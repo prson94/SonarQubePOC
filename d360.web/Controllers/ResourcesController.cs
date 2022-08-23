@@ -70,14 +70,14 @@ namespace d360.web.Controllers
 		public FileResult ExportFollowsByResourceByType(int resourceID, string type, int id)
 		{
 			string sql = @"
-						select	TextPath as [Path],
-								A.ID as AssetID
+						select	F.TextPath as [Path],
+								F.AssetID as AssetID
 						from	FollowDetail F
-								inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID and F.ResourceID = @r
-								and F.[Type] = @type
-								and F.TypeID = @id";
+						where   F.ResourceID = @r
+								and F.AssetTypeID = @id
+								and f.AssetId is not null";
 
-			var query = Company.Query<dynamic>(sql, new { r = resourceID, type, id });
+			var query = Company.Query<dynamic>(sql, new { r = resourceID, id });
 
 			var document = new ExcelDocument(Smart.Format(ExcelExports.FollowedResources_DocumentName, new { DateTime.Now }))
 			{
