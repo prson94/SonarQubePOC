@@ -1514,4 +1514,95 @@ end
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+  <changeSet author="TKlok" id="Data.Corrections.GOV-19410">
+  <comment>GOV-19410 Correct lookup values in rule conditions</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+begin
+
+declare @iteration int, @itearationMax int;
+
+set @iteration = 0;
+select @itearationMax = max(cnt) from (
+	select (
+		select count(*) from OPENJSON(rtrr.definition, '$.When') with
+		(
+			FieldTypeid int '$.FieldTypeID',
+			Value NVARCHAR(max) '$.Value'
+		) as summary
+		inner join FieldType ft on ft.id = summary.FieldTypeid
+		where ft.Type = 'Lookup'
+		and isnumeric(summary.value) <> 1
+	) as cnt
+from ResponsibilityTypeRelationRule rtrr
+) cntSel;
+
+While (@iteration < @itearationMax)
+begin
+	update rtrr
+	set rtrr.Definition = JSON_MODIFY(rtrr.definition, concat('$.When[', j1.[key], '].Value') COLLATE SQL_Latin1_General_CP1_CI_AS, flv.value)
+		,rtrr.UpdatedOn = getdate()
+	from ResponsibilityTypeRelationRule as rtrr
+	cross apply OPENJSON(rtrr.definition, '$.When') j1
+	cross apply OPENJSON(j1.[value], '$')
+	with (
+		FieldTypeid int '$.FieldTypeID',
+		Value NVARCHAR(max) '$.Value'
+	) as summary
+	inner join FieldType ft on ft.id = summary.FieldTypeid
+	inner join FieldLookupValue flv on flv.FieldTypeID = ft.id and summary.value = flv.text
+	where ft.Type = 'Lookup'
+	and isnumeric(summary.value) <> 1;
+
+	set @iteration = @iteration+1;
+end;
+
+
+set @iteration = 0;
+select @itearationMax = max(cnt) from (
+	select (
+		select count(*) from OPENJSON(rtrr.definition, '$.Then.Conditions') with
+		(
+			FieldTypeid int '$.FieldTypeID',
+			Value NVARCHAR(max) '$.Value'
+		) as summary
+		inner join FieldType ft on ft.id = summary.FieldTypeid
+		where ft.Type = 'Lookup'
+		and isnumeric(summary.value) <> 1
+	) as cnt
+from ResponsibilityTypeRelationRule rtrr
+) cntSel;
+
+While (@iteration < @itearationMax)
+begin
+	update rtrr
+	set rtrr.Definition = JSON_MODIFY(rtrr.definition, concat('$.Then.Conditions[', j1.[key], '].Value') COLLATE SQL_Latin1_General_CP1_CI_AS, flv.value)
+		,rtrr.UpdatedOn = getdate()
+	from ResponsibilityTypeRelationRule as rtrr
+	cross apply OPENJSON(rtrr.definition, '$.Then.Conditions') j1
+	cross apply OPENJSON(j1.[value], '$')
+	with (
+		FieldTypeid int '$.FieldTypeID',
+		Value NVARCHAR(max) '$.Value'
+	) as summary
+	inner join FieldType ft on ft.id = summary.FieldTypeid
+	inner join FieldLookupValue flv on flv.FieldTypeID = ft.id and summary.value = flv.text
+	where ft.Type = 'Lookup'
+	and isnumeric(summary.value) <> 1;
+
+	set @iteration = @iteration+1;
+end;
+
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+  
+  
 </databaseChangeLog>
