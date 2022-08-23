@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { AssetRoutingModule } from './asset.routes';
 import { AssetComponent } from './asset.component';
 import { GovernRequestInterceptor } from '../../http-interceptors/govern-request.interceptor';
+import { ArtifactModule } from '../artifact/artifact.module';
 
 @NgModule({
     imports: [
@@ -14,7 +15,8 @@ import { GovernRequestInterceptor } from '../../http-interceptors/govern-request
 
         RouterModule,
 
-        AssetRoutingModule
+		AssetRoutingModule,
+		ArtifactModule
     ],
     declarations: [        
         AssetComponent

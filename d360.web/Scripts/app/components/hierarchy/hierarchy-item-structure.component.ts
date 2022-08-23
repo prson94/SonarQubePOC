@@ -639,7 +639,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	showHierarchy($event, asset) {
 		this.assetService.getUIDetailsForAssetUID(asset.AssetUid)
 			.subscribe((res) => {
-				let url = SiteUrlHelpers.getObjectUrl(this.object, res.ObjectId, this.objectTypeId);
+				let url = SiteUrlHelpers.getAssetUrl(asset.AssetUid);
 				if ($event['from-context-method']) {
 					this.linkClickInterceptor.sendEvent($event, {
 						Values: [{

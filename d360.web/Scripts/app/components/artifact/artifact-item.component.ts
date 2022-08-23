@@ -33,6 +33,8 @@ declare var CurrentResourceID;
 })
 
 export class ArtifactItemComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
+	@Input() assetUid: string;
+
 	private artifact: Artifact;
 	private sub: any;
 	private currentAreaNameSubscription: any;
@@ -74,26 +76,26 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 	}
 
 	ngOnInit() {
-		this.sub = this.route.params.subscribe(params => {
-			this.uid = this.baseAssetUid = params["assetUid"];
 
-			this.logAction('open', 'Artifact', this.uid);
-			this.isLoading = true;
-			this.messages = [];
+		this.uid = this.baseAssetUid = this.assetUid;
 
-			this.permissionsService.getAssetPermissions(this.uid)
-				.subscribe((res) => {
-					this.objectPermission = res;
-					this.load(this.uid);
-				}
-				);
+		this.logAction('open', 'Artifact', this.uid);
+		this.isLoading = true;
+		this.messages = [];
 
-			this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-				this.linkClickInterceptor.handleEvent(this, ev);
-			});
+		this.permissionsService.getAssetPermissions(this.uid)
+			.subscribe((res) => {
+				this.objectPermission = res;
+				this.load(this.uid);
+			}
+			);
 
-			this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
+		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			this.linkClickInterceptor.handleEvent(this, ev);
 		});
+
+		this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
+
 	}
 
 	ngOnDestroy() {

@@ -6,14 +6,17 @@ import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-asset',
-    template: `<div id="main"><router-outlet> </router-outlet></div>`,
+	template: `<div id="main">
+		<d3s-artifact-item [assetUid]="assetUid"></d3s-artifact-item>
+	</div>`,
     providers: [AssetService],
 })
 
 export class AssetComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
+	assetUid: string = '';
 
-    constructor(
+	constructor(
         private assetService: AssetService,
         protected settingsService: CompanySettingsService,
         private route: ActivatedRoute,
@@ -23,33 +26,7 @@ export class AssetComponent extends BaseComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            let assetUid = params['assetUid'];
-            let currentUrl = this.router.url;
-            let behavior = { replaceUrl: true };
-            if (currentUrl.toLowerCase().indexOf("assettype") == -1) {
-                this.assetService.getAssetLegacyUri(assetUid).subscribe(uri => {
-                    if (uri !== '') {
-                        if (uri.startsWith("reference;")) {
-                            this.router.navigateByUrl(uri, behavior);
-                        }
-                        else {
-                            this.router.navigate([uri], behavior);
-                        }
-                    }
-                    else {
-                        this.router.navigate(['/home'], behavior);
-                    }
-                });
-            } else {
-                //check for asset types 
-                this.assetService.getAssetTypeLegacyUri(assetUid).subscribe(uri => {
-                    if (uri !== '') {
-                        this.router.navigate([uri], behavior);
-                    } else {
-                        this.router.navigate(['/home'], behavior);
-                    }
-                });
-            }
+            this.assetUid = params['assetUid'];
         });
     }
 

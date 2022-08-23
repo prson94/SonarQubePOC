@@ -1,9 +1,9 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { ArtifactItemComponent } from '../artifact/artifact-item.component';
+import { AssetComponent } from './asset.component';
 
 const routes: Routes = [
-	{ path: ':assetUid', component: ArtifactItemComponent },
+	{ path: ':assetUid', component: AssetComponent },
 ];
 
 @NgModule({
