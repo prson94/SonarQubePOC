@@ -110,7 +110,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                         this.folderTitle = res;
                         this.area = res;
 
-                        this.artifactType = artifactType;
+						this.artifactType = artifactType;
+						this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId, this.artifactType.AssetTypeUID);
                         this.gridObject = ArtifactType.AsGridObject(this.artifactType);
                         this.setObjectInfo('ArtifactType', this.artifactType.ID);
 

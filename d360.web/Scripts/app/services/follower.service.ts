@@ -26,12 +26,12 @@ export class FollowerService extends BaseObservableService {
     private _cacheTime = () => 5 * 1000; //5 seconds
 
     getFollowers(
-        type: string,
-        id: number
+		assetUid: string,
+		assetTypeUid: string
     ): Observable<FollowDetail[]> {
         return this
             .http
-            .get(`api/${type}/${id}/followers`)
+			.get(`api/${assetTypeUid}/${assetUid}/followers`)
             .pipe(
                 map((response) => <FollowDetail[]>response),
                 catchError((err) => this.handleError(err))
@@ -40,16 +40,16 @@ export class FollowerService extends BaseObservableService {
     }
 
     getFollowInfo(
-        type: string,
-        id: number
+		assetUid: string,
+		assetTypeUid: string
     ): Observable<FollowInfo> {
-        const cacheKey = type + '||' + id.toString();
+		const cacheKey = assetUid + '||' + assetTypeUid;
 
         if (!this._followInfoCache.has(cacheKey)) {
             this._followInfoCache.set(cacheKey, this
                 .http
                 .get(
-                    `api/followinfo/${type}/${id}`,
+					`api/followinfo/${assetTypeUid}/${assetUid}`,
                     { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
                 )
                 .pipe(
@@ -65,14 +65,14 @@ export class FollowerService extends BaseObservableService {
     }
 
     updateFollowStatus(
-        type: string,
-        id: number,
+		assetUid: string,
+		assetTypeUid: string,
         includeChildren: boolean = false
     ): Observable<any> {
         this._followInfoCache.clear();
         return this
             .http
-            .post('resources/UpdateFollowStatus', {type: type, id: id, includeChildren: includeChildren})
+			.post('resources/UpdateFollowStatus', { assetTypeUid: assetTypeUid, assetUid: assetUid, includeChildren: includeChildren })
             .pipe(
                 map((response) => <any>response),
                 catchError((err) => this.handleError(err))

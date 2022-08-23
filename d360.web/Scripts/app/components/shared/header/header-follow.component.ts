@@ -37,12 +37,10 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
     isFollowing: boolean = false;
     isFollowingParent: boolean = false;
 
-    objectType: string = "";
-    objectId: number = 0;
+	assetUId: string = "";
+	assetTypeUId: string = "";
 
-    parentObjectType: string = "";
-    parentObjectId: number = 0;
-
+	emptyguid: string = "00000000-0000-0000-0000-000000000000";
     isLoading = false;
     sub: any;
 
@@ -61,16 +59,16 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
     ngOnInit() {
 
         this.sub = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
-            this.objectType = c.type;
-            this.objectId = c.id;
+			this.assetTypeUId = c.AssetTypeUid;
+			this.assetUId = c.AssetUid;
             this.checkActive();
         });
 
         //set values on initial load
         let o = this.breadcrumbService.currentObject;
         if (o != null) {
-            this.objectType = o.type;
-            this.objectId = o.id;
+			this.assetTypeUId = o.AssetTypeUid;
+			this.assetUId = o.AssetUid;
             this.checkActive();
         }
     }
@@ -79,24 +77,22 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
     checkActive() {
         this.active = false;
         this.visible = true;
-        if (this.objectType == null || this.objectType == "" || this.objectId < 0) {
-            this.visible = false;
-            return;
-        }
+		if ((this.assetUId === null || this.assetUId === "" || this.assetUId === undefined) && (this.assetTypeUId === null || this.assetTypeUId === "" || this.assetTypeUId === undefined)) {
+			this.visible = false;
+			return;
+		}
 
+		if (this.assetUId === undefined || this.assetUId === null) {
+			this.assetUId = this.emptyguid;
+		}
+		if (this.assetTypeUId === undefined || this.assetTypeUId === null) {
+			this.assetTypeUId = this.emptyguid;
+		}
 
-        this.followerService.getFollowInfo(this.objectType, this.objectId).subscribe(
+		this.followerService.getFollowInfo(this.assetUId, this.assetTypeUId).subscribe(
             f => {
                 this.isFollowing = f.isFollowing;
                 this.isFollowingParent = f.isFollowingParent;
-
-                if (f.parent) {
-                    this.parentObjectType = f.parent.ObjectType;
-                    this.parentObjectId = f.parent.ObjectID;
-                } else {
-                    this.parentObjectType = '';
-                    this.parentObjectId = 0;
-                }
 
                 this.updateTooltip();
             }
@@ -104,17 +100,20 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
     }
 
     toggleFollow() {
-        if (this.isFollowingParent && (this.objectType != this.parentObjectType || this.objectId != this.parentObjectId)) {
+		if (this.isFollowingParent && (this.assetUId != this.emptyguid)) {
             this.messageService.add({ severity: 'info', summary: 'Following Parent', detail: 'Following via Parent.\nTo unfollow, please go to type list.' });
             return;
         }
-        if (this.objectType == null || this.objectType == "" || this.objectId < 0) {
+		if (this.assetUId === this.emptyguid && this.assetTypeUId === this.emptyguid) {
             return;
         }
         this.isLoading = true;
-        let includeChildren = this.objectType.endsWith('Type');
+		let includeChildren = false;
+		if (this.assetTypeUId !== this.emptyguid && this.assetUId === this.emptyguid) {
+			includeChildren = true;
+		}
 
-        this.followerService.updateFollowStatus(this.objectType, this.objectId, includeChildren).subscribe(
+		this.followerService.updateFollowStatus(this.assetUId, this.assetTypeUId, includeChildren).subscribe(
             f => {
                 if (f.type == 'notification') {
                     this.active = !this.active;
@@ -160,9 +159,9 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
             this.tooltipString = $localize`Stop following`;
         else if (!this.isFollowingParent && !this.isFollowing)
             this.tooltipString = $localize`Follow this item`;
-        else if (this.isFollowingParent && this.objectType.endsWith('Type'))
+		else if (this.isFollowingParent && this.assetTypeUId !== this.emptyguid)
             this.tooltipString = $localize`Stop following`;
-        else if (this.isFollowingParent && !this.objectType.endsWith('Type'))
+		else if (this.isFollowingParent && this.assetTypeUId === this.emptyguid)
             this.tooltipString = $localize`Following parent item`;
         this.ref.markForCheck();
     }

@@ -2013,10 +2013,12 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> UpdateWatches(UpdateUserWatchModel model)
 		{
 			int id = -1;
-			string type = "";
+			long AssetID = 0;
+			int AssetTypeID = 0;
 			string name = "";
 			string parentName = "";
 			bool includeChildren = false;
+			FollowDetail followDetail = null;
 
 			if (model.assetTypeUid == null && model.assetUid == null)
 			{
@@ -2037,10 +2039,10 @@ namespace d360.web.Controllers.V2
 				else
 				{
 					var assetType = assetRepository.GetAssetTypeByUID(model.assetTypeUid.Value);
-					id = assetType.ObjectID;
-					type = assetType.Object;
+					AssetTypeID = assetType.ID; 
 					name = assetType.Name;
 					includeChildren = true;
+					followDetail = Company.Filter<FollowDetail>(i => i.AssetTypeID == AssetTypeID && i.AssetID == null && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
 				}
 			}
 
@@ -2054,14 +2056,12 @@ namespace d360.web.Controllers.V2
 				else
 				{
 					var asset = Company.Filter<AssetDetail>(x => x.uid == model.assetUid.Value).FirstOrDefault();
-					id = asset.ObjectID;
-					type = asset.Object;
+					AssetID = asset.id; 
 					name = asset.DisplayValue;
 					parentName = asset.TypeName;
+					followDetail = Company.Filter<FollowDetail>(i => i.AssetID == AssetID && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
 				}
 			}
-
-			var followDetail = Company.Filter<FollowDetail>(i => i.ObjectID == id && i.ObjectType == type && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
 
 			if (model.watches && followDetail != null)
 			{
@@ -2092,7 +2092,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			bool success = Company.UpdateFollowStatus((SystemObjects)Enum.Parse(typeof(SystemObjects), type), id, null, includeChildren);
+			bool success = Company.UpdateFollowStatus(AssetTypeID, AssetID, null, includeChildren);
 
 			return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, string.Format(ApiMessages.YouAreWatching, (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
 		}
@@ -2220,13 +2220,13 @@ namespace d360.web.Controllers.V2
 						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.AssetValidateWithAssetType);
 					}
 
-					response = Company.Any<Follow>(F => F.ObjectID == asset.ObjectID && F.ObjectType == asset.Object && F.ResourceID == Company.CurrentResourceID);
+					response = Company.Any<Follow>(F => F.AssetID  == asset.ID && F.ResourceID == Company.CurrentResourceID);
 				}
 			}
 
 			if (!response)
 			{
-				response = Company.Any<Follow>(F => F.ObjectID == assetType.ObjectID && F.ObjectType == assetType.Object && F.ResourceID == Company.CurrentResourceID);
+				response = Company.Any<Follow>(F => F.AssetTypeID == assetType.ID && F.ResourceID == Company.CurrentResourceID);
 			}
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));

@@ -22,6 +22,8 @@ using Newtonsoft.Json;
 
 using SmartFormat;
 
+using Resources;
+
 namespace d360.web.Models
 {
 	public class TooltipFieldLevelPathModel
@@ -348,13 +350,56 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPost, Route("UpdateFollowStatus"), NonNullableParameters, AjaxValidateAntiForgeryToken]
-		public JsonResult UpdateFollowStatus(SystemObjects type, int id, bool includeChildren = false)
+		[HttpPost, Route("UpdateFollowStatus"), AjaxValidateAntiForgeryToken]
+		public JsonResult UpdateFollowStatus(Guid assetTypeUid, Guid? assetUid, bool includeChildren = false)
 		{
 			try
 			{
-				var sType = type.ToString();
-				var f = Company.Filter<FollowDetail>(i => i.ObjectID == id && i.ObjectType == sType && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+				FollowDetail f = null;
+				int? assetTypeid = 0;
+				long? assetid = 0;
+
+				if (assetTypeUid != Guid.Empty && !Company.Any<AssetType>(x => x.uid == assetTypeUid))
+				{
+					return Json(new { title = "Error!", message = ActionApiMessages.InvalidAssetTypeUid, type = "error" });
+				}
+
+				var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+
+				if (assetType != null)
+				{
+					assetTypeid = assetType.ID;
+				}
+
+				if (assetUid != null && assetUid != Guid.Empty)
+				{
+
+					if (!Company.Any<Asset>(x => x.uid == assetUid.Value))
+					{
+						return Json(new { title = "Error!", message = ActionApiMessages.InvalidAssetUid, type = "error" });
+					}
+					else
+					{
+						var asset = Company.Filter<AssetDetail>(x => x.uid == assetUid.Value).FirstOrDefault();
+
+						if (asset != null)
+						{
+							assetid = asset.id;
+						}
+
+						if (asset.AssetTypeUid != assetTypeUid && assetTypeUid != Guid.Empty)
+						{
+							return Json(new { title = "Error!", message = ApiMessages.AssetValidateWithAssetType, type = "error" });
+						}
+
+						f = Company.Filter<FollowDetail>(i => i.AssetID == asset.ID && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+					}
+				}
+
+				if (f == null && assetTypeUid != Guid.Empty && assetUid == Guid.Empty)
+				{
+					f = Company.Filter<FollowDetail>(i => i.AssetTypeID == assetType.ID && i.AssetID == null && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+				}
 				
 				if (f != null)
 				{
@@ -364,7 +409,7 @@ namespace d360.web.Controllers
 					}
 				}
 
-				bool status = Company.UpdateFollowStatus(type, id, null, includeChildren);
+				bool status = Company.UpdateFollowStatus(assetTypeid, assetid, null, includeChildren);
 				
 				return Json(new { title = "Success!", message = string.Format("You are {0} following this item.", (status) ? "now" : "no longer"), type = "notification" });
 			}

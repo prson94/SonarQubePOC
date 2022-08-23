@@ -42,4 +42,111 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.dbo.Follow-AddColumn-V1">
+  <comment>GOV-18457</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'AssetID')
+begin
+	alter table [dbo].[Follow] add [AssetID] bigint SPARSE NULL
+end
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'AssetTypeID')
+begin
+	alter table [dbo].[Follow] add [AssetTypeID] int SPARSE NULL
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+	alter table [dbo].[Follow] drop column if exists [AssetID]
+	alter table [dbo].[Follow] drop column if exists [AssetTypeID]
+]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Puneet Gupta" id="Table.dbo.Follow-ObjectObjectIDNull-V1">
+  <comment>GOV-18457</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'IX_Follow_ObjectType-ObjectID')
+BEGIN
+	drop INDEX [IX_Follow_ObjectType-ObjectID] ON [dbo].[Follow]
+END
+
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'ObjectType' and IS_NULLABLE = 'NO')
+begin
+	alter table [dbo].[Follow] alter column [ObjectType] [varchar](50) NULL;
+end
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'ObjectID' and IS_NULLABLE = 'NO')
+begin
+	alter table [dbo].[Follow] alter column [ObjectID] int NULL;
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'ObjectType' and IS_NULLABLE = 'YES')
+and ((select count(1) from follow where objecttype is null) = 0)
+begin
+	alter table [dbo].[Follow] alter column [ObjectType] [varchar](50) NOT NULL;
+end
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'ObjectID' and IS_NULLABLE = 'YES')
+and ((select count(1) from follow where ObjectID is null) = 0)
+begin
+	alter table [dbo].[Follow] alter column [ObjectID] int NOT NULL;
+end
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Follow_ObjectType-ObjectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Follow_ObjectType-ObjectID] ON [dbo].[Follow] ( [ObjectType] ASC, [ObjectID] ASC )
+END
+
+]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Puneet Gupta" id="Index.dbo.Follow-V1">
+  <comment>GOV-18457</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'AssetID')
+begin
+	IF Not EXISTS (select * from sys.indexes where name = 'IX_Follow_AssetID')
+	BEGIN
+		CREATE NONCLUSTERED INDEX [IX_Follow_AssetID] ON [dbo].[Follow] ( [AssetID] ASC)
+	END
+end
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'AssetTypeID')
+begin
+	IF Not EXISTS (select * from sys.indexes where name = 'IX_Follow_AssetTypeID')
+	BEGIN
+		CREATE NONCLUSTERED INDEX [IX_Follow_AssetTypeID] ON [dbo].[Follow] ( [AssetTypeID] ASC)
+	END
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'IX_Follow_AssetID')
+BEGIN
+	drop INDEX [IX_Follow_AssetID] ON [dbo].[Follow]
+END
+
+IF EXISTS (select * from sys.indexes where name = 'IX_Follow_AssetTypeID')
+BEGIN
+	drop INDEX [IX_Follow_AssetTypeID] ON [dbo].[Follow]
+END
+]]>
+	</rollback>
+  </changeSet>
+  
+  
 </databaseChangeLog>
