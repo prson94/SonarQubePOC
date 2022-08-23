@@ -77,15 +77,15 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
     checkActive() {
         this.active = false;
         this.visible = true;
-		if ((this.assetUId === null || this.assetUId === "" || this.assetUId === undefined) && (this.assetTypeUId === null || this.assetTypeUId === "" || this.assetTypeUId === undefined)) {
+		if ((this.assetUId === null || this.assetUId === "" || typeof this.assetUId === "undefined") && (this.assetTypeUId === null || this.assetTypeUId === "" || typeof this.assetTypeUId === "undefined")) {
 			this.visible = false;
 			return;
 		}
 
-		if (this.assetUId === undefined || this.assetUId === null) {
+		if (typeof this.assetUId === "undefined" || this.assetUId === null) {
 			this.assetUId = this.emptyguid;
 		}
-		if (this.assetTypeUId === undefined || this.assetTypeUId === null) {
+		if (typeof this.assetTypeUId === "undefined" || this.assetTypeUId === null) {
 			this.assetTypeUId = this.emptyguid;
 		}
 
@@ -100,7 +100,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
     }
 
     toggleFollow() {
-		if (this.isFollowingParent && (this.assetUId != this.emptyguid)) {
+		if (this.isFollowingParent && (this.assetUId !== this.emptyguid)) {
             this.messageService.add({ severity: 'info', summary: 'Following Parent', detail: 'Following via Parent.\nTo unfollow, please go to type list.' });
             return;
         }
