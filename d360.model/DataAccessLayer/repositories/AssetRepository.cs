@@ -385,8 +385,9 @@ namespace d360.model.DataAccessLayer
 				hasAssetPathField = true;
 			}
 
-			DynamicQuerySelects fieldColumns = new DynamicQuerySelects();
+			var fieldColumns = new DynamicQuerySelects();
 			var fieldJoins = new DynamicQueryJoins();
+			var advancedFilterTempTableInfos = new AdvancedFilterTempTableFilters();
 
 			List<string> whereStatements = new List<string>();
 			List<string> pagingSql = new List<string>();
@@ -585,6 +586,7 @@ namespace d360.model.DataAccessLayer
 					 then 1
 					 else 0
 					end as HasAssetPermission
+					option(recompile)
 					", new { userId = CompanyContext.CurrentResourceID, assetTypeID, p = (int)Permission.ReadAsset }
 					, ApiTimeout))
 					.FirstOrDefault();
@@ -909,6 +911,8 @@ namespace d360.model.DataAccessLayer
 					{
 						dbArgs.Add(item.Key, item.Value);
 					}
+
+					advancedFilterTempTableInfos = filterExpressionParser.GetAdvancedFilterTempTableFilters();
 				}
 			}
 
@@ -1001,6 +1005,7 @@ namespace d360.model.DataAccessLayer
 						var join = fieldJoins.Joins().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
 
 						string nodeJoin = "inner join AssetPath Node on Node.ID = a.ID";
+						
 						if (ft.Type == DataType.Path.ToString() && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
 						{
 							join = new DynamicQueryJoinData();
@@ -1022,6 +1027,7 @@ namespace d360.model.DataAccessLayer
 							simpleFilters.Add($@"
 								select  A.ID
 								from    Asset A 
+								{advancedFilterTempTableInfos.JoinFilter()}
 								{(ft.Type == DataType.Path.ToString() && joinStatement != nodeJoin ? nodeJoin : "")}
 								{joinStatement}
 								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
@@ -1347,8 +1353,10 @@ namespace d360.model.DataAccessLayer
 			var baseSQL = $@"
 				{TempTableScriptStr}
 
+				{advancedFilterTempTableInfos.TempTableSQL()}
+				
 				{simpleFiltersTempTablesQuery}
-
+				
 				DROP TABLE IF EXISTS #tempasset;
 				create table #tempasset (id int identity(1,1), AssetId bigint);
 

@@ -13,6 +13,7 @@ import { Table } from 'primeng/table';
 import { debounceTime } from 'rxjs/operators';
 import { ObjectStatisticChildItem, ObjectStatistics } from '../../../models/object-statistics.model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-artifact-item-child-grid',
@@ -48,7 +49,9 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     filter: string = "";
     statistics: ObjectStatistics;
     isLoading: boolean = false;
-    subjectUid: string;
+	subjectUid: string;
+
+	loadSub: Subscription;
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -99,9 +102,13 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     getData() {
         this.isLoading = true;
         this.assetService.getArtifactType(this.selected.TypeID).subscribe((i) => {
-            this.subjectUid = i.uid;
+			this.subjectUid = i.uid;
 
-            this.assetService.getAssets(i.uid, this.getParams()).pipe(
+			if (this.loadSub) {
+				this.loadSub.unsubscribe();
+			}
+
+			this.loadSub = this.assetService.getAssets(i.uid, this.getParams()).pipe(
                 debounceTime(500)).subscribe((res) => {
                     this.totalRecords = res.total;
                     this.artifacts = res;
