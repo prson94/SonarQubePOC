@@ -147,7 +147,7 @@ GO
 				if not exists (select 1 from sys.columns where Name = N'AssetTypeID' and Object_ID = Object_ID(N'dbo.Favorite'))
 				begin
 					alter table dbo.Favorite
-					add AssetTypeID bigint SPARSE
+					add AssetTypeID int SPARSE
 				end
 
 				GO

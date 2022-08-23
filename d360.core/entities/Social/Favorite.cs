@@ -28,7 +28,7 @@ namespace d360.core.entities
 		public long? AssetId { get; set; }
 
 		[DataMember]
-		public long? AssetTypeId { get; set; }
+		public int? AssetTypeId { get; set; }
 
 		[DataMember]
 		public long? SemanticId { get; set; }
