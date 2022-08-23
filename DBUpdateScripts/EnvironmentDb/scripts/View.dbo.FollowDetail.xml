@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="View.dbo.FollowDetail-v9">
+  <changeSet author="Puneet Gupta" id="View.dbo.FollowDetail-v10">
 	<comment>GOV-18454,GOV-18457</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -203,7 +203,7 @@ create or alter view [dbo].[FollowDetail]
 				case coalesce(AAT.Class,OAT.Class)  
 					when 11 then 'User'  
 					when 12 then 'Group'  
-					else AAT.Name 
+					else coalesce(AAT.Name,OAT.Name)
 				end as [TypeName],  
 				coalesce(AATS.IconBackColor,OATS.IconBackColor,'#000') IconBackColor,  
 				coalesce(AATS.IconForeColor,OATS.IconForeColor, '#fff') IconForeColor,  
