@@ -8,6 +8,7 @@
   &-actions {
     display: flex;
     justify-content: flex-start;
+    margin-left: 70px;
     min-width: 308px;
 
     button {
@@ -31,26 +32,29 @@
   }
 }
 
+td,
+th {
+  color: black;
+}
+
 .tr-head {
   height: 32px;
 
   & > th {
-    background-color: #F1F2F3;
+    background-color: #f1f2f3;
   }
 }
 
 .tr-body {
   height: 35px;
-  border-bottom: 2px solid #F1F2F3;
+  border-bottom: 2px solid #f1f2f3;
 
   .name-cell {
     display: flex;
     word-break: break-all;
+    align-items: center;
+    min-height: 39px;
   }
-}
-
-td, th {
-  color: black;
 }
 
 .rebuild-status {
@@ -79,5 +83,16 @@ td, th {
     &--red {
       background-color: @d3s-primary-red;
     }
+  }
+}
+
+.rebuild-kebab {
+  background: transparent;
+}
+
+.treeTable-header-checkbox {
+  &.disabled {
+    opacity: .34;
+    pointer-events: none;
   }
 }

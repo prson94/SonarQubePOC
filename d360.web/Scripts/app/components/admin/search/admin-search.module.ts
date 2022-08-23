@@ -6,6 +6,9 @@ import { TooltipModule } from 'primeng/tooltip';
 import { CoreModule } from "../../shared/core.module";
 import { AdminSearchComponent } from "./admin-search.component";
 import { AdminSearchRoutingModule } from "./admin-search.routes";
+import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.component";
+import { AdminSearchTreeTableDirective } from "./admin-search.table.directive";
+import { AdminSearchCheckboxDirective } from "./admin-search.checkbox.directive";
 
 @NgModule({
     imports: [
@@ -16,9 +19,12 @@ import { AdminSearchRoutingModule } from "./admin-search.routes";
         TooltipModule,
         //d3s                
         CoreModule,
+		PopupMenuModule,
     ],
     declarations: [
         AdminSearchComponent,
+		AdminSearchTreeTableDirective,
+		AdminSearchCheckboxDirective,
     ],
 	exports: [
 		AdminSearchComponent

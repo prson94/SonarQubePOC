@@ -23,7 +23,10 @@
 			</button>
 		</div>
     </div>
-    <p-treeTable styleClass="breadcrumbTree treetable"
+    <p-treeTable #treeTable
+				 adminSearchTreeTable
+				 styleClass="breadcrumbTree treetable"
+				 selectionMode="checkbox"
 				 [value]="indexableNodes"
 				 [(selection)]="selectedIndexes"
 				 [scrollable]="true"
@@ -31,7 +34,8 @@
         <ng-template pTemplate="header">
             <tr class="tr-head">
                 <th i18n>
-					<p-treeTableHeaderCheckbox></p-treeTableHeaderCheckbox>
+					<p-treeTableHeaderCheckbox class="treeTable-header-checkbox" [ngClass]="{'disabled': isUpdating}">
+					</p-treeTableHeaderCheckbox>
 					Name
 				</th>
 				<th i18n>Assets in Index</th>
@@ -42,18 +46,20 @@
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
-            <tr class="tr-body" (click)="rowToggle.onClick($event)">
-                <td [class.name-cell]="!rowNode.node.children.length">
-					<p-treeTableCheckbox *ngIf="rowNode.node.children.length" [value]="rowNode"
-										 [disabled]="isUpdating || !canRebuild(rowData)">
-					</p-treeTableCheckbox>
+            <tr class="tr-body"
+				[ngClass]="{'p-highlight': treeTable.isSelected(rowNode.node) && canRebuild(rowData)}"
+				(click)="onRowClick($event, rowNode, treeTable, rowToggle, kebabMenuDiv)">
+                <td [class.name-cell]="rowNode.level !== 0">
+					<ng-container *ngIf="rowNode.level === 0">
+						<ng-container *ngTemplateOutlet="checkBox"></ng-container>
+					</ng-container>
                     <p-treeTableToggler #rowToggle
 										[rowNode]="rowNode"
 										(click)="$event.stopImmediatePropagation()">
 					</p-treeTableToggler>
-					<p-treeTableCheckbox *ngIf="!rowNode.node.children.length" [value]="rowNode"
-										 [disabled]="isUpdating || !canRebuild(rowData)">
-					</p-treeTableCheckbox>
+					<ng-container *ngIf="rowNode.level !== 0">
+						<ng-container *ngTemplateOutlet="checkBox"></ng-container>
+					</ng-container>
 					{{rowData.Name}}
                 </td>
 				<td>
@@ -73,10 +79,27 @@
 					{{ (rowData.LastUpdate | date:'medium') }}
 				</td>
 				<td style="width: 40px">
+					<div #kebabMenuDiv>
+						<button igButton type="button" icon="fa-ellipsis-v"
+								class="rebuild-kebab" (click)="kebabMenu.toggle($event)">
+						</button>
+						<ig-popup-menu #kebabMenu [items]="rowData.Menu" [tabIndex]="1"
+									   (onSelect)="onKebabMenuClick($event, rowNode.node)">
+						</ig-popup-menu>
+					</div>
 				</td>
             </tr>
+			<ng-template #checkBox>
+				<p-treeTableCheckbox [value]="rowNode" adminSearchCheckbox
+									 [canRebuild]="canRebuild(rowData)"
+									 [disabled]="isUpdating || !canRebuild(rowData)"
+									 (click)="$event.stopImmediatePropagation()">
+				</p-treeTableCheckbox>
+			</ng-template>
         </ng-template>
     </p-treeTable>
+	<button style="margin-top: 20px" igButton i18n-label label="Close" (click)="onModalClose.emit(true)">
+	</button>
 </div>
 
 <!--<span *ngIf="!canRebuild(rowData) && rowData.TargetCount > 0" i18n>-->

@@ -213,5 +213,5 @@
 		   additionalClasses="large-dialog rebuild-partial-search-index"
 		   (onClose)="isPartialRebuildModalVisible = false"
 		   [isVisible]="isPartialRebuildModalVisible">
-	<d3s-admin-search-component></d3s-admin-search-component>
+	<d3s-admin-search-component (onModalClose)="isPartialRebuildModalVisible = false"></d3s-admin-search-component>
 </d3s-modal>

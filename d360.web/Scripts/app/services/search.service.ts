@@ -169,12 +169,14 @@ export class SearchService extends BaseObservableService  {
             );
     }
 
-	public sendRebuildRequest(assetClass: number, assetTypeUid: string) {
+	public sendRebuildRequest(assets: IndexableStatus[]): Observable<any> {
 		let requests: IndexPartialRebuild[] = [];
-		requests.push({
-			Class: assetClass,
-			AssetTypeUid: assetTypeUid
-		})
+		assets.forEach((asset) => {
+			requests.push({
+				Class: asset.Class,
+				AssetTypeUid: asset.AssetTypeUid
+			});
+		});
         return this.http
 			.post(`api/v2/search/rebuild`, requests)
             .pipe(

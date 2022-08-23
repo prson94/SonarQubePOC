@@ -12,6 +12,7 @@ export class IndexableStatus extends IndexableType
     CurrentCount: number;
     Start: string;
     LastUpdate: string;
+	Menu: object[];
 }
 
 export class IndexPartialRebuild
