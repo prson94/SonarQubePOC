@@ -187,7 +187,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Survey with the specified Uid was does not exist..
+        ///   Looks up a localized string similar to Survey with the specified Uid does not exist..
         /// </summary>
         public static string SurveyTypeNotFound {
             get {
