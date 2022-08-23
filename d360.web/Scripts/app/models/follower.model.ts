@@ -1,7 +1,5 @@
 ﻿export class FollowDetail {
     ResourceID: number;
-    ObjectID: number;
-    ObjectType: string;
     FollowID: number;
     ID: number;
     Name: string;
@@ -25,17 +23,19 @@
     FollowerObjectType: string;
     FollowerObjectID: number;
     FollowerUrl: string;
-    HardFollow: boolean;
+	HardFollow: boolean;
+	AssetID: number;
+	AssetTypeID: number;
 }
 
 
 export class Follow {
     ID: number;
     ResourceID: number;
-    ObjectType: string;
-    ObjectID: number;
     DateCreate: string;
-    FollowTypeID: FollowType;
+	FollowTypeID: FollowType;
+	AssetID: number;
+	AssetTypeID: number;
 }
 
 export class FollowInfo {

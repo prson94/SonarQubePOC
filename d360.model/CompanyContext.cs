@@ -857,35 +857,48 @@ namespace d360.model
 			return Filter<AssetDetail>(i => i.ID == parentId).FirstOrDefault();
 		}
 
-		public bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID)
+		public bool IsUserFollowing(int? AssetTypeID, long? AssetID, int? resourceID)
 		{
+			bool follow = false;
 			if (!resourceID.HasValue)
 			{
 				resourceID = CurrentResourceID;
 			}
-			string sType = type.ToString();
 
-			bool follow = Any<FollowDetail>(i => i.ResourceID == resourceID && i.ObjectID == objectID && i.ObjectType == sType);
-
+			if (AssetID != 0)
+			{
+				follow = Any<FollowDetail>(i => i.ResourceID == resourceID && i.AssetID == AssetID);
+			}
+			else if (AssetTypeID != 0)
+			{
+				follow = Any<FollowDetail>(i => i.AssetTypeID == AssetTypeID && i.AssetID == null && i.ResourceID == resourceID);
+			}
 			return follow;
 		}
 
-		public bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID)
+		public bool IsUserFollowingParent(int? AssetTypeID, long? AssetID, int? resourceID)
 		{
-			return GetFollowingParent(type, objectID, resourceID) != null;
+			return GetFollowingParent(AssetTypeID, AssetID, resourceID) != null;
 		}
 
-		public Follow GetFollowingParent(SystemObjects type, int objectID, int? resourceID)
+		public Follow GetFollowingParent(int? AssetTypeID, long? AssetID, int? resourceID)
 		{
+			FollowDetail fd = null;
+
 			if (!resourceID.HasValue)
 			{
 				resourceID = CurrentResourceID;
 			}
 
-			string sType = type.ToString();
+			if (AssetID != 0)
+			{
+				fd = Filter<FollowDetail>(i => i.ResourceID == resourceID && i.AssetID == AssetID).FirstOrDefault();
+			}
+			else if (AssetTypeID != 0)
+			{
+				fd = Filter<FollowDetail>(i => i.ResourceID == resourceID && i.AssetTypeID == AssetTypeID && i.AssetID == null).FirstOrDefault();
+			}
 
-			FollowDetail fd = Filter<FollowDetail>(i => i.ResourceID == resourceID && i.ObjectID == objectID && i.ObjectType == sType).FirstOrDefault();
-			
 			if (fd != null)
 			{
 				int followID = fd.FollowID;
@@ -897,8 +910,10 @@ namespace d360.model
 			}
 		}
 
-		public bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false)
+		public bool UpdateFollowStatus(int? assetTypeid, long? assetid, int? resourceID, bool includeChildren = false)
 		{
+			Follow f = null;
+
 			if (!resourceID.HasValue)
 			{
 				resourceID = CurrentResourceID;
@@ -906,8 +921,14 @@ namespace d360.model
 
 			bool value = false;
 
-			string sType = type.ToString();
-			Follow f = Filter<Follow>(i => i.ObjectID == objectID && i.ObjectType == sType && i.ResourceID == resourceID).FirstOrDefault();
+			if (assetid != 0)
+			{
+				f = Filter<Follow>(i => i.AssetID == assetid && i.ResourceID == resourceID).FirstOrDefault();
+			}
+			else if (assetTypeid != 0)
+			{
+				f = Filter<Follow>(i => i.AssetTypeID == assetTypeid && i.ResourceID == resourceID).FirstOrDefault();
+			}
 
 			if (f != null)
 			{
@@ -916,38 +937,35 @@ namespace d360.model
 			}
 			else
 			{
-				if (IsUserFollowingParent(type, objectID, resourceID.Value) && !IsUserFollowing(type, objectID, resourceID.Value))
+				if (IsUserFollowingParent(assetTypeid, assetid, resourceID.Value) && !IsUserFollowing(assetTypeid, assetid, resourceID.Value))
 				{
 					//the user is following a parent of this item
 				}
 				else
 				{
-					FollowType followType;
-					switch (type)
+					FollowType followType = FollowType.Single;
+
+					if (assetTypeid != 0 && assetid == 0)
 					{
-						case SystemObjects.ArtifactType:
-						case SystemObjects.PolicyType:
-						case SystemObjects.ResourceType:
-						case SystemObjects.TaxonomyType:
-							followType = FollowType.Parent;
-							break;
-						default:
-							followType = FollowType.Single;
-							break;
+						followType = FollowType.Parent;
+					}
+					else if (assetid != 0)
+					{
+						followType = FollowType.Single;
 					}
 
-					if (includeChildren || objectID == 0)
+					if (includeChildren)
 					{
 						followType = FollowType.Parent;
 					}
 
-					SqlParameter pObjectID = new SqlParameter("id", objectID);
-					SqlParameter pType = new SqlParameter("type", sType);
 					SqlParameter pResourceID = new SqlParameter("resourceID", resourceID);
 					SqlParameter pFollowTypeID = new SqlParameter("followTypeID", followType);
 					SqlParameter pIncludeChildren = new SqlParameter("includeChildren", includeChildren);
+					SqlParameter pAssetid = new SqlParameter("Assetid", assetid);
+					SqlParameter pAssetTypeid = new SqlParameter("AssetTypeid", assetTypeid);
 
-					Database.ExecuteSqlCommand("FollowObject @id, @type, @resourceID, @followTypeID, @includeChildren", pObjectID, pType, pResourceID, pFollowTypeID, pIncludeChildren);
+					Database.ExecuteSqlCommand("FollowObject @resourceID, @followTypeID, @includeChildren, @Assetid, @AssetTypeid", pResourceID, pFollowTypeID, pIncludeChildren, pAssetid, pAssetTypeid);
 
 					value = true;
 				}
@@ -1335,16 +1353,29 @@ namespace d360.model
 		/// <summary>
 		/// Get a list of those following the current object.
 		/// </summary>
-		public IQueryable<FollowDetail> GetFollowersByObject(SystemObjects type, int id)
+		public IQueryable<FollowDetail> GetFollowersByObject(int? assetTypeid, long? assetid)
 		{
-			string fs = type.ToString();
+			string sql;
+			long? id;
 
-			string sql = @"select f.* from FollowDetail f
+			if (assetid != 0)
+			{
+				id = assetid;
+				sql = @"select f.* from FollowDetail f
 						inner join reporting.Global_Resource r on
 						r.ResourceID = f.ResourceID
-						where r.State = @userStatus  and objectId=@objectId and objectType = @objectType";
+						where r.State = @userStatus  and f.assetid = @Id";
+			}
+			else
+			{
+				id = assetTypeid;
+				sql = @"select f.* from FollowDetail f
+						inner join reporting.Global_Resource r on
+						r.ResourceID = f.ResourceID
+						where r.State = @userStatus  and f.assettypeid = @Id";
+			}
 
-			return Query<FollowDetail>(sql, new { userStatus = CompanyResourceState.Active, objectId = id, objectType = fs }).AsQueryable();
+			return Query<FollowDetail>(sql, new { userStatus = CompanyResourceState.Active, ID = id}).AsQueryable();
 		}
 
 		#endregion

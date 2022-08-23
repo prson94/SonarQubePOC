@@ -218,7 +218,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 					this.assetTypeUid = result[0].uid;
 					this.baseAssetTypeUid = this.assetTypeUid;
                     this.uid = this.assetTypeUid;
-
+					this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId, this.assetTypeUid);
                     this.levels = result[0].Levels;
                     this.maxLevelAllowed = result[0].HierarchyMaximumDepth;
                     this.load();
@@ -344,7 +344,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.PermissionInterval = 100;
         });
         this.setObjectInfo(this.objectType, this.objectTypeId);
-        this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId);
+		this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId, this.assetTypeUid);
 
         this.searchValue = "";
         this.buildNav();
