@@ -86,18 +86,25 @@ namespace d360.web.Controllers
 		[Route("{type}/{id:int}/SocialBreakdown")]
 		public JsonNetResult GetSocialBreakdownByObject(string type, int id)
 		{
+			long assetid = 0;
+
+			if (Company.Assets.Any(x => x.Object == type && x.ObjectID == id))
+			{
+				assetid = Company.Assets.Where(x => x.Object == type && x.ObjectID == id).SingleOrDefault().ID;
+			}
+
 			var query = Company.Query<dynamic>(@"
 												select 'followers' as Suffix, count(1) as [Count], 'Followers' as Name
-												from	Follow
-												where	ObjectType = @type and ObjectID = @id
-												union
+												from	Follow F
+												where	F.AssetID = @id
+												union all
 												select 'comments' as Suffix, count(1) as [Count], 'Comments' as Name
 												from	Comment C
-														inner join CommentRelation R	on R.CommentID = C.ID 
-																						and R.ObjectType = @type 
-																						and R.ObjectID = @id
-																						and C.ParentID is null",
-																						new { type = new Dapper.DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 }, id });
+														inner join CommentRelation R	
+														on R.CommentID = C.ID 
+														and C.ParentID is null
+														and R.AssetID  = @id",
+												new {assetid});
 
 			return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
 		}

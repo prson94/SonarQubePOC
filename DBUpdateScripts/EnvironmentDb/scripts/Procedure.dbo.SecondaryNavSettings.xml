@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.dbo.SecondaryNavSettings-v9">
-    <comment>GOV-19279</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.SecondaryNavSettings-v9">
+    <comment>GOV-19408</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -175,7 +175,7 @@ begin
 	
 		--has follower
 		if exists(select a.uid from Asset A 
-					inner join [Follow] F ON F.ObjectType = A.Object and F.ObjectID = A.ObjectID
+					inner join [Follow] F ON F.AssetID = A.ID
 					where A.uid = @assetUid
 					union
 					select 
@@ -184,8 +184,7 @@ begin
 						AssetType ast
 						inner join 
 						@assetData ad on ad.AssetTypeId = ast.ID
-						inner join 
-						Follow F on F.ObjectType = ast.Object and F.ObjectID = ast.ObjectID
+						inner join Follow F on F.AssetTypeID = ast.ID
 		)
 		begin
 			update @navItems set HasFollowers = 1
@@ -204,7 +203,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[
-CREATE OR ALTER   procedure [dbo].[SecondaryNavSettings]
+create or alter procedure [dbo].[SecondaryNavSettings]
 	@uid uniqueidentifier,
 	@assetTypeUid uniqueidentifier,
 	@resourceId int,
@@ -236,20 +235,18 @@ begin
 	  HasFollowers bit default(null),
 	  HasWorkflow bit default(null),
 	  HasField bit default(null),
-	  HasChild bit default(null)
+	  HasChild bit default(null),
+	  HasRequestCertificationWorkflow bit default(null)
 	)
-	insert into @navItems values (0,0,0,0,0,0,0,0,0,0)
+	insert into @navItems values (0,0,0,0,0,0,0,0,0,0,0)
 	
 	if @assetTypeUid is not null
 	begin 
 		insert into @assetdata
-		select Id,0,@uid, Object,Object,ObjectID, ObjectID, 
+		select Id,0, coalesce(@uid,@assetTypeUid) as uid, Object,Object,ObjectID, ObjectID, 
 		CASE
 			WHEN Class = 1 THEN 'Business Assets'
 			WHEN Class = 2 THEN 'Models'
-			WHEN Class = 3 THEN 'Fusions'
-			WHEN Class = 4 THEN 'Fusion Attributes'
-			WHEN Class = 5 THEN 'Attribute Groups'
 			WHEN Class = 6 THEN 'Policies'
 			WHEN Class = 7 THEN 'Rules'
 			WHEN Class = 8 THEN 'Technical Assets'
@@ -257,16 +254,12 @@ begin
 			WHEN Class = 10 THEN 'Organizations'
 			WHEN Class = 11 THEN 'Users'
 			WHEN Class = 12 THEN 'Groups'
-			WHEN Class = 13 THEN 'Fusion Queries'
 			WHEN Class = 14 THEN 'Reference Lists'
 			ELSE ''
 		END as Name , 
 		CASE
 			WHEN Class = 1 THEN 'Business Asset'
 			WHEN Class = 2 THEN 'Model'
-			WHEN Class = 3 THEN 'Fusion'
-			WHEN Class = 4 THEN 'Fusion Attribute'
-			WHEN Class = 5 THEN 'Attribute Group'
 			WHEN Class = 6 THEN 'Policy'
 			WHEN Class = 7 THEN 'Rule'
 			WHEN Class = 8 THEN 'Technical Asset'
@@ -274,7 +267,6 @@ begin
 			WHEN Class = 10 THEN 'Organization'
 			WHEN Class = 11 THEN 'User'
 			WHEN Class = 12 THEN 'Group'
-			WHEN Class = 13 THEN 'Fusion Query'
 			WHEN Class = 14 THEN 'Reference List'
 			ELSE ''
 		END + ' Types' as MainTitle ,
@@ -283,14 +275,14 @@ begin
 	
 		declare @type varchar(50) = (select top 1 Object from AssetType where uid = @assetTypeUid)
 		delete from @navItems
-		insert into @navItems values (1,0,0,0,0,0,0,0,0,0)
+		insert into @navItems values (1,0,0,0,0,0,0,0,0,0,0)
 
 
 
 		if @type = 'ReferenceItemType'
 		begin
 			delete from @navItems
-			insert into @navItems values (1,1,0,0,1,0,0,1,0,0)
+			insert into @navItems values (1,1,0,0,1,0,0,1,0,0,0)
 
 			if @isAdmin = 1
 			begin
@@ -325,7 +317,7 @@ begin
 		--dashboard
 		if exists(select a.uid from Asset A 
 					inner join AssetType T on T.ID = A.AssetTypeID
-					inner join Report R on R.ObjectType = A.Object and R.ObjectID = T.ObjectID
+					inner join Report R on R.AssetTypeId = T.Id and R.Location = 2
 					where A.uid = @assetUid
 		)
 		begin
@@ -341,6 +333,17 @@ begin
 		)
 		begin
 			update @navItems set HasWorkflow = 1
+
+			--check if request certification workflow
+			if exists(select a.uid from Asset A 
+								inner join AssetType T on T.ID = A.AssetTypeID
+								inner join workflow.EventRegistration WER on WER.Object = T.Object and WER.ObjectID = T.ObjectID
+								inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1
+								Where WER.ChangeType = 8 and a.uid = @assetUid
+			)
+			begin
+				update @navItems set HasRequestCertificationWorkflow = 1
+			end
 		end
 
 		--has actions on this asset also show the workflow tab

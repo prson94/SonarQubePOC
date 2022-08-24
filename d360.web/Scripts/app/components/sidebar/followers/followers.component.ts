@@ -117,8 +117,12 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
         this.isLoading = true;
         this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
             res => {
-                this.objectName = res.Name ? res.Name : res.DisplayValue;
-				this.followerService.getFollowers(res.UID, res.AssetTypeUid).subscribe(
+				this.objectName = res.Name ? res.Name : res.DisplayValue;
+				var assetUid = res["Uid"];
+				if (!assetUid) {
+					assetUid = res["UID"];
+				}
+				this.followerService.getFollowers(assetUid, res.AssetTypeUid).subscribe(
 					r => {
 						this.items = r;
 
