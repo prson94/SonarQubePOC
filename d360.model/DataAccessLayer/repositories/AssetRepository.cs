@@ -4177,7 +4177,7 @@ namespace d360.model.DataAccessLayer
 							from FollowDetail F
 							inner join reporting.Global_Resource R on
 							R.ResourceID = F.ResourceID
-							inner join Asset A on F.ObjectID = A.ObjectID and F.ObjectType=A.[Object]
+							inner join Asset A on F.AssetID = A.ID 
 							where A.[uid]=@assetUid
 							";
 
@@ -4347,7 +4347,7 @@ namespace d360.model.DataAccessLayer
 							FROM
 								Follow f
 								inner join 
-								Asset a on a.ObjectID=f.ObjectID and a.[Object]=f.ObjectType and f.FollowTypeID=1
+								Asset a on a.ID=f.AssetID and f.FollowTypeID=1
 								inner join 
 								AssetType ast on a.AssetTypeID=ast.ID and ast.[uid]=@assetTypeUid
 								inner join 
@@ -4371,7 +4371,7 @@ namespace d360.model.DataAccessLayer
 							FROM
 									Follow f	
 									inner join 
-									AssetType ast on ast.ObjectID=f.ObjectID and ast.[Object]=f.ObjectType and f.FollowTypeID=3 and ast.[uid]=@assetTypeUid
+									AssetType ast on ast.ID=f.AssetTypeID and f.FollowTypeID=3 and ast.[uid]=@assetTypeUid
 									inner join 
 									Asset a on a.AssetTypeID=ast.ID		
 									inner join 

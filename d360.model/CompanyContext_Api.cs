@@ -3189,7 +3189,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								delete	T
 								from	Follow T
-										inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};",
+										inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};",
             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
             AddMeasurement(metrics, $"remove from social tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
@@ -3926,7 +3926,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								    delete	T
 								    from	Follow T
-										    inner join #deleteAssets O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID;
+										    inner join #deleteAssets O on O.ID = T.AssetID;
 												
 								    delete	T
 								    from	Nym T
