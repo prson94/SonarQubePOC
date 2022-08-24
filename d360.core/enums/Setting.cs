@@ -322,15 +322,6 @@ namespace d360.core.enums
 
         [
             DefaultValue(false),
-            Description("ShowCustomAPIAdmin_Desc", typeof(Settings)),
-            Locked(false),
-            Name("ShowCustomAPIAdmin_Name", typeof(Settings)),
-            Type(SettingType.Boolean)
-        ]
-        ShowCustomAPIAdmin = 50,
-
-        [
-            DefaultValue(false),
             Description("HasRegisterLink_Desc", typeof(Settings)),
             Locked(false),
             Name("HasRegisterLink_Name", typeof(Settings)),

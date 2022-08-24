@@ -1603,6 +1603,21 @@ end
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+
+   <changeSet author="Pappas" id="Data.Corrections.GOV-19236">
+  <comment>GOV-19236 - remove the Custom API environment setting</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+delete [Setting] where ID = 50
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
   
   
 </databaseChangeLog>
