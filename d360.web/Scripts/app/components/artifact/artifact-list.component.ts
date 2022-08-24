@@ -182,7 +182,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		this.selection = event.row;
 
 		if (event.forceRefresh) {
-			this.assetDetail.load();
+			this.assetDetail?.load();
 		}
 
 		if (this.selection && this.selection.HasProfiling && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {

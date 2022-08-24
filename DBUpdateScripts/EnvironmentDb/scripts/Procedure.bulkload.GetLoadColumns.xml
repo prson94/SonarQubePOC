@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.bulkload.GetLoadColumns-v15">
+  <changeSet author="Pappas" id="Procedure.bulkload.GetLoadColumns-v15.1">
     <comment>GOV-19319</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -303,8 +303,11 @@ begin
 		
 			declare @IDs varchar(500);
 			select @IDs = string_agg(FieldTypeID, ',') from @fields where FieldTypeID <> 0 and IsLookup = 1
-			insert into @lookups (FieldTypeID, [Label])
-				exec('select FieldTypeID, [Text] from FieldLookupValue where FieldTypeID in (' + @IDs + ') order by FieldTypeID, [Text]');
+			if @IDs IS NOT NULL
+			begin
+				insert into @lookups (FieldTypeID, [Label])
+					exec('select FieldTypeID, [Text] from FieldLookupValue where FieldTypeID in (' + @IDs + ') order by FieldTypeID, [Text]');
+			end
 	end
 	
 	select	Name,

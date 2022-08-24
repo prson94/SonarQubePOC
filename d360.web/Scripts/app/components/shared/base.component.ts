@@ -902,7 +902,7 @@ export class BaseComponent {
 			}
 
 			this.secondaryNavService.setLocalHomeUrl(homeUrl);
-            this.breadcrumbsService.setCurrentObjectInfo(r.Object, r.ObjectID);
+            this.breadcrumbsService.setCurrentObjectInfo(r.Object, r.ObjectID, r.Artifact?.AssetTypeUid, r.Uid);
             if (buildBreadcrumbOverride == null) {
                 if (this.objectType.toLowerCase() == 'artifact') {
                     this.setArtifactBreadcrumbs(r);

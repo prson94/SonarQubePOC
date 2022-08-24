@@ -114,20 +114,24 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     load() {
-		this.isLoading = true;
+        this.isLoading = true;
+        this.assetsService.getAsset(this.uid)
+            .subscribe((res) => {
+                this.objectName = res.Name ? res.Name : res.DisplayValue;
+				var assetUid = res["Uid"];
+				if (!assetUid) {
+					assetUid = res["UID"];
+				}
+				this.followerService.getFollowers(assetUid, res.AssetTypeUid).subscribe(
+					r => {
+						this.items = r;
 
-		this.assetsService.getAsset(this.uid)
-			.subscribe((res) => {
-				this.objectName = res.Name ? res.Name : res.DisplayValue;
-			});
-
-		this.followerService.getFollowersByAssetUid(this.uid).subscribe(
-            r => {
-                this.items = r;
-
-                this.isLoading = false;
+						this.isLoading = false;
+					}
+				);
             }
         );
+
     }
 
     private doSelect(follower: FollowDetail) {

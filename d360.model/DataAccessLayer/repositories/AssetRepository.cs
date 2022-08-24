@@ -385,8 +385,9 @@ namespace d360.model.DataAccessLayer
 				hasAssetPathField = true;
 			}
 
-			DynamicQuerySelects fieldColumns = new DynamicQuerySelects();
+			var fieldColumns = new DynamicQuerySelects();
 			var fieldJoins = new DynamicQueryJoins();
+			var advancedFilterTempTableInfos = new AdvancedFilterTempTableFilters();
 
 			List<string> whereStatements = new List<string>();
 			List<string> pagingSql = new List<string>();
@@ -585,6 +586,7 @@ namespace d360.model.DataAccessLayer
 					 then 1
 					 else 0
 					end as HasAssetPermission
+					option(recompile)
 					", new { userId = CompanyContext.CurrentResourceID, assetTypeID, p = (int)Permission.ReadAsset }
 					, ApiTimeout))
 					.FirstOrDefault();
@@ -909,6 +911,8 @@ namespace d360.model.DataAccessLayer
 					{
 						dbArgs.Add(item.Key, item.Value);
 					}
+
+					advancedFilterTempTableInfos = filterExpressionParser.GetAdvancedFilterTempTableFilters();
 				}
 			}
 
@@ -981,11 +985,10 @@ namespace d360.model.DataAccessLayer
 				var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
 				if (!string.IsNullOrEmpty(simpleFilter))
 				{
+					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
 					simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
 
 					dbArgs.Add("@simpleFilter", simpleFilter);
-
-					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
 
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
 					foreach (var ft in fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString()))
@@ -1001,10 +1004,12 @@ namespace d360.model.DataAccessLayer
 						var select = fieldColumns.Selects().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
 						var join = fieldJoins.Joins().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
 
-						if(ft.Type == DataType.Path.ToString())
+						string nodeJoin = "inner join AssetPath Node on Node.ID = a.ID";
+						
+						if (ft.Type == DataType.Path.ToString() && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
 						{
 							join = new DynamicQueryJoinData();
-							join.SQLStatement = "inner join AssetPath Node on Node.ID = a.ID";
+							join.SQLStatement = nodeJoin;
 						}
 
 						if (select != null && join != null)
@@ -1022,7 +1027,8 @@ namespace d360.model.DataAccessLayer
 							simpleFilters.Add($@"
 								select  A.ID
 								from    Asset A 
-								{(ft.Type == DataType.Path.ToString() ? "inner join AssetPath Node on Node.ID = a.ID" : "")}
+								{advancedFilterTempTableInfos.JoinFilter()}
+								{(ft.Type == DataType.Path.ToString() && joinStatement != nodeJoin ? nodeJoin : "")}
 								{joinStatement}
 								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
 								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and {selectField} like @simpleFilter");
@@ -1304,7 +1310,7 @@ namespace d360.model.DataAccessLayer
 			var includedJoins = new DynamicQueryJoins();
 			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID", null);
 
-			fieldsUsedInMainQuery.ForEach(field =>
+			fieldsUsedInMainQuery.Distinct().ToList().ForEach(field =>
 			{
 				var joins = countJoins.Joins().Where(x => x.SQLStatement.ToLowerInvariant().Contains(field.ToLowerInvariant()));
 				includedJoins.AddRange(joins);
@@ -1347,8 +1353,10 @@ namespace d360.model.DataAccessLayer
 			var baseSQL = $@"
 				{TempTableScriptStr}
 
+				{advancedFilterTempTableInfos.TempTableSQL()}
+				
 				{simpleFiltersTempTablesQuery}
-
+				
 				DROP TABLE IF EXISTS #tempasset;
 				create table #tempasset (id int identity(1,1), AssetId bigint);
 
@@ -4169,7 +4177,7 @@ namespace d360.model.DataAccessLayer
 							from FollowDetail F
 							inner join reporting.Global_Resource R on
 							R.ResourceID = F.ResourceID
-							inner join Asset A on F.ObjectID = A.ObjectID and F.ObjectType=A.[Object]
+							inner join Asset A on F.AssetID = A.ID 
 							where A.[uid]=@assetUid
 							";
 
@@ -4339,7 +4347,7 @@ namespace d360.model.DataAccessLayer
 							FROM
 								Follow f
 								inner join 
-								Asset a on a.ObjectID=f.ObjectID and a.[Object]=f.ObjectType and f.FollowTypeID=1
+								Asset a on a.ID=f.AssetID and f.FollowTypeID=1
 								inner join 
 								AssetType ast on a.AssetTypeID=ast.ID and ast.[uid]=@assetTypeUid
 								inner join 
@@ -4363,7 +4371,7 @@ namespace d360.model.DataAccessLayer
 							FROM
 									Follow f	
 									inner join 
-									AssetType ast on ast.ObjectID=f.ObjectID and ast.[Object]=f.ObjectType and f.FollowTypeID=3 and ast.[uid]=@assetTypeUid
+									AssetType ast on ast.ID=f.AssetTypeID and f.FollowTypeID=3 and ast.[uid]=@assetTypeUid
 									inner join 
 									Asset a on a.AssetTypeID=ast.ID		
 									inner join 

@@ -42,7 +42,7 @@ namespace d360.web.Controllers.V2
 		public async Task<HttpResponseMessage> FollowingBreakdownByResource(int id)
 		{
 			var query = await Company.QueryAsync<dynamic>(@"select  		                
-								T.[Type], 
+								A.Object [Type], 
 								T.TypeName,
 								T.TypeID, 		
 								T.[Count],
@@ -51,17 +51,16 @@ namespace d360.web.Controllers.V2
 								coalesce(S.IconText, substring(T.TypeName, 1, 2)) as IconText
 						from (
 						select 
-							[Type], 
 							TypeName, 
-							TypeID, 
+							AssetTypeID TypeID, 
 							count(1) as [Count]
 						from 
 							FollowDetail
 						where 
 							ResourceID = @r
-							and ObjectType not in ('ArtifactType', 'PolicyType', 'ReferenceItemType', 'ResourceType', 'TaxonomyType', 'RuleType')
-						group by Type, TypeName, TypeID) T
-						left join AssetType A on A.[Object] = T.[Type] and A.ObjectID = T.TypeID
+							and AssetId is not null
+						group by TypeName, AssetTypeID) T
+						left join AssetType A on A.ID = T.TypeID
 						left join AssetTypeStyle S on S.ID = A.ID
 						order by TypeName", new { r = id }, ApiTimeout);
 

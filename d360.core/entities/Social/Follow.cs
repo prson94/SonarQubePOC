@@ -13,13 +13,13 @@ namespace d360.core.entities
         [DataMember]
         public int ResourceID { get; set; }
 
-        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
-        public string ObjectType { get; set; }
+		[DataMember]
+		public long? AssetID { get; set; }
 
-        [DataMember]
-        public int ObjectID { get; set; }
+		[DataMember]
+		public int? AssetTypeID { get; set; }
 
-        [DataMember]
+		[DataMember]
         public DateTime DateCreated { get; set; }
 
         [DataMember]

@@ -1,0 +1,36 @@
+@import "../../../../../Content/styles/_Variables";
+
+.ig-button {
+  box-shadow: none !important;
+  margin-right: 4px;
+  background: white;
+
+  &.highlighted {
+    background: @ig-purple-t4;
+  }
+
+  &-size-m {
+    width: 24px;
+    height: 24px;
+  }
+
+  &-size-l {
+    width: 28px;
+    height: 28px;
+  }
+
+  &-size-chip {
+    border-radius: 4px;
+    width: 100%;
+    height: 24px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    margin-right: 0;
+    background: transparent;
+    justify-content: flex-end;
+    padding-right: 28px;
+    padding-top: 2px;
+  }
+}

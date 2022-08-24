@@ -42,7 +42,7 @@
 
     &:hover {
       color: @ig-black;
-    }    
+    }
   }
 }
 
@@ -2506,7 +2506,8 @@ div.home-image-title-text {
 
   &.large-dialog {
     width: 100%;
-    max-width: 800px;
+    max-width: fit-content;
+    min-width: 800px;
     max-height: 100%;
 
     .confirmation-wrapper {
@@ -7094,6 +7095,10 @@ table {
       margin-right: 8px;
       margin-top: 4px;
     }
+  }
+
+  .ig-colorfield-item {
+    height: unset;
   }
 }
 

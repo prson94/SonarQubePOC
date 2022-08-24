@@ -130,10 +130,44 @@
                                            (onChange)="onChangeMultiselect($event)"
                                            [required]="field.Required"
                                            [readonly]="true"
-                                           placeholder="{{lookupSelectPlaceholder}}"
                                            [disabled]="isLookupFieldDisabled"
+										   placeholder="{{ lookupSelectPlaceholder }}"
                                            [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
                                            display="chip">
+								<ng-template pTemplate="selectedItems" let-items>
+									<ng-container *ngIf="dropdown.value && dropdown.value.length !== 0; else placeholder">
+										<div class="p-multiselect-token" style="position: relative;" *ngFor="let item of items">
+											<span class="p-multiselect-token-label" style="z-index: 2">
+												{{ (item | findMultiselectOption: field.Items).label }}
+											</span>
+											<asset-editor-field-info *ngIf="useSidePanel && item"
+																	 [object]="{objectID: item.toLowerCase(), fieldName: field.FieldName}"
+																	 (click)="onItemInfoClick($event, item)"
+																	 [selected]="sidePanelSelection" size="chip">
+											</asset-editor-field-info>
+											<span class="p-multiselect-token-icon fa fa-close"
+												  style="z-index: 2; margin-left: 24px;"
+												  (click)="dropdown.removeChip(item, $event); $event.stopPropagation()">
+											</span>
+										</div>
+										<ng-template #chipTemplate let-option>
+											<span class="p-multiselect-token-label">
+												{{ option.label }}
+											</span>
+											<span class="p-multiselect-token-icon pi pi-times-circle"
+												  (click)="dropdown.removeChip(option.value, $event); $event.stopPropagation()">
+											</span>
+											<asset-editor-field-info *ngIf="useSidePanel && option.value"
+																	 [object]="{objectID: option.value.toLowerCase(), fieldName: field.FieldName}"
+																	 (click)="onItemInfoClick($event, option.value)"
+																	 [selected]="sidePanelSelection" size="s">
+											</asset-editor-field-info>
+										</ng-template>
+									</ng-container>
+									<ng-template #placeholder>
+										{{ lookupSelectPlaceholder }}
+									</ng-template>
+								</ng-template>
                             </p-multiSelect>
                         </div>
                         <p-dropdown *ngIf="!field?.MultiSelect"
@@ -160,7 +194,15 @@
                                 </div>
 
                                 <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
-
+								
+								<div class="info-button" 
+									 *ngIf="useSidePanel && item.value"
+									 [class.info-button--required]="field.Required">
+									<asset-editor-field-info (click)="onItemInfoClick($event, item.value)" size="m"
+															 [object]="{objectID: item.value.toLowerCase(), fieldName: field.FieldName}"
+															 [selected]="sidePanelSelection">
+									</asset-editor-field-info>
+								</div>
                             </ng-template>
                         </p-dropdown>
 
@@ -215,6 +257,12 @@
 
                                                 <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label"></span>
                                             </td>
+											<td style="justify-content: flex-end;" *ngIf="useSidePanel && item.value">
+												<asset-editor-field-info (click)="onItemInfoClick($event, item.value)"
+																		 [object]="{objectID: item.value.toLowerCase(), fieldName: field.FieldName}"
+																		 [selected]="sidePanelSelection">
+												</asset-editor-field-info>
+											</td>
                                         </tr>
                                     </ng-template>
                                 </p-table>

@@ -5,12 +5,44 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.dbo.FollowObject-v1">
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.FollowObject-v2">
+   <comment>GOV-18457</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [dbo].[FollowObject]
+	@resourceID int,
+	@followTypeID int = 1,
+	@includeChildren bit = 0,
+	@Assetid bigint,
+	@AssetTypeid int
+AS
+BEGIN
+	if (@Assetid !=0 or @AssetTypeid !=0)
+	begin
+		insert into Follow (ResourceID, DateCreated, FollowTypeID, AssetId, AssetTypeId) 
+		values ( @resourceID, getutcdate(), @followTypeID, case when @Assetid !=0 then @Assetid else null end, 
+		case when @Assetid =0 then @AssetTypeid else null end)
+
+		IF (@followTypeID = 3) AND (@AssetTypeid IS NOT NULL)
+		BEGIN
+			delete	F
+			from	Follow F
+					inner join FollowDetail FD 
+			on FD.Assetid = F.AssetID
+			and FD.HardFollow = 0 
+			and F.ResourceID = FD.ResourceID 
+			and F.ResourceID = @resourceID 
+			and FD.AssetTypeid = @AssetTypeid ;
+		END
+	END
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [dbo].[FollowObject]
 	@id int,
 	@type varchar(50),
@@ -29,11 +61,6 @@ BEGIN
 		
 	END
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

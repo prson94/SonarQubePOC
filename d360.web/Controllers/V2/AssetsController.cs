@@ -3293,7 +3293,7 @@ namespace d360.web.Controllers.V2
 						FROM
 							Follow f
 							inner join
-							AssetType ast on f.ObjectID = ast.ObjectID and f.ObjectType=ast.Object and f.FollowTypeID =3
+							AssetType ast on f.AssetTypeID = ast.ID and f.FollowTypeID =3
 							inner join 
 							Asset a on a.AssetTypeID=ast.ID 
 							{resourceJoin}
@@ -3306,7 +3306,7 @@ namespace d360.web.Controllers.V2
 						from 
 							Follow f
 							inner join
-							Asset a on f.ObjectID = a.ObjectID and f.ObjectType=a.Object and f.FollowTypeID = 1
+							Asset a on f.AssetID = a.ID and f.FollowTypeID = 1
 							inner join 
 							AssetType ast on a.AssetTypeID=ast.ID
 							{resourceJoin}

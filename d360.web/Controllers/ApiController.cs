@@ -1017,10 +1017,7 @@ namespace d360.web.Controllers
 							new GridColumn { text = Fields.AssetPath_Name, datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
 					);
 
-					remainingWidth = 80;
-					dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-					parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
+					parseDynamicColumnsAndFields(items, columns, fields, 0, true);
 
 					fields.Add(new GridField { name = "ID", type = "number" });
 					fields.Add(new GridField { name = "Name", type = "string" });
@@ -1381,8 +1378,43 @@ namespace d360.web.Controllers
 		[HttpGet, Route("followinfo/{type}/{id:int}")]
 		public dynamic GetFollowInfo(int id, SystemObjects type)
 		{
-			var following = Company.IsUserFollowing(type, id, null);
-			var followParent = Company.GetFollowingParent(type, id, null);
+			int? assetTypeid = 0;
+			long? assetid = 0;
+			var sType = type.ToString();
+
+			if (!type.ToString().ToLower().EndsWith("type") && Company.Any<Asset>(x => x.Object == sType && x.ObjectID == id))
+			{
+				assetid = Company.Filter<Asset>(x => x.Object == sType && x.ObjectID == id).SingleOrDefault().ID;
+			}
+			else if (Company.Any<AssetType>(x => x.Object == sType && x.ObjectID == id))
+			{
+				assetTypeid = Company.Filter<AssetType>(x => x.Object == sType && x.ObjectID == id).SingleOrDefault().ID;
+			}
+
+			return GetFollowInfo(assetTypeid, assetid);
+		}
+
+		[HttpGet, Route("followinfo/{assetTypeUid:Guid}/{assetUid:Guid}")]
+		public dynamic GetFollowInfo(Guid? assetTypeUid, Guid? assetUid)
+		{
+			int? AssettypeID = 0;
+			long? AssetID = 0;
+			if (assetUid != Guid.Empty && Company.Any<Asset>(x => x.uid == assetUid))
+			{
+				AssetID = Company.Filter<Asset>(x => x.uid == assetUid).SingleOrDefault().ID;
+			}
+			else if (assetTypeUid != Guid.Empty && Company.Any<AssetType>(x => x.uid == assetTypeUid))
+			{
+				AssettypeID = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault().ID;
+			}
+			return GetFollowInfo(AssettypeID, AssetID);
+		}
+
+		[HttpGet, Route("followinfo/{assetTypeid}/{assetid}")]
+		public dynamic GetFollowInfo(int? assetTypeid, long? assetid)
+		{
+			var following = Company.IsUserFollowing(assetTypeid, assetid, null);
+			var followParent = Company.GetFollowingParent(assetTypeid, assetid, null);
 			var followingParent = followParent != null && followParent.FollowTypeID == FollowType.Parent;
 
 			return new
@@ -4667,15 +4699,39 @@ where v.id = {0}", id)).FirstOrDefault();
 		[Route("{type}/{id:int}/followers")]
 		public IQueryable<FollowDetail> GetFollowers(SystemObjects type, int id)
 		{
-			return Company.GetFollowersByObject(type.ToString(), id);
+			int? assetTypeid = 0;
+			long? assetid = 0;
+			var sType = type.ToString();
+
+			if (!type.ToString().ToLower().EndsWith("type") && Company.Any<Asset>(x => x.Object == sType && x.ObjectID == id))
+			{
+				assetid = Company.Filter<Asset>(x => x.Object == sType && x.ObjectID == id).SingleOrDefault().ID;
+			}
+			else if (Company.Any<AssetType>(x => x.Object == sType && x.ObjectID == id))
+			{
+				assetTypeid = Company.Filter<AssetType>(x => x.Object == sType && x.ObjectID == id).SingleOrDefault().ID;
+			}
+
+			return Company.GetFollowersByObject(assetTypeid, assetid);
 		}
 
-		[Route("{assetUid:Guid}/followers")]
-		public IQueryable<FollowDetail> GetFollowers(Guid assetUid)
+		[Route("{assetTypeUid:Guid}/{assetUid:Guid}/followers")]
+		public IQueryable<FollowDetail> GetFollowers(Guid? assetTypeUid, Guid? assetUid)
 		{
-			var objectData = Company.Assets.Where(x => x.uid == assetUid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
-			return Company.GetFollowersByObject(objectData.Object, objectData.ObjectID);
+			int? AssettypeID = 0;
+			int? AssetID = 0;
+			if (assetUid != Guid.Empty)
+			{
+				AssetID = (int)Company.Filter<Asset>(x => x.uid == assetUid).SingleOrDefault().ID;
+			}
+			else if (assetTypeUid != Guid.Empty)
+			{
+				AssettypeID = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault().ID;
+			}
+
+			return Company.GetFollowersByObject(AssettypeID, AssetID);
 		}
+
 
 		[Route("{id:int}/permissionsbyid")]
 		public List<PermissionInfo> GetPermissionsObject(int id)

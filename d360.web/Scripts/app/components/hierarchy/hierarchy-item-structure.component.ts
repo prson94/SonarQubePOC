@@ -331,13 +331,13 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		this.setObjectInfo(this.objectType, this.objectTypeId);
 		this.setCommonSecondaryNavTabs({ hasAudit: true });
 
-		this.getFieldsDefinition();
-		this.PermissionInterval = 500;
-		this.loadPermissions(this.permissionsService, this.objectType, this.objectTypeId).then((perms) => {
-			this.PermissionInterval = 100;
-		});
-		this.setObjectInfo(this.objectType, this.objectTypeId);
-		this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId);
+        this.getFieldsDefinition();
+        this.PermissionInterval = 500;
+        this.loadPermissions(this.permissionsService, this.objectType, this.objectTypeId).then((perms) => {
+            this.PermissionInterval = 100;
+        });
+        this.setObjectInfo(this.objectType, this.objectTypeId);
+		this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId, this.assetTypeUid);
 
 		this.searchValue = "";
 		this.buildNav();

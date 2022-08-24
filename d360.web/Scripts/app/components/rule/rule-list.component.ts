@@ -108,7 +108,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 					this.headerBreadcrumbService
 						.getAreaName('RuleType', this.ruleType.ID)
 						.subscribe((result) => { this.currentAreaName = result; });
-				this.headerBreadcrumbService.setCurrentObjectInfo('RuleType', this.ruleType.ID);
+				this.headerBreadcrumbService.setCurrentObjectInfo('RuleType', this.ruleTypeId, this.baseAssetTypeUid);
 				this.setObjectInfo('RuleType', this.ruleType.ID);
 
 				this.sidePanelStorageKey = 'list_' + AssetTypeClass[AssetTypeClass.Rule] + '_' + CurrentResourceID;

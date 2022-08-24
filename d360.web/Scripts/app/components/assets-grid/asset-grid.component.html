@@ -91,8 +91,7 @@
                  [lazy]="true"
                  (onLazyLoad)="loadArtifactsLazy($event)"
                  [totalRecords]="totalRecords"
-                 [scrollable]="true"
-                 scrollWidth="100%"
+                 responsiveLayout="scroll"
                  [loading]="isLoading"
                  [loadingIcon]="'fa fa-spinner fa-spin'"
                  (onPage)="numberOfRowsByCategoryService.onPage($event)">
@@ -100,19 +99,19 @@
                 <tr>
                     <th *ngFor="let col of columns"
                         [pSortableColumn]="col.sortable ? col.datafield : null"
-                        [style.flex]="col.columnWidth ? flexGrow + ' 0 ' + col.columnWidth + 'px' : ''">
+                        [style.width]="col.columnWidth === 0 ? 'auto' : (col.columnWidth + 'px')">
                         {{ col.text }}
                         <d3s-sortIcon *ngIf="col.sortable"
                                       [field]="col.datafield"></d3s-sortIcon>
                     </th>
-                    <th style="flex: 0 0 30px"></th>
-                    <th style="flex: 0 0 30px"></th>
+                    <th style="width: 30px"></th>
+                    <th style="width: 30px"></th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
                 <tr (dblclick)="selectArtifact($event, item)" [pSelectableRow]="item" (click)="selectRow(item)"
 					(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selectRow(item)">
-                    <td *ngFor="let col of columns; let i=index" [style.flex]="col.columnWidth ? flexGrow + ' 0 ' + col.columnWidth + 'px' : ''">
+                    <td *ngFor="let col of columns; let i=index">
                         <ng-container *ngIf="i != linkColumnIndex; else linked">
                             <div style="display: block; word-wrap: break-word; width: 100%">
                                 <d3s-dynamic-field-value [column]="col"
@@ -137,7 +136,7 @@
                         </ng-template>
 
                     </td>
-                    <td style="flex: 0 0 30px">
+                    <td style="width: 30px">
                         <div class="RowTools"
                              *ngIf="item[certificationStatusIndex] != null && item[certificationStatusIndex] != '' && !statusHasColor">
                             <i [pTooltip]="'Status: ' + item[certificationStatusIndex]"
@@ -146,7 +145,7 @@
                                style="margin: 0 10px 0 5px"></i>
                         </div>
                     </td>
-                    <td class="asset-grid-tools" #assetGridTools style="flex: 0 0 30px">
+                    <td class="asset-grid-tools" #assetGridTools style="width: 30px">
                         <div style="display:inline-block">
                             <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                             <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>

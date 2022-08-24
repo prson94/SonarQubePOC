@@ -115,7 +115,6 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                 this.objectUID = changes['objectUID'].currentValue;
             }
         }
-
         this.load();
     }
 
@@ -154,8 +153,19 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                     this.rows = this.getRowsWithOnlyFilteredFields(data.rows);
                     this.objectID = data.ObjectID;
                     this.objectType = data.Object;
+					
+					if (!this.model.AssetName) {
+						this.rows.forEach((row) => {
+							const nameField = row.FirstColumnFields.concat(row.SecondColumnFields).find((field) => {
+								return field.Name === 'Name';
+							});
+							if (nameField) {
+								this.model.AssetName = nameField.Value;
+							}
+						});
+					}
 
-                    if (this.objectType === 'Resource') {
+                    if (this.objectType === 'Resource' && this.objectUID) {
                         this.tab = 'detail';
                         this.useAccordion = false;
                         if (this.loadGroupSub) {

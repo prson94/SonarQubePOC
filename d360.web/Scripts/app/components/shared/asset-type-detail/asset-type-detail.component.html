@@ -11,7 +11,11 @@
                 Reference List
             </div>
             <div>
-                <a (click)="open();" i18n>Open</a> <span class="grey-delimiter">|</span> <a (click)="open(true);" i18n>Open in New Tab</a>
+				<ng-container *ngIf="hasOpenLink">
+					<a (click)="open();" i18n>Open</a>
+					<span class="grey-delimiter">|</span>
+				</ng-container>
+				<a (click)="open(true);" i18n>Open in New Tab</a>
             </div>
         </div>
         <div class="windowtabs">

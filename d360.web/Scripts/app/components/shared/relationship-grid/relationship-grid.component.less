@@ -1,4 +1,29 @@
-﻿.relationship-detail {
+﻿// By this we guarantee that column headings are always visible (sticky) even if user scrolls vertically
+.relationship-detail p-table thead tr th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.relationship-detail p-table table {
+  th, 
+  td {
+    &:not(:last-child) {
+      padding-right: 16px;
+    }
+
+    &:not(:first-child) {
+      padding-left: 16px;
+    }
+  }
+}
+
+// This is a fix to add horizontal scroll on table when [responsiveLayout]="scroll"
+.relationship-detail p-table table {
+    width: max-content;
+}
+
+.relationship-detail {
   overflow: hidden;
 
   .main-panel {
