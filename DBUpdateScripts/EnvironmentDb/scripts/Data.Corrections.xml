@@ -1553,7 +1553,7 @@ begin
 		Value NVARCHAR(max) '$.Value'
 	) as summary
 	inner join FieldType ft on ft.id = summary.FieldTypeid
-	inner join FieldLookupValue flv on flv.FieldTypeID = ft.id and summary.value = flv.text
+	cross apply (select top 1 value from FieldLookupValue flv where flv.FieldTypeID = ft.id and summary.value = flv.text)flv(value)
 	where ft.Type = 'Lookup'
 	and isnumeric(summary.value) <> 1;
 
@@ -1589,7 +1589,7 @@ begin
 		Value NVARCHAR(max) '$.Value'
 	) as summary
 	inner join FieldType ft on ft.id = summary.FieldTypeid
-	inner join FieldLookupValue flv on flv.FieldTypeID = ft.id and summary.value = flv.text
+	cross apply (select top 1 value from FieldLookupValue flv where flv.FieldTypeID = ft.id and summary.value = flv.text)flv(value)
 	where ft.Type = 'Lookup'
 	and isnumeric(summary.value) <> 1;
 
