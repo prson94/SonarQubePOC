@@ -75,9 +75,9 @@ namespace d360.web.Controllers.V2
 					insert into #govRoles
 					select distinct GOV.uid from asset a
 						inner join AssetType AT on At.id = a.AssetTypeID
-						inner join IntersectType It on it.Subject = at.Object and it.SubjectID = at.ObjectID
+						inner join IntersectType It on it.SubjectAssetTypeID = at.ID
 						inner join Predicate P on it.PredicateID = p.ID and p.Type = 15
-						inner join AssetType Task on Task.Object = it.Object and task.ObjectID = it.ObjectID
+						inner join AssetType Task on Task.ID = it.ObjectAssetTypeID 
 						inner join FieldType FT on FT.Object = task.object and ft.objectid = task.objectid and ft.Name ='GovernanceRole'
 						inner join AssetType GOV on GOV.ObjectId = FT.LookupObjectId and gov.Object ='ReferenceItemType'
 						where a.uid = @assetuid

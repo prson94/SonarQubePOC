@@ -830,18 +830,17 @@ namespace d360.web.Controllers.V2
 				case 
 					when ga.ActionObjectTypeName = 'Intersect Type' 
 						then 'Relationship Type' 
-					else coalesce(ityname.name,ga.ActionObjectTypeName) 
+					else coalesce(T.Name,ga.ActionObjectTypeName) 
 				end as actionObjectTypeName,
 				coalesce(iname.Name,ga.actionObjectName) as actionObjectName,
 				case when O.ID > 0
-					then ITyName.Name + ' ' + R.Action
+					then T.Name + ' ' + R.Action
 					else ga.ActionDescription
 				end as actionDescription
 				from reporting.global_audit r
 					left join [Intersect] O on R.ActionObject = 'Intersect' and O.ID = r.ActionObjectID
-					left join [IntersectType] T on T.ID = O.IntersectTypeID
+					left join IntersectTypeDetail T on T.ID = O.IntersectTypeID
 					outer apply dbo.getIntersectNames(O.ID) Iname
-					outer apply dbo.getIntersectTypeNames(T.ID) ITyName
 				where r.ID = ga.ID
 			)ActionData
 			inner join  (

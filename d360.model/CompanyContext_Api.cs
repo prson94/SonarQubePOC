@@ -118,10 +118,7 @@ namespace d360.model
 
         private bool TypeHasProcessRelationshipTypes(AssetType at)
         {
-            return Database.Connection.QuerySingle<bool>(@"select CASE WHEN count(*) = 0 THEN 0 ELSE 1 END from assettype at
-								inner join IntersectType it on it.SubjectUid = at.uid or it.objectuid = at.uid
-								inner join [Predicate] P on p.id = it.predicateid
-							where at.uid = @uid and p.[type] = 15", new { at.uid });
+            return Database.Connection.QuerySingle<bool>(@"select iif(count(*) = 0, 0, 1) from IntersectTypeDetail where SubjectUid = @uid or objectuid = @uid and it.PredicateType = 15", new { at.uid });
         }
 
         private PredicateType? DeterminePredicateType(string obj)
@@ -1162,18 +1159,13 @@ namespace d360.model
 							and I.[Object] = R.[Object] and I.ObjectID = R.ObjectID;
 
 				--check reverse if subject/object type are the same
-				update R
-				set R.ID = I.ID,
-					R.[uid] = I.[uid]
-				from #Relationships R
-				inner join IntersectType T on T.ID = R.IntersectTypeID and T.Subject = T.Object and T.SubjectID = T.ObjectID
-				inner join [Intersect] I on 
-					I.IntersectTypeID = R.IntersectTypeID 
-					and I.[Subject] = R.[Object] 
-					and I.SubjectID = R.ObjectID
-					and I.[Object] = R.[Subject] 
-					and I.ObjectID = R.SubjectID
-				where R.ID is null;
+				update	R
+				set		R.ID =	I.IntersectID,
+						R.[uid] = I.[uid]
+				from	#Relationships R
+						inner join IntersectType T on T.ID = R.IntersectTypeID and T.SubjectAssetTypeID = T.ObjectAssetTypeID
+						inner join [Intersect] I on I.IntersectTypeID = R.IntersectTypeID and I.SubjectAssetID = R.ObjectAssetID and I.ObjectAssetID = R.SubjectAssetID
+				where	R.ID is null;
 
 				drop table if exists #tempdatasmy;
 
@@ -7824,7 +7816,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 								where  ER.ExecutionID=@executionID and p.Type = {((int)PredicateType.Diagram)}  and
 								ER.Success is null
 								and  exists (select it.id from processexpandeddata ped
-							inner join IntersectType it on it.uid = ER.Uid
+							inner join IntersectTypeDetail it on it.uid = ER.Uid
 							where ped.DiagramAssetTypeUid = it.SubjectUid 
 							and (ped.FromAssetTypeUid = it.ObjectUid or ped.ToAssetTypeUid = it.objectuid) )
 						", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
@@ -7942,14 +7934,14 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									set     SubjectUid = SA.Uid, [Subject] = SA.Object, SubjectID = SA.ObjectID
 									from    [api].[ExecutionRelationshipType] T
 											inner join IntersectType S on S.Uid = T.Uid
-											inner join AssetType SA on SA.Object = S.Subject and SA.ObjectID = S.SubjectID
+											inner join AssetType SA on SA.ID = S.SubjectAssetTypeID 
 									where   T.ExecutionID = @ExecutionID and T.Success is null and T.SubjectUid is null;
 
 									Update  T
 									set     ObjectUid = OA.Uid, [Object] = OA.Object, ObjectID = OA.ObjectID
 									from    [api].[ExecutionRelationshipType] T
 											inner join IntersectType S on S.Uid = T.Uid
-											inner join AssetType OA on OA.Object = S.Object and OA.ObjectID = S.ObjectID
+											inner join AssetType OA on OA.ID = S.ObjectAssetTypeID
 									where   T.ExecutionID = @ExecutionID and T.Success is null and T.ObjectUid is null;",
                 new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
@@ -8083,77 +8075,73 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                 Connection.Execute(@"
 									update  api.ExecutionRelationshipType 
 									set     Success = 0, 
-										Message = 'SubjectUid is missing / incorrect format.' 
+											Message = 'SubjectUid is missing / incorrect format.' 
 									where   ExecutionID = @ExecutionID 
-										and Success is null 
-										and (SubjectUid is null or SubjectUid = @emptyUid);
+											and Success is null 
+											and (SubjectUid is null or SubjectUid = @emptyUid);
 
 									update  api.ExecutionRelationshipType 
 									set     Success = 0, 
-										Message ='Subject asset type not found.' 
+											Message ='Subject asset type not found.' 
 									where   ExecutionID = @ExecutionID 
-										and Success is null 
-										and (SubjectId is null or [Subject] is null);
+											and Success is null 
+											and (SubjectId is null or [Subject] is null);
 
 									update  api.ExecutionRelationshipType
 									set     Success = 0,
-										Message = 'ObjectUid is missing / incorrect format.' 
+											Message = 'ObjectUid is missing / incorrect format.' 
 									where   ExecutionID = @ExecutionID 
-										and Success is null 
-										and (ObjectUid is null or ObjectUid = @emptyUid);
+											and Success is null 
+											and (ObjectUid is null or ObjectUid = @emptyUid);
 
 									update  api.ExecutionRelationshipType 
 									set     Success = 0, 
-										Message = 'Object asset type not found.' 
+											Message = 'Object asset type not found.' 
 									where   ExecutionID = @ExecutionID 
-										and Success is null 
-										and (ObjectId is null or [Object] is null);
+											and Success is null 
+											and (ObjectId is null or [Object] is null);
 
 									update  T
 									set     T.Success = 0, 
-										T.Message = 'Relationship with specified Uid already exists.' 
+											T.Message = 'Relationship with specified Uid already exists.' 
 									from    api.ExecutionRelationshipType T
-										inner join IntersectType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID 
-										and T.Success is null 
-										and (T.Uid is not null and T.Uid <> @emptyUid);
+											inner join IntersectType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID 
+												and T.Success is null 
+												and (T.Uid is not null and T.Uid <> @emptyUid);
 
 									update  ER 
 									set     Success = 0, 
-										Message = 'Another relationship already exists with this configuration.' 
+											Message = 'Another relationship already exists with this configuration.' 
 									from    [api].[ExecutionRelationshipType] ER 
 									where   ER.ExecutionID = @ExecutionID 
-										and ER.Success is null 
-										and exists (
-													select  1 
-													from    IntersectType 
-													where   [Subject] = ER.[Subject] 
-															and SubjectID = ER.SubjectID 
-															and [Object] = ER.[Object] 
-															and ObjectID = ER.ObjectID 
-															and PredicateID = ER.PredicateID);",
-                                                    new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
+											and ER.Success is null 
+											and exists (
+												select  1 
+												from    IntersectTypeDetail 
+												where   SubjectUid = ER.SubjectUid 
+														and ObjectUid = ER.ObjectUid 
+														and PredicateID = ER.PredicateID
+											);", new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
             else
             {
                 Connection.Execute(@"
-									update  ER 
-									set     Success = 0, 
-										Message = 'Relationship type with the specified predicate already exists.' 
-									from    [api].[ExecutionRelationshipType] ER 
-										inner join [intersecttype] IT on IT.UID = ER.UID 
-									where   ER.ExecutionID = @ExecutionID 
-										and ER.Success is null 
-										and exists (
-											select  1 
-											from    [intersecttype] I 
-													inner join Predicate P on P.ID = I.PredicateID 
-											where   P.Uid = ER.PredicateUid 
-													and I.Subject = IT.Subject 
-													and I.SubjectID=IT.SubjectID 
-													and I.Uid != IT.Uid 
-													and I.[Object]=IT.[Object] 
-													and I.ObjectID=IT.ObjectID);",
-                                                    new { execution.ExecutionID }, commandTimeout: timeout);
+update  ER 
+set     Success = 0, 
+		Message = 'Relationship type with the specified predicate already exists.' 
+from    [api].[ExecutionRelationshipType] ER 
+		inner join IntersectType IT on IT.UID = ER.UID 
+where   ER.ExecutionID = @ExecutionID 
+		and ER.Success is null 
+		and exists (
+			select  1 
+			from    IntersectType I 
+					inner join Predicate P on P.ID = I.PredicateID 
+			where   P.Uid = ER.PredicateUid 
+					and I.SubjectAssetTypeID = IT.SubjectAssetTypeID 
+					and I.ObjectAssetTypeID = IT.ObjectAssetTypeID 
+					and I.Uid != IT.Uid;",
+					new { execution.ExecutionID }, commandTimeout: timeout);
             }
         }
 

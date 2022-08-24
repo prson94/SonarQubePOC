@@ -2033,7 +2033,7 @@ namespace d360.model
 									inner join metrics.Asset A on A.Uid = V.AssetUid and V.Definition is not null 
 									inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
 									inner join AssetType T on T.Uid = Al.AssetTypeUid
-									inner join IntersectType IA on ( (IA.Subject = T.Object and IA.SubjectID = A.ObjectID) or (IA.Object = T.Object and IA.ObjectID = A.ObjectID) ) 
+									inner join IntersectType IA on ( IA.SubjectAssetTypeID = T.ID or IA.ObjectAssetTypeID = T.ID ) 
 									inner join [Predicate] P on P.Uid = JSON_VALUE(V.Definition, '$.Governance.Predicate.PredicateUid') and P.ID = IA.PredicateID and P.ID = @typeId";
 					break;
 				case MetricGovernanceCheckType.Relation:
@@ -2043,7 +2043,7 @@ namespace d360.model
 									inner join metrics.Asset A on A.Uid = V.AssetUid and V.Definition is not null 
 									inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
 									inner join AssetType T on T.Uid = Al.AssetTypeUid
-									inner join IntersectType IA on ( (IA.Subject = T.Object and IA.SubjectID = T.ObjectID) or (IA.Object = T.Object and IA.ObjectID = T.ObjectID) ) 
+									inner join IntersectType IA on ( IA.SubjectAssetTypeID = T.ID or IA.ObjectAssetTypeID = T.ID ) 
 										and IA.Uid = JSON_VALUE(V.Definition, '$.Governance.Relation.IntersectTypeUid') and IA.ID = @typeId";
 					break;
 			}

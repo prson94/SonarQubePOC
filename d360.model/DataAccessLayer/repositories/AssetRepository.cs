@@ -3959,15 +3959,8 @@ where an.Uid = fam.uid)
 								{string.Join("," + Environment.NewLine, fieldColumns.GetStatements())}
 						from    Asset A
 								inner join AssetType T on T.ID = A.AssetTypeID
-								outer apply (
-									select SA.uid from Asset A
-									inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectID
-									inner join [IntersectType] IT on IT.Id = I.IntersectTypeId
-									inner join [Predicate] P on P.Id = IT.PredicateID and P.Type in (3,4)
-									inner join [Asset] SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
-									where A.uid = @assetuid
-								) Parent
-								left join AssetDetail P on P.uid = Parent.uid
+								left join PredicateIntersect Parent on Parent.ObjectAssetID = A.ID and Parent.PredicateType in (3,4)
+								left join AssetDetail P on P.ID = Parent.SubjectAssetID
 								{fieldJoins.SQLJoinStatement}
 						where   A.[uid] = @assetUid";
 

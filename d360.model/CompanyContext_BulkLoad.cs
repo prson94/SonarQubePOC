@@ -1411,8 +1411,9 @@ namespace d360.model
 								left join {(subjectIsReferenceItemType ? "AssetType" : "Asset")} SA on SA.Uid = try_cast(CS.[Value] as uniqueidentifier)
 								left join {(objectIsReferenceItemType ? "AssetType" : "Asset")} OA on OA.Uid = try_cast(CO.[Value] as uniqueidentifier)
 								inner join IntersectType T on T.[uid] = @intersectTypeUid
-								left join [Intersect] I on I.IntersectTypeID = T.ID and I.[Subject] = SA.[Object] and I.SubjectID = SA.ObjectID 
-									and I.[Object] = OA.[Object] and I.ObjectID = OA.ObjectID
+								left join [Intersect] I on I.IntersectTypeID = T.ID 
+									and I.{(subjectIsReferenceItemType ? "SubjectAssetTypeID" : "SubjectAssetID")} = SA.ID 
+									and I.{(objectIsReferenceItemType ? "ObjectAssetTypeID" : "ObjectAssetID")} = OA.ID 
 						where   L.LoadID = @id
 
 						update  L

@@ -835,10 +835,7 @@ from	IntersectType I
 				return default(AssetDetail);
 			}
 
-			string sql = @"select a.Id from PredicateIntersect I
-					inner join IntersectType T on T.ID = I.IntersectTypeID
-					inner join Asset a on a.object = i.subject and a.objectid = i.subjectid
-					where I.PredicateType = @type and I.[Object] = @obj and I.ObjectID = @objectId";
+			string sql = @"select SubjectAssetID from PredicateIntersect where PredicateType = @type and [Object] = @obj and ObjectID = @objectId";
 
 			int parentId = Query<int>(sql, new { type = (int)predicateType, obj = new DbString { Value = obj.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, objectId = id }).FirstOrDefault();
 			
@@ -2792,11 +2789,13 @@ from	IntersectType I
 
 		public bool HasRelationshipInProcessDiagram(Guid intersectTypeUid)
 		{
-			return Query<int>(@"select count(*) from processexpandeddata ped
-							inner join IntersectType it on it.uid = @intersectTypeUid
-							where ped.DiagramAssetTypeUid = it.SubjectUid and 
-							(ped.FromAssetTypeUid = it.ObjectUid or ped.ToAssetTypeUid = it.objectuid)",
-							new { intersectTypeUid }).FirstOrDefault() > 0;
+			return Query<int>(@"
+select	count(*) 
+from	processexpandeddata ped
+		inner join IntersectTypeDetail it on it.uid = @intersectTypeUid 
+			and ped.DiagramAssetTypeUid = it.SubjectUid 
+			and (ped.FromAssetTypeUid = it.ObjectUid or ped.ToAssetTypeUid = it.objectuid)",
+			new { intersectTypeUid }).FirstOrDefault() > 0;
 		}
 
 		public void CreateEventsForAddedActions(List<Issue> actions)

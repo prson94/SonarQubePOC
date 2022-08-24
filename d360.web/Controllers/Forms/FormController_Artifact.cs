@@ -398,20 +398,18 @@ with u as (
 					and Subject = 'ReferenceItemType' and A.Uid <> u.Uid
 			) I
 ), d as (
-	select	A.Uid, I.Object, I.ObjectID
+	select	A.Uid, I.ObjectAssetTypeID
 	from	AssetType A
-			inner join IntersectType I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.Object = 'ReferenceItemType'
+			inner join IntersectType I on I.SubjectAssetTypeID = A.ID and I.ObjectClass = 9
 	where	A.Uid = @Uid
 	union all
-	select	A.Uid, I.Object, I.ObjectID
+	select	A.Uid, I.ObjectAssetTypeID
 	from	AssetType A
-			inner join d on d.Object = A.Object and d.ObjectID = A.ObjectID
+			inner join d on d.ObjectAssetTypeID = A.ID
 			outer apply (
-			select	Object, ObjectID
+			select	ObjectAssetTypeID
 			from	IntersectType 
-					where Subject = A.Object 
-					and SubjectID = A.ObjectID 
-					and Object = 'ReferenceItemType' and A.Uid <> d.Uid
+			where	SubjectAssetTypeID = A.ID and ObjectClass = 9 and A.Uid <> d.Uid
 			) I
 ) 
 select	LOWER(CAST(uid AS char(36))) as value, 
