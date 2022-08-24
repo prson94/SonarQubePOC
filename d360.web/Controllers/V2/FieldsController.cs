@@ -2419,13 +2419,18 @@ namespace d360.web.Controllers.V2
 								{pagingQuery}
 								option (maxrecursion 100)
 
-								select	count(*)
+								select	count(*) + 1
 								from	Asset A
 										inner join AssetType T on T.ID = A.AssetTypeID and T.Id = @id
 										cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
 										cross apply dbo.GetAssetLevelById(A.ID) LV
 								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
 								option (maxrecursion 100)";
+
+						if(skip != null && skip > 0)
+						{
+							skip--;
+						}
 					}
 
 					var cmd = new CommandDefinition(sql, cancellationToken: cancellationToken, parameters: new { atype.ID, skip, take, filter });
