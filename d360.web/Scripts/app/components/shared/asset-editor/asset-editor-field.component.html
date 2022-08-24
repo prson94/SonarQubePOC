@@ -136,9 +136,19 @@
                                            display="chip">
 								<ng-template pTemplate="selectedItems" let-items>
 									<ng-container *ngIf="dropdown.value && dropdown.value.length !== 0; else placeholder">
-										<div class="p-multiselect-token" *ngFor="let item of items">
-											<ng-container *ngTemplateOutlet="chipTemplate; context: { $implicit: item | findMultiselectOption: field.Items }">
-											</ng-container>
+										<div class="p-multiselect-token" style="position: relative;" *ngFor="let item of items">
+											<span class="p-multiselect-token-label" style="z-index: 2">
+												{{ (item | findMultiselectOption: field.Items).label }}
+											</span>
+											<asset-editor-field-info *ngIf="useSidePanel && item"
+																	 [object]="{objectID: item.toLowerCase(), fieldName: field.FieldName}"
+																	 (click)="onItemInfoClick($event, item)"
+																	 [selected]="sidePanelSelection" size="chip">
+											</asset-editor-field-info>
+											<span class="p-multiselect-token-icon fa fa-close"
+												  style="z-index: 2; margin-left: 24px;"
+												  (click)="dropdown.removeChip(item, $event); $event.stopPropagation()">
+											</span>
 										</div>
 										<ng-template #chipTemplate let-option>
 											<span class="p-multiselect-token-label">
