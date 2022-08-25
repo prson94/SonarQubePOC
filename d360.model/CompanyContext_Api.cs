@@ -3185,7 +3185,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								delete	T
 								from	Favorite T
-										inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};
+										inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
 
 								delete	T
 								from	Follow T
@@ -3922,7 +3922,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								    delete	T
 								    from	Favorite T
-										    inner join #deleteAssets O on O.Object = T.Object and O.ObjectID = T.ObjectID;
+										    inner join #deleteAssets O on O.ID = T.AssetID;
 
 								    delete	T
 								    from	Follow T
