@@ -855,7 +855,7 @@ order by	case
 				var previousDefinition = existing.Definition;
 				existing.SetRawFromDefinition();
 
-				if (existing.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)
+				if (existing.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null && (x.Operator == null || !(x.Operator == Operator.Populated || x.Operator == Operator.NotPopulated))).Count() > 0)
 				{
 					throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_Then_Filter_Value_Required);
 				}
@@ -932,7 +932,7 @@ order by	case
 
 				model.SetRawFromDefinition();
 
-				if (model.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)
+				if (model.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null && (x.Operator == null || !(x.Operator == Operator.Populated || x.Operator == Operator.NotPopulated))).Count() > 0)
 				{
 					throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_Then_Filter_Value_Required);
 				}
