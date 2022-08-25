@@ -3420,13 +3420,23 @@ namespace d360.web.Controllers.V2
 			MapToApiVersion("2.0"),
 			Route("lookupvalues/{assetTypeUid}"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
+			SwaggerResponse(HttpStatusCode.OK, "Values for a dropdown list"),
+			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
 		public async Task<HttpResponseMessage> GetAssetLookupValues(Guid assetTypeUid, int? skip = null, int? take = 0, string filter = null)
 		{
 			var prefix = "Assets.GetAssetLookupValues => ";
 			var errorMessage = "";
+
+			if (skip == null)
+			{
+				return ReturnApiError(HttpStatusCode.BadRequest, "Skip cannot be null");
+			}
+			if (take < 1)
+			{
+				return ReturnApiError(HttpStatusCode.BadRequest, "Take must be greater than 0");
+			}
 
 			try
 			{
