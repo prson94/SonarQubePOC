@@ -141,7 +141,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         // Redefine `storageKeyPrefix()` to get from the `SidePanelComponent.storageKeyPrefix` ...
         // but wait a tick first to avoid one-time devMode
         // unidirectional-data-flow-violation error
-        setTimeout(() => this.storageKeyPrefix = () => this.sidePanelComponent?.storageKeyPrefix, 0);
+        setTimeout(() => this.storageKeyPrefix = () => this.sidePanelComponent?.panelWidthStorageKey, 0);
     }
 
     createBreadcrumbHierarchy(artifact: ArtifactType) {

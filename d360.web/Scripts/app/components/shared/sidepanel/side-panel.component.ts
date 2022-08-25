@@ -33,13 +33,14 @@ export class SidePanelComponent extends BaseComponent {
     @Input() setMinMaxWidth: boolean = true;
     @Input() set sidePanelWidth(value: number) {
         if (value !== 59) {
-            this.saveState(value);
+            this.savePanelWidthState(value);
         }
     }
     @Output() selectedPanelChange = new EventEmitter<string>();
 
     @Input() storageKey: string = null;
     readonly storageKeyPrefix: string = 'side_panel_';
+    readonly panelWidthStorageKey: string = 'side_panel_width';
 
     @Input() extraButtons: SidePanelButton[] = [];
     @Input() multipleItemsSelected: boolean = false;
@@ -142,16 +143,23 @@ export class SidePanelComponent extends BaseComponent {
         }
     }
 
-    private saveState(sidePanelWidth?: number) {
+    private saveState() {
         if (this.storageKey != null && this.storageKey.length > 0) {
             let state: any = {};
             state.expanded = this.expanded;
             state.selectedPanel = this.selectedPanel;
+
+            localStorage.setItem(this.storageKeyPrefix + this.storageKey, JSON.stringify(state));
+        }
+    }
+
+    private savePanelWidthState(sidePanelWidth: number) {
+        if (this.storageKey != null && this.storageKey.length > 0) {
+            let state: any = {};
             if (sidePanelWidth) {
                 state.panelWidth = sidePanelWidth;
             }
-
-            localStorage.setItem(this.storageKeyPrefix + this.storageKey, JSON.stringify(state));
+            localStorage.setItem(this.panelWidthStorageKey + this.storageKey, JSON.stringify(state));
         }
     }
 
