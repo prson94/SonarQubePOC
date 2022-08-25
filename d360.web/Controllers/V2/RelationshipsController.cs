@@ -1869,7 +1869,7 @@ namespace d360.web.Controllers.V2
 															from Asset a
 															inner join assettype at on at.id = a.assettypeid
 															inner join intersecttype it on it.subjectUid = at.uid
-															inner join [Intersect] i on i.intersecttypeid = it.id and i.subjectAssetID = a.id
+															inner join [Intersect] i on i.intersecttypeid = it.id and i.SubjectAssetTypeId = at.id
 															where a.uid = @assetuid
 															group by it.uid
 															union 
@@ -1877,7 +1877,7 @@ namespace d360.web.Controllers.V2
 															from Asset a
 															inner join assettype at on at.id = a.assettypeid
 															inner join intersecttype it on it.objectUid = at.uid
-															inner join [Intersect] i on i.intersecttypeid = it.id and i.objectAssetID = a.id
+															inner join [Intersect] i on i.intersecttypeid = it.id and i.ObjectAssetTypeId = at.id
 															where a.uid = @assetuid
 															group by it.uid)
 															insert into #relationshipCountMap
