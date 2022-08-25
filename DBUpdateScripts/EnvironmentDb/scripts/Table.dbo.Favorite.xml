@@ -134,7 +134,7 @@ GO
   </changeSet>
 
 	<changeSet author="Andrii Kunetskyi" id="Table.dbo.Favorite-v4">
-		<sql dbms="mssql" endDelimeter="\nGO" splitStatements="true" stripComments="false">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 			<![CDATA[
 				if not exists (select 1 from sys.columns where Name = N'AssetID' and Object_ID = Object_ID(N'dbo.Favorite'))
 				begin
