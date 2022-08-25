@@ -1094,7 +1094,7 @@ namespace d360.model
 						}
 
 						thenSql.Append($"{(thenSql.Length>0 ? " UNION " : "")}{rulegroupSql}");
-					};					
+					}					
 				}				
 			}			
 

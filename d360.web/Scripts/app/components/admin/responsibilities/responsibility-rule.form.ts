@@ -159,7 +159,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 .subscribe((data) => {
 					this.model = data;
 					if (this.model.StructuredDefinition.Then && this.model.StructuredDefinition.Then.Conditions) {
-						this.model.StructuredDefinition.Then.Conditions.forEach(x => {
+						this.model.StructuredDefinition.Then.Conditions.forEach((x) => {
 							if (!x.Object) {
 								x.Object = this.model.StructuredDefinition.Then.Object;
 								x.ObjectID = this.model.StructuredDefinition.Then.ObjectID;
@@ -190,8 +190,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
 									
 									if (this.model && this.model.StructuredDefinition && this.model.StructuredDefinition.Then) {
-										if (this.model.StructuredDefinition.Then.Conditions != null && this.model.StructuredDefinition.Then.Conditions.length > 0 && !this.model.StructuredDefinition.Then.Conditions.every(c => !c.Object)) {
-											this.model.StructuredDefinition.Then.Conditions.forEach(t => {												
+										if (this.model.StructuredDefinition.Then.Conditions != null && this.model.StructuredDefinition.Then.Conditions.length > 0 && !this.model.StructuredDefinition.Then.Conditions.every((c) => !c.Object)) {
+											this.model.StructuredDefinition.Then.Conditions.forEach((t) => {												
 												this.responsibilityTypeService.getRelationRuleFormData(t.Object, 1)
 													.subscribe((d) => {
 														if (t.Object === this.resourceType) {
@@ -362,7 +362,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     removeWhenCondition(i: number): void {
 		this.model.StructuredDefinition.When.splice(i, 1);
-		if (this.model.StructuredDefinition.When.length == 0) {
+		if (this.model.StructuredDefinition.When.length === 0) {
 			this.addWhen();
 		}
 	}
@@ -395,7 +395,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 if (response) {
                     this.WhenTestRows = response.items;
 				}
-				this.noWhenResults = this.WhenTestRows.length == 0 && this.simpleWhenFilter.trim()==""
+				this.noWhenResults = this.WhenTestRows.length === 0 && this.simpleWhenFilter.trim() === "";
 
                 this.disableTestWhen = false;
                 this.isWhenTestLoading = false;
@@ -460,7 +460,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
         this.model.StructuredDefinition.Then.Object = item.Object;
 		this.model.StructuredDefinition.Then.ObjectID = item.ObjectID = 1;
-		if ((item.Object === this.resourceType && (!this.thenUserFieldTypes || this.thenUserFieldTypes.length == 0)) || (item.Object === this.groupType && this.thenGroupFieldTypes.length == 0)) {
+		if ((item.Object === this.resourceType && (!this.thenUserFieldTypes || this.thenUserFieldTypes.length === 0)) || (item.Object === this.groupType && this.thenGroupFieldTypes.length === 0)) {
 			this.responsibilityTypeService.getRelationRuleFormData(item.Object, 1)
 				.subscribe((d) => {
 					if (item.Object === this.resourceType) {
@@ -592,7 +592,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 item.IsBool = true;
 				item.ValueOptions = this.whenBoolTypes;
 				item.IsLookup = selectedFieldType.isLookup;
-			} else if (selectedFieldType.type == "Text") {
+			} else if (selectedFieldType.type === "Text") {
 				item.IsSimpleText = true;
 				if (!item.Operator) {
 					item.Operator = Operator[Operator.Equals];
@@ -675,17 +675,17 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 	}
 
 	enableAddWhenCondition(): any {		
-		return this.model.StructuredDefinition.When.every(w => { return w.Value && w.Value.length > 0; });
+		return this.model.StructuredDefinition.When.every((w) => { return w.Value && w.Value.length > 0; });
 	}
 
 	enableAddThenCondition(): any {
-		return this.model.StructuredDefinition.Then.Conditions.every(w => { return w.Value && w.Value.length > 0; });
+		return this.model.StructuredDefinition.Then.Conditions.every((w) => { return w.Value && w.Value.length > 0; });
 	}
 
 	showValueOption(item) {
 		if (item.CheckType == "F" && item.FieldTypeID) {
 			if (item.IsSimpleText) {
-				return item.Operator && item.Operator != Operator.Populated && item.Operator != Operator.NotPopulated;
+				return item.Operator && item.Operator !== Operator.Populated && item.Operator !== Operator.NotPopulated;
 			}
 			return true;
 		} 
@@ -698,7 +698,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 	showThenValueOption(item) {
 		if (item.FieldTypeID || item.FieldTypeName) {
 			if (item.IsSimpleText) {				
-				return item.Operator && item.Operator != Operator.Populated && item.Operator != Operator.NotPopulated;				
+				return item.Operator && item.Operator !== Operator.Populated && item.Operator !== Operator.NotPopulated;				
 			}			
 			return true;
 		}		
