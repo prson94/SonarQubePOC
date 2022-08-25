@@ -553,9 +553,9 @@ where	FT.[Object] = @type
 		and FT.Type not in ({ftTypeRemoveString})
 for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString(), id }).ToList();
 
-            if (type == SystemObjects.OrganizationType)
-            {
-                fieldTypes = Company.Query<string>($@"
+			if (type == SystemObjects.OrganizationType)
+			{
+				fieldTypes = Company.Query<string>($@"
 select	FT.ID as value,
 		T.[Name] + ' :: ' + FriendlyName as label,
         FT.Name as fieldTypeName,
@@ -581,9 +581,9 @@ where	FT.[Object] = @type
 		and Type not in ({ftTypeRemoveString})
 order by T.[Name] + ' :: ' + FriendlyName
 for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString() }).ToList();
-            }
+			}
 
-            var groupFieldTypes = new List<string>();
+			var groupFieldTypes = new List<string>();
             if (type == SystemObjects.GroupType)
             {
                 groupFieldTypes = Company.Query<string>($@"

@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
 using d360.core.entities.Contracts;
-
+using d360.core.enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -89,7 +89,7 @@ namespace d360.core.entities
         public List<ResponsibilityRuleDefinitionWhen> When { get; set; }
 
         public ResponsibilityRuleDefinitionThen Then { get; set; }
-    }
+	}
 
     public class ResponsibilityRuleDefinitionWhen
     {
@@ -110,7 +110,13 @@ namespace d360.core.entities
         public Guid? IntersectTypeUID { get; set; }
 
         public Guid? AssetUID { get; set; }
-    }
+
+		public Operator? Operator { get; set; }
+		
+		public string Object { get; set; }
+
+		public int ObjectID { get; set; }
+	}
 
     [JsonConverter(typeof(StringEnumConverter), true)]
     public enum ResponsibilityMatchType
