@@ -31,6 +31,11 @@ export class SidePanelComponent extends BaseComponent {
     @Input() selectedPanel: string = '';
     @Input() showEmptyOverlay: boolean = false;
     @Input() setMinMaxWidth: boolean = true;
+    @Input() set sidePanelWidth(value: number) {
+        if (value !== 59) {
+            this.saveState(value);
+        }
+    }
     @Output() selectedPanelChange = new EventEmitter<string>();
 
     @Input() storageKey: string = null;
@@ -136,11 +141,14 @@ export class SidePanelComponent extends BaseComponent {
         }
     }
 
-    private saveState() {
+    private saveState(sidePanelWidth?: number) {
         if (this.storageKey != null && this.storageKey.length > 0) {
             let state: any = {};
             state.expanded = this.expanded;
             state.selectedPanel = this.selectedPanel;
+            if (sidePanelWidth) {
+                state.panelWidth = sidePanelWidth;
+            }
 
             localStorage.setItem(this.storageKeyPrefix + this.storageKey, JSON.stringify(state));
         }

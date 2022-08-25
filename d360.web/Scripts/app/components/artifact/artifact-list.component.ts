@@ -21,6 +21,7 @@ import { SemanticType } from '../../models/semantic-type.model';
 import { TitleAndTabsService } from '../../services/title-and-tabs.service';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
+import { SidePanelComponent } from '../shared/sidepanel/side-panel.component';
 
 declare var CurrentResourceID;
 
@@ -31,7 +32,7 @@ declare var CurrentResourceID;
 })
 
 export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
-
+    @ViewChild(SidePanelComponent) sidePanelComponent: SidePanelComponent;
     gridObject: AssetGridObject;
     artifactType: ArtifactType;
     artifactTypeHierarchy: ArtifactType[];
@@ -60,12 +61,15 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     secondarySidePanel: string = "detail";
     resourceUid: any;
     innerWidth: number;
+    sidePanelWidth: number;
 	
 	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
     @HostListener('window:resize', ['$event'])
     onResize(event) {
         this.innerWidth = event.target.innerWidth;
     }
+
+    storageKeyPrefix() { return ''; }
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -130,6 +134,13 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                     });
                 });
         });
+    }
+
+    ngAfterViewInit() {
+        // Redefine `storageKeyPrefix()` to get from the `SidePanelComponent.storageKeyPrefix` ...
+        // but wait a tick first to avoid one-time devMode
+        // unidirectional-data-flow-violation error
+        setTimeout(() => this.storageKeyPrefix = () => this.sidePanelComponent?.storageKeyPrefix, 0);
     }
 
     createBreadcrumbHierarchy(artifact: ArtifactType) {
@@ -227,16 +238,25 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         }
     }
 
-    getSidebarSize(): number {
-        return this.sidePanelOpen ? 400 : 59;
+    getSidePanelWidth(): number {
+        const sidePanelStorage = JSON.parse(localStorage.getItem(this.storageKeyPrefix() + this.sidePanelStorageKey));
+        const panelWidth = sidePanelStorage?.panelWidth;
+        if (this.sidePanelOpen) {
+            return panelWidth ? panelWidth : 400;
+        }
+        return 59;
     }
 
-    getSidebarMaxSize(): number {
+    getSidePanelMaxWidth(): number {
         return this.sidePanelOpen ? this.innerWidth/2 : 59;
     }
 
-    getSidebarMinSize(): number {
+    getSidePanelMinWidth(): number {
         return this.sidePanelOpen ? 400 : 59;
+    }
+
+    onSidePanelDragEnd(event: { gutterNum: number; sizes: Array<number> }): void {
+        this.sidePanelWidth = event.sizes[1];
     }
 
     ngOnDestroy() {
