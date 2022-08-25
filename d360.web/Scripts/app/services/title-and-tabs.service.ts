@@ -80,6 +80,7 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
       this.folderTitle = folderTitle;
       this.area = folderTitle;
       this.gridObject = ArtifactType.AsGridObject(this.artifactType);
+      this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', this.artifactType.ID, this.artifactType.AssetTypeUID);
       this.setObjectInfo('ArtifactType', this.artifactType.ID);
       this.artifactTypeBreadcrumbElements.push(this.artifactType);
       this.createBreadcrumbHierarchy(this.artifactType);

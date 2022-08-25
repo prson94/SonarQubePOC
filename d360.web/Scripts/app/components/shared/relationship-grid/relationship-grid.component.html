@@ -63,8 +63,8 @@
                          [loading]="isLoading"
                          [loadingIcon]="'fa fa-spinner fa-spin'"
                          [lazy]="true"
-                         [scrollable]="true"
                          [scrollHeight]="selectionScrollHeight"
+                         responsiveLayout="scroll"
                          (onLazyLoad)="loadRelationshipLazy($event)">
                     <ng-template pTemplate="emptymessage" let-columns>
                         <tr>
@@ -75,22 +75,24 @@
                     </ng-template>
                     <ng-template pTemplate="header">
                         <tr>
-                            <th width="50%" [pSortableColumn]="'RelationshipTypeName'">
+                            <th [pSortableColumn]="'RelationshipTypeName'">
                                 <ng-container i18n>Relationship Type</ng-container> <d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'AssetPath'">Asset <d3s-sortIcon [field]="'AssetPath'"></d3s-sortIcon></th>
-                            <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.apiName : null ">
+                            <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.apiName : null "
+                                [style.width]="column.columnWidth === 0 ? 'auto' : (column.columnWidth + 'px')">
                                 {{column.text}}
+                                {{column.columnWidth}}
                                 <d3s-sortIcon [field]="column.apiName"></d3s-sortIcon>
                             </th>
-                            <th style="flex: 0 0 40px"></th>
+                            <th [style.width]="'40px'"></th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
                         <tr (dblclick)="selectRow(item)" [pSelectableRow]="item" (focus)="selectRow(item)"
 							(contextmenu)="positionContextMenu(item, $event, floatButton, floatMenu, assetGridTools);"
 							class="relationship-row">
-                            <td width="50%" style="word-break: break-word;">
+                            <td style="word-break: break-word;">
                                 {{item.RelationshipTypeName}}
                             </td>
                             <td style="word-break: break-word;">
@@ -99,7 +101,7 @@
                             <td *ngFor="let column of columns">
                                 <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
                             </td>
-                            <td style="flex: 0 0 40px" class="asset-grid-tools" #assetGridTools>
+                            <td [style.width]="'40px'" class="asset-grid-tools" #assetGridTools>
                                 <div style="display:inline-block" *ngIf="!item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
                                     <button igButton class="ig-button-transparent" type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                                     <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>

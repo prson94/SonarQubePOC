@@ -823,7 +823,9 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("ResourceUid", "Uid of user", DataType = "string", ParameterType = "query", Required = false),
-			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false)
+			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_pageSize", "The number of results to return per page. The default is 10 groups per page", DataType = "integer", ParameterType = "query", Required = false),
+			SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false)
 		]
 		public async Task<IHttpActionResult> GetGroups()
 		{
@@ -843,7 +845,25 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.ResourceUidNotValid)).ConfigureAwait(false);
 				}
 
+				var pageSize = "10";
+				var pageNum = "1";
+				var pageSizeParam = queryParams.FirstOrDefault(x => x.Key == "_pageSize");
+				var pageNumParam = queryParams.FirstOrDefault(x => x.Key == "_pageNum");
+				pageSize = pageSizeParam.Value ?? pageSize;
+				pageNum = pageNumParam.Value ?? pageNum;
+
+				Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+				var isValid = isPageSizeAndNumValid(queryParams);
+
+				if (!string.IsNullOrEmpty(isValid))
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid)).ConfigureAwait(false);
+				}
+
 				var results = await membershipRepository.GetGroups(queryParams);
+
+				results.PageNum = int.Parse(pageNum);
+				results.PageSize = int.Parse(pageSize);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
 			}
@@ -1993,10 +2013,12 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> UpdateWatches(UpdateUserWatchModel model)
 		{
 			int id = -1;
-			string type = "";
+			long AssetID = 0;
+			int AssetTypeID = 0;
 			string name = "";
 			string parentName = "";
 			bool includeChildren = false;
+			FollowDetail followDetail = null;
 
 			if (model.assetTypeUid == null && model.assetUid == null)
 			{
@@ -2017,10 +2039,10 @@ namespace d360.web.Controllers.V2
 				else
 				{
 					var assetType = assetRepository.GetAssetTypeByUID(model.assetTypeUid.Value);
-					id = assetType.ObjectID;
-					type = assetType.Object;
+					AssetTypeID = assetType.ID; 
 					name = assetType.Name;
 					includeChildren = true;
+					followDetail = Company.Filter<FollowDetail>(i => i.AssetTypeID == AssetTypeID && i.AssetID == null && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
 				}
 			}
 
@@ -2034,14 +2056,12 @@ namespace d360.web.Controllers.V2
 				else
 				{
 					var asset = Company.Filter<AssetDetail>(x => x.uid == model.assetUid.Value).FirstOrDefault();
-					id = asset.ObjectID;
-					type = asset.Object;
+					AssetID = asset.id; 
 					name = asset.DisplayValue;
 					parentName = asset.TypeName;
+					followDetail = Company.Filter<FollowDetail>(i => i.AssetID == AssetID && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
 				}
 			}
-
-			var followDetail = Company.Filter<FollowDetail>(i => i.ObjectID == id && i.ObjectType == type && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
 
 			if (model.watches && followDetail != null)
 			{
@@ -2072,7 +2092,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			bool success = Company.UpdateFollowStatus((SystemObjects)Enum.Parse(typeof(SystemObjects), type), id, null, includeChildren);
+			bool success = Company.UpdateFollowStatus(AssetTypeID, AssetID, null, includeChildren);
 
 			return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, string.Format(ApiMessages.YouAreWatching, (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
 		}
@@ -2200,13 +2220,13 @@ namespace d360.web.Controllers.V2
 						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.AssetValidateWithAssetType);
 					}
 
-					response = Company.Any<Follow>(F => F.ObjectID == asset.ObjectID && F.ObjectType == asset.Object && F.ResourceID == Company.CurrentResourceID);
+					response = Company.Any<Follow>(F => F.AssetID  == asset.ID && F.ResourceID == Company.CurrentResourceID);
 				}
 			}
 
 			if (!response)
 			{
-				response = Company.Any<Follow>(F => F.ObjectID == assetType.ObjectID && F.ObjectType == assetType.Object && F.ResourceID == Company.CurrentResourceID);
+				response = Company.Any<Follow>(F => F.AssetTypeID == assetType.ID && F.ResourceID == Company.CurrentResourceID);
 			}
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));

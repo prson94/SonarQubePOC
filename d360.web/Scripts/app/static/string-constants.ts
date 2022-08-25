@@ -44,7 +44,6 @@ export class StringConstants {
     static Section_Responsibilities = $localize`Responsibilities`;
     static Section_Rules = $localize`Rules`;
     static Section_Scoring = $localize`Scoring Definitions`;
-    static Section_Search = $localize`Search Index`;
     static Section_Settings = $localize`Settings`;
     static Section_Surveys = $localize`Surveys`;
     static Section_Tags = $localize`Tags`;

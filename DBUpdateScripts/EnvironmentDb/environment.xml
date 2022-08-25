@@ -79,10 +79,6 @@
 	<include file="scripts/Table.dbo.AssetDisplayValue.xml"/>
 	<include file="scripts/Table.dbo.AssetPath.xml"/>
 	<include file="scripts/Table.dbo.AssetResult.xml"/>
-	<include file="scripts/Table.dbo.AttributeTypeCategory.xml"/>
-	<include file="scripts/Table.dbo.AttributeType.xml"/>
-	<include file="scripts/Table.dbo.AttributeTypeRelation.xml"/>
-	<include file="scripts/Table.dbo.Attribute.xml"/>
 	<include file="scripts/Table.dbo.Comment.xml"/>
 	<include file="scripts/Table.dbo.CommentRelation.xml"/>
 	<include file="scripts/Table.dbo.CommentVote.xml"/>
@@ -108,18 +104,6 @@
 	<include file="scripts/Table.dbo.LoadColumn.xml"/>
 	<include file="scripts/Table.dbo.LoadItem.xml"/>
 	<include file="scripts/Table.dbo.LoadItemColumn.xml"/>
-	<include file="scripts/Table.dbo.MapType.xml"/>
-	<include file="scripts/Table.dbo.Map.xml"/>
-	<include file="scripts/Table.dbo.MapGraph.xml"/>
-	<include file="scripts/Table.dbo.MapItem.xml"/>
-	<include file="scripts/Table.dbo.MapItemMap.xml"/>
-	<include file="scripts/Table.dbo.MapRule.xml"/>
-	<include file="scripts/Table.dbo.MapRuleItem.xml"/>
-	<include file="scripts/Table.dbo.MapRuleItemMapItem.xml"/>
-	<include file="scripts/Table.dbo.MapRuleItemMapRule.xml"/>
-	<include file="scripts/Table.dbo.MapRuleMap.xml"/>
-	<include file="scripts/Table.dbo.MapSequence.xml"/>
-	<include file="scripts/Table.dbo.MapSequenceContext.xml"/>
 	<include file="scripts/Table.dbo.Nym.xml"/>
 	<include file="scripts/Table.dbo.NymRelation.xml"/>
 	<include file="scripts/Table.dbo.OrganizationType.xml"/>
@@ -163,9 +147,6 @@
 	<include file="scripts/Table.dbo.ResourceTheme.xml"/>
 	<include file="scripts/Table.dbo.TooltipTemplate.xml"/>
 	<include file="scripts/Table.dbo.RebuildJobStatus.xml"/>
-	<include file="scripts/Table.graph.AssetNode.xml"/>
-	<include file="scripts/Table.graph.AssetEdge.xml"/>
-	<include file="scripts/Table.dbo.AssetResultEdge.xml"/>						<!-- Dependent on graph.AssetNode -->
 	<include file="scripts/Table.graph.Filter.xml"/>
 	<include file="scripts/Table.metrics.Allocation.xml"/>
 	<include file="scripts/Table.metrics.Asset.xml"/>
@@ -250,8 +231,6 @@
 	<include file="scripts/View.dbo.AssetApiModel.xml"/>
 	<include file="scripts/View.dbo.AssetWithType.xml"/>
 	<include file="scripts/View.dbo.AssetDetail.xml"/>
-	<include file="scripts/View.dbo.AttributeDetail.xml"/>
-	<include file="scripts/View.dbo.AttributeTypeRelationDetail.xml"/>
 	<include file="scripts/View.dbo.FieldApiModel.xml"/>
 	<include file="scripts/View.dbo.FieldDetail.xml"/>
 	<include file="scripts/View.dbo.FieldLookupValue.xml"/>
@@ -347,7 +326,6 @@
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.Hop_GenerateSalt.xml"/>
 	<include file="scripts/Function.graph.GetBackwardLineage.xml"/>
-	<include file="scripts/Function.graph.GetForwardLineage.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
     <include file="scripts/Function.utility.DeriveIntersectName.xml"/>
     <include file="scripts/Function.utility.FieldDetails.xml"/>
@@ -409,6 +387,7 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
     <include file="scripts/Procedure.dbo.GetResponsibilityBreakdownByResource.xml"/>
+	<include file="scripts/Procedure.graph.PopulateForwardLineage.xml"/>
 
     <include file="scripts/Function.Deletions.xml"/>
 	<include file="scripts/Procedure.Deletions.xml"/>

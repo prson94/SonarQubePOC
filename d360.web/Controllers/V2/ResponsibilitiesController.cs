@@ -795,9 +795,14 @@ namespace d360.web.Controllers.V2
 
 			foreach (var type in responsibilityTypes)
 			{
-				if (type.Name.Trim().Length > 250)
+				if (type.Name?.Trim().Length > 250)
 				{
 					throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
+				}
+
+				if (type.Description?.Trim().Length > 4000)
+				{
+					throw new ArgumentException(string.Format(MetricsApiMessages.DescriptionLengthValidation, type.Description?.Trim().Length));
 				}
 			}
 
@@ -1304,7 +1309,8 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is false meaning the total count is excluded.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerParameter("_simpleFilter", SIMPLE_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the responsibility rule", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of assets which are applicable to the rule definition.", typeof(ResponsibilityRuleTestResponseModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))

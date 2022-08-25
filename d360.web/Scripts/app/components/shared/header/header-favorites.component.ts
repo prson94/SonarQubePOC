@@ -42,11 +42,11 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     @Input() favItems: FavoriteApiModel[] = [];
     @Input() homePageItem: FavoriteApiModel = null;
 
-    private subBreadcrumb: any;
+	private subBreadcrumb: any;
     private isLoading = false;
     private favoriteRoutesSet = new Set<string>();
 
-    private name: string;
+	private favoriteToSend = new FavoriteApiModel();
 
     constructor(
         private favoritesService: FavoritesService,
@@ -57,9 +57,12 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     ngOnInit() {
-        this.subBreadcrumb = this.breadcrumbService.breadcrumbs$.subscribe(b => {
-            this.name = b.text;
-        });
+		this.subBreadcrumb = this.breadcrumbService.breadcrumbs$.subscribe(b => {
+			this.favoriteToSend = new FavoriteApiModel();
+			this.favoriteToSend.Name = b.text;
+			this.favoriteToSend.Id = b.objectId;
+			this.favoriteToSend.Type = b.objectType;
+		});
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -75,7 +78,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     ngOnDestroy() {
         if (this.subBreadcrumb) {
             this.subBreadcrumb.unsubscribe();
-        }
+		}
     }
 
     handleClick() {
@@ -98,11 +101,10 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
             return;
         }
 
-        this.isLoading = true;
-        let f = new FavoriteApiModel();
-        f.Name = this.name;
-        f.Route = this.currentUri;
-        this.favoritesService.toggleFavoriteV2(f).subscribe(
+		this.isLoading = true;
+		this.favoriteToSend.Route = this.currentUri;
+		
+		this.favoritesService.toggleFavoriteV2(this.favoriteToSend).subscribe(
             fav => {
                 this.headerActionsService.emitFavoritesChange();
                 this.isLoading = false;

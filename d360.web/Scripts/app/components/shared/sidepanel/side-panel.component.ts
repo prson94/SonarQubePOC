@@ -43,6 +43,7 @@ export class SidePanelComponent extends BaseComponent {
 
     @Input() extraButtons: SidePanelButton[] = [];
     @Input() multipleItemsSelected: boolean = false;
+	@Input() closeIcon: string = 'fa-arrow-circle-right';
 
     buttons: SidePanelButton[] = [];
 

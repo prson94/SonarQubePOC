@@ -89,7 +89,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 this.messages = []; //clear any messages for this rule
 
                 this.rulesService.getRuleType(this.rule.TypeID).subscribe(r => { this.ruleType = r; });
-                this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
+				this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId, null, this.rule.UID);
                 this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
 
                 this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId).then(p => {

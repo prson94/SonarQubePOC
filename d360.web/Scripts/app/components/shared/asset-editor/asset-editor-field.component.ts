@@ -1,28 +1,25 @@
 import {
-    AfterViewChecked,
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    EventEmitter,
-    Input,
-    OnChanges,
-    OnDestroy,
-    OnInit,
-    Output,
-    ViewChild,
-
-    HostListener,
-    ElementRef
+	AfterViewChecked,
+	ChangeDetectionStrategy,
+	ChangeDetectorRef,
+	Component,
+	EventEmitter,
+	Input,
+	OnChanges,
+	OnDestroy,
+	OnInit,
+	Output,
+	ViewChild,
+	ElementRef
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
-import { Subject, Observable, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
 import { EditorDropDownItem, EditorField } from '../../../models/editor-field.model';
 
 import { FormHelpers } from '../../../static/form-helpers';
 
-import { CascadeService } from '../../../services/cascade.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
 import { BaseComponent } from '../base.component';
@@ -34,6 +31,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { Dropdown } from 'primeng/dropdown';
 import { OverlayPanel } from 'primeng/overlaypanel';
 import { Table } from 'primeng/table';
+import { MultiSelect } from "primeng/multiselect";
 
 @Component({
     selector: 'asset-editor-field',
@@ -57,7 +55,11 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     selectionScrollHeight: string = "320px";
 
     @Input() useNewUI: boolean = false;
+	@Input() useSidePanel: boolean = false;
     private isDirty: boolean = false;
+	
+	@Input() sidePanelSelection: { objectID: string, fieldName: string };
+	@Output() sidePanelSelectionChange: EventEmitter<{ objectID: string, fieldName: string }> = new EventEmitter<any>();
 
     @ViewChild('ed', { static: false }) ed: Editor;
     private quill;
@@ -102,7 +104,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     showLookupSearchField: boolean = false;
     hadInitialLazyLoad: boolean = false;
 
-    @ViewChild('dropdown', { static: false }) dropdown: Dropdown;
+    @ViewChild('dropdown', { static: false }) dropdown: Dropdown & MultiSelect;
     @ViewChild('overlayPanel', { static: false }) overlayPanel: OverlayPanel;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
 
@@ -261,21 +263,22 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         if (this.field.FieldType === 'Relationship' && this.field.Value) {
             this.field.Items = this.field.Value;
-            var value = this.field.Items.filter((x) => x.Selected === true).map(x => x.Value);
-            this.form.controls[this.field.FieldName].setValue(value);
-
-            if (this.field?.MultiSelect && this.field.Value) {
-                this.lookupSelectedValue = [];
-
-                this.field.Items.forEach((item) => {
-                    item['label'] = item['Text'];
-                    item['value'] = item['Value'];
-                    this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
-
-                });
-                this.selectSingleItem(null, { value: null });
-
-            }
+            let value: any;
+			if (this.field.MultiSelect) {
+				value = this.field.Value.filter((x) => x.Selected === true).map((x) => x.Value);
+			} else {
+				value = this.field.Value.filter((x) => x.Selected === true).map((x) => x.Value)[0];
+			}
+			
+			this.lookupSelectedValue = [];
+			this.field.Items.forEach((item) => {
+				item['label'] = item['Text'];
+				item['value'] = item['Value'];
+				this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
+			});
+			this.selectSingleItem(null, { value: null });
+			
+			this.form.controls[this.field.FieldName].setValue(value);
         }
 
         if (this.field.FieldType === 'Relationship') {
@@ -303,21 +306,28 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 }
             });
 
-            if (this.field.Value === null && this.field.Items.some((x) => x.Selected === true)) {
-                this.field.Value = this.field.Items.filter((x) => x.Selected == true).map((x) => x.Value);
+			let value: any = this.field.Value;
+
+            if (!value && this.field.Items.some((x) => x.Selected === true)) {
+				if (this.field.MultiSelect) {
+					value = this.field.Items.filter((x) => x.Selected === true).map((x) => x.Value);
+				} else {
+					value = this.field.Items.filter((x) => x.Selected === true).map((x) => x.Value)[0];
+				}
             }
 
-            if (this.field?.MultiSelect && this.field.Value) {
+            if (value) {
                 this.lookupSelectedValue = [];
-                this.field.Items.filter((x) => x.Selected === true).forEach((item) => {
+                this.field.Items.forEach((item) => {
+					item['value'] = item['Value'];
                     this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
                 });
                 this.selectSingleItem(null, { value: null });
             }
-            this.form.controls[this.field.FieldName].setValue(this.field.Value);
+			this.form.controls[this.field.FieldName].setValue(value);
 
             window.setTimeout(() => {
-                this.listItemChange.emit({ field: this.field, value: this.field.Value });
+                this.listItemChange.emit({ field: this.field, value });
                 this.ref.markForCheck();
             }, 250);
         }
@@ -337,9 +347,10 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
 
         if (this.dropdown && this.overlayPanel) {
-            var width = this.dropdown.el.nativeElement.offsetWidth;
+            const width = this.dropdown.el.nativeElement.offsetWidth;
             if (this.overlayPanel.overlayVisible && this.overlayPanel.container) {
                 this.overlayPanel.container.style.width = width + "px";
+				this.overlayPanel.align();
             }
         }
 
@@ -793,7 +804,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             let loadedData = [];
 
             res.items.forEach((str) => {
-                loadedData.push({ label: str.text, value: str.value, color: str.color });
+				const color = str.color;
+                loadedData.push({ label: str.text, value: str.value, ...(color && { color }) });
             });
 
             Array.prototype.splice.apply(this.lookupValues, [...[loadParams.skip, loadParams.take], ...loadedData]);
@@ -805,14 +817,19 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
             this.isLookupValuesLoading = false;
             this.lastParams = loadParams;
+			
+			if (!this.field.MultiSelect) {
+				const selectedItem = this.lookupValues.find((lookup) => {
+					return lookup.value?.toLowerCase() === this.dropdown.value?.toLowerCase();
+				});
+				if (selectedItem?.value) {
+					this.selectSingleItem(null, selectedItem);
+				}
+			}
+			
             this.lookupValues = JSON.parse(JSON.stringify(this.lookupValues));
             this.setSelectionVirtualScrollHeight();
             this.ref.detectChanges();
-			setTimeout(() => {
-				if (this.overlayPanel) {
-					this.overlayPanel.align();
-				}
-            }, 10);
         });
     }
 
@@ -829,15 +846,17 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     selectSingleItem(event: MouseEvent, item: SelectItem) {
         if (this.field?.MultiSelect) {
             this.field.Items = [...this.lookupSelectedValue];
-            var value = this.lookupSelectedValue.map((s) => s.value);
+            const value = this.lookupSelectedValue.map((s) => s.value);
             this.form.controls[this.field.FieldName].setValue(value);
         } else {
             this.lookupSelectedValue = [item];
-            this.dropdown.options = [item];
+			if (this.dropdown) {
+				this.dropdown.options = [item];
+			}
             this.form.controls[this.field.FieldName].setValue(item.value);
-            this.overlayPanel.hide();
         }
         if (event) {
+			this.overlayPanel.hide();
             this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
         }
     }
@@ -951,4 +970,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         return true;
     }
+	
+	onItemInfoClick($event: MouseEvent, objectID: string): void {
+		$event.stopPropagation();
+		this.sidePanelSelectionChange.emit({ objectID: objectID.toLowerCase(), fieldName: this.field.FieldName });
+	}
 }

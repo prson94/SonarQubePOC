@@ -151,24 +151,35 @@
         <div class="tile tile-detail rebuild-panel">
             <header i18n>Rebuild Requests</header>
 
-            <div style="margin-bottom: 20px" *ngFor="let rs of rebuildStatuses">
-                <div>
-                    <button class="link-button" (click)="rebuild(rs)" [disabled]="isDisabled(rs)">
-                        <i [class]="rebuildJobIcon(rs)"></i>
-                        <span *ngIf="rs.jobToken === 2" i18n>Rebuild Display Values</span>
-                        <span *ngIf="rs.jobToken === 3" i18n>Rebuild Search Index</span>
-                    </button>
-                </div>
-                <div class="description" [innerHtml]="rs.jobTokenDescription"></div>
-                <div class="status" [innerHtml]="rs.validationMessage"></div>
-                <div class="status" *ngIf="rs.lastStartedOn">
-                    <span *ngIf="isDisabled(rs)" i18n>In progress. </span>
-                    <ng-container i18n>
-                        Rebuild last started on {{(rs.lastStartedOn |  date:'medium')}} <span *ngIf="rs.lastCompletedOn">and completed on {{(rs.lastCompletedOn |  date:'medium')}}</span>.
-                    </ng-container>
+			<div style="margin-bottom: 20px" *ngFor="let rs of rebuildStatuses">
+				<div>
+					<button class="link-button" (click)="rebuild(rs)" [disabled]="isDisabled(rs)">
+						<i [class]="rebuildJobIcon(rs)"></i>
+						<span *ngIf="rs.jobToken === 2" i18n>Rebuild Display Values</span>
+						<span *ngIf="rs.jobToken === 3" i18n>Rebuild Search Index</span>
+					</button>
+				</div>
+				<div class="description" [innerHtml]="rs.jobTokenDescription"></div>
+				<div class="status" [innerHtml]="rs.validationMessage"></div>
+				<div class="status" *ngIf="rs.lastStartedOn">
+					<span *ngIf="isDisabled(rs)" i18n>In progress. </span>
+					<ng-container i18n>
+						Rebuild last started on {{(rs.lastStartedOn |  date:'medium')}} <span *ngIf="rs.lastCompletedOn">and completed on {{(rs.lastCompletedOn |  date:'medium')}}</span>.
+					</ng-container>
 
-                </div>
-            </div>
+				</div>
+			</div>
+			<div style="margin-bottom: 20px">
+				<div>
+					<button class="link-button" (click)="rebuildPartialSearchIndex()">
+						<i class="fa fa-gear mr8"></i>
+						<span i18n>Rebuild Partial Search Index</span>
+					</button>
+				</div>
+				<div class="description">
+					Rebuilds the full-text index for all or partial assets within your environment.
+				</div>
+			</div>
         </div>
         <div class="tile tile-detail rebuild-panel">
             <header i18n>Security</header>
@@ -197,3 +208,10 @@
 
     </div>
 </div>
+
+<d3s-modal i18n-title title="Rebuild Partial Search Index"
+		   additionalClasses="large-dialog rebuild-partial-search-index"
+		   (onClose)="isPartialRebuildModalVisible = false"
+		   [isVisible]="isPartialRebuildModalVisible">
+	<d3s-admin-search-component (onModalClose)="isPartialRebuildModalVisible = false"></d3s-admin-search-component>
+</d3s-modal>

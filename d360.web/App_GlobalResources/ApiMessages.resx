@@ -145,7 +145,7 @@
     <value>Forbidden</value>
   </data>
   <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
-    <value>Forbidden user is not an administrator.</value>
+    <value>The current user is not an administrator.</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
     <value>AssetUid {0} is invalid</value>

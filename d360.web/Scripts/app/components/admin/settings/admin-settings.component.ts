@@ -52,6 +52,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     disableExcel: boolean = false;
 
     rebuildStatuses: CompanyRebuildJobStatusApiModel[] = [];
+	isPartialRebuildModalVisible: boolean = false;
     
     SaveButton: DynamicButton;
 
@@ -430,6 +431,10 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 }
             });
     }
+	
+	rebuildPartialSearchIndex(): void {
+		this.isPartialRebuildModalVisible = true;
+	}
 
     public isDisabled(model: CompanyRebuildJobStatusApiModel): boolean {
         return (+model.state === +CompanyRebuildJobStatusState.Active);

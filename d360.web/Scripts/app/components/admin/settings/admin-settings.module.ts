@@ -41,6 +41,7 @@ import { SearchFieldModule } from '../../shared/controls/search-field/search-fie
 import { AdminSiteMenuAssetTypeEditorComponent } from './admin-site-menu-asset-type.component';
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
+import { AdminSearchModule } from "../search/admin-search.module";
 
 @NgModule({
     imports: [CommonModule,
@@ -81,7 +82,8 @@ import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.mod
 		TableModule,
 		SearchFieldModule,
 		PropertyGroupModule,
-		AssetPreviewModule
+		AssetPreviewModule,
+		AdminSearchModule
     ],
     declarations: [
         AdminSettingsComponent,

@@ -50,103 +50,105 @@
                 </div>
             </div>
 
-            <div class="tree-wrapper" *ngIf="!showDelete">
-                <p-treeTable #treeTable
-                             [pageLinks]="3"
-                             [paginator]="true"
-                             [rows]="rowsPerPage"
-                             [rowsPerPageOptions]="defaultPagingOptions"
-                             [value]="treeNodeArray"
-                             [metaKeySelection]="true"
-                             selectionMode="single"
-                             [selection]="selected"
-                             (selectionChange)="selectAsset($event)"
-                             styleClass="breadcrumbTree treetable"
-                             [style]="{'line-height':'25px'}"
-                             [globalFilterFields]="filterColumns"
-                             dataKey="AssetUid"
-                             [loading]="isLoading"
-                             [loadingIcon]="'fa fa-spinner fa-spin'"
-                             [showLoader]="true"
-                             (onNodeExpand)="nodeExpanded($event)"
-                             (onPage)="numberOfRowsByCategoryService.onPage($event)"
-                             (onNodeCollapse)="nodeCollapsed($event)">
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th *ngFor="let column of columns"
-                                [ttSortableColumn]="column.sortable === true ? column.datafield : null"
-                                (click)="onSort()"
-                                [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
-                                {{column.text}}
-                                <p-treeTableSortIcon *ngIf="column.sortable === true" [field]="column.datafield"></p-treeTableSortIcon>
-                            </th>
-                            <th style="width: 40px"></th>
-							<th style="width: 0; padding: 0"></th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body"
-                                 let-rowNode
-                                 let-item="rowData">
-                        <tr [ttRow]="rowNode" [ttSelectableRow]="rowNode" (click)="selectAsset(rowNode.node)"
-							(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selectAsset(rowNode.node)">
-                            <td class="no-text-overflow" *ngFor="let column of columns; let i = index" [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
-                                <p-treeTableToggler [rowNode]="rowNode"
-                                                    style="margin-right: 8px;"
-                                                    [igDataCy]="'Hierarchy_Toggler_' + item.AssetUid"
-                                                    *ngIf="i === 0"></p-treeTableToggler>
-                                <ng-container *ngIf="i === linkColumnIndex">
-                                    <a (click)="showHierarchy($event, item)" context-link [isOpenDefault]="true"
-                                       [ngStyle]="setTreeNodeStyles(rowNode.node)"
-                                       [igDataCy]="'Hierarchy_Item_' + item.AssetUid">
+            <div class="tree-wrapper-wrapper" *ngIf="!showDelete">
+                <div class="tree-wrapper">
+                    <p-treeTable #treeTable
+                                [pageLinks]="3"
+                                [paginator]="true"
+                                [rows]="rowsPerPage"
+                                [rowsPerPageOptions]="defaultPagingOptions"
+                                [value]="treeNodeArray"
+                                [metaKeySelection]="true"
+                                selectionMode="single"
+                                [selection]="selected"
+                                (selectionChange)="selectAsset($event)"
+                                styleClass="breadcrumbTree treetable"
+                                [style]="{'line-height':'25px'}"
+                                [globalFilterFields]="filterColumns"
+                                dataKey="AssetUid"
+                                [loading]="isLoading"
+                                [loadingIcon]="'fa fa-spinner fa-spin'"
+                                [showLoader]="true"
+                                (onNodeExpand)="nodeExpanded($event)"
+                                (onPage)="numberOfRowsByCategoryService.onPage($event)"
+                                (onNodeCollapse)="nodeCollapsed($event)">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th *ngFor="let column of columns"
+                                    [ttSortableColumn]="column.sortable === true ? column.datafield : null"
+                                    (click)="onSort()"
+                                    [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
+                                    {{column.text}}
+                                    <p-treeTableSortIcon *ngIf="column.sortable === true" [field]="column.datafield"></p-treeTableSortIcon>
+                                </th>
+                                <th style="width: 40px"></th>
+                                <th style="width: 0; padding: 0"></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body"
+                                    let-rowNode
+                                    let-item="rowData">
+                            <tr [ttRow]="rowNode" [ttSelectableRow]="rowNode" (click)="selectAsset(rowNode.node)"
+                                (contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selectAsset(rowNode.node)">
+                                <td class="no-text-overflow" *ngFor="let column of columns; let i = index" [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
+                                    <p-treeTableToggler [rowNode]="rowNode"
+                                                        style="margin-right: 8px;"
+                                                        [igDataCy]="'Hierarchy_Toggler_' + item.AssetUid"
+                                                        *ngIf="i === 0"></p-treeTableToggler>
+                                    <ng-container *ngIf="i === linkColumnIndex">
+                                        <a (click)="showHierarchy($event, item)" context-link [isOpenDefault]="true"
+                                        [ngStyle]="setTreeNodeStyles(rowNode.node)"
+                                        [igDataCy]="'Hierarchy_Item_' + item.AssetUid">
+                                            <d3s-dynamic-field-value [column]="column"
+                                                                    [fields]="fields"
+                                                                    [useApiName]="true"
+                                                                    styleClass="cell-link"
+                                                                    [item]="item"
+                                                                    [isDateUTC]="true"
+                                                                    [interceptLinkClick]="true"></d3s-dynamic-field-value>
+                                        </a>
+                                    </ng-container>
+                                    <ng-container *ngIf="i !== linkColumnIndex">
                                         <d3s-dynamic-field-value [column]="column"
-                                                                 [fields]="fields"
-                                                                 [useApiName]="true"
-                                                                 styleClass="cell-link"
-                                                                 [item]="item"
-                                                                 [isDateUTC]="true"
-                                                                 [interceptLinkClick]="true"></d3s-dynamic-field-value>
-                                    </a>
-                                </ng-container>
-                                <ng-container *ngIf="i !== linkColumnIndex">
-                                    <d3s-dynamic-field-value [column]="column"
-                                                             [fields]="fields"
-                                                             [useApiName]="true"
-                                                             [item]="item"
-                                                             [isDateUTC]="true"
-                                                             [interceptLinkClick]="true"></d3s-dynamic-field-value>
-                                </ng-container>
-                            </td>
-                            <td class="asset-grid-tools" #assetGridTools>
-                                <div>
-                                    <button igButton
-                                            type="button"
-                                            icon="fa-ellipsis-v"
-                                            [igDataCy]="'Hierarchy_Menu_Button_' + item.AssetUid"
-                                            (click)="selectAsset(rowNode.node);linkMenu.toggle($event)"></button>
+                                                                [fields]="fields"
+                                                                [useApiName]="true"
+                                                                [item]="item"
+                                                                [isDateUTC]="true"
+                                                                [interceptLinkClick]="true"></d3s-dynamic-field-value>
+                                    </ng-container>
+                                </td>
+                                <td class="asset-grid-tools" #assetGridTools>
+                                    <div>
+                                        <button igButton
+                                                type="button"
+                                                icon="fa-ellipsis-v"
+                                                [igDataCy]="'Hierarchy_Menu_Button_' + item.AssetUid"
+                                                (click)="selectAsset(rowNode.node);linkMenu.toggle($event)"></button>
+                                        <ig-popup-menu (onSelect)="clickMenuItem($event, rowNode.node)"
+                                                    [items]="item[menuKey]"
+                                                    [dataCy]="'Hierarchy_Menu_Popup_' + item.AssetUid"
+                                                    #linkMenu
+                                                    [tabIndex]="1"></ig-popup-menu>
+                                    </div>
+                                </td>
+                                <button class="ig-float-popup-container" #floatButton
+                                        [igDataCy]="'Hierarchy_Menu_Button_' + item.AssetUid">
                                     <ig-popup-menu (onSelect)="clickMenuItem($event, rowNode.node)"
-                                                   [items]="item[menuKey]"
-                                                   [dataCy]="'Hierarchy_Menu_Popup_' + item.AssetUid"
-                                                   #linkMenu
-                                                   [tabIndex]="1"></ig-popup-menu>
-                                </div>
-                            </td>
-							<button class="ig-float-popup-container" #floatButton
-									[igDataCy]="'Hierarchy_Menu_Button_' + item.AssetUid">
-								<ig-popup-menu (onSelect)="clickMenuItem($event, rowNode.node)"
-											   [items]="item[menuKey]"
-											   [dataCy]="'Hierarchy_Menu_Popup_' + item.AssetUid"
-											   #floatMenu
-											   [tabIndex]="1">
-								</ig-popup-menu>
-							</button>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="summary">
-                        <d3s-grid-paging-info [first]="treeTable.first"
-                                              [rows]="treeTable.rows"
-                                              [totalRecords]="treeTable.totalRecords"></d3s-grid-paging-info>
-                    </ng-template>
-                </p-treeTable>
+                                                [items]="item[menuKey]"
+                                                [dataCy]="'Hierarchy_Menu_Popup_' + item.AssetUid"
+                                                #floatMenu
+                                                [tabIndex]="1">
+                                    </ig-popup-menu>
+                                </button>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="summary">
+                            <d3s-grid-paging-info [first]="treeTable.first"
+                                                [rows]="treeTable.rows"
+                                                [totalRecords]="treeTable.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-treeTable>
+                </div>
             </div>
 
 

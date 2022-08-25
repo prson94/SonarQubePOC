@@ -11,7 +11,13 @@ namespace d360.core.entities.Membership
 
         [DataMember]
         public int Total { get; set; }
-    }
+
+		[DataMember]
+		public int PageSize { get; set; }
+
+		[DataMember]
+		public int PageNum { get; set; }
+	}
 
     public class GroupResponseResult : IExecutionItem
     {

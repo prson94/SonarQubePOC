@@ -6,7 +6,7 @@ import { Observable, Subject, of, throwError } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SettingsHelper, SearchType } from '../models/settings.model';
-import { IndexableType, IndexableStatus } from "../models/search-admin.model";
+import { IndexableType, IndexableStatus, IndexPartialRebuild } from "../models/search-admin.model";
 import { FeatureFlags, FeatureFlagsService } from './featureflags.service';
 import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 import { Table } from 'primeng/table';
@@ -69,9 +69,14 @@ export class SearchService extends BaseObservableService  {
     }
 
     public downloadSearchExcel(query: SearchQuery): Observable<any> {
-        return this.
-            http
-            .post("api/v2/search/results", query, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' });
+        return this.http.post(
+			"api/v2/search/results",
+			query, 
+			{
+				headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }),
+				responseType: 'blob' 
+			}
+		);
     }
 
     public getSearchCategories(showUsers: boolean = true, keepNotVisible: boolean = false): Observable<SearchType[]> {
@@ -126,7 +131,7 @@ export class SearchService extends BaseObservableService  {
         this.visibleCategories$ = null;
     }
 
-    public GetIndexableTypes(): Observable<IndexableType[]> {
+    public getIndexableTypes(): Observable<IndexableType[]> {
         return this.http
             .get("api/v2/search/indexableTypes")
             .pipe(
@@ -145,7 +150,7 @@ export class SearchService extends BaseObservableService  {
             );
     }
 
-    public GetIndexbleStatus(): Observable<IndexableStatus[]> {
+    public getIndexableStatus(): Observable<IndexableStatus[]> {
         return this.http
             .get("api/v2/search/indexableStatus")
             .pipe(
@@ -164,10 +169,16 @@ export class SearchService extends BaseObservableService  {
             );
     }
 
-    public SendRebildRequest(Class: number, assettypeuid: string) {
-        let url = `api/v2/search/rebuild/${Class}/${assettypeuid}`;
+	public sendRebuildRequest(assets: IndexableStatus[]): Observable<any> {
+		let requests: IndexPartialRebuild[] = [];
+		assets.forEach((asset) => {
+			requests.push({
+				Class: asset.Class,
+				AssetTypeUid: asset.AssetTypeUid
+			});
+		});
         return this.http
-            .post(url, "")
+			.post(`api/v2/search/rebuild`, requests)
             .pipe(
                 delay(1000),
                 map((res) => res),
