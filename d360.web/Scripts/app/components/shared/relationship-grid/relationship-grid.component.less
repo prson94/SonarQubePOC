@@ -24,11 +24,22 @@
 }
 
 // This makes kebab menu to be sticky
-.relationship-detail p-table table td.asset-grid-tools {
-  background: inherit;
-  position: sticky;
-  right: -1px; // This 1px compensates transparent border
-  z-index: 1;
+.relationship-detail p-table table  {
+  th.asset-grid-tools, td.asset-grid-tools {
+    position: sticky;
+    right: -1px; // This 1px compensates transparent border
+  }
+
+  td.asset-grid-tools {
+    z-index: 1;
+  }
+}
+
+// This makes sure that kebab menu can inherit white background from p-table
+.relationship-detail p-table {
+  .p-datatable-wrapper, table, tbody, tr, td {
+    background: inherit;
+  }
 }
 
 .relationship-detail p-table table tr {

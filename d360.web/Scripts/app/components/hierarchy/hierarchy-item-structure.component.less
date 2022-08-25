@@ -51,16 +51,20 @@
 }
 
 // This makes kebab menu to be sticky
-:host p-treetable ::ng-deep table td.asset-grid-tools {
-  background: inherit;
-  position: sticky;
-  right: -1px; // This 1px compensates transparent border
-  z-index: 1;
+:host p-treetable ::ng-deep table {
+  th.asset-grid-tools, td.asset-grid-tools {
+    position: sticky;
+    right: -1px; // This 1px compensates transparent border
+  }
+
+  td.asset-grid-tools {
+    z-index: 1;
+  }
 }
 
 // This makes sure that kebab menu can inherit white background from p-treetable
 :host p-treetable ::ng-deep {
-  .p-treetable-wrapper, table, tbody, tr {
+  .p-treetable-wrapper, table, tbody, tr, td {
     background: inherit;
   }
 }

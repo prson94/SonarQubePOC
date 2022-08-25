@@ -39,7 +39,7 @@
 
 // This makes kebab menu to be sticky
 :host p-table ::ng-deep table {
-  td {
+  th, td {
     &.asset-grid-tools {
       position: sticky;
       right: -1px; // This 1px compensates transparent border
@@ -47,6 +47,7 @@
     }
   }
 
+  // This makes sure that kebab menu can inherit white background from p-table
   td.asset-grid-tools {
     background: inherit;
   }
