@@ -1834,7 +1834,7 @@ namespace d360.web.Controllers.V2
 								inner join IntersectType IT on IT.ID = I.IntersectTypeID
 								where I.subjectAssetTypeId = @id
 								group by it.uid
-								select * from #relationshipCountMap";
+								select distinct * from #relationshipCountMap";
 
 						var refListData = await Company.QueryAsync<RelationshipCountModel>(refTypeCountSQL, new { assetType.ID });
 						
@@ -1883,7 +1883,7 @@ namespace d360.web.Controllers.V2
 															insert into #relationshipCountMap
 															select IntersectTypeUid, IsSubject,Count from cte
 
-															select * from #relationshipCountMap";
+															select distinct * from #relationshipCountMap";
 
 				var data = await Company.QueryAsync<RelationshipCountModel>(countsSql, new { assetUid });
 
