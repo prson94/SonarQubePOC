@@ -1422,6 +1422,22 @@ namespace d360.web.Controllers.V2
 					return $"rgba({col.R},{col.G},{col.B},{opacity})";
 				}
 
+				string BlendHexToRGB(string color, string backgroundColor, float opacity)
+				{
+					var col = ColorTranslator.FromHtml(color);
+					var background = ColorTranslator.FromHtml(backgroundColor);
+					var resultColor = Blend(col, background, opacity);
+					return $"rgba({resultColor.R},{resultColor.G},{resultColor.B})";
+				}
+
+				Color Blend(Color color, Color backColor, double amount)
+				{
+					byte r = (byte)(color.R * amount + backColor.R * (1 - amount));
+					byte g = (byte)(color.G * amount + backColor.G * (1 - amount));
+					byte b = (byte)(color.B * amount + backColor.B * (1 - amount));
+					return Color.FromArgb(r, g, b);
+				}
+
 				if (theme == null)
 				{
 					throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.NoActiveThemeExists);
@@ -1441,7 +1457,7 @@ namespace d360.web.Controllers.V2
 				css.AppendCssVariable("secondaryButtonSelectedBackColor", hexToRGBA(theme.PrimaryButtonBackColor, 0.35f));
 				css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
 				css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
-				css.AppendCssVariable("tableRowBackColorHover", hexToRGBA(theme.TableRowBackSelectedColor, 0.35f));
+				css.AppendCssVariable("tableRowBackColorHover", BlendHexToRGB(theme.TableRowBackSelectedColor, "#ffffff", 0.35f));
 				css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
 				css.AppendLine("");
 				css.AppendCssVariable("calculatedBackTextColor", textColorFromBackground(theme.BackColor));

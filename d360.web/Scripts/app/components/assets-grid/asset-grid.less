@@ -29,12 +29,27 @@
 :host p-table ::ng-deep .p-datatable .p-datatable-thead > tr > th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
 }
 
 // This is a fix to add horizontal scroll on table when [responsiveLayout]="scroll"
 :host p-table ::ng-deep table {
   width: max-content;
+}
+
+// This makes kebab menu to be sticky
+:host p-table ::ng-deep table {
+  td {
+    &.asset-grid-tools {
+      position: sticky;
+      right: -1px; // This 1px compensates transparent border
+      z-index: 1;
+    }
+  }
+
+  td.asset-grid-tools {
+    background: inherit;
+  }
 }
 
 p-table ::ng-deep table {

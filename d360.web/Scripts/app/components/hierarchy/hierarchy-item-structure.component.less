@@ -36,7 +36,7 @@
 :host p-treetable ::ng-deep thead tr th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
 }
 
 // This adds horizontal scroll on table
@@ -47,6 +47,21 @@
 
   table {
     width: max-content;
+  }
+}
+
+// This makes kebab menu to be sticky
+:host p-treetable ::ng-deep table td.asset-grid-tools {
+  background: inherit;
+  position: sticky;
+  right: -1px; // This 1px compensates transparent border
+  z-index: 1;
+}
+
+// This makes sure that kebab menu can inherit white background from p-treetable
+:host p-treetable ::ng-deep {
+  .p-treetable-wrapper, table, tbody, tr {
+    background: inherit;
   }
 }
 
