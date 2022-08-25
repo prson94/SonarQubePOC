@@ -11286,7 +11286,10 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 							ItemNumber =pd.ItemNumber 
 							and 
 							ExecutionId = pd.ExecutionId  
-							and ((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
+							and 
+							[Object] is not null
+							and 
+							((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
 						for json path, include_null_values
 					)Conditions(json)
 				where 
