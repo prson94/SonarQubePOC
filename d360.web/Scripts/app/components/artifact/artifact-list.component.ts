@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
@@ -59,8 +59,13 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     secondarySidePanelOpen: boolean;
     secondarySidePanel: string = "detail";
     resourceUid: any;
+    innerWidth: number;
 	
 	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
+    @HostListener('window:resize', ['$event'])
+    onResize(event) {
+        this.innerWidth = event.target.innerWidth;
+    }
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -82,6 +87,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     }
 
     ngOnInit() {
+        this.innerWidth = window.innerWidth;
+        
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
 
@@ -218,6 +225,18 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         if (this.selection != null && this.sidePanelTab === 'dataprofile' && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
             return this.selection.HasProfiling;
         }
+    }
+
+    getSidebarSize(): number {
+        return this.sidePanelOpen ? 400 : 59;
+    }
+
+    getSidebarMaxSize(): number {
+        return this.sidePanelOpen ? this.innerWidth/2 : 59;
+    }
+
+    getSidebarMinSize(): number {
+        return this.sidePanelOpen ? 400 : 59;
     }
 
     ngOnDestroy() {

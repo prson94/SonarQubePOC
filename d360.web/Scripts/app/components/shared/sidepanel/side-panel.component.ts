@@ -30,6 +30,7 @@ export class SidePanelComponent extends BaseComponent {
     @Input() selectedItem: any = {};
     @Input() selectedPanel: string = '';
     @Input() showEmptyOverlay: boolean = false;
+    @Input() setMinMaxWidth: boolean = true;
     @Output() selectedPanelChange = new EventEmitter<string>();
 
     @Input() storageKey: string = null;

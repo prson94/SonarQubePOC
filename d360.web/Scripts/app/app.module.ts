@@ -43,6 +43,7 @@ import { FeatureFlagsService } from './services/featureflags.service';
 import { governHttpInterceptorProviders } from './http-interceptors';
 import { SelectAssetService } from './services/select-asset.service';
 import { ForceNoReuseStrategy } from './services/forceNoReuseStrategy';
+import { AngularSplitModule } from 'angular-split';
 
 export function localeIdFactory() {
     return navigator.language;
@@ -101,6 +102,7 @@ export function localeInitializer(localeId: string) {
         HttpClientModule,
         AppRoutingModule,
         BrowserAnimationsModule,
+        AngularSplitModule,
         // prime
         ToastModule,
         DialogModule,

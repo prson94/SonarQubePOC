@@ -2,21 +2,26 @@
     <div class="col s12" *ngIf="isLoading">
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
     </div>
-    <div class="col s12" style="display: flex" *ngIf="!isLoading">
-        <div class="tile tile-detail main-panel">
+    <as-split unit="pixel" [gutterSize]="16" class="col s12 split" style="display: flex" *ngIf="!isLoading" [class.side-panel-close]="!sidePanelOpen">
+        <as-split-area class="tile tile-detail main-panel">
             <d3s-asset-grid #assetGrid [gridObject]="gridObject"
                             (selectedChange)="selectAsset($event)"
                             (hasProfilingChange)="hasProfiling=$event"
                             (showEditorChange)="showEditor=$event"
                             (isLoadingChange)="gridLoading=$event"
                             (isDefinitionLoadedChange)="definitionLoaded=$event"></d3s-asset-grid>
-        </div>
-        <div class="tile tile-detail side-panel" *ngIf="!gridLoading && !isLoading && definitionLoaded && (!showEditor || (showEditor && selection != null))">
+        </as-split-area>
+        <as-split-area [size]="getSidebarSize()"
+                       [minSize]="getSidebarMinSize()"
+                       [maxSize]="getSidebarMaxSize()"
+                       class="tile tile-detail side-panel"
+                       *ngIf="!gridLoading && !isLoading && definitionLoaded && (!showEditor || (showEditor && selection != null))">
             <side-panel [(expanded)]="sidePanelOpen"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [hasSelectedItem]="selection ? true : false"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="hasProfiling"
+                        [setMinMaxWidth]="false"
                         hasDetail="true"
                         [storageKey]="sidePanelStorageKey"
                         [selectedPanel]="sidePanelTab">
@@ -29,26 +34,26 @@
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
                         <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag" #assetDetail
-                                         [objectUID]="selectedAsset ? selectedAsset.uid : selection.AssetUid"
-                                         [objectType]="selectedAsset ? selectedAsset.type : 'artifact'"
-                                         [useAccordion]="true"
-                                         [shouldBePadded]="false"
-                                         [showHeader]="true"
-                                         [showHeaderLine]="false"
-                                         [spacerHeight]="'16px'"
-                                         [tooltipAlign]="'left'"
-                                         [isSidePanel]="true"
-                                         [hasEditLink]="true"
-                                         [hasAddRelationshipsPermissions]="false"
-                                         [hasModifyRelationshipsPermissions]="false"
-                                         [hasDeleteRelationshipsPermissions]="false"
-                                         [interceptLinkClick]="true"
-                                         (onEditClick)="assetGrid.triggerEdit()"></ig-asset-detail>
+                                        [objectUID]="selectedAsset ? selectedAsset.uid : selection.AssetUid"
+                                        [objectType]="selectedAsset ? selectedAsset.type : 'artifact'"
+                                        [useAccordion]="true"
+                                        [shouldBePadded]="false"
+                                        [showHeader]="true"
+                                        [showHeaderLine]="false"
+                                        [spacerHeight]="'16px'"
+                                        [tooltipAlign]="'left'"
+                                        [isSidePanel]="true"
+                                        [hasEditLink]="true"
+                                        [hasAddRelationshipsPermissions]="false"
+                                        [hasModifyRelationshipsPermissions]="false"
+                                        [hasDeleteRelationshipsPermissions]="false"
+                                        [interceptLinkClick]="true"
+                                        (onEditClick)="assetGrid.triggerEdit()"></ig-asset-detail>
 
                         <ng-container *ngIf="selectedReferenceItem">
                             <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
-                                                  [highlightUid]="selectedReferenceItem.assetUid"
-                                                  [baseUrl]="selectedReferenceItem.url">
+                                                [highlightUid]="selectedReferenceItem.assetUid"
+                                                [baseUrl]="selectedReferenceItem.url">
                             </ig-asset-type-detail>
                         </ng-container>
                         <ng-container *ngIf="selectedTag">
@@ -67,25 +72,25 @@
                         <div class="details-container">
                             <ng-container *ngIf="semanticType && secondarySidePanel=='detail'">
                                 <semantic-detail [qualifier]="semanticType.qualifier"
-                                                 [isSidePanel]="true"
-                                                 [showHeader]="true"
-                                                 [semanticType]="semanticType"
-                                                 (close)="secondarySidePanelOpen=false;"
-                                                 (linkClicked)="secondaryPanelOpen($event)">
+                                                [isSidePanel]="true"
+                                                [showHeader]="true"
+                                                [semanticType]="semanticType"
+                                                (close)="secondarySidePanelOpen=false;"
+                                                (linkClicked)="secondaryPanelOpen($event)">
                                 </semantic-detail>
                             </ng-container>
                             <ng-container *ngIf="resourceUid && secondarySidePanel=='user'">
                                 <ig-asset-detail [objectUID]="resourceUid"
-                                                 [objectType]="'Resource'"
-                                                 [useAccordion]="true"
-                                                 [shouldBePadded]="true"
-                                                 [showHeader]="true"
-                                                 [showHeaderLine]="false"
-                                                 [spacerHeight]="'16px'"
-                                                 [tooltipAlign]="'left'"
-                                                 [isSidePanel]="true"
-                                                 [interceptLinkClick]="true"
-                                                 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+                                                [objectType]="'Resource'"
+                                                [useAccordion]="true"
+                                                [shouldBePadded]="true"
+                                                [showHeader]="true"
+                                                [showHeaderLine]="false"
+                                                [spacerHeight]="'16px'"
+                                                [tooltipAlign]="'left'"
+                                                [isSidePanel]="true"
+                                                [interceptLinkClick]="true"
+                                                (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
                             </ng-container>
                             <ng-container *ngIf="secondarySidePanel=='status'">
                                 <semantic-status-detail (close)="secondarySidePanelOpen=false;"></semantic-status-detail>
@@ -94,6 +99,6 @@
                     </div>
                 </ng-container>
             </side-panel>
-        </div>
-    </div>
+        </as-split-area>
+    </as-split>
 </div>

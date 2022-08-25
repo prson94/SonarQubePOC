@@ -11,7 +11,7 @@
         </button>
     </div>
 </div>
-<div *ngIf="expanded === true" [style.min-width]="minWidth" [style.max-width]="maxWidth">
+<div *ngIf="expanded === true" [style.min-width]="setMinMaxWidth ? minWidth : null" [style.max-width]="setMinMaxWidth ? maxWidth : null">
     <div>
         <div class="side-panel-container" style="margin: 0;">
             <div class="panel-header">
