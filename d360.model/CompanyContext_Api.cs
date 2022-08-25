@@ -11164,7 +11164,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 		                left join FieldLookupValue flv on flv.FieldTypeID = pd.FieldTypeId
 	                ) lookupValue
 		                on lookupValue.FieldTypeID = pd.FieldTypeId 
-		                and trim(pd.Value) = lookupValue.Value 
+		                and try_cast(trim(pd.Value) as int) = lookupValue.Value 
                 where pd.fieldtypeid is not null and ft.type = 'Lookup'
 
 				update #parsedData
