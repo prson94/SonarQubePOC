@@ -518,7 +518,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 if (response) {
                     this.ThenTestRows = response.items;
 				}
-				this.noWhenResults = this.WhenTestRows.length == 0 && this.simpleWhenFilter.trim() == ""
+				this.noWhenResults = this.WhenTestRows.length === 0 && this.simpleWhenFilter.trim() === "";
                 this.disableTestThen = false;
                 this.isThenTestLoading = false;
             });
@@ -683,13 +683,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 	}
 
 	showValueOption(item) {
-		if (item.CheckType == "F" && item.FieldTypeID) {
+		if (item.CheckType === "F" && item.FieldTypeID) {
 			if (item.IsSimpleText) {
 				return item.Operator && item.Operator !== Operator.Populated && item.Operator !== Operator.NotPopulated;
 			}
 			return true;
 		} 
-		if (item.CheckType == 'R') {
+		if (item.CheckType === 'R') {
 			return item.Operator && item.IntersectTypeID;
 		}
 		return false;
