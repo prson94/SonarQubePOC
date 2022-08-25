@@ -134,14 +134,13 @@ GO
   </changeSet>
 
 	<changeSet author="Andrii Kunetskyi" id="Table.dbo.Favorite-v4">
-		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+		<sql dbms="mssql" endDelimiter="GO" splitStatements="true" stripComments="false">
 			<![CDATA[
 				if not exists (select 1 from sys.columns where Name = N'AssetID' and Object_ID = Object_ID(N'dbo.Favorite'))
 				begin
 					alter table dbo.Favorite
 					add AssetID bigint SPARSE
-				end
-					
+				end					
 				GO
 
 				if not exists (select 1 from sys.columns where Name = N'AssetTypeID' and Object_ID = Object_ID(N'dbo.Favorite'))
@@ -149,7 +148,6 @@ GO
 					alter table dbo.Favorite
 					add AssetTypeID int SPARSE
 				end
-
 				GO
 
 				if not exists (select 1 from sys.columns where Name = N'SemanticID' and Object_ID = Object_ID(N'dbo.Favorite'))
@@ -157,7 +155,6 @@ GO
 					alter table dbo.Favorite
 					add SemanticID bigint SPARSE
 				end
-
 				GO
 				
 				update Favorite
@@ -165,7 +162,6 @@ GO
 				from Favorite f
 				left join Asset a on a.Object = f.Object and a.ObjectID = f.ObjectID
 				where f.Object is not null and f.Object != 'SemanticType' and f.Object not like '%Type'
-
 				GO
 				
 				update Favorite 
@@ -173,25 +169,27 @@ GO
 				from Favorite f
 				left join AssetType at on at.Object = f.Object and at.ObjectID = f.ObjectID
 				where f.Object is not null and f.Object != 'SemanticType' and f.Object like '%Type'
-
 				GO
 				
 				update Favorite
 					set SemanticId = s.ID
 				from Favorite f
 				left join Semantic s on s.ID = f.ObjectID
-				where f.Object is not null and f.Object = 'SemanticType'
-				
+				where f.Object is not null and f.Object = 'SemanticType'				
 				GO
 				
-				alter Favorite
-				drop column Object
-				
+				if exists (select 1 from sys.columns where Name = N'Object' and Object_ID = Object_ID(N'dbo.Favorite'))
+				begin
+					alter table dbo.Favorite
+					drop column Object
+				end
 				GO
 				
-				alter Favorite
-				drop column ObjectID
-				
+				if exists (select 1 from sys.columns where Name = N'ObjectID' and Object_ID = Object_ID(N'dbo.Favorite'))
+				begin
+					alter table dbo.Favorite
+					drop column ObjectID
+				end
 				GO
 			]]>
 		</sql>
