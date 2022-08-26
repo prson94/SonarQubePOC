@@ -201,7 +201,6 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
-
     ngOnDestroy() {
         this.clearSidebar();
         if (this.currentAreaNameSubscription) {

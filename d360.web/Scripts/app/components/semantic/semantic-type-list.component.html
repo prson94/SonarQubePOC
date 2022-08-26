@@ -1,7 +1,20 @@
 <div class="row">
-    <div class="col s12" style="display: flex">
-        <div class="tile tile-detail main-panel">
-            <div><p-checkbox style="float:right; padding: 14px 10px 6px;" igCheckbox [binary]="true" [(ngModel)]="showDisabled" (onChange)="getData()" label="Show disabled semantic types"></p-checkbox></div>
+    <as-split unit="pixel"
+              direction="horizontal"
+              [gutterSize]="16"
+              class="col s12 split"
+              style="display: flex"
+              [class.side-panel-close]="!sidePanelOpen"
+              (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+        <as-split-area class="tile tile-detail main-panel">
+            <div>
+                <p-checkbox style="float:right; padding: 14px 10px 6px;"
+                            igCheckbox
+                            [binary]="true"
+                            [(ngModel)]="showDisabled"
+                            (onChange)="getData()"
+                            label="Show disabled semantic types"></p-checkbox>
+            </div>
             <div class="grid-actions-header column-layout">
                 <div class="grid-actions-header-row">
                     <div class="simple-search">
@@ -39,7 +52,10 @@
                     </div>
                 </div>
                 <div class="grid-actions-header-row">
-                    <advanced-filtering [loadIdentifier]="'SemanticTypes'" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+                    <advanced-filtering [loadIdentifier]="'SemanticTypes'"
+                                        [fieldsObserver]="filterFields$"
+                                        (onLoad)="onFiltersLoaded()"
+                                        (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
                 </div>
             </div>
             <div class="row asset-grid-wrapper">
@@ -85,15 +101,20 @@
                                     <ng-container i18n>Base Type</ng-container>
                                     <d3s-sortIcon [field]="'BaseType'"></d3s-sortIcon>
                                 </th>
-                                <th *ngIf="showDisabled" style="flex: 0 0 100px" [pSortableColumn]="'isDisabled'">
+                                <th *ngIf="showDisabled"
+                                    style="flex: 0 0 100px"
+                                    [pSortableColumn]="'isDisabled'">
                                     <ng-container i18n>Disabled</ng-container>
                                     <d3s-sortIcon [field]="'isDisabled'"></d3s-sortIcon>
                                 </th>
                                 <th style="flex: 0 0 30px"></th>
                             </tr>
                         </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr (dblclick)="selectSemanticType(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
+                        <ng-template pTemplate="body"
+                                     let-item>
+                            <tr (dblclick)="selectSemanticType(item)"
+                                [pSelectableRow]="item"
+                                (focus)="selectRow(item)">
                                 <td>
                                     <a (click)="selectSemanticType(item)"
                                        class="link">
@@ -104,8 +125,10 @@
                                     {{item.qualifier}}
                                 </td>
                                 <td>
-                                    <span class="ig-value ig-colorfield-item detail" style="display: inline-flex !important;">
-                                        <span class="ig-colorfield-swatch" [style.background-color]="getCertificationStatusColor(item.status)"></span>
+                                    <span class="ig-value ig-colorfield-item detail"
+                                          style="display: inline-flex !important;">
+                                        <span class="ig-colorfield-swatch"
+                                              [style.background-color]="getCertificationStatusColor(item.status)"></span>
                                         <span class="ig-colorfield-item-label">
                                             {{(item.status==="InReview" ? "Under Review" : item.status)}}
                                         </span>
@@ -113,13 +136,26 @@
                                 </td>
                                 <td>{{item.priority}}</td>
                                 <td>{{(item.baseType == 0 ? '' : getBaseTypeText(item.baseType))}}</td>
-                                <td *ngIf="showDisabled" style="flex: 0 0 100px">
-                                    <span *ngIf="item.isDisabled"><ig-badge [text]="'Disabled'" [variant]="'disabled'"></ig-badge></span>
+                                <td *ngIf="showDisabled"
+                                    style="flex: 0 0 100px">
+                                    <span *ngIf="item.isDisabled">
+                                        <ig-badge [text]="'Disabled'"
+                                                  [variant]="'disabled'"></ig-badge>
+                                    </span>
                                 </td>
-                                <td class="asset-grid-tools" style="flex: 0 0 30px" alignFrozen="right" pFrozenColumn>
+                                <td class="asset-grid-tools"
+                                    style="flex: 0 0 30px"
+                                    alignFrozen="right"
+                                    pFrozenColumn>
                                     <div style="display:inline-block">
-                                        <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); menu.toggle($event)"></button>
-                                        <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #menu [tabIndex]="1"></ig-popup-menu>
+                                        <button igButton
+                                                type="button"
+                                                icon="fa-ellipsis-v"
+                                                (click)="selectRow(item); menu.toggle($event)"></button>
+                                        <ig-popup-menu (onSelect)="clickMenuItem($event, item)"
+                                                       [items]="item[menuKey]"
+                                                       #menu
+                                                       [tabIndex]="1"></ig-popup-menu>
                                     </div>
                                 </td>
                             </tr>
@@ -129,19 +165,25 @@
                                                   [rows]="dt.rows"
                                                   [totalRecords]="semanticsTotal"></d3s-grid-paging-info>
                         </ng-template>
-                        <ng-template pTemplate="emptymessage" i18n>
+                        <ng-template pTemplate="emptymessage"
+                                     i18n>
                             No semantic types found
                         </ng-template>
                     </p-table>
                 </div>
             </div>
-        </div>
-        <div *ngIf="showSidePanel && selectedType" class="tile tile-detail side-panel">
+        </as-split-area>
+        <as-split-area [size]="getSidePanelWidth()"
+                       [minSize]="getSidePanelMinWidth()"
+                       [maxSize]="getSidePanelMaxWidth()"
+                       class="tile tile-detail side-panel"
+                       *ngIf="showSidePanel && selectedType">
             <side-panel (expandedChange)="sidePanelOpen=$event"
                         [expanded]="sidePanelOpen"
                         [storageKey]="sidePanelStorageKey"
                         [selectedPanel]="sidePanelTab"
                         [hasSelectedItem]="selectedType ? true : false"
+                        [setMinMaxWidth]="false"
                         hasDetail="true">
                 <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
                     <ng-container *ngIf="selectedType">
@@ -151,13 +193,20 @@
                                          [semanticType]="selectedType"
                                          (linkClicked)="handleSecondarySidePanelLinkClicked($event)"></semantic-detail>
                     </ng-container>
-                </ng-container>   
+                </ng-container>
                 <ng-container *ngIf="secondarySidePanelOpen">
-                    <div #semanticTile class="secondary-side-panel">
+                    <div #semanticTile
+                         class="secondary-side-panel">
                         <div class="panel-header">
-                            <span class="header-label" i18n>Information</span>
+                            <span class="header-label"
+                                  i18n>Information</span>
                             <div class="button-container">
-                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>
+                                <button igButton
+                                        [attr.data-cy]="'Semantic_Secondary_Close'"
+                                        icon="fa-times"
+                                        (click)="secondarySidePanelOpen=false;"
+                                        [tooltip]="Close"
+                                        class="close-button"></button>
                             </div>
                         </div>
                         <div class="details-container">
@@ -176,15 +225,16 @@
                                                      (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
                                 </ng-container>
                                 <ng-container *ngIf="secondarySidePanel=='status'">
-                                    <semantic-status-detail (close)="secondarySidePanelOpen=false;"></semantic-status-detail>
+                                    <semantic-status-detail (close)="secondarySidePanelOpen=false;">
+                                    </semantic-status-detail>
                                 </ng-container>
                             </div>
                         </div>
                     </div>
                 </ng-container>
             </side-panel>
-        </div>
-    </div>
+        </as-split-area>
+    </as-split>
 </div>
 <d3s-delete-form [callback]="theDeleteCallback"
                  [items]="selectedType"
@@ -206,10 +256,13 @@
 </d3s-delete-form>
 
 <d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
-           (onClose)="showEditor=false"           
+           (onClose)="showEditor=false"
            [showTitle]="false"
            [isVisible]="showEditor">
-    <semantic-editor *ngIf="showEditor" [semanticType]="isAdd ? null : selectedType" (closeClick)="showEditor=false" (saveClick)="saveSemantic($event)"></semantic-editor>
+    <semantic-editor *ngIf="showEditor"
+                     [semanticType]="isAdd ? null : selectedType"
+                     (closeClick)="showEditor=false"
+                     (saveClick)="saveSemantic($event)"></semantic-editor>
 </d3s-modal>
 
 <d3s-delete-form [callback]="theDisableCallback"
@@ -222,7 +275,8 @@
                  [method]="'callback'"
                  (onCancel)="showDisableDialog=false;"
                  [deleteButtonText]="disableButtonText">
-    <div *ngIf="selectedType && !selectedType.isDisabled" prompt>
+    <div *ngIf="selectedType && !selectedType.isDisabled"
+         prompt>
         <p i18n>
             Are you sure you want to disable this semantic type?
         </p>
@@ -230,9 +284,11 @@
             It will be disabled as of today and will no longer be used to classify assets based on Profiling data.
         </p>
     </div>
-    <div *ngIf="selectedType && selectedType.isDisabled" prompt>
+    <div *ngIf="selectedType && selectedType.isDisabled"
+         prompt>
         <p i18n>
-            The Semantic Type will be enabled as of today (current date) and will be used to classify assets when profiling data is added to an asset.
+            The Semantic Type will be enabled as of today (current date) and will be used to classify assets when
+            profiling data is added to an asset.
         </p>
     </div>
 </d3s-delete-form>
