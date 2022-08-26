@@ -80,7 +80,8 @@
                             </th>
                             <th [pSortableColumn]="'AssetPath'">Asset <d3s-sortIcon [field]="'AssetPath'"></d3s-sortIcon></th>
                             <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.apiName : null "
-                                [style.width]="column.columnWidth === 0 ? 'auto' : (column.columnWidth + 'px')">
+                                [style.width]="column.columnWidth === 0 ? 'auto' : (column.columnWidth + 'px')"
+                                [style.maxWidth]="col.columnWidth === 0 ? '500px' : null">
                                 {{column.text}}
                                 {{column.columnWidth}}
                                 <d3s-sortIcon [field]="column.apiName"></d3s-sortIcon>

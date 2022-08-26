@@ -99,7 +99,8 @@
                 <tr>
                     <th *ngFor="let col of columns"
                         [pSortableColumn]="col.sortable ? col.datafield : null"
-                        [style.width]="col.columnWidth === 0 ? 'auto' : (col.columnWidth + 'px')">
+                        [style.width]="col.columnWidth === 0 ? 'auto' : (col.columnWidth + 'px')"
+                        [style.maxWidth]="col.columnWidth === 0 ? '500px' : null">
                         {{ col.text }}
                         <d3s-sortIcon *ngIf="col.sortable"
                                       [field]="col.datafield"></d3s-sortIcon>
