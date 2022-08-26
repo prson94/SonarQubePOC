@@ -1,8 +1,15 @@
 ﻿<div class="relationship-detail">
     <div class="row">
-        <div class="col s12" style="display: flex">
-            <div class="main-panel {{isInModal ? 'modal-dialog-main-panel' : 'tile tile-detail '}}">
-                <div class="modal-title" *ngIf="isInModal">
+        <as-split unit="pixel"
+                  direction="horizontal"
+                  [gutterSize]="16"
+                  class="col s12 split"
+                  style="display: flex"
+                  [class.side-panel-close]="!sidePanelOpen"
+                  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+            <as-split-area class="{{isInModal ? 'modal-dialog-main-panel' : 'tile tile-detail '}} main-panel">
+                <div class="modal-title"
+                     *ngIf="isInModal">
                     <h1 i18n>Relationships</h1>
                     <h2 *ngIf="assetDetail">{{assetDetail.DisplayValue}}</h2>
                 </div>
@@ -47,8 +54,8 @@
                         </div>
                     </div>
                 </div>
-
-                <p-table *ngIf="assetUid && areTypesLoaded" #dt
+                <p-table *ngIf="assetUid && areTypesLoaded"
+                         #dt
                          [metaKeySelection]="true"
                          [value]="relationships"
                          [(selection)]="selectedRelationship"
@@ -66,7 +73,8 @@
                          [scrollHeight]="selectionScrollHeight"
                          responsiveLayout="scroll"
                          (onLazyLoad)="loadRelationshipLazy($event)">
-                    <ng-template pTemplate="emptymessage" let-columns>
+                    <ng-template pTemplate="emptymessage"
+                                 let-columns>
                         <tr>
                             <td [attr.colspan]="2">
                                 &nbsp;&nbsp;<span i18n>No matches found</span>
@@ -76,10 +84,13 @@
                     <ng-template pTemplate="header">
                         <tr>
                             <th [pSortableColumn]="'RelationshipTypeName'">
-                                <ng-container i18n>Relationship Type</ng-container> <d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
+                                <ng-container i18n>Relationship Type</ng-container>
+                                <d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
                             </th>
-                            <th [pSortableColumn]="'AssetPath'">Asset <d3s-sortIcon [field]="'AssetPath'"></d3s-sortIcon></th>
-                            <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.apiName : null "
+                            <th [pSortableColumn]="'AssetPath'">Asset <d3s-sortIcon [field]="'AssetPath'"></d3s-sortIcon>
+                            </th>
+                            <th *ngFor="let column of columns"
+                                [pSortableColumn]="column.sortable ? column.apiName : null "
                                 [style.width]="column.columnWidth === 0 ? 'auto' : (column.columnWidth + 'px')">
                                 {{column.text}}
                                 {{column.columnWidth}}
@@ -88,10 +99,13 @@
                             <th [style.width]="'40px'"></th>
                         </tr>
                     </ng-template>
-                    <ng-template pTemplate="body" let-item>
-                        <tr (dblclick)="selectRow(item)" [pSelectableRow]="item" (focus)="selectRow(item)"
-							(contextmenu)="positionContextMenu(item, $event, floatButton, floatMenu, assetGridTools);"
-							class="relationship-row">
+                    <ng-template pTemplate="body"
+                                 let-item>
+                        <tr (dblclick)="selectRow(item)"
+                            [pSelectableRow]="item"
+                            (focus)="selectRow(item)"
+                            (contextmenu)="positionContextMenu(item, $event, floatButton, floatMenu, assetGridTools);"
+                            class="relationship-row">
                             <td style="word-break: break-word;">
                                 {{item.RelationshipTypeName}}
                             </td>
@@ -99,21 +113,42 @@
                                 {{item.AssetPath}}
                             </td>
                             <td *ngFor="let column of columns">
-                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
+                                <d3s-dynamic-field-value [column]="column"
+                                                         [fields]="fields"
+                                                         [item]="item"
+                                                         [useApiName]="true"></d3s-dynamic-field-value>
                             </td>
-                            <td [style.width]="'40px'" class="asset-grid-tools" #assetGridTools>
-                                <div style="display:inline-block" *ngIf="!item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
-                                    <button igButton class="ig-button-transparent" type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
-                                    <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
+                            <td [style.width]="'40px'"
+                                class="asset-grid-tools"
+                                #assetGridTools>
+                                <div style="display:inline-block"
+                                     *ngIf="!item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
+                                    <button igButton
+                                            class="ig-button-transparent"
+                                            type="button"
+                                            icon="fa-ellipsis-v"
+                                            (click)="selectRow(item); linkMenu.toggle($event)"></button>
+                                    <ig-popup-menu (onSelect)="clickMenuItem($event, item)"
+                                                   [items]="item[menuKey]"
+                                                   #linkMenu
+                                                   [tabIndex]="1"></ig-popup-menu>
                                 </div>
-                                <div style="display:inline-block" *ngIf="item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
-                                    <i class="fa fa-question-circle" pTooltip="This is a parent-child relationship which can neither be edited/deleted" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
+                                <div style="display:inline-block"
+                                     *ngIf="item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
+                                    <i class="fa fa-question-circle"
+                                       pTooltip="This is a parent-child relationship which can neither be edited/deleted"
+                                       tooltipPosition="top"
+                                       tooltipStyleClass="ig-tooltip"></i>
                                 </div>
                             </td>
-							<button class="ig-float-popup-container" #floatButton>
-								<ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #floatMenu [tabIndex]="1"></ig-popup-menu>
-							</button>
-						</tr>
+                            <button class="ig-float-popup-container"
+                                    #floatButton>
+                                <ig-popup-menu (onSelect)="clickMenuItem($event, item)"
+                                               [items]="item[menuKey]"
+                                               #floatMenu
+                                               [tabIndex]="1"></ig-popup-menu>
+                            </button>
+                        </tr>
                     </ng-template>
                     <ng-template pTemplate="summary">
                         <d3s-grid-paging-info [first]="dt.first"
@@ -121,20 +156,27 @@
                                               [totalRecords]="totalRecords"></d3s-grid-paging-info>
                     </ng-template>
                 </p-table>
-
-                <div class="action-bar modal-action-bar" *ngIf="isInModal">
-                    <button igButton igAutoFocus i18n-label label="Close" (click)="onClose.emit()"></button>
+                <div class="action-bar modal-action-bar"
+                     *ngIf="isInModal">
+                    <button igButton
+                            igAutoFocus
+                            i18n-label
+                            label="Close"
+                            (click)="onClose.emit()"></button>
                 </div>
-            </div>
-
-
-            <div *ngIf="areTypesLoaded && relationshipTypesResolvedNames.length !== 0" class="side-panel {{isInModal ? '' : 'tile tile-detail '}}">
+            </as-split-area>
+            <as-split-area [size]="getSidePanelWidth()"
+                           [minSize]="getSidePanelMinWidth()"
+                           [maxSize]="getSidePanelMaxWidth()"
+                           class="{{isInModal ? '' : 'tile tile-detail '}} side-panel"
+                           *ngIf="areTypesLoaded && relationshipTypesResolvedNames.length !== 0">
                 <side-panel (expandedChange)="sidePanelOpen=$event"
                             (selectedPanelChange)="sidePanelTab=$event"
                             [selectedItem]="selectedAsset || selectedRelAsset || selectedReferenceItem || selectedTag"
                             [hasProfiling]="false"
                             [hasDetail]="true"
                             [hasFilter]="true"
+                            [setMinMaxWidth]="false"
                             [storageKey]="sidePanelStorageKey"
                             [selectedPanel]="sidePanelTab">
                     <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'filters'">
@@ -167,8 +209,8 @@
                         </ng-container>
                     </ng-container>
                 </side-panel>
-            </div>
-        </div>
+            </as-split-area>
+        </as-split>
     </div>
 </div>
 

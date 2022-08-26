@@ -35,7 +35,7 @@ export class SidePanelService {
     if (isSidePanelOpen) {
       return sidePanelWidthFromStorage ? sidePanelWidthFromStorage : this.sidePanelOpenDefaultWidth;
     }
-    if (options.hasOwnProperty('sidePanelCloseCustomWidth')) {
+    if (options?.hasOwnProperty('sidePanelCloseCustomWidth')) {
       return options.sidePanelCloseCustomWidth;
     }
     return this.sidePanelCloseWidth;
