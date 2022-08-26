@@ -30,10 +30,13 @@ export class SidePanelService {
     };
   }
 
-  getSidePanelWidth(isSidePanelOpen: boolean, sidePanelStorageKey: string): number {
+  getSidePanelWidth(isSidePanelOpen: boolean, sidePanelStorageKey: string, options?: {sidePanelCloseCustomWidth: number}): number {
     const sidePanelWidthFromStorage = this.getSidePanelWidthFromStorage(sidePanelStorageKey);
     if (isSidePanelOpen) {
       return sidePanelWidthFromStorage ? sidePanelWidthFromStorage : this.sidePanelOpenDefaultWidth;
+    }
+    if (options.hasOwnProperty('sidePanelCloseCustomWidth')) {
+      return options.sidePanelCloseCustomWidth;
     }
     return this.sidePanelCloseWidth;
   }
