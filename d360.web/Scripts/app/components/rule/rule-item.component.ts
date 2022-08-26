@@ -14,6 +14,8 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 @Component({
     selector: 'd3s-rule-item',
@@ -38,11 +40,12 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     selectedTag: any;
 
     sidePanelOpen: boolean = false;
-    sidePanelStorageKey;
+    sidePanelStorageKey = 'side_panel_width_detail_rules';
 
     constructor(private rulesService: RulesService,
         private route: ActivatedRoute,
         private router: Router,
+        private sidePanelService: SidePanelService,
         secondaryNavService: SecondaryNavService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
@@ -72,6 +75,22 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         });
 
         this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
     ngOnDestroy() {
