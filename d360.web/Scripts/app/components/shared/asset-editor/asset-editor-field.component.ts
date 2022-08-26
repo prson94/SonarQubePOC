@@ -865,7 +865,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.form.controls[this.field.FieldName].setValue(item.value);
         }
         if (event) {
-			this.overlayPanel.hide();
+			if (!this.field.MultiSelect) {
+				this.overlayPanel.hide();
+			}
             this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
         }
     }
