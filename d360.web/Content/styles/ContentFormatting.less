@@ -1,7 +1,5 @@
 ﻿@import "_Variables.less";
 
-@content-height: calc(100vh - 150px);
-
 /*#region Common Page Structure */
 
 body {
@@ -321,7 +319,7 @@ button.WhiteButton {
 .main-panel,
 as-split.split .as-split-area.main-panel {
   flex: 1;
-  height: @content-height;
+  height: calc(100vh - 150px);
   overflow: auto;
 }
 
@@ -424,7 +422,7 @@ as-split.split .as-split-area.side-panel {
   background-color: white;
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
-  height: @content-height;
+  height: calc(100vh - 150px);
 
   .panel-header {
     letter-spacing: normal;

@@ -21,7 +21,6 @@ import { SemanticType } from '../../models/semantic-type.model';
 import { TitleAndTabsService } from '../../services/title-and-tabs.service';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
-import { SidePanelComponent } from '../shared/sidepanel/side-panel.component';
 import { SidePanelService } from '../../services/side-panel.service';
 
 declare var CurrentResourceID;
@@ -33,7 +32,6 @@ declare var CurrentResourceID;
 })
 
 export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
-    @ViewChild(SidePanelComponent) sidePanelComponent: SidePanelComponent;
     gridObject: AssetGridObject;
     artifactType: ArtifactType;
     artifactTypeHierarchy: ArtifactType[];
