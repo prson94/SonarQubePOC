@@ -30,12 +30,11 @@
 				 [value]="indexableNodes"
 				 [(selection)]="selectedIndexes"
 				 [scrollable]="true"
-				 [scrollHeight]="'392px'">
+				 [scrollHeight]="'calc(100vh - 331px)'">
         <ng-template pTemplate="header">
             <tr class="tr-head">
                 <th i18n>
-					<p-treeTableHeaderCheckbox class="treeTable-header-checkbox"
-											   [ngClass]="{'disabled': isUpdating || isGlobalSelectDisabled}">
+					<p-treeTableHeaderCheckbox [ngClass]="{'disabled': isUpdating || isGlobalSelectDisabled}">
 					</p-treeTableHeaderCheckbox>
 					Name
 				</th>
@@ -99,10 +98,6 @@
 			</ng-template>
         </ng-template>
     </p-treeTable>
-	<button style="margin-top: 20px" igButton i18n-label label="Close" (click)="onModalClose.emit(true)">
+	<button class="admin-search-close" igButton i18n-label label="Close" (click)="onModalClose.emit(true)">
 	</button>
 </div>
-
-<!--<span *ngIf="!canRebuild(rowData) && rowData.TargetCount > 0" i18n>-->
-<!--	{{rowData.TargetCount}} Assets when queued-->
-<!--</span>-->

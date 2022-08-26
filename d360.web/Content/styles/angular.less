@@ -7173,6 +7173,11 @@ p-treetableheadercheckbox {
   .p-checkbox {
     border-radius: 4px;
     color: white;
+    
+    .p-disabled {
+      opacity: 1;
+      background-color: @ig-grey-t5;
+    }
 
     &-box.p-indeterminate,
     &-box.p-highlight {
@@ -7183,6 +7188,18 @@ p-treetableheadercheckbox {
     &-icon {
       font-size: 9px;
       font-weight: bold;
+    }
+  }
+}
+
+p-treeTableHeaderCheckbox {
+  &.disabled {
+    pointer-events: none;
+
+    .p-checkbox {
+      &-box {
+        background-color: @ig-grey-t5;
+      }
     }
   }
 }
