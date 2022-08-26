@@ -5,6 +5,8 @@ import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { SidePanelService } from '../../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 declare var CurrentResourceID;
 
@@ -17,11 +19,12 @@ export class AdminResourcesComponent extends AdminBaseComponent implements OnIni
 
     selectedResource: any;
     showSidePanel: boolean = true;
-    private sidePanelOpen: boolean = false;
+    sidePanelOpen: boolean = false;
     sidePanelTab: string = 'detail';
     sidePanelStorageKey: string = 'Admin_User_list_' + CurrentResourceID;
 
     constructor(
+        private sidePanelService: SidePanelService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title,
         secondaryNavService: SecondaryNavService,
@@ -38,5 +41,21 @@ export class AdminResourcesComponent extends AdminBaseComponent implements OnIni
 
     ngOnInit() {
         this.clearSidebar();
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 }
