@@ -9,7 +9,7 @@
               style="display: flex"
               *ngIf="!isLoading"
               [class.side-panel-close]="!sidePanelOpen"
-              (dragEnd)="onSidePanelDragEnd($event)">
+              (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
         <as-split-area class="tile tile-detail main-panel">
             <d3s-asset-grid #assetGrid [gridObject]="gridObject"
                             (selectedChange)="selectAsset($event)"

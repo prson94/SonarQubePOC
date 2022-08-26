@@ -22,6 +22,7 @@ import { TitleAndTabsService } from '../../services/title-and-tabs.service';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 import { SidePanelComponent } from '../shared/sidepanel/side-panel.component';
+import { SidePanelService } from '../../services/side-panel.service';
 
 declare var CurrentResourceID;
 
@@ -69,11 +70,10 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         this.innerWidth = event.target.innerWidth;
     }
 
-    storageKeyPrefix() { return ''; }
-
     constructor(private route: ActivatedRoute,
         private router: Router,
         private artifactTypeService: ArtifactTypeService,
+        private sidePanelService: SidePanelService,
         private titleAndTabsService: TitleAndTabsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
@@ -135,13 +135,6 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                     });
                 });
         });
-    }
-
-    ngAfterViewInit() {
-        // Redefine `storageKeyPrefix()` to get from the `SidePanelComponent.storageKeyPrefix` ...
-        // but wait a tick first to avoid one-time devMode
-        // unidirectional-data-flow-violation error
-        setTimeout(() => this.storageKeyPrefix = () => this.sidePanelComponent?.panelWidthStorageKey, 0);
     }
 
     createBreadcrumbHierarchy(artifact: ArtifactType) {
@@ -240,24 +233,19 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     }
 
     getSidePanelWidth(): number {
-        const sidePanelStorage = JSON.parse(localStorage.getItem(this.storageKeyPrefix() + this.sidePanelStorageKey));
-        const panelWidth = sidePanelStorage?.panelWidth;
-        if (this.sidePanelOpen) {
-            return panelWidth ? panelWidth : 400;
-        }
-        return 59;
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
     }
 
     getSidePanelMaxWidth(): number {
-        return this.sidePanelOpen ? this.innerWidth/2 : 59;
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen, this.innerWidth);
     }
 
     getSidePanelMinWidth(): number {
-        return this.sidePanelOpen ? 400 : 59;
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
     }
 
-    onSidePanelDragEnd(event: { gutterNum: number; sizes: Array<number> }): void {
-        this.sidePanelWidth = event.sizes[1];
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: { gutterNum: number; sizes: Array<number> }): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
     ngOnDestroy() {
