@@ -1004,7 +1004,7 @@ namespace d360.model
 
 						foreach (var rc in rulegroup)
 						{				
-							var sqlEscapedValue = rc.Value.Replace("'", "''");
+							var sqlEscapedValue = rc.Value == null ? "" : rc.Value.Replace("'", "''");
 
 							if (rc.FieldTypeID > 0)
 							{

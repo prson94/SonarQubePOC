@@ -321,7 +321,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 				else if (selectedFieldType.type === "Text") {
 					item.IsSimpleText = true;		
 					if (!item.Operator) {
-						item.Operator = Operator[Operator.Equals];
+						item.Operator = Operator[Operator.Contains];
 					}
 				}
                 else {
@@ -595,7 +595,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 			} else if (selectedFieldType.type === "Text") {
 				item.IsSimpleText = true;
 				if (!item.Operator) {
-					item.Operator = Operator[Operator.Equals];
+					item.Operator = Operator[Operator.Contains];
 				}
 			}
             else {
@@ -685,7 +685,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 	showValueOption(item) {
 		if (item.CheckType === "F" && item.FieldTypeID) {
 			if (item.IsSimpleText) {
-				return item.Operator && item.Operator !== Operator.Populated && item.Operator !== Operator.NotPopulated;
+				return item.Operator && item.Operator !== Operator[Operator.Populated] && item.Operator !== Operator[Operator.NotPopulated];
 			}
 			return true;
 		} 
@@ -698,7 +698,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 	showThenValueOption(item) {
 		if (item.FieldTypeID || item.FieldTypeName) {
 			if (item.IsSimpleText) {				
-				return item.Operator && item.Operator !== Operator.Populated && item.Operator !== Operator.NotPopulated;				
+				return item.Operator && item.Operator !== Operator[Operator.Populated] && item.Operator !== Operator[Operator.NotPopulated];				
 			}			
 			return true;
 		}		
