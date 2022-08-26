@@ -53,6 +53,16 @@
   }
 }
 
+// This ensures that only column headings affects calculation of column width
+:host p-table ::ng-deep td {
+  max-width: 0;
+
+  // For some reason, max-width: 0 makes kebab menu to extend table width. Thus we undo this to avoid weird mess
+  &.asset-grid-tools {
+    max-width: unset;
+  }
+}
+
 p-table ::ng-deep table {
   th, 
   td {
