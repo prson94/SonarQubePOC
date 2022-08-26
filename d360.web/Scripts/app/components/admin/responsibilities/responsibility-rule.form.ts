@@ -704,10 +704,4 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 		}		
 		return false;
 	}
-
-	changeOperator(item: any) {
-		if (item.IsSimpleText) {
-			return item.Operator && item.Operator !== Operator.Populated && item.Operator !== Operator.NotPopulated;
-		}
-	}
 }
