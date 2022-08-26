@@ -15,6 +15,8 @@ import { SemanticBaseComponent } from './semantics-base.component';
 import { FeatureFlagsService } from '../../services/featureflags.service';
 import { AuthenticationService } from '../../services/authentication.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
+import { IOutputData } from 'angular-split';
+import { SidePanelService } from '../../services/side-panel.service';
 
 
 declare var CurrentResourceID;
@@ -54,6 +56,7 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
+        private sidePanelService: SidePanelService,
         private featureFlagService: FeatureFlagsService,
         private authenticationService: AuthenticationService,
         private headerActionsService: HeaderActionsService,
@@ -143,6 +146,22 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
         this.headerActionsService.emitFavoritesChange();    
         this.getData(this.semanticType.uid);
         this.showEditor = false;
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
     isDisabled() {
