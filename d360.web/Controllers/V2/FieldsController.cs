@@ -370,13 +370,8 @@ namespace d360.web.Controllers.V2
 
 						if (hasFields)
 						{
-							var newType = Company.AssetTypes.Where(x => x.uid == ft.Type.Lookup.List.Uid)
+							var newType = Company.AssetTypes.Where(x => x.uid == model.AssetTypeUid)
 								.Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
-
-							if (newType.Object.Replace("Type", "") != exFt.LookupObjectType || newType.ObjectID != exFt.LookupObjectID)
-							{
-								throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ChangeFieldNotAllowed, string.Format(ApiMessages.LookupFieldTypeInUse, exFt.FriendlyName));
-							}
 						}
 					}
 				}
