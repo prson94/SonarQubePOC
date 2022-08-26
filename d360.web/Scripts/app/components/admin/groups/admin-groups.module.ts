@@ -35,13 +35,14 @@ import { DirectivesModule } from '../../../directives/directives.module';
 import { TooltipModule } from 'primeng/tooltip';
 import { AssetTypeDetailModule } from '../../shared/asset-type-detail/asset-type-detail.module';
 import { TaggedAssetDetailModule } from '../../shared/tagged-assets/tagged-assets-detail.module';
+import { AngularSplitModule } from 'angular-split';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
 
-
+        AngularSplitModule,
         AdminGroupsRoutingModule,
 
         //prime
