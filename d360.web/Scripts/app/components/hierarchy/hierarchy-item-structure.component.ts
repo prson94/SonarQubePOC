@@ -32,6 +32,8 @@ import { AppConstants } from '../../static/constants';
 import { takeUntil } from 'rxjs/operators';
 import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 declare var CurrentResourceID;
 
@@ -132,6 +134,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     constructor(
         public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetService: AssetService,
+        private sidePanelService: SidePanelService,
         private assetTypeService: AssetTypeService,
         private dataProfileService: DataProfileService,
         protected gridDefinitionService: GridDefinitionService,
@@ -248,6 +251,22 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
         this.destroy.next();
         this.destroy.complete();
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
     selectAsset(event: any, forceRefresh: boolean = false) {

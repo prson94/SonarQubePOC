@@ -27,7 +27,6 @@ export class SidePanelService {
   getWindowSize() {
     return {
       width: window.innerWidth
-      //you can sense other parameters here
     };
   }
 
