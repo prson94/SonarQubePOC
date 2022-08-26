@@ -971,7 +971,7 @@ namespace d360.model
 
 			if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null) && (rule.StructuredDefinition.Then.Object != null || rule.StructuredDefinition.Then.Conditions.All(c => c.Object != null)))
 			{							
-                if (rule.StructuredDefinition.Then.Conditions != null)
+                if (rule.StructuredDefinition.Then.Conditions != null || rule.StructuredDefinition.Then.Conditions.Count > 0)
                 {
 					var rulegroups = rule.StructuredDefinition.Then.Conditions.GroupBy(c => c.Object);
 					foreach(var rulegroup in rulegroups)
@@ -1094,7 +1094,21 @@ namespace d360.model
 						}
 
 						thenSql.Append($"{(thenSql.Length>0 ? " UNION " : "")}{rulegroupSql}");
-					}					
+					}
+				}
+				else
+				{
+					thenSql.Append($@"select distinct {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}");					
+
+					if (rule.StructuredDefinition.Then.Object == "GroupType")
+					{
+						thenSql.Append($"'G' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, Z.uid " : "")} from	[Group] O {(includeUid ? " inner join Asset Z on Z.ObjectID=O.ID and Z.Object='Group' " : "")}");
+					}
+
+					if (rule.StructuredDefinition.Then.Object == "ResourceType")
+					{
+						thenSql.Append($@"'R' as SecurityAsset, O.ResourceID as SecurityAssetID{(includeName ? ", O.FirstName + ' ' + O.LastName as Name" : "")} {(includeUid ? ", O.FirstName + ' ' + O.LastName as Path, O.uid " : "")} from reporting.Global_Resource O ");
+					}
 				}				
 			}			
 
