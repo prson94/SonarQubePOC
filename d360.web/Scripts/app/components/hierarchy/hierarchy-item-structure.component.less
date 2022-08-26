@@ -64,7 +64,7 @@
 
 // This makes sure that kebab menu can inherit white background from p-treetable
 :host p-treetable ::ng-deep {
-  .p-treetable-wrapper, table, tbody, tr, td {
+  .p-treetable-wrapper, table, tbody, tr:not(.p-highlight), td {
     background: inherit;
   }
 }
