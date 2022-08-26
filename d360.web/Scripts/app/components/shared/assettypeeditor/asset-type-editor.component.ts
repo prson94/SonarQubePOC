@@ -227,7 +227,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     }
 
     get isPredicateRequired(): boolean {
-        return this.assetTypeClass == AssetTypeClass.Model || this.assetTypeClass == AssetTypeClass.Policy;
+        return (this.assetTypeClass == AssetTypeClass.Model) || (this.assetTypeClass == AssetTypeClass.Policy) || this.parentID !== undefined;
     }
 
     public selectFlowObject($event) {

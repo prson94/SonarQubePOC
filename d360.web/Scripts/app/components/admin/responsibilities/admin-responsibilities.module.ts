@@ -34,6 +34,8 @@ import { TableModule } from "primeng/table";
 
 import { DirectivesModule } from "../../../directives/directives.module";
 
+import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
+
 @NgModule({
     imports: [
         CommonModule,
@@ -64,7 +66,8 @@ import { DirectivesModule } from "../../../directives/directives.module";
         DirectivesModule,
         SimpleAccordionModule,
         TilesModule,
-        AdminModule,
+		AdminModule,
+		SearchFieldModule
     ],
     declarations: [
         AdminGovernanceComponent,

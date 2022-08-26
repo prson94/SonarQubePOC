@@ -34,6 +34,7 @@ END
 		]]>
 	</rollback>
   </changeSet>
+	
   <changeSet author="Tklok" id="Table.dbo.Favorite-v2">
 	<validCheckSum>7:205efb9f52219e33baa7a52bffa473b3</validCheckSum>
     <sql dbms="mssql"
@@ -115,6 +116,7 @@ GO
 		</sql>
 	</rollback>
   </changeSet>
+	
   <changeSet author="Tklok" id="Table.dbo.Favorite-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -130,6 +132,34 @@ GO
     </sql>
 	<rollback/>
   </changeSet>
+
+	<changeSet author="Andrii Kunetskyi" id="Table.dbo.Favorite-v4">
+		<sql dbms="mssql" endDelimiter="GO" splitStatements="true" stripComments="false">
+			<![CDATA[
+				if not exists (select 1 from sys.columns where Name = N'AssetID' and Object_ID = Object_ID(N'dbo.Favorite'))
+				begin
+					alter table dbo.Favorite
+					add AssetID bigint SPARSE
+				end					
+				GO
+
+				if not exists (select 1 from sys.columns where Name = N'AssetTypeID' and Object_ID = Object_ID(N'dbo.Favorite'))
+				begin
+					alter table dbo.Favorite
+					add AssetTypeID int SPARSE
+				end
+				GO
+
+				if not exists (select 1 from sys.columns where Name = N'SemanticID' and Object_ID = Object_ID(N'dbo.Favorite'))
+				begin
+					alter table dbo.Favorite
+					add SemanticID bigint SPARSE
+				end
+				GO
+			]]>
+		</sql>
+	</changeSet>
+	
   <changeSet author="Core" id="Table.dbo.Favorite-Favorite_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

@@ -9,7 +9,7 @@
             <div [hidden]="isLoading" [class]="isFullScreen ? 'asset-browser-header expanded' : 'asset-browser-header'">
                 <div class="controls-left">
                     <div style="display: inline-flex">
-                        <d3s-assetbrowser-viewchange [current]="displayConfiguration.DiagramType" (apply)="viewchange_Apply($event)" [items]="diagramTypes?.items"></d3s-assetbrowser-viewchange>
+                        <d3s-assetbrowser-viewchange [current]="currentDiagramType" (apply)="viewchange_Apply($event)" [items]="diagramTypes?.items"></d3s-assetbrowser-viewchange>
                     </div>
                     <div class="button-spacer"></div>
                     <div style="display: inline-flex">

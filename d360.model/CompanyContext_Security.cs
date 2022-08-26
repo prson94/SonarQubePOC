@@ -867,15 +867,51 @@ namespace d360.model
 					{
 						if (w.FieldTypeID > 0)
 						{
-							dynamic whenFieldType = await Connection.QueryFirstOrDefaultAsync<dynamic>("select ID,AllowMultipleValues,Type from FieldType where ID = @FieldTypeID", new { w.FieldTypeID }, transaction: transaction);
+							var whenFieldType = Connection.QueryFirstOrDefaultAsync<FieldType>("select * from FieldType where ID = @FieldTypeID", new { w.FieldTypeID }, transaction: transaction).Result;							
 
 							if (whenFieldType != null)
 							{
 								whenSql.Append($" cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ");
-
-								whenSql.Append(whenFieldType.AllowMultipleValues ?
-									$"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}" : // multiselect list
-									$"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
+								
+								if (whenFieldType.AllowMultipleValues)// multiselect list
+								{
+									whenSql.Append(
+										$"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}");
+								}else if (whenFieldType.Type == "Text")
+								{
+									switch (w.Operator)
+									{
+										case Operator.NotEquals:								
+											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) != '{w.Value}' ) FV{fCount}");
+											break;
+										case Operator.Contains:
+											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{w.Value}%' ) FV{fCount}");
+											break;
+										case Operator.NotContains:
+											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) NOT LIKE '%{w.Value}%' ) FV{fCount}");
+											break;
+										case Operator.StartsWith:
+											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '{w.Value}%' ) FV{fCount}");
+											break;
+										case Operator.EndsWith:
+											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{w.Value}' ) FV{fCount}");
+											break;
+										case Operator.Populated:
+											whenSql.Append($"where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is not null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))>0) ) FV{fCount}");  // all field types plus single select list
+											break;
+										case Operator.NotPopulated:
+											whenSql.Append($"where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))=0) ) FV{fCount}");  // all field types plus single select list
+											break;
+										default:
+											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
+											break;
+									}
+									
+								}
+								else // all other field types including single select list
+								{
+									whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
+								}
 							}
 							else // invalid field type ID so the when is always not going to return anything
 							{
@@ -890,8 +926,28 @@ namespace d360.model
 						whenSql.Append($@"inner join [Intersect] I{rCount} on 
 									I{rCount}.IntersectTypeID = {w.IntersectTypeID} and 
 									( 
-									(I{rCount}.Subject = A.Object and I{rCount}.SubjectID = A.ObjectID and I{rCount}.Object = '{w.TargetObject}' and I{rCount}.ObjectID = {w.TargetObjectID}) OR 
-									(I{rCount}.Object = A.Object and I{rCount}.ObjectID = A.ObjectID and I{rCount}.Subject = '{w.TargetObject}' and I{rCount}.SubjectID = {w.TargetObjectID}) 
+										(
+											I{rCount}.Subject = A.Object 
+											and 
+											I{rCount}.SubjectID = A.ObjectID 
+											and 
+											{ (w.Operator == Operator.NotIn ? "Not" : "") }(
+												I{rCount}.Object = '{w.TargetObject}' 
+												and 
+												I{rCount}.ObjectID = {w.TargetObjectID}
+											)
+										) 
+										OR 
+										(
+											I{rCount}.Object = A.Object 
+											and 
+											I{rCount}.ObjectID = A.ObjectID 
+											and 
+											{ (w.Operator == Operator.NotIn ? "Not" : "") } (
+												I{rCount}.Subject = '{w.TargetObject}' 
+												and 
+												I{rCount}.SubjectID = {w.TargetObjectID})
+											) 
 									) ");
 						rCount++;
 					}
@@ -909,94 +965,138 @@ namespace d360.model
 		public string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "", bool includeUid = true)
 		{
 			StringBuilder thenSql = new StringBuilder();
-
-			int tCount = 1;
-			string whenSuffix = "";
+			
 			string obj = "";
 			string uniqueIdField = "ID";
 
-			if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null) && (rule.StructuredDefinition.Then.Object != null))
-			{
-				thenSql.Append($@"select distinct {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}");
-
-				if (rule.StructuredDefinition.Then.Object == "OrganizationType")
-				{
-					obj = "Organization";
-					thenSql.Append($"'O' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, Z.uid " : "")} from Organization O {(includeUid ? " inner join Asset Z on Z.ObjectID=O.ID and Z.Object='Organization' " : "")}  ");
-				}
-
-				if (rule.StructuredDefinition.Then.Object == "GroupType")
-				{
-					obj = "Group";
-					thenSql.Append($"'G' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, Z.uid " : "")} from	[Group] O {(includeUid ? " inner join Asset Z on Z.ObjectID=O.ID and Z.Object='Group' " : "")}");
-				}
-
-				if (rule.StructuredDefinition.Then.Object == "ResourceType")
-				{
-					obj = "Resource";
-					uniqueIdField = "ResourceID";
-					thenSql.Append($@"'R' as SecurityAsset, O.ResourceID as SecurityAssetID{(includeName ? ", O.FirstName + ' ' + O.LastName as Name" : "")} {(includeUid ? ", O.FirstName + ' ' + O.LastName as Path, O.uid " : "")} from reporting.Global_Resource O ");
-				}
-
+			if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null) && (rule.StructuredDefinition.Then.Object != null || rule.StructuredDefinition.Then.Conditions.All(c => c.Object != null)))
+			{							
                 if (rule.StructuredDefinition.Then.Conditions != null)
                 {
-                    rule.StructuredDefinition.Then.Conditions.ForEach(rc =>
+					var rulegroups = rule.StructuredDefinition.Then.Conditions.GroupBy(c => c.Object);
+					foreach(var rulegroup in rulegroups)
                     {
-                        var sqlEscapedValue = rc.Value.Replace("'", "''");
+						StringBuilder rulegroupSql = new StringBuilder();
+						StringBuilder whenSuffix = new StringBuilder();
+						obj = "";
+						uniqueIdField = "ID";
 
-                        if (rc.FieldTypeID > 0)
-                        {
-                            var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();                            
-                            whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ";
-                            if (thenFieldType != null)
-                            {
-                                whenSuffix += ((thenFieldType.AllowMultipleValues) ?
-                                    $"where FT.ID = {rc.FieldTypeID} and '{sqlEscapedValue}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) " :
-                                    $"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{sqlEscapedValue}' )  ");
-                            }
-                            else
-                            {
-                                whenSuffix += ($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{sqlEscapedValue}' )  ");                                
-                            }
-                        }
-                        else
-                        {
-                            if (!string.IsNullOrEmpty(rc.FieldTypeName) && !string.IsNullOrEmpty(rc.Value))
-                            {
-                                if (rc.FieldTypeName == "Name")
-                                {
-                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"O.{uniqueIdField} = {rc.Value}";
-                                }
-                                else
-                                {
-                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"O.{rc.FieldTypeName} = '{sqlEscapedValue}'";
-                                }
-                            }
-                        }
+						rulegroupSql.Append($@"select distinct {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}");
 
-						tCount++;
-					});
+						if (rulegroup.Key == "OrganizationType")
+						{
+							obj = "Organization";
+							rulegroupSql.Append($"'O' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, Z.uid " : "")} from Organization O {(includeUid ? " inner join Asset Z on Z.ObjectID=O.ID and Z.Object='Organization' " : "")}  ");
+						}
 
-					if (!string.IsNullOrEmpty(whenSuffix))
-					{
-						whenSuffix += " ) ";
-					}
-				}
+						if (rulegroup.Key == "GroupType")
+						{
+							obj = "Group";
+							rulegroupSql.Append($"'G' as SecurityAsset, OG.ID as SecurityAssetID{(includeName ? ", OG.Name" : "")} {(includeUid ? ", OG.Name as Path, Z.uid " : "")} from	[Group] OG {(includeUid ? " inner join Asset Z on Z.ObjectID=OG.ID and Z.Object='Group' " : "")}");
+						}
 
-				if (obj == "Resource")
-				{
-					whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where " : " and ") + $"O.[State] = 1";
-					if (IsHideData3SixtyUsers)
-					{
-						whenSuffix += " and (O.Email not like '%@data3sixty.com' and O.Email not like '%@infogix.com' and O.Email not like '%@precisely.com')";
-					}
-				}
-			}
+						if (rulegroup.Key == "ResourceType")
+						{
+							obj = "Resource";
+							uniqueIdField = "ResourceID";
+							rulegroupSql.Append($@"'R' as SecurityAsset, RO.ResourceID as SecurityAssetID{(includeName ? ", RO.FirstName + ' ' + RO.LastName as Name" : "")} {(includeUid ? ", RO.FirstName + ' ' + RO.LastName as Path, RO.uid " : "")} from reporting.Global_Resource RO ");
+						}
 
-			if (thenSql.Length > 0 || !string.IsNullOrEmpty(whenSuffix))
-			{
-				thenSql.Append(" {0} " + whenSuffix);
-			}
+						foreach (var rc in rulegroup)
+						{				
+							var sqlEscapedValue = rc.Value == null ? "" : rc.Value.Replace("'", "''");
+
+							if (rc.FieldTypeID > 0)
+							{
+								var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();
+								whenSuffix.Append((whenSuffix.Length==0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = {(obj == "Resource" ? "RO" : "OG")}.{uniqueIdField} ");
+								if (thenFieldType != null)
+								{
+									if (thenFieldType.AllowMultipleValues)// multiselect list
+									{
+										whenSuffix.Append(
+											$"where FT.ID = {rc.FieldTypeID} and '{sqlEscapedValue}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) ");
+									}
+									else if (thenFieldType.Type == "Text")
+									{
+										switch (rc.Operator)
+										{
+											case Operator.NotEquals:												
+												whenSuffix.Append($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) != '{sqlEscapedValue}' )  ");
+												break;
+											case Operator.Contains:												
+												whenSuffix.Append($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{sqlEscapedValue}%' )  ");
+												break;
+											case Operator.NotContains:												
+												whenSuffix.Append($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) NOT LIKE '%{sqlEscapedValue}%' )  ");
+												break;
+											case Operator.StartsWith:
+												whenSuffix.Append($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '{sqlEscapedValue}%' )  ");
+												break;
+											case Operator.EndsWith:
+												whenSuffix.Append($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{sqlEscapedValue}' )  ");												
+												break;
+											case Operator.Populated:												
+												whenSuffix.Append($"where FT.ID = {rc.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is not null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))>0) )  ");
+												break;
+											case Operator.NotPopulated:												
+												whenSuffix.Append($"where FT.ID = {rc.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))=0) )  ");
+												break;
+											default:
+												whenSuffix.Append($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{sqlEscapedValue}' )  ");												
+												break;
+										}
+
+									}
+									else // all other field types including single select list
+									{
+										whenSuffix.Append($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{sqlEscapedValue}' )  ");  // all field types plus single select list
+									}
+								}
+								else
+								{
+									whenSuffix.Append($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{sqlEscapedValue}' )  ");
+								}
+							}
+							else
+							{
+								if (!string.IsNullOrEmpty(rc.FieldTypeName) && !string.IsNullOrEmpty(rc.Value))
+								{
+									if (rc.FieldTypeName == "Name")
+									{
+										whenSuffix.Append((whenSuffix.Length==0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"{(obj == "Resource" ? "RO" : "OG")}.{uniqueIdField} = {rc.Value}");
+									}
+									else
+									{
+										whenSuffix.Append((whenSuffix.Length == 0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"{(obj == "Resource" ? "RO" : "OG")}.{rc.FieldTypeName} = '{sqlEscapedValue}'");
+									}
+								}
+							}																				
+						}
+
+						if (rulegroup.Key == "ResourceType")
+						{
+							whenSuffix.Append((whenSuffix.Length == 0 ? $" where " : " and ") + $"RO.[State] = 1");
+							if (IsHideData3SixtyUsers)
+							{
+								whenSuffix.Append(" and (RO.Email not like '%@data3sixty.com' and RO.Email not like '%@infogix.com' and RO.Email not like '%@precisely.com')");
+							}
+						}
+
+						if (whenSuffix.Length>0)
+						{
+							whenSuffix.Append(" ) ");
+						}
+
+						if (rulegroupSql.Length > 0 || whenSuffix.Length>0)
+						{
+							rulegroupSql.Append(" {0} " + whenSuffix);
+						}
+
+						thenSql.Append($"{(thenSql.Length>0 ? " UNION " : "")}{rulegroupSql}");
+					}					
+				}				
+			}			
 
 			return thenSql.ToString();
 		}

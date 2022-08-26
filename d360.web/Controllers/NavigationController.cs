@@ -1434,7 +1434,7 @@ namespace d360.web.Controllers
 
 					if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
 					{
-						if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
+						if ((responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() || responseModel?.Object == SystemObjects.Resource.ToString()) && !Company.CurrentResourceIsAdmin)
 						{
 							responseModel.Items.HasOwnership = false;
 						}

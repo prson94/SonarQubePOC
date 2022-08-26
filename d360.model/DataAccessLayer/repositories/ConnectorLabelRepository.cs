@@ -432,7 +432,7 @@ namespace d360.model.DataAccessLayer
 										Count as Occurrences,
 										u.diagramassetuid as AssetUid,
 										a.ID as AssetId,
-										'asset/' + lower(cast(an.uid as nvarchar(36))) as url,
+										'asset/' + lower(cast(a.uid as nvarchar(36))) as url,
 										Type.AssetTypeName,
 										a.Object,
 										a.ObjectID

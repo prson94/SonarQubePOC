@@ -3185,7 +3185,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								delete	T
 								from	Favorite T
-										inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};
+										inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
 
 								delete	T
 								from	Follow T
@@ -3922,7 +3922,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								    delete	T
 								    from	Favorite T
-										    inner join #deleteAssets O on O.Object = T.Object and O.ObjectID = T.ObjectID;
+										    inner join #deleteAssets O on O.ID = T.AssetID;
 
 								    delete	T
 								    from	Follow T
@@ -10614,7 +10614,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                             if (model.AssetTypeUid.HasValue)
                             {
-                                row["AssetTypeUid"] = model.AssetTypeUid;
+                                row["AssetTypeUid"] = model.AssetTypeUid;								
                             }
 
                             row["Name"] = model.Name;
@@ -10624,6 +10624,16 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                             if (model.Definition != null)
                             {
+								if (model?.Definition?.Then != null)
+								{
+									model.Definition.Then.ForEach(th => { 
+										if(th.AssigneeTypeUid.HasValue && th.Conditions.All(c=> !c.AssigneeTypeUid.HasValue))
+										{
+											th.Conditions.ForEach(co => co.AssigneeTypeUid = th.AssigneeTypeUid);
+										}
+									});
+								}
+
                                 row["Definition"] = JsonConvert.SerializeObject(model.Definition);
                             }
 
@@ -10664,8 +10674,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                             }
 
                             model.Definition.Then.ForEach(th =>
-                            {
-                                if (th.AssigneeTypeUid == null || th.AssigneeTypeUid == Guid.Empty)
+							{
+								if (th.AssigneeTypeUid == null || th.AssigneeTypeUid == Guid.Empty || th.Conditions.Any(c => { return (c.AssigneeTypeUid == null || c.AssigneeTypeUid == Guid.Empty); }))
                                 {
                                     rowError += ";AssigneeTypeUid cannot be null or empty.";
                                 }
@@ -10683,7 +10693,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     if (cond.Assignee != null)
                                     {
-                                        if (!cond.Assignee.Uid.HasValue)
+                                        if (!cond.Assignee.Uid.HasValue || cond.Assignee.Uid.Value == Guid.Empty )
                                         {
                                             rowError += ";Assignee Uid is required field.";
                                         }
@@ -11000,74 +11010,86 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             };
 
             string jsonParseSql = $@"
-				drop table if exists #tempData
+				drop table if exists #tempData				  
 				create table #tempData
 				(
-				ItemNumber int, 
-				ExecutionId uniqueidentifier, 
-				AssetTypeUid uniqueidentifier,
-				AssigneeTypeUid uniqueidentifier, 
-				MatchType nvarchar(20),
-				RelIntersectTypeUid uniqueidentifier, 
-				RelAssetUid uniqueidentifier,
-				FieldApiName nvarchar(250),
-				FieldValue nvarchar(250),
-				AssigneeUid uniqueidentifier,
-				ValueAsUid uniqueidentifier,
+					ItemNumber int, 
+					ExecutionId uniqueidentifier, 
+					AssetTypeUid uniqueidentifier,
+					AssigneeTypeUid uniqueidentifier, 
+					MatchType nvarchar(20),
+					RelIntersectTypeUid uniqueidentifier, 
+					RelAssetUid uniqueidentifier,				
+					FieldApiName nvarchar(250),
+					FieldValue nvarchar(250),				
+					AssigneeUid uniqueidentifier,
+					RelOperator nvarchar(250),
+					FieldOperator nvarchar(250),
+					ValueAsUid uniqueidentifier,
+					CondAssigneeTypeUid uniqueidentifier													
 				)
 
 				insert into #tempData
 				select
-				ItemNumber,
-				ExecutionId,
-				AssetTypeUid,
-				ThenData.AssigneeTypeUid,
-				ThenData.MatchType,
-				ThenCond.*,
-				case 
-				when ThenCond.IntersectTypeUid is not null then cast(thencond.intersecttypeuid as uniqueidentifier)
-				else null
-				end as ValueAsUid
+					ItemNumber,
+					ExecutionId,
+					AssetTypeUid,
+					case when ThenCond.AssigneeTypeUid is not null then ThenCond.AssigneeTypeUid
+					else ThenData.AssigneeTypeUid end as AssigneeTypeUid,
+					ThenData.MatchType,
+					ThenCond.*,				
+					case 
+					when ThenCond.IntersectTypeUid is not null then cast(thencond.intersecttypeuid as uniqueidentifier)
+					else null
+					end as ValueAsUid
 				from {sourceTable}
-				cross apply OPENJSON (Definition, N'$.Then')
-				WITH (
-				AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
-				MatchType nvarchar(20) N'$.MatchType',
-				Conditions nvarchar(max) N'$.Conditions' as Json
-				) AS ThenData
-				outer apply OPENJSON(ThenData.Conditions)
-				with(
-					IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
-					AssetUid uniqueidentifier N'$.Relation.AssetUid',
-					FieldApiName nvarchar(250) N'$.Field.ApiName',
-					Value nvarchar(250) N'$.Field.Value',
-					AssetUid uniqueidentifier  N'$.Assignee.Uid'
-				) as ThenCond
-				where executionid = @executionId and success is null
-
+					cross apply OPENJSON (Definition, N'$.Then')
+					WITH (
+					AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
+					MatchType nvarchar(20) N'$.MatchType',
+					Conditions nvarchar(max) N'$.Conditions' as Json
+					) AS ThenData
+					outer apply OPENJSON(ThenData.Conditions)
+					with(
+						IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
+						AssetUid uniqueidentifier N'$.Relation.AssetUid',
+						FieldApiName nvarchar(250) N'$.Field.ApiName',
+						Value nvarchar(250) N'$.Field.Value',
+						AssetUid uniqueidentifier  N'$.Assignee.Uid',
+						RelOperator nvarchar(250) N'$.Relation.Operator',
+						FieldOperator nvarchar(250) N'$.Field.Operator',
+						AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid'	
+					) as ThenCond
+				where 
+					executionid = @executionId and success is null
+							  
 				insert into #tempData
 				select
-				ItemNumber,
-				ExecutionId,
-				AssetTypeUid,
-				null as AssigneeTypeUid,
-				null as MatchType,
-				WhenData.*,
-				case 
-				when WhenData.IntersectTypeUid is not null then cast(WhenData.value as uniqueidentifier)
-				else null
-				end as ValueAsUid
+					ItemNumber,
+					ExecutionId,
+					AssetTypeUid,
+					null as AssigneeTypeUid,
+					null as MatchType,
+					WhenData.*,
+					null as CondAssigneeTypeUid,				
+					case 
+					when WhenData.IntersectTypeUid is not null then cast(WhenData.value as uniqueidentifier)
+					else null
+					end as ValueAsUid
 				from {sourceTable}
-				cross apply OPENJSON (Definition, N'$.When')
-				WITH (
-					IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
-					AssetUid uniqueidentifier N'$.Relation.AssetUid',
-					FieldApiName nvarchar(250) N'$.Field.ApiName',
-					Value nvarchar(250) N'$.Field.Value',
-					AssetUid uniqueidentifier  N'$.Assignee.Uid'
-				) AS WhenData
-				where executionid = @executionId and success is null
-
+					cross apply OPENJSON (Definition, N'$.When')
+					WITH (
+						IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
+						AssetUid uniqueidentifier N'$.Relation.AssetUid',					
+						FieldApiName nvarchar(250) N'$.Field.ApiName',
+						Value nvarchar(250) N'$.Field.Value',
+						AssetUid uniqueidentifier  N'$.Assignee.Uid',
+						RelOperator nvarchar(250) N'$.Relation.Operator',
+						FieldOperator nvarchar(250) N'$.Field.Operator'
+					) AS WhenData
+				where 
+					executionid = @executionId and success is null
+							 
 				drop table if exists #parsedData
 				select  d.itemnumber, 
 					d.executionid ,
@@ -11099,7 +11121,11 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 					isnull(a.objectid,0) as TargetObjectId,
 					cast('' as nvarchar(max)) as ErrorMessage,
 					ROW_NUMBER() OVER(ORDER BY(SELECT NULL)) as rowNumber,
-					ft2.type as FieldType
+					ft2.type as FieldType,
+					case 
+						when d.RelIntersectTypeUid is null then FieldOperator
+						else RelOperator
+					end as Operator
 				into #parsedData
 				from #tempData d
 					left join assettype at on d.assigneetypeuid = at.uid
@@ -11107,7 +11133,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 					left join IntersectType it on it.uid = d.RelIntersectTypeUid
 					left join assettype at2 on d.AssetTypeUid = at2.uid
 					left join FieldType ft2 on ft2.object = at2.object and ft2.objectid = at2.objectid and ft2.name = d.fieldapiname
-					left join asset a on a.uid = d.RelAssetUid
+					left join asset a on a.uid = d.RelAssetUid								
 
 				update #parsedData
 				set FieldTypeId = 0,
@@ -11138,7 +11164,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 		                left join FieldLookupValue flv on flv.FieldTypeID = pd.FieldTypeId
 	                ) lookupValue
 		                on lookupValue.FieldTypeID = pd.FieldTypeId 
-		                and trim(pd.Value) = lookupValue.Text 
+		                and try_cast(trim(pd.Value) as int) = lookupValue.Value 
                 where pd.fieldtypeid is not null and ft.type = 'Lookup'
 
 				update #parsedData
@@ -11208,7 +11234,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 				update #parsedData
 				set ErrorMessage = 'Invalid JSON Data.'
 				where fieldtypeid is null and fieldtypename is null and value is null and intersecttypeid is null and TargetObject is null and errormessage is null
-
+								
 				MERGE {sourceTable} err
 				USING (select itemnumber,executionid,trim(string_agg(errormessage,',')) as msg from #parsedData
 				where isnull(errormessage,'') <> ''
@@ -11251,12 +11277,25 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 						Value,
 						isnull(IntersectTypeID,0) as IntersectTypeID,
 						TargetObject,
-						TargetObjectId        
+						TargetObjectId,
+						Operator,
+						Object,
+						ObjectID
 						from #parsedData
-						where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object  and ((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
+						where 
+							ItemNumber =pd.ItemNumber 
+							and 
+							ExecutionId = pd.ExecutionId  
+							and 
+							[Object] is not null
+							and 
+							((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
 						for json path, include_null_values
 					)Conditions(json)
-				where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
+				where 
+					ItemNumber =pd.ItemNumber 
+					and 
+					ExecutionId = pd.ExecutionId 
 				for json path, include_null_values, without_array_wrapper
 				)ConditionsThen(json)
 
@@ -11266,21 +11305,23 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 						isnull(FieldTypeID,0) as FieldTypeID,
 						FieldTypeName,
 						Value,
-						isnull(IntersectTypeID,0) as IntersectTypeID,
+						isnull(IntersectTypeID,0) as IntersectTypeID,			   
 						TargetObject,
-						TargetObjectId
+						TargetObjectId,
+						Operator
 						from #parsedData
 						where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object is null
 						for json path, include_null_values
 				)ConditionsWhen(json)
 				where Object is not null
 				group by ItemNumber,ExecutionId,ConditionsThen.json, ConditionsWhen.json)
+							
 				update #convertedData 
 				set [When] = c.[When],
 				[Then] = c.[Then],
 				[Definition] = '{{'+Concat_ws(',','""When"":' + c.[When],'""Then"":' + c.[Then]) + '}}'
 				from conditions c
-				where #convertedData.itemnumber = c.itemnumber and #convertedData.executionid = c.executionid
+				where #convertedData.itemnumber = c.itemnumber and #convertedData.executionid = c.executionid								
 
 				MERGE {sourceTable} err
 				USING #convertedData cd

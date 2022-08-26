@@ -5142,17 +5142,25 @@ where v.id = {0}", id)).FirstOrDefault();
 		[Route("CountItems/Activity/{assetTypeId}/{days}")]
 		public IEnumerable<AssetDetail> GetAreaActivityItems(int assetTypeId, int days)
 		{
-			var sql = @"select * from AssetDetail where AssetTypeID = @assetTypeId";
+			var dbArgs = new DynamicParameters();
+			var sql = @"select * from AssetDetail a where a.AssetTypeID = @assetTypeId ";
+			dbArgs.Add("@assetTypeId", assetTypeId);
+
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				sql += "and not exists(select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = a.AssetTypeID) ";
+				sql += "and not exists(select 1 from AssetsByTypeUserCantRead(@userId, a.AssetTypeID) u where u.AssetID = a.ID) ";
+				dbArgs.Add("@userId", Company.CurrentResourceID);
+			}
 
 			if (days != 0)
 			{
-				days = days * -1;
-				sql += " and (CreatedOn > dateadd(day, @d, CURRENT_TIMESTAMP) or UpdatedOn > dateadd(day, @d, CURRENT_TIMESTAMP))";
-
-				return Company.Query<AssetDetail>(sql, new { assetTypeId, d = days });
+				days *= -1;
+				sql += " and (a.CreatedOn > dateadd(day, @d, CURRENT_TIMESTAMP) or a.UpdatedOn > dateadd(day, @d, CURRENT_TIMESTAMP))";
+				dbArgs.Add("@d", days);
 			}
 
-			return Company.Query<AssetDetail>(sql, new { assetTypeId });
+			return Company.Query<AssetDetail>(sql, dbArgs);
 		}
 
 		[Route("Count/{area}/{days}")]
@@ -5186,19 +5194,57 @@ where v.id = {0}", id)).FirstOrDefault();
 
 		private IEnumerable<CountModel> LoadArtifactActivityCount(int days)
 		{
+			var dbArgs = new DynamicParameters();
 			string sql;
+			string innerQuery;
+			var whereClauses = new List<string>();
+
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				whereClauses.Add("not exists(select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = a.AssetTypeID)");
+				whereClauses.Add("not exists(select 1 from AssetsByTypeUserCantRead(@userId, a.AssetTypeID) u where u.AssetID = a.ID)");
+				dbArgs.Add("@userId", Company.CurrentResourceID);
+			}
 
 			if (days != 0)
 			{
-				days = days * -1;
-				sql = QueryConstants.ArtifactActivitySpecificDateCountList;
+				days *= -1;
+				dbArgs.Add("@d", days);
+				innerQuery = @"select  at.Name,
+						case when datediff(day, CURRENT_TIMESTAMP, a.createdon) <= @d then 0 else 1 end as New,
+						case when datediff(day, CURRENT_TIMESTAMP, a.UpdatedOn) <= @d then 0 else 1 end as Total,
+						at.id as Id								
+				from    Asset a
+						inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'";
+				whereClauses.Add("(a.CreatedOn > dateadd(day, @d, CURRENT_TIMESTAMP) or a.UpdatedOn > dateadd(day, @d, CURRENT_TIMESTAMP))");
 			}
 			else
 			{
-				sql = QueryConstants.ArtifactActivityAllDateCountList;
+				innerQuery = @"
+				select  at.Name,
+						1 as New,        					
+						1 as Total,
+						at.id as Id								
+				from    Asset a
+						inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'";
 			}
 
-			return Company.Query<CountModel>(sql, new { d = days });
+			if(whereClauses.Any())
+			{
+				innerQuery += " where " + string.Join(" and ", whereClauses.ToArray());
+			}
+
+			sql = $@"
+				select 
+					Name,
+					sum(New) as New,
+					sum(Total) as Total,
+					Id
+				from
+				({innerQuery}) T
+				group by Name, Id order by Name";
+
+			return Company.Query<CountModel>(sql, dbArgs);
 		}
 
 		private async Task<IEnumerable<CountModel>> LoadSocialActivityCount(int days, int resourceId)

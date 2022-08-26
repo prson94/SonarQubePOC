@@ -1603,6 +1603,65 @@ end
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+
+   <changeSet author="Pappas" id="Data.Corrections.GOV-19236">
+  <comment>GOV-19236 - remove the Custom API environment setting</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+delete [Setting] where ID = 50
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
   
+  <changeSet author="Andrii Kunetskyi" id="Data.Corrections.GOV-19439">
+	<comment>GOV-19439 - we need to perform the following scripts after the whole DB is created.</comment>
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		update Favorite
+			set AssetId = a.ID
+		from Favorite f
+		left join Asset a on a.Object = f.Object and a.ObjectID = f.ObjectID
+		where f.Object is not null and f.Object != 'SemanticType' and f.Object not like '%Type'
+		GO
+		
+		update Favorite 
+			set AssetTypeId = at.ID
+		from Favorite f
+		left join AssetType at on at.Object = f.Object and at.ObjectID = f.ObjectID
+		where f.Object is not null and f.Object != 'SemanticType' and f.Object like '%Type'
+		GO
+		
+		update Favorite
+			set SemanticId = s.ID
+		from Favorite f
+		left join Semantic s on s.ID = f.ObjectID
+		where f.Object is not null and f.Object = 'SemanticType'				
+		GO
+		
+		if exists (select 1 from sys.columns where Name = N'Object' and Object_ID = Object_ID(N'dbo.Favorite'))
+		begin
+			alter table dbo.Favorite
+			drop column Object
+		end
+		GO
+		
+		if exists (select 1 from sys.columns where Name = N'ObjectID' and Object_ID = Object_ID(N'dbo.Favorite'))
+		begin
+			alter table dbo.Favorite
+			drop column ObjectID
+		end
+		GO
+	]]>]
+	</sql>
+  </changeSet>
   
 </databaseChangeLog>

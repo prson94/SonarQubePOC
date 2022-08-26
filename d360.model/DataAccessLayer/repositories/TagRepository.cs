@@ -862,6 +862,17 @@ namespace d360.model.DataAccessLayer
 							IsGlobalSearchException = true;
 						}
 						break;
+					case "displayvalue":
+						if (!hasGlobalSearch)
+						{
+							dbArgs.Add("displayvalue", $"%{param.Value.ToLower()}%");
+							whereClauses.Add("(adv.DisplayValue like @displayvalue)");
+						}
+						else
+						{
+							IsGlobalSearchException = true;
+						}
+						break;
 					case "assettype":
 						if (!hasGlobalSearch)
 						{
