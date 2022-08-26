@@ -1102,14 +1102,11 @@ namespace d360.model
 
 					if (rule.StructuredDefinition.Then.Object == "GroupType")
 					{
-						obj = "Group";
 						thenSql.Append($"'G' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, Z.uid " : "")} from	[Group] O {(includeUid ? " inner join Asset Z on Z.ObjectID=O.ID and Z.Object='Group' " : "")}");
 					}
 
 					if (rule.StructuredDefinition.Then.Object == "ResourceType")
 					{
-						obj = "Resource";
-						uniqueIdField = "ResourceID";
 						thenSql.Append($@"'R' as SecurityAsset, O.ResourceID as SecurityAssetID{(includeName ? ", O.FirstName + ' ' + O.LastName as Name" : "")} {(includeUid ? ", O.FirstName + ' ' + O.LastName as Path, O.uid " : "")} from reporting.Global_Resource O ");
 					}
 				}				
