@@ -22,6 +22,7 @@ import { TitleAndTabsService } from '../../services/title-and-tabs.service';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 declare var CurrentResourceID;
 
@@ -59,14 +60,9 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     secondarySidePanelOpen: boolean;
     secondarySidePanel: string = "detail";
     resourceUid: any;
-    innerWidth: number;
     sidePanelWidth: number;
 	
 	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
-    @HostListener('window:resize', ['$event'])
-    onResize(event) {
-        this.innerWidth = event.target.innerWidth;
-    }
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -89,8 +85,6 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     }
 
     ngOnInit() {
-        this.innerWidth = window.innerWidth;
-        
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
 
@@ -235,14 +229,14 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     }
 
     getSidePanelMaxWidth(): number {
-        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen, this.innerWidth);
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
     }
 
     getSidePanelMinWidth(): number {
         return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
     }
 
-    onSidePanelDragEnd(sidePanelStorageKey: string, event: { gutterNum: number; sizes: Array<number> }): void {
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
         this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
