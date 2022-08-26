@@ -826,6 +826,15 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 					this.selectSingleItem(null, selectedItem);
 				}
 			}
+
+			// Until we can use the PrimeNG dropdown filter template https://github.com/primefaces/primeng/issues/11628
+			// The Virtual scroll will shrink the dropdown container if there is less than 10 items in the list, and will not
+			// take the filter input field into account, so the area shrinks too much.
+			// By adding an empty element and hiding it, the area size is usable.
+			// This should be redone once PrimeNG has been updated to 14.x
+			if (this.showLookupSearchField && this.lookupValues.length < 10) {
+				this.lookupValues.push({label:null, value: null});
+			}
 			
             this.lookupValues = JSON.parse(JSON.stringify(this.lookupValues));
             this.setSelectionVirtualScrollHeight();
