@@ -342,9 +342,6 @@ namespace d360.web.Controllers
 			JsonResult res;
 			switch ((o ?? "").ToUpper())
 			{
-				case "APIFIELD":
-					res = CustomAPIVersionField_EditFields(oid);
-					break;
 				case "ARTIFACT":
 					res = Asset_EditFields(SystemObjects.ArtifactType, SystemObjects.Artifact, oid);
 					break;
@@ -354,9 +351,6 @@ namespace d360.web.Controllers
 				case "CONTRACT":
 					res = Contract_EditFields(oid);
 					break;
-				case "ENDPOINT":
-					res = CustomAPIServiceEndpoint_EditFields(oid);
-					break;
 				case "EXPORTTEMPLATE":
 					res = ExportTemplate_EditFields(oid);
 					break;
@@ -365,9 +359,6 @@ namespace d360.web.Controllers
 					break;
 				case "ISSUETYPE":
 					res = IssueType_EditFields(oid);
-					break;
-				case "NAMESPACE":
-					res = CustomAPINamespace_EditFields(oid);
 					break;
 				case "ORGANIZATION":
 					res = Organization_EditFields(oid);
@@ -393,9 +384,6 @@ namespace d360.web.Controllers
 				case "RESOURCETYPE":
 					res = Resource_EditFields(oid);
 					break;
-				case "SERVICE":
-					res = CustomAPIService_EditFields(oid);
-					break;
 				case "SURVEYTYPE":
 					res = SurveyType_EditFields(oid);
 					break;
@@ -411,12 +399,6 @@ namespace d360.web.Controllers
 				case "TAXONOMY":
 				case "TAXONOMYTYPE":
 					res = Hierarchy_EditFields(SystemObjects.Taxonomy, oid);
-					break;
-				case "VERSION":
-					res = CustomAPIServiceEndpointVersion_EditFields(oid);
-					break;
-				case "URI":
-					res = CustomAPIVersionUri_EditFields(oid);
 					break;
 				default:
 					throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
@@ -513,9 +495,6 @@ namespace d360.web.Controllers
 			JsonResult res;
 			switch ((objectType ?? "").ToUpper())
 			{
-				case "APIFIELD":
-					res = CustomAPIVersionField_AddFields(parentID.GetValueOrDefault());
-					break;
 				case "ARTIFACT":
 					res = Asset_AddFields(SystemObjects.ArtifactType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
 					break;
@@ -524,9 +503,6 @@ namespace d360.web.Controllers
 					break;
 				case "CONTRACT":
 					res = Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
-					break;
-				case "ENDPOINT":
-					res = CustomAPIServiceEndpoint_AddFields(parentID.GetValueOrDefault());
 					break;
 				case "EXPORTTEMPLATE":
 					res = ExportTemplate_AddFields();
@@ -539,9 +515,6 @@ namespace d360.web.Controllers
 					break;
 				case "ISSUETYPERELATION":
 					res = IssueTypeRelation_AddFields(objectID.GetValueOrDefault());
-					break;
-				case "NAMESPACE":
-					res = CustomAPINamespace_AddFields(parentID.GetValueOrDefault());
 					break;
 				case "ORGANIZATION":
 					res = Organization_AddFields(objectID.GetValueOrDefault());
@@ -567,9 +540,6 @@ namespace d360.web.Controllers
 				case "RESOURCETYPE":
 					res = Resource_AddFields(objectID.GetValueOrDefault());
 					break;
-				case "SERVICE":
-					res = CustomAPIService_AddFields();
-					break;
 				case "SURVEYTYPE":
 					res = SurveyType_AddFields();
 					break;
@@ -587,12 +557,6 @@ namespace d360.web.Controllers
 					break;
 				case "TAXONOMYTYPE":
 					res = Hierarchy_AddFields(SystemObjects.TaxonomyType, typeID.GetValueOrDefault(), parentID.GetValueOrDefault());
-					break;
-				case "VERSION":
-					res = CustomAPIServiceEndpointVersion_AddFields(parentID.GetValueOrDefault());
-					break;
-				case "URI":
-					res = CustomAPIVersionUri_AddFields(parentID.GetValueOrDefault());
 					break;
 				default:
 					throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
@@ -617,14 +581,8 @@ namespace d360.web.Controllers
 
 			switch ((objectType ?? "").ToUpper())
 			{
-				case "APIFIELD":
-					return EditApiField(form);
-				case "ENDPOINT":
-					return EditServiceEndpoint(form);
 				case "INTERSECT":
 					return EditRelationship(form);
-				case "NAMESPACE":
-					return EditNamespace(form);
 				case "ORGANIZATION":
 					return PutOrganization(form);
 				case "ORGANIZATIONDOMAIN":
@@ -633,14 +591,8 @@ namespace d360.web.Controllers
 					return PutOrganizationInvitation(form);
 				case "POLICYTYPELEVEL":
 					return EditPolicyTypeLevel(form);
-				case "SERVICE":
-					return EditService(form);
 				case "TAXONOMYTYPELEVEL":
 					return EditTaxonomyTypeLevel(form);
-				case "VERSION":
-					return EditServiceEndpointVersion(form);
-				case "URI":
-					return EditServiceEndpointVersionUri(form);
 				default:
 					throw new ArgumentNullException(FormControllerApiMessage.InvalidEditType);
 			}
@@ -656,16 +608,10 @@ namespace d360.web.Controllers
 
 			switch ((objectType ?? "").ToUpper())
 			{
-				case "APIFIELD":
-					return DeleteApiField(form);
 				case "CONTRACT":
 					return DeleteContract(objectID);
 				case "CUSTOMSYNONYM":
 					return DeleteCustomSynonym(form);
-				case "ENDPOINT":
-					return DeleteCustomAPIEndPoint(form);
-				case "NAMESPACE":
-					return DeleteCustomAPINamespace(form);
 				case "ORGANIZATION":
 					return DeleteOrganization(objectID);
 				case "ORGANIZATIONDOMAIN":
@@ -674,14 +620,8 @@ namespace d360.web.Controllers
 					return DeleteOrganizationInvitation(objectID);
 				case "POLICYTYPELEVEL":
 					return DeletePolicyTypeLevel(form);
-				case "SERVICE":
-					return DeleteCustomAPIService(form);
 				case "TAXONOMYTYPELEVEL":
 					return DeleteTaxonomyTypeLevel(form);
-				case "URI":
-					return DeleteCustomAPIUri(form);
-				case "VERSION":
-					return DeleteCustomAPIVersion(form);
 				default:
 					throw new ArgumentNullException(FormControllerApiMessage.InvalidDeleteType);
 			}
@@ -700,16 +640,10 @@ namespace d360.web.Controllers
 
 			switch ((objectType ?? "").ToUpper())
 			{
-				case "APIFIELD":
-					return AddServiceEndpointVersionField(form);
 				case "CUSTOMSYNONYM":
 					return AddCustomSynonym(form);
-				case "ENDPOINT":
-					return AddServiceEndpoint(form);
 				case "INTERSECT":
 					return AddRelationship(form);
-				case "NAMESPACE":
-					return AddNamespace(form);
 				case "ORGANIZATION":
 					return PostOrganization(form);
 				case "ORGANIZATIONDOMAIN":
@@ -718,14 +652,8 @@ namespace d360.web.Controllers
 					return PostOrganizationInvitation(form);
 				case "POLICYTYPELEVEL":
 					return AddPolicyTypeLevel(form);
-				case "SERVICE":
-					return AddService(form);
 				case "TAXONOMYTYPELEVEL":
 					return AddTaxonomyTypeLevel(form);
-				case "VERSION":
-					return AddServiceEndpointVersion(form);
-				case "URI":
-					return AddServiceEndpointVersionUri(form);
 				default:
 					throw new ArgumentNullException(FormControllerApiMessage.InvalidCreateType);
 			}

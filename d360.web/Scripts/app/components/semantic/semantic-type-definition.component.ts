@@ -101,9 +101,17 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
             this.area = res;
 
             this.headerBreadcrumbService.clearBreadcrumbs();
-            this.headerBreadcrumbService.clearCurrentObjectInfo();
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT));
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.semanticType.name, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}`, null, null, null, null, null, null));
+			this.headerBreadcrumbService.clearCurrentObjectInfo();
+			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT));
+			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
+				this.semanticType.name,
+				`${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}`,
+				!this.semanticType.isDisabled,
+				'Semantic',
+				this.semanticType.id,
+				null,
+				null,
+				null));
 
             this.setBrowserTitle(this.headerBreadcrumbService.getTitleService(), this.semanticType.name);
 

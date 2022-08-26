@@ -2,6 +2,7 @@
 
 .add-asset-form {
   padding: 24px;
+  width: 800px;
 
   .form-header-wrapper {
     display: flex;
@@ -38,6 +39,16 @@
 
     .dropdown-selected-value {
       margin-top: -7px;
+    }
+
+    .info-button {
+      position: absolute;
+      right: 54px;
+      top: 3px;
+
+      &--required {
+        right: 27px;
+      }
     }
 
     .col {
@@ -86,7 +97,14 @@
   }
 
   .action-buttons {
-    padding: 24px 0 0 0;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+  }
+
+  .action-buttons-placeholder {
+    width: 100%;
+    height: 56px;
   }
 
   .multi-select-lazy-load {
@@ -122,10 +140,13 @@
 
       &.p-placeholder {
         padding-left: 8px;
+        color: #6f7482;
       }
 
       .p-multiselect-token {
-        display: block;
+        position: relative;
+        display: flex;
+        align-items: center;
         background: @ig-grey-t5;
         color: @ig-black;
         border-radius: 4px;
@@ -133,14 +154,22 @@
         padding: 0 4px;
         float: left;
         height: 24px;
+        max-width: calc(100% - 28px);
+
+        .p-multiselect-token-label,
+        .p-multiselect-token-icon {
+          z-index: 2;
+        }
 
         .p-multiselect-token-label {
           position: relative;
-          top: -3px;
+          text-overflow: ellipsis;
+          overflow: hidden;
         }
 
         .p-multiselect-token-icon {
-          font-size: 16px;
+          font-size: 13px;
+          margin-left: 24px;
           padding: 4px;
         }
       }
@@ -174,6 +203,7 @@
       }
     }
   }
+
   //we do not want key fields error to disable submit button so we are just enforcing invalid field colour instead of marking field as invalid
   .has-key-field-error {
     input {
@@ -190,7 +220,7 @@
 .p-overlaypanel.dropdown-overlay {
   margin-top: 0;
   position: absolute;
-  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.3);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
   border-radius: 4px;
   min-width: 500px;
 
@@ -243,4 +273,17 @@
   .ig-dropdown-overlay {
     display: none;
   }
+}
+
+.asset-editor-container {
+  display: flex;
+  justify-content: flex-start;
+
+  .side-panel {
+    min-width: 417px;
+    height: auto;
+    border-left: 1px solid @d3s-gray-6;
+    background: unset;
+  }
+
 }

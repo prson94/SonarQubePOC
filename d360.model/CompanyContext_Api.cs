@@ -15,6 +15,7 @@ using d360.core.entities.Membership;
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.enums.Workflow;
+using d360.core.exceptions;
 using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
@@ -75,26 +76,10 @@ namespace d360.model
 
         #region DbSets
 
-        public DbSet<ApiService> ApiServices { get; set; }
-
-        public DbSet<ApiEndpoint> ApiEndpoints { get; set; }
-
-        public DbSet<ApiEndpointVersion> ApiEndpointVersions { get; set; }
-
-        public DbSet<ApiEntity> ApiEntities { get; set; }
-
-        public DbSet<ApiEntityFieldType> ApiEntityFieldTypes { get; set; }
-
-        public DbSet<ApiEntityFieldTypeMultiSelectField> ApiEntityFieldTypeMultiSelectFields { get; set; }
-
-        public DbSet<ApiEntityUri> ApiEntityUris { get; set; }
-
         public DbSet<ApiExecution> ApiExecutions { get; set; }
 
         public DbSet<ApiExecutionsExternal> ApiExecutionsExternals { get; set; }
-
-        public DbSet<ApiNamespace> ApiNamespaces { get; set; }
-
+        
         #endregion
 
         #region Events specific to API sub-system
@@ -217,7 +202,7 @@ namespace d360.model
 										T.ParentObjectID = S.ObjectID
 								from    api.ExecutionAsset T
 										inner join [Intersect] I on T.ExecutionID = @executionID and I.IntersectTypeID = T.IntersectTypeID and I.Object = T.Object and I.ObjectID = T.ObjectID and T.ParentUid is null
-										inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID;",
+										inner join Asset S on S.Id = I.SubjectAssetId;",
             new { executionID, assetTypeID = at.ID }, commandTimeout: timeout);
 
             if (at.Class == AssetTypeClass.Reference)
@@ -279,21 +264,18 @@ namespace d360.model
 								with h as 
 								(select 
 										p.parentuid,
-										A.object subject,
-										A.objectid SubjectId,
+										A.Id as AssetId,
 										1 [Level]
 									from #tempdistparent P
 									inner join Asset A
 									on A.uid = p.parentuid
 									union all
 								select  H.parentuid,
-										I.subject,
-										I.SubjectId,
+										I.SubjectAssetId as AssetId,
 										H.[Level] + 1 [Level]
 								from H
 								inner join [Intersect] I
-									on I.[object] = h.Subject
-									and I.ObjectID = h.SubjectID
+									on I.[ObjectAssetID] = h.AssetId
 									and I.IntersectTypeID = @intersectTypeID
 									where H.[Level] <= @maxlevel + 1
 									)
@@ -318,21 +300,18 @@ namespace d360.model
 
 									with h as 
 									(select c.uid,
-											A.object,
-											A.objectid,
+											A.Id as AssetId,
 											1 [Level]
 										from #tempdistchild C
 										inner join Asset A
 										on a.uid = c.uid
 										union all
 									select H.uid,
-											I.Object,
-											I.ObjectId,
+											I.ObjectAssetID as AssetId,
 											H.[Level] + 1 [Level]
 									from H
 									inner join [Intersect] I
-										on I.[Subject] = h.object
-										and I.SubjectID = h.objectID
+										on I.[SubjectAssetID] = h.AssetId
 										and I.IntersectTypeID = @intersectTypeID
 										where H.[Level] <= @maxlevel + 1
 										)
@@ -3176,15 +3155,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 															and S.id between @struncount and @enruncount
 												);
 
-										delete  T
-										from    [graph].AssetEdge T
-										where   exists (
-													select  1
-													from    #tempintersect S
-													where   S.IntersectID = T.ID
-															and S.id between @struncount and @enruncount
-												);
-
 										set @runcount = @enruncount;
 									end;
 
@@ -3215,11 +3185,11 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								delete	T
 								from	Favorite T
-										inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};
+										inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
 
 								delete	T
 								from	Follow T
-										inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};",
+										inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};",
             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
             AddMeasurement(metrics, $"remove from social tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
@@ -3952,11 +3922,11 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								    delete	T
 								    from	Favorite T
-										    inner join #deleteAssets O on O.Object = T.Object and O.ObjectID = T.ObjectID;
+										    inner join #deleteAssets O on O.ID = T.AssetID;
 
 								    delete	T
 								    from	Follow T
-										    inner join #deleteAssets O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID;
+										    inner join #deleteAssets O on O.ID = T.AssetID;
 												
 								    delete	T
 								    from	Nym T
@@ -4149,38 +4119,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 											delete	T
 											from	ResponsibilityTypeRelation T
 													inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-
-
-											drop table if exists #e;
-											create table #e (ID int);
-											create index idx_e on #e(ID);
-
-											insert into #e
-											select distinct E.ID
-											from	api.Entity E
-											inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID 
-											and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
-
-											if exists(select 1 from #e)
-											begin
-
-												delete	T
-												from	api.EntityFieldTypeMultiSelectField T
-														inner join api.EntityFieldType F on F.ID = T.EntityFieldTypeID
-														inner join #e E on E.ID = F.EntityID;
-
-												delete	T
-												from	api.EntityFieldType T
-														inner join #e E on E.ID = T.EntityID;
-
-												delete	T
-												from	api.EntityUri T
-														inner join #e E on E.ID = T.EntityID;
-
-												delete	T
-												from	api.Entity T
-														inner join #e E on E.ID = T.ID;
-											end
 
 											delete	T
 											from	[Load] T
@@ -5323,7 +5261,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (fieldLoadProperties.ContainsColorField)
                     {
-                        ResolveColorValues(execution.ExecutionID, timeout);
+						AddMeasurement(metrics, "ResolveColorValues-Begin", 0, ++step);
+						ResolveColorValues(execution.ExecutionID, timeout);
                         AddMeasurement(metrics, "ResolveColorValues", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
@@ -5332,13 +5271,15 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     {
                         if (lookupFieldsPassedByValue)
                         {
-                            CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout, ApiExecutionFieldTable);
+							AddMeasurement(metrics, "CopyFieldLookupValuesAsIs-Begin", 0, ++step);
+							CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout, ApiExecutionFieldTable);
                             AddMeasurement(metrics, "CopyFieldLookupValuesAsIs", sw.ElapsedMilliseconds, ++step);
                             sw.Restart();
                         }
                         else
                         {
-                            ResolveFieldLookupValues(execution.ExecutionID, ApiExecutionFieldTable, timeout);
+							AddMeasurement(metrics, "ResolveFieldLookupValues-Begin", 0, ++step);
+							ResolveFieldLookupValues(execution.ExecutionID, ApiExecutionFieldTable, timeout);
                             AddMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);
                             sw.Restart();
                         }
@@ -5346,21 +5287,24 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (hasLookupFieldTypes)
                     {
-                        LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", lookupFieldsPassedByValue, timeout);
+						AddMeasurement(metrics, "LogFieldLookupErrors-Begin", 0, ++step);
+						LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", lookupFieldsPassedByValue, timeout);
                         AddMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
 
                     if (hasRelationshipFieldTypes)
                     {
-                        LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
+						AddMeasurement(metrics, "LogRelationshipErrors-Begin", 0, ++step);
+						LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
                         AddMeasurement(metrics, "LogRelationshipErrors", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
 
                     if (hasCounterField)
                     {
-                        LogCounterFieldErrors(execution.ExecutionID, timeout);
+						AddMeasurement(metrics, "LogCounterFieldErrors-Begin", 0, ++step);
+						LogCounterFieldErrors(execution.ExecutionID, timeout);
                         AddMeasurement(metrics, "LogCounterFieldErrors", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
@@ -5377,7 +5321,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (!isInsert)
                     {
-                        LogAssetErrors(execution.ExecutionID, timeout);             // If you cannot find asset based on Uids provided.
+						AddMeasurement(metrics, "LogAssetErrors / LoadMissingKeyFields/ LogNullIsRequiredFields - Begin", 0, ++step);
+
+						LogAssetErrors(execution.ExecutionID, timeout);             // If you cannot find asset based on Uids provided.
                         LoadMissingKeyFields(execution.ExecutionID, at, timeout);   // Get missing key fields if this is an update.
                         LogNullIsRequiredFields(execution.ExecutionID, timeout);    // Get IsRequired Field having Null value if this is an update.
 
@@ -5394,14 +5340,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     AddMeasurement(metrics, "Log Errors", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
-
-                    #region Generate proposed key hash and compare against existing data.
-
-                    CalculateProposedKeyHashes(at, execution.ExecutionID, timeout, intersectTypeID, fieldTable: ApiExecutionFieldTable);
-                    AddMeasurement(metrics, "CalculateProposedKeyHashes", sw.ElapsedMilliseconds, ++step);
-                    sw.Restart();
-
-                    #endregion
 
                     #region Invalidate repetitious items in load
 
@@ -5659,8 +5597,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 																						insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
 																							select  EA.ExecutionID, EA.ItemNumber, 1, 2, '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
 																							from    api.ExecutionAsset EA 
-																									inner join [Intersect] I on I.IntersectTypeID = EA.IntersectTypeID and EA.Object = I.Object and EA.ObjectID = I.ObjectID 
-																									inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+																									inner join [Intersect] I on I.IntersectTypeID = EA.IntersectTypeID and EA.AssetId = I.ObjectAssetId
+																									inner join Asset P on P.Id = I.SubjectAssetId
 																							where    EA.ExecutionID = @ExecutionID 
 																									and Success is null 
 																									and EA.ItemNumber between @beginItemNumber and @endItemNumber
@@ -5771,14 +5709,16 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     if (hasCounterField)
                                     {
-                                        UpdateCounterFields(at.ID, execution.ExecutionID, trans, beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+										AddMeasurement(metrics, $"UpdateCounteFields >> {currentLoop} > Begin", 0, ++step);
+										UpdateCounterFields(at.ID, execution.ExecutionID, trans, beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         AddMeasurement(metrics, $"UpdateCounteFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                         sw.Restart();
                                     }
 
                                     if (hasRelationshipFieldTypes)
                                     {
-                                        ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
+										AddMeasurement(metrics, $"ImportRelationships >> {currentLoop} > Begin", 0, ++step);
+										ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
                                         AddMeasurement(metrics, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
@@ -5787,7 +5727,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     if (enableJsonAttributes && jsonFieldTypes.Count > 0 && fieldLoadProperties.JsonFieldCount > 0)
                                     {
                                         sw.Restart();
-                                        MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, metrics, step, isInsert);
+										AddMeasurement(metrics, $"MergeJsonFieldProperties >> {currentLoop} > Begin", 0, ++step);
+
+										MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, metrics, step, isInsert);
                                         AddMeasurement(metrics, $"MergeJsonFieldProperties >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
@@ -5796,6 +5738,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 										"exec api.MergeAssetPaths @executionId, @class, @begin, @end",
 										new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber },
 										transaction: trans, timeout);
+									sw.Restart();
+									AddMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
 
 									// Must execute BEFORE the Success flag is updated below.
 									sw.Restart();
@@ -5806,11 +5750,47 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     if (hasLookupFieldTypes && !isInsert)
                                     {
                                         sw.Restart();
-                                        DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
+										AddMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop} > Begin", 0, ++step);
+
+										DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
                                         AddMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
-                                    sw.Restart();
+									#region Generate proposed key hash and compare against existing data.
+									var invalidHashState = Connection.Query<int>(@"
+										declare @assetTypeId int =  (select top 1 a.AssetTypeID from api.ExecutionAsset ea
+										inner join Asset a on a.ID = ea.AssetID
+										where ExecutionId = @executionid and ea.AssetID is not null and  ItemNumber between @beginItemNumber and @endItemNumber )
+
+										drop table if exists #HashData
+										select AssetID, Ap.KeyPathHash 
+										into #HashData
+										from api.ExecutionAsset ea
+										inner join Asset A on a.ID = ea.AssetID
+										inner join AssetPath AP on AP.ID = A.ID
+
+										where ea.ExecutionID = @executionid 
+										and ItemNumber between @beginItemNumber and @endItemNumber 
+
+										select count(1) from Asset A
+										inner join AssetPath ap on ap.ID = a.ID
+										inner join #HashData hd on hd.assetid != a.ID and hd.KeyPathHash = ap.KeyPathHash
+										where a.AssetTypeID = @assetTypeId
+										option(recompile)
+										", new { executionID = execution.ExecutionID, beginItemNumber, endItemNumber },
+										transaction: trans, commandTimeout: timeout).FirstOrDefault();
+
+									if (invalidHashState > 0)
+									{
+										throw new DuplicateHashException("Key values match another asset under a different set of key fields.");
+									}
+
+									AddMeasurement(metrics, "CheckKeyHashes", sw.ElapsedMilliseconds, ++step);
+									sw.Restart();
+
+									#endregion
+
+									sw.Restart();
                                     // Update success flag.
                                     Connection.Execute(
                                         $@"update api.ExecutionAsset set Success = 1 where {executionAssetWhereSql} and Object is not null and ObjectID is not null;",
@@ -5830,6 +5810,11 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                 }
                                 catch (Exception ex)
                                 {
+									if (ex is DuplicateHashException)
+									{
+										retryCount = API_V2_RETRY_LIMIT;
+									}
+
                                     try
                                     {
                                         if (trans != null)
@@ -5840,7 +5825,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     catch
                                     {
                                     }
-
                                     retryCount++;
 
                                     if (retryCount > API_V2_RETRY_LIMIT)
@@ -5881,7 +5865,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (sendGraphEvents)
                     {
-                        IEnumerable<IGraphAsset> graphResults = results.AsEnumerable();
+						AddMeasurement(metrics, $"SendAssetGraphEvents > Begin", 0, ++step);
+
+						IEnumerable<IGraphAsset> graphResults = results.AsEnumerable();
 
                         if (parentIntersectGuids.Any())
                         {
@@ -5918,7 +5904,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     if (sendWorkflowEvents)
                     {
                         sw.Restart();
-                        SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
+						AddMeasurement(metrics, $"SendWorkflowEvents > Begin", 0, ++step);
+						SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
                         AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
                     }
 
@@ -5936,13 +5923,17 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 					if (intersectTypeID.HasValue)
                     {
-                        CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
+						sw.Restart();
+						AddMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution > Begin", 0, ++step);
+						CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
+						AddMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution", 0, ++step);
                     }
 
                     if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
                     {
                         sw.Restart();
-                        CreateImportAssetsExecution(execution.ExecutionID, at.uid);
+						AddMeasurement(metrics, $"SendScoreEventWithPayload > Begin", 0, ++step);
+						CreateImportAssetsExecution(execution.ExecutionID, at.uid);
                         AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                     }
 
@@ -9243,7 +9234,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 													select		A.ID, P.UID as ParentAssetUID, Null, Null
 													from		Asset A 
 															left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
-															left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID	
+															left join Asset P on P.Id = I.SubjectAssetId
 													where		A.AssetTypeID = @ID and @hasUpdatedKeyFields = 1;
 
 													create clustered index idx_key_assetid on #keys(AssetID);
@@ -10623,7 +10614,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                             if (model.AssetTypeUid.HasValue)
                             {
-                                row["AssetTypeUid"] = model.AssetTypeUid;
+                                row["AssetTypeUid"] = model.AssetTypeUid;								
                             }
 
                             row["Name"] = model.Name;
@@ -10633,6 +10624,16 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                             if (model.Definition != null)
                             {
+								if (model?.Definition?.Then != null)
+								{
+									model.Definition.Then.ForEach(th => { 
+										if(th.AssigneeTypeUid.HasValue && th.Conditions.All(c=> !c.AssigneeTypeUid.HasValue))
+										{
+											th.Conditions.ForEach(co => co.AssigneeTypeUid = th.AssigneeTypeUid);
+										}
+									});
+								}
+
                                 row["Definition"] = JsonConvert.SerializeObject(model.Definition);
                             }
 
@@ -10673,8 +10674,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                             }
 
                             model.Definition.Then.ForEach(th =>
-                            {
-                                if (th.AssigneeTypeUid == null || th.AssigneeTypeUid == Guid.Empty)
+							{
+								if (th.AssigneeTypeUid == null || th.AssigneeTypeUid == Guid.Empty || th.Conditions.Any(c => { return (c.AssigneeTypeUid == null || c.AssigneeTypeUid == Guid.Empty); }))
                                 {
                                     rowError += ";AssigneeTypeUid cannot be null or empty.";
                                 }
@@ -10692,7 +10693,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     if (cond.Assignee != null)
                                     {
-                                        if (!cond.Assignee.Uid.HasValue)
+                                        if (!cond.Assignee.Uid.HasValue || cond.Assignee.Uid.Value == Guid.Empty )
                                         {
                                             rowError += ";Assignee Uid is required field.";
                                         }
@@ -11009,74 +11010,86 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             };
 
             string jsonParseSql = $@"
-				drop table if exists #tempData
+				drop table if exists #tempData				  
 				create table #tempData
 				(
-				ItemNumber int, 
-				ExecutionId uniqueidentifier, 
-				AssetTypeUid uniqueidentifier,
-				AssigneeTypeUid uniqueidentifier, 
-				MatchType nvarchar(20),
-				RelIntersectTypeUid uniqueidentifier, 
-				RelAssetUid uniqueidentifier,
-				FieldApiName nvarchar(250),
-				FieldValue nvarchar(250),
-				AssigneeUid uniqueidentifier,
-				ValueAsUid uniqueidentifier,
+					ItemNumber int, 
+					ExecutionId uniqueidentifier, 
+					AssetTypeUid uniqueidentifier,
+					AssigneeTypeUid uniqueidentifier, 
+					MatchType nvarchar(20),
+					RelIntersectTypeUid uniqueidentifier, 
+					RelAssetUid uniqueidentifier,				
+					FieldApiName nvarchar(250),
+					FieldValue nvarchar(250),				
+					AssigneeUid uniqueidentifier,
+					RelOperator nvarchar(250),
+					FieldOperator nvarchar(250),
+					ValueAsUid uniqueidentifier,
+					CondAssigneeTypeUid uniqueidentifier													
 				)
 
 				insert into #tempData
 				select
-				ItemNumber,
-				ExecutionId,
-				AssetTypeUid,
-				ThenData.AssigneeTypeUid,
-				ThenData.MatchType,
-				ThenCond.*,
-				case 
-				when ThenCond.IntersectTypeUid is not null then cast(thencond.intersecttypeuid as uniqueidentifier)
-				else null
-				end as ValueAsUid
+					ItemNumber,
+					ExecutionId,
+					AssetTypeUid,
+					case when ThenCond.AssigneeTypeUid is not null then ThenCond.AssigneeTypeUid
+					else ThenData.AssigneeTypeUid end as AssigneeTypeUid,
+					ThenData.MatchType,
+					ThenCond.*,				
+					case 
+					when ThenCond.IntersectTypeUid is not null then cast(thencond.intersecttypeuid as uniqueidentifier)
+					else null
+					end as ValueAsUid
 				from {sourceTable}
-				cross apply OPENJSON (Definition, N'$.Then')
-				WITH (
-				AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
-				MatchType nvarchar(20) N'$.MatchType',
-				Conditions nvarchar(max) N'$.Conditions' as Json
-				) AS ThenData
-				outer apply OPENJSON(ThenData.Conditions)
-				with(
-					IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
-					AssetUid uniqueidentifier N'$.Relation.AssetUid',
-					FieldApiName nvarchar(250) N'$.Field.ApiName',
-					Value nvarchar(250) N'$.Field.Value',
-					AssetUid uniqueidentifier  N'$.Assignee.Uid'
-				) as ThenCond
-				where executionid = @executionId and success is null
-
+					cross apply OPENJSON (Definition, N'$.Then')
+					WITH (
+					AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
+					MatchType nvarchar(20) N'$.MatchType',
+					Conditions nvarchar(max) N'$.Conditions' as Json
+					) AS ThenData
+					outer apply OPENJSON(ThenData.Conditions)
+					with(
+						IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
+						AssetUid uniqueidentifier N'$.Relation.AssetUid',
+						FieldApiName nvarchar(250) N'$.Field.ApiName',
+						Value nvarchar(250) N'$.Field.Value',
+						AssetUid uniqueidentifier  N'$.Assignee.Uid',
+						RelOperator nvarchar(250) N'$.Relation.Operator',
+						FieldOperator nvarchar(250) N'$.Field.Operator',
+						AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid'	
+					) as ThenCond
+				where 
+					executionid = @executionId and success is null
+							  
 				insert into #tempData
 				select
-				ItemNumber,
-				ExecutionId,
-				AssetTypeUid,
-				null as AssigneeTypeUid,
-				null as MatchType,
-				WhenData.*,
-				case 
-				when WhenData.IntersectTypeUid is not null then cast(WhenData.value as uniqueidentifier)
-				else null
-				end as ValueAsUid
+					ItemNumber,
+					ExecutionId,
+					AssetTypeUid,
+					null as AssigneeTypeUid,
+					null as MatchType,
+					WhenData.*,
+					null as CondAssigneeTypeUid,				
+					case 
+					when WhenData.IntersectTypeUid is not null then cast(WhenData.value as uniqueidentifier)
+					else null
+					end as ValueAsUid
 				from {sourceTable}
-				cross apply OPENJSON (Definition, N'$.When')
-				WITH (
-					IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
-					AssetUid uniqueidentifier N'$.Relation.AssetUid',
-					FieldApiName nvarchar(250) N'$.Field.ApiName',
-					Value nvarchar(250) N'$.Field.Value',
-					AssetUid uniqueidentifier  N'$.Assignee.Uid'
-				) AS WhenData
-				where executionid = @executionId and success is null
-
+					cross apply OPENJSON (Definition, N'$.When')
+					WITH (
+						IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
+						AssetUid uniqueidentifier N'$.Relation.AssetUid',					
+						FieldApiName nvarchar(250) N'$.Field.ApiName',
+						Value nvarchar(250) N'$.Field.Value',
+						AssetUid uniqueidentifier  N'$.Assignee.Uid',
+						RelOperator nvarchar(250) N'$.Relation.Operator',
+						FieldOperator nvarchar(250) N'$.Field.Operator'
+					) AS WhenData
+				where 
+					executionid = @executionId and success is null
+							 
 				drop table if exists #parsedData
 				select  d.itemnumber, 
 					d.executionid ,
@@ -11108,7 +11121,11 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 					isnull(a.objectid,0) as TargetObjectId,
 					cast('' as nvarchar(max)) as ErrorMessage,
 					ROW_NUMBER() OVER(ORDER BY(SELECT NULL)) as rowNumber,
-					ft2.type as FieldType
+					ft2.type as FieldType,
+					case 
+						when d.RelIntersectTypeUid is null then FieldOperator
+						else RelOperator
+					end as Operator
 				into #parsedData
 				from #tempData d
 					left join assettype at on d.assigneetypeuid = at.uid
@@ -11116,7 +11133,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 					left join IntersectType it on it.uid = d.RelIntersectTypeUid
 					left join assettype at2 on d.AssetTypeUid = at2.uid
 					left join FieldType ft2 on ft2.object = at2.object and ft2.objectid = at2.objectid and ft2.name = d.fieldapiname
-					left join asset a on a.uid = d.RelAssetUid
+					left join asset a on a.uid = d.RelAssetUid								
 
 				update #parsedData
 				set FieldTypeId = 0,
@@ -11147,7 +11164,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 		                left join FieldLookupValue flv on flv.FieldTypeID = pd.FieldTypeId
 	                ) lookupValue
 		                on lookupValue.FieldTypeID = pd.FieldTypeId 
-		                and trim(pd.Value) = lookupValue.Text 
+		                and try_cast(trim(pd.Value) as int) = lookupValue.Value 
                 where pd.fieldtypeid is not null and ft.type = 'Lookup'
 
 				update #parsedData
@@ -11217,7 +11234,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 				update #parsedData
 				set ErrorMessage = 'Invalid JSON Data.'
 				where fieldtypeid is null and fieldtypename is null and value is null and intersecttypeid is null and TargetObject is null and errormessage is null
-
+								
 				MERGE {sourceTable} err
 				USING (select itemnumber,executionid,trim(string_agg(errormessage,',')) as msg from #parsedData
 				where isnull(errormessage,'') <> ''
@@ -11260,12 +11277,25 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 						Value,
 						isnull(IntersectTypeID,0) as IntersectTypeID,
 						TargetObject,
-						TargetObjectId        
+						TargetObjectId,
+						Operator,
+						Object,
+						ObjectID
 						from #parsedData
-						where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object  and ((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
+						where 
+							ItemNumber =pd.ItemNumber 
+							and 
+							ExecutionId = pd.ExecutionId  
+							and 
+							[Object] is not null
+							and 
+							((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
 						for json path, include_null_values
 					)Conditions(json)
-				where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
+				where 
+					ItemNumber =pd.ItemNumber 
+					and 
+					ExecutionId = pd.ExecutionId 
 				for json path, include_null_values, without_array_wrapper
 				)ConditionsThen(json)
 
@@ -11275,21 +11305,23 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 						isnull(FieldTypeID,0) as FieldTypeID,
 						FieldTypeName,
 						Value,
-						isnull(IntersectTypeID,0) as IntersectTypeID,
+						isnull(IntersectTypeID,0) as IntersectTypeID,			   
 						TargetObject,
-						TargetObjectId
+						TargetObjectId,
+						Operator
 						from #parsedData
 						where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object is null
 						for json path, include_null_values
 				)ConditionsWhen(json)
 				where Object is not null
 				group by ItemNumber,ExecutionId,ConditionsThen.json, ConditionsWhen.json)
+							
 				update #convertedData 
 				set [When] = c.[When],
 				[Then] = c.[Then],
 				[Definition] = '{{'+Concat_ws(',','""When"":' + c.[When],'""Then"":' + c.[Then]) + '}}'
 				from conditions c
-				where #convertedData.itemnumber = c.itemnumber and #convertedData.executionid = c.executionid
+				where #convertedData.itemnumber = c.itemnumber and #convertedData.executionid = c.executionid								
 
 				MERGE {sourceTable} err
 				USING #convertedData cd

@@ -87,7 +87,7 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
 
     updateFormValidity(event) {
         if (this.groups && this.groups.length > 0) {
-            this.groups.forEach(x => { x.refreshBadgeCounts(); });
+            this.groups.forEach((x) => { x.refreshBadgeCounts(); });
         }
         this.checkModelChanged();
         this.cdRef.markForCheck();

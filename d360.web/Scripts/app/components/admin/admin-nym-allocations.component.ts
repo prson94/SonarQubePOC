@@ -63,7 +63,7 @@ export class AdminNymAllocationsComponent extends BaseComponent implements OnCha
         this.isLoading = true;
 
         this.objectDetailService.getNymAllocations(this.objectID, this.objectType).subscribe(
-            data => {
+            (data) => {
                 this.nyms = data;
 
                 this.isLoading = false;
@@ -73,7 +73,7 @@ export class AdminNymAllocationsComponent extends BaseComponent implements OnCha
 
     private save() {
         this.objectDetailService.saveNymAllocations(this.objectID, this.objectType, this.nyms).subscribe(
-            data => {
+            (data) => {
                 this.showMessageForResult(this.messagesService, data);
             }
         );

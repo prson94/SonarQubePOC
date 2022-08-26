@@ -27,39 +27,6 @@ namespace d360.model
 			}
 		}
 
-		public static readonly string ArtifactActivitySpecificDateCountList = @"
-				select 
-					Name,
-					sum(New) as New,
-					sum(Total) as Total,
-					Id
-				from
-				(select  at.Name,
-						1 as New,        					
-						0 as Total,
-						at.id as Id		
-				from    Asset a
-						inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'
-				where   a.createdon > dateadd(day, @d, CURRENT_TIMESTAMP)
-				union all
-				select  at.Name,
-						0 as New,   
-						1 as Total,     					
-						at.id as Id		
-				from    Asset a
-						inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'
-				where a.updatedon > dateadd(day, @d, CURRENT_TIMESTAMP)) T
-				group by Name, Id";
-
-		public static readonly string ArtifactActivityAllDateCountList = @"
-				select  at.Name,
-						count(1) as New,        					
-						count(1) as Total,
-						at.id as Id								
-				from    Asset a
-						inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'                       
-				group by at.name,at.id order by at.name";
-
 		public static readonly string ObjectNymTypes = @"
 				select 
 					P.ID as [ID],

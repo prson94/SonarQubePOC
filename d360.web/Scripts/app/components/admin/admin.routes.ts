@@ -27,11 +27,9 @@ const routes: Routes = [
             { path: 'predicates', loadChildren: () => import('./predicates/admin-predicates.module').then((m) => m.AdminPredicatesModule) },
             { path: 'organizations', loadChildren: () => import('./organizations/admin-organizations.module').then((m) => m.AdminOrganizationsModule) },
             { path: 'customizations', loadChildren: () => import('./customizations/admin-customizations.module').then((m) => m.AdminCustomizationsModule) },
-            { path: 'customapi', loadChildren: () => import('./customapi/admin-customapi.module').then((m) => m.AdminCustomAPIModule) },
             { path: 'exporttemplates', loadChildren: () => import('./exporttemplates/admin-export-templates.module').then((m) => m.AdminExportTemplatesModule) },
             { path: 'tags', loadChildren: () => import('./tags/admin-tags.module').then((m) => m.AdminTagsModule) },
             { path: 'diagrams', loadChildren: () => import('./diagram-asset/admin-diagram-asset.module').then((m) => m.AdminDiagramAssetModule) },
-            { path: 'search', loadChildren: () => import('./search/admin-search.module').then((m) => m.AdminSearchModule) },
             { path: 'branding', loadChildren: () => import('./branding/admin-branding.module').then((m) => m.AdminBrandingModule) },
         ]
     }

@@ -7,31 +7,28 @@ namespace d360.core.entities.Views
     [DataContract(Namespace = NAMESPACE)]
     public class FollowDetail : BaseObject
     {
-        [DataMember, Key, Column(Order = 1)]
-        public int ResourceID { get; set; }
+		[DataMember, Key, Column(Order = 1)]
+		public int ResourceID { get; set; }
 
-        [DataMember, Key, Column(Order = 2)]
-        public int ObjectID { get; set; }
+		[DataMember, Key, Column(Order = 2)]
+		public long? ID { get; set; }
 
-        [DataMember, Key, Column(Order = 3, TypeName = "varchar"), StringLength(50)]
-        public string ObjectType { get; set; }
+		[DataMember]
+		public long? AssetID { get; set; }
 
-        [DataMember]
-        public long? AssetID { get; set; }
+		[DataMember]
+		public int? AssetTypeID { get; set; }
 
-        [DataMember]
-        public int FollowID { get; set; }
+		[DataMember]
+		public int FollowID { get; set; }
 
-        [DataMember]
-        public int? ID { get; set; }
+		[DataMember]
+		public string Name { get; set; }
 
-        [DataMember]
-        public string Name { get; set; }
+		[DataMember]
+		public string TextPath { get; set; }
 
-        [DataMember]
-        public string TextPath { get; set; }
-
-        [DataMember]
+		[DataMember]
         public string Description { get; set; }
 
         [DataMember]
@@ -42,12 +39,6 @@ namespace d360.core.entities.Views
 
         [DataMember]
         public string Url { get; set; }
-
-        [DataMember]
-        public int? TypeID { get; set; }
-
-        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
-        public string Type { get; set; }
 
         [DataMember]
         public string TypeName { get; set; }

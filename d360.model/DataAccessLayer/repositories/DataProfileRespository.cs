@@ -767,7 +767,7 @@ namespace d360.model.DataAccessLayer
 				List<DefaultFilter> fieldList = new List<DefaultFilter>
 				{
 				new DefaultFilter("Tag", "T.tagString", SqlFieldType.Text),
-				new DefaultFilter("Path", "AP.[Segments]", SqlFieldType.Xml),
+				new DefaultFilter("Path", "[Segments]", SqlFieldType.Xml),
 				};
 
 				if (!string.IsNullOrEmpty(filterValue))
@@ -860,6 +860,10 @@ namespace d360.model.DataAccessLayer
 								,AST.Uid as AssetTypeUid
 								,A.ID";
 
+				sqlJoins = $@"{sqlJoins}
+							INNER JOIN
+							AssetType AST on A.AssetTypeID=AST.ID ";
+
 				assetDetailSQL = $@"drop table if exists #tempAssetDetails;
 
 									select 
@@ -870,7 +874,7 @@ namespace d360.model.DataAccessLayer
 										,tagString as AssetTags
 									into #tempAssetDetails
 									from
-										Asset A on A.ID=adp.AssetID
+										Asset A
 										INNER JOIN
 										AssetPath AP on A.ID=AP.ID
 										cross apply dbo.GetAssetTypeTextPathById(A.AssetTypeID, ' > ') ATP

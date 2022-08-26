@@ -123,7 +123,7 @@ namespace d360.model.DataAccessLayer.repositories
 																	)
 
 																insert into @semanticTypes
-																select 
+																select top 1
 																	favorite.FavoriteId,
 																	isnull(favorite.ObjectType, 'SemanticType') as ObjectType,
 																	s.ID as ObjectId,

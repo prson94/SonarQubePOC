@@ -121,6 +121,17 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	$destroy = new Subject();
 
+	get isFirstItemFromTargetSelected(): boolean {
+		return this.selectedNewFolderItems.findIndex((selectedItem) => selectedItem.ObjectID === this.newFolderItems[0].ObjectID && selectedItem.Object === this.newFolderItems[0].Object) > -1;
+	}
+
+	get isLastItemFromTargetSelected(): boolean {
+		const lastIndex: number = this.newFolderItems.length - 1;
+		return this.selectedNewFolderItems.findIndex((selectedItem): boolean => {
+			return selectedItem.ObjectID === this.newFolderItems[lastIndex].ObjectID && selectedItem.Object === this.newFolderItems[lastIndex].Object;
+		}) > -1;
+	}
+
 	constructor(
 		private cdRef: ChangeDetectorRef,
 		private formBuilder: FormBuilder,
@@ -164,6 +175,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		} else {
 			this.isEdit = false;
 			this.folderModel = new SiteNav();
+			this.folderModel.IsCustom = true;
 		}
 
 		this.$destroy.next();
@@ -441,7 +453,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.iconType = 'image';
 		this.iconImage.file = files[0];
 		FormHelper.getDataUrl(files[0])
-			.then(dataUrl => {
+			.then((dataUrl) => {
 				this.folderModel.IconPayload = dataUrl;
 				if (!this.categories[0].label) {
 					this.categories[0].items = [{ label: 'Custom', path: dataUrl, img: true }];
@@ -505,12 +517,16 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		el.click();
 	}
 
+	onRelocateItemsFromSourceToTargetEvent(): void {
+		this.addToSelectedFolderItems();
+	}
+
 	addToSelectedFolderItems() {
 		if (this._tempSelectedFolderItems.length > 0) {
 			for (let j = 0; j < this._tempSelectedFolderItems.length; j++) {
 				if (this.newFolderItems.indexOf(this._tempSelectedFolderItems[j]) === -1) {
 					this.newFolderItems.push(this._tempSelectedFolderItems[j]);
-					this.availableItems = this.availableItems.filter((x) => x != this._tempSelectedFolderItems[j]);
+					this.availableItems = this.availableItems.filter((x) => x !== this._tempSelectedFolderItems[j]);
 				}
 			}
 			this.newFolderItems = this.newFolderItems.sort((a, b) => a.Title.localeCompare(b.Title));
@@ -521,11 +537,15 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.cdRef.markForCheck();
 	}
 
+	onRelocateItemsFromTargetToSourceEvent(): void {
+		this.removeFromSelectedFolderItems();
+	}
+
 	removeFromSelectedFolderItems() {
 		if (this.selectedNewFolderItems.length > 0) {
 			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
-				let x = this.availableItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
-				let y = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				let x = this.availableItems.findIndex((i) => i.ObjectID === this.selectedNewFolderItems[j].ObjectID && i.Object === this.selectedNewFolderItems[j].Object);
+				let y = this.newFolderItems.findIndex((i) => i.ObjectID === this.selectedNewFolderItems[j].ObjectID && i.Object === this.selectedNewFolderItems[j].Object);
 				if (y > -1) {
 					let i = _.cloneDeep(this.newFolderItems.splice(y, 1)[0]);
 					if (x === -1) {
@@ -540,7 +560,11 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.cdRef.markForCheck();
 	}
 
-	moveToTop(items: SiteNav[]) {
+	onMoveToTopEvent(): void {
+		this.moveToTop();
+	}
+
+	moveToTop() {
 		if (this.selectedNewFolderItems.length > 0) {
 			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
 				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
@@ -549,18 +573,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 	}
 
-	disableBtnMoveToTop() {
-		return (!this.selectedNewFolderItems
-			|| this.selectedNewFolderItems.length === 0
-			|| this.selectedNewFolderItems.findIndex((i) => i.ObjectID == this.newFolderItems[0].ObjectID && i.Object == this.newFolderItems[0].Object) > -1
-		);
-	}
-
-	disableBtnMoveUp() {
-		return (!this.selectedNewFolderItems
-			|| this.selectedNewFolderItems.length === 0
-			|| this.selectedNewFolderItems.findIndex((i) => i.ObjectID == this.newFolderItems[0].ObjectID && i.Object == this.newFolderItems[0].Object) > -1
-		);
+	onMoveUpEvent(): void {
+		this.moveUp();
 	}
 
 	moveUp() {
@@ -572,12 +586,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 	}
 
-	disableBtnMoveDown() {
-		return (!this.selectedNewFolderItems
-			|| this.selectedNewFolderItems.length === 0
-			|| this.selectedNewFolderItems.findIndex(
-				(i) => i.ObjectID == this.newFolderItems[this.newFolderItems.length - 1].ObjectID && i.Object == this.newFolderItems[this.newFolderItems.length - 1].Object) > -1
-		);
+	onMoveDownEvent(): void {
+		this.moveDown();
 	}
 
 	moveDown() {
@@ -589,15 +599,11 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 	}
 
-	disableBtnMoveToBottom() {
-		return (!this.selectedNewFolderItems
-			|| this.selectedNewFolderItems.length === 0
-			|| this.selectedNewFolderItems.findIndex(
-				(i) => i.ObjectID == this.newFolderItems[this.newFolderItems.length - 1].ObjectID && i.Object == this.newFolderItems[this.newFolderItems.length - 1].Object) > -1
-		);
+	onMoveToBottomEvent(): void {
+		this.moveToBottom();
 	}
 
-	moveToBottom(items: SiteNav[]) {
+	moveToBottom() {
 		if (this.selectedNewFolderItems.length > 0) {
 			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
 				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
@@ -642,6 +648,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 	}
 
+	onRelocatePermissionItemsForwardEvent(): void {
+		this.addPermissionAssets();
+	}
+
 	lastLoadedEvent: any;
 	addPermissionAssets() {
 		if (!this.selectedPermissionAssets) {
@@ -660,6 +670,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this._tempSelectedPermissionAssets = [];
 
 		this.cdRef.markForCheck();
+	}
+
+	onRelocatePermissionItemsBackwardEvent(): void {
+		this.removePermissionAssets();
 	}
 
 	removePermissionAssets() {

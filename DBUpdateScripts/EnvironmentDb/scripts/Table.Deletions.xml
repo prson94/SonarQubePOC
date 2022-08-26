@@ -16,7 +16,7 @@
     </sql>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.Deletions-v1.1">
+  <changeSet author="Pappas" id="Table.Deletions-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -99,6 +99,14 @@ GO
 drop table if exists [metrics].[ScoreItem_Backup]
 GO
 drop table if exists [reporting].[Dates_backup]
+GO
+drop table if exists [dbo].[AssetResultEdge]
+GO
+drop table if exists [dbo].[AssetResultDepricated]
+GO
+drop table if exists [graph].[AssetEdge]
+GO
+drop table if exists [graph].[AssetNode]
 ]]>
     </sql>
 		<![CDATA[
@@ -156,6 +164,32 @@ GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[RuleType]') AND type in (N'U'))
 DROP TABLE [dbo].[RuleType]
+GO
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.Deletions.CustomAPI-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+drop table if exists api.EntityUri
+GO
+drop table if exists api.EntityFieldTypeMultiSelectField
+GO
+drop table if exists api.EntityFieldType
+GO
+drop table if exists api.Entity
+GO
+drop table if exists api.EndpointVersion
+GO
+drop table if exists api.[Endpoint]
+GO
+drop table if exists api.[Namespace]
+GO
+drop table if exists api.[Service]
 GO
 		]]>
     </sql>

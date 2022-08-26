@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.Deletions-v1.3">
+  <changeSet author="Core" id="Function.Deletions-v1.4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -48,6 +48,8 @@ GO
 drop function if exists [utility].[GetBreadcrumbStringWrapper]
 GO
 drop function if exists [utility].[GetBreadcrumbString]
+GO
+drop function if exists [graph].[GetForwardLineage]
 GO
 		]]>
     </sql>

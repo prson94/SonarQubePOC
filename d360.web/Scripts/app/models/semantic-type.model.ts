@@ -68,7 +68,8 @@ export class SemanticType {
     hasQualifiedAssets: boolean = false;
     headerRegExps: string;
     isDisabled: boolean = false;
-    effectiveDates: DateRange[];
+	effectiveDates: DateRange[];
+	id: number;
 
     public static getBaseTypeText(baseType: string): string {
         switch (baseType.toString().toLocaleLowerCase()) {

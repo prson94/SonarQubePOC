@@ -147,6 +147,9 @@ namespace d360.core.entities
 
         [JsonProperty("effectiveDates")]
         public List<DateRange>? EffectiveDates { get; set; }
+
+		[JsonProperty("id")]
+		public long ID { get; set; }
     }
 
     public class PatchSemantic : SemanticBase
@@ -310,7 +313,8 @@ namespace d360.core.entities
                 ValidLocalesStructured = model.deserializeTextProperty<List<string>>(model.ValidLocales),
                 ValidValuesStructured = model.deserializeTextProperty<List<string>>(model.ValidValues),
                 HasQualifiedAssets = hasQualifiedAssets,
-                EffectiveDates = parseEffectiveDates(effectiveDates)
+                EffectiveDates = parseEffectiveDates(effectiveDates),
+				ID = model.ID
             };
         }
 

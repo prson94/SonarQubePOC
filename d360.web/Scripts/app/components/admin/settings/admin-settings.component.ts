@@ -52,6 +52,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     disableExcel: boolean = false;
 
     rebuildStatuses: CompanyRebuildJobStatusApiModel[] = [];
+	isPartialRebuildModalVisible: boolean = false;
     
     SaveButton: DynamicButton;
 
@@ -100,7 +101,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.DefaultRoute = this.getStringSetting(CompanySettingEnum.DefaultRoute);
 
         this.companySettings.DefaultSearchTypes = this.getStringSetting(CompanySettingEnum.DefaultSearchTypes);
-        this.searchService.getSearchCategories(true, true).subscribe(cat => {
+        this.searchService.getSearchCategories(true, true).subscribe((cat) => {
             this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes, cat);
         });
         this.companySettings.DiagramMaxAvoidNodesLinkCount = this.getNumberSetting(CompanySettingEnum.DiagramMaxAvoidNodesLinkCount);
@@ -131,7 +132,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.ShowHomeAssignmentTile = this.getBooleanSetting(CompanySettingEnum.ShowHomeAssignmentTile);
         this.companySettings.ShowHomeBoardTile = this.getBooleanSetting(CompanySettingEnum.ShowHomeBoardTile);
         this.companySettings.ShowHomePageTitle = this.getBooleanSetting(CompanySettingEnum.ShowHomePageTitle);
-        this.companySettings.SiteNav.forEach(s => {
+        this.companySettings.SiteNav.forEach((s) => {
             s.IsCustom = (s.Name.indexOf('#') != 0);
         });
         this.companySettings.WorkflowCatchAllGroup = this.getNumberSetting(CompanySettingEnum.WorkflowCatchAllGroup);
@@ -140,8 +141,8 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.RequestCertificationDraft = this.getStringSetting(CompanySettingEnum.RequestCertificationDraft);
 
         this.settingsService.getGroups()
-            .subscribe(x => {
-                this.groups = x.map(x => {
+            .subscribe((x) => {
+                this.groups = x.map((x) => {
                     return { label: x.label, value: +x.value };
                 });
                 this.groups.unshift({ label: $localize`[Administrators]`, value: 0 });
@@ -150,7 +151,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.resetSaveButton();
 
         this.settingsService.getRebuildRequestStatuses()
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.rebuildStatuses = data;
             });
     }
@@ -421,7 +422,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     rebuild(model: CompanyRebuildJobStatusApiModel) {
         model.state = CompanyRebuildJobStatusState.Active;
         this.settingsService.postRebuildRequest(model.jobToken)
-            .subscribe(data => {
+            .subscribe((data) => {
                 if (data.type && data.type === "error") {
                     this.messagesService.showError($localize`Problem with Rebuild`, data.message);
                     model.state = CompanyRebuildJobStatusState.Inactive;
@@ -430,6 +431,10 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 }
             });
     }
+	
+	rebuildPartialSearchIndex(): void {
+		this.isPartialRebuildModalVisible = true;
+	}
 
     public isDisabled(model: CompanyRebuildJobStatusApiModel): boolean {
         return (+model.state === +CompanyRebuildJobStatusState.Active);

@@ -206,39 +206,7 @@ where p.type in (3,4)
 		]]>
     </rollback>
   </changeSet>
-  <changeSet author="MDonato" id="Data.Corrections.GOV-11768">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-drop view if exists [dbo].MapRuleItemDetail;
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-
-		]]>
-    </rollback>
-  </changeSet>
   
-  <changeSet author="MDonato" id="Data.Corrections.GOV-10308">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-drop table if exists metrics.TempScore;
-drop table if exists metrics.TempScoreItem;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
   <changeSet author="Pappas" id="Data.Corrections.GOV-10174">
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -591,74 +559,6 @@ and DefaultValue is not null and DefaultFormattedValue is null
 		]]>
 	</rollback>
   </changeSet>
-
-  <changeSet author="TDuric" id="Data.Corrections.GOV-10789-V2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-		
-update metrics.AssetVersion
-set State = 3
-where Uid in (
-select uid from metrics.assetversion where state = 3
-)
-and State = 1
-		
-drop table if exists #soloMetrics
-
-select uid, max(effectivedate) as EffectiveDate
-into #soloMetrics
-from metrics.assetversion where [state] = 3
-group by uid
-
-
-MERGE metrics.AssetVersion AV
-USING (
-	select uid, #soloMetrics.EffectiveDate, isnull(LastUsage.EffectiveDate, getdate()) as EffectiveEndDate from #soloMetrics
-	outer apply (
-	select top 1 EffectiveDate
-						  FROM[metrics].[ScoreItem]
-						  where metricassetuid = #soloMetrics.Uid
-						  order by EffectiveDate desc
-	)LastUsage
-)Data
-ON AV.State = 3 and av.uid = data.uid and av.effectivedate = data.effectivedate
-WHEN MATCHED
-    THEN UPDATE set AV.EffectiveEndDate = data.EffectiveEndDate;
-
-
-
-drop table if exists #multiMetrics
-
-select uid, count(*) as count
-into #multiMetrics
-from metrics.assetversion where [state] = 3
-group by uid having count(*) > 1
-
-MERGE metrics.AssetVersion AV
-USING (
-	select av.uid, av.EffectiveDate, Next.EffectiveDate as EffectiveEndDate 
-			from metrics.AssetVersion av
-			outer apply (select top 1 EffectiveDate from metrics.assetversion 
-				where uid = av.uid and av.effectivedate < effectivedate
-				order by EffectiveDate
-			)Next
-			where uid in (select uid from #multiMetrics)
-)Data
-ON AV.State = 3 and av.uid = data.uid and av.effectivedate = data.effectivedate and data.effectiveenddate is not null
-WHEN MATCHED
-    THEN UPDATE set AV.EffectiveEndDate = data.EffectiveEndDate;
-
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
   
   <changeSet author="TKlok" id="Data.Corrections.GOV-10856">
     <sql dbms="mssql"
@@ -689,39 +589,7 @@ DEALLOCATE cursorDelete;
 		]]>
     </sql>
 	</changeSet>
-	<changeSet author="bquinlivan" id="Data.Corrections.GOV-11092">
-    <sql dbms="mssql"
-			splitStatements="false"
-            stripComments="false">
-		<![CDATA[
-			Update FTL
-				Set FTL.[Definition] = REPLACE(FTL.[Definition], '"FieldTypeID":0,"FieldTypeName":"AssetPath"', '"FieldTypeID":0,"FieldTypeName":"_assetPath"')
-			FROM 
-				[dbo].[FieldTypeLookup] FTL
-				inner join 
-				FieldType FT on FT.ID = FTL.[FieldTypeID]
-			where 
-				FT.[Type] = 'ComplexRelationLookup'
-				and
-				FTL.Definition like '%"FieldTypeID":0,"FieldTypeName":"AssetPath"%' 
-		]]>
-    </sql>
-  </changeSet>
-  <changeSet author="TKlok" id="Data.Corrections.GOV-10856-2">
-    <sql dbms="mssql"
-			splitStatements="false"
-            stripComments="false">
-		<![CDATA[
-			UPDATE [dbo].[OrganizationType]
-			SET State = 3
-			WHERE State = 1 AND ID NOT IN (
-				SELECT ObjectID
-				FROM [dbo].[AssetType]
-				WHERE [Object] = 'OrganizationType'
-			)
-		]]>
-    </sql>
-	</changeSet>
+
   <changeSet author="TKlok" id="Data.Corrections.GOV-11037">
     <sql dbms="mssql"
 			splitStatements="false"
@@ -747,26 +615,7 @@ DEALLOCATE cursorDelete;
     </sql>
   </changeSet>
   
-  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11456-b">
-    <sql dbms="mssql"
-			splitStatements="false"
-            stripComments="false">
-      <![CDATA[
-		update assettype set DisplayFormat = '{Code}', UpdatedBy = 0, UpdatedOn = GETUTCDATE() where [object] = 'ReferenceItemType' and [name] = 'Rule Status' and DisplayFormat = '{Name}'
-		]]>
-    </sql>
-  </changeSet>
-
-  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11479">
-    <sql dbms="mssql"
-			splitStatements="false"
-            stripComments="false">
-      <![CDATA[
-		update assettype set DisplayFormat = '{Code}', UpdatedBy = 0, UpdatedOn = GETUTCDATE() where [object] = 'ReferenceItemType' and [name] = 'Rule Dimension' and DisplayFormat = '{Name}'
-		]]>
-    </sql>
-  </changeSet>
-  
+ 
  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-10">
     <sql dbms="mssql"
 			splitStatements="false"
@@ -960,46 +809,6 @@ from    metrics.Score T
     </sql>
 	</changeSet>
 	
-	<changeSet author="TDuric" id="Data.Corrections.GOV-12749">
-    <sql dbms="mssql" splitStatements="false" stripComments="false">
-<![CDATA[
-
-drop table if exists #delAssets
-create table #delAssets(
-	uid uniqueidentifier,
-	ObjectID int
-)
-
-drop table if exists #delRel
-create table #delRel(
-	uid uniqueidentifier,
-	ID int
-)
-
-insert into #delAssets
-select a.uid,a.ObjectID from asset a 
-	left join processexpandeddata pxd on pxd.fromuid = a.uid or pxd.touid = a.uid
-where a.Object = 'Task' and pxd.DiagramAssetUid is null
-
-insert into #delRel
-select i.uid,I.Id from #delAssets
-	inner join Asset A on A.uid = #delAssets.uid
-	inner join [Intersect] I on I.Object = A.Object and I.ObjectId = A.ObjectId
-union 
-select i.uid,I.Id from #delAssets
-	inner join Asset A on A.uid = #delAssets.uid
-	inner join [Intersect] I on I.Subject = A.Object and I.SubjectID = A.ObjectId
-
-delete from Field where ObjectType = 'Intersect' and ObjectID in (select ID from #delRel)
-
-delete from Field where ObjectType = 'Task' and ObjectID in (select ObjectId from #delAssets)
-delete from asset where uid in (select uid from #delAssets)
-
-delete from graph.AssetNode where uid in (select uid from #delAssets) and Class = 15
-]]>
-    </sql>
-	</changeSet>
-
 	<changeSet author="Pappas" id="Data.Corrections.GOV-12785-v1.2">
     <sql dbms="mssql" splitStatements="false" stripComments="false">
 <![CDATA[
@@ -1172,21 +981,6 @@ from	metrics.AssetVersion V
 		</sql>
 	</changeSet>
 
-	<changeSet author="TDuric" id="Data.Corrections.GOV-14813">
-			<sql dbms="mssql" splitStatements="false" stripComments="false">
-	<![CDATA[
-	UPDATE [dbo].[AssetType]
-	SET CanEditParent = 1
-	where CanEditParent IS NULL
-
-	ALTER TABLE [dbo].[AssetType]
-	ALTER COLUMN CanEditParent bit NOT NULL;
-	
-	ALTER TABLE [dbo].[AssetType] ADD  CONSTRAINT [DF_AssetType_CanEditParent]  DEFAULT ((1)) FOR [CanEditParent]
-	]]>
-		</sql>
-	</changeSet>
-
 	<changeSet author="TKlok" id="Data.Corrections.GOV-15034">
 	<validCheckSum>7:72d6d78e055f4cbc83f086229ca82525</validCheckSum>
 			<sql dbms="mssql" splitStatements="false" stripComments="false">
@@ -1198,44 +992,6 @@ from	metrics.AssetVersion V
 
 	DELETE FROM [dbo].[SiteNav]
 	WHERE Name = '#Fusion'
-	]]>
-		</sql>
-	</changeSet>
-
-
-	<changeSet author="Pappas" id="Data.Corrections.GOV-9838-2">
-		<sql dbms="mssql" splitStatements="false" stripComments="false">
-	<![CDATA[
-update graph.AssetEdge set [PredicateType] = 7 where [PredicateType] = 10;
-update [Predicate] set [Type] = 7 where [Type] = 10;	--Usage predicate change
-
-delete Field where ObjectType = 'Intersect' and ObjectID in (
-	select	I.ID
-	from	[Intersect] I 
-			inner join IntersectType T on T.ID = I.IntersectTypeID 
-			inner join [Predicate] P on P.Id = T.PredicateID and P.[Type] in (5,8,11)
-);
-
-delete	I
-from	graph.AssetEdge I 
-where	I.PredicateType in (5,8,11);
-
-delete	I
-from	[Intersect] I 
-		inner join IntersectType T on T.ID = I.IntersectTypeID 
-		inner join [Predicate] P on P.Id = T.PredicateID and P.[Type] in (5,8,11);
-
-delete FieldType where Object = 'IntersectType' and ObjectID in (
-	select	T.ID
-	from	IntersectType T
-			inner join [Predicate] P on P.Id = T.PredicateID and P.[Type] in (5,8,11)
-);
-
-delete	T
-from	IntersectType T
-		inner join [Predicate] P on P.Id = T.PredicateID and P.[Type] in (5,8,11);
-
-delete	[Predicate] where [Type] in (5,8,11);
 	]]>
 		</sql>
 	</changeSet>
@@ -1516,134 +1272,7 @@ drop table if exists #tempfieldid;
 		]]>
 	</rollback>
   </changeSet>
-
-  <changeSet author="Pappas" id="Data.Corrections.GOV-18632-Class1-v1.2">
-  <comment>Copy Business Asset segment data from graph table to dbo.AssetPath</comment>
-  <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-merge	AssetPath WITH (TABLOCKX, HOLDLOCK) as P
-using	(
-		select	G.ID, G.Segments 
-		from	graph.AssetNode G
-				inner join Asset A on A.ID = G.ID and G.[Class] = 1
-		) G 
-on		(G.ID = P.ID)
-when	not matched by target then
-insert	(ID, Segments)
-values	(G.ID, G.Segments);
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Data.Corrections.GOV-18632-Class2-v1.2">
-  <comment>Copy Technical Asset segment data from graph table to dbo.AssetPath</comment>
-  <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-merge	AssetPath WITH (TABLOCKX, HOLDLOCK) as P
-using	(
-		select	G.ID, G.Segments 
-		from	graph.AssetNode G
-				inner join Asset A on A.ID = G.ID and G.[Class] = 8
-		) G 
-on		(G.ID = P.ID)
-when	not matched by target then
-insert	(ID, Segments)
-values	(G.ID, G.Segments);
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Data.Corrections.GOV-18632-Class_AllOthers-v1.2">
-  <comment>Copy Non-Business and non-Technical segment data from graph table to dbo.AssetPath</comment>
-  <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-merge	AssetPath WITH (TABLOCKX, HOLDLOCK) as P
-using	(
-		select	G.ID, G.Segments 
-		from	graph.AssetNode G
-				inner join Asset A on A.ID = G.ID and G.[Class] not in (1,8)
-		) G 
-on		(G.ID = P.ID)
-when	not matched by target then
-insert	(ID, Segments)
-values	(G.ID, G.Segments);
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-		]]>
-	</rollback>
-  </changeSet>
   
-  <changeSet author="Pappas" id="Data.Corrections.GOV-18575-CopyAssetResultRecords-1.2">
-  <comment>Initially set by Quinlivan. Copy asset result data from graph table to non-graph table dbo.AssetResult</comment>
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-		<![CDATA[
-merge	AssetResult T
-using	(
-		SELECT 	ARD.*,
-				An.[Uid] as OwningAssetUid
-		FROM	AssetResultDepricated ARD,
-				AssetResultEdge Oe,
-				graph.AssetNode An
-		WHERE	match(An-(Oe)->ARD)
-				and Oe.Class = 1
-		) S
-on		(T.Uid = S.Uid)
-when	matched then
-update	set
-		T.OwningAssetUid = S.OwningAssetUid,
-		T.EffectiveDate = S.EffectiveDate,
-		T.RunDate = S.RunDate,
-		T.PassCount = S.PassCount,
-		T.FailCount = S.FailCount,
-		T.CreatedBy = S.CreatedBy,
-		T.CreatedOn = S.CreatedOn,
-		T.UpdatedBy = S.UpdatedBy,
-		T.UpdatedOn = S.UpdatedOn
-when not matched then
-insert	(Uid, EffectiveDate, OwningAssetUid, RunDate, PassCount, FailCount, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-values	(S.Uid, S.EffectiveDate, S.OwningAssetUid, S.RunDate, S.PassCount, S.FailCount, S.CreatedBy, S.CreatedOn, S.UpdatedBy, S.UpdatedOn);
-
-merge	AssetResult T
-using	(
-		SELECT 	ARD.[Uid],
-				En.[Uid] as EvaluatedAssetUid
-		FROM	AssetResultDepricated ARD,
-				AssetResultEdge Ee,
-				graph.AssetNode En
-		WHERE	match(En-(Ee)->ARD)
-				and Ee.Class = 2
-		) S
-on		(T.Uid = S.Uid)
-when	matched then
-update	set
-		T.EvaluatedAssetUid = S.EvaluatedAssetUid;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-		]]>
-	</rollback>
-  </changeSet>
-
   <changeSet author="Pappas" id="Data.Corrections.GOV-18612">
   <validCheckSum>7:295c472b9c68f533e2b8929af6797c49</validCheckSum>
   <comment>Intersect table new column data updates</comment>
@@ -1813,5 +1442,218 @@ ENABLE TRIGGER ALL ON [dbo].[Intersect];
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+  <changeSet author="Puneet Gupta" id="Data.Corrections.GOV-18457">
+  <comment>Update Asset/AssetID column</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+update	F
+set		F.AssetID = A.ID
+from	Follow F 
+		inner join Asset A on A.Object = F.ObjectType and A.ObjectId = F.ObjectId
+where   F.FollowTypeID = 1
+		and F.AssetID is null
+		and F.AssetTypeID is null;
 
+update	F
+set		F.AssetTypeID = ATT.ID
+from	Follow F 
+		inner join AssetType ATT on ATT.Object = F.ObjectType and ATT.ObjectId = F.ObjectId
+where   F.FollowTypeID = 3 
+		and F.ObjectType in ('ArtifactType','ReferenceItemType','PolicyType','TaxonomyType','RuleType')
+		and F.AssetID is null
+		and F.AssetTypeID is null;
+
+update	F
+set		F.AssetTypeID = (select top 1 ATT.ID from AssetType ATT where ATT.object = 'GroupType') 
+from	Follow F 
+where   F.ObjectType = 'Group' 
+		and F.ObjectID = 0 
+		and F.FollowTypeID = 3
+		and F.AssetID is null
+		and F.AssetTypeID is null;
+
+update	F
+set		F.AssetTypeID = (select top 1 ATT.ID from AssetType ATT where ATT.object = 'ResourceType') 
+from	Follow F 
+where   F.ObjectType = 'ResourceType' 
+		and F.FollowTypeID = 3
+		and F.AssetID is null
+		and F.AssetTypeID is null;
+		
+update	F
+set		F.AssetID = A.ID
+from	Follow F 
+		inner join Asset A on A.Object = F.ObjectType and A.ObjectId = F.ObjectId
+where   F.FollowTypeID = 3 
+		and F.ObjectType in ('Policy','Taxonomy') 
+		and F.AssetID is null
+		and F.AssetTypeID is null;
+		
+if exists(select 1 from Follow F where F.AssetID is null and F.AssetTypeID is null)
+begin
+	update	F
+	set		F.AssetID = A.ID
+	from	Follow F 
+			inner join Asset A on A.Object = F.ObjectType and A.ObjectId = F.ObjectId
+	where 	F.AssetID is null
+			and F.AssetTypeID is null;
+	
+	update	F
+	set		F.AssetTypeID = ATT.ID
+	from	Follow F 
+			inner join AssetType ATT on ATT.Object = F.ObjectType and ATT.ObjectId = F.ObjectId
+	where   F.AssetID is null
+			and F.AssetTypeID is null;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+  <changeSet author="TKlok" id="Data.Corrections.GOV-19410">
+  <comment>GOV-19410 Correct lookup values in rule conditions</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+begin
+
+declare @iteration int, @itearationMax int;
+
+set @iteration = 0;
+select @itearationMax = max(cnt) from (
+	select (
+		select count(*) from OPENJSON(rtrr.definition, '$.When') with
+		(
+			FieldTypeid int '$.FieldTypeID',
+			Value NVARCHAR(max) '$.Value'
+		) as summary
+		inner join FieldType ft on ft.id = summary.FieldTypeid
+		where ft.Type = 'Lookup'
+		and isnumeric(summary.value) <> 1
+	) as cnt
+from ResponsibilityTypeRelationRule rtrr
+) cntSel;
+
+While (@iteration < @itearationMax)
+begin
+	update rtrr
+	set rtrr.Definition = JSON_MODIFY(rtrr.definition, concat('$.When[', j1.[key], '].Value') COLLATE SQL_Latin1_General_CP1_CI_AS, flv.value)
+		,rtrr.UpdatedOn = getdate()
+	from ResponsibilityTypeRelationRule as rtrr
+	cross apply OPENJSON(rtrr.definition, '$.When') j1
+	cross apply OPENJSON(j1.[value], '$')
+	with (
+		FieldTypeid int '$.FieldTypeID',
+		Value NVARCHAR(max) '$.Value'
+	) as summary
+	inner join FieldType ft on ft.id = summary.FieldTypeid
+	cross apply (select top 1 value from FieldLookupValue flv where flv.FieldTypeID = ft.id and summary.value = flv.text)flv(value)
+	where ft.Type = 'Lookup'
+	and isnumeric(summary.value) <> 1;
+
+	set @iteration = @iteration+1;
+end;
+
+
+set @iteration = 0;
+select @itearationMax = max(cnt) from (
+	select (
+		select count(*) from OPENJSON(rtrr.definition, '$.Then.Conditions') with
+		(
+			FieldTypeid int '$.FieldTypeID',
+			Value NVARCHAR(max) '$.Value'
+		) as summary
+		inner join FieldType ft on ft.id = summary.FieldTypeid
+		where ft.Type = 'Lookup'
+		and isnumeric(summary.value) <> 1
+	) as cnt
+from ResponsibilityTypeRelationRule rtrr
+) cntSel;
+
+While (@iteration < @itearationMax)
+begin
+	update rtrr
+	set rtrr.Definition = JSON_MODIFY(rtrr.definition, concat('$.Then.Conditions[', j1.[key], '].Value') COLLATE SQL_Latin1_General_CP1_CI_AS, flv.value)
+		,rtrr.UpdatedOn = getdate()
+	from ResponsibilityTypeRelationRule as rtrr
+	cross apply OPENJSON(rtrr.definition, '$.Then.Conditions') j1
+	cross apply OPENJSON(j1.[value], '$')
+	with (
+		FieldTypeid int '$.FieldTypeID',
+		Value NVARCHAR(max) '$.Value'
+	) as summary
+	inner join FieldType ft on ft.id = summary.FieldTypeid
+	cross apply (select top 1 value from FieldLookupValue flv where flv.FieldTypeID = ft.id and summary.value = flv.text)flv(value)
+	where ft.Type = 'Lookup'
+	and isnumeric(summary.value) <> 1;
+
+	set @iteration = @iteration+1;
+end;
+
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
+   <changeSet author="Pappas" id="Data.Corrections.GOV-19236">
+  <comment>GOV-19236 - remove the Custom API environment setting</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+delete [Setting] where ID = 50
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Andrii Kunetskyi" id="Data.Corrections.GOV-19439">
+  	<preConditions onFail="MARK_RAN">
+		<columnExists tableName="Favorite" schemaName="dbo" columnName="Object" />
+	</preConditions>
+	<comment>GOV-19439 - we need to perform the following scripts after the whole DB is created.</comment>	
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		update Favorite
+			set AssetId = a.ID
+		from Favorite f
+		left join Asset a on a.Object = f.Object and a.ObjectID = f.ObjectID
+		where f.Object is not null and f.Object != 'SemanticType' and f.Object not like '%Type'
+		
+		update Favorite 
+			set AssetTypeId = at.ID
+		from Favorite f
+		left join AssetType at on at.Object = f.Object and at.ObjectID = f.ObjectID
+		where f.Object is not null and f.Object != 'SemanticType' and f.Object like '%Type'
+		
+		update Favorite
+			set SemanticId = s.ID
+		from Favorite f
+		left join Semantic s on s.ID = f.ObjectID
+		where f.Object is not null and f.Object = 'SemanticType'
+
+		alter table dbo.Favorite
+		drop column Object
+
+		alter table dbo.Favorite
+		drop column ObjectID
+	]]>
+	</sql>
+  </changeSet>
+  
 </databaseChangeLog>

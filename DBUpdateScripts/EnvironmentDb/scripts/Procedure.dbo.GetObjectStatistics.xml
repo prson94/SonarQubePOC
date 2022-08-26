@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Procedure.dbo.GetObjectStatistics-v4">
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetObjectStatistics-v5">
+    <comment>GOV-19408</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -28,7 +29,7 @@ BEGIN
 		select NULL, count(1), 'Followers', '', max(datecreated),null
 		from	Follow F
 		inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID
-		where	F.ObjectType = @type and F.ObjectID = @id
+		where	F.AssetId = @assetId
 	
 	insert into @table
 		select	NULL, count(1), 'Comments', '', max(CreatedOn),null
@@ -97,10 +98,9 @@ BEGIN
 	insert into @table
 		select	NULL, count(1), 'Comments', '', max(CreatedOn),null
 		from	Comment C
-				inner join CommentRelation R	on R.CommentID = C.ID and C.ParentID is null
-												and R.AssetID = @assetId
-                                                and C.ParentID is null
-												and C.IsDeleted = 0
+		where	C.ParentID is null 
+				and C.IsDeleted = 0 
+				and (C.AssetID = @assetId or exists (select 1 from CommentRelation R where R.CommentID = C.ID and R.AssetID = @assetId))
 
 	insert into @table 
 		select	NULL, cast(Value * 100 as int), 'Score', '', coalesce(S.RunDate, S.EffectiveDate), null

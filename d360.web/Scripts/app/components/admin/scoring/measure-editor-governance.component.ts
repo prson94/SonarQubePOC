@@ -163,7 +163,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
         if (this.screenReferences.predicates && this.screenReferences.predicates.length) {
             this.predicateTypes = this.screenReferences.predicates
-                .filter(x => this.restrictedPredicateTypes.indexOf(x.Type) == -1)
+                .filter((x) => this.restrictedPredicateTypes.indexOf(x.Type) == -1)
                 .map((x, idx, self) => {
                     let label = x.Name + '/' + x.Inverse + ' (' + x.FriendlyTypeName + ')';
                     return { label: label, value: x.Uid };
@@ -174,8 +174,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
         if (this.screenReferences.relationships && this.screenReferences.relationships.length) {
             this.relationshipTypes = this.screenReferences.relationships
-                .filter(x => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) == -1)
-                .map(x => {
+                .filter((x) => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) == -1)
+                .map((x) => {
                     let isSubject = (x.Subject.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());
                     let isObject = (x.Object.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());
                     let label = "";
@@ -380,7 +380,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                         val2 = null;
                     }
 
-                    this.model.Definition.Governance.Field.Values = [condition.value, val2].filter(x => { return x !== null; });
+                    this.model.Definition.Governance.Field.Values = [condition.value, val2].filter((x) => { return x !== null; });
                 }
                 break;
             default:
@@ -454,8 +454,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             if (updated.Governance.Field && this.testFieldConditions[0] &&
                 ((this.testFieldConditions[0].field != original.Governance.Field.FieldTypeName)
                     || !(this.testFieldConditions[0].operator == original.Governance.Field.Operator || Operator[this.testFieldConditions[0].operator] == <any>original.Governance.Field.Operator)
-                    || original.Governance.Field.Values.length != [this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter(x => { return x !== null && x !== undefined; }).length
-                    || (original.Governance.Field.Values.length > 0 && ![this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter(x => { return x !== null && x !== undefined; }).every(v => original.Governance.Field.Values.indexOf(v) > -1))
+                    || original.Governance.Field.Values.length != [this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter((x) => { return x !== null && x !== undefined; }).length
+                    || (original.Governance.Field.Values.length > 0 && ![this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter((x) => { return x !== null && x !== undefined; }).every((v) => original.Governance.Field.Values.indexOf(v) > -1))
                 )
             ) {
                 return true;
@@ -518,7 +518,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                     || !(updated.Governance.Relation.Operator == original.Governance.Relation.Operator || Operator[updated.Governance.Relation.Operator] == <any>original.Governance.Relation.Operator)
                     || (
                         updated.Governance.Relation.Values &&
-                        !updated.Governance.Relation.Values.every(v => original.Governance.Relation.Values.indexOf(v) > -1)
+                        !updated.Governance.Relation.Values.every((v) => original.Governance.Relation.Values.indexOf(v) > -1)
                     )
                 )
             ) {

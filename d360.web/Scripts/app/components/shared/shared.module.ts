@@ -1,4 +1,4 @@
-﻿import { NgModule }       from '@angular/core';
+﻿﻿﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 
@@ -31,9 +31,8 @@ import { SharedObjectDetailsModule } from './objectdetails/shared-object-details
 import { AdvancedFiltersModule } from "../assets-grid/advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
 
-import { MessagesBarComponent } from './messages-bar.component';
+import { RelocateButtonsComponent } from './relocate-buttons/relocate-buttons.component';
 import { ObjectDefinitionTile } from './object-definition.tile';
-import { ObjectFollowersComponent } from './object-followers.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
 import { UserListComponent } from './user/user-list.component';
@@ -44,17 +43,15 @@ import { AssetEditorModule } from './asset-editor/asset-editor.module';
 
 @NgModule({
     declarations: [                           
-        MessagesBarComponent,                                        
+        RelocateButtonsComponent,
         ObjectDefinitionTile,
-        ObjectFollowersComponent,                          
         ResourceResponsibilityComponent,        
         ResourceResponsibilityGridComponent,      
         UserListComponent
     ],
     exports: [                                                                                                                                        
-        MessagesBarComponent,                                                  
+        RelocateButtonsComponent,
         ObjectDefinitionTile,
-        ObjectFollowersComponent,                                 
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,               
         UserListComponent

@@ -63,21 +63,21 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     }
 
     clearCurrentObjectInfo() {
-        this.currentObject = { type: null, id: null };
-        this.currentObjectInfoSource.next({ type: null, id: null });
+		this.currentObject = { type: null, id: null, AssetTypeUid: null, AssetUid: null };
+		this.currentObjectInfoSource.next({ type: null, id: null, AssetTypeUid: null, AssetUid: null });
     }
 
     updateCurrentPath(oldValue: string, value: string) {
         this.updateCurrentObjectPath.next({ oldValue, value });
     }
 
-    setCurrentObjectInfo(type: string, id: number) {
-        this.currentObject = { type: type, id: id };
-        this.currentObjectInfoSource.next({ type: type, id: id });
-    }
+	setCurrentObjectInfo(type: string, id: number, AssetTypeUid: string = null, AssetUid: string = null) {
+		this.currentObject = { type: type, id: id, AssetTypeUid: AssetTypeUid, AssetUid: AssetUid };
+		this.currentObjectInfoSource.next({ type: type, id: id, AssetTypeUid: AssetTypeUid, AssetUid: AssetUid });
+	}
 
     showBreadcrumb(breadcrumb: Breadcrumb) {
-        this.breadcrumbSource.next(breadcrumb);
+		this.breadcrumbSource.next(breadcrumb);
     }
 
     setCurrentObjectState(objectState: string) {

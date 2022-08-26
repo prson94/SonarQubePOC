@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
 
 using d360.core.enums;
 
 namespace d360.core.entities.Membership
 {
-    public enum FavoritePageType
+	public enum FavoritePageType
     {
         Artifact,
         SearchResultsPage,
@@ -19,15 +18,13 @@ namespace d360.core.entities.Membership
         SemanticTypePage
     }
 
-    public interface IFavoriteUpsert
-    {
-        string Route { get; set; }
-    }
+	public class FavoriteApiModel
+	{
+		public int Id { get; set; }
 
-    public class FavoriteApiModel : IFavoriteUpsert
-    {
-        [DataMember]
-        public string Route { get; set; }
+		public string Type { get; set; }
+
+		public string Route { get; set; }
     }
 
     public class FavoriteApiViewModel

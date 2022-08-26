@@ -155,8 +155,10 @@ export class ResponsibilityTypeRelationRuleDefinitionWhenItem {
     ValueOptions: SelectItem[] = [];
     IntersectTypeValueOptions: (SelectItem & { assetUid: string })[] = [];
     IsLookup: boolean = false;
-    IsBool: boolean = false;
-    IsloadValuesForIntersectType: boolean = false;
+	IsBool: boolean = false;
+	IsSimpleText: boolean = false;
+	IsloadValuesForIntersectType: boolean = false;
+	Operator: string;
 }
 
 export class ResponsibilityTypeRelationRuleDefinitionThen {
@@ -170,7 +172,10 @@ export class ResponsibilityTypeRelationRuleDefinitionThenItem {
     FieldTypeID: number;
     FieldTypeName: string;
     ValueOptions: SelectItem[] = [];
-    Value: string;
+	Value: string;
+	Operator: string;
+	Object: string;
+	ObjectID: number = 1;
 }
 
 export class ResponsibilityTypeRelationRuleFormData {
@@ -184,22 +189,26 @@ export class ResponsibilityTypeRelationRuleFormDataFieldType {
     isLookup: boolean;
     values: (SelectItem & { assigneeUid?: string })[] = [];
     assigneeTypeUid?: string;
-    fieldTypeName?: string;
+	fieldTypeName?: string;	
+	Operator: string;
+	isSimpleText: boolean = false;
 }
 
 export interface RuleRelationConditionV2 {
     IntersectTypeUid: string | undefined;
-    AssetUid: string | undefined;
+	AssetUid: string | undefined;
+	Operator: string;
 }
 
 export interface RuleFieldConditionV2 {
     ApiName: string;
-    Value: string;
+	Value: string;
+	Operator: string;
 }
 
 export interface RuleWhenV2 {
     Field?: RuleFieldConditionV2;
-    Relation?: RuleRelationConditionV2;
+	Relation?: RuleRelationConditionV2;	
 }
 
 export interface ResponsibilityRuleTestRow {
@@ -214,12 +223,14 @@ export type ResponsibilityRuleTestResponseModel = {
 }
 
 export interface RuleAsigneeConditionV2 {
+	AssigneeTypeUid?: string;
     Uid?: string;
 }
 
 export interface RuleThenV2 {
     Field?: RuleFieldConditionV2;
-    Assignee?: RuleAsigneeConditionV2;
+	Assignee?: RuleAsigneeConditionV2;
+	AssigneeTypeUid?: string;
 }
 
 export interface RuleThenWrapperV2 {
@@ -235,5 +246,5 @@ export class ResponsibilityTypeRelationRuleDefinitionV2 {
 
 export class ResponsibilityTypeRelationRuleV2 {
     AssetTypeUid: string;
-    Definition: ResponsibilityTypeRelationRuleDefinitionV2;
+	Definition: ResponsibilityTypeRelationRuleDefinitionV2;
 }

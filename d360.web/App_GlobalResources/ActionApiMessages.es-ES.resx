@@ -1,0 +1,241 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ActionAssetCommentBody" xml:space="preserve">
+    <value>Nuevo {0} realizado.</value>
+  </data>
+  <data name="ActionCreatedMsg" xml:space="preserve">
+    <value>Acción creada</value>
+  </data>
+  <data name="ActionTypeNotFound" xml:space="preserve">
+    <value>Tipo de acción no encontrado</value>
+  </data>
+  <data name="ActionTypeUidIsNotValid" xml:space="preserve">
+    <value>No se ha encontrado el tipo de acción con UID {0}.</value>
+  </data>
+  <data name="ActionUidNotFound" xml:space="preserve">
+    <value>No se ha encontrado la acción con UID {0}.</value>
+  </data>
+  <data name="AddAllocationsSuccessful" xml:space="preserve">
+    <value>Asignaciones añadidas correctamente</value>
+  </data>
+  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
+    <value>Asignación añadida correctamente</value>
+  </data>
+  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
+    <value>No tiene permisos para añadir acciones a este activo.</value>
+  </data>
+  <data name="AssetNotFound" xml:space="preserve">
+    <value>No se pudo encontrar el activo con el UID {0}.</value>
+  </data>
+  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
+    <value>No tiene permisos para añadir acciones a este tipo de activo.</value>
+  </data>
+  <data name="AssettypeInvalidClass" xml:space="preserve">
+    <value>El tipo de activo tiene una clase no válida.</value>
+  </data>
+  <data name="AssetTypeNotFound" xml:space="preserve">
+    <value>No se pudo encontrar el tipo de activo con el UID {0}.</value>
+  </data>
+  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
+    <value>Se debe proporcionar el AssetTypeUid o AssetUid.</value>
+  </data>
+  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
+    <value>{0} no es un UID de tipo de activo válido.</value>
+  </data>
+  <data name="AssetUidIsNotValid" xml:space="preserve">
+    <value>{0} no es un UID de activo válido.</value>
+  </data>
+  <data name="CascadeDeleteActionType" xml:space="preserve">
+    <value>El tipo de acción tiene acciones asociadas. Habilite la solicitud en cascada que desee eliminar.</value>
+  </data>
+  <data name="ChildRecordExistsIssueType" xml:space="preserve">
+    <value>El tipo de acción seleccionado ({0}) tiene acciones asociadas, por lo que no se puede eliminar.</value>
+  </data>
+  <data name="DeleteAllocationSuccessful" xml:space="preserve">
+    <value>Asignación borrada correctamente.</value>
+  </data>
+  <data name="EmptyAllocationRequest" xml:space="preserve">
+    <value>No se han proporcionado UID de tipos de activos.</value>
+  </data>
+  <data name="InvalidActionTypeUid" xml:space="preserve">
+    <value>Se necesita un UID de tipo de acción válido.</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>AssetTypeUid no válido proporcionado.</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>AssetUid no válido proporcionado.</value>
+  </data>
+  <data name="InvalidDirectionPassed" xml:space="preserve">
+    <value>Dirección pasada en la solicitud no válida.</value>
+  </data>
+  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
+    <value>El valor de los flujos de trabajo Límite a Activo proporcionado no es válido.</value>
+  </data>
+  <data name="InvalidOrder" xml:space="preserve">
+    <value>Orden no válida pasada en la solicitud.</value>
+  </data>
+  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
+    <value>{0} es un responsibilityTypeUid no válido para {1}.</value>
+  </data>
+  <data name="NameMaxLength250Char" xml:space="preserve">
+    <value>El nombre proporcionado debe tener menos de 250 caracteres.</value>
+  </data>
+  <data name="NameNotEmptyAndRequired" xml:space="preserve">
+    <value>Cadena vacía proporcionada para el nombre. No puede estar vacío.</value>
+  </data>
+  <data name="NameNotNull" xml:space="preserve">
+    <value>El nombre es un campo obligatorio.</value>
+  </data>
+  <data name="NoMatchingAllocation" xml:space="preserve">
+    <value>No existe ninguna asignación de correspondencia para '{0}' en el tipo de acción '{1}'</value>
+  </data>
+  <data name="OrderByFieldNotFound" xml:space="preserve">
+    <value>Campo Ordenar por no encontrado</value>
+  </data>
+  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
+    <value>No se ha encontrado el campo especificado para la ordenación ({0}).</value>
+  </data>
+  <data name="RelationShipTypeUidNotFound" xml:space="preserve">
+    <value>No se ha encontrado el tipo de relación con UID {0}.</value>
+  </data>
+  <data name="ResourceUidNotFound" xml:space="preserve">
+    <value>El UID del recurso proporcionado no existe.</value>
+  </data>
+  <data name="ResourceUidNotValid" xml:space="preserve">
+    <value>El UID del recurso proporcionado no es válido.</value>
+  </data>
+  <data name="UidNotEmptyAndRequired" xml:space="preserve">
+    <value>Se necesita un UID válido.</value>
+  </data>
+  <data name="UidNotValid" xml:space="preserve">
+    <value>El UID proporcionado no es válido.</value>
+  </data>
+  <data name="UniqueAllocation" xml:space="preserve">
+    <value>La asignación ya existe.</value>
+  </data>
+  <data name="UniqueNameWorkflowAction" xml:space="preserve">
+    <value>El nombre deber ser único. Ya existe una acción de flujo de trabajo con este nombre</value>
+  </data>
+  <data name="UniqueUid" xml:space="preserve">
+    <value>El UID proporcionado ya está en uso.</value>
+  </data>
+  <data name="UserUidNotFound" xml:space="preserve">
+    <value>Usuario con UID {0} no encontrado</value>
+  </data>
+</root>

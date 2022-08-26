@@ -1375,8 +1375,43 @@ namespace d360.web.Controllers
 		[HttpGet, Route("followinfo/{type}/{id:int}")]
 		public dynamic GetFollowInfo(int id, SystemObjects type)
 		{
-			var following = Company.IsUserFollowing(type, id, null);
-			var followParent = Company.GetFollowingParent(type, id, null);
+			int? assetTypeid = 0;
+			long? assetid = 0;
+			var sType = type.ToString();
+
+			if (!type.ToString().ToLower().EndsWith("type") && Company.Any<Asset>(x => x.Object == sType && x.ObjectID == id))
+			{
+				assetid = Company.Filter<Asset>(x => x.Object == sType && x.ObjectID == id).SingleOrDefault().ID;
+			}
+			else if (Company.Any<AssetType>(x => x.Object == sType && x.ObjectID == id))
+			{
+				assetTypeid = Company.Filter<AssetType>(x => x.Object == sType && x.ObjectID == id).SingleOrDefault().ID;
+			}
+
+			return GetFollowInfo(assetTypeid, assetid);
+		}
+
+		[HttpGet, Route("followinfo/{assetTypeUid:Guid}/{assetUid:Guid}")]
+		public dynamic GetFollowInfo(Guid? assetTypeUid, Guid? assetUid)
+		{
+			int? AssettypeID = 0;
+			long? AssetID = 0;
+			if (assetUid != Guid.Empty && Company.Any<Asset>(x => x.uid == assetUid))
+			{
+				AssetID = Company.Filter<Asset>(x => x.uid == assetUid).SingleOrDefault().ID;
+			}
+			else if (assetTypeUid != Guid.Empty && Company.Any<AssetType>(x => x.uid == assetTypeUid))
+			{
+				AssettypeID = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault().ID;
+			}
+			return GetFollowInfo(AssettypeID, AssetID);
+		}
+
+		[HttpGet, Route("followinfo/{assetTypeid}/{assetid}")]
+		public dynamic GetFollowInfo(int? assetTypeid, long? assetid)
+		{
+			var following = Company.IsUserFollowing(assetTypeid, assetid, null);
+			var followParent = Company.GetFollowingParent(assetTypeid, assetid, null);
 			var followingParent = followParent != null && followParent.FollowTypeID == FollowType.Parent;
 
 			return new
@@ -4661,8 +4696,39 @@ where v.id = {0}", id)).FirstOrDefault();
 		[Route("{type}/{id:int}/followers")]
 		public IQueryable<FollowDetail> GetFollowers(SystemObjects type, int id)
 		{
-			return Company.GetFollowersByObject(type, id);
+			int? assetTypeid = 0;
+			long? assetid = 0;
+			var sType = type.ToString();
+
+			if (!type.ToString().ToLower().EndsWith("type") && Company.Any<Asset>(x => x.Object == sType && x.ObjectID == id))
+			{
+				assetid = Company.Filter<Asset>(x => x.Object == sType && x.ObjectID == id).SingleOrDefault().ID;
+			}
+			else if (Company.Any<AssetType>(x => x.Object == sType && x.ObjectID == id))
+			{
+				assetTypeid = Company.Filter<AssetType>(x => x.Object == sType && x.ObjectID == id).SingleOrDefault().ID;
+			}
+
+			return Company.GetFollowersByObject(assetTypeid, assetid);
 		}
+
+		[Route("{assetTypeUid:Guid}/{assetUid:Guid}/followers")]
+		public IQueryable<FollowDetail> GetFollowers(Guid? assetTypeUid, Guid? assetUid)
+		{
+			int? AssettypeID = 0;
+			int? AssetID = 0;
+			if (assetUid != Guid.Empty)
+			{
+				AssetID = (int)Company.Filter<Asset>(x => x.uid == assetUid).SingleOrDefault().ID;
+			}
+			else if (assetTypeUid != Guid.Empty)
+			{
+				AssettypeID = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault().ID;
+			}
+
+			return Company.GetFollowersByObject(AssettypeID, AssetID);
+		}
+
 
 		[Route("{id:int}/permissionsbyid")]
 		public List<PermissionInfo> GetPermissionsObject(int id)
@@ -5073,17 +5139,25 @@ where v.id = {0}", id)).FirstOrDefault();
 		[Route("CountItems/Activity/{assetTypeId}/{days}")]
 		public IEnumerable<AssetDetail> GetAreaActivityItems(int assetTypeId, int days)
 		{
-			var sql = @"select * from AssetDetail where AssetTypeID = @assetTypeId";
+			var dbArgs = new DynamicParameters();
+			var sql = @"select * from AssetDetail a where a.AssetTypeID = @assetTypeId ";
+			dbArgs.Add("@assetTypeId", assetTypeId);
+
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				sql += "and not exists(select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = a.AssetTypeID) ";
+				sql += "and not exists(select 1 from AssetsByTypeUserCantRead(@userId, a.AssetTypeID) u where u.AssetID = a.ID) ";
+				dbArgs.Add("@userId", Company.CurrentResourceID);
+			}
 
 			if (days != 0)
 			{
-				days = days * -1;
-				sql += " and (CreatedOn > dateadd(day, @d, CURRENT_TIMESTAMP) or UpdatedOn > dateadd(day, @d, CURRENT_TIMESTAMP))";
-
-				return Company.Query<AssetDetail>(sql, new { assetTypeId, d = days });
+				days *= -1;
+				sql += " and (a.CreatedOn > dateadd(day, @d, CURRENT_TIMESTAMP) or a.UpdatedOn > dateadd(day, @d, CURRENT_TIMESTAMP))";
+				dbArgs.Add("@d", days);
 			}
 
-			return Company.Query<AssetDetail>(sql, new { assetTypeId });
+			return Company.Query<AssetDetail>(sql, dbArgs);
 		}
 
 		[Route("Count/{area}/{days}")]
@@ -5117,19 +5191,57 @@ where v.id = {0}", id)).FirstOrDefault();
 
 		private IEnumerable<CountModel> LoadArtifactActivityCount(int days)
 		{
+			var dbArgs = new DynamicParameters();
 			string sql;
+			string innerQuery;
+			var whereClauses = new List<string>();
+
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				whereClauses.Add("not exists(select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = a.AssetTypeID)");
+				whereClauses.Add("not exists(select 1 from AssetsByTypeUserCantRead(@userId, a.AssetTypeID) u where u.AssetID = a.ID)");
+				dbArgs.Add("@userId", Company.CurrentResourceID);
+			}
 
 			if (days != 0)
 			{
-				days = days * -1;
-				sql = QueryConstants.ArtifactActivitySpecificDateCountList;
+				days *= -1;
+				dbArgs.Add("@d", days);
+				innerQuery = @"select  at.Name,
+						case when datediff(day, CURRENT_TIMESTAMP, a.createdon) <= @d then 0 else 1 end as New,
+						case when datediff(day, CURRENT_TIMESTAMP, a.UpdatedOn) <= @d then 0 else 1 end as Total,
+						at.id as Id								
+				from    Asset a
+						inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'";
+				whereClauses.Add("(a.CreatedOn > dateadd(day, @d, CURRENT_TIMESTAMP) or a.UpdatedOn > dateadd(day, @d, CURRENT_TIMESTAMP))");
 			}
 			else
 			{
-				sql = QueryConstants.ArtifactActivityAllDateCountList;
+				innerQuery = @"
+				select  at.Name,
+						1 as New,        					
+						1 as Total,
+						at.id as Id								
+				from    Asset a
+						inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'";
 			}
 
-			return Company.Query<CountModel>(sql, new { d = days });
+			if(whereClauses.Any())
+			{
+				innerQuery += " where " + string.Join(" and ", whereClauses.ToArray());
+			}
+
+			sql = $@"
+				select 
+					Name,
+					sum(New) as New,
+					sum(Total) as Total,
+					Id
+				from
+				({innerQuery}) T
+				group by Name, Id order by Name";
+
+			return Company.Query<CountModel>(sql, dbArgs);
 		}
 
 		private async Task<IEnumerable<CountModel>> LoadSocialActivityCount(int days, int resourceId)
@@ -5405,95 +5517,5 @@ where v.id = {0}", id)).FirstOrDefault();
 		}
 
 		#endregion
-
-		#region Custom API
-
-		[Route("custom/services")]
-		public List<ApiService> GetCustomAPIServices()
-		{
-			return Company.ApiServices.ToList();
-		}
-
-		[Route("custom/service/{id:int}/namespaces")]
-		public List<ApiNamespace> GetCustomAPINamespaces(int id)
-		{
-			return Company.ApiNamespaces.Where(i => i.ServiceID == id).ToList();
-		}
-
-		[Route("custom/service/{id:int}")]
-		public ApiService GetCustomAPIService(int id)
-		{
-			return Company.ApiServices.FirstOrDefault(x => x.ID == id);
-		}
-
-		[Route("custom/service/{serviceId:int}/endpoints")]
-		public List<ApiEndpoint> GetCustomAPIServiceEndpoints(int serviceId)
-		{
-			return Company.ApiEndpoints.Where(x => x.ServiceID == serviceId).ToList();
-		}
-
-		[Route("custom/endpoint/{endpointId:int}")]
-		public ApiEndpoint GetCustomAPIServiceEndpoint(int endpointId)
-		{
-			return Company.ApiEndpoints.FirstOrDefault(x => x.ID == endpointId);
-		}
-
-		[Route("custom/endpoint/{endpointId:int}/versions")]
-		public List<dynamic> GetCustomAPIEndpointVersions(int endpointId)
-		{
-			return Company.Query<dynamic>(@"select 
-										v.*,
-										e.ID as EntityID
-									from api.EndpointVersion v
-									inner join api.Entity e on v.id = e.endpointversionid
-									where v.endpointid = @id", new { id = endpointId }).ToList();
-		}
-
-		[Route("custom/version/{versionId:int}/fields")]
-		public List<dynamic> GetCustomAPIVersionFields(int versionId)
-		{
-			var entity = Company.ApiEntities.FirstOrDefault(x => x.EndpointVersionID == versionId);
-
-			if (entity == null)
-			{
-				return null;
-			}
-
-			var types = DataType.Text.GetDataTypeInfoList();
-			var fields = Company.Query<dynamic>(@"select 
-										   eft.*,
-										   ft.Name,
-										   ft.Type
-									   from api.entityfieldtype eft
-									   inner join fieldtype ft on ft.id = eft.fieldtypeid                                    
-									   where eft.entityid = @id", new { id = entity.ID }).ToList();
-
-			foreach (var field in fields)
-			{
-				var t = types.FirstOrDefault(x => x.Name == field.Type);
-
-				if (t != null)
-				{
-					field.Type = t.Description;
-				}
-			}
-
-			return fields;
-		}
-
-		[Route("custom/version/{versionId:int}/uritypes")]
-		public List<ApiEntityUri> GetCustomAPIVersionUriTypes(int versionId)
-		{
-			var entity = Company.ApiEntities.FirstOrDefault(x => x.EndpointVersionID == versionId);
-
-			if (entity == null)
-			{
-				return null;
-			}
-
-			return Company.ApiEntityUris.Where(x => x.EntityID == entity.ID).ToList();
-		}
-
-		#endregion        
 	}
 }

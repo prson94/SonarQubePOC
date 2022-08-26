@@ -127,10 +127,10 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     getPredicates() {
         this.isLoading = true;
         this.predicatesService.getPredicates()
-            .subscribe(predicates => {
+            .subscribe((predicates) => {
                 this.predicates = predicates;
                 this.selected = predicates[0];
-                this.predicates.forEach(p => p.FriendlyTypeName = PredicateFriendlyType[p.Type] ? PredicateFriendlyType[p.Type] : p.Type);
+                this.predicates.forEach((p) => p.FriendlyTypeName = PredicateFriendlyType[p.Type] ? PredicateFriendlyType[p.Type] : p.Type);
                 this.isLoading = false;
             });
     }
@@ -141,11 +141,11 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
 
     deletePredicate(uid: string) {
         this.predicatesService.deletePredicate(uid)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.showMessageForApiResults(this.messagesService, result, $localize`Predicate deleted`, true);
                 this.showDelete = false;
-                if (!result.some(x => x.Success == false)) {
-                    this.predicates = this.predicates.filter(x => x.Uid != uid);
+                if (!result.some((x) => x.Success == false)) {
+                    this.predicates = this.predicates.filter((x) => x.Uid != uid);
                 }
             });
     }
@@ -172,7 +172,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
         }
 
         this.predicatesService.savePredicate(event.item)
-            .subscribe(result => {
+            .subscribe((result) => {
 
                 if (event.action == 'new') {
                     this.showMessageForApiResults(this.messagesService, result, $localize`Predicate succesfully added!`, true);

@@ -179,7 +179,7 @@ export class AdminContractsComponent extends BaseComponent implements OnInit {
 
     delete(id: number) {
         this.organizationsService.deleteContract(id).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
 
                 if (result.type != 'error') {

@@ -139,7 +139,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
     updateFormValidity(event) {
         if (this.groups && this.groups.length > 0) {
-            this.groups.forEach(x => { x.refreshBadgeCounts(); });
+            this.groups.forEach((x) => { x.refreshBadgeCounts(); });
         }
         this.checkModelChanged();
         this.cdRef.markForCheck();
@@ -150,7 +150,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             this.ruleResultFiltersMatchType = (this.model.Definition.DataQuality.FilterMatchType.toString() === 'All') ? 'All' : 'Any';
         }
 
-        this.loadConditionFieldOptions().subscribe(result => {
+        this.loadConditionFieldOptions().subscribe((result) => {
             this.isLoading = false;
             this.cdRef.markForCheck();
         });
@@ -159,7 +159,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
             this.metricsService
                 .getRuleResultPathOptionFields(this.model.Definition.DataQuality.ResultPathUid)
-                .subscribe(fields => {
+                .subscribe((fields) => {
                     this.parseRuleResultFilters(fields);
 
                     if (!this.model.Definition.DataQuality.Filters) {
@@ -170,7 +170,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
                         const filters = this.model.Definition.DataQuality.Filters;
                         this.ruleResultFilters = [];
                         if (filters.length > 0) {
-                            filters.forEach(f => {
+                            filters.forEach((f) => {
                                 const filter = new FieldCondition();
                                 filter.field = `${f.AssetTypeUid}.${f.FieldTypeName}`;
                                 filter.isValid = true;
@@ -250,7 +250,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
     onPathChange(event: any) {
         let ruleResultPathUid = this.model.Definition.DataQuality.ResultPathUid;
-        this.metricsService.getRuleResultPathOptionFields(ruleResultPathUid).subscribe(fields => {
+        this.metricsService.getRuleResultPathOptionFields(ruleResultPathUid).subscribe((fields) => {
             this.parseRuleResultFilters(fields);
             this.cdRef.markForCheck();
         });
@@ -258,7 +258,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
     parseRuleResultFilters(fields: MetricFieldTypeViewModel[]) {
         this.ruleResultFilters = [];
-        this.ruleResultFields = fields.map(f => {
+        this.ruleResultFields = fields.map((f) => {
             let fieldOption: FieldTypeAPIModelFieldCondition = {
                 AssetTypeUid: f.AssetTypeUid,
                 RelationshipTypeUid: '',
@@ -269,13 +269,13 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
                 Type: new FieldType(f.Type),
                 Values: []
             };
-            this.screenReferences.operators.forEach(op => {
-                if (op.AllowedDataTypes.some(x => x.Name.toLowerCase() === f.Type.toLowerCase())) {
+            this.screenReferences.operators.forEach((op) => {
+                if (op.AllowedDataTypes.some((x) => x.Name.toLowerCase() === f.Type.toLowerCase())) {
                     fieldOption.Operators.push({ label: op.Name, value: op.ID });
                 }
             });
             if (f.Values) {
-                f.Values.forEach(val => {
+                f.Values.forEach((val) => {
                     fieldOption.Values.push({ value: val.Value, label: val.Text });
                 });
             }
@@ -290,14 +290,14 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         this.model.Definition.DataQuality.FilterMatchType = (this.ruleResultFiltersMatchType == "All") ? MetricMatchType.All : MetricMatchType.Any;
 
         this.model.Definition.DataQuality.Filters = [];
-        this.ruleResultFilters = this.ruleResultFilters.filter(x => x.field && x.operator); // Make sure we have valid items selected here.
-        this.ruleResultFilters.forEach(f => {
+        this.ruleResultFilters = this.ruleResultFilters.filter((x) => x.field && x.operator); // Make sure we have valid items selected here.
+        this.ruleResultFilters.forEach((f) => {
             let filter = new MetricAssetDefinitionDataQualityFilterViewModel();
             let fieldData = f.field.split('.'); // {assetTypeUid}.{FieldTypeName}
             filter.AssetTypeUid = fieldData[0];
             filter.FieldTypeName = fieldData[1];
             filter.Operator = Operator[f.operator + ''];
-            let fieldTypes = this.ruleResultFields.filter(x => x.AssetTypeUid == filter.AssetTypeUid && x.Name == filter.FieldTypeName);
+            let fieldTypes = this.ruleResultFields.filter((x) => x.AssetTypeUid == filter.AssetTypeUid && x.Name == filter.FieldTypeName);
 
             let fieldDataType = 'Text'; //Default
 
@@ -374,7 +374,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             if (this.havePassTestCriteriaChanged(this.model.Definition, this.originalModel.Definition)) {
                 this.hasModelChanged = true;
             }
-            if (this.haveRuleConditionsChanged(this.ruleResultFilters.filter(x => x.field), this.originalRuleResultFilters.filter(x => x.field !== ""))) {
+            if (this.haveRuleConditionsChanged(this.ruleResultFilters.filter((x) => x.field), this.originalRuleResultFilters.filter((x) => x.field !== ""))) {
                 this.hasModelChanged = true;
             }
 

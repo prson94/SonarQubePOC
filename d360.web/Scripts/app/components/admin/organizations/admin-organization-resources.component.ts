@@ -167,7 +167,7 @@ export class AdminOrganizationResourcesComponent extends BaseComponent implement
         this.organizationsService
             .getUsersByOrganization(this.organization.ID)
             .subscribe(
-                result => {
+                (result) => {
                     this.resources = result;
 
                     this.selected = (this.resources.length > 0 ? this.resources[0] : null);

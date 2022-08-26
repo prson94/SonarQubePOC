@@ -186,7 +186,7 @@ export class AdminOrganizationListComponent extends BaseComponent implements OnC
         this.organizations = [];
 
         this.organizationService.getOrganizationsByType(this.organizationType.ID).subscribe(
-            result => {
+            (result) => {
                 this.organizations = result;
                 this.isLoading = false;
 
@@ -203,13 +203,13 @@ export class AdminOrganizationListComponent extends BaseComponent implements OnC
 
     deleteOrganization(id: number) {
         this.organizationService.deleteOrganization(id).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
 
                 if (result.type != 'error') {
                     this.organization = this.organizations.length > 0 ? this.organizations[0] : null;
-                    this.organizations = this.organizations.filter(x => x.ID != id);
+                    this.organizations = this.organizations.filter((x) => x.ID != id);
                 }
             }
         );
@@ -217,7 +217,7 @@ export class AdminOrganizationListComponent extends BaseComponent implements OnC
 
     save(event) {
         this.organizationService.saveOrganization(event.item).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
 
                 if (result.type != 'error') {

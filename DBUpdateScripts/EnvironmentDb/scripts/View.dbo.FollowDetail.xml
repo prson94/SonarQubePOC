@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.dbo.FollowDetail-v7.1">
+  <changeSet author="Puneet Gupta" id="View.dbo.FollowDetail-v10">
+	<comment>GOV-18454,GOV-18457</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -14,171 +15,171 @@
 create or alter view [dbo].[FollowDetail]  
 	as
 		with ArtifactTypes as (
-			select 	ID as FollowID,  
-					ObjectType as [Object],  
-					ObjectID,  
-					ResourceID,  
-					1 as HardFollow  
-			from 	Follow  
-			where 	ObjectType = 'ArtifactType' and FollowTypeID = 3  
+			select 	F.ID as FollowID,  
+					F.ResourceID,  
+					1 as HardFollow,
+                    F.AssetId,
+					F.AssetTypeID
+			from 	Follow F
+			inner join AssetType Att on F.AssetTypeID = Att.ID and Att.Class in (1,8)
+			where 	F.AssetTypeID is not null and FollowTypeID = 3  
 			union all  
 			select 	P.ID as FollowID,  
-					cast('Artifact' as varchar(50)) as [Object],  
-					A.ObjectID as ObjectID,  
 					P.ResourceID,  
-					0 as HardFollow  
-			from 	Asset A
-					inner join AssetType ATT on A.AssetTypeID = ATT.ID and A.[Object] = 'Artifact'  
-					inner join Follow P on P.ObjectType = 'ArtifactType' and P.ObjectID = ATT.ObjectID and P.FollowTypeID = 3  
+					0 as HardFollow,
+					A.ID AssetID,
+					A.AssetTypeID 
+			from 	Follow P
+					inner join AssetType ATT on P.AssetTypeID = ATT.ID and Att.Class in (1,8) 
+					inner join Asset A on A.AssetTypeID = Att.ID 
+			where 	P.FollowTypeID = 3 and P.AssetTypeID is not null
 		),
 		DomainTypes as (
-			select 	ID as FollowID,  
-					ObjectType as [Object],  
-					ObjectID,  
-					ResourceID,  
-					1 as HardFollow  
-			from 	Follow  
-			where 	ObjectType = 'ReferenceItemType' 
-					and FollowTypeID = 3  
+			select 	F.ID as FollowID,  
+					F.ResourceID,  
+					1 as HardFollow,
+					F.AssetID,
+					F.AssetTypeID
+			from 	Follow F
+			inner join AssetType Att on Att.ID = F.AssetTypeId and Att.Class = 9
+			where 	F.FollowTypeID = 3  and F.AssetTypeId is not null
 		),
 		Groups as (  
-			select 	ID as FollowID,  
-					ObjectType as [Object],  
-					ObjectID,  
-					ResourceID,  
-					1 as HardFollow  
-			from 	Follow  
-			where 	ObjectType = 'Group' 
-					and ObjectID = 0 
-					and FollowTypeID = 3  
-			union all  
 			select 	P.ID as FollowID,  
-					P.ObjectType as [Object],  
-					C.ID as ObjectID,  
 					P.ResourceID,  
-					0 as HardFollow  
-			from 	[Group] C  
-					inner join Follow P on P.ObjectType = 'Group' and P.ObjectID = 0 and P.FollowTypeID = 3  
+					0 as HardFollow,
+					A.ID AssetId,
+					P.AssetTypeID
+			from 	Follow P
+			inner join AssetType Att on Att.ID = P.AssetTypeId and Att.Class = 12
+			inner join Asset A on A.AssetTypeID = Att.ID
+			inner join [Group] C on C.ID = A.SourceID
+			where P.FollowTypeID = 3 and P.AssetTypeId is not null
 		),  
 		PolicyTypes as (
-			select 	ID as FollowID,  
-					ObjectType as [Object],  
-					ObjectID,  
-					ResourceID,  
-					1 as HardFollow  
-			from 	Follow  
-			where 	ObjectType = 'PolicyType' 
-					and FollowTypeID = 3  
+			select 	F.ID as FollowID,  
+					F.ResourceID,  
+					1 as HardFollow,
+					F.AssetId,
+					F.AssetTypeId  
+			from 	Follow F
+			inner join AssetType Att on Att.ID = F.AssetTypeId and Att.Class = 6
+			where F.FollowTypeID = 3  and F.AssetTypeId is not null
 			union all  
 			select 	P.ID as FollowID,  
-					cast('Policy' as varchar(50)) as [Object],  
-					A.ObjectID as ObjectID,
 					P.ResourceID,
-					0 as HardFollow
-			from 	Asset A
-					inner join AssetType ATT on ATT.ID = A.AssetTypeID and A.[Object] = 'Policy'
-					inner join Follow P on P.ObjectType = 'PolicyType' and P.ObjectID = ATT.ObjectID and P.FollowTypeID = 3
+					0 as HardFollow,
+					A.ID,
+					A.AssetTypeID
+			from 	Follow P
+					inner join AssetType ATT on ATT.ID = P.AssetTypeID and Att.Class = 6
+					inner join Asset A on A.AssetTypeID = Att.ID
+			Where P.FollowTypeID = 3  and P.AssetTypeId is not null
 		),  
 		PolicyParents as (  
 			select	F.ID as FollowID,
-					T.ObjectID as ID,
 					null as ParentID,
 					F.ResourceID,
-					1 as HardFollow
-			from 	AssetDetail T  
-					left join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
-					inner join Follow F on F.ObjectType = 'Policy' and F.ObjectID = T.ObjectID and F.FollowTypeID = 3  
-			where 	I.IntersectID is null 
-					and T.Object = 'Policy'  
+					1 as HardFollow,
+					A.ID AssetID,
+					cast(Null as bigint) ParentAssetID,
+					A.AssetTypeID
+			from    Follow F
+			inner join Asset A on F.AssetID = A.ID
+			inner join AssetType Att on A.AssetTypeID = Att.Id and Att.Class = 6
+			left join PredicateIntersect I on I.ObjectAssetID = A.ID and I.PredicateType = 4  
+            where I.IntersectID is null and F.FollowTypeID = 3  and F.AssetID is Not Null
 			union all  
 			select 	P.FollowID,  
-					T.ObjectID,  
 					I.SubjectID as ParentID,  
 					P.ResourceID,
-					0 as HardFollow  
-			from 	AssetDetail T  
-					inner join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
-					inner join PolicyParents p on I.Subject = 'Policy' and I.SubjectID = p.ID  
-			where 	T.Object = 'Policy'  
+					0 as HardFollow,
+					A.ID AssetID,
+					I.SubjectAssetID as ParentAssetID,  
+					A.AssetTypeID
+			from 	Asset A  
+					inner join AssetType Att on A.AssetTypeID = Att.Id and Att.Class = 6
+					inner join PredicateIntersect I on I.ObjectAssetID = A.ID and I.PredicateType = 4  
+					inner join PolicyParents p on I.SubjectAssetID = p.AssetID
 		),  
 		Resources as (
-			select 	ID as FollowID,
-					ObjectType as [Object],
-					ObjectID,
-					ResourceID,
-					1 as HardFollow
-			from 	Follow  
-			where 	ObjectType = 'ResourceType' 
-					and FollowTypeID = 3  
-			union all  
 			select 	P.ID as FollowID,  
-					cast('Resource' as varchar(50)) as [Object],  
-					C.ResourceID as ObjectID,  
 					P.ResourceID,  
-					0 as HardFollow  
-			from 	reporting.Global_Resource C  
-					inner join Follow P on P.ObjectType = 'ResourceType' and P.FollowTypeID = 3  
-			where 	C.ResourceID > 0  
+					0 as HardFollow,
+					A.ID as AssetID,
+					P.AssetTypeID
+			from 	Follow P
+			inner join AssetType Att on Att.ID = P.AssetTypeId and Att.Class = 11
+			inner join Asset A on A.AssetTypeId = Att.ID 
+			inner join reporting.Global_Resource C  on C.ResourceID = A.SourceID
+			where P.FollowTypeID = 3 and P.AssetTypeId Is Not Null
+				  and C.ResourceID > 0  
 		),  
 		TaxonomyParents as (  
 			select	F.ID as FollowID,  
-					T.ObjectID as ID,     
 					null as ParentID,  
 					F.ResourceID,  
-					1 as HardFollow  
-			from 	AssetDetail T  
-					left join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
-					inner join Follow F on F.ObjectType = 'Taxonomy' and F.ObjectID = T.ObjectID and F.FollowTypeID = 3  
-			where 	I.IntersectID is null 
-					and T.Object = 'Taxonomy'  
+					1 as HardFollow,
+					A.ID AssetID,
+					cast(Null as bigint) ParentAssetID,
+					A.AssetTypeID
+			from    Follow F
+			inner join Asset A on F.AssetID = A.ID
+			inner join AssetType Att on A.AssetTypeID = Att.Id and  Att.Class = 2
+			left join PredicateIntersect I on I.ObjectAssetID = A.ID and I.PredicateType = 4  
+			where I.IntersectID is null and F.FollowTypeID = 3  and F.AssetID is Not Null
 			union all  
 			select 	P.FollowID,  
-					T.ObjectID,  
 					I.SubjectID as ParentID,  
 					P.ResourceID,  
-					0 as HardFollow  
-			from 	AssetDetail T  
-					inner join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
-					inner join TaxonomyParents  p on I.Subject = 'Taxonomy' and I.SubjectID = p.ID  
-			where 	T.Object = 'Taxonomy'  
+					0 as HardFollow,
+					A.ID AssetID,
+					I.SubjectAssetID as ParentAssetID,  
+					A.AssetTypeID
+			from 	Asset A  
+					inner join AssetType Att on A.AssetTypeID = Att.Id and Att.Class = 2
+					inner join PredicateIntersect I on I.ObjectAssetID = A.ID and I.PredicateType = 4  
+					inner join PolicyParents p on I.SubjectAssetID = p.AssetID
 		),
 		TaxonomyTypes as (
-			select 	ID as FollowID,  
-					ObjectType as [Object],  
-					ObjectID,  
-					ResourceID,  
-					1 as HardFollow  
-			from 	Follow  
-			where 	ObjectType = 'TaxonomyType' 
-					and FollowTypeID = 3  
+			select 	F.ID as FollowID,  
+					F.ResourceID,  
+					1 as HardFollow,
+                    F.AssetId,
+					F.AssetTypeID
+			from 	Follow F
+			inner join AssetType Att on F.AssetTypeID = Att.ID and Att.Class = 2
+			where 	F.FollowTypeID = 3 and F.AssetTypeID is not null
 			union all  
 			select 	P.ID as FollowID,  
-					cast('Taxonomy' as varchar(50)) as [Object],  
-					A.ObjectID as ObjectID,
 					P.ResourceID,
-					0 as HardFollow
-			from 	Asset A
-					inner join AssetType ATT on ATT.ID = A.AssetTypeID and A.[Object] = 'Taxonomy'
-					inner join Follow P on P.ObjectType = 'TaxonomyType' and P.ObjectID = ATT.ObjectID and P.FollowTypeID = 3
+					0 as HardFollow,
+					A.ID AssetID,
+					A.AssetTypeID 
+			from 	Follow P
+					inner join AssetType Att on P.AssetTypeID = Att.ID and Att.Class = 2
+					inner join Asset A on A.AssetTypeID = Att.ID
+			where 	P.FollowTypeID = 3 and P.AssetTypeID is not null
 		),
 		RuleTypes as (
-			select 	ID as FollowID,  
-					ObjectType as [Object],  
-					ObjectID,  
-					ResourceID,  
-					1 as HardFollow  
-			from 	Follow  
-			where 	ObjectType = 'RuleType' 
-					and FollowTypeID = 3  
+			select 	F.ID as FollowID,  
+					F.ResourceID,  
+					1 as HardFollow,
+                    F.AssetId,
+					F.AssetTypeID
+			from 	Follow F
+			inner join AssetType Att on F.AssetTypeID = Att.ID and Att.Class = 7
+			where 	F.FollowTypeID = 3 and F.AssetTypeID is not null
 			union all  
 			select 	P.ID as FollowID,  
-					cast('Rule' as varchar(50)) as [Object],  
-					A.ObjectID as ObjectID,
 					P.ResourceID,
-					0 as HardFollow
-			from 	Asset A
-					inner join AssetType ATT on ATT.ID = A.AssetTypeID and A.[Object] = 'Rule'
-					inner join Follow P on P.ObjectType = 'RuleType' and P.ObjectID = ATT.ObjectID and P.FollowTypeID = 3
+					0 as HardFollow,
+					A.ID AssetID,
+					A.AssetTypeID 
+			from 	Follow P
+					inner join AssetType Att on P.AssetTypeID = Att.ID and Att.Class = 7
+					inner join Asset A on A.AssetTypeID = Att.ID
+			where 	P.FollowTypeID = 3 and P.AssetTypeID is not null
 		)
 	  
 		select	F.FollowID,  
@@ -190,111 +191,115 @@ create or alter view [dbo].[FollowDetail]
 				R.LastName as FollowerLastName,  
 				'Resource' as FollowerObjectType,  
 				F.ResourceID as FollowerObjectID,  
-				dbo.GenerateAssetUrl((select ID from Asset where Object ='Resource' and ObjectID = F.ResourceID)) as FollowerUrl,  
-				F.ObjectID,  
-				F.[Object] as ObjectType,  
+				dbo.GenerateAssetUrl((select A.ID from Asset A inner join AssetType att on att.id = a.assettypeid and att.class = 11 where A.SourceID = F.ResourceID)) as FollowerUrl,  
 				A.ID as AssetID,
-				O.ObjectID as ID,  
-				O.Name,  
-				O.TextPath,  
-				O.Description,  
-				O.ParentID,  
-				O.Parent as ParentType,  
-				O.Url,  
-				O.ObjectTypeID as TypeID,  
-				O.ObjectType as [Type],  
-				case O.ObjectType  
-					when 'ResourceType' then 'User'  
-					when 'Group' then 'Group'  
-					else O.ObjectTypeName  
+				coalesce(F.AssetID,F.AssetTypeID) as ID,  
+				coalesce(AName.DisplayValue,OAT.Name) Name,  
+				coalesce(AName.DisplayValue,OAT.Name) TextPath,  
+				cast(null as nvarchar) Description,  
+				cast(null as int) ParentID,  
+				cast(null as varchar) ParentType,  
+				coalesce(AUrl.Url,ATUrl.Url) as Url,  
+				case coalesce(AAT.Class,OAT.Class)  
+					when 11 then 'User'  
+					when 12 then 'Group'  
+					else coalesce(AAT.Name,OAT.Name)
 				end as [TypeName],  
-				O.IconBackColor,  
-				O.IconForeColor,  
-				O.IconText,  
+				coalesce(AATS.IconBackColor,OATS.IconBackColor,'#000') IconBackColor,  
+				coalesce(AATS.IconForeColor,OATS.IconForeColor, '#fff') IconForeColor,  
+				coalesce(AATS.IconText, OATS.IconText , 'leaf') IconText,  
 				0 AS OpenEventCount,  
 				cast(S.Value as decimal(4,3)) as CurrentScore,  
-				cast(F.HardFollow as bit) as HardFollow  
+				cast(F.HardFollow as bit) as HardFollow,
+				coalesce(AAT.ID,OAT.ID) AssetTypeID
 		from  	(  
 				select 	FollowID,  
-						[Object],   
-						ObjectID,   
 						ResourceID,   
-						HardFollow   
+						HardFollow,
+						AssetID,
+						AssetTypeID
 				from 	ArtifactTypes  
 				union  
 				select 	FollowID,  
-						[Object],   
-						ObjectID,   
 						ResourceID,   
-						HardFollow   
+						HardFollow ,
+						AssetID,
+						AssetTypeID  
 				from 	DomainTypes  
 				union  
 				select 	FollowID,  
-						[Object],   
-						ObjectID,   
 						ResourceID,   
-						HardFollow   
+						HardFollow,
+						AssetID,
+						AssetTypeID  
 				from 	Groups  
 				union  
 				select 	FollowID,  
-						[Object],   
-						ObjectID,   
 						ResourceID,   
-						HardFollow   
+						HardFollow,
+						AssetID,
+						AssetTypeID  
 				from 	PolicyTypes  
 				union  
 				select 	FollowID,  
-						'Policy',   
-						ID as ObjectID,   
 						ResourceID,   
-						HardFollow   
+						HardFollow,
+						AssetID,
+						AssetTypeID  
 				from 	PolicyParents  
 				union  
 				select 	FollowID,  
-						[Object],   
-						ObjectID,   
 						ResourceID,   
-						HardFollow   
+						HardFollow,
+						AssetID,
+						AssetTypeID  
 				from 	Resources  
 				union  
 				select 	FollowID,  
-						'Taxonomy' as [Object],   
-						ID as ObjectID,   
 						ResourceID,   
-						HardFollow   
+						HardFollow,
+						AssetID,
+						AssetTypeID  
 				from 	TaxonomyParents 
 				union  
 				select 	FollowID,  
-						[Object],   
-						ObjectID,   
 						ResourceID,   
-						HardFollow   
+						HardFollow,
+						AssetID,
+						AssetTypeID  
 				from 	TaxonomyTypes
 				union  
 				select 	FollowID,  
-						[Object],   
-						ObjectID,   
 						ResourceID,   
-						HardFollow   
+						HardFollow,
+						AssetID,
+						AssetTypeID  
 				from 	RuleTypes				
 				union  
 				select 	ID as FollowID,  
-						ObjectType as [Object],   
-						ObjectID,   
 						ResourceID,   
-						1 as HardFollow   
+						1 as HardFollow,
+						AssetID,
+						AssetTypeID
 				from 	Follow  
 				where 	FollowTypeID = 1   
 		) F  
 		inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID  
-		inner join cache.ObjectDetails O on O.[Object] = F.[Object] and O.ObjectID = F.ObjectID
-		left join Asset A on A.Object = F.Object and A.ObjectID = F.ObjectID
+		left join Asset A on A.ID = F.AssetID and F.AssetID is not null
+		left join AssetType AAT on AAT.ID = A.AssetTypeID
+		left join AssetTypeStyle AATS on AATS.ID = AAT.ID
+		outer apply [dbo].[GetAssetDisplayValueById](A.ID) AName
+		outer apply [dbo].[GetAssetUrlById](A.ID) AUrl
+		left Outer Join AssetType OAT on OAT.ID = F.AssetTypeID and F.AssetID is null
+		left join AssetTypeStyle OATS on OATS.ID = OAT.ID
+		outer apply [dbo].[GetAssetTypeUrlByID](OAT.ID) ATUrl
 		outer apply (
 			select	S.Value
 			from	metrics.Score S
 					inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = 1 and Al.OverrideName is null
 								and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)
 		) S
+		where (A.ID IS NOT NULL OR OAT.ID IS NOT NULL)
 		]]>
     </sql>
 	<rollback>
@@ -481,6 +486,7 @@ create or alter view [dbo].[FollowDetail]
 				dbo.GenerateAssetUrl((select ID from Asset where Object ='Resource' and ObjectID = F.ResourceID)) as FollowerUrl,  
 				F.ObjectID,  
 				F.[Object] as ObjectType,  
+				A.ID as AssetID,
 				O.ObjectID as ID,  
 				O.Name,  
 				O.TextPath,  

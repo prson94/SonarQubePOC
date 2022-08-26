@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using d360.core;
 using d360.core.entities.SurveyModels;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
@@ -224,6 +225,12 @@ namespace d360.model.validators
 			return null;
 		}
 
+		private static HashSet<string> VALID_ASSET_TYPES_FOR_SURVEY = new[] {
+			SystemObjects.ArtifactType,
+			SystemObjects.TaxonomyType,
+			SystemObjects.RuleType
+		}.Select(x => x.ToString()).ToHashSet();
+
 		public async Task<WorkHttpStatus> ValidateSurveyTypeCreateApiModel(SurveyTypeCreateApiModel surveyType)
 		{
 			if (string.IsNullOrEmpty(surveyType.Name))
@@ -271,6 +278,14 @@ namespace d360.model.validators
 					HttpStatusCode.NotFound,
 					AssetTypeErrors.NotFound,
 					AssetTypeErrors.NotFoundGeneric);
+			}
+
+			if (!VALID_ASSET_TYPES_FOR_SURVEY.Contains(assetType.Object))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					SurveyTypeErrors.InvalidAssetType);
 			}
 
 			if (!await surveyRepository.IsUniqueSurveyTypeName(surveyType.Name, assetType.ID, surveyTypeUid: null))

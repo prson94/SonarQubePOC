@@ -1,0 +1,389 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Code_Name" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="LastLoggedInOn_Description" xml:space="preserve">
+    <value>Das Datum der letzten Anmeldung dieser Ressource.</value>
+  </data>
+  <data name="LastLoggedInOn_Name" xml:space="preserve">
+    <value>Letzte Anmeldung am</value>
+  </data>
+  <data name="Description_Description" xml:space="preserve">
+    <value>Die Beschreibung für dieses Element.</value>
+  </data>
+  <data name="Description_ErrorRequired" xml:space="preserve">
+    <value>Beschreibung ist ein Pflichtfeld.</value>
+  </data>
+  <data name="Description_Name" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="Email_Description" xml:space="preserve">
+    <value>E-Mail-Adresse dieser Ressource.</value>
+  </data>
+  <data name="Email_ErrorRegex" xml:space="preserve">
+    <value>E-Mail-Adresse enthält unzulässige Zeichen.</value>
+  </data>
+  <data name="Email_ErrorRequired" xml:space="preserve">
+    <value>E-Mail-Adresse ist ein Pflichtfeld.</value>
+  </data>
+  <data name="Email_Name" xml:space="preserve">
+    <value>E-Mail-Adresse</value>
+  </data>
+  <data name="FirstName_Description" xml:space="preserve">
+    <value>Vorname dieser Ressource.</value>
+  </data>
+  <data name="FirstName_ErrorRegex" xml:space="preserve">
+    <value>Vorname enthält unzulässige Zeichen.</value>
+  </data>
+  <data name="FirstName_ErrorRequired" xml:space="preserve">
+    <value>Vorname ist ein Pflichtfeld.</value>
+  </data>
+  <data name="FirstName_Name" xml:space="preserve">
+    <value>Vorname</value>
+  </data>
+  <data name="FriendlyName_Description" xml:space="preserve">
+    <value>Der Name, der verwendet wird, wenn dieser Feldwert Ihrer Zielgruppe angezeigt wird.</value>
+  </data>
+  <data name="FriendlyName_ErrorRequired" xml:space="preserve">
+    <value>Anzeigename ist erforderlich.</value>
+  </data>
+  <data name="FriendlyName_Name" xml:space="preserve">
+    <value>Anzeigename</value>
+  </data>
+  <data name="ID_Description" xml:space="preserve">
+    <value>Die eindeutige Kennung für dieses Element.</value>
+  </data>
+  <data name="ID_Name" xml:space="preserve">
+    <value>ID</value>
+    <comment>u</comment>
+  </data>
+  <data name="LastName_Description" xml:space="preserve">
+    <value>Nachname dieser Ressource.</value>
+  </data>
+  <data name="LastName_ErrorRegex" xml:space="preserve">
+    <value>Nachname enthält unzulässige Zeichen.</value>
+  </data>
+  <data name="LastName_ErrorRequired" xml:space="preserve">
+    <value>Nachname ist ein Pflichtfeld.</value>
+  </data>
+  <data name="LastName_Name" xml:space="preserve">
+    <value>Nachname</value>
+  </data>
+  <data name="Length_Description" xml:space="preserve">
+    <value>Die genaue Länge eines Werts für dieses Feld.</value>
+  </data>
+  <data name="Length_Name" xml:space="preserve">
+    <value>Länge</value>
+  </data>
+  <data name="LookupObjectID_Description" xml:space="preserve">
+    <value/>
+  </data>
+  <data name="LookupObjectID_Name" xml:space="preserve">
+    <value>Objekt-ID für die Suche</value>
+  </data>
+  <data name="LookupObjectType_Description" xml:space="preserve">
+    <value>Der Suchtyp, den dieses Feld verwendet.</value>
+  </data>
+  <data name="LookupObjectType_Name" xml:space="preserve">
+    <value>Objekttyp für die Suche</value>
+  </data>
+  <data name="MaximumLength_Description" xml:space="preserve">
+    <value>Die maximal zulässige Länge für den Wert dieses Felds.</value>
+  </data>
+  <data name="MaximumLength_Name" xml:space="preserve">
+    <value>Maximale Länge</value>
+  </data>
+  <data name="MinimumLength_Description" xml:space="preserve">
+    <value>Die minimal zulässige Länge für den Wert dieses Felds.</value>
+  </data>
+  <data name="MinimumLength_Name" xml:space="preserve">
+    <value>Minimale Länge</value>
+  </data>
+  <data name="Name_Description" xml:space="preserve">
+    <value>Der Name für dieses Element.</value>
+  </data>
+  <data name="Name_ErrorRegex" xml:space="preserve">
+    <value>Name enthält unzulässige Zeichen.</value>
+  </data>
+  <data name="Name_ErrorRequired" xml:space="preserve">
+    <value>Name ist ein Pflichtfeld.</value>
+  </data>
+  <data name="Name_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Path_Description" xml:space="preserve">
+    <value>Der Pfad innerhalb der Hierarchie.</value>
+  </data>
+  <data name="Path_Name" xml:space="preserve">
+    <value>Pfad</value>
+  </data>
+  <data name="Pattern_Description" xml:space="preserve">
+    <value>Das verwendete Validierungsmuster, wenn ein Wert für dieses Feld bereitgestellt wird.</value>
+  </data>
+  <data name="Pattern_Name" xml:space="preserve">
+    <value>Validierungsmuster</value>
+  </data>
+  <data name="Status_Name" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Type_Description" xml:space="preserve">
+    <value>Der Typ für dieses Element.</value>
+  </data>
+  <data name="Type_ErrorRequired" xml:space="preserve">
+    <value>Typ ist ein Pflichtfeld.</value>
+  </data>
+  <data name="Type_Name" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="Username_Description" xml:space="preserve">
+    <value>Benutzername dieser Ressource.</value>
+  </data>
+  <data name="Username_ErrorRegex" xml:space="preserve">
+    <value>Benutzername enthält unzulässige Zeichen.</value>
+  </data>
+  <data name="Username_ErrorRequired" xml:space="preserve">
+    <value>Benutzername ist ein Pflichtfeld.</value>
+  </data>
+  <data name="Username_Name" xml:space="preserve">
+    <value>Benutzername</value>
+  </data>
+  <data name="Level_Description" xml:space="preserve">
+    <value>Die Ebene dieses Informationsmodells innerhalb des gesamten Katalogbaums.</value>
+  </data>
+  <data name="Level_Name" xml:space="preserve">
+    <value>Ebene</value>
+  </data>
+  <data name="DisplayDescription_Description" xml:space="preserve">
+    <value>Die Beschreibung, die angezeigt wird, wenn ein Benutzer die Informationen in diesem Feld liest.</value>
+  </data>
+  <data name="DisplayDescription_Name" xml:space="preserve">
+    <value>Anzeigebeschreibung</value>
+  </data>
+  <data name="FormDescription_Description" xml:space="preserve">
+    <value>Die Beschreibung, die angezeigt wird, wenn ein Benutzer die Informationen in diesem Feld aktualisiert.</value>
+  </data>
+  <data name="FormDescription_Name" xml:space="preserve">
+    <value>Formularbeschreibung</value>
+  </data>
+  <data name="MaximumDepth_Description" xml:space="preserve">
+    <value>Die maximale Tiefe des Informationsmodells.</value>
+  </data>
+  <data name="MaximumDepth_Name" xml:space="preserve">
+    <value>Maximale Tiefe</value>
+  </data>
+  <data name="GroupPrimaryOwner_Description" xml:space="preserve">
+    <value>Der primäre Eigner der Gruppe.  Diese Person ist verantwortlich für die tägliche Verwaltung der Gruppe und weist den Mitgliedern beispielsweise Aufgaben zu.</value>
+  </data>
+  <data name="GroupPrimaryOwner_Name" xml:space="preserve">
+    <value>Primärer Eigner</value>
+  </data>
+  <data name="GroupSecondaryOwner_Description" xml:space="preserve">
+    <value>Der sekundäre Eigner der Gruppe.  Diese Person ist der Backup-Eigner der Gruppe, wenn der primäre Eigner nicht verfügbar ist.</value>
+  </data>
+  <data name="GroupSecondaryOwner_Name" xml:space="preserve">
+    <value>Sekundärer Eigner</value>
+  </data>
+  <data name="ReportDescription_Description" xml:space="preserve">
+    <value>Eine Beschreibung der Bedeutung dieses Berichts; was in diesem Bericht erläutert wird.</value>
+  </data>
+  <data name="ValidationDescription_Description" xml:space="preserve">
+    <value>Diese Nachricht wird dem Benutzer angezeigt, wenn Informationen für dieses Feld ungültig sind oder fehlen.  Sie müssen eine Art regulärer Ausdrucksmustervalidierung für dieses Feld aktivieren, damit die Nachricht angezeigt wird.</value>
+  </data>
+  <data name="ValidationDescription_Name" xml:space="preserve">
+    <value>Überprüfungsnachricht</value>
+  </data>
+  <data name="DisplayFormat_Description" xml:space="preserve">
+    <value>Das Format des Anzeigewerts.</value>
+  </data>
+  <data name="DisplayFormat_Name" xml:space="preserve">
+    <value>Anzeigeformat</value>
+  </data>
+  <data name="ReportName_Description" xml:space="preserve">
+    <value>Der Name für diesen Bericht.  Dieser Name wird verwendet, wenn der Bericht zur Anzeige zur Verfügung steht.</value>
+  </data>
+  <data name="ReportObjectType_Description" xml:space="preserve">
+    <value>Der Typ des Objekts, in dem dieser Bericht zur Verfügung steht.</value>
+  </data>
+  <data name="ReportObjectType_Name" xml:space="preserve">
+    <value>Zieltyp</value>
+  </data>
+  <data name="SourceNotes_Description" xml:space="preserve">
+    <value>Definiert Informationen in Bezug auf die Quelle oder den Ersteller dieser Referenzliste.</value>
+  </data>
+  <data name="SourceNotes_Name" xml:space="preserve">
+    <value>Quellenhinweise</value>
+  </data>
+  <data name="GroupIsActiveDirectory_Description" xml:space="preserve">
+    <value>Ob diese Gruppe automatisch über SAML-Gruppenansprüche verwaltet werden soll oder nicht</value>
+  </data>
+  <data name="GroupIsActiveDirectory_Name" xml:space="preserve">
+    <value>Ist Active Directory</value>
+  </data>
+  <data name="Parent_Name" xml:space="preserve">
+    <value>Eigner/übergeordnetes Element</value>
+  </data>
+  <data name="RegexPatternChoose" xml:space="preserve">
+    <value>Beispiel auswählen …</value>
+  </data>
+  <data name="RegexPatternEmail" xml:space="preserve">
+    <value>E-Mail-Adresse</value>
+  </data>
+  <data name="RegexPatternInternalUrl" xml:space="preserve">
+    <value>Interne URL</value>
+  </data>
+  <data name="RegexPatternIP" xml:space="preserve">
+    <value>IP-Adresse</value>
+  </data>
+  <data name="RegexPatternNorthAmericanPhone" xml:space="preserve">
+    <value>Telefon aus Nordamerika</value>
+  </data>
+  <data name="RegexPatternPublicUrl" xml:space="preserve">
+    <value>Öffentliche URL</value>
+  </data>
+  <data name="RegexPatternUSZipCode" xml:space="preserve">
+    <value>US-Postleitzahl</value>
+  </data>
+  <data name="Administrator_Name" xml:space="preserve">
+    <value>Administrator?</value>
+  </data>
+  <data name="AssetPath_Name" xml:space="preserve">
+    <value>Asset-Pfad</value>
+  </data>
+  <data name="AssignedUserGroup_Name" xml:space="preserve">
+    <value>Zugewiesener Benutzer/zugewiesene Gruppe</value>
+  </data>
+  <data name="Color_Name" xml:space="preserve">
+    <value>Farbe</value>
+  </data>
+  <data name="Context_Name" xml:space="preserve">
+    <value>Kontext</value>
+  </data>
+  <data name="OwnedItems_Name" xml:space="preserve">
+    <value>Eigene Elemente</value>
+  </data>
+  <data name="Responsibility_Name" xml:space="preserve">
+    <value>Aufgabe</value>
+  </data>
+  <data name="Via_Name" xml:space="preserve">
+    <value>Via</value>
+  </data>
+  <data name="LastSeen_Name" xml:space="preserve">
+    <value>Zuletzt online</value>
+  </data>
+</root>
