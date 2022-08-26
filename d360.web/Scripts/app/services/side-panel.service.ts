@@ -3,6 +3,7 @@ import { IOutputData } from 'angular-split';
 import { BehaviorSubject, fromEvent } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
 import { map, distinctUntilChanged  } from 'rxjs/operators';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,11 +16,11 @@ export class SidePanelService {
   readonly sidePanelOpenMinWidth = 400;
   readonly panelWidthStorageKeyPrefix: string = 'side_panel_width_';
   
-  constructor() {
+  constructor(private messagesService: MessagesObservableService) {
     let windowSize$ = new BehaviorSubject(this.getWindowSize());
     fromEvent(window, 'resize').pipe(map(this.getWindowSize)).subscribe(windowSize$);
     windowSize$.pipe(
-      map(windowSize => windowSize.width),
+      map((windowSize) => windowSize.width),
       distinctUntilChanged()
     ).subscribe((value: number) => this.windowInnerWidth = value);
   }
@@ -45,8 +46,8 @@ export class SidePanelService {
     let sidePanelStorageState;
     try {
       sidePanelStorageState = JSON.parse(localStorage.getItem(this.panelWidthStorageKeyPrefix + sidePanelStorageKey));
-    } catch {
-      console.warn('State for key ' + this.panelWidthStorageKeyPrefix + sidePanelStorageKey + ' could not be parsed');
+    } catch(e) {
+      this.messagesService.showError('State for key ' + this.panelWidthStorageKeyPrefix + sidePanelStorageKey + ' could not be parsed', e);
     }
     if(sidePanelStorageState?.panelWidth > this.windowInnerWidth / 2) {
       return this.windowInnerWidth / 2;
