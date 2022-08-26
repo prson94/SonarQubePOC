@@ -3707,6 +3707,17 @@ namespace d360.web.Controllers.V2
 			return Ok(result);
 		}
 
+		/// <summary>
+		/// Hidden API to return class of asset
+		/// </summary>
+		[HttpGet]
+		[Route("asset/{assetUid}/class")]
+		[ApiExplorerSettings(IgnoreApi = true)]
+		public async Task<IHttpActionResult> GetAssetClassByUID(Guid assetUid)
+		{
+			return Ok(AssetRepository.GetAssetClassByUID(assetUid));
+		}
+
 		#region Request / Response models
 
 		public class AssetTypeAncestryModel
