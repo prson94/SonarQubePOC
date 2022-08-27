@@ -2,7 +2,7 @@
 .relationship-detail p-table thead tr th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
 }
 
 .relationship-detail p-table table {
@@ -21,6 +21,39 @@
 // This is a fix to add horizontal scroll on table when [responsiveLayout]="scroll"
 .relationship-detail p-table table {
     width: max-content;
+}
+
+// This makes kebab menu to be sticky
+.relationship-detail p-table table  {
+  th.asset-grid-tools, td.asset-grid-tools {
+    position: sticky;
+    right: -1px; // This 1px compensates transparent border
+  }
+
+  td.asset-grid-tools {
+    z-index: 1;
+  }
+}
+
+// This makes sure that kebab menu can inherit white background from p-table
+.relationship-detail p-table {
+  .p-datatable-wrapper, table, tbody, tr, td {
+    background: inherit;
+  }
+}
+
+// This ensures that only column headings affects calculation of column width
+.relationship-detail p-table td {
+  max-width: 0;
+
+  // For some reason, max-width: 0 makes kebab menu to extend table width. Thus we undo this to avoid weird mess
+  &.asset-grid-tools {
+    max-width: unset;
+  }
+}
+
+.relationship-detail p-table table tr {
+  background: inherit;
 }
 
 .relationship-detail {
