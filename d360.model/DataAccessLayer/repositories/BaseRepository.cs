@@ -796,7 +796,7 @@ namespace d360.model.DataAccessLayer.repositories
 
 									if (!string.IsNullOrEmpty(fieldDataType))
 									{
-										fieldsUsedInMainQuery.Add($"F{field.ID}.");
+										fieldsUsedInMainQuery.Add($"F{field.ID}");
 										if (fieldDataType == "bit")
 										{
 											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(case when F{field.ID}.{valueColumn} is null then null when F{field.ID}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) {orderDirection}";
