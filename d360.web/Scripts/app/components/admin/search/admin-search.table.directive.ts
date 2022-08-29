@@ -11,7 +11,8 @@ export class AdminSearchTreeTableDirective implements AfterViewInit {
 	ngAfterViewInit(): void {
 		const scrollableBody = DomHandler.findSingle(this.element.nativeElement, '.p-treetable-scrollable-body');
 		scrollableBody.style.overflowX = 'hidden';
-		scrollableBody.style.overflowY = 'auto';
+		scrollableBody.style.overflowY = 'overlay';
+		scrollableBody.style.paddingRight = '17px';
 	}
 	
 }
