@@ -91,7 +91,6 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             .route
             .params
             .subscribe(params => {
-
                 this.uid = params['uid'];
 
                 this.auditService.getLegacyDetails(this.uid).subscribe(res => {
@@ -137,8 +136,9 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         if (!this.isFiltersReady) {
             return;
-        }
-        this.auditService
+		}
+
+		this.auditService
             .getAuditData(this.uid, this.getParams())
             .subscribe(result => {
                 this.isLoading = false;

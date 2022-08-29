@@ -3,8 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { AuditComponent } from './audit.component';
 
 const routes: Routes = [
-    { path: ':uid/log', component: AuditComponent },
-    { path: ':type/:uid', component: AuditComponent },
+	{ path: ':uid/log', component: AuditComponent }
 ];
 
 @NgModule({
