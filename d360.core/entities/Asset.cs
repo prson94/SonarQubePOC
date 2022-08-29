@@ -320,9 +320,9 @@ namespace d360.core.entities
 			get
 			{
 				var sb = new StringBuilder();
-				foreach (var statement in joins.Distinct().OrderBy(x => x.Sort))
+				foreach (var statement in joins.OrderBy(x => x.Sort).Select(x=> x.SQLStatement).Distinct())
 				{
-					sb.AppendLine(statement.SQLStatement);
+					sb.AppendLine(statement);
 				}
 				return sb.ToString();
 			}
