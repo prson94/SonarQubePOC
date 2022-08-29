@@ -67,7 +67,7 @@
     right: 0px;
     background-image: var(--headerLogoUri);
     background-repeat: no-repeat;
-    background-position: 12px top;
+    background-position: left top;
     background-size: auto 40px;
 
     .background {
@@ -141,9 +141,9 @@
 
 .ng-loading-image {
   background-image: var(--headerLogoUri);
-  background-size: auto 40px;
+  background-size: auto 60px;
   background-repeat: no-repeat;
-  height: 40px;
+  height: 60px;
   width: 322px;
 }
 
@@ -460,7 +460,6 @@ d3s-navbar-item {
     background-position: left top;
     height: 40px;
     width: auto;
-    margin-left: 12px;
   }
 }
 
@@ -7184,6 +7183,11 @@ p-treetableheadercheckbox {
   .p-checkbox {
     border-radius: 4px;
     color: white;
+    
+    .p-disabled {
+      opacity: 1;
+      background-color: @ig-grey-t5;
+    }
 
     &-box.p-indeterminate,
     &-box.p-highlight {
@@ -7194,6 +7198,18 @@ p-treetableheadercheckbox {
     &-icon {
       font-size: 9px;
       font-weight: bold;
+    }
+  }
+}
+
+p-treeTableHeaderCheckbox {
+  &.disabled {
+    pointer-events: none;
+
+    .p-checkbox {
+      &-box {
+        background-color: @ig-grey-t5;
+      }
     }
   }
 }

@@ -136,8 +136,8 @@
                                            display="chip">
 								<ng-template pTemplate="selectedItems" let-items>
 									<ng-container *ngIf="dropdown.value && dropdown.value.length !== 0; else placeholder">
-										<div class="p-multiselect-token" style="position: relative;" *ngFor="let item of items">
-											<span class="p-multiselect-token-label" style="z-index: 2">
+										<div class="p-multiselect-token" *ngFor="let item of items">
+											<span class="p-multiselect-token-label">
 												{{ (item | findMultiselectOption: field.Items).label }}
 											</span>
 											<asset-editor-field-info *ngIf="useSidePanel && item"
@@ -145,24 +145,10 @@
 																	 (click)="onItemInfoClick($event, item)"
 																	 [selected]="sidePanelSelection" size="chip">
 											</asset-editor-field-info>
-											<span class="p-multiselect-token-icon fa fa-close"
-												  style="z-index: 2; margin-left: 24px;"
+											<span class="p-multiselect-token-icon pi pi-times"
 												  (click)="dropdown.removeChip(item, $event); $event.stopPropagation()">
 											</span>
 										</div>
-										<ng-template #chipTemplate let-option>
-											<span class="p-multiselect-token-label">
-												{{ option.label }}
-											</span>
-											<span class="p-multiselect-token-icon pi pi-times-circle"
-												  (click)="dropdown.removeChip(option.value, $event); $event.stopPropagation()">
-											</span>
-											<asset-editor-field-info *ngIf="useSidePanel && option.value"
-																	 [object]="{objectID: option.value.toLowerCase(), fieldName: field.FieldName}"
-																	 (click)="onItemInfoClick($event, option.value)"
-																	 [selected]="sidePanelSelection" size="s">
-											</asset-editor-field-info>
-										</ng-template>
 									</ng-container>
 									<ng-template #placeholder>
 										{{ lookupSelectPlaceholder }}
@@ -242,6 +228,7 @@
                                     <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
                                         <tr [pSelectableRow]="item" 
                                             [pSelectableRowIndex]="rowIndex"
+                                            *ngIf="item.label !== null && item.value !== null"
                                             (click)="selectSingleItem($event,item);">
                                             <td class="first-col" *ngIf="field?.MultiSelect">
                                                 <p-tableCheckbox 

@@ -84,7 +84,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     matchAllLabel = $localize`Match all`;
     matchAnyLabel = $localize`Match any`;
 
-    saveLabel = $localize`Save`;
+    saveLabel = $localize`Add Rule`;
 	cancelLabel = $localize`Cancel`;
 
 	showResultsLabel = $localize`Show Results`;
@@ -191,20 +191,22 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 									
 									if (this.model && this.model.StructuredDefinition && this.model.StructuredDefinition.Then) {
 										if (this.model.StructuredDefinition.Then.Conditions != null && this.model.StructuredDefinition.Then.Conditions.length > 0 && !this.model.StructuredDefinition.Then.Conditions.every((c) => !c.Object)) {
-											this.model.StructuredDefinition.Then.Conditions.forEach((t) => {												
-												this.responsibilityTypeService.getRelationRuleFormData(t.Object, 1)
-													.subscribe((d) => {
-														if (t.Object === this.resourceType) {
-															this.thenUserFieldTypes = d.FieldTypes;
-														} else {
-															this.thenGroupFieldTypes = d.FieldTypes;
-														}
-														
-														this.loadThenValuesForFieldType(t, false);
 
-														this.isLoading = false;
-													});
-											});
+											this.responsibilityTypeService.getRelationRuleFormData(this.resourceType, 1)
+												.subscribe((r) => {
+													this.thenUserFieldTypes = r.FieldTypes;
+													
+													this.responsibilityTypeService.getRelationRuleFormData(this.groupType, 1)
+														.subscribe((g) => {
+															this.thenGroupFieldTypes = g.FieldTypes;
+															this.model.StructuredDefinition.Then.Conditions.forEach((t) => {
+																this.loadThenValuesForFieldType(t, false);
+															});
+
+														});
+
+													this.isLoading = false;
+												});											
 										} else {
 											this.responsibilityTypeService.getRelationRuleFormData(this.model.StructuredDefinition.Then.Object, this.model.StructuredDefinition.Then.ObjectID)
 												.subscribe((d) => {
@@ -321,7 +323,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 				else if (selectedFieldType.type === "Text") {
 					item.IsSimpleText = true;		
 					if (!item.Operator) {
-						item.Operator = Operator[Operator.Equals];
+						item.Operator = Operator[Operator.Contains];
 					}
 				}
                 else {
@@ -595,7 +597,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 			} else if (selectedFieldType.type === "Text") {
 				item.IsSimpleText = true;
 				if (!item.Operator) {
-					item.Operator = Operator[Operator.Equals];
+					item.Operator = Operator[Operator.Contains];
 				}
 			}
             else {
@@ -685,7 +687,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 	showValueOption(item) {
 		if (item.CheckType === "F" && item.FieldTypeID) {
 			if (item.IsSimpleText) {
-				return item.Operator && item.Operator !== Operator.Populated && item.Operator !== Operator.NotPopulated;
+				return item.Operator && item.Operator !== Operator[Operator.Populated] && item.Operator !== Operator[Operator.NotPopulated];
 			}
 			return true;
 		} 
@@ -698,7 +700,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 	showThenValueOption(item) {
 		if (item.FieldTypeID || item.FieldTypeName) {
 			if (item.IsSimpleText) {				
-				return item.Operator && item.Operator !== Operator.Populated && item.Operator !== Operator.NotPopulated;				
+				return item.Operator && item.Operator !== Operator[Operator.Populated] && item.Operator !== Operator[Operator.NotPopulated];				
 			}			
 			return true;
 		}		

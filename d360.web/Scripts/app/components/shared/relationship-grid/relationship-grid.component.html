@@ -87,16 +87,15 @@
                                 <ng-container i18n>Relationship Type</ng-container>
                                 <d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
                             </th>
-                            <th [pSortableColumn]="'AssetPath'">Asset <d3s-sortIcon [field]="'AssetPath'"></d3s-sortIcon>
-                            </th>
-                            <th *ngFor="let column of columns"
-                                [pSortableColumn]="column.sortable ? column.apiName : null "
-                                [style.width]="column.columnWidth === 0 ? 'auto' : (column.columnWidth + 'px')">
+							<th [pSortableColumn]="'AssetPath'">Asset <d3s-sortIcon [field]="'AssetPath'"></d3s-sortIcon></th>
+                            <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.apiName : null "
+                                [style.width]="column.columnWidth === 0 ? 'auto' : (column.columnWidth + 'px')"
+                                [style.maxWidth]="column.columnWidth === 0 ? '500px' : null">
                                 {{column.text}}
                                 {{column.columnWidth}}
                                 <d3s-sortIcon [field]="column.apiName"></d3s-sortIcon>
                             </th>
-                            <th [style.width]="'40px'"></th>
+                            <th class="asset-grid-tools" [style.width]="'40px'"></th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body"

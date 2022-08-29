@@ -112,19 +112,64 @@
 									</div>
 								</div>
 								<div class="buttons-grid">
-									<d3s-relocate-buttons [sourceItems]="availableItems"
-														[targetItems]="newFolderItems"
-														[selectedItemsFromSource]="_tempSelectedFolderItems"
-														[selectedItemsFromTarget]="selectedNewFolderItems"
-														[isFirstItemFromTargetSelected]="isFirstItemFromTargetSelected"
-														[isLastItemFromTargetSelected]="isLastItemFromTargetSelected"
-														(relocateItemsFromSourceToTargetEvent)="onRelocateItemsFromSourceToTargetEvent()"
-														(relocateItemsFromTargetToSourceEvent)="onRelocateItemsFromTargetToSourceEvent()"
-														(moveToTopEvent)="onMoveToTopEvent()"
-														(moveUpEvent)="onMoveUpEvent()"
-														(moveDownEvent)="onMoveDownEvent()"
-														(moveToBottomEvent)="onMoveToBottomEvent()">
-									</d3s-relocate-buttons>
+									<div style="height:100px"></div>
+									<div class="buttons-vertical">
+										<button igButton
+												class="ig-lookup-grid-button"
+												[disabled]="!_tempSelectedFolderItems || _tempSelectedFolderItems.length === 0"
+												icon="fa-arrow-right"
+												(click)="addToSelectedFolderItems()"
+												i18n-pTooltip
+												pTooltip="Add to selected folder items"
+												tooltipPosition="top"
+												tooltipStyleClass="ig-tooltip"></button>
+										<button igButton
+												class="ig-lookup-grid-button"
+												[disabled]="!selectedNewFolderItems || selectedNewFolderItems.length === 0"
+												icon="fa-arrow-left"
+												(click)="removeFromSelectedFolderItems()"
+												i18n-pTooltip
+												pTooltip="Remove from selected folder items"
+												tooltipPosition="top"
+												tooltipStyleClass="ig-tooltip"></button>
+										<div style="height:16px"></div>
+										<button igButton
+												class="ig-lookup-grid-button rotateRight"
+												[disabled]="disableBtnMoveToTop()"
+												icon="fa-step-backward"
+												(click)="moveToTop()"
+												i18n-pTooltip
+												pTooltip="Move to top"
+												tooltipPosition="top"
+												tooltipStyleClass="ig-tooltip"></button>
+										<button igButton
+												class="ig-lookup-grid-button"
+												[disabled]="disableBtnMoveUp()"
+												icon="fa-caret-up"
+												(click)="moveUp()"
+												i18n-pTooltip
+												pTooltip="Move up"
+												tooltipPosition="top"
+												tooltipStyleClass="ig-tooltip"></button>
+										<button igButton
+												class="ig-lookup-grid-button"
+												[disabled]="disableBtnMoveDown()"
+												icon="fa-caret-down"
+												(click)="moveDown()"
+												i18n-pTooltip
+												pTooltip="Move down"
+												tooltipPosition="top"
+												tooltipStyleClass="ig-tooltip"></button>
+										<button igButton
+												class="ig-lookup-grid-button rotateLeft"
+												[disabled]="disableBtnMoveToBottom()"
+												icon="fa-step-backward"
+												(click)="moveToBottom()"
+												i18n-pTooltip
+												pTooltip="Move to bottom"
+												tooltipPosition="top"
+												tooltipStyleClass="ig-tooltip"></button>
+									</div>
 								</div>
 								<div class="table-content">
 									<div class="flex-grid-search">
@@ -243,16 +288,27 @@
 									</div>
 								</div>
 								<div class="buttons-grid">
-									<d3s-relocate-buttons [sourceItems]="permissionAssets"
-														[targetItems]="selectedPermissionAssets"
-														[selectedItemsFromSource]="_tempSelectedPermissionAssets"
-														[selectedItemsFromTarget]="_selectedPermissionAsset"
-														[isOrderButtonsPresent]="false"
-														[relocateToTargetButtonTooltip]="'Add to selected users/groups'"
-														[relocateToSourceButtonTooltip]="'Remove from selected users/groups'"
-														(relocateItemsFromSourceToTargetEvent)="onRelocatePermissionItemsForwardEvent()"
-														(relocateItemsFromTargetToSourceEvent)="onRelocatePermissionItemsBackwardEvent()">
-									</d3s-relocate-buttons>
+									<div style="height:100px"></div>
+									<div class="buttons-vertical">
+										<button igButton
+												class="ig-lookup-grid-button"
+												icon="fa-arrow-right"
+												(click)="addPermissionAssets()"
+												[disabled]="!_tempSelectedPermissionAssets || _tempSelectedPermissionAssets.length === 0"
+												pTooltip="Add to selected users/groups"
+												i18n-pTooltip
+												tooltipPosition="top"
+												tooltipStyleClass="ig-tooltip"></button>
+										<button igButton
+												class="ig-lookup-grid-button"
+												icon="fa-arrow-left"
+												(click)="removePermissionAssets()"
+												[disabled]="!_selectedPermissionAsset || _selectedPermissionAsset.length === 0"
+												pTooltip="Remove from selected users/groups"
+												i18n-pTooltip
+												tooltipPosition="top"
+												tooltipStyleClass="ig-tooltip"></button>
+									</div>
 								</div>
 								<div class="table-content">
 									<ig-search-field class="search tooltip-full-width"

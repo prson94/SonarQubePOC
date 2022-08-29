@@ -1,4 +1,4 @@
-﻿﻿﻿import { NgModule }       from '@angular/core';
+﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 
@@ -31,7 +31,6 @@ import { SharedObjectDetailsModule } from './objectdetails/shared-object-details
 import { AdvancedFiltersModule } from "../assets-grid/advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
 
-import { RelocateButtonsComponent } from './relocate-buttons/relocate-buttons.component';
 import { ObjectDefinitionTile } from './object-definition.tile';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
@@ -43,14 +42,12 @@ import { AssetEditorModule } from './asset-editor/asset-editor.module';
 
 @NgModule({
     declarations: [                           
-        RelocateButtonsComponent,
         ObjectDefinitionTile,
         ResourceResponsibilityComponent,        
         ResourceResponsibilityGridComponent,      
         UserListComponent
     ],
     exports: [                                                                                                                                        
-        RelocateButtonsComponent,
         ObjectDefinitionTile,
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,               

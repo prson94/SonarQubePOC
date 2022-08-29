@@ -22,6 +22,7 @@ export class AdminSearchComponent extends AdminBaseComponent {
     isUpdating: boolean = false;
     indexableHash: any;
     indexableNodes: TreeNode[];
+	isGlobalSelectDisabled: boolean = true;
 	selectedIndexes: TreeNode<IndexableStatus>[] = [];
 	
 	@Output() onModalClose: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -80,6 +81,7 @@ export class AdminSearchComponent extends AdminBaseComponent {
                         this.indexableHash[this.getIndexableStatusId(elem)] = { data: elem, children: [] };
 
                         if (this.indexableHash[`${elem.Class}-${this.emptyUid}`]) {
+							this.indexableHash[this.getIndexableStatusId(elem)].parent = this.indexableHash[`${elem.Class}-${this.emptyUid}`];
                             this.indexableHash[`${elem.Class}-${this.emptyUid}`].children.push(this.indexableHash[this.getIndexableStatusId(elem)]);
                         }
                     });
@@ -127,6 +129,7 @@ export class AdminSearchComponent extends AdminBaseComponent {
 						elem.Menu = this.getKebabMenuItems(this.indexableHash[this.getIndexableStatusId(s)]);
                     }
                 });
+				this.isGlobalSelectDisabled = this.indexableNodes.every((node) => !this.canRebuildNode(node));
 				this.selectedIndexes = [];
                 this.isUpdating = false;
             });
@@ -135,9 +138,19 @@ export class AdminSearchComponent extends AdminBaseComponent {
     canRebuild(data: IndexableStatus): boolean {
         return (data.Status < 1 || data.Status > 3);
     }
+	
+	canRebuildNode(node: TreeNode<IndexableStatus>): boolean {
+		if (node.parent) {
+			return this.canRebuild(node.parent.data) && this.canRebuild(node.data);
+		}
+		if (!node.children.length || node.children.some((node) => this.canRebuild(node.data))) {
+			return this.canRebuild(node.data);	
+		}
+		return false;
+	}
 
 	rebuild(data: TreeNode<IndexableStatus>[]) {
-		data = data.filter((node) => this.canRebuild(node.data));
+		data = data.filter((node) => this.canRebuildNode(node));
 		data.forEach((node) => {
 			if (node.children.length > 0) {
 				const removableAssets = node.children.map((node) => node.data.AssetTypeUid);
@@ -157,7 +170,7 @@ export class AdminSearchComponent extends AdminBaseComponent {
 			if (rowNode.node.children) {
 				if (rowNode.node.children.length > 0) {
 					rowToggle.onClick($event);
-				} else if (!this.isUpdating && this.canRebuild(rowNode.node.data)) {
+				} else if (!this.isUpdating && this.canRebuildNode(rowNode.node)) {
 					treeTable.toggleNodeWithCheckbox({ originalEvent: $event, rowNode });
 				}
 			}
@@ -168,9 +181,9 @@ export class AdminSearchComponent extends AdminBaseComponent {
 		const menu = [];
 		if (node.children) {
 			if (node.children.length) {
-				menu.push({ title: $localize`Rebuild Category Index`, disabled: !this.canRebuild(node.data) });
+				menu.push({ title: $localize`Rebuild Category Index`, disabled: !this.canRebuildNode(node) });
 			} else {
-				menu.push({ title: $localize`Rebuild Asset Type Index`, disabled: !this.canRebuild(node.data) });
+				menu.push({ title: $localize`Rebuild Asset Type Index`, disabled: !this.canRebuildNode(node) });
 			}
 		}
 		menu.push({ title: $localize`Refresh View` });

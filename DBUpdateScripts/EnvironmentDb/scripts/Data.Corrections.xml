@@ -1619,5 +1619,41 @@ delete [Setting] where ID = 50
 	</rollback>
   </changeSet>
   
+  <changeSet author="Andrii Kunetskyi" id="Data.Corrections.GOV-19439">
+  	<preConditions onFail="MARK_RAN">
+		<columnExists tableName="Favorite" schemaName="dbo" columnName="Object" />
+	</preConditions>
+	<comment>GOV-19439 - we need to perform the following scripts after the whole DB is created.</comment>	
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		update Favorite
+			set AssetId = a.ID
+		from Favorite f
+		left join Asset a on a.Object = f.Object and a.ObjectID = f.ObjectID
+		where f.Object is not null and f.Object != 'SemanticType' and f.Object not like '%Type'
+		
+		update Favorite 
+			set AssetTypeId = at.ID
+		from Favorite f
+		left join AssetType at on at.Object = f.Object and at.ObjectID = f.ObjectID
+		where f.Object is not null and f.Object != 'SemanticType' and f.Object like '%Type'
+		
+		update Favorite
+			set SemanticId = s.ID
+		from Favorite f
+		left join Semantic s on s.ID = f.ObjectID
+		where f.Object is not null and f.Object = 'SemanticType'
+
+		alter table dbo.Favorite
+		drop column Object
+
+		alter table dbo.Favorite
+		drop column ObjectID
+	]]>
+	</sql>
+  </changeSet>
   
 </databaseChangeLog>

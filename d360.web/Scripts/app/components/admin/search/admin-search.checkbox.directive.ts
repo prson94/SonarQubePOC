@@ -1,4 +1,4 @@
-import { AfterContentChecked, Directive, Input } from "@angular/core";
+import { AfterContentChecked, Directive } from "@angular/core";
 import { TTCheckbox } from "primeng/treetable";
 
 @Directive({
@@ -6,13 +6,13 @@ import { TTCheckbox } from "primeng/treetable";
 })
 
 export class AdminSearchCheckboxDirective implements AfterContentChecked {
-	@Input() canRebuild: boolean;
+
 	constructor(private checkbox: TTCheckbox) {}
-	
+
 	// PrimeNG allows disabled rows to be selected, which is improper behaviour,
 	// that is why we need to handle check state of checkboxes additionally
 	ngAfterContentChecked(): void {
-		if (!this.canRebuild) {
+		if (this.checkbox.checked && this.checkbox.disabled) {
 			this.checkbox.checked = false;
 		}
 	}

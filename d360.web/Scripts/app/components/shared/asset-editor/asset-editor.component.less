@@ -144,6 +144,7 @@
       }
 
       .p-multiselect-token {
+        position: relative;
         display: flex;
         align-items: center;
         background: @ig-grey-t5;
@@ -153,13 +154,22 @@
         padding: 0 4px;
         float: left;
         height: 24px;
+        max-width: calc(100% - 28px);
+
+        .p-multiselect-token-label,
+        .p-multiselect-token-icon {
+          z-index: 2;
+        }
 
         .p-multiselect-token-label {
           position: relative;
+          text-overflow: ellipsis;
+          overflow: hidden;
         }
 
         .p-multiselect-token-icon {
-          font-size: 16px;
+          font-size: 13px;
+          margin-left: 24px;
           padding: 4px;
         }
       }
@@ -270,7 +280,7 @@
   justify-content: flex-start;
 
   .side-panel {
-    min-width: 410px;
+    min-width: 417px;
     height: auto;
     border-left: 1px solid @d3s-gray-6;
     background: unset;
