@@ -103,34 +103,34 @@
                     You can define "When" filters to limit when the rule applies. Responsibilities will be applied to any items which match the Selected Type and meet the filter criteria that you specify below.<br />
                     The When filters do not apply to create, only read ,modify, and remove.  The user will be able to create any asset of the asset type.
                 </div>
-                <div class="col s12" style="border-radius:8px; border: 1px solid lightgrey; padding:5px" i18n>
+                <div class="col s12 rule-bounding-box" i18n>
                     <div class="condition-group">
                         <div>
                             <table class="highlight, striped responsive-table" cellpadding="5">
                                 <tbody *ngFor="let item of model.StructuredDefinition.When; let i=index;">
                                     <tr>
                                         <td style="width: 200px">
-                                            <p-dropdown igDropdown required [filter]="true" filterBy="label" [ngModelOptions]="{standalone: true}" [options]="whenCheckTypes" [(ngModel)]="item.CheckType" [style]="{ 'width' : '95%','min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
+                                            <p-dropdown igDropdown required [filter]="true" filterBy="label" [ngModelOptions]="{standalone: true}" [options]="whenCheckTypes" [(ngModel)]="item.CheckType" [style]="{ 'min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
                                         </td>
                                         <td style="width: 200px" *ngIf="item.CheckType">
-                                            <p-dropdown igDropdown required *ngIf="item.CheckType == 'F'" [filter]="true" filterBy="label" [ngModelOptions]="{standalone: true}" appendTo="body" [options]="whenFieldTypes" [(ngModel)]="item.FieldTypeID" [style]="{ 'width' : '95%','min-width' : '6em' }" (onChange)="loadWhenValuesForFieldType(item, $event)" placeholder="Value Required"></p-dropdown>
-                                            <p-dropdown igDropdown required *ngIf="item.CheckType == 'R'" [filter]="true" filterBy="label" [ngModelOptions]="{standalone: true}" appendTo="body" [options]="whenIntersectTypes" [(ngModel)]="item.IntersectTypeID" [style]="{ 'width' : '95%','min-width' : '6em' }" (onChange)="loadValuesForIntersectType(item)" placeholder="Value Required"></p-dropdown>
+                                            <p-dropdown igDropdown required *ngIf="item.CheckType == 'F'" [filter]="true" filterBy="label" [ngModelOptions]="{standalone: true}" appendTo="body" [options]="whenFieldTypes" [(ngModel)]="item.FieldTypeID" [style]="{ 'min-width' : '6em' }" (onChange)="loadWhenValuesForFieldType(item, $event)" placeholder="Value Required"></p-dropdown>
+                                            <p-dropdown igDropdown required *ngIf="item.CheckType == 'R'" [filter]="true" filterBy="label" [ngModelOptions]="{standalone: true}" appendTo="body" [options]="whenIntersectTypes" [(ngModel)]="item.IntersectTypeID" [style]="{ 'min-width' : '6em' }" (onChange)="loadValuesForIntersectType(item)" placeholder="Value Required"></p-dropdown>
                                         </td>
                                         <td style="width: 200px" *ngIf="(item.CheckType == 'F' && item.FieldTypeID && item.IsSimpleText) || (item.CheckType == 'R' && item.IntersectTypeID)">
-                                            <p-dropdown igDropdown required [filter]="true" *ngIf="item.CheckType == 'F'" [ngModelOptions]="{standalone: true}" appendTo="body" [options]="fieldOperatorTypes" [(ngModel)]="item.Operator" [style]="{ 'width' : '95%','min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
-                                            <p-dropdown igDropdown required [filter]="true" *ngIf="item.CheckType == 'R'" [ngModelOptions]="{standalone: true}" appendTo="body" [options]="relationshipOperatorTypes" [(ngModel)]="item.Operator" [style]="{ 'width' : '95%','min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
+                                            <p-dropdown igDropdown required [filter]="true" *ngIf="item.CheckType == 'F'" [ngModelOptions]="{standalone: true}" appendTo="body" [options]="fieldOperatorTypes" [(ngModel)]="item.Operator" [style]="{ 'min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
+                                            <p-dropdown igDropdown required [filter]="true" *ngIf="item.CheckType == 'R'" [ngModelOptions]="{standalone: true}" appendTo="body" [options]="relationshipOperatorTypes" [(ngModel)]="item.Operator" [style]="{ 'min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
                                         </td>
                                         <td style="width: 200px" *ngIf="showValueOption(item)">
                                             <div *ngIf="item.CheckType == 'F' && !item.IsLookup && !item.IsBool">
-                                                <input igInput required [ngModelOptions]="{standalone: true}" name="name" type="text" [(ngModel)]="item.Value" style="width: 95%;" placeholder="Value Required" />
+                                                <input igInput required [ngModelOptions]="{standalone: true}" name="name" type="text" [(ngModel)]="item.Value" placeholder="Value Required" />
                                             </div>
-                                            <p-dropdown igDropdown required [filter]="true" *ngIf="item.CheckType == 'F' && !item.IsLookup && item.IsBool" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%','min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
-                                            <p-dropdown igDropdown required [filter]="true" *ngIf="item.CheckType == 'F' && item.IsLookup && !item.IsBool" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%','min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
+                                            <p-dropdown igDropdown required [filter]="true" *ngIf="item.CheckType == 'F' && !item.IsLookup && item.IsBool" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
+                                            <p-dropdown igDropdown required [filter]="true" *ngIf="item.CheckType == 'F' && item.IsLookup && !item.IsBool" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
 
-                                            <div *ngIf="item.IsloadValuesForIntersectType" [style]="{ 'width' : '95%','min-width' : '6em', 'text-align':'center'}">
+                                            <div *ngIf="item.IsloadValuesForIntersectType" [style]="{ 'min-width' : '6em', 'text-align':'center'}">
                                                 <i class="fa fa-spinner fa-spin"></i>
                                             </div>
-                                            <p-dropdown igDropdown required pTooltip="item.Value" tooltipPosition="top" *ngIf="item.CheckType == 'R' && !item.IsBool && !item.IsloadValuesForIntersectType" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%','min-width' : '6em', 'direction': 'rtl' }" (onChange)="parseRelationshipWhenValue(item);simpleWhenFilter='';" [virtualScroll]="item?.ValueOptions?.length > 100" itemSize="20" [filter]="true" placeholder="Value Required"></p-dropdown>
+                                            <p-dropdown igDropdown required pTooltip="item.Value" tooltipPosition="top" *ngIf="item.CheckType == 'R' && !item.IsBool && !item.IsloadValuesForIntersectType" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'min-width' : '6em' }" (onChange)="parseRelationshipWhenValue(item);simpleWhenFilter='';" [virtualScroll]="item?.ValueOptions?.length > 100" itemSize="20" [filter]="true" placeholder="Value Required"></p-dropdown>
                                         </td>
                                         <td><a *ngIf="model?.StructuredDefinition?.When?.length>1 || (model?.StructuredDefinition?.When?.length == 1 && model?.StructuredDefinition?.When[0]?.CheckType?.length>0)" style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="removeWhenCondition(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
                                     </tr>
@@ -148,7 +148,7 @@
                     </div>
                     <div style="height: 50px; display:flex; align-items:center">
                         <div>
-                            <button pButton type="button" [disabled]="disableTestWhen" label="{{testButtonLabel}}" (click)="testWhen()"></button>
+                            <button igButton type="button" [disabled]="disableTestWhen" label="{{testButtonLabel}}" (click)="testWhen()"></button>
                         </div>
                         <div style="margin-left:10px">
                             <span *ngIf="noWhenResults">No Results</span>
@@ -211,20 +211,20 @@
                                 <tbody *ngFor="let item of model.StructuredDefinition.Then.Conditions; let i=index;">
                                     <tr>
                                         <td style="width: 200px">
-                                            <p-dropdown igDropdown required [ngModelOptions]="{standalone: true}" [options]="thenObjectTypes" (onChange)="item.FieldTypeID=null;item.Value=null;item.ValueOptions=null;item.Operator=null;loadThenFilterOptions(item)" [(ngModel)]="item.Object" [style]="{ 'width' : '95%','min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
+                                            <p-dropdown igDropdown required [ngModelOptions]="{standalone: true}" [options]="thenObjectTypes" (onChange)="item.FieldTypeID=null;item.Value=null;item.ValueOptions=null;item.Operator=null;loadThenFilterOptions(item)" [(ngModel)]="item.Object" placeholder="Value Required"></p-dropdown>
                                         </td>
                                         <td style="width: 200px" *ngIf="item.Object">
-                                            <p-dropdown igDropdown required *ngIf="item.Object == 'ResourceType'" [ngModelOptions]="{standalone: true}" [options]="thenUserFieldTypes" [(ngModel)]="item.FieldTypeID" [style]="{ 'width' : '95%' }" (onChange)="item.Value=null;item.ValueOptions=null;item.Operator=null;loadThenValuesForFieldType(item)" placeholder="Value Required"></p-dropdown>
-                                            <p-dropdown igDropdown required *ngIf="item.Object == 'GroupType'" [ngModelOptions]="{standalone: true}" [options]="thenGroupFieldTypes" [(ngModel)]="item.FieldTypeID" [style]="{ 'width' : '95%' }" (onChange)="item.Value=null;item.ValueOptions=null;item.Operator=null;loadThenValuesForFieldType(item)" placeholder="Value Required"></p-dropdown>
+                                            <p-dropdown igDropdown required *ngIf="item.Object == 'ResourceType'" [ngModelOptions]="{standalone: true}" [options]="thenUserFieldTypes" [(ngModel)]="item.FieldTypeID" (onChange)="item.Value=null;item.ValueOptions=null;item.Operator=null;loadThenValuesForFieldType(item)" placeholder="Value Required"></p-dropdown>
+                                            <p-dropdown igDropdown required *ngIf="item.Object == 'GroupType'" [ngModelOptions]="{standalone: true}" [options]="thenGroupFieldTypes" [(ngModel)]="item.FieldTypeID" (onChange)="item.Value=null;item.ValueOptions=null;item.Operator=null;loadThenValuesForFieldType(item)" placeholder="Value Required"></p-dropdown>
                                         </td>
                                         <td style="width: 200px" *ngIf="item.FieldTypeID && item.IsSimpleText">
-                                            <p-dropdown igDropdown required [ngModelOptions]="{standalone: true}" appendTo="body" [options]="fieldOperatorTypes" [(ngModel)]="item.Operator" [style]="{ 'width' : '95%','min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
+                                            <p-dropdown igDropdown required [ngModelOptions]="{standalone: true}" appendTo="body" [options]="fieldOperatorTypes" [(ngModel)]="item.Operator" [style]="{ 'min-width' : '6em' }" placeholder="Value Required"></p-dropdown>
                                         </td>
                                         <td style="width: 200px" *ngIf="showThenValueOption(item)">
-                                            <p-dropdown igDropdown required *ngIf="item.IsLookup" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%' }"></p-dropdown>
-                                            <p-dropdown igDropdown required *ngIf="item.IsBool" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%' }"></p-dropdown>
+                                            <p-dropdown igDropdown required *ngIf="item.IsLookup" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" ></p-dropdown>
+                                            <p-dropdown igDropdown required *ngIf="item.IsBool" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" ></p-dropdown>
                                             <div *ngIf="!item.IsLookup && !item.IsBool">
-                                                <input igInput [ngModelOptions]="{standalone: true}" required name="name" pInputText type="text" [(ngModel)]="item.Value" style="width: 98%; display: block;" #Name="ngModel" />
+                                                <input igInput [ngModelOptions]="{standalone: true}" required name="name" pInputText type="text" [(ngModel)]="item.Value" style="display: block;" #Name="ngModel" />
                                             </div>
                                         </td>
                                         <td><a *ngIf="model?.StructuredDefinition?.Then?.Conditions?.length>1 || (model?.StructuredDefinition?.Then?.Conditions?.length == 1 && model?.StructuredDefinition?.Then.Conditions[0]?.Object)" style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="removeThenCondition(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
@@ -243,7 +243,7 @@
                     </div>
                     <div style="height: 50px; display:flex; align-items:center">
                         <div>
-                            <button pButton type="button" [disabled]="disableTestThen" label="{{testButtonLabel}}" (click)="testThen()"></button>
+                            <button igButton type="button" [disabled]="disableTestThen" label="{{testButtonLabel}}" (click)="testThen()"></button>
                         </div>
                         <div style="margin-left:10px">
                             <span *ngIf="noThenResults">No Results</span>
@@ -305,9 +305,10 @@
 
         <div class="row">
             <div class="col s12">
-                <div style="padding-top:10px">
-                    <button pButton type="submit" [disabled]="!ruleEditor.form.valid || !isValid()" label="{{saveLabel}}"></button>
-                    <button pButton type="button" label="{{cancelLabel}}" (click)="cancel()"></button>
+                <div style="padding-top:10px" class="action-buttons flex-grid">
+                    <button igButton type="button" label="{{cancelLabel}}" (click)="cancel()"></button>
+                    <div class="flex-grow"></div>
+                    <button igButton type="submit" class="ig-button-primary" [disabled]="!ruleEditor.form.valid || !isValid()" label="{{saveLabel}}"></button>
                 </div>
             </div>
         </div>
