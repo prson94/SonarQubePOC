@@ -1,8 +1,14 @@
 <div class="row">
-    <div class="col s12" style="display: flex">
-        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <div class="tile tile-detail main-panel"
-             *ngIf="!isLoading">
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <as-split unit="pixel"
+              direction="horizontal"
+              [gutterSize]="16"
+              class="col s12 split"
+              style="display: flex"
+              [class.side-panel-close]="!sidePanelOpen"
+              (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)"
+              *ngIf="!isLoading">
+        <as-split-area class="tile tile-detail main-panel">
             <d3s-asset-grid #grid
                             [gridObject]="gridObject"
                             (selectedChange)="selectAsset($event)"
@@ -10,13 +16,18 @@
                             (showEditorChange)="showEditor=$event"
                             (isLoadingChange)="gridLoading=$event"
                             (isDefinitionLoadedChange)="definitionLoaded=$event"></d3s-asset-grid>
-        </div>
-        <div class="tile tile-detail side-panel" *ngIf="!gridLoading && !isLoading && definitionLoaded && (!showEditor || (showEditor && selection != null))">
+        </as-split-area>
+        <as-split-area [size]="getSidePanelWidth()"
+                       [minSize]="getSidePanelMinWidth()"
+                       [maxSize]="getSidePanelMaxWidth()"
+                       class="tile tile-detail side-panel"
+                       *ngIf="!gridLoading && !isLoading && definitionLoaded && (!showEditor || (showEditor && selection != null))">
             <side-panel (expandedChange)="sidePanelOpen=$event"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [hasSelectedItem]="selection ? true : false"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="hasProfiling"
+                        [setMinMaxWidth]="false"
                         hasDetail="true"
                         [storageKey]="sidePanelStorageKey">
                 <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
@@ -24,10 +35,12 @@
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen && selection != null && !sidePanelLoading">
                     <ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">
-                        <data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondaryPanelOpen($event)"></data-profile>
+                        <data-profile [dataProfile]="dataProfile"
+                                      (secondaryPanelLinkClicked)="secondaryPanelOpen($event)"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
-                        <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag" #assetDetail
+                        <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag"
+                                         #assetDetail
                                          [objectUID]="selectedAsset ? selectedAsset.uid : selection.AssetUid"
                                          [objectType]="selectedAsset ? selectedAsset.type : 'artifact'"
                                          [useAccordion]="true"
@@ -56,11 +69,18 @@
                     </ng-container>
                 </ng-container>
                 <ng-container *ngIf="secondarySidePanelOpen">
-                    <div #semanticTile class="secondary-side-panel">
+                    <div #semanticTile
+                         class="secondary-side-panel">
                         <div class="panel-header">
-                            <span class="header-label" i18n>Information</span>
+                            <span class="header-label"
+                                  i18n>Information</span>
                             <div class="button-container">
-                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>
+                                <button igButton
+                                        [attr.data-cy]="'Semantic_Secondary_Close'"
+                                        icon="fa-times"
+                                        (click)="secondarySidePanelOpen=false;"
+                                        [tooltip]="Close"
+                                        class="close-button"></button>
                             </div>
                         </div>
                         <div class="details-container">
@@ -93,6 +113,6 @@
                     </div>
                 </ng-container>
             </side-panel>
-        </div>
-    </div>
+        </as-split-area>
+    </as-split>
 </div>

@@ -19,6 +19,8 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
 import { Subscription } from 'rxjs';
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 @Component({
     selector: 'd3s-hierarchy-item',
@@ -54,13 +56,14 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
     selectedReferenceItem: any;
 
     sidePanelOpen: boolean = false;
-    sidePanelStorageKey;
+    sidePanelStorageKey = 'side_panel_width_detail_';
 
     synonymPermission: SynonymPermission;
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
+        private sidePanelService: SidePanelService,
         secondaryNavService: SecondaryNavService,
         protected modelsService: ModelsService,
         protected policiesService: PoliciesService,
@@ -133,6 +136,22 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 
     ngOnDestroy() {
         this.clearSidebar();
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
     private load(hierarchyId: number) {

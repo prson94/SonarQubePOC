@@ -77,6 +77,7 @@ import { AssetTypeDetailModule } from '../asset-type-detail/asset-type-detail.mo
 import { TaggedAssetDetailModule } from '../tagged-assets/tagged-assets-detail.module';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { AddRelationshipModule } from "../relationship-grid/add-relationship.module";
+import { AngularSplitModule } from 'angular-split';
 
 
 @NgModule({
@@ -137,7 +138,8 @@ import { AddRelationshipModule } from "../relationship-grid/add-relationship.mod
         PopupMenuModule,
         SearchFieldModule,
         DirectivesModule,
-        AddRelationshipModule
+        AddRelationshipModule,
+        AngularSplitModule,
     ],
     declarations: [
         AssetBrowserAddPanelComponent,

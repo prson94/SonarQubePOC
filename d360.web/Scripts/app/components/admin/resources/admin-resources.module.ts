@@ -14,6 +14,7 @@ import { AdminResourcesRoutingModule } from './admin-resources.routes';
 import { SharedModule } from 'primeng/api';
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
 import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
+import { AngularSplitModule } from 'angular-split';
 
 
 @NgModule({
@@ -21,7 +22,7 @@ import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.mod
         CommonModule,
         FormsModule,
 
-
+        AngularSplitModule,
         AdminResourcesRoutingModule,
 
         //prime        
