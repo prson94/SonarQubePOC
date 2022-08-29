@@ -130,21 +130,12 @@ namespace d360.model.DataAccessLayer
 						List<string> simpleFilters = new List<string>();
 
 						//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
-						foreach (var ft in fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString()))
+						var fields = fieldTypes.Zip(fieldColumns.Selects(), (type, column) => (type, column))
+							.Where(x => x.type.IsListable == true && x.type.Type != DataType.OwnershipLookup.ToString());
+
+						foreach (var (ft, column) in fields)
 						{
-							if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
-							{
-								string ftformatted = $@"F{ft.ID}.FormattedValue";
-								simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else {ftformatted} end as value) like @simpleFilter");
-							}
-							else if (ft.Type == DataType.Counter.ToString())
-							{
-								simpleFilters.Add($"('{ft.CounterPrefix}' + CAST(F{ft.ID}.FormattedValue as nvarchar(max))) like @simpleFilter");
-							}
-							else
-							{
-								simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
-							}
+							simpleFilters.Add($"{column.StatementWithoutColumnName} like @simpleFilter");
 						}
 
 						simpleFilters.Add($"G.Name like @simpleFilter");
