@@ -23,26 +23,8 @@ import { forEach } from "core-js/fn/dict";
 
 @Component({
     selector: "d3s-responsibility-rule-form",
-    templateUrl: "./responsibility-rule.form.html",
-    styles: [
-        `
-        .display-table tr td {
-            padding:3px;
-            border-radius: 0;
-        }
-        .relation-table tr td {
-            border-radius: 0;
-        }
-        
-       .display-table-title {
-            text-align:center;
-            width:100%;
-            text-transform: uppercase;
-            color: #5c5e60 !important;
-            font-size: 1rem;
-            font-weight: bold;
-        }`
-    ],
+	templateUrl: "./responsibility-rule.form.html",
+	styleUrls: ["responsibility-rule.less"],
     providers: [ResponsibilityTypeService, ObjectDetailService],
 })
 
@@ -628,19 +610,20 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         return null;
     }
 
-    private isValid(): boolean {
-        if (!this.model.ApplyToType) {
-            if (!this.model.StructuredDefinition.When || this.model.StructuredDefinition.When.length === 0) {
-				return false;				
-            }
-            else {
-                return true;
-            }
-        }
-        else {
-            return true;
-        }
-    }
+	private isValid(): boolean {
+		if (!this.model.ApplyToType) {
+			if (!this.model.StructuredDefinition.When || this.model.StructuredDefinition.When.length === 0) {
+				return false;
+			}
+			else {
+				return true;
+			}
+		}
+		else {
+			return true;
+		}
+	}
+
     cancel(): void {
         this.onCancel.emit(null);
     }
