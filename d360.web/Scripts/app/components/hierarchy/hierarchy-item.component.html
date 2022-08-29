@@ -4,10 +4,10 @@
         <div>
             <div class="col s12" style="display:flex;">
                 <div class="tile tile-detail main-panel">
-               
+
                     <d3s-object-definition-tile [nymTypes]="assetType?.NymTypes"
                                                 [objectPermissions]="objectPermission"
-                                                [objectType]="object"
+                                                [objectType]="objectType"
                                                 [useV2Api]="true"
                                                 [objectID]="selected?.ID"
                                                 (onEditComplete)="editComplete($event)"

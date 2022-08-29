@@ -18,7 +18,7 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { AssetService } from '../../services/asset.service';
 import { ArtifactService } from '../../services/artifacts.service';
 
@@ -87,19 +87,15 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 		switch (this.assetTypeClass) {
 			case AssetTypeClass.Model:
 				this.assetTypeClass = AssetTypeClass.Model;
+				this.objectType = 'Taxonomy';
 				this.objectName = 'Model';
 				break;
 			case AssetTypeClass.Policy:
 				this.assetTypeClass = AssetTypeClass.Policy;
 				this.objectName = 'Policy';
+				this.objectType = 'Policy';
 				break;
 		}
-
-		this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
-			id => {
-				//this.selectHierarchy(id);
-				//this.showHierarchy(id);
-			});
 
 		this.currentAreaNameSub =
 			this.headerBreadcrumbService
@@ -112,13 +108,26 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 				});
 
 		this.logAction("open", this.assetTypeClass.toString(), this.assetUid);
+		this.baseAssetUid = this.assetUid;
+		forkJoin(this.artifactService.getArtifactByUid(this.assetUid)
+			, this.permissionsService.getAssetPermissions(this.assetUid)
+		).subscribe((res) => {
+			this.objectPermission = res[1];
+			this.selected = res[0];
+			this.baseAssetTypeUid = this.selected["AssetTypeUid"];
 
-		this.artifactService.getArtifactByUid(this.assetUid)
-			.subscribe((res) => {
-				this.selected = res;
-				this.baseAssetTypeUid = res["AssetTypeUid"];
-				this.load();
-			})
+			let TempsynonymPermission = new SynonymPermission;
+			if (this.hasAddRelationshipsPermissions() || this.hasModifyRelationshipsPermissions()) {
+				TempsynonymPermission.addModifySynonym = true;
+			}
+
+			if (this.hasDeleteRelationshipsPermissions()) {
+				TempsynonymPermission.deleteSynonym = true;
+			}
+			this.synonymPermission = TempsynonymPermission;
+
+			this.load();
+		})
 
 		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this, ev);
@@ -150,52 +159,17 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 		}
 	}
 
-	//private editComplete(e: any) {
-	//	this.load(e.ID);
-	//}
+	private editComplete(e: any) {
+		this.load();
+	}
 
-	//private showHierarchy(id: number) {
-	//	this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(this.object, id, this.objectTypeId));
-	//	this.buildBreadcrumb();
-	//}
+	private showHierarchy(id: number) {
+		window.alert("showHierarchy");
+		this.router.navigateByUrl("asset/");
+		this.buildBreadcrumb();
+	}
 
 	private buildBreadcrumb() {
 		this.buildSecondaryNavigation(this.baseAssetUid);
 	}
-
-
-		//private selectHierarchy(selectedHierarchyId: number): Promise<void> {
-		//	if (selectedHierarchyId > 0) {
-		//		let selArray = this.preloadedTreeData.filter(x => x.ID == selectedHierarchyId);
-		//		if (selArray.length > 0) this.selected = selArray[0];
-		//		else {
-		//			this.selected = (this.preloadedTreeData.length && this.preloadedTreeData.length > 0) ? this.preloadedTreeData[0] : null;
-		//		}
-		//	} else {
-		//		this.selected = (this.preloadedTreeData.length && this.preloadedTreeData.length > 0) ? this.preloadedTreeData[0] : null;
-		//	}
-
-		//	this.assetID = this.selected.AssetID;
-
-		//	this.baseAssetUid = this.selected.Uid;
-
-		//	this.loadPermissions(this.permissionsService, this.object, this.selected.ID);
-
-		//	let TempsynonymPermission = new SynonymPermission;
-
-		//	this.loadPermissions(this.permissionsService, this.object, this.selected.ID).then((perms) => {
-		//		if (this.hasAddRelationshipsPermissions() || this.hasModifyRelationshipsPermissions()) {
-		//			TempsynonymPermission.addModifySynonym = true;
-		//		}
-
-		//		if (this.hasDeleteRelationshipsPermissions()) {
-		//			TempsynonymPermission.deleteSynonym = true;
-		//		}
-		//		this.synonymPermission = TempsynonymPermission;
-		//	});
-
-		//	this.buildBreadcrumb();
-
-		//	return Promise.resolve(null);
-		//}
 }

@@ -113,7 +113,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
 
     getAreaName(objectType: string, objectId: number): Observable<string> {
         return this.http
-            .get(`api/breadcrumb/getArea?&objectType=${objectType}&objectId=${objectId}`)
+            .get(`api/breadcrumb/getArea?objectType=${objectType}&objectId=${objectId}&uid=`)
             .pipe(
                 map((response) => <string>response),
                 catchError((err) => this.handleError(err))
