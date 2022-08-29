@@ -4645,7 +4645,10 @@ namespace d360.model.DataAccessLayer
 
 		public AssetTypeClass GetAssetClassByUID(Guid uid)
 		{
-			return CompanyContext.Query<AssetTypeClass>("select at.Class from asset a inner join assettype at on at.id = a.AssetTypeID where a.uid = @uid", new { uid }).FirstOrDefault();
+			return CompanyContext.Query<AssetTypeClass>(@"
+			select at.Class from asset a inner join assettype at on at.id = a.AssetTypeID where a.uid = @uid
+			union
+			select at.Class from assettype at where at.uid = @uid", new { uid }).FirstOrDefault();
 		}
 	}
 }

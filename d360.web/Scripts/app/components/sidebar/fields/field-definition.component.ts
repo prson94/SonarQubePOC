@@ -16,9 +16,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
              *ngIf="!isLoading">
             <div class="col s12">
                 <div class="tile tile-detail">
-                    <d3s-field-definition-tile [objectID]="objectID"
-                                               [objectType]="objectType"
-                                               [assetTypeUid]="assetTypeUid"
+                    <d3s-field-definition-tile [assetTypeUid]="assetTypeUid"
                                                [relationshipTypeUid]="relationshipTypeUid"
                                                [allowSingleSegmentPath]="false"
                                                [objectName]="objectName"
