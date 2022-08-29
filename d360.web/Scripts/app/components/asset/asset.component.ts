@@ -10,6 +10,7 @@ import { BaseComponent } from '../shared/base.component';
 	template: `<div id="main">
 		<d3s-artifact-item *ngIf="showArtifactComponent" [assetUid]="assetUid"></d3s-artifact-item>
 		<d3s-hierarchy-item *ngIf="showHierarchyComponent" [assetTypeClass]="assetTypeClass" [assetUid]="assetUid"></d3s-hierarchy-item>
+		<d3s-rule-item *ngIf="showRuleComponent" [assetUid]="assetUid"></d3s-rule-item>
 	</div>`,
 	providers: [AssetService],
 })
@@ -21,6 +22,7 @@ export class AssetComponent extends BaseComponent implements OnInit, OnDestroy {
 
 	showArtifactComponent: boolean = false;
 	showHierarchyComponent: boolean = false;
+	showRuleComponent: boolean = false;
 
 	constructor(
 		private assetService: AssetService,
@@ -41,6 +43,8 @@ export class AssetComponent extends BaseComponent implements OnInit, OnDestroy {
 
 					this.showHierarchyComponent = this.assetTypeClass === AssetTypeClass.Policy
 						|| this.assetTypeClass === AssetTypeClass.Model;
+
+					this.showRuleComponent = this.assetTypeClass === AssetTypeClass.Rule;
 				}
 				);
 		});

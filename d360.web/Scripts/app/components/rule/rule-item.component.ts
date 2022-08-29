@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -16,90 +16,89 @@ import { CompanySettingEnum } from '../../models/settings.model';
 import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
 
 @Component({
-    selector: 'd3s-rule-item',
-    providers: [RulesService, PermissionsService, WebAnalyticsService],
-    templateUrl: 'rule-item.component.html'
+	selector: 'd3s-rule-item',
+	providers: [RulesService, PermissionsService, WebAnalyticsService],
+	templateUrl: 'rule-item.component.html'
 })
 
 export class RuleItemComponent extends BaseComponent implements OnInit, OnDestroy {
-    private routeParamsSubscription: any;
-    private currentAreaName: string;
-    private rightSub: any;
-    private ruleSub: Subscription;
-    private rule: RuleDetail;
-    private messages: MessageBarItem[] = [];
-    private showSurvey: boolean = false;
-    private showSocialScoreBar: boolean = true;
-    private ruleType: RuleType;
+	@Input() assetUid: string;
 
-    hrefSub: Subscription;
-    selectedAsset: any;
-    selectedReferenceItem: any;
-    selectedTag: any;
+	private routeParamsSubscription: any;
+	private currentAreaName: string;
+	private rightSub: any;
+	private ruleSub: Subscription;
+	private rule: RuleDetail;
+	private messages: MessageBarItem[] = [];
+	private showSurvey: boolean = false;
+	private showSocialScoreBar: boolean = true;
+	private ruleType: RuleType;
 
-    sidePanelOpen: boolean = false;
-    sidePanelStorageKey;
+	hrefSub: Subscription;
+	selectedAsset: any;
+	selectedReferenceItem: any;
+	selectedTag: any;
 
-    constructor(private rulesService: RulesService,
-        private route: ActivatedRoute,
-        private router: Router,
-        secondaryNavService: SecondaryNavService,
-        protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService,
-        protected settingsService: CompanySettingsService,
-        webAnalyticsService: WebAnalyticsService,
-        private linkClickInterceptor: LinkClickInterceptor,
-    ) {
-        super(settingsService);
+	sidePanelOpen: boolean = false;
+	sidePanelStorageKey;
 
-        this.webAnalyticsService = webAnalyticsService;
-        this.secondaryNavService = secondaryNavService;
-        this.breadcrumbsService = headerBreadcrumbService;
-    }
+	constructor(private rulesService: RulesService,
+		private route: ActivatedRoute,
+		private router: Router,
+		secondaryNavService: SecondaryNavService,
+		protected titleService: Title,
+		protected headerBreadcrumbService: HeaderBreadcrumbService,
+		protected permissionsService: PermissionsService,
+		protected settingsService: CompanySettingsService,
+		webAnalyticsService: WebAnalyticsService,
+		private linkClickInterceptor: LinkClickInterceptor,
+	) {
+		super(settingsService);
 
-    ngOnInit() {
-        this.routeParamsSubscription = this.route.params.subscribe(params => {
-            let ruleTypeId = +params['ruleTypeId']; // (+) converts string 'id' to a number    
-            let ruleId = +params['ruleId']; // (+) converts string 'id' to a number            
-            this.isLoading = true;
-            this.logAction("open", "Rule", ruleId);
-            this.load(ruleId);
-        });
+		this.webAnalyticsService = webAnalyticsService;
+		this.secondaryNavService = secondaryNavService;
+		this.breadcrumbsService = headerBreadcrumbService;
+	}
 
-        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-            this.linkClickInterceptor.handleEvent(this, ev);
-        });
+	ngOnInit() {
 
-        this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
-    }
+		this.isLoading = true;
+		this.logAction("open", "Rule", this.assetUid);
+		this.load();
 
-    ngOnDestroy() {
-        if (this.routeParamsSubscription) {
-            this.routeParamsSubscription.unsubscribe();
-        }
-    }
+		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			this.linkClickInterceptor.handleEvent(this, ev);
+		});
 
-    load(ruleId: number) {
-        this.ruleSub = this.rulesService.getRule(ruleId+"")
-            .subscribe(result => {
-                this.rule = result;
+		this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
+	}
 
-                this.setBrowserTitle(this.titleService, this.rule.Name);
-                this.messages = []; //clear any messages for this rule
+	ngOnDestroy() {
+		if (this.routeParamsSubscription) {
+			this.routeParamsSubscription.unsubscribe();
+		}
+	}
 
-                this.rulesService.getRuleType(this.rule.TypeID+"").subscribe(r => { this.ruleType = r; });
-				this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId, null, this.rule.UID);
-                this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
+	load() {
+		this.ruleSub = this.rulesService.getRule(this.assetUid)
+			.subscribe(result => {
+				this.rule = result;
 
-                this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId).then(p => {
-                    this.buildSecondaryNavigation(this.rule.UID, null, null, null, null, null, null, this.rule.Name);
-                });
-                this.isLoading = false;
-            });
-    }
+				this.setBrowserTitle(this.titleService, this.rule.Name);
+				this.messages = []; //clear any messages for this rule
+				console.log(this.rule);
+				this.rulesService.getRuleType(this.rule.AssetTypeUid).subscribe(r => { this.ruleType = r; });
+				this.headerBreadcrumbService.setCurrentObjectInfo('Rule', this.rule.ID, null, this.rule.UID);
+				this.setObjectInfo('Rule', this.rule.ID, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
+				
+				this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, this.rule.ID).then(p => {
+					this.buildSecondaryNavigation(this.rule.UID, null, null, null, null, null, null, this.rule.Name);
+				});
+				this.isLoading = false;
+			});
+	}
 
-    editRule(e: any) {
-        this.load(e.ID);
-    }
+	editRule() {
+		this.load();
+	}
 }

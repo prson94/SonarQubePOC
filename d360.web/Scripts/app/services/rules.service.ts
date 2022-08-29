@@ -15,8 +15,8 @@ export class RulesService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-	getRule(id: string): Observable<RuleDetail> {
-        return this.http.get(`api/rule/${id}`)
+	getRule(assetUid: string): Observable<RuleDetail> {
+		return this.http.get(`api/rule/${assetUid}`)
             .pipe(
                 map((response) => <RuleDetail>response),
                 catchError((err) => this.handleError(err))

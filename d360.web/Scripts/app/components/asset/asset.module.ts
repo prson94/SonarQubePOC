@@ -6,6 +6,7 @@ import { AssetRoutingModule } from './asset.routes';
 import { AssetComponent } from './asset.component';
 import { ArtifactModule } from '../artifact/artifact.module';
 import { HierarchyModule } from '../hierarchy/hierarchy.module';
+import { RuleModule } from '../rule/rule.module';
 
 @NgModule({
     imports: [
@@ -16,7 +17,8 @@ import { HierarchyModule } from '../hierarchy/hierarchy.module';
 
 		AssetRoutingModule,
 		ArtifactModule,
-		HierarchyModule
+		HierarchyModule,
+		RuleModule
     ],
     declarations: [        
         AssetComponent
