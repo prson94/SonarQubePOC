@@ -11,6 +11,7 @@ const routes: Routes = [
 	{ path: 'class/Rule', data: { type: "Rule" }, component: AssetGridTopLevelListComponent },
 	{ path: 'class/Model', data: { type: "Model" }, component: HierarchyListComponent },
 	{ path: 'class/Policy', data: { type: "Policy" }, component: HierarchyListComponent },
+	{ path: 'class/Policy', data: { type: "Policy" }, component: HierarchyListComponent },
 ];
 
 @NgModule({

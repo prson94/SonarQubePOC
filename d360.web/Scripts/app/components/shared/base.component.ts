@@ -402,7 +402,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.followersSidebar);
             }
 
-            if (opts.hasMonitor) {
+			if (opts.hasMonitor) {
                 this.monitorSidebar = new SecondaryNavItem(
                     $localize`Workflow`,
                     'monitor',

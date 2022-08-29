@@ -168,7 +168,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 								new SecondaryNavItem($localize`Workflow`,
 									'workflowmonitor',
 									['fa-usb'],
-									`/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`)
+									`/assets/${this.objectContextUrl()};isAdminPage=false`)
 							);
 						}
 					});
