@@ -305,7 +305,11 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 				else if (selectedFieldType.type === "Text") {
 					item.IsSimpleText = true;		
 					if (!item.Operator) {
-						item.Operator = Operator[Operator.Contains];
+						if (item.Value) {
+							item.Operator = Operator[Operator.Equals];
+						} else {
+							item.Operator = Operator[Operator.Contains];
+						}						
 					}
 				}
                 else {
@@ -578,8 +582,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 				item.IsLookup = selectedFieldType.isLookup;
 			} else if (selectedFieldType.type === "Text") {
 				item.IsSimpleText = true;
+				
 				if (!item.Operator) {
-					item.Operator = Operator[Operator.Contains];
+					if (item.Value) {
+						item.Operator = Operator[Operator.Equals];
+					} else {
+						item.Operator = Operator[Operator.Contains];
+					}
 				}
 			}
             else {
