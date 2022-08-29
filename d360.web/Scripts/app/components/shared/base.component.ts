@@ -305,8 +305,8 @@ export class BaseComponent {
                 this.fieldNav = new SecondaryNavItem(
                     $localize`Field Definitions`,
                     'fields',
-                    ['fa-drivers-license-o'],
-                    `/sidebar/fields/${this.objectType}/${this.objectID}`, null, 1);
+					['fa-drivers-license-o'],
+					`/assets/${this.baseAssetTypeUid}/fields`, null, 1);
                 this.secondaryNavService.showItem(this.fieldNav);
             }
 
@@ -784,7 +784,11 @@ export class BaseComponent {
 
     buildSecondaryNavigationForAssetID(assetId: number, object: string, buildBreadcrumbOverride: Function = null) {
         this.buildSecondaryNavigation(null, null, object, assetId, null, buildBreadcrumbOverride);
-    }
+	}
+
+	buildSecondaryNavigationForAssetTypeUid(assetTypeUid: string, buildBreadcrumbOverride: Function = null) {
+		this.buildSecondaryNavigation(null, null, null, null, assetTypeUid, buildBreadcrumbOverride);
+	}
 
     buildSecondaryNavigationForObject(objectId: number, object: string, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null) {
         this.buildSecondaryNavigation(null, objectId, object, null, null, buildBreadcrumbOverride, assetClass);

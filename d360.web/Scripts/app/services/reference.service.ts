@@ -14,8 +14,8 @@ export class ReferenceService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    canReadReferenceType(id: number): Observable<boolean> {
-        return this.http.get(`api/canReadReferenceItemType/${id}`)
+    canReadReferenceType(uid: string): Observable<boolean> {
+		return this.http.get(`api/canReadReferenceItemType/${uid}`)
             .pipe(
              map((response) => <boolean>response),
             catchError((err) => this.handleError(err)));

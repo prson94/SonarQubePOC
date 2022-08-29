@@ -6,7 +6,7 @@ export class SiteUrlHelpers {
     //main site routes
     // WARNING!! - SOME URLS SUCH AS TOOLTIPS ARE BURNED IN THE DB DO NOT CHANGES THE BELOW WITHOUT 
     // UPDATING BOTH!!
-    static SITE_URL_REFERENCE_ROOT = 'reference';
+    static SITE_URL_REFERENCE_ROOT = 'assets/class/Reference';
     static SITE_URL_ARTIFACT_ROOT = 'artifact';
     static SITE_URL_ASSET_ROOT = 'asset';
     static SITE_URL_ASSETTYPE_ROOT = 'assettype';

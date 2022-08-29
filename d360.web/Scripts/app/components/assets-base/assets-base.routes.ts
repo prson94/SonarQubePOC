@@ -14,7 +14,6 @@ const routes: Routes = [
 	{ path: 'class/Rule', data: { type: "Rule" }, component: AssetGridTopLevelListComponent },
 	{ path: 'class/Model', data: { type: "Model" }, component: HierarchyListComponent },
 	{ path: 'class/Policy', data: { type: "Policy" }, component: HierarchyListComponent },
-	{ path: 'class/Policy', data: { type: "Policy" }, component: HierarchyListComponent },
 	{ path: ':assetTypeUid/workflowmonitor', component: MonitorWorkflowComponent },
 	{ path: ':assetTypeUid/diagrams', component: DiagramComponent },
 	{ path: ':uid/log', component: AuditComponent },

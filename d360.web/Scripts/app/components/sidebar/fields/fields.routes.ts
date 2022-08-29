@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { FieldDefinitionComponent } from './field-definition.component';
 
 const routes: Routes = [
-    { path: ':objectType/:objectId', component: FieldDefinitionComponent },    
+    { path: ':assetTypeUid/fields', component: FieldDefinitionComponent },    
 ];
 
 @NgModule({

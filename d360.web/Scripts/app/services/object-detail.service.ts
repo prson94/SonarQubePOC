@@ -38,7 +38,11 @@ export class ObjectDetailService extends BaseObservableService {
                 map((response) => <any>response),
                 catchError((err) => this.handleError(err))
             );
-    }
+	}
+
+	getObjectDetailByObjectUid(uid: string): Observable<any> {
+		return this.getObjectDetailByUid(uid, 'Generic');
+	}
 
     getObjectDetail(
         objectID: number,
