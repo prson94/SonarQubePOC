@@ -2,6 +2,7 @@
 import { Routes, RouterModule } from '@angular/router';
 import { AssetGridTopLevelListComponent } from '../assets-grid/asset-grid-top-level-list.component';
 import { HierarchyListComponent } from '../hierarchy/hierarchy-list.component';
+import { MonitorWorkflowComponent } from '../sidebar/workflowmonitor/monitor-workflow.component';
 import { AssetsBaseComponent } from './assets-base.component';
 
 const routes: Routes = [
@@ -12,6 +13,7 @@ const routes: Routes = [
 	{ path: 'class/Model', data: { type: "Model" }, component: HierarchyListComponent },
 	{ path: 'class/Policy', data: { type: "Policy" }, component: HierarchyListComponent },
 	{ path: 'class/Policy', data: { type: "Policy" }, component: HierarchyListComponent },
+	{ path: ':assetTypeUid/workflowmonitor', component: MonitorWorkflowComponent },
 ];
 
 @NgModule({

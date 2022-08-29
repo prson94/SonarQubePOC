@@ -175,7 +175,7 @@ export class AssetService extends BaseObservableService {
                 catchError((err) => this.handleError(err, true)));
     }
 
-    public GetObjectUIDetailsForAssetUID(uid: string): Observable<any> {
+    public GetObjectUIDetailsForUid(uid: string): Observable<any> {
         return this.http.get('api/v2/assets/GetObjectDetailUIDetails/' + uid)
             .pipe(map((res) => { return <any>res; }),
                 catchError((err) => this.handleError(err, true)));

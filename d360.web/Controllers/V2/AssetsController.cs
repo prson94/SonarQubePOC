@@ -1282,14 +1282,21 @@ namespace d360.web.Controllers.V2
 		/// <param name="assetUid">The asset Uid</param>
 		/// <returns></returns>
 		[
-			HttpGet, MapToApiVersion("2.0"), Route("GetObjectDetailUIDetails/{assetUid}"),
+			HttpGet, MapToApiVersion("2.0"), Route("GetObjectDetailUIDetails/{uid}"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(object)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public dynamic GetObjectDetailUIDetails(Guid assetUid)
+		public dynamic GetObjectDetailUIDetails(Guid uid)
 		{
-			return Company.Query<dynamic>($@"select Object,ObjectId from [utility].[GetObjectObjectIdByUID](@assetUid)", new { assetUid }, ApiTimeout).FirstOrDefault();
+			var data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+
+			if(data == null)
+			{
+				data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			}
+
+			return data;
 		}
 
 		/// <summary>

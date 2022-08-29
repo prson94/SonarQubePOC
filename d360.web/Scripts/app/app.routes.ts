@@ -35,7 +35,6 @@ const routes: Routes = [
     { path: "sidebar/itemfollow", loadChildren: () => import("./components/sidebar/itemfollow/itemfollow.module").then((m) => m.ItemFollowModule) },
     { path: "sidebar/itemown", loadChildren: () => import("./components/sidebar/itemown/itemown.module").then((m) => m.ItemOwnModule) },
     { path: "sidebar/membergroup", loadChildren: () => import("./components/sidebar/membergroup/membergroup.module").then((m) => m.MemberGroupModule) },
-    { path: "sidebar/workflowmonitor", loadChildren: () => import("./components/workflowmonitor/workflowmonitor.module").then((m) => m.WorkflowMonitorModule) },
     { path: "sidebar/score", loadChildren: () => import("./components/sidebar/score/score.module").then((m) => m.ScoreModule) },
     { path: "sidebar/children", loadChildren: () => import("./components/sidebar/children/children.module").then((m) => m.ChildrenModule) },
     { path: "sidebar/governanceRoles", loadChildren: () => import("./components/sidebar/governance-roles/governance-roles-sidebar.module").then((m) => m.GovernanceRolesModule) },
@@ -57,7 +56,8 @@ const routes: Routes = [
         path: "**",
         canActivate: [RedirectGuard],
         children: [],
-    },
+	},
+	
 ];
 
 @NgModule({
