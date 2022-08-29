@@ -297,6 +297,14 @@ export class AssetService extends BaseObservableService {
                 catchError((err) => this.handleError(err, true)));
     }
 
+	public getAssetTypeClassForAsset(assetUid: string): Observable<AssetTypeClass> {
+		return this.
+			http
+			.get(`/api/v2/assets/asset/${assetUid}/class`)
+			.pipe(map((res) => { return <AssetTypeClass>res; }),
+				catchError((err) => this.handleError(err, true)));
+	}
+
     public getAssetDescendants(assetUid: string, params: any): Observable<any> {
         var qString = '';
         if (params) {

@@ -1409,7 +1409,7 @@ namespace d360.web.Controllers
 					if (responseModel.Object == SystemObjects.Taxonomy.ToString() && model.PreloadData)
 					{
 						var apiCtrlr = new TaxonomyController(Set);
-						responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.ObjectTypeId);
+						responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.AssetTypeUid.Value);
 					}
 
 					var anyDiagramRelationTypes = Company.Query<bool>("select case when count(*) > 0 then 1 else 0 end from IntersectTypeDetail D where D.PredicateType = @predicateType and Subject = @ObjectType and SubjectID = @ObjectTypeId", new { responseModel.ObjectType, responseModel.ObjectTypeId, predicateType = (int)PredicateType.Diagram }).SingleOrDefault();

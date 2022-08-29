@@ -100,7 +100,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
             }
         );
 
-        this.modelsService.getModel(this.id)
+        this.modelsService.getModel(this.id+ "")
             .subscribe(result => {
                 this.assetType = result;
                 this.buildNav();

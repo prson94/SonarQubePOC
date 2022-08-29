@@ -429,7 +429,7 @@ namespace d360.core.entities
         public int AssetId { get; set; }
         
         public int AssetTypeId { get; set; }
-        
+        public Guid? AssetTypeUid { get; set; }
         public Guid Uid { get; set; }
         
         public string Object { get; set; }

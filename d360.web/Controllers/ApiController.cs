@@ -2212,24 +2212,24 @@ namespace d360.web.Controllers
 
 		#region Policies
 
-		[Route("policytypes/{id:int}")]
-		public HttpResponseMessage GetPolicyType(int id)
+		[Route("policytypes/{assetTypeUid:Guid}")]
+		public HttpResponseMessage GetPolicyType(Guid assetTypeUid)
 		{
-			var row = Company.Query<dynamic>(QueryConstants.PolicySettingsItem, new { id }).Single();
+			var row = Company.Query<dynamic>(QueryConstants.PolicySettingsItem, new { assetTypeUid }).Single();
 
 			return Request.CreateResponse<dynamic>(
 				new Dictionary<string, object>() {
 					{ "ID", row.ObjectID },
 					{ "Name", row.Name },
 					{ "Description", row.Description },
-					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
+					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = row.ObjectID, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
 					{ "MaximumDepth", row.HierarchyMaximumDepth },
 					{ "AssetTypeUID", row.Uid }
 				}
 			);
 		}
 
-		[Route("policytypes/{id:int}/policies")]
+		[Route("policytypes/{assetTypeUid:Guid}/policies")]
 		public IEnumerable<dynamic> GetPoliciesByType(int id, bool stripHtml = false)
 		{
 			getDynamicFieldJoinStatements(id, "Policy", out string joins, out string columns, false, false, true, false, "A.ObjectID");
@@ -5103,10 +5103,10 @@ where v.id = {0}", id)).FirstOrDefault();
 											order by Level", new { ObjectId = id }).AsQueryable();
 		}
 
-		[Route("catalogs/{typeID:int}")]
-		public async Task<HttpResponseMessage> GetTaxonomyType(int typeID)
+		[Route("catalogs/{assetTypeUid:Guid}")]
+		public async Task<HttpResponseMessage> GetTaxonomyType(Guid assetTypeUid)
 		{
-			var row = await Company.QueryFirstOrDefaultAsync<dynamic>(QueryConstants.TaxonomySettingsItem, new { id = typeID });
+			var row = await Company.QueryFirstOrDefaultAsync<dynamic>(QueryConstants.TaxonomySettingsItem, new { assetTypeUid });
 
 			if (row == null)
 			{
@@ -5119,7 +5119,7 @@ where v.id = {0}", id)).FirstOrDefault();
 					{ "MaximumDepth", row.MaximumDepth },
 					{ "Name", row.Name },
 					{ "Description", row.Description },
-					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
+					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = row.ID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
 					{ "HasDashboards", row.HasDashboards },
 					{ "AssetTypeUID", row.Uid }
 				}
@@ -5348,8 +5348,21 @@ where v.id = {0}", id)).FirstOrDefault();
 		}
 
 		[Route("breadcrumb/getArea")]
-		public async Task<string> GetBreadcrumbAreaByType(SystemObjects objectType, int objectId)
+		public async Task<string> GetBreadcrumbAreaByType(string objectType, int? objectId, Guid? uid)
 		{
+			if (uid.HasValue)
+			{
+				var data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+				if (data == null)
+				{
+					data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+				}
+
+				objectType = data.Object;
+				objectId = data.ObjectID;
+
+			}
+
 			//var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
 			var sql = $" select Title FROM [dbo].[SiteNav] WHERE ID = (Select top 1 ParentID FROM [dbo].[SiteNav] WHERE [Object] = @typeName and [objectId] = @typeId)";
 			var res = await Company.QueryAsync<string>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId });

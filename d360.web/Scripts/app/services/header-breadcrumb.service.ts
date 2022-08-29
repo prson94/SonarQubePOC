@@ -112,14 +112,22 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     }
 
     getAreaName(objectType: string, objectId: number): Observable<string> {
-
         return this.http
             .get(`api/breadcrumb/getArea?&objectType=${objectType}&objectId=${objectId}`)
             .pipe(
                 map((response) => <string>response),
                 catchError((err) => this.handleError(err))
             );
-    }
+	}
+
+	getAreaNameByUid(assetUid: string): Observable<string> {
+		return this.http
+			.get(`api/breadcrumb/getArea?uid=${assetUid}&objectType=&objectId=`)
+			.pipe(
+				map((response) => <string>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
     getFolderTitle(menuID: string): Promise<string> {
         let folderName = menuID;

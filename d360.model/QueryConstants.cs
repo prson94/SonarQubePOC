@@ -281,7 +281,7 @@ namespace d360.model
 						T.Uid,
 						T.ObjectID
 				from	AssetType T 
-				where T.[object]='PolicyType' and	T.ObjectID = @id";
+				where T.Uid = @assetTypeUid";
 
 		public static readonly string RuleSettingsItem = @"
 				select	T.*,
@@ -464,10 +464,10 @@ namespace d360.model
 												select	IT.ID
 												from	IntersectType IT
 														inner join [Predicate] ITP on ITP.ID = IT.PredicateID and ITP.Type = 6 -- Synonym
-												where	(IT.Subject = 'TaxonomyType' and IT.SubjectID = @id) OR (IT.Object = 'TaxonomyType' and IT.ObjectID = @id)
+												where	(IT.SubjectUid = @assetTypeUid) OR (IT.ObjectUid = @assetTypeUid)
 											) O
 									) S
-				where	T.ObjectID = @id and T.Object='TaxonomyType'";
+				where	T.Uid = @assetTypeUid";
 
 		public static readonly string ShoppingCartItemList = @"
 				select 

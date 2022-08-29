@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 
@@ -22,7 +23,7 @@ namespace d360.web.Controllers
 		#region JSON
 
 		[HttpGet, Route("ModelHierarchy"), NonNullableParameters]
-		public JsonNetResult ModelHierarchy(int id)
+		public JsonNetResult ModelHierarchy(Guid uid)
 		{
 			var models = Company.Query<dynamic>($@"
 					drop table if exists #tempFilteredAssets
@@ -30,7 +31,7 @@ namespace d360.web.Controllers
 					into #tempFilteredAssets
 					from assettype at
 					inner join asset a on a.AssetTypeID = at.ID
-					where AT.Object = 'TaxonomyType' and At.ObjectID = @id AND At.[State] = 1 
+					where AT.Uid = @uid AND At.[State] = 1 
 
 					select	A.ObjectID as ID,
 							A.[Uid],
@@ -63,7 +64,7 @@ namespace d360.web.Controllers
 												and WER.ObjectID = AT.ObjectID
 										) Work
 		
-					where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 order by A.DisplayValue", new { id });
+					where  AT.uid = @uid AND A.[State] = 1 order by A.DisplayValue", new { uid });
 
 			return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
 		}
