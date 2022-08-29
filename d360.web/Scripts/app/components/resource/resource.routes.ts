@@ -11,8 +11,8 @@ const routes: Routes = [
         component: ResourceComponent,
         children: [
             { path: '', component: ResourceListComponent },
-            { path: ':resourceId', component: ResourceItemComponent },
-            { path: ':resourceId/changepassword', component: ResourceChangePwdComponent }
+            { path: ':uid', component: ResourceItemComponent },
+			{ path: ':uid/changepassword', component: ResourceChangePwdComponent }
         ]
     },
 ];

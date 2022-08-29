@@ -456,7 +456,7 @@ export class BaseComponent {
             if (goodAssetTypeForComments && this.getBooleanSetting(CompanySettingEnum.ShowCommentsTab)) {
                 this.commentsSidebar = new SecondaryNavItem(
                     $localize`Comments`, 'Comments', ['fa-comments'],
-                    `/sidebar/comments/${this.uid}`, null, 33
+                    `/asset/${this.uid}/comments`, null, 33
                 );
                 this.secondaryNavService.showItem(this.commentsSidebar);
             }

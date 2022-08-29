@@ -40,7 +40,6 @@ enum PageMode {
 
 export class ResourceItemComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
-    private resourceId = -1;
     private resourceUid = "";
     private items: any[] = [];
     private resource: any;
@@ -49,7 +48,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     showAllUsersAPIKey = false;
     private totNumber = 0;
     private days = 90;
-    private resourceType = ' ';
+	private resourceType = ' ';
+	resourceId: number;
 
     isApiKeysPopupVisible = false;
 
@@ -87,16 +87,15 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         this.isLoading = true;
 
         this.sub = this.route.params.subscribe(params => {
-            const resourceId = +params['resourceId'];
+			this.baseAssetUid = params['uid'];
 
-            this.resourceId = resourceId;
-
-            this.resourcesService.getResource(this.resourceId)
-                .subscribe(r => {
+            this.resourcesService.getResourceByUid(this.baseAssetUid)
+				.subscribe(r => {
                     this.items = r.items;
                     if (this.items.length > 0) {
                         this.resource = this.items[0];
-                    }
+					}
+					this.resourceId = this.resource["ResourceID"];
 
                     if (!this.resource || this.resource.State != 'Active') {
                         this.isLoading = false;
