@@ -1387,7 +1387,7 @@ namespace d360.model
 								drop table if exists #temp_field_type_ids
 								select distinct F.Id 
 								into #temp_field_type_ids
-								from api.ExecutionField T
+								from {fieldTable} T
 								inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and T.ExecutionID = @executionID
 
 
