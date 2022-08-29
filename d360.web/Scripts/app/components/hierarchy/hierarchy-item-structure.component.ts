@@ -355,7 +355,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				: res,
 				`${this.type} /${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
 			));
-			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.objectType, this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
+			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
 
 			this.headerBreadcrumbService.getAssetFolderIcon(this.objectType, this.objectTypeId, currentAreaName ? currentAreaName : res)
 				.subscribe((icon) => {
@@ -365,11 +365,11 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 					this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
 
 					if (this.showDiagram) {
-						this.secondaryNavService.showItem(new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7));
+						this.secondaryNavService.showItem(new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/assets/${this.baseAssetTypeUid}/diagrams`, null, 7));
 					}
 
 					if (this.auditSidebar) {
-						this.auditSidebar.url = `/sidebar/audit/${this.assetType.uid}`;
+						this.auditSidebar.url = `/assets/${this.baseAssetTypeUid}/log`;
 					}
 
 					this.secondaryNavService.showHeader(true);

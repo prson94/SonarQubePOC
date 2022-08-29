@@ -891,8 +891,8 @@ export class BaseComponent {
                     this.preloadedTreeData = r.PreloadData.Data;
                 }
             }
-            let area = this.determineAreaForAdminPage(areaName);
-
+			let area = this.determineAreaForAdminPage(areaName);
+			
 			let homeUrl: string = ``;
 			if (this.uid) {
 				homeUrl = SiteUrlHelpers.getAssetUrl(this.uid);

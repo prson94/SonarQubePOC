@@ -2,6 +2,8 @@
 import { Routes, RouterModule } from '@angular/router';
 import { AssetGridTopLevelListComponent } from '../assets-grid/asset-grid-top-level-list.component';
 import { HierarchyListComponent } from '../hierarchy/hierarchy-list.component';
+import { AuditComponent } from '../sidebar/audit/audit.component';
+import { DiagramComponent } from '../sidebar/visualization/diagram.component';
 import { MonitorWorkflowComponent } from '../sidebar/workflowmonitor/monitor-workflow.component';
 import { AssetsBaseComponent } from './assets-base.component';
 
@@ -14,6 +16,8 @@ const routes: Routes = [
 	{ path: 'class/Policy', data: { type: "Policy" }, component: HierarchyListComponent },
 	{ path: 'class/Policy', data: { type: "Policy" }, component: HierarchyListComponent },
 	{ path: ':assetTypeUid/workflowmonitor', component: MonitorWorkflowComponent },
+	{ path: ':assetTypeUid/diagrams', component: DiagramComponent },
+	{ path: ':uid/log', component: AuditComponent },
 ];
 
 @NgModule({

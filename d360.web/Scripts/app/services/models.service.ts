@@ -20,10 +20,10 @@ export class ModelsService extends BaseObservableService {
 		super(messagesService);
 	}
 
-	public getCatalogDiagram(id: number): Observable<HierarchyDiagramModel[]> {
+	public getCatalogDiagram(uid: string): Observable<HierarchyDiagramModel[]> {
 		return this
 			.http
-			.get(`diagrams/${id}/InformationCatalogDiagramData`)
+			.get(`diagrams/${uid}/InformationCatalogDiagramData`)
 			.pipe(
 				map((response) => <HierarchyDiagramModel[]>response),
 				catchError((err) => this.handleError(err))
