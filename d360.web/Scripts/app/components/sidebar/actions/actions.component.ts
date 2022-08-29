@@ -12,9 +12,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                     <d3s-workflow-issue-details
-                                        [objectType]="objectType"
-                                        [objectID]="objectID"></d3s-workflow-issue-details>
+                     <d3s-workflow-issue-details [uid]="baseAssetUid"></d3s-workflow-issue-details>
                     </div>
                 </div>
             </div>
@@ -22,10 +20,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class ActionsComponent extends BaseComponent implements OnInit, OnDestroy {
-    @Input() objectType: string = "";
-    @Input() objectID: number = 0;
-    @Input() objectName: string = "";
-
     private sub: any;    
     
     constructor(
@@ -44,11 +38,10 @@ export class ActionsComponent extends BaseComponent implements OnInit, OnDestroy
         
         this.sub = this.route.params.subscribe(params => {
 
-            this.objectType = params['objectType'];
-            this.objectID = +params['objectId'];
+			this.baseAssetUid = params['assetUid'];
             this.isLoading = false;
-            //ObjectId here is actually assetid!
-            this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+			//ObjectId here is actually assetid!
+			this.buildSecondaryNavigation(this.baseAssetUid);
         });
     }
 

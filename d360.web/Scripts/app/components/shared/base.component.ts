@@ -295,8 +295,8 @@ export class BaseComponent {
                 this.auditSidebar = new SecondaryNavItem(
                     $localize`Change Log`,
                     'Change Log',
-                    ['fa-eye'],
-                    `/sidebar/audit${this.auditContextUrl()}`, null, 40
+					['fa-eye'],
+					`/asset/${this.uid}/log`, null, 40
                 );
                 this.secondaryNavService.showItem(this.auditSidebar);
             }
@@ -445,8 +445,8 @@ export class BaseComponent {
 
                 if (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement)) {
                     this.actionsSidebar = new SecondaryNavItem(
-                        $localize`Actions`, 'Actions', null,
-                        `/sidebar/actions/${this.objectType}/${this.objectID}`, null, 27
+						$localize`Actions`, 'Actions', null,
+						`/asset/${this.uid}/actions`, null, 27
                     );
                     this.secondaryNavService.showItem(this.actionsSidebar);
                 }
