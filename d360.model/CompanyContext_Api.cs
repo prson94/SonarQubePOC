@@ -1384,12 +1384,23 @@ namespace d360.model
 								drop table if exists #RelevantLookupValues;
 								create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
 
-								;with field_type_ids as( 
-								select distinct F.Id from {fieldTable} T
-												inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and T.ExecutionID = @executionID)
-												insert into #RelevantLookupValues WITH(TABLOCK)
-												select FieldTypeId,[Text],[Value] from field_type_ids fti
-													inner join FieldLookupValue FLV on FLV.FieldTypeID = fti.ID
+								drop table if exists #temp_field_type_ids
+								select distinct F.Id 
+								into #temp_field_type_ids
+								from api.ExecutionField T
+								inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and T.ExecutionID = @executionID
+
+
+								declare @fieldTypeId int = (select top 1 Id from #temp_field_type_ids)
+
+								while @fieldTypeId is not null
+								begin
+									insert into #RelevantLookupValues WITH(TABLOCK)
+									select FieldTypeId,[Text],[Value] from FieldLookupValue FLV where FLV.FieldTypeID = @fieldTypeId
+
+									delete top (1) from #temp_field_type_ids
+									set @fieldTypeId = (select top 1 Id from #temp_field_type_ids)
+								end
 
 								declare @maxlen int;
 								select @maxlen = max(len(text)) from #RelevantLookupValues
