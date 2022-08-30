@@ -26,12 +26,13 @@ import { LazyLoadEvent } from 'primeng/api';
 import { isEqual } from 'lodash';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { SortOrder } from '../../../models/enums.model';
 
 declare var CurrentResourceID;
 @Component({
     selector: 'd3s-admin-groups',
     providers: [GroupService],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.Default,
     templateUrl: './admin-groups.component.html',
     styleUrls: ['admin-groups.component.less'],
     encapsulation: ViewEncapsulation.None
@@ -77,6 +78,8 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     selectedTag: any;
 
 	previousEvent: LazyLoadEvent;
+    sortOrder: number = SortOrder.None;
+    sortField: string = "";
 	currentPageNumber: number = 0;
 	totalRecords: number;
 	rowsPerPage: number = this.defaultInitialItemsPerPage;
@@ -171,6 +174,9 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 
 		this.rowsPerPage = event.rows;
 		this.currentPageNumber = event.first / event.rows;
+        this.sortOrder = event.sortOrder;
+        this.sortField = event.sortField;
+        
 		this.load();
 	}
 
@@ -186,8 +192,10 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 				var gridDefinition = res[0];
 				var groups = res[1];
 
-				this.columns = gridDefinition.Columns.filter((x) => x.datafield !== 'Name');
-				this.fields = gridDefinition.Fields;
+                if (this.columns.length === 0 && this.fields.length === 0) {
+                    this.columns = gridDefinition.Columns.filter((x) => x.datafield !== 'Name');
+                    this.fields = gridDefinition.Fields;
+                }
 
 				this.totalRecords = groups.Total;
 				this.groupItems = groups.items;
@@ -216,6 +224,14 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 		else {
 			delete params['_simpleFilter'];
 		}
+
+        if (this.sortField) {
+            params._order = this.sortField;
+        }
+
+        if (this.sortOrder !== SortOrder.None) {
+            params._direction = this.sortOrder === SortOrder.Ascending ? "asc" : "desc";
+        }
 
 		params._pageNum = this.currentPageNumber + 1;
 		params._pageSize = this.rowsPerPage;

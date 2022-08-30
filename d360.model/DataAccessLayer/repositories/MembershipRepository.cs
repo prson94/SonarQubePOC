@@ -75,7 +75,7 @@ namespace d360.model.DataAccessLayer
 				{
 
 					var name = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "name").Value.Trim();
-					
+
 					if (!string.IsNullOrEmpty(name))
 					{
 
@@ -88,7 +88,7 @@ namespace d360.model.DataAccessLayer
 				{
 
 					var user = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "resourceuid").Value.Trim();
-					
+
 					if (!string.IsNullOrEmpty(user))
 					{
 						resourceString = @"left join Asset U on U.[uid] = @user
@@ -120,7 +120,7 @@ namespace d360.model.DataAccessLayer
 				if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
 				{
 					var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
-					
+
 					if (!string.IsNullOrEmpty(simpleFilter))
 					{
 						simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
@@ -145,6 +145,17 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
+			var sqlOrderBy = CompanyContext.ParseOrderColumn(queryParams, Enumerable
+				.Zip(
+					fieldTypes,
+					fieldColumns.Selects(),
+					(type, column) => new DefaultFilter(type.Name, column.StatementWithoutColumnName, SqlFieldType.Text))
+				.Concat(new[] { new DefaultFilter("Name", "G.Name", SqlFieldType.Text) })
+				.ToList(),
+				"Name");
+
+			var sqlOrderDirection = this.CompanyContext.ParseOrderDirection(queryParams, "asc");
+
 			var whereStatements = condition.Count != 0 ? $" where  {string.Join(" and ", condition)}" : "";
 			var sql = $@"
 				   Select 
@@ -162,7 +173,7 @@ namespace d360.model.DataAccessLayer
 						   {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins.SQLJoinStatement) : "")}
 						   {resourceString} 
 						   {whereStatements}  
-						   order by G.Name 
+						   order by {sqlOrderBy} {sqlOrderDirection}
 						   {paginationStatement}";
 
 			var countSql = $@"Select count(*) from [Group] G

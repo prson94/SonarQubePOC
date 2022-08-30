@@ -52,7 +52,7 @@
                                 [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
                                 {{ col.text }}
                                 <d3s-sortIcon *ngIf="col.sortable"
-                                              [field]="col.datafield"></d3s-sortIcon>
+                                              [field]="col.apiName"></d3s-sortIcon>
                             </th>
                             <th style="width: 48px"></th>
                         </tr>
