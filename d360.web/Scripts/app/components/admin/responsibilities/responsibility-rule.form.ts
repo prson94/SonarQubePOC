@@ -626,15 +626,11 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 			}
 		}
 
-		if (this.model.StructuredDefinition.Then?.Conditions?.length > 0) {
-			return this.isThenValid();
-		} else {
-			return true;
-		}
+		return this.isThenValid();		
 	}
 
 	isThenValid() {
-		if (this.model.StructuredDefinition.Then.Conditions.length == 0 || !this.model.StructuredDefinition.Then.Conditions[this.model.StructuredDefinition.Then.Conditions.length-1].Object) {
+		if (this.model.StructuredDefinition.Then.Conditions.length === 0 || !this.model.StructuredDefinition.Then.Conditions[this.model.StructuredDefinition.Then.Conditions.length-1].Object) {
 			return true;
 		}
 		
