@@ -92,11 +92,11 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 			.getArtifactTypeDetails(this.assetTypeUid, true)
 			.subscribe((artifactType) => {
 				let folderName: string = '#Business';
-				this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
+				this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 
 				if (artifactType.Class == AssetTypeClass.TechnicalAsset) {
 					folderName = '#Technical';
-					this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
+					this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
 				}
 
 				this.sidePanelStorageKey = 'list_' + AssetTypeClass[artifactType.Class] + '_' + CurrentResourceID;

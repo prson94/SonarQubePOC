@@ -1200,7 +1200,7 @@ export class BaseComponent {
                     this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.ObjectTypeId, currentFolderName).subscribe((res) => {
                         this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, $localize`Definition`);
                         let areaName: string = currentAreaName ? currentAreaName : folderTitle;
-                        let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}`;
+                        let areaLink: string = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}`;
                         if (area == "Technical Assets") {
                             areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
                         }

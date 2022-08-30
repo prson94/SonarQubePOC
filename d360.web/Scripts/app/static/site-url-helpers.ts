@@ -11,6 +11,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ASSET_ROOT = 'asset';
     static SITE_URL_ASSETTYPE_ROOT = 'assettype';
     static SITE_URL_ASSETS_ROOT = 'assets';
+    static SITE_URL_ASSETS_CLASS_ROOT = 'assets/class';
     static SITE_URL_COMMUNITY_ROOT = 'community';
     static SITE_URL_HELP_ROOT = 'help';
     static SITE_URL_MONITOR_ROOT = 'monitor';
