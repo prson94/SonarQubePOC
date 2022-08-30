@@ -996,8 +996,6 @@ export class BaseComponent {
 
 			let homeUrl: string = ``;
 
-			console.log(r.AssetTypeClass);
-
 			if (this.baseIntersectTypeUid) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS;
 			}
@@ -1012,6 +1010,9 @@ export class BaseComponent {
 			}
 			else if (r?.AssetTypeClass === AssetTypeClass.DiagramAsset) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS
+			}
+			else if (r?.ObjectType === `Tag`) {
+				homeUrl = SiteUrlHelpers.SITE_URL_TAG_ROOT + "/" + this.uid;
 			}
 			else if (this.baseAssetUid) {
 				homeUrl = SiteUrlHelpers.getAssetUrl(this.uid);
