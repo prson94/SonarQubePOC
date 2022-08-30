@@ -148,6 +148,11 @@ namespace d360.web.Services.Favorites
 
 			void SplitObjectId(Favorite favorite, string objectType)
 			{
+				if (objectType == null)
+				{
+					return;
+				}
+
 				if (objectType.EndsWith("SemanticType", System.StringComparison.InvariantCultureIgnoreCase))
 				{
 					favorite.SemanticId = @object?.ObjectId;
