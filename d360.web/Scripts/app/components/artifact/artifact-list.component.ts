@@ -211,15 +211,6 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		}
 	}
 
-    get panelApplies(): boolean {
-        if (this.selection == null || this.sidePanelTab === 'detail') {
-            return true;
-        }
-        if (this.selection != null && this.sidePanelTab === 'dataprofile' && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
-            return this.selection.HasProfiling;
-        }
-    }
-
     getSidePanelWidth(): number {
         return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
     }

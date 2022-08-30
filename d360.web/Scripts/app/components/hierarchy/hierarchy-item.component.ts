@@ -18,10 +18,9 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
-import { forkJoin, Subscription } from 'rxjs';
 import { AssetService } from '../../services/asset.service';
 import { ArtifactService } from '../../services/artifacts.service';
 
