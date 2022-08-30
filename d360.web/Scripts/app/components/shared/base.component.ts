@@ -988,11 +988,14 @@ export class BaseComponent {
 			if (this.baseIntersectTypeUid) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS;
 			}
-			if (data.isScoringDefinitionPage) {
+			else if (data.isScoringDefinitionPage) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_SCORING;
 			}
-			if ((this.baseAssetTypeUid ?? "").toLowerCase() === this.groupTypeUid.toLowerCase()) {
+			else if ((this.baseAssetTypeUid ?? "").toLowerCase() === this.groupTypeUid.toLowerCase()) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_GROUPS;
+			}
+			else if ((this.baseAssetTypeUid ?? "").toLowerCase() === this.resourceTypeUid.toLowerCase()) {
+				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES;
 			}
 			else if (this.isTypePage) {
 				homeUrl = SiteUrlHelpers.getAssetTypeUrl(this.uid);

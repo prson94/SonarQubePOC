@@ -701,7 +701,7 @@ namespace d360.web.Controllers
 						folderToUpdate.ImageIconUrl = $"{imageFileName}";
 						folderToUpdate.Icon = null;
 					}
-				} 
+				}
 				else
 				{
 					folderToUpdate.Icon = patch.Icon;
@@ -1268,6 +1268,7 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
+					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-A00000000011");
 					responseModel.DisplayValue = PageNames.UsersPage;
 					responseModel.MainTabTitle = PageNames.UsersPage;
 					responseModel.Items.HasAudit = true;
@@ -1312,7 +1313,8 @@ namespace d360.web.Controllers
 
 			if (model.AssetTypeUid != null)
 			{
-				if (Company.AssetTypes.Where(x => x.uid == model.AssetTypeUid).Select(x=> x.Class).FirstOrDefault() == AssetTypeClass.Group)
+				var typeClass = Company.AssetTypes.Where(x => x.uid == model.AssetTypeUid).Select(x => x.Class).FirstOrDefault();
+				if (typeClass == AssetTypeClass.Group)
 				{
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.GroupType.ToString();
@@ -1320,6 +1322,18 @@ namespace d360.web.Controllers
 					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-B00000000012");
 					responseModel.DisplayValue = PageNames.GroupsTab;
 					responseModel.MainTabTitle = PageNames.GroupsTab;
+					responseModel.Items.HasAudit = true;
+					responseModel.Items.HasField = true;
+				}
+
+				if (typeClass == AssetTypeClass.User)
+				{
+					execProcedure = false;
+					responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
+					responseModel.ObjectID = model.ObjectId ?? 0;
+					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-A00000000011");
+					responseModel.DisplayValue = PageNames.UsersPage;
+					responseModel.MainTabTitle = PageNames.UsersPage;
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
 				}
