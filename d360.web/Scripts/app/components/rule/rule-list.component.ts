@@ -45,16 +45,16 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 	gridObject: AssetGridObject;
 	ruleType: RuleType;
 
-	selection: any = null;
-	showEditor: boolean = false;
-	private sidePanelOpen: boolean = false;
-	private sidePanelLoading: boolean = false;
-	private sidePanelTab: string;
-	private sidePanelStorageKey: string;
-	private hasProfiling: boolean = false;
-	gridLoading: boolean = true;
-	definitionLoaded: boolean = false;
-	dataProfile: any;
+    selection: any = null;
+    showEditor: boolean = false;
+    sidePanelOpen: boolean = false;
+    sidePanelLoading: boolean = false;
+    sidePanelTab: string;
+    sidePanelStorageKey: string;
+    hasProfiling: boolean = false;
+    gridLoading: boolean = true;
+    definitionLoaded: boolean = false;
+    dataProfile: any;
 
 	@ViewChild('grid', { static: false }) assetGrid: AssetGridComponent;
 	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
