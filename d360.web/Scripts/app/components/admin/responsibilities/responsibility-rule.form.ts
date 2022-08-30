@@ -19,6 +19,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
 import { HelpResource } from "../../../models/resource.model";
 import { Operator } from "../../../models/operator.model";
 import { forEach } from "core-js/fn/dict";
+import { forkJoin } from "rxjs";
 
 
 @Component({
@@ -174,21 +175,20 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 									if (this.model && this.model.StructuredDefinition && this.model.StructuredDefinition.Then) {
 										if (this.model.StructuredDefinition.Then.Conditions != null && this.model.StructuredDefinition.Then.Conditions.length > 0 && !this.model.StructuredDefinition.Then.Conditions.every((c) => !c.Object)) {
 
-											this.responsibilityTypeService.getRelationRuleFormData(this.resourceType, 1)
-												.subscribe((r) => {
-													this.thenUserFieldTypes = r.FieldTypes;
-													
-													this.responsibilityTypeService.getRelationRuleFormData(this.groupType, 1)
-														.subscribe((g) => {
-															this.thenGroupFieldTypes = g.FieldTypes;
-															this.model.StructuredDefinition.Then.Conditions.forEach((t) => {
-																this.loadThenValuesForFieldType(t, false);
-															});
+											let resources = this.responsibilityTypeService.getRelationRuleFormData(this.resourceType, 1);
+											let groups = this.responsibilityTypeService.getRelationRuleFormData(this.groupType, 1);
 
-														});
-
-													this.isLoading = false;
-												});											
+											forkJoin([
+												resources,
+												groups
+											]).subscribe(([resourceList, groupList]) => {
+												this.thenUserFieldTypes = resourceList.FieldTypes;
+												this.thenGroupFieldTypes = groupList.FieldTypes;
+												this.model.StructuredDefinition.Then.Conditions.forEach((t) => {
+													this.loadThenValuesForFieldType(t, false);
+												});
+												this.isLoading = false;												
+											});																			
 										} else {
 											this.responsibilityTypeService.getRelationRuleFormData(this.model.StructuredDefinition.Then.Object, this.model.StructuredDefinition.Then.ObjectID)
 												.subscribe((d) => {
