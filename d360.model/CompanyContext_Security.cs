@@ -971,7 +971,7 @@ namespace d360.model
 
 			if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null) && (rule.StructuredDefinition.Then.Object != null || rule.StructuredDefinition.Then.Conditions.All(c => c.Object != null)))
 			{							
-                if (rule.StructuredDefinition.Then.Conditions != null || rule.StructuredDefinition.Then.Conditions.Count > 0)
+                if (rule.StructuredDefinition.Then.Conditions != null && rule.StructuredDefinition.Then.Conditions.Count > 0)
                 {
 					var rulegroups = rule.StructuredDefinition.Then.Conditions.GroupBy(c => c.Object);
 					foreach(var rulegroup in rulegroups)
