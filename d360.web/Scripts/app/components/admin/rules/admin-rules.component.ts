@@ -112,15 +112,16 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     }
 
     selectedItemChange(objectId: number) {
-        this.loadDataAndExecuteAction();
-        this.buildSecondaryNavigationForObject(objectId ? objectId : 0, StringConstants.ObjectRuleType, null, this.assetTypeClass);
+		this.loadDataAndExecuteAction();
+		this.baseAssetTypeUid = this.selected.uid;
+		this.buildSecondaryNavigationForAssetTypeUid(this.selected.uid, null);
     }
 
     private loadDataAndExecuteAction() {
         if (this.selected) {
             this.assetsService.getAssetTypeLegacyData(this.selected.uid)
                 .subscribe((res) => {
-                    this.selected.ID = res.ObjectID;
+					this.selected.ID = res.ObjectID;
                     this.selected.AssetTypeID = res.AssetTypeID;
                 });
         }

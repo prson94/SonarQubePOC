@@ -49,7 +49,7 @@ export class RuleResultsComponent extends BaseComponent implements OnInit, OnDes
             this.isLoading = false;
             this.showBoard = true;
         });
-        this.buildSecondaryNavigation(this.Uid);
+		this.buildSecondaryNavigationByAssetUid(this.Uid);
     }
 
     ngOnDestroy() {

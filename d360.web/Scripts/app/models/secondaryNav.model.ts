@@ -120,3 +120,15 @@ export class SecondaryNavPostModel {
     Class: AssetTypeClass;
     DisplayValue: string;
 }
+
+export class SecondaryNavRequestModel {
+	assetUid?: any = null;
+	assetTypeUid?: string = null;
+	objectId?: number = null;
+	objectType?: string = null;
+	assetId?: number = null;
+	buildBreadcrumbOverride?: Function = null;
+	assetClass?: AssetTypeClass = null;
+	DisplayValue?: string = null;
+	forceRefresh?: boolean = false;
+}

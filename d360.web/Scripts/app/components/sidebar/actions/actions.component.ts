@@ -41,7 +41,7 @@ export class ActionsComponent extends BaseComponent implements OnInit, OnDestroy
 			this.baseAssetUid = params['assetUid'];
             this.isLoading = false;
 			//ObjectId here is actually assetid!
-			this.buildSecondaryNavigation(this.baseAssetUid);
+			this.buildSecondaryNavigationByAssetUid(this.baseAssetUid);
         });
     }
 

@@ -66,15 +66,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 			}
 			this.loadAvailableDashboards();
 			if (this.assetUid) {
-				this.buildSecondaryNavigation(this.assetUid,
-					null,
-					null,
-					null,
-					null,
-					this.buildBreadcrumb.bind(this),
-					null,
-					null,
-					true);
+				this.buildSecondaryNavigationByAssetUid(this.assetUid,this.buildBreadcrumb.bind(this));
 			}
 		});
 	}

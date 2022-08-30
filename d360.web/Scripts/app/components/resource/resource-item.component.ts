@@ -121,7 +121,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                         }
                     );
 
-                    this.buildSecondaryNavigation(this.resource.uid);
+                    this.buildSecondaryNavigationByAssetUid(this.resource.uid);
 
                     window.setTimeout(() => {
                         this.isLoading = false;

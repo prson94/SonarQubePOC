@@ -122,7 +122,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 					this.artifact = artifact;
 					this.synonymPermission = artifact.SynonymPermission;
 
-					this.buildSecondaryNavigation(this.artifact.Uid, null, null, null, null, null, null, this.artifact.DisplayValue);
+					this.buildSecondaryNavigation({ assetUid: this.artifact.Uid, DisplayValue: this.artifact.DisplayValue });
 
 					this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + CurrentResourceID;
 

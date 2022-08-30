@@ -92,7 +92,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 				this.setObjectInfo('Rule', this.rule.ID, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
 				
 				this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, this.rule.ID).then(p => {
-					this.buildSecondaryNavigation(this.rule.UID, null, null, null, null, null, null, this.rule.Name);
+					this.buildSecondaryNavigation({ assetUid: this.rule.UID, DisplayValue: this.rule.Name });
 				});
 				this.isLoading = false;
 			});

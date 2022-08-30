@@ -47,7 +47,7 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
             this.isLoading = false;
             this.showBoard = true;
 
-            this.buildSecondaryNavigation(this.assetUid);
+			this.buildSecondaryNavigationByAssetUid(this.assetUid);
         });
     }
 

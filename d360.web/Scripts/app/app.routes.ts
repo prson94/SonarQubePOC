@@ -51,6 +51,7 @@ const routes: Routes = [
     { path: "asset", loadChildren: () => import("./components/sidebar/visualization/visualization.module").then((m) => m.VisualizationModule) },
     { path: "asset", loadChildren: () => import("./components/sidebar/relationships/relationships.module").then((m) => m.RelationshipsModule) },
     { path: "assets", loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
+    { path: "relationships", loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
 
     {
         path: "**",

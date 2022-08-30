@@ -1,5 +1,5 @@
 import { Title } from '@angular/platform-browser';
-import { SecondaryNavItem, SecondaryNavCurrentObject, SecondaryNavPostModel } from '../../models/secondaryNav.model';
+import { SecondaryNavItem, SecondaryNavCurrentObject, SecondaryNavPostModel, SecondaryNavRequestModel } from '../../models/secondaryNav.model';
 import { PermissionsService, Permissions } from '../../services/permissions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
@@ -41,6 +41,7 @@ export class BaseComponent {
 	objectName: string;
 
 	baseAssetTypeUid: string;
+	baseIntersectTypeUid: string;
 	baseAssetUid: string;
 	infoIconHtmlString: string = `<i class='fa fa-info-circle help-icon'></i>`;
 
@@ -307,7 +308,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.auditSidebar);
             }
 
-            if (opts.hasField) {
+			if (opts.hasField) {
                 this.fieldNav = new SecondaryNavItem(
                     $localize`Field Definitions`,
                     'fields',
@@ -792,18 +793,41 @@ export class BaseComponent {
         if (node.children) {
             node.children.forEach(n => this.expandTreeNode(n));
         }
-    }
+	}
 
-    buildSecondaryNavigationForAssetID(assetId: number, object: string, buildBreadcrumbOverride: Function = null) {
-        this.buildSecondaryNavigation(null, null, object, assetId, null, buildBreadcrumbOverride);
+	buildSecondaryNavigationByAssetUid(uid: string, buildBreadcrumbOverride: Function = null) {
+		const reqModel: SecondaryNavRequestModel = {
+			assetUid: uid,
+			buildBreadcrumbOverride: buildBreadcrumbOverride
+		};
+		this.buildSecondaryNavigation(reqModel);
+	}
+
+	buildSecondaryNavigationForAssetID(assetId: number, object: string, buildBreadcrumbOverride: Function = null) {
+		const reqModel: SecondaryNavRequestModel = {
+			objectType: object,
+			assetId: assetId,
+			buildBreadcrumbOverride: buildBreadcrumbOverride
+		};
+		this.buildSecondaryNavigation(reqModel);
 	}
 
 	buildSecondaryNavigationForAssetTypeUid(assetTypeUid: string, buildBreadcrumbOverride: Function = null) {
-		this.buildSecondaryNavigation(null, null, null, null, assetTypeUid, buildBreadcrumbOverride);
+		const reqModel: SecondaryNavRequestModel = {
+			assetTypeUid: assetTypeUid,
+			buildBreadcrumbOverride: buildBreadcrumbOverride
+		};
+		this.buildSecondaryNavigation(reqModel);
 	}
 
-    buildSecondaryNavigationForObject(objectId: number, object: string, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null) {
-        this.buildSecondaryNavigation(null, objectId, object, null, null, buildBreadcrumbOverride, assetClass);
+	buildSecondaryNavigationForObject(objectId: number, object: string, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null) {
+		const reqModel: SecondaryNavRequestModel = {
+			objectId: objectId,
+			objectType: object,
+			assetClass: assetClass,
+			buildBreadcrumbOverride: buildBreadcrumbOverride
+		};
+		this.buildSecondaryNavigation(reqModel);
     }
 
     private isSidebarLoadedForCurrentObject(loadData: SecondaryNavPostModel): boolean {
@@ -843,42 +867,42 @@ export class BaseComponent {
         this.secondaryNavService.refreshStats();
     }
 
-	buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null, DisplayValue: string = null, forceRefresh: boolean = false) {
+	buildSecondaryNavigation(requestModel: SecondaryNavRequestModel) {
         var data = new SecondaryNavPostModel();
         data.PreloadData = false;
-        data.Class = assetClass;
-        if (assetUid != null)
-            data.AssetUid = assetUid.toString().toLowerCase();
+		data.Class = requestModel.assetClass;
+		if (requestModel.assetUid != null)
+			data.AssetUid = requestModel.assetUid.toString().toLowerCase();
 
-        if (DisplayValue != null)
-            data.DisplayValue = DisplayValue;
+		if (requestModel.DisplayValue != null)
+			data.DisplayValue = requestModel.DisplayValue;
 
-        if (objectId) {
-            data.ObjectId = objectId;
-            if (objectId.toString().length == 36) {
-                data.AssetUid = objectId.toString();
+		if (requestModel.objectId) {
+			data.ObjectId = requestModel.objectId;
+			if (requestModel.objectId.toString().length == 36) {
+				data.AssetUid = requestModel.objectId.toString();
             }
         }
 
-        if (objectType)
-            data.ObjectType = objectType;
+		if (requestModel.objectType)
+			data.ObjectType = requestModel.objectType;
 
-        if (assetId)
-            data.AssetId = assetId;
+		if (requestModel.assetId)
+			data.AssetId = requestModel.assetId;
 
-        if (assetTypeUid)
-            data.AssetTypeUid = assetTypeUid;
+		if (requestModel.assetTypeUid)
+			data.AssetTypeUid = requestModel.assetTypeUid;
 
         if (!this.preloadedTreeData || this.preloadedTreeData.length == 0) {
             //This will have effect only on pages that need populate tree to create breadcrumbs (model, policy)
             data.PreloadData = true;
         }
 
-		if (assetUid == null && !assetId && !assetTypeUid && !(objectId != null && objectId != undefined) && !forceRefresh) {
+		if (requestModel.assetUid == null && !requestModel.assetId && !requestModel.assetTypeUid && !(requestModel.objectId != null && requestModel.objectId != undefined) && !requestModel.forceRefresh) {
             return;
 		}
 
-		if (this.isSidebarLoadedForCurrentObject(data) && !forceRefresh) {
+		if (this.isSidebarLoadedForCurrentObject(data) && !requestModel.forceRefresh) {
             this.refreshObjectStats();
             return;
         }
@@ -925,7 +949,7 @@ export class BaseComponent {
 
 			this.secondaryNavService.setLocalHomeUrl(homeUrl);
             this.breadcrumbsService.setCurrentObjectInfo(r.Object, r.ObjectID, r.Artifact?.AssetTypeUid, r.Uid);
-            if (buildBreadcrumbOverride == null) {
+			if (requestModel.buildBreadcrumbOverride == null) {
                 if (this.objectType.toLowerCase() == 'artifact') {
                     this.setArtifactBreadcrumbs(r);
                 }
@@ -952,7 +976,7 @@ export class BaseComponent {
                 }
             }
             else {
-                buildBreadcrumbOverride();
+				requestModel.buildBreadcrumbOverride();
             }
 
             this.secondaryNavService.clearItems();

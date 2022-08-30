@@ -46,7 +46,7 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
 		this.route.params.subscribe(
 			params => {
 				this.uid = params['assetUid'];
-				this.buildSecondaryNavigation(this.uid);
+				this.buildSecondaryNavigationByAssetUid(this.uid);
 			}
 		);
 	}

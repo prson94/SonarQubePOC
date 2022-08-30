@@ -32,9 +32,9 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
     }
 
     selectedItemChange(event) {
-        this.selected = event;
-
-        this.buildSecondaryNavigationForObject(this.selected.Id, 'IntersectType');
+		this.selected = event;
+		this.baseIntersectTypeUid = this.selected.Uid;
+		this.buildSecondaryNavigationForAssetTypeUid(this.selected.Id, 'IntersectType');
 
         if (this.auditSidebar) {
             this.auditSidebar.url = `/sidebar/audit/${this.selected.Uid}`;
