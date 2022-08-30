@@ -117,15 +117,18 @@ export class SecondaryNavPostModel {
     AssetUid: string;
     AssetTypeUid: string;
     IntersectTypeUid: string;
+	PredicateTypeUid?: string = null;
     PreloadData: boolean;
     Class: AssetTypeClass;
     DisplayValue: string;
+	isScoringDefinitionPage: boolean = false;
 }
 
 export class SecondaryNavRequestModel {
 	assetUid?: any = null;
 	assetTypeUid?: string = null;
 	intersectTypeUid?: string = null;
+	predicateTypeUid?: string = null;
 	objectId?: number = null;
 	objectType?: string = null;
 	assetId?: number = null;
@@ -133,4 +136,5 @@ export class SecondaryNavRequestModel {
 	assetClass?: AssetTypeClass = null;
 	DisplayValue?: string = null;
 	forceRefresh?: boolean = false;
+	isScoringDefinitionPage?: boolean = false;
 }

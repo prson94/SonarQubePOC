@@ -1282,7 +1282,7 @@ namespace d360.web.Controllers
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
 				}
-				else if (model.ObjectType == SystemObjects.MetricAllocation.ToString())
+				else if (model.isScoringDefinitionPage)
 				{
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.MetricAllocation.ToString();
@@ -1291,7 +1291,7 @@ namespace d360.web.Controllers
 					responseModel.MainTabTitle = PageNames.ScoringDefinitionsTab;
 					responseModel.Items.HasAudit = true;
 				}
-				else if (model.ObjectType == SystemObjects.Predicate.ToString())
+				else if (model.PredicateTypeUid.HasValue)
 				{
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.Predicate.ToString();

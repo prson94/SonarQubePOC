@@ -419,10 +419,12 @@ namespace d360.core.entities
         
         public Guid? AssetTypeUid { get; set; }
         public Guid? IntersectTypeUid { get; set; }
+        public Guid? PredicateTypeUid { get; set; }
         
         public bool PreloadData { get; set; }
         
         public AssetTypeClass Class { get; set; }
+        public bool isScoringDefinitionPage { get; set; }
     }
 
     public class SecondaryNavigationResponseModel

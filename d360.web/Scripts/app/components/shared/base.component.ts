@@ -42,6 +42,7 @@ export class BaseComponent {
 
 	baseAssetTypeUid: string;
 	baseIntersectTypeUid: string;
+	basePredicateTypeUid: string;
 	baseAssetUid: string;
 	infoIconHtmlString: string = `<i class='fa fa-info-circle help-icon'></i>`;
 
@@ -881,6 +882,16 @@ export class BaseComponent {
 			this.baseIntersectTypeUid = requestModel.intersectTypeUid;
 			data.IntersectTypeUid = this.baseIntersectTypeUid;
 		}
+
+		if (requestModel.isScoringDefinitionPage) {
+			data.isScoringDefinitionPage = requestModel.isScoringDefinitionPage;
+		}
+
+		if (requestModel.predicateTypeUid) {
+			data.PredicateTypeUid = requestModel.predicateTypeUid;
+			this.basePredicateTypeUid = data.PredicateTypeUid;
+		}
+
         data.PreloadData = false;
 		data.Class = requestModel.assetClass;
 		if (requestModel.assetUid != null)
@@ -910,7 +921,7 @@ export class BaseComponent {
             data.PreloadData = true;
         }
 
-		if (requestModel.assetUid == null && !requestModel.intersectTypeUid && !requestModel.assetId && !requestModel.assetTypeUid && !(requestModel.objectId != null && requestModel.objectId != undefined) && !requestModel.forceRefresh) {
+		if (!requestModel.isScoringDefinitionPage && requestModel.assetUid == null && !requestModel.intersectTypeUid && !requestModel.assetId && !requestModel.assetTypeUid && !(requestModel.objectId != null && requestModel.objectId != undefined) && !requestModel.forceRefresh) {
             return;
 		}
 
@@ -919,7 +930,11 @@ export class BaseComponent {
             return;
         }
 
-        this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe((r) => {
+		this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe((r) => {
+			if (data.isScoringDefinitionPage) {
+				r.Uid = this.metricAllocationUid;
+			}
+
             this.assetID = r?.AssetId;
 			this.assetTypeID = r?.AssetTypeId;
 			this.uid = r?.Uid;
@@ -956,6 +971,9 @@ export class BaseComponent {
 
 			if (this.baseIntersectTypeUid) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS;
+			}
+			if (data.isScoringDefinitionPage) {
+				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_SCORING;
 			}
 			else if (this.isTypePage) {
 				homeUrl = SiteUrlHelpers.getAssetTypeUrl(this.uid);

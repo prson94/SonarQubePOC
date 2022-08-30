@@ -110,7 +110,10 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
 
                     let objectID = this.objectType == 'Tag' ? params['uid'] : this.objectID;
 
-                    if (reloadNav) {
+					if (this.uid === this.metricAllocationUid) {
+						this.buildSecondaryNavigation({ isScoringDefinitionPage:true });
+					}
+                    else if (reloadNav) {
                         this.buildSecondaryNavigationForObject(objectID, this.objectType);
                     }
 
