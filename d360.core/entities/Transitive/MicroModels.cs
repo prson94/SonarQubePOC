@@ -436,7 +436,8 @@ namespace d360.core.entities
         public Guid? AssetTypeUid { get; set; }
 		public Guid? IntersectTypeUid { get; set; }
         public Guid? ResponsibilityTypeUid { get; set; }
-		public Guid Uid { get; set; }
+		public Guid? Uid { get; set; }
+		public AssetTypeClass? AssetTypeClass { get; set; }
         
         public string Object { get; set; }
         

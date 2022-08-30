@@ -81,9 +81,10 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         });
     }
 
-    selectedItemChange() {
-        this.loadDataAndExecuteAction(() => {
-            this.buildSecondaryNavigationForObject(this.selectedRow ? this.selectedRow.data.ID : 0, this.objectType, null, this.assetTypeClass);
+	selectedItemChange() {
+		this.baseAssetTypeUid = this.selectedRow.data.uid;
+		this.loadDataAndExecuteAction(() => {
+			this.buildSecondaryNavigation({ assetTypeUid: this.selectedRow.data.uid });
         });
     }
 

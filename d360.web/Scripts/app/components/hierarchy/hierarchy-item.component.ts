@@ -7,9 +7,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { PermissionsService } from '../../services/permissions.service';
 import { ModelsService } from '../../services/models.service';
 import { PoliciesService } from '../../services/policies.service';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AssetTypeClass } from '../../models/asset.model';
-import { StringConstants } from '../../static/string-constants';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { TreeNode } from 'primeng/api';
 import { MessageBarItem } from '../../models/message-bar-item.model';

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.SecondaryNavSettings-v10">
+  <changeSet author="Tomislav Duric" id="Procedure.dbo.SecondaryNavSettings-v12.1">
     <comment>GOV-19408</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -24,6 +24,7 @@ begin
 	  AssetId int, 
 	  AssetTypeId int,
 	  AssetTypeUid uniqueidentifier,
+	  AssetTypeClass int,
 	  Uid uniqueidentifier,
 	  Object varchar(50),
 	  ObjectType varchar(50),
@@ -53,7 +54,7 @@ begin
 	if @assetTypeUid is not null
 	begin 
 		insert into @assetdata
-		select Id,0,@assetTypeUid, coalesce(@uid,@assetTypeUid) as uid, Object,Object,ObjectID, ObjectID, 
+		select Id,0,@assetTypeUid, Class, @uid as uid, Object,Object,ObjectID, ObjectID, 
 		CASE
 			WHEN Class = 1 THEN 'Business Assets'
 			WHEN Class = 2 THEN 'Models'
@@ -65,6 +66,7 @@ begin
 			WHEN Class = 11 THEN 'Users'
 			WHEN Class = 12 THEN 'Groups'
 			WHEN Class = 14 THEN 'Reference Lists'
+			WHEN Class = 15 THEN 'Diagram'
 			ELSE ''
 		END as Name , 
 		CASE
@@ -78,6 +80,7 @@ begin
 			WHEN Class = 11 THEN 'User'
 			WHEN Class = 12 THEN 'Group'
 			WHEN Class = 14 THEN 'Reference List'
+			WHEN Class = 15 THEN 'Diagram'
 			ELSE ''
 		END + ' Types' as MainTitle ,
 		Name
@@ -107,7 +110,7 @@ begin
 	if @uid is not null
 	begin
 		insert into @assetdata
-		select AD.ID,AD.AssetTypeID,AD.Uid,@uid, AD.Object,AD.Type,AD.TypeId, AD.ObjectID, AD.DisplayValue, 'Definition', at.Name 
+		select AD.ID,AD.AssetTypeID,AD.Uid,AT.Class, @uid, AD.Object,AD.Type,AD.TypeId, AD.ObjectID, AD.DisplayValue, 'Definition', at.Name 
 		from AssetDetail AD
 		inner join AssetType AT on AT.Id = AD.AssetTypeID
 		where AD.uid = @uid

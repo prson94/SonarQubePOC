@@ -139,4 +139,5 @@ export class SecondaryNavRequestModel {
 	DisplayValue?: string = null;
 	forceRefresh?: boolean = false;
 	isScoringDefinitionPage?: boolean = false;
+	isDiagramAdminPage?: boolean = false;
 }
