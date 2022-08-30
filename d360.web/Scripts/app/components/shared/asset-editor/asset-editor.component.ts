@@ -139,7 +139,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	sidePanelTab: string;
 	sidePanelSelection: { objectID: string, fieldName: string };
 	selectedAsset: { id?: number, uid?: string, type: string };
-	selectedReferenceItem: { uid: string, assetUid?: string, url: string };
+	selectedReferenceItem: { uid: string, assetUid?: string, url?: string };
+	selectedTag: { uid: string };
 
     modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
@@ -1094,19 +1095,14 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	onSidePanelSelectionChange(selection: {objectID: string, fieldName: string}): void {
 		if (!_.isEqual(this.sidePanelSelection, selection)) {
 			this.sidePanelSelection = selection;
-			this.selectedAsset = {
-				type: this.getObjectTypeByFieldName(selection.fieldName)
-			};
-			if (isNaN(+selection.objectID)) {
-				this.selectedAsset.uid = selection.objectID;
-			} else {
-				this.selectedAsset.id = +selection.objectID;
-			}
-			if (this.selectedAsset.type.startsWith('ReferenceItem')) {
+			const objectType = this.getObjectTypeByFieldName(selection.fieldName);
+			if (objectType.startsWith('ReferenceItem')) {
 				this.sidePanelLoading = true;
+				this.selectedAsset = this.selectedTag = null;
+				this.selectedReferenceItem = this.selectedReferenceItem || { uid: null, url: null };
 				this.objectDetailService.getObject(
-					this.selectedAsset.id,
-					this.selectedAsset.type
+					+selection.objectID,
+					objectType
 				).subscribe((details) => {
 					this.selectedReferenceItem = {
 						uid: details.AssetTypeUid,
@@ -1115,10 +1111,18 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 					};
 					this.sidePanelLoading = false;
 				});
+			} else {
+				this.selectedReferenceItem = this.selectedTag = null;
+				this.selectedAsset = { type: objectType };
+				if (isNaN(+selection.objectID)) {
+					this.selectedAsset.uid = selection.objectID;
+				} else {
+					this.selectedAsset.id = +selection.objectID;
+				}
 			}
 		} else {
 			this.sidePanelSelection = null;
-			this.selectedAsset = null;
+			this.selectedAsset = this.selectedTag = this.selectedReferenceItem = null;
 		}
 		this.sidePanelOpen = !!this.sidePanelSelection;
 	}

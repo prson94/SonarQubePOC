@@ -31,7 +31,8 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
     }
 
     ngOnInit() {
-        var htmlEl = this.el.nativeElement as HTMLElement;
+        const htmlEl = this.el.nativeElement as HTMLElement;
+		const hideOpenLink = this.el.nativeElement.closest('side-panel') && this.el.nativeElement.closest('asset-editor');
         this.canViewUsers = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
 		
 		this.contextMenuItems = [
@@ -39,6 +40,10 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
 			{ title: $localize`Open`, value: 'open' },
 			{ title: $localize`Open in New Tab`, value: 'new-tab' }
 		];
+		
+		if (hideOpenLink) {
+			this.contextMenuItems = this.contextMenuItems.filter((item) => item.value !== 'open');
+		}
         
 		if (this.isLinkDisabled) {
             htmlEl.style.pointerEvents = "none";

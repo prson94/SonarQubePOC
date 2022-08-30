@@ -104,6 +104,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+		this.tab = 'detail';
         for (let p in changes) {
             if (p === 'objectType') {
                 this.objectType = changes['objectType'].currentValue;
@@ -473,7 +474,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     get showOwnershipTab(): boolean {
-        return this.objectType !== 'Resource' && this.objectType !== 'Group' && this.objectType !== 'Task' && !this.relationshipUid;
+        return this.objectType !== 'Resource' && this.objectType !== 'Group' && this.objectType !== 'Task' && !this.relationshipUid && this.model?.HasResponsibilityReadAccess;
     }
 
     get showGroupTab(): boolean {
