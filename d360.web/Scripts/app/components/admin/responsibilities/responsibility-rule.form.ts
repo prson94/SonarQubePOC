@@ -621,16 +621,71 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
 	private isValid(): boolean {
 		if (!this.model.ApplyToType) {
-			if (!this.model.StructuredDefinition.When || this.model.StructuredDefinition.When.length === 0) {
+			if (!this.model.StructuredDefinition.When || this.model.StructuredDefinition.When.length === 0 || !this.isWhenValid()) {
 				return false;
 			}
-			else {
-				return true;
-			}
 		}
-		else {
+
+		return this.isThenValid();		
+	}
+
+	isThenValid() {
+		if (this.model.StructuredDefinition.Then.Conditions.length === 0 || !this.model.StructuredDefinition.Then.Conditions[this.model.StructuredDefinition.Then.Conditions.length-1].Object) {
 			return true;
 		}
+		
+		if (this.model.StructuredDefinition.Then.Conditions.every((c) => c.FieldTypeID >= 0
+			&& c.FieldTypeName && c.FieldTypeName.length > 0
+			&& c.Object && c.Object.length > 0
+			&& (
+				(
+					!c.IsSimpleText && (c.Value && c.Value.length > 0)
+				)
+				||
+				(
+					c.IsSimpleText && c.Operator && c.Operator.length > 0
+					&& (
+						(c.Operator === Operator[Operator.Populated] || c.Operator === Operator[Operator.Populated]) || (c.Value && c.Value.length > 0)
+					)
+				)
+			)
+		)) {
+
+			return true;
+		}
+		return false;
+	}
+
+	isWhenValid() {
+		if (this.model.StructuredDefinition.When.every((w) =>
+			w.CheckType && w.CheckType.length > 0
+			&& (
+				(
+					w.CheckType === 'F' && w.FieldTypeID >= 0
+					&& w.FieldTypeName && w.FieldTypeName.length > 0
+					&& (
+						(
+							!w.IsSimpleText && (w.Value && w.Value.length > 0)
+						)
+						||
+						(
+							w.IsSimpleText && w.Operator && w.Operator.length > 0
+							&& (
+								(w.Operator === Operator[Operator.Populated] || w.Operator === Operator[Operator.Populated]) || (w.Value && w.Value.length > 0)
+							)
+						)
+					)
+				)
+				||
+				(
+					w.CheckType === 'R' && w.IntersectTypeID && w.IntersectTypeID > 0 && w.Operator && w.Value && w.Value.length > 0
+				)
+			)
+		)
+		) {
+			return true;
+		}
+		return false;
 	}
 
     cancel(): void {
