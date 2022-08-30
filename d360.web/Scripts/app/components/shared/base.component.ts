@@ -894,11 +894,13 @@ export class BaseComponent {
 
         data.PreloadData = false;
 		data.Class = requestModel.assetClass;
-		if (requestModel.assetUid != null)
+		if (requestModel.assetUid != null) {
 			data.AssetUid = requestModel.assetUid.toString().toLowerCase();
+		}
 
-		if (requestModel.DisplayValue != null)
+		if (requestModel.DisplayValue != null) {
 			data.DisplayValue = requestModel.DisplayValue;
+		}
 
 		if (requestModel.objectId) {
 			data.ObjectId = requestModel.objectId;
@@ -943,11 +945,15 @@ export class BaseComponent {
 
 			this.baseAssetUid = r?.Uid;
 
-			if (r.Artifact?.AssetTypeUid ?? r.AssetTypeUid) {
-				this.baseAssetTypeUid = r.Artifact?.AssetTypeUid ?? r.AssetTypeUid;
+			if (r?.AssetTypeUid) {
+				this.baseAssetTypeUid = r.AssetTypeUid;
 			}
 
-			if (r.IntersectTypeUid) {
+			if (r?.Artifact?.AssetTypeUid) {
+				this.baseAssetTypeUid = r.Artifact?.AssetTypeUid;
+			}
+
+			if (r?.IntersectTypeUid) {
 				this.baseIntersectTypeUid = r.IntersectTypeUid;
 			}
 
@@ -974,6 +980,9 @@ export class BaseComponent {
 			}
 			if (data.isScoringDefinitionPage) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_SCORING;
+			}
+			if (this.baseAssetTypeUid.toLowerCase() === this.groupTypeUid.toLowerCase()) {
+				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_GROUPS;
 			}
 			else if (this.isTypePage) {
 				homeUrl = SiteUrlHelpers.getAssetTypeUrl(this.uid);

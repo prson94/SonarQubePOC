@@ -113,6 +113,9 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
 					if (this.uid === this.metricAllocationUid) {
 						this.buildSecondaryNavigation({ isScoringDefinitionPage:true });
 					}
+					else if (this.uid.toLowerCase() === this.groupTypeUid.toLowerCase()) {
+						this.buildSecondaryNavigationForAssetTypeUid(this.groupTypeUid);
+					}
                     else if (reloadNav) {
                         this.buildSecondaryNavigationForObject(objectID, this.objectType);
                     }
