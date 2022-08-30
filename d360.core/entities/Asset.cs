@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 using d360.core.entities.Contracts;
@@ -420,5 +421,8 @@ namespace d360.core.entities
 		public string Statement { get; set; }
 		public string FieldIdentifier { get; set; }
 		public string SimpleStatement { get; set; }
+
+		public string StatementWithoutColumnName => 
+			Regex.Replace(this.Statement, @" as \[?\w*\]?$", "");
 	}
 }
