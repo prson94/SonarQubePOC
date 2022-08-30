@@ -291,12 +291,18 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.lineageSidebar);
             }
 
-            if ((opts.hasAudit || opts.hasAudit === undefined) && this.getBooleanSetting(CompanySettingEnum.ShowChangeLogTab)) {
+			if ((opts.hasAudit || opts.hasAudit === undefined) && this.getBooleanSetting(CompanySettingEnum.ShowChangeLogTab)) {
+				let url = `/asset/${this.uid}/log`;
+
+				if (this.isTypePage) {
+					url = `/assets/${this.uid}/log`;
+				}
+
                 this.auditSidebar = new SecondaryNavItem(
                     $localize`Change Log`,
                     'Change Log',
 					['fa-eye'],
-					`/asset/${this.uid}/log`, null, 40
+					url, null, 40
                 );
                 this.secondaryNavService.showItem(this.auditSidebar);
             }
@@ -310,13 +316,13 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.fieldNav);
             }
 
-            if (opts.hasOwnership && this.getBooleanSetting(CompanySettingEnum.ShowOwnersSidebar)) {
-                if (this.objectType == 'ReferenceItemType') {
+			if (opts.hasOwnership && this.getBooleanSetting(CompanySettingEnum.ShowOwnersSidebar)) {
+				if (this.isTypePage) {
                     this.ownershipSidebar = new SecondaryNavItem(
                         $localize`Responsibilities`,
                         'responsibilities',
-                        ['fa-user'],
-                        `/sidebar/responsibilities${this.auditContextUrl()}`, null, 25
+						['fa-user'],
+						`/assets/${this.baseAssetTypeUid}/owners`, null, 25
                     );
                 }
                 else {
@@ -382,12 +388,18 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.followingSidebar);
             }
 
-            if (opts.hasRelationships) {
+			if (opts.hasRelationships) {
+				let url = `/asset/${this.uid}/relationships`;
+
+				if (this.isTypePage) {
+					url = `/assets/${this.uid}/relationships`;
+				}
+
                 this.relationsSidebar = new SecondaryNavItem(
                     $localize`Relationships`,
                     'relationship',
 					['fa-retweet'],
-					`/asset/${this.uid}/relationships`, null, 20
+					url, null, 20
                 );
                 this.secondaryNavService.showItem(this.relationsSidebar);
             }
@@ -879,7 +891,10 @@ export class BaseComponent {
 			this.objectID = r.ObjectID;
 
 			this.baseAssetUid = r.Uid;
-			this.baseAssetTypeUid = r.Artifact?.AssetTypeUid;
+
+			if (r.Artifact?.AssetTypeUid ?? r.AssetTypeUid) {
+				this.baseAssetTypeUid = r.Artifact?.AssetTypeUid ?? r.AssetTypeUid;
+			}
 
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID, DisplayValue: r.DisplayValue });
             this.secondaryNavService.setLoadedKey(_key);
@@ -898,7 +913,10 @@ export class BaseComponent {
 			let area = this.determineAreaForAdminPage(areaName);
 			
 			let homeUrl: string = ``;
-			if (this.uid) {
+			if (this.isTypePage) {
+				homeUrl = SiteUrlHelpers.getAssetTypeUrl(this.uid);
+			}
+			else if (this.uid) {
 				homeUrl = SiteUrlHelpers.getAssetUrl(this.uid);
 			}
 			else {
@@ -1333,5 +1351,10 @@ export class BaseComponent {
     }
     public get referenceListUid(): string {
         return "0000000a-0000-0000-0000-000000000009";
-    }
+	}
+
+	public isTypePage(): boolean{
+		return this.uid.toLowerCase() === this.baseAssetTypeUid.toLowerCase();
+	}
+
 }

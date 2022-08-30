@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { RelationshipsComponent } from './relationships.component';
 
 const routes: Routes = [
-    { path: ':assetUid/relationships', component: RelationshipsComponent },
+    { path: ':uid/relationships', component: RelationshipsComponent },
 ];
 
 @NgModule({

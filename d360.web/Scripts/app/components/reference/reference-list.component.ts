@@ -107,7 +107,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		if (refListIdString) {
 
 			if (refListIdString.toString().length == 36) {
-				this.selectedReferenceListUid = refListIdString;
+				this.baseAssetTypeUid = this.selectedReferenceListUid = refListIdString;
 				if (this.loadObjectDataSub) {
 					this.loadObjectDataSub.unsubscribe();
 				}
@@ -182,6 +182,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 	changeType(e: any, replaceUrl: boolean) {
 		const requiresRedirect = this.selectedReferenceListUid !== e.uid;
 		this.selectedReferenceItemType = e;
+		this.baseAssetTypeUid = this.selectedReferenceListUid = this.selectedReferenceItemType.uid;
 		this.setSecondaryNavItems();
 		if (requiresRedirect) {
 			this.router.navigateByUrl(`/assets/${e.uid}`, { replaceUrl: replaceUrl });
@@ -224,7 +225,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 			this.ownershipSidebar.tag = 'responsibilities';
 			this.ownershipSidebar.title = $localize`Responsibilities`;
 			this.ownershipSidebar.orderPriority = 4;
-			this.ownershipSidebar.url = `/assets${this.selectedReferenceListUid}/responsibilities`;
+			this.ownershipSidebar.url = `/assets/${this.selectedReferenceListUid}/owners`;
 		}
 	}
 }
