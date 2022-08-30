@@ -1167,10 +1167,11 @@ namespace d360.web.Controllers
 
 					responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
 				}
-				else if (model.ObjectType == SystemObjects.IntersectType.ToString())
+				else if (model.IntersectTypeUid.HasValue)
 				{
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
+					responseModel.IntersectTypeUid = model.IntersectTypeUid.Value;
 					responseModel.ObjectID = model.ObjectId ?? 0;
 					responseModel.DisplayValue = PageNames.RelationshipsTab;
 					responseModel.MainTabTitle = PageNames.RelationshipsTabTitle;

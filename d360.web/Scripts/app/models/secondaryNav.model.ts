@@ -116,6 +116,7 @@ export class SecondaryNavPostModel {
     AssetId: number;
     AssetUid: string;
     AssetTypeUid: string;
+    IntersectTypeUid: string;
     PreloadData: boolean;
     Class: AssetTypeClass;
     DisplayValue: string;
@@ -124,6 +125,7 @@ export class SecondaryNavPostModel {
 export class SecondaryNavRequestModel {
 	assetUid?: any = null;
 	assetTypeUid?: string = null;
+	intersectTypeUid?: string = null;
 	objectId?: number = null;
 	objectType?: string = null;
 	assetId?: number = null;

@@ -299,6 +299,10 @@ export class BaseComponent {
 					url = `/assets/${this.uid}/log`;
 				}
 
+				if (this.baseIntersectTypeUid) {
+					url = `/assets/${this.baseIntersectTypeUid}/log`;
+				}
+
                 this.auditSidebar = new SecondaryNavItem(
                     $localize`Change Log`,
                     'Change Log',
@@ -309,11 +313,15 @@ export class BaseComponent {
             }
 
 			if (opts.hasField) {
+				let url = `/assets/${this.baseAssetTypeUid}/fields`;
+				if (this.baseIntersectTypeUid) {
+					url = `/admin/relationships/${this.baseIntersectTypeUid}/fields`;
+				}
                 this.fieldNav = new SecondaryNavItem(
                     $localize`Field Definitions`,
                     'fields',
 					['fa-drivers-license-o'],
-					`/assets/${this.baseAssetTypeUid}/fields`, null, 1);
+					url, null, 1);
                 this.secondaryNavService.showItem(this.fieldNav);
             }
 
@@ -868,7 +876,11 @@ export class BaseComponent {
     }
 
 	buildSecondaryNavigation(requestModel: SecondaryNavRequestModel) {
-        var data = new SecondaryNavPostModel();
+		var data = new SecondaryNavPostModel();
+		if (requestModel.intersectTypeUid) {
+			this.baseIntersectTypeUid = requestModel.intersectTypeUid;
+			data.IntersectTypeUid = this.baseIntersectTypeUid;
+		}
         data.PreloadData = false;
 		data.Class = requestModel.assetClass;
 		if (requestModel.assetUid != null)
@@ -898,7 +910,7 @@ export class BaseComponent {
             data.PreloadData = true;
         }
 
-		if (requestModel.assetUid == null && !requestModel.assetId && !requestModel.assetTypeUid && !(requestModel.objectId != null && requestModel.objectId != undefined) && !requestModel.forceRefresh) {
+		if (requestModel.assetUid == null && !requestModel.intersectTypeUid && !requestModel.assetId && !requestModel.assetTypeUid && !(requestModel.objectId != null && requestModel.objectId != undefined) && !requestModel.forceRefresh) {
             return;
 		}
 
@@ -908,16 +920,20 @@ export class BaseComponent {
         }
 
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe((r) => {
-            this.assetID = r.AssetId;
-            this.assetTypeID = r.AssetTypeId;
-			this.uid = r.Uid;
-            this.objectType = r.Object;
-			this.objectID = r.ObjectID;
+            this.assetID = r?.AssetId;
+			this.assetTypeID = r?.AssetTypeId;
+			this.uid = r?.Uid;
+			this.objectType = r?.Object;
+			this.objectID = r?.ObjectID;
 
-			this.baseAssetUid = r.Uid;
+			this.baseAssetUid = r?.Uid;
 
 			if (r.Artifact?.AssetTypeUid ?? r.AssetTypeUid) {
 				this.baseAssetTypeUid = r.Artifact?.AssetTypeUid ?? r.AssetTypeUid;
+			}
+
+			if (r.IntersectTypeUid) {
+				this.baseIntersectTypeUid = r.IntersectTypeUid;
 			}
 
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID, DisplayValue: r.DisplayValue });
@@ -935,9 +951,13 @@ export class BaseComponent {
                 }
             }
 			let area = this.determineAreaForAdminPage(areaName);
-			
+
 			let homeUrl: string = ``;
-			if (this.isTypePage) {
+
+			if (this.baseIntersectTypeUid) {
+				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS;
+			}
+			else if (this.isTypePage) {
 				homeUrl = SiteUrlHelpers.getAssetTypeUrl(this.uid);
 			}
 			else if (this.uid) {
@@ -1102,10 +1122,10 @@ export class BaseComponent {
         components.push(this.connectorLabels);
         components.push(this.groupsSidebar);
         components.push(this.itemOwnSidebar);
-        components.push(this.followingSidebar);
+		components.push(this.followingSidebar);
 
-        components.forEach((cmp) => {
-            if (cmp && currentComponentUrl.startsWith(cmp.url)) {
+		components.forEach((cmp) => {
+			if (cmp && currentComponentUrl.startsWith(cmp.url)) {
                 cmp.active = true;
             }
 

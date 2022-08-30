@@ -50,8 +50,8 @@ const routes: Routes = [
     { path: "asset", loadChildren: () => import("./components/sidebar/ownership/ownership.module").then((m) => m.OwnershipModule) },
     { path: "asset", loadChildren: () => import("./components/sidebar/visualization/visualization.module").then((m) => m.VisualizationModule) },
     { path: "asset", loadChildren: () => import("./components/sidebar/relationships/relationships.module").then((m) => m.RelationshipsModule) },
-    { path: "assets", loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
-    { path: "relationships", loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
+	{ path: "assets", loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
+	{ path: "admin/relationships", data: { type: 'relationship' }, loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
 
     {
         path: "**",

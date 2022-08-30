@@ -5,6 +5,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { Param } from '../../../enums/param.enum';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -19,7 +20,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
                     <d3s-field-definition-tile [assetTypeUid]="assetTypeUid"
                                                [relationshipTypeUid]="relationshipTypeUid"
                                                [allowSingleSegmentPath]="false"
-                                               [objectName]="objectName"
                                                [title]="objectName"></d3s-field-definition-tile>
                 </div>
             </div>
@@ -30,9 +30,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 
 export class FieldDefinitionComponent extends BaseComponent implements OnInit, OnDestroy {
 	private sub: any;
-	objectID: number;
-	objectType: string;
-	objectName: string;
+
 	assetTypeUid: string;
 	relationshipTypeUid: string;
 
@@ -53,25 +51,16 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
 		this.isLoading = true;
 		this.sub = this.route.params.subscribe(
 			params => {
-				this.baseAssetTypeUid = params['assetTypeUid']; // (+) converts string 'id' to a number
+				if (this.route.snapshot.data?.type === "relationship") {
+					this.relationshipTypeUid = this.baseIntersectTypeUid = params['assetTypeUid'];
+					this.buildSecondaryNavigation({ intersectTypeUid: this.relationshipTypeUid });
 
-				this.objectDetailService.getObjectDetailByObjectUid(this.baseAssetTypeUid).subscribe(
-					res => {
-						if (res) {
-							this.objectName = $localize`Field Definitions for` + " " + (res.Name ? res.Name : res.DisplayValue);
-							if (res.Object.toLowerCase() === 'intersecttype') {
-								this.relationshipTypeUid = res.UID;
-							}
-							else {
-								this.assetTypeUid = res.AssetTypeUid;
-							}
-							this.isLoading = false;
-						}
-						this.isLoading = false;
-					}
-				);
-
-				this.buildSecondaryNavigationForAssetTypeUid(this.baseAssetTypeUid, null);
+				}
+				else {
+					this.assetTypeUid = this.baseAssetTypeUid = params['assetTypeUid'];
+					this.buildSecondaryNavigationForAssetTypeUid(this.baseAssetTypeUid, null);
+				}
+				this.isLoading = false;
 			}
 		);
 	}
