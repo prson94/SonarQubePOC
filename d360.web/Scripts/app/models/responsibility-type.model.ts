@@ -176,6 +176,7 @@ export class ResponsibilityTypeRelationRuleDefinitionThenItem {
 	Operator: string;
 	Object: string;
 	ObjectID: number = 1;
+	IsSimpleText: boolean = false;
 }
 
 export class ResponsibilityTypeRelationRuleFormData {
