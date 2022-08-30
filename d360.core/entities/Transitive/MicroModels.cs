@@ -420,6 +420,7 @@ namespace d360.core.entities
         public Guid? AssetTypeUid { get; set; }
         public Guid? IntersectTypeUid { get; set; }
         public Guid? PredicateTypeUid { get; set; }
+        public Guid? ResponsibilityTypeUid { get; set; }
         
         public bool PreloadData { get; set; }
         
@@ -434,6 +435,7 @@ namespace d360.core.entities
         public int AssetTypeId { get; set; }
         public Guid? AssetTypeUid { get; set; }
 		public Guid? IntersectTypeUid { get; set; }
+        public Guid? ResponsibilityTypeUid { get; set; }
 		public Guid Uid { get; set; }
         
         public string Object { get; set; }

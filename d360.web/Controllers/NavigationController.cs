@@ -1187,10 +1187,11 @@ namespace d360.web.Controllers
 					responseModel.MainTabTitle = PageNames.WorkflowActionsTabTitle;
 					responseModel.Items.HasAudit = true;
 				}
-				else if (model.ObjectType == SystemObjects.ResponsibilityType.ToString())
+				else if (model.ResponsibilityTypeUid.HasValue)
 				{
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResponsibilityType.ToString();
+					responseModel.AssetTypeUid = responseModel.ResponsibilityTypeUid = model.ResponsibilityTypeUid;
 					responseModel.ObjectID = model.ObjectId ?? 0;
 					responseModel.DisplayValue = PageNames.ResponsibilitiesTab;
 					responseModel.MainTabTitle = PageNames.ResponsibilitiesTabTitle;

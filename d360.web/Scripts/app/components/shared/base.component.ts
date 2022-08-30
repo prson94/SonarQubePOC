@@ -43,6 +43,7 @@ export class BaseComponent {
 	baseAssetTypeUid: string;
 	baseIntersectTypeUid: string;
 	basePredicateTypeUid: string;
+	baseResponsibilityUid: string;
 	baseAssetUid: string;
 	infoIconHtmlString: string = `<i class='fa fa-info-circle help-icon'></i>`;
 
@@ -295,13 +296,17 @@ export class BaseComponent {
 
 			if ((opts.hasAudit || opts.hasAudit === undefined) && this.getBooleanSetting(CompanySettingEnum.ShowChangeLogTab)) {
 				let url = `/asset/${this.uid}/log`;
-
+;
 				if (this.isTypePage) {
 					url = `/assets/${this.uid}/log`;
 				}
 
 				if (this.baseIntersectTypeUid) {
 					url = `/assets/${this.baseIntersectTypeUid}/log`;
+				}
+
+				if (this.baseResponsibilityUid) {
+					url = `/assets/${this.baseResponsibilityUid}/log`;
 				}
 
                 this.auditSidebar = new SecondaryNavItem(
@@ -887,6 +892,11 @@ export class BaseComponent {
 			data.isScoringDefinitionPage = requestModel.isScoringDefinitionPage;
 		}
 
+		if (requestModel.responsibilityTypeUid) {
+			data.ResponsibilityTypeUid = requestModel.responsibilityTypeUid;
+			this.baseResponsibilityUid = data.ResponsibilityTypeUid;
+		}
+
 		if (requestModel.predicateTypeUid) {
 			data.PredicateTypeUid = requestModel.predicateTypeUid;
 			this.basePredicateTypeUid = data.PredicateTypeUid;
@@ -923,7 +933,7 @@ export class BaseComponent {
             data.PreloadData = true;
         }
 
-		if (!requestModel.isScoringDefinitionPage && requestModel.assetUid == null && !requestModel.intersectTypeUid && !requestModel.assetId && !requestModel.assetTypeUid && !(requestModel.objectId != null && requestModel.objectId != undefined) && !requestModel.forceRefresh) {
+		if (!requestModel.responsibilityTypeUid && !requestModel.isScoringDefinitionPage && requestModel.assetUid == null && !requestModel.intersectTypeUid && !requestModel.assetId && !requestModel.assetTypeUid && !(requestModel.objectId != null && requestModel.objectId != undefined) && !requestModel.forceRefresh) {
             return;
 		}
 
@@ -981,7 +991,7 @@ export class BaseComponent {
 			if (data.isScoringDefinitionPage) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_SCORING;
 			}
-			if (this.baseAssetTypeUid.toLowerCase() === this.groupTypeUid.toLowerCase()) {
+			if ((this.baseAssetTypeUid ?? "").toLowerCase() === this.groupTypeUid.toLowerCase()) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_GROUPS;
 			}
 			else if (this.isTypePage) {
