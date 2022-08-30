@@ -22,9 +22,8 @@
                        [maxSize]="getSidePanelMaxWidth()"
                        class="tile tile-detail side-panel"
                        *ngIf="!gridLoading && !isLoading && definitionLoaded && (!showEditor || (showEditor && selection != null))">
-            <side-panel (expandedChange)="sidePanelOpen=$event"
+            <side-panel [(expanded)]="sidePanelOpen"
                         (selectedPanelChange)="sidePanelTab=$event"
-                        [hasSelectedItem]="selection ? true : false"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="hasProfiling"
                         [setMinMaxWidth]="false"
