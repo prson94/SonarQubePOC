@@ -28,6 +28,7 @@ import { AssetEditorModule } from '../asset-editor/asset-editor.module';
 import { AddRelationshipModule } from './add-relationship.module';
 import { TooltipModule } from 'primeng/tooltip';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
+import { AngularSplitModule } from 'angular-split';
 
 @NgModule({
     imports: [
@@ -57,6 +58,7 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
         AssetEditorModule,
         AddRelationshipModule,
         TooltipModule,
+        AngularSplitModule,
         SharedGridPagingInfoModule
     ],
     declarations: [

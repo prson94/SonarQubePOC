@@ -19,30 +19,13 @@ import { CompanySettingsService } from "../../../services/settings.service";
 import { HelpResource } from "../../../models/resource.model";
 import { Operator } from "../../../models/operator.model";
 import { forEach } from "core-js/fn/dict";
+import { forkJoin } from "rxjs";
 
 
 @Component({
     selector: "d3s-responsibility-rule-form",
-    templateUrl: "./responsibility-rule.form.html",
-    styles: [
-        `
-        .display-table tr td {
-            padding:3px;
-            border-radius: 0;
-        }
-        .relation-table tr td {
-            border-radius: 0;
-        }
-        
-       .display-table-title {
-            text-align:center;
-            width:100%;
-            text-transform: uppercase;
-            color: #5c5e60 !important;
-            font-size: 1rem;
-            font-weight: bold;
-        }`
-    ],
+	templateUrl: "./responsibility-rule.form.html",
+	styleUrls: ["responsibility-rule.less"],
     providers: [ResponsibilityTypeService, ObjectDetailService],
 })
 
@@ -84,7 +67,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     matchAllLabel = $localize`Match all`;
     matchAnyLabel = $localize`Match any`;
 
-    saveLabel = $localize`Save`;
+    saveLabel = $localize`Add Rule`;
 	cancelLabel = $localize`Cancel`;
 
 	showResultsLabel = $localize`Show Results`;
@@ -191,20 +174,21 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 									
 									if (this.model && this.model.StructuredDefinition && this.model.StructuredDefinition.Then) {
 										if (this.model.StructuredDefinition.Then.Conditions != null && this.model.StructuredDefinition.Then.Conditions.length > 0 && !this.model.StructuredDefinition.Then.Conditions.every((c) => !c.Object)) {
-											this.model.StructuredDefinition.Then.Conditions.forEach((t) => {												
-												this.responsibilityTypeService.getRelationRuleFormData(t.Object, 1)
-													.subscribe((d) => {
-														if (t.Object === this.resourceType) {
-															this.thenUserFieldTypes = d.FieldTypes;
-														} else {
-															this.thenGroupFieldTypes = d.FieldTypes;
-														}
-														
-														this.loadThenValuesForFieldType(t, false);
 
-														this.isLoading = false;
-													});
-											});
+											let resources = this.responsibilityTypeService.getRelationRuleFormData(this.resourceType, 1);
+											let groups = this.responsibilityTypeService.getRelationRuleFormData(this.groupType, 1);
+
+											forkJoin([
+												resources,
+												groups
+											]).subscribe(([resourceList, groupList]) => {
+												this.thenUserFieldTypes = resourceList.FieldTypes;
+												this.thenGroupFieldTypes = groupList.FieldTypes;
+												this.model.StructuredDefinition.Then.Conditions.forEach((t) => {
+													this.loadThenValuesForFieldType(t, false);
+												});
+												this.isLoading = false;												
+											});																			
 										} else {
 											this.responsibilityTypeService.getRelationRuleFormData(this.model.StructuredDefinition.Then.Object, this.model.StructuredDefinition.Then.ObjectID)
 												.subscribe((d) => {
@@ -321,7 +305,11 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 				else if (selectedFieldType.type === "Text") {
 					item.IsSimpleText = true;		
 					if (!item.Operator) {
-						item.Operator = Operator[Operator.Contains];
+						if (item.Value) {
+							item.Operator = Operator[Operator.Equals];
+						} else {
+							item.Operator = Operator[Operator.Contains];
+						}						
 					}
 				}
                 else {
@@ -594,8 +582,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 				item.IsLookup = selectedFieldType.isLookup;
 			} else if (selectedFieldType.type === "Text") {
 				item.IsSimpleText = true;
+				
 				if (!item.Operator) {
-					item.Operator = Operator[Operator.Contains];
+					if (item.Value) {
+						item.Operator = Operator[Operator.Equals];
+					} else {
+						item.Operator = Operator[Operator.Contains];
+					}
 				}
 			}
             else {
@@ -626,19 +619,75 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         return null;
     }
 
-    private isValid(): boolean {
-        if (!this.model.ApplyToType) {
-            if (!this.model.StructuredDefinition.When || this.model.StructuredDefinition.When.length === 0) {
-				return false;				
-            }
-            else {
-                return true;
-            }
-        }
-        else {
-            return true;
-        }
-    }
+	private isValid(): boolean {
+		if (!this.model.ApplyToType) {
+			if (!this.model.StructuredDefinition.When || this.model.StructuredDefinition.When.length === 0 || !this.isWhenValid()) {
+				return false;
+			}
+		}
+
+		return this.isThenValid();		
+	}
+
+	isThenValid() {
+		if (this.model.StructuredDefinition.Then.Conditions.length === 0 || !this.model.StructuredDefinition.Then.Conditions[this.model.StructuredDefinition.Then.Conditions.length-1].Object) {
+			return true;
+		}
+		
+		if (this.model.StructuredDefinition.Then.Conditions.every((c) => c.FieldTypeID >= 0
+			&& c.FieldTypeName && c.FieldTypeName.length > 0
+			&& c.Object && c.Object.length > 0
+			&& (
+				(
+					!c.IsSimpleText && (c.Value && c.Value.length > 0)
+				)
+				||
+				(
+					c.IsSimpleText && c.Operator && c.Operator.length > 0
+					&& (
+						(c.Operator === Operator[Operator.Populated] || c.Operator === Operator[Operator.Populated]) || (c.Value && c.Value.length > 0)
+					)
+				)
+			)
+		)) {
+
+			return true;
+		}
+		return false;
+	}
+
+	isWhenValid() {
+		if (this.model.StructuredDefinition.When.every((w) =>
+			w.CheckType && w.CheckType.length > 0
+			&& (
+				(
+					w.CheckType === 'F' && w.FieldTypeID >= 0
+					&& w.FieldTypeName && w.FieldTypeName.length > 0
+					&& (
+						(
+							!w.IsSimpleText && (w.Value && w.Value.length > 0)
+						)
+						||
+						(
+							w.IsSimpleText && w.Operator && w.Operator.length > 0
+							&& (
+								(w.Operator === Operator[Operator.Populated] || w.Operator === Operator[Operator.Populated]) || (w.Value && w.Value.length > 0)
+							)
+						)
+					)
+				)
+				||
+				(
+					w.CheckType === 'R' && w.IntersectTypeID && w.IntersectTypeID > 0 && w.Operator && w.Value && w.Value.length > 0
+				)
+			)
+		)
+		) {
+			return true;
+		}
+		return false;
+	}
+
     cancel(): void {
         this.onCancel.emit(null);
     }

@@ -38,5 +38,26 @@ END
 ]]>
 	</rollback>
   </changeSet>
-  
+  <changeSet author="Puneet Gupta" id="Table.dbo.AssetResult-Indexes-v1">
+  <comment>GOV-19463</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetResult_OwningAssetUid_EffectiveDate_EvaluatedAssetUid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_AssetResult_OwningAssetUid_EffectiveDate_EvaluatedAssetUid] ON [dbo].[AssetResult] (	OwningAssetUid ASC,[EffectiveDate] ASC, [EvaluatedAssetUid] ASC)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_AssetResult_OwningAssetUid_EffectiveDate_EvaluatedAssetUid')
+BEGIN
+	DROP INDEX [IX_AssetResult_OwningAssetUid_EffectiveDate_EvaluatedAssetUid] ON [dbo].[AssetResult]
+END
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

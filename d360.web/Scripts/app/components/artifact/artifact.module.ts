@@ -36,6 +36,7 @@ import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
 import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
 import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
 import { SemanticsModule } from '../semantic/semantics.module';
+import { AngularSplitModule } from 'angular-split';
 
 @NgModule({
     imports: [
@@ -43,6 +44,8 @@ import { SemanticsModule } from '../semantic/semantics.module';
         FormsModule,
 
         RouterModule,
+
+        AngularSplitModule,
 
         //primeng        
         InputTextModule, 

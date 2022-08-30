@@ -143,7 +143,7 @@ export class AdminSearchComponent extends AdminBaseComponent {
 		if (node.parent) {
 			return this.canRebuild(node.parent.data) && this.canRebuild(node.data);
 		}
-		if (node.children.some((node) => this.canRebuild(node.data))) {
+		if (!node.children.length || node.children.some((node) => this.canRebuild(node.data))) {
 			return this.canRebuild(node.data);	
 		}
 		return false;

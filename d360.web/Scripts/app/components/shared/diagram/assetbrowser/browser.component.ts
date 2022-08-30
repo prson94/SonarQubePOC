@@ -63,6 +63,8 @@ import { CompanySettingEnum } from '../../../../models/settings.model';
 import { AssetDetailComponent } from '../../asset-detail/asset-detail.component';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
 import { concatMap } from "rxjs/operators";
+import { SidePanelService } from '../../../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 declare var window: any;
 @Component({
@@ -105,6 +107,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private originalAssetUid: string;
 
+    isSidePanelDragging: boolean = false;
+    sidePanelStorageKey = 'side_panel_width_on_diagram';
     alerts: AssetBrowserAlert[] = [];
     assetsWithAlerts: string[] = [];
     selectedAssetsWithAlerts: string[] = [];
@@ -228,6 +232,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     constructor(
         private route: ActivatedRoute,
         private myElement: ElementRef,
+        private sidePanelService: SidePanelService,
         private browserService: BrowserService,
         private router: Router,
         protected permissionsService: PermissionsService,
@@ -4169,6 +4174,31 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 return $localize`The item in this collection has relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`;
             }
         }
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.isWindowVisible(), this.sidePanelStorageKey, {sidePanelCloseCustomWidth: 0});
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.isWindowVisible());
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.isWindowVisible());
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.isSidePanelDragging = false; 
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+    }
+
+    onSidePanelDragStart(): void {
+        this.isSidePanelDragging = true; 
+    }
+
+    calculateBottomControlsPosition(): string {
+        return this.getSidePanelWidth() + 55 + 'px'
     }
 
     onEditClick($event) {

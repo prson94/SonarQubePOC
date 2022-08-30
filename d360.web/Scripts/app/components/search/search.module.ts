@@ -42,6 +42,7 @@ import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { AssetEditorModule } from '../shared/asset-editor/asset-editor.module';
 import { SemanticsModule } from "../semantic/semantics.module";
+import { AngularSplitModule } from 'angular-split';
 
 
 @NgModule({
@@ -84,7 +85,8 @@ import { SemanticsModule } from "../semantic/semantics.module";
         PopupMenuModule,
         SiteModalModule,
         AssetEditorModule,
-        SemanticsModule
+        SemanticsModule,
+        AngularSplitModule,
     ],
     declarations: [
         HomeSearchComponent,

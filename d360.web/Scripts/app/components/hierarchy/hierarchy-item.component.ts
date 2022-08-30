@@ -18,6 +18,9 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
+import { Subscription } from 'rxjs';
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 import { forkJoin, Subscription } from 'rxjs';
 import { AssetService } from '../../services/asset.service';
 import { ArtifactService } from '../../services/artifacts.service';
@@ -55,12 +58,13 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 	selectedTag: any;
 	selectedReferenceItem: any;
 
-	sidePanelOpen: boolean = false;
-	sidePanelStorageKey;
+    sidePanelOpen: boolean = false;
+    sidePanelStorageKey = 'side_panel_width_detail_';
 
 	synonymPermission: SynonymPermission;
 
 	constructor(
+		private sidePanelService: SidePanelService,
 		private route: ActivatedRoute,
 		private router: Router,
 		secondaryNavService: SecondaryNavService,
@@ -139,6 +143,22 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 	ngOnDestroy() {
 		this.clearSidebar();
 	}
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+    }
 
 	private load() {
 		switch (this.assetTypeClass) {

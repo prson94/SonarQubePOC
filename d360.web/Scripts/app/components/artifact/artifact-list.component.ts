@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, Input, OnDestroy, OnInit, ViewChild, HostListener } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
@@ -21,6 +21,8 @@ import { SemanticType } from '../../models/semantic-type.model';
 import { TitleAndTabsService } from '../../services/title-and-tabs.service';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 declare var CurrentResourceID;
 
@@ -60,12 +62,14 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 	secondarySidePanelOpen: boolean;
 	secondarySidePanel: string = "detail";
 	resourceUid: any;
+	sidePanelWidth: number;
 
 	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
 
-	constructor(
+	constructor(private route: ActivatedRoute,
 		private router: Router,
 		private artifactTypeService: ArtifactTypeService,
+		private sidePanelService: SidePanelService,
 		private titleAndTabsService: TitleAndTabsService,
 		headerBreadcrumbService: HeaderBreadcrumbService,
 		private titleService: Title,
@@ -207,6 +211,30 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		}
 	}
 
+    get panelApplies(): boolean {
+        if (this.selection == null || this.sidePanelTab === 'detail') {
+            return true;
+        }
+        if (this.selection != null && this.sidePanelTab === 'dataprofile' && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
+            return this.selection.HasProfiling;
+        }
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+    }
 	get panelApplies(): boolean {
 		if (this.selection == null || this.sidePanelTab === 'detail') {
 			return true;

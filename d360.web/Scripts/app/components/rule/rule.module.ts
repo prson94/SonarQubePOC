@@ -48,6 +48,7 @@ import { AssetDetailModule } from '../shared/asset-detail/asset-detail.module';
 import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
 import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
 import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
+import { AngularSplitModule } from 'angular-split';
 
 
 @NgModule({
@@ -78,6 +79,7 @@ import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-d
         //d3s
         CoreModule,
         D3SSharedModule,
+        AngularSplitModule,
         PipesModule,
         TilesModule,
         SidePanelModule,

@@ -25,6 +25,7 @@ import { AssetScoreComponent } from './asset-score.component';
 import { ScoreCalculationModule } from './calculation/score-calculation.module';
 import { ScoreDefinitionModule } from './definition/score-definition.module';
 import { ScoreHistoryModule } from './history/score-history.module';
+import { AngularSplitModule } from 'angular-split';
 
 
 
@@ -52,6 +53,7 @@ import { ScoreHistoryModule } from './history/score-history.module';
         DropdownModule,
         CheckboxModule,
 
+        AngularSplitModule,
         ScoreCalculationModule,
         ScoreDefinitionModule,
         ScoreHistoryModule

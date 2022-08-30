@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Impact-v3">
-    <comment>GOV-18301</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Impact-v4">
+    <comment>GOV-19425 : Exclude responsibilities which have IsVisible flag false</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -340,7 +340,7 @@ begin
 						R.ResourceID
 			from		#nodes IH
 						inner join Asset A on A.ID = IH.assetId
-						inner join ResponsibilityDetail R on (R.ApplyToType = 0 and R.AssetID = IH.assetId) 
+						inner join ResponsibilityDetail R on (R.ApplyToType = 0 and R.AssetID = IH.assetId and R.IsVisible = 1) 
 			group by	IH.hierarchyKey,
 						R.ResponsibilityTypeID,
 						R.ResponsibilityTypeName,
@@ -353,7 +353,7 @@ begin
 						R.ResourceID
 			from		#nodes IH
 						inner join Asset A on A.ID = IH.assetId
-						inner join ResponsibilityDetail R on (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID)
+						inner join ResponsibilityDetail R on (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID and R.IsVisible = 1)
 						left join #GroupedOwners G on G.hierarchyKey = IH.hierarchyKey and G.id = R.ResponsibilityTypeID and G.ResourceID = R.ResourceID
 			where		G.id is null
 			group by	IH.hierarchyKey,

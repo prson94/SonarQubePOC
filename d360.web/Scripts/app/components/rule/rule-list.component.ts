@@ -25,6 +25,8 @@ import { AssetGridComponent } from '../assets-grid/asset-grid.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 declare var CurrentResourceID;
 
@@ -70,6 +72,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 		private router: Router,
 		protected rulesService: RulesService,
 		protected titleService: Title,
+		private sidePanelService: SidePanelService,
 		protected messagesService: MessagesObservableService,
 		private gridDefinitionService: GridDefinitionService,
 		private headerActionsService: HeaderActionsService,
@@ -171,15 +174,30 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 		}
 	}
 
-	get panelApplies(): boolean {
-		if (this.selection == null || this.sidePanelTab === 'detail') {
-			return true;
-		}
-		if (this.selection != null && this.sidePanelTab === 'dataprofile') {
-			return this.selection.HasProfiling;
-		}
-	}
+    get panelApplies(): boolean {
+        if (this.selection == null || this.sidePanelTab === 'detail') {
+            return true;
+        }
+        if (this.selection != null && this.sidePanelTab === 'dataprofile') {
+            return this.selection.HasProfiling;
+        }
+    }
 
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+    }
 
 	ngOnDestroy() {
 		this.clearSidebar();

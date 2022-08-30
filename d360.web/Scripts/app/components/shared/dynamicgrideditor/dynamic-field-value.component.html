@@ -55,7 +55,8 @@
     </span>
     <span *ngSwitchCase="'html'">
         <span class="ql-editor small-indent" *ngIf="fieldValue != null"
-              [innerHtml]="fieldValue | safeHtml"></span>
+              [innerHtml]="fieldValue | safeHtml"
+              [style.padding]="0"></span>
     </span>
     <span *ngSwitchCase="'tag'">
         <d3s-tag-view [data]="fieldValue" [assetUID]="item?.AssetUid" [interceptLinkClick]="interceptLinkClick"></d3s-tag-view>

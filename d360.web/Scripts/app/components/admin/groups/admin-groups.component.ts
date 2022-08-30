@@ -24,6 +24,8 @@ import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-
 import { takeUntil } from 'rxjs/operators';
 import { LazyLoadEvent } from 'primeng/api';
 import { isEqual } from 'lodash';
+import { SidePanelService } from '../../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 declare var CurrentResourceID;
 @Component({
@@ -101,6 +103,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
+        private sidePanelService: SidePanelService,
         private linkClickInterceptor: LinkClickInterceptor,
 		private featureFlagService: FeatureFlagsService,
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService
@@ -135,6 +138,22 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 
 		this.destroy.next();
 		this.destroy.complete();
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
 	setRowsPerPage(): void {

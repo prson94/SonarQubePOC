@@ -23,6 +23,8 @@ import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-
 import { AssetService } from '../../services/asset.service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 declare var CurrentResourceID;
 
@@ -59,6 +61,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 
 	constructor(
 		private route: ActivatedRoute,
+		private sidePanelService: SidePanelService,
 		secondaryNavService: SecondaryNavService,
 		private router: Router,
 		private artifactService: ArtifactService,
@@ -166,19 +169,35 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 		return this.showDataProfile || true;
 	}
 
-	secondaryPanelOpen(event: any) {
-		this.secondarySidePanelOpen = true;
-		if (event) {
-			if (event.resourceUid) {
-				this.secondarySidePanel = "user";
-				this.resourceUid = event.resourceUid;
-			}
-			if (event.semanticType) {
-				this.secondarySidePanel = "detail";
-				this.semanticType = event.semanticType;
-			}
-		} else {
-			this.secondarySidePanel = "status";
-		}
-	}
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+    }
+
+    secondaryPanelOpen(event: any) {
+        this.secondarySidePanelOpen = true;
+        if (event) {
+            if (event.resourceUid) {
+                this.secondarySidePanel = "user";
+                this.resourceUid = event.resourceUid;
+            }
+            if (event.semanticType) {
+                this.secondarySidePanel = "detail";
+                this.semanticType = event.semanticType;
+            }
+        } else {
+            this.secondarySidePanel = "status";
+        }
+    }  
 }

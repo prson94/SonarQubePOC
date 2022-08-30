@@ -23,6 +23,8 @@ import { BaseComponent } from '../base.component';
 import { AddRelationshipComponent } from './add-relationship.component';
 import { FeatureFlags, FeatureFlagsService } from "../../../services/featureflags.service";
 import { PopupMenu } from "../controls/popup-menu/popup-menu.component";
+import { SidePanelService } from '../../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 @Component({
     selector: 'gov-relationship-grid',
@@ -57,7 +59,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     areTypesLoaded: boolean = false;
 	isContainsSearchDefault: boolean = false;
 
-	sidePanelOpen: string = '';
+	sidePanelOpen: boolean = true;
     sidePanelTab: string = 'filters';
     sidePanelStorageKey: string = '';
 
@@ -143,6 +145,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private relationshipService: RelationshipsService,
         private assetService: AssetService,
+        private sidePanelService: SidePanelService,
         private fieldService: FieldsObservableService,
         protected settingsService: CompanySettingsService,
         private gridDefinitionService: GridDefinitionService,
@@ -613,6 +616,22 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                 $localize`Filtered ${this.assetDetail?.DisplayValue} Relationships`,
                 () => { this.isExportInProgress = false; }
             );
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
     get fullRelationshipNameAsHTML(): string {
