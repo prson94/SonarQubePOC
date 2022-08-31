@@ -171,40 +171,26 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 										this.model.StructuredDefinition.When.forEach((wft) => this.loadWhenValuesForFieldType(wft));
 									}
 
-									
+									let resources = this.responsibilityTypeService.getRelationRuleFormData(this.resourceType, 1);
+									let groups = this.responsibilityTypeService.getRelationRuleFormData(this.groupType, 1);
+
 									if (this.model && this.model.StructuredDefinition && this.model.StructuredDefinition.Then) {
-										if (this.model.StructuredDefinition.Then.Conditions != null && this.model.StructuredDefinition.Then.Conditions.length > 0 && !this.model.StructuredDefinition.Then.Conditions.every((c) => !c.Object)) {
+										forkJoin([
+											resources,
+											groups
+										]).subscribe(([resourceList, groupList]) => {
+											this.thenUserFieldTypes = resourceList.FieldTypes;
+											this.thenGroupFieldTypes = groupList.FieldTypes;
 
-											let resources = this.responsibilityTypeService.getRelationRuleFormData(this.resourceType, 1);
-											let groups = this.responsibilityTypeService.getRelationRuleFormData(this.groupType, 1);
-
-											forkJoin([
-												resources,
-												groups
-											]).subscribe(([resourceList, groupList]) => {
-												this.thenUserFieldTypes = resourceList.FieldTypes;
-												this.thenGroupFieldTypes = groupList.FieldTypes;
-												this.model.StructuredDefinition.Then.Conditions.forEach((t) => {
-													this.loadThenValuesForFieldType(t, false);
-												});
-												this.isLoading = false;												
-											});																			
-										} else {
-											this.responsibilityTypeService.getRelationRuleFormData(this.model.StructuredDefinition.Then.Object, this.model.StructuredDefinition.Then.ObjectID)
-												.subscribe((d) => {
-													if (this.model.StructuredDefinition.Then.Object === this.resourceType) {
-														this.thenUserFieldTypes = d.FieldTypes;
-													} else {
-														this.thenGroupFieldTypes = d.FieldTypes;
-													}
-
-													this.loadThenValuesForFieldType(this.model.StructuredDefinition.Then.Conditions, false);
-
-													this.isLoading = false;
-												});
-										}
-										
-									}																		
+											this.model.StructuredDefinition.Then.Conditions.forEach((t) => {
+												if (t.Value && t.FieldTypeID && !t.Object && this.model.StructuredDefinition.Then.Object && this.model.StructuredDefinition.Then.Object.length > 0) {
+													t.Object = this.model.StructuredDefinition.Then.Object;
+												}
+												this.loadThenValuesForFieldType(t, false);
+											});
+											this.isLoading = false;
+										});
+									}																																
 								});
                 });
         } else {
@@ -267,10 +253,12 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     // Clear When Filter array when "Applies To Entire Type" selected
-    clearWhen(): void {
-        if (this.model.StructuredDefinition.When) {
-            this.model.StructuredDefinition.When.splice(0, this.model.StructuredDefinition.When.length);
-        }
+	clearWhen(): void {
+		if (this.model.ApplyToType && this.model.StructuredDefinition.When) {
+			this.model.StructuredDefinition.When.splice(0, this.model.StructuredDefinition.When.length);
+		} else {
+			this.addWhen();
+		}
     }
 
 
@@ -468,7 +456,10 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     removeThenCondition(i: number): void {
-        this.model.StructuredDefinition.Then.Conditions.splice(i, 1);
+		this.model.StructuredDefinition.Then.Conditions.splice(i, 1);
+		if (this.model.StructuredDefinition.Then.Conditions.length == 0) {
+			this.addThenCondition();
+		}
     }
 
     testThen(): Promise<void> {
@@ -506,7 +497,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 if (response) {
                     this.ThenTestRows = response.items;
 				}
-				this.noWhenResults = this.WhenTestRows.length === 0 && this.simpleWhenFilter.trim() === "";
+				this.noThenResults = this.ThenTestRows.length === 0 && this.simpleThenFilter.trim() === "";
                 this.disableTestThen = false;
                 this.isThenTestLoading = false;
             });
@@ -700,7 +691,12 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             this.model.StructuredDefinition.When.forEach((wft) => {
                 wft.ValueOptions = [];
             });
-        }
+		}
+
+		this.model.StructuredDefinition.Then.Conditions = this.model.StructuredDefinition.Then.Conditions.filter((c) => c.FieldTypeID && c.Object && c.Value);
+		if (this.model.StructuredDefinition.Then.Conditions.length === 0) {
+			this.model.StructuredDefinition.Then === null
+		}
 
         if (this.model.ID > 0) {
             this.responsibilityTypeService.putRule(this.model)

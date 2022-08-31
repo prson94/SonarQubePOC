@@ -860,7 +860,7 @@ order by	case
 					throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_Then_Filter_Value_Required);
 				}
 
-				if (model.StructuredDefinition?.When?.Where(x => x.Value == null).Count() > 0)
+				if (model.StructuredDefinition?.When?.Where(x => (x.Operator == null || (x.Operator != null && x.Operator != Operator.Populated && x.Operator != Operator.NotPopulated)) && x.Value == null).Count() > 0)				
 				{
 					throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_When_Filter_Value_Required);
 				}
@@ -937,7 +937,7 @@ order by	case
 					throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_Then_Filter_Value_Required);
 				}
 
-				if (model.StructuredDefinition?.When?.Where(x => x.Value == null).Count() > 0)
+				if (model.StructuredDefinition?.When?.Where(x => (x.Operator==null || (x.Operator != null && x.Operator != Operator.Populated && x.Operator != Operator.NotPopulated)) && x.Value == null).Count() > 0)
 				{
 					throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_When_Filter_Value_Required);
 				}

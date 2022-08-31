@@ -602,7 +602,9 @@ namespace d360.model
 									into #changes;", new { ruleId = rule.ID }, transaction: transaction);
 
 					//merge into the resource table
-					await Connection.ExecuteAsync($@"
+					if(thenSql != null && thenSql.Length > 0)
+					{
+						await Connection.ExecuteAsync($@"
 							merge [dbo].[ResponsibilityRuleResultSecurityAsset] as T
 									using	(
 												{thenSql}
@@ -615,6 +617,7 @@ namespace d360.model
 									when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
 											delete;
 						", new { ruleId = rule.ID, appliesToType = rule.ApplyToType }, transaction: transaction);
+					}					
 
 					IEnumerable<ResponsibilityAssetMeasureProcessedResult> ruleResults = 
 						await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(@"
@@ -969,7 +972,7 @@ namespace d360.model
 			string obj = "";
 			string uniqueIdField = "ID";
 
-			if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null) && (rule.StructuredDefinition.Then.Object != null || rule.StructuredDefinition.Then.Conditions.All(c => c.Object != null)))
+			if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null) && (rule.StructuredDefinition.Then.Object != null || (rule.StructuredDefinition.Then.Conditions != null && rule.StructuredDefinition.Then.Conditions.All(c => c.Object != null))))
 			{							
                 if (rule.StructuredDefinition.Then.Conditions != null && rule.StructuredDefinition.Then.Conditions.Count > 0)
                 {
