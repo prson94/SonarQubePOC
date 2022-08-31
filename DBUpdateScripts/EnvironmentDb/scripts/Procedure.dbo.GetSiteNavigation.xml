@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Procedure.dbo.GetSiteNavigation-v8.5">
+  <changeSet author="tduric" id="Procedure.dbo.GetSiteNavigation-v8.6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -297,7 +297,7 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 		n.ImageIconUrl as ImageIconUrl,
 		at.Name as Title,	
 		dbo.ArtifactNgSiteNavigation(n.ObjectID) as items,
-		'assettype/'+ cast(at.uid as nvarchar(36)) as [url]
+		'assets/'+ cast(at.uid as nvarchar(36)) as [url]
 		FROM SiteNav n
 		left join AssetType at on at.Object = n.Object and at.ObjectID = n.ObjectID
 		left join AssetTypeStyle ats on ats.id = at.ID

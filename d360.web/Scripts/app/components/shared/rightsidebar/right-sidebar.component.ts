@@ -442,7 +442,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
 		this.objectStatisticsService.getObjectStatistics(this.currentObject.Uid).subscribe(
 			result => {
-				console.log(result);
                 this.statistics = result;
                 this.ref.markForCheck();
             }
