@@ -373,9 +373,16 @@ namespace d360.web.Controllers.V2
 							var newType = Company.AssetTypes.Where(x => x.uid == ft.Type.Lookup.List.Uid)
 								.Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
 
-							if (newType.Object.Replace("Type", "") != exFt.LookupObjectType || newType.ObjectID != exFt.LookupObjectID)
+							var restApiException = new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ChangeFieldNotAllowed, string.Format(ApiMessages.LookupFieldTypeInUse, exFt.FriendlyName));
+
+							if (exFt.LookupObjectType != "TaxonomyType" && ft.Type.Lookup.List.Class == AssetTypeClass.Model)
 							{
-								throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ChangeFieldNotAllowed, string.Format(ApiMessages.LookupFieldTypeInUse, exFt.FriendlyName));
+								throw restApiException;
+							}
+
+							if (newType != null && (newType.Object.Replace("Type", "") != exFt.LookupObjectType || newType.ObjectID != exFt.LookupObjectID))
+							{
+								throw restApiException;
 							}
 						}
 					}
