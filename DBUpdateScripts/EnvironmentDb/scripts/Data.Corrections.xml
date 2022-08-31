@@ -1839,6 +1839,12 @@ update dbo.Favorite
 set Route = CONCAT('dashboard/',LOWER(cast(at.uid as nvarchar(max)))) from Favorite f
 inner join assettype at on at.id = f.AssetTypeID
 where f.Route like 'dashboard/%'
+
+update SiteNav
+set Route = CONCAT('assets/',cast(at.uid as nvarchar(max)))
+from SiteNav S
+inner join AssetType AT on AT.Object = S.Object AND AT.ObjectID = S.ObjectID
+where S.Route is not null
 	]]>
 	</sql>
   </changeSet>

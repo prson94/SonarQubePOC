@@ -258,8 +258,8 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
             .subscribe(result => {
                 this.currentAreaName = result;
                 this.breadcrumbsService.getFolderTitle(this.navFolderName).then((res) => {
-                    this.breadcrumbsService.clearBreadcrumbs();
-					this.breadcrumbsService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `TaxonomyType/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`));
+					this.breadcrumbsService.clearBreadcrumbs();
+					this.breadcrumbsService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `/${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/Model`));
 					this.breadcrumbsService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
 
 					this.breadcrumbsService.getAssetFolderIcon(this.objectType, this.assetType.ID, this.currentAreaName ? this.currentAreaName : res)

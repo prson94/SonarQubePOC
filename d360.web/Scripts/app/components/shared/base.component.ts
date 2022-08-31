@@ -1327,7 +1327,7 @@ export class BaseComponent {
 
 					let areaRootUriSegment: string = (objectName.toLowerCase() == 'policy') ? SiteUrlHelpers.SITE_URL_POLICY_ROOT : SiteUrlHelpers.SITE_URL_MODEL_ROOT;
 					let areaBreadcrumb = new Breadcrumb(
-						currentAreaName ? currentAreaName : res, `${areaRootUriSegment}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
+						currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${areaRootUriSegment}`
 					);
 					this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
 

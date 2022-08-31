@@ -372,7 +372,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(currentAreaName
 				? currentAreaName
 				: res,
-				`${this.type} /${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
+				`/${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/Model`
 			));
 			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
 

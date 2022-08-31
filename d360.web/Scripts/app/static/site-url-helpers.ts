@@ -43,9 +43,6 @@ export class SiteUrlHelpers {
     static SITE_URL_GOVERNANCE_ROLES_ROOT = 'sidebar/governanceRoles';
     static SITE_URL_CONNECTOR_LABELS_ROOT = 'sidebar/connectorLabels';
     static SITE_URL_SEMANTICTYPES_ROOT = 'semantics';
-    //hierarchy child routes
-    static SITE_URL_HIERARCHY_CLASSIFICATION = 'classification';
-
     //asset child routes
     static SITE_URL_ASSET_RULE = 'Rule';
 
