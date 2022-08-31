@@ -824,58 +824,46 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("ResourceUid", "Uid of user", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_order", "The name of the field to order results by. The acceptable fields are Name or field defined on groups field definitions. By default the results are ordered by Name ascending.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false), 
 			SwaggerParameter("_pageSize", "The number of results to return per page. The default is 10 groups per page", DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false)
 		]
 		public async Task<IHttpActionResult> GetGroups()
 		{
-			var prefix = "Membership.GetGroups => ";
+			var queryParams = Request.GetQueryNameValuePairs();
 
-			try
+			if (!IsValidGuid(queryParams, "uid"))
 			{
-				var queryParams = Request.GetQueryNameValuePairs();
-
-				if (!IsValidGuid(queryParams, "uid"))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.UidNotValid)).ConfigureAwait(false);
-				}
-
-				if (!IsValidGuid(queryParams, "resourceuid"))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.ResourceUidNotValid)).ConfigureAwait(false);
-				}
-
-				var pageSize = "10";
-				var pageNum = "1";
-				var pageSizeParam = queryParams.FirstOrDefault(x => x.Key == "_pageSize");
-				var pageNumParam = queryParams.FirstOrDefault(x => x.Key == "_pageNum");
-				pageSize = pageSizeParam.Value ?? pageSize;
-				pageNum = pageNumParam.Value ?? pageNum;
-
-				Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-				var isValid = isPageSizeAndNumValid(queryParams);
-
-				if (!string.IsNullOrEmpty(isValid))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid)).ConfigureAwait(false);
-				}
-
-				var results = await membershipRepository.GetGroups(queryParams);
-
-				results.PageNum = int.Parse(pageNum);
-				results.PageSize = int.Parse(pageSize);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.UidNotValid)).ConfigureAwait(false);
 			}
-			catch (Exception ex)
+
+			if (!IsValidGuid(queryParams, "resourceuid"))
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.ResourceUidNotValid)).ConfigureAwait(false);
 			}
+
+			var pageSize = "10";
+			var pageNum = "1";
+			var pageSizeParam = queryParams.FirstOrDefault(x => x.Key == "_pageSize");
+			var pageNumParam = queryParams.FirstOrDefault(x => x.Key == "_pageNum");
+			pageSize = pageSizeParam.Value ?? pageSize;
+			pageNum = pageNumParam.Value ?? pageNum;
+
+			Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+			var isValid = isPageSizeAndNumValid(queryParams);
+
+			if (!string.IsNullOrEmpty(isValid))
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid)).ConfigureAwait(false);
+			}
+
+			var results = await membershipRepository.GetGroups(queryParams);
+
+			results.PageNum = int.Parse(pageNum);
+			results.PageSize = int.Parse(pageSize);
+
+			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
 		}
 
 		/// <summary>

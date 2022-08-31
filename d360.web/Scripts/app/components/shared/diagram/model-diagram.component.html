@@ -1,18 +1,30 @@
 <div class="row">
     <div>
-        <div class="col s12" style="display:flex;">
-            <div class="tile tile-detail main-panel no-padding">
+        <as-split unit="pixel"
+                  direction="horizontal"
+                  [gutterSize]="16"
+                  class="col s12 split"
+                  style="display: flex"
+                  [class.side-panel-close]="!sidePanelOpen"
+                  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+            <as-split-area class="tile tile-detail main-panel no-padding">
                 <div class="diagram-top-header">
                     <div class="flex-row">
                         <div class="title">
                             <ng-container i18n>Hierarchy</ng-container>
                             <span *ngIf="isLoading"
                                   id="LoadingProgress"
-                                  style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i><ng-container i18n>Loading</ng-container>...</span>
+                                  style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>
+                                <ng-container i18n>Loading</ng-container>...
+                            </span>
                         </div>
                         <div class="flex-grow"></div>
                         <div class="button-wrapper">
-                            <button igButton icon="fa-refresh" (click)="populateDiagram()" i18n-tooltip tooltip="Refresh"></button>
+                            <button igButton
+                                    icon="fa-refresh"
+                                    (click)="populateDiagram()"
+                                    i18n-tooltip
+                                    tooltip="Refresh"></button>
                         </div>
                     </div>
                 </div>
@@ -21,9 +33,13 @@
                      class="diagram"
                      id="HierarchyDiagram"
                      style="overflow: hidden;"></div>
-            </div>
-            <div class="tile tile-detail side-panel">
+            </as-split-area>
+            <as-split-area [size]="getSidePanelWidth()"
+                           [minSize]="getSidePanelMinWidth()"
+                           [maxSize]="getSidePanelMaxWidth()"
+                           class="tile tile-detail side-panel">
                 <side-panel (expandedChange)="sidePanelOpen=$event"
+                            [setMinMaxWidth]="false"
                             hasDetail="true"
                             [storageKey]="sidePanelStorageKey"
                             [showEmptyOverlay]="!selectedNode?.uid">
@@ -45,7 +61,7 @@
                         </ng-container>
                     </ng-container>
                 </side-panel>
-            </div>
-        </div>
+            </as-split-area>
+        </as-split>
     </div>
-</div> 
+</div>

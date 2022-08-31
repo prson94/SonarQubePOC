@@ -13,6 +13,8 @@ import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { SidePanelService } from '../../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 declare var window: any;
 declare var CurrentResourceID;
@@ -45,6 +47,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     sidePanelStorageKey: string = '';
     constructor(
         private myElement: ElementRef,
+        private sidePanelService: SidePanelService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -106,6 +109,22 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
                 this.buildNav();
             });
 
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
     private htmlDecode(s: string): string {

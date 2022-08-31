@@ -109,9 +109,9 @@
 					[height]="'calc(100vh - 152px)'"
 					closeIcon="fa-close"
 					hasDetail="true">
-			<ng-container *ngIf="sidePanelOpen && selectedAsset">
+			<ng-container *ngIf="sidePanelOpen">
 				<ng-container *ngIf="sidePanelTab === 'detail'">
-					<ig-asset-detail *ngIf="!selectedAsset.type.startsWith('ReferenceItem')"
+					<ig-asset-detail *ngIf="selectedAsset"
 									 [objectID]="selectedAsset.id"
 									 [objectUID]="selectedAsset.uid"
 									 [objectType]="selectedAsset.type"
@@ -129,8 +129,8 @@
 									 [hasDeleteRelationshipsPermissions]="false"
 									 [interceptLinkClick]="true">
 					</ig-asset-detail>
-					<ng-container *ngIf="selectedAsset.type.startsWith('ReferenceItem')">
-						<ng-container *ngIf="sidePanelLoading && !selectedReferenceItem; else assetTypeDetail">
+					<ng-container *ngIf="selectedReferenceItem">
+						<ng-container *ngIf="sidePanelLoading && !selectedReferenceItem.uid; else assetTypeDetail">
 							<d3s-loading [isLoading]="true"></d3s-loading>
 						</ng-container>
 						<ng-template #assetTypeDetail>
@@ -140,6 +140,9 @@
 												  [highlightUid]="selectedReferenceItem.assetUid">
 							</ig-asset-type-detail>
 						</ng-template>
+					</ng-container>
+					<ng-container *ngIf="selectedTag">
+						<ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
 					</ng-container>
 				</ng-container>
 			</ng-container>
