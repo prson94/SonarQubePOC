@@ -236,43 +236,24 @@ namespace d360.web.Services.Favorites
 
         private static readonly IEnumerable<FavoriteRouteMatcher> matchers = new[]
         {
-            // asset type
             new FavoriteRouteMatcher
             {
-                RoutePattern = "artifact/:objectId",
-                OtherRoutePatterns = {
-                    "assettype/:uid"
-                },
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.AssetsTab),
-                ObjectType = SystemObjects.ArtifactType
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "dashboard/ArtifactType/:objectId",
+                RoutePattern = "dashboard/:uid",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.DashboardsTab),
                 ObjectType = SystemObjects.ArtifactType
             },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "sidebar/followers/Artifact/:objectId",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.FollowersTab),
-                ObjectType = SystemObjects.Artifact
-            },
-
             // users
             new FavoriteRouteMatcher
             {
-                RoutePattern = "resource/:objectId",
+                RoutePattern = "users/:uid",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.ProfileTab),
                 ObjectType = SystemObjects.Resource
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/membergroup/:uid",
+                RoutePattern = "users/:uid/groups",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.GroupsTab),
                 ObjectType = SystemObjects.Resource
@@ -297,15 +278,6 @@ namespace d360.web.Services.Favorites
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.RuleResultsTab),
                 ObjectType = SystemObjects.Rule
-            },
-
-            // model type            
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "model/structure/:uid",
-                PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name,
-                ObjectType = SystemObjects.TaxonomyType
             },
             new FavoriteRouteMatcher
             {
@@ -337,7 +309,14 @@ namespace d360.web.Services.Favorites
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.CommentsTab),
             },
-            new FavoriteRouteMatcher
+			new FavoriteRouteMatcher
+			{
+				RoutePattern = "asset/:uid/followers",
+				PageType = FavoritePageType.Artifact,
+				GetName = WithTabName(PageNames.FollowersTab),
+				ObjectType = SystemObjects.Artifact
+			},
+			new FavoriteRouteMatcher
             {
                 RoutePattern = "asset/:uid/log",
                 PageType = FavoritePageType.Artifact,
