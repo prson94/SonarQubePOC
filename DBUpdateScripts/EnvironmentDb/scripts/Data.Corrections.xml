@@ -1656,4 +1656,66 @@ delete [Setting] where ID = 50
 	</sql>
   </changeSet>
   
+    <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-18538">
+	<comment>GOV-18538 - Update Routes for new routing.</comment>	
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		update dbo.Favorite 
+		set Route = 'assets/class/Reference' 
+		where Route = 'reference' and Type = 'ResourceListPage'
+		
+		update dbo.Favorite
+		set Route = 'assets/class/Policy'
+		where Route = 'policy/classification'
+		
+		update dbo.Favorite
+		set Route = 'assets/class/Model'
+		where Route = 'model/classification'
+
+		update dbo.Favorite
+		set Route = 'assets/class/BusinessAsset'
+		where Route = 'artifact/assets/BusinessAsset'
+
+		update dbo.Favorite
+		set Route = 'assets/class/TechnicalAsset'
+		where Route = 'artifact/assets/TechnicalAsset'
+		
+		update dbo.Favorite
+		set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max))),'/workflowmonitor;isAdminPage=false') from dbo.Favorite f
+		inner join AssetType at on at.ID = f.AssetTypeID
+		where f.AssetTypeID is not null
+		and f.Route like 'sidebar/workflowmonitor%'
+		and f.Route like '%isAdminPage%'
+		
+		update dbo.Favorite
+		set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/children') from Favorite f
+		inner join asset a on a.id = f.AssetID
+		where f.Route like 'sidebar/children%'
+		
+		update dbo.Favorite
+		set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/workflowmonitor') from Favorite f
+		inner join asset a on a.id = f.AssetID
+		where f.Route like 'sidebar/workflowmonitor%'
+		
+		update dbo.Favorite
+		set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/actions') from Favorite f
+		inner join asset a on a.id = f.AssetID
+		where f.Route like 'sidebar/actions%'
+
+		update dbo.Favorite
+		set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/relationships') from Favorite f
+		inner join asset a on a.id = f.AssetID
+		where f.Route like 'sidebar/relationships%'
+
+		update dbo.Favorite
+		set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/ownership') from Favorite f
+		inner join asset a on a.id = f.AssetID
+		where f.Route like 'sidebar/ownership%'
+	]]>
+	</sql>
+  </changeSet>
+  
 </databaseChangeLog>

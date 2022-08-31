@@ -3,8 +3,8 @@ import { Routes, RouterModule } from '@angular/router';
 import { ScoreComponent } from './score.component';
 
 const routes: Routes = [
-    { path: ':Uid/:scoreType', component: ScoreComponent },
-    { path: ':Uid', component: ScoreComponent },
+	{ path: ':Uid/score/:scoreType', component: ScoreComponent },
+	{ path: ':Uid/score', component: ScoreComponent },
 ];
 
 @NgModule({
