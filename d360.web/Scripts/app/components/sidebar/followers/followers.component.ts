@@ -130,7 +130,7 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
 
     }
 
-    private doSelect(follower: FollowDetail) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource', follower.ResourceID));
+	private doSelect(follower: FollowDetail) {
+		this.router.navigateByUrl(follower.FollowerUrl);
     }
 }

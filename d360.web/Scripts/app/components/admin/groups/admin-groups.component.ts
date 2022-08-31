@@ -253,10 +253,6 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
     }
 
-    private groupUrl(id: number) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(StringConstants.ObjectGroup, id));
-    }
-
     saveItem($event) {
         this.showEditor = false;
         this.load();

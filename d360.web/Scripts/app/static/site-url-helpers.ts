@@ -208,6 +208,11 @@ export class SiteUrlHelpers {
 		return `assets/${uid}`;
     }
 
+	// getAssetTypeUrl - Generates the url for an object based on its type
+	static getGroupUrl(uid: string): string {
+		return `group/${uid}`;
+	}
+
     // convertClassicUrl - Converts a url from the legacy site to the new url used in angular
     // inputs - url the old url
     // output - the converted url

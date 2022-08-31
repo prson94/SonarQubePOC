@@ -151,7 +151,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 					this.artifactTypeHierarchy.forEach(x => {
 						this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
 							x.Name,
-							SiteUrlHelpers.getObjectUrl("ArtifactType", x.AssetTypeUID),
+							SiteUrlHelpers.getAssetTypeUrl(x.AssetTypeUID),
 							false,
 							"ArtifactType",
 							x.ID,
