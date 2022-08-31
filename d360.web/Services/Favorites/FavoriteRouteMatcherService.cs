@@ -333,7 +333,7 @@ namespace d360.web.Services.Favorites
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/ruleResults/:any/:uid",
+                RoutePattern = "asset/:uid/results",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.RuleResultsTab),
                 ObjectType = SystemObjects.Rule
@@ -349,14 +349,7 @@ namespace d360.web.Services.Favorites
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "model/:objectId/structure",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.ModelTab),
-                ObjectType = SystemObjects.TaxonomyType
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "sidebar/visualization/diagram/:objectId",
+                RoutePattern = "assets/:uid/diagrams",
                 PageType = FavoritePageType.Artifact,
                 GetName = (name, p) => name,
                 ObjectType = SystemObjects.TaxonomyType

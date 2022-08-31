@@ -122,6 +122,7 @@ namespace d360.model.DataAccessLayer.repositories
 																		((favorite.ObjectType is null) or (favorite.ObjectType = assetType.Object))
 																		and favorite.Uid = assetType.Uid
 																	)
+																	or (favorite.Uid = assetType.Uid)
 
 																insert into @semanticTypes
 																select top 1
