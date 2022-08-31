@@ -121,7 +121,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 					this.headerBreadcrumbService.showBreadcrumb(
 						new Breadcrumb(
 							this.currentAreaName ? this.currentAreaName : res,
-							`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_RULE}`
+							`${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/class/Rule`
 						)
 					);
 					this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.ruleType.Name, `assets/${this.ruleType.AssetTypeUID}`,

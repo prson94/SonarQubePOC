@@ -1371,7 +1371,7 @@ export class BaseComponent {
 					this.breadcrumbsService.showBreadcrumb(
 						new Breadcrumb(
 							currentAreaName ? currentAreaName : res,
-							`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_RULE}`
+							`${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/class/Rule`
 						)
 					);
 					this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.TypeName, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${data.ObjectTypeId}`,

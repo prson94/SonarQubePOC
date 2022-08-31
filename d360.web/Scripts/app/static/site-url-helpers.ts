@@ -197,6 +197,10 @@ export class SiteUrlHelpers {
     // getAssetUrl - Generates the url for an object based on its type
     static getAssetUrl(uid: string): string {
         return `${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${uid}`;
+	}
+
+	static getUserUrl(uid: string): string {
+        return `users/${uid}`;
     }
 
     // getAssetTypeUrl - Generates the url for an object based on its type
