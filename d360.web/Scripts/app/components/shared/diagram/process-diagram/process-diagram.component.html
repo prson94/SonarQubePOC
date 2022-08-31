@@ -66,45 +66,77 @@
                 </div>
             </div>
         </div>
-        <div #diagram id="process-diagram-placeholder">
-            <div class="empty-overlay" *ngIf="isDiagramLoaded && isCanvasEmpty">
-                <div class="content" *ngIf="isEditMode">
-                    <div class="icon-holder">
-                        <i class="fa fa-plus"></i>
-                    </div>
-                    <span i18n>Drag and drop flow objects to start building your diagram</span>
-                </div>
-                <div class="content" *ngIf="!isEditMode">
-                    <div class="icon-holder">
-                        <i class="fa fa-pencil"></i>
-                    </div>
-                    <span i18n>Choose Edit to start creating your diagram</span>
-                </div>
-            </div>
-            <div [hidden]="viewType == 'list'" id="diagram"></div>
-            <div [hidden]="viewType == 'diagram'" id="list-view" *ngIf="myDiagram && myDiagram.model">
-                <d3s-process-diagram-list-view #listView [diagram]="myDiagram" [nodeArray]="myDiagram.model.nodeDataArray" [nodeSelection]="myDiagram.selection"></d3s-process-diagram-list-view>
-            </div>
-            <div *ngIf="myDiagram">
-                <d3s-assetbrowser-overview [hidden]="viewType != 'diagram' || !isDiagramLoaded || isCanvasEmpty" #overview [diagram]="myDiagram"></d3s-assetbrowser-overview>
-            </div>
-            <div *ngIf="viewType == 'diagram' && !isCanvasEmpty" class="asset-browser-controls-bottom">
-                <d3s-assetbrowser-zoom [scale]="scale" (change)="zoom_Change($event)" [enabled]="true"></d3s-assetbrowser-zoom>
-            </div>
-        </div>
 
-        <div #editors class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
-            <d3s-process-diagram-side-panel [isReadOnly]="!isEditMode"
-                                            [assetUid]="assetUid"
-                                            [nodeData]="selectedNodeData"
-                                            [linkData]="selectedLinkData"
-                                            [viewType]="viewType"
-                                            (nodeDataChange)="updateNodeFromForm($event)"
-                                            (nodeDeselected)="deselect($event)"
-                                            (linkDataChange)="updateLinkFromForm($event)"
-                                            [disallowedNames]="nodeNames">
-            </d3s-process-diagram-side-panel>
-        </div>
+        <as-split unit="pixel"
+                  direction="horizontal"
+                  [gutterSize]="16"
+                  class="split"
+                  style="display: flex"
+                  [class.side-panel-close]="!isInfoPanelOpened"
+                  (dragStart)="onSidePanelDragStart()"
+                  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+            <as-split-area>
+                <div #diagram
+                     id="process-diagram-placeholder">
+                    <div class="empty-overlay"
+                         *ngIf="isDiagramLoaded && isCanvasEmpty">
+                        <div class="content"
+                             *ngIf="isEditMode">
+                            <div class="icon-holder">
+                                <i class="fa fa-plus"></i>
+                            </div>
+                            <span i18n>Drag and drop flow objects to start building your diagram</span>
+                        </div>
+                        <div class="content"
+                             *ngIf="!isEditMode">
+                            <div class="icon-holder">
+                                <i class="fa fa-pencil"></i>
+                            </div>
+                            <span i18n>Choose Edit to start creating your diagram</span>
+                        </div>
+                    </div>
+                    <div [hidden]="viewType == 'list'"
+                         id="diagram"></div>
+                    <div [hidden]="viewType == 'diagram'"
+                         id="list-view"
+                         *ngIf="myDiagram && myDiagram.model">
+                        <d3s-process-diagram-list-view #listView
+                                                       [diagram]="myDiagram"
+                                                       [nodeArray]="myDiagram.model.nodeDataArray"
+                                                       [nodeSelection]="myDiagram.selection"></d3s-process-diagram-list-view>
+                    </div>
+                    <div *ngIf="myDiagram">
+                        <d3s-assetbrowser-overview [hidden]="viewType != 'diagram' || !isDiagramLoaded || isCanvasEmpty"
+                                                   #overview
+                                                   [diagram]="myDiagram"></d3s-assetbrowser-overview>
+                    </div>
+                    <div *ngIf="viewType == 'diagram' && !isCanvasEmpty && !isSidePanelDragging"
+                         class="asset-browser-controls-bottom"
+                         [style.right]="isInfoPanelOpened ? calculateBottomControlsPosition() : '16px'">
+                        <d3s-assetbrowser-zoom [scale]="scale"
+                                               (change)="zoom_Change($event)"
+                                               [enabled]="true"></d3s-assetbrowser-zoom>
+                    </div>
+                </div>
+            </as-split-area>
+            <as-split-area [size]="getSidePanelWidth()"
+                           [minSize]="getSidePanelMinWidth()"
+                           [maxSize]="getSidePanelMaxWidth()">
+                <div #editors
+                     class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
+                    <d3s-process-diagram-side-panel [isReadOnly]="!isEditMode"
+                                                    [assetUid]="assetUid"
+                                                    [nodeData]="selectedNodeData"
+                                                    [linkData]="selectedLinkData"
+                                                    [viewType]="viewType"
+                                                    (nodeDataChange)="updateNodeFromForm($event)"
+                                                    (nodeDeselected)="deselect($event)"
+                                                    (linkDataChange)="updateLinkFromForm($event)"
+                                                    [disallowedNames]="nodeNames">
+                    </d3s-process-diagram-side-panel>
+                </div>
+            </as-split-area>
+        </as-split>
     </div>
 </div>
 
