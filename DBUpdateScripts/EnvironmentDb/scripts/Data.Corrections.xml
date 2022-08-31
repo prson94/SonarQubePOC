@@ -1714,6 +1714,76 @@ delete [Setting] where ID = 50
 		set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/ownership') from Favorite f
 		inner join asset a on a.id = f.AssetID
 		where f.Route like 'sidebar/ownership%'
+		
+			update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/score','/Governance') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/score%' and f.route like '%Governance'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/score','/DataQuality') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/score%' and f.route like '%DataQuality'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/score') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/score%'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/diagrams','/Lineage') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/visualization/browser/%' and  f.Route like '%Lineage'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/diagrams','/Impact') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/visualization/browser/%' and  f.Route like '%Impact'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/diagrams','/Process') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/visualization/browser/%' and  f.Route like '%Process'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/diagrams') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/visualization/browser/%'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/log') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/audit%'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/comments') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/comments%'
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max))),'/owners') from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'sidebar/responsibilities%'
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max))),'/fields') from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'sidebar/fields/%'
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max)))) from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'reference;referenceListId=%'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max)))) from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'model/%' and route like '%;hierarchyId=%'
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max))),'/diagrams') from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'sidebar/visualization/diagram/%' 
 	]]>
 	</sql>
   </changeSet>

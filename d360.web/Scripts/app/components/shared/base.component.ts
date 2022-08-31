@@ -476,7 +476,7 @@ export class BaseComponent {
 					$localize`Scoring`,
 					'Scoring',
 					['fa-sitemap'],
-					`/sidebar/score/${this.uid}`, null, 7
+					`/asset/${this.uid}/score`, null, 7
 				);
 
 				this.secondaryNavService.showItem(this.scoreSidebar);

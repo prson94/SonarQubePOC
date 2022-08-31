@@ -93,6 +93,7 @@ namespace d360.model.DataAccessLayer.repositories
 																		((favorite.ObjectType is null) or (favorite.ObjectType = asset.Object))
 																		and favorite.Uid = asset.Uid
 																	)
+																	or (favorite.Uid = asset.Uid)
 																join dbo.AssetType assetType
 																	on asset.AssetTypeId = assetType.Id
 																outer apply [dbo].[GetAssetDisplayValueById](asset.Id) AssetName

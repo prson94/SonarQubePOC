@@ -254,18 +254,6 @@ namespace d360.web.Services.Favorites
                 GetName = WithTabName(PageNames.DashboardsTab),
                 ObjectType = SystemObjects.ArtifactType
             },
-
-            // asset
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "artifact/:typeObjectId/:objectId",
-                OtherRoutePatterns = {
-                    "asset/:uid"
-                },
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.DefinitionTab),
-                ObjectType = SystemObjects.Artifact
-            },
             new FavoriteRouteMatcher
             {
                 RoutePattern = "sidebar/followers/Artifact/:objectId",
@@ -373,37 +361,16 @@ namespace d360.web.Services.Favorites
                 GetName = (name, p) => name,
                 ObjectType = SystemObjects.TaxonomyType
             },
-
-            // model
             new FavoriteRouteMatcher
             {
-                RoutePattern = "model/:typeObjectId;hierarchyId=:objectId",
-                OtherRoutePatterns = {
-                    "model/:typeObjectId/id/:objectId"
-                },
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.DefinitionTab),
-                ObjectType = SystemObjects.Taxonomy
-            },
-
-            // reference list pages
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "reference;referenceListId=:uid",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.ReferenceTypesTab),
-                ObjectType = SystemObjects.ReferenceItemType
-            },
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "sidebar/fields/ReferenceItemType/:objectId",
+                RoutePattern = "assets/:uid/fields",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.FieldDefinitionsTab),
                 ObjectType = SystemObjects.ReferenceItemType
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/responsibilities/:uid",
+                RoutePattern = "assets/:uid/owners",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.ResponsibilitiesTab),
                 ObjectType = SystemObjects.ReferenceItemType
@@ -412,47 +379,47 @@ namespace d360.web.Services.Favorites
             // shared
             new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/comments/:uid",
+                RoutePattern = "asset/:uid/comments",
                 OtherRoutePatterns = { "sidebar/comments/:uid/true" },
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.CommentsTab),
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/audit/:uid",
+                RoutePattern = "asset/:uid/log",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.ChangeLogTab)
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/visualization/browser/:uid",
+                RoutePattern = "asset/:uid/diagrams",
                 OtherRoutePatterns = {
-                    "sidebar/visualization/browser/:uid/Impact"
-                },
+					"asset/:uid/diagrams/Impact"
+				},
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.ImpactDiagramTab),
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/visualization/browser/:uid/Lineage",
+                RoutePattern = "asset/:uid/diagrams/Lineage",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.LineageDiagramTab),
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/visualization/browser/:uid/Proces",
+                RoutePattern = "asset/:uid/diagrams/Proces",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.ProcessDiagramTab),
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/score/:uid",
+                RoutePattern = "asset/:uid/score",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.ScoringTab),
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "sidebar/score/:uid/:any",
+                RoutePattern = "asset/:uid/score/:any",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.ScoringTab),
             },
@@ -486,7 +453,14 @@ namespace d360.web.Services.Favorites
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.WorkflowTab),
             },
-            new FavoriteRouteMatcher
+			new FavoriteRouteMatcher
+			{
+				RoutePattern = "asset/:uid",
+				PageType = FavoritePageType.Artifact,
+				GetName = WithTabName(PageNames.DefinitionTab),
+				ObjectType = SystemObjects.Artifact
+			},
+			new FavoriteRouteMatcher
             {
                 RoutePattern = "assets/:uid/workflowmonitor;isAdminPage=false",
 				OtherRoutePatterns = {
@@ -495,7 +469,13 @@ namespace d360.web.Services.Favorites
 				PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.WorkflowTab),
             },
-
+			new FavoriteRouteMatcher
+			{
+				RoutePattern = "assets/:uid",
+				PageType = FavoritePageType.Artifact,
+				GetName = WithTabName(PageNames.ReferenceTypesTab),
+				ObjectType = SystemObjects.ReferenceItemType
+			},
             // resource list pages
             new FavoriteRouteMatcher
             {
