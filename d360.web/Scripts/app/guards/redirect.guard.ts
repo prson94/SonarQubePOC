@@ -15,15 +15,15 @@ export class RedirectGuard implements CanActivate {
     ) { }
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
-        //let defaultRoute = this.settingsService.getSettingById(CompanySettingEnum.DefaultRoute).StringSetting.Value;
-        //if (ResourceHomePage !== null && ResourceHomePage !== "" && ResourceHomePage !== '/') {
-        //    this.router.navigate([ResourceHomePage]);
-        //}
-        //else if (defaultRoute !== null && defaultRoute !== '' && defaultRoute !== '/') {
-        //    this.router.navigate([defaultRoute]);
-        //} else {
-        //    this.router.navigate(['home']);
-        //}
+        let defaultRoute = this.settingsService.getSettingById(CompanySettingEnum.DefaultRoute).StringSetting.Value;
+        if (ResourceHomePage !== null && ResourceHomePage !== "" && ResourceHomePage !== '/') {
+            this.router.navigate([ResourceHomePage]);
+        }
+        else if (defaultRoute !== null && defaultRoute !== '' && defaultRoute !== '/') {
+            this.router.navigate([defaultRoute]);
+        } else {
+            this.router.navigate(['home']);
+        }
 
         return true;
     }
