@@ -345,7 +345,7 @@ namespace d360.model
         
         ObjectDetail GetObjectDetail(string type, long id);
         
-        ObjectStatisticTileModel GetObjectStatistics(SystemObjects type, int id);
+        ObjectStatisticTileModel GetObjectStatistics(string type, int id);
         
         AssetTypeStyle GetAssetTypeStyle(int assetTypeId);
         

@@ -30,7 +30,6 @@ const routes: Routes = [
     { path: "dashboard", loadChildren: () => import("./components/sidebar/dashboard/dashboard.module").then((m) => m.DashboardModule) },
     { path: "cart", loadChildren: () => import("./components/shoppingcart/shopping-cart.module").then((m) => m.ShoppingCartModule) },
     { path: "sidebar/itemfollow", loadChildren: () => import("./components/sidebar/itemfollow/itemfollow.module").then((m) => m.ItemFollowModule) },
-    { path: "sidebar/children", loadChildren: () => import("./components/sidebar/children/children.module").then((m) => m.ChildrenModule) },
     { path: "sidebar/governanceRoles", loadChildren: () => import("./components/sidebar/governance-roles/governance-roles-sidebar.module").then((m) => m.GovernanceRolesModule) },
     { path: "sidebar/connectorLabels", loadChildren: () => import("./components/sidebar/connector-labels/connector-labels-sidebar.module").then((m) => m.ConnectorLabelsModule) },
 	{ path: "sidebar/itemown", loadChildren: () => import("./components/sidebar/itemown/itemown.module").then((m) => m.ItemOwnModule) },
@@ -40,6 +39,7 @@ const routes: Routes = [
     { path: "asset", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
 	//sidebar
     { path: "assets", loadChildren: () => import("./components/sidebar/permissions/permissions.module").then((m) => m.PermissionsModule) },
+    { path: "asset", loadChildren: () => import("./components/sidebar/children/children.module").then((m) => m.ChildrenModule) },
     { path: "asset", loadChildren: () => import("./components/sidebar/score/score.module").then((m) => m.ScoreModule) },
     { path: "asset", loadChildren: () => import("./components/sidebar/comments/comments.module").then((m) => m.CommentsModule) },
     { path: "asset", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },

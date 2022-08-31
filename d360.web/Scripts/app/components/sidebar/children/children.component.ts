@@ -63,13 +63,12 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
-            this.objectID = +params['objectId']; // (+) converts string 'id' to a number
-            this.objectType = params['objectType'];
+		this.sub = this.route.params.subscribe(params => {
+			this.baseAssetUid = params['uid'];
 
             this.load();
 
-            this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+			this.buildSecondaryNavigation({ assetUid: this.baseAssetUid });
         });
     }
 
@@ -83,7 +82,7 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
     private load() {
         this.isLoading = true;
 
-        this.objectStatisticsService.getObjectStatistics(this.objectID, this.objectType).subscribe(
+		this.objectStatisticsService.getObjectStatistics(this.baseAssetUid).subscribe(
             res => {
                 this.children = res.Items;
                 this.selected = this.children.length > 0 ? this.children[0] : null;
@@ -91,7 +90,7 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
                 this.isLoading = false;
             });
 
-        this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
+		this.objectDetailService.getObjectDetailByObjectUid(this.baseAssetUid).subscribe(
             res => {
                 this.displayName = res.DisplayValue;
                 this.objectName = res.DisplayValue;

@@ -133,7 +133,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     }
 
     updateStatistics() {
-        this.statisticsService.getObjectStatistics(this.resourceId, 'Resource').subscribe(
+        this.statisticsService.getObjectStatistics(this.resource.uid).subscribe(
             s => {
                 this.statistics = s;
             }

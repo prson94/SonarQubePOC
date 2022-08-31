@@ -4677,10 +4677,17 @@ where v.id = {0}", id)).FirstOrDefault();
 			return "";
 		}
 
-		[Route("{type}/{id:int}/object/statistics")]
-		public ObjectStatisticTileModel GetTileObjectStatistics(SystemObjects type, int id)
+		[Route("object/statistics/{uid:Guid}")]
+		public ObjectStatisticTileModel GetTileObjectStatistics(Guid uid)
 		{
-			return Company.GetObjectStatistics(type, id);
+			var data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+
+			if (data == null)
+			{
+				data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			}
+
+			return Company.GetObjectStatistics(data.Object, data.ObjectID);
 		}
 
 		[Route("{type}/{id:int}/fields")]
