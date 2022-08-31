@@ -457,7 +457,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     removeThenCondition(i: number): void {
 		this.model.StructuredDefinition.Then.Conditions.splice(i, 1);
-		if (this.model.StructuredDefinition.Then.Conditions.length == 0) {
+		if (this.model.StructuredDefinition.Then.Conditions.length === 0) {
 			this.addThenCondition();
 		}
     }
@@ -695,7 +695,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
 		this.model.StructuredDefinition.Then.Conditions = this.model.StructuredDefinition.Then.Conditions.filter((c) => c.FieldTypeID && c.Object && c.Value);
 		if (this.model.StructuredDefinition.Then.Conditions.length === 0) {
-			this.model.StructuredDefinition.Then === null
+			this.model.StructuredDefinition.Then === null;
 		}
 
         if (this.model.ID > 0) {
