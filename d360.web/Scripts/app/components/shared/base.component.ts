@@ -376,7 +376,7 @@ export class BaseComponent {
 					$localize`Groups`,
 					'memberGroup',
 					['fa-user-circle'],
-					`/sidebar/membergroup/${this.uid}`, null, 5
+					`/users/${this.uid}/groups`, null, 5
 				);
 
 				this.secondaryNavService.showItem(this.groupsSidebar);
@@ -1010,6 +1010,9 @@ export class BaseComponent {
 			}
 			else if (r?.AssetTypeClass === AssetTypeClass.DiagramAsset) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS
+			}
+			else if (r?.AssetTypeClass === AssetTypeClass.User) {
+				homeUrl = "users/" + this.uid;
 			}
 			else if (r?.ObjectType === `Tag`) {
 				homeUrl = SiteUrlHelpers.SITE_URL_TAG_ROOT + "/" + this.uid;

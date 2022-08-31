@@ -36,9 +36,8 @@ export class SiteUrlHelpers {
     static SITE_URL_RESPONSIBILITIES_ROOT = 'sidebar/responsibilities';
     static SITE_URL_SHOPPING_CART_ROOT = 'cart';
     static SITE_URL_ITEM_FOLLOW_ROOT = 'sidebar/itemfollow';
-    static SITE_URL_ITEM_OWN_ROOT = 'sidebar/itemown';
-    static SITE_URL_MEMBER_GROUP_ROOT = 'sidebar/membergroup';
-    static SITE_URL_COMMENTS_ROOT = 'sidebar/comments';
+	static SITE_URL_COMMENTS_ROOT = 'sidebar/comments';
+	static SITE_URL_ITEM_OWN_ROOT = 'sidebar/itemown';
     static SITE_URL_SCORE_ROOT = 'sidebar/score';
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
     static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';

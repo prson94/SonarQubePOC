@@ -1789,6 +1789,28 @@ update dbo.Favorite
 set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max)))) from Favorite f
 inner join assettype at on at.id = f.AssetTypeID
 where f.Route like 'model/%' and f.Route like '%/structure%' 
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max)))) from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'quality/rule%'
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max)))) from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'quality/rule%'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max)))) from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'policy%' and f.Route like '%hierarchyid=%'
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max)))) from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'policy%' and f.Route like '%/structure%'
+
+
 	]]>
 	</sql>
   </changeSet>

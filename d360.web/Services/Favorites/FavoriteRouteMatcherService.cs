@@ -291,46 +291,6 @@ namespace d360.web.Services.Favorites
                 GetName = WithTabName(PageNames.FollowingTab),
                 ObjectType = SystemObjects.Resource
             },
-
-            // policy type
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "policy/:objectId/structure",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.PolicyTab),
-                ObjectType = SystemObjects.PolicyType
-            },
-
-            // policy
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "policy/:typeObjectId;hierarchyId=:objectId",
-                OtherRoutePatterns =
-                {
-                    "policy/:typeObjectId/id/:objectId"
-                },
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.DefinitionTab),
-                ObjectType = SystemObjects.Policy
-            },
-
-            // rule type
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "quality/rule/:objectId",
-                PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name,
-                ObjectType = SystemObjects.RuleType
-            },
-
-            // rule
-            new FavoriteRouteMatcher
-            {
-                RoutePattern = "quality/rule/:any/:objectId",
-                PageType = FavoritePageType.Artifact,
-                GetName = WithTabName(PageNames.DefinitionTab),
-                ObjectType = SystemObjects.Rule
-            },
             new FavoriteRouteMatcher
             {
                 RoutePattern = "asset/:uid/results",

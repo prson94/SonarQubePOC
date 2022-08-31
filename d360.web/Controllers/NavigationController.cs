@@ -1529,6 +1529,7 @@ namespace d360.web.Controllers
 				responseModel.Items.HasRelationship = true;
 				responseModel.Items.HasGroups = true;
 				responseModel.Items.HasFollowing = true;
+				responseModel.AssetTypeClass = AssetTypeClass.User;
 				responseModel.Uid = asset.uid;
 			}
 		}
