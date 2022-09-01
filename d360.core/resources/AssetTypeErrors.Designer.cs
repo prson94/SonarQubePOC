@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class AssetTypeErrors {
@@ -61,7 +61,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _parentUid with value {0} does not correspond to a valid asset!.
+        ///   Looks up a localized string similar to [_parentUid] with value {0} does not correspond to a valid asset!.
         /// </summary>
         public static string _parentuidNotValidAsset {
             get {
@@ -70,7 +70,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _parentUid parameter must be a valid Guid, be set to null, or not be present!.
+        ///   Looks up a localized string similar to [_parentUid] parameter must be a valid Guid, be set to null, or not be present!.
         /// </summary>
         public static string _parentUidNotValidUid {
             get {
@@ -97,7 +97,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An asset type with the specified Uid already exists..
+        ///   Looks up a localized string similar to An asset type with the specified [Uid] already exists..
         /// </summary>
         public static string AssetTypeWithUidExists {
             get {
@@ -106,7 +106,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Auto Display Parent can be set only asset types that are a Business or Technical class and are the child of another asset type..
+        ///   Looks up a localized string similar to [AutoDisplayParent] can be set only asset types that are a Business or Technical class and are the child of another asset type..
         /// </summary>
         public static string AutoDisplayParentRestriction {
             get {
@@ -124,7 +124,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Can Edit Parent can be set only asset types that are a Business or Technical class and are the child of another asset type..
+        ///   Looks up a localized string similar to [CanEditParent] can be set only asset types that are a Business or Technical class and are the child of another asset type..
         /// </summary>
         public static string CanEditParentClassRestriction {
             get {
@@ -268,7 +268,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid assetType specified.
+        ///   Looks up a localized string similar to Invalid [assetType] specified.
         /// </summary>
         public static string InvalidAssetType {
             get {
@@ -304,7 +304,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DisplayFormat provided is invalid..
+        ///   Looks up a localized string similar to [DisplayFormat] provided is invalid..
         /// </summary>
         public static string InvalidDisplayFormat {
             get {
@@ -331,7 +331,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Maximum Depth.
+        ///   Looks up a localized string similar to Invalid [HierarchyMaximumDepth] value.
         /// </summary>
         public static string InvalidMaximumDepthTitle {
             get {
@@ -394,7 +394,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid ParentUid provided..
+        ///   Looks up a localized string similar to Invalid [ParentUid] provided..
         /// </summary>
         public static string InvalidParentUid {
             get {
@@ -430,7 +430,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Icon Style provided..
+        ///   Looks up a localized string similar to Invalid [IconStyle] value provided..
         /// </summary>
         public static string InvalidStyle {
             get {
@@ -520,7 +520,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value {0} in _includeFields parameter, field with this name not found..
+        ///   Looks up a localized string similar to Invalid value {0} in [_includeFields] parameter, field with this name not found..
         /// </summary>
         public static string InvalueValue_includeFields {
             get {
@@ -547,7 +547,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Icon Style ForeColor and BackColor cannot be the same value..
+        ///   Looks up a localized string similar to [IconStyle.BackColor] and [IconStyle.ForeColor] cannot be the same value..
         /// </summary>
         public static string MatchingIconStyle {
             get {
@@ -574,7 +574,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FlowObjectType is required field for Asset Type with class Diagram..
+        ///   Looks up a localized string similar to [FlowObjectType] is required field for Asset Type with class Diagram..
         /// </summary>
         public static string MissingFlowObjectType {
             get {
@@ -637,7 +637,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset Type not found based on Class provided..
+        ///   Looks up a localized string similar to Asset Type not found based on [Class] provided..
         /// </summary>
         public static string NotFoundBasedOnClass {
             get {
@@ -646,7 +646,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset Type not found based on Uid provided..
+        ///   Looks up a localized string similar to Asset Type not found based on [Uid] provided..
         /// </summary>
         public static string NotFoundBasedOnUid {
             get {
@@ -718,7 +718,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use As Transformation can be set only asset types that are a Business or Technical class..
+        ///   Looks up a localized string similar to [UseAsTransformation] can be set only asset types that are a Business or Technical class..
         /// </summary>
         public static string TransformationClassRestriction {
             get {
@@ -745,7 +745,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not parse value of _includeFields.
+        ///   Looks up a localized string similar to Could not parse value of [_includeFields].
         /// </summary>
         public static string UnableParse_IncludeFields {
             get {
@@ -772,7 +772,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FlowObjectType is not support for class {0}..
+        ///   Looks up a localized string similar to [FlowObjectType] is not support for class {0}..
         /// </summary>
         public static string UnsupportedFlowObjectType {
             get {
@@ -781,7 +781,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to UseAsAdmin parameter can be used only with _assetUid specified!.
+        ///   Looks up a localized string similar to [UseAsAdmin] parameter can be used only with [_assetUid] specified!.
         /// </summary>
         public static string UseAsAdminUseWithAssetUid {
             get {
