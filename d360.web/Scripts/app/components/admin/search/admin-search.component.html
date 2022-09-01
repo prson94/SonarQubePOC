@@ -1,6 +1,6 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
 
-<div class="tile tile-detail" *ngIf="!isLoading">
+<div class="tile tile-detail" title=" " *ngIf="!isLoading">
     <div class="tile-tools">
         <div class="tile-description" i18n>
             This page shows the count of Assets in the search index by Category and Asset Type.
@@ -10,12 +10,14 @@
 		<div class="tile-actions">
 			<button igButton
 					class="ig-button-primary"
+					title="{{rebuildIndexesLabel}}"
 					label="{{rebuildIndexesLabel}}"
 					[disabled]="isUpdating || selectedIndexes.length === 0"
 					[loading]="isUpdating"
 					(click)="rebuild(selectedIndexes)">
 			</button>
 			<button igButton
+					title="{{refreshViewLabel}}"
 					label="{{refreshViewLabel}}"
 					[disabled]="isUpdating"
 					icon="fa-rotate-right"
