@@ -5,9 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 	
-	<changeSet author="Pappas" id="Function.dbo.GetKeyPathHash-v2.2">
+	<changeSet author="Pappas" id="Function.dbo.GetKeyPathHash-v2.3">
 		<preConditions onFail="MARK_RAN">
-			<sqlCheck expectedResult="NULL">select COL_LENGTH('dbo.AssetPath', 'KeyPathHash');</sqlCheck>
+			<sqlCheck expectedResult="0">SELECT count(1) FROM sys.columns WHERE Name = N'KeyPathHash' AND Object_ID = Object_ID(N'dbo.AssetPath');</sqlCheck>
 		</preConditions>
 		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 			<comment></comment>
