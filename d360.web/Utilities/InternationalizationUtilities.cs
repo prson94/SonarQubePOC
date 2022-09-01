@@ -125,11 +125,7 @@ namespace d360.web.Utilities
                 if (setUiCulture)
                 {
 					var _uiLocale = GetUserLocaleCode(uiCulture);
-					if (_uiLocale != DefaultLocale)
-					{
-						uiCulture = _uiLocale;
-					}
-                    var UICulture = new CultureInfo(uiCulture);
+                    var UICulture = new CultureInfo(_uiLocale);
                     Thread.CurrentThread.CurrentUICulture = UICulture;
                 }
             }
