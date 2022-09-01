@@ -7,7 +7,7 @@ namespace d360.web.Utilities
     public static class InternationalizationUtilities
     {
         private const string DefaultLocale = "en";
-        private static readonly string[] AllowedUILocales = new[] { "en"/*", nl-NL", "de-DE", "fr-FR","it-IT","es-ES"*/ };
+        private static readonly string[] AllowedUILocales = new[] { "en", "nl-NL", "de-DE", "fr-FR","it-IT","es-ES" };
 
         /// <summary>
         /// Sets the culture and UI culture to a specific culture. Allows overriding of currency
@@ -125,11 +125,7 @@ namespace d360.web.Utilities
                 if (setUiCulture)
                 {
 					var _uiLocale = GetUserLocaleCode(uiCulture);
-					if (_uiLocale != DefaultLocale)
-					{
-						uiCulture = _uiLocale;
-					}
-                    var UICulture = new CultureInfo(uiCulture);
+                    var UICulture = new CultureInfo(_uiLocale);
                     Thread.CurrentThread.CurrentUICulture = UICulture;
                 }
             }
