@@ -46,23 +46,37 @@ namespace igx.UnitTests.WebUtilitiesTests
             Assert.True(!string.IsNullOrEmpty(CultureInfo.CurrentUICulture.Name));
         }
 
+
 		[Theory]
-		[InlineData("nl", "en")]
-		[InlineData("nl-NL", "en")]
-		[InlineData("nl-BE", "en")]
-		[InlineData("nl-XX", "en")]
-		[InlineData("fr-FR", "en")]
-		[InlineData("fr-CA", "en")]
-		[InlineData("fr-XX", "en")]
-		[InlineData("es-ES", "en")]
-		[InlineData("es-CA", "en")]
-		[InlineData("es-XX", "en")]
-		[InlineData("de-DE", "en")]
-		[InlineData("de-AT", "en")]
-		[InlineData("de-XX", "en")]
-		[InlineData("it-IT", "en")]
-		[InlineData("it", "en")]
-		[InlineData("it-XX", "en")]
+		[InlineData("nl")]
+		[InlineData("nl-NL")]
+		[InlineData("nl-BE")]
+		[InlineData("nl-XX")]
+		public void DutchLanguageTest(string locale)
+		{
+			InternationalizationUtilities.SetUserLocale(locale);
+
+			Assert.NotNull(CultureInfo.CurrentCulture);
+			Assert.Equal("NL-NL", (CultureInfo.CurrentUICulture.Name ?? "").ToUpper());
+		}
+
+		[Theory]
+		[InlineData("nl","nl-NL")]
+		[InlineData("nl-NL", "nl-NL")]
+		[InlineData("nl-BE", "nl-NL")]
+		[InlineData("nl-XX", "nl-NL")]
+		[InlineData("fr-FR", "fr-FR")]
+		[InlineData("fr-CA", "fr-FR")]
+		[InlineData("fr-XX", "fr-FR")]
+		[InlineData("es-ES", "es-ES")]
+		[InlineData("es-CA", "es-ES")]
+		[InlineData("es-XX", "es-ES")]
+		[InlineData("de-DE", "de-DE")]
+		[InlineData("de-AT", "de-DE")]
+		[InlineData("de-XX", "de-DE")]
+		[InlineData("it-IT", "it-IT")]
+		[InlineData("it", "it-IT")]
+		[InlineData("it-XX", "it-IT")]
 		[InlineData("en", "en")]
 		[InlineData("en-us","en")]
 		[InlineData("hr","en")]
