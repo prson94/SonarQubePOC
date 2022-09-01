@@ -121,13 +121,13 @@
     <value>Asset corresponding with identifier of {0} could not be found.</value>
   </data>
   <data name="ConditionFieldTypeNameNotEmpty" xml:space="preserve">
-    <value>ConditionFieldTypeName must not be empty.</value>
+    <value>[ConditionFieldTypeName] must not be empty.</value>
   </data>
   <data name="ConditionIntersectTypeUidNotValid" xml:space="preserve">
-    <value>ConditionIntersectTypeUid must be valid.</value>
+    <value>[ConditionIntersectTypeUid] must be valid.</value>
   </data>
   <data name="ConditionNotEmpty" xml:space="preserve">
-    <value>You must use either a ConditionFieldTypeName or ConditionIntersectTypeUid within a condition.</value>
+    <value>You must use either a [ConditionFieldTypeName] or [ConditionIntersectTypeUid ]within a condition.</value>
   </data>
   <data name="ConditionValueMaxChar250" xml:space="preserve">
     <value>Condition Value must not be longer than 250 characters.</value>
@@ -154,7 +154,7 @@
     <value>{0} {1} is not a valid Uid</value>
   </data>
   <data name="DescriptionLengthValidation" xml:space="preserve">
-    <value>Description length({0} characters) is too long . It must be maximum length of 4000 characters or less.</value>
+    <value>[Description] length({0} characters) is too long . It must be maximum length of 4000 characters or less.</value>
   </data>
   <data name="Errorlocatingmetric" xml:space="preserve">
     <value>Error locating metric</value>
@@ -184,10 +184,10 @@
     <value>The value {0} is not a valid date. The year must be between 1900 and the current year.</value>
   </data>
   <data name="InvalidEffectiveDate" xml:space="preserve">
-    <value>Invalid Effective date provided!</value>
+    <value>Invalid [EffectiveDate] provided!</value>
   </data>
   <data name="IsGroupTrueParentMetric" xml:space="preserve">
-    <value>Parent metric must have 'IsGroup' value set to True.</value>
+    <value>Parent metric must have [IsGroup] value set to True.</value>
   </data>
   <data name="MetricAdded" xml:space="preserve">
     <value>Metric Added</value>
@@ -235,7 +235,7 @@
     <value>Score Allocation corresponding to asset with identifier of {0} could not be found.</value>
   </data>
   <data name="UseSingleCondition" xml:space="preserve">
-    <value>You cannot use both ConditionFieldTypeName and ConditionIntersectTypeUid within a single condition</value>
+    <value>You cannot use both [ConditionFieldTypeName] and [ConditionIntersectTypeUid] within a single condition</value>
   </data>
   <data name="WeightDecimalValidation" xml:space="preserve">
     <value>Weight must be a decimal greater than 0 and less than or equal to 1</value>

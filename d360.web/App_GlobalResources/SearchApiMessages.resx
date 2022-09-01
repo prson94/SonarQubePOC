@@ -124,7 +124,7 @@
     <value>The aggregations '{0}' are not supported</value>
   </data>
   <data name="CategoryNotAvailable" xml:space="preserve">
-    <value>The values '{0}' are not valid for Category.</value>
+    <value>The values '{0}' are not valid for [Category].</value>
   </data>
   <data name="FieldUnsupported" xml:space="preserve">
     <value>The field filters '{0}' are not supported</value>

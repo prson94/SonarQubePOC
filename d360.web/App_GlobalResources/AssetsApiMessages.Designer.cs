@@ -19,7 +19,7 @@ namespace Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class AssetsApiMessages {
@@ -187,7 +187,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Export Template UID parameter must be used with &apos;Accept&apos; header set to &apos;application/octet-stream&apos;..
+        ///   Looks up a localized string similar to [_exportTemplateUid] parameter must be used with &apos;Accept&apos; header set to &apos;application/octet-stream&apos;..
         /// </summary>
         public static string ExportTemplateMessage {
             get {
@@ -223,7 +223,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Filtering using _relationFilter cannot be used with _predicateUid parameter.
+        ///   Looks up a localized string similar to Filtering using [_relationFilter] cannot be used with [_predicateUid] parameter.
         /// </summary>
         public static string FilterResrictPredicateUid {
             get {
@@ -286,7 +286,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} is not a valid _order field.
+        ///   Looks up a localized string similar to {0} is not a valid [_order] field.
         /// </summary>
         public static string InvalidOrder {
             get {
@@ -313,7 +313,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid boolean value for parameter &apos;forUI&apos;.
+        ///   Looks up a localized string similar to Invalid boolean value for parameter [forUI].
         /// </summary>
         public static string InvalidParameteforUI {
             get {
@@ -322,7 +322,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid field value for parameter &apos;_order&apos;..
+        ///   Looks up a localized string similar to Invalid field value for parameter [_order]..
         /// </summary>
         public static string InvalidParameter_order {
             get {
@@ -331,7 +331,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid integer value for parameter &apos;_pageNum&apos;.
+        ///   Looks up a localized string similar to Invalid integer value for parameter [_pageNum].
         /// </summary>
         public static string InvalidParameter_pageNum {
             get {
@@ -340,7 +340,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid integer value for parameter &apos;_pageSize&apos;.
+        ///   Looks up a localized string similar to Invalid integer value for parameter [_pageSize].
         /// </summary>
         public static string InvalidParameter_pageSize {
             get {
@@ -358,7 +358,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid boolean value for parameter &apos;useUidUrls&apos;.
+        ///   Looks up a localized string similar to Invalid boolean value for parameter [useUidUrls].
         /// </summary>
         public static string InvalidParameteruseUidUrls {
             get {
@@ -367,7 +367,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid boolean value for parameter &apos;useUnflattedStructure&apos;.
+        ///   Looks up a localized string similar to Invalid boolean value for parameter [useUnflattedStructure].
         /// </summary>
         public static string InvalidParameteruseUnflattedStructure {
             get {
@@ -376,7 +376,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid boolean value for parameter &apos;useFriendlyNames&apos;.
+        ///   Looks up a localized string similar to Invalid boolean value for parameter [useFriendlyNames].
         /// </summary>
         public static string InvalidParameteruseuseFriendlyNames {
             get {
@@ -385,7 +385,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ParentAssetUid {0} is invalid.
+        ///   Looks up a localized string similar to [ParentAssetUid] {0} is invalid.
         /// </summary>
         public static string InvalidParentAssetUid {
             get {
@@ -394,7 +394,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid resourceUid provided.
+        ///   Looks up a localized string similar to Invalid [resourceUid] provided.
         /// </summary>
         public static string InvalidResourceUID {
             get {

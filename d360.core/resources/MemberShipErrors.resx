@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CanNotProvideStateOfNewUser" xml:space="preserve">
-    <value>Cannot provide State for a new user</value>
+    <value>Cannot provide [State] for a new user</value>
   </data>
   <data name="CurrentPasswordWrong" xml:space="preserve">
     <value>Your password was not updated, since the provided current password does not match.</value>
@@ -127,25 +127,25 @@
     <value>Field type for key [{0}] not found on this asset</value>
   </data>
   <data name="FirstNameMissing" xml:space="preserve">
-    <value>Must provide a First Name</value>
+    <value>Must provide a [FirstName]</value>
   </data>
   <data name="FirstNameTooLong" xml:space="preserve">
-    <value>First Name must be less or equal to 250 characters in length</value>
+    <value>[FirstName] must be less or equal to 250 characters in length</value>
   </data>
   <data name="InternalServerErrorMsg" xml:space="preserve">
     <value>An internal server error occurred</value>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
-    <value>Username is not in a valid email format</value>
+    <value>[Username] is not in a valid email format</value>
   </data>
   <data name="LastNameMissing" xml:space="preserve">
-    <value>Must provide a Last Name</value>
+    <value>Must provide a [LastName]</value>
   </data>
   <data name="LastNameTooLong" xml:space="preserve">
-    <value>Last Name must be less or equal to 250 characters in length</value>
+    <value>[LastName] must be less or equal to 250 characters in length</value>
   </data>
   <data name="MissingCurrentPasswordParameter" xml:space="preserve">
-    <value>CurrentPassword parameter value missing.</value>
+    <value>[CurrentPassword] parameter value missing.</value>
   </data>
   <data name="NewAndCurrentNotSame" xml:space="preserve">
     <value>New password may not be the same as current password</value>

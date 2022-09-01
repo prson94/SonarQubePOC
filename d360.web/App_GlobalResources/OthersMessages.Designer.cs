@@ -19,7 +19,7 @@ namespace Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class OthersMessages {
@@ -61,7 +61,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _pageNum parameter must be greater than 0..
+        ///   Looks up a localized string similar to [_pageNum] parameter must be greater than 0..
         /// </summary>
         public static string _PageNumGT0 {
             get {
@@ -70,7 +70,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _pageSize parameter has a maximum supported value of 200..
+        ///   Looks up a localized string similar to [_pageSize] parameter has a maximum supported value of 200..
         /// </summary>
         public static string _PageSizeMax200 {
             get {
@@ -97,7 +97,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to allocationUid {0} is not a correctly formatted identifier..
+        ///   Looks up a localized string similar to [allocationUid] {0} is not a correctly formatted identifier..
         /// </summary>
         public static string AllocationUidNotCorrectlyFormatted {
             get {
@@ -133,7 +133,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to assetUid {0} is not a correctly formatted identifier..
+        ///   Looks up a localized string similar to [assetUid] {0} is not a correctly formatted identifier..
         /// </summary>
         public static string AssetuidNotCorrectlyFormatted {
             get {
@@ -241,7 +241,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have invalid fields in your _order query parameter..
+        ///   Looks up a localized string similar to You have invalid fields in your [_order] query parameter..
         /// </summary>
         public static string InvalidField_OrderParameter {
             get {
@@ -250,7 +250,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have invalid fields in your filter query parameters: {0}..
+        ///   Looks up a localized string similar to You have invalid fields in your [filter] query parameters: {0}..
         /// </summary>
         public static string InvalidFieldFilterParameter {
             get {
@@ -259,7 +259,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have invalid fields in your select query parameters: {0}..
+        ///   Looks up a localized string similar to You have invalid fields in your [select] query parameters: {0}..
         /// </summary>
         public static string InvalidFieldSelectQueryParameter {
             get {
@@ -466,7 +466,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search filters are invalid in your filter query parameter: last_modified..
+        ///   Looks up a localized string similar to Search filters are invalid in your filter query parameter: [last_modified]..
         /// </summary>
         public static string SearchFilterInvalid {
             get {
@@ -484,7 +484,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to When using copy/replace option with sourceAssetUid model must be empty..
+        ///   Looks up a localized string similar to When using copy/replace option with [sourceAssetUid] model must be empty..
         /// </summary>
         public static string SourceAssetUidModelNotEmpty {
             get {
@@ -511,7 +511,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to sourceAssetUid is invalid or asset does not exist..
+        ///   Looks up a localized string similar to [sourceAssetUid] is invalid or asset does not exist..
         /// </summary>
         public static string SourceUidNotExists {
             get {

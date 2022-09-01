@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DirectionAllowedForRelation" xml:space="preserve">
-    <value>_direction parameter is allowed only when RelationshipTypeUid or AssetUid is passed</value>
+    <value>[_direction] parameter is allowed only when [RelationshipTypeUid] or [AssetUid] is passed</value>
   </data>
   <data name="InvalidIntersectTypeUid" xml:space="preserve">
     <value>Invalid Intersect Type Uid provided {0}.</value>
@@ -133,7 +133,7 @@
     <value>Invalid Object Uid passed in the request</value>
   </data>
   <data name="InvalidOrderValue" xml:space="preserve">
-    <value>Invalid _order value in the request</value>
+    <value>Invalid [_order] value in the request</value>
   </data>
   <data name="InvalidParameter" xml:space="preserve">
     <value>The type parameter is invalid.</value>
@@ -148,10 +148,10 @@
     <value>Invalid Subject Uid passed in the request</value>
   </data>
   <data name="Invalid_includeTotal" xml:space="preserve">
-    <value>Invalid _includeTotal parameter passed in the request, value must be true false or not specified</value>
+    <value>Invalid [_includeTotal] parameter passed in the request, value must be true false or not specified</value>
   </data>
   <data name="Invalid_owner" xml:space="preserve">
-    <value>Invalid _owner parameter passed in the request, maximum length is 100 characters.</value>
+    <value>Invalid [_owner] parameter passed in the request, maximum length is 100 characters.</value>
   </data>
   <data name="MaxRelationShipLimit" xml:space="preserve">
     <value>You may only provide a maximum of {0} relationships in this request. Please call the BATCH API to submit more than {1} items.</value>
@@ -160,7 +160,7 @@
     <value>Object with Uid [{0}] could not be found.</value>
   </data>
   <data name="OrderForRelation" xml:space="preserve">
-    <value>_order parameter is allowed only when RelationshipTypeUid is passed</value>
+    <value>[_order] parameter is allowed only when [RelationshipTypeUid] is passed</value>
   </data>
   <data name="PassedValidForExistingRelationType" xml:space="preserve">
     <value>Invalid relationship type uid specified.  Please specify a valid uid for an existing relationship type.</value>

@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class TagErrors {
@@ -61,7 +61,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Tag with uid &apos;{0}&apos; have related assets. Use cascade=&apos;true&apos; to delete this tag!.
+        ///   Looks up a localized string similar to Tag with uid &apos;{0}&apos; have related assets. Set [cascade] to &apos;true&apos; to delete this tag!.
         /// </summary>
         public static string DeleteCascadeTagRelateAsset {
             get {
@@ -70,7 +70,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value [{0}] provided for _includetotal parameter in the request..
+        ///   Looks up a localized string similar to Invalid value [{0}] provided for [_includetotal] parameter in the request..
         /// </summary>
         public static string Invalid_IncludeTotal {
             get {
@@ -97,7 +97,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for page number parametar!.
+        ///   Looks up a localized string similar to Invalid value for [_pagenum] parametar!.
         /// </summary>
         public static string InvalidPageNumber {
             get {
@@ -106,7 +106,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for page size parametar!.
+        ///   Looks up a localized string similar to Invalid value for [_pagesize] parametar!.
         /// </summary>
         public static string InvalidPageSize {
             get {
@@ -115,7 +115,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid parameters supplied. Parameter DisplayValue, AssetType, TagsasString not allowed to used when globalSearch parameter is present..
+        ///   Looks up a localized string similar to Invalid parameters supplied. Parameter [DisplayValue], [AssetType], [TagsAsString] not allowed to used when [globalSearch] parameter is present..
         /// </summary>
         public static string InvalidParaMeter {
             get {
@@ -124,7 +124,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid sortby value provided in the request..
+        ///   Looks up a localized string similar to Invalid [sortby] value provided in the request..
         /// </summary>
         public static string InvalidSortBy {
             get {
@@ -133,7 +133,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid sort order value provided in the request..
+        ///   Looks up a localized string similar to Invalid [sortorder] value provided in the request..
         /// </summary>
         public static string InvalidSortOrder {
             get {

@@ -79,7 +79,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Duplicate measureUid specified in the payload..
+        ///   Looks up a localized string similar to Duplicate [measureUid] specified in the payload..
         /// </summary>
         public static string DuplicateMeasureUid {
             get {
@@ -88,7 +88,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to effectiveDate must not be greater than today&apos;s date (in UTC)..
+        ///   Looks up a localized string similar to [effectiveDate] must not be greater than today&apos;s date (in UTC)..
         /// </summary>
         public static string EffectiveDateNotGTToday {
             get {
@@ -133,7 +133,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Threshold values must be between 0 and 100..
+        ///   Looks up a localized string similar to [Threshold] values must be between 0 and 100..
         /// </summary>
         public static string RangeLimitThreshold {
             get {
@@ -241,7 +241,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lower threshold must be smaller than Upper threshold..
+        ///   Looks up a localized string similar to [lowerThreshold] must be smaller than [upperThreshold].
         /// </summary>
         public static string UpperGtLower {
             get {
@@ -250,7 +250,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Upper threshold must be set..
+        ///   Looks up a localized string similar to [upperThreshold] must be set..
         /// </summary>
         public static string UpperThreshold {
             get {

@@ -61,7 +61,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allocation ScoreType not recognised.  Value {0}.
+        ///   Looks up a localized string similar to [Allocation.ScoreType] not recognised.  Value {0}.
         /// </summary>
         public static string AllocationScoreTypeNotRecognised {
             get {
@@ -70,7 +70,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must provide a valid AllocationUid..
+        ///   Looks up a localized string similar to You must provide a valid [AllocationUid]..
         /// </summary>
         public static string AllocationUidInvalid {
             get {
@@ -79,7 +79,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Condition group in position {0} must contain a Threshold value between 0 and 1.
+        ///   Looks up a localized string similar to Condition group in position {0} must contain a [Threshold] value between 0 and 1.
         /// </summary>
         public static string ConditionGroupThresholdValue {
             get {
@@ -259,7 +259,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FieldType does not exist!.
+        ///   Looks up a localized string similar to Field Type does not exist!.
         /// </summary>
         public static string FieldTypeNotFound {
             get {
@@ -313,7 +313,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid FieldType for this asset!.
+        ///   Looks up a localized string similar to Invalid Field Type for this asset!.
         /// </summary>
         public static string InvalidFieldTypeAsset {
             get {
@@ -430,7 +430,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not provide a DataQuality object property under Definition..
+        ///   Looks up a localized string similar to You may not provide a [DataQuality] object property under [Definition]..
         /// </summary>
         public static string NotProvideDataQualityUnderDefinition {
             get {
@@ -439,7 +439,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not provide a Governance object property under Definition..
+        ///   Looks up a localized string similar to You may not provide a [Governance] object property under [Definition]..
         /// </summary>
         public static string NotProvideGovernanceUnderDefinition {
             get {
@@ -511,7 +511,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must provide the DataQuality object property under Definition..
+        ///   Looks up a localized string similar to You must provide the [DataQuality] object property under [Definition]..
         /// </summary>
         public static string ProvideDataQualityUnderDefinition {
             get {
@@ -520,7 +520,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must provide the Governance object property under Definition..
+        ///   Looks up a localized string similar to You must provide the [Governance] object property under [Definition]..
         /// </summary>
         public static string ProvideGovernanceUnderDefinition {
             get {
@@ -529,7 +529,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must not provide a value for the Threshold property since the measure you are adding does not belong to a threshold-based score definition..
+        ///   Looks up a localized string similar to You must not provide a value for the [Threshold] property since the measure you are adding does not belong to a threshold-based score definition..
         /// </summary>
         public static string ProvideValueForNotThresholdBasedScoring {
             get {
@@ -547,7 +547,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ResultPathUid may not be an empty identifier..
+        ///   Looks up a localized string similar to [ResultPathUid] may not be an empty identifier..
         /// </summary>
         public static string ResultPathUidNotEmpty {
             get {
@@ -556,7 +556,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ResultPathUid with the specified identifier {0} does not exist or does not correspond to the asset type you are scoring..
+        ///   Looks up a localized string similar to [ResultPathUid] with the specified identifier {0} does not exist or does not correspond to the asset type you are scoring..
         /// </summary>
         public static string ResultPathUidNotValid {
             get {
@@ -565,7 +565,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Condition group in position {0} must not provide a value for the Threshold property since the measure you are adding does not belong to a threshold-based measure..
+        ///   Looks up a localized string similar to Condition group in position {0} must not provide a value for the [Threshold] property since the measure you are adding does not belong to a threshold-based measure..
         /// </summary>
         public static string ScoreDefinitionNotThresholdBased {
             get {
@@ -574,7 +574,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Threshold must be a value between 0 and 1.
+        ///   Looks up a localized string similar to [Threshold] must be a value between 0 and 1.
         /// </summary>
         public static string ThresholdRangeCheck {
             get {

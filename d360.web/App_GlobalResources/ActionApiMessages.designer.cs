@@ -19,7 +19,7 @@ namespace Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class ActionApiMessages {
@@ -151,7 +151,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset type has invalid class..
+        ///   Looks up a localized string similar to Asset type has invalid [Class].
         /// </summary>
         public static string AssettypeInvalidClass {
             get {
@@ -169,7 +169,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Either AssetTypeUid or AssetUid must be provided..
+        ///   Looks up a localized string similar to Either [AssetTypeUid] or [AssetUid] must be provided..
         /// </summary>
         public static string AssetTypeOrAssetRequired {
             get {
@@ -196,7 +196,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Action Type has associated actions. Enable on cascade request to delete..
+        ///   Looks up a localized string similar to Action Type has associated actions. Enable on [cascade] request to delete..
         /// </summary>
         public static string CascadeDeleteActionType {
             get {
@@ -232,7 +232,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A valid Action Type Uid is required..
+        ///   Looks up a localized string similar to A valid [ActionTypeUid] is required..
         /// </summary>
         public static string InvalidActionTypeUid {
             get {
@@ -241,7 +241,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid AssetTypeUid provided..
+        ///   Looks up a localized string similar to Invalid [AssetTypeUid] provided..
         /// </summary>
         public static string InvalidAssetTypeUid {
             get {
@@ -250,7 +250,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid AssetUid provided..
+        ///   Looks up a localized string similar to Invalid [AssetUid] provided..
         /// </summary>
         public static string InvalidAssetUid {
             get {
@@ -268,7 +268,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Limit To Active Workflows value provided is not valid..
+        ///   Looks up a localized string similar to [_limitToActiveWorkflows] value provided is not valid..
         /// </summary>
         public static string InvalidLimitActiveWorkflow {
             get {
@@ -286,7 +286,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} is an invalid responsibilityTypeUid for {1}..
+        ///   Looks up a localized string similar to {0} is an invalid [responsibilityTypeUid] for {1}..
         /// </summary>
         public static string InvalidReponsibilityTypeUid {
             get {
@@ -295,7 +295,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name provided must be less than 250 characters in length..
+        ///   Looks up a localized string similar to [Name] provided must be less than 250 characters in length..
         /// </summary>
         public static string NameMaxLength250Char {
             get {
@@ -304,7 +304,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Empty string provided for Name. Cannot be empty..
+        ///   Looks up a localized string similar to Empty string provided for [Name]. Cannot be empty..
         /// </summary>
         public static string NameNotEmptyAndRequired {
             get {
@@ -313,7 +313,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name is a required field..
+        ///   Looks up a localized string similar to [Name] is a required field..
         /// </summary>
         public static string NameNotNull {
             get {

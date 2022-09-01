@@ -411,19 +411,19 @@
     <value>You may not use a Reference Item List from Relationship type on an action type or relationship type for field {0}.</value>
   </data>
   <data name="NotUseRelationshipLookupField" xml:space="preserve">
-    <value>You may not use a Relationship Lookup type on an action type or relationship type for field {0}.</value>
+    <value>You may not use a [Type.ComputedRelationshipReferenceList] on an action type or relationship type for field {0}.</value>
   </data>
   <data name="NotUserOwnershipLookup" xml:space="preserve">
-    <value>You may not use a Ownership Lookup type on an action type or relationship type for field {0}.</value>
+    <value>You may not use a [Type.ComputedOwnershipLookup] on an action type or relationship type for field {0}.</value>
   </data>
   <data name="NotUseSCoreTypeAssetForField" xml:space="preserve">
-    <value>You may not use a Score type on an asset of type {0} for field {1}.</value>
+    <value>You may not use a [Type.Score] on an asset of type {0} for field {1}.</value>
   </data>
   <data name="NotUseScoreTypeOnActionAndRelationshipType" xml:space="preserve">
-    <value>You may not use a Score type on an action type or relationship type for field {0}.</value>
+    <value>You may not use a [Type.Score] on an action type or relationship type for field {0}.</value>
   </data>
   <data name="NotValidRegex" xml:space="preserve">
-    <value>Validation pattern is not valid Regex expression!</value>
+    <value>[Text.Validation.Pattern] is not valid Regex expression!</value>
   </data>
   <data name="NoUidFound" xml:space="preserve">
     <value>No Uid found</value>
@@ -435,49 +435,49 @@
     <value>The following fields have more than one type defined: {0}.</value>
   </data>
   <data name="OnlyOneTagFieldAllowed" xml:space="preserve">
-    <value>Asset type can have only one Tag field type!</value>
+    <value>Asset type can have only one [Type.Tag] field type!</value>
   </data>
   <data name="ParameterError" xml:space="preserve">
     <value>Parameter error</value>
   </data>
   <data name="ParentFieldRefernceItemNotfound" xml:space="preserve">
-    <value>Parent field [{0}] of type ReferenceItem not found on this asset.</value>
+    <value>Parent field [{0}] of type Reference not found on this asset.</value>
   </data>
   <data name="ProvideComputedRealtionshipLookupField" xml:space="preserve">
-    <value>You must provide a definition for the computed relationship lookup field {0}.</value>
+    <value>You must provide a definition for the [Type.ComputedRelationshipLookup] on field {0}.</value>
   </data>
   <data name="ProvideOneValueActionAssetRelationship" xml:space="preserve">
-    <value>You must provide only one of the three Uid properties: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.</value>
+    <value>You must provide only one of the three Uid properties: [ActionTypeUid], [AssetTypeUid], or [RelationshipTypeUid].</value>
   </data>
   <data name="ReferenceItemIsPartOfKeyNotAllowedTrue" xml:space="preserve">
-    <value>Reference item types cannot have field property 'IsPartOfKey' set to true.</value>
+    <value>Reference types cannot have field property [IsPartOfKey] set to true.</value>
   </data>
   <data name="ReferenceItemNotSupportJsonElement" xml:space="preserve">
-    <value>Field type JsonElement not support for reference item type!</value>
+    <value>[Type.JsonElement] not support for reference item type!</value>
   </data>
   <data name="ReferenceListNotSupportJson" xml:space="preserve">
-    <value>Field type Json not support for reference item type!</value>
+    <value>[Type.Json] not support for reference item type!</value>
   </data>
   <data name="ReferenceListNotSupportTag" xml:space="preserve">
-    <value>Field type Tag not support for reference item type</value>
+    <value>[Type.Tag] not support for reference item type</value>
   </data>
   <data name="RelationNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
-    <value>Relationship Types cannot have field property 'IsPartOfKey' set to true.</value>
+    <value>Relationship Types cannot have field property [IsPartOfKey] set to true.</value>
   </data>
   <data name="RelationshipIDUsedMoreThanOnce" xml:space="preserve">
-    <value>The following relationship ID are used more than once: {0}. Relationship must be unique on same assettype</value>
+    <value>The following relationship ID are used more than once: {0}. [Type.Relationship] must be unique on same asset type</value>
   </data>
   <data name="RelationshipNotAllowedScoreFieldType" xml:space="preserve">
-    <value>Relationships cannot have Score field type!</value>
+    <value>[Type.Score] is not supported on relationships</value>
   </data>
   <data name="RelationshipNotSupported" xml:space="preserve">
-    <value>Relationship fields are not allowed for current Asset Type!</value>
+    <value>[Type.Relationship] are not allowed for current Asset Type!</value>
   </data>
   <data name="RelationshipNotSupportPath" xml:space="preserve">
-    <value>Relationships cannot have Path field type!</value>
+    <value>[Type.Path] is not supported on relationships</value>
   </data>
   <data name="RelationshipsNotAllowedTagFieldType" xml:space="preserve">
-    <value>Relationships cannot have Tag field type!</value>
+    <value>[Type.Tag] is not supported on relationships</value>
   </data>
   <data name="RelationshipTypeFieldNotFound" xml:space="preserve">
     <value>Relationship Type/Field not found</value>
@@ -495,41 +495,41 @@
     <value>Relationship Type not found based on Uid provided [{0}].</value>
   </data>
   <data name="RelationShipTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
-    <value>You may not provide an RelationshipTypeUid since you have already provided an ActionTypeUid.</value>
+    <value>You may not provide an [RelationshipTypeUid] since you have already provided an [ActionTypeUid].</value>
   </data>
   <data name="RelationShipTypeUidNotRequiredIfAssetTypeUidProvided" xml:space="preserve">
     <value>You may not provide an RelationshipTypeUid since you have already provided an AssetTypeUid.</value>
   </data>
   <data name="RelationshipUidMustUniqueWithinAssetType" xml:space="preserve">
-    <value>The following relationship ID are used more than once: {0}. Relationship must be unique on same assettype.</value>
+    <value>The following relationship UID are used more than once: {0}. [Type.Relationship] must be unique on same asset type</value>
   </data>
   <data name="ScoreNotSupported" xml:space="preserve">
-    <value>Score fields are not allowed for current Asset Type!</value>
+    <value>[Type.Score] is not supported for current asset type</value>
   </data>
   <data name="ScoreTypeCannotAllocateAssetType" xml:space="preserve">
-    <value>Score type {0} cannot be allocated to this asset type for field {1}.</value>
+    <value>[Score.ScoreType] {0} cannot be allocated to this asset type for field {1}.</value>
   </data>
   <data name="ShowIfEmpty" xml:space="preserve">
     <value>ShowIfEmpty</value>
     <comment>Constant Parameter value</comment>
   </data>
   <data name="SpecificHaveTagFieldType" xml:space="preserve">
-    <value>Only Artifacts, Policies, Models and Rules are allowed to have Tag field type!</value>
+    <value>[Type.Tag] is allowed only on Business Assets, Technical Assets, Policies, Models and Rules</value>
   </data>
   <data name="TaskTypeGovernanceRoleCustomError" xml:space="preserve">
-    <value>Task Types cannot have field property '{0}' on field GovernanceRole set to {1}.</value>
+    <value>Task Types cannot have field property '{0}' on field [GovernanceRole] set to {1}.</value>
   </data>
   <data name="TaskTypeNameCustomError" xml:space="preserve">
-    <value>Task Types cannot have field property '{0}' on field Name set to {1}.</value>
+    <value>Task Types cannot have field property '{0}' on field [Name] set to {1}.</value>
   </data>
   <data name="TaskTypeStepNoCustomError" xml:space="preserve">
-    <value>Task Types cannot have field property '{0}' on field StepNo set to {1}.</value>
+    <value>Task Types cannot have field property '{0}' on field [StepNo] set to {1}.</value>
   </data>
   <data name="ThisAssetTypeNotSupportPath" xml:space="preserve">
-    <value>This asset type may not have a Path field type!</value>
+    <value>[Type.Path] is not supported for current asset type</value>
   </data>
   <data name="TypeObjectMissing" xml:space="preserve">
-    <value>The 'Type' object is missing from one or more field type definitions.</value>
+    <value>The [Type] object is missing from one or more field type definitions.</value>
   </data>
   <data name="WholeNumberError" xml:space="preserve">
     <value>{0} must be a whole number</value>
