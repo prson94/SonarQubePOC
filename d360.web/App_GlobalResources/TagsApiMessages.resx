@@ -154,7 +154,7 @@
     <value>Parent tag should not be included in children tags!</value>
   </data>
   <data name="TagExists" xml:space="preserve">
-    <value>Invalid tag specified [same tag already exists].</value>
+    <value>Invalid tag specified (same tag already exists).</value>
   </data>
   <data name="TagNotFound" xml:space="preserve">
     <value>Tag not found.</value>

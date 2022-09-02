@@ -115,7 +115,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid connector label specified [same connector label already exists]..
+        ///   Looks up a localized string similar to Invalid connector label specified (same connector label already exists)..
         /// </summary>
         public static string LabelAlreadyExists {
             get {
