@@ -9,6 +9,7 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { ResourcesService } from '../../../services/resources.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
 
 @Component({
@@ -176,8 +177,8 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     }
 
     memberClicked($event, data) {
-        if (this.interceptLinkClick) {
-            this.linkClickInterceptor.sendEvent($event, data, "asset/" + data.uid);
+		if (this.interceptLinkClick) {
+			this.linkClickInterceptor.sendEvent($event, data, SiteUrlHelpers.getUserUrl(data.uid));
             return;
         }
     }

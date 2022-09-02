@@ -93,6 +93,7 @@ namespace d360.model.DataAccessLayer.repositories
 																		((favorite.ObjectType is null) or (favorite.ObjectType = asset.Object))
 																		and favorite.Uid = asset.Uid
 																	)
+																	or (favorite.Uid = asset.Uid)
 																join dbo.AssetType assetType
 																	on asset.AssetTypeId = assetType.Id
 																outer apply [dbo].[GetAssetDisplayValueById](asset.Id) AssetName
@@ -121,6 +122,7 @@ namespace d360.model.DataAccessLayer.repositories
 																		((favorite.ObjectType is null) or (favorite.ObjectType = assetType.Object))
 																		and favorite.Uid = assetType.Uid
 																	)
+																	or (favorite.Uid = assetType.Uid)
 
 																insert into @semanticTypes
 																select top 1
@@ -149,7 +151,7 @@ namespace d360.model.DataAccessLayer.repositories
 
 																select favorite.FavoriteId, breadcrumbs.Level, breadcrumbs.Name
 																from @assets favorite
-																cross apply dbo.GetAssetBreadcrumbs(favorite.ObjectType, favorite.ObjectId) as breadcrumbs
+																cross apply dbo.GetAssetBreadcrumbs(favorite.uid) as breadcrumbs
 	
 																union
 	

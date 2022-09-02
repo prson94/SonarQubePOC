@@ -26,7 +26,7 @@ declare var CurrentResourceID;
 })
 
 export class ModelDiagramComponent extends DiagramBaseComponent implements OnInit, OnDestroy {
-    @Input() id: number = 0;
+    @Input() assetTypeUid: string;
     @ViewChild('diagram', { static: false }) diagramRef;
 
     private items: HierarchyDiagramModel[] = [];
@@ -87,8 +87,8 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     }
 
     public populateDiagram() {
-        this.isLoading = true;
-        this.modelsService.getCatalogDiagram(this.id).subscribe(
+		this.isLoading = true;
+		this.modelsService.getCatalogDiagram(this.assetTypeUid).subscribe(
             data => {
                 let root = data.find(x => x.parent === null);
                 if (root) {
@@ -103,7 +103,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
             }
         );
 
-        this.modelsService.getModel(this.id)
+		this.modelsService.getModel(this.assetTypeUid)
             .subscribe(result => {
                 this.assetType = result;
                 this.buildNav();
@@ -253,29 +253,29 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
     buildNav() {
         this.setCommonSecondaryNavTabs({ hasAudit: true });
-        this.breadcrumbsService
-            .getAreaName(this.objectType, this.id)
+		this.breadcrumbsService
+			.getAreaNameByUid(this.assetTypeUid)
             .subscribe(result => {
                 this.currentAreaName = result;
                 this.breadcrumbsService.getFolderTitle(this.navFolderName).then((res) => {
-                    this.breadcrumbsService.clearBreadcrumbs();
-                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `TaxonomyType/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`));
-                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getObjectUrl(this.objectType, this.assetType.ID), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
+					this.breadcrumbsService.clearBreadcrumbs();
+					this.breadcrumbsService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `/${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/Model`));
+					this.breadcrumbsService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
 
-                    this.breadcrumbsService.getAssetFolderIcon(this.objectType, this.id, this.currentAreaName ? this.currentAreaName : res)
+					this.breadcrumbsService.getAssetFolderIcon(this.objectType, this.assetType.ID, this.currentAreaName ? this.currentAreaName : res)
                         .subscribe(icon => {
                             this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, $localize`Model`);
                             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
-                            this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
-                            let diagramTab = new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.id}`, null, 7);
+							this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
+							let diagramTab = new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/assets/${this.assetTypeUid}/diagrams`, null, 7);
                             this.secondaryNavService.showItem(diagramTab);
                             diagramTab.active = true;
 
-                            if (this.auditSidebar) {
-                                this.auditSidebar.url = `/sidebar/audit/${this.assetType.AssetTypeUID}`;
+							if (this.auditSidebar) {
+								this.auditSidebar.url = `/assets/${this.assetTypeUid}/log`;
                             }
 
-                            this.secondaryNavService.setLocalHomeUrl(SiteUrlHelpers.getObjectUrl(this.objectType, this.assetType.ID));
+							this.secondaryNavService.setLocalHomeUrl(SiteUrlHelpers.getAssetTypeUrl(this.assetTypeUid));
                             this.secondaryNavService.showHeader(true);
                         });
 

@@ -37,19 +37,15 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
         }
     }
 
-    private navigateToArtifact() {
-        this
-            .router
-            .navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${this.selected.TypeID}/${this.selected.ObjectID}`);
+	private navigateToArtifact() {
+        this.router
+			.navigateByUrl(SiteUrlHelpers.getAssetUrl(this.selected["uid"]));           
+
     }
 
-    private artifactLink(
-        artifactTypeId,
-        artifactId
-    ) {
-        this
-            .router
-            .navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${artifactTypeId}/${artifactId}`);           
+    private artifactLink(uid:string) {
+        this.router
+			.navigateByUrl(SiteUrlHelpers.getAssetUrl(uid));           
     }
 
     private load() {

@@ -906,7 +906,7 @@ namespace d360.model
 
 		#endregion Bulk Import Methods
 
-		public ObjectStatisticTileModel GetObjectStatistics(SystemObjects type, int id)
+		public ObjectStatisticTileModel GetObjectStatistics(string type, int id)
 		{
 			ObjectStatisticTileModel model = new ObjectStatisticTileModel { Items = new List<ObjectStatisticTileItemModel>() };
 

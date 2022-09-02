@@ -175,7 +175,7 @@ export class AssetService extends BaseObservableService {
                 catchError((err) => this.handleError(err, true)));
     }
 
-    public GetObjectUIDetailsForAssetUID(uid: string): Observable<any> {
+    public GetObjectUIDetailsForUid(uid: string): Observable<any> {
         return this.http.get('api/v2/assets/GetObjectDetailUIDetails/' + uid)
             .pipe(map((res) => { return <any>res; }),
                 catchError((err) => this.handleError(err, true)));
@@ -296,6 +296,14 @@ export class AssetService extends BaseObservableService {
             .pipe(map((res) => { return <any>res; }),
                 catchError((err) => this.handleError(err, true)));
     }
+
+	public getAssetTypeClassForAsset(assetUid: string): Observable<AssetTypeClass> {
+		return this.
+			http
+			.get(`/api/v2/assets/asset/${assetUid}/class`)
+			.pipe(map((res) => { return <AssetTypeClass>res; }),
+				catchError((err) => this.handleError(err, true)));
+	}
 
     public getAssetDescendants(assetUid: string, params: any): Observable<any> {
         var qString = '';

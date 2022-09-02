@@ -47,8 +47,8 @@ export class HeaderActionsComponent {
 
     private uri = "";
     public notTopArtifact: boolean = true;
-    public testuri: string[] = [];
-    public hasRaiseIssueButton: boolean = false;
+
+	public hasRaiseIssueButton: boolean = false;
     public showShoppingCart: boolean = false;
 
     private routerSub;
@@ -91,17 +91,6 @@ export class HeaderActionsComponent {
                 this.currentUrl = e.url;
                 this.isAdminSidebarUrl = false;
                 this.uri = _.trimStart(e.urlAfterRedirects, '/');
-                if ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT.toUpperCase())) {
-                    this.testuri = this.uri.split("/");
-                    if (this.testuri.length < 3) {
-                        this.notTopArtifact = false;
-                    } else {
-                        this.notTopArtifact = true;
-                    }
-                }
-                else {
-                    this.notTopArtifact = true;
-                }
                 
                 let isHomeUrl: boolean = false;
                 isHomeUrl = (this.uri && this.uri.toUpperCase() == SiteUrlHelpers.SITE_URL_HOME_ROOT.toUpperCase());
@@ -119,10 +108,10 @@ export class HeaderActionsComponent {
                     if ((this.currentObject != null && this.currentObjectId != null) && (this.currentObject == 'ReferenceItemType'))
                     {
                         if (((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_FIELDS_ROOT.toUpperCase()))
-                            ||
-                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT.toUpperCase()))
-                            ||
-                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RELATIONSHIP_ROOT.toUpperCase()))
+							||
+							((this.uri || '').toUpperCase().indexOf("diagrams".toUpperCase()) > 0)
+							||
+							((this.uri || '').toUpperCase().endsWith("relationships".toUpperCase()))
                             ||
                             ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESPONSIBILITIES_ROOT.toUpperCase()))
                             ||

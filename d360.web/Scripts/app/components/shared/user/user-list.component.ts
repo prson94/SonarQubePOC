@@ -134,8 +134,8 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.destroy.complete();
     }
 
-    public openResource(event) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource', event.ResourceID));
+	public openResource(event) {
+		this.router.navigateByUrl(SiteUrlHelpers.getUserUrl(event.uid));
     }
 
     public export() {

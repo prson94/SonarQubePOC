@@ -14,9 +14,6 @@ import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-editor.module';
 
-import { ArtifactRoutingModule } from './artifact.routes';
-
-import { ArtifactComponent } from './artifact.component';
 import { ArtifactItemComponent } from './artifact-item.component';
 import { ArtifactListComponent } from './artifact-list.component';
 
@@ -48,7 +45,6 @@ import { AngularSplitModule } from 'angular-split';
 
         RouterModule,
 
-        ArtifactRoutingModule,
         AngularSplitModule,
 
         //primeng        
@@ -85,10 +81,13 @@ import { AngularSplitModule } from 'angular-split';
         SemanticsModule
     ],
     declarations: [        
-        ArtifactComponent,
         ArtifactItemComponent,
         ArtifactListComponent,
-    ],
+	],
+	exports: [
+		ArtifactItemComponent,
+		ArtifactListComponent,
+	],
     providers: [
         
     ]

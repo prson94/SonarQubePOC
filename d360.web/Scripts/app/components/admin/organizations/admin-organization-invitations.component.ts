@@ -183,8 +183,8 @@ export class AdminOrganizationInvitationsComponent extends BaseComponent impleme
         }
     }
 
-    private openResource(event) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource', event.AcceptedBy));
+	private openResource(event) {
+		this.router.navigateByUrl(SiteUrlHelpers.getUserUrl(event.AcceptedBy));
     }
 
     save(event) {

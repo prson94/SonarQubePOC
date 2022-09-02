@@ -243,7 +243,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         this.setCommonSecondaryNavTabs({ hasAudit: true });
 
                         if (this.auditSidebar) {
-                            this.auditSidebar.url = `/sidebar/audit/Tag/${this.tagUid}`;
+                            this.auditSidebar.url = `/tag/${this.tagUid}/log`;
                         }
                     }
                     else {

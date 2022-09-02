@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+﻿import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
@@ -7,9 +7,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { PermissionsService } from '../../services/permissions.service';
 import { ModelsService } from '../../services/models.service';
 import { PoliciesService } from '../../services/policies.service';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AssetTypeClass } from '../../models/asset.model';
-import { StringConstants } from '../../static/string-constants';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { TreeNode } from 'primeng/api';
 import { MessageBarItem } from '../../models/message-bar-item.model';
@@ -18,125 +16,130 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { AssetService } from '../../services/asset.service';
+import { ArtifactService } from '../../services/artifacts.service';
 
 @Component({
-    selector: 'd3s-hierarchy-item',
-    providers: [
-        ModelsService,
-        PoliciesService,
-        PermissionsService,
-        WebAnalyticsService,
-    ],
-    templateUrl: 'hierarchy-item.component.html'
+	selector: 'd3s-hierarchy-item',
+	providers: [
+		ModelsService,
+		PoliciesService,
+		PermissionsService,
+		WebAnalyticsService,
+	],
+	templateUrl: 'hierarchy-item.component.html'
 })
 
 export class HierarchyItemComponent extends BaseComponent implements OnInit, OnDestroy {
-    treeSub: any;
-    routeSub: any;
-    currentAreaNameSub: any;
-    currentAreaName: string;
-    showSocialScoreBar: boolean;
+	@Input() assetTypeClass: AssetTypeClass;
+	@Input() assetUid: string;
 
-    object: string;
-    objectTypeId: number;
-    assetTypeClass: AssetTypeClass;
+	treeSub: any;
+	routeSub: any;
+	currentAreaNameSub: any;
+	currentAreaName: string;
+	showSocialScoreBar: boolean;
 
-    selected: any;
-    assetType: any;
-    treeNodeArray: TreeNode[] = [];
-    crumbs: Breadcrumb[] = [];
-    messages: MessageBarItem[] = [];
 
-    hrefSub: Subscription;
-    selectedAsset: any;
-    selectedTag: any;
-    selectedReferenceItem: any;
+	selected: any;
+	assetType: any;
+	treeNodeArray: TreeNode[] = [];
+	crumbs: Breadcrumb[] = [];
+	messages: MessageBarItem[] = [];
+
+	hrefSub: Subscription;
+	selectedAsset: any;
+	selectedTag: any;
+	selectedReferenceItem: any;
 
     sidePanelOpen: boolean = false;
     sidePanelStorageKey = 'side_panel_width_detail_';
 
-    synonymPermission: SynonymPermission;
+	synonymPermission: SynonymPermission;
 
-    constructor(
-        private route: ActivatedRoute,
-        private router: Router,
-        private sidePanelService: SidePanelService,
-        secondaryNavService: SecondaryNavService,
-        protected modelsService: ModelsService,
-        protected policiesService: PoliciesService,
-        protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService,
-        protected settingsService: CompanySettingsService,
-        webAnalyticsService: WebAnalyticsService,
-        private linkClickInterceptor: LinkClickInterceptor,
-    ) {
-        super(settingsService);
+	constructor(
+		private sidePanelService: SidePanelService,
+		private route: ActivatedRoute,
+		private router: Router,
+		secondaryNavService: SecondaryNavService,
+		protected modelsService: ModelsService,
+		protected policiesService: PoliciesService,
+		private assetService: AssetService,
+		private artifactService: ArtifactService,
+		protected titleService: Title,
+		protected headerBreadcrumbService: HeaderBreadcrumbService,
+		protected permissionsService: PermissionsService,
+		protected settingsService: CompanySettingsService,
+		webAnalyticsService: WebAnalyticsService,
+		private linkClickInterceptor: LinkClickInterceptor,
+	) {
+		super(settingsService);
 
-        this.webAnalyticsService = webAnalyticsService;
-        this.secondaryNavService = secondaryNavService;
-        this.breadcrumbsService = headerBreadcrumbService;
-    }
+		this.webAnalyticsService = webAnalyticsService;
+		this.secondaryNavService = secondaryNavService;
+		this.breadcrumbsService = headerBreadcrumbService;
+	}
 
-    ngOnInit() {
-        let type = this.route.parent.snapshot.data.type;
+	ngOnInit() {
+		this.uid = this.baseAssetUid = this.assetUid;
+		switch (this.assetTypeClass) {
+			case AssetTypeClass.Model:
+				this.assetTypeClass = AssetTypeClass.Model;
+				this.objectType = 'Taxonomy';
+				this.objectName = 'Model';
+				break;
+			case AssetTypeClass.Policy:
+				this.assetTypeClass = AssetTypeClass.Policy;
+				this.objectName = 'Policy';
+				this.objectType = 'Policy';
+				break;
+		}
 
-        switch (type) {
-            case SiteUrlHelpers.SITE_URL_MODEL_ROOT:
-                this.assetTypeClass = AssetTypeClass.Model;
-                this.objectType = StringConstants.ObjectTaxonomyType;
-                this.object = StringConstants.ObjectTaxonomy;
-                this.objectName = 'Model';
-                break;
-            case SiteUrlHelpers.SITE_URL_POLICY_ROOT:
-                this.assetTypeClass = AssetTypeClass.Policy;
-                this.objectType = StringConstants.ObjectPolicyType;
-                this.object = StringConstants.ObjectPolicy;
-                this.objectName = 'Policy';
-                break;
-        }
+		this.currentAreaNameSub =
+			this.headerBreadcrumbService
+				.getAreaNameByUid(this.assetUid)
+				.subscribe(result => {
+					this.currentAreaName = result;
+					if (this.assetType) {
+						this.buildBreadcrumb();
+					}
+				});
 
-        this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
-            id => {
-                this.selectHierarchy(id);
-                this.showHierarchy(id);
-            });
+		this.logAction("open", this.assetTypeClass.toString(), this.assetUid);
+		this.baseAssetUid = this.assetUid;
+		forkJoin(this.artifactService.getArtifactByUid(this.assetUid)
+			, this.permissionsService.getAssetPermissions(this.assetUid)
+		).subscribe((res) => {
+			this.objectPermission = res[1];
+			this.selected = res[0];
+			this.baseAssetTypeUid = this.selected["AssetTypeUid"];
 
-        this.routeSub = this.route.params.subscribe(params => {
-            let newObjectTypeId = +params['typeId'];
-            let hierarchyId = +params['id'];// if hierarchyId is passed via alternative route to workaround bug with router escaping ; = and other chars.
+			let TempsynonymPermission = new SynonymPermission;
+			if (this.hasAddRelationshipsPermissions() || this.hasModifyRelationshipsPermissions()) {
+				TempsynonymPermission.addModifySynonym = true;
+			}
 
-            this.currentAreaNameSub =
-                this.headerBreadcrumbService
-                    .getAreaName(this.objectType, newObjectTypeId)
-                    .subscribe(result => { this.currentAreaName = result; if (this.assetType) this.buildBreadcrumb(); });
+			if (this.hasDeleteRelationshipsPermissions()) {
+				TempsynonymPermission.deleteSynonym = true;
+			}
+			this.synonymPermission = TempsynonymPermission;
 
-            if (!hierarchyId)
-                hierarchyId = params['hierarchyId'] ? +params['hierarchyId'] : 0;
+			this.load();
+		})
 
-            this.logAction("open", this.object, hierarchyId);
-            if (this.objectTypeId != newObjectTypeId || (this.selected == undefined || this.selected.ID != hierarchyId)) {
-                this.objectTypeId = newObjectTypeId;
-                this.isLoading = true;
-                this.load(hierarchyId);
+		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			this.linkClickInterceptor.handleEvent(this, ev);
+		});
 
-                this.isLoading = false;
-            }
-        });
+		this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
+	}
 
-        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-            this.linkClickInterceptor.handleEvent(this, ev);
-        });
-
-        this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
-    }
-
-    ngOnDestroy() {
-        this.clearSidebar();
-    }
+	ngOnDestroy() {
+		this.clearSidebar();
+	}
 
     getSidePanelWidth(): number {
         return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
@@ -154,131 +157,36 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
         this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
-    private load(hierarchyId: number) {
-        switch (this.assetTypeClass) {
-            case AssetTypeClass.Model:
-                this.modelsService.getModel(this.objectTypeId)
-                    .subscribe(result => {
-                        this.assetType = result;
-                        this.loadHierarchy(this.objectTypeId, hierarchyId);
-                        this.buildBreadcrumb();
-                    });
-                break;
-            case AssetTypeClass.Policy:
-                this.policiesService.getPolicyType(this.objectTypeId)
-                    .subscribe(result => {
-                        this.assetType = result;
-                        this.loadHierarchy(this.objectTypeId, hierarchyId);
-                        this.buildBreadcrumb();
-                    });
-                break;
-        }
+	private load() {
+		switch (this.assetTypeClass) {
+			case AssetTypeClass.Model:
+				this.modelsService.getModel(this.baseAssetTypeUid)
+					.subscribe(result => {
+						this.assetType = result;
+						this.buildBreadcrumb();
+					});
+				break;
+			case AssetTypeClass.Policy:
+				this.policiesService.getPolicyType(this.baseAssetTypeUid)
+					.subscribe(result => {
+						this.assetType = result;
+						this.buildBreadcrumb();
+					});
+				break;
+		}
+	}
 
+	private editComplete(e: any) {
+		this.load();
+	}
 
-    }
-
-    private editComplete(e: any) {
-        this.load(e.ID);
-    }
-
-    private showHierarchy(id: number) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(this.object, id, this.objectTypeId));
-        this.buildBreadcrumb();
-    }
+	private showHierarchy(id: number) {
+		window.alert("showHierarchy");
+		this.router.navigateByUrl("asset/");
+		this.buildBreadcrumb();
+	}
 
 	private buildBreadcrumb() {
-        if (this.selected) {
-            if (this.selected.DisplayValue) {
-                this.buildSecondaryNavigation(this.selected.Uid, null, this.object, null, null, null, this.assetTypeClass, this.selected.DisplayValue);
-            }
-            else {
-                this.buildSecondaryNavigation(this.selected.Uid, null, this.object, null, null, null, this.assetTypeClass);
-            }
-        }
-    }
-
-    private loadHierarchy(id: number, selectedHierarchyId: number): void {
-        switch (this.assetTypeClass) {
-            case AssetTypeClass.Model:
-                this.modelsService.getModelHierarchy(id).subscribe(result => {
-                    this.preloadedTreeData = result;
-
-                    this.treeNodeArray = this.buildTreeNodeArray(this.preloadedTreeData);
-
-                    this.selectHierarchy(selectedHierarchyId);
-                    this.messages = []; //clear any messages for this model
-
-                    this.setBrowserTitle(this.titleService, this.assetType.Name);
-                });
-                break;
-            case AssetTypeClass.Policy:
-                this.policiesService.getPolicies(this.objectTypeId)
-                    .subscribe(result => {
-                        this.preloadedTreeData = result;
-                        this.baseTreeNodeArray = this.buildTreeNodeArrayBase(this.preloadedTreeData);
-                        this.selectHierarchy(selectedHierarchyId);
-                    });
-                break;
-        }
-
-
-    }
-
-    private selectHierarchy(selectedHierarchyId: number): Promise<void> {
-        if (selectedHierarchyId > 0) {
-            let selArray = this.preloadedTreeData.filter(x => x.ID == selectedHierarchyId);
-            if (selArray.length > 0) this.selected = selArray[0];
-            else {
-                this.selected = (this.preloadedTreeData.length && this.preloadedTreeData.length > 0) ? this.preloadedTreeData[0] : null;
-            }
-        } else {
-            this.selected = (this.preloadedTreeData.length && this.preloadedTreeData.length > 0) ? this.preloadedTreeData[0] : null;
-        }
-
-		this.assetID = this.selected.AssetID;
-
-		this.baseAssetUid = this.selected.Uid;
-
-        this.loadPermissions(this.permissionsService, this.object, this.selected.ID);
-
-        let TempsynonymPermission = new SynonymPermission;
-
-        this.loadPermissions(this.permissionsService, this.object, this.selected.ID).then((perms) => {
-            if (this.hasAddRelationshipsPermissions() || this.hasModifyRelationshipsPermissions()) {
-                TempsynonymPermission.addModifySynonym = true;
-            }
-
-            if (this.hasDeleteRelationshipsPermissions()) {
-                TempsynonymPermission.deleteSynonym = true;
-            }
-            this.synonymPermission = TempsynonymPermission;
-        });
-
-        this.buildBreadcrumb();
-
-        return Promise.resolve(null);
-    }
-
-    private buildTreeNodeArray(assets: any[], Parent?: number, includeChildren?: boolean): TreeNode[] {
-        //find the root items then 
-        includeChildren = includeChildren == undefined ? true : false;
-        let rootNodes = assets.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
-
-        if (rootNodes.length == 0) return null;
-
-        let res: TreeNode[] = [];
-
-        for (let root of rootNodes) {
-            res.push({
-                label: root.DisplayValue,
-                expanded: true,
-                data: {
-                    id: root.ID, hasRelations: root.HasChildren, AssetID: root.AssetID
-                },
-                children: (includeChildren ? this.buildTreeNodeArray(assets, root.ID) : null) //recursively find its children
-            });
-        }
-
-        return res;
-    }
+		this.buildSecondaryNavigationByAssetUid(this.baseAssetUid);
+	}
 }

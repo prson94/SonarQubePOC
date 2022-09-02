@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { FollowersComponent } from './followers.component';
 
 const routes: Routes = [
-    { path: ':objectType/:objectId', component: FollowersComponent },
+    { path: ':assetUid/followers', component: FollowersComponent },
 ];
 
 @NgModule({

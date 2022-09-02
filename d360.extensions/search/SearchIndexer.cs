@@ -519,23 +519,6 @@ namespace d360.extensions.search
             }
         }
 
-        private string GenerateUrl(string type, int typeId, int objectId, string fallback = "")
-        {
-            switch (type)
-            {
-                case "Artifact":
-                    return $"artifact/{typeId}/{objectId}";
-                case "Policy":
-                    return $"policy/{typeId}/id/{objectId}";
-                case "Rule":
-                    return $"quality/rule/{typeId}/{objectId}";
-                case "Taxonomy":
-                    return $"model/{typeId}/id/{objectId}";
-                default:
-                    return fallback;
-            }
-        }
-
         private string[] GetPathArrayFromSegments(string segments)
         {
             if (string.IsNullOrWhiteSpace(segments) || segments.IndexOf('<') < 0)
@@ -643,7 +626,7 @@ namespace d360.extensions.search
                             AssetID = o.AssetID,
                             ItemUniqueID = o.ItemUniqueID,
                             AssetType = o.TypeName,
-                            RelativeUrl = GenerateUrl(o.Type, o.TypeID, o.ID, o.Url),
+                            RelativeUrl = $"asset/{o.Uid}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
                             AssetPath = GetPathArrayFromSegments(o.Segments),

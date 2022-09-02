@@ -67,10 +67,10 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
       switchMap((artifactType: ArtifactType): Promise<string> => {
         this.artifactType = artifactType;
         let folderName: string = '#Business';
-        this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
+		  this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
         if (artifactType.Class === AssetTypeClass.TechnicalAsset) {
           folderName = '#Technical';
-          this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
+			this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
         }
         this.sidePanelStorageKey = 'list_' + AssetTypeClass[artifactType.Class] + '_' + CurrentResourceID;
         return this.headerBreadcrumbService.getFolderTitle(folderName);

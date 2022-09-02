@@ -45,7 +45,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 
 	selectedItemChange() {
 		if (this.selected) {
-			this.buildSecondaryNavigation(this.selected.uid, null, 'Report');
+			this.buildSecondaryNavigation({ assetUid: this.selected.uid, objectType: 'Report' });
 		}
 	}
 

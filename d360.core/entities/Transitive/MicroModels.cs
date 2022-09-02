@@ -418,10 +418,14 @@ namespace d360.core.entities
         public Guid? AssetUid { get; set; }
         
         public Guid? AssetTypeUid { get; set; }
+        public Guid? IntersectTypeUid { get; set; }
+        public Guid? PredicateTypeUid { get; set; }
+        public Guid? ResponsibilityTypeUid { get; set; }
         
         public bool PreloadData { get; set; }
         
         public AssetTypeClass Class { get; set; }
+        public bool isScoringDefinitionPage { get; set; }
     }
 
     public class SecondaryNavigationResponseModel
@@ -429,8 +433,11 @@ namespace d360.core.entities
         public int AssetId { get; set; }
         
         public int AssetTypeId { get; set; }
-        
-        public Guid Uid { get; set; }
+        public Guid? AssetTypeUid { get; set; }
+		public Guid? IntersectTypeUid { get; set; }
+        public Guid? ResponsibilityTypeUid { get; set; }
+		public Guid? Uid { get; set; }
+		public AssetTypeClass? AssetTypeClass { get; set; }
         
         public string Object { get; set; }
         

@@ -8,6 +8,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'd3s-followers',
@@ -85,7 +86,8 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
 
     constructor(
         private followerService: FollowerService,
-        private objectDetailService: ObjectDetailService,
+		private objectDetailService: ObjectDetailService,
+		private assetsService: AssetService,
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
         private router: Router,
@@ -99,11 +101,9 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            this.objectID = +params['objectId']; // (+) converts string 'id' to a number
-            this.objectType = params['objectType'];
-
-            this.load();
-            this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+			this.uid = params['assetUid'];
+			this.load();
+			this.buildSecondaryNavigationByAssetUid(this.uid);
         });
     }
 
@@ -115,14 +115,10 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
 
     load() {
         this.isLoading = true;
-        this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
-            res => {
-				this.objectName = res.Name ? res.Name : res.DisplayValue;
-				var assetUid = res["Uid"];
-				if (!assetUid) {
-					assetUid = res["UID"];
-				}
-				this.followerService.getFollowers(assetUid, res.AssetTypeUid).subscribe(
+        this.assetsService.getAsset(this.uid)
+            .subscribe((res) => {
+                this.objectName = res.Name ? res.Name : res.DisplayValue;
+				this.followerService.getFollowers(this.uid, res.AssetTypeUid).subscribe(
 					r => {
 						this.items = r;
 
@@ -134,7 +130,7 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
 
     }
 
-    private doSelect(follower: FollowDetail) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource', follower.ResourceID));
+	private doSelect(follower: FollowDetail) {
+		this.router.navigateByUrl(follower.FollowerUrl);
     }
 }

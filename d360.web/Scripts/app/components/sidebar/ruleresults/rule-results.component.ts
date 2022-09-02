@@ -12,7 +12,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                       <d3s-rule-results-grid [ruleId]="ID" [ruleUid]="Uid" [showTitle]="true"></d3s-rule-results-grid> 
+                       <d3s-rule-results-grid [ruleUid]="Uid" [showTitle]="true"></d3s-rule-results-grid> 
                     </div>
                 </div>
             </div>
@@ -20,8 +20,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class RuleResultsComponent extends BaseComponent implements OnInit, OnDestroy {
-
-    @Input() ID: number;
     @Input() Uid: string;
 
     private sub: any;
@@ -46,13 +44,12 @@ export class RuleResultsComponent extends BaseComponent implements OnInit, OnDes
         this.showBoard = false;
 
         this.sub = this.route.params.subscribe(params => {
-            this.ID = params['ID'];
-            this.Uid = params['Uid'];
+            this.Uid = params['assetUid'];
 
             this.isLoading = false;
             this.showBoard = true;
         });
-        this.buildSecondaryNavigation(this.Uid, this.ID, 'Rule');
+		this.buildSecondaryNavigationByAssetUid(this.Uid);
     }
 
     ngOnDestroy() {

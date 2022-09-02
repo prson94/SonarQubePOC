@@ -326,7 +326,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                     this.assetUrl = res;
                 });
         } else {
-            this.assetUrl = SiteUrlHelpers.getObjectUrl(this.model.Object, this.model.ObjectID, this.model.ObjectTypeID);
+			this.assetUrl = SiteUrlHelpers.getAssetUrl(this.model.AssetUid);
         }
     }
 

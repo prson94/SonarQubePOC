@@ -37,7 +37,18 @@ export class FollowerService extends BaseObservableService {
                 catchError((err) => this.handleError(err))
             );
 
-    }
+	}
+
+	getFollowersByAssetUid(assetUid: string): Observable<FollowDetail[]> {
+		return this
+			.http
+			.get(`api/${assetUid}/followers`)
+			.pipe(
+				map((response) => <FollowDetail[]>response),
+				catchError((err) => this.handleError(err))
+			);
+
+	}
 
     getFollowInfo(
 		assetUid: string,

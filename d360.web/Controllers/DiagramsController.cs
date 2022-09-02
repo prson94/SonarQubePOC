@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 
@@ -18,12 +19,12 @@ namespace d360.web.Controllers
 
         #region Model Diagram
 
-        [Route("{id:int}/InformationCatalogDiagramData")]
-        public JsonNetResult InformationCatalogDiagramData(int id)
+        [Route("{uid:Guid}/InformationCatalogDiagramData")]
+        public JsonNetResult InformationCatalogDiagramData(Guid uid)
         {
             return new JsonNetResult
             {
-                Data = Company.Query<InformationCatalogDiagramDataItem>(QueryConstants.InformationCatalogDiagramData, new { id }).ToList(),
+                Data = Company.Query<InformationCatalogDiagramDataItem>(QueryConstants.InformationCatalogDiagramData, new { uid }).ToList(),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

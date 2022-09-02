@@ -157,7 +157,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.route.params.subscribe((params) => {
             this.focusKey = params['focusKey'];
             if (this.focusKey) {
-                let url: string = `/sidebar/visualization/browser/${params['assetUid']}/${params['diagramType']}`;
+                let url: string = `/asset/${params['assetUid']}/diagrams/${params['diagramType']}`;
                 this.location.replaceState(url);
                 this.isInfoPanelOpened = true;
             }

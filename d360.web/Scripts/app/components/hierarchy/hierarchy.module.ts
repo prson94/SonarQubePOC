@@ -102,7 +102,13 @@ import { AngularSplitModule } from 'angular-split';
         HierarchyListComponent,
         HierarchyItemComponent,
         HierarchyItemStructureComponent,
-    ],
+	],
+	exports: [
+		HierarchyComponent,
+		HierarchyListComponent,
+		HierarchyItemComponent,
+		HierarchyItemStructureComponent,
+	],
     providers: [
         
     ]

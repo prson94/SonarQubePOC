@@ -302,7 +302,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 						this.helper_UpdateDiagramType(this.displayConfiguration.DiagramType);
 					} else {
                         this.helper_UpdateDiagramType(this.diagramTypes.initial);
-
                     }
 
                     if (this.diagram) this.diagram.div = null;
@@ -708,10 +707,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private menu_ClickLinkItem(e: any) {
         if (e.value.toLowerCase() === 'open') {
-            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.selectedDiagramAsset.Uid}/${DiagramType[this.displayConfiguration.DiagramType]}`);
+            this.router.navigateByUrl(`asset/${this.selectedDiagramAsset.Uid}/diagrams/${DiagramType[this.displayConfiguration.DiagramType]}`);
         }
         if (e.value.toLowerCase() === 'open in new tab') {
-            window.open(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.selectedDiagramAsset.Uid}/${DiagramType[this.displayConfiguration.DiagramType]}`, "_blank");
+            window.open(`asset/${this.selectedDiagramAsset.Uid}/diagrams/${DiagramType[this.displayConfiguration.DiagramType]}`, "_blank");
         }
     }
 
@@ -2448,7 +2447,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
 
                         this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
-                            this.router.navigate([SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, 'browser', assetUidRedirect]);
+                            this.router.navigate(['asset', assetUidRedirect,'diagrams']);
                         });
                     }
                 },
@@ -2476,7 +2475,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             return;
                         }
 
-                        var url = window.location.protocol + '//' + window.location.hostname + '/' + SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT + '/' + 'browser' + '/' + assetUidRedirect;
+                        var url = window.location.protocol + '//' + window.location.hostname + '/asset/' + assetUidRedirect + '/diagrams';
                         window.open(url, '_blank');
                     }
                 },
@@ -3462,7 +3461,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 	viewchange_Apply(e: DiagramType) {
 		this.displayConfiguration.DiagramType = e;
         this.saveFilter();
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.assetUid}/${DiagramType[e]}`);
+        this.router.navigateByUrl(`asset/${this.assetUid}/diagrams/${DiagramType[e]}`);
     }
 
     /**

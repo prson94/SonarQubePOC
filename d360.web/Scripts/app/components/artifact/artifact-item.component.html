@@ -11,7 +11,7 @@
                       (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
                 <as-split-area class="tile tile-detail main-panel">
                     <d3s-object-definition-tile [synonymPermission]="synonymPermission"
-                                                [objectPermissions]="permissions"
+                                                [objectPermissions]="objectPermission"
                                                 [objectID]="artifact?.ID"
                                                 [useV2Api]="true"
                                                 [objectType]="'Artifact'"

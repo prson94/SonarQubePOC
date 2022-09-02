@@ -55,5 +55,11 @@ export class PermissionsService extends BaseObservableService {
             map((response) => <Permissions>response),
             catchError((err) => this.handleError(err))
         );
-    }
+	}
+	getAssetTypePermissions(assetTypeUid: string): Observable<Permissions> {
+		return this.http.get(`api/v2/permissions/assettype/${assetTypeUid}`).pipe(
+			map((response) => <Permissions>response),
+			catchError((err) => this.handleError(err))
+		);
+	}
 }

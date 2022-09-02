@@ -114,8 +114,9 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Groups;
         this.adminHeading = StringConstants.SubArea_Security;
-        this.setCommonItems();
-        this.buildSecondaryNavigationForObject(0, 'GroupType');
+		this.setCommonItems();
+		this.baseAssetTypeUid = this.groupTypeUid;
+		this.buildSecondaryNavigationForAssetTypeUid(this.groupTypeUid);
 
         this.sidePanelStorageKey = 'list_' + AssetTypeClass.Group + '_' + CurrentResourceID;
 
@@ -250,10 +251,6 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     selectRow(data) {
         this.selectedRow = data;
         this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
-    }
-
-    private groupUrl(id: number) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(StringConstants.ObjectGroup, id));
     }
 
     saveItem($event) {

@@ -56,8 +56,9 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                     if (t.uid == this.selected.uid) {
                         t['AssetTypeId'] = res.Id;
                     }
-                });
-                this.buildSecondaryNavigationForObject(this.selected ? this.selectedItemID : 0, this.objectType);
+				});
+
+				this.buildSecondaryNavigation({ assetTypeUid: this.selected.uid});
 
             });
         }

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="vlova" id="Function.dbo.GetAssetBreadcrumbs-v1">
+  <changeSet author="tduric" id="Function.dbo.GetAssetBreadcrumbs-v2.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,8 +13,7 @@
 		<![CDATA[
 create or alter function [dbo].[GetAssetBreadcrumbs]
 (		        
-	@objectType varchar(max),
-	@objectId int
+	@assetUid uniqueidentifier
 )
 returns table
 as
@@ -24,22 +23,24 @@ return
 		(
 		select	A.ID,
 				A.[ObjectID], 
+				A.Object,
 				A.AssetTypeID,
 				I.SubjectID as [ParentID], 
 				0 as [Level]
 		from	dbo.Asset A
 				left join dbo.PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
-		where	A.[Object] = @objectType and A.ObjectID = @objectId
+		where	A.Uid = @assetUid
 		
 		union all
 		
 		select	P.ID,
 				P.[ObjectID] as ID, 
+				P.Object,
 				P.AssetTypeID,
 				I.SubjectID as ParentID, 
 				h.[Level]-1 as [Level]
 		from	dbo.Asset P
-				inner join h on P.[Object] = @objectType and P.ObjectID = h.ParentID
+				inner join h on P.[Object] = h.Object and P.ObjectID = h.ParentID
 				outer apply (
 							select	SubjectID
 							from	dbo.PredicateIntersect 
