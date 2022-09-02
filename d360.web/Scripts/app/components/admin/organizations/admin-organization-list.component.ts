@@ -242,6 +242,6 @@ export class AdminOrganizationListComponent extends BaseComponent implements OnC
     }
 
     private openResource(event) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource', event.AcceptedBy));
+        this.router.navigateByUrl(SiteUrlHelpers.getUserUrl(event.AcceptedBy));
     }
 }

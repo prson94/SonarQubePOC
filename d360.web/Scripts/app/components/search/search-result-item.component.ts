@@ -108,7 +108,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     private navigateVisualization() {
-        let url = (this.result.Group == 'Diagram Asset') ? this.result.Url : '/sidebar/visualization/browser/' + this.result.Uid;
+        let url = (this.result.Group == 'Diagram Asset') ? this.result.Url : `/asset/${this.result.Uid}/diagrams`;
         this.router.navigateByUrl(url);
     }
 

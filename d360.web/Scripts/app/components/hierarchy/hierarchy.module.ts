@@ -46,6 +46,7 @@ import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-de
 import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
 import { PortalsModule } from '../shared/portals/portals.module';
 import { InfoTooltipModule } from '../shared/tooltip/info-tooltip.component';
+import { AngularSplitModule } from 'angular-split';
 
 @NgModule({
     imports: [
@@ -75,6 +76,7 @@ import { InfoTooltipModule } from '../shared/tooltip/info-tooltip.component';
         D3SSharedModule,
         PipesModule,
 
+        AngularSplitModule,
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
         SharedAssetScoreModule,
@@ -100,7 +102,13 @@ import { InfoTooltipModule } from '../shared/tooltip/info-tooltip.component';
         HierarchyListComponent,
         HierarchyItemComponent,
         HierarchyItemStructureComponent,
-    ],
+	],
+	exports: [
+		HierarchyComponent,
+		HierarchyListComponent,
+		HierarchyItemComponent,
+		HierarchyItemStructureComponent,
+	],
     providers: [
         
     ]

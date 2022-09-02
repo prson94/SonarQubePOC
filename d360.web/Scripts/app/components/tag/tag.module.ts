@@ -29,6 +29,7 @@ import { SemanticsModule } from '../semantic/semantics.module';
 import { TooltipModule } from 'primeng/tooltip';
 import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advanced-filtering.module';
 import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
+import { AngularSplitModule } from 'angular-split';
 
 @NgModule({
     imports: [
@@ -38,6 +39,8 @@ import { SearchFieldModule } from '../shared/controls/search-field/search-field.
         RouterModule,
 
         TagRoutingModule,
+
+        AngularSplitModule,
 
         //primeng
         TableModule,

@@ -1,21 +1,33 @@
 ﻿<div class="row">
-    <div class="col s12" style="display:flex;">
-        <div class="tile tile-detail main-panel">
+    <as-split unit="pixel"
+              direction="horizontal"
+              [gutterSize]="16"
+              class="col s12 split"
+              style="display: flex"
+              [class.side-panel-close]="!sidePanelOpen"
+              (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+        <as-split-area class="tile tile-detail main-panel">
             <d3s-user-list [(selected)]="selectedResource"></d3s-user-list>
-        </div>
-        <div class="tile tile-detail side-panel" *ngIf="!isLoading">
+        </as-split-area>
+        <as-split-area [size]="getSidePanelWidth()"
+                       [minSize]="getSidePanelMinWidth()"
+                       [maxSize]="getSidePanelMaxWidth()"
+                       class="tile tile-detail side-panel"
+                       *ngIf="!isLoading">
             <side-panel (expandedChange)="sidePanelOpen=$event"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [expanded]="sidePanelOpen"
                         [panelApplies]="'true'"
                         [storageKey]="sidePanelStorageKey"
                         [selectedPanel]="'detail'"
+                        [setMinMaxWidth]="false"
                         hasDetail="true">
                 <ng-container *ngIf="sidePanelOpen && sidePanelLoading">
                     <d3s-loading [isLoading]="true"></d3s-loading>
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen">
-                    <div class="empty-overlay" *ngIf="!selectedResource && sidePanelTab === 'detail'">
+                    <div class="empty-overlay"
+                         *ngIf="!selectedResource && sidePanelTab === 'detail'">
                         <div class="content">
                             <div class="icon-holder">
                                 <i class="fa fa-info-circle"></i>
@@ -25,12 +37,12 @@
                     </div>
                     <ng-container *ngIf="selectedResource && sidePanelTab === 'detail'">
                         <asset-preview [assetUid]="selectedResource.uid"
-                                       [assetType]="'Resource'"                                       
+                                       [assetType]="'Resource'"
                                        [hasEditLink]="false"
                                        [hasOpenLink]="true"></asset-preview>
-                    </ng-container>                    
+                    </ng-container>
                 </ng-container>
             </side-panel>
-        </div>
-    </div>
+        </as-split-area>
+    </as-split>
 </div>

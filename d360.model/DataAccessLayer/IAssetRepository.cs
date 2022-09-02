@@ -18,6 +18,7 @@ namespace d360.model.DataAccessLayer
         Asset GetAssetByObjectId(string obj, int objId);
         
         Asset GetAssetByUID(Guid assetUid);
+        AssetTypeClass GetAssetClassByUID(Guid assetUid);
         
         Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? assetTypeUid);
         

@@ -16,8 +16,14 @@
             </div>
         </div>
     </div>
-    <div class="search-container">
-        <div class="search-content">
+    <as-split unit="pixel"
+              direction="horizontal"
+              [gutterSize]="16"
+              class="search-container split"
+              style="display: flex"
+              [class.side-panel-close]="!sidePanelOpen"
+              (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+        <as-split-area class="search-content">
             <div class="filterbar">
                 <advanced-filtering #advancedFilter
                                     [loadIdentifier]="'GlobalSearch'"
@@ -39,22 +45,25 @@
                         </button>
                     </div>
                 </div>
-
+    
             </div>
             <div class="cardlist">
                 <div *ngIf="(searchStateService.connectionError | async)">
                     <div class="row">
                         <div class="tile tile-detail search-nodata">
                             <header i18n>No Connection to Search Server.</header>
-                            <span style="padding-left:15px" i18n>Cannot connect to the search server at the moment. Please try again later.</span>
+                            <span style="padding-left:15px"
+                                  i18n>Cannot connect to the search server at the moment. Please try again later.</span>
                         </div>
                     </div>
                 </div>
-                <div *ngIf="!(searchStateService.loading | async) &&!(searchStateService.connectionError | async) && (searchStateService.resultCount | async) == 0">
+                <div
+                     *ngIf="!(searchStateService.loading | async) &&!(searchStateService.connectionError | async) && (searchStateService.resultCount | async) == 0">
                     <div class="row">
                         <div class="tile tile-detail search-nodata">
                             <header i18n>Your search did not find any results.</header>
-                            <span style="padding-left:15px" i18n>Suggestions:</span>
+                            <span style="padding-left:15px"
+                                  i18n>Suggestions:</span>
                             <ul>
                                 <li i18n>Check your spelling</li>
                                 <li i18n>Try broader search criteria</li>
@@ -65,20 +74,30 @@
                 </div>
                 <ng-container *ngIf="!(searchStateService.loading | async)">
                     <div *ngFor="let result of searchStateService.results | async">
-                        <d3s-search-result-item [result]="result" [selection]="selection" (onSelect)="resultSelected($event)"></d3s-search-result-item>
+                        <d3s-search-result-item [result]="result"
+                                                [selection]="selection"
+                                                (onSelect)="resultSelected($event)"></d3s-search-result-item>
                     </div>
                 </ng-container>
                 <d3s-loading [isLoading]="(searchStateService.loading | async)"></d3s-loading>
             </div>
-            <d3s-paginator [page]="searchStateService.pageNumber | async" [rows]="resultsPerPage" [totalRecords]="searchStateService.resultCount | async" (onPageChange)="paginate($event)" [hideLastButton]="true"></d3s-paginator>
-        </div>
-        <div class="tile tile-detail side-panel">
+            <d3s-paginator [page]="searchStateService.pageNumber | async"
+                           [rows]="resultsPerPage"
+                           [totalRecords]="searchStateService.resultCount | async"
+                           (onPageChange)="paginate($event)"
+                           [hideLastButton]="true"></d3s-paginator>
+        </as-split-area>
+        <as-split-area [size]="getSidePanelWidth()"
+                       [minSize]="getSidePanelMinWidth()"
+                       [maxSize]="getSidePanelMaxWidth()"
+                       class="tile tile-detail side-panel">
             <side-panel (expandedChange)="sidePanelOpen=$event"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [expanded]="sidePanelOpen"
                         [selectedItem]="selection"
                         [panelApplies]="panelApplies"
                         hasProfiling="true"
+                        [setMinMaxWidth]="false"
                         hasDetail="true"
                         [height]="'calc(100vh - 210px)'"
                         [extraButtons]="extraButtons"
@@ -97,7 +116,8 @@
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen && selection?.AssetUid != null && !sidePanelLoading">
                     <ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">
-                        <data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondaryPanelOpen($event)"></data-profile>
+                        <data-profile [dataProfile]="dataProfile"
+                                      (secondaryPanelLinkClicked)="secondaryPanelOpen($event)"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail' && selection.ObjectType === 'Semantic Type'">
                         <semantic-detail [qualifier]="getQualifier(selection)"
@@ -125,11 +145,19 @@
                     </ng-container>
                 </ng-container>
                 <ng-container *ngIf="secondarySidePanelOpen">
-                    <div #semanticTile class="secondary-side-panel">
+                    <div #semanticTile
+                         class="secondary-side-panel">
                         <div class="panel-header">
-                            <span class="header-label" i18n>Information</span>
+                            <span class="header-label"
+                                  i18n>Information</span>
                             <div class="button-container">
-                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" i18n-tooltip tooltip="Close" class="close-button"></button>
+                                <button igButton
+                                        [attr.data-cy]="'Semantic_Secondary_Close'"
+                                        icon="fa-times"
+                                        (click)="secondarySidePanelOpen=false;"
+                                        i18n-tooltip
+                                        tooltip="Close"
+                                        class="close-button"></button>
                             </div>
                         </div>
                         <div class="details-container">
@@ -162,8 +190,10 @@
                     </div>
                 </ng-container>
             </side-panel>
-        </div>
-    </div>
+        </as-split-area>
+    </as-split>
+
+
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
 
     <d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
@@ -183,3 +213,4 @@
                       [isV2API]="true"
                       (closeClick)="showEditor=false"></asset-editor>
     </d3s-modal>
+</div>

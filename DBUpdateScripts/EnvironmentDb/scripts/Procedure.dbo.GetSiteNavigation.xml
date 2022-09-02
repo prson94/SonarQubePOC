@@ -113,33 +113,34 @@ begin
 	union all
 
 
-	select	n.Name as MenuID,
-			n.SortOrder,
-			0 as Feature,
-			n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
-			n.Title as Title,
-			(
-				SELECT	name,
-						url,
-						0 as feature,
-						null as items
-				FROM	(
-						SELECT		TOP 1000
-									T.ObjectID,
-									T.Name,
-									dbo.GenerateAssetTypeUrl(T.ID) As url
-						FROM		AssetType T 
-									left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'TaxonomyType' and v.Name != '#ASSET_TYPE'
-						WHERE		v.ObjectID is null
-						and			T.Object = 'TaxonomyType'
-						and			not exists (select 1 from #tempNoReadAssetTypes nr where nr.AssetTypeId = T.ID)
-						ORDER BY	T.Name
-						) BG
-						FOR XML PATH('nav'), TYPE
-			) AS Items,
-			'' as [url]
-	from	SiteNav n
-	where	n.Name = '#Models' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+			SELECT	name,
+					url,
+					0 as feature,
+					null as items
+			FROM	(
+					SELECT		TOP 1000
+								T.ObjectID,
+								T.Name,
+								AUrl.Url As url
+					FROM		AssetType T 
+								cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
+								left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'TaxonomyType' and v.Name != '#ASSET_TYPE'
+					WHERE		v.ObjectID is null
+					and			T.Object = 'TaxonomyType'
+					and			not exists (select 1 from #tempNoReadAssetTypes nr where nr.AssetTypeId = T.ID)
+					ORDER BY	T.Name
+					) BG
+					FOR XML PATH('nav'), TYPE
+		) AS Items,
+		'' as [url]
+FROM SiteNav n
+WHERE n.Name = '#Models' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 
 	union all
 
@@ -157,8 +158,9 @@ begin
 					SELECT		TOP 1000
 								T.ObjectID,
 								T.name,
-								dbo.GenerateAssetTypeUrl(T.ID) As url
+								AUrl.Url As url
 					FROM		AssetType T 
+								cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
 								left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'PolicyType' and v.Name != '#ASSET_TYPE'
 					WHERE		v.ObjectID is null
 					and T.Object = 'PolicyType'
@@ -202,29 +204,28 @@ begin
 	union all
 
 	SELECT	n.Name as MenuID,
-			n.SortOrder,
-			0 as Feature,
-			n.Icon as Icon, 
-			n.ImageIconUrl as ImageIconUrl,
-			n.Title as Title,
-			(
-			SELECT	T.name,
-					dbo.GenerateAssetTypeUrl(T.ID) As url,
-					0 as feature,
-					null AS items	
-			FROM	AssetType T
-					LEFT JOIN SiteNav v on v.ObjectID = T.ObjectID and v.Object = T.Object and v.Name != '#ASSET_TYPE'
-			WHERE	T.Object = 'RuleType' 
-					and v.ObjectID IS NULL
-					and not exists (select 1 from #tempNoReadAssetTypes nr where nr.AssetTypeId = T.ID)
-			Order By T.Name
-			FOR XML PATH('nav'), TYPE
-			) AS Items,
-			'' as [url]
-	from	SiteNav n
-	where	n.Name = '#Data Quality' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
-
-	union all
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, 
+		n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+		SELECT	T.name,
+				AUrl.Url As url,
+				0 as feature,
+				null AS items	
+		FROM	AssetType T
+				cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
+				LEFT JOIN SiteNav v on v.ObjectID = T.ObjectID and v.Object = T.Object and v.Name != '#ASSET_TYPE'
+		WHERE	T.Object = 'RuleType' 
+				and v.ObjectID IS NULL
+				and not exists (select 1 from #tempNoReadAssetTypes nr where nr.AssetTypeId = T.ID)
+		Order By T.Name
+		FOR XML PATH('nav'), TYPE
+		) AS Items,
+		'' as [url]
+	FROM SiteNav n
+	WHERE n.Name = '#Data Quality' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 
 	select	n.Name as MenuID,
 			n.SortOrder,
@@ -275,27 +276,27 @@ begin
 
 	union all 
 
-	select	n.name as MenuID,
-			n.SortOrder,
-			0 as Feature,
-			case when ats.Icon is not null 
-			then ats.Icon
-			else (
-			  select case 
-				  when at.Class = 1 or at.Class = 8 or at.Class = 7 then 'fa-book' 
-				  when at.Class = 2 then 'fa-sitemap' 
-				  when at.Class = 6 then 'fa-university' 
-				  end as value)
-			end as Icon,
-			n.ImageIconUrl as ImageIconUrl,
-			at.Name as Title,	
-			dbo.ArtifactNgSiteNavigation(at.ID) as items,
-			'assettype/'+ cast(at.uid as nvarchar(36)) as [url]
-	from	SiteNav n
-			left join AssetType at on at.Object = n.Object and at.ObjectID = n.ObjectID
-			left join AssetTypeStyle ats on ats.id = at.ID
-	where	n.Name = '#ASSET_TYPE' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
-			and not exists (select 1 from #tempNoReadAssetTypes nr where nr.AssetTypeId = at.ID)
+	SELECT	n.name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		case when ats.Icon is not null 
+		then ats.Icon
+		else (
+		  select case 
+		      when at.Class = 1 or at.Class = 8 or at.Class = 7 then 'fa-book' 
+			  when at.Class = 2 then 'fa-sitemap' 
+			  when at.Class = 6 then 'fa-university' 
+			  end as value)
+		end as Icon,
+		n.ImageIconUrl as ImageIconUrl,
+		at.Name as Title,	
+		dbo.ArtifactNgSiteNavigation(at.ID) as items,
+		'assets/'+ cast(at.uid as nvarchar(36)) as [url]
+		FROM SiteNav n
+		left join AssetType at on at.Object = n.Object and at.ObjectID = n.ObjectID
+		left join AssetTypeStyle ats on ats.id = at.ID
+		WHERE n.Name = '#ASSET_TYPE' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+		and not exists (select 1 from #tempNoReadAssetTypes nr where nr.AssetTypeId = at.ID)
 
 	order by sortorder
 end

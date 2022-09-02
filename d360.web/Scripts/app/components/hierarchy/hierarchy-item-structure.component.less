@@ -36,7 +36,7 @@
 :host p-treetable ::ng-deep thead tr th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
 }
 
 // This adds horizontal scroll on table
@@ -46,11 +46,45 @@
   }
 
   table {
+    min-width: 100%;
     width: max-content;
   }
 }
 
+// This makes kebab menu to be sticky
+:host p-treetable ::ng-deep table {
+  th.asset-grid-tools, td.asset-grid-tools {
+    position: sticky;
+    right: -1px; // This 1px compensates transparent border
+  }
+
+  td.asset-grid-tools {
+    z-index: 1;
+  }
+}
+
+// This makes sure that kebab menu can inherit white background from p-treetable
+:host p-treetable ::ng-deep {
+  .p-treetable-wrapper, table, tbody, tr:not(.p-highlight), td {
+    background: inherit;
+  }
+}
+
+// This ensures that only column headings affects calculation of column width
+:host p-treetable ::ng-deep td {
+  max-width: 0;
+
+  // For some reason, max-width: 0 makes kebab menu to extend table width. Thus we undo this to avoid weird mess
+  &.asset-grid-tools {
+    max-width: unset;
+  }
+}
+
 p-treetable ::ng-deep table {
+  th {
+    word-break: break-all;
+  }
+
   th, 
   td {
     &:not(:last-child) {

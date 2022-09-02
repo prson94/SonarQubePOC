@@ -75,7 +75,7 @@ namespace d360.model.DataAccessLayer
 				{
 
 					var name = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "name").Value.Trim();
-					
+
 					if (!string.IsNullOrEmpty(name))
 					{
 
@@ -88,7 +88,7 @@ namespace d360.model.DataAccessLayer
 				{
 
 					var user = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "resourceuid").Value.Trim();
-					
+
 					if (!string.IsNullOrEmpty(user))
 					{
 						resourceString = @"left join Asset U on U.[uid] = @user
@@ -120,7 +120,7 @@ namespace d360.model.DataAccessLayer
 				if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
 				{
 					var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
-					
+
 					if (!string.IsNullOrEmpty(simpleFilter))
 					{
 						simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
@@ -130,21 +130,12 @@ namespace d360.model.DataAccessLayer
 						List<string> simpleFilters = new List<string>();
 
 						//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
-						foreach (var ft in fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString()))
+						var fields = fieldTypes.Zip(fieldColumns.Selects(), (type, column) => (type, column))
+							.Where(x => x.type.IsListable == true && x.type.Type != DataType.OwnershipLookup.ToString());
+
+						foreach (var (ft, column) in fields)
 						{
-							if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
-							{
-								string ftformatted = $@"F{ft.ID}.FormattedValue";
-								simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else {ftformatted} end as value) like @simpleFilter");
-							}
-							else if (ft.Type == DataType.Counter.ToString())
-							{
-								simpleFilters.Add($"('{ft.CounterPrefix}' + CAST(F{ft.ID}.FormattedValue as nvarchar(max))) like @simpleFilter");
-							}
-							else
-							{
-								simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
-							}
+							simpleFilters.Add($"{column.StatementWithoutColumnName} like @simpleFilter");
 						}
 
 						simpleFilters.Add($"G.Name like @simpleFilter");
@@ -153,6 +144,17 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 			}
+
+			var sqlOrderBy = CompanyContext.ParseOrderColumn(queryParams, Enumerable
+				.Zip(
+					fieldTypes,
+					fieldColumns.Selects(),
+					(type, column) => new DefaultFilter(type.Name, column.StatementWithoutColumnName, SqlFieldType.Text))
+				.Concat(new[] { new DefaultFilter("Name", "G.Name", SqlFieldType.Text) })
+				.ToList(),
+				"Name");
+
+			var sqlOrderDirection = this.CompanyContext.ParseOrderDirection(queryParams, "asc");
 
 			var whereStatements = condition.Count != 0 ? $" where  {string.Join(" and ", condition)}" : "";
 			var sql = $@"
@@ -171,7 +173,7 @@ namespace d360.model.DataAccessLayer
 						   {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins.SQLJoinStatement) : "")}
 						   {resourceString} 
 						   {whereStatements}  
-						   order by G.Name 
+						   order by {sqlOrderBy} {sqlOrderDirection}
 						   {paginationStatement}";
 
 			var countSql = $@"Select count(*) from [Group] G

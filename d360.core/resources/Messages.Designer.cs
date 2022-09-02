@@ -70,7 +70,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset Type Class invalid. Allowed classes are {0}.
+        ///   Looks up a localized string similar to [Class] value invalid. Allowed classes are {0}.
         /// </summary>
         public static string AssetTypeInvalidClass {
             get {
@@ -88,7 +88,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Duplicate Relationship Uid identifiers : {0}. Identifiers must be unique within a batch..
+        ///   Looks up a localized string similar to Duplicate Relationship Uid identifiers : {0}. [Uid] identifiers must be unique within a batch..
         /// </summary>
         public static string Error_Duplicate_Relationship_Uid {
             get {
@@ -151,7 +151,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Must use When conditions when ApplyToType value is set to false..
+        ///   Looks up a localized string similar to Must use [When] conditions when [ApplyToType] value is set to false..
         /// </summary>
         public static string Error_Responsibility_ApplyToType_False {
             get {

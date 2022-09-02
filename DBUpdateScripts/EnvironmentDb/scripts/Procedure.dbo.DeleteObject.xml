@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.DeleteObject-v18">
-  <comment>GOV-18610</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.DeleteObject-v19">
+    <comment>GOV-19408</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -549,18 +549,18 @@ create or alter procedure [dbo].[DeleteObject]
 			  begin
 				  delete	O
 				  from	Follow O 
-						  inner join Asset A on A.Object = O.ObjectType and A.ObjectID = O.ObjectID
+						  inner join Asset A on A.ID = O.ASSETID
 						  inner join #types I on I.ID = A.AssetTypeID;
 
 				  delete	O
 				  from	Follow O
-						  inner join #types I on O.ObjectType = I.Object and I.ObjectID =  O.ObjectID;
+						  inner join #types I on O.AssetTypeID = I.ID;
 			  end
 			  else
 			  begin
-				  delete	O
+				  delete O
 				  from	Follow O
-						  inner join #items I on O.ObjectType = I.Object and I.ObjectID =  O.ObjectID;
+						  inner join #items I on O.AssetID = I.ID;
 			  end
 		  end;
  
@@ -921,7 +921,6 @@ create or alter procedure [dbo].[DeleteObject]
 			  set @ClearResponsibilities = 0
 			  set @ClearAssets = 0
 
-			  update	graph.AssetEdge set State = 3 where ID = @ObjectID
 			  update	[Intersect] set Deleted = 1 where ID = @ObjectID
 		  end;
 
@@ -936,7 +935,6 @@ create or alter procedure [dbo].[DeleteObject]
 			  set @ClearResponsibilities = 0
 			  set @ClearAssets = 0
 
-			  delete graph.AssetEdge where IntersectTypeID = @ObjectID;
 			  delete [Intersect] where IntersectTypeID = @ObjectID
 			  delete IntersectType where ID = @ObjectID
 		  end;
@@ -995,15 +993,6 @@ create or alter procedure [dbo].[DeleteObject]
 			  -- Delete intersect types related to types that you are removing.
 			  if @IsType = 1
 			  begin
-				  delete	O
-				  from	graph.AssetEdge O
-						  inner join IntersectType T on T.ID = O.IntersectTypeID
-						  inner join #types I on T.Subject = I.Object and T.SubjectID = I.ObjectID;
-
-				  delete	O
-				  from	graph.AssetEdge O
-						  inner join IntersectType T on T.ID = O.IntersectTypeID
-						  inner join #types I on T.Object = I.Object and T.ObjectID = I.ObjectID;
 
 				  delete	O
 				  from	IntersectType O
@@ -1029,7 +1018,6 @@ create or alter procedure [dbo].[DeleteObject]
 					  from	[Intersect] I
 							  inner join #items O on I.Object = O.Object and I.ObjectID = O.ObjectID;
 
-				  delete graph.AssetEdge where ID in (select ID from #intersects);
 				  delete [Intersect] where ID in (select ID from #intersects);
 			  end;
 		  end;
@@ -1090,8 +1078,9 @@ create or alter procedure [dbo].[DeleteObject]
 							inner join #types I on I.ID = O.AssetTypeID;
 
 				  delete	O
-				  from		graph.AssetNode O
-							inner join #types I on I.ID = O.AssetTypeID;
+				  from		dbo.AssetPath O
+							inner join Asset A on A.ID = O.ID
+							inner join #types I on I.ID = A.AssetTypeID;
 
 				delete	T
 				from	[metrics].[ScoreItem] T
@@ -1163,7 +1152,7 @@ create or alter procedure [dbo].[DeleteObject]
 						  inner join #items I on I.ID = A.ID;
 
 				  delete	O
-				  from	graph.AssetNode O
+				  from	dbo.AssetPath O
 						  inner join #items I on I.ID = O.ID;
 
 					delete	T

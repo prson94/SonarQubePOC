@@ -24,12 +24,15 @@ import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-
 import { takeUntil } from 'rxjs/operators';
 import { LazyLoadEvent } from 'primeng/api';
 import { isEqual } from 'lodash';
+import { SidePanelService } from '../../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
+import { SortOrder } from '../../../models/enums.model';
 
 declare var CurrentResourceID;
 @Component({
     selector: 'd3s-admin-groups',
     providers: [GroupService],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.Default,
     templateUrl: './admin-groups.component.html',
     styleUrls: ['admin-groups.component.less'],
     encapsulation: ViewEncapsulation.None
@@ -75,6 +78,8 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     selectedTag: any;
 
 	previousEvent: LazyLoadEvent;
+    sortOrder: number = SortOrder.None;
+    sortField: string = "";
 	currentPageNumber: number = 0;
 	totalRecords: number;
 	rowsPerPage: number = this.defaultInitialItemsPerPage;
@@ -101,6 +106,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
+        private sidePanelService: SidePanelService,
         private linkClickInterceptor: LinkClickInterceptor,
 		private featureFlagService: FeatureFlagsService,
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService
@@ -108,8 +114,9 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Groups;
         this.adminHeading = StringConstants.SubArea_Security;
-        this.setCommonItems();
-        this.buildSecondaryNavigationForObject(0, 'GroupType');
+		this.setCommonItems();
+		this.baseAssetTypeUid = this.groupTypeUid;
+		this.buildSecondaryNavigationForAssetTypeUid(this.groupTypeUid);
 
         this.sidePanelStorageKey = 'list_' + AssetTypeClass.Group + '_' + CurrentResourceID;
 
@@ -136,6 +143,22 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 		this.destroy.complete();
     }
 
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+    }
+
 	setRowsPerPage(): void {
 		this.numberOfRowsByCategoryService.rowsPerPage.pipe(
 			takeUntil(this.destroy)
@@ -152,6 +175,9 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 
 		this.rowsPerPage = event.rows;
 		this.currentPageNumber = event.first / event.rows;
+        this.sortOrder = event.sortOrder;
+        this.sortField = event.sortField;
+        
 		this.load();
 	}
 
@@ -167,8 +193,10 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 				var gridDefinition = res[0];
 				var groups = res[1];
 
-				this.columns = gridDefinition.Columns.filter((x) => x.datafield !== 'Name');
-				this.fields = gridDefinition.Fields;
+                if (this.columns.length === 0 && this.fields.length === 0) {
+                    this.columns = gridDefinition.Columns.filter((x) => x.datafield !== 'Name');
+                    this.fields = gridDefinition.Fields;
+                }
 
 				this.totalRecords = groups.Total;
 				this.groupItems = groups.items;
@@ -198,6 +226,14 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 			delete params['_simpleFilter'];
 		}
 
+        if (this.sortField) {
+            params._order = this.sortField;
+        }
+
+        if (this.sortOrder !== SortOrder.None) {
+            params._direction = this.sortOrder === SortOrder.Ascending ? "asc" : "desc";
+        }
+
 		params._pageNum = this.currentPageNumber + 1;
 		params._pageSize = this.rowsPerPage;
 
@@ -215,10 +251,6 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     selectRow(data) {
         this.selectedRow = data;
         this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
-    }
-
-    private groupUrl(id: number) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(StringConstants.ObjectGroup, id));
     }
 
     saveItem($event) {

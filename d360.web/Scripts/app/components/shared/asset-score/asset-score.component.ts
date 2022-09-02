@@ -11,6 +11,8 @@ import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { Router } from '@angular/router';
 import { drop } from 'lodash';
+import { SidePanelService } from '../../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 @Component({
     selector: 'd3s-asset-score',
@@ -67,6 +69,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     selectedMetric: any;
     isExternallyCalculated: boolean = false;
     dropdownClassName: string = 'scoring-picker-dropdown';
+    sidePanelStorageKey: string = 'side_panel_width_scoring';
+    sidePanelOpen: boolean = true;
 
     private headerMenu = [
         {
@@ -83,6 +87,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     constructor(
         protected assetService: AssetService,
         protected metricService: MetricsService,
+        private sidePanelService: SidePanelService,
         protected scoreService: ScoreService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
@@ -497,7 +502,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private setSelectedButton(scoreType: ScoreType) {
         scoreType = <any>ScoreType[scoreType];
         if (this.selectedScoreType !== scoreType) {
-            this.router.navigateByUrl(`/sidebar/score/${this.uid}/${scoreType}`);
+            this.router.navigateByUrl(`/asset/${this.uid}/score/${scoreType}`);
         }
     }
 
@@ -595,6 +600,22 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 }
             }
         }
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
     getTooltipForScoreBadge(item: PointBreakdown) {

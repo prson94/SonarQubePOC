@@ -1185,6 +1185,9 @@ namespace d360.model.DataAccessLayer
 			queryValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value ?? "1";
 			int.TryParse(queryValue, out int pageNum);
 
+			string simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value ?? "";
+			string simpleFilterSQL = string.IsNullOrEmpty(simpleFilter.Trim()) ? "" : $"where [Path] like '%{simpleFilter}%'";
+
 			#endregion
 
 			//need to add a default Then if it was omitted even if the test is for When, since the parser expects the full rule model
@@ -1283,10 +1286,10 @@ namespace d360.model.DataAccessLayer
 
 			if (includeTotal)
 			{
-				total = await Company.QueryFirstOrDefaultAsync<int>($"select count(*) from ({resultsSql})x");
+				total = await Company.QueryFirstOrDefaultAsync<int>($"select count(*) from ({resultsSql}) x {simpleFilterSQL}");
 			}
 
-			var items = await Company.QueryAsync<ResponsibilityRuleTestResultModel>(resultsSql + orderSql + pagingSql, new { offset = pageSize * (pageNum - 1), rows = pageSize });
+			var items = await Company.QueryAsync<ResponsibilityRuleTestResultModel>($"select * from ({resultsSql}) r {simpleFilterSQL} {orderSql} {pagingSql}", new { offset = pageSize * (pageNum - 1), rows = pageSize });
 
 			return new ResponsibilityRuleTestResponseModel
 			{

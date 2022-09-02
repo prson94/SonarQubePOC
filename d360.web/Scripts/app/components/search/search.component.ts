@@ -21,6 +21,8 @@ import { Operator } from '../../models/operator.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { SemanticType } from '../../models/semantic-type.model';
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 @Component({
     selector: 'd3s-search',
@@ -100,6 +102,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected secondaryNavService: SecondaryNavService,
         public searchStateService: SearchStateService,
+        private sidePanelService: SidePanelService,
         private dataProfileService: DataProfileService,
         protected settingsService: CompanySettingsService,
         private datePipe: DatePipe) {
@@ -341,6 +344,22 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
             this.searchStateService.connector = this.parseConnector(this.advancedFilter.conditions.connector);
             this.doSearch(true);
         }
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
     saveItem() {

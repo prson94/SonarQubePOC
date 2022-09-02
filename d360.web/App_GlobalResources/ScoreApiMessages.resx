@@ -124,10 +124,10 @@
     <value>Allocation with uid {0} does not exist.</value>
   </data>
   <data name="DuplicateMeasureUid" xml:space="preserve">
-    <value>Duplicate measureUid specified in the payload.</value>
+    <value>Duplicate [measureUid] specified in the payload.</value>
   </data>
   <data name="EffectiveDateNotGTToday" xml:space="preserve">
-    <value>effectiveDate must not be greater than today's date (in UTC).</value>
+    <value>[effectiveDate] must not be greater than today's date (in UTC).</value>
   </data>
   <data name="ErrorAddingScoreResults" xml:space="preserve">
     <value>Error adding score results</value>
@@ -142,7 +142,7 @@
     <value>Lower threshold must be set.</value>
   </data>
   <data name="RangeLimitThreshold" xml:space="preserve">
-    <value>Threshold values must be between 0 and 100.</value>
+    <value>[Threshold] values must be between 0 and 100.</value>
   </data>
   <data name="RestrictDeleteScore" xml:space="preserve">
     <value>Unfortunately you are unable to delete a score with measures defined.</value>
@@ -178,9 +178,9 @@
     <value>Score definition with {0} is not internally calculated.</value>
   </data>
   <data name="UpperGtLower" xml:space="preserve">
-    <value>Lower threshold must be smaller than Upper threshold.</value>
+    <value>[lowerThreshold] must be smaller than [upperThreshold]</value>
   </data>
   <data name="UpperThreshold" xml:space="preserve">
-    <value>Upper threshold must be set.</value>
+    <value>[upperThreshold] must be set.</value>
   </data>
 </root>

@@ -76,8 +76,12 @@ export class HeaderBreadcrumbService extends BaseObservableService {
 		this.currentObjectInfoSource.next({ type: type, id: id, AssetTypeUid: AssetTypeUid, AssetUid: AssetUid });
 	}
 
+	setCurrentObjectInfoByUid(uid: string) {
+		this.setCurrentObjectInfo(null, null, uid);
+	}
+
     showBreadcrumb(breadcrumb: Breadcrumb) {
-        this.breadcrumbSource.next(breadcrumb);
+		this.breadcrumbSource.next(breadcrumb);
     }
 
     setCurrentObjectState(objectState: string) {
@@ -108,14 +112,22 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     }
 
     getAreaName(objectType: string, objectId: number): Observable<string> {
-
         return this.http
-            .get(`api/breadcrumb/getArea?&objectType=${objectType}&objectId=${objectId}`)
+            .get(`api/breadcrumb/getArea?objectType=${objectType}&objectId=${objectId}&uid=`)
             .pipe(
                 map((response) => <string>response),
                 catchError((err) => this.handleError(err))
             );
-    }
+	}
+
+	getAreaNameByUid(assetUid: string): Observable<string> {
+		return this.http
+			.get(`api/breadcrumb/getArea?uid=${assetUid}&objectType=&objectId=`)
+			.pipe(
+				map((response) => <string>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
     getFolderTitle(menuID: string): Promise<string> {
         let folderName = menuID;

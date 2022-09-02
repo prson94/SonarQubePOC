@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild, Input } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -25,153 +25,154 @@ import { AssetGridComponent } from '../assets-grid/asset-grid.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 declare var CurrentResourceID;
 
 @Component({
-    selector: 'd3s-rule-list',
-    providers: [GridDefinitionService, RulesService, PermissionsService, WebAnalyticsService, DataProfileService],
-    templateUrl: './rule-list.component.html'
+	selector: 'd3s-rule-list',
+	providers: [GridDefinitionService, RulesService, PermissionsService, WebAnalyticsService, DataProfileService],
+	templateUrl: './rule-list.component.html'
 })
 
 export class RuleListComponent extends BaseComponent implements OnInit, OnDestroy {
-    routeParamsSubscription: any;
-    private currentAreaNameSubscription: any;
-    private currentAreaName: string;
-    ruleTypeId: number;
-    gridObject: AssetGridObject;
-    ruleType: RuleType;
+	@Input() assetTypeUid: string;
+
+	routeParamsSubscription: any;
+	private currentAreaNameSubscription: any;
+	private currentAreaName: string;
+	gridObject: AssetGridObject;
+	ruleType: RuleType;
 
     selection: any = null;
     showEditor: boolean = false;
-    private sidePanelOpen: boolean = false;
-    private sidePanelLoading: boolean = false;
-    private sidePanelTab: string;
-    private sidePanelStorageKey: string;
-    private hasProfiling: boolean = false;
+    sidePanelOpen: boolean = false;
+    sidePanelLoading: boolean = false;
+    sidePanelTab: string;
+    sidePanelStorageKey: string;
+    hasProfiling: boolean = false;
     gridLoading: boolean = true;
     definitionLoaded: boolean = false;
     dataProfile: any;
 
-    @ViewChild('grid', { static: false }) assetGrid: AssetGridComponent;
+	@ViewChild('grid', { static: false }) assetGrid: AssetGridComponent;
 	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
 
-    hrefSub: Subscription;
-    selectedAsset: any;
-    selectedReferenceItem: any;
-    selectedTag: any;
-    semanticType: SemanticType;
-    secondarySidePanelOpen: boolean;
-    secondarySidePanel: string = "detail";
-    resourceUid: string;
+	hrefSub: Subscription;
+	selectedAsset: any;
+	selectedReferenceItem: any;
+	selectedTag: any;
+	semanticType: SemanticType;
+	secondarySidePanelOpen: boolean;
+	secondarySidePanel: string = "detail";
+	resourceUid: string;
 
-    constructor(private route: ActivatedRoute,
-        private router: Router,
-        protected rulesService: RulesService,
-        protected titleService: Title,
-        protected messagesService: MessagesObservableService,
-        private gridDefinitionService: GridDefinitionService,
-        private headerActionsService: HeaderActionsService,
-        private dataProfileService: DataProfileService,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService,
-        secondaryNavService: SecondaryNavService,
-        protected settingsService: CompanySettingsService,
-        webAnalyticsService: WebAnalyticsService,
-        private linkClickInterceptor: LinkClickInterceptor,
-    ) {
-        super(settingsService);
-        this.webAnalyticsService = webAnalyticsService;
-        this.secondaryNavService = secondaryNavService;
+	constructor(private route: ActivatedRoute,
+		private router: Router,
+		protected rulesService: RulesService,
+		protected titleService: Title,
+		private sidePanelService: SidePanelService,
+		protected messagesService: MessagesObservableService,
+		private gridDefinitionService: GridDefinitionService,
+		private headerActionsService: HeaderActionsService,
+		private dataProfileService: DataProfileService,
+		protected headerBreadcrumbService: HeaderBreadcrumbService,
+		protected permissionsService: PermissionsService,
+		secondaryNavService: SecondaryNavService,
+		protected settingsService: CompanySettingsService,
+		webAnalyticsService: WebAnalyticsService,
+		private linkClickInterceptor: LinkClickInterceptor,
+	) {
+		super(settingsService);
+		this.webAnalyticsService = webAnalyticsService;
+		this.secondaryNavService = secondaryNavService;
 
-        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-            this.linkClickInterceptor.handleEvent(this, ev);
-        });
-    }
+		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			this.linkClickInterceptor.handleEvent(this, ev);
+		});
+	}
 
-    ngOnInit() {
-        this.routeParamsSubscription = this.route.params.subscribe(params => {
+	ngOnInit() {
 
-            this.ruleTypeId = +params['ruleTypeId'];
-            this.logAction("open", "RuleType", this.ruleTypeId);
-            this.currentAreaNameSubscription =
-                this.headerBreadcrumbService
-                    .getAreaName('RuleType', this.ruleTypeId)
-                    .subscribe((result) => { this.currentAreaName = result; });
-            this.headerBreadcrumbService.setCurrentObjectInfo('RuleType', this.ruleTypeId);
+		this.logAction("open", "RuleType", this.assetTypeUid);
 
-            this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
 
-            this.isLoading = true;
-            this.rulesService.getRuleType(this.ruleTypeId)
-                .subscribe(result => {
-                    this.isLoading = false;
-                    this.ruleType = result;
-					this.gridObject = RuleType.AsGridObject(this.ruleType);
-					this.baseAssetTypeUid = this.gridObject.AssetTypeUID;
-                    this.setObjectInfo('RuleType', this.ruleType.ID);
-					this.headerBreadcrumbService.setCurrentObjectInfo('RuleType', this.ruleTypeId, this.baseAssetTypeUid);
+		this.isLoading = true;
+		this.rulesService.getRuleType(this.assetTypeUid)
+			.subscribe(result => {
+				this.isLoading = false;
+				this.ruleType = result;
+				this.gridObject = RuleType.AsGridObject(this.ruleType);
+				this.baseAssetTypeUid = this.gridObject.AssetTypeUID;
 
-                    this.sidePanelStorageKey = 'list_' + AssetTypeClass[AssetTypeClass.Rule] + '_' + CurrentResourceID;
 
-                    this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
-                        this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(
-                            new Breadcrumb(
-                                this.currentAreaName ? this.currentAreaName : res,
-                                `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_RULE}`
-                            )
-                        );
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.ruleType.Name, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.ruleTypeId}`,
-                            undefined,
-                            'RuleType',
-                            this.ruleType.ID,
-                            undefined,
-                            undefined,
-                            true));
+				this.currentAreaNameSubscription =
+					this.headerBreadcrumbService
+						.getAreaName('RuleType', this.ruleType.ID)
+						.subscribe((result) => { this.currentAreaName = result; });
+				this.headerBreadcrumbService.setCurrentObjectInfo('RuleType', this.ruleType.ID, this.baseAssetTypeUid);
+				this.setObjectInfo('RuleType', this.ruleType.ID);
 
-                        this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID, this.currentAreaName ? this.currentAreaName : res).subscribe((icon) => {
-                            this.secondaryNavService.setCurrentArea(this.ruleType.Name, icon, 'Rules');
-                            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true, null, this.ruleType.AssetTypeUID));
-                            this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.ruleType.HasDashboards });
-                        });
-                        this.secondaryNavService.showHeader(true);
-                    });
-                    this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
-                    this.setBrowserTitle(this.titleService, this.ruleType.Name);
-                });
-        });
-    }
+				this.sidePanelStorageKey = 'list_' + AssetTypeClass[AssetTypeClass.Rule] + '_' + CurrentResourceID;
 
-    selectAsset(event: any) {
-        this.selection = event.row;
-        this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
-		
+				this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
+					this.headerBreadcrumbService.clearBreadcrumbs();
+					this.headerBreadcrumbService.showBreadcrumb(
+						new Breadcrumb(
+							this.currentAreaName ? this.currentAreaName : res,
+							`${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/class/Rule`
+						)
+					);
+					this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.ruleType.Name, `assets/${this.ruleType.AssetTypeUID}`,
+						undefined,
+						'RuleType',
+						this.ruleType.ID,
+						undefined,
+						undefined,
+						true));
+
+					this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID, this.currentAreaName ? this.currentAreaName : res).subscribe((icon) => {
+						this.secondaryNavService.setCurrentArea(this.ruleType.Name, icon, 'Rules');
+						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true, null, this.ruleType.AssetTypeUID));
+						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.ruleType.HasDashboards });
+					});
+					this.secondaryNavService.showHeader(true);
+				});
+				this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleType.ID);
+				this.setBrowserTitle(this.titleService, this.ruleType.Name);
+			});
+	}
+
+	selectAsset(event: any) {
+		this.selection = event.row;
+		this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
+
 		if (event.forceRefresh) {
 			this.assetDetail.load();
 		}
 
-        if (this.selection && this.selection.HasProfiling) {
-            this.sidePanelLoading = true;
-            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
-                (r) => {
-                    if (r && r.items && r.items.length > 0) {
-                        this.dataProfile = r.items[0];
+		if (this.selection && this.selection.HasProfiling) {
+			this.sidePanelLoading = true;
+			this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
+				(r) => {
+					if (r && r.items && r.items.length > 0) {
+						this.dataProfile = r.items[0];
 
-                        forkJoin(
-                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
-                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
-                        ).subscribe((res) => {
-                            this.dataProfile['matches'] = {
-                                structure: res[0],
-                                data: res[1]
-                            };
-                        });
-                    }
-                    this.sidePanelLoading = false;
-                });
-        }
-    }
+						forkJoin(
+							this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+							this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+						).subscribe((res) => {
+							this.dataProfile['matches'] = {
+								structure: res[0],
+								data: res[1]
+							};
+						});
+					}
+					this.sidePanelLoading = false;
+				});
+		}
+	}
 
     get panelApplies(): boolean {
         if (this.selection == null || this.sidePanelTab === 'detail') {
@@ -182,30 +183,45 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         }
     }
 
-
-    ngOnDestroy() {
-        this.clearSidebar();
-        if (this.currentAreaNameSubscription) {
-            this.currentAreaNameSubscription.unsubscribe();
-        }
-        if (this.routeParamsSubscription) {
-            this.routeParamsSubscription.unsubscribe();
-        }
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
     }
 
-    secondaryPanelOpen(event: any) {
-        this.secondarySidePanelOpen = true;
-        if (event) {
-            if (event.resourceUid) {
-                this.secondarySidePanel = "user";
-                this.resourceUid = event.resourceUid;
-            }
-            if (event.semanticType) {
-                this.secondarySidePanel = "detail";
-                this.semanticType = event.semanticType;
-            }
-        } else {
-            this.secondarySidePanel = "status";
-        }
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
     }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+    }
+
+	ngOnDestroy() {
+		this.clearSidebar();
+		if (this.currentAreaNameSubscription) {
+			this.currentAreaNameSubscription.unsubscribe();
+		}
+		if (this.routeParamsSubscription) {
+			this.routeParamsSubscription.unsubscribe();
+		}
+	}
+
+	secondaryPanelOpen(event: any) {
+		this.secondarySidePanelOpen = true;
+		if (event) {
+			if (event.resourceUid) {
+				this.secondarySidePanel = "user";
+				this.resourceUid = event.resourceUid;
+			}
+			if (event.semanticType) {
+				this.secondarySidePanel = "detail";
+				this.semanticType = event.semanticType;
+			}
+		} else {
+			this.secondarySidePanel = "status";
+		}
+	}
 }

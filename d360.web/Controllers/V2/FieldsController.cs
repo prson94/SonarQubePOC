@@ -373,9 +373,16 @@ namespace d360.web.Controllers.V2
 							var newType = Company.AssetTypes.Where(x => x.uid == ft.Type.Lookup.List.Uid)
 								.Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
 
-							if (newType.Object.Replace("Type", "") != exFt.LookupObjectType || newType.ObjectID != exFt.LookupObjectID)
+							var restApiException = new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ChangeFieldNotAllowed, string.Format(ApiMessages.LookupFieldTypeInUse, exFt.FriendlyName));
+
+							if (exFt.LookupObjectType != "TaxonomyType" && ft.Type.Lookup.List.Class == AssetTypeClass.Model)
 							{
-								throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ChangeFieldNotAllowed, string.Format(ApiMessages.LookupFieldTypeInUse, exFt.FriendlyName));
+								throw restApiException;
+							}
+
+							if (newType != null && (newType.Object.Replace("Type", "") != exFt.LookupObjectType || newType.ObjectID != exFt.LookupObjectID))
+							{
+								throw restApiException;
 							}
 						}
 					}
@@ -2287,20 +2294,25 @@ namespace d360.web.Controllers.V2
 								{pagingQuery}
 								option (maxrecursion 100)
 
-								select	count(*)
+								select	count(*) + 1
 								from	Asset A
 										inner join AssetType T on T.ID = A.AssetTypeID and T.Id = @id
 										cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
 										cross apply dbo.GetAssetLevelById(A.ID) LV
 								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
 								option (maxrecursion 100)";
+
+						if(skip != null && skip > 0)
+						{
+							skip--;
+						}
 					}
 
 					var cmd = new CommandDefinition(sql, cancellationToken: cancellationToken, parameters: new { atype.ID, skip, take, filter });
 					var resultsAssets = await Company.Connection.QueryMultipleAsync(cmd);
 					var items = resultsAssets.Read<DDLSelectItem>().ToList();
 
-					if (isHierarchyGrid)
+					if (isHierarchyGrid && (skip == null || skip == 0))
 					{
 						items = items.Prepend(new DDLSelectItem { text = "- Root -", value = Guid.Empty.ToString() }).ToList();
 					}

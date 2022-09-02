@@ -14,132 +14,125 @@ import { AssetGridBaseComponent } from './asset-grid-base.component';
 import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
-    selector: 'd3s-asset-grid-top-level-list',
-    templateUrl: './asset-grid-top-level-list.component.html',
-    providers: [AssetService],
+	selector: 'd3s-asset-grid-top-level-list',
+	templateUrl: './asset-grid-top-level-list.component.html',
+	providers: [AssetService],
 })
 
 export class AssetGridTopLevelListComponent extends AssetGridBaseComponent implements OnInit {
-    searchFilter: string = "";
-    objectType: string = "ArtifactType";
-    adminType: string = "Artifacts";
-    selectedRow: TreeNode;
-    ArtifactTypes: TreeNode[];
-    private sub: any;
-    assetTypeClass: AssetTypeClass;
-    public searchValue: string;
+	searchFilter: string = "";
+	objectType: string = "ArtifactType";
+	adminType: string = "Artifacts";
+	selectedRow: TreeNode;
+	ArtifactTypes: TreeNode[];
+	private sub: any;
+	assetTypeClass: AssetTypeClass;
+	public searchValue: string;
 
-    constructor(
-        private router: Router,
-        private route: ActivatedRoute,
-        private assetService: AssetService,
-        headerBreadcrumbService: HeaderBreadcrumbService,
-        private titleService: Title,
-        secondaryNavService: SecondaryNavService,
-        protected settingsService: CompanySettingsService
-    ) {
-        super(headerBreadcrumbService, settingsService, secondaryNavService);
-    }
+	constructor(
+		private router: Router,
+		private route: ActivatedRoute,
+		private assetService: AssetService,
+		headerBreadcrumbService: HeaderBreadcrumbService,
+		private titleService: Title,
+		secondaryNavService: SecondaryNavService,
+		protected settingsService: CompanySettingsService
+	) {
+		super(headerBreadcrumbService, settingsService, secondaryNavService);
+	}
 
-    ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
-            try {
-                let assetTypeClassString: keyof typeof AssetTypeClass = params['class'];
-                this.assetTypeClass = AssetTypeClass[assetTypeClassString];
-                if (!this.assetTypeClass) {
-                    this.assetTypeClass = AssetTypeClass.BusinessAsset;
-                }
-            } catch (e) {
-                this.assetTypeClass = AssetTypeClass.BusinessAsset;
-            }
+	ngOnInit() {
+		let assetTypeClassString: keyof typeof AssetTypeClass = this.route.snapshot.data.type;
+		try {
 
-            switch (this.assetTypeClass) {
-                case AssetTypeClass.BusinessAsset:
+			this.assetTypeClass = AssetTypeClass[assetTypeClassString];
+			if (!this.assetTypeClass) {
+				this.assetTypeClass = AssetTypeClass.BusinessAsset;
+			}
+		} catch (e) {
+			this.assetTypeClass = AssetTypeClass.BusinessAsset;
+		}
 
-                    this.headerBreadcrumbService.getFolderTitle('#Business').then(res => {
-                        this.folderTitle = res;
-                        this.setBrowserTitle(this.titleService, res);
-                        this.area = res;
-                    });
+		switch (this.assetTypeClass) {
+			case AssetTypeClass.BusinessAsset:
 
-                    break;
-                case AssetTypeClass.TechnicalAsset:
+				this.headerBreadcrumbService.getFolderTitle('#Business').then(res => {
+					this.folderTitle = res;
+					this.setBrowserTitle(this.titleService, res);
+					this.area = res;
+				});
 
-                    this.headerBreadcrumbService.getFolderTitle('#Technical').then(res => {
-                        this.folderTitle = res;
-                        this.setBrowserTitle(this.titleService, res);
-                        this.area = res;
-                    });
+				break;
+			case AssetTypeClass.TechnicalAsset:
 
-                    break;
-                case AssetTypeClass.Rule:
-                    // false alarm from codacy, $localize is declared globaly
-                    // eslint-disable-next-line
-                    const assetType = $localize`Rules`;
-                    this.folderTitle = assetType;
-                    this.setBrowserTitle(this.titleService, assetType);
-                    this.area = assetType;
-                    break;
-                default:
-                    let className: string = AssetTypeClass[this.assetTypeClass];
-                    this.folderTitle = `${className} Assets`;
-                    this.setBrowserTitle(this.titleService, this.folderTitle);
-                    this.area = this.folderTitle;
-                    break;
-            }
+				this.headerBreadcrumbService.getFolderTitle('#Technical').then(res => {
+					this.folderTitle = res;
+					this.setBrowserTitle(this.titleService, res);
+					this.area = res;
+				});
 
-            this.load();
-        });
-    }
+				break;
+			case AssetTypeClass.Rule:
+				// false alarm from codacy, $localize is declared globaly
+				// eslint-disable-next-line
+				const assetType = $localize`Rules`;
+				this.folderTitle = assetType;
+				this.setBrowserTitle(this.titleService, assetType);
+				this.area = assetType;
+				break;
+			default:
+				let className: string = AssetTypeClass[this.assetTypeClass];
+				this.folderTitle = `${className} Assets`;
+				this.setBrowserTitle(this.titleService, this.folderTitle);
+				this.area = this.folderTitle;
+				break;
+		}
 
-    private load() {
-        this.isLoading = true;
-        this
-            .assetService
-            .getAssetCountsByAssetType(this.assetTypeClass)
-            .subscribe(data => {
-                let dataNodes: TreeNode[] = [];
+		this.load();
+	}
 
-                for (let i = 0; i < data.length; i++) {
-                    if (data[i].description != null)
-                        data[i].description = this.htmlDecode(data[i].description);
-                    else {
-                        data[i].description = '';
-                    }
+	private load() {
+		this.isLoading = true;
+		this
+			.assetService
+			.getAssetCountsByAssetType(this.assetTypeClass)
+			.subscribe(data => {
+				let dataNodes: TreeNode[] = [];
 
-                    dataNodes.push(AssetCount.ConvertToTreeNode(data[i]));
-                }
-                this.ArtifactTypes = AssetCount.ListToTree(dataNodes);
-                if (this.ArtifactTypes != null && this.ArtifactTypes.length > 0) {
-                    this.selectedRow = this.ArtifactTypes[0];
-                }
+				for (let i = 0; i < data.length; i++) {
+					if (data[i].description != null)
+						data[i].description = this.htmlDecode(data[i].description);
+					else {
+						data[i].description = '';
+					}
 
-                this.headerBreadcrumbService.clearBreadcrumbs();
-                this.headerBreadcrumbService.clearCurrentObjectInfo();
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.folderTitle ? this.folderTitle : this.area));
-                this.headerBreadcrumbService.getFolderIcon(this.folderTitle ? this.folderTitle : this.area).subscribe(res => {
-                    this.secondaryNavService.clearCurrentObject();
-                    this.secondaryNavService.clearItems();
-                    this.secondaryNavService.setCurrentArea(this.folderTitle ? this.folderTitle : this.area, res, null);
-                });
+					dataNodes.push(AssetCount.ConvertToTreeNode(data[i]));
+				}
+				this.ArtifactTypes = AssetCount.ListToTree(dataNodes);
+				if (this.ArtifactTypes != null && this.ArtifactTypes.length > 0) {
+					this.selectedRow = this.ArtifactTypes[0];
+				}
 
-                this.isLoading = false;
-            }
-            );
-    }
+				this.headerBreadcrumbService.clearBreadcrumbs();
+				this.headerBreadcrumbService.clearCurrentObjectInfo();
+				this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.folderTitle ? this.folderTitle : this.area));
+				this.headerBreadcrumbService.getFolderIcon(this.folderTitle ? this.folderTitle : this.area).subscribe(res => {
+					this.secondaryNavService.clearCurrentObject();
+					this.secondaryNavService.clearItems();
+					this.secondaryNavService.setCurrentArea(this.folderTitle ? this.folderTitle : this.area, res, null);
+				});
 
-    private htmlDecode(val: string): string {
-        return val ? String(val).replace(/<[^>]+>/gm, '') : '';
-    }
+				this.isLoading = false;
+			}
+			);
+	}
 
-    navigate(uid: string) {
-        this.assetService.getAssetTypeLegacyData(uid)
-            .subscribe(res => {
-                if(res.Object === 'RuleType') {
-                    this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_RULE_ROOT}/` + res.ObjectID);
-                } else {
-                    this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', res.ObjectID));
-                }
-            });
-    }
+	private htmlDecode(val: string): string {
+		return val ? String(val).replace(/<[^>]+>/gm, '') : '';
+	}
+
+	navigate(uid: string) {
+		this.router.navigateByUrl("assets/" + uid);
+
+	}
 }

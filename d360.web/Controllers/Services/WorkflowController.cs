@@ -198,6 +198,17 @@ namespace d360.web.Controllers.Services
 			return Request.CreateResponse(HttpStatusCode.OK, filterColumns.OrderBy(x => x.text).ToList());
 		}
 
+		[Route("issue/type/{uid:Guid}"), HttpGet]
+		public HttpResponseMessage GetTaskByIDForUid(Guid uid)
+		{
+			var data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			if (data == null)
+			{
+				data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			}
+			return GetTaskByIDForObjectAndType(data.ObjectID, data.Object);
+		}
+
 		[Route("issue/type/{objectid:int}/{objecttype}"), HttpGet]
 		public HttpResponseMessage GetTaskByIDForObjectAndType(int objectid, string objecttype)
 		{

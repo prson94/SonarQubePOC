@@ -3958,9 +3958,6 @@ where an.Uid = fam.uid)
 						select  
 								{string.Join("," + Environment.NewLine, fieldColumns.GetStatements())}
 						from    Asset A
-								inner join AssetType T on T.ID = A.AssetTypeID
-								left join PredicateIntersect Parent on Parent.ObjectAssetID = A.ID and Parent.PredicateType in (3,4)
-								left join AssetDetail P on P.ID = Parent.SubjectAssetID
 								{fieldJoins.SQLJoinStatement}
 						where   A.[uid] = @assetUid";
 
@@ -4162,7 +4159,7 @@ where an.Uid = fam.uid)
 							from FollowDetail F
 							inner join reporting.Global_Resource R on
 							R.ResourceID = F.ResourceID
-							inner join Asset A on F.ObjectID = A.ObjectID and F.ObjectType=A.[Object]
+							inner join Asset A on F.AssetID = A.ID 
 							where A.[uid]=@assetUid
 							";
 
@@ -4332,7 +4329,7 @@ where an.Uid = fam.uid)
 							FROM
 								Follow f
 								inner join 
-								Asset a on a.ObjectID=f.ObjectID and a.[Object]=f.ObjectType and f.FollowTypeID=1
+								Asset a on a.ID=f.AssetID and f.FollowTypeID=1
 								inner join 
 								AssetType ast on a.AssetTypeID=ast.ID and ast.[uid]=@assetTypeUid
 								inner join 
@@ -4356,7 +4353,7 @@ where an.Uid = fam.uid)
 							FROM
 									Follow f	
 									inner join 
-									AssetType ast on ast.ObjectID=f.ObjectID and ast.[Object]=f.ObjectType and f.FollowTypeID=3 and ast.[uid]=@assetTypeUid
+									AssetType ast on ast.ID=f.AssetTypeID and f.FollowTypeID=3 and ast.[uid]=@assetTypeUid
 									inner join 
 									Asset a on a.AssetTypeID=ast.ID		
 									inner join 
@@ -4626,6 +4623,14 @@ where an.Uid = fam.uid)
 				}
 			});
 			return results.OrderBy(x => x.title);
+		}
+
+		public AssetTypeClass GetAssetClassByUID(Guid uid)
+		{
+			return CompanyContext.Query<AssetTypeClass>(@"
+			select at.Class from asset a inner join assettype at on at.id = a.AssetTypeID where a.uid = @uid
+			union
+			select at.Class from assettype at where at.uid = @uid", new { uid }).FirstOrDefault();
 		}
 	}
 }

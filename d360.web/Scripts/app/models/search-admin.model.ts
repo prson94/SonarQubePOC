@@ -10,8 +10,9 @@ export class IndexableStatus extends IndexableType
     Status: number;
     TargetCount: number;
     CurrentCount: number;
-    Start: Date;
-    LastUpdate: Date;
+    Start: string;
+    LastUpdate: string;
+	Menu: object[];
 }
 
 export class IndexPartialRebuild

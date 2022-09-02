@@ -537,7 +537,7 @@ select	FT.ID as value,
 			else cast(0 as bit) 
 		end as isLookup,
 		(
-		select	cast(Text as varchar) as [value],
+		select	cast(value as varchar) as [value],
 				Text as label 
 		from	FieldLookupValue
 		where	FieldTypeID = FT.ID
@@ -553,9 +553,9 @@ where	FT.[Object] = @type
 		and FT.Type not in ({ftTypeRemoveString})
 for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString(), id }).ToList();
 
-            if (type == SystemObjects.OrganizationType)
-            {
-                fieldTypes = Company.Query<string>($@"
+			if (type == SystemObjects.OrganizationType)
+			{
+				fieldTypes = Company.Query<string>($@"
 select	FT.ID as value,
 		T.[Name] + ' :: ' + FriendlyName as label,
         FT.Name as fieldTypeName,
@@ -565,7 +565,7 @@ select	FT.ID as value,
 			else cast(0 as bit) 
 		end as isLookup,
 		(
-		select	cast(Text as varchar) as [value],
+		select	cast(value as varchar) as [value],
 				Text as label 
 		from	FieldLookupValue
 		where	FieldTypeID = FT.ID
@@ -581,9 +581,9 @@ where	FT.[Object] = @type
 		and Type not in ({ftTypeRemoveString})
 order by T.[Name] + ' :: ' + FriendlyName
 for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString() }).ToList();
-            }
+			}
 
-            var groupFieldTypes = new List<string>();
+			var groupFieldTypes = new List<string>();
             if (type == SystemObjects.GroupType)
             {
                 groupFieldTypes = Company.Query<string>($@"
@@ -802,12 +802,12 @@ order by	case
 				var previousDefinition = existing.Definition;
 				existing.SetRawFromDefinition();
 
-				if (existing.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)
+				if (existing.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null && (x.Operator == null || !(x.Operator == Operator.Populated || x.Operator == Operator.NotPopulated))).Count() > 0)
 				{
 					throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_Then_Filter_Value_Required);
 				}
 
-				if (model.StructuredDefinition?.When?.Where(x => x.Value == null).Count() > 0)
+				if (model.StructuredDefinition?.When?.Where(x => (x.Operator == null || (x.Operator != null && x.Operator != Operator.Populated && x.Operator != Operator.NotPopulated)) && x.Value == null).Count() > 0)				
 				{
 					throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_When_Filter_Value_Required);
 				}
@@ -879,12 +879,12 @@ order by	case
 
 				model.SetRawFromDefinition();
 
-				if (model.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)
+				if (model.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null && (x.Operator == null || !(x.Operator == Operator.Populated || x.Operator == Operator.NotPopulated))).Count() > 0)
 				{
 					throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_Then_Filter_Value_Required);
 				}
 
-				if (model.StructuredDefinition?.When?.Where(x => x.Value == null).Count() > 0)
+				if (model.StructuredDefinition?.When?.Where(x => (x.Operator==null || (x.Operator != null && x.Operator != Operator.Populated && x.Operator != Operator.NotPopulated)) && x.Value == null).Count() > 0)
 				{
 					throw new GenericException(HttpStatusCode.BadRequest, FormControllerApiMessage.ResponsibilityType, FormInfo.Responsibility_When_Filter_Value_Required);
 				}

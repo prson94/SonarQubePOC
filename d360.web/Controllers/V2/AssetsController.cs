@@ -1282,14 +1282,21 @@ namespace d360.web.Controllers.V2
 		/// <param name="assetUid">The asset Uid</param>
 		/// <returns></returns>
 		[
-			HttpGet, MapToApiVersion("2.0"), Route("GetObjectDetailUIDetails/{assetUid}"),
+			HttpGet, MapToApiVersion("2.0"), Route("GetObjectDetailUIDetails/{uid}"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(object)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public dynamic GetObjectDetailUIDetails(Guid assetUid)
+		public dynamic GetObjectDetailUIDetails(Guid uid)
 		{
-			return Company.Query<dynamic>($@"select Object,ObjectId from [utility].[GetObjectObjectIdByUID](@assetUid)", new { assetUid }, ApiTimeout).FirstOrDefault();
+			var data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+
+			if(data == null)
+			{
+				data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			}
+
+			return data;
 		}
 
 		/// <summary>
@@ -3293,7 +3300,7 @@ namespace d360.web.Controllers.V2
 						FROM
 							Follow f
 							inner join
-							AssetType ast on f.ObjectID = ast.ObjectID and f.ObjectType=ast.Object and f.FollowTypeID =3
+							AssetType ast on f.AssetTypeID = ast.ID and f.FollowTypeID =3
 							inner join 
 							Asset a on a.AssetTypeID=ast.ID 
 							{resourceJoin}
@@ -3306,7 +3313,7 @@ namespace d360.web.Controllers.V2
 						from 
 							Follow f
 							inner join
-							Asset a on f.ObjectID = a.ObjectID and f.ObjectType=a.Object and f.FollowTypeID = 1
+							Asset a on f.AssetID = a.ID and f.FollowTypeID = 1
 							inner join 
 							AssetType ast on a.AssetTypeID=ast.ID
 							{resourceJoin}
@@ -3420,13 +3427,23 @@ namespace d360.web.Controllers.V2
 			MapToApiVersion("2.0"),
 			Route("lookupvalues/{assetTypeUid}"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
+			SwaggerResponse(HttpStatusCode.OK, "Values for a dropdown list"),
+			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
 		public async Task<HttpResponseMessage> GetAssetLookupValues(Guid assetTypeUid, int? skip = null, int? take = 0, string filter = null)
 		{
 			var prefix = "Assets.GetAssetLookupValues => ";
 			var errorMessage = "";
+
+			if (skip == null)
+			{
+				return ReturnApiError(HttpStatusCode.BadRequest, "Skip cannot be null");
+			}
+			if (take < 1)
+			{
+				return ReturnApiError(HttpStatusCode.BadRequest, "Take must be greater than 0");
+			}
 
 			try
 			{
@@ -3695,6 +3712,17 @@ namespace d360.web.Controllers.V2
 			}).ToArray();
 
 			return Ok(result);
+		}
+
+		/// <summary>
+		/// Hidden API to return class of asset
+		/// </summary>
+		[HttpGet]
+		[Route("asset/{assetUid}/class")]
+		[ApiExplorerSettings(IgnoreApi = true)]
+		public async Task<IHttpActionResult> GetAssetClassByUID(Guid assetUid)
+		{
+			return Ok(AssetRepository.GetAssetClassByUID(assetUid));
 		}
 
 		#region Request / Response models

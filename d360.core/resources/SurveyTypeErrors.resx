@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DescriptionTooBig" xml:space="preserve">
-    <value>Description should not exceed {maxDescriptionLength} characters</value>
+    <value>[Description] should not exceed {maxDescriptionLength} characters</value>
   </data>
   <data name="DuplicateName" xml:space="preserve">
     <value>Survey with the same name already exists for this asset type.</value>
@@ -135,23 +135,26 @@
   <data name="DuplicateQuestionOptionValue" xml:space="preserve">
     <value>Please enter unique option identifier for option #{index}</value>
   </data>
+  <data name="InvalidAssetType" xml:space="preserve">
+    <value>Asset Type is invalid. Surveys can be created only for Business Assets, Technical Assets, Models and Rules</value>
+  </data>
   <data name="InvalidDirection" xml:space="preserve">
-    <value>Invalid value for direction parameter. Use asc|desc.</value>
+    <value>Invalid value for [direction] parameter. Use asc|desc.</value>
   </data>
   <data name="InvalidDisplayStyle" xml:space="preserve">
-    <value>Invalid Display Style</value>
+    <value>Invalid [DisplayStyle]</value>
   </data>
   <data name="MissingQuestionOptionName" xml:space="preserve">
-    <value>You are missing a Name in option #{index}</value>
+    <value>You are missing a [Name] in option #{index}</value>
   </data>
   <data name="MissingQuestionOptions" xml:space="preserve">
     <value>You are missing one or more options.</value>
   </data>
   <data name="NameIsTooBig" xml:space="preserve">
-    <value>Name should not exceed {maxNameLength} characters.</value>
+    <value>[Name] should not exceed {maxNameLength} characters.</value>
   </data>
   <data name="NameShouldBeNotEmpty" xml:space="preserve">
-    <value>Name should be not empty.</value>
+    <value>[Name] should be not empty.</value>
   </data>
   <data name="QuestionTypeNotFound" xml:space="preserve">
     <value>Survey question with the specified Uid was does not exist.</value>
@@ -163,9 +166,9 @@
     <value>Survey with the specified Uid does not exist.</value>
   </data>
   <data name="ValidForDaysIsTooBig" xml:space="preserve">
-    <value>ValidForDays must be {maxValidForDays} days or less.</value>
+    <value>[ValidForDays] must be {maxValidForDays} days or less.</value>
   </data>
   <data name="ValidForDaysIsTooSmall" xml:space="preserve">
-    <value>ValidForDays must be {minValidForDays} days or greater.</value>
+    <value>[ValidForDays] must be {minValidForDays} days or greater.</value>
   </data>
 </root>

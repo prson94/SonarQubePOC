@@ -24,7 +24,7 @@ namespace igx.UnitTests.WebUtilitiesTests
 
             Assert.NotNull(CultureInfo.CurrentCulture);
             Assert.Equal("EN-GB", (CultureInfo.CurrentCulture.Name ?? "").ToUpper());
-            Assert.Equal("EN-GB", (CultureInfo.CurrentUICulture.Name ?? "").ToUpper());
+            Assert.Equal("EN", (CultureInfo.CurrentUICulture.Name ?? "").ToUpper());
         }
 
         [Fact]

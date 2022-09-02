@@ -6,7 +6,7 @@ import { BaseComponent } from '../../shared/base.component';
 @Component({
     selector: 'd3s-diagram-wrapper',
     template: `           
-                <d3s-model-diagram [id]="objectID"></d3s-model-diagram>                
+                <d3s-model-diagram *ngIf="baseAssetTypeUid" [assetTypeUid]="baseAssetTypeUid"></d3s-model-diagram>                
         `
 })
 
@@ -23,7 +23,7 @@ export class DiagramComponent extends BaseComponent implements OnInit, OnDestroy
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            this.objectID = +params['objectId']; // (+) converts string 'id' to a number       
+			this.baseAssetTypeUid = params['assetTypeUid']; // (+) converts string 'id' to a number       
         });
     }
 

@@ -30,6 +30,7 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { SemanticEditorModule } from '../shared/semantic-editor/semantic-editor.module';
 import { CheckboxModule } from 'primeng/checkbox';
 import { IgBadgeModule } from '../shared/controls/badge/badge.module';
+import { AngularSplitModule } from 'angular-split';
 
 @NgModule({
     imports: [
@@ -53,6 +54,7 @@ import { IgBadgeModule } from '../shared/controls/badge/badge.module';
         SharedDeleteFormModule,
         SiteModalModule,
         SemanticEditorModule,
+        AngularSplitModule,
         CheckboxModule,
         IgBadgeModule
     ],

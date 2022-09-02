@@ -28,6 +28,8 @@ import { UiAdvancedFiltering } from '../../services/ui-advanced-filtering.servic
 import {uniqWith as _uniqWith, isEqual as _isEqual} from 'lodash';
 import { Table } from 'primeng/table';
 import { SearchService } from '../../services/search.service';
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 
 @Component({
@@ -52,7 +54,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     sidePanelOpen: boolean = false;
     sidePanelTab: string;
     hasProfiling: boolean = false;
-    sidePanelStorageKey: string;
+    sidePanelStorageKey: string = 'side_panel_width_tagged_assets';
     sidePanelLoading: boolean = false;
     dataProfile: any;
     secondarySidePanelOpen: boolean;
@@ -107,6 +109,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     constructor(private route: ActivatedRoute,
         private uiAdvancedFiltering: UiAdvancedFiltering,
         private searchService: SearchService,
+        private sidePanelService: SidePanelService,
         private router: Router,
         private loc: Location,
         private dataProfileService: DataProfileService,
@@ -240,7 +243,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         this.setCommonSecondaryNavTabs({ hasAudit: true });
 
                         if (this.auditSidebar) {
-                            this.auditSidebar.url = `/sidebar/audit/Tag/${this.tagUid}`;
+                            this.auditSidebar.url = `/tag/${this.tagUid}/log`;
                         }
                     }
                     else {
@@ -414,6 +417,22 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                 this.onActionBackClick();
 
             }, err => this.showMessageForResult(this.messagesService, err));
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
     saveTag(event) {

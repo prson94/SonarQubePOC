@@ -124,7 +124,7 @@
     <value>Asset Type Already Exists</value>
   </data>
   <data name="AssetTypeWithUidExists" xml:space="preserve">
-    <value>An asset type with the specified Uid already exists.</value>
+    <value>An asset type with the specified [Uid] already exists.</value>
   </data>
   <data name="CheckRequest" xml:space="preserve">
     <value>Please check your request and try again.</value>
@@ -136,7 +136,7 @@
     <value>You have not provided a proper predicate based on its asset type class.</value>
   </data>
   <data name="InvalidDisplayFormat" xml:space="preserve">
-    <value>DisplayFormat provided is invalid.</value>
+    <value>[DisplayFormat] provided is invalid.</value>
   </data>
   <data name="InvalidModelDepth" xml:space="preserve">
     <value>Invalid maximum depth. Model level specified must be a value between 1 and 10.</value>
@@ -145,22 +145,22 @@
     <value>Invalid maximum depth. Policy level specified must be a value between 1 and 10.</value>
   </data>
   <data name="InvalidParentUid" xml:space="preserve">
-    <value>Invalid ParentUid provided.</value>
+    <value>Invalid [ParentUid] provided.</value>
   </data>
   <data name="InvalidRequestHttpErrorTitle" xml:space="preserve">
     <value>Invalid request</value>
   </data>
   <data name="InvalidStyle" xml:space="preserve">
-    <value>Invalid Icon Style provided.</value>
+    <value>Invalid [IconStyle] value provided.</value>
   </data>
   <data name="NotFoundBasedOnClass" xml:space="preserve">
-    <value>Asset Type not found based on Class provided.</value>
+    <value>Asset Type not found based on [Class] provided.</value>
   </data>
   <data name="ErrorNameTaken" xml:space="preserve">
     <value>The name is taken. Please try another name.</value>
   </data>
   <data name="NotFoundBasedOnUid" xml:space="preserve">
-    <value>Asset Type not found based on Uid provided.</value>
+    <value>Asset Type not found based on [Uid] provided.</value>
   </data>
   <data name="NotFoundGeneric" xml:space="preserve">
     <value>Asset Type not found.</value>
@@ -169,7 +169,7 @@
     <value>Relationship OR Relationship type exists with this the asset type or any asset under this type participates in the relationship.</value>
   </data>
   <data name="TransformationClassRestriction" xml:space="preserve">
-    <value>Use As Transformation can be set only asset types that are a Business or Technical class.</value>
+    <value>[UseAsTransformation] can be set only asset types that are a Business or Technical class.</value>
   </data>
   <data name="TransformationLimitExceeded" xml:space="preserve">
     <value>The total number of asset types exceeds the Transformation limit.</value>
@@ -178,16 +178,16 @@
     <value>Unsupported asset class.</value>
   </data>
   <data name="MatchingIconStyle" xml:space="preserve">
-    <value>Icon Style ForeColor and BackColor cannot be the same value.</value>
+    <value>[IconStyle.BackColor] and [IconStyle.ForeColor] cannot be the same value.</value>
   </data>
   <data name="AutoDisplayParentRestriction" xml:space="preserve">
-    <value>Auto Display Parent can be set only asset types that are a Business or Technical class and are the child of another asset type.</value>
+    <value>[AutoDisplayParent] can be set only asset types that are a Business or Technical class and are the child of another asset type.</value>
   </data>
   <data name="MissingFlowObjectType" xml:space="preserve">
-    <value>FlowObjectType is required field for Asset Type with class Diagram.</value>
+    <value>[FlowObjectType] is required field for Asset Type with class Diagram.</value>
   </data>
   <data name="UnsupportedFlowObjectType" xml:space="preserve">
-    <value>FlowObjectType is not support for class {0}.</value>
+    <value>[FlowObjectType] is not support for class {0}.</value>
   </data>
   <data name="GovernanceRoleNotSet" xml:space="preserve">
     <value>Cannot add Asset Type of class Diagram. Governance Role Reference UID is not set.</value>
@@ -202,7 +202,7 @@
     <value>Invalid {0} provided</value>
   </data>
   <data name="CanEditParentClassRestriction" xml:space="preserve">
-    <value>Can Edit Parent can be set only asset types that are a Business or Technical class and are the child of another asset type.</value>
+    <value>[CanEditParent] can be set only asset types that are a Business or Technical class and are the child of another asset type.</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Invalid order direction passed in the request.</value>
@@ -217,13 +217,13 @@
     <value>Predicate</value>
   </data>
   <data name="InvalidAssetType" xml:space="preserve">
-    <value>Invalid assetType specified</value>
+    <value>Invalid [assetType] specified</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
     <value>Invalid asset Uid in parameters!</value>
   </data>
   <data name="InvalidMaximumDepthTitle" xml:space="preserve">
-    <value>Invalid Maximum Depth</value>
+    <value>Invalid [HierarchyMaximumDepth] value</value>
   </data>
   <data name="InvalidOwnerUid" xml:space="preserve">
     <value>Invalid Owner Uid in parameters!</value>
@@ -247,13 +247,13 @@
     <value>Invalid value for parameter [objID]</value>
   </data>
   <data name="InvalueValue_includeFields" xml:space="preserve">
-    <value>Invalid value {0} in _includeFields parameter, field with this name not found.</value>
+    <value>Invalid value {0} in [_includeFields] parameter, field with this name not found.</value>
   </data>
   <data name="UnableParse_IncludeFields" xml:space="preserve">
-    <value>Could not parse value of _includeFields</value>
+    <value>Could not parse value of [_includeFields]</value>
   </data>
   <data name="UseAsAdminUseWithAssetUid" xml:space="preserve">
-    <value>UseAsAdmin parameter can be used only with _assetUid specified!</value>
+    <value>[UseAsAdmin] parameter can be used only with [_assetUid] specified!</value>
   </data>
   <data name="WrongNameHttpErrorTitle" xml:space="preserve">
     <value>Wrong Name</value>
@@ -295,10 +295,10 @@
     <value>Wrong {0}</value>
   </data>
   <data name="_parentuidNotValidAsset" xml:space="preserve">
-    <value>_parentUid with value {0} does not correspond to a valid asset!</value>
+    <value>[_parentUid] with value {0} does not correspond to a valid asset!</value>
   </data>
   <data name="_parentUidNotValidUid" xml:space="preserve">
-    <value>_parentUid parameter must be a valid Guid, be set to null, or not be present!</value>
+    <value>[_parentUid] parameter must be a valid Guid, be set to null, or not be present!</value>
   </data>
   <data name="BadRequest" xml:space="preserve">
     <value>Bad Request</value>

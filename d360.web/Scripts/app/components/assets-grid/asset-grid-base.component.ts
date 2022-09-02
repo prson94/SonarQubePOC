@@ -13,7 +13,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 export class AssetGridBaseComponent extends BaseComponent {            
     public area: string = StringConstants.AssetTypeClass_Business;
     public folderTitle: string; 
-    public areaLink: string = SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;
+    public areaLink: string = SiteUrlHelpers.SITE_URL_ADMIN_ASSET;
     //sidebar
     sidebarSubscription: Subscription;
     

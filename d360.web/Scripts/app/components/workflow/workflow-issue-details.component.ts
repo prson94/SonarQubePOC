@@ -93,11 +93,11 @@ import { CompanySettingsService } from '../../services/settings.service';
 })
 
 export class WorkflowIssueDetailsComponent extends BaseComponent implements OnInit {
+	@Input() uid: string;
+
     private issues: any[] = [];
     private selected: any;
 
-    @Input() objectID: number = 0;
-    @Input() objectType: string;
 
     @Output() countsChanged = new EventEmitter();
 
@@ -115,7 +115,7 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
     private loadIssues() {
         this.isLoading = true;
 
-        this.workflowService.getIssues(this.objectID, this.objectType)
+		this.workflowService.getIssuesByAssetUid(this.uid)
             .subscribe(result => {
                 this.issues = result;
                 if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];

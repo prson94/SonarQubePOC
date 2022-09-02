@@ -124,7 +124,7 @@
     <value>Allocation identifier with value {0} does not correspond to a valid allocation.</value>
   </data>
   <data name="AllocationUidNotCorrectlyFormatted" xml:space="preserve">
-    <value>allocationUid {0} is not a correctly formatted identifier.</value>
+    <value>[allocationUid] {0} is not a correctly formatted identifier.</value>
   </data>
   <data name="AssetIdentifierDoesnotValidAsset" xml:space="preserve">
     <value>Asset identifier with value {0} does not correspond to a valid asset.</value>
@@ -136,7 +136,7 @@
     <value>The asset uid must be specified.</value>
   </data>
   <data name="AssetuidNotCorrectlyFormatted" xml:space="preserve">
-    <value>assetUid {0} is not a correctly formatted identifier.</value>
+    <value>[assetUid] {0} is not a correctly formatted identifier.</value>
   </data>
   <data name="BadRequestSubmitted" xml:space="preserve">
     <value>Bad request submitted</value>
@@ -172,13 +172,13 @@
     <value>This email does not look valid.</value>
   </data>
   <data name="InvalidFieldFilterParameter" xml:space="preserve">
-    <value>You have invalid fields in your filter query parameters: {0}.</value>
+    <value>You have invalid fields in your [filter] query parameters: {0}.</value>
   </data>
   <data name="InvalidFieldSelectQueryParameter" xml:space="preserve">
-    <value>You have invalid fields in your select query parameters: {0}.</value>
+    <value>You have invalid fields in your [select] query parameters: {0}.</value>
   </data>
   <data name="InvalidField_OrderParameter" xml:space="preserve">
-    <value>You have invalid fields in your _order query parameter.</value>
+    <value>You have invalid fields in your [_order] query parameter.</value>
   </data>
   <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
     <value>Invalid Relationship field encountered invalid or deleted relationship type encountered.</value>
@@ -247,13 +247,13 @@
     <value>Resource not available for this user.</value>
   </data>
   <data name="SearchFilterInvalid" xml:space="preserve">
-    <value>Search filters are invalid in your filter query parameter: last_modified.</value>
+    <value>Search filters are invalid in your filter query parameter: [last_modified].</value>
   </data>
   <data name="ServerErrorOccurred" xml:space="preserve">
     <value>A server error occurred. Please try your request again at a later time</value>
   </data>
   <data name="SourceAssetUidModelNotEmpty" xml:space="preserve">
-    <value>When using copy/replace option with sourceAssetUid model must be empty.</value>
+    <value>When using copy/replace option with [sourceAssetUid] model must be empty.</value>
   </data>
   <data name="SourceTargetNotSame" xml:space="preserve">
     <value>Source and target asset cannot be same.</value>
@@ -262,15 +262,15 @@
     <value>Source and target asset types must be same.</value>
   </data>
   <data name="SourceUidNotExists" xml:space="preserve">
-    <value>sourceAssetUid is invalid or asset does not exist.</value>
+    <value>[sourceAssetUid] is invalid or asset does not exist.</value>
   </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Unauthorized</value>
   </data>
   <data name="_PageNumGT0" xml:space="preserve">
-    <value>_pageNum parameter must be greater than 0.</value>
+    <value>[_pageNum] parameter must be greater than 0.</value>
   </data>
   <data name="_PageSizeMax200" xml:space="preserve">
-    <value>_pageSize parameter has a maximum supported value of 200.</value>
+    <value>[_pageSize] parameter has a maximum supported value of 200.</value>
   </data>
 </root>

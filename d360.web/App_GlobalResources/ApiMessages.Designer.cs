@@ -61,7 +61,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _pageSize parameter passed in the request value is greater than the maximum supported value of 100,000..
+        ///   Looks up a localized string similar to Invalid [_pageSize] parameter passed in the request value is greater than the maximum supported value of 100,000..
         /// </summary>
         public static string _PageSizeLimit {
             get {
@@ -70,7 +70,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _pageSize parameter passed in the request value is less than or equal to zero..
+        ///   Looks up a localized string similar to Invalid [_pageSize] parameter passed in the request value is less than or equal to zero..
         /// </summary>
         public static string _PageSizePassedZeroLess {
             get {
@@ -115,7 +115,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ApplicationId length cannot exceed 200 characters.
+        ///   Looks up a localized string similar to [ApplicationId] length cannot exceed 200 characters.
         /// </summary>
         public static string ApplicationIdMaxLengthViolated {
             get {
@@ -259,7 +259,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connetor status with externalId {0} could not be found..
+        ///   Looks up a localized string similar to Connetor status with [externalId] {0} could not be found..
         /// </summary>
         public static string ConnectorStatusNotFound {
             get {
@@ -268,7 +268,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Counter Initial Value must be higher that asset count ({0}).
+        ///   Looks up a localized string similar to [CounterInitialIndex] must be higher that asset count ({0}).
         /// </summary>
         public static string CounterInitialValueHigherCurrentValue {
             get {
@@ -313,7 +313,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fields Name, GovernanceRole and StepNo cannot be delete from Diagram Asset Type..
+        ///   Looks up a localized string similar to Fields [Name], [GovernanceRole] and [StepNo] cannot be delete from Diagram Asset Type..
         /// </summary>
         public static string DiagramAssetTypeSystemFieldValidation {
             get {
@@ -601,7 +601,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A valid ExportViewType is required..
+        ///   Looks up a localized string similar to A valid [ExportViewType] is required..
         /// </summary>
         public static string ExportViewMessage {
             get {
@@ -781,7 +781,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Forbidden user is not an administrator..
+        ///   Looks up a localized string similar to The current user is not an administrator..
         /// </summary>
         public static string ForbiddenUserNotAuthorizedMessage {
             get {
@@ -907,7 +907,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _includeChildAssets provided.
+        ///   Looks up a localized string similar to Invalid [_includeChildAssets] provided.
         /// </summary>
         public static string Invalid_includeChildAssetsProvided {
             get {
@@ -916,7 +916,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _order provided!.
+        ///   Looks up a localized string similar to Invalid [_order] provided!.
         /// </summary>
         public static string Invalid_Order {
             get {
@@ -925,7 +925,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _pageNum parameter passed in the request.
+        ///   Looks up a localized string similar to Invalid [_pageNum] parameter passed in the request.
         /// </summary>
         public static string Invalid_PageNum {
             get {
@@ -934,7 +934,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _pageSize parameter passed in the request.
+        ///   Looks up a localized string similar to Invalid [_pageSize] parameter passed in the request.
         /// </summary>
         public static string Invalid_PageSize {
             get {
@@ -943,7 +943,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid apiKey or apiSecret for currentUser.
+        ///   Looks up a localized string similar to Invalid [apiKey] or [apiSecret] for current user.
         /// </summary>
         public static string InvalidApiKeyOrApiSecret {
             get {
@@ -961,7 +961,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No asset type found with assetTypeUid provided..
+        ///   Looks up a localized string similar to No asset type found with [assetTypeUid] provided..
         /// </summary>
         public static string InvalidAssetTypeUidProvided {
             get {
@@ -988,7 +988,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for parameter &apos;_direction&apos;. Allowed values are &apos;desc&apos; and &apos;asc&apos;..
+        ///   Looks up a localized string similar to Invalid value for parameter [_direction]. Allowed values are &apos;desc&apos; and &apos;asc&apos;..
         /// </summary>
         public static string InvalidDirection {
             get {
@@ -997,7 +997,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _endDate provided.
+        ///   Looks up a localized string similar to Invalid [_endDate] provided.
         /// </summary>
         public static string InvalidEndDate {
             get {
@@ -1015,7 +1015,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to externalId {0} is not a valid Uid.
+        ///   Looks up a localized string similar to [externalId] {0} is not a valid Uid.
         /// </summary>
         public static string InvalidExternalID {
             get {
@@ -1114,7 +1114,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _includeTotal provided.
+        ///   Looks up a localized string similar to Invalid [_includeTotal] provided.
         /// </summary>
         public static string InvalidIncludeTotal {
             get {
@@ -1150,7 +1150,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid LoadUid provided..
+        ///   Looks up a localized string similar to Invalid [LoadUid] provided..
         /// </summary>
         public static string InvalidLoadUid {
             get {
@@ -1195,7 +1195,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid organizationTypeUid provided.
+        ///   Looks up a localized string similar to Invalid [organizationTypeUid] provided.
         /// </summary>
         public static string InvalidOrgTypeUid {
             get {
@@ -1249,7 +1249,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _resourceuid provided!.
+        ///   Looks up a localized string similar to Invalid [_resourceuid] provided!.
         /// </summary>
         public static string InvalidResourceuid {
             get {
@@ -1258,7 +1258,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid score type provided, please provide a valid score type..
+        ///   Looks up a localized string similar to Invalid [scoreType] provided, please provide a valid score type..
         /// </summary>
         public static string InvalidScoreType {
             get {
@@ -1285,7 +1285,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _startDate provided.
+        ///   Looks up a localized string similar to Invalid [_startDate] provided.
         /// </summary>
         public static string InvalidStartDate {
             get {
@@ -1330,7 +1330,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IsChangePasswordReqeust set to true, Not allowed for authentication type other than Forms.
+        ///   Looks up a localized string similar to [IsChangePasswordReqeust] set to true, Not allowed for authentication type other than Forms.
         /// </summary>
         public static string IsChangePwdReqAuthOtherThanForm {
             get {
@@ -1339,7 +1339,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IsChangePasswordReqeust set to true only for current user.
+        ///   Looks up a localized string similar to [IsChangePasswordReqeust] set to true only for current user.
         /// </summary>
         public static string IsChangePwdReqCurrentUser {
             get {
@@ -1348,7 +1348,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Only one request accepted for IsChangePasswordReqeust set to true..
+        ///   Looks up a localized string similar to Only one request accepted for [IsChangePasswordReqeust] set to true..
         /// </summary>
         public static string IsChangePwdReqOneReq {
             get {
@@ -1357,7 +1357,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There are existing items in your environment. You may not perform a Replace action until those items are removed..
+        ///   Looks up a localized string similar to There are existing items in your environment. You may not perform a &apos;Replace&apos; action until those items are removed..
         /// </summary>
         public static string ItemExistsNotReplaceMessage {
             get {
@@ -1375,7 +1375,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There are existing assets in your environment with values on field &apos;{0}&apos;. You may not change &apos;Type of List&apos; property until those field values are removed..
+        ///   Looks up a localized string similar to There are existing assets in your environment with values on field &apos;{0}&apos;. You may not change [Type.Lookup.List] property until those field values are removed..
         /// </summary>
         public static string LookupFieldTypeInUse {
             get {
@@ -1465,7 +1465,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No assetTypeUid or actionTypeUid or relationshipTypeUid provided.
+        ///   Looks up a localized string similar to No [assetTypeUid] or [actionTypeUid] or [relationshipTypeUid] provided.
         /// </summary>
         public static string NotValidAssetActionRelationTypeProvided {
             get {
@@ -1654,7 +1654,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Value passed for _settingId is not valid.
+        ///   Looks up a localized string similar to Value passed for [_settingId] is not valid.
         /// </summary>
         public static string SettingIDNotValid {
             get {
@@ -1699,7 +1699,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for Status. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION.
+        ///   Looks up a localized string similar to Invalid value for [Status]. Allowed values are: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION.
         /// </summary>
         public static string StatusInvalid {
             get {

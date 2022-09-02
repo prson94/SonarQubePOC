@@ -20,6 +20,8 @@ import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.s
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AuthenticationService } from '../../services/authentication.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 declare var CurrentResourceID;
 
@@ -44,7 +46,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     rowsPerPage: number = 25;
     currentPageNumber: number = 1;
     showSidePanel: boolean = true;
-    private sidePanelOpen: boolean = false;
+    sidePanelOpen: boolean = false;
     sidePanelTab: string = 'detail';
     sidePanelStorageKey: string;
     navigationItemsSubs: Subscription[] = [];
@@ -155,6 +157,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         protected router: Router,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
+        private sidePanelService: SidePanelService,
         webAnalyticsService: WebAnalyticsService,
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
@@ -280,8 +283,8 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     selectRow(row: any) {
         this.secondarySidePanelOpen = false;
         this.selectedType = row;
-        if (this.selectedType) {
-            this.buildSecondaryNavigation(this.selectedType.uid, 0, 'SemanticType', null, null, this.displayBreadCrumbs.bind(this), null);
+		if (this.selectedType) {
+			this.buildSecondaryNavigation({ assetUid: this.selectedType.uid, objectId: 0, objectType: 'SemanticType', buildBreadcrumbOverride: this.displayBreadCrumbs.bind(this) });
         }
         this.selectedTypeChanged.emit(row);
     }
@@ -467,4 +470,19 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
 		return this.selectedType && this.selectedType.isDisabled ? $localize`Enable` : $localize`Disable`;
 	}
 	
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+    }
 }

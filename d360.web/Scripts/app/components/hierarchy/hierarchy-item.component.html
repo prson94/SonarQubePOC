@@ -2,32 +2,44 @@
 <div *ngIf="!isLoading">
     <div class="row">
         <div>
-            <div class="col s12" style="display:flex;">
-                <div class="tile tile-detail main-panel">
+            <as-split unit="pixel"
+                      direction="horizontal"
+                      [gutterSize]="16"
+                      class="col s12 split"
+                      style="display: flex"
+                      [class.side-panel-close]="!sidePanelOpen"
+                      (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+                <as-split-area class="tile tile-detail main-panel">
                     <d3s-object-definition-tile [nymTypes]="assetType?.NymTypes"
-                                                [objectPermissions]="permissions"
-                                                [objectType]="object"
+                                                [objectPermissions]="objectPermission"
+                                                [objectType]="objectType"
                                                 [useV2Api]="true"
                                                 [objectID]="selected?.ID"
                                                 (onEditComplete)="editComplete($event)"
                                                 [interceptLinkClick]="true"
                                                 [synonymPermission]="synonymPermission"></d3s-object-definition-tile>
-                </div>
-                <div class="tile tile-detail side-panel">
+                </as-split-area>
+                <as-split-area [size]="getSidePanelWidth()"
+                               [minSize]="getSidePanelMinWidth()"
+                               [maxSize]="getSidePanelMaxWidth()"
+                               class="tile tile-detail side-panel">
                     <side-panel (expandedChange)="sidePanelOpen=$event"
                                 [hasProfiling]="false"
                                 [expanded]="sidePanelOpen"
                                 [storageKey]="sidePanelStorageKey"
                                 (selectedPanelChange)="sidePanelTab=$event"
                                 [selectedPanel]="sidePanelTab"
+                                [setMinMaxWidth]="false"
                                 hasDetail="true">
                         <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
-                            <div class="empty-overlay" *ngIf="!selectedAsset && !selectedReferenceItem && !selectedTag">
+                            <div class="empty-overlay"
+                                 *ngIf="!selectedAsset && !selectedReferenceItem && !selectedTag">
                                 <div class="content">
                                     <div class="icon-holder">
                                         <i class="fa fa-info-circle"></i>
                                     </div>
-                                    <span i18n>Click a link or a tag to display the properties of a referenced item</span>
+                                    <span i18n>Click a link or a tag to display the properties of a referenced
+                                        item</span>
                                 </div>
                             </div>
                             <ng-container *ngIf="selectedAsset">
@@ -57,8 +69,8 @@
                             </ng-container>
                         </ng-container>
                     </side-panel>
-                </div>
-            </div>
+                </as-split-area>
+            </as-split>
         </div>
     </div>
-</div> 
+</div>

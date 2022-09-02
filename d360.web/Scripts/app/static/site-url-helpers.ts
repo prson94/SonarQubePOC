@@ -6,18 +6,19 @@ export class SiteUrlHelpers {
     //main site routes
     // WARNING!! - SOME URLS SUCH AS TOOLTIPS ARE BURNED IN THE DB DO NOT CHANGES THE BELOW WITHOUT 
     // UPDATING BOTH!!
-    static SITE_URL_REFERENCE_ROOT = 'reference';
+    static SITE_URL_REFERENCE_ROOT = 'assets/class/Reference';
     static SITE_URL_ARTIFACT_ROOT = 'artifact';
     static SITE_URL_ASSET_ROOT = 'asset';
     static SITE_URL_ASSETTYPE_ROOT = 'assettype';
     static SITE_URL_ASSETS_ROOT = 'assets';
+    static SITE_URL_ASSETS_CLASS_ROOT = 'assets/class';
     static SITE_URL_COMMUNITY_ROOT = 'community';
     static SITE_URL_HELP_ROOT = 'help';
     static SITE_URL_MONITOR_ROOT = 'monitor';
     static SITE_URL_WORKFLOWMONITOR_ROOT = 'workflowitems';
     static SITE_URL_POLICY_ROOT = 'policy';
     static SITE_URL_GROUP_ROOT = 'group';
-    static SITE_URL_RESOURCE_ROOT = 'resource';
+    static SITE_URL_RESOURCE_ROOT = 'users';
     static SITE_URL_RULE_ROOT = 'quality/rule';
     static SITE_URL_TAG_ROOT = 'tag';
     static SITE_URL_CONNECTORLABEL_ROOT = 'connectorLabel';
@@ -29,28 +30,19 @@ export class SiteUrlHelpers {
     static SITE_URL_GALLERY_ROOT = 'gallery';
     static SITE_URL_AUDIT_ROOT = 'sidebar/audit';
     static SITE_URL_DASHBOARD_ROOT = 'dashboard';
-    static SITE_URL_FOLLOWERS_ROOT = 'sidebar/followers';
-    static SITE_URL_OWNERSHIP_ROOT = 'sidebar/ownership';
-    static SITE_URL_VISUALIZATION_ROOT = 'sidebar/visualization';
-    static SITE_URL_RELATIONSHIP_ROOT = 'sidebar/relationships';
-    static SITE_URL_CHILDREN_ROOT = 'sidebar/children';
     static SITE_URL_WORKFLOW_MONITOR_ROOT = 'sidebar/workflowmonitor';
     static SITE_URL_FIELDS_ROOT = 'sidebar/fields';
     static SITE_URL_RESPONSIBILITIES_ROOT = 'sidebar/responsibilities';
     static SITE_URL_SHOPPING_CART_ROOT = 'cart';
     static SITE_URL_ITEM_FOLLOW_ROOT = 'sidebar/itemfollow';
-    static SITE_URL_ITEM_OWN_ROOT = 'sidebar/itemown';
-    static SITE_URL_MEMBER_GROUP_ROOT = 'sidebar/membergroup';
-    static SITE_URL_COMMENTS_ROOT = 'sidebar/comments';
+	static SITE_URL_COMMENTS_ROOT = 'sidebar/comments';
+	static SITE_URL_ITEM_OWN_ROOT = 'sidebar/itemown';
     static SITE_URL_SCORE_ROOT = 'sidebar/score';
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
     static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';
     static SITE_URL_GOVERNANCE_ROLES_ROOT = 'sidebar/governanceRoles';
     static SITE_URL_CONNECTOR_LABELS_ROOT = 'sidebar/connectorLabels';
     static SITE_URL_SEMANTICTYPES_ROOT = 'semantics';
-    //hierarchy child routes
-    static SITE_URL_HIERARCHY_CLASSIFICATION = 'classification';
-
     //asset child routes
     static SITE_URL_ASSET_RULE = 'Rule';
 
@@ -155,10 +147,10 @@ export class SiteUrlHelpers {
     }
 
     // getObjectUrl - Generates the url for an object based on its type
-    static getObjectUrl(objectType: string, objectId: number | string, parentId?: number, objectName?: string): string {
-        switch (objectType.toUpperCase()) {
-            case 'ARTIFACTTYPE':
-                return `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${objectId}`;
+	static getObjectUrl(objectType: string, objectId: number | string, parentId?: number, objectName?: string): string {
+		switch (objectType.toUpperCase()) {
+			case 'ARTIFACTTYPE':
+				return this.getObjectUrlByUid(objectType, objectId as string);
             case 'ARTIFACT':
                 return `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${parentId}/${objectId}`;
             case 'COMMENTS':
@@ -186,33 +178,37 @@ export class SiteUrlHelpers {
             default:
                 console.log('Unable to generate object link', objectType, objectId);
         }
-    }
+	}
+
+	// getObjectUrl - Generates the url for an object based on its type
+	static getObjectUrlByUid(objectType: string, uid: string): string {
+		console.log("Debug getObjectUrl > ", objectType, uid);
+		switch (objectType.toUpperCase()) {
+			case 'ARTIFACTTYPE':
+				return `${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${uid}`;
+			default:
+				console.log('Unable to generate getObjectUrlByUid');
+		}
+	}
 
     // getAssetUrl - Generates the url for an object based on its type
     static getAssetUrl(uid: string): string {
         return `${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${uid}`;
+	}
+
+	static getUserUrl(uid: string): string {
+        return `users/${uid}`;
     }
 
     // getAssetTypeUrl - Generates the url for an object based on its type
-    static getAssetTypeUrl(type: string, uid: string): string {
-        let uri: string = "";
-
-        switch (type.toUpperCase()) {
-            case 'TAXONOMY':
-            case 'TAXONOMYTYPE':
-                uri = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/structure/${uid}`;
-                break;
-            case 'POLICY':
-            case 'POLICYTYPE':
-                uri = `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/structure/${uid}`;
-                break;
-            default:
-                uri = `${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${uid}`;
-                break;
-        }
-
-        return uri;
+    static getAssetTypeUrl(uid: string): string {
+		return `assets/${uid}`;
     }
+
+	// getAssetTypeUrl - Generates the url for an object based on its type
+	static getGroupUrl(uid: string): string {
+		return `group/${uid}`;
+	}
 
     // convertClassicUrl - Converts a url from the legacy site to the new url used in angular
     // inputs - url the old url

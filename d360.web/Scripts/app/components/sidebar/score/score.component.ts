@@ -55,7 +55,7 @@ export class ScoreComponent extends BaseComponent implements OnInit, OnDestroy {
             this.isLoading = false;
             this.show = true;
         });
-        this.buildSecondaryNavigation(this.uid);
+		this.buildSecondaryNavigationByAssetUid(this.uid);
     }
 
     ngOnDestroy() {

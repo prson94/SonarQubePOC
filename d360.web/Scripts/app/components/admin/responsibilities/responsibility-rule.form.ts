@@ -16,30 +16,16 @@ import { BaseComponent } from "../../shared/base.component";
 import * as _ from "lodash";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
+import { HelpResource } from "../../../models/resource.model";
+import { Operator } from "../../../models/operator.model";
+import { forEach } from "core-js/fn/dict";
+import { forkJoin } from "rxjs";
 
 
 @Component({
     selector: "d3s-responsibility-rule-form",
-    templateUrl: "./responsibility-rule.form.html",
-    styles: [
-        `
-        .display-table tr td {
-            padding:3px;
-            border-radius: 0;
-        }
-        .relation-table tr td {
-            border-radius: 0;
-        }
-        
-       .display-table-title {
-            text-align:center;
-            width:100%;
-            text-transform: uppercase;
-            color: #5c5e60 !important;
-            font-size: 1rem;
-            font-weight: bold;
-        }`
-    ],
+	templateUrl: "./responsibility-rule.form.html",
+	styleUrls: ["responsibility-rule.less"],
     providers: [ResponsibilityTypeService, ObjectDetailService],
 })
 
@@ -52,11 +38,19 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     @Output() onCancel = new EventEmitter();
 
     public isThenTestLoading: boolean = false;
-    public isWhenTestLoading: boolean = false;
+	public isWhenTestLoading: boolean = false;
+
+	readonly resourceType: string = "ResourceType";
+	readonly groupType: string = "GroupType";
 
     model: ResponsibilityTypeRelationRule = new ResponsibilityTypeRelationRule();
     disableTestWhen: boolean = false;
     disableTestThen: boolean = false;
+
+	showWhenResults: boolean = true;
+	showThenResults: boolean = true;
+	noWhenResults: boolean = false;
+	noThenResults: boolean = false;
 
     actionName: string = $localize`Add`;
 
@@ -66,15 +60,18 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     applyToTooltip = $localize`Marking the rule as applying to a type grants the applied responsibilities to act upon the type itself, including all instances under the type. 
                     For example, if you wanted to grant a user or group with the ability to create a specific business term you would need to check this box.`;
 
-    addCheckTitle = $localize`Add check`;
-    testWhenLabel = $localize`Test Filters`;
+    addCheckTitle = $localize`Add Condition`;
+    testButtonLabel = $localize`Test Filters`;
     addConditionLabel = $localize`Add condition`;
 
     matchAllLabel = $localize`Match all`;
     matchAnyLabel = $localize`Match any`;
 
-    saveLabel = $localize`Save`;
-    cancelLabel = $localize`Cancel`;
+    saveLabel = $localize`Add Rule`;
+	cancelLabel = $localize`Cancel`;
+
+	showResultsLabel = $localize`Show Results`;
+	hideResultsLabel = $localize`Hide Results`;
 
     chooseLabel = $localize`Choose...`;
 
@@ -84,24 +81,40 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         { label: $localize`Relationship`, value: "R" }
     ];
     private whenBoolTypes: SelectItem[] = [
-        { label: this.chooseLabel, value: null },
         { label: $localize`True`, value: "true" },
         { label: $localize`False`, value: "false" },
-    ];
+	];
+
+	private fieldOperatorTypes: SelectItem[] = [
+		{ label: "contains", value: Operator[Operator.Contains] },
+		{ label: "does not contain", value: Operator[Operator.NotContains] },
+		{ label: "is", value: Operator[Operator.Equals] },
+		{ label: "is not", value: Operator[Operator.NotEquals] },
+		{ label: "starts with", value: Operator[Operator.StartsWith] },
+		{ label: "ends with", value: Operator[Operator.EndsWith] },
+		{ label: "is populated", value: Operator[Operator.Populated] },
+		{ label: "is not populated", value: Operator[Operator.NotPopulated] }]
+
+	private relationshipOperatorTypes: SelectItem[] = [
+		{ label: "in", value: Operator[Operator.In] },
+		{ label: "not in", value: Operator[Operator.NotIn] }]
+
     private whenFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
     private whenIntersectTypes: (SelectItem<number> & { uid: string })[] = [];
     WhenTestRows: ResponsibilityRuleTestRow[] = [];
     ThenTestRows: ResponsibilityRuleTestRow[] = [];
 
     thenObjectTypes: SelectItem<string>[] = [
-        { label: this.chooseLabel, value: null },
-        { label: $localize`Group`, value: "GroupType" },
-        { label: $localize`Organization`, value: "OrganizationType" },
-        { label: $localize`User`, value: "ResourceType" }
+        { label: $localize`Group`, value: this.groupType },
+        { label: $localize`User`, value: this.resourceType }
     ];
-    private thenFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
+	private thenUserFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
+	private thenGroupFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
 
-    errorMessage: string = "";
+	errorMessage: string = "";
+
+	public simpleWhenFilter: string = "";
+	public simpleThenFilter: string = "";
 
     constructor(
         private responsibilityTypeService: ResponsibilityTypeService,
@@ -127,42 +140,58 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             let r: ResponsibilityTypeRelationRule;
             this.responsibilityTypeService.getResponsibilityTypeRelationRule(this.id)
                 .subscribe((data) => {
-                    this.model = data;
+					this.model = data;
+					if (this.model.StructuredDefinition.Then && this.model.StructuredDefinition.Then.Conditions) {
+						this.model.StructuredDefinition.Then.Conditions.forEach((x) => {
+							if (!x.Object) {
+								x.Object = this.model.StructuredDefinition.Then.Object;
+								x.ObjectID = this.model.StructuredDefinition.Then.ObjectID;
+							}							
+						});
+					}
                     this.model.ObjectString = this.model.Object + "|" + this.model.ObjectID + "|" + this.model.AssetTypeUid.toLowerCase();
                     r = data;
-                    this.responsibilityTypeService.getRelationRuleFormData(this.model.StructuredDefinition.Then.Object, this.model.StructuredDefinition.Then.ObjectID)
-                        .subscribe((d) => {
-                            this.thenFieldTypes = d.FieldTypes;
-                            this.thenFieldTypes.unshift({ label: this.chooseLabel, value: null, type: null, isLookup: false, values: [] });
 
                             this.model = r;
                             this.model.ObjectString = r.Object + "|" + r.ObjectID + "|" + r.AssetTypeUid.toLowerCase();
                             //load the then islookup and field values
-                            if (this.model && this.model.StructuredDefinition && this.model.StructuredDefinition.Then && this.model.StructuredDefinition.Then.Conditions != null && this.model.StructuredDefinition.Then.Conditions.length > 0) {
-                                for (let item of this.model.StructuredDefinition.Then.Conditions) {
-                                    this.loadThenValuesForFieldType(item, false);
-                                }
-                            }
+                            
 
                             if (!this.model.StructuredDefinition.Then.Conditions) {
-                                this.model.StructuredDefinition.Then.Conditions = [];
+								this.model.StructuredDefinition.Then.Conditions = [];
+								this.addThenCondition();
 							}
 
 							this.responsibilityTypeService.getRelationRuleFormData(this.model.Object, this.model.ObjectID)
-								.subscribe((d) => {
-									this.whenFieldTypes = d.FieldTypes;
-									this.whenIntersectTypes = d.IntersectTypes;
+								.subscribe((w) => {
+									this.whenFieldTypes = w.FieldTypes;
+									this.whenIntersectTypes = w.IntersectTypes;
 
 									if (this.model.StructuredDefinition.When) {
 										this.model.StructuredDefinition.When.forEach((wft) => this.loadWhenValuesForFieldType(wft));
 									}
 
-									this.whenFieldTypes.unshift({ label: this.chooseLabel, value: null, type: null, isLookup: false, values: [] });
-									this.whenIntersectTypes.unshift({ label: this.chooseLabel, value: null, uid: null });
-									this.isLoading = false;
+									let resources = this.responsibilityTypeService.getRelationRuleFormData(this.resourceType, 1);
+									let groups = this.responsibilityTypeService.getRelationRuleFormData(this.groupType, 1);
 
+									if (this.model && this.model.StructuredDefinition && this.model.StructuredDefinition.Then) {
+										forkJoin([
+											resources,
+											groups
+										]).subscribe(([resourceList, groupList]) => {
+											this.thenUserFieldTypes = resourceList.FieldTypes;
+											this.thenGroupFieldTypes = groupList.FieldTypes;
+
+											this.model.StructuredDefinition.Then.Conditions.forEach((t) => {
+												if (t.Value && t.FieldTypeID && !t.Object && this.model.StructuredDefinition.Then.Object && this.model.StructuredDefinition.Then.Object.length > 0) {
+													t.Object = this.model.StructuredDefinition.Then.Object;
+												}
+												this.loadThenValuesForFieldType(t, false);
+											});
+											this.isLoading = false;
+										});
+									}																																
 								});
-                        });
                 });
         } else {
             this.actionName = $localize`Add`;
@@ -182,7 +211,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 .subscribe((d) => {
                     this.objectTypes = this.mapObjectTypes(d);
                     this.isLoading = false;
-                });
+				});
         }
     }
 
@@ -195,7 +224,6 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 value: mappedValue
             });
         });
-        mapped.unshift({ label: this.chooseLabel, value: null });
         return mapped;
     }
 
@@ -218,30 +246,24 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             .subscribe((d) => {
                 this.whenFieldTypes = d.FieldTypes;
                 this.whenIntersectTypes = d.IntersectTypes;
-                let excluded = this.whenFieldTypes.findIndex((a) => a.label === this.chooseLabel);
-                if (excluded < 0) {
-                    this.whenFieldTypes.unshift({ label: this.chooseLabel, value: null, type: null, isLookup: false, values: [] });
-                }
-                excluded = this.whenIntersectTypes.findIndex((a) => a.label === this.chooseLabel);
-                if (excluded < 0) {
-                    this.whenIntersectTypes.unshift({ label: this.chooseLabel, value: null, uid: null });
-                }
             });
-
+		this.addWhen();
+		this.addThenCondition();
         return Promise.all(promises).then(() => { });
     }
 
     // Clear When Filter array when "Applies To Entire Type" selected
-    clearWhen(): void {
-        if (this.model.StructuredDefinition.When) {
-            this.model.StructuredDefinition.When.splice(0, this.model.StructuredDefinition.When.length);
-        }
+	clearWhen(): void {
+		if (this.model.ApplyToType && this.model.StructuredDefinition.When) {
+			this.model.StructuredDefinition.When.splice(0, this.model.StructuredDefinition.When.length);
+		} else {
+			this.addWhen();
+		}
     }
 
 
     addWhen(): void {
         let whenItem: ResponsibilityTypeRelationRuleDefinitionWhenItem = new ResponsibilityTypeRelationRuleDefinitionWhenItem();
-        whenItem.CheckType = "F";
         whenItem.IsBool = false;
         if (!this.model.StructuredDefinition.When) {
             this.model.StructuredDefinition.When = [];
@@ -250,17 +272,15 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     private loadWhenValuesForFieldType(item: ResponsibilityTypeRelationRuleDefinitionWhenItem, event: any = null): Promise<void> {
-        item.IsBool = false;
+		item.IsBool = false;
+		item.IsLookup = false;
+		item.IsSimpleText = false;
         if (item.FieldTypeID) {
             let selectedFieldType = this.whenFieldTypes.find((f) => f.value === item.FieldTypeID);
             if (selectedFieldType) {
                 selectedFieldType = _.cloneDeep(selectedFieldType);
                 item.FieldTypeName = selectedFieldType.fieldTypeName ?? selectedFieldType.label;
                 if (selectedFieldType.isLookup) {
-                    let excluded = selectedFieldType.values.findIndex((a) => a.label == this.chooseLabel);
-                    if (excluded < 0) {
-                        selectedFieldType.values.unshift({ label: this.chooseLabel, value: null });
-                    }
 
                     item.ValueOptions = selectedFieldType.values;
                     item.IsLookup = selectedFieldType.isLookup;
@@ -269,7 +289,17 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                     item.IsBool = true;
                     item.ValueOptions = this.whenBoolTypes;
                     item.IsLookup = selectedFieldType.isLookup;
-                }
+				}
+				else if (selectedFieldType.type === "Text") {
+					item.IsSimpleText = true;		
+					if (!item.Operator) {
+						if (item.Value) {
+							item.Operator = Operator[Operator.Equals];
+						} else {
+							item.Operator = Operator[Operator.Contains];
+						}						
+					}
+				}
                 else {
                     item.ValueOptions = [];
                     item.IsLookup = selectedFieldType.isLookup;
@@ -307,11 +337,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     removeWhenCondition(i: number): void {
-        this.model.StructuredDefinition.When.splice(i, 1);
-    }
+		this.model.StructuredDefinition.When.splice(i, 1);
+		if (this.model.StructuredDefinition.When.length === 0) {
+			this.addWhen();
+		}
+	}
 
-    testWhen(): Promise<void> {
-
+	testWhen(): Promise<void> {	
         this.isWhenTestLoading = true;
 
         let promises = [];
@@ -332,12 +364,14 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 Definition: {
                     When: whenTest.StructuredDefinition.When.map((when) => this.mapToWhenV2(when)),
                     Then: []
-                }
-            })
+				}
+			},
+				this.simpleWhenFilter)
             .subscribe((response) => {
                 if (response) {
                     this.WhenTestRows = response.items;
-                }
+				}
+				this.noWhenResults = this.WhenTestRows.length === 0 && this.simpleWhenFilter.trim() === "";
 
                 this.disableTestWhen = false;
                 this.isWhenTestLoading = false;
@@ -352,7 +386,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 return ({
                     Field: {
                         ApiName: when.FieldTypeName,
-                        Value: this.mapToWhenFieldValueForV2(when)
+						Value: this.mapToWhenFieldValueForV2(when),
+						Operator: when.Operator
                     }
                 });
 
@@ -360,7 +395,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 return ({
                     Relation: {
                         AssetUid: this.mapToWhenRelationAssetUidForV2(when),
-                        IntersectTypeUid: this.mapToWhenRelationIntersectTypeUidForV2(when)
+						IntersectTypeUid: this.mapToWhenRelationIntersectTypeUidForV2(when),
+						Operator: when.Operator
                     }
                 });
         }
@@ -391,34 +427,39 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         this.model.StructuredDefinition.Then.Conditions.push(thenItem);
     }
 
-    loadThenFilterOptions(value: string): Promise<void> {
+    loadThenFilterOptions(item: any): Promise<void> {
         let promises = [];
 
-        if (value == null) {
+		if (item == null) {
             return Promise.resolve();
         }
 
-        this.model.StructuredDefinition.Then.Object = value;
-        this.model.StructuredDefinition.Then.ObjectID = 1;
+        this.model.StructuredDefinition.Then.Object = item.Object;
+		this.model.StructuredDefinition.Then.ObjectID = item.ObjectID = 1;
+		if ((item.Object === this.resourceType && (!this.thenUserFieldTypes || this.thenUserFieldTypes.length === 0)) || (item.Object === this.groupType && this.thenGroupFieldTypes.length === 0)) {
+			this.responsibilityTypeService.getRelationRuleFormData(item.Object, 1)
+				.subscribe((d) => {
+					if (item.Object === this.resourceType) {
+						this.thenUserFieldTypes = d.FieldTypes;
+					} else {
+						this.thenGroupFieldTypes = d.FieldTypes;
+					}
 
-        this.responsibilityTypeService.getRelationRuleFormData(this.model.StructuredDefinition.Then.Object, this.model.StructuredDefinition.Then.ObjectID)
-            .subscribe((d) => {
-                this.thenFieldTypes = d.FieldTypes;
-                this.thenFieldTypes.unshift({ label: this.chooseLabel, value: null, type: null, isLookup: false, values: [] });
-                if (this.model && this.model.StructuredDefinition
-                    && this.model.StructuredDefinition.Then && this.model.StructuredDefinition.Then.Conditions != null
-                    && this.model.StructuredDefinition.Then.Conditions.length > 0) {
-                    for (let item of this.model.StructuredDefinition.Then.Conditions) {
-                        this.loadThenValuesForFieldType(item, false);
-                    }
-                }
-            });
+					this.loadThenValuesForFieldType(item, false);
+				});
+		} else {
+			this.loadThenValuesForFieldType(item, false);
+		}
+		
 
         return Promise.all(promises).then(() => { });
     }
 
     removeThenCondition(i: number): void {
-        this.model.StructuredDefinition.Then.Conditions.splice(i, 1);
+		this.model.StructuredDefinition.Then.Conditions.splice(i, 1);
+		if (this.model.StructuredDefinition.Then.Conditions.length === 0) {
+			this.addThenCondition();
+		}
     }
 
     testThen(): Promise<void> {
@@ -450,11 +491,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                         }
                     ]
                 }
-            })
+			},
+				this.simpleThenFilter )
             .subscribe((response) => {
                 if (response) {
                     this.ThenTestRows = response.items;
-                }
+				}
+				this.noThenResults = this.ThenTestRows.length === 0 && this.simpleThenFilter.trim() === "";
                 this.disableTestThen = false;
                 this.isThenTestLoading = false;
             });
@@ -463,64 +506,82 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     getAssigneeTypeUid(then: ResponsibilityTypeRelationRuleDefinitionThenItem) {
-        if (then == null) {
-            return this.thenFieldTypes
+		var fieldTypes = then.Object === this.resourceType ? this.thenUserFieldTypes : this.thenGroupFieldTypes;
+
+		if (then == null) {
+			return fieldTypes
                 .map((field) => field.assigneeTypeUid)
                 .filter((x) => x != null)[0];
         }
         
-        const field = this.thenFieldTypes.find((field) => field.value === then.FieldTypeID);
+		const field = fieldTypes.find((field) => field.value === then.FieldTypeID);
         return field.assigneeTypeUid;
     }
 
-    mapToThenV2(then: ResponsibilityTypeRelationRuleDefinitionThenItem): RuleThenV2 {
-        const field = this.thenFieldTypes.find((field) => field.value === then.FieldTypeID);
+	mapToThenV2(then: ResponsibilityTypeRelationRuleDefinitionThenItem): RuleThenV2 {
+		var fieldTypes = then.Object === this.resourceType ? this.thenUserFieldTypes : this.thenGroupFieldTypes;
+        const field = fieldTypes.find((field) => field.value === then.FieldTypeID);
         if (field.isLookup) {
-            const item = field.values.find((item) => item.value === then.Value);
+			const item = field.values.find((item) => item.value === then.Value);
+
             if (item.assigneeUid) {
                 return {
+					AssigneeTypeUid: field.assigneeTypeUid,
                     Assignee: {
                         Uid: item.assigneeUid
                     }
                 };
             }
             else {
-                return {
+				return {
+					AssigneeTypeUid: field.assigneeTypeUid,
                     Field: {
                         ApiName: then.FieldTypeName,
-                        Value: item.value
+						Value: item.value,
+						Operator: then.Operator
                     }
                 };
             }
         }
 
-        return {
+		return {
+			AssigneeTypeUid: field.assigneeTypeUid,
             Field: {
                 ApiName: then.FieldTypeName,
-                Value: then.Value
+				Value: then.Value,
+				Operator: then.Operator
             }
         };
     }
 
-    private loadThenValuesForFieldType(item: any, clearValue?: boolean): Promise<void> {
-        let selectedFieldType = this.thenFieldTypes.find((f) => f.value === item.FieldTypeID);
+	private loadThenValuesForFieldType(item: any, clearValue?: boolean): Promise<void> {
+		var fieldTypes = item.Object === this.resourceType ? this.thenUserFieldTypes : this.thenGroupFieldTypes;
+		let selectedFieldType = fieldTypes.find((f) => f.value === item.FieldTypeID);
         if (clearValue !== undefined && clearValue === true) item.Value = "";
         if (selectedFieldType) {
-            item.IsBool = false;
-            item.FieldTypeName = selectedFieldType.fieldTypeName ?? selectedFieldType.label;
+			item.IsBool = false;
+			item.IsSimpleText = false;
+			item.IsLookup = false;
+			item.FieldTypeName = selectedFieldType.fieldTypeName ?? selectedFieldType.label;
             if (selectedFieldType.isLookup) {
-                let excluded = selectedFieldType.values.findIndex((a) => a.label == this.chooseLabel);
-                if (excluded < 0) {
-                    selectedFieldType.values.unshift({ label: this.chooseLabel, value: null });
-                }
                 item.ValueOptions = selectedFieldType.values;
                 item.IsLookup = selectedFieldType.isLookup;
             }
             else if (selectedFieldType.type == "Boolean") {
                 item.IsBool = true;
-                item.ValueOptions = this.whenBoolTypes;
-                item.IsLookup = selectedFieldType.isLookup;
-            }
+				item.ValueOptions = this.whenBoolTypes;
+				item.IsLookup = selectedFieldType.isLookup;
+			} else if (selectedFieldType.type === "Text") {
+				item.IsSimpleText = true;
+				
+				if (!item.Operator) {
+					if (item.Value) {
+						item.Operator = Operator[Operator.Equals];
+					} else {
+						item.Operator = Operator[Operator.Contains];
+					}
+				}
+			}
             else {
                 item.ValueOptions = [];
                 item.IsLookup = selectedFieldType.isLookup;
@@ -541,27 +602,83 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 item.IsBool = false;
                 item.ValueOptions = d;
                 item.IntersectTypeValueOptions = d;
-                let excluded = item.IntersectTypeValueOptions.findIndex((a) => a.label === this.chooseLabel);
-                if (excluded < 0) {
-                    item.IntersectTypeValueOptions.unshift({ label: this.chooseLabel, value: null, assetUid: null });
-                }
+				if (!item.Operator) {
+					item.Operator = Operator[Operator.In];
+				}
+
             });
         return null;
     }
 
-    private isValid(): boolean {
-        if (!this.model.ApplyToType) {
-            if (!this.model.StructuredDefinition.When || this.model.StructuredDefinition.When.length === 0) {
-                return false;
-            }
-            else {
-                return true;
-            }
-        }
-        else {
-            return true;
-        }
-    }
+	private isValid(): boolean {
+		if (!this.model.ApplyToType) {
+			if (!this.model.StructuredDefinition.When || this.model.StructuredDefinition.When.length === 0 || !this.isWhenValid()) {
+				return false;
+			}
+		}
+
+		return this.isThenValid();		
+	}
+
+	isThenValid() {
+		if (this.model.StructuredDefinition.Then.Conditions.length === 0 || !this.model.StructuredDefinition.Then.Conditions[this.model.StructuredDefinition.Then.Conditions.length-1].Object) {
+			return true;
+		}
+		
+		if (this.model.StructuredDefinition.Then.Conditions.every((c) => c.FieldTypeID >= 0
+			&& c.FieldTypeName && c.FieldTypeName.length > 0
+			&& c.Object && c.Object.length > 0
+			&& (
+				(
+					!c.IsSimpleText && (c.Value && c.Value.length > 0)
+				)
+				||
+				(
+					c.IsSimpleText && c.Operator && c.Operator.length > 0
+					&& (
+						(c.Operator === Operator[Operator.Populated] || c.Operator === Operator[Operator.Populated]) || (c.Value && c.Value.length > 0)
+					)
+				)
+			)
+		)) {
+
+			return true;
+		}
+		return false;
+	}
+
+	isWhenValid() {
+		if (this.model.StructuredDefinition.When.every((w) =>
+			w.CheckType && w.CheckType.length > 0
+			&& (
+				(
+					w.CheckType === 'F' && w.FieldTypeID >= 0
+					&& w.FieldTypeName && w.FieldTypeName.length > 0
+					&& (
+						(
+							!w.IsSimpleText && (w.Value && w.Value.length > 0)
+						)
+						||
+						(
+							w.IsSimpleText && w.Operator && w.Operator.length > 0
+							&& (
+								(w.Operator === Operator[Operator.Populated] || w.Operator === Operator[Operator.Populated]) || (w.Value && w.Value.length > 0)
+							)
+						)
+					)
+				)
+				||
+				(
+					w.CheckType === 'R' && w.IntersectTypeID && w.IntersectTypeID > 0 && w.Operator && w.Value && w.Value.length > 0
+				)
+			)
+		)
+		) {
+			return true;
+		}
+		return false;
+	}
+
     cancel(): void {
         this.onCancel.emit(null);
     }
@@ -574,7 +691,12 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             this.model.StructuredDefinition.When.forEach((wft) => {
                 wft.ValueOptions = [];
             });
-        }
+		}
+
+		this.model.StructuredDefinition.Then.Conditions = this.model.StructuredDefinition.Then.Conditions.filter((c) => c.FieldTypeID && c.Object && c.Value);
+		if (this.model.StructuredDefinition.Then.Conditions.length === 0) {
+			this.model.StructuredDefinition.Then === null;
+		}
 
         if (this.model.ID > 0) {
             this.responsibilityTypeService.putRule(this.model)
@@ -595,5 +717,36 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                     }
                 });
         }
-    }
+	}
+
+	enableAddWhenCondition(): any {		
+		return this.model.StructuredDefinition.When.every((w) => { return w.Value && w.Value.length > 0; });
+	}
+
+	enableAddThenCondition(): any {
+		return this.model.StructuredDefinition.Then.Conditions.every((w) => { return w.Value && w.Value.length > 0; });
+	}
+
+	showValueOption(item) {
+		if (item.CheckType === "F" && item.FieldTypeID) {
+			if (item.IsSimpleText) {
+				return item.Operator && item.Operator !== Operator[Operator.Populated] && item.Operator !== Operator[Operator.NotPopulated];
+			}
+			return true;
+		} 
+		if (item.CheckType === 'R') {
+			return item.Operator && item.IntersectTypeID;
+		}
+		return false;
+	}
+
+	showThenValueOption(item) {
+		if (item.FieldTypeID || item.FieldTypeName) {
+			if (item.IsSimpleText) {				
+				return item.Operator && item.Operator !== Operator[Operator.Populated] && item.Operator !== Operator[Operator.NotPopulated];				
+			}			
+			return true;
+		}		
+		return false;
+	}
 }

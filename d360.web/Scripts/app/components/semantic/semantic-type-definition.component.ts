@@ -15,6 +15,8 @@ import { SemanticBaseComponent } from './semantics-base.component';
 import { FeatureFlagsService } from '../../services/featureflags.service';
 import { AuthenticationService } from '../../services/authentication.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
+import { IOutputData } from 'angular-split';
+import { SidePanelService } from '../../services/side-panel.service';
 
 
 declare var CurrentResourceID;
@@ -54,6 +56,7 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
+        private sidePanelService: SidePanelService,
         private featureFlagService: FeatureFlagsService,
         private authenticationService: AuthenticationService,
         private headerActionsService: HeaderActionsService,
@@ -101,9 +104,17 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
             this.area = res;
 
             this.headerBreadcrumbService.clearBreadcrumbs();
-            this.headerBreadcrumbService.clearCurrentObjectInfo();
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT));
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.semanticType.name, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}`, null, null, null, null, null, null));
+			this.headerBreadcrumbService.clearCurrentObjectInfo();
+			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT));
+			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
+				this.semanticType.name,
+				`${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}`,
+				!this.semanticType.isDisabled,
+				'Semantic',
+				this.semanticType.id,
+				null,
+				null,
+				null));
 
             this.setBrowserTitle(this.headerBreadcrumbService.getTitleService(), this.semanticType.name);
 
@@ -135,6 +146,22 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
         this.headerActionsService.emitFavoritesChange();    
         this.getData(this.semanticType.uid);
         this.showEditor = false;
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
 
     isDisabled() {

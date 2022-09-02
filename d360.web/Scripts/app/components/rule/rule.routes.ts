@@ -2,7 +2,6 @@
 import { Routes, RouterModule } from '@angular/router';
 import { RuleComponent } from './rule.component';
 import { RuleListComponent } from './rule-list.component';
-import { RuleItemComponent } from './rule-item.component';
 
 const routes: Routes = [
     {
@@ -10,7 +9,6 @@ const routes: Routes = [
         component: RuleComponent,
         children: [                        
             { path: ':ruleTypeId', component: RuleListComponent },
-            { path: ':ruleTypeId/:ruleId', component: RuleItemComponent }
         ]
     },
 ];

@@ -14,9 +14,6 @@ import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-editor.module';
 
-import { ArtifactRoutingModule } from './artifact.routes';
-
-import { ArtifactComponent } from './artifact.component';
 import { ArtifactItemComponent } from './artifact-item.component';
 import { ArtifactListComponent } from './artifact-list.component';
 
@@ -39,6 +36,7 @@ import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
 import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
 import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
 import { SemanticsModule } from '../semantic/semantics.module';
+import { AngularSplitModule } from 'angular-split';
 
 @NgModule({
     imports: [
@@ -47,7 +45,7 @@ import { SemanticsModule } from '../semantic/semantics.module';
 
         RouterModule,
 
-        ArtifactRoutingModule,
+        AngularSplitModule,
 
         //primeng        
         InputTextModule, 
@@ -83,10 +81,13 @@ import { SemanticsModule } from '../semantic/semantics.module';
         SemanticsModule
     ],
     declarations: [        
-        ArtifactComponent,
         ArtifactItemComponent,
         ArtifactListComponent,
-    ],
+	],
+	exports: [
+		ArtifactItemComponent,
+		ArtifactListComponent,
+	],
     providers: [
         
     ]

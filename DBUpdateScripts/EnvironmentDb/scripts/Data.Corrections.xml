@@ -1514,6 +1514,341 @@ end
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+  <changeSet author="TKlok" id="Data.Corrections.GOV-19410">
+  <comment>GOV-19410 Correct lookup values in rule conditions</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+begin
+
+declare @iteration int, @itearationMax int;
+
+set @iteration = 0;
+select @itearationMax = max(cnt) from (
+	select (
+		select count(*) from OPENJSON(rtrr.definition, '$.When') with
+		(
+			FieldTypeid int '$.FieldTypeID',
+			Value NVARCHAR(max) '$.Value'
+		) as summary
+		inner join FieldType ft on ft.id = summary.FieldTypeid
+		where ft.Type = 'Lookup'
+		and isnumeric(summary.value) <> 1
+	) as cnt
+from ResponsibilityTypeRelationRule rtrr
+) cntSel;
+
+While (@iteration < @itearationMax)
+begin
+	update rtrr
+	set rtrr.Definition = JSON_MODIFY(rtrr.definition, concat('$.When[', j1.[key], '].Value') COLLATE SQL_Latin1_General_CP1_CI_AS, flv.value)
+		,rtrr.UpdatedOn = getdate()
+	from ResponsibilityTypeRelationRule as rtrr
+	cross apply OPENJSON(rtrr.definition, '$.When') j1
+	cross apply OPENJSON(j1.[value], '$')
+	with (
+		FieldTypeid int '$.FieldTypeID',
+		Value NVARCHAR(max) '$.Value'
+	) as summary
+	inner join FieldType ft on ft.id = summary.FieldTypeid
+	cross apply (select top 1 value from FieldLookupValue flv where flv.FieldTypeID = ft.id and summary.value = flv.text)flv(value)
+	where ft.Type = 'Lookup'
+	and isnumeric(summary.value) <> 1;
+
+	set @iteration = @iteration+1;
+end;
+
+
+set @iteration = 0;
+select @itearationMax = max(cnt) from (
+	select (
+		select count(*) from OPENJSON(rtrr.definition, '$.Then.Conditions') with
+		(
+			FieldTypeid int '$.FieldTypeID',
+			Value NVARCHAR(max) '$.Value'
+		) as summary
+		inner join FieldType ft on ft.id = summary.FieldTypeid
+		where ft.Type = 'Lookup'
+		and isnumeric(summary.value) <> 1
+	) as cnt
+from ResponsibilityTypeRelationRule rtrr
+) cntSel;
+
+While (@iteration < @itearationMax)
+begin
+	update rtrr
+	set rtrr.Definition = JSON_MODIFY(rtrr.definition, concat('$.Then.Conditions[', j1.[key], '].Value') COLLATE SQL_Latin1_General_CP1_CI_AS, flv.value)
+		,rtrr.UpdatedOn = getdate()
+	from ResponsibilityTypeRelationRule as rtrr
+	cross apply OPENJSON(rtrr.definition, '$.Then.Conditions') j1
+	cross apply OPENJSON(j1.[value], '$')
+	with (
+		FieldTypeid int '$.FieldTypeID',
+		Value NVARCHAR(max) '$.Value'
+	) as summary
+	inner join FieldType ft on ft.id = summary.FieldTypeid
+	cross apply (select top 1 value from FieldLookupValue flv where flv.FieldTypeID = ft.id and summary.value = flv.text)flv(value)
+	where ft.Type = 'Lookup'
+	and isnumeric(summary.value) <> 1;
+
+	set @iteration = @iteration+1;
+end;
+
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
+   <changeSet author="Pappas" id="Data.Corrections.GOV-19236">
+  <comment>GOV-19236 - remove the Custom API environment setting</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+delete [Setting] where ID = 50
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Andrii Kunetskyi" id="Data.Corrections.GOV-19439">
+  	<preConditions onFail="MARK_RAN">
+		<columnExists tableName="Favorite" schemaName="dbo" columnName="Object" />
+	</preConditions>
+	<comment>GOV-19439 - we need to perform the following scripts after the whole DB is created.</comment>	
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		update Favorite
+			set AssetId = a.ID
+		from Favorite f
+		left join Asset a on a.Object = f.Object and a.ObjectID = f.ObjectID
+		where f.Object is not null and f.Object != 'SemanticType' and f.Object not like '%Type'
+		
+		update Favorite 
+			set AssetTypeId = at.ID
+		from Favorite f
+		left join AssetType at on at.Object = f.Object and at.ObjectID = f.ObjectID
+		where f.Object is not null and f.Object != 'SemanticType' and f.Object like '%Type'
+		
+		update Favorite
+			set SemanticId = s.ID
+		from Favorite f
+		left join Semantic s on s.ID = f.ObjectID
+		where f.Object is not null and f.Object = 'SemanticType'
+
+		alter table dbo.Favorite
+		drop column Object
+
+		alter table dbo.Favorite
+		drop column ObjectID
+	]]>
+	</sql>
+  </changeSet>
+  
+    <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-18538">
+	<comment>GOV-18538 - Update Routes for new routing.</comment>	
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		update dbo.Favorite 
+		set Route = 'assets/class/Reference' 
+		where Route = 'reference' and Type = 'ResourceListPage'
+		
+		update dbo.Favorite
+		set Route = 'assets/class/Policy'
+		where Route = 'policy/classification'
+		
+		update dbo.Favorite
+		set Route = 'assets/class/Model'
+		where Route = 'model/classification'
+
+		update dbo.Favorite
+		set Route = 'assets/class/BusinessAsset'
+		where Route = 'artifact/assets/BusinessAsset'
+
+		update dbo.Favorite
+		set Route = 'assets/class/TechnicalAsset'
+		where Route = 'artifact/assets/TechnicalAsset'
+		
+		update dbo.Favorite
+		set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max))),'/workflowmonitor;isAdminPage=false') from dbo.Favorite f
+		inner join AssetType at on at.ID = f.AssetTypeID
+		where f.AssetTypeID is not null
+		and f.Route like 'sidebar/workflowmonitor%'
+		and f.Route like '%isAdminPage%'
+		
+		update dbo.Favorite
+		set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/children') from Favorite f
+		inner join asset a on a.id = f.AssetID
+		where f.Route like 'sidebar/children%'
+		
+		update dbo.Favorite
+		set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/workflowmonitor') from Favorite f
+		inner join asset a on a.id = f.AssetID
+		where f.Route like 'sidebar/workflowmonitor%'
+		
+		update dbo.Favorite
+		set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/actions') from Favorite f
+		inner join asset a on a.id = f.AssetID
+		where f.Route like 'sidebar/actions%'
+
+		update dbo.Favorite
+		set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/relationships') from Favorite f
+		inner join asset a on a.id = f.AssetID
+		where f.Route like 'sidebar/relationships%'
+
+		update dbo.Favorite
+		set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/ownership') from Favorite f
+		inner join asset a on a.id = f.AssetID
+		where f.Route like 'sidebar/ownership%'
+		
+			update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/score','/Governance') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/score%' and f.route like '%Governance'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/score','/DataQuality') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/score%' and f.route like '%DataQuality'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/score') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/score%'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/diagrams','/Lineage') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/visualization/browser/%' and  f.Route like '%Lineage'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/diagrams','/Impact') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/visualization/browser/%' and  f.Route like '%Impact'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/diagrams','/Process') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/visualization/browser/%' and  f.Route like '%Process'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/diagrams') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/visualization/browser/%'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/log') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/audit%'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/comments') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/comments%'
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max))),'/owners') from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'sidebar/responsibilities%'
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max))),'/fields') from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'sidebar/fields/%'
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max)))) from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'reference;referenceListId=%'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max)))) from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'model/%' and route like '%;hierarchyId=%'
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max))),'/diagrams') from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'sidebar/visualization/diagram/%' 
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max)))) from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'model/%' and f.Route like '%/structure%' 
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max)))) from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'quality/rule%'
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max)))) from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'quality/rule%'
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max)))) from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'policy%' and f.Route like '%hierarchyid=%'
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max)))) from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'policy%' and f.Route like '%/structure%'
+
+update dbo.Favorite
+set Route = CONCAT('users/',LOWER(cast(a.uid as nvarchar(max))),'/groups') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/membergroup%' 
+
+update dbo.Favorite
+set Route = CONCAT('users/',LOWER(cast(a.uid as nvarchar(max)))) from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'resource/%' 
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max)))) from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'artifact/%' 
+
+update dbo.Favorite
+set Route = CONCAT('assets/',LOWER(cast(at.uid as nvarchar(max)))) from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'artifact/%' 
+
+update dbo.Favorite
+set Route = CONCAT('asset/',LOWER(cast(a.uid as nvarchar(max))),'/followers') from Favorite f
+inner join asset a on a.id = f.AssetID
+where f.Route like 'sidebar/followers%' 
+
+update dbo.Favorite
+set Route = CONCAT('dashboard/',LOWER(cast(at.uid as nvarchar(max)))) from Favorite f
+inner join assettype at on at.id = f.AssetTypeID
+where f.Route like 'dashboard/%'
+
+update SiteNav
+set Route = CONCAT('assets/',cast(at.uid as nvarchar(max)))
+from SiteNav S
+inner join AssetType AT on AT.Object = S.Object AND AT.ObjectID = S.ObjectID
+where S.Route is not null
+	]]>
+	</sql>
+  </changeSet>
+  
    <changeSet author="Pappas" id="Data.Corrections.GOV-18449-Workflow-1">
   <comment>Update columns for workflow.EventRegistration</comment>
   <sql dbms="mssql"

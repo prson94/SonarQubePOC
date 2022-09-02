@@ -35,7 +35,7 @@
   min-width: 128px;
   position: fixed;
   min-height: 50px;
-  z-index: 1000;
+  z-index: 100000;
 
   .menu-item {
     color: @ig-black;
@@ -67,7 +67,7 @@
     right: 0px;
     background-image: var(--headerLogoUri);
     background-repeat: no-repeat;
-    background-position: left top;
+    background-position: 12px top;
     background-size: auto 40px;
 
     .background {
@@ -141,9 +141,9 @@
 
 .ng-loading-image {
   background-image: var(--headerLogoUri);
-  background-size: auto 60px;
+  background-size: auto 40px;
   background-repeat: no-repeat;
-  height: 60px;
+  height: 40px;
   width: 322px;
 }
 
@@ -460,6 +460,7 @@ d3s-navbar-item {
     background-position: left top;
     height: 40px;
     width: auto;
+    margin-left: 12px;
   }
 }
 
@@ -2509,6 +2510,11 @@ div.home-image-title-text {
     max-width: fit-content;
     min-width: 800px;
     max-height: 100%;
+
+    &.rebuild-partial-search-index {
+      min-width: 1200px;
+      max-width: calc(100vw - 80px);
+    }
 
     .confirmation-wrapper {
       padding: 0px 24px 24px 24px;
@@ -5642,6 +5648,10 @@ d3s-header-typeahead-search {
   background: transparent;
   border: none;
   box-shadow: none !important;
+  as-split.split.as-horizontal .as-split-gutter[role="slider"] {
+    margin-right: -10px;
+    margin-left: -5px;
+  }
 }
 
 .gov-hr {
@@ -7038,6 +7048,12 @@ table {
   }
 }
 
+.split {
+  .empty-overlay {
+    position: static;
+  }
+}
+
 .empty-overlay {
   position: absolute;
   width: 97%;
@@ -7159,6 +7175,42 @@ table {
     a {
       padding: 0;
       border: 0;
+    }
+  }
+}
+
+p-treetablecheckbox,
+p-treetableheadercheckbox {
+  .p-checkbox {
+    border-radius: 4px;
+    color: white;
+    
+    .p-disabled {
+      opacity: 1;
+      background-color: @ig-grey-t5;
+    }
+
+    &-box.p-indeterminate,
+    &-box.p-highlight {
+      background-color: @ig-purple-t1 !important;
+      border: unset;
+    }
+    
+    &-icon {
+      font-size: 9px;
+      font-weight: bold;
+    }
+  }
+}
+
+p-treeTableHeaderCheckbox {
+  &.disabled {
+    pointer-events: none;
+
+    .p-checkbox {
+      &-box {
+        background-color: @ig-grey-t5;
+      }
     }
   }
 }

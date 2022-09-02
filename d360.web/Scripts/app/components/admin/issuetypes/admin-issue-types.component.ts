@@ -91,7 +91,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
-                                    <d3s-field-definition-tile [objectType]="'IssueType'" [objectID]="selected?.ID" 
+                                    <d3s-field-definition-tile
                                         [showIsListable]="false" 
                                         [showIsPartOfKey]="false"
                                         [actionTypeUid]="selected?.Uid"

@@ -327,7 +327,7 @@ namespace d360.web.Controllers
 				if (jsonField != null)
 				{
 					var jsonElementProperty = await Company.QueryFirstOrDefaultAsync<FieldJsonProperty>("select * from FieldJsonProperty where FieldID = @ID and [Path] = @Path", new { jsonField.ID, jsonElementDefinition.Path });
-					
+
 					if (jsonElementProperty != null)
 					{
 						jsonElementValue = jsonElementProperty.Value;
@@ -544,7 +544,7 @@ namespace d360.web.Controllers
 		private async Task<List<ComplexRelationFieldHasAnyModel>> RelationshipLookupsHasValueResolver(ObjectDetail details, List<FieldType> fieldTypes, List<FieldTypeLookup> fieldTypeLookups)
 		{
 			var complexRelationFieldHasAnyModels = new List<ComplexRelationFieldHasAnyModel>();
-			
+
 			try
 			{
 				complexRelationFieldHasAnyModels = ComplexFieldsHelper.GetComplexRelationFieldHasAnyModels(fieldTypeLookups, fieldTypes);
@@ -769,7 +769,7 @@ namespace d360.web.Controllers
 			}
 
 			var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID, canHaveMultipleFilters = canHaveMultipleFilterItems, apiName = item.Name, fieldType = item.Type };
-			
+
 			if (!string.IsNullOrEmpty(item.Category))
 			{
 				gc.columngroup = item.Category.Replace(" ", "");
@@ -840,7 +840,7 @@ namespace d360.web.Controllers
 					case "Lookup":
 						var lookupType = item.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : item.LookupObjectType;
 						var foundColorOnList = Company.Assets.Any(x => x.Color != null && x.AssetType.Object == lookupType && item.LookupObjectID == x.AssetType.ObjectID);
-						
+
 						if (foundColorOnList)
 						{
 							fieldType = "ListColor";
@@ -1028,7 +1028,7 @@ namespace d360.web.Controllers
 					fields.Add(new GridField { name = "Url", type = "string" });
 
 					break;
-				#endregion                
+				#endregion
 				case SystemObjects.TaxonomyType:
 				case SystemObjects.PolicyType:
 					#region
@@ -1042,7 +1042,7 @@ namespace d360.web.Controllers
 
 					break;
 
-					#endregion                                
+				#endregion
 				case SystemObjects.ReferenceItemType:
 					#region
 
@@ -1083,7 +1083,7 @@ namespace d360.web.Controllers
 					fields.Add(new GridField { name = "ReferenceItemType", type = "number" });
 					break;
 
-					#endregion               
+				#endregion
 				case SystemObjects.RuleType:
 					#region
 
@@ -1123,7 +1123,7 @@ namespace d360.web.Controllers
 
 					break;
 
-					#endregion                  
+				#endregion
 				case SystemObjects.ResourceType:
 					#region
 
@@ -1283,18 +1283,20 @@ namespace d360.web.Controllers
 
 		#region Artifacts
 
-		[Route("artifact/{id:int}")]
-		public HttpResponseMessage GetArtifact(int id)
+		[Route("artifact/{uid:Guid}")]
+		public HttpResponseMessage GetArtifact(Guid uid)
 		{
-			var json = Company.GetPageInformation(SystemObjects.Artifact, id);
+
+			var json = Company.GetPageInformation(uid);
 			bool addModifySynonym = true;
 			bool deleteSynonym = true;
 
 			if (!Company.CurrentResourceIsAdmin)
 			{
+				long assetId = long.Parse(json.GetValue("AssetID").ToString());
 				string objectType = SystemObjects.Artifact.ToString();
-				addModifySynonym = Company.HasAssetPermission(objectType, id, Permission.AddRelationships) || Company.HasAssetPermission(objectType, id, Permission.EditRelationships);
-				deleteSynonym = Company.HasAssetPermission(objectType, id, Permission.DeleteRelationships);
+				addModifySynonym = Company.HasAssetPermission(assetId, Permission.AddRelationships) || Company.HasAssetPermission(assetId, Permission.EditRelationships);
+				deleteSynonym = Company.HasAssetPermission(assetId, Permission.DeleteRelationships);
 			}
 
 			var permission = new JObject
@@ -1313,11 +1315,11 @@ namespace d360.web.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, json);
 		}
 
-		[Route("artifacts/{typeID:int}")]
-		public Dictionary<string, object> GetArtifactType(int typeID)
+		[Route("artifacts/{assetTypeUid:Guid}")]
+		public Dictionary<string, object> GetArtifactType(Guid assetTypeUid)
 		{
-			var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == typeID).SingleOrDefault();
-			
+			var assetType = Company.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
+
 			if (assetType == null)
 			{
 				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
@@ -1327,20 +1329,21 @@ namespace d360.web.Controllers
 
 			try
 			{
-
+				var parent = Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType);
 				model.Add("ID", assetType.ObjectID);
 				model.Add("Name", assetType.Name);
 				model.Add("Description", assetType.Description);
-				model.Add("ParentID", Company.GetParentType(assetType.ID)?.ObjectID ?? null);
+				model.Add("ParentID", parent?.ID ?? null);
+				model.Add("ParentUid", parent?.uid ?? null);
 				model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
 				model.Add("Class", assetType.Class);
 				model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
-				var assetTypeId = Company.AssetTypes.FirstOrDefault(x => x.Object == "ArtifactType" && x.ObjectID == typeID)?.ID;
+				var assetTypeId = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid)?.ID;
 
 				bool hasDashboards = Company.Filter<Report>(x => x.AssetTypeID == assetTypeId && x.ReportType != DashboardType.Legacy && x.Location == DashboardLocation.List).Any();
 				model.Add("HasDashboards", hasDashboards);
 
-				var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {typeID}";
+				var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {assetType.ObjectID}";
 
 				var hasV2WorkflowsAssigned = Company.Query<int>(sql).FirstOrDefault() > 0;
 				model.Add("HasV2Workflows", hasV2WorkflowsAssigned);
@@ -1596,7 +1599,7 @@ namespace d360.web.Controllers
 					if (ft.Type == DataType.OwnershipLookup.ToString() && !string.IsNullOrWhiteSpace(lookup.Definition))
 					{
 						FieldTypeOwnershipLookupDefinition lookupdefinition = JsonConvert.DeserializeObject<FieldTypeOwnershipLookupDefinition>(lookup.Definition);
-						
+
 						if (lookupdefinition.DisplayAsList == true)
 						{
 							isGrid = false;
@@ -1734,7 +1737,7 @@ namespace d360.web.Controllers
 			var sType = type.ToString();
 			var values = new List<ReadOnlyFieldValue>();
 			var intersects = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id))).OrderBy(x => x.ObjectName);
-			
+
 			if (intersects == null)
 			{
 				return list;
@@ -1777,7 +1780,7 @@ namespace d360.web.Controllers
 				var relVal = new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url };
 
 				var assetUid = Company.Assets.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
-				
+
 				if (assetUid != null)
 				{
 					relVal.uid = assetUid;
@@ -2199,24 +2202,24 @@ namespace d360.web.Controllers
 
 		#region Policies
 
-		[Route("policytypes/{id:int}")]
-		public HttpResponseMessage GetPolicyType(int id)
+		[Route("policytypes/{assetTypeUid:Guid}")]
+		public HttpResponseMessage GetPolicyType(Guid assetTypeUid)
 		{
-			var row = Company.Query<dynamic>(QueryConstants.PolicySettingsItem, new { id }).Single();
+			var row = Company.Query<dynamic>(QueryConstants.PolicySettingsItem, new { assetTypeUid }).Single();
 
 			return Request.CreateResponse<dynamic>(
 				new Dictionary<string, object>() {
 					{ "ID", row.ObjectID },
 					{ "Name", row.Name },
 					{ "Description", row.Description },
-					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
+					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = row.ObjectID, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
 					{ "MaximumDepth", row.HierarchyMaximumDepth },
 					{ "AssetTypeUID", row.Uid }
 				}
 			);
 		}
 
-		[Route("policytypes/{id:int}/policies")]
+		[Route("policytypes/{assetTypeUid:Guid}/policies")]
 		public IEnumerable<dynamic> GetPoliciesByType(int id, bool stripHtml = false)
 		{
 			getDynamicFieldJoinStatements(id, "Policy", out string joins, out string columns, false, false, true, false, "A.ObjectID");
@@ -2424,13 +2427,13 @@ namespace d360.web.Controllers
 
 		#region Rules
 
-		[Route("ruletypes/{id:int}")]
-		public HttpResponseMessage GetRuleType(int id)
+		[Route("ruletypes/{uid:Guid}")]
+		public HttpResponseMessage GetRuleType(Guid uid)
 		{
-			var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { id }).Single();
+			var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { uid }).Single();
 			int objectId = int.Parse(row.ID.ToString());
 			var hasCustomExports = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == objectId);
-			var assettypeid = Company.AssetTypes.FirstOrDefault(x => x.Object == "RuleType" && x.ObjectID == id).ID;
+			var assettypeid = Company.AssetTypes.FirstOrDefault(x => x.uid == uid).ID;
 			var hasDashboards = Company.Reports.Any(x => x.AssetTypeID == assettypeid && x.ReportType != DashboardType.Legacy && x.Location == DashboardLocation.List);
 
 			return Request.CreateResponse<dynamic>(
@@ -2440,7 +2443,7 @@ namespace d360.web.Controllers
 					{ "Description", row.Description },
 					{ "HasCustomExportTemplates", hasCustomExports },
 					{ "HasWorkflow", (bool)row.HasWorkflow },
-					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
+					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = assettypeid, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
 					{ "HasDashboards", hasDashboards },
 					{ "AssetTypeUID", row.uid }
 				}
@@ -2538,7 +2541,7 @@ namespace d360.web.Controllers
 			}
 
 			var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
-			
+
 			if (fieldType?.LookupObjectType == SystemObjects.ReferenceItem.ToString() && !LookupFieldHasColorItem(fieldType))
 			{
 				var joincondition = " ";
@@ -2574,7 +2577,7 @@ namespace d360.web.Controllers
 			}
 
 			string value = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
-			
+
 			if (string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(fieldType.DefaultFormattedValue))
 			{
 				value = $@"[{{""name"":""{fieldType.DefaultFormattedValue}""}}]";
@@ -2597,7 +2600,7 @@ namespace d360.web.Controllers
 								outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.ObjectID = SPF.Value and FD2.AssetID=ACF.ID) FPL
 								where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";
 				string colorAndValue = Company.Query<string>(colorAndValueSql).FirstOrDefault();
-				
+
 				if (!string.IsNullOrEmpty(colorAndValue))
 				{
 					return colorAndValue;
@@ -2612,14 +2615,14 @@ namespace d360.web.Controllers
 			if (f.LookupObjectType != null && f.LookupObjectID.HasValue)
 			{
 				var obj = f.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : f.LookupObjectType;
-				
+
 				if (obj != "ReferenceItemType")
 				{
 					return false;
 				}
 
 				var assettype = Company.AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == f.LookupObjectID);
-				
+
 				if (assettype != null)
 				{
 					return Company.Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
@@ -2639,6 +2642,22 @@ namespace d360.web.Controllers
 		public AssetTypeStyle GetAssetTypeStyle(SystemObjects type, int objectId)
 		{
 			return Company.GetAssetTypeStyle(type.ToString(), objectId);
+		}
+
+		[Route("generic/{uid}/detail")]
+		public async Task<DetailReadOnlyModel> GetObjectDetailFields(Guid uid, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false, Guid? baseAssetUid = null)
+		{
+			int objectId = -1;
+
+			var data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+
+			if (data == null)
+			{
+				data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			}
+
+			SystemObjects sysObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), data.Object, true);
+			return await GetObjectDetailFields(sysObject, data?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
 		}
 
 		[Route("{type}/{uid}/detail")]
@@ -3079,7 +3098,7 @@ namespace d360.web.Controllers
 							{
 								row.FirstColumnFields = new List<ReadOnlyField> { primaryRow ?? secondaryRow };
 							}
-							else if(row.columns == 2)
+							else if (row.columns == 2)
 							{
 								row.FirstColumnFields = new List<ReadOnlyField> { primaryRow };
 								row.SecondColumnFields = new List<ReadOnlyField> { secondaryRow };
@@ -3401,7 +3420,7 @@ namespace d360.web.Controllers
 					}
 					fieldType = null;
 					break;
-				#endregion                                
+				#endregion
 				case SystemObjects.Intersect:
 					#region Fields                    
 					var intersect = Company.GetById<Intersect>(id);
@@ -3649,7 +3668,7 @@ namespace d360.web.Controllers
 						{
 							var minutes = Math.Round((load.DateCompleted.Value - load.DateStarted.Value).TotalMinutes);
 
-							var minutesMessage = minutes == 0 ? FieldInfo.Load_MessageLessThanMin : minutes + " "+ FieldInfo.Load_MessageMoreThanMin;
+							var minutesMessage = minutes == 0 ? FieldInfo.Load_MessageLessThanMin : minutes + " " + FieldInfo.Load_MessageMoreThanMin;
 
 							model.rows.Add(new DetailReadOnlyRowModel
 							{
@@ -4648,10 +4667,17 @@ where v.id = {0}", id)).FirstOrDefault();
 			return "";
 		}
 
-		[Route("{type}/{id:int}/object/statistics")]
-		public ObjectStatisticTileModel GetTileObjectStatistics(SystemObjects type, int id)
+		[Route("object/statistics/{uid:Guid}")]
+		public ObjectStatisticTileModel GetTileObjectStatistics(Guid uid)
 		{
-			return Company.GetObjectStatistics(type, id);
+			var data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+
+			if (data == null)
+			{
+				data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			}
+
+			return Company.GetObjectStatistics(data.Object, data.ObjectID);
 		}
 
 		[Route("{type}/{id:int}/fields")]
@@ -4788,7 +4814,7 @@ where v.id = {0}", id)).FirstOrDefault();
 				else
 				{
 					asset = Company.Filter<AssetDetail>(i => i.Object == sType && i.ObjectID == id).FirstOrDefault();
-					
+
 					if (asset == null)
 					{
 						throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = ApiMessages.AssetNotfound });
@@ -4822,22 +4848,22 @@ where v.id = {0}", id)).FirstOrDefault();
 
 		#region NEW Relationship Tile
 
-        [Route("{obj}/{objid:int}/relationships/{targettype}/{targettypeid:int}/fields")]
-        public HttpResponseMessage GetRelationshipFieldsByObject(SystemObjects obj, int objid, SystemObjects targettype, int targettypeid)
-        {
-            var columns = new List<GridColumn>();
-            var fields = new List<GridField>();
+		[Route("{obj}/{objid:int}/relationships/{targettype}/{targettypeid:int}/fields")]
+		public HttpResponseMessage GetRelationshipFieldsByObject(SystemObjects obj, int objid, SystemObjects targettype, int targettypeid)
+		{
+			var columns = new List<GridColumn>();
+			var fields = new List<GridField>();
 
-            var IDs = Company.Query<int>(
-                QueryConstants.ObjectRelationshipTypeIDs,
-                new
-                {
-                    obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() },
-                    objid,
-                    objtype = new Dapper.DbString { IsAnsi = true, Value = targettype.ToString() },
-                    objtypeid = targettypeid
-                }
-            ).ToList();
+			var IDs = Company.Query<int>(
+				QueryConstants.ObjectRelationshipTypeIDs,
+				new
+				{
+					obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString() },
+					objid,
+					objtype = new Dapper.DbString { IsAnsi = true, Value = targettype.ToString() },
+					objtypeid = targettypeid
+				}
+			).ToList();
 
 			var fieldTypes = Company.Filter<FieldType>(i =>
 				i.Object == "IntersectType" &&
@@ -4873,18 +4899,18 @@ where v.id = {0}", id)).FirstOrDefault();
 			return Company.Query<dynamic>(QueryConstants.ObjectRelationships, new { type = new DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, id });
 		}
 
-        [Route("{type}/{id:int}/{predicateId:int}/synonyms")]
-        public async Task<HttpResponseMessage> GetSynonymsByObject(SystemObjects type, int id, int predicateId)
-        {
-            var models = await Company.QueryAsync<dynamic>(
-                QueryConstants.SynonymsByObjectList,
-                new
-                {
-                    type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
-                    id,
-                    predicateId
-                }
-            );
+		[Route("{type}/{id:int}/{predicateId:int}/synonyms")]
+		public async Task<HttpResponseMessage> GetSynonymsByObject(SystemObjects type, int id, int predicateId)
+		{
+			var models = await Company.QueryAsync<dynamic>(
+				QueryConstants.SynonymsByObjectList,
+				new
+				{
+					type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
+					id,
+					predicateId
+				}
+			);
 
 			return Request.CreateResponse(
 				HttpStatusCode.OK,
@@ -5008,7 +5034,8 @@ where v.id = {0}", id)).FirstOrDefault();
 									inner join survey s on (s.surveytypeid = st.id and s.resourceid = @resource and s.createdon > DATEADD(day, (st.validfordays*-1), getdate()) and s.AssetId = @assetId)
 					)";
 
-			var surveys = Company.Query<ObjectSurveyModel>(sql, new { 
+			var surveys = Company.Query<ObjectSurveyModel>(sql, new
+			{
 				assetTypeId,
 				assetId,
 				resource = Company.CurrentResourceID
@@ -5090,10 +5117,10 @@ where v.id = {0}", id)).FirstOrDefault();
 											order by Level", new { ObjectId = id }).AsQueryable();
 		}
 
-		[Route("catalogs/{typeID:int}")]
-		public async Task<HttpResponseMessage> GetTaxonomyType(int typeID)
+		[Route("catalogs/{assetTypeUid:Guid}")]
+		public async Task<HttpResponseMessage> GetTaxonomyType(Guid assetTypeUid)
 		{
-			var row = await Company.QueryFirstOrDefaultAsync<dynamic>(QueryConstants.TaxonomySettingsItem, new { id = typeID });
+			var row = await Company.QueryFirstOrDefaultAsync<dynamic>(QueryConstants.TaxonomySettingsItem, new { assetTypeUid });
 
 			if (row == null)
 			{
@@ -5106,7 +5133,7 @@ where v.id = {0}", id)).FirstOrDefault();
 					{ "MaximumDepth", row.MaximumDepth },
 					{ "Name", row.Name },
 					{ "Description", row.Description },
-					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
+					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = row.ID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
 					{ "HasDashboards", row.HasDashboards },
 					{ "AssetTypeUID", row.Uid }
 				}
@@ -5129,17 +5156,25 @@ where v.id = {0}", id)).FirstOrDefault();
 		[Route("CountItems/Activity/{assetTypeId}/{days}")]
 		public IEnumerable<AssetDetail> GetAreaActivityItems(int assetTypeId, int days)
 		{
-			var sql = @"select * from AssetDetail where AssetTypeID = @assetTypeId";
+			var dbArgs = new DynamicParameters();
+			var sql = @"select * from AssetDetail a where a.AssetTypeID = @assetTypeId ";
+			dbArgs.Add("@assetTypeId", assetTypeId);
+
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				sql += "and not exists(select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = a.AssetTypeID) ";
+				sql += "and not exists(select 1 from AssetsByTypeUserCantRead(@userId, a.AssetTypeID) u where u.AssetID = a.ID) ";
+				dbArgs.Add("@userId", Company.CurrentResourceID);
+			}
 
 			if (days != 0)
 			{
-				days = days * -1;
-				sql += " and (CreatedOn > dateadd(day, @d, CURRENT_TIMESTAMP) or UpdatedOn > dateadd(day, @d, CURRENT_TIMESTAMP))";
-
-				return Company.Query<AssetDetail>(sql, new { assetTypeId, d = days });
+				days *= -1;
+				sql += " and (a.CreatedOn > dateadd(day, @d, CURRENT_TIMESTAMP) or a.UpdatedOn > dateadd(day, @d, CURRENT_TIMESTAMP))";
+				dbArgs.Add("@d", days);
 			}
 
-			return Company.Query<AssetDetail>(sql, new { assetTypeId });
+			return Company.Query<AssetDetail>(sql, dbArgs);
 		}
 
 		[Route("Count/{area}/{days}")]
@@ -5173,19 +5208,57 @@ where v.id = {0}", id)).FirstOrDefault();
 
 		private IEnumerable<CountModel> LoadArtifactActivityCount(int days)
 		{
+			var dbArgs = new DynamicParameters();
 			string sql;
+			string innerQuery;
+			var whereClauses = new List<string>();
+
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				whereClauses.Add("not exists(select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = a.AssetTypeID)");
+				whereClauses.Add("not exists(select 1 from AssetsByTypeUserCantRead(@userId, a.AssetTypeID) u where u.AssetID = a.ID)");
+				dbArgs.Add("@userId", Company.CurrentResourceID);
+			}
 
 			if (days != 0)
 			{
-				days = days * -1;
-				sql = QueryConstants.ArtifactActivitySpecificDateCountList;
+				days *= -1;
+				dbArgs.Add("@d", days);
+				innerQuery = @"select  at.Name,
+						case when datediff(day, CURRENT_TIMESTAMP, a.createdon) <= @d then 0 else 1 end as New,
+						case when datediff(day, CURRENT_TIMESTAMP, a.UpdatedOn) <= @d then 0 else 1 end as Total,
+						at.id as Id								
+				from    Asset a
+						inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'";
+				whereClauses.Add("(a.CreatedOn > dateadd(day, @d, CURRENT_TIMESTAMP) or a.UpdatedOn > dateadd(day, @d, CURRENT_TIMESTAMP))");
 			}
 			else
 			{
-				sql = QueryConstants.ArtifactActivityAllDateCountList;
+				innerQuery = @"
+				select  at.Name,
+						1 as New,        					
+						1 as Total,
+						at.id as Id								
+				from    Asset a
+						inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'";
 			}
 
-			return Company.Query<CountModel>(sql, new { d = days });
+			if (whereClauses.Any())
+			{
+				innerQuery += " where " + string.Join(" and ", whereClauses.ToArray());
+			}
+
+			sql = $@"
+				select 
+					Name,
+					sum(New) as New,
+					sum(Total) as Total,
+					Id
+				from
+				({innerQuery}) T
+				group by Name, Id order by Name";
+
+			return Company.Query<CountModel>(sql, dbArgs);
 		}
 
 		private async Task<IEnumerable<CountModel>> LoadSocialActivityCount(int days, int resourceId)
@@ -5289,12 +5362,25 @@ where v.id = {0}", id)).FirstOrDefault();
 		}
 
 		[Route("breadcrumb/getArea")]
-		public async Task<string> GetBreadcrumbAreaByType(SystemObjects objectType, int objectId)
+		public async Task<string> GetBreadcrumbAreaByType(string objectType, int? objectId, Guid? uid)
 		{
+			if (uid.HasValue)
+			{
+				var data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+				if (data == null)
+				{
+					data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+				}
+
+				objectType = data.Object;
+				objectId = data.ObjectID;
+
+			}
+
 			//var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
 			var sql = $" select Title FROM [dbo].[SiteNav] WHERE ID = (Select top 1 ParentID FROM [dbo].[SiteNav] WHERE [Object] = @typeName and [objectId] = @typeId)";
 			var res = await Company.QueryAsync<string>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId });
-			
+
 			return res.FirstOrDefault();
 		}
 
@@ -5306,7 +5392,7 @@ where v.id = {0}", id)).FirstOrDefault();
 		public async Task<HttpResponseMessage> GetReferenceItems(int typeID)
 		{
 			var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}, {Company.CurrentResourceID}");
-			
+
 			return Request.CreateResponse(HttpStatusCode.OK, models);
 		}
 
@@ -5314,20 +5400,21 @@ where v.id = {0}", id)).FirstOrDefault();
 		public Task<HttpResponseMessage> GetReferenceItemsByFieldId(int fieldId)
 		{
 			var field = Company.GetById<FieldType>(fieldId);
-			
+
 			return GetReferenceItems((int)field.LookupObjectID);
 		}
 
-		[HttpGet, Route("canReadReferenceItemType/{id:int}")]
-		public async Task<HttpResponseMessage> CanReadReferenceItemType(int id)
+		[HttpGet, Route("canReadReferenceItemType/{uid:Guid}")]
+		public async Task<HttpResponseMessage> CanReadReferenceItemType(Guid uid)
 		{
 			var records = await Company.QueryAsync<dynamic>(@"
 					select	1 
 					from	ResponsibilityDetail
+					inner join ResponsibilityType rt on rt.ID = ResponsibilityDetail.ResponsibilityTypeID
 					where	Type = 'ReferenceItemType'
-							and TypeID = @id 
+							and rt.uid = @uid
 							and PermissionsBitMask & @p = 0
-							and ResourceID = @resource", new { id, resource = Company.CurrentResourceID, p = (int)Permission.ReadAsset });
+							and ResourceID = @resource", new { uid, resource = Company.CurrentResourceID, p = (int)Permission.ReadAsset });
 
 			return Request.CreateResponse(HttpStatusCode.OK, !records.Any());
 		}
@@ -5389,7 +5476,7 @@ where v.id = {0}", id)).FirstOrDefault();
 				foreach (var rawItem in rawItems)
 				{
 					SelectListInfoItem match = items.FirstOrDefault(i => i.Value == rawItem.Value.ToString());
-					
+
 					if (match != null)
 					{
 						match.Info += ", " + rawItem.ShortName;

@@ -5,16 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetPageInformation-v7">
-    <comment>GOV-18449</comment>
+  <changeSet author="tduric" id="Procedure.dbo.GetPageInformation-v7.3">
+    <comment>GOV-18079, GOV-18449</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[    
-create or alter procedure [dbo].[GetPageInformation]
-	@o varchar(50),
-	@oid int,
+CREATE OR ALTER PROCEDURE [dbo].[GetPageInformation]
+	@assetUid uniqueidentifier,
 	@rid int 
 as
 begin
@@ -22,7 +21,7 @@ begin
 	
 	insert into @breadcrumbsRaw
 	select *
-	from dbo.GetAssetBreadcrumbs(@o, @oid)
+	from dbo.GetAssetBreadcrumbs(@assetUid)
 
 	select	distinct
 			O.[Uid],
@@ -99,7 +98,7 @@ begin
 								inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3 
 						where	(IT.SubjectAssetTypeID = T.ID OR IT.ObjectAssetTypeID = T.ID)
 						) Hier
-	where   O.Object = @o and O.ObjectID = @oid  
+	where   O.Uid = @assetUid
 			and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
 	for json path, WITHOUT_ARRAY_WRAPPER
 end

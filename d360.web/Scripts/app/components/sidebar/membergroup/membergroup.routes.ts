@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { MemberGroupComponent } from './membergroup.component';
 
 const routes: Routes = [
-    { path: ':resourceUid', component: MemberGroupComponent },
+    { path: ':resourceUid/groups', component: MemberGroupComponent },
 ];
 
 @NgModule({

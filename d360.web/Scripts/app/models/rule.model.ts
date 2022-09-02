@@ -26,7 +26,8 @@ export class RuleDetail {
     Name: string;
     ID: number;
     UID: string;
-    AssetID: number;
+	AssetID: number;
+	AssetTypeUid: string;
     Description: string;
     IconBackColor: string;
     IconForeColor: string;

@@ -63,6 +63,8 @@ import { CompanySettingEnum } from '../../../../models/settings.model';
 import { AssetDetailComponent } from '../../asset-detail/asset-detail.component';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
 import { concatMap } from "rxjs/operators";
+import { SidePanelService } from '../../../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 declare var window: any;
 @Component({
@@ -105,6 +107,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private originalAssetUid: string;
 
+    isSidePanelDragging: boolean = false;
+    sidePanelStorageKey = 'side_panel_width_on_diagram';
     alerts: AssetBrowserAlert[] = [];
     assetsWithAlerts: string[] = [];
     selectedAssetsWithAlerts: string[] = [];
@@ -144,7 +148,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     scale = 1;
     filter_AvailableOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
     filter_AllOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
-    diagramTypes: DiagramTypesModel = null;
+	diagramTypes: DiagramTypesModel = null;
+	currentDiagramType: DiagramType = null;
     assetPermissions: Permissions;
 
     showNodeCount: boolean = true;
@@ -227,6 +232,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     constructor(
         private route: ActivatedRoute,
         private myElement: ElementRef,
+        private sidePanelService: SidePanelService,
         private browserService: BrowserService,
         private router: Router,
         protected permissionsService: PermissionsService,
@@ -290,11 +296,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             diagramTypeParameterValue = DiagramType[this.diagramTypes.initial];
                         }
 
-                        this.diagramTypeSpecifiedInPath = DiagramType[diagramTypeParameterValue];
-                        this.helper_UpdateDiagramType(this.diagramTypeSpecifiedInPath);
-                    } else {
+						this.diagramTypeSpecifiedInPath = DiagramType[diagramTypeParameterValue];
+						this.helper_UpdateDiagramType(this.diagramTypeSpecifiedInPath);
+					} else if (this.displayConfiguration.DiagramType !== null) {
+						this.helper_UpdateDiagramType(this.displayConfiguration.DiagramType);
+					} else {
                         this.helper_UpdateDiagramType(this.diagramTypes.initial);
-
                     }
 
                     if (this.diagram) this.diagram.div = null;
@@ -403,11 +410,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         const m: AssetBrowserFilterModel = this.loadState(this.displayConfigurationKey);
         if (m === null)
             this.displayConfiguration = new AssetBrowserFilterModel();
-        else {
+		else {
+			console.log("loading filter");
             // Override the selected diagram type in the session, as you are going to a specific diagram via the path. 
             if (this.isDiagramTypeSpecifiedInPath) {
                 m.DiagramType = this.diagramTypeSpecifiedInPath;
-            }
+			}
+			//
             this.displayConfiguration = m;
         }
 
@@ -698,10 +707,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private menu_ClickLinkItem(e: any) {
         if (e.value.toLowerCase() === 'open') {
-            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.selectedDiagramAsset.Uid}/${DiagramType[this.displayConfiguration.DiagramType]}`);
+            this.router.navigateByUrl(`asset/${this.selectedDiagramAsset.Uid}/diagrams/${DiagramType[this.displayConfiguration.DiagramType]}`);
         }
         if (e.value.toLowerCase() === 'open in new tab') {
-            window.open(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.selectedDiagramAsset.Uid}/${DiagramType[this.displayConfiguration.DiagramType]}`, "_blank");
+            window.open(`asset/${this.selectedDiagramAsset.Uid}/diagrams/${DiagramType[this.displayConfiguration.DiagramType]}`, "_blank");
         }
     }
 
@@ -1894,7 +1903,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_UpdateDiagramType(dt: DiagramType) {
         let model: AssetBrowserFilterModel = _.cloneDeep(this.displayConfiguration);
         model.DiagramType = dt;
-        this.displayConfiguration = model;
+		this.displayConfiguration = model;
+		this.currentDiagramType = dt;
         this.cdRef.detectChanges();
     }
 
@@ -2437,7 +2447,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
 
                         this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
-                            this.router.navigate([SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, 'browser', assetUidRedirect]);
+                            this.router.navigate(['asset', assetUidRedirect,'diagrams']);
                         });
                     }
                 },
@@ -2465,7 +2475,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             return;
                         }
 
-                        var url = window.location.protocol + '//' + window.location.hostname + '/' + SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT + '/' + 'browser' + '/' + assetUidRedirect;
+                        var url = window.location.protocol + '//' + window.location.hostname + '/asset/' + assetUidRedirect + '/diagrams';
                         window.open(url, '_blank');
                     }
                 },
@@ -3448,9 +3458,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * Responds to the change event from the shared Asset Browser ViewChange control.
     * @returns The DiagramType.
     */
-    viewchange_Apply(e: DiagramType) {
+	viewchange_Apply(e: DiagramType) {
+		this.displayConfiguration.DiagramType = e;
         this.saveFilter();
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.assetUid}/${DiagramType[e]}`);
+        this.router.navigateByUrl(`asset/${this.assetUid}/diagrams/${DiagramType[e]}`);
     }
 
     /**
@@ -4163,6 +4174,31 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 return $localize`The item in this collection has relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`;
             }
         }
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.isWindowVisible(), this.sidePanelStorageKey, {sidePanelCloseCustomWidth: 0});
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.isWindowVisible());
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.isWindowVisible());
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.isSidePanelDragging = false; 
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+    }
+
+    onSidePanelDragStart(): void {
+        this.isSidePanelDragging = true; 
+    }
+
+    calculateBottomControlsPosition(): string {
+        return this.getSidePanelWidth() + 55 + 'px'
     }
 
     onEditClick($event) {

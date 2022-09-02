@@ -53,7 +53,20 @@ export class ResourcesService extends BaseObservableService {
                 }
                 return this.handleError(err);
             }));
-    }
+	}
+
+	getResourceByUid(uid: string): Observable<any> {
+		return this.http.get(`/api/v2/membership/users?uid=${uid}`).pipe(
+			map((response) => {
+				return <any>response;
+			}),
+			catchError((err) => {
+				if (this.isErrorFromFilterExpression(err)) {
+					return throwError(err);
+				}
+				return this.handleError(err);
+			}));
+	}
 
     public saveResource(
         resource: ResourceApiModel,

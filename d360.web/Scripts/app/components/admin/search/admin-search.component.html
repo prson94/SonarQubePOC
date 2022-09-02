@@ -1,51 +1,105 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
 
-<div class="tile tile-detail" *ngIf="!isLoading">
-    <div style="display: flex; justify-content: space-between; margin: 10px; padding-top: 10px; align-items: flex-end;">
-        <div i18n>
-            This page shows the count of Assets in the search index by Category and Asset Type.<br />
-            It is possible to do a partial rebuild of the search index, by clicking the <b>Rebuild</b> button for the desired Category or Asset Type.<br />
+<div class="tile tile-detail" title=" " *ngIf="!isLoading">
+    <div class="tile-tools">
+        <div class="tile-description" i18n>
+            This page shows the count of Assets in the search index by Category and Asset Type.
+            It is possible to do a partial rebuild of the search index, by clicking the <b>Rebuild</b> button for the desired Category or Asset Type.
             To update the information on the page, click the <b>Refresh View</b> button.
         </div>
-        <button igButton
-                label="{{refreshViewLabel}}"
-                [disabled]="isUpdating"
-                icon="fa-recycle"
-                (click)="UpdateStatus()">
-        </button>
+		<div class="tile-actions">
+			<button igButton
+					class="ig-button-primary"
+					title="{{rebuildIndexesLabel}}"
+					label="{{rebuildIndexesLabel}}"
+					[disabled]="isUpdating || selectedIndexes.length === 0"
+					[loading]="isUpdating"
+					(click)="rebuild(selectedIndexes)">
+			</button>
+			<button igButton
+					title="{{refreshViewLabel}}"
+					label="{{refreshViewLabel}}"
+					[disabled]="isUpdating"
+					icon="fa-rotate-right"
+					(click)="updateStatus()">
+			</button>
+		</div>
     </div>
-    <p-treeTable [value]="indexableNodes">
+    <p-treeTable #treeTable
+				 adminSearchTreeTable
+				 styleClass="breadcrumbTree treetable"
+				 selectionMode="checkbox"
+				 [value]="indexableNodes"
+				 [(selection)]="selectedIndexes"
+				 [scrollable]="true"
+				 [scrollHeight]="'calc(100vh - 331px)'">
         <ng-template pTemplate="header">
-            <tr>
-                <th i18n>Name</th>
-                <th i18n>Status</th>
-                <th i18n>Assets in Index</th>
-                <th></th>
-                <th></th>
+            <tr class="tr-head">
+                <th i18n>
+					<p-treeTableHeaderCheckbox [ngClass]="{'disabled': isUpdating || isGlobalSelectDisabled}">
+					</p-treeTableHeaderCheckbox>
+					Name
+				</th>
+				<th i18n style="width: 200px">Assets in Index</th>
+				<th i18n style="width: 200px">Assets in Database</th>
+				<th i18n style="width: 200px">Status</th>
+				<th i18n style="width: 200px">Last Updated</th>
+                <th style="width: 40px"></th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
-            <tr>
-                <td>
-                    <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
-                    {{rowData.Name}}
+            <tr class="tr-body" (click)="onRowClick($event, rowNode, treeTable, rowToggle, kebabMenuDiv)"
+				[ngClass]="{'p-highlight': treeTable.isSelected(rowNode.node) && canRebuildNode(rowNode.node)}">
+                <td [class.name-cell]="rowNode.level !== 0">
+					<ng-container *ngIf="rowNode.level === 0">
+						<ng-container *ngTemplateOutlet="checkBox"></ng-container>
+					</ng-container>
+                    <p-treeTableToggler #rowToggle
+										[rowNode]="rowNode"
+										(click)="$event.stopImmediatePropagation()">
+					</p-treeTableToggler>
+					<ng-container *ngIf="rowNode.level !== 0">
+						<ng-container *ngTemplateOutlet="checkBox"></ng-container>
+					</ng-container>
+					<span class="name-text">
+						{{rowData.Name}}
+					</span>
                 </td>
-                <td><span *ngIf="rowData.Status != 0" pTooltip="{{(rowData.LastUpdate | date:'medium')}}" tooltipStyleClass="ig-tooltip">{{JobStatus[rowData.Status]}}</span></td>
-                <td>{{rowData.CurrentCount}}</td>
-                <td><span *ngIf="!canRebuild(rowData) && rowData.TargetCount > 0" i18n>{{rowData.TargetCount}} Assets when queued</span></td>
-                <td>
-                    <div class="RowTools">
-                        <button igButton
-                                [disabled]="isUpdating || !canRebuild(rowData)"
-                                icon="fa-refresh"
-                                (click)="rebuild(rowData)"
-                                pTooltip="Rebuild index for this {{(rowData.AssetTypeUid === emptyguid) ? 'Category' : 'Asset Type'}}"
-                                tooltipStyleClass="ig-tooltip"
-                                tooltipPosition="left">
-                        </button>
-                    </div>
-                </td>
+				<td style="width: 200px">
+					{{rowData.TargetCount}}
+				</td>
+				<td style="width: 200px">
+					{{rowData.CurrentCount}}
+				</td>
+				<td style="width: 200px">
+					<div *ngIf="rowData.Status !== 0" class="rebuild-status">
+						<div class="rebuild-status__circle rebuild-status__circle--{{jobStatuses[rowData.Status].color}}">
+						</div>
+						{{jobStatuses[rowData.Status].name}}
+					</div>
+				</td>
+                <td style="width: 200px">
+					{{ (rowData.LastUpdate | date:'medium') }}
+				</td>
+				<td style="width: 40px">
+					<div #kebabMenuDiv>
+						<button igButton type="button" icon="fa-ellipsis-v" [disabled]="isUpdating"
+								class="rebuild-kebab" (click)="kebabMenu.toggle($event)">
+						</button>
+						<ig-popup-menu #kebabMenu [items]="rowData.Menu" [tabIndex]="1"
+									   (onSelect)="onKebabMenuClick($event, rowNode.node)">
+						</ig-popup-menu>
+					</div>
+				</td>
             </tr>
+			<ng-template #checkBox>
+				<p-treeTableCheckbox adminSearchCheckbox [value]="rowNode"
+									 [disabled]="isUpdating || !this.canRebuildNode(rowNode.node)"
+									 (click)="$event.stopImmediatePropagation()">
+				</p-treeTableCheckbox>
+			</ng-template>
         </ng-template>
     </p-treeTable>
+	<button class="admin-search-close" igButton i18n-label label="Close" (click)="onModalClose.emit(true)">
+	</button>
 </div>

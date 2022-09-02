@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class MemberShipErrors {
@@ -61,7 +61,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot provide State for a new user.
+        ///   Looks up a localized string similar to Cannot provide [State] for a new user.
         /// </summary>
         public static string CanNotProvideStateOfNewUser {
             get {
@@ -88,7 +88,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Must provide a First Name.
+        ///   Looks up a localized string similar to Must provide a [FirstName].
         /// </summary>
         public static string FirstNameMissing {
             get {
@@ -97,7 +97,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to First Name must be less or equal to 250 characters in length.
+        ///   Looks up a localized string similar to [FirstName] must be less or equal to 250 characters in length.
         /// </summary>
         public static string FirstNameTooLong {
             get {
@@ -115,7 +115,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Username is not in a valid email format.
+        ///   Looks up a localized string similar to [Username] is not in a valid email format.
         /// </summary>
         public static string InvalidEmail {
             get {
@@ -124,7 +124,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Must provide a Last Name.
+        ///   Looks up a localized string similar to Must provide a [LastName].
         /// </summary>
         public static string LastNameMissing {
             get {
@@ -133,7 +133,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Last Name must be less or equal to 250 characters in length.
+        ///   Looks up a localized string similar to [LastName] must be less or equal to 250 characters in length.
         /// </summary>
         public static string LastNameTooLong {
             get {
@@ -142,7 +142,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CurrentPassword parameter value missing..
+        ///   Looks up a localized string similar to [CurrentPassword] parameter value missing..
         /// </summary>
         public static string MissingCurrentPasswordParameter {
             get {

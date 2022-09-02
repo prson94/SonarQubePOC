@@ -4,7 +4,6 @@ import { HeaderActionsService } from '../../services/header-actions.service';
 import { ObjectDetail } from '../../models/object-detail.model';
 import { BaseComponent } from '../shared/base.component';
 import { NymType } from '../../models/object-detail.model';
-import { ResponsibilityTypeRelationPermission } from '../../models/responsibility-type.model';
 import { FormMode } from '../../models/form.model';
 import { AssetService } from '../../services/asset.service';
 import { AssetEditorModel } from '../../models/asset.model';
@@ -12,6 +11,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 import { SynonymPermission } from '../../models/artifacts.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { D3SModal } from './modal/gov-modal.component';
+import { Permissions } from '../../services/permissions.service';
 
 @Component({
     selector: 'd3s-object-definition-tile',
@@ -38,7 +38,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
 
     protected object: ObjectDetail = null;
 
-    @Input() objectPermissions: ResponsibilityTypeRelationPermission[] = [];
+	@Input() objectPermissions: Permissions;
 
     @ViewChild('modal', { static: false }) modal: D3SModal;
 
@@ -58,8 +58,8 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     }
 
     load(): void {
-        // this is to workaround angular limitaiont with inputs in base classes
-        this.permissions = this.objectPermissions;
+		// this is to workaround angular limitaiont with inputs in base classes
+		this.objectPermission = this.objectPermissions;
 
         if (this.objectType == null || this.objectID == null) {
             return;

@@ -268,16 +268,16 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
-    testWhenV2(rule: ResponsibilityTypeRelationRuleV2): Observable<ResponsibilityRuleTestResponseModel> {
-        return this.http.post(`api/v2/responsibilities/test/when`, rule)
+    testWhenV2(rule: ResponsibilityTypeRelationRuleV2, simpleFilter: string): Observable<ResponsibilityRuleTestResponseModel> {
+		return this.http.post(`api/v2/responsibilities/test/when?_simpleFilter=${simpleFilter}&_includeTotal=true`, rule)
             .pipe(
                 map((response) => <ResponsibilityRuleTestResponseModel[]>response),
                 catchError((err) => this.handleError(err))
             );
     }
 
-    testThenV2(rule: ResponsibilityTypeRelationRuleV2): Observable<ResponsibilityRuleTestResponseModel> {
-        return this.http.post(`api/v2/responsibilities/test/then`, rule)
+	testThenV2(rule: ResponsibilityTypeRelationRuleV2, simpleFilter: string): Observable<ResponsibilityRuleTestResponseModel> {
+		return this.http.post(`api/v2/responsibilities/test/then?_simpleFilter=${simpleFilter}`, rule)
             .pipe(
                 map((response) => <ResponsibilityRuleTestResponseModel[]>response),
                 catchError((err) => this.handleError(err))

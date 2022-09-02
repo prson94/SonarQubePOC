@@ -945,7 +945,10 @@ namespace d360.core.entities
 
         [DataMember]
         public RuleAssigneeCondition Assignee { get; set; }
-    }
+
+		[DataMember]
+		public Guid? AssigneeTypeUid { get; set; }
+	}
 
     [DataContract]
     public class RuleWhen
@@ -961,11 +964,14 @@ namespace d360.core.entities
     public class RuleFieldCondition
     {
         [DataMember]
-        public string ApiName { get; set; }
+        public string ApiName { get; set; }		
 
         [DataMember]
         public string Value { get; set; }
-    }
+
+		[DataMember]
+		public Operator Operator { get; set; } = Operator.Equals;
+	}
 
     [DataContract]
     public class RuleAssigneeCondition
@@ -983,7 +989,11 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid? AssetUid { get; set; }
-    }
+
+		[DataMember]
+		public Operator Operator { get; set; } = Operator.In;
+
+	}
 
     [DataContract]
     public class ResponsibilityRuleUpsertResponseModel

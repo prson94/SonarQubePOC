@@ -1,6 +1,12 @@
 ﻿<div class="row admin-group-list">
-    <div class="col s12 overflow-container" style="display: flex">
-        <div class="tile tile-detail admin-group-details">
+    <as-split unit="pixel"
+              direction="horizontal"
+              [gutterSize]="16"
+              class="col s12 overflow-container split"
+              style="display: flex"
+              [class.side-panel-close]="!sidePanelOpen"
+              (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+        <as-split-area class="tile tile-detail main-panel">
             <div class="actions-header">
                 <div class="simple-search">
                     <ig-search-field mode="Keypress"
@@ -23,12 +29,13 @@
             </div>
 
             <div id="List">
-                <p-table #dt [value]="groupItems"
+                <p-table #dt
+                         [value]="groupItems"
                          selectionMode="single"
                          [metaKeySelection]="true"
                          [globalFilterFields]="['Name']"
                          [paginator]="true"
-                         [lazy] ="true"
+                         [lazy]="true"
                          (onLazyLoad)="lazyLoadGroups($event)"
                          [rows]="rowsPerPage"
                          [rowsPerPageOptions]="defaultPagingOptions"
@@ -45,14 +52,18 @@
                                 [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
                                 {{ col.text }}
                                 <d3s-sortIcon *ngIf="col.sortable"
-                                              [field]="col.datafield"></d3s-sortIcon>
+                                              [field]="col.apiName"></d3s-sortIcon>
                             </th>
                             <th style="width: 48px"></th>
                         </tr>
                     </ng-template>
-                    <ng-template pTemplate="body" let-item>
-                        <tr (dblclick)="selectRow(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
-                            <td *ngFor="let col of columns; let i=index" [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
+                    <ng-template pTemplate="body"
+                                 let-item>
+                        <tr (dblclick)="selectRow(item)"
+                            [pSelectableRow]="item"
+                            (focus)="selectRow(item)">
+                            <td *ngFor="let col of columns; let i=index"
+                                [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
                                 <ng-container *ngIf="i != linkColumnIndex; else linked">
                                     <div style="display:block; word-wrap:break-word">
                                         <d3s-dynamic-field-value [column]="col"
@@ -75,10 +86,18 @@
                                 </ng-template>
 
                             </td>
-                            <td class="asset-grid-tools" (click)="selectRow(item)" style="width: 48px">
+                            <td class="asset-grid-tools"
+                                (click)="selectRow(item)"
+                                style="width: 48px">
                                 <div style="display:inline-block">
-                                    <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
-                                    <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="menuItems" #linkMenu [tabIndex]="1"></ig-popup-menu>
+                                    <button igButton
+                                            type="button"
+                                            icon="fa-ellipsis-v"
+                                            (click)="selectRow(item); linkMenu.toggle($event)"></button>
+                                    <ig-popup-menu (onSelect)="clickMenuItem($event, item)"
+                                                   [items]="menuItems"
+                                                   #linkMenu
+                                                   [tabIndex]="1"></ig-popup-menu>
                                 </div>
                             </td>
                         </tr>
@@ -90,13 +109,17 @@
                     </ng-template>
                 </p-table>
             </div>
-        </div>
-        <div class="tile tile-detail side-panel">
+        </as-split-area>
+        <as-split-area [size]="getSidePanelWidth()"
+                       [minSize]="getSidePanelMinWidth()"
+                       [maxSize]="getSidePanelMaxWidth()"
+                       class="tile tile-detail side-panel">
             <side-panel (expandedChange)="sidePanelOpen=$event"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [selectedItem]="selectedRow"
                         [panelApplies]="true"
                         [hasProfiling]="false"
+                        [setMinMaxWidth]="false"
                         hasDetail="true"
                         [storageKey]="sidePanelStorageKey"
                         [selectedPanel]="sidePanelTab">
@@ -129,8 +152,8 @@
                     </ng-container>
                 </ng-container>
             </side-panel>
-        </div>
-    </div>
+        </as-split-area>
+    </as-split>
 </div>
 
 <d3s-modal *ngIf="selectedRow" additionalClasses="modal-dyn-editor asset-editor"

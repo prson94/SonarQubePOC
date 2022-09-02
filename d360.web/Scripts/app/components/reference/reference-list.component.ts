@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -18,9 +18,9 @@ import { Subscription } from 'rxjs';
 import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
-    selector: 'd3s-reference-list',
+	selector: 'd3s-reference-list',
 
-    template: `                 
+	template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
                     <div [ngClass]="showDefault ? 'col s12 l3' : 'col s12 l8'">
@@ -44,189 +44,188 @@ import { CompanySettingsService } from '../../services/settings.service';
                     </div>
                 </div>
                `,
-    providers: [PermissionsService, ReferenceService, UriBasedService, AssetTypeService],
+	providers: [PermissionsService, ReferenceService, UriBasedService, AssetTypeService],
 })
 
 export class ReferenceListComponent extends BaseComponent implements OnInit, OnDestroy {
-    private sub: any;
-    private selectedReferenceItemType: ReferenceItemType;
-    private selectedReferenceListId: number = 0;
-    private selectedReferenceListUid: string = '';
-    private canReadSelectedType = true;
+	@Input() assetTypeUid: string = "";
 
-    private showDefault: boolean = true;
+	private sub: any;
+	private selectedReferenceItemType: ReferenceItemType;
+	private selectedReferenceListUid: string = '';
+	private canReadSelectedType = true;
 
-    private canAddReferenceItem: boolean = false;
-    private canEditReferenceItem: boolean = false;
-    private canRemoveReferenceItem: boolean = false;
+	private showDefault: boolean = true;
 
-    private loadPermissionSub: Subscription;
-    private loadObjectDataSub: Subscription;
-    private replaceUrl: boolean = true;
-    highlightUid: string = '';
-    constructor(
-        private assetTypeService: AssetTypeService,
-        protected authenticationService: AuthenticationService,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
-        private permissionsService: PermissionsService,
-        protected referenceService: ReferenceService,
-        secondaryNavService: SecondaryNavService,
-        protected settingsService: CompanySettingsService,
-        protected titleService: Title,
-        private uriBasedService: UriBasedService,
-        private route: ActivatedRoute,
-        private router: Router
-    ) {
-        super(settingsService);
-        this.secondaryNavService = secondaryNavService;
-        this.breadcrumbsService = headerBreadcrumbService;
-    }
+	private canAddReferenceItem: boolean = false;
+	private canEditReferenceItem: boolean = false;
+	private canRemoveReferenceItem: boolean = false;
 
-    ngOnInit() {
-        this.setBrowserTitle(this.titleService, 'Reference');
+	private loadPermissionSub: Subscription;
+	private loadObjectDataSub: Subscription;
+	private replaceUrl: boolean = true;
+	highlightUid: string = '';
+	constructor(
+		private assetTypeService: AssetTypeService,
+		protected authenticationService: AuthenticationService,
+		protected headerBreadcrumbService: HeaderBreadcrumbService,
+		private permissionsService: PermissionsService,
+		protected referenceService: ReferenceService,
+		secondaryNavService: SecondaryNavService,
+		protected settingsService: CompanySettingsService,
+		protected titleService: Title,
+		private uriBasedService: UriBasedService,
+		private route: ActivatedRoute,
+		private router: Router
+	) {
+		super(settingsService);
+		this.secondaryNavService = secondaryNavService;
+		this.breadcrumbsService = headerBreadcrumbService;
+	}
 
-        this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
+	ngOnInit() {
+		this.setBrowserTitle(this.titleService, 'Reference');
 
-        this.sub = this.route.params.subscribe((params) => {
-            this.canReadSelectedType = false;
-            var refListIdString = "";
-            //load default perms
-            this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
-            refListIdString = params['referenceListId'];
+		this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
-            if (params['referenceListId'] && (params['referenceListId'] as string).indexOf(',') !== -1) {
-                var items = refListIdString.split(',');
-                refListIdString = items[0];
-                this.highlightUid = items[1];
-            }
-            else {
-                this.selectedReferenceListId = +params['referenceListId']; // (+) converts string 'id' to a number
-            }
 
-            if (refListIdString) {
+		this.canReadSelectedType = false;
+		var refListIdString = "";
+		//load default perms
+		this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
+		refListIdString = this.assetTypeUid;
 
-                if (refListIdString.toString().length == 36) {
-                    this.selectedReferenceListUid = refListIdString;
-                    if (this.loadObjectDataSub) {
-                        this.loadObjectDataSub.unsubscribe();
-                    }
-                    this.loadObjectDataSub = this.assetTypeService.getAssetTypeObjectAndID(refListIdString).subscribe((res) => {
-                        this.selectedReferenceListId = +res.ObjectID;
-                        this.load();
-                        if (this.selectedReferenceItemType && this.selectedReferenceItemType.ID != this.selectedReferenceListId) {
-                            var referenceItemType: ReferenceItemType = new ReferenceItemType();
-                            referenceItemType.ID = this.selectedReferenceListId;
-                            referenceItemType.uid = this.selectedReferenceListUid;
-                            this.changeType(referenceItemType, true);
-                        }
-                        this.replaceUrl = false;
-                    });
-                }
-                else if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {
-                    this.load();
-                    this.replaceUrl = true;
-                }
-            }
-        });
+		if (this.assetTypeUid && (this.assetTypeUid as string).indexOf(',') !== -1) {
+			var items = refListIdString.split(',');
+			refListIdString = items[0];
+			this.highlightUid = items[1];
+		}
+		else {
+			this.selectedReferenceListUid = this.assetTypeUid;
+		}
 
-    }
+		if (refListIdString) {
 
-    private load() {
-        //check if the user has permission to read the selected type
-        if (this.loadPermissionSub)
-            this.loadPermissionSub.unsubscribe();
+			if (refListIdString.toString().length == 36) {
+				this.baseAssetTypeUid = this.selectedReferenceListUid = refListIdString;
+				if (this.loadObjectDataSub) {
+					this.loadObjectDataSub.unsubscribe();
+				}
+				this.loadObjectDataSub = this.assetTypeService.getAssetTypeObjectAndID(refListIdString).subscribe((res) => {
+					this.load();
+					if (this.selectedReferenceItemType && this.selectedReferenceItemType.uid != this.selectedReferenceListUid) {
+						var referenceItemType: ReferenceItemType = new ReferenceItemType();
+						referenceItemType.uid = this.selectedReferenceListUid;
+						this.changeType(referenceItemType, true);
+					}
+					this.replaceUrl = false;
+				});
+			}
+			else if (this.selectedReferenceListUid != null) {
+				this.load();
+				this.replaceUrl = true;
+			}
+		}
 
-        this.loadPermissionSub = this.referenceService.canReadReferenceType(this.selectedReferenceListId)
-            .subscribe((r) => {
-                this.canReadSelectedType = r;
-                if (this.selectedReferenceListId && !isNaN(this.selectedReferenceListId)) {
-                    this.loadPermissions(this.permissionsService, "ReferenceItemType", this.selectedReferenceListId).then((perms) => {
-                        this.canAddReferenceItem = this.hasAddAssetPermissions();
-                        this.canEditReferenceItem = this.hasModifyAssetPermissions();
-                        this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
-                    });
-                    this.buildSecondaryNavigationForObject(this.selectedReferenceListId, 'ReferenceItemType', () => {
-                        this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {
-                            this.headerBreadcrumbService.clearBreadcrumbs();
-                            this.headerBreadcrumbService.clearCurrentObjectInfo();
-                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
-                            if (this.selectedReferenceItemType)
-                                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selectedReferenceItemType.Name));
-                            if (this.auditSidebar) {
-                                this.auditSidebar.url = `/sidebar/audit/${this.selectedReferenceListUid}`;
-                            }
-                        });
-                    });
-                }
-            });
-    }
+	}
 
-    ngOnDestroy() {
-        this.clearSidebar();
-        if (this.loadPermissionSub)
-            this.loadPermissionSub.unsubscribe();
+	private load() {
+		//check if the user has permission to read the selected type
+		if (this.loadPermissionSub)
+			this.loadPermissionSub.unsubscribe();
 
-        if (this.loadObjectDataSub)
-            this.loadObjectDataSub.unsubscribe();
+		this.loadPermissionSub = this.referenceService.canReadReferenceType(this.selectedReferenceListUid)
+			.subscribe((r) => {
+				this.canReadSelectedType = r;
+				if (this.selectedReferenceListUid) {
+					this.permissionsService.getAssetTypePermissions(this.selectedReferenceListUid)
+						.subscribe((res) => {
+							this.objectPermission = res;
+							this.canAddReferenceItem = this.hasAddAssetPermissions();
+							this.canEditReferenceItem = this.hasModifyAssetPermissions();
+							this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
+						})
 
-    }
+					this.buildSecondaryNavigationForAssetTypeUid(this.selectedReferenceListUid, () => {
+						this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {
+							this.headerBreadcrumbService.clearBreadcrumbs();
+							this.headerBreadcrumbService.clearCurrentObjectInfo();
+							this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
+							if (this.selectedReferenceItemType)
+								this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selectedReferenceItemType.Name));
+							if (this.auditSidebar) {
+								this.auditSidebar.url = `/assets/${this.selectedReferenceListUid}/log`;
+							}
+						});
+					});
+				}
+			});
+	}
 
-    private changeFormMode(formMode: FormMode) {
-        if (formMode == FormMode.Default)
-            this.showDefault = true;
-        else
-            this.showDefault = false;
-    }
+	ngOnDestroy() {
+		this.clearSidebar();
+		if (this.loadPermissionSub)
+			this.loadPermissionSub.unsubscribe();
 
-    changeType(e: any, replaceUrl: boolean) {
-        const requiresRedirect = this.selectedReferenceListId !== e.ID;
-        this.selectedReferenceItemType = e;
-        this.selectedReferenceListId = e.ID;
-        this.setSecondaryNavItems();
-        if (requiresRedirect) {
-            this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.uid}`, { replaceUrl: replaceUrl });
-        }
-    }
+		if (this.loadObjectDataSub)
+			this.loadObjectDataSub.unsubscribe();
 
-    setSecondaryNavItems() {
-        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(null, null, null, null, true, null, null));
-        if (this.auditSidebar) {
-            this.auditSidebar.url = `/sidebar/audit/${this.selectedReferenceListUid}`;
-        }
+	}
 
-        if (this.impactSidebar) {
-            this.impactSidebar.orderPriority = 2;
-            this.impactSidebar.url = `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceListId}`;
-        }
+	private changeFormMode(formMode: FormMode) {
+		if (formMode == FormMode.Default)
+			this.showDefault = true;
+		else
+			this.showDefault = false;
+	}
 
-        if (this.relationsSidebar) {
-            this.relationsSidebar.orderPriority = 3;
-            this.relationsSidebar.url = `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceListId}`;
-        }
+	changeType(e: any, replaceUrl: boolean) {
+		const requiresRedirect = this.selectedReferenceListUid !== e.uid;
+		this.selectedReferenceItemType = e;
+		this.baseAssetTypeUid = this.selectedReferenceListUid = this.selectedReferenceItemType.uid;
+		this.setSecondaryNavItems();
+		if (requiresRedirect) {
+			this.router.navigateByUrl(`/assets/${e.uid}`, { replaceUrl: replaceUrl });
+		}
+	}
 
-        if (this.monitorSidebar) {
-            this.monitorSidebar.url = `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceListId}`;
-        }
+	setSecondaryNavItems() {
+		this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(null, null, null, null, true, null, null));
+		if (this.auditSidebar) {
+			this.auditSidebar.url = `/assets/${this.selectedReferenceListUid}/log`;
+		}
 
-        if (this.authenticationService.isAdmin && this.fieldNav) {
+		if (this.impactSidebar) {
+			this.impactSidebar.orderPriority = 2;
+			this.impactSidebar.url = `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceListUid}`;
+		}
 
-            this.fieldNav.icons = ['fa-drivers-license-o'];
-            this.fieldNav.tag = 'fields';
-            this.fieldNav.title = $localize`Field Definitions`;
-            this.fieldNav.url = '/sidebar/fields';
-            this.fieldNav.orderPriority = 1;
-            this.fieldNav.url = `/sidebar/fields/ReferenceItemType/${this.selectedReferenceListId}`;
+		if (this.relationsSidebar) {
+			this.relationsSidebar.orderPriority = 3;
+			this.relationsSidebar.url = `/assets/${this.selectedReferenceListUid}/relationships`;
+		}
 
-        }
+		if (this.monitorSidebar) {
+			this.monitorSidebar.url = `/assets/${this.selectedReferenceListUid}/workflowmonitor`;
+		}
 
-        if (this.authenticationService.isAdmin && this.ownershipSidebar) {
+		if (this.authenticationService.isAdmin && this.fieldNav) {
 
-            this.ownershipSidebar.icons = ['fa-bars'];
-            this.ownershipSidebar.tag = 'responsibilities';
-            this.ownershipSidebar.title = $localize`Responsibilities`;
-            this.ownershipSidebar.url = '/sidebar/responsibilities';
-            this.ownershipSidebar.orderPriority = 4;
-            this.ownershipSidebar.url = `/sidebar/responsibilities/${this.selectedReferenceListUid}`;
-        }
-    }
+			this.fieldNav.icons = ['fa-drivers-license-o'];
+			this.fieldNav.tag = 'fields';
+			this.fieldNav.title = $localize`Field Definitions`;
+			this.fieldNav.orderPriority = 1;
+			this.fieldNav.url = `/assets/${this.selectedReferenceListUid}/fields`;
+
+		}
+
+		if (this.authenticationService.isAdmin && this.ownershipSidebar) {
+
+			this.ownershipSidebar.icons = ['fa-bars'];
+			this.ownershipSidebar.tag = 'responsibilities';
+			this.ownershipSidebar.title = $localize`Responsibilities`;
+			this.ownershipSidebar.orderPriority = 4;
+			this.ownershipSidebar.url = `/assets/${this.selectedReferenceListUid}/owners`;
+		}
+	}
 }

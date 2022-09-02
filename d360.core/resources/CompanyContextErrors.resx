@@ -130,7 +130,7 @@
     <value>Invalid Relationship field encountered no relationship type to lookup found in definition.</value>
   </data>
   <data name="InvalidTypeIdentifierInfoModel" xml:space="preserve">
-    <value>Invalid TypeIdentifierInfoModel.</value>
+    <value>Invalid [TypeIdentifierInfoModel].</value>
   </data>
   <data name="MultiRelationshipsReferRelationship" xml:space="preserve">
     <value>One or more relationships reference this relationship.</value>

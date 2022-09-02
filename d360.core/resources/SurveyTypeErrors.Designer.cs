@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class SurveyTypeErrors {
@@ -61,7 +61,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Description should not exceed {maxDescriptionLength} characters.
+        ///   Looks up a localized string similar to [Description] should not exceed {maxDescriptionLength} characters.
         /// </summary>
         public static string DescriptionTooBig {
             get {
@@ -115,7 +115,16 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for direction parameter. Use asc|desc..
+        ///   Looks up a localized string similar to Asset Type is invalid. Surveys can be created only for Business Assets, Technical Assets, Models and Rules.
+        /// </summary>
+        public static string InvalidAssetType {
+            get {
+                return ResourceManager.GetString("InvalidAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for [direction] parameter. Use asc|desc..
         /// </summary>
         public static string InvalidDirection {
             get {
@@ -124,7 +133,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Display Style.
+        ///   Looks up a localized string similar to Invalid [DisplayStyle].
         /// </summary>
         public static string InvalidDisplayStyle {
             get {
@@ -133,7 +142,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are missing a Name in option #{index}.
+        ///   Looks up a localized string similar to You are missing a [Name] in option #{index}.
         /// </summary>
         public static string MissingQuestionOptionName {
             get {
@@ -151,7 +160,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name should not exceed {maxNameLength} characters..
+        ///   Looks up a localized string similar to [Name] should not exceed {maxNameLength} characters..
         /// </summary>
         public static string NameIsTooBig {
             get {
@@ -160,7 +169,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name should be not empty..
+        ///   Looks up a localized string similar to [Name] should be not empty..
         /// </summary>
         public static string NameShouldBeNotEmpty {
             get {
@@ -196,7 +205,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ValidForDays must be {maxValidForDays} days or less..
+        ///   Looks up a localized string similar to [ValidForDays] must be {maxValidForDays} days or less..
         /// </summary>
         public static string ValidForDaysIsTooBig {
             get {
@@ -205,7 +214,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ValidForDays must be {minValidForDays} days or greater..
+        ///   Looks up a localized string similar to [ValidForDays] must be {minValidForDays} days or greater..
         /// </summary>
         public static string ValidForDaysIsTooSmall {
             get {

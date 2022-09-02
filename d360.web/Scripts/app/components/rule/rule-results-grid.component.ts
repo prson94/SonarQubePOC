@@ -24,8 +24,6 @@ import { CompanySettingEnum } from '../../models/settings.model';
 })
 
 export class RuleResultsGridComponent extends BaseComponent implements OnDestroy {
-
-    @Input() ruleId: number;
     @Input() ruleUid: string;
     @Input() showTitle: boolean = true;
 
@@ -85,11 +83,6 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
     }
 
     getData() {
-        if (!this.ruleId) {
-            console.log("ERROR - NO RULE ID");
-            return;
-        }
-
         //remove any invalid filters
         if (this.filters && this.filters.length > 0) {
             for (var i = this.filters.length - 1; i >= 0; i--) {
@@ -107,7 +100,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
             this.getRuleResultsSub.unsubscribe();
         }
         this.getRuleResultsSub = this.ruleService
-            .getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, false, null, this.simpleTextFilter, this.newAdvancedFilters?.filter)
+            .getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, false, this.simpleTextFilter, this.newAdvancedFilters?.filter)
             .pipe(debounceTime(300))
             .subscribe((res) => {
                 this.results = res;
@@ -151,7 +144,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
     }
 
     doExport() {
-        this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.totalRecords, this.sortField, this.sortOrder, true, this.ruleId, this.simpleTextFilter, this.newAdvancedFilters?.filter);
+        this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.totalRecords, this.sortField, this.sortOrder, true, this.simpleTextFilter, this.newAdvancedFilters?.filter);
     }
 
     formatPath(s: string) {

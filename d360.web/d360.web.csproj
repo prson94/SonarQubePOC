@@ -2066,7 +2066,7 @@
     <TypeScriptCompile Include="Scripts\vendor.ts" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Scripts\app\**\*.ts" />
+	<TypeScriptCompile Include="Scripts\app\**\*.ts" />
     <None Include="Scripts\app\**\*.html" />
     <None Include="Scripts\app\**\*.less" />
     <None Include="Scripts\app\**\*.css" />

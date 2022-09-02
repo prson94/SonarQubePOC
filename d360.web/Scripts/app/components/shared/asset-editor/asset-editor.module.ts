@@ -46,6 +46,7 @@ import { AssetEditorFieldInfoComponent } from "./asset-editor-field-info.compone
 import { FindMultiselectOptionPipe } from "./find-multiselect-option.pipe";
 import { AssetDetailModule } from "../asset-detail/asset-detail.module";
 import { AssetTypeDetailModule } from "../asset-type-detail/asset-type-detail.module";
+import { TaggedAssetDetailModule } from "../tagged-assets/tagged-assets-detail.module";
 
 @NgModule({
     imports: [
@@ -94,7 +95,8 @@ import { AssetTypeDetailModule } from "../asset-type-detail/asset-type-detail.mo
         SidePanelModule,
 		
 		AssetDetailModule,
-		AssetTypeDetailModule
+		AssetTypeDetailModule,
+		TaggedAssetDetailModule
     ],
     declarations: [
         AssetEditorComponent,

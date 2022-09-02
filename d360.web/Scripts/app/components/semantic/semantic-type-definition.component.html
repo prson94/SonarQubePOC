@@ -2,36 +2,58 @@
 <div *ngIf="!isLoading">
     <div class="row">
         <div>
-            <div class="col s12" style="display:flex;">
-                <div class="tile tile-detail main-panel">
-                    <div *ngIf="!isLoading" style="padding: 16px 11px 6px 11px">
+            <as-split unit="pixel"
+                      direction="horizontal"
+                      [gutterSize]="16"
+                      class="col s12 split"
+                      style="display: flex"
+                      [class.side-panel-close]="!sidePanelOpen"
+                      (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)"
+                      *ngIf="!isLoading">
+                <as-split-area class="tile tile-detail main-panel">
+                    <div *ngIf="!isLoading"
+                         style="padding: 16px 11px 6px 11px">
                         <div style="height: 0">
-                            &nbsp;<button class="ig-button-primary" igButton *ngIf="isAdmin && !semanticType.isDisabled" icon="fa-pencil" i18n-label label="Edit" (click)="showEditor=true" style="float:right;z-index:1000"></button>
+                            &nbsp;<button class="ig-button-primary"
+                                    igButton
+                                    *ngIf="isAdmin && !semanticType.isDisabled"
+                                    icon="fa-pencil"
+                                    i18n-label
+                                    label="Edit"
+                                    (click)="showEditor=true"
+                                    style="float:right;z-index:1000"></button>
                         </div>
 
                         <semantic-detail [qualifier]="semanticType.qualifier"
                                          [semanticType]="semanticType"
                                          (linkClicked)="handleLinkClick($event)"></semantic-detail>
                     </div>
-                </div>
-                <div class="tile tile-detail side-panel" *ngIf="!isLoading">
+                </as-split-area>
+                <as-split-area [size]="getSidePanelWidth()"
+                               [minSize]="getSidePanelMinWidth()"
+                               [maxSize]="getSidePanelMaxWidth()"
+                               class="tile tile-detail side-panel"
+                               *ngIf="!isLoading">
                     <side-panel (expandedChange)="sidePanelOpen=$event"
                                 (selectedPanelChange)="sidePanelTab=$event"
                                 [expanded]="sidePanelOpen"
                                 [panelApplies]="'true'"
                                 [storageKey]="sidePanelStorageKey"
                                 [selectedPanel]="'detail'"
+                                [setMinMaxWidth]="false"
                                 hasDetail="true">
                         <ng-container *ngIf="sidePanelOpen && sidePanelLoading">
                             <d3s-loading [isLoading]="true"></d3s-loading>
                         </ng-container>
                         <ng-container *ngIf="sidePanelOpen">
-                            <div class="empty-overlay" *ngIf="!resourceUid && sidePanelTab === 'detail'">
+                            <div class="empty-overlay"
+                                 *ngIf="!resourceUid && sidePanelTab === 'detail'">
                                 <div class="content">
                                     <div class="icon-holder">
                                         <i class="fa fa-info-circle"></i>
                                     </div>
-                                    <span i18n>Click a link or a tag to display the properties of a referenced item</span>
+                                    <span i18n>Click a link or a tag to display the properties of a referenced
+                                        item</span>
                                 </div>
                             </div>
                             <ng-container *ngIf="resourceUid && sidePanelTab === 'detail'">
@@ -51,8 +73,8 @@
                             </ng-container>
                         </ng-container>
                     </side-panel>
-                </div>
-            </div>
+                </as-split-area>
+            </as-split>
         </div>
     </div>
 </div>
@@ -61,6 +83,9 @@
            (onClose)="showEditor=false"
            [showTitle]="false"
            [isVisible]="showEditor">
-    <semantic-editor *ngIf="showEditor" [semanticType]="semanticType" (closeClick)="showEditor=false" (saveClick)="editSemantic($event)"></semantic-editor>
+    <semantic-editor *ngIf="showEditor"
+                     [semanticType]="semanticType"
+                     (closeClick)="showEditor=false"
+                     (saveClick)="editSemantic($event)"></semantic-editor>
 </d3s-modal>
 

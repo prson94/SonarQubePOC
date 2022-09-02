@@ -116,8 +116,8 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.theDeleteCallback = this.deletePredicate.bind(this);
         this.areaName = StringConstants.Section_Predicates;
-        this.setCommonItems();
-        this.buildSecondaryNavigationForObject(0, 'Predicate');
+		this.setCommonItems();
+		this.buildSecondaryNavigation({ predicateTypeUid: '00000001-0000-0000-0000-b00000000012' });
     }
 
     ngOnInit() {
