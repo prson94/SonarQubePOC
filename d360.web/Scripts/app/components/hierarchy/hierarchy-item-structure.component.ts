@@ -134,7 +134,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     constructor(
         public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetService: AssetService,
-        private sidePanelService: SidePanelService,
+        public sidePanelService: SidePanelService,
         private assetTypeService: AssetTypeService,
         private dataProfileService: DataProfileService,
         protected gridDefinitionService: GridDefinitionService,

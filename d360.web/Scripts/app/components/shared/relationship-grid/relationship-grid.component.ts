@@ -145,7 +145,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private relationshipService: RelationshipsService,
         private assetService: AssetService,
-        private sidePanelService: SidePanelService,
+        public sidePanelService: SidePanelService,
         private fieldService: FieldsObservableService,
         protected settingsService: CompanySettingsService,
         private gridDefinitionService: GridDefinitionService,

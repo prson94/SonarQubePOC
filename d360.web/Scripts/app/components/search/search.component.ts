@@ -102,7 +102,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected secondaryNavService: SecondaryNavService,
         public searchStateService: SearchStateService,
-        private sidePanelService: SidePanelService,
+        public sidePanelService: SidePanelService,
         private dataProfileService: DataProfileService,
         protected settingsService: CompanySettingsService,
         private datePipe: DatePipe) {
