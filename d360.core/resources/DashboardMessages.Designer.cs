@@ -115,7 +115,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Asset Type Uid provided..
+        ///   Looks up a localized string similar to Invalid [AssetTypeUid] provided..
         /// </summary>
         public static string InvalidDashboardDashboardAssetTypeUid {
             get {
@@ -124,7 +124,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Asset Uid provided..
+        ///   Looks up a localized string similar to Invalid [AssetUid] provided..
         /// </summary>
         public static string InvalidDashboardDashboardAssetUid {
             get {
@@ -133,7 +133,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Location must be one of the following values: List, Detail or Homepage.
+        ///   Looks up a localized string similar to [Location] must be one of the following values: List, Detail or Homepage.
         /// </summary>
         public static string InvalidDashboardLocation {
             get {
@@ -142,7 +142,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ReportType must be one of the following values: DqPlus or PowerBi.
+        ///   Looks up a localized string similar to [ReportType] must be one of the following values: DqPlus or PowerBi.
         /// </summary>
         public static string InvalidDashboardType {
             get {
@@ -160,7 +160,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid JSON value for field &apos;Definition&apos;.
+        ///   Looks up a localized string similar to Invalid JSON value for [Definition].
         /// </summary>
         public static string InvalidDefinitionValue {
             get {

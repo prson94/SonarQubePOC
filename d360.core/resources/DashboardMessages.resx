@@ -136,22 +136,22 @@
     <value>Error updating dashboard</value>
   </data>
   <data name="InvalidDashboardDashboardAssetTypeUid" xml:space="preserve">
-    <value>Invalid Asset Type Uid provided.</value>
+    <value>Invalid [AssetTypeUid] provided.</value>
   </data>
   <data name="InvalidDashboardDashboardAssetUid" xml:space="preserve">
-    <value>Invalid Asset Uid provided.</value>
+    <value>Invalid [AssetUid] provided.</value>
   </data>
   <data name="InvalidDashboardLocation" xml:space="preserve">
-    <value>Location must be one of the following values: List, Detail or Homepage</value>
+    <value>[Location] must be one of the following values: List, Detail or Homepage</value>
   </data>
   <data name="InvalidDashboardType" xml:space="preserve">
-    <value>ReportType must be one of the following values: DqPlus or PowerBi</value>
+    <value>[ReportType] must be one of the following values: DqPlus or PowerBi</value>
   </data>
   <data name="InvalidDashboardUid" xml:space="preserve">
     <value>Invalid Uid provided.</value>
   </data>
   <data name="InvalidDefinitionValue" xml:space="preserve">
-    <value>Invalid JSON value for field 'Definition'</value>
+    <value>Invalid JSON value for [Definition]</value>
   </data>
   <data name="NameExists" xml:space="preserve">
     <value>Dashboard with same name already exists</value>

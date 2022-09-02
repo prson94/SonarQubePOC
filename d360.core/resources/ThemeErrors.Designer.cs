@@ -61,7 +61,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to backColor is not a valid RGB color..
+        ///   Looks up a localized string similar to [backColor] is not a valid RGB color..
         /// </summary>
         public static string BackColorFormat {
             get {
@@ -70,7 +70,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to homeBackground may not be greater than 2048K..
+        ///   Looks up a localized string similar to [homeBackground] may not be greater than 2048K..
         /// </summary>
         public static string BackgroundSize {
             get {
@@ -79,7 +79,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to homeBackground must be either a *.gif, *jpg or *.png file..
+        ///   Looks up a localized string similar to [homeBackground] must be either a *.gif, *jpg or *.png file..
         /// </summary>
         public static string BackgroundType {
             get {
@@ -88,7 +88,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to breadcrumbLinkColor is not a valid RGB color..
+        ///   Looks up a localized string similar to [breadcrumbLinkColor] is not a valid RGB color..
         /// </summary>
         public static string BreadcrumbColorFormat {
             get {
@@ -97,7 +97,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to buttonBackColor is not a valid RGB color..
+        ///   Looks up a localized string similar to [buttonBackColor] is not a valid RGB color..
         /// </summary>
         public static string ButtonColorFormat {
             get {
@@ -169,7 +169,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to headerBackColor is not a valid RGB color..
+        ///   Looks up a localized string similar to [headerBackColor] is not a valid RGB color..
         /// </summary>
         public static string HeaderColorFormat {
             get {
@@ -205,7 +205,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to headerLogo may not be greater than 1024K..
+        ///   Looks up a localized string similar to [headerLogo] may not be greater than 1024K..
         /// </summary>
         public static string LogoSize {
             get {
@@ -214,7 +214,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to headerLogo must be either a *.gif, *.jpg or *.png file..
+        ///   Looks up a localized string similar to [headerLogo] must be either a *.gif, *.jpg or *.png file..
         /// </summary>
         public static string LogoType {
             get {
@@ -223,7 +223,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to name may not be empty..
+        ///   Looks up a localized string similar to [name] may not be empty..
         /// </summary>
         public static string NameNotEmpty {
             get {
@@ -232,7 +232,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to navbarBackColor is not a valid RGB color..
+        ///   Looks up a localized string similar to [navbarBackColor] is not a valid RGB color..
         /// </summary>
         public static string NavbarColorFormat {
             get {
@@ -241,7 +241,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to navbarBackColorSelected is not a valid RGB color..
+        ///   Looks up a localized string similar to [navbarBackColorSelected] is not a valid RGB color..
         /// </summary>
         public static string NavbarSelectedColorFormat {
             get {
@@ -277,7 +277,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to primaryButtonBackColor is not a valid RGB color..
+        ///   Looks up a localized string similar to [primaryButtonBackColor] is not a valid RGB color..
         /// </summary>
         public static string PrimaryButtonColorFormat {
             get {
@@ -286,7 +286,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to tableHeaderBackColor is not a valid RGB color..
+        ///   Looks up a localized string similar to [tableHeaderBackColor] is not a valid RGB color..
         /// </summary>
         public static string TableHeaderColorFormat {
             get {
@@ -295,7 +295,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to tableRowBackColor is not a valid RGB color..
+        ///   Looks up a localized string similar to [tableRowBackColor] is not a valid RGB color..
         /// </summary>
         public static string TableRowColorFormat {
             get {
@@ -304,7 +304,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to tabLinkColor is not a valid RGB color..
+        ///   Looks up a localized string similar to [tabLinkColor] is not a valid RGB color..
         /// </summary>
         public static string TabLinkColorFormat {
             get {
@@ -313,7 +313,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This theme is set as the currently used theme in this environment and IsCurrent property cannot be set to false..
+        ///   Looks up a localized string similar to This theme is set as the currently used theme in this environment and [IsCurrent] property cannot be set to false..
         /// </summary>
         public static string ThemeInUseForIsCurrentEdit {
             get {

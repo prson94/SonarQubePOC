@@ -118,19 +118,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="BackColorFormat" xml:space="preserve">
-    <value>backColor is not a valid RGB color.</value>
+    <value>[backColor] is not a valid RGB color.</value>
   </data>
   <data name="BackgroundSize" xml:space="preserve">
-    <value>homeBackground may not be greater than 2048K.</value>
+    <value>[homeBackground] may not be greater than 2048K.</value>
   </data>
   <data name="BackgroundType" xml:space="preserve">
-    <value>homeBackground must be either a *.gif, *jpg or *.png file.</value>
+    <value>[homeBackground] must be either a *.gif, *jpg or *.png file.</value>
   </data>
   <data name="BreadcrumbColorFormat" xml:space="preserve">
-    <value>breadcrumbLinkColor is not a valid RGB color.</value>
+    <value>[breadcrumbLinkColor] is not a valid RGB color.</value>
   </data>
   <data name="ButtonColorFormat" xml:space="preserve">
-    <value>buttonBackColor is not a valid RGB color.</value>
+    <value>[buttonBackColor] is not a valid RGB color.</value>
   </data>
   <data name="CustomCssNotAllowed" xml:space="preserve">
     <value>Your environment does not allow custom css to be defined within a theme.</value>
@@ -154,7 +154,7 @@
     <value>Error updating theme</value>
   </data>
   <data name="HeaderColorFormat" xml:space="preserve">
-    <value>headerBackColor is not a valid RGB color.</value>
+    <value>[headerBackColor] is not a valid RGB color.</value>
   </data>
   <data name="IconSize" xml:space="preserve">
     <value>icon may not be greater than 512K.</value>
@@ -166,19 +166,19 @@
     <value>You have not provided a valid uid parameter value.</value>
   </data>
   <data name="LogoSize" xml:space="preserve">
-    <value>headerLogo may not be greater than 1024K.</value>
+    <value>[headerLogo] may not be greater than 1024K.</value>
   </data>
   <data name="LogoType" xml:space="preserve">
-    <value>headerLogo must be either a *.gif, *.jpg or *.png file.</value>
+    <value>[headerLogo] must be either a *.gif, *.jpg or *.png file.</value>
   </data>
   <data name="NameNotEmpty" xml:space="preserve">
-    <value>name may not be empty.</value>
+    <value>[name] may not be empty.</value>
   </data>
   <data name="NavbarColorFormat" xml:space="preserve">
-    <value>navbarBackColor is not a valid RGB color.</value>
+    <value>[navbarBackColor] is not a valid RGB color.</value>
   </data>
   <data name="NavbarSelectedColorFormat" xml:space="preserve">
-    <value>navbarBackColorSelected is not a valid RGB color.</value>
+    <value>[navbarBackColorSelected] is not a valid RGB color.</value>
   </data>
   <data name="NoActiveThemeExists" xml:space="preserve">
     <value>No theme currently active theme exists.</value>
@@ -190,19 +190,19 @@
     <value>Property {0} does not have valid Base64 value.</value>
   </data>
   <data name="PrimaryButtonColorFormat" xml:space="preserve">
-    <value>primaryButtonBackColor is not a valid RGB color.</value>
+    <value>[primaryButtonBackColor] is not a valid RGB color.</value>
   </data>
   <data name="TableHeaderColorFormat" xml:space="preserve">
-    <value>tableHeaderBackColor is not a valid RGB color.</value>
+    <value>[tableHeaderBackColor] is not a valid RGB color.</value>
   </data>
   <data name="TableRowColorFormat" xml:space="preserve">
-    <value>tableRowBackColor is not a valid RGB color.</value>
+    <value>[tableRowBackColor] is not a valid RGB color.</value>
   </data>
   <data name="TabLinkColorFormat" xml:space="preserve">
-    <value>tabLinkColor is not a valid RGB color.</value>
+    <value>[tabLinkColor] is not a valid RGB color.</value>
   </data>
   <data name="ThemeInUseForIsCurrentEdit" xml:space="preserve">
-    <value>This theme is set as the currently used theme in this environment and IsCurrent property cannot be set to false.</value>
+    <value>This theme is set as the currently used theme in this environment and [IsCurrent] property cannot be set to false.</value>
   </data>
   <data name="ThemeInUseForRemoval" xml:space="preserve">
     <value>This theme is set as the currently used theme in this environment and may not be removed.</value>

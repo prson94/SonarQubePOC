@@ -61,7 +61,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _direction parameter is allowed only when RelationshipTypeUid or AssetUid is passed.
+        ///   Looks up a localized string similar to [_direction] parameter is allowed only when [RelationshipTypeUid] or [AssetUid] is passed.
         /// </summary>
         public static string DirectionAllowedForRelation {
             get {
@@ -70,7 +70,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _includeTotal parameter passed in the request, value must be true false or not specified.
+        ///   Looks up a localized string similar to Invalid [_includeTotal] parameter passed in the request, value must be true false or not specified.
         /// </summary>
         public static string Invalid_includeTotal {
             get {
@@ -79,7 +79,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _owner parameter passed in the request, maximum length is 100 characters..
+        ///   Looks up a localized string similar to Invalid [_owner] parameter passed in the request, maximum length is 100 characters..
         /// </summary>
         public static string Invalid_owner {
             get {
@@ -124,7 +124,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid _order value in the request.
+        ///   Looks up a localized string similar to Invalid [_order] value in the request.
         /// </summary>
         public static string InvalidOrderValue {
             get {
@@ -187,7 +187,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _order parameter is allowed only when RelationshipTypeUid is passed.
+        ///   Looks up a localized string similar to [_order] parameter is allowed only when [RelationshipTypeUid] is passed.
         /// </summary>
         public static string OrderForRelation {
             get {

@@ -127,7 +127,7 @@
     <value>The request contains duplicate combinations of assetUid, metricAssetUid, and effectiveDate. You must send in unique combinations for those three fields.</value>
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Invalid value for assetTypeUid parameter</value>
+    <value>Invalid value for [assetTypeUid] parameter</value>
   </data>
   <data name="InvalidMeasureFound" xml:space="preserve">
     <value>Invalid Measure Found</value>

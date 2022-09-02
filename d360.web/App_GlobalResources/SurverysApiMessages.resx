@@ -121,16 +121,16 @@
     <value>Asset type does not match with any survey.</value>
   </data>
   <data name="InvalidFormatSurveyTypeUid" xml:space="preserve">
-    <value>Invalid format for surveyTypeUid</value>
+    <value>Invalid format for [surveyTypeUid]</value>
   </data>
   <data name="InvalidValueAsOfDate" xml:space="preserve">
-    <value>Invalid date value for AsOfDate parameter!</value>
+    <value>Invalid date value for [AsOfDate] parameter!</value>
   </data>
   <data name="NotavalidEndDateRange" xml:space="preserve">
-    <value>Not a valid EndDateRange</value>
+    <value>Not a valid [EndDateRange]</value>
   </data>
   <data name="NotvalidStartDateRange" xml:space="preserve">
-    <value>Not a valid StartDateRange</value>
+    <value>Not a valid [StartDateRange]</value>
   </data>
   <data name="ResultRemoved" xml:space="preserve">
     <value>{0} results removed.</value>
@@ -145,7 +145,7 @@
     <value>Survey Question Type for uid {0} not found</value>
   </data>
   <data name="SurveyResourceAssetUidPopulated" xml:space="preserve">
-    <value>Either SurveyTypeUid or ResourceUid or AssetUid should populate</value>
+    <value>Either [SurveyTypeUid] or [ResourceUid] or [AssetUid] should populate</value>
   </data>
   <data name="SurveyUidNotFound" xml:space="preserve">
     <value>Survey Type with Uid {0} not found.</value>

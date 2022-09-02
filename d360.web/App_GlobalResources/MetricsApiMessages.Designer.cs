@@ -19,7 +19,7 @@ namespace Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class MetricsApiMessages {
@@ -70,7 +70,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ConditionFieldTypeName must not be empty..
+        ///   Looks up a localized string similar to [ConditionFieldTypeName] must not be empty..
         /// </summary>
         public static string ConditionFieldTypeNameNotEmpty {
             get {
@@ -79,7 +79,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ConditionIntersectTypeUid must be valid..
+        ///   Looks up a localized string similar to [ConditionIntersectTypeUid] must be valid..
         /// </summary>
         public static string ConditionIntersectTypeUidNotValid {
             get {
@@ -88,7 +88,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must use either a ConditionFieldTypeName or ConditionIntersectTypeUid within a condition..
+        ///   Looks up a localized string similar to You must use either a [ConditionFieldTypeName] or [ConditionIntersectTypeUid ]within a condition..
         /// </summary>
         public static string ConditionNotEmpty {
             get {
@@ -169,7 +169,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Description length({0} characters) is too long . It must be maximum length of 4000 characters or less..
+        ///   Looks up a localized string similar to [Description] length({0} characters) is too long . It must be maximum length of 4000 characters or less..
         /// </summary>
         public static string DescriptionLengthValidation {
             get {
@@ -259,7 +259,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Effective date provided!.
+        ///   Looks up a localized string similar to Invalid [EffectiveDate] provided!.
         /// </summary>
         public static string InvalidEffectiveDate {
             get {
@@ -268,7 +268,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parent metric must have &apos;IsGroup&apos; value set to True..
+        ///   Looks up a localized string similar to Parent metric must have [IsGroup] value set to True..
         /// </summary>
         public static string IsGroupTrueParentMetric {
             get {
@@ -412,7 +412,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You cannot use both ConditionFieldTypeName and ConditionIntersectTypeUid within a single condition.
+        ///   Looks up a localized string similar to You cannot use both [ConditionFieldTypeName] and [ConditionIntersectTypeUid] within a single condition.
         /// </summary>
         public static string UseSingleCondition {
             get {
