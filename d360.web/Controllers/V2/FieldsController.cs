@@ -1113,11 +1113,8 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public HttpResponseMessage GetFieldTypeLookupTokens(string identifier)
+		public IHttpActionResult GetFieldTypeLookupTokens(string identifier)
 		{
-			var prefix = "Fields.GetFieldTypeLookupTokens => ";
-			var errorMessage = "";
-
 			var excludedFieldTypes = new List<string>
 			{
 				DataType.Path.ToString(),
@@ -1125,8 +1122,6 @@ namespace d360.web.Controllers.V2
 				DataType.Score.ToString(),
 			};
 
-			try
-			{
 				int id;
 				Dictionary<string, string> list = new Dictionary<string, string>();
 
@@ -1184,23 +1179,7 @@ namespace d360.web.Controllers.V2
 						break;
 				}
 
-				return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.Key, value = "{" + i.Value + "}" }));
-			}
-			catch (RestApiException ex)
-			{
-				errorMessage = ex.GetFullExceptionData(false);
-
-				return ReturnApiError(ex.Status, errorMessage);
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+				return Ok(list.Select(i => new { title = i.Key, value = "{" + i.Value + "}" }));
 		}
 
 		/// <summary>
