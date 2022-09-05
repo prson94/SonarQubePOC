@@ -636,7 +636,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 				(
 					c.IsSimpleText && c.Operator && c.Operator.length > 0
 					&& (
-						(c.Operator === Operator[Operator.Populated] || c.Operator === Operator[Operator.Populated]) || (c.Value && c.Value.length > 0)
+						(c.Operator === Operator[Operator.Populated] || c.Operator === Operator[Operator.NotPopulated]) || (c.Value && c.Value.length > 0)
 					)
 				)
 			)
@@ -662,7 +662,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 						(
 							w.IsSimpleText && w.Operator && w.Operator.length > 0
 							&& (
-								(w.Operator === Operator[Operator.Populated] || w.Operator === Operator[Operator.Populated]) || (w.Value && w.Value.length > 0)
+								(w.Operator === Operator[Operator.Populated] || w.Operator === Operator[Operator.NotPopulated]) || (w.Value && w.Value.length > 0)
 							)
 						)
 					)
@@ -693,7 +693,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             });
 		}
 
-		this.model.StructuredDefinition.Then.Conditions = this.model.StructuredDefinition.Then.Conditions.filter((c) => c.FieldTypeID && c.Object && c.Value);
+		this.model.StructuredDefinition.Then.Conditions = this.model.StructuredDefinition.Then.Conditions.filter((c) => c.FieldTypeID && c.Object && (c.Value || c.Operator === Operator[Operator.Populated] || c.Operator === Operator[Operator.Populated] ));
 		if (this.model.StructuredDefinition.Then.Conditions.length === 0) {
 			this.model.StructuredDefinition.Then === null;
 		}
@@ -718,14 +718,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 });
         }
 	}
-
-	enableAddWhenCondition(): any {		
-		return this.model.StructuredDefinition.When.every((w) => { return w.Value && w.Value.length > 0; });
-	}
-
-	enableAddThenCondition(): any {
-		return this.model.StructuredDefinition.Then.Conditions.every((w) => { return w.Value && w.Value.length > 0; });
-	}
+	
 
 	showValueOption(item) {
 		if (item.CheckType === "F" && item.FieldTypeID) {
