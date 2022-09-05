@@ -1,4 +1,4 @@
-﻿import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, Input, OnDestroy, OnInit, ViewChild, HostListener } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
@@ -27,202 +27,189 @@ import { IOutputData } from 'angular-split';
 declare var CurrentResourceID;
 
 @Component({
-    selector: 'd3s-artifact-list',
-    templateUrl: './artifact-list.component.html',
-    providers: [ArtifactTypeService, DataProfileService],
+	selector: 'd3s-artifact-list',
+	templateUrl: './artifact-list.component.html',
+	providers: [ArtifactTypeService, DataProfileService],
 })
 
 export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
-    gridObject: AssetGridObject;
-    artifactType: ArtifactType;
-    artifactTypeHierarchy: ArtifactType[];
-    sub: any;
-    currentAreaNameSubscription: any;
-    navigationItemsSubs: Subscription[] = [];
-    currentAreaName: string;
+	@Input() assetTypeUid: string;
 
-    selection: any = null;
-    showEditor: boolean = false;
-    sidePanelOpen: boolean = false;
-    sidePanelLoading: boolean = false;
-    sidePanelTab: string;
-    sidePanelStorageKey: string;
-    hasProfiling: boolean = false;
-    gridLoading: boolean = true;
-    definitionLoaded: boolean = false;
-    dataProfile: any;
+	gridObject: AssetGridObject;
+	artifactType: ArtifactType;
+	artifactTypeHierarchy: ArtifactType[];
+	sub: any;
+	currentAreaNameSubscription: any;
+	navigationItemsSubs: Subscription[] = [];
+	currentAreaName: string;
 
-    hrefSub: Subscription;
-    selectedAsset: any;
-    selectedReferenceItem: any;
-    selectedTag: any;
-    semanticType: SemanticType;
-    secondarySidePanelOpen: boolean;
-    secondarySidePanel: string = "detail";
-    resourceUid: any;
-    sidePanelWidth: number;
-	
+	selection: any = null;
+	showEditor: boolean = false;
+	sidePanelOpen: boolean = false;
+	sidePanelLoading: boolean = false;
+	sidePanelTab: string;
+	sidePanelStorageKey: string;
+	hasProfiling: boolean = false;
+	gridLoading: boolean = true;
+	definitionLoaded: boolean = false;
+	dataProfile: any;
+
+	hrefSub: Subscription;
+	selectedAsset: any;
+	selectedReferenceItem: any;
+	selectedTag: any;
+	semanticType: SemanticType;
+	secondarySidePanelOpen: boolean;
+	secondarySidePanel: string = "detail";
+	resourceUid: any;
+	sidePanelWidth: number;
+
 	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
 
-    constructor(private route: ActivatedRoute,
-        private router: Router,
-        private artifactTypeService: ArtifactTypeService,
-        private sidePanelService: SidePanelService,
-        private titleAndTabsService: TitleAndTabsService,
-        headerBreadcrumbService: HeaderBreadcrumbService,
-        private titleService: Title,
-        webAnalyticsService: WebAnalyticsService,
-        private dataProfileService: DataProfileService,
-        secondaryNavService: SecondaryNavService,
-        private linkClickInterceptor: LinkClickInterceptor,
-        protected settingsService: CompanySettingsService,
-        private featureFlagService: FeatureFlagsService) {
-        super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
+	constructor(private route: ActivatedRoute,
+		private router: Router,
+		private artifactTypeService: ArtifactTypeService,
+		private sidePanelService: SidePanelService,
+		private titleAndTabsService: TitleAndTabsService,
+		headerBreadcrumbService: HeaderBreadcrumbService,
+		private titleService: Title,
+		webAnalyticsService: WebAnalyticsService,
+		private dataProfileService: DataProfileService,
+		secondaryNavService: SecondaryNavService,
+		private linkClickInterceptor: LinkClickInterceptor,
+		protected settingsService: CompanySettingsService,
+		private featureFlagService: FeatureFlagsService) {
+		super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
 
-        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-            this.linkClickInterceptor.handleEvent(this, ev);
-        });
-    }
+		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			this.linkClickInterceptor.handleEvent(this, ev);
+		});
+	}
 
-    ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
-            let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
+	ngOnInit() {
+		this.isLoading = true;
+		this.artifactTypeHierarchy = [];
+		this.headerBreadcrumbService.setCurrentObjectInfo('bla bla', -1);
+		this.logAction('open', 'AssetType', this.assetTypeUid);
+		this
+			.artifactTypeService
+			.getArtifactTypeDetails(this.assetTypeUid, true)
+			.subscribe((artifactType) => {
+				let folderName: string = '#Business';
+				this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 
+				if (artifactType.Class == AssetTypeClass.TechnicalAsset) {
+					folderName = '#Technical';
+					this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
+				}
 
-            this.isLoading = true;
-            this.artifactTypeHierarchy = [];
-            this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
-            this.logAction('open', 'ArtifactType', artifactTypeId);
-            this
-                .artifactTypeService
-                .getArtifactTypeDetails(artifactTypeId, true)
-                .subscribe((artifactType) => {
-                    let folderName: string = '#Business';
-                    this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
+				this.sidePanelStorageKey = 'list_' + AssetTypeClass[artifactType.Class] + '_' + CurrentResourceID;
 
-                    if (artifactType.Class == AssetTypeClass.TechnicalAsset) {
-                        folderName = '#Technical';
-                        this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
-                    }
+				this.headerBreadcrumbService.getFolderTitle(folderName).then((res) => {
+					this.headerBreadcrumbService.clearBreadcrumbs();
 
-                    this.sidePanelStorageKey = 'list_' + AssetTypeClass[artifactType.Class] + '_' + CurrentResourceID;
+					this.folderTitle = res;
+					this.area = res;
 
-                    this.headerBreadcrumbService.getFolderTitle(folderName).then((res) => {
-                        this.headerBreadcrumbService.clearBreadcrumbs();
+					this.artifactType = artifactType;
+					this.gridObject = ArtifactType.AsGridObject(this.artifactType);
+					this.setObjectInfo('ArtifactType', this.artifactType.ID);
 
-                        this.folderTitle = res;
-                        this.area = res;
+					this.artifactTypeHierarchy.push(this.artifactType);
+					this.createBreadcrumbHierarchy(artifactType);
 
-						this.artifactType = artifactType;
-						this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId, this.artifactType.AssetTypeUID);
-                        this.gridObject = ArtifactType.AsGridObject(this.artifactType);
-                        this.setObjectInfo('ArtifactType', this.artifactType.ID);
+					this.setBrowserTitle(this.titleService, this.artifactType.Name);
+					this.isLoading = false;
+					this.titleAndTabsService.isInitialize = true;
+				});
+			});
+	}
 
-                        this.artifactTypeHierarchy.push(this.artifactType);
-                        this.createBreadcrumbHierarchy(artifactType);
+	createBreadcrumbHierarchy(artifact: ArtifactType) {
+		if (artifact.ParentID) {
+			var detailsSub = this.artifactTypeService.getArtifactTypeDetails(artifact.ParentUid).subscribe(parent => {
+				this.artifactTypeHierarchy.unshift(parent);
+				if (parent.ParentID)
+					this.createBreadcrumbHierarchy(parent);
+				else
+					this.displayBreadcrumb();
+			});
 
-                        this.setBrowserTitle(this.titleService, this.artifactType.Name);
-                        this.isLoading = false;
-                        this.titleAndTabsService.isInitialize = true;
-                    });
-                });
-        });
-    }
+			this.navigationItemsSubs.push(detailsSub);
+		} else
+			this.displayBreadcrumb();
+	}
 
-    createBreadcrumbHierarchy(artifact: ArtifactType) {
-        if (artifact.ParentID) {
-            var detailsSub = this.artifactTypeService.getArtifactTypeDetails(artifact.ParentID).subscribe(parent => {
-                this.artifactTypeHierarchy.unshift(parent);
-                if (parent.ParentID)
-                    this.createBreadcrumbHierarchy(parent);
-                else
-                    this.displayBreadcrumb();
-            });
+	displayBreadcrumb() {
+		this.headerBreadcrumbService.clearBreadcrumbs();
+		this.currentAreaNameSubscription =
+			this.headerBreadcrumbService
+				.getAreaName('ArtifactType', this.artifactTypeHierarchy[0].ID)
+				.subscribe(result => {
+					this.currentAreaName = result;
+					this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
+					this.artifactTypeHierarchy.forEach(x => {
+						this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
+							x.Name,
+							SiteUrlHelpers.getAssetTypeUrl(x.AssetTypeUID),
+							false,
+							"ArtifactType",
+							x.ID,
+							null,
+							null,
+							true,
+							x.ParentID > 0));
 
-            this.navigationItemsSubs.push(detailsSub);
-        } else
-            this.displayBreadcrumb();
-    }
-
-    displayBreadcrumb() {
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.currentAreaNameSubscription =
-            this.headerBreadcrumbService
-                .getAreaName('ArtifactType', this.artifactTypeHierarchy[0].ID)
-                .subscribe(result => {
-                    this.currentAreaName = result;
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
-                    this.artifactTypeHierarchy.forEach(x => {
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
-                            x.Name,
-                            SiteUrlHelpers.getObjectUrl("ArtifactType", x.ID),
-                            false,
-                            "ArtifactType",
-                            x.ID,
-                            null,
-                            null,
-                            true,
-                            x.ParentID > 0));
-
-                    });
+					});
 
 					var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe(res => {
 						this.baseAssetTypeUid = this.artifactType.AssetTypeUID;
 						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.artifactType.HasDashboards });
-                        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
-                        this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, $localize`Assets`);
-                        if (this.artifactType.HasV2Workflows) {
-                            this.secondaryNavService.showItem(
-                                new SecondaryNavItem($localize`Workflow`,
-                                                     'workflowmonitor',
-                                                     ['fa-usb'],
-                                                     `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`)
-                            );
-                        }
-                    });
-                    this.navigationItemsSubs.push(breadCrumbsSub);
-                });
+						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
+						this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, $localize`Assets`);
+						if (this.artifactType.HasV2Workflows) {
+							this.secondaryNavService.showItem(
+								new SecondaryNavItem($localize`Workflow`,
+									'workflowmonitor',
+									['fa-usb'],
+									`/assets/${this.baseAssetTypeUid}/workflowmonitor;isAdminPage=false`)
+							);
+						}
+					});
+					this.navigationItemsSubs.push(breadCrumbsSub);
+				});
 
-    }
+	}
 
-    selectAsset(event: any) {
-        this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
-        this.selection = event.row;
-		
+	selectAsset(event: any) {
+		this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
+		this.selection = event.row;
+
 		if (event.forceRefresh) {
 			this.assetDetail?.load();
 		}
 
-        if (this.selection && this.selection.HasProfiling && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
-            this.sidePanelLoading = true;                                  
-            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
-                (r) => {
-                    if (r && r.items && r.items.length > 0) {
-                        this.dataProfile = r.items[0];
-                        
-                        forkJoin(
-                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
-                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
-                        ).subscribe((res) => {
-                            this.dataProfile['matches'] = {
-                                structure: res[0],
-                                data: res[1]
-                            };
-                        });
-                    }
-                    this.sidePanelLoading = false;
-                });
-        }
-    }
+		if (this.selection && this.selection.HasProfiling && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
+			this.sidePanelLoading = true;
+			this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
+				(r) => {
+					if (r && r.items && r.items.length > 0) {
+						this.dataProfile = r.items[0];
 
-    get panelApplies(): boolean {
-        if (this.selection == null || this.sidePanelTab === 'detail') {
-            return true;
-        }
-        if (this.selection != null && this.sidePanelTab === 'dataprofile' && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
-            return this.selection.HasProfiling;
-        }
-    }
+						forkJoin(
+							this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+							this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+						).subscribe((res) => {
+							this.dataProfile['matches'] = {
+								structure: res[0],
+								data: res[1]
+							};
+						});
+					}
+					this.sidePanelLoading = false;
+				});
+		}
+	}
 
     getSidePanelWidth(): number {
         return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
@@ -239,42 +226,50 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
         this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
+	get panelApplies(): boolean {
+		if (this.selection == null || this.sidePanelTab === 'detail') {
+			return true;
+		}
+		if (this.selection != null && this.sidePanelTab === 'dataprofile' && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
+			return this.selection.HasProfiling;
+		}
+	}
 
-    ngOnDestroy() {
-        if (this.sub) {
-            this.sub.unsubscribe();
-        }
+	ngOnDestroy() {
+		if (this.sub) {
+			this.sub.unsubscribe();
+		}
 
-        if (this.currentAreaNameSubscription) {
-            this.currentAreaNameSubscription.unsubscribe();
-        }
+		if (this.currentAreaNameSubscription) {
+			this.currentAreaNameSubscription.unsubscribe();
+		}
 
-        if (this.navigationItemsSubs) {
-            this.navigationItemsSubs.forEach((s) => {
-                s.unsubscribe();
-            });
-        }
+		if (this.navigationItemsSubs) {
+			this.navigationItemsSubs.forEach((s) => {
+				s.unsubscribe();
+			});
+		}
 
-        if (this.hrefSub) {
-            this.hrefSub.unsubscribe();
-        }
+		if (this.hrefSub) {
+			this.hrefSub.unsubscribe();
+		}
 
-        this.clearSidebar();
-    }
+		this.clearSidebar();
+	}
 
-    secondaryPanelOpen(event: any) {
-        this.secondarySidePanelOpen = true;        
-        if (event) {
-            if (event.resourceUid) {
-                this.secondarySidePanel = "user";
-                this.resourceUid = event.resourceUid;
-            }
-            if (event.semanticType) {
-                this.secondarySidePanel = "detail";
-                this.semanticType = event.semanticType;
-            }            
-        } else {
-            this.secondarySidePanel = "status";
-        }
-    }    
+	secondaryPanelOpen(event: any) {
+		this.secondarySidePanelOpen = true;
+		if (event) {
+			if (event.resourceUid) {
+				this.secondarySidePanel = "user";
+				this.resourceUid = event.resourceUid;
+			}
+			if (event.semanticType) {
+				this.secondarySidePanel = "detail";
+				this.semanticType = event.semanticType;
+			}
+		} else {
+			this.secondarySidePanel = "status";
+		}
+	}
 }

@@ -15,16 +15,16 @@ export class RulesService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getRule(id: number): Observable<RuleDetail> {
-        return this.http.get(`api/rule/${id}`)
+	getRule(assetUid: string): Observable<RuleDetail> {
+		return this.http.get(`api/rule/${assetUid}`)
             .pipe(
                 map((response) => <RuleDetail>response),
                 catchError((err) => this.handleError(err))
             );
     }
 
-    getRuleType(id: number): Observable<RuleType> {
-        return this.http.get(`api/ruletypes/${id}`)
+    getRuleType(uid: string): Observable<RuleType> {
+        return this.http.get(`api/ruletypes/${uid}`)
             .pipe(
                 map((response) => <RuleType>response),
                 catchError((err) => this.handleError(err))
@@ -48,7 +48,6 @@ export class RulesService extends BaseObservableService {
         sortField?: string,
         sortOrder?: SortOrder,
         isExport: boolean = false,
-        ruleId?: number,
         simpleFilter: string = "",
         advancedFilter: string = ""
     ): Observable<RuleResultPagedResults> {
@@ -77,7 +76,7 @@ export class RulesService extends BaseObservableService {
             }
             uri += `&_isFriendlyNameExport=true&_pageNum=1&_pageSize=${pageSize}&_includeDuplicateFlag=True`;
 
-            this.getRule(ruleId)
+			this.getRule(uid)
                 .subscribe((result) => {
                     fileName = result.Name + fileName;
                 });

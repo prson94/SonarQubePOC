@@ -149,7 +149,7 @@ namespace igx.UnitTests.ValidatorTests
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
             Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
-            Assert.True(valResults.Error.Contains("No primary key defined"), XMsg.BadResponseMessage);
+            Assert.True(valResults.Error.Contains("[IsPartOfKey]"), XMsg.BadResponseMessage);
 
         }
 

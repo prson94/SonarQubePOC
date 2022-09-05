@@ -73,8 +73,8 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     }
 
     selectedItemChange() {
-        this.loadDataAndExecuteAction(() => {
-            this.buildSecondaryNavigationForObject(this.selectedRow ? this.selectedRow.ID : 0, this.objectType, null, this.assetTypeClass);
+		this.loadDataAndExecuteAction(() => {
+			this.buildSecondaryNavigation({ assetTypeUid: this.selectedRow.uid });
         });
     }
 

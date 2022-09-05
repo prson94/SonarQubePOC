@@ -8,8 +8,7 @@ const routes: Routes = [
         path: '',
         component: ReferenceComponent,
         children: [
-            { path: ':referenceListId', component: ReferenceListComponent },
-            { path: '', component: ReferenceListComponent },
+			{ path: 'class/Reference', component: ReferenceListComponent },
         ]                
     }
 ];

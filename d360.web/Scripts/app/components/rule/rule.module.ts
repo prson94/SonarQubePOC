@@ -106,7 +106,11 @@ import { AngularSplitModule } from 'angular-split';
         RuleColumnFilterComponent
     ],
     exports: [
-        RuleResultsGridComponent
+		RuleComponent,
+		RuleListComponent,
+		RuleItemComponent,
+		RuleResultsGridComponent,
+		RuleColumnFilterComponent
     ],
     providers: [
 

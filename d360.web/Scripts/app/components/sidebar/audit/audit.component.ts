@@ -91,7 +91,6 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             .route
             .params
             .subscribe(params => {
-
                 this.uid = params['uid'];
 
                 this.auditService.getLegacyDetails(this.uid).subscribe(res => {
@@ -111,7 +110,13 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
 
                     let objectID = this.objectType == 'Tag' ? params['uid'] : this.objectID;
 
-                    if (reloadNav) {
+					if (this.uid === this.metricAllocationUid) {
+						this.buildSecondaryNavigation({ isScoringDefinitionPage:true });
+					}
+					else if (this.uid.toLowerCase() === this.groupTypeUid.toLowerCase()) {
+						this.buildSecondaryNavigationForAssetTypeUid(this.groupTypeUid);
+					}
+                    else if (reloadNav) {
                         this.buildSecondaryNavigationForObject(objectID, this.objectType);
                     }
 
@@ -137,8 +142,9 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         if (!this.isFiltersReady) {
             return;
-        }
-        this.auditService
+		}
+
+		this.auditService
             .getAuditData(this.uid, this.getParams())
             .subscribe(result => {
                 this.isLoading = false;

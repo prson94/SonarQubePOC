@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { PermissionsComponent } from './permissions.component';
 
 const routes: Routes = [
-    { path: ':assetTypeUId', component: PermissionsComponent },
+	{ path: ':assetTypeUId/owners', component: PermissionsComponent },
 ];
 
 @NgModule({

@@ -19,7 +19,7 @@ namespace Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class SurverysApiMessages {
@@ -70,7 +70,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid format for surveyTypeUid.
+        ///   Looks up a localized string similar to Invalid format for [surveyTypeUid].
         /// </summary>
         public static string InvalidFormatSurveyTypeUid {
             get {
@@ -79,7 +79,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid date value for AsOfDate parameter!.
+        ///   Looks up a localized string similar to Invalid date value for [AsOfDate] parameter!.
         /// </summary>
         public static string InvalidValueAsOfDate {
             get {
@@ -88,7 +88,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not a valid EndDateRange.
+        ///   Looks up a localized string similar to Not a valid [EndDateRange].
         /// </summary>
         public static string NotavalidEndDateRange {
             get {
@@ -97,7 +97,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not a valid StartDateRange.
+        ///   Looks up a localized string similar to Not a valid [StartDateRange].
         /// </summary>
         public static string NotvalidStartDateRange {
             get {
@@ -142,7 +142,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Either SurveyTypeUid or ResourceUid or AssetUid should populate.
+        ///   Looks up a localized string similar to Either [SurveyTypeUid] or [ResourceUid] or [AssetUid] should populate.
         /// </summary>
         public static string SurveyResourceAssetUidPopulated {
             get {

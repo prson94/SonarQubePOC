@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.dbo.GetAssetUrlById-v2">
+  <changeSet author="TDuric" id="Function.dbo.GetAssetUrlById-v3.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -20,13 +20,13 @@ AS
 RETURN 
 (
 	SELECT CASE A.Object
-		WHEN 'Artifact' THEN 'artifact/' +  + CAST(T.ObjectID as varchar) + '/' + CAST(A.ObjectID as varchar)
-		WHEN 'ReferenceItem' THEN 'reference/' +  + CAST(T.ObjectID as varchar)
-		WHEN 'Group' THEN 'group/' + CAST(A.ObjectID as varchar)	
-		WHEN 'Policy' THEN 'policy/' + CAST(T.ObjectID as varchar(15)) + '/id/' + CAST(A.ObjectID as varchar)
-		WHEN 'Resource' THEN 'resource/' + CAST(A.ObjectID as varchar)
-		WHEN 'Rule' THEN 'quality/rule/' + CAST(T.ObjectID as varchar) + '/' + CAST(A.ObjectID as varchar)
-		WHEN 'Taxonomy' THEN 'model/' + CAST(T.ObjectID as varchar) + '/id/' + CAST(A.ObjectID as varchar)
+		WHEN 'Artifact' THEN 'asset/' + CAST(A.Uid as nvarchar(max))
+		WHEN 'ReferenceItem' THEN 'assets/' +  + CAST(T.uid as nvarchar(max))
+		WHEN 'Group' THEN 'group/' + CAST(A.ObjectID as nvarchar(max))	
+		WHEN 'Policy' THEN 'asset/' + CAST(A.Uid as nvarchar(max))
+		WHEN 'Resource' THEN 'users/' + CAST(A.Uid as nvarchar(max))
+		WHEN 'Rule' THEN 'asset/' + CAST(A.Uid as nvarchar(max))
+		WHEN 'Taxonomy' THEN 'asset/' + CAST(A.Uid as nvarchar(max))
 	end as Url
 	from 
 		Asset A

@@ -64,7 +64,7 @@
                 <tr (dblclick)="selected=item;navigateToArtifact();"
                     [pSelectableRow]="item">
                     <td>
-                        <a (click)="artifactLink(item.TypeID, item.ObjectID)">{{item.DisplayValue}}</a>
+                        <a (click)="artifactLink(item.uid)">{{item.DisplayValue}}</a>
                     </td>
                     <td>
                         <span>{{item.CreatedOn | date: 'shortDate'}}</span>

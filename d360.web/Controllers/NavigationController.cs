@@ -701,7 +701,7 @@ namespace d360.web.Controllers
 						folderToUpdate.ImageIconUrl = $"{imageFileName}";
 						folderToUpdate.Icon = null;
 					}
-				} 
+				}
 				else
 				{
 					folderToUpdate.Icon = patch.Icon;
@@ -1167,10 +1167,11 @@ namespace d360.web.Controllers
 
 					responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
 				}
-				else if (model.ObjectType == SystemObjects.IntersectType.ToString())
+				else if (model.IntersectTypeUid.HasValue)
 				{
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
+					responseModel.IntersectTypeUid = model.IntersectTypeUid.Value;
 					responseModel.ObjectID = model.ObjectId ?? 0;
 					responseModel.DisplayValue = PageNames.RelationshipsTab;
 					responseModel.MainTabTitle = PageNames.RelationshipsTabTitle;
@@ -1186,10 +1187,11 @@ namespace d360.web.Controllers
 					responseModel.MainTabTitle = PageNames.WorkflowActionsTabTitle;
 					responseModel.Items.HasAudit = true;
 				}
-				else if (model.ObjectType == SystemObjects.ResponsibilityType.ToString())
+				else if (model.ResponsibilityTypeUid.HasValue)
 				{
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResponsibilityType.ToString();
+					responseModel.AssetTypeUid = responseModel.ResponsibilityTypeUid = model.ResponsibilityTypeUid;
 					responseModel.ObjectID = model.ObjectId ?? 0;
 					responseModel.DisplayValue = PageNames.ResponsibilitiesTab;
 					responseModel.MainTabTitle = PageNames.ResponsibilitiesTabTitle;
@@ -1266,6 +1268,7 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
+					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-A00000000011");
 					responseModel.DisplayValue = PageNames.UsersPage;
 					responseModel.MainTabTitle = PageNames.UsersPage;
 					responseModel.Items.HasAudit = true;
@@ -1281,7 +1284,7 @@ namespace d360.web.Controllers
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
 				}
-				else if (model.ObjectType == SystemObjects.MetricAllocation.ToString())
+				else if (model.isScoringDefinitionPage)
 				{
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.MetricAllocation.ToString();
@@ -1290,7 +1293,7 @@ namespace d360.web.Controllers
 					responseModel.MainTabTitle = PageNames.ScoringDefinitionsTab;
 					responseModel.Items.HasAudit = true;
 				}
-				else if (model.ObjectType == SystemObjects.Predicate.ToString())
+				else if (model.PredicateTypeUid.HasValue)
 				{
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.Predicate.ToString();
@@ -1305,6 +1308,34 @@ namespace d360.web.Controllers
 					var asset = Company.Assets.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
 					var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.ResourceID == model.ObjectId);
 					FillResponseModelForResource(asset, resource);
+				}
+			}
+
+			if (model.AssetTypeUid != null)
+			{
+				var typeClass = Company.AssetTypes.Where(x => x.uid == model.AssetTypeUid).Select(x => x.Class).FirstOrDefault();
+				if (typeClass == AssetTypeClass.Group)
+				{
+					execProcedure = false;
+					responseModel.Object = responseModel.ObjectType = SystemObjects.GroupType.ToString();
+					responseModel.ObjectID = model.ObjectId ?? 0;
+					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-B00000000012");
+					responseModel.DisplayValue = PageNames.GroupsTab;
+					responseModel.MainTabTitle = PageNames.GroupsTab;
+					responseModel.Items.HasAudit = true;
+					responseModel.Items.HasField = true;
+				}
+
+				if (typeClass == AssetTypeClass.User)
+				{
+					execProcedure = false;
+					responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
+					responseModel.ObjectID = model.ObjectId ?? 0;
+					responseModel.AssetTypeUid = responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-A00000000011");
+					responseModel.DisplayValue = PageNames.UsersPage;
+					responseModel.MainTabTitle = PageNames.UsersPage;
+					responseModel.Items.HasAudit = true;
+					responseModel.Items.HasField = true;
 				}
 			}
 
@@ -1394,7 +1425,7 @@ namespace d360.web.Controllers
 				{
 					if (responseModel.Object == "Artifact")
 					{
-						responseModel.Artifact = Company.GetPageInformation(SystemObjects.Artifact, responseModel.ObjectID);
+						responseModel.Artifact = Company.GetPageInformation(model.AssetUid.Value);
 					}
 
 					if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
@@ -1409,7 +1440,7 @@ namespace d360.web.Controllers
 					if (responseModel.Object == SystemObjects.Taxonomy.ToString() && model.PreloadData)
 					{
 						var apiCtrlr = new TaxonomyController(Set);
-						responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.ObjectTypeId);
+						responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.AssetTypeUid.Value);
 					}
 
 					var anyDiagramRelationTypes = Company.Query<bool>("select case when count(*) > 0 then 1 else 0 end from IntersectTypeDetail D where D.PredicateType = @predicateType and Subject = @ObjectType and SubjectID = @ObjectTypeId", new { responseModel.ObjectType, responseModel.ObjectTypeId, predicateType = (int)PredicateType.Diagram }).SingleOrDefault();
@@ -1498,6 +1529,7 @@ namespace d360.web.Controllers
 				responseModel.Items.HasRelationship = true;
 				responseModel.Items.HasGroups = true;
 				responseModel.Items.HasFollowing = true;
+				responseModel.AssetTypeClass = AssetTypeClass.User;
 				responseModel.Uid = asset.uid;
 			}
 		}

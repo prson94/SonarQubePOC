@@ -116,7 +116,28 @@ export class SecondaryNavPostModel {
     AssetId: number;
     AssetUid: string;
     AssetTypeUid: string;
+    IntersectTypeUid: string;
+	PredicateTypeUid?: string = null;
+	ResponsibilityTypeUid?: string = null;
     PreloadData: boolean;
     Class: AssetTypeClass;
     DisplayValue: string;
+	isScoringDefinitionPage: boolean = false;
+}
+
+export class SecondaryNavRequestModel {
+	assetUid?: any = null;
+	assetTypeUid?: string = null;
+	intersectTypeUid?: string = null;
+	predicateTypeUid?: string = null;
+	responsibilityTypeUid?: string = null;
+	objectId?: number = null;
+	objectType?: string = null;
+	assetId?: number = null;
+	buildBreadcrumbOverride?: Function = null;
+	assetClass?: AssetTypeClass = null;
+	DisplayValue?: string = null;
+	forceRefresh?: boolean = false;
+	isScoringDefinitionPage?: boolean = false;
+	isDiagramAdminPage?: boolean = false;
 }

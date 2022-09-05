@@ -66,7 +66,7 @@ namespace d360.model
 						null as Object,
 						null as uid
 				from	AssetType
-				where	ObjectID = @ID and Object ='TaxonomyType'
+				where	uid = @uid
 				union
 				select	A.ObjectID as ID, 
 						A.ID as AssetID,
@@ -82,7 +82,7 @@ namespace d360.model
 											inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 											inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 									) P
-				where   A.Type = 'TaxonomyType' and A.TypeID = @ID AND A.[State] = 1";
+				where   A.AssetTypeUid = @uid AND A.[State] = 1";
 
 		public static readonly string LookupAllocations = @"
 				SELECT	FT.Name as FieldTypeName,
@@ -281,7 +281,7 @@ namespace d360.model
 						T.Uid,
 						T.ObjectID
 				from	AssetType T 
-				where T.[object]='PolicyType' and	T.ObjectID = @id";
+				where T.Uid = @assetTypeUid";
 
 		public static readonly string RuleSettingsItem = @"
 				select	T.*,
@@ -297,7 +297,7 @@ namespace d360.model
 										where	WER.Object = T.Object
 												and WER.ObjectID = T.ObjectID
 										) Work
-				where T.[object]='RuleType' and		T.ObjectID = @id";
+				where T.uid = @uid";
 
 		public static readonly string SynonymTypes = @"
 				declare	@ot varchar(50),
@@ -464,10 +464,10 @@ namespace d360.model
 												select	IT.ID
 												from	IntersectType IT
 														inner join [Predicate] ITP on ITP.ID = IT.PredicateID and ITP.Type = 6 -- Synonym
-												where	(IT.Subject = 'TaxonomyType' and IT.SubjectID = @id) OR (IT.Object = 'TaxonomyType' and IT.ObjectID = @id)
+												where	(IT.SubjectUid = @assetTypeUid) OR (IT.ObjectUid = @assetTypeUid)
 											) O
 									) S
-				where	T.ObjectID = @id and T.Object='TaxonomyType'";
+				where	T.Uid = @assetTypeUid";
 
 		public static readonly string ShoppingCartItemList = @"
 				select 

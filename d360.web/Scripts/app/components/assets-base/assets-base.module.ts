@@ -2,11 +2,12 @@
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AssetRoutingModule } from './asset.routes';
-import { AssetComponent } from './asset.component';
+import { AssetsBaseComponent } from './assets-base.component';
+import { AssetsBaseRoutingModule } from './assets-base.routes';
 import { ArtifactModule } from '../artifact/artifact.module';
-import { HierarchyModule } from '../hierarchy/hierarchy.module';
 import { RuleModule } from '../rule/rule.module';
+import { HierarchyModule } from '../hierarchy/hierarchy.module';
+import { ReferenceModule } from '../reference/reference.module';
 
 @NgModule({
     imports: [
@@ -15,17 +16,18 @@ import { RuleModule } from '../rule/rule.module';
 
         RouterModule,
 
-		AssetRoutingModule,
+		AssetsBaseRoutingModule,
 		ArtifactModule,
+		RuleModule,
 		HierarchyModule,
-		RuleModule
+		ReferenceModule
     ],
     declarations: [        
-        AssetComponent
-    ],
+		AssetsBaseComponent
+	],
     providers: [
         
     ]
 })
 
-export class AssetModule { }
+export class AssetsBaseModule { }

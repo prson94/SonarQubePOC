@@ -199,19 +199,19 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
                     switch (menu.MenuID) {
                         case '#Business':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/BusinessAsset`;
+                            menu.ngUrl = `/assets/class/BusinessAsset`;
                             break;
                         case '#Technical':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/TechnicalAsset`;
+							menu.ngUrl = `/assets/class/TechnicalAsset`;
                             break;
                         case '#Models':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`;
+							menu.ngUrl = `/assets/class/Model`;
                             break;
                         case '#Policy':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`;
+							menu.ngUrl = `/assets/class/Policy`;
                             break;
                         case '#Data Quality':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_RULE}`;
+							menu.ngUrl = `/assets/class/Rule`;
                             break;
                         case '#Monitor':
                             menu.NavigationItems = [];
@@ -296,13 +296,12 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     getAllCounts(items, arr: any[]) {
         if (_.isString(items.Name) && _.isString(items.Url) && items.Url.indexOf('/') !== -1) {
-            //get count for item
-            var id = _.findIndex(arr, function (o) {
+			//get count for item
+			var id = _.findIndex(arr, function (o) {
                 let currentURL = items.Url.toLowerCase();
                 currentURL = items.Url.replace('model', 'taxonomy');
                 return o.Name == items.Name
-                    && _.includes(currentURL, o.Object.toLowerCase().replace('type', ''))
-                    && _.includes(currentURL, '/' + o.ObjectID);
+                    && _.includes(currentURL.toLowerCase(), o.Uid.toLowerCase());
             });
             if (id !== -1) {
                 items.count = arr[id].count;

@@ -118,13 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AllocationScoreTypeNotRecognised" xml:space="preserve">
-    <value>Allocation ScoreType not recognised.  Value {0}</value>
+    <value>[Allocation.ScoreType] not recognised.  Value {0}</value>
   </data>
   <data name="AllocationUidInvalid" xml:space="preserve">
-    <value>You must provide a valid AllocationUid.</value>
+    <value>You must provide a valid [AllocationUid].</value>
   </data>
   <data name="ConditionGroupThresholdValue" xml:space="preserve">
-    <value>Condition group in position {0} must contain a Threshold value between 0 and 1</value>
+    <value>Condition group in position {0} must contain a [Threshold] value between 0 and 1</value>
   </data>
   <data name="ConditionOperatorNotValid" xml:space="preserve">
     <value>A condition uses an operator ({0}) that is not valid for fields with a data type of {1}. </value>
@@ -184,7 +184,7 @@
     <value>You may not alter the weight of this metric without also altering its effective date.</value>
   </data>
   <data name="FieldTypeNotFound" xml:space="preserve">
-    <value>FieldType does not exist!</value>
+    <value>Field Type does not exist!</value>
   </data>
   <data name="GovernanceFieldCheck" xml:space="preserve">
     <value>Governance Field Check</value>
@@ -202,7 +202,7 @@
     <value>Instructions for External check cannot be longer than 500 characters.</value>
   </data>
   <data name="InvalidFieldTypeAsset" xml:space="preserve">
-    <value>Invalid FieldType for this asset!</value>
+    <value>Invalid Field Type for this asset!</value>
   </data>
   <data name="InvalidFieldTypeGovernanceFieldCheck" xml:space="preserve">
     <value>The field type name ({0}) used on your Governance Field Check does not exist on this asset type.</value>
@@ -241,10 +241,10 @@
     <value>Name cannot be longer than 250 characters.</value>
   </data>
   <data name="NotProvideDataQualityUnderDefinition" xml:space="preserve">
-    <value>You may not provide a DataQuality object property under Definition.</value>
+    <value>You may not provide a [DataQuality] object property under [Definition].</value>
   </data>
   <data name="NotProvideGovernanceUnderDefinition" xml:space="preserve">
-    <value>You may not provide a Governance object property under Definition.</value>
+    <value>You may not provide a [Governance] object property under [Definition].</value>
   </data>
   <data name="OneMoreValueDataQualityNotSupportDataType" xml:space="preserve">
     <value>One or more values used on your DataQuality filters are not supported by the data type ({0}) of the referenced field.</value>
@@ -268,28 +268,28 @@
     <value>Parent metric not found.</value>
   </data>
   <data name="ProvideDataQualityUnderDefinition" xml:space="preserve">
-    <value>You must provide the DataQuality object property under Definition.</value>
+    <value>You must provide the [DataQuality] object property under [Definition].</value>
   </data>
   <data name="ProvideGovernanceUnderDefinition" xml:space="preserve">
-    <value>You must provide the Governance object property under Definition.</value>
+    <value>You must provide the [Governance] object property under [Definition].</value>
   </data>
   <data name="ProvideValueForNotThresholdBasedScoring" xml:space="preserve">
-    <value>You must not provide a value for the Threshold property since the measure you are adding does not belong to a threshold-based score definition.</value>
+    <value>You must not provide a value for the [Threshold] property since the measure you are adding does not belong to a threshold-based score definition.</value>
   </data>
   <data name="ReferInvalidFieldDataQualityFilters" xml:space="preserve">
     <value>You have referenced an invalid field as part of your DataQuality filters, either because it was not found or is using an improper operator.</value>
   </data>
   <data name="ResultPathUidNotEmpty" xml:space="preserve">
-    <value>ResultPathUid may not be an empty identifier.</value>
+    <value>[ResultPathUid] may not be an empty identifier.</value>
   </data>
   <data name="ResultPathUidNotValid" xml:space="preserve">
-    <value>ResultPathUid with the specified identifier {0} does not exist or does not correspond to the asset type you are scoring.</value>
+    <value>[ResultPathUid] with the specified identifier {0} does not exist or does not correspond to the asset type you are scoring.</value>
   </data>
   <data name="ScoreDefinitionNotThresholdBased" xml:space="preserve">
-    <value>Condition group in position {0} must not provide a value for the Threshold property since the measure you are adding does not belong to a threshold-based measure.</value>
+    <value>Condition group in position {0} must not provide a value for the [Threshold] property since the measure you are adding does not belong to a threshold-based measure.</value>
   </data>
   <data name="ThresholdRangeCheck" xml:space="preserve">
-    <value>Threshold must be a value between 0 and 1</value>
+    <value>[Threshold] must be a value between 0 and 1</value>
   </data>
   <data name="UidGovernanceOwnerCheck" xml:space="preserve">
     <value>The Uid Governance Owner Check does not correspond to a known responsibility type.</value>

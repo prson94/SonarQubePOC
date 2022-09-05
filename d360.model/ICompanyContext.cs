@@ -345,7 +345,7 @@ namespace d360.model
         
         ObjectDetail GetObjectDetail(string type, long id);
         
-        ObjectStatisticTileModel GetObjectStatistics(SystemObjects type, int id);
+        ObjectStatisticTileModel GetObjectStatistics(string type, int id);
         
         AssetTypeStyle GetAssetTypeStyle(int assetTypeId);
         
@@ -355,7 +355,7 @@ namespace d360.model
         
         string GetObjectTypePath(string type, long id);
         
-        JObject GetPageInformation(SystemObjects o, int oid);
+        JObject GetPageInformation(Guid assetUid);
         
         AssetDetail GetParentObject(int id, SystemObjects obj);
         

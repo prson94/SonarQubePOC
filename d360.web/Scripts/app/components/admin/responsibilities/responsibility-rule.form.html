@@ -138,11 +138,11 @@
                             </table>
                         </div>
                         <div style="padding-top: 10px">
-                            <div *ngIf="!enableAddWhenCondition()" class="disabled-link">
+                            <div *ngIf="!isWhenValid()" class="disabled-link">
                                 <i class='fa fa-plus-circle' style="padding-right:5px;" title='{{addCheckTitle}}'></i>{{addCheckTitle}}
                             </div>
-                            <div *ngIf="enableAddWhenCondition()">
-                                <a disabled="!enableAddWhenCondition()" (click)="addWhen()"><i class='fa fa-plus-circle' style="padding-right:5px;" title='{{addCheckTitle}}'></i>{{addCheckTitle}}</a>
+                            <div *ngIf="isWhenValid()">
+                                <a (click)="addWhen()"><i class='fa fa-plus-circle' style="padding-right:5px;" title='{{addCheckTitle}}'></i>{{addCheckTitle}}</a>
                             </div>
                         </div>
                     </div>
@@ -233,11 +233,11 @@
                             </table>
                         </div>
                         <div style="padding-top: 10px">
-                            <div *ngIf="!enableAddThenCondition()" class="disabled-link">
+                            <div *ngIf="!isThenValid()" class="disabled-link">
                                 <i class='fa fa-plus-circle' style="padding-right:5px;" title='{{addCheckTitle}}'></i>{{addCheckTitle}}
                             </div>
-                            <div *ngIf="enableAddThenCondition()">
-                                <a disabled="!enableAddWhenCondition()" (click)="addThenCondition()"><i class='fa fa-plus-circle' style="padding-right:5px;" title='{{addCheckTitle}}'></i>{{addCheckTitle}}</a>
+                            <div *ngIf="isThenValid()">
+                                <a (click)="addThenCondition()"><i class='fa fa-plus-circle' style="padding-right:5px;" title='{{addCheckTitle}}'></i>{{addCheckTitle}}</a>
                             </div>
                         </div>
                     </div>

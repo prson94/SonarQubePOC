@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeleteCascadeTagRelateAsset" xml:space="preserve">
-    <value>Tag with uid '{0}' have related assets. Use cascade='true' to delete this tag!</value>
+    <value>Tag with uid '{0}' have related assets. Set [cascade] to 'true' to delete this tag!</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Invalid value [{0}] passed in the request.</value>
@@ -127,25 +127,25 @@
     <value>Invalid value [{0}] passed in the request</value>
   </data>
   <data name="InvalidPageNumber" xml:space="preserve">
-    <value>Invalid value for page number parametar!</value>
+    <value>Invalid value for [_pagenum] parametar!</value>
   </data>
   <data name="InvalidPageSize" xml:space="preserve">
-    <value>Invalid value for page size parametar!</value>
+    <value>Invalid value for [_pagesize] parametar!</value>
   </data>
   <data name="InvalidParaMeter" xml:space="preserve">
-    <value>Invalid parameters supplied. Parameter DisplayValue, AssetType, TagsasString not allowed to used when globalSearch parameter is present.</value>
+    <value>Invalid parameters supplied. Parameter [DisplayValue], [AssetType], [TagsAsString] not allowed to used when [globalSearch] parameter is present.</value>
   </data>
   <data name="InvalidSortBy" xml:space="preserve">
-    <value>Invalid sortby value provided in the request.</value>
+    <value>Invalid [sortby] value provided in the request.</value>
   </data>
   <data name="InvalidSortOrder" xml:space="preserve">
-    <value>Invalid sort order value provided in the request.</value>
+    <value>Invalid [sortorder] value provided in the request.</value>
   </data>
   <data name="InvalidTagUid" xml:space="preserve">
     <value>Invalid value [{0}] passed in the request</value>
   </data>
   <data name="Invalid_IncludeTotal" xml:space="preserve">
-    <value>Invalid value [{0}] provided for _includetotal parameter in the request.</value>
+    <value>Invalid value [{0}] provided for [_includetotal] parameter in the request.</value>
   </data>
   <data name="InvalueTotalValue" xml:space="preserve">
     <value>Invalid value [{0}] passed in the request.</value>

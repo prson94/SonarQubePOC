@@ -20,11 +20,8 @@ export class ObjectStatisticsService extends BaseObservableService {
         super(messagesService);
     }
 
-    getObjectStatistics(
-        objectID: number,
-        objectType: string
-    ): Observable<ObjectStatistics> {
-        return this.http.get(`api/${objectType}/${objectID}/object/statistics`).pipe(
+    getObjectStatistics(uid:string): Observable<ObjectStatistics> {
+		return this.http.get(`api/object/statistics/${uid}`).pipe(
             map((response) => <ObjectStatistics>response),
             catchError((err) => this.handleError(err))
         );

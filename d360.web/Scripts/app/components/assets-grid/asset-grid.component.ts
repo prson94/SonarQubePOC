@@ -659,10 +659,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
             .subscribe(res => {
                 if (this.gridObject.ObjectType == StringConstants.ObjectArtifactType) {
-                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', res.ObjectId, this.gridObject.ID);
+					this.itemUrl = SiteUrlHelpers.getAssetUrl(artifact.AssetUid);
                 }
                 else if (this.gridObject.ObjectType == StringConstants.ObjectRuleType) {
-                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Rule', res.ObjectId, this.gridObject.ID);
+					this.itemUrl = SiteUrlHelpers.getAssetUrl(artifact.AssetUid);
                 }
                 else {
                     console.warn("onRightClick => Invalid object type");
@@ -728,15 +728,15 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
             .subscribe(res => {
-                if (this.gridObject.ObjectType == StringConstants.ObjectArtifactType) {
-                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', res.ObjectId, this.gridObject.ID);
-                }
-                else if (this.gridObject.ObjectType == StringConstants.ObjectRuleType) {
-                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Rule', res.ObjectId, this.gridObject.ID);
-                }
-                else {
-                    console.warn("onRightClick => Invalid object type");
-                }
+				if (this.gridObject.ObjectType == StringConstants.ObjectArtifactType) {
+					this.itemUrl = SiteUrlHelpers.getAssetUrl(artifact.AssetUid);
+				}
+				else if (this.gridObject.ObjectType == StringConstants.ObjectRuleType) {
+					this.itemUrl = SiteUrlHelpers.getAssetUrl(artifact.AssetUid);
+				}
+				else {
+					console.warn("onRightClick => Invalid object type");
+				}
             });
 
         return false;

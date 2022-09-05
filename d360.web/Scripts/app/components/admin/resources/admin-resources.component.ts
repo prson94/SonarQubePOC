@@ -35,8 +35,8 @@ export class AdminResourcesComponent extends AdminBaseComponent implements OnIni
         this.secondaryNavService = secondaryNavService;
 
         this.setCommonItems();
-        this.setObjectInfo('ResourceType', 1);
-        this.buildSecondaryNavigationForObject(0, 'ResourceType');
+		this.setObjectInfo('ResourceType', 1);
+		this.buildSecondaryNavigation({ assetTypeUid: this.resourceTypeUid });
     }
 
     ngOnInit() {

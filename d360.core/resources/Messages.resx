@@ -136,10 +136,10 @@
     <value>One or more JSON Attribute fields reference the field you are attempting to remove.</value>
   </data>
   <data name="Error_Duplicate_Relationship_Uid" xml:space="preserve">
-    <value>Duplicate Relationship Uid identifiers : {0}. Identifiers must be unique within a batch.</value>
+    <value>Duplicate Relationship Uid identifiers : {0}. [Uid] identifiers must be unique within a batch.</value>
   </data>
   <data name="Error_Responsibility_ApplyToType_False" xml:space="preserve">
-    <value>Must use When conditions when ApplyToType value is set to false.</value>
+    <value>Must use [When] conditions when [ApplyToType] value is set to false.</value>
   </data>
   <data name="Error_Parameter_InvalidUidValue" xml:space="preserve">
     <value>Parameter '{0}' has invalid GUID value</value>
@@ -151,7 +151,7 @@
     <value>Asset Type with Uid {0} not found</value>
   </data>
   <data name="AssetTypeInvalidClass" xml:space="preserve">
-    <value>Asset Type Class invalid. Allowed classes are {0}</value>
+    <value>[Class] value invalid. Allowed classes are {0}</value>
   </data>
   <data name="AssetNotFound" xml:space="preserve">
     <value>Asset with Uid {0} not found</value>

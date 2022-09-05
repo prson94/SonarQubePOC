@@ -76,7 +76,17 @@ export class WorkflowService extends BaseObservableService {
                 map((response) => <Issue[]>response),
                 catchError((err) => this.handleError(err))
             );
-    }
+	}
+
+	getIssuesByAssetUid(uid: string): Observable<Issue[]> {
+		let url = 'services/workflow/issue/type/' + uid;
+
+		return this.http.get(url)
+			.pipe(
+				map((response) => <Issue[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
     
     updateIssue(issue: Issue, action: string, comment: string, assignTo?: string): Observable<JsonResult> {
         let headers = new HttpHeaders({

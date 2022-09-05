@@ -51,8 +51,8 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
     @Output() controlWidthChange = new EventEmitter();
     public isAdminUrl = false;
     private uri = "";
-    public notTopArtifact: boolean = true;
-    public testuri: string[] = [];
+
+	public testuri: string[] = [];
     public hasRaiseIssueButton: boolean = false;
     public showShoppingCart: boolean = false;
 
@@ -85,17 +85,6 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
         this.routerSub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
                 this.uri = _.trimStart(e.urlAfterRedirects, '/');
-                if ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT.toUpperCase())) {
-                    this.testuri = this.uri.split("/");
-                    if (this.testuri.length < 3) {
-                        this.notTopArtifact = false;
-                    } else {
-                        this.notTopArtifact = true;
-                    }
-                }
-                else {
-                    this.notTopArtifact = true;
-                }
 
                 //dont show raise issue button on raise issue screen or any admin screens or user profile           
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());

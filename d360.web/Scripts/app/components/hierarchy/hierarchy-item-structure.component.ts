@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { AssetTypeClass, AssetTypeLevelApiModel } from '../../models/asset.model';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -38,220 +38,213 @@ import { IOutputData } from 'angular-split';
 declare var CurrentResourceID;
 
 @Component({
-    selector: 'd3s-hierarchy-item-structure',
-    providers: [
-        AssetTypeService,
-        GridDefinitionService,
-        PermissionsService,
-        AssetService,
-        WebAnalyticsService,
-        DataProfileService,
-    ],
-    templateUrl: 'hierarchy-item-structure.component.html',
-    styleUrls: ['hierarchy-item-structure.component.less']
+	selector: 'd3s-hierarchy-item-structure',
+	providers: [
+		AssetTypeService,
+		GridDefinitionService,
+		PermissionsService,
+		AssetService,
+		WebAnalyticsService,
+		DataProfileService,
+	],
+	templateUrl: 'hierarchy-item-structure.component.html',
+	styleUrls: ['hierarchy-item-structure.component.less']
 })
 
 export class HierarchyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
+	@Input() assetTypeClass: AssetTypeClass;
+	@Input() assetTypeUid: string;
 
-    rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
+	rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
 
-    assetTypeClass: AssetTypeClass;
-    assetTypeUid: string;
-    objectTypeId: number;
-    object: string;
-    assetType: any;
-    type: string;
-    navFolderName: string;
-    showDiagram: boolean = false;
+	objectTypeId: number;
+	object: string;
+	assetType: any;
+	type: string;
+	navFolderName: string;
+	showDiagram: boolean = false;
 
-    levels: AssetTypeLevelApiModel[] = [];
-    maxLevelAllowed: number = 1;
-    hierarchy: any[] = [];
-    timeouthandle: any;
-    PermissionInterval: number;
+	levels: AssetTypeLevelApiModel[] = [];
+	maxLevelAllowed: number = 1;
+	hierarchy: any[] = [];
+	timeouthandle: any;
+	PermissionInterval: number;
 
-    rowID: string = 'AssetUid';
-    routeSub: any;
-    filterTimer: any;
+	rowID: string = 'AssetUid';
+	routeSub: any;
+	filterTimer: any;
 
-    selectedParentId: number;
-    treeNodeArray: TreeNode[] = [];
-    selected: TreeNode;
+	selectedParentId: number;
+	treeNodeArray: TreeNode[] = [];
+	selected: TreeNode;
 
-    columns: GridColumn[] = [];
-    fields: GridField[] = [];
-    scoreAllocations: GridScoreAllocation[] = [];
+	columns: GridColumn[] = [];
+	fields: GridField[] = [];
+	scoreAllocations: GridScoreAllocation[] = [];
 
-    searchValue: string = "";
-    showEditor: boolean;
-    showDelete: boolean;
-    selectedLevel: number = 0;
-    filterColumns: string[] = ['Path'];
-    totalRecords: number = 0;
-    totalRecordsFiltered: number = 0;
-    linkColumnIndex: number = -1;
-    readonly excludedLinkColumnTypes = [
-        'Tag',
-        'OwnershipLookup',
-        'Boolean'
-    ];
+	searchValue: string = "";
+	showEditor: boolean;
+	showDelete: boolean;
+	selectedLevel: number = 0;
+	filterColumns: string[] = ['Path'];
+	totalRecords: number = 0;
+	totalRecordsFiltered: number = 0;
+	linkColumnIndex: number = -1;
+	readonly excludedLinkColumnTypes = [
+		'Tag',
+		'OwnershipLookup',
+		'Boolean'
+	];
 
-    @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
-    @ViewChild("inputBox", { static: false }) filterText: any;
-    @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
+	@ViewChild("treeTable", { static: false }) treeTable: TreeTable;
+	@ViewChild("inputBox", { static: false }) filterText: any;
+	@ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
 	@ViewChild('assetDetail', { static: false }) assetDetail: AssetDetailComponent;
 
-    simpleFilterValue: string = '';
-    areAllExpanded: boolean = false;
-    loadNodesSub: Subscription;
+	simpleFilterValue: string = '';
+	areAllExpanded: boolean = false;
+	loadNodesSub: Subscription;
 
-    sidePanelOpen: boolean = false;
-    sidePanelLoading: boolean = false;
-    sidePanelTab: string;
-    sidePanelStorageKey: string;
+	sidePanelOpen: boolean = false;
+	sidePanelLoading: boolean = false;
+	sidePanelTab: string;
+	sidePanelStorageKey: string;
 
-    hasProfiling: boolean = false;
-    dataProfile: any;
+	hasProfiling: boolean = false;
+	dataProfile: any;
 
-    hrefSub: Subscription;
-    selectedAsset: any;
-    selectedReferenceItem: any;
-    selectedTag: any;
-    semanticType: SemanticType;
-    secondarySidePanelOpen: boolean;
+	hrefSub: Subscription;
+	selectedAsset: any;
+	selectedReferenceItem: any;
+	selectedTag: any;
+	semanticType: SemanticType;
+	secondarySidePanelOpen: boolean;
 
-    destroy = new Subject<void>();
+	destroy = new Subject<void>();
 
-    readonly menuKey: string = '~menu';
-    baseMenuItems: any[] = [
-        { title: $localize`Open` },
-        { title: $localize`Open in New Tab` },
-    ];
-    secondarySidePanel: string = "detail";
+	readonly menuKey: string = '~menu';
+	baseMenuItems: any[] = [
+		{ title: $localize`Open` },
+		{ title: $localize`Open in New Tab` },
+	];
+	secondarySidePanel: string = "detail";
 
-    resourceUid: string;
+	resourceUid: string;
 
-    constructor(
-        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
-        private assetService: AssetService,
-        public sidePanelService: SidePanelService,
-        private assetTypeService: AssetTypeService,
-        private dataProfileService: DataProfileService,
-        protected gridDefinitionService: GridDefinitionService,
-        private headerActionsService: HeaderActionsService,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService,
-        protected titleService: Title,
-        protected secondaryNavService: SecondaryNavService,
-        protected settingsService: CompanySettingsService,
-        webAnalyticsService: WebAnalyticsService,
-        private route: ActivatedRoute,
-        private router: Router,
-        private changeDetectorRef: ChangeDetectorRef,
-        private linkClickInterceptor: LinkClickInterceptor
-    ) {
-        super(settingsService);
+	constructor(
+		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
+		private assetService: AssetService,
+		public sidePanelService: SidePanelService,
+		private assetTypeService: AssetTypeService,
+		private dataProfileService: DataProfileService,
+		protected gridDefinitionService: GridDefinitionService,
+		private headerActionsService: HeaderActionsService,
+		protected headerBreadcrumbService: HeaderBreadcrumbService,
+		protected permissionsService: PermissionsService,
+		protected titleService: Title,
+		protected secondaryNavService: SecondaryNavService,
+		protected settingsService: CompanySettingsService,
+		webAnalyticsService: WebAnalyticsService,
+		private route: ActivatedRoute,
+		private router: Router,
+		private changeDetectorRef: ChangeDetectorRef,
+		private linkClickInterceptor: LinkClickInterceptor
+	) {
+		super(settingsService);
 
-        this.webAnalyticsService = webAnalyticsService;
-        this.secondaryNavService = secondaryNavService;
+		this.webAnalyticsService = webAnalyticsService;
+		this.secondaryNavService = secondaryNavService;
 
-        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-            this.linkClickInterceptor.handleEvent(this, ev);
-        });
-    }
+		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			this.linkClickInterceptor.handleEvent(this, ev);
+		});
+	}
 
-    get assetEditorTitle(): string {
-        return this.selected ? $localize`Edit Asset` : $localize`Create New Asset`;
+	get assetEditorTitle(): string {
+		return this.selected ? $localize`Edit Asset` : $localize`Create New Asset`;
 	}
 
 	get exportTooltip(): string {
 		return this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
 	}
 
-    ngOnInit() {
-        this.type = this.route.parent.snapshot.data.type;
-        switch (this.type) {
-            case SiteUrlHelpers.SITE_URL_MODEL_ROOT:
-                this.assetTypeClass = AssetTypeClass.Model;
-                this.objectType = StringConstants.ObjectTaxonomyType;
-                this.object = StringConstants.ObjectTaxonomy;
-                this.objectName = $localize`Model`;
-                this.navFolderName = '#Models';
-                this.showDiagram = true;
-                break;
-            case SiteUrlHelpers.SITE_URL_POLICY_ROOT:
-                this.assetTypeClass = AssetTypeClass.Policy;
-                this.objectType = StringConstants.ObjectPolicyType;
-                this.objectName = $localize`Policy`;
-                this.object = StringConstants.ObjectPolicy;
-                this.navFolderName = '#Policy';
-                this.showDiagram = false;
-                break;
-        }
+	ngOnInit() {
+		switch (this.assetTypeClass) {
+			case AssetTypeClass.Model:
+				this.objectType = StringConstants.ObjectTaxonomyType;
+				this.object = StringConstants.ObjectTaxonomy;
+				this.objectName = $localize`Model`;
+				this.navFolderName = '#Models';
+				this.showDiagram = true;
+				break;
+			case AssetTypeClass.Policy:
+				this.objectType = StringConstants.ObjectPolicyType;
+				this.objectName = $localize`Policy`;
+				this.object = StringConstants.ObjectPolicy;
+				this.navFolderName = '#Policy';
+				this.showDiagram = false;
+				break;
+		}
 
-        this.sidePanelStorageKey = 'list_' + AssetTypeClass[this.assetTypeClass] + '_' + CurrentResourceID;
+		this.sidePanelStorageKey = 'list_' + AssetTypeClass[this.assetTypeClass] + '_' + CurrentResourceID;
 
-        this.routeSub = this.route.params.subscribe((params) => {
-            this.objectTypeId = +params['typeId'];
-            this.assetTypeUid = params['uid'];
-            let uriParams: any = {};
-            let useUid: boolean = false;
+		let uriParams: any = {};
 
-            const obs = new Observable((observer) => {
-                if (this.assetTypeUid) {
-                    this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe((response) => {
-                        this.objectTypeId = response.ObjectID;
-                        observer.next();
-                    });
-                }
-                else {
-                    observer.next();
-                }
-            });
+		const obs = new Observable((observer) => {
+			if (this.assetTypeUid) {
+				this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe((response) => {
+					this.objectTypeId = response.ObjectID;
+					observer.next();
+				});
+			}
+			else {
+				observer.next();
+			}
+		});
 
-            obs.subscribe((r) => {
-                uriParams.obj = this.objectType;
-                uriParams.objId = this.objectTypeId;
-                uriParams.includelevels = "true";
-                uriParams.includedashboardflag = "true";
-                this.logAction("open", this.objectType, this.objectTypeId);
+		obs.subscribe((r) => {
+			uriParams.obj = this.objectType;
+			uriParams.objId = this.objectTypeId;
+			uriParams.includelevels = "true";
+			uriParams.includedashboardflag = "true";
+			this.logAction("open", this.objectType, this.objectTypeId);
 
-                this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
-                    this.assetType = result[0];
-					this.assetTypeUid = result[0].uid;
-					this.baseAssetTypeUid = this.assetTypeUid;
-                    this.uid = this.assetTypeUid;
-					this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId, this.assetTypeUid);
-                    this.levels = result[0].Levels;
-                    this.maxLevelAllowed = result[0].HierarchyMaximumDepth;
-                    this.load();
-                });
-            });
-        });
+			this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
+				this.assetType = result[0];
+				this.assetTypeUid = result[0].uid;
+				this.baseAssetTypeUid = this.assetTypeUid;
+				this.uid = this.assetTypeUid;
 
-        this.setRowsPerPage();
-        this.numberOfRowsByCategoryService.defineNumberOfRows();
-    }
+				this.levels = result[0].Levels;
+				this.maxLevelAllowed = result[0].HierarchyMaximumDepth;
+				this.load();
+			});
+		});
 
-    setRowsPerPage(): void {
-        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
-            takeUntil(this.destroy)
-        ).subscribe((rowsPerPage) => {
-            this.rowsPerPage = rowsPerPage['Main'];
-        });
-    }
 
-    ngOnDestroy() {
-        if (this.loadNodesSub) {
-            this.loadNodesSub.unsubscribe();
-        }
-        if (this.hrefSub) {
-            this.hrefSub.unsubscribe();
-        }
+		this.setRowsPerPage();
+		this.numberOfRowsByCategoryService.defineNumberOfRows();
+	}
 
-        this.destroy.next();
-        this.destroy.complete();
-    }
+	setRowsPerPage(): void {
+		this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+			takeUntil(this.destroy)
+		).subscribe((rowsPerPage) => {
+			this.rowsPerPage = rowsPerPage['Main'];
+		});
+	}
+
+	ngOnDestroy() {
+		if (this.loadNodesSub) {
+			this.loadNodesSub.unsubscribe();
+		}
+		if (this.hrefSub) {
+			this.hrefSub.unsubscribe();
+		}
+
+		this.destroy.next();
+		this.destroy.complete();
+	}
 
     getSidePanelWidth(): number {
         return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
@@ -277,27 +270,27 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			this.assetDetail.load();
 		}
 
-        if (this.selected && this.selected.data && this.selected.data.HasProfiling) {
-            this.sidePanelLoading = true;
-            this.dataProfileService.getDataProfiles(this.selected.data.AssetUid).subscribe(
-                (r) => {
-                    if (r && r.items && r.items.length > 0) {
-                        this.dataProfile = r.items[0];
+		if (this.selected && this.selected.data && this.selected.data.HasProfiling) {
+			this.sidePanelLoading = true;
+			this.dataProfileService.getDataProfiles(this.selected.data.AssetUid).subscribe(
+				(r) => {
+					if (r && r.items && r.items.length > 0) {
+						this.dataProfile = r.items[0];
 
-                        forkJoin(
-                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
-                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
-                        ).subscribe((res) => {
-                            this.dataProfile['matches'] = {
-                                structure: res[0],
-                                data: res[1]
-                            };
-                        });
-                    }
-                    this.sidePanelLoading = false;
-                });
-        }
-    }
+						forkJoin(
+							this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+							this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+						).subscribe((res) => {
+							this.dataProfile['matches'] = {
+								structure: res[0],
+								data: res[1]
+							};
+						});
+					}
+					this.sidePanelLoading = false;
+				});
+		}
+	}
 
 	positionContextMenu(
 		$event: MouseEvent, container: HTMLElement, floatMenu: PopupMenu, assetGridTools: HTMLElement
@@ -318,18 +311,18 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		return false;
 	}
 
-    get panelApplies(): boolean {
-        if (this.selected == null || this.selected.data == null || this.sidePanelTab === 'detail') {
-            return true;
-        }
-        if (this.selected != null && this.selected.data != null && this.sidePanelTab === 'dataprofile') {
-            return this.selected.data.HasProfiling;
-        }
-    }
+	get panelApplies(): boolean {
+		if (this.selected == null || this.selected.data == null || this.sidePanelTab === 'detail') {
+			return true;
+		}
+		if (this.selected != null && this.selected.data != null && this.sidePanelTab === 'dataprofile') {
+			return this.selected.data.HasProfiling;
+		}
+	}
 
 
-    clickMenuItem(menuItem: any, item: any) {
-        let key = menuItem.value.toLowerCase();
+	clickMenuItem(menuItem: any, item: any) {
+		let key = menuItem.value.toLowerCase();
 		const event = menuItem.event;
 		if (key === $localize`View Information`.toLowerCase()) {
 			event['from-context-method'] = 'info';
@@ -337,25 +330,25 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		} else if (key === $localize`Open`.toLowerCase()) {
 			event['from-context-method'] = 'open';
 			this.showHierarchy(event, item.data);
-        } else if (key === $localize`Open in New Tab`.toLowerCase()) {
+		} else if (key === $localize`Open in New Tab`.toLowerCase()) {
 			event['from-context-method'] = 'new-tab';
 			this.showHierarchy(event, item.data);
-        } else if (key === $localize`Edit`.toLowerCase()) {
-            this.selectAsset(item);
-            this.showEditor = true;
-        } else if (key === $localize`Delete`.toLowerCase()) {
-            this.selectAsset(item);
-            this.showDelete = true;
-        } else if (key === $localize`Add Child`.toLowerCase()) {
-            this.showAdd(item.data.Level, item.data.AssetUid);
+		} else if (key === $localize`Edit`.toLowerCase()) {
+			this.selectAsset(item);
+			this.showEditor = true;
+		} else if (key === $localize`Delete`.toLowerCase()) {
+			this.selectAsset(item);
+			this.showDelete = true;
+		} else if (key === $localize`Add Child`.toLowerCase()) {
+			this.showAdd(item.data.Level, item.data.AssetUid);
 
-        }
-    }
+		}
+	}
 
 
-    load() {
-        this.setObjectInfo(this.objectType, this.objectTypeId);
-        this.setCommonSecondaryNavTabs({ hasAudit: true });
+	load() {
+		this.setObjectInfo(this.objectType, this.objectTypeId);
+		this.setCommonSecondaryNavTabs({ hasAudit: true });
 
         this.getFieldsDefinition();
         this.PermissionInterval = 500;
@@ -365,307 +358,311 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.setObjectInfo(this.objectType, this.objectTypeId);
 		this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId, this.assetTypeUid);
 
-        this.searchValue = "";
-        this.buildNav();
-    }
+		this.searchValue = "";
+		this.buildNav();
+	}
 
-    async buildNav() {
-        const currentAreaName = await this.headerBreadcrumbService
-            .getAreaName(this.objectType, this.objectTypeId)
-            .toPromise();
+	async buildNav() {
+		const currentAreaName = await this.headerBreadcrumbService
+			.getAreaName(this.objectType, this.objectTypeId)
+			.toPromise();
 
-        this.headerBreadcrumbService.getFolderTitle(this.navFolderName).then((res) => {
-            this.headerBreadcrumbService.clearBreadcrumbs();
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(currentAreaName
-                 ? currentAreaName 
-                 : res, 
-                 `${this.type} /${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
-                 ));
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.objectType, this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
+		this.headerBreadcrumbService.getFolderTitle(this.navFolderName).then((res) => {
+			this.headerBreadcrumbService.clearBreadcrumbs();
+			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(currentAreaName ? currentAreaName : res,
+				`/${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/Model`,
+				null,
+				this.objectType,
+				this.objectTypeId,
+				null,
+				null,
+				true
+			));
+			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
 
-            this.headerBreadcrumbService.getAssetFolderIcon(this.objectType, this.objectTypeId, currentAreaName ? currentAreaName : res)
-                .subscribe((icon) => {
-                    this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, this.objectName);
+			this.headerBreadcrumbService.getAssetFolderIcon(this.objectType, this.objectTypeId, currentAreaName ? currentAreaName : res)
+				.subscribe((icon) => {
+					this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, this.objectName);
 
-                    this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
-                    this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
+					this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
+					this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
 
-                    if (this.showDiagram) {
-                        this.secondaryNavService.showItem(new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7));
-                    }
+					if (this.showDiagram) {
+						this.secondaryNavService.showItem(new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/assets/${this.baseAssetTypeUid}/diagrams`, null, 7));
+					}
 
-                    if (this.auditSidebar) {
-                        this.auditSidebar.url = `/sidebar/audit/${this.assetType.uid}`;
-                    }
+					if (this.auditSidebar) {
+						this.auditSidebar.url = `/assets/${this.baseAssetTypeUid}/log`;
+					}
 
-                    this.secondaryNavService.showHeader(true);
-                });
+					this.secondaryNavService.showHeader(true);
+				});
 
-            this.setBrowserTitle(this.titleService, this.assetType.Name);
-        });
-    }
+			this.setBrowserTitle(this.titleService, this.assetType.Name);
+		});
+	}
 
-    private getFieldsDefinition() {
-        this.gridDefinitionService.getGridDefinition(this.objectTypeId, this.objectType).subscribe(
-            (result) => {
-                this.scoreAllocations = result.ScoreAllocations;
-                this.columns = result.Columns;
-                this.fields = result.Fields;
-                var filterfields = this.fields.filter(function (item) { return item.apiName && item.name.startsWith("Field"); });
-                this.filterColumns = this.filterColumns.concat(filterfields.map(({ name }) => name));
+	private getFieldsDefinition() {
+		this.gridDefinitionService.getGridDefinition(this.objectTypeId, this.objectType).subscribe(
+			(result) => {
+				this.scoreAllocations = result.ScoreAllocations;
+				this.columns = result.Columns;
+				this.fields = result.Fields;
+				var filterfields = this.fields.filter(function (item) { return item.apiName && item.name.startsWith("Field"); });
+				this.filterColumns = this.filterColumns.concat(filterfields.map(({ name }) => name));
 
-                for (let i = 0; i < this.columns.length; i++) {
-                    if (this.excludedLinkColumnTypes.findIndex((e) => e === (this.columns[i] as any).fieldType) === -1) {
-                        this.linkColumnIndex = i;
-                        break;
-                    }
-                }
-            }
-        );
-    }
+				for (let i = 0; i < this.columns.length; i++) {
+					if (this.excludedLinkColumnTypes.findIndex((e) => e === (this.columns[i] as any).fieldType) === -1) {
+						this.linkColumnIndex = i;
+						break;
+					}
+				}
+			}
+		);
+	}
 
-    private buildTreeNodeArray(hierarchies: any[], levelNumber: number, Parent?: string): TreeNode[] {
-        let rootNodes = hierarchies.filter((x) => (Parent !== undefined ? x.ParentAssetUid === Parent : !x.ParentAssetUid));
+	private buildTreeNodeArray(hierarchies: any[], levelNumber: number, Parent?: string): TreeNode[] {
+		let rootNodes = hierarchies.filter((x) => (Parent !== undefined ? x.ParentAssetUid === Parent : !x.ParentAssetUid));
 
-        if (rootNodes.length === 0) {
-            return null;
-        }
+		if (rootNodes.length === 0) {
+			return null;
+		}
 
-        let res: TreeNode[] = [];
+		let res: TreeNode[] = [];
 
 
-        for (let root of rootNodes) {
-            let isExpanded = this.expandedNodes.indexOf(root.AssetUid) !== -1 || this.areAllExpanded;
-            root.Level = levelNumber;
+		for (let root of rootNodes) {
+			let isExpanded = this.expandedNodes.indexOf(root.AssetUid) !== -1 || this.areAllExpanded;
+			root.Level = levelNumber;
 
-            root[this.menuKey] = [
+			root[this.menuKey] = [
 				{ title: $localize`View Information` },
 				{ title: $localize`Open` },
-                { title: $localize`Open in New Tab` },
-            ];
+				{ title: $localize`Open in New Tab` },
+			];
 
-            if (this.displayChildAdd(levelNumber) && this.hasAddAssetPermissions()) {
-                root[this.menuKey].push({ title: $localize`Add Child` });
-            }
+			if (this.displayChildAdd(levelNumber) && this.hasAddAssetPermissions()) {
+				root[this.menuKey].push({ title: $localize`Add Child` });
+			}
 
-            if (root.Permissions.ModifyAsset) {
-                root[this.menuKey].push({ title: $localize`Edit` });
-            }
+			if (root.Permissions.ModifyAsset) {
+				root[this.menuKey].push({ title: $localize`Edit` });
+			}
 
-            let children = (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.AssetUid));
+			let children = (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.AssetUid));
 
-            if (root.Permissions.DeleteAsset && (!children || children?.length === 0)) {
-                root[this.menuKey].push({ title: $localize`Delete` });
-            }
+			if (root.Permissions.DeleteAsset && (!children || children?.length === 0)) {
+				root[this.menuKey].push({ title: $localize`Delete` });
+			}
 
-            res.push({
-                key: root.AssetUid,
-                label: root.Path,
-                expanded: isExpanded,
-                data: root,
-                children
-            });
-        }
-        return res;
-    }
+			res.push({
+				key: root.AssetUid,
+				label: root.Path,
+				expanded: isExpanded,
+				data: root,
+				children
+			});
+		}
+		return res;
+	}
 
-    private buildScoreAllocationThresholds() {
-        if (this.scoreAllocations && this.scoreAllocations.length > 0) {
-            if (this.hierarchy) {
-                this.hierarchy.forEach((i) => {
-                    this.scoreAllocations.forEach((s) => {
-                        var field = this.fields.find(f => f.apiName == s.Name);
-                        if (field) {
-                            i[field.apiName + '_threshold'] = this.getThreshold(i[field.apiName], s.LowerThreshold, s.UpperThreshold);
-                        }
-                    });
-                });
-            }
-        }
-    }
+	private buildScoreAllocationThresholds() {
+		if (this.scoreAllocations && this.scoreAllocations.length > 0) {
+			if (this.hierarchy) {
+				this.hierarchy.forEach((i) => {
+					this.scoreAllocations.forEach((s) => {
+						var field = this.fields.find(f => f.apiName == s.Name);
+						if (field) {
+							i[field.apiName + '_threshold'] = this.getThreshold(i[field.apiName], s.LowerThreshold, s.UpperThreshold);
+						}
+					});
+				});
+			}
+		}
+	}
 
-    public onDeleted() {
-        this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
-        this.deleteSelectedTreeNode(this.selected.data.AssetUid);
-        this.hierarchy = this.hierarchy.filter((x) => x.AssetUid !== this.selected.data.AssetUid);
-        this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
+	public onDeleted() {
+		this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
+		this.deleteSelectedTreeNode(this.selected.data.AssetUid);
+		this.hierarchy = this.hierarchy.filter((x) => x.AssetUid !== this.selected.data.AssetUid);
+		this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
 
-        this.selected = null;
-        this.selectedLevel = null;
-        this.selectedParentId = null;
-        this.showDelete = false;
-        this.isLoading = false;
-    }
+		this.selected = null;
+		this.selectedLevel = null;
+		this.selectedParentId = null;
+		this.showDelete = false;
+		this.isLoading = false;
+	}
 
-    private deleteSelectedTreeNode(id: number): TreeNode {
-        let nodes: TreeNode[] = [];
+	private deleteSelectedTreeNode(id: number): TreeNode {
+		let nodes: TreeNode[] = [];
 
-        // add root nodes
-        for (let i = 0; i < this.treeNodeArray.length; i++) {
-            if (this.treeNodeArray[i].data.AssetUid && this.treeNodeArray[i].data.AssetUid === id) {
-                this.treeNodeArray.splice(i, 1);
-                return;
-            }
-            nodes.push(this.treeNodeArray[i]);
-        }
+		// add root nodes
+		for (let i = 0; i < this.treeNodeArray.length; i++) {
+			if (this.treeNodeArray[i].data.AssetUid && this.treeNodeArray[i].data.AssetUid === id) {
+				this.treeNodeArray.splice(i, 1);
+				return;
+			}
+			nodes.push(this.treeNodeArray[i]);
+		}
 
-        //do a breadth first search for the given treenode
-        if (nodes.length == 0) {
-            return;
-        }
+		//do a breadth first search for the given treenode
+		if (nodes.length == 0) {
+			return;
+		}
 
-        let node = nodes[0];
+		let node = nodes[0];
 
-        while (node) {
-            if (node.data.AssetUid && node.data.AssetUid === id) {
-                return node;
-            }
+		while (node) {
+			if (node.data.AssetUid && node.data.AssetUid === id) {
+				return node;
+			}
 
-            //push children
-            if (node.children) {
-                for (let i = 0; i < node.children.length; i++) {
-                    if (node.children[i].data.AssetUid && node.children[i].data.AssetUid == id) {
-                        node.children.splice(i, 1);
-                        return;
-                    }
-                    nodes.push(node.children[i]);
-                }
-            }
+			//push children
+			if (node.children) {
+				for (let i = 0; i < node.children.length; i++) {
+					if (node.children[i].data.AssetUid && node.children[i].data.AssetUid == id) {
+						node.children.splice(i, 1);
+						return;
+					}
+					nodes.push(node.children[i]);
+				}
+			}
 
-            //remove this node
-            nodes.splice(0, 1);
+			//remove this node
+			nodes.splice(0, 1);
 
-            if (nodes.length == 0) {
-                return null;
-            }
-            node = nodes[0];
-        }
-    }
+			if (nodes.length == 0) {
+				return null;
+			}
+			node = nodes[0];
+		}
+	}
 
-    private save($event) {
-        if ($event && $event.addAnother) {
-            this.showAdd(this.selectedLevel, this.selectedParentId);
-            this.loadNodes(false);
-        }
-        else if ($event && $event.action === 'new') {
-            var newUrl = '/asset/' + $event.assetUid;
-            this.router.navigateByUrl(newUrl);
-        }
-        else {
-            this.showEditor = false;
-            this.loadNodes(true, { keyFieldChanged: $event.keyFieldChanged });
-            this.headerActionsService.emitFavoritesChange();
-            this.isLoading = false;
-        }
-        this.changeDetectorRef.markForCheck();
+	private save($event) {
+		if ($event && $event.addAnother) {
+			this.showAdd(this.selectedLevel, this.selectedParentId);
+			this.loadNodes(false);
+		}
+		else if ($event && $event.action === 'new') {
+			var newUrl = '/asset/' + $event.assetUid;
+			this.router.navigateByUrl(newUrl);
+		}
+		else {
+			this.showEditor = false;
+			this.loadNodes(true, { keyFieldChanged: $event.keyFieldChanged });
+			this.headerActionsService.emitFavoritesChange();
+			this.isLoading = false;
+		}
+		this.changeDetectorRef.markForCheck();
 
-    }
+	}
 
-    private closeEditor() {
-        this.showEditor = false;
-        this.selected = null;
-        this.selectedLevel = null;
-        this.selectedParentId = null;
+	private closeEditor() {
+		this.showEditor = false;
+		this.selected = null;
+		this.selectedLevel = null;
+		this.selectedParentId = null;
 
-    }
+	}
 
-    private exportExcel(level: number) {
-        var params = new V2ApiFilters();
-        params._onlyListableFields = false;
-        params._direction = this.treeTable._sortOrder == 1 ? 'ASC' : 'DESC';
-        if (this.treeTable._sortField != undefined) {
-            var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
-            params._order = field["apiName"];
-        }
-        else {
-            params.useTypeLevelDefaultSorts = true;
-            delete params._order;
-        }
+	private exportExcel(level: number) {
+		var params = new V2ApiFilters();
+		params._onlyListableFields = false;
+		params._direction = this.treeTable._sortOrder == 1 ? 'ASC' : 'DESC';
+		if (this.treeTable._sortField != undefined) {
+			var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
+			params._order = field["apiName"];
+		}
+		else {
+			params.useTypeLevelDefaultSorts = true;
+			delete params._order;
+		}
 
-        if (this.simpleFilterValue) {
-            params["_simpleFilter"] = "*" + this.simpleFilterValue;
-            this.areAllExpanded = true;
-        }
+		if (this.simpleFilterValue) {
+			params["_simpleFilter"] = "*" + this.simpleFilterValue;
+			this.areAllExpanded = true;
+		}
 
-        if (this.newAdvancedFilters && this.newAdvancedFilters.filter) {
-            params["_filter"] = this.newAdvancedFilters.filter;
-            this.areAllExpanded = true;
-        }
+		if (this.newAdvancedFilters && this.newAdvancedFilters.filter) {
+			params["_filter"] = this.newAdvancedFilters.filter;
+			this.areAllExpanded = true;
+		}
 
-        params["isForTreeGrid"] = true;
+		params["isForTreeGrid"] = true;
 
-        params._isHierachyItem = true;
-        this.isLoading = true;
-        this.assetService.downloadAssetsExcel(this.assetTypeUid, params, 'Filtered ' + this.assetType.Name, () => { this.isLoading = false; });
-    }
+		params._isHierachyItem = true;
+		this.isLoading = true;
+		this.assetService.downloadAssetsExcel(this.assetTypeUid, params, 'Filtered ' + this.assetType.Name, () => { this.isLoading = false; });
+	}
 
-    private showAdd(level: number, parentId: number) {
-        this.selectedParentId = parentId;
-        this.selectedLevel = level;
-        this.selected = null;
-        this.showEditor = true;
-        //reload dynamic editor if it already exists to trigger change detection
-        if (this.dynamicEditor) {
-            this.dynamicEditor.load();
-        }
-    }
+	private showAdd(level: number, parentId: number) {
+		this.selectedParentId = parentId;
+		this.selectedLevel = level;
+		this.selected = null;
+		this.showEditor = true;
+		//reload dynamic editor if it already exists to trigger change detection
+		if (this.dynamicEditor) {
+			this.dynamicEditor.load();
+		}
+	}
 
-    private displayChildAdd(level: number) {
-        return (level < this.maxLevelAllowed);
-    }
+	private displayChildAdd(level: number) {
+		return (level < this.maxLevelAllowed);
+	}
 
-    setTreeNodeStyles(node) {
-        if (!node.data) return null;
+	setTreeNodeStyles(node) {
+		if (!node.data) return null;
 
-        let styles = {
-            'font-weight': node.data.hasRelations ? 'bold' : 'normal',
-        };
-        return styles;
-    }
+		let styles = {
+			'font-weight': node.data.hasRelations ? 'bold' : 'normal',
+		};
+		return styles;
+	}
 
-    get assetTypeTitle(): string {
-        if (this.levels == null) {
-            return $localize`(Level Unknown Item)`;
-        }
+	get assetTypeTitle(): string {
+		if (this.levels == null) {
+			return $localize`(Level Unknown Item)`;
+		}
 
-        if (!this.selected) {
-            let thisLevel = this.levels.filter(x => x.Level == this.selectedLevel + 1);
+		if (!this.selected) {
+			let thisLevel = this.levels.filter(x => x.Level == this.selectedLevel + 1);
 
-            if (thisLevel && thisLevel.length > 0)
-                return thisLevel[0].Name;
-            else
-                return $localize`(Level ${this.selectedLevel + 1}) Item`;
-        }
+			if (thisLevel && thisLevel.length > 0)
+				return thisLevel[0].Name;
+			else
+				return $localize`(Level ${this.selectedLevel + 1}) Item`;
+		}
 
-        let thisLevel = this.levels.filter(x => x.Level == this.selected.data.Level);
+		let thisLevel = this.levels.filter(x => x.Level == this.selected.data.Level);
 
-        if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
-        return $localize`(Level ${this.selected.data.Level}) Item`;
-    }
+		if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
+		return $localize`(Level ${this.selected.data.Level}) Item`;
+	}
 
-    getThreshold(value: string, lower: number, upper: number): string {
-        if (value == null || value.length < 1)
-            return '';
-        if (value.indexOf('%') > -1) {
-            value = value.replace('%', '');
-        }
-        if (isNaN(+value))
-            return '';
+	getThreshold(value: string, lower: number, upper: number): string {
+		if (value == null || value.length < 1)
+			return '';
+		if (value.indexOf('%') > -1) {
+			value = value.replace('%', '');
+		}
+		if (isNaN(+value))
+			return '';
 
-        let v = +value;
+		let v = +value;
 
-        if (v <= lower)
-            return 'poor';
-        else if (v > lower && v <= upper)
-            return 'average';
-        else
-            return 'good';
-    }
+		if (v <= lower)
+			return 'poor';
+		else if (v > lower && v <= upper)
+			return 'average';
+		else
+			return 'good';
+	}
 
 	showHierarchy($event, asset) {
-        this.assetService.getUIDetailsForAssetUID(asset.AssetUid)
-            .subscribe((res) => {
-                let url = SiteUrlHelpers.getObjectUrl(this.object, res.ObjectId, this.objectTypeId);
+		this.assetService.getUIDetailsForAssetUID(asset.AssetUid)
+			.subscribe((res) => {
+				let url = SiteUrlHelpers.getAssetUrl(asset.AssetUid);
 				if ($event['from-context-method']) {
 					this.linkClickInterceptor.sendEvent($event, {
 						Values: [{
@@ -681,101 +678,101 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				} else {
 					this.router.navigateByUrl(url);
 				}
-            });
-    }
+			});
+	}
 
-    private expandNodes() {
-        if (this.treeTable.filters["global"]) { // only expand if global filter populated.
-            this.totalRecordsFiltered = 0;
-            this.totalRecordsFiltered = this.treeTable.filteredNodes ? this.treeTable.filteredNodes.length : 0;
-            this.expandChildNodes(this.treeTable.filteredNodes, this.treeTable.globalFilterFields, this.treeTable.filters["global"].value);
-        }
-    }
+	private expandNodes() {
+		if (this.treeTable.filters["global"]) { // only expand if global filter populated.
+			this.totalRecordsFiltered = 0;
+			this.totalRecordsFiltered = this.treeTable.filteredNodes ? this.treeTable.filteredNodes.length : 0;
+			this.expandChildNodes(this.treeTable.filteredNodes, this.treeTable.globalFilterFields, this.treeTable.filters["global"].value);
+		}
+	}
 
-    private expandChildNodes(nodes: TreeNode[], fields: string[], search: string) {
-        nodes.forEach((node) => {
-            var match = false;
-            fields.forEach((field) => { if (node.data[field] && String(node.data[field]).toLowerCase().includes(search.toLowerCase())) { match = true; } }); //check each of the global filterfields for filter value
-            if (!match) { // if we haven't found a match expand the node and check children.
-                node.expanded = true;
-                if (node.children && node.children.length > 0) {
-                    this.totalRecordsFiltered = this.totalRecordsFiltered + node.children.length;
-                    this.expandChildNodes(node.children, fields, search);
-                }
-            }
-            else { // if matched then count number of child and futher child
-                if (node.children && node.children.length > 0) {
-                    this.totalRecordsFiltered = this.totalRecordsFiltered + node.children.length;
-                    this.expandChildNodesCount(node.children);
-                }
-            }
-        }
-        );
-    }
+	private expandChildNodes(nodes: TreeNode[], fields: string[], search: string) {
+		nodes.forEach((node) => {
+			var match = false;
+			fields.forEach((field) => { if (node.data[field] && String(node.data[field]).toLowerCase().includes(search.toLowerCase())) { match = true; } }); //check each of the global filterfields for filter value
+			if (!match) { // if we haven't found a match expand the node and check children.
+				node.expanded = true;
+				if (node.children && node.children.length > 0) {
+					this.totalRecordsFiltered = this.totalRecordsFiltered + node.children.length;
+					this.expandChildNodes(node.children, fields, search);
+				}
+			}
+			else { // if matched then count number of child and futher child
+				if (node.children && node.children.length > 0) {
+					this.totalRecordsFiltered = this.totalRecordsFiltered + node.children.length;
+					this.expandChildNodesCount(node.children);
+				}
+			}
+		}
+		);
+	}
 
-    private expandChildNodesCount(nodes: TreeNode[]) {
-        nodes.forEach((node) => {
-            if (node.children && node.children.length > 0) {
-                this.totalRecordsFiltered = this.totalRecordsFiltered + node.children.length;
-                this.expandChildNodesCount(node.children);
-            }
-        }
-        );
-    }
+	private expandChildNodesCount(nodes: TreeNode[]) {
+		nodes.forEach((node) => {
+			if (node.children && node.children.length > 0) {
+				this.totalRecordsFiltered = this.totalRecordsFiltered + node.children.length;
+				this.expandChildNodesCount(node.children);
+			}
+		}
+		);
+	}
 
-    onSort() {
-        setTimeout(() => this.loadNodes(), 20);
-    }
+	onSort() {
+		setTimeout(() => this.loadNodes(), 20);
+	}
 
-    loadNodes(autoSelect: boolean = true, edit?: { keyFieldChanged: boolean }) {
-        this.expandedNodes = this.treeState;
-        this.areAllExpanded = false;
-        if (this.assetTypeUid) {
-            this.isLoading = true;
+	loadNodes(autoSelect: boolean = true, edit?: { keyFieldChanged: boolean }) {
+		this.expandedNodes = this.treeState;
+		this.areAllExpanded = false;
+		if (this.assetTypeUid) {
+			this.isLoading = true;
 
-            if (this.loadNodesSub) {
-                this.loadNodesSub.unsubscribe();
-            }
+			if (this.loadNodesSub) {
+				this.loadNodesSub.unsubscribe();
+			}
 
-            let uriParams: any = {
-                _pageSize: 50000,
-                _includeParent: "true",
-                _pageNum: 1,
-                _loadPermissionDetails: "true",
-                _listColorsAsJSON: "true",
-                isForTreeGrid: true
-            };
+			let uriParams: any = {
+				_pageSize: 50000,
+				_includeParent: "true",
+				_pageNum: 1,
+				_loadPermissionDetails: "true",
+				_listColorsAsJSON: "true",
+				isForTreeGrid: true
+			};
 
-            if (this.treeTable) {
-                uriParams._direction = this.treeTable._sortOrder === 1 ? 'ASC' : 'DESC';
-            }
-            if (this.treeTable && this.treeTable._sortField && this.treeTable._sortField !== "") {
-                var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
-                uriParams._order = field["apiName"];
-            }
-            else {
-                uriParams.useTypeLevelDefaultSorts = true;
-                delete uriParams._order;
-            }
+			if (this.treeTable) {
+				uriParams._direction = this.treeTable._sortOrder === 1 ? 'ASC' : 'DESC';
+			}
+			if (this.treeTable && this.treeTable._sortField && this.treeTable._sortField !== "") {
+				var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
+				uriParams._order = field["apiName"];
+			}
+			else {
+				uriParams.useTypeLevelDefaultSorts = true;
+				delete uriParams._order;
+			}
 
-            if (this.simpleFilterValue) {
-                uriParams["_simpleFilter"] = "*" + this.simpleFilterValue;
-                this.areAllExpanded = true;
-            }
+			if (this.simpleFilterValue) {
+				uriParams["_simpleFilter"] = "*" + this.simpleFilterValue;
+				this.areAllExpanded = true;
+			}
 
-            if (this.newAdvancedFilters && this.newAdvancedFilters.filter) {
-                uriParams["_filter"] = this.newAdvancedFilters.filter;
-                this.areAllExpanded = true;
-            }
+			if (this.newAdvancedFilters && this.newAdvancedFilters.filter) {
+				uriParams["_filter"] = this.newAdvancedFilters.filter;
+				this.areAllExpanded = true;
+			}
 
-            this.loadNodesSub = this.assetService.getAssets(this.assetTypeUid, uriParams, true).subscribe((result) => {
-                this.totalRecords += result.total;
-                this.hierarchy = result.items;
+			this.loadNodesSub = this.assetService.getAssets(this.assetTypeUid, uriParams, true).subscribe((result) => {
+				this.totalRecords += result.total;
+				this.hierarchy = result.items;
 
-                if (this.hierarchy.length !== 0) {
-                    clearTimeout(this.timeouthandle);
-                    this.timeouthandle = window.setTimeout(() => {
-                        this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
+				if (this.hierarchy.length !== 0) {
+					clearTimeout(this.timeouthandle);
+					this.timeouthandle = window.setTimeout(() => {
+						this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
 						if (autoSelect) {
 							if (this.treeNodeArray.length > 0) {
 								if (this.selected && edit && !edit.keyFieldChanged) {
@@ -791,21 +788,21 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 							} else {
 								this.selectAsset(null);
 							}
-                        }
-                        this.buildScoreAllocationThresholds();
-                        this.isLoading = false;
-                    }, this.PermissionInterval);
-                }
-                else {
-                    this.treeNodeArray = [];
-                    this.selectAsset(null);
-                    this.isLoading = false;
-                }
+						}
+						this.buildScoreAllocationThresholds();
+						this.isLoading = false;
+					}, this.PermissionInterval);
+				}
+				else {
+					this.treeNodeArray = [];
+					this.selectAsset(null);
+					this.isLoading = false;
+				}
 
-            });
-        }
-    }
-	
+			});
+		}
+	}
+
 	findAssetInTree(tree: TreeNode[], assetUid: string): TreeNode {
 		if (!tree) { return; }
 
@@ -820,89 +817,89 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		}
 	}
 
-    canExportRecords() {
-        var isfilter = false;
+	canExportRecords() {
+		var isfilter = false;
 
-        if (this.treeTable != null) {
-            if (this.treeTable.filters != null) {
-                if (this.treeTable.filters["global"]) {
-                    isfilter = true;
-                }
-            }
-        }
+		if (this.treeTable != null) {
+			if (this.treeTable.filters != null) {
+				if (this.treeTable.filters["global"]) {
+					isfilter = true;
+				}
+			}
+		}
 
-        if (isfilter) {
-            return this.totalRecordsFiltered <= this.maxExportRows;
-        }
-        else {
-            return this.totalRecords <= this.maxExportRows;
-        }
-    }
+		if (isfilter) {
+			return this.totalRecordsFiltered <= this.maxExportRows;
+		}
+		else {
+			return this.totalRecords <= this.maxExportRows;
+		}
+	}
 
-    newAdvancedFilters: Filters;
-    advancedFiltersChanged($event) {
-        this.newAdvancedFilters = $event;
-        this.loadNodes();
-    }
+	newAdvancedFilters: Filters;
+	advancedFiltersChanged($event) {
+		this.newAdvancedFilters = $event;
+		this.loadNodes();
+	}
 
-    onFiltersLoaded() {
-        this.loadNodes();
-    }
+	onFiltersLoaded() {
+		this.loadNodes();
+	}
 
-    expandedNodes: string[] = [];
-    nodeExpanded($event) {
-        this.expandedNodes.push($event.node.key);
-        this.saveTreeState();
-    }
-    nodeCollapsed($event) {
-        var idx = this.expandedNodes.indexOf($event.node.key);
-        if (idx !== -1) {
-            this.expandedNodes.splice(idx, 1);
-        }
-        this.saveTreeState();
-    }
+	expandedNodes: string[] = [];
+	nodeExpanded($event) {
+		this.expandedNodes.push($event.node.key);
+		this.saveTreeState();
+	}
+	nodeCollapsed($event) {
+		var idx = this.expandedNodes.indexOf($event.node.key);
+		if (idx !== -1) {
+			this.expandedNodes.splice(idx, 1);
+		}
+		this.saveTreeState();
+	}
 
-    saveTreeState() {
-        localStorage.setItem(this.getNodesStateKey, JSON.stringify(this.expandedNodes));
-    }
+	saveTreeState() {
+		localStorage.setItem(this.getNodesStateKey, JSON.stringify(this.expandedNodes));
+	}
 
-    get treeState(): string[] {
-        var loadedData = localStorage.getItem(this.getNodesStateKey);
-        if (!loadedData) {
-            return [];
-        }
-        else {
-            return JSON.parse(loadedData) as string[];
-        }
-    }
+	get treeState(): string[] {
+		var loadedData = localStorage.getItem(this.getNodesStateKey);
+		if (!loadedData) {
+			return [];
+		}
+		else {
+			return JSON.parse(loadedData) as string[];
+		}
+	}
 
-    get getNodesStateKey() {
-        return "nodeState_" + this.assetTypeUid;
-    }
+	get getNodesStateKey() {
+		return "nodeState_" + this.assetTypeUid;
+	}
 
-    getAssetPath() {
-        if (this.selected && this.selected?.data?.Path) {
-            let path = this.selected.data.Path as string;
-            path = path.substring(1, path.length - 1);
-            path = path.split("].[").join(` > `);
-            return this.assetType?.Path + ' > ' + path;
-        }
-        return this.assetType?.Path;
-    }
+	getAssetPath() {
+		if (this.selected && this.selected?.data?.Path) {
+			let path = this.selected.data.Path as string;
+			path = path.substring(1, path.length - 1);
+			path = path.split("].[").join(` > `);
+			return this.assetType?.Path + ' > ' + path;
+		}
+		return this.assetType?.Path;
+	}
 
-    secondaryPanelOpen(event: any) {
-        this.secondarySidePanelOpen = true;
-        if (event) {
-            if (event.resourceUid) {
-                this.secondarySidePanel = "user";
-                this.resourceUid = event.resourceUid;
-            }
-            if (event.semanticType) {
-                this.secondarySidePanel = "detail";
-                this.semanticType = event.semanticType;
-            }
-        } else {
-            this.secondarySidePanel = "status";
-        }
-    }
+	secondaryPanelOpen(event: any) {
+		this.secondarySidePanelOpen = true;
+		if (event) {
+			if (event.resourceUid) {
+				this.secondarySidePanel = "user";
+				this.resourceUid = event.resourceUid;
+			}
+			if (event.semanticType) {
+				this.secondarySidePanel = "detail";
+				this.semanticType = event.semanticType;
+			}
+		} else {
+			this.secondarySidePanel = "status";
+		}
+	}
 }

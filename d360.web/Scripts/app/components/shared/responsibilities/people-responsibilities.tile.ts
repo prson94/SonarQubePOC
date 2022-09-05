@@ -42,7 +42,6 @@ import { CompanySettingsService } from "../../../services/settings.service";
 })
 
 export class PeopleResponsibilitiesTile extends BaseComponent implements OnChanges {
-    @Input() assetID: number;
     @Input() assetUid: string;
     @Input() overrideItemID: number;
     @Input() title: string = "Responsibilities";
@@ -109,7 +108,10 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
                 this.ref.markForCheck();
             });
 
-        this.loadPermissionsById(this.permissionsService, this.assetID);
+		this.permissionsService.getAssetPermissions(this.assetUid)
+			.subscribe((p) => {
+			this.objectPermission = p;
+		});
     }
 
     edit(item): void {  

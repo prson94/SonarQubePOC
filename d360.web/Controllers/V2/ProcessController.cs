@@ -595,7 +595,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			Guid baseAssetUid = Company.Query<Guid>(@"select top 1 diagramassetuid from processexpandeddata where fromuid = @assetUid or touid = @assetUid", new { assetUid }).FirstOrDefault();
-			string url = $"sidebar/visualization/browser/{baseAssetUid.ToString()}/Process/{assetUid}";
+			string url = $"asset/{baseAssetUid.ToString()}/diagrams/Process/{assetUid}";
 			
 			return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, url))).ConfigureAwait(false);
 		}

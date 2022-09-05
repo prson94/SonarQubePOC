@@ -50,8 +50,8 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
         this.tabTitle = StringConstants.Section_Scoring;
         this.setCommonItems();
         this.selection = new ScoreTypeAllocation();
-        this.selection.scoreType = ScoreType.Governance;
-        this.buildSecondaryNavigationForObject(0, 'MetricAllocation');
+		this.selection.scoreType = ScoreType.Governance;
+		this.buildSecondaryNavigation({ isScoringDefinitionPage: true });
     }
 
     ngOnInit() {

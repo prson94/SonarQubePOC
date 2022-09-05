@@ -502,7 +502,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private setSelectedButton(scoreType: ScoreType) {
         scoreType = <any>ScoreType[scoreType];
         if (this.selectedScoreType !== scoreType) {
-            this.router.navigateByUrl(`/sidebar/score/${this.uid}/${scoreType}`);
+            this.router.navigateByUrl(`/asset/${this.uid}/score/${scoreType}`);
         }
     }
 

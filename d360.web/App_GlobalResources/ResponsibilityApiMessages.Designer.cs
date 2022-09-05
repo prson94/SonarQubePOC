@@ -19,7 +19,7 @@ namespace Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class ResponsibilityApiMessages {
@@ -106,7 +106,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to In order to use the _assigneeuid filter the _assetTypeUid or _assetUid filter must also be specified..
+        ///   Looks up a localized string similar to In order to use the [_assigneeuid] filter the [_assetTypeUid] or [_assetUid] filter must also be specified..
         /// </summary>
         public static string assigneeUidFilterValidation {
             get {
@@ -124,7 +124,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid AssetTypeClass. [{0}] is not valid..
+        ///   Looks up a localized string similar to Invalid [AssetTypeClass]. [{0}] is not valid..
         /// </summary>
         public static string InvalidAssetTypeClass {
             get {
@@ -151,7 +151,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have not provided a valid ResponsibilityType uid for this request..
+        ///   Looks up a localized string similar to You have not provided a valid Responsibility type uid for this request..
         /// </summary>
         public static string InvalidResponsibilityUid {
             get {

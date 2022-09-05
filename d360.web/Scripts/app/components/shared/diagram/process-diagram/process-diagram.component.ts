@@ -18,6 +18,8 @@ import { Location } from '@angular/common';
 import { ProcessDiagramListViewComponent } from './process-diagram-list-view.component';
 import { AssetBrowserOverviewComponent } from '../assetbrowser/tools/overview.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
+import { SidePanelService } from '../../../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -52,6 +54,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     myGatewayPallete: go.Diagram;
 
     processDiagramBase64: string = '';
+
+    isSidePanelDragging: boolean = false;
+    sidePanelStorageKey = 'side_panel_width_on_diagram';
 
     private assetTypeNodes: DiagramNodeBase[] = [];
     private events: DiagramNodeBase[] = [];
@@ -130,6 +135,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
         private headerActionService: HeaderActionsService,
+        private sidePanelService: SidePanelService,
         private processService: ProcessService,
         protected settingsService: CompanySettingsService,
         public cdRef: ChangeDetectorRef,
@@ -157,7 +163,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.route.params.subscribe((params) => {
             this.focusKey = params['focusKey'];
             if (this.focusKey) {
-                let url: string = `/sidebar/visualization/browser/${params['assetUid']}/${params['diagramType']}`;
+                let url: string = `/asset/${params['assetUid']}/diagrams/${params['diagramType']}`;
                 this.location.replaceState(url);
                 this.isInfoPanelOpened = true;
             }
@@ -1216,5 +1222,30 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.myDiagram) {
             this.myDiagram.clearSelection();
         }
+    }
+
+    getSidePanelWidth(): number {
+        return this.sidePanelService.getSidePanelWidth(this.isInfoPanelOpened, this.sidePanelStorageKey, {sidePanelCloseCustomWidth: 0});
+    }
+
+    getSidePanelMaxWidth(): number {
+        return this.sidePanelService.getSidePanelMaxWidth(this.isInfoPanelOpened);
+    }
+
+    getSidePanelMinWidth(): number {
+        return this.sidePanelService.getSidePanelMinWidth(this.isInfoPanelOpened);
+    }
+
+    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+        this.isSidePanelDragging = false; 
+        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+    }
+
+    onSidePanelDragStart(): void {
+        this.isSidePanelDragging = true; 
+    }
+
+    calculateBottomControlsPosition(): string {
+        return this.getSidePanelWidth() + 16 + 'px'
     }
 }

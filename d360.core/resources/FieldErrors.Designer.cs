@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class FieldErrors {
@@ -61,7 +61,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Action Types cannot have field property &apos;IsPartOfKey&apos; set to true..
+        ///   Looks up a localized string similar to Action Types cannot have field property [IsPartOfKey] set to true..
         /// </summary>
         public static string ActionNotAllowedIsPartyOFKeyTrue {
             get {
@@ -70,7 +70,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Actions cannot have Score field type.
+        ///   Looks up a localized string similar to Actions cannot have [Type.Score] value.
         /// </summary>
         public static string ActionNotAllowedScoreFieldType {
             get {
@@ -79,7 +79,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Actions cannot have Tag field type!.
+        ///   Looks up a localized string similar to Actions cannot have [Type.Tag] value.
         /// </summary>
         public static string ActionNotAllowedTagFieldType {
             get {
@@ -88,7 +88,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Actions cannot have Path field type!.
+        ///   Looks up a localized string similar to Actions cannot have [Type.Path] value.
         /// </summary>
         public static string ActionNotSupportPath {
             get {
@@ -142,7 +142,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This asset type may not have a Score field type!.
+        ///   Looks up a localized string similar to This asset type may not have a [Type.Score] value.
         /// </summary>
         public static string AssetTypeNotHaveScoreField {
             get {
@@ -160,7 +160,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not provide an AssetTypeUid since you have already provided an ActionTypeUid..
+        ///   Looks up a localized string similar to You may not provide an [AssetTypeUid] since you have already provided an [ActionTypeUid]..
         /// </summary>
         public static string AssetTypeUidNotRequiredIfActionTypeUidProvided {
             get {
@@ -169,7 +169,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ComputedOwnershipLookup fields are not allowed for current Asset Type!.
+        ///   Looks up a localized string similar to [ComputedOwnershipLookup] fields are not allowed for current Asset Type!.
         /// </summary>
         public static string ComputedOwnershipLookupNotSupported {
             get {
@@ -178,7 +178,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ComputedRelationshipField fields are not allowed for current Asset Type!.
+        ///   Looks up a localized string similar to [ComputedRelationshipField] fields are not allowed for current Asset Type!.
         /// </summary>
         public static string ComputedRelationshipFieldNotSupported {
             get {
@@ -187,7 +187,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ComputedRelationshipLookup fields are not allowed for current Asset Type!.
+        ///   Looks up a localized string similar to [ComputedRelationshipLookup] fields are not allowed for current Asset Type!.
         /// </summary>
         public static string ComputedRelationshipLookupNotSupported {
             get {
@@ -196,7 +196,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ComputedRelationshipReferenceList fields are not allowed for current Asset Type!.
+        ///   Looks up a localized string similar to [ComputedRelationshipReferenceList] fields are not allowed for current Asset Type!.
         /// </summary>
         public static string ComputedRelationshipReferenceListNotSupported {
             get {
@@ -268,7 +268,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This asset type may not have a Counter field type!.
+        ///   Looks up a localized string similar to This asset type may not have a [Type.Counter] value.
         /// </summary>
         public static string CounterFieldNotSupportedThisAssetType {
             get {
@@ -277,7 +277,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Counter Prefix cannot be longer than 10 characters..
+        ///   Looks up a localized string similar to [CounterPrefix] cannot be longer than 10 characters..
         /// </summary>
         public static string CounterPrefixMax10Char {
             get {
@@ -286,7 +286,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Counter Prefix must be consisted of alphanumericals and/or symbols _ or -..
+        ///   Looks up a localized string similar to [CounterPrefix] must be consisted of alphanumericals and/or symbols _ or -..
         /// </summary>
         public static string CounterPrefixRule {
             get {
@@ -295,7 +295,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Counter Prefix must start with a character..
+        ///   Looks up a localized string similar to [CounterPrefix] must start with a character..
         /// </summary>
         public static string CounterPrefixStartWithAlpha {
             get {
@@ -304,7 +304,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Counter Initial Value must be between 1 and 9999999..
+        ///   Looks up a localized string similar to [CounterInitialIndex] must be between 1 and 9999999..
         /// </summary>
         public static string CounterRange {
             get {
@@ -313,7 +313,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Default value must be between {0} and {1}.
+        ///   Looks up a localized string similar to [DefaultValue] must be between {0} and {1}.
         /// </summary>
         public static string DefaultValueError {
             get {
@@ -331,7 +331,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DisplayInColumn on ComputedOwnershipLookup can be set to True only if DisplayAsList is set to True..
+        ///   Looks up a localized string similar to [DisplayInColumn] on [ComputedOwnershipLookup] can be set to True only if [DisplayAsList] is set to True..
         /// </summary>
         public static string DisplayInColumnMustFlaseOnComputedWonerShipLookup {
             get {
@@ -430,7 +430,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field Type - list not specified.
+        ///   Looks up a localized string similar to [Lookup.List] must be specified.
         /// </summary>
         public static string FieldTypeListNotSpecified {
             get {
@@ -448,7 +448,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field Type not found based on Name provided [{0}]..
+        ///   Looks up a localized string similar to Field Type not found based on [Name] provided [{0}]..
         /// </summary>
         public static string FieldTypeNotFoundByName {
             get {
@@ -457,7 +457,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field {0}. Form description must be empty for Relationship field when IsEditable set to false..
+        ///   Looks up a localized string similar to Field {0}. [Description.Form] must be empty for Relationship field when [IsEditable] set to false..
         /// </summary>
         public static string FormDescriptionMustBeEmptyForRelationship {
             get {
@@ -466,7 +466,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FriendlyName cannot be [{0}]..
+        ///   Looks up a localized string similar to [FriendlyName] cannot be [{0}]..
         /// </summary>
         public static string FriendNameCannotBe {
             get {
@@ -511,7 +511,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Field FriendlyName.
+        ///   Looks up a localized string similar to Invalid Field [FriendlyName].
         /// </summary>
         public static string InvalidFieldFriendlyName {
             get {
@@ -520,7 +520,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Field Name.
+        ///   Looks up a localized string similar to Invalid Field [Name].
         /// </summary>
         public static string InvalidFieldName {
             get {
@@ -538,7 +538,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Json attribute field type. Allowed values are {0}!&quot;.
+        ///   Looks up a localized string similar to Invalid Json attribute [DataType]. Allowed values are {0}!&quot;.
         /// </summary>
         public static string InvalidJsonFieldType {
             get {
@@ -547,7 +547,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Lookup display Format.
+        ///   Looks up a localized string similar to Invalid [Lookup.Format] value.
         /// </summary>
         public static string InvalidLookupDisplayFormat {
             get {
@@ -565,7 +565,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid parent Field.
+        ///   Looks up a localized string similar to Invalid [ParentFieldTypeName] value.
         /// </summary>
         public static string InvalidparentField {
             get {
@@ -592,7 +592,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field {0}. IsDisplayable parameter value must be true for type Reference Item List from Relationship..
+        ///   Looks up a localized string similar to Field {0}. [IsDisplayable] parameter value must be true for type Reference Item List from Relationship..
         /// </summary>
         public static string IsDisplayAbleTrueReferenceItemListForRelationship {
             get {
@@ -601,7 +601,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field {0}. IsDisplayable parameter value must be true for type Relation Lookup..
+        ///   Looks up a localized string similar to Field {0}. [IsDisplayable] parameter value must be true for type Relation Lookup..
         /// </summary>
         public static string IsDisplayAbleTrueRelationshipLookup {
             get {
@@ -619,7 +619,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IsEditable cannot be true for this field type..
+        ///   Looks up a localized string similar to [IsEditable] cannot be true for this field type..
         /// </summary>
         public static string IsEditableCanotTrue {
             get {
@@ -637,7 +637,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field {0}. IsListable parameter value must be false for boolean type field defined for action type!.
+        ///   Looks up a localized string similar to Field {0}. [IsListable] parameter value must be false for boolean type field defined for action type!.
         /// </summary>
         public static string IsListableParameterMustBeFalseForBooleanType {
             get {
@@ -664,7 +664,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field {0}. IsPrimaryFilter(Show As Top Level Filter) parameter value must be false for boolean type field defined for action type!.
+        ///   Looks up a localized string similar to Field {0}. [IsPrimaryFilter] (Show As Top Level Filter) parameter value must be false for boolean type field defined for action type!.
         /// </summary>
         public static string IsPrimaryFilterMustBefalseForBooleanType {
             get {
@@ -682,7 +682,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to JsonElement field types are not enabled in this environment.  In order to use JsonElement field type you must enable system setting 75..
+        ///   Looks up a localized string similar to [JsonElement] field types are not enabled in this environment.  In order to use [JsonElement] field type you must enable system setting 75..
         /// </summary>
         public static string JsonElementFieldTypeNotenabled {
             get {
@@ -691,7 +691,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to JsonElement fields are not allowed for current Asset Type!.
+        ///   Looks up a localized string similar to [JsonElement] fields are not allowed for current Asset Type!.
         /// </summary>
         public static string JsonElementNotSupported {
             get {
@@ -709,7 +709,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Json fields are not allowed for current Asset Type!.
+        ///   Looks up a localized string similar to [Type.Json] are not allowed for current Asset Type!.
         /// </summary>
         public static string JsonNotSupported {
             get {
@@ -718,7 +718,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IsRequired property can not be true for JSON field types defined on this asset type!.
+        ///   Looks up a localized string similar to [IsRequired] property can not be true for [Type.Json] defined on this asset type!.
         /// </summary>
         public static string JSONTypeNotSupportIsRequiredTrue {
             get {
@@ -727,7 +727,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have elected to replace all current fields, yet you have not defined a key. You must define at least one field as a key, or choose Merge as an Action..
+        ///   Looks up a localized string similar to You have elected to replace all current fields, yet you have not defined a key. You must define at least one field as a key, or choose &apos;Merge&apos; as an Action..
         /// </summary>
         public static string KeyFieldNotDefined {
             get {
@@ -745,7 +745,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Link Types cannot have field property IsPartOfKey on field {0} set to true..
+        ///   Looks up a localized string similar to [Type.Link] cannot have field property [IsPartOfKey] on field {0} set to true..
         /// </summary>
         public static string LinkTypeNotSupportIsPartOfKeyTrue {
             get {
@@ -754,7 +754,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to List Asset Type not found.
+        ///   Looks up a localized string similar to [Lookup.List] Asset Type not found.
         /// </summary>
         public static string ListAssetTypeNotFound {
             get {
@@ -763,7 +763,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lookup Field Type is incomplete as it does not have a valid class specified..
+        ///   Looks up a localized string similar to [Type.Lookup.List] is incomplete as it does not have a valid [Class] specified..
         /// </summary>
         public static string LookupFieldTypeIsIncomplete {
             get {
@@ -772,7 +772,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lookup Field Type is incomplete as it does not have a List specified..
+        ///   Looks up a localized string similar to [Type.Lookup.List] is incomplete as it does not have a [List] specified..
         /// </summary>
         public static string LookupNotSpecifiedList {
             get {
@@ -790,7 +790,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Missing Json attribute definition!.
+        ///   Looks up a localized string similar to Missing [JsonAttribute] definition!.
         /// </summary>
         public static string MissingJsonAttribute {
             get {
@@ -799,7 +799,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to List Display Format is required for Lookup Field Type..
+        ///   Looks up a localized string similar to [Lookup.Format] is required for [Type.Lookup]..
         /// </summary>
         public static string MissingListDisplayFormat {
             get {
@@ -808,7 +808,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must provide a link Text value if setting a default value for {0}..
+        ///   Looks up a localized string similar to You must provide a [DefaultValue.Text] value if setting a default value for {0}..
         /// </summary>
         public static string MustProvideLinkTextValue {
             get {
@@ -817,7 +817,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must provide a link Url value if setting a default value for {0}..
+        ///   Looks up a localized string similar to You must provide a [DefaultValue.Url] value if setting a default value for {0}..
         /// </summary>
         public static string MustProvideLinkUrlValue {
             get {
@@ -826,7 +826,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name cannot be [{0}]..
+        ///   Looks up a localized string similar to [Name] cannot be [{0}]..
         /// </summary>
         public static string NameCannotBe {
             get {
@@ -853,7 +853,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No primary key defined.
+        ///   Looks up a localized string similar to No fields with [IsPartOfKey] set to true.
         /// </summary>
         public static string NoPrimaryKeyDefined {
             get {
@@ -871,7 +871,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not use a ComputedRelationshipLookup type on an asset of type {0} for field {1}..
+        ///   Looks up a localized string similar to You may not use a [Type.ComputedRelationshipLookup] type on an asset of type {0} for field {1}..
         /// </summary>
         public static string NotUseComputedRelationshipLookuptypeField {
             get {
@@ -880,7 +880,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not use a JSON type on an action type or relationship type for field {0}..
+        ///   Looks up a localized string similar to You may not use a [Type.Json] on an action type or relationship type for field {0}..
         /// </summary>
         public static string NotUseJSONonActionType {
             get {
@@ -898,7 +898,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not use a Relationship Lookup type on an action type or relationship type for field {0}..
+        ///   Looks up a localized string similar to You may not use a [Type.ComputedRelationshipReferenceList] on an action type or relationship type for field {0}..
         /// </summary>
         public static string NotUseRelationshipLookupField {
             get {
@@ -907,7 +907,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not use a Ownership Lookup type on an action type or relationship type for field {0}..
+        ///   Looks up a localized string similar to You may not use a [Type.ComputedOwnershipLookup] on an action type or relationship type for field {0}..
         /// </summary>
         public static string NotUserOwnershipLookup {
             get {
@@ -916,7 +916,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not use a Score type on an asset of type {0} for field {1}..
+        ///   Looks up a localized string similar to You may not use a [Type.Score] on an asset of type {0} for field {1}..
         /// </summary>
         public static string NotUseSCoreTypeAssetForField {
             get {
@@ -925,7 +925,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not use a Score type on an action type or relationship type for field {0}..
+        ///   Looks up a localized string similar to You may not use a [Type.Score] on an action type or relationship type for field {0}..
         /// </summary>
         public static string NotUseScoreTypeOnActionAndRelationshipType {
             get {
@@ -934,7 +934,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Validation pattern is not valid Regex expression!.
+        ///   Looks up a localized string similar to [Text.Validation.Pattern] is not valid Regex expression!.
         /// </summary>
         public static string NotValidRegex {
             get {
@@ -970,7 +970,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset type can have only one Tag field type!.
+        ///   Looks up a localized string similar to Asset type can have only one [Type.Tag] field type!.
         /// </summary>
         public static string OnlyOneTagFieldAllowed {
             get {
@@ -988,7 +988,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parent field [{0}] of type ReferenceItem not found on this asset..
+        ///   Looks up a localized string similar to Parent field [{0}] of type Reference not found on this asset..
         /// </summary>
         public static string ParentFieldRefernceItemNotfound {
             get {
@@ -997,7 +997,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must provide a definition for the computed relationship lookup field {0}..
+        ///   Looks up a localized string similar to You must provide a definition for the [Type.ComputedRelationshipLookup] on field {0}..
         /// </summary>
         public static string ProvideComputedRealtionshipLookupField {
             get {
@@ -1006,7 +1006,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must provide only one of the three Uid properties: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid..
+        ///   Looks up a localized string similar to You must provide only one of the three Uid properties: [ActionTypeUid], [AssetTypeUid], or [RelationshipTypeUid]..
         /// </summary>
         public static string ProvideOneValueActionAssetRelationship {
             get {
@@ -1015,7 +1015,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Reference item types cannot have field property &apos;IsPartOfKey&apos; set to true..
+        ///   Looks up a localized string similar to Reference types cannot have field property [IsPartOfKey] set to true..
         /// </summary>
         public static string ReferenceItemIsPartOfKeyNotAllowedTrue {
             get {
@@ -1024,7 +1024,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field type JsonElement not support for reference item type!.
+        ///   Looks up a localized string similar to [Type.JsonElement] not support for reference item type!.
         /// </summary>
         public static string ReferenceItemNotSupportJsonElement {
             get {
@@ -1033,7 +1033,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field type Json not support for reference item type!.
+        ///   Looks up a localized string similar to [Type.Json] not support for reference item type!.
         /// </summary>
         public static string ReferenceListNotSupportJson {
             get {
@@ -1042,7 +1042,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field type Tag not support for reference item type.
+        ///   Looks up a localized string similar to [Type.Tag] not support for reference item type.
         /// </summary>
         public static string ReferenceListNotSupportTag {
             get {
@@ -1051,7 +1051,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Relationship Types cannot have field property &apos;IsPartOfKey&apos; set to true..
+        ///   Looks up a localized string similar to Relationship Types cannot have field property [IsPartOfKey] set to true..
         /// </summary>
         public static string RelationNotAllowedIsPartyOFKeyTrue {
             get {
@@ -1060,7 +1060,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The following relationship ID are used more than once: {0}. Relationship must be unique on same assettype.
+        ///   Looks up a localized string similar to The following relationship ID are used more than once: {0}. [Type.Relationship] must be unique on same asset type.
         /// </summary>
         public static string RelationshipIDUsedMoreThanOnce {
             get {
@@ -1069,7 +1069,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Relationships cannot have Score field type!.
+        ///   Looks up a localized string similar to [Type.Score] is not supported on relationships.
         /// </summary>
         public static string RelationshipNotAllowedScoreFieldType {
             get {
@@ -1078,7 +1078,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Relationship fields are not allowed for current Asset Type!.
+        ///   Looks up a localized string similar to [Type.Relationship] are not allowed for current Asset Type!.
         /// </summary>
         public static string RelationshipNotSupported {
             get {
@@ -1087,7 +1087,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Relationships cannot have Path field type!.
+        ///   Looks up a localized string similar to [Type.Path] is not supported on relationships.
         /// </summary>
         public static string RelationshipNotSupportPath {
             get {
@@ -1096,7 +1096,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Relationships cannot have Tag field type!.
+        ///   Looks up a localized string similar to [Type.Tag] is not supported on relationships.
         /// </summary>
         public static string RelationshipsNotAllowedTagFieldType {
             get {
@@ -1150,7 +1150,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not provide an RelationshipTypeUid since you have already provided an ActionTypeUid..
+        ///   Looks up a localized string similar to You may not provide an [RelationshipTypeUid] since you have already provided an [ActionTypeUid]..
         /// </summary>
         public static string RelationShipTypeUidNotRequiredIfActionTypeUidProvided {
             get {
@@ -1168,7 +1168,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The following relationship ID are used more than once: {0}. Relationship must be unique on same assettype..
+        ///   Looks up a localized string similar to The following relationship UID are used more than once: {0}. [Type.Relationship] must be unique on same asset type.
         /// </summary>
         public static string RelationshipUidMustUniqueWithinAssetType {
             get {
@@ -1177,7 +1177,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Score fields are not allowed for current Asset Type!.
+        ///   Looks up a localized string similar to [Type.Score] is not supported for current asset type.
         /// </summary>
         public static string ScoreNotSupported {
             get {
@@ -1186,7 +1186,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Score type {0} cannot be allocated to this asset type for field {1}..
+        ///   Looks up a localized string similar to [Score.ScoreType] {0} cannot be allocated to this asset type for field {1}..
         /// </summary>
         public static string ScoreTypeCannotAllocateAssetType {
             get {
@@ -1204,7 +1204,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Only Artifacts, Policies, Models and Rules are allowed to have Tag field type!.
+        ///   Looks up a localized string similar to [Type.Tag] is allowed only on Business Assets, Technical Assets, Policies, Models and Rules.
         /// </summary>
         public static string SpecificHaveTagFieldType {
             get {
@@ -1213,7 +1213,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Task Types cannot have field property &apos;{0}&apos; on field GovernanceRole set to {1}..
+        ///   Looks up a localized string similar to Task Types cannot have field property &apos;{0}&apos; on field [GovernanceRole] set to {1}..
         /// </summary>
         public static string TaskTypeGovernanceRoleCustomError {
             get {
@@ -1222,7 +1222,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Task Types cannot have field property &apos;{0}&apos; on field Name set to {1}..
+        ///   Looks up a localized string similar to Task Types cannot have field property &apos;{0}&apos; on field [Name] set to {1}..
         /// </summary>
         public static string TaskTypeNameCustomError {
             get {
@@ -1231,7 +1231,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Task Types cannot have field property &apos;{0}&apos; on field StepNo set to {1}..
+        ///   Looks up a localized string similar to Task Types cannot have field property &apos;{0}&apos; on field [StepNo] set to {1}..
         /// </summary>
         public static string TaskTypeStepNoCustomError {
             get {
@@ -1240,7 +1240,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This asset type may not have a Path field type!.
+        ///   Looks up a localized string similar to [Type.Path] is not supported for current asset type.
         /// </summary>
         public static string ThisAssetTypeNotSupportPath {
             get {
@@ -1249,7 +1249,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &apos;Type&apos; object is missing from one or more field type definitions..
+        ///   Looks up a localized string similar to The [Type] object is missing from one or more field type definitions..
         /// </summary>
         public static string TypeObjectMissing {
             get {

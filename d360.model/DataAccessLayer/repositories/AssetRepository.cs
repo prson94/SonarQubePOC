@@ -3965,16 +3965,6 @@ namespace d360.model.DataAccessLayer
 						select  
 								{string.Join("," + Environment.NewLine, fieldColumns.GetStatements())}
 						from    Asset A
-								inner join AssetType T on T.ID = A.AssetTypeID
-								outer apply (
-									select SA.uid from Asset A
-									inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectID
-									inner join [IntersectType] IT on IT.Id = I.IntersectTypeId
-									inner join [Predicate] P on P.Id = IT.PredicateID and P.Type in (3,4)
-									inner join [Asset] SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
-									where A.uid = @assetuid
-								) Parent
-								left join AssetDetail P on P.uid = Parent.uid
 								{fieldJoins.SQLJoinStatement}
 						where   A.[uid] = @assetUid";
 
@@ -4641,6 +4631,14 @@ namespace d360.model.DataAccessLayer
 				}
 			});
 			return results.OrderBy(x => x.title);
+		}
+
+		public AssetTypeClass GetAssetClassByUID(Guid uid)
+		{
+			return CompanyContext.Query<AssetTypeClass>(@"
+			select at.Class from asset a inner join assettype at on at.id = a.AssetTypeID where a.uid = @uid
+			union
+			select at.Class from assettype at where at.uid = @uid", new { uid }).FirstOrDefault();
 		}
 	}
 }

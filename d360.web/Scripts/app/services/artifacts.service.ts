@@ -24,10 +24,10 @@ export class ArtifactService extends BaseObservableService {
         super(messagesService);
     }
 
-    getArtifact(id: number): Observable<Artifact> {
+    getArtifactByUid(uid: string): Observable<Artifact> {
         return this
             .http
-            .get(`api/artifact/${id}`)
+			.get(`api/artifact/${uid}`)
             .pipe(
                 map((response) => <Artifact>response),
                 catchError((err) => this.handleError(err, false, this.router))

@@ -283,8 +283,8 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     selectRow(row: any) {
         this.secondarySidePanelOpen = false;
         this.selectedType = row;
-        if (this.selectedType) {
-            this.buildSecondaryNavigation(this.selectedType.uid, 0, 'SemanticType', null, null, this.displayBreadCrumbs.bind(this), null);
+		if (this.selectedType) {
+			this.buildSecondaryNavigation({ assetUid: this.selectedType.uid, objectId: 0, objectType: 'SemanticType', buildBreadcrumbOverride: this.displayBreadCrumbs.bind(this) });
         }
         this.selectedTypeChanged.emit(row);
     }

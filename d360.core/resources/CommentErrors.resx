@@ -121,7 +121,7 @@
     <value>Asset with provided Uid does not exist.</value>
   </data>
   <data name="BodyNotEmpty" xml:space="preserve">
-    <value>You must provide a value for the Body property.</value>
+    <value>You must provide a value for the [Body] property.</value>
   </data>
   <data name="comment" xml:space="preserve">
     <value>comment</value>
@@ -145,7 +145,7 @@
     <value>You are not the creator of this comment or administrator and may not update it.</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>You must provide a valid Uid for the AssetUid property.</value>
+    <value>You must provide a valid [Uid] for the [AssetUid] property.</value>
   </data>
   <data name="NoContentProvided" xml:space="preserve">
     <value>No content provided to create a comment with.</value>

@@ -31,7 +31,7 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
     private isAdminSub: Subscription;
     constructor(
         private router: Router,
-        private ref: ChangeDetectorRef,
+		private ref: ChangeDetectorRef,
         private authenticationService: AuthenticationService,
         protected settingsService: CompanySettingsService
     ) { }
@@ -59,8 +59,8 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
         window.location.href = '/slo';
     }
 
-    public viewProfile() {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('Resource', this.resourceId));
+	public viewProfile() {
+		this.router.navigateByUrl(SiteUrlHelpers.getUserUrl(CurrentResourceUid));
     }
 
     show(item) {

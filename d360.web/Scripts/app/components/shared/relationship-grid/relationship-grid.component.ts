@@ -238,7 +238,10 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
         this.assetService.getUIDetailsForAssetUID(this.assetUid)
             .subscribe((ad) => {
-                this.assetDetail = ad;
+				this.assetDetail = ad;
+				if (!this.assetTypeUid) {
+					this.assetTypeUid = this.assetDetail["AssetTypeUid"];
+				}
                 var permissionObs: Observable<Permissions> = this.permissionService.getAssetPermissions(this.assetUid);
 
                 if (ad.Object === 'Resource' || ad.Object === 'ReferenceItemType') {

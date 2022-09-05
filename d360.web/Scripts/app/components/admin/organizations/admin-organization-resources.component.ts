@@ -178,7 +178,7 @@ export class AdminOrganizationResourcesComponent extends BaseComponent implement
             ;
     }
 
-    private openResource(event) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource', event.ResourceID));
+	private openResource(event) {
+		this.router.navigateByUrl(SiteUrlHelpers.getUserUrl(event.ResourceID));
     }
 }

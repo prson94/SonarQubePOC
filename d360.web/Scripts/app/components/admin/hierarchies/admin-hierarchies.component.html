@@ -92,9 +92,7 @@
             <object-detail [objectType]="objectType" [objectID]="selectedItemID"></object-detail>
         </div>
         <div class="tile tile-detail">
-            <d3s-field-definition-tile [objectType]="objectType"
-                                       [objectID]="selectedItemID"
-                                       [assetTypeUid]="selected?.uid"
+            <d3s-field-definition-tile [assetTypeUid]="selected?.uid"
                                        [allowSingleSegmentPath]="false"
                                        [objectName]="selectedRow?.data?.Name"
                                        [showAddToSearch]="true"

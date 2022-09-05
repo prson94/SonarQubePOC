@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.dbo.GenerateAssetUrl-v4">
+  <changeSet author="TDuric" id="Function.dbo.GenerateAssetUrl-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -36,15 +36,15 @@ BEGIN
 
 
 	SET @Url = CASE @Type
-		WHEN 'Artifact' THEN 'artifact/' +  + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
-		WHEN 'ReferenceItem' THEN 'reference;referenceListId=' + lower(cast(@typeUid as nvarchar(36)))
+		WHEN 'Artifact' THEN 'asset/' + CAST(@uid as nvarchar(max))
+		WHEN 'ReferenceItem' THEN 'assets/' + lower(cast(@typeUid as nvarchar(36)))
 		WHEN 'Group' THEN 'group/' + CAST(@ObjectID as varchar)	
-		WHEN 'Policy' THEN 'policy/' + CAST(@TypeID as varchar(15)) + '/id/' + CAST(@ObjectID as varchar)	
-		WHEN 'Resource' THEN 'resource/' + CAST(@ObjectID as varchar)
-		WHEN 'Rule' THEN 'quality/rule/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
-		WHEN 'Taxonomy' THEN 'model/' + CAST(@TypeID as varchar) + '/id/' + CAST(@ObjectID as varchar)
+		WHEN 'Policy' THEN 'asset/'  + CAST(@uid as nvarchar(max))	
+		WHEN 'Resource' THEN 'users/' + CAST(@uid as nvarchar(max))
+		WHEN 'Rule' THEN 'asset/' + CAST(@uid as nvarchar(max))
+		WHEN 'Taxonomy' THEN 'asset/' + CAST(@uid as nvarchar(max))
 		WHEN 'Task' THEN (SELECT 
-			 '/sidebar/visualization/browser/'+lower(cast(a.uid as nvarchar(36)))+'/Process/' + lower(cast(@uid as nvarchar(36)))
+			 '/asset/'+lower(cast(a.uid as nvarchar(36)))+'/diagrams/Process/' + lower(cast(@uid as nvarchar(36)))
 				FROM AssetProcessDiagram APD
 				CROSS APPLY (SELECT * FROM OPENJSON(APD.Diagram,'$.nodeDataArray') WITH ( uid uniqueidentifier '$.key' )) D
 				INNER JOIN asset a on a.id = apd.AssetID

@@ -37,7 +37,7 @@ export class MemberGroupComponent extends BaseComponent implements OnInit, OnDes
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             this.resourceUid = params['resourceUid'];
-            this.buildSecondaryNavigation(this.resourceUid);
+            this.buildSecondaryNavigationByAssetUid(this.resourceUid);
         });
     }
 

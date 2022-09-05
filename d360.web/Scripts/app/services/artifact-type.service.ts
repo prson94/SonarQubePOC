@@ -38,7 +38,7 @@ export class ArtifactTypeService extends BaseObservableService {
             ;
     }
 
-    getArtifactTypeDetails(id: number, redirectToHome: boolean = false): Observable<ArtifactType> {
+    getArtifactTypeDetails(id: number | string, redirectToHome: boolean = false): Observable<ArtifactType> {
         return this
             .http
             .get(`api/artifacts/${id}`)

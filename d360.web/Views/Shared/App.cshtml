@@ -1,6 +1,7 @@
 ﻿@{
     Layout = null;
     var CurrentResourceID = ViewData["ResourceID"].ToString();
+    var CurrentResourceUid = ViewData["ResourceUid"].ToString();
     var VersionNumber = ViewData["VersionNumber"].ToString();
     var ResourceHomePage = ViewData["ResourceHomePage"].ToString();
 
@@ -61,11 +62,11 @@
     }
     <script type="text/javascript">
         var CurrentResourceID = @(CurrentResourceID);
+		var CurrentResourceUid = '@(CurrentResourceUid)';
         var ResourceHomePage = '@(ResourceHomePage)';
         var SingleSignOn = @(ViewData["SingleSignOn"].ToString().ToLower());
         var ResourceName = '@(ViewData["ResourceName"].ToString())';
         var ResourceEmail = '@(ViewData["ResourceEmail"].ToString())';
-        var CurrentResourceUid = '@(ViewData["ResourceUid"].ToString())';
         var VersionNumber = '@(VersionNumber)';
         var DataDogApplicationId = '@(DataDogApplicationId)';
         var DataDogClientToken = '@(DataDogClientToken)';
