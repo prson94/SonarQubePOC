@@ -71,8 +71,7 @@
                              [rows]="rowsPerPage"
                              [rowsPerPageOptions]="defaultPagingOptions"
                              [totalRecords]="semanticsTotal"
-                             [scrollable]="true"
-                             scrollWidth="100%"
+                             responsiveLayout="scroll"
                              [loading]="isLoading"
                              [loadingIcon]="'fa fa-spinner fa-spin'"
                              [lazy]="true"
@@ -107,7 +106,7 @@
                                     <ng-container i18n>Disabled</ng-container>
                                     <d3s-sortIcon [field]="'isDisabled'"></d3s-sortIcon>
                                 </th>
-                                <th style="flex: 0 0 30px"></th>
+                                <th class="asset-grid-tools" style="flex: 0 0 30px"></th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body"
