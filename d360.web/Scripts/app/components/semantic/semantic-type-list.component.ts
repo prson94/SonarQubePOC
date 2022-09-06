@@ -157,7 +157,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         protected router: Router,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
-        private sidePanelService: SidePanelService,
+        public sidePanelService: SidePanelService,
         webAnalyticsService: WebAnalyticsService,
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,

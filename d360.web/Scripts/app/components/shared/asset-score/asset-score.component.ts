@@ -87,7 +87,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     constructor(
         protected assetService: AssetService,
         protected metricService: MetricsService,
-        private sidePanelService: SidePanelService,
+        public sidePanelService: SidePanelService,
         protected scoreService: ScoreService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,

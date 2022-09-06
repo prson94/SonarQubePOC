@@ -24,7 +24,7 @@ export class AdminResourcesComponent extends AdminBaseComponent implements OnIni
     sidePanelStorageKey: string = 'Admin_User_list_' + CurrentResourceID;
 
     constructor(
-        private sidePanelService: SidePanelService,
+        public sidePanelService: SidePanelService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title,
         secondaryNavService: SecondaryNavService,
