@@ -844,6 +844,7 @@ namespace d360.model
 		public async Task<string> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true, bool includeUid = true)
 		{
 			var whenSql = new StringBuilder();
+			var whenWhereConditions = new List<string>();
 
 			whenSql.Append("select distinct A.ID as AssetID ");
 			if (includeName)
@@ -930,35 +931,28 @@ from	Asset A
 
 					if (w.CheckType == "R")
 					{
-						whenSql.Append($@"inner join [Intersect] I{rCount} on 
-									I{rCount}.IntersectTypeID = {w.IntersectTypeID} and 
-									( 
-										(
-											I{rCount}.Subject = A.Object 
-											and 
-											I{rCount}.SubjectID = A.ObjectID 
-											and 
-											{ (w.Operator == Operator.NotIn ? "Not" : "") }(
-												I{rCount}.Object = '{w.TargetObject}' 
-												and 
-												I{rCount}.ObjectID = {w.TargetObjectID}
-											)
-										) 
-										OR 
-										(
-											I{rCount}.Object = A.Object 
-											and 
-											I{rCount}.ObjectID = A.ObjectID 
-											and 
-											{ (w.Operator == Operator.NotIn ? "Not" : "") } (
-												I{rCount}.Subject = '{w.TargetObject}' 
-												and 
-												I{rCount}.SubjectID = {w.TargetObjectID})
-											) 
-									) ");
+						whenWhereConditions.Add(
+							$@"( 
+								{ (w.Operator == Operator.NotIn ? "Not" : "") } exists(
+										SELECT TargetAsset.Uid as TargetAssetId
+										FROM  
+											[Intersect] I
+											Inner join [IntersectType] IT ON IT.ID = I.IntersectTypeId
+											inner join [Asset] TargetAsset on TargetAsset.Object = '{w.TargetObject}' and TargetAsset.ObjectID = {w.TargetObjectID}
+										WHERE 
+											IT.ID = {w.IntersectTypeID} AND I.SubjectAssetId = A.Id and I.ObjectAssetId = TargetAsset.Id
+										)
+							)"
+							);						
 						rCount++;
 					}
 				}
+			}
+
+			if (whenWhereConditions.Count > 0)
+			{
+				whenSql.Append(" where ");
+				whenSql.Append(string.Join(" and ", whenWhereConditions));
 			}
 
 			return whenSql.ToString();

@@ -327,17 +327,6 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getTechnicalRelations(intersectTypeUid: string): Observable<any> {
-        let url = `intersectTypeUid=${intersectTypeUid}`;
-        return this
-            .http
-            .get(`api/v2/fields/technicalrelationships?${url}`)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
     moveUp(typeUid: string, fieldTypeName: string) {
         let model = {
             TypeUid: typeUid,

@@ -47,7 +47,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     sidePanelStorageKey: string = '';
     constructor(
         private myElement: ElementRef,
-        private sidePanelService: SidePanelService,
+        public sidePanelService: SidePanelService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         headerBreadcrumbService: HeaderBreadcrumbService,

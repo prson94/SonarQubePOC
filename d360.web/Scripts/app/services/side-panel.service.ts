@@ -14,6 +14,7 @@ export class SidePanelService {
   readonly sidePanelCloseWidth = 59;
   readonly sidePanelOpenDefaultWidth = 400;
   readonly sidePanelOpenMinWidth = 400;
+  readonly draggableAreaWidth: number = 6;
   readonly panelWidthStorageKeyPrefix: string = 'side_panel_width_';
   
   constructor(private messagesService: MessagesObservableService) {

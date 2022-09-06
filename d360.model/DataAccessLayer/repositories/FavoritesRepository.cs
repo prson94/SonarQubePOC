@@ -73,7 +73,7 @@ namespace d360.model.DataAccessLayer.repositories
 																select 
 																	favorite.FavoriteId,
 																	asset.Object as ObjectType,
-																	asset.ObjectID as ObjectId,
+																	asset.ID as ObjectId,
 																	asset.uid as Uid,
 																	assetType.ObjectID as TypeObjectId,
 																	AssetName.DisplayValue,
@@ -101,7 +101,7 @@ namespace d360.model.DataAccessLayer.repositories
 																select 
 																	favorite.FavoriteId,
 																	assetType.Object as ObjectType,
-																	assetType.ObjectID as ObjectId,
+																	assetType.ID as ObjectId,
 																	assetType.uid as Uid,
 																	null as TypeObjectId,
 																	assetType.Name,

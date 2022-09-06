@@ -106,7 +106,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
-        private sidePanelService: SidePanelService,
+        public sidePanelService: SidePanelService,
         private linkClickInterceptor: LinkClickInterceptor,
 		private featureFlagService: FeatureFlagsService,
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService

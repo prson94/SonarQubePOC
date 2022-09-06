@@ -134,7 +134,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	constructor(
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 		private assetService: AssetService,
-		private sidePanelService: SidePanelService,
+		public sidePanelService: SidePanelService,
 		private assetTypeService: AssetTypeService,
 		private dataProfileService: DataProfileService,
 		protected gridDefinitionService: GridDefinitionService,
@@ -369,10 +369,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 		this.headerBreadcrumbService.getFolderTitle(this.navFolderName).then((res) => {
 			this.headerBreadcrumbService.clearBreadcrumbs();
-			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(currentAreaName
-				? currentAreaName
-				: res,
-				`/${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/Model`
+			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(currentAreaName ? currentAreaName : res,
+				`/${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/Model`,
+				null,
+				this.objectType,
+				this.objectTypeId,
+				null,
+				null,
+				true
 			));
 			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
 

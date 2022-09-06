@@ -1,6 +1,6 @@
 ﻿<as-split unit="pixel"
           direction="horizontal"
-          [gutterSize]="16"
+          [gutterSize]="sidePanelService.draggableAreaWidth"
           class="scoring-v2 split"
           style="display: flex"
           (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
