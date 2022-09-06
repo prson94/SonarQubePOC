@@ -997,7 +997,10 @@ namespace d360.model.DataAccessLayer
 						if (fieldType.Type == DataType.Path.ToString())
 						{
 							var definition = JsonConvert.DeserializeObject<JObject>(fieldType.Definition ?? "{}");
-							return Guid.TryParse(definition.GetValue("AssetTypeUid").ToString(), out _);
+							if (definition.TryGetValue("AssetTypeUid", out _))
+							{
+								return Guid.TryParse(definition.GetValue("AssetTypeUid").ToString(), out _); ;
+							}
 						}
 
 						return false;
