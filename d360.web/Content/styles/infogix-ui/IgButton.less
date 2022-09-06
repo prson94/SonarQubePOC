@@ -92,23 +92,23 @@
   }
 
   &.ig-button-accent {
-    background: @ig-coral;
-    color: @ig-black;
+    background: @ig-pink-t1;
+    color: @ig-white;
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: @ig-coral-s1;
+      background: @ig-pink-s1;
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: @ig-coral-s2;
+      background: @ig-pink-s2;
     }
 
-    &:focus, &.ig-state-focus {
-      background: @ig-coral;
+    &:focus:not(:disabled), &.ig-state-focus {
+      background: @ig-pink-t1;
     }
   }
 
-  &.ig-button-negative {
+  &.ig-button-danger {
     background: @ig-red;
     color: @ig-white;
 
@@ -122,6 +122,76 @@
 
     &:focus:not(:disabled), &.ig-state-focus {
       background: @ig-red;
+    }
+  }
+
+  &.ig-button-secondary {
+    background: transparent;
+    color: var(--primaryButtonBackColor);
+    border: 1px solid var(--primaryButtonBackColor);
+
+    &:hover:not(:disabled), &.ig-state-hover {
+      background: rgba(var(--primaryButtonBackColor), 0.08);
+    }
+
+    &:active:not(:disabled), &.ig-state-active {
+      background: rgba(var(--primaryButtonBackColor), 0.2);
+    }
+
+    &:focus:not(:disabled), &.ig-state-focus {
+      border-color: @ig-midblue-t3;
+    }
+
+    &:disabled {
+      border-color: @ig-grey-t4;
+    }
+  }
+
+  &.ig-button-text {
+    background: transparent;
+    width: auto;
+    height: auto;
+    color: var(--primaryButtonBackColor);
+
+    &:hover:not(:disabled), &.ig-state-hover {
+      filter: brightness(80%);
+      text-decoration: underline;
+    }
+
+    &:active:not(:disabled), &.ig-state-active {
+      filter: brightness(60%);
+      text-decoration: underline;
+    }
+
+    &:focus:not(:disabled), &.ig-state-focus {
+      border: 1px solid @ig-midblue-t3;
+    }
+
+    &:disabled {
+      background: transparent;
+    }
+  }
+
+  &.ig-button-group {
+    background: @ig-grey-t5;
+    width: 32px;
+    height: 32px;
+    color: @ig-black;
+
+    &:hover:not(:disabled), &.ig-state-hover {
+      background: rgba(var(--primaryButtonBackColor), 0.2);
+    }
+
+    &:active:not(:disabled), &.ig-state-active {
+      background: rgba(var(--primaryButtonBackColor), 0.35);
+    }
+
+    &:focus:not(:disabled), &.ig-state-focus {
+      border: 1px solid @ig-midblue-t3;
+    }
+
+    &:disabled > * {
+      opacity: @ig-field-disabled-opacity;
     }
   }
 
@@ -177,7 +247,8 @@
   }
 
   &:disabled {
-    opacity: @ig-field-disabled-opacity;
+    background: @ig-grey-t5;
+    color: @ig-grey-t2;
     cursor: default;
   }
 
@@ -258,6 +329,13 @@
     border: 2px solid @ig-white;
     border-color: @ig-white fade(@ig-white, 0.36) fade(@ig-white, 0.36) fade(@ig-white, 0.36);
   }
+}
+
+.ig-buttons-group {
+  border-radius: @ig-field-border-radius;
+  overflow: hidden;
+  display: flex;
+  height: 32px;
 }
 
 @keyframes ig-button-spin {
