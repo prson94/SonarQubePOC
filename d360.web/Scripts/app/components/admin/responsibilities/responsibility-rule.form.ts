@@ -695,7 +695,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
 		this.model.StructuredDefinition.Then.Conditions = this.model.StructuredDefinition.Then.Conditions.filter((c) => c.FieldTypeID != null
 			&& c.Object
-			&& (c.Value || c.Operator === Operator[Operator.Populated] || c.Operator === Operator[Operator.Populated])
+			&& (c.Value || c.Operator === Operator[Operator.Populated] || c.Operator === Operator[Operator.NotPopulated])
 		);
 		if (this.model.StructuredDefinition.Then.Conditions.length === 0) {
 			this.model.StructuredDefinition.Then === null;
