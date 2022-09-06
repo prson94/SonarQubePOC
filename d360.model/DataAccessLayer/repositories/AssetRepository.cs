@@ -478,7 +478,7 @@ namespace d360.model.DataAccessLayer
 								{IntersectTypeIDField}
 							from Asset B
 							inner join AssetType TB on TB.ID = B.AssetTypeID
-							cross apply dbo.GetAssetDisplayValueById(B.ID) BD
+							inner join AssetDisplayValue BD on BD.AssetID = B.ID
 							inner join [Intersect] I on {intersectJoin}";
 
 				if (includeBoth == false)
@@ -513,7 +513,7 @@ namespace d360.model.DataAccessLayer
 								{IntersectTypeIDField}
 							from Asset B
 							inner join AssetType TB on TB.ID = B.AssetTypeID
-							cross apply dbo.GetAssetDisplayValueById(B.ID) BD
+							inner join AssetDisplayValue BD on BD.AssetID = B.ID
 							inner join [Intersect] I on {reverseIntersectJoin}";
 
 					var reverseInnerCountSql = $@"
@@ -2669,8 +2669,10 @@ where an.Uid = fam.uid)
 			{
 				var intersectType = new IntersectType
 				{
+					SubjectClass = (parentAssetType != null) ? parentAssetType.Class : at.Class,
 					SubjectAssetTypeID = (parentAssetType != null) ? parentAssetType.ID : at.ID,
 					SubjectCardinality = Cardinality.One,
+					ObjectClass = at.Class,
 					ObjectAssetTypeID = at.ID,
 					ObjectCardinality = Cardinality.Many,
 					PredicateID = predicate.ID
@@ -3729,11 +3731,12 @@ where an.Uid = fam.uid)
 							att.description
 							{(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")}
 						 from AssetType att
-						 outer apply (select ATParent.uid from IntersectType IT
-							inner join [Predicate] P on P.ID = it.PredicateID and P.Type in (3,4)
-							inner join [AssetType] ATParent on ATParent.Object = IT.Subject AND ATParent.ObjectID = IT.SubjectID
-						 where it.ObjectID = att.ObjectID and it.Object = att.Object
-						 )ATParent
+						 outer apply (
+							select	ATParent.uid 
+							from	IntersectType IT
+									inner join [Predicate] P on P.ID = it.PredicateID and P.Type in (3,4)
+									inner join [AssetType] ATParent on ATParent.ID = IT.SubjectAssetTypeID and IT.ObjectAssetTypeID = att.ID
+						 ) ATParent
 						 {(isReturnCount ? " left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID " : "")}
 						where att.Class in @filterClasses
 						 {assetTypePermissionWhere}
@@ -4334,7 +4337,7 @@ where an.Uid = fam.uid)
 								AssetType ast on a.AssetTypeID=ast.ID and ast.[uid]=@assetTypeUid
 								inner join 
 								reporting.Global_Resource r on r.ResourceId = f.ResourceId {resourceSQL}
-								cross apply [dbo].[GetAssetDisplayValueById](A.ID) AName
+								inner join AssetDisplayValue AName on AName.AssetID = A.ID
 								outer apply (select cast(S.Value * 100 as decimal(18,1)) as Score from metrics.Score S
 												inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {ScoreType.Governance.ToString("D")} and Al.OverrideName is null
 															and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)) Governance
@@ -4358,7 +4361,7 @@ where an.Uid = fam.uid)
 									Asset a on a.AssetTypeID=ast.ID		
 									inner join 
 									reporting.Global_Resource r on r.ResourceId = f.ResourceId {resourceSQL}
-									cross apply [dbo].[GetAssetDisplayValueById](A.ID) AName
+									inner join AssetDisplayValue AName on AName.AssetID = A.ID
 									outer apply (select cast(S.Value * 100 as decimal(18,1)) as Score from metrics.Score S
 													inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {ScoreType.Governance.ToString("D")} and Al.OverrideName is null
 																and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)) Governance

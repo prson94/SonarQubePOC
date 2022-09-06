@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.Deletions-v2">
+  <changeSet author="Pappas" id="Function.Deletions-v4.4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -25,9 +25,21 @@ drop function if exists [dbo].[GetArtifactKeyHashByIdWithParent]
 GO
 drop function if exists [dbo].[GetAssetColorJsonById]
 GO
+drop function if exists [dbo].[GetAssetDisplayValue]
+GO
+drop function if exists [dbo].[GetAssetDisplayValueByObjectID]
+GO
 drop function if exists [dbo].[GetAssetHasChildrenByAssetID]
 GO
+drop function if exists [dbo].[GetAssetKeyHash]
+GO
+drop function if exists [dbo].[GetAssetKeyHashById]
+GO
 drop function if exists [dbo].[GetAssetUrl]
+GO
+drop function if exists [dbo].[GetAssetTextPath]
+GO
+drop function if exists [dbo].[GetAssetTextPathById]
 GO
 drop function if exists [dbo].[GetAssetTypeAncestry]
 GO
@@ -35,13 +47,25 @@ drop function if exists [dbo].[GetAssetTypeIconById]
 GO
 drop function if exists [dbo].[GetChildObjectIds]
 GO
+drop function if exists [utility].[GetObjectDisplayValueWrapper]
+GO
+drop function if exists [utility].[GetObjectDisplayValue]
+GO
 drop function if exists [dbo].[GetReferenceItemDisplayValue]
 GO
 drop function if exists [dbo].[GetAssetFieldHash]
 GO
+drop function if exists [graph].[GetKeyPath]
+GO
+drop function if exists [graph].[GetPath]
+GO
 drop function if exists [graph].[GetPathSegment]
 GO
 drop function if exists [graph].[GetXmlSegment]
+GO
+drop function if exists [graph].[Hop_GenerateSalt]
+GO
+drop function if exists [graph].[ReformatSegments]
 GO
 drop function if exists [integration].[GetObjectByAssetTypeId]
 GO
@@ -54,6 +78,12 @@ GO
 drop function if exists [utility].[DeriveIntersectName]
 GO
 drop function if exists [utility].[DeriveIntersectTypeName]
+GO
+drop function if exists [utility].[GetAssetBusinessKey]
+GO
+drop function if exists [utility].[GetAssetDisplayValueWrapper]
+GO
+drop function if exists [utility].[GetAssetDisplayValue]
 GO
 drop function if exists [utility].[GetBreadcrumbStringWrapper]
 GO

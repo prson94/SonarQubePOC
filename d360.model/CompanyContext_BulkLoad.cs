@@ -742,20 +742,19 @@ namespace d360.model
 							) P
 							where P.ItemNumber = V.ItemNumber;
 
-							update V
-							set V.Uid = A.UId
-							from #PathValues V 
-							inner join Asset A on A.AssetTypeID = @atID
-							cross apply dbo.GetAssetTextPathById(A.ID, '/') T
-							where V.FullPath = T.TextPath;
+							update	V
+							set		V.Uid = A.UId
+							from	#PathValues V 
+									inner join Asset A on A.AssetTypeID = @atID
+									inner join AssetPath P on P.ID = A.ID
+							where	V.FullPath = P.DisplayPath;
 
-							update V
-							set V.ParentUid = A.Uid
-							from #PathValues V 
-							inner join Asset A on A.AssetTypeID = @atID
-							cross apply dbo.GetAssetTextPathById(A.ID, '/') T
-							where V.ParentPath = T.TextPath;
-
+							update	V
+							set		V.ParentUid = A.Uid
+							from	#PathValues V 
+									inner join Asset A on A.AssetTypeID = @atID
+									inner join AssetPath P on P.ID = A.ID
+							where	V.ParentPath = P.DisplayPath;
 
 							update A
 							set A.AssetUid = P.Uid,
@@ -1069,12 +1068,10 @@ namespace d360.model
 							string parentKeyHash = await GetModelKeyHashForLevel(item, assetType, item.Level - 1).ConfigureAwait(false);
 							string itemPath = await GetModelPathForLevel(item, assetType, item.Level).ConfigureAwait(false);
 
-							Guid? parentUid = (await QueryAsync<Guid?>(@"select [uid] from asset a
-								cross apply GetAssetKeyHashById(A.ID) S
-								cross apply dbo.GetAssetTextPathById(A.ID, '>') TP
-								where a.AssetTypeID = @assetTypeId 
-								and TP.TextPath like @textPath
-								and S.KeyHash = @parentKeyHash", new { parentKeyHash, assetTypeId = assetType.ID, textPath = itemPath })).FirstOrDefault();
+							Guid? parentUid = (await QueryAsync<Guid?>(@"select [uid] from Asset A inner join AssetPath P on P.ID = A.ID
+								and A.AssetTypeID = @assetTypeId 
+								and P.DisplayPath like @textPath
+								and S.KeyPathHash = @parentKeyHash", new { parentKeyHash, assetTypeId = assetType.ID, textPath = itemPath })).FirstOrDefault();
 
 							if (parentUid.HasValue)
 							{

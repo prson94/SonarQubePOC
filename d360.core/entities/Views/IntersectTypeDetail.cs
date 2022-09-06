@@ -17,6 +17,9 @@ namespace d360.core.entities
         public Guid Uid { get; set; }
 
 		[DataMember]
+		public State State { get; set; }
+
+		[DataMember]
 		public string Name { get; set; }
 
 		public AssetTypeClass SubjectClass { get; set; }
@@ -75,7 +78,10 @@ namespace d360.core.entities
         [DataMember]
         public int? PredicateID { get; set; }
 
-        [DataMember]
+		[DataMember]
+		public Guid? PredicateUid { get; set; }
+
+		[DataMember]
         public string PredicateName { get; set; }
 
         [DataMember]

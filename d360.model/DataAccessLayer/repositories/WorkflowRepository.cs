@@ -987,12 +987,11 @@ namespace d360.model.DataAccessLayer
 							));
 
 			var sql = $@"select top {resultCount} A.ID, 
-								T.TextPath as Name, 
+								P.DisplayPath as Name, 
 								A.Object, 
 								A.ObjectID 
-						from AssetDetail A
-						cross apply dbo.GetAssetTextPathById(A.ID, ' > ') T
-						where A.AssetTypeID in ({(assetTypes.Any() ? string.Join(",", assetTypes) : "-1")}) 
+						from	AssetDetail A
+								inner join AssetPath P on P.ID = A.ID and A.AssetTypeID in ({(assetTypes.Any() ? string.Join(",", assetTypes) : "-1")}) 
 						{(string.IsNullOrWhiteSpace(query) ? "" : "and (A.DisplayValue like @query + '%' or A.DisplayValue like '%' + @query + '%')")}
 						order by A.DisplayValue";
 

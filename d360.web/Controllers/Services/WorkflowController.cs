@@ -2371,7 +2371,7 @@ namespace d360.web.Controllers.Services
 									,assettype.ObjectID as 'ObjectTypeID'	                                
 									,case 
 										when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
-										else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)')
+										else coalesce(ADV.DisplayValue,'(unknown)')
 									end as 'ObjectName'
 									,wis.id as 'ItemStepID'
 									,wvs.name as 'StepName'
@@ -2379,10 +2379,11 @@ namespace d360.web.Controllers.Services
 									,wvs.activitytype as 'ActivityType'
 									,iss.[object] as 'IssueObject'
 									,iss.[objectid] as 'IssueObjectID'
-									,utility.getassetdisplayvalue(cod.id) as 'IssueObjectName'  
-									,case when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id)
-									  when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
-										else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)')
+									,CODV.DisplayValue as 'IssueObjectName'  
+									,case 
+										when wi.[object] = 'Issue' then CODV.DisplayValue
+										when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
+										else coalesce(ADV.DisplayValue,'(unknown)')
 									end as Name,
 									wvs.Settings.query('settings/FormResponseType').value('.', 'varchar(50)') as 'responseType',
 									itemCount.assignedCount as 'countAssigned'
@@ -2390,7 +2391,8 @@ namespace d360.web.Controllers.Services
 									[workflow].[type] wt
 									inner join [workflow].[version] wv on (wt.id = wv.typeid)
 									inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
-									left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid])
+									left join Asset ass on ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]
+									left join AssetDisplayValue ADV on ADV.AssetID = ass.ID
 									left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
 									inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
 									inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
@@ -2402,6 +2404,7 @@ namespace d360.web.Controllers.Services
 									inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
 									left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
 									left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+									left join AssetDisplayValue CODV on CODV.AssetID = cod.ID
 									left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
 								where
 									wt.id = @typeId and wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3 
@@ -3033,9 +3036,8 @@ namespace d360.web.Controllers.Services
 							int objectId = (int)reassigned["@objectId"];
 							var objectType = reassigned["@objectType"];
 							var sql = @"Select A.Uid, D.DisplayValue as ObjectName
-						From
-						Asset A
-						cross apply dbo.GetAssetDisplayValueById(A.ID) D
+						from	Asset A
+								inner join AssetDisplayValue D on D.AssetID = A.ID
 						where   A.Object = @obj and A.ObjectID = @objId";
 							var objectDetails = Company.Query<dynamic>(sql, new { obj = objectType.Value, objId = objectId }).FirstOrDefault();
 							reassigned["@objectName"] = objectDetails.ObjectName;
@@ -3135,11 +3137,9 @@ namespace d360.web.Controllers.Services
 								}
 								else
 								{
-									var sql = @"Select D.DisplayValue as ObjectName
-												From
-												Asset A
-												cross apply dbo.GetAssetDisplayValueById(A.ID) D
-												where   A.Object = @obj and A.ObjectID = @objId";
+									var sql = @"select	D.DisplayValue as ObjectName
+												from	Asset A
+														inner join AssetDisplayValue D on D.AssetID = A.ID and A.Object = @obj and A.ObjectID = @objId";
 									previousObjectName = " - " + Company.Query<string>(sql, new { obj = objectType, objId = objectId }).FirstOrDefault();
 
 								}
@@ -3202,7 +3202,7 @@ namespace d360.web.Controllers.Services
 			from workflow.itemstep si
 			inner join workflow.item i on i.id = si.itemid
 			left join Asset a on a.[Object] = i.Object and a.ObjectID = i.ObjectID
-			cross apply dbo.GetAssetDisplayValueById(a.id) d
+			inner join AssetDisplayValue d on d.AssetID = a.ID
 			inner join workflow.versionstep vs on vs.id = si.stepid
 			inner join workflow.version v on v.ID = vs.VersionID
 			inner join workflow.[type] t on t.id = v.typeid
@@ -3298,7 +3298,7 @@ namespace d360.web.Controllers.Services
 					inner join IssueType t on t.id = s.IssueTypeID
 					inner join Asset A on A.Object = s.Object and A.ObjectID = s.ObjectID
 					inner join AssetType TA on TA.ID = A.AssetTypeID
-					cross apply dbo.GetAssetDisplayValueById(A.ID) D
+					inner join AssetDisplayValue D on D.AssetID = A.ID
 					 where i.ID = @itemId";
 
 					var issueDetails = Company.Query<WorkflowStepIssueDetail>(issueSql, new { itemId = detail.ItemID }).FirstOrDefault();

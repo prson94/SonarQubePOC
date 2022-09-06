@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Procedure.dbo.GetPageInformation-v7.3">
+  <changeSet author="tduric" id="Procedure.dbo.GetPageInformation-v7.4">
     <comment>GOV-18079, GOV-18449</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -71,7 +71,7 @@ begin
 			) as Breadcrumbs
 	from	Asset O
 			inner join AssetType T on T.ID = O.AssetTypeID
-			left join dbo.GetAssetDisplayValue() OD on OD.ID = O.ID
+			left join AssetDisplayValue OD on OD.AssetID = O.ID
 			
 			cross apply (
 						select	count(1) as [Count]

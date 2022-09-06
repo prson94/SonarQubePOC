@@ -497,7 +497,7 @@ namespace d360.model.DataAccessLayer
 					inner join AssetTag AT on AT.TagId = T.Id
 					inner join Asset A on A.ID = AT.AssetID
 					inner join AssetType AST ON AST.ID = A.AssetTypeId
-					left join dbo.GetAssetDisplayValue() D on D.ID = A.ID
+					left join AssetDisplayValue D on D.AssetID = A.ID
 				where t.uid = @uid";
 
 			var result = companyContext.Query<dynamic>(sql, new { uid = tagUid }, ApiTimeout).ToList();
@@ -1067,7 +1067,7 @@ namespace d360.model.DataAccessLayer
 							inner join Asset A ON A.ID = AT.AssetID
 							inner join AssetPath Node on Node.id = a.id
 							inner join AssetType AST ON AST.Id = A.AssetTypeId
-							cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
+							inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
 							{(addtagasstingfilter ? $" {tagsCrossApply} " : "")}
 						{whereClause}";
 
@@ -1102,7 +1102,7 @@ namespace d360.model.DataAccessLayer
 							inner join Asset A ON A.ID = AT.AssetID
 							inner join AssetPath Node on Node.id = a.id
 							inner join AssetType AST ON AST.Id = A.AssetTypeId
-							cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
+							inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
 							{tagsCrossApply}
 						{whereClause}
 						{sortClause}
@@ -1135,7 +1135,7 @@ namespace d360.model.DataAccessLayer
 									inner join Tag T on T.ID = TA.TagID
 									inner join Asset A on A.ID = TA.AssetID
 									inner join Asset R on R.Object = 'Resource' and R.ObjectID = TA.CreatedBy
-									cross apply dbo.GetAssetDisplayValueById(R.ID)ADV
+									inner join AssetDisplayValue ADV on ADV.AssetID = R.ID
 							where	T.[Uid] = @tagUid 
 									and A.[Uid] = @assetUid";
 			}
@@ -1146,7 +1146,7 @@ namespace d360.model.DataAccessLayer
 								ADV.DisplayValue as CreatedBy 
 						from    Tag T 
 								inner join Asset R on R.Object = 'Resource' and R.ObjectID = T.CreatedBy
-								cross apply dbo.GetAssetDisplayValueById(R.ID)ADV
+								inner join AssetDisplayValue ADV on ADV.AssetID = R.ID
 						where   T.[Uid] = @tagUid";
 			}
 

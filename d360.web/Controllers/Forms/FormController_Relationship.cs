@@ -669,7 +669,6 @@ namespace d360.web.Controllers
 				}
 
 				var models = Company.GetIntersectTypeOptions(subjectUid, objectUid, predicateUid, classLimits)
-					.Where(i => i.Type != "IntersectType")
 					.Select(i => new { title = i.Name, value = i.Uid.ToString() });
 
 				return new JsonNetResult { Data = models, Formatting = Formatting.None };

@@ -1993,8 +1993,8 @@ namespace d360.model
 			bool present = Query<bool>(@"
 										select	cast(iif(count(1)>0,1,0) as bit) 
 										from	IntersectType T
-											inner join AssetType A on (A.Object = T.Subject and A.ObjectID = T.SubjectID) or (A.Object = T.Object and A.ObjectID = T.ObjectID)
-											inner join metrics.Allocation L on L.AssetTypeUid = A.Uid and L.ScoreType = 1
+												inner join AssetType A on A.ID = T.SubjectAssetTypeID or A.ID = T.ObjectAssetTypeID
+												inner join metrics.Allocation L on L.AssetTypeUid = A.Uid and L.ScoreType = 1
 										where   T.ID = @id", new { id }).Single();
 
 			return present;

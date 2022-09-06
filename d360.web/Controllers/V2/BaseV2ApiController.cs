@@ -185,13 +185,13 @@ namespace d360.web.Controllers.V2
 					fieldJoins.Add($@"
 					outer apply (
 							SELECT hello = Stuff((
-							SELECT  distinct ' | ' + FRelation_P.TextPath
+							SELECT  distinct ' | ' + FRelation_P.DisplayPath
 								from [Intersect] FRelation_I 
 								inner Join Asset FRelation_RA on 
 								FRelation_I.[IntersectTypeID] = {intersectType.ID} AND 
 								((({joinObjectField} = FRelation_I.[Subject] and {joinObjectIdField} = FRelation_I.[SubjectID]) AND (FRelation_RA.[Object] = FRelation_I.[Object] and FRelation_RA.[ObjectID] = FRelation_I.[ObjectID])) 
 								OR ({joinObjectField} = FRelation_I.[Object] and {joinObjectIdField} = FRelation_I.[ObjectID]) AND (FRelation_I.[Subject] = FRelation_RA.[Object] and FRelation_I.[SubjectID] = FRelation_RA.ObjectID))
-								cross apply GetAssetTextPathById(FRelation_RA.ID, '/') FRelation_P
+								inner join AssetPath FRelation_P on FRelation_P.ID = FRelation_RA.ID  
 								Where 
 								FRelation_I.[IntersectTypeID] = {intersectType.ID} AND
 								((FRelation_I.[Object] = {joinObjectField} and FRelation_I.ObjectID = {joinObjectIdField}) 
@@ -225,7 +225,7 @@ namespace d360.web.Controllers.V2
 								inner join FieldType FT{tableAlias} on FT{tableAlias}.ID = {tableAlias}.FieldTypeID
 								{lookupValueJoinCriteria}								
 								cross apply dbo.GetAssetColorJsonByColor(AC{tableAlias}.Color) ACJ{tableAlias}
-								cross apply GetAssetDisplayValueByID(AC{tableAlias}.ID) ADV{tableAlias}
+								inner join AssetDisplayValue ADV{tableAlias} on ADV{tableAlias}.AssetID = AC{tableAlias}.ID
 								where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {joinObjectField} and {tableAlias}.[ObjectID] = {joinObjectIdField} FOR JSON PATH),
 								[Value] = 
 									(SELECT [Value] from Field {tableAlias}

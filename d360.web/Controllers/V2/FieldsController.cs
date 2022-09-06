@@ -1292,7 +1292,7 @@ namespace d360.web.Controllers.V2
 							d.DisplayValue as title  
 						from asset ast 
 							inner join assettype astt on (ast.assettypeid = astt.id) 
-							cross apply [dbo].GetAssetDisplayValueById(ast.id) d 
+							inner join AssetDisplayValue d on d.AssetID = ast.ID
 						where astt.Uid = @Uid order by d.DisplayValue";
 				}
 
@@ -2133,7 +2133,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 			]
-		public async Task<HttpResponseMessage> GetFilterVales(CancellationToken cancellationToken, Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, string lookupParentValue = null, bool isForAssetForm = false, Guid? assetUid = null)
+		public async Task<HttpResponseMessage> GetFilterValues(CancellationToken cancellationToken, Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, string lookupParentValue = null, bool isForAssetForm = false, Guid? assetUid = null)
 		{
 			var prefix = "Fields.GetFilterVales => ";
 			try
@@ -2282,12 +2282,11 @@ namespace d360.web.Controllers.V2
 													where	A.uid = @assetUid
 													", new { assetUid }).SingleOrDefault();
 
-						sql = $@"select	
-										P.TextPath as text,
+						sql = $@"select	P.DisplayPath as text,
 										cast(a.uid as nvarchar(36)) as value
 								from	Asset A
 										inner join AssetType T on T.ID = A.AssetTypeID and T.Id = @id
-										cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
+										inner join AssetPath P on P.ID = A.ID
 										cross apply dbo.GetAssetLevelById(A.ID) LV
 								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
 								order by P.TextPath 
@@ -2297,7 +2296,7 @@ namespace d360.web.Controllers.V2
 								select	count(*) + 1
 								from	Asset A
 										inner join AssetType T on T.ID = A.AssetTypeID and T.Id = @id
-										cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
+										inner join AssetPath P on P.ID = A.ID
 										cross apply dbo.GetAssetLevelById(A.ID) LV
 								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
 								option (maxrecursion 100)";

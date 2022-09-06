@@ -79,7 +79,7 @@ namespace d360.model.DataAccessLayer.repositories
 																	AssetName.DisplayValue,
 																	assetType.Class
 																from @favorites favorite
-																join dbo.Asset asset 
+																join Asset asset 
 																	on 
 																	(
 																		((favorite.ObjectType is null) or (favorite.ObjectType = asset.Object))
@@ -94,9 +94,8 @@ namespace d360.model.DataAccessLayer.repositories
 																		and favorite.Uid = asset.Uid
 																	)
 																	or (favorite.Uid = asset.Uid)
-																join dbo.AssetType assetType
-																	on asset.AssetTypeId = assetType.Id
-																outer apply [dbo].[GetAssetDisplayValueById](asset.Id) AssetName
+																inner join AssetType assetType on asset.AssetTypeId = assetType.Id
+																inner join AssetDisplayValue AssetName on AssetName.AssetID = asset.ID
 
 																insert into @assetTypes
 																select 

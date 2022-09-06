@@ -662,11 +662,11 @@ namespace d360.model
             if (at.Class == AssetTypeClass.Reference)
             {
                 jointablesql = $@" left join {ApiExecutionFieldTable} C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' ";
-                DisplayValuesql = $@" cross apply GetAssetDisplayValueByObjectID(@AssetTypeID,A.Object,A.ObjectID,C.FieldValue) ADV ";
+                DisplayValuesql = $@" inner join AssetDisplayValue ADV on ADV.AssetID = A.AssetID ";
             }
             else
             {
-                DisplayValuesql = $@" cross apply GetAssetDisplayValueByObjectID(@AssetTypeID,A.Object,A.ObjectID,Null) ADV ";
+                DisplayValuesql = $@" inner join AssetDisplayValue ADV on ADV.AssetID = A.AssetID ";
             }
 
             string fieldsSelectSql = $@"
@@ -721,7 +721,7 @@ namespace d360.model
 											from    api.ExecutionGroup EG
 													inner join Asset A on A.Object = 'Group' and A.uid = EG.GroupUid
 													inner join [Group] G on G.id = A.ObjectID
-													cross apply GetAssetDisplayValueByID(A.ID) ADV
+													inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
 											where   EG.ExecutionID = @executionID
 													and EG.ItemNumber between @beginItemNumber and @endItemNumber 
 													and EG.Success is null 
@@ -1977,9 +1977,7 @@ namespace d360.model
 										inner join Asset S on T.ExecutionID = @executionID and S.AssetTypeID = @assetTypeID and S.Uid = T.Uid and T.Uid is not null;
 
 								update  T
-								set     T.ParentAssetID = S.ID,
-										T.ParentObject = S.Object,
-										T.ParentObjectID = S.ObjectID
+								set     T.ParentAssetID = S.ID
 								from    api.ExecutionAsset T
 										inner join Asset S on T.ExecutionID = @executionID and S.Uid = T.ParentUid and T.ParentUid is not null
 										inner join AssetType ST on ST.ID = S.AssetTypeID and ST.ID = T.ParentAssetTypeID;",
@@ -2003,7 +2001,7 @@ namespace d360.model
                     if (Guid.TryParse(predicateUidString, out Guid predicateUid))
                     {
                         dbArgs.Add("@predicateUid", predicateUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" P.[UID] = @predicateUid";
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" PredicateUid = @predicateUid";
                     }
                 }
 
@@ -2014,7 +2012,7 @@ namespace d360.model
                     if (Guid.TryParse(assetTypeUidString, out Guid assetTypeUid))
                     {
                         dbArgs.Add("@assettypeuid", assetTypeUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid)";
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (SubjectUid = @assettypeuid OR ObjectUid = @assettypeuid)";
                     }
                 }
 
@@ -2025,40 +2023,29 @@ namespace d360.model
                     if (Enum.TryParse(stateString, out State state))
                     {
                         dbArgs.Add("@state", state);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.State = @state";
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" State = @state";
                     }
                 }
             }
 
             string sql = $@"
-							select	I.Id,
-								I.Uid,
-								I.State as State,
-								coalesce(I.IsSystem, 0) as IsSystem,
-								P.UID as 'Predicate.Uid',
-								coalesce(P.[Type],0) as 'Predicate.Type',
-								coalesce(P.Name,'') as 'Predicate.Name',
-								coalesce(P.Inverse,'') as 'Predicate.Inverse',
-								coalesce(SI.Uid, S.Uid) as 'Subject.Uid',
-								case 
-									when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
-									else coalesce(SP.[Path], S.Name)
-								end as 'Subject.Name',
-								coalesce(S.Class, 0) as 'Subject.Class',
-								I.SubjectCardinality as 'Subject.Cardinality',
-								O.Uid as 'Object.Uid',
-								coalesce(OP.[Path], O.Name)  as 'Object.Name',
-								coalesce(O.Class, 0) as 'Object.Class',
-								I.ObjectCardinality as 'Object.Cardinality'
-							from	IntersectType I
-								left join [Predicate] P on P.ID = I.PredicateID
-
-								left join AssetType S on (S.uid = I.SubjectUid OR (S.Object = I.Subject and S.ObjectID = I.SubjectID))
-								outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
-
-								left join IntersectTypeDetail SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
-								left join AssetType O on (O.uid = I.ObjectUid OR (O.Object = I.Object and O.ObjectID = I.ObjectID))
-								outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
+							select	Id,
+									Uid,
+									State,
+									coalesce(IsSystem, 0) as IsSystem,
+									PredicateUid as 'Predicate.Uid',
+									coalesce(PredicateType,0) as 'Predicate.Type',
+									coalesce(PredicateName,'') as 'Predicate.Name',
+									coalesce(PredicateInverse,'') as 'Predicate.Inverse',
+									SubjectUid as 'Subject.Uid',
+									SubjectAssetTypePath as 'Subject.Name',
+									SubjectClass as 'Subject.Class',
+									SubjectCardinality as 'Subject.Cardinality',
+									ObjectUid as 'Object.Uid',
+									ObjectAssetTypePath  as 'Object.Name',
+									ObjectClass as 'Object.Class',
+									ObjectCardinality as 'Object.Cardinality'
+							from	IntersectTypeDetail
 							{whereClause} for json path";
 
             List<IntersectTypeApiViewModel> models = await GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs);
@@ -4383,17 +4370,10 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                 table.Columns.Add("ExecutionItemUid", typeof(Guid));
                 table.Columns.Add("ItemNumber", typeof(int));
                 table.Columns.Add("SubjectUid", typeof(Guid));
-                table.Columns.Add("Subject", typeof(string));
-                table.Columns.Add("SubjectID", typeof(int));
                 table.Columns.Add("SubjectCardinality", typeof(int));
                 table.Columns.Add("ObjectUid", typeof(Guid));
-                table.Columns.Add("Object", typeof(string));
-                table.Columns.Add("ObjectID", typeof(int));
                 table.Columns.Add("ObjectCardinality", typeof(int));
                 table.Columns.Add("PredicateUid", typeof(Guid));
-                table.Columns.Add("PredicateID", typeof(int));
-                table.Columns.Add("Message", typeof(string));
-                table.Columns.Add("Success", typeof(bool));
                 table.Columns.Add("IsNew", typeof(bool));
                 table.Columns.Add("uid", typeof(Guid));
 
@@ -4465,24 +4445,24 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 										update  api.ExecutionRelationshipType
 										set     [Uid] = Newid()
 										where   ExecutionID = @ExecutionID 
-											and Success is null
-											and ([Uid] is null or [Uid] = @emptyUid);
+												and Success is null
+												and ([Uid] is null or [Uid] = @emptyUid);
 
 										insert into [IntersectType] 
-											(SubjectUid, [Subject], SubjectID, ObjectUid, [Object], ObjectID, PredicateID, SubjectCardinality, ObjectCardinality, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Uid])
-										select  SubjectUid, [Subject], SubjectID, 
-											ObjectUid, [Object], ObjectID, 
-											PredicateID, SubjectCardinality, ObjectCardinality,
-											@resourceId, @utcNow, @resourceId, @utcNow, [Uid] 
+												(SubjectClass, SubjectAssetTypeID, ObjectClass, ObjectAssetTypeID, PredicateID, SubjectCardinality, ObjectCardinality, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Uid])
+										select  SubjectClass, SubjectAssetTypeID, 
+												ObjectClass, ObjectAssetTypeID, 
+												PredicateID, SubjectCardinality, ObjectCardinality,
+												@resourceId, @utcNow, @resourceId, @utcNow, [Uid] 
 										from    api.ExecutionRelationshipType 
 										where   ExecutionID = @ExecutionID 
-											and Success is null;
+												and Success is null;
 
 										update  api.ExecutionRelationshipType
 										set     Success = 1,
-											Message = 'Added Successfully'
+												Message = 'Added Successfully'
 										where   ExecutionID = @ExecutionID 
-											and Success is null; ",
+												and Success is null; ",
                     new { execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow, emptyUid = Guid.Empty }, commandTimeout: timeout);
 
                     results = Query<RelationshipTypeResult>(
@@ -4966,10 +4946,10 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                 table.Columns.Add("ParentUid", typeof(Guid));
                 table.Columns.Add("ObjectType", typeof(string));
                 table.Columns.Add("ObjectTypeID", typeof(int));
+				
+				table.Columns.Add("ParentAssetTypeID", typeof(int));
 
-                table.Columns.Add("ParentObjectType", typeof(string));
-                table.Columns.Add("ParentObjectTypeID", typeof(int));
-                table.Columns.Add("IntersectTypeUid", typeof(Guid));
+				table.Columns.Add("IntersectTypeUid", typeof(Guid));
                 table.Columns.Add("IntersectTypeID", typeof(int));
 
                 DataTable errorTable = new DataTable();
@@ -6362,16 +6342,16 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     sw.Restart();
                     Connection.Execute(@"
-										declare @st varchar(50),
+										declare @sc int,
 												@stid int,
-												@ot varchar(50),
+												@oc int,
 												@otid int,
 												@it int
 
-										select	@st = Subject,
-												@stid = SubjectID,
-												@ot = Object,
-												@otid = ObjectID,
+										select	@sc = SubjectClass,
+												@stid = SubjectAssetTypeID,
+												@oc = ObjectClass,
+												@otid = ObjectAssetTypeID,
 												@it = ID
 										from	IntersectType
 										where	[uid] = @uid
@@ -6407,13 +6387,13 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 															ELSE 0
 														  END
 										from	api.ExecutionRelationship T
-												left join AssetWithType S on S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
-												left join AssetWithType O on O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid
+												left join Asset S on S.AssetTypeID = @stid and S.[uid] = T.SubjectUid
+												left join Asset O on O.AssetTypeID = @otid and O.[uid] = T.ObjectUid
 												left join IntersectType IT on IT.uid = @uid
-												left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectId= S.ObjectId and I.ObjectId = O.ObjectId and I.Subject = S.Object and I.Object = O.Object
+												left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectAssetId= S.ID and I.ObjectAssetId = O.ID 
 											where T.ExecutionID = @ExecutionID and (T.IsNew is null OR T.IsNew = 1);
 
-										if @st = 'ReferenceItemType' and @stid = 0
+										if @sc = 9 and @stid = 0
 										begin
 										update	T
 										set		T.SubjectAssetID = 0,
@@ -6421,11 +6401,11 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 												T.Subject = S.Object,
 												T.SubjectID = S.ObjectID
 										from	api.ExecutionRelationship T
-													inner join AssetType S on S.[uid] = T.SubjectUid and T.Subject is null
+												inner join AssetType S on S.[uid] = T.SubjectUid and T.Subject is null and S.[Class] = @sc
 												where T.ExecutionID = @ExecutionID;
 										end
 
-										if @ot = 'ReferenceItemType' and @otid = 0 
+										if @oc = 9 and @otid = 0 
 										begin
 										update	T
 										set		T.ObjectAssetID = 0,
@@ -6433,7 +6413,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 												T.Object = O.Object,
 												T.ObjectID = O.ObjectID
 										from	api.ExecutionRelationship T
-												inner join AssetType O on O.[uid] = T.ObjectUid and T.Object is null
+												inner join AssetType O on O.[uid] = T.ObjectUid and T.Object is null and O.[Class] = @oc
 												where T.ExecutionID = @ExecutionID;
 										end",
                                         new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
@@ -7915,8 +7895,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 											Message = 'Relationship type (Uid) not found.' 
 									from    [api].[ExecutionRelationshipType] ER 
 									where   ER.ExecutionID = @ExecutionID 
-										and ER.Success is null 
-										and not exists (select 1 from IntersectType where Uid = ER.[Uid]);
+											and ER.Success is null 
+											and not exists (select 1 from IntersectType where Uid = ER.[Uid]);
 
 									update  ER 
 									set     Success = 0,
@@ -7924,10 +7904,10 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									from    [api].[ExecutionRelationshipType] ER 
 											inner join IntersectType T on T.Uid = ER.Uid
 									where   ER.ExecutionID = @ExecutionID 
-										and ER.Success is null 
-										and (ER.SubjectUid is not null or ER.ObjectUid is not null)
-										and (ER.SubjectUid <> T.SubjectUid or ER.ObjectUid <> T.ObjectUid)
-										and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);
+											and ER.Success is null 
+											and (ER.SubjectUid is not null or ER.ObjectUid is not null)
+											and (ER.SubjectUid <> T.SubjectUid or ER.ObjectUid <> T.ObjectUid)
+											and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);
 
 									update  ER 
 									set     Success = 0,
@@ -7935,21 +7915,21 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									from    [api].[ExecutionRelationshipType] ER 
 											inner join IntersectType I on I.Uid = ER.[Uid] 
 												and (
-													(I.SubjectCardinality = 1 and ER.SubjectCardinality <> 1 and I.ID in (select LookupObjectID from FieldType where LookupObjectType = 'IntersectType' and Object = I.Object and ObjectID = I.ObjectID and [Type] = 'FieldFromRelationship')) 
-													or (I.ObjectCardinality = 1 and ER.ObjectCardinality <> 1  and I.ID in (select LookupObjectID from FieldType where LookupObjectType = 'IntersectType' and Object = I.Subject and ObjectID = I.SubjectID and [Type] = 'FieldFromRelationship')) 
+													(I.SubjectCardinality = 1 and ER.SubjectCardinality <> 1 and I.ID in (select LookupObjectID from FieldType where LookupObjectType = 'IntersectType' and AssetTypeID = I.ObjectAssetTypeID and [Type] = 'FieldFromRelationship')) 
+													or (I.ObjectCardinality = 1 and ER.ObjectCardinality <> 1  and I.ID in (select LookupObjectID from FieldType where LookupObjectType = 'IntersectType' and AssetTypeID = I.SubjectAssetTypeID and [Type] = 'FieldFromRelationship')) 
 													)
 												and  ER.ExecutionID = @ExecutionID 
 												and ER.Success is null;
 
 									Update  T
-									set     SubjectUid = SA.Uid, [Subject] = SA.Object, SubjectID = SA.ObjectID
+									set     SubjectClass = SA.[Class], SubjectAssetTypeID = SA.ID
 									from    [api].[ExecutionRelationshipType] T
 											inner join IntersectType S on S.Uid = T.Uid
 											inner join AssetType SA on SA.ID = S.SubjectAssetTypeID 
 									where   T.ExecutionID = @ExecutionID and T.Success is null and T.SubjectUid is null;
 
 									Update  T
-									set     ObjectUid = OA.Uid, [Object] = OA.Object, ObjectID = OA.ObjectID
+									set     ObjectClass = OA.[Class], ObjectAssetTypeID = OA.ID
 									from    [api].[ExecutionRelationshipType] T
 											inner join IntersectType S on S.Uid = T.Uid
 											inner join AssetType OA on OA.ID = S.ObjectAssetTypeID
@@ -8053,31 +8033,29 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );
 
 								Update  ER 
-								set     [Subject] = AST.[Object],
-									SubjectID = AST.[ObjectID]
+								set     ER.SubjectAssetTypeID = AST.ID
 								from    [api].[ExecutionRelationshipType] ER 
-									inner join AssetType AST on AST.UID = ER.SubjectUID 
+										inner join AssetType AST on AST.UID = ER.SubjectUID 
 								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
 
 								Update  ER 
-								set     [Object] = AST.[Object], 
-									ObjectID = AST.[ObjectID] 
+								set     ER.ObjectAssetTypeID = AST.ID 
 								from    [api].[ExecutionRelationshipType] ER 
-									inner join AssetType AST on AST.UID = ER.ObjectUID 
+										inner join AssetType AST on AST.UID = ER.ObjectUID 
 								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
 
 								update  ER 
 								set     PredicateID = P.ID 
 								from    [api].[ExecutionRelationshipType] ER 
-									inner join [Predicate] P on P.UID = ER.PredicateUID 
+										inner join [Predicate] P on P.UID = ER.PredicateUID 
 								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
 
 								update  api.ExecutionRelationshipType 
 								set     Success = 0, 
-									Message = 'Predicate not found.' 
+										Message = 'Predicate not found.' 
 								where   ExecutionID = @ExecutionID 
-									and Success is null 
-									and PredicateID is null;", new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
+										and Success is null 
+										and PredicateID is null;", new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
 
             #endregion
 
@@ -8096,7 +8074,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 											Message ='Subject asset type not found.' 
 									where   ExecutionID = @ExecutionID 
 											and Success is null 
-											and (SubjectId is null or [Subject] is null);
+											and (SubjectUid is not null or SubjectUid <> @emptyUid)
+											and SubjectAssetTypeID is null;
 
 									update  api.ExecutionRelationshipType
 									set     Success = 0,
@@ -8110,7 +8089,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 											Message = 'Object asset type not found.' 
 									where   ExecutionID = @ExecutionID 
 											and Success is null 
-											and (ObjectId is null or [Object] is null);
+											and (ObjectUid is not null or ObjectUid <> @emptyUid)
+											and ObjectAssetTypeID is null;
 
 									update  T
 									set     T.Success = 0, 

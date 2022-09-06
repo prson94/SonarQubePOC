@@ -848,15 +848,19 @@ namespace d360.model
 			whenSql.Append("select distinct A.ID as AssetID ");
 			if (includeName)
 			{
-				whenSql.Append(", utility.GetAssetDisplayValueWrapper(A.ID) as Name ");
+				whenSql.Append(", ADV.DisplayValue as Name ");
 			}
 
 			if (includeUid)
 			{
-				whenSql.Append(", A.uid, graph.GetPathByAssetId(a.id,'>', '/') as Path ");
+				whenSql.Append(", A.uid, P.DisplayPath as Path ");
 			}
 
-			whenSql.Append($"from Asset A inner join AssetType T on T.ID = A.AssetTypeID and T.Object = '{rule.Object}' and T.ObjectID = {rule.ObjectID} ");
+			whenSql.Append($@"
+from	Asset A 
+		inner join AssetPath P on P.ID = A.ID
+		inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
+		inner join AssetType T on T.ID = A.AssetTypeID and T.Object = '{rule.Object}' and T.ObjectID = {rule.ObjectID} ");
 
 			int fCount = 1;
 			int rCount = 1;

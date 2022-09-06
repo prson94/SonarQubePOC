@@ -35,11 +35,12 @@ namespace d360.model
 				where exists
 					(SELECT *  
 					FROM IntersectType IT
-					WHERE P.[type] = 6 and P.ID = IT.PredicateID and ((IT.Subject = @ot and IT.SubjectID = @id) OR (IT.Object = @ot and IT.ObjectID = @id)))
+					WHERE P.[Type] = 6 and P.ID = IT.PredicateID and (IT.SubjectAssetTypeID = @id or IT.ObjectAssetTypeID = @id))
 				union
-					select 
-						P.ID as [ID], P.Name as [Name] 
-				from  [dbo].[NymRelation] R inner join [dbo].[predicate] P on P.ID = R.PredicateID where R.[Object] = @ot and R.ObjectID = @id";
+				select	P.ID as [ID], P.Name as [Name] 
+				from	NymRelation R 
+						inner join [Predicate] P on P.ID = R.PredicateID 
+						inner join AssetType T on T.ID = @id and T.Object = R.[Object] and T.ObjectID = R.ObjectID";
 
 		public static readonly string GroupResourceInfoList = @"
 				select  RG.GroupID,
@@ -275,7 +276,8 @@ namespace d360.model
 				order by case when (Subject = @type and SubjectID = @id) then ObjectName else SubjectName end";
 
 		public static readonly string PolicySettingsItem = @"
-				select	T.Name, 
+				select	T.ID,
+						T.Name, 
 						T.Description, 
 						T.HierarchyMaximumDepth,
 						T.Uid,
@@ -384,15 +386,15 @@ namespace d360.model
 								else I.SubjectID 
 							end	
 						inner join AssetType ST on ST.ID = S.AssetTypeID
-						cross apply dbo.GetAssetDisplayValueById(S.ID) D
+						inner join AssetDisplayValue D on D.AssetID = S.ID
 						outer apply (
 							select I.* from [Intersect] I
-							inner join IntersectTypeDetail D on D.[Object] = ST.[Object] and D.ObjectID = ST.ObjectID and PredicateType = 3
+							inner join IntersectTypeDetail D on D.ObjectAssetTypeID = ST.ID and PredicateType = 3
 							where I.IntersectTypeID = D.ID and I.ObjectID = S.ObjectID and I.[Object] = S.[Object]
 						) P
 						left join Asset SP on SP.[Object] = P.[Subject] and SP.ObjectID = P.SubjectID
 						left join AssetType SPT on SPT.ID = SP.AssetTypeID
-						cross apply dbo.GetAssetDisplayValueById(SP.ID) DP
+						inner join AssetDisplayValue DP on DP.AssetID = SP.ID
 				where	(I.Subject = @type and I.SubjectID = @id) or (I.[Object] = @type and I.ObjectID = @id) and I.visible = 1
 				union
 				select 
@@ -678,7 +680,7 @@ namespace d360.model
 				left join [IntersectDetail] ISD on coalesce(s.[Object], I.[Object]) = 'Intersect' and ISD.ID = coalesce(s.ObjectID, I.ObjectID)
 				left join Asset A on A.[Object] = coalesce(s.[Object], I.[Object]) and A.ObjectID = coalesce(s.ObjectID, I.ObjectID)
 				left join AssetType AST on AST.id = A.AssetTypeID
-				outer apply dbo.GetAssetDisplayValueById(A.ID) DV
+				left join AssetDisplayValue DV on DV.AssetID = A.ID
 				outer apply dbo.GetAssetUrlById(A.ID) UL
 				inner join workflow.VersionStep VS on VS.ID = IST.StepID
 				left join AssetDetail D on D.Object = I.Object and D.ObjectID = I.ObjectID

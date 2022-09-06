@@ -114,7 +114,7 @@ namespace d360.web.Controllers
 							select 
 								RD.ResponsibilityTypeName as ResponsibilityType,
 								A.ID as AssetID,
-								TP.TextPath as [Path],
+								P.DisplayPath as [Path],
 								case RD.SecurityAsset
 									when 'G' then 'Via Group'
 									when 'O' then 'Via Organization'
@@ -122,12 +122,11 @@ namespace d360.web.Controllers
 								end as ViaType,
 								A.Uid as UID,
 								RD.SecurityAssetName as Via
-							from 
-								ResponsibilityDetail RD 
-								inner join AssetType T on T.ObjectID = RD.TypeID and T.Object = RD.Type and T.Object = @type and T.ObjectID = @id
-								inner join Asset A on A.AssetTypeID = T.ID
-								cross apply [dbo].GetAssetTextPathById(A.ID, ' / ') TP
-							where {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} 
+							from	ResponsibilityDetail RD 
+									inner join AssetType T on T.ObjectID = RD.TypeID and T.Object = RD.Type and T.Object = @type and T.ObjectID = @id
+									inner join Asset A on A.AssetTypeID = T.ID
+									inner join AssetPath P on P.ID = A.ID
+							where	{(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} 
 								ResourceID = @resourceID and AssetID = 0 and ApplyToType = 1 and RD.IsVisible = 1
 		
 							union all
@@ -135,7 +134,7 @@ namespace d360.web.Controllers
 							select	
 									RD.ResponsibilityTypeName as ResponsibilityType,
 									RD.AssetID as AssetID,
-									TP.TextPath as [Path],
+									P.DisplayPath as [Path],
 									case RD.SecurityAsset
 										when 'G' then 'Via Group'
 										when 'O' then 'Via Organization'
@@ -144,7 +143,7 @@ namespace d360.web.Controllers
 									A.Uid as UID,
 									RD.SecurityAssetName as Via
 							from	ResponsibilityDetail RD
-									cross apply [dbo].GetAssetTextPathById(RD.AssetID, ' / ') TP
+									inner join AssetPath P on P.ID = RD.AssetID
 									inner join Asset A on A.ID = RD.AssetID
 									inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @resourceID and T.Object = @type and T.ObjectID = @id
 							where  {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} 
@@ -637,7 +636,7 @@ namespace d360.web.Controllers
 													cross apply STRING_SPLIT(F.Value, ',') SPFfi
 													inner join Asset AC on AC.Object = FT.LookupObjectType and AC.ObjectID = try_cast(SPFfi.value as int)
 													cross apply dbo.GetAssetColorJsonByColor(AC.Color) ACJ
-													cross apply GetAssetDisplayValueByID(AC.ID) ADV
+													left join AssetDisplayValue ADV on ADV.AssetID = AC.ID
 													where FieldTypeID = F.fieldTypeID and fi.AssetID = F.AssetID and FT.Type = 'Lookup'
 												for json path)
 											)Color(value)

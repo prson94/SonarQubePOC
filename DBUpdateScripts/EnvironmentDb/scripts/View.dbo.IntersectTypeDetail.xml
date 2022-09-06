@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.dbo.IntersectTypeDetail-v5">
+  <changeSet author="Pappas" id="View.dbo.IntersectTypeDetail-v5.1">
 	<comment>GOV-18449</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -16,10 +16,11 @@ create or alter view [dbo].[IntersectTypeDetail]
 as
 	SELECT		IT.uid, 
 				IT.ID,
+			    IT.[State],
+				iif (IT.SubjectClass = 9, 'Reference List', SATT.Name) + ' ' + P.Name + ' ' + iif (IT.ObjectClass = 9, 'Reference List', OATT.Name)	as Name,
 				IT.SubjectClass,
 				IT.SubjectAssetTypeID,
 				SATT.Uid as SubjectUid,
-				--IT.Subject, IT.SubjectID, 
 				IT.SubjectCardinality, 
 				iif (IT.SubjectClass = 9, 'Reference List', SATT.Name) AS SubjectName, 
 				COALESCE (SIcon.IconBackColor, '#000') AS SubjectIconBackColor, 
@@ -29,7 +30,6 @@ as
 				IT.ObjectClass,
 				IT.ObjectAssetTypeID,
 				OATT.Uid as ObjectUid,
-				--IT.Object, IT.ObjectID, 
 				IT.ObjectCardinality, 
 				iif (IT.ObjectClass = 9, 'Reference List', OATT.Name) AS ObjectName, 
 				COALESCE (OIcon.IconBackColor, '#000') AS ObjectIconBackColor, 
@@ -37,6 +37,7 @@ as
 				COALESCE (OIcon.IconText, SUBSTRING(COALESCE (OATT.Name, 'Re'), 1, 2)) AS ObjectIconText, 
 				OP.Path as ObjectAssetTypePath,
 				IT.PredicateID, 
+				P.Uid as PredicateUid,
 				P.Name AS PredicateName, 
 				P.Inverse AS PredicateInverse, 
 				P.Type AS PredicateType, 

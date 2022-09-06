@@ -468,7 +468,7 @@ namespace d360.model.DataAccessLayer
 														SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
 												from    api.ExecutionDiagramAsset EDA
 														inner join Asset A on a.uid = EDA.uid
-														cross apply GetAssetDisplayValueByID(A.Id) ADV
+														inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
 												where   EDA.ExecutionID = @executionID 
 														and EDA.uid is not null
 														and ADV.DisplayValue is not null

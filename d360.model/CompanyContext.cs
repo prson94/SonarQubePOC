@@ -281,7 +281,16 @@ namespace d360.model
 
 		public Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type)
 		{
-			return GetRelationshipTypes(null, $"where I.State = 1 and ((I.SubjectID = {id} and I.[Subject] = '{type}') or (I.ObjectID = {id} and I.Object = '{type}'))");
+			var sType = type.ToString();
+			var assetType = Filter<AssetType>(a => a.Object == sType && a.ObjectID == id).FirstOrDefault();
+			if (assetType != null)
+			{
+				return GetRelationshipTypes(null, $"where State = 1 and (SubjectAssetTypeID = {assetType.ID} or ObjectAssetTypeID = {assetType.ID})");
+			}
+			else
+			{
+				return null;
+			}
 		}
 
 		public List<AllocationPossibility> GetAllocationOptions()
@@ -1161,7 +1170,7 @@ from	IntersectType I
 			{
 				whereStatement = $@" and exists(select top 1 it.id from intersecttype it
 				 inner join Predicate p on it.PredicateID = p.ID and p.Type = {(int)PredicateType.Diagram}
-				 where it.subject = T.object and it.subjectid = T.objectid
+				 where it.SubjectAssetTypeID = T.ID
 				)";
 			}
 
@@ -1171,7 +1180,9 @@ from	IntersectType I
 									I.Name,
 									I.Type
 						FROM		(
-									select	T.ObjectID as ID,
+									select	T.ID as AssetTypeID,
+											T.Object as Type,
+											T.ObjectID as ID,
 											T.Uid,
 											case 
 												when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: '
@@ -1183,8 +1194,7 @@ from	IntersectType I
 												when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} :: '
 												when T.Object = 'TaskType' and T.[Class] = 15 then '{CommonNames.AssetTypeClass_Task.CleanForSql()} :: ' 
 												when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} :: '
-											end + coalesce(P.[Path], T.Name) as Name,
-											T.Object as Type
+											end + coalesce(P.[Path], T.Name) as Name
 									from	AssetType T
 											cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
 									where	T.Object not in ({excludeClassInStatement}){classLimitSql}
@@ -1193,14 +1203,14 @@ from	IntersectType I
 
 			if (subjectUid.HasValue)
 			{
-				sql += $@" left join IntersectType T on (T.SubjectUid = @subjectUid and T.Object = I.[Type] and T.ObjectID = I.ID) ";
+				sql += $@" left join IntersectTypeDetail T on T.SubjectUid = @subjectUid and T.ObjectAssetTypeID = I.AssetTypeID ";
 				if (objectUid.HasValue || predicateUid.HasValue)
 				{
 					if (objectUid.HasValue)
 					{
 						if (predicateUid.HasValue)
 						{
-							sql += $@" and (T.ObjectUid = @objectUid and T.PredicateID = (select top 1 ID from [Predicate] where UID = @predicateUid) or T.ID is null)";
+							sql += $@" and T.ObjectUid = @objectUid and T.PredicateUid = @predicateUid";
 						}
 						else
 						{
@@ -1211,7 +1221,7 @@ from	IntersectType I
 					{
 						if (predicateUid.HasValue)
 						{
-							sql += $@" and T.PredicateID = (select top 1 ID from [Predicate] where UID = @predicateUid) where T.ID is null";
+							sql += $@" and T.PredicateUid = @predicateUid where T.ID is null";
 						}
 					}
 				}
@@ -1833,7 +1843,7 @@ from	IntersectType I
 
 									if @err = '' and (@sc = 0 OR @sc = 1) --ONLY ONE, check if multiple already
 									begin
-										if exists(select ObjectClass, ObjectAssetTypeID, count(1) as [Count] from [Intersect] where IntersectTypeID = @id group by ObjectClass, ObjectAssetTypeID having count(1) > 1)
+										if exists(select ObjectAssetID, ObjectAssetTypeID, count(1) as [Count] from [Intersect] where IntersectTypeID = @id group by ObjectAssetID, ObjectAssetTypeID having count(1) > 1)
 										begin
 											set @err = 'There are objects that are related to more than one subject.'
 										end
@@ -1841,7 +1851,7 @@ from	IntersectType I
 
 									if @err = '' and (@oc = 0 OR @oc = 1) --ONLY ONE, check if multiple already
 									begin
-										if exists(select SubjectClass, SubjectAssetTypeID, count(1) as [Count] from [Intersect] where IntersectTypeID = @id group by SubjectClass, SubjectAssetTypeID having count(1) > 1)
+										if exists(select SubjectAssetID, SubjectAssetTypeID, count(1) as [Count] from [Intersect] where IntersectTypeID = @id group by SubjectAssetID, SubjectAssetTypeID having count(1) > 1)
 										begin
 											set @err = 'There are subjects that are related to more than one object.'
 										end
@@ -2363,7 +2373,7 @@ from	IntersectType I
 								{fieldJoin}
 								inner join Asset AC on AC.Object = '{f.LookupObjectType}' and AC.ObjectID = {fieldclause}
 								cross apply dbo.GetAssetColorJsonByColor(AC.Color) ACJ
-								cross apply GetAssetDisplayValueByID(AC.ID) ADV
+								inner join AssetDisplayValue ADV on ADV.AssetID = AC.ID
 								where FieldTypeID = {f.ID} and {whereClause}
 								for json path)
 							){name}_T(value)");

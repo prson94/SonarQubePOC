@@ -403,7 +403,9 @@ namespace d360.web.Controllers
 						end
 						else if @type = 'Path'
 						begin
-							select  @assetId = ID from Asset where Object = @obj and ObjectID = @objId
+							select  @assetId = ID 
+							from	Asset 
+							where	Object = @obj and ObjectID = @objId
 							select	@fieldValue = graph.GetPathByAssetId(@assetId, ' <i class=""fa fa-angle-right""></i> ', ' / ')
 						end
 						else
@@ -1329,7 +1331,7 @@ namespace d360.web.Controllers
 
 			try
 			{
-				var parent = Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType);
+				var parent = Company.GetParentType(assetType.ID);
 				model.Add("ID", assetType.ObjectID);
 				model.Add("Name", assetType.Name);
 				model.Add("Description", assetType.Description);
@@ -1768,7 +1770,7 @@ namespace d360.web.Controllers
 
 				if (obj == "Taxonomy")
 				{
-					var det = await Company.QueryFirstOrDefaultAsync<string>("select tp.TextPath from  asset a cross apply GetAssetTextPathById(a.id, '/') tp where a.[Object] = 'Taxonomy' and a.ObjectID = @id", new { id = objID }).ConfigureAwait(false);
+					var det = await Company.QueryFirstOrDefaultAsync<string>("select tp.DisplayPath from Asset a inner join AssetPath tp on tp.ID = a.ID where a.[Object] = 'Taxonomy' and a.ObjectID = @id", new { id = objID }).ConfigureAwait(false);
 					intersectDisplayValue = det;
 				}
 
@@ -1829,37 +1831,30 @@ namespace d360.web.Controllers
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'ArtifactType')                            
 							inner join [Intersect] I on ( (I.Subject = 'Artifact' and ASS.ObjectID = I.SubjectID and I.IntersectTypeID = @intersectTypeId)) 
-							cross apply [dbo].GetAssetDisplayValueById(ASS.ID) disp
+							inner join AssetDisplayValue disp on disp.AssetID = ASS.ID
 							union
 							select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'ArtifactType')     
 							inner join [Intersect] I on ( (I.Object = 'Artifact' and ASS.ObjectID = I.ObjectID and I.IntersectTypeID = @intersectTypeId) ) 
-							cross apply [dbo].GetAssetDisplayValueById(ASS.ID) disp
+							inner join AssetDisplayValue disp on disp.AssetID = ASS.ID
 							order by disp.DisplayValue";
-					break;
-				case SystemObjects.IntersectType:
-					sql = @"select distinct iname.Name as Name, A.ID, 'Intersect' as [Type] , I.Uid
-							from [Intersect] A 
-							inner join [Intersect] I on A.IntersectTypeID = @id and ( (I.Subject = 'Intersect' and A.ID = I.SubjectID) OR (I.Object = 'Intersect' and A.ID = I.ObjectID) ) 
-							cross apply [dbo].getintersectNames(A.ID) iname
-							order by iname.Name";
 					break;
 				case SystemObjects.PolicyType:
 				case SystemObjects.Policy:
 				case SystemObjects.TaxonomyType:
 					var ty = type == SystemObjects.TaxonomyType ? "Taxonomy" : "Policy";
-					sql = $@"select distinct disp.TextPath as Name, ASS.ObjectID as ID, '{ty}' as [Type] , ASS.Uid
+					sql = $@"select distinct disp.DisplayPath as Name, ASS.ObjectID as ID, '{ty}' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = '{ty}Type')                            
 							inner join [Intersect] I on ( (I.Subject = '{ty}' and ASS.ObjectID = I.SubjectID)) and I.IntersectTypeID = @intersectTypeId
-							cross apply [dbo].GetAssetTextPathById(ASS.ID,'/') disp
+							inner join AssetPath disp on disp.ID = ASS.ID
 							union
-							select distinct disp.TextPath as Name, ASS.ObjectID as ID, '{ty}' as [Type] , ASS.Uid
+							select distinct disp.DisplayPath as Name, ASS.ObjectID as ID, '{ty}' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = '{ty}Type')     
 							inner join [Intersect] I on ( (I.Object = '{ty}' and ASS.ObjectID = I.ObjectID) ) and I.IntersectTypeID = @intersectTypeId
-							cross apply [dbo].GetAssetTextPathById(ASS.ID,'/') disp
+							inner join AssetPath disp on disp.ID = ASS.ID
 							order by disp.TextPath";
 					break;
 				case SystemObjects.ReferenceItemType:
@@ -1902,13 +1897,13 @@ namespace d360.web.Controllers
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'TaskType')                            
 							inner join [Intersect] I on ( (I.Subject = 'Task' and ASS.ObjectID = I.SubjectID and I.IntersectTypeID = @intersectTypeId)) 
-							cross apply [dbo].GetAssetDisplayValueById(ASS.ID) disp
+							inner join AssetDisplayValue disp on disp.AssetID = ASS.ID
 							union
 							select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'TaskType' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'TaskType')     
 							inner join [Intersect] I on ( (I.Object = 'Task' and ASS.ObjectID = I.ObjectID and I.IntersectTypeID = @intersectTypeId) ) 
-							cross apply [dbo].GetAssetDisplayValueById(ASS.ID) disp
+							inner join AssetDisplayValue disp on disp.AssetID = ASS.ID
 							order by disp.DisplayValue";
 					break;
 			}
@@ -2016,7 +2011,7 @@ namespace d360.web.Controllers
 							T.Name as TypeName,
 							A.Object,
 							A.ObjectID,
-							utility.GetAssetDisplayValueWrapper(A.ID) as ObjectName,
+							disp.DisplayValue as ObjectName,
 							RD.ResponsibilityTypeName,
 							case RD.SecurityAsset
 								when 'G' then 'Via Group'
@@ -2027,7 +2022,8 @@ namespace d360.web.Controllers
 						from 
 						ResponsibilityDetail RD 
 						inner join AssetType T on T.ObjectID = RD.TypeID and T.Object = RD.Type and T.Object = @type and T.ObjectID = @id
-						inner join Asset A on A.AssetTypeID = T.ID
+						inner join Asset A on A.AssetTypeID = T.ID 
+						inner join AssetDisplayValue disp on disp.AssetID = A.ID 
 						where {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} 
 							ResourceID = @resourceID and AssetID = 0 and ApplyToType = 1 and RD.IsVisible = 1
 		
@@ -2043,7 +2039,7 @@ namespace d360.web.Controllers
 								T.Name as TypeName,
 								RD.Object,
 								RD.ObjectID,
-								utility.GetAssetDisplayValueWrapper(RD.AssetID) as ObjectName,
+								disp.DisplayValue as ObjectName,
 								RD.ResponsibilityTypeName,
 								case RD.SecurityAsset
 									when 'G' then 'Via Group'
@@ -2052,6 +2048,7 @@ namespace d360.web.Controllers
 								end as Via,
 								RD.Context
 						from	ResponsibilityDetail RD
+								inner join AssetDisplayValue disp on disp.AssetID = RD.AssetID
 								inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @resourceID and T.Object = @type and T.ObjectID = @id
 						where  {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} RD.AssetID != 0 
 							and RD.ApplyToType = 0 and RD.IsVisible = 1";
@@ -2073,7 +2070,7 @@ namespace d360.web.Controllers
 							T.Name as TypeName,
 							A.Object,
 							A.ObjectID,
-							utility.GetAssetDisplayValueWrapper(A.ID) as ObjectName,
+							display.DisplayValue as ObjectName,
 							RD.ResponsibilityTypeName,
 							case RD.SecurityAsset
 								when 'G' then 'Via Group'
@@ -2085,6 +2082,7 @@ namespace d360.web.Controllers
 						ResponsibilityDetail RD 
 						inner join AssetType T on T.ObjectID = RD.TypeID and T.Object = RD.Type and T.Object = @type and T.ObjectID = @id
 						inner join Asset A on A.AssetTypeID = T.ID
+						inner join AssetDisplayValue disp on disp.AssetID = A.ID
 						where RD.SecurityAsset = 'G' and RD.SecurityAssetID = @groupID and AssetID = 0 and ApplyToType = 1 and RD.IsVisible = 1
 		
 						union all
@@ -2099,7 +2097,7 @@ namespace d360.web.Controllers
 								T.Name as TypeName,
 								RD.Object,
 								RD.ObjectID,
-								utility.GetAssetDisplayValueWrapper(RD.AssetID) as ObjectName,
+								disp.DisplayValue as ObjectName,
 								RD.ResponsibilityTypeName,
 								case RD.SecurityAsset
 									when 'G' then 'Via Group'
@@ -2108,6 +2106,7 @@ namespace d360.web.Controllers
 								end as Via,
 								RD.Context
 						from	ResponsibilityDetail RD
+								inner join AssetDisplayValue disp on disp.AssetID = RD.AssetID
 								inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and T.Object = @type and T.ObjectID = @id
 						where  RD.AssetID != 0 
 							and RD.ApplyToType = 0 and RD.IsVisible = 1
@@ -2212,7 +2211,7 @@ namespace d360.web.Controllers
 					{ "ID", row.ObjectID },
 					{ "Name", row.Name },
 					{ "Description", row.Description },
-					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = row.ObjectID, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
+					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = row.ID }) },
 					{ "MaximumDepth", row.HierarchyMaximumDepth },
 					{ "AssetTypeUID", row.Uid }
 				}
@@ -2595,10 +2594,9 @@ namespace d360.web.Controllers
 								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
 								inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
 								cross apply dbo.GetAssetColorJsonByColor(ACf.Color) ACJ
-								cross apply GetAssetDisplayValueByID(ACF.ID) ADV 
 								outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.ObjectID = SPF.Value and FD1.AssetID=ACF.ID) FD
 								outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.ObjectID = SPF.Value and FD2.AssetID=ACF.ID) FPL
-								where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";
+								where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type}' and f.[ObjectID] = {id}) FOR JSON PATH";
 				string colorAndValue = Company.Query<string>(colorAndValueSql).FirstOrDefault();
 
 				if (!string.IsNullOrEmpty(colorAndValue))
@@ -3702,11 +3700,11 @@ namespace d360.web.Controllers
 																	A.UID as UID,
 																	A.ObjectID ,
 																	T.ID as AssetTypeId,
-																	P.TextPath,
+																	P.DisplayPath as TextPath,
 																	L.Level
 															from	Asset A
 																	inner join AssetType T on T.ID = A.AssetTypeID
-																	cross apply dbo.GetAssetTextPathById(A.ID, '/') P
+																	inner join AssetPath P on P.ID = A.ID
 																	cross apply dbo.GetAssetLevelById(A.ID) L
 															where	A.Object = 'Policy' and A.ObjectID = @id
 															", new { id }).SingleOrDefault();
@@ -4391,11 +4389,11 @@ select	A.ID as AssetID,
 		A.UpdatedBy,
 		T.ID as TypeID,
 		T.uid as AssetTypeUid,
-		P.TextPath,
+		P.DisplayPath as TextPath,
 		L.Level
 from	Asset A
 		inner join AssetType T on T.ID = A.AssetTypeID
-		cross apply dbo.GetAssetTextPathById(A.ID, '/') P
+		inner join AssetPath P on P.ID = A.ID
 		cross apply dbo.GetAssetLevelById(A.ID) L
 where	A.Object = 'Taxonomy' and A.ObjectID = @id
 ", new { id }).SingleOrDefault();

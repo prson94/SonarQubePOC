@@ -86,7 +86,7 @@ namespace d360.web.Controllers.V2
 										from #govRoles gov
 										inner join AssetType at on at.uid = gov.GovRoleUid
 										inner join asset a on a.AssetTypeID = at.ID
-										inner join dbo.GetAssetDisplayValue() adv on adv.id = a.id
+										inner join AssetDisplayValue adv on adv.AssetID = a.ID
 										outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
 					", new { governanceRoleUid, assetUid }
 					 , ApiTimeout);
@@ -657,26 +657,29 @@ namespace d360.web.Controllers.V2
 					select diagramassetuid as uid, FromUid as duid from processexpandeddata where diagramassetuid = @targetassetuid
 					union
 					select diagramassetuid as uid, ToUid as duid from processexpandeddata where diagramassetuid = @targetassetuid)
-					select 
-						assets.uid,
-						utility.GetAssetDisplayValue(a.id) as 'FlowObject',
-						utility.GetAssetDisplayValue(a2.id) as 'RelatedAsset'
-					 from assets
-						inner join asset a on a.uid = assets.duid
-						inner join [intersect] i on i.SubjectAssetID = a.ID 
-						inner join intersecttype it on i.intersecttypeid = it.id
-						inner join asset a2 on a2.ID = i.ObjectAssetID
-					where it.objectcardinality = 1 or it.SubjectCardinality = 1
+					select	assets.uid,
+							adv.DisplayValue as 'FlowObject',
+							adv2.DisplayValue as 'RelatedAsset'
+					 from	assets
+							inner join asset a on a.uid = assets.duid
+							inner join AssetDisplayValue adv on adv.AssetID = a.ID
+							inner join [intersect] i on i.SubjectAssetID = a.ID 
+							inner join intersecttype it on i.intersecttypeid = it.id
+							inner join asset a2 on a2.ID = i.ObjectAssetID
+							inner join AssetDisplayValue adv2 on adv2.AssetID = a2.ID
+					where	it.objectcardinality = 1 or it.SubjectCardinality = 1
 					union
 					select 
 						assets.uid,
-						utility.GetAssetDisplayValue(a.id) as 'FlowObject',
-						utility.GetAssetDisplayValue(a2.id) as 'RelatedAsset'
+						adv.DisplayValue as 'FlowObject',
+						adv2.DisplayValue as 'RelatedAsset'
 					 from assets
 						inner join asset a on a.uid = assets.duid
+						inner join AssetDisplayValue adv on adv.AssetID = a.ID
 						inner join [intersect] i on i.ObjectAssetID = a.ID 
 						inner join intersecttype it on i.intersecttypeid = it.id
 						inner join asset a2 on a2.ID = i.SubjectAssetID 
+						inner join AssetDisplayValue adv2 on adv2.AssetID = a2.ID
 					where it.objectcardinality = 1 or it.SubjectCardinality = 1
 					", new { targetAssetUid });
 
