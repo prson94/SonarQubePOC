@@ -425,4 +425,10 @@ namespace d360.core.entities
 		public string StatementWithoutColumnName => 
 			Regex.Replace(this.Statement, @" as \[?\w*\]?$", "");
 	}
+
+	public class AssetTypeKeyFieldMap
+	{
+		public Guid AssetTypeUid { get; set; }
+		public int FieldTypeId { get; set; }
+	}
 }
