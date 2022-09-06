@@ -408,8 +408,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         }
 
         const field = this.whenFieldTypes.find((field) => field.value === when.FieldTypeID);
-        const item = field.values.find((item) => item.value === when.Value);
-        return item.label;
+		const item = field.values.find((item) => item.value === when.Value);
+		return item.value;
     }
 
     mapToWhenRelationIntersectTypeUidForV2(when: ResponsibilityTypeRelationRuleDefinitionWhenItem) {
