@@ -232,6 +232,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Responsibility type has asset assignments and cannot be deleted. Use cascade=true to delete all assignments and rules.
+        /// </summary>
+        public static string ResponsibilityTypeHasAssetAssigments {
+            get {
+                return ResourceManager.GetString("ResponsibilityTypeHasAssetAssigments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Responsibility type with UID &apos;{0}&apos; does not exist..
+        /// </summary>
+        public static string ResponsibilityTypeUidNotExist {
+            get {
+                return ResourceManager.GetString("ResponsibilityTypeUidNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Non Unique Responsibility Uids: {0}. Identifiers must be unique within a table..
         /// </summary>
         public static string ResponsibilityUidNonUnique {
