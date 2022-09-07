@@ -446,8 +446,8 @@ namespace d360.model.DataAccessLayer
 						dbArgs.Add("@relatedAssetUid", relatedAssetUID);
 						relatedAssetSql = $"{objectAlias}.[UID] = @relatedAssetUid";
 					}
-					intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and abs(I.ObjectID) = {subjectAlias}.ObjectID";
-					intersecTypeJoin = $"IT.[Subject] = {ATobjectAlias}.[Object] and IT.SubjectID = {ATobjectAlias}.ObjectID and IT.[Object] = {ATsubjectAlias}.[Object] and abs(IT.ObjectID) = {ATsubjectAlias}.ObjectID";
+					intersectJoin = $"I.SubjectAssetID = {objectAlias}.ID and I.ObjectAssetID = {subjectAlias}.ID ";
+					intersecTypeJoin = $"IT.SubjectAssetTypeID = {ATobjectAlias}.ID and IT.ObjectAssetTypeID = {ATsubjectAlias}.ID ";
 				}
 				else if (queryParams.ToList().Any(q => q.Key.ToLower() == "_subjectuid"))
 				{
@@ -457,16 +457,16 @@ namespace d360.model.DataAccessLayer
 						dbArgs.Add("@relatedAssetUid", relatedAssetUID);
 						relatedAssetSql = $"{subjectAlias}.[UID] = @relatedAssetUid";
 					}
-					intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and abs(I.SubjectID) = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
-					intersecTypeJoin = $"IT.[Subject] = {ATsubjectAlias}.[Object] and abs(IT.SubjectID) = {ATsubjectAlias}.ObjectID and IT.[Object] = {ATobjectAlias}.[Object] and IT.ObjectID = {ATobjectAlias}.ObjectID";
+					intersectJoin = $"I.SubjectAssetID = {subjectAlias}.ID and I.ObjectAssetID = {objectAlias}.ID";
+					intersecTypeJoin = $"IT.SubjectAssetTypeID = {ATsubjectAlias}.ID and IT.ObjectAssetTypeID = {ATobjectAlias}.ID";
 				}
 				else
 				{
 					//subject and object not specified
 					includeBoth = true;
 					IntersectTypeIDField = ", I.IntersectTypeID ";
-					intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and abs(I.ObjectID) = {subjectAlias}.ObjectID";
-					reverseIntersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and abs(I.SubjectID) = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
+					intersectJoin = $"I.SubjectAssetID = {objectAlias}.ID and I.ObjectAssetID = {subjectAlias}.ID";
+					reverseIntersectJoin = $"I.SubjectAssetID = {subjectAlias}.ID and I.ObjectAssetID = {objectAlias}.ID";
 				}
 
 				var innerSql = $@"

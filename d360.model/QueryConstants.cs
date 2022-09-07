@@ -440,7 +440,7 @@ namespace d360.model
 												select	IT.ID
 												from	IntersectType IT
 														inner join [Predicate] ITP on ITP.ID = IT.PredicateID and ITP.Type = 6 -- Synonym
-												where	IT.SubjectAssetTypeID = @id OR IT.ObjectAssetTypeID = @id
+												where	IT.SubjectAssetTypeID = T.ID OR IT.ObjectAssetTypeID = T.ID
 											) O
 									) S
 				where	T.Uid = @assetTypeUid";

@@ -2218,73 +2218,6 @@ namespace d360.web.Controllers
 			);
 		}
 
-		[Route("policytypes/{assetTypeUid:Guid}/policies")]
-		public IEnumerable<dynamic> GetPoliciesByType(int id, bool stripHtml = false)
-		{
-			getDynamicFieldJoinStatements(id, "Policy", out string joins, out string columns, false, false, true, false, "A.ObjectID");
-
-			var permissionSql = $@"case when exists (
-										select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & {(int)Permission.EditAsset} = {(int)Permission.EditAsset} and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
-										) 
-											then 1
-											else 0
-
-										end as P_CanEdit,
-										case when exists(
-															 select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & {(int)Permission.DeleteAsset} = {(int)Permission.DeleteAsset} and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
-														   ) 
-														   then 1
-														   else 0
-
-										end as P_CanDelete";
-
-			if (Company.CurrentResourceIsAdmin)
-			{
-				permissionSql = "1 as P_CanEdit, 1 as P_CanDelete";
-			}
-
-			var querySql = $@"
-							select	top 100 percent 
-									A.ObjectID as ID, 
-									A.[Uid],
-									A.ID as AssetID, 
-									P.SubjectID as ParentID,
-									TD.DisplayValue,
-									{columns}
-									case 
-											when Work.[Count] > 0 then cast(1 as bit)
-											else cast(0 as bit)
-										end as HasWorkflow,
-									{permissionSql}
-							from	
-									Asset A
-									inner join AssetType ATT on ATT.ID = A.AssetTypeID and ATT.ObjectID = @id  and A.Object = 'Policy'
-									{joins}         
-									inner join dbo.AssetDisplayValue TD on TD.AssetID = A.ID
-									outer apply (
-												select	I.SubjectID
-												from	[Intersect] I
-														inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.ObjectAssetID = A.ID
-														inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-												) P
-									cross apply (
-												select	count(1) as [Count]
-												from	workflow.EventRegistration WER
-														inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
-												where	WER.Object = ATT.Object
-														and WER.ObjectID = ATT.ObjectID
-												) Work
-							where   A.ID not in ({Company.GetNoReadSqlStatement()})
-									and A.AssetTypeID not in ({Company.GetAssetTypeNoReadSqlStatement()})";
-
-			var sql = string.Format(@"select * from ({0}) A", querySql);
-			sql = applyFilteringSuffix(sql, Request);
-			sql += " order by A.DisplayValue";
-			var policies = Company.Query<dynamic>(sql, new { id, r = Company.CurrentResourceID }).ToList();
-
-			return policies;
-		}
-
 		[Route("PolicyType/{id:int}/levels")]
 		public IQueryable<dynamic> GetPolicyTypeLevels(int id)
 		{
@@ -2696,7 +2629,7 @@ namespace d360.web.Controllers
 			model.Object = type.ToString();
 			model.ObjectID = id;
 
-			var metadata = Company.Query<dynamic>(@"
+			var metadataResult = await Company.QueryAsync<dynamic>(@"
 					select  V.DisplayValue as AssetName, 
 							T.Name as AssetTypeName, 
 							T.Object as ObjectType, 
@@ -2708,7 +2641,9 @@ namespace d360.web.Controllers
 							inner join AssetDisplayValue V on V.AssetID = A.ID 
 							inner join AssetType T on T.ID = A.AssetTypeID 
 							outer apply dbo.UserAssetPermissions(@resourceId, T.ID) P 
-					where   A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id, resourceId = Company.CurrentResourceID }).FirstOrDefault();
+					where   A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id, resourceId = Company.CurrentResourceID });
+			var metadata = metadataResult.FirstOrDefault();
+
 
 			if (metadata != null)
 			{
@@ -2741,7 +2676,7 @@ namespace d360.web.Controllers
 
 			if (includeHeader)
 			{
-				model.Scores = Company.Query<dynamic>(@"
+				var scoreResult = await Company.QueryAsync<dynamic>(@"
 					select	*
 					from	(
 							select  S.EffectiveDate,
@@ -2763,7 +2698,8 @@ namespace d360.web.Controllers
 									inner join Asset A on A.Uid = S.AssetUid and A.Object = @Object and A.ObjectID = @ObjectID and S.EffectiveDate <= @date 
 									inner join metrics.Allocation AL on AL.Uid = S.AllocationUid
 							) O
-					where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow }).ToList();
+					where	O.RowNum = 1", new { model.Object, model.ObjectID, date = DateTime.UtcNow });
+				model.Scores = scoreResult.ToList();
 			}
 
 			FieldColumnMapper fcMapper = null;

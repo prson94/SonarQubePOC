@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.api.ExecutionAsset-v1">
+  <changeSet author="Pappas" id="Table.api.ExecutionAsset-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -39,6 +39,30 @@ BEGIN
 	)
 END
 
+if not exists (select * from information_schema.columns where table_schema='api' and table_name = 'ExecutionAsset' and column_name = 'UpdateGraph')
+begin
+  alter table api.ExecutionAsset add UpdateGraph bit constraint DF_ApiExecutionAsset_UpdateGraph default(0) not null
+end
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'ExecutionAsset' and COLUMN_NAME = 'ParentAssetTypeID')
+begin
+	alter table [api].[ExecutionAsset] add ParentAssetTypeID int null
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.api.ExecutionAsset.Indices-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionAsset_Asset')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ApiExecutionAsset_Asset] ON [api].[ExecutionAsset] ( [ExecutionID] DESC, [AssetID] ASC ) INCLUDE([ItemNumber])
@@ -58,48 +82,12 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionAsset_Succ
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ApiExecutionAsset_Success] ON [api].[ExecutionAsset] ( [ExecutionID] DESC, [Success] ASC ) INCLUDE([ItemNumber])
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Table.api.ExecutionAsset-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-
-if not exists (select * from information_schema.columns where table_schema='api' and table_name = 'ExecutionAsset' and column_name = 'UpdateGraph')
-begin
-  alter table api.ExecutionAsset add UpdateGraph bit constraint DF_ApiExecutionAsset_UpdateGraph default(0) not null
-end
 
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionAsset_UpdateGraph')
 BEGIN
 	create nonclustered index IX_ApiExecutionAsset_UpdateGraph on api.ExecutionAsset (ExecutionID asc, UpdateGraph asc)
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-alter table api.ExecutionAsset DROP CONSTRAINT IF EXISTS DF_ApiExecutionAsset_UpdateGraph
-drop index if exists IX_ApiExecutionAsset_UpdateGraph on api.ExecutionAsset
-alter table api.ExecutionAsset DROP COLUMN IF EXISTS UpdateGraph
-		]]>
-	</rollback>
-  </changeSet>
 
-  <changeSet author="Puneet gupta" id="Table.api.ExecutionAsset-IX_ApiExecutionAsset_Uid-v3">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionAsset_Uid')
 BEGIN
 	create nonclustered index IX_ApiExecutionAsset_Uid on api.ExecutionAsset (Uid asc)
@@ -108,10 +96,7 @@ END
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionAsset_Uid')
-BEGIN
-drop index if exists IX_ApiExecutionAsset_Uid on api.ExecutionAsset
-END
+
 		]]>
 	</rollback>
   </changeSet>

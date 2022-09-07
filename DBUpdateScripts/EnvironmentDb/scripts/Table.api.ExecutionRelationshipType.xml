@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.api.ExecutionRelationshipType-v1">
+  <changeSet author="Pappas" id="Table.api.ExecutionRelationshipType-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -14,26 +14,66 @@
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionRelationshipType')
 BEGIN
 	CREATE TABLE [api].[ExecutionRelationshipType](
-		[ExecutionID] [uniqueidentifier] NOT NULL,
-		[ExecutionItemUid] [uniqueidentifier] NULL,
-		[ItemNumber] [int] NOT NULL,
-		[SubjectUid] [uniqueidentifier] NULL,
-		[Subject] [varchar](50) NULL,
-		[SubjectID] [int] NULL,
-		[SubjectCardinality] [int] NOT NULL,
-		[ObjectUid] [uniqueidentifier] NULL,
-		[Object] [varchar](50) NULL,
-		[ObjectID] [int] NULL,
-		[ObjectCardinality] [int] NOT NULL,
-		[PredicateUid] [uniqueidentifier] NOT NULL,
-		[PredicateID] [int] NULL,
-		[Message] [nvarchar](2500) NULL,
-		[Success] [bit] NULL,
-		[IsNew] [bit] NULL,
-		[uid] [uniqueidentifier] NULL,
-		CONSTRAINT [PK_ApiExecutionRelationshipType] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [ItemNumber] ASC )
+		ExecutionID uniqueidentifier not null,
+		ExecutionItemUid uniqueidentifier null,
+		ItemNumber int not null,
+		SubjectUid uniqueidentifier null,
+		SubjectClass int null,
+		SubjectAssetTypeID int null,
+		SubjectCardinality int not null,
+		ObjectUid uniqueidentifier null,
+		ObjectClass int null,
+		ObjectAssetTypeID int null,
+		ObjectCardinality int not null,
+		PredicateUid uniqueidentifier not null,
+		PredicateID int null,
+		[Message] nvarchar(2500) null,
+		[Success] bit null,
+		[IsNew] bit null,
+		[uid] uniqueidentifier null,
+		CONSTRAINT PK_ApiExecutionRelationshipType PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [ItemNumber] ASC )
 	)
 END
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'ExecutionRelationshipType' and COLUMN_NAME = 'SubjectClass')
+begin
+	alter table [api].[ExecutionRelationshipType] add SubjectClass int null
+end
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'ExecutionRelationshipType' and COLUMN_NAME = 'SubjectAssetTypeID')
+begin
+	alter table [api].[ExecutionRelationshipType] add SubjectAssetTypeID int null
+end
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'ExecutionRelationshipType' and COLUMN_NAME = 'ObjectClass')
+begin
+	alter table [api].[ExecutionRelationshipType] add ObjectClass int null
+end
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'ExecutionRelationshipType' and COLUMN_NAME = 'ObjectAssetTypeID')
+begin
+	alter table [api].[ExecutionRelationshipType] add ObjectAssetTypeID int null
+end
+
+if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'ExecutionRelationshipType' and COLUMN_NAME = 'Subject')
+begin
+	alter table [api].[ExecutionRelationshipType] drop column [Subject]
+end
+
+if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'ExecutionRelationshipType' and COLUMN_NAME = 'Subject')
+begin
+	alter table [api].[ExecutionRelationshipType] drop column [SubjectID]
+end
+
+if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'ExecutionRelationshipType' and COLUMN_NAME = 'Subject')
+begin
+	alter table [api].[ExecutionRelationshipType] drop column [Object]
+end
+
+if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'ExecutionRelationshipType' and COLUMN_NAME = 'Subject')
+begin
+	alter table [api].[ExecutionRelationshipType] drop column [ObjectID]
+end
 		]]>
     </sql>
 	<rollback>

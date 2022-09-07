@@ -4600,12 +4600,10 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 							Set PredicateID=ER.PredicateID,
 								SubjectCardinality=ER.SubjectCardinality, 
 								ObjectCardinality=ER.ObjectCardinality,
-								[Subject] = ER.Subject,
-								SubjectID = ER.SubjectID,
-								SubjectUid = ER.SubjectUid,
-								[Object] = ER.Object,
-								ObjectID = ER.ObjectID,
-								ObjectUid = ER.ObjectUid,
+								SubjectClass = ER.SubjectClass,
+								SubjectAssetTypeID = ER.SubjectAssetTypeID,
+								ObjectClass = ER.ObjectClass,
+								ObjectAssetTypeID = ER.ObjectAssetTypeID,
 								UpdatedBy=@resourceId,
 								UpdatedOn=@utcNow
 							from [intersecttype] IT
@@ -5608,12 +5606,12 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 																							update 
 																							set     T.SubjectAssetTypeID = S.SubjectAssetTypeID,
 																									T.SubjectAssetID = S.ParentAssetID,
-																									T.Subject = S.ParentObject,
-																									T.SubjectID = S.ParentObjectID,
+																									T.Subject = 'NONE',
+																									T.SubjectID = 0,
 																									T.UpdatedBy = @R
 																						when not matched by target then
 																							insert  (IntersectTypeID, SubjectAssetTypeID, SubjectAssetID, Subject, SubjectID, ObjectAssetTypeID, ObjectAssetID, Object, ObjectID, CreatedBy, UpdatedBy)
-																							values  (S.IntersectTypeID, S.SubjectAssetTypeID, S.ParentAssetID, S.ParentObject, S.ParentObjectID, S.ObjectAssetTypeID, S.AssetID, S.Object, S.ObjectID, @R, @R)
+																							values  (S.IntersectTypeID, S.SubjectAssetTypeID, S.ParentAssetID, 'NONE', 0, S.ObjectAssetTypeID, S.AssetID, 'NONE', 0, @R, @R)
 																						output $action, inserted.[uid], S.ItemNumber into #ParentChildRelationships;
 
 																						-- Log the parent removals into Dependent Change table
@@ -7900,17 +7898,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 									update  ER 
 									set     Success = 0,
-											Message = 'Cannot change SubjectUid or ObjectUid for a relationship type that already has relationships.' 
-									from    [api].[ExecutionRelationshipType] ER 
-											inner join IntersectType T on T.Uid = ER.Uid
-									where   ER.ExecutionID = @ExecutionID 
-											and ER.Success is null 
-											and (ER.SubjectUid is not null or ER.ObjectUid is not null)
-											and (ER.SubjectUid <> T.SubjectUid or ER.ObjectUid <> T.ObjectUid)
-											and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);
-
-									update  ER 
-									set     Success = 0,
 											Message = 'Relationship type referenced in FieldFromRelationship field type. Cardinality may not be changed.' 
 									from    [api].[ExecutionRelationshipType] ER 
 											inner join IntersectType I on I.Uid = ER.[Uid] 
@@ -7925,15 +7912,26 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									set     SubjectClass = SA.[Class], SubjectAssetTypeID = SA.ID
 									from    [api].[ExecutionRelationshipType] T
 											inner join IntersectType S on S.Uid = T.Uid
-											inner join AssetType SA on SA.ID = S.SubjectAssetTypeID 
-									where   T.ExecutionID = @ExecutionID and T.Success is null and T.SubjectUid is null;
+											inner join AssetType SA on SA.Uid = T.SubjectUid
+									where   T.ExecutionID = @ExecutionID and T.Success is null;
 
 									Update  T
 									set     ObjectClass = OA.[Class], ObjectAssetTypeID = OA.ID
 									from    [api].[ExecutionRelationshipType] T
 											inner join IntersectType S on S.Uid = T.Uid
-											inner join AssetType OA on OA.ID = S.ObjectAssetTypeID
-									where   T.ExecutionID = @ExecutionID and T.Success is null and T.ObjectUid is null;",
+											inner join AssetType OA on OA.Uid = T.ObjectUid
+									where   T.ExecutionID = @ExecutionID and T.Success is null;
+
+									update  ER 
+									set     Success = 0,
+											Message = 'Cannot change SubjectUid or ObjectUid for a relationship type that already has relationships.' 
+									from    [api].[ExecutionRelationshipType] ER 
+											inner join IntersectType T on T.Uid = ER.Uid
+									where   ER.ExecutionID = @ExecutionID 
+											and ER.Success is null 
+											and (ER.SubjectUid is not null or ER.ObjectUid is not null)
+											and (ER.SubjectAssetTypeID <> T.SubjectAssetTypeID or ER.ObjectAssetTypeID <> T.ObjectAssetTypeID)
+											and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);",
                 new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
 
@@ -8033,13 +8031,15 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );
 
 								Update  ER 
-								set     ER.SubjectAssetTypeID = AST.ID
+								set     ER.SubjectAssetTypeID = AST.ID,
+										ER.SubjectClass = AST.Class
 								from    [api].[ExecutionRelationshipType] ER 
 										inner join AssetType AST on AST.UID = ER.SubjectUID 
 								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
 
 								Update  ER 
-								set     ER.ObjectAssetTypeID = AST.ID 
+								set     ER.ObjectAssetTypeID = AST.ID,
+										ER.ObjectClass = AST.Class 
 								from    [api].[ExecutionRelationshipType] ER 
 										inner join AssetType AST on AST.UID = ER.ObjectUID 
 								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
@@ -8131,7 +8131,8 @@ where   ER.ExecutionID = @ExecutionID
 			where   P.Uid = ER.PredicateUid 
 					and I.SubjectAssetTypeID = IT.SubjectAssetTypeID 
 					and I.ObjectAssetTypeID = IT.ObjectAssetTypeID 
-					and I.Uid != IT.Uid;",
+					and I.Uid != IT.Uid
+		);",
 					new { execution.ExecutionID }, commandTimeout: timeout);
             }
         }

@@ -1434,7 +1434,7 @@ namespace d360.web.Controllers
 						{
 							Request = new System.Net.Http.HttpRequestMessage()
 						};
-						responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
+						//responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
 					}
 
 					if (responseModel.Object == SystemObjects.Taxonomy.ToString() && model.PreloadData)
