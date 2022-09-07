@@ -121,6 +121,17 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	$destroy = new Subject();
 
+	get isFirstItemFromTargetSelected(): boolean {
+		return this.selectedItemsFromTarget.findIndex((selectedItem) => selectedItem.ObjectID === this.itemsFromTarget[0].ObjectID && selectedItem.Object === this.itemsFromTarget[0].Object) > -1;
+	}
+
+	get isLastItemFromTargetSelected(): boolean {
+		const lastIndex: number = this.itemsFromTarget.length - 1;
+		return this.selectedItemsFromTarget.findIndex((selectedItem): boolean => {
+			return selectedItem.ObjectID === this.itemsFromTarget[lastIndex].ObjectID && selectedItem.Object === this.itemsFromTarget[lastIndex].Object;
+		}) > -1;
+	}
+
 	constructor(
 		private cdRef: ChangeDetectorRef,
 		private formBuilder: FormBuilder,
@@ -550,18 +561,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 	}
 
-	disableBtnMoveToTop() {
-		return (!this.selectedItemsFromTarget
-			|| this.selectedItemsFromTarget.length === 0
-			|| this.selectedItemsFromTarget.findIndex((i) => i.ObjectID == this.itemsFromTarget[0].ObjectID && i.Object == this.itemsFromTarget[0].Object) > -1
-		);
-	}
-
-	disableBtnMoveUp() {
-		return (!this.selectedItemsFromTarget
-			|| this.selectedItemsFromTarget.length === 0
-			|| this.selectedItemsFromTarget.findIndex((i) => i.ObjectID == this.itemsFromTarget[0].ObjectID && i.Object == this.itemsFromTarget[0].Object) > -1
-		);
+	isMoveUpPossible(): boolean {
+		return this.selectedItemsFromTarget?.length && !this.isFirstItemFromTargetSelected;
 	}
 
 	setIndexes(arrayOfObjects: object[]): void {
@@ -582,12 +583,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		});
 	}
 
-	disableBtnMoveDown() {
-		return (!this.selectedItemsFromTarget
-			|| this.selectedItemsFromTarget.length === 0
-			|| this.selectedItemsFromTarget.findIndex(
-				(i) => i.ObjectID == this.itemsFromTarget[this.itemsFromTarget.length - 1].ObjectID && i.Object == this.itemsFromTarget[this.itemsFromTarget.length - 1].Object) > -1
-		);
+	isMoveDownPossible(): boolean {
+		return this.selectedItemsFromTarget?.length && !this.isLastItemFromTargetSelected;
 	}
 
 	moveDown() {
@@ -599,15 +596,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 	}
 
-	disableBtnMoveToBottom() {
-		return (!this.selectedItemsFromTarget
-			|| this.selectedItemsFromTarget.length === 0
-			|| this.selectedItemsFromTarget.findIndex(
-				(i) => i.ObjectID == this.itemsFromTarget[this.itemsFromTarget.length - 1].ObjectID && i.Object == this.itemsFromTarget[this.itemsFromTarget.length - 1].Object) > -1
-		);
-	}
-
-	moveToBottom(items: SiteNav[]) {
+	moveToBottom() {
 		if (this.selectedItemsFromTarget.length > 0) {
 			for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
 				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID == this.selectedItemsFromTarget[j].ObjectID && i.Object == this.selectedItemsFromTarget[j].Object);
