@@ -65,9 +65,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	hasHeader: boolean = false;
 	iconType = 'icon';
 	isInError: boolean = false;
-	newFolderItems: SiteNav[] = [];
+	itemsFromTarget: SiteNav[] = [];
 	_tempSelectedFolderItems: any[] = [];
-	selectedNewFolderItems: SiteNav[] = [];
+	selectedItemsFromTarget: SiteNav[] = [];
 	folderModel: SiteNav;
 	folderNameIsFocused: boolean = false;
 	selection: SiteNav = null;
@@ -218,9 +218,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				this.addPermissionAssets();
 
 				//preselect folder items
-				this.selectedNewFolderItems = [];
+				this.selectedItemsFromTarget = [];
 				folders.forEach((folder) => {
-					this.newFolderItems.push(folder);
+					this.itemsFromTarget.push(folder);
 				});
 
 				this.isAvailableFolderItemsTableLoading = false;
@@ -255,7 +255,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			}
 		}
 
-		folder.Items = this.newFolderItems;
+		folder.Items = this.itemsFromTarget;
 		folder.Permissions = [];
 
 		this.selectedPermissionAssets.forEach((p) => {
@@ -287,7 +287,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			case FormMode.Adding:
 				var model = {
 					folder: this.getModel(),
-					items: this.newFolderItems,
+					items: this.itemsFromTarget,
 				};
 
 				this.siteMenuService.addFolder(model)
@@ -488,14 +488,14 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	addNewFolder(item: SiteNav) {
 		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
 		let i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
-		this.newFolderItems.push(i);
+		this.itemsFromTarget.push(i);
 		this.checkBoxAllForNewFolderItemsDisabled = false;
 		this.setRequiredCount();
 	}
 
 	deleteNewFolder(item: SiteNav) {
 		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
-		let i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
+		let i = _.cloneDeep(this.itemsFromTarget.splice(x, 1)[0]);
 		this.availableItems.push(i);
 		this.setRequiredCount();
 	}
@@ -509,12 +509,12 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	addToSelectedFolderItems() {
 		if (this._tempSelectedFolderItems.length > 0) {
 			for (let j = 0; j < this._tempSelectedFolderItems.length; j++) {
-				if (this.newFolderItems.indexOf(this._tempSelectedFolderItems[j]) === -1) {
-					this.newFolderItems.push(this._tempSelectedFolderItems[j]);
+				if (this.itemsFromTarget.indexOf(this._tempSelectedFolderItems[j]) === -1) {
+					this.itemsFromTarget.push(this._tempSelectedFolderItems[j]);
 					this.availableItems = this.availableItems.filter((x) => x != this._tempSelectedFolderItems[j]);
 				}
 			}
-			this.newFolderItems = this.newFolderItems.sort((a, b) => a.Title.localeCompare(b.Title));
+			this.itemsFromTarget = this.itemsFromTarget.sort((a, b) => a.Title.localeCompare(b.Title));
 			this._tempSelectedFolderItems = [];
 			this.setRequiredCount();
 			this.checkBoxAllForNewFolderItemsDisabled = false;
@@ -523,87 +523,96 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	removeFromSelectedFolderItems() {
-		if (this.selectedNewFolderItems.length > 0) {
-			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
-				let x = this.availableItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
-				let y = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+		if (this.selectedItemsFromTarget.length > 0) {
+			for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
+				let x = this.availableItems.findIndex((i) => i.ObjectID == this.selectedItemsFromTarget[j].ObjectID && i.Object == this.selectedItemsFromTarget[j].Object);
+				let y = this.itemsFromTarget.findIndex((i) => i.ObjectID == this.selectedItemsFromTarget[j].ObjectID && i.Object == this.selectedItemsFromTarget[j].Object);
 				if (y > -1) {
-					let i = _.cloneDeep(this.newFolderItems.splice(y, 1)[0]);
+					let i = _.cloneDeep(this.itemsFromTarget.splice(y, 1)[0]);
 					if (x === -1) {
 						this.availableItems.push(i);
 					}
 				}
 			}
 			this.availableItems = this.availableItems.sort((a, b) => a.Title.localeCompare(b.Title));
-			this.selectedNewFolderItems = [];
+			this.selectedItemsFromTarget = [];
 			this.setRequiredCount();
 		}
 		this.cdRef.markForCheck();
 	}
 
-	moveToTop(items: SiteNav[]) {
-		if (this.selectedNewFolderItems.length > 0) {
-			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
-				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
-				this.newFolderItems.splice(j, 0, this.newFolderItems.splice(x, 1)[0]);
+	moveToTop() {
+		if (this.selectedItemsFromTarget.length > 0) {
+			for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
+				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID == this.selectedItemsFromTarget[j].ObjectID && i.Object == this.selectedItemsFromTarget[j].Object);
+				this.itemsFromTarget.splice(j, 0, this.itemsFromTarget.splice(x, 1)[0]);
 			}
 		}
 	}
 
 	disableBtnMoveToTop() {
-		return (!this.selectedNewFolderItems
-			|| this.selectedNewFolderItems.length === 0
-			|| this.selectedNewFolderItems.findIndex((i) => i.ObjectID == this.newFolderItems[0].ObjectID && i.Object == this.newFolderItems[0].Object) > -1
+		return (!this.selectedItemsFromTarget
+			|| this.selectedItemsFromTarget.length === 0
+			|| this.selectedItemsFromTarget.findIndex((i) => i.ObjectID == this.itemsFromTarget[0].ObjectID && i.Object == this.itemsFromTarget[0].Object) > -1
 		);
 	}
 
 	disableBtnMoveUp() {
-		return (!this.selectedNewFolderItems
-			|| this.selectedNewFolderItems.length === 0
-			|| this.selectedNewFolderItems.findIndex((i) => i.ObjectID == this.newFolderItems[0].ObjectID && i.Object == this.newFolderItems[0].Object) > -1
+		return (!this.selectedItemsFromTarget
+			|| this.selectedItemsFromTarget.length === 0
+			|| this.selectedItemsFromTarget.findIndex((i) => i.ObjectID == this.itemsFromTarget[0].ObjectID && i.Object == this.itemsFromTarget[0].Object) > -1
 		);
 	}
 
+	setIndexes(arrayOfObjects: object[]): void {
+		arrayOfObjects.forEach((object, i) => {
+			object['index'] = i;
+		});
+	}
+
+	sortSelectedItemsFromTargetByIndexes(array: SiteNav[]): void {
+		array.sort((a, b) => a.index - b.index);
+	}
+
 	moveUp() {
-		if (this.selectedNewFolderItems.length > 0) {
-			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
-				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
-				this.newFolderItems.splice(x - 1, 0, this.newFolderItems.splice(x, 1)[0]);
-			}
-		}
+		this.setIndexes(this.itemsFromTarget);
+		this.sortSelectedItemsFromTargetByIndexes(this.selectedItemsFromTarget);
+		this.selectedItemsFromTarget.forEach((selectedItemFromTarget: SiteNav) => {
+			this.itemsFromTarget.splice(selectedItemFromTarget.index - 1, 0, this.itemsFromTarget.splice(selectedItemFromTarget.index, 1)[0]);
+		});
 	}
 
 	disableBtnMoveDown() {
-		return (!this.selectedNewFolderItems
-			|| this.selectedNewFolderItems.length === 0
-			|| this.selectedNewFolderItems.findIndex(
-				(i) => i.ObjectID == this.newFolderItems[this.newFolderItems.length - 1].ObjectID && i.Object == this.newFolderItems[this.newFolderItems.length - 1].Object) > -1
+		return (!this.selectedItemsFromTarget
+			|| this.selectedItemsFromTarget.length === 0
+			|| this.selectedItemsFromTarget.findIndex(
+				(i) => i.ObjectID == this.itemsFromTarget[this.itemsFromTarget.length - 1].ObjectID && i.Object == this.itemsFromTarget[this.itemsFromTarget.length - 1].Object) > -1
 		);
 	}
 
 	moveDown() {
-		if (this.selectedNewFolderItems.length > 0) {
-			for (let j = this.selectedNewFolderItems.length - 1; j >= 0; j--) {
-				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
-				this.newFolderItems.splice(x + 1, 0, this.newFolderItems.splice(x, 1)[0]);
+		if (this.selectedItemsFromTarget.length > 0) {
+			for (let j = this.selectedItemsFromTarget.length - 1; j >= 0; j--) {
+				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID == this.selectedItemsFromTarget[j].ObjectID && i.Object == this.selectedItemsFromTarget[j].Object);
+				this.itemsFromTarget.splice(x + 1, 0, this.itemsFromTarget.splice(x, 1)[0]);
 			}
 		}
 	}
 
 	disableBtnMoveToBottom() {
-		return (!this.selectedNewFolderItems
-			|| this.selectedNewFolderItems.length === 0
-			|| this.selectedNewFolderItems.findIndex(
-				(i) => i.ObjectID == this.newFolderItems[this.newFolderItems.length - 1].ObjectID && i.Object == this.newFolderItems[this.newFolderItems.length - 1].Object) > -1
+		return (!this.selectedItemsFromTarget
+			|| this.selectedItemsFromTarget.length === 0
+			|| this.selectedItemsFromTarget.findIndex(
+				(i) => i.ObjectID == this.itemsFromTarget[this.itemsFromTarget.length - 1].ObjectID && i.Object == this.itemsFromTarget[this.itemsFromTarget.length - 1].Object) > -1
 		);
 	}
 
 	moveToBottom(items: SiteNav[]) {
-		if (this.selectedNewFolderItems.length > 0) {
-			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
-				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
-				let newPosition = this.newFolderItems.length - j;
-				this.newFolderItems.splice(newPosition - 1, 0, this.newFolderItems.splice(x, 1)[0]);
+		if (this.selectedItemsFromTarget.length > 0) {
+			for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
+				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID == this.selectedItemsFromTarget[j].ObjectID && i.Object == this.selectedItemsFromTarget[j].Object);
+				let newPosition = this.itemsFromTarget.length - j;
+				this.itemsFromTarget.splice(newPosition - 1, 0, this.itemsFromTarget.splice(x, 1)[0]);
 			}
 		}
 	}
@@ -613,7 +622,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (this.folderModel.Title?.length > 0) {
 			this.requiredCount--;
 		}
-		if (this.newFolderItems?.length > 0 || !this.hasFolderItems) {
+		if (this.itemsFromTarget?.length > 0 || !this.hasFolderItems) {
 			this.requiredCount--;
 		}
 	}
@@ -623,7 +632,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if ($event.data?.length > 0) {
 			this.requiredCount--;
 		}
-		if (this.newFolderItems?.length > 0 || !this.hasFolderItems) {
+		if (this.itemsFromTarget?.length > 0 || !this.hasFolderItems) {
 			this.requiredCount--;
 		}
 		this.cdRef.markForCheck();
@@ -637,7 +646,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (!this.folderForm.get('title')?.errors?.empty && !this.folderNameIsFocused) {
 			this.elRef.nativeElement.querySelectorAll("[name = folderNameInput]")[0].focus();
 			this.folderNameIsFocused = true;
-		} else if (!this.newFolderItems || this.newFolderItems?.length == 0) {
+		} else if (!this.itemsFromTarget || this.itemsFromTarget?.length == 0) {
 			this.elRef.nativeElement.querySelector("[name = availableFolderItemsSearchField]").querySelectorAll(".ig-input")[0].focus();
 			this.folderNameIsFocused = false;
 		}
@@ -684,10 +693,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	selectAllSelectedFolderItems($event, table: Table) {
-		this.selectedNewFolderItems = [];
+		this.selectedItemsFromTarget = [];
 		for (let i = 0; i < table.selection.length; i++) {
-			let x = this.newFolderItems.findIndex((item) => item.ObjectID == table.selection[i].ObjectID && item.Object == table.selection[i].Object);
-			this.selectedNewFolderItems.push(_.cloneDeep(this.newFolderItems[x]));
+			let x = this.itemsFromTarget.findIndex((item) => item.ObjectID == table.selection[i].ObjectID && item.Object == table.selection[i].Object);
+			this.selectedItemsFromTarget.push(_.cloneDeep(this.itemsFromTarget[x]));
 		}
 	}
 
@@ -707,6 +716,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	get isSaveDisabled(): boolean {
-		return (this.isEdit && !this.hasChanges) || this.savingInProgress || this.folderModel === null || this.folderModel.Title === null || this.folderModel.Title === '' || ((this.newFolderItems === null || this.newFolderItems.length < 1) && this.hasFolderItems);
+		return (this.isEdit && !this.hasChanges) || this.savingInProgress || this.folderModel === null || this.folderModel.Title === null || this.folderModel.Title === '' || ((this.itemsFromTarget === null || this.itemsFromTarget.length < 1) && this.hasFolderItems);
 	}
 }
