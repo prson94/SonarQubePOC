@@ -135,7 +135,7 @@ namespace d360.model.DataAccessLayer
 
 						foreach (var (ft, column) in fields)
 						{
-							simpleFilters.Add($"{column.StatementWithoutColumnName} like @simpleFilter");
+							simpleFilters.Add($"{column.FilterStatement} like @simpleFilter");
 						}
 
 						simpleFilters.Add($"G.Name like @simpleFilter");
@@ -149,7 +149,7 @@ namespace d360.model.DataAccessLayer
 				.Zip(
 					fieldTypes,
 					fieldColumns.Selects(),
-					(type, column) => new DefaultFilter(type.Name, column.StatementWithoutColumnName, SqlFieldType.Text))
+					(type, column) => new DefaultFilter(type.Name, column.FilterStatement, SqlFieldType.Text))
 				.Concat(new[] { new DefaultFilter("Name", "G.Name", SqlFieldType.Text) })
 				.ToList(),
 				"Name");

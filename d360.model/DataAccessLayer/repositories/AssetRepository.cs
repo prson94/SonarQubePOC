@@ -1014,13 +1014,7 @@ namespace d360.model.DataAccessLayer
 
 						if (select != null && join != null)
 						{
-							//search for beggining of alias part  
-							//F26650.FormattedValue as [x]
-							//and trim take only part before that
-							var selectStatement = select.SimpleStatement ?? select.Statement;
-							var splitIdx = selectStatement.ToLowerInvariant().IndexOf(" as [");
-
-							var selectField = splitIdx < 0 ? selectStatement : selectStatement.Substring(0, splitIdx);
+							var selectField = select.StatementWithoutColumnName;
 
 							var joinStatement = !string.IsNullOrEmpty(join.SimpleStatement) ? join.SimpleStatement : join.SQLStatement;
 
