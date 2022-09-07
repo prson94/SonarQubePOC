@@ -536,8 +536,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	removeFromSelectedFolderItems() {
 		if (this.selectedItemsFromTarget.length > 0) {
 			for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
-				let x = this.availableItems.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line ESLint_detect-object-injection
-				let y = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line ESLint_detect-object-injection (false positive)
+				let x = this.availableItems.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line ESLint_security_detect-object-injection
+				let y = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line ESLint_security_detect-object-injection (false positive)
 				if (y > -1) {
 					let i = _.cloneDeep(this.itemsFromTarget.splice(y, 1)[0]);
 					if (x === -1) {
@@ -555,7 +555,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	moveToTop() {
 		if (this.selectedItemsFromTarget.length > 0) {
 			for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
-				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line ESLint_detect-object-injection
+				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line ESLint_security_detect-object-injection
 				this.itemsFromTarget.splice(j, 0, this.itemsFromTarget.splice(x, 1)[0]);
 			}
 		}
@@ -684,8 +684,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	selectAllSelectedFolderItems($event, table: Table) {
 		this.selectedItemsFromTarget = [];
 		for (let i = 0; i < table.selection.length; i++) {
-			let x: number = this.itemsFromTarget.findIndex((item) => item.ObjectID === table.selection[i].ObjectID && item.Object === table.selection[i].Object); // eslint-disable-line ESLint_detect-object-injection
-			this.selectedItemsFromTarget.push(_.cloneDeep(this.itemsFromTarget[x])); // eslint-disable-line ESLint_detect-object-injection
+			let x: number = this.itemsFromTarget.findIndex((item) => item.ObjectID === table.selection[i].ObjectID && item.Object === table.selection[i].Object); // eslint-disable-line ESLint_security_detect-object-injection
+			this.selectedItemsFromTarget.push(_.cloneDeep(this.itemsFromTarget[x])); // eslint-disable-line ESLint_security_detect-object-injection
 		}
 	}
 
