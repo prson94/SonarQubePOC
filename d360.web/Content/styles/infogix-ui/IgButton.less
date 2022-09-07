@@ -39,55 +39,19 @@
     background: var(--primaryButtonBackColor);
     color: var(--calculatedPrimaryButtonTextColor);
 
-    &:active:not(:disabled),
-    &.ig-state-active,
-    &:focus,
-    &.ig-state-focus {
-      background: var(--primaryButtonBackColor);
-
-      ::after {
-        content: "";
-        position: absolute;
-        border-radius: @ig-field-border-radius;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: black;
-        opacity: 0.3;
-      }
-    }
-
     &:hover:not(:disabled), &.ig-state-hover {
       background: var(--primaryButtonBackColor);
-
-      ::after {
-        content: "";
-        position: absolute;
-        border-radius: @ig-field-border-radius;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: white;
-        opacity: 0.3;
-      }
+      filter: brightness(80%);
     }
 
-    &:disabled {
+    &:active:not(:disabled), &.ig-state-active {
       background: var(--primaryButtonBackColor);
+      filter: brightness(60%);
+    }
 
-      ::after {
-        content: "";
-        position: absolute;
-        border-radius: @ig-field-border-radius;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: white;
-        opacity: 0.6;
-      }
+    &:focus:not(:disabled), &.ig-state-focus {
+      background: var(--primaryButtonBackColor);
+      border: 1px solid @ig-midblue-t3;
     }
   }
 
@@ -99,12 +63,12 @@
       background: @ig-pink-s1;
     }
 
-    &:active:not(:disabled), &.ig-state-active {
-      background: @ig-pink-s2;
-    }
-
     &:focus:not(:disabled), &.ig-state-focus {
       background: @ig-pink-t1;
+    }
+
+    &:active:not(:disabled), &.ig-state-active {
+      background: @ig-pink-s2;
     }
   }
 
@@ -116,30 +80,53 @@
       background: @ig-red-s1;
     }
 
-    &:active:not(:disabled), &.ig-state-active {
-      background: @ig-red-s2;
-    }
-
     &:focus:not(:disabled), &.ig-state-focus {
       background: @ig-red;
+    }
+
+    &:active:not(:disabled), &.ig-state-active {
+      background: @ig-red-s2;
     }
   }
 
   &.ig-button-secondary {
-    background: transparent;
+    background: none;
     color: var(--primaryButtonBackColor);
     border: 1px solid var(--primaryButtonBackColor);
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: rgba(var(--primaryButtonBackColor), 0.08);
-    }
-
-    &:active:not(:disabled), &.ig-state-active {
-      background: rgba(var(--primaryButtonBackColor), 0.2);
+      background: none;
+      ::after {
+        content: '';
+        position: absolute;
+        width: calc(100% + 1px);
+        height: 32px;
+        background: var(--primaryButtonBackColor);
+        border-radius: 4px;
+        left: 0;
+        top: 0;
+        opacity: .08;
+      }
     }
 
     &:focus:not(:disabled), &.ig-state-focus {
       border-color: @ig-midblue-t3;
+      background: none;
+    }
+
+    &:active:not(:disabled), &.ig-state-active {
+      background: none;
+      ::after {
+        content: '';
+        position: absolute;
+        width: calc(100% + 1px);
+        height: 32px;
+        background: var(--primaryButtonBackColor);
+        border-radius: 4px;
+        left: 0;
+        top: 0;
+        opacity: .2;
+      }
     }
 
     &:disabled {
@@ -148,7 +135,7 @@
   }
 
   &.ig-button-text {
-    background: transparent;
+    background: none;
     width: auto;
     height: auto;
     color: var(--primaryButtonBackColor);
@@ -156,19 +143,22 @@
     &:hover:not(:disabled), &.ig-state-hover {
       filter: brightness(80%);
       text-decoration: underline;
+      background: none;
     }
 
     &:active:not(:disabled), &.ig-state-active {
       filter: brightness(60%);
       text-decoration: underline;
+      background: none;
     }
 
     &:focus:not(:disabled), &.ig-state-focus {
       border: 1px solid @ig-midblue-t3;
+      background: none;
     }
 
-    &:disabled {
-      background: transparent;
+    &:disabled:not(&.ig-state-loading) {
+      background: none;
     }
   }
 
@@ -188,6 +178,7 @@
 
     &:focus:not(:disabled), &.ig-state-focus {
       border: 1px solid @ig-midblue-t3;
+      background: @ig-grey-t5;
     }
 
     &:disabled > * {
@@ -247,12 +238,15 @@
   }
 
   &:disabled {
-    background: @ig-grey-t5;
-    color: @ig-grey-t2;
+    &:not(&.ig-state-loading) {
+      background: @ig-grey-t5;
+      color: @ig-grey-t2;      
+    }
     cursor: default;
   }
 
   &.ig-state-loading {
+    pointer-events: none;
     .ig-button-label, .ig-button-icon {
       visibility: hidden;
     }
@@ -319,15 +313,15 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 2px solid @ig-black;
-  border-color: @ig-black fade(@ig-black, 0.18) fade(@ig-black, 0.18) fade(@ig-black, 0.18);
+  border: 2px solid @ig-white;
+  border-color: @ig-white fade(@ig-white, 0.36) fade(@ig-white, 0.36) fade(@ig-white, 0.36);
   animation: ig-button-spin 1s infinite linear;
 }
 
-.ig-button-primary, .ig-button-accent, .ig-button-negative, .ig-button-light {
+.ig-button-secondary, .ig-button-light, .ig-button-text, .ig-button-group {
   .ig-button-spinner {
-    border: 2px solid @ig-white;
-    border-color: @ig-white fade(@ig-white, 0.36) fade(@ig-white, 0.36) fade(@ig-white, 0.36);
+    border: 2px solid var(--primaryButtonBackColor);
+    border-color: var(--primaryButtonBackColor) fade(@ig-white, 0.36) fade(@ig-white, 0.36) fade(@ig-white, 0.36);
   }
 }
 
