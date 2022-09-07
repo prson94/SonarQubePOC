@@ -363,9 +363,6 @@
   <data name="FileUploadMessage" xml:space="preserve">
     <value>File Successfully uploaded</value>
   </data>
-  <data name="GroupIsAcitveDirectorNotManageManually" xml:space="preserve">
-    <value>Group UID provided is an active directory group and cannot be managed manually.</value>
-  </data>
   <data name="GroupUidNotExists" xml:space="preserve">
     <value>Group UID provided is not a valid group UID. Group does not exist.</value>
   </data>

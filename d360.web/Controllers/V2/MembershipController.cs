@@ -568,11 +568,6 @@ namespace d360.web.Controllers.V2
 				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, ApiMessages.GroupUidNotExists));
 			}
 
-			if (isValidGroup.items?.First()?.IsActiveDirectoryGroup == true)
-			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.GroupIsAcitveDirectorNotManageManually));
-			}
-
 			var duplicatedUsers = from u in users group u by u.Uid into user where user.Count() > 1 select user.Key;
 
 			if (duplicatedUsers.Count() != 0)
