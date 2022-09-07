@@ -308,7 +308,7 @@
                 <div style="padding-top:10px" class="action-buttons flex-grid">
                     <button igButton type="button" label="{{cancelLabel}}" (click)="cancel()"></button>
                     <div class="flex-grow"></div>
-                    <button igButton type="submit" class="ig-button-primary" [disabled]="!ruleEditor.form.valid || !isValid()" label="{{saveLabel}}"></button>
+                    <button igButton type="submit" class="ig-button-primary" [disabled]="!ruleEditor.form.valid || !isValid()" label="{{(id > 0 ? editLabel : addLabel)}}"></button>
                 </div>
             </div>
         </div>
