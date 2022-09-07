@@ -111,11 +111,17 @@ namespace d360.web.Controllers
 		}
 
 		[HttpGet, Route("Responsibility/Resources"), NonNullableParameters]
-		public JsonNetResult ResponsibilityResources(long assetID, int resTypeId, string secAssettype, int secAssetTypeid, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter, Guid? resTypeUid)
+		public JsonNetResult ResponsibilityResources(Guid? assetUid, int resTypeId, string secAssettype, int secAssetTypeid, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter, Guid? resTypeUid)
 		{
 			string querySql;
 			string hideUsersSql = "";
 			var dbArgs = new Dapper.DynamicParameters();
+
+			long assetID = -1;
+			if (assetUid.HasValue)
+			{
+				assetID = Company.Assets.Where(x=> x.uid == assetUid.Value).Select(x=> x.ID).FirstOrDefault();
+			}
 
 			if (HideData3SixtyUsers())
 			{
@@ -192,8 +198,9 @@ namespace d360.web.Controllers
 		}
 
 		[HttpGet, Route("Responsibility"), NonNullableParameters]
-		public JsonNetResult Responsibility(long assetID, long? overrideID, Guid? assetUid, Guid? responsibilityUid, Guid? ResourceUid)
+		public JsonNetResult Responsibility(long? overrideID, Guid? assetUid, Guid? responsibilityUid, Guid? ResourceUid)
 		{
+			long assetID = -1;
 			if (assetUid.HasValue)
 			{
 				assetID = Company.Assets.FirstOrDefault(a => a.uid == assetUid.Value).ID;

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 export interface IResponsibilityService {    
     getResponsibilityDetail(assetUid: string): Observable<ResponsibilityItemDetailV2[]> 
-    getResponsibilityItemEditor(assetID: number, responsibilityID: number, assetUid: string, responsibilityUid: string, resourceUid: string): Observable<ResponsibilityEditorModel>;
+    getResponsibilityItemEditor(responsibilityID: number, assetUid: string, responsibilityUid: string, resourceUid: string): Observable<ResponsibilityEditorModel>;
     postResponsibility(assetUid: string, responsibilityUid: string, responsibilityUids: any): Observable<any>;
 }
 
