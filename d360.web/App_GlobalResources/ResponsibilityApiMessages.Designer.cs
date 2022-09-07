@@ -232,7 +232,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Responsibility type has asset assignments and cannot be deleted. Use cascade=true to delete all assignments and rules.
+        ///   Looks up a localized string similar to Responsibility type has asset assignments and cannot be deleted. Use [cascade]=true to delete all assignments and rules.
         /// </summary>
         public static string ResponsibilityTypeHasAssetAssigments {
             get {

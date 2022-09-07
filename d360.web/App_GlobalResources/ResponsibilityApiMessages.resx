@@ -163,7 +163,7 @@
     <value>Responsibility successfully deleted</value>
   </data>
   <data name="ResponsibilityTypeHasAssetAssigments" xml:space="preserve">
-    <value>Responsibility type has asset assignments and cannot be deleted. Use cascade=true to delete all assignments and rules</value>
+    <value>Responsibility type has asset assignments and cannot be deleted. Use [cascade]=true to delete all assignments and rules</value>
   </data>
   <data name="ResponsibilityTypeUidNotExist" xml:space="preserve">
     <value>Responsibility type with UID '{0}' does not exist.</value>
