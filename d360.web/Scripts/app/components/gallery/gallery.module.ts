@@ -1,7 +1,6 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { GovernRequestInterceptor } from '../../http-interceptors/govern-request.interceptor';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -83,6 +82,8 @@ import { GalleryFormFeedbackBadgesComponent } from './gallery.form-feedback-badg
 import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badges/form-feedback-badges.component';
 import { GalleryDropdownBadgeComponent } from './gallery.dropdown-badge.component';
 import { DropdownBadgeModule } from '../shared/controls/dropdown-badge/dropdown-badge.component';
+import { InputTextareaModule } from "primeng/inputtextarea";
+import { InputTextModule } from "primeng/inputtext";
 
 @NgModule({
     imports: [
@@ -129,7 +130,9 @@ import { DropdownBadgeModule } from '../shared/controls/dropdown-badge/dropdown-
         ColorSelectorModule,
         RegexpInputModule,
         FormFeedbackBadgesModule,
-        DropdownBadgeModule
+        DropdownBadgeModule,
+        InputTextareaModule,
+		InputTextModule
     ],
     declarations: [
         GalleryComponent,
