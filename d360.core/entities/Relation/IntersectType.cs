@@ -29,16 +29,6 @@ namespace d360.core.entities
 
         public int? UpdatedBy { get; set; }
 
-        //[DataMember, Column(TypeName = "varchar"), StringLength(50)]
-        //public string Subject { get; set; }
-
-        //[DataMember]
-        //public int SubjectID { get; set; }
-
-        //[DataMember]
-        //public Guid? SubjectUid { get; set; }
-
-
 		[DataMember]
 		public AssetTypeClass SubjectClass { get; set; }
 
@@ -47,16 +37,6 @@ namespace d360.core.entities
 
 		[DataMember]
         public Cardinality SubjectCardinality { get; set; }
-
-        //[DataMember, Column(TypeName = "varchar"), StringLength(50)]
-        //public string Object { get; set; }
-
-        //[DataMember]
-        //public int ObjectID { get; set; }
-
-        //[DataMember]
-        //public Guid? ObjectUid { get; set; }
-
 
 		[DataMember]
 		public AssetTypeClass ObjectClass { get; set; }

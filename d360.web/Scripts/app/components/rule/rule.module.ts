@@ -22,8 +22,6 @@ import { RuleComponent } from './rule.component';
 import { RuleListComponent } from './rule-list.component';
 import { RuleItemComponent } from './rule-item.component';
 import { RuleResultsGridComponent } from './rule-results-grid.component';
-import { RuleColumnFilterComponent } from './rule-column-filter.component';
-
 
 import { TabViewModule } from 'primeng/tabview';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -102,15 +100,13 @@ import { AngularSplitModule } from 'angular-split';
         RuleComponent,
         RuleListComponent,
         RuleItemComponent,        
-        RuleResultsGridComponent,
-        RuleColumnFilterComponent
+        RuleResultsGridComponent
     ],
     exports: [
 		RuleComponent,
 		RuleListComponent,
 		RuleItemComponent,
-		RuleResultsGridComponent,
-		RuleColumnFilterComponent
+		RuleResultsGridComponent
     ],
     providers: [
 
