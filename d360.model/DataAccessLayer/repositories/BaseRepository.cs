@@ -610,6 +610,11 @@ namespace d360.model.DataAccessLayer.repositories
 							 lookupValueJoinCriteria = $" where ACF{tableAlias}.Object = '{f.LookupObjectType}' and ACF{tableAlias}.[ObjectID] = try_cast(F{tableAlias}.[Value] as int)";
 						 }
 
+						 foreach(var qry in fieldColumns.Selects().Where(fc => fc.FieldIdentifier == f.ID.ToString()))
+						 {
+							 qry.FilterStatement = $@"F{tableAlias}.formattedValue";
+						 }
+
 						 if (IsCreateTempTable)
 						 {
 							 temptablename = $@"#TempLookUp{f.LookupObjectType}{f.LookupObjectID}";
