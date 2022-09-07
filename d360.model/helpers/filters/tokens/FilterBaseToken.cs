@@ -15,8 +15,6 @@ namespace d360.model.helpers.filters
     {
         protected IFilterDataProvider dataProvider;
         
-        protected bool isLookupField { get; set; }
-
         protected int parameterIdx { get; set; }
         
         protected string field { get; set; }
@@ -37,7 +35,9 @@ namespace d360.model.helpers.filters
         
         protected DefaultFilter defaultFilter { get; set; }
 
-        public string CurrentFieldType
+		public readonly string[] lookupFieldTypes = new[] { "Lookup", "Relationship" };
+
+		public string CurrentFieldType
         {
             get
             {
@@ -90,112 +90,127 @@ namespace d360.model.helpers.filters
         }
 
         protected void UpdateTokenValueForType(bool skipLookupCheck = false, bool complexField = false)
-        {
-            if (@operator == "ct" || @operator == "nct")
-            {
-                bool isStartWith = value.ToString().Last() == '*';
-                bool isEndWith = value.ToString().First() == '*';
-                bool isBoth = (isStartWith && isEndWith) || (!isStartWith && !isEndWith);
+		{
+			UpdateValueWithWildCards();
+			bool isListField = lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()) && !complexField;
 
-                if (isBoth)
-                {
-                    value = $"%{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}%";
-                }
-                else
-                {
-                    //Wildcard will be present from request
-                    value = $"{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}";
-                }
-            }
+			if (isListField)
+			{
+				LoadListFieldQuery(skipLookupCheck);
+			}
+			else if (fieldType.Type == DataType.Color.ToString())
+			{
+				LoadColorFieldQuery(complexField);
+			}
+			else
+			{
+				LoadFieldQuery(complexField);
+			}
 
-            string[] lookupFieldTypes = new[] { "Lookup", "Relationship" };
+			if (sqlParamsRef != null)
+			{
+				sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+			}
 
-            if (lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()) && !complexField)
-            {
-                if (fieldType.LookupObjectID == null)
-                {
-                    throw new FilterExpressionParserException("Lookup field type is missing LookupObjectID value!");
-                }
+		}
 
-                isLookupField = true;
+		public void LoadFieldQuery(bool complexField)
+		{
+			var fieldSql = GetColumnValueSyntax(fieldType.ID);
+			if (@operator == "ct" && complexField && fieldType.Type != "Text")
+			{
+				fieldSql = $"CONVERT(NVARCHAR(max),{fieldSql})";
+			}
 
-                if (skipLookupCheck)
-                {
-                    if (@operator == "eq")
-                    {
-                        @operator = "ct";
-                        value = "%" + value + "%";
-                    }
+			if (ConvertToNvarChar)
+			{
+				fieldSql = $"CONVERT(VARCHAR,{fieldSql},120)";
+			}
 
-                    if (@operator == "ne")
-                    {
-                        @operator = "nct";
-                        value = "%" + value + "%";
-                    }
-                }
-                else
-                {
-                    LoadLookupSql();
-                }
-            }
+			if (fieldType.Type == "Score")
+			{
+				fieldSql = $"CONVERT(DECIMAL(7,2),REPLACE({fieldSql},'%',''))";
+			}
 
-            if (!isLookupField && fieldType.Type != DataType.Color.ToString())
-            {
-                var fieldSql = GetColumnValueSyntax(fieldType.ID);
-                if (@operator == "ct" && complexField && fieldType.Type != "Text")
-                {
-                    fieldSql = $"CONVERT(NVARCHAR(max),{fieldSql})";
-                }
+			stringBuilder.Append(fieldSql);
+			stringBuilder.Append(FilterHelpers.GetSQLOperator(@operator));
+			stringBuilder.Append($"@filter_{parameterIdx}");
 
-                if (ConvertToNvarChar)
-                {
-                    fieldSql = $"CONVERT(VARCHAR,{fieldSql},120)";
-                }
+			AppendNullOperatorForNotOperators(fieldSql);
+		}
 
-                if (fieldType.Type == "Score")
-                {
-                    fieldSql = $"CONVERT(DECIMAL(7,2),REPLACE({fieldSql},'%',''))";
-                }
+		public void LoadColorFieldQuery(bool complexField)
+		{
+			if (@operator == "eq")
+			{
+				@operator = "ct";
+				value = "%\"Name\":\"" + value.ToString().Trim() + "\"%";
+			}
 
-                stringBuilder.Append(fieldSql);
-                stringBuilder.Append(FilterHelpers.GetSQLOperator(@operator));
-                stringBuilder.Append($"@filter_{parameterIdx}");
+			if (@operator == "ne")
+			{
+				@operator = "nct";
+				value = "%\"Name\":\"" + value.ToString().Trim() + "\"%";
+			}
 
-                AppendNullOperatorForNotOperators(fieldSql);
-            }
+			field = "ISNULL(ACJ.ColorJson,'')";
 
-            if (fieldType.Type == DataType.Color.ToString())
-            {
-                if (@operator == "eq")
-                {
-                    @operator = "ct";
-                    value = "%\"Name\":\"" + value.ToString().Trim() + "\"%";
-                }
+			if (complexField)
+			{
+				stringBuilder.Append("ISNULL(ACJ.ColorJson,'')");
+				stringBuilder.Append(FilterHelpers.GetSQLOperator(@operator));
+				stringBuilder.Append($"@filter_{parameterIdx}");
+			}
+		}
 
-                if (@operator == "ne")
-                {
-                    @operator = "nct";
-                    value = "%\"Name\":\"" + value.ToString().Trim() + "\"%";
-                }
+		public void LoadListFieldQuery(bool skipLookupCheck)
+		{
+			if (fieldType.LookupObjectID == null)
+			{
+				throw new FilterExpressionParserException("Lookup field type is missing LookupObjectID value!");
+			}
 
-                field = "ISNULL(ACJ.ColorJson,'')";
+			if (skipLookupCheck)
+			{
+				if (@operator == "eq")
+				{
+					@operator = "ct";
+					value = "%" + value + "%";
+				}
 
-                if (complexField)
-                {
-                    stringBuilder.Append("ISNULL(ACJ.ColorJson,'')");
-                    stringBuilder.Append(FilterHelpers.GetSQLOperator(@operator));
-                    stringBuilder.Append($"@filter_{parameterIdx}");
-                }
-            }
+				if (@operator == "ne")
+				{
+					@operator = "nct";
+					value = "%" + value + "%";
+				}
+			}
+			else
+			{
+				LoadLookupSql();
+			}
+		}
 
-            if (sqlParamsRef != null)
-            {
-                sqlParamsRef.Add($"@filter_{parameterIdx}", value);
-            }
+		public void UpdateValueWithWildCards()
+		{
+			if (@operator == "ct" || @operator == "nct")
+			{
+				bool isStartWith = value.ToString().Last() == '*';
+				bool isEndWith = value.ToString().First() == '*';
+				bool isBoth = (isStartWith && isEndWith) || (!isStartWith && !isEndWith);
 
-        }
+				if (isBoth)
+				{
+					value = $"%{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}%";
+				}
+				else
+				{
+					//Wildcard will be present from request
+					value = $"{FilterHelpers.WildcardValue(FilterHelpers.EscapeForSQLLike(value.ToString()))}";
+				}
+			}
+		}
 
-        protected void LoadLookupSql()
+		protected void LoadLookupSql()
         {
             bool isFieldFromRel = dataProvider.IsFieldFromRelationship(fieldType.ID);
 

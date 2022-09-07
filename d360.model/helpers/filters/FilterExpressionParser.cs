@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.model.helpers.filters;
@@ -24,6 +24,7 @@ namespace d360.model.helpers
         private readonly bool registerTokensAsFields;
 		private bool hasSingleParentFilter;
 		List<IFilterToken> filterTokens = new List<IFilterToken>();
+		DynamicQueryJoins dynamicQueryJoins;
 
 		public FilterExpressionParser(
             IFilterDataProvider fdp,
@@ -168,11 +169,12 @@ namespace d360.model.helpers
             allowedDefaultFields.AddRange(defaultFilters);
         }
 
-        public void LoadFieldTypes(List<FieldType> fields, List<string> columns)
+        public void LoadFieldTypes(List<FieldType> fields, List<string> columns, DynamicQueryJoins queryJoins = null)
         {
             fieldTypes = fields;
             fieldColumns = columns;
-        }
+			dynamicQueryJoins = queryJoins;
+		}
 
         public string Parse(string filterString, out Dictionary<string, object> sqlParams, out List<int> fieldIds)
         {
@@ -352,6 +354,17 @@ namespace d360.model.helpers
             else
             {
                 filteredFieldIDs.Add(fieldType.ID);
+				List<string> filterTypesWithTempTables = new List<string>
+				{
+					DataType.Text.ToString(),
+					DataType.Number.ToString(),
+					DataType.Decimal.ToString(),
+					DataType.Boolean.ToString(),
+					DataType.Date.ToString(),
+					DataType.DateTime.ToString(),
+					DataType.Lookup.ToString()
+
+				};
                 if (parseType == FilterExpressionParseType.ComplexLookupField)
                 {
                     if (fieldName.StartsWith("$related"))
@@ -364,7 +377,14 @@ namespace d360.model.helpers
                     
                     return token;
                 }
-                else
+				else if (filterTypesWithTempTables.Contains(fieldType.Type))
+				{
+					TempTableFieldToken token = new TempTableFieldToken(fdp, field, op, value, paramIdx);
+					token.LoadFieldType(fieldType, fieldColumns, dynamicQueryJoins);
+
+					return token;
+				}
+				else
                 {
                     FieldToken token = new FieldToken(fdp, field, op, value, paramIdx);
                     token.LoadFieldType(fieldType, fieldColumns);

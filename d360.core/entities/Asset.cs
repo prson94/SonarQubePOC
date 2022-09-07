@@ -294,6 +294,10 @@ namespace d360.core.entities
 	public class DynamicQueryJoins
 	{
 		private List<DynamicQueryJoinData> joins { get; set; } = new List<DynamicQueryJoinData>();
+		public string GetJoinStatementForFieldTypeId(int id)
+		{
+			return this.joins.Distinct().Where(x => x.FieldIdentifier == id.ToString()).Select(x => x.SQLStatement).FirstOrDefault();
+		}
 
 		public void Add(string statement, string fieldIdentifier, string simpleStatement = null)
 		{
@@ -389,7 +393,6 @@ namespace d360.core.entities
 		{
 			return this.selects.Distinct().Select(x=> x.Statement).ToList(); 
 		}
-
 		public void AddRange(IEnumerable<DynamicQuerySelectData> values)
 		{
 			foreach (var value in values)

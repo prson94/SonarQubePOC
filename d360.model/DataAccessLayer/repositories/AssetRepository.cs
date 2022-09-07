@@ -868,7 +868,7 @@ namespace d360.model.DataAccessLayer
 
 					var filterDataProvider = new FilterDataProvider(CompanyContext);
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, includeParent);
-					filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns.GetStatements());
+					filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns.GetStatements(), tempJoins);
 					Dictionary<string, object> sqlParams = new Dictionary<string, object>();
 					List<int> filteredFields = new List<int>();
 					whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
