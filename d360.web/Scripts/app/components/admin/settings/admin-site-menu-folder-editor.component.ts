@@ -128,7 +128,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	get isLastItemFromTargetSelected(): boolean {
 		const lastIndex: number = this.itemsFromTarget.length - 1;
 		return this.selectedItemsFromTarget.findIndex((selectedItem): boolean => {
-			return selectedItem.ObjectID === this.itemsFromTarget[lastIndex].ObjectID && selectedItem.Object === this.itemsFromTarget[lastIndex].Object;
+			return selectedItem.ObjectID === this.itemsFromTarget[`${lastIndex}`].ObjectID && selectedItem.Object === this.itemsFromTarget[`${lastIndex}`].Object;
 		}) > -1;
 	}
 
@@ -520,8 +520,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	addToSelectedFolderItems() {
 		if (this._tempSelectedFolderItems.length > 0) {
 			for (let j = 0; j < this._tempSelectedFolderItems.length; j++) {
-				if (this.itemsFromTarget.indexOf(this._tempSelectedFolderItems[j]) === -1) {
-					this.itemsFromTarget.push(this._tempSelectedFolderItems[j]);
+				if (this.itemsFromTarget.indexOf(this._tempSelectedFolderItems[`${j}`]) === -1) {
+					this.itemsFromTarget.push(this._tempSelectedFolderItems[`${j}`]);
 					this.availableItems = this.availableItems.filter((x) => x != this._tempSelectedFolderItems[j]);
 				}
 			}
@@ -536,8 +536,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	removeFromSelectedFolderItems() {
 		if (this.selectedItemsFromTarget.length > 0) {
 			for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
-				let x = this.availableItems.findIndex((i) => i.ObjectID == this.selectedItemsFromTarget[j].ObjectID && i.Object == this.selectedItemsFromTarget[j].Object);
-				let y = this.itemsFromTarget.findIndex((i) => i.ObjectID == this.selectedItemsFromTarget[j].ObjectID && i.Object == this.selectedItemsFromTarget[j].Object);
+				let x = this.availableItems.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object);
+				let y = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object);
 				if (y > -1) {
 					let i = _.cloneDeep(this.itemsFromTarget.splice(y, 1)[0]);
 					if (x === -1) {
@@ -635,7 +635,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (!this.folderForm.get('title')?.errors?.empty && !this.folderNameIsFocused) {
 			this.elRef.nativeElement.querySelectorAll("[name = folderNameInput]")[0].focus();
 			this.folderNameIsFocused = true;
-		} else if (!this.itemsFromTarget || this.itemsFromTarget?.length == 0) {
+		} else if (!this.itemsFromTarget || this.itemsFromTarget?.length === 0) {
 			this.elRef.nativeElement.querySelector("[name = availableFolderItemsSearchField]").querySelectorAll(".ig-input")[0].focus();
 			this.folderNameIsFocused = false;
 		}
@@ -684,7 +684,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	selectAllSelectedFolderItems($event, table: Table) {
 		this.selectedItemsFromTarget = [];
 		for (let i = 0; i < table.selection.length; i++) {
-			let x = this.itemsFromTarget.findIndex((item) => item.ObjectID == table.selection[i].ObjectID && item.Object == table.selection[i].Object);
+			let x: number = this.itemsFromTarget.findIndex((item) => item.ObjectID === table.selection[i].ObjectID && item.Object === table.selection[i].Object);
 			this.selectedItemsFromTarget.push(_.cloneDeep(this.itemsFromTarget[x]));
 		}
 	}
