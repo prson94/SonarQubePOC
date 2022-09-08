@@ -599,7 +599,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	moveToBottom() {
 		if (this.selectedItemsFromTarget.length > 0) {
 			for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
-				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID == this.selectedItemsFromTarget[j].ObjectID && i.Object == this.selectedItemsFromTarget[j].Object);
+				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
 				let newPosition = this.itemsFromTarget.length - j;
 				this.itemsFromTarget.splice(newPosition - 1, 0, this.itemsFromTarget.splice(x, 1)[0]);
 			}
