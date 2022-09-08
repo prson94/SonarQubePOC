@@ -575,6 +575,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		array.sort((a, b) => a.index - b.index);
 	}
 
+	reverseSortSelectedItemsFromTargetByIndexes(array: SiteNav[]): void {
+		array.sort((a, b) => b.index - a.index);
+	}
+
 	moveUp() {
 		this.setIndexes(this.itemsFromTarget);
 		this.sortSelectedItemsFromTargetByIndexes(this.selectedItemsFromTarget);
@@ -588,12 +592,11 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	moveDown() {
-		if (this.selectedItemsFromTarget.length > 0) {
-			for (let j = this.selectedItemsFromTarget.length - 1; j >= 0; j--) {
-				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
-				this.itemsFromTarget.splice(x + 1, 0, this.itemsFromTarget.splice(x, 1)[0]);
-			}
-		}
+		this.setIndexes(this.itemsFromTarget);
+		this.reverseSortSelectedItemsFromTargetByIndexes(this.selectedItemsFromTarget);
+		this.selectedItemsFromTarget.forEach((selectedItemFromTarget: SiteNav) => {
+			this.itemsFromTarget.splice(selectedItemFromTarget.index + 1, 0, this.itemsFromTarget.splice(selectedItemFromTarget.index, 1)[0]);
+		});
 	}
 
 	moveToBottom() {
