@@ -394,6 +394,7 @@ namespace d360.model.DataAccessLayer
 			List<string> TempTableScriptList = new List<string>();
 			List<string> fieldsUsedInMainQuery = new List<string>();
 			string TempTableScriptStr = " ";
+			var tempincludeRelationships = "";
 
 			var dbArgs = new DynamicParameters();
 			var model = new AssetsApiViewModel();
@@ -421,22 +422,13 @@ namespace d360.model.DataAccessLayer
 
 			if (includeRelationships)
 			{
-				var subjectAlias = "B";
-				var objectAlias = "A";
-				var ATsubjectAlias = "TB";
-				var ATobjectAlias = "T";
 				string relatedAssetUIDString = "";
 				Guid relatedAssetUID;
 
 				var predicateUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value;
-				var intersectJoin = "";
-				var intersecTypeJoin = "";
-				var IntersectTypeIDField = "";
-				var reverseIntersectJoin = "";
-				var relatedAssetSql = " 1=1 ";
 				bool includeBoth = false;
-				var addtop1hint = "";
 
+				var finalstring = "";
 
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_objectuid"))
 				{
@@ -444,10 +436,18 @@ namespace d360.model.DataAccessLayer
 					if (Guid.TryParse(relatedAssetUIDString, out relatedAssetUID))
 					{
 						dbArgs.Add("@relatedAssetUid", relatedAssetUID);
-						relatedAssetSql = $"{objectAlias}.[UID] = @relatedAssetUid";
+
+						finalstring = $@"
+									select I.[SubjectAssetID] ObjectAssetID,
+									I.[SubjectAssetTypeID] ObjectAssetTypeID,
+									I.ObjectAssetID BID,
+									I.ObjectAssetTypeID BAssetTypeID
+									from Asset A
+									inner join [intersect] I on I.[SubjectAssetID] = A.ID and I.[SubjectAssetTypeID] = A.AssetTypeID 
+									inner join IntersectType IT on IT.ID = I.IntersectTypeID
+									inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+									where A.[UID] =  @relatedAssetUid";
 					}
-					intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and abs(I.ObjectID) = {subjectAlias}.ObjectID";
-					intersecTypeJoin = $"IT.[Subject] = {ATobjectAlias}.[Object] and IT.SubjectID = {ATobjectAlias}.ObjectID and IT.[Object] = {ATsubjectAlias}.[Object] and abs(IT.ObjectID) = {ATsubjectAlias}.ObjectID";
 				}
 				else if (queryParams.ToList().Any(q => q.Key.ToLower() == "_subjectuid"))
 				{
@@ -455,96 +455,67 @@ namespace d360.model.DataAccessLayer
 					if (Guid.TryParse(relatedAssetUIDString, out relatedAssetUID))
 					{
 						dbArgs.Add("@relatedAssetUid", relatedAssetUID);
-						relatedAssetSql = $"{subjectAlias}.[UID] = @relatedAssetUid";
+						finalstring = $@"
+									select I.[ObjectAssetID] ObjectAssetID,
+									I.[ObjectAssetTypeID] ObjectAssetTypeID,
+									I.SubjectAssetID BID,
+									I.SubjectAssetTypeID BAssetTypeID
+									from Asset B
+									inner join [intersect] I on I.[SubjectAssetID] = B.ID and I.[SubjectAssetTypeID] = B.AssetTypeID 
+									inner join IntersectType IT on IT.ID = I.IntersectTypeID
+									inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+									where B.[UID] =  @relatedAssetUid";
 					}
-					intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and abs(I.SubjectID) = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
-					intersecTypeJoin = $"IT.[Subject] = {ATsubjectAlias}.[Object] and abs(IT.SubjectID) = {ATsubjectAlias}.ObjectID and IT.[Object] = {ATobjectAlias}.[Object] and IT.ObjectID = {ATobjectAlias}.ObjectID";
+							 
 				}
 				else
 				{
 					//subject and object not specified
 					includeBoth = true;
-					IntersectTypeIDField = ", I.IntersectTypeID ";
-					intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and abs(I.ObjectID) = {subjectAlias}.ObjectID";
-					reverseIntersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and abs(I.SubjectID) = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
+					finalstring = $@"
+									select I.[SubjectAssetID] ObjectAssetID,
+									I.[SubjectAssetTypeID] ObjectAssetTypeID,
+									I.ObjectAssetID BID,
+									I.ObjectAssetTypeID BAssetTypeID
+									from [intersect] I
+									inner join IntersectType IT on IT.ID = I.IntersectTypeID
+									inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+									where I.[SubjectAssetTypeID] =  @assetTypeID
+									UNION ALL
+									select I.[ObjectAssetID] ObjectAssetID,
+									I.[ObjectAssetTypeID] ObjectAssetTypeID,
+									I.SubjectAssetID BID,
+									I.SubjectAssetTypeID BAssetTypeID
+									from [intersect] I 
+									inner join IntersectType IT on IT.ID = I.IntersectTypeID
+									inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+									where I.[ObjectAssetTypeID] =  @assetTypeID";
 				}
+
+				tempincludeRelationships = $@"
+						drop table if exists #tempInclRela;
+						select distinct * into #tempInclRela
+						from ( {finalstring}) P
+						OPTION(RECOMPILE);
+						
+						create index idx_tempInclRela on #tempInclRela(ObjectAssetID) include (BID)";
 
 				var innerSql = $@"
-							select 
+								Select
 								B.[UID] as AssetUid 
 								,BD.DisplayValue
 								,TB.[Name] as TypeName
 								,@predicateUid as PredicateUid
-								{IntersectTypeIDField}
-							from Asset B
+							from #tempInclRela TIR
+							inner join Asset B on B.ID = TIR.BID
 							inner join AssetType TB on TB.ID = B.AssetTypeID
-							cross apply dbo.GetAssetDisplayValueById(B.ID) BD
-							inner join [Intersect] I on {intersectJoin}";
-
-				if (includeBoth == false)
-				{
-					addtop1hint = " top 1 ";
-
-					innerSql = innerSql + $@"
-					where { relatedAssetSql }
-					and exists (select 1 from IntersectType IT 
-					inner join [Predicate] P on P.ID = IT.PredicateID 
-					where IT.ID = I.IntersectTypeID and P.[UID] = @predicateUid
-					and {intersecTypeJoin})";
-				}
+							inner join AssetDisplayValue BD on B.ID = BD.AssetID
+							where TIR.ObjectAssetID =  A.ID";
 
 				var innerCountSql = $@"
-						select {addtop1hint} B.ID as Relationships  from Asset B
-						inner join AssetType TB on TB.ID = B.AssetTypeID
-						where {relatedAssetSql}
-						and exists (select 1 from [Intersect] I
-							inner join IntersectType IT on IT.ID = I.IntersectTypeID
-							inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
-							where {intersectJoin})";
-
-				if (includeBoth)
-				{
-					var reverseInnerSql = $@"
-							select 
-								B.[UID] as AssetUid 
-								,BD.DisplayValue
-								,TB.[Name] as TypeName
-								,@predicateUid as PredicateUid
-								{IntersectTypeIDField}
-							from Asset B
-							inner join AssetType TB on TB.ID = B.AssetTypeID
-							cross apply dbo.GetAssetDisplayValueById(B.ID) BD
-							inner join [Intersect] I on {reverseIntersectJoin}";
-
-					var reverseInnerCountSql = $@"
-						select B.ID as Relationships from Asset B
-						inner join AssetType TB on TB.ID = B.AssetTypeID
-						where {relatedAssetSql}
-						and exists (select 1 from [Intersect] I
-							inner join IntersectType IT on IT.ID = I.IntersectTypeID
-							inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
-							where {reverseIntersectJoin})";
-
-					innerSql = $@"select AssetUid
-							,DisplayValue 
-							,TypeName 
-							,PredicateUid
-					from (
-						{innerSql}
-						union all
-						{reverseInnerSql}
-						) RI
-						where exists (select 1 from IntersectType IT 
-						inner join [Predicate] P on P.ID = IT.PredicateID 
-						where IT.ID = RI.IntersectTypeID and P.[UID] = @predicateUid)";
-
-					innerCountSql = $@"
-						select top 1 * from (
-						{innerCountSql}
-						union all
-						{reverseInnerCountSql}) RI
-					";
-				}
+						select top 1 B.BID as Relationships  
+						from #TempInclRela B
+						where B.ObjectAssetID = A.ID";
 
 				var joinSql = $@"
 					cross apply (
@@ -1346,6 +1317,8 @@ namespace d360.model.DataAccessLayer
 
 			var baseSQL = $@"
 				{TempTableScriptStr}
+
+				{tempincludeRelationships}
 
 				{advancedFilterTempTableInfos.TempTableSQL()}
 				
