@@ -157,6 +157,10 @@
       <Project>{b12a1078-5835-43b8-afb2-c3d24c4aa098}</Project>
       <Name>d360.model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d360.web\d360.web.csproj">
+      <Project>{df57be56-958b-4c4d-b82c-6b61297434ab}</Project>
+      <Name>d360.web</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
