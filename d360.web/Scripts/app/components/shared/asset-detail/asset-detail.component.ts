@@ -437,12 +437,17 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         this.systemPropertiesCategory.loaded = true;
     }
 
-    open(newTab: boolean = false) {
-        if (this.assetUrl) {
+	open(newTab: boolean = false) {
+		let openUrl = this.assetUrl;
+		if (this.model.Url) {
+			openUrl = this.model.Url;
+		}
+
+		if (openUrl) {
             if (newTab) {
-                window.open(this.assetUrl, '_blank');
+				window.open(openUrl, '_blank');
             } else {
-                this.router.navigateByUrl(this.assetUrl);
+				this.router.navigateByUrl(openUrl);
             }
         }
     }
