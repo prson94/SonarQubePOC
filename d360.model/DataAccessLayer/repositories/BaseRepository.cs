@@ -845,7 +845,7 @@ namespace d360.model.DataAccessLayer.repositories
 										}
 										else
 										{
-											var tableAlias = (field.Type == "Lookup" && CompanyContext.LookupFieldHasColorItem(field)) ? $"FF{field.ID}" : $"F{field.ID}";
+											var tableAlias = $"F{field.ID}";
 											if(!string.IsNullOrEmpty(field.DefaultValue))
 											{
 												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"COALESCE({tableAlias}.{valueColumn}, @defaultValueF{field.ID}) {orderDirection}";

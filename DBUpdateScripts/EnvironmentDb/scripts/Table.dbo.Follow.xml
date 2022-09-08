@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.Follow-v1">
+  <changeSet author="Core" id="Table.dbo.Follow-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -15,18 +15,13 @@ IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo
 BEGIN
 	CREATE TABLE [dbo].[Follow](
 		[ResourceID] [int] NOT NULL,
-		[ObjectType] [varchar](50) NOT NULL,
-		[ObjectID] [int] NOT NULL,
+		[AssetID] bigint SPARSE NULL,
+		[AssetTypeID] int SPARSE NULL,
 		[DateCreated] [datetime] NOT NULL,
 		[FollowTypeID] [int] NULL,
 		[ID] [int] IDENTITY(1,1) NOT NULL,
 		CONSTRAINT [PK_Follow] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Follow_ObjectType-ObjectID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Follow_ObjectType-ObjectID] ON [dbo].[Follow] ( [ObjectType] ASC, [ObjectID] ASC )
 END
 
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Follow_ResourceID')
@@ -63,49 +58,6 @@ end
 <![CDATA[
 	alter table [dbo].[Follow] drop column if exists [AssetID]
 	alter table [dbo].[Follow] drop column if exists [AssetTypeID]
-]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Puneet Gupta" id="Table.dbo.Follow-ObjectObjectIDNull-V1">
-  <comment>GOV-18457</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-<![CDATA[
-IF EXISTS (select * from sys.indexes where name = 'IX_Follow_ObjectType-ObjectID')
-BEGIN
-	drop INDEX [IX_Follow_ObjectType-ObjectID] ON [dbo].[Follow]
-END
-
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'ObjectType' and IS_NULLABLE = 'NO')
-begin
-	alter table [dbo].[Follow] alter column [ObjectType] [varchar](50) NULL;
-end
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'ObjectID' and IS_NULLABLE = 'NO')
-begin
-	alter table [dbo].[Follow] alter column [ObjectID] int NULL;
-end
-]]>
-    </sql>
-	<rollback>
-<![CDATA[
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'ObjectType' and IS_NULLABLE = 'YES')
-and ((select count(1) from follow where objecttype is null) = 0)
-begin
-	alter table [dbo].[Follow] alter column [ObjectType] [varchar](50) NOT NULL;
-end
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'ObjectID' and IS_NULLABLE = 'YES')
-and ((select count(1) from follow where ObjectID is null) = 0)
-begin
-	alter table [dbo].[Follow] alter column [ObjectID] int NOT NULL;
-end
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Follow_ObjectType-ObjectID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Follow_ObjectType-ObjectID] ON [dbo].[Follow] ( [ObjectType] ASC, [ObjectID] ASC )
-END
-
 ]]>
 	</rollback>
   </changeSet>
@@ -148,5 +100,28 @@ END
 	</rollback>
   </changeSet>
   
-  
+  <changeSet author="Puneet Gupta" id="Table.dbo.Follow-DropColumn-V1">
+  <comment>GOV-19388</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+	alter table [dbo].[Follow] drop column if exists [ObjectType]
+	alter table [dbo].[Follow] drop column if exists [ObjectID]
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'ObjectType')
+begin
+	alter table [dbo].[Follow] add [ObjectType] varchar(50) NULL
+end
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Follow' and COLUMN_NAME = 'ObjectID')
+begin
+	alter table [dbo].[Follow] add [ObjectID] int NULL
+end
+]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

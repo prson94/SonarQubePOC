@@ -790,15 +790,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Group UID provided is an active directory group and cannot be managed manually..
-        /// </summary>
-        public static string GroupIsAcitveDirectorNotManageManually {
-            get {
-                return ResourceManager.GetString("GroupIsAcitveDirectorNotManageManually", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Group UID provided is not a valid group UID. Group does not exist..
         /// </summary>
         public static string GroupUidNotExists {

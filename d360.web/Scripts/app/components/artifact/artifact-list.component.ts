@@ -89,7 +89,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 	ngOnInit() {
 		this.isLoading = true;
 		this.artifactTypeHierarchy = [];
-		this.headerBreadcrumbService.setCurrentObjectInfo('bla bla', -1);
+		this.headerBreadcrumbService.setCurrentObjectInfo(null, -1, this.assetTypeUid);
 		this.logAction('open', 'AssetType', this.assetTypeUid);
 		this
 			.artifactTypeService

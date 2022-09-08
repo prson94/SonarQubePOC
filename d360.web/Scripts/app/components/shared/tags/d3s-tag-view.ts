@@ -621,16 +621,13 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             if (items.length > 0) {
                 for (let i = 0; i < items.length; i++) {
                     var x = items[i];
+                    
+                    x.style.maxWidth = null;
+                    x.classList.remove('too-long');
+
                     if (x.offsetWidth > ofWidth) {
-                        x.setAttribute('original-width', x.offsetWidth);
                         x.style.maxWidth = (ofWidth - 30) + 'px';
                         x.classList.add('too-long');
-                        x.setAttribute('max-width', ofWidth - 30);
-                    } else {
-                        x.setAttribute('original-width', null);
-                        x.style.maxWidth = null;
-                        x.classList.remove('too-long');
-                        x.setAttribute('max-width', null);
                     }
                 }
             }

@@ -1,4 +1,4 @@
-﻿import { Component, NgModule, Input, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter, HostBinding, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, NgModule, Input, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter, HostBinding, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
@@ -38,8 +38,9 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @ViewChild("pgcontainer", { static: false }) inputContainer: ElementRef;
 
     constructor(
-        private propertyGroups: PropertyGroupsService, 
-        private ref: ChangeDetectorRef) {
+        private propertyGroups: PropertyGroupsService,
+        private ref: ChangeDetectorRef,
+        private thisRef: ElementRef) {
     }
 
     ngAfterViewInit(): void {
@@ -87,6 +88,13 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
 
     ngOnDestroy() {
         this.propertyGroups.unregister(this);
+    }
+
+    // This is a hack to prevent showing incorrect tooltips on all property group
+    // Browser automatically shows tooltip [title] because of @Input() title
+    // This hack is required, because renaming @Input() dom attribute via bindingPropertyName doesn't works in angular 13.3.7
+    @HostListener('mouseenter') mouseenter() {
+        (this.thisRef.nativeElement as Element).removeAttribute('title');
     }
 }
 
