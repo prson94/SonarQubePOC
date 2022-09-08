@@ -128,7 +128,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	get isLastItemFromTargetSelected(): boolean {
 		const lastIndex: number = this.itemsFromTarget.length - 1;
 		return this.selectedItemsFromTarget.findIndex((selectedItem): boolean => {
-			return selectedItem.ObjectID === this.itemsFromTarget[`${lastIndex}`].ObjectID && selectedItem.Object === this.itemsFromTarget[`${lastIndex}`].Object;
+			return selectedItem.ObjectID === this.itemsFromTarget[lastIndex].ObjectID && selectedItem.Object === this.itemsFromTarget[lastIndex].Object; // eslint-disable-line
 		}) > -1;
 	}
 
@@ -520,8 +520,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	addToSelectedFolderItems() {
 		if (this._tempSelectedFolderItems.length > 0) {
 			for (let j = 0; j < this._tempSelectedFolderItems.length; j++) {
-				if (this.itemsFromTarget.indexOf(this._tempSelectedFolderItems[`${j}`]) === -1) {
-					this.itemsFromTarget.push(this._tempSelectedFolderItems[`${j}`]);
+				if (this.itemsFromTarget.indexOf(this._tempSelectedFolderItems[j]) === -1) { // eslint-disable-line
+					this.itemsFromTarget.push(this._tempSelectedFolderItems[j]); // eslint-disable-line
 					this.availableItems = this.availableItems.filter((x) => x != this._tempSelectedFolderItems[j]);
 				}
 			}
@@ -537,7 +537,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (this.selectedItemsFromTarget.length > 0) {
 			for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
 				let x = this.availableItems.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
-				let y = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line (false positive)
+				let y = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
 				if (y > -1) {
 					let i = _.cloneDeep(this.itemsFromTarget.splice(y, 1)[0]);
 					if (x === -1) {
@@ -590,7 +590,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	moveDown() {
 		if (this.selectedItemsFromTarget.length > 0) {
 			for (let j = this.selectedItemsFromTarget.length - 1; j >= 0; j--) {
-				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID == this.selectedItemsFromTarget[j].ObjectID && i.Object == this.selectedItemsFromTarget[j].Object);
+				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
 				this.itemsFromTarget.splice(x + 1, 0, this.itemsFromTarget.splice(x, 1)[0]);
 			}
 		}
