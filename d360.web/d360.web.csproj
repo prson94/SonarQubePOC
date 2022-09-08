@@ -2312,7 +2312,6 @@
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\rule\rule-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-results-grid.component.ts" />
@@ -2994,7 +2993,6 @@
     <None Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
     <None Include="Scripts\app\components\resource\api-key\resource-api.component.html" />
     <None Include="Scripts\app\components\resource\resource-item.component.html" />
-    <None Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <None Include="Scripts\app\components\rule\rule-item.component.html" />
     <None Include="Scripts\app\components\rule\rule-list.component.html" />
     <None Include="Scripts\app\components\rule\rule-results-grid.component.html" />
@@ -3274,7 +3272,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>62325</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://mpappas.eng.data3sixty.local</IISUrl>
+          <IISUrl>http://integration.eng.data3sixty.local</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
