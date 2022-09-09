@@ -118,7 +118,7 @@ namespace d360.model
 
         private bool TypeHasProcessRelationshipTypes(AssetType at)
         {
-            return Database.Connection.QuerySingle<bool>(@"select iif(count(*) = 0, 0, 1) from IntersectTypeDetail where SubjectUid = @uid or objectuid = @uid and it.PredicateType = 15", new { at.uid });
+            return Database.Connection.QuerySingle<bool>(@"select iif(count(*) = 0, 0, 1) from IntersectTypeDetail where SubjectUid = @uid or objectuid = @uid and PredicateType = 15", new { at.uid });
         }
 
         private PredicateType? DeterminePredicateType(string obj)
@@ -3301,20 +3301,15 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 			return step;
         }
 
-        public List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes deletes, int timeout = 7200, int maxRetryCount = 10)
+        public List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes deletes, int timeout = 7200, bool stateChangeOnly = true)
         {
             bool isLog = true;
             Stopwatch sw = Stopwatch.StartNew();
-            TelemetryClient client = new TelemetryClient();
             const string METHOD_NAME = "RemoveAssetTypes";
             Dictionary<string, double> metrics = new Dictionary<string, double>();
 
-            List<DatabaseBulkAssetTypeResult> results = new List<DatabaseBulkAssetTypeResult>();
+			var results = new List<DatabaseBulkAssetTypeResult>();
             DateTime dt = DateTime.UtcNow;
-            bool generalChecksCompleted = false;
-            CurrentExecutionLocationModel currentLocation = null;
-
-            SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             var executionItemDupes = deletes.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
 
@@ -3336,68 +3331,50 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                 }
                 else
                 {
-                    try
+                    #region Build data tables.
+
+                    DataTable table = new DataTable();
+                    table.Columns.Add("ExecutionID", typeof(Guid));
+                    table.Columns.Add("ItemNumber", typeof(int));
+                    table.Columns.Add("ExecutionItemUid", typeof(Guid));
+                    table.Columns.Add("Uid", typeof(Guid));
+                    table.Columns.Add("Cascade", typeof(bool));
+
+                    #endregion
+
+                    #region Generate data sets
+
+                    for (int i = 1; i <= deletes.Count; i++)
                     {
-                        currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionDeletedAssetType");
+                        AssetTypeDelete model = deletes[i - 1];
 
-                        if (currentLocation.HighestItemNumberProcessed > 0)
+                        DataRow row = table.NewRow();
+
+                        row["ExecutionID"] = execution.ExecutionID;
+                        row["ItemNumber"] = i;
+                        if (model.ExecutionItemUid.HasValue)
                         {
-                            results.AddRange(
-                                Query<DatabaseBulkAssetTypeResult>(
-                                    $"select * from api.ExecutionDeletedAssetType where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
-                                    new { execution.ExecutionID }
-                                )
-                            );
+                            row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
                         }
 
-                        #region Build data tables.
+                        row["Uid"] = model.Uid;
+                        row["Cascade"] = model.Cascade;
 
-                        DataTable table = new DataTable();
-                        table.Columns.Add("ExecutionID", typeof(Guid));
-                        table.Columns.Add("ItemNumber", typeof(int));
-                        table.Columns.Add("ExecutionItemUid", typeof(Guid));
-                        table.Columns.Add("Uid", typeof(Guid));
-                        table.Columns.Add("Cascade", typeof(bool));
-                        table.Columns.Add("AssetTypeID", typeof(int));
-                        table.Columns.Add("Message", typeof(string));
-                        table.Columns.Add("Success", typeof(bool));
+                        table.Rows.Add(row);
+                    }
 
-                        #endregion
+                    #endregion
 
-                        #region Generate data sets
+                    if (Database.Connection.State != ConnectionState.Open)
+                    {
+                        Connection.Open();
+                    }
 
-                        for (int i = 1; i <= deletes.Count; i++)
-                        {
-                            if (i > currentLocation.HighestItemNumber)
-                            {
-                                AssetTypeDelete model = deletes[i - 1];
+					Connection.Execute($@"delete api.ExecutionDeletedAssetType where ExecutionID = @ExecutionID", new { execution.ExecutionID }, commandTimeout: timeout);
 
-                                DataRow row = table.NewRow();
+					#region Bulk Copy
 
-                                row["ExecutionID"] = execution.ExecutionID;
-                                row["ItemNumber"] = i;
-                                if (model.ExecutionItemUid.HasValue)
-                                {
-                                    row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
-                                }
-
-                                row["Uid"] = model.Uid;
-                                row["Cascade"] = model.Cascade;
-
-                                table.Rows.Add(row);
-                            }
-                        }
-
-                        #endregion
-
-                        if (Database.Connection.State != ConnectionState.Open)
-                        {
-                            Connection.Open();
-                        }
-
-                        #region Bulk Copy
-
-                        using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+					using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
                         {
 
                             bulkCopy.BatchSize = SqlBulkBatchSize;
@@ -3413,939 +3390,44 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                             bulkCopy.WriteToServer(table);
                         }
 
-                        #endregion
-
-                        string resolveAssetTypesSQL = @"
-														update	T
-														set		T.Object = S.Object, 
-																T.ObjectID = S.ObjectID, 
-																T.AssetTypeID = S.ID
-														from	api.ExecutionDeletedAssetType T
-																inner join AssetType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID;";
-
-                        string logLookupErrorSQL = $@"
-														update	api.ExecutionDeletedAssetType
-														set		Success = 0,
-																[Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid for this asset type when you are attempting to delete it'
-														where	ExecutionID = @ExecutionID and ([Uid] is null or [Uid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER)); 
-
-														update	api.ExecutionDeletedAssetType
-														set		Success = 0,
-																[Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
-														where	ExecutionID = @ExecutionID and AssetTypeID is null;";
-
-                        string logCascadeErrorSQL = $@"
-														update	T
-														set		T.Success = 0,
-																T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(A.AssetCount as nvarchar) + ' asset(s) present for this type.'
-														from    api.ExecutionDeletedAssetType T
-																cross apply (
-																	select  count(1) as AssetCount
-																	from    Asset
-																	where   AssetTypeID = T.AssetTypeID
-																			and [State] not in (3,4)
-																) A 
-														where	T.ExecutionID = @ExecutionID
-																and T.[Cascade] = 0
-																and A.AssetCount > 0; 
-
-														update	T
-														set		T.Success = 0,
-																T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(A.ChildCount as nvarchar) + ' child asset type(s) present for this type.'
-														from    api.ExecutionDeletedAssetType T
-																cross apply (
-																	select  count(1) as ChildCount
-																	from	IntersectType I
-																			inner join AssetType A on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject = T.Object and I.SubjectID = T.ObjectID and A.[State] not in (3,4)
-																			inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4)
-																) A 
-														where	T.ExecutionID = @ExecutionID
-																and T.Object not in ('PolicyType', 'TaxonomyType')
-																and T.[Cascade] = 0
-																and A.ChildCount > 0;
-
-														update	T
-														set		T.Success = 0,
-																T.[Message] = coalesce([Message] + '; ', '') + 'There are ' + cast(A.ChildCount as nvarchar) + ' Organizations defined for this OrganizationType.'
-														from    api.ExecutionDeletedAssetType T
-																cross apply (
-																	select  count(1) as ChildCount
-																	from	Organization O
-																	where O.OrganizationTypeID = T.ObjectID
-																) A 
-														where	T.ExecutionID = @ExecutionID
-																and T.Object = 'OrganizationType'
-																and A.ChildCount > 0;
-
-														--Check if asset Results exist 
-														update	T
-														set		T.Success = 0,
-																T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(ARE.ResultCount as nvarchar) + ' results(s) present for this rule type.'
-														from    api.ExecutionDeletedAssetType T
-																inner join Asset AN on AN.AssetTypeID = T.AssetTypeID
-																inner join AssetType AT on AT.ID = AN.AssetTypeID and AT.Class = {(int)AssetTypeClass.Rule}
-																cross apply (select count(1) as ResultCount from AssetResult where AN.uid = OwningAssetUid or AN.uid = EvaluatedAssetUid) ARE
-														where	T.ExecutionID = @ExecutionID
-																and T.[Cascade] = 0
-																and ARE.ResultCount > 0;
-
-														--Check if related lookup fields exist
-														update	T
-														set		T.Success = 0,
-																T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(LFT.FieldCount as nvarchar) + ' Lookup fields referenced to this type.'
-														from    api.ExecutionDeletedAssetType T
-																inner join AssetType AT on AT.ID = T.AssetTypeID
-																cross apply (select count(1) as FieldCount
-																	from fieldtype ft 
-																	where ft.type = 'Lookup' 
-																		and ft.LookupObjectType = REPLACE(AT.Object,'Type','') 
-																		and ft.LookupObjectID = AT.ObjectId) LFT
-														where	T.ExecutionID = @ExecutionID
-																and T.[Cascade] = 0 and LFT.FieldCount > 0;
-														";
-
-                        #region Log cascade errors
-
-                        Connection.Execute($@"{resolveAssetTypesSQL} {logLookupErrorSQL} {logCascadeErrorSQL}",
-                        new { execution.ExecutionID }, commandTimeout: timeout);
-
-                        #endregion
-
-                        generalChecksCompleted = true;
-
-                        AddMeasurement(metrics, "Building data tables and initialization completed", sw.ElapsedMilliseconds, 1);
-                        sw.Restart();
-                    }
-                    catch (Exception generalEx)
-                    {
-                        generalChecksCompleted = false;
-                        string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-                        execution.ErrorMessage = msg;
-                        execution.Processed = 0;
-                        execution.Error = deletes.Count();
-
-                        results = new List<DatabaseBulkAssetTypeResult>();
-                        results.AddRange(deletes.Select(i => new DatabaseBulkAssetTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
-
-                        AddMeasurement(metrics, "Error occurred > Building data tables and initialization completed", sw.ElapsedMilliseconds, 1);
-                        sw.Restart();
-                    }
-
-                    if (generalChecksCompleted)
-                    {
-                        bool runCompleted = false;
-                        int retryCount = 0;
-
-                        AddMeasurement(metrics, "Checks passed (Deletion started)", sw.ElapsedMilliseconds, 1);
-                        sw.Restart();
-
-                        while (!runCompleted && retryCount <= maxRetryCount)
-                        {
-                            int itemNumber = 1;
-                            try
-                            {
-                                List<AssetTypeDeleteObject> assetTypes;
-                                //Create list of asset types for deletion + their children
-                                using (SqlTransaction trans = Connection.BeginTransaction())
-                                {
-                                    try
-                                    {
-                                        assetTypes = BuildDeletionTree(execution, timeout, itemNumber, trans);
-
-                                        trans.Commit();
-
-                                        AddMeasurement(metrics, "Building Deletion Tree", sw.ElapsedMilliseconds, 1);
-                                        sw.Restart();
-                                    }
-                                    catch (Exception)
-                                    {
-                                        try
-                                        {
-                                            if (trans != null)
-                                            {
-                                                trans.Rollback();
-                                            }
-                                        }
-                                        catch
-                                        {
-                                        }
-
-                                        AddMeasurement(metrics, "Error occurred > Building Deletion Tree", sw.ElapsedMilliseconds, 1);
-                                        sw.Restart();
-
-                                        throw;
-                                    }
-                                }
-
-                                //Delete hierarchy by hierarchy and start from highest level (children)
-                                List<IGrouping<int, AssetTypeDeleteObject>> hierarchies = assetTypes.GroupBy(x => x.ItemNumber).ToList();
-                                int success = 0;
-                                int failed = 0;
-
-                                foreach (IGrouping<int, AssetTypeDeleteObject> hierarchy in hierarchies)
-                                {
-                                    List<AssetTypeDeleteObject> typesToDelete = hierarchy.OrderByDescending(x => x.Level).ToList();
-                                    bool hasError = false;
-
-                                    foreach (AssetTypeDeleteObject at in typesToDelete)
-                                    {
-                                        //If error occured stop deleting this hierarchy do not continue deleting parent asset types
-                                        if (hasError)
-                                        {
-                                            continue;
-                                        }
-
-                                        int totalAssetCount = Connection.Query<int>("select count(*) from asset where assettypeid = @id", new { id = at.AssetTypeId }).FirstOrDefault();
-
-                                        if (totalAssetCount > 0)
-                                        {
-                                            int transactionsCount = (totalAssetCount / SqlBulkAssetDeleteSize) + 1;
-
-                                            AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion started ({totalAssetCount} assets) by chunks of size {SqlBulkAssetDeleteSize}", sw.ElapsedMilliseconds, 1);
-                                            sw.Restart();
-
-                                            List<Guid> assetUids = null;
-                                            if (at.Class == AssetTypeClass.Rule)
-                                            {
-                                                assetUids = Connection.Query<Guid>("select uid from asset where assettypeid = @id", new { id = at.AssetTypeId }).ToList();
-                                            }
-
-                                            for (int i = 0; i < transactionsCount; i++)
-                                            {
-                                                AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion : {(i + 1)}/{transactionsCount}", sw.ElapsedMilliseconds, 1);
-                                                sw.Restart();
-
-                                                #region RemoveAssetsGraphDataByChunks
-
-                                                using (SqlTransaction trans = Connection.BeginTransaction())
-                                                {
-                                                    try
-                                                    {
-                                                        RemoveAssetsGraphDataByChunk(execution, timeout, itemNumber, at, trans);
-                                                        trans.Commit();
-
-                                                        AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion > Graph data {(i + 1)}/{transactionsCount} > Finished", sw.ElapsedMilliseconds, 1);
-                                                        sw.Restart();
-                                                    }
-                                                    catch (Exception ex)
-                                                    {
-                                                        try
-                                                        {
-                                                            if (trans != null)
-                                                            {
-                                                                trans.Rollback();
-                                                            }
-                                                        }
-                                                        catch
-                                                        {
-                                                        }
-
-                                                        Connection.Query(@"update api.executiondeletedassettype
-													set Message = isnull(Message,'') + @msg
-													where executionid = @executionuid and uid = @assetTypeUid",
-                                                            new
-                                                            {
-                                                                executionuid = execution.ExecutionID,
-                                                                assetTypeUid = at.uid,
-                                                                msg = $@"Error occurred while deleting assets graph data : ({ex.Message})"
-                                                            });
-
-                                                        hasError = true;
-                                                        i = transactionsCount + 1;
-
-                                                        AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion > Graph data {(i + 1)}/{transactionsCount} > Error occurred", sw.ElapsedMilliseconds, 1);
-                                                        sw.Restart();
-
-                                                        throw;
-                                                    }
-
-                                                }
-                                                #endregion
-
-                                                #region RemoveAssetsDataByChunks
-                                                using (SqlTransaction trans = Connection.BeginTransaction())
-                                                {
-
-                                                    try
-                                                    {
-                                                        RemoveAssetsDataByChunk(execution, timeout, itemNumber, at, trans);
-
-                                                        trans.Commit();
-
-                                                        AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion > Asset data {(i + 1)}/{transactionsCount} > Finished", sw.ElapsedMilliseconds, 1);
-                                                        sw.Restart();
-                                                    }
-                                                    catch (Exception ex)
-                                                    {
-                                                        try
-                                                        {
-                                                            if (trans != null)
-                                                            {
-                                                                trans.Rollback();
-                                                            }
-                                                        }
-                                                        catch
-                                                        {
-                                                        }
-
-                                                        Connection.Query(@"update api.executiondeletedassettype
-													set Message = isnull(Message,'') + @msg
-													where executionid = @executionuid and uid = @assetTypeUid",
-                                                            new
-                                                            {
-                                                                executionuid = execution.ExecutionID,
-                                                                assetTypeUid = at.uid,
-                                                                msg = $@"Error occurred while deleting assets : ({ex.Message})"
-                                                            });
-
-                                                        hasError = true;
-                                                        i = transactionsCount + 1;
-
-                                                        AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion > Graph data {(i + 1)}/{transactionsCount} > Error occurred", sw.ElapsedMilliseconds, 1);
-                                                        sw.Restart();
-
-                                                        throw;
-                                                    }
-
-                                                }
-                                                #endregion
-                                            }
-
-                                            // Data Quality Scoring - send to engine to determine what scores need to be recalculated.
-                                            if (at.Class == AssetTypeClass.Rule && assetUids != null)
-                                            {
-                                                CreateRulesRemovedExecution(execution.ExecutionID, assetUids);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion skipped asset data deletion", sw.ElapsedMilliseconds, 1);
-                                            sw.Restart();
-                                        }
-
-                                        if (!hasError)
-                                        {
-                                            #region RemoveAssetTypeData
-
-                                            AddMeasurement(metrics, $"Asset Type '{at.uid}' > Deleting Asset Type Data Started", sw.ElapsedMilliseconds, 1);
-                                            sw.Restart();
-
-                                            using (SqlTransaction trans = Connection.BeginTransaction())
-                                            {
-                                                try
-                                                {
-                                                    RemoveAssetTypeData(execution, timeout, itemNumber, at, trans);
-
-                                                    trans.Commit();
-                                                    AddMeasurement(metrics, $"Asset Type '{at.uid}' > Deleting Asset Type Data Finished", sw.ElapsedMilliseconds, 1);
-                                                    sw.Restart();
-                                                }
-                                                catch (Exception ex)
-                                                {
-                                                    try
-                                                    {
-                                                        if (trans != null)
-                                                        {
-                                                            trans.Rollback();
-                                                        }
-                                                    }
-                                                    catch
-                                                    {
-                                                    }
-                                                    hasError = true;
-                                                    Connection.Query(@"update api.executiondeletedassettype
-													set Message = isnull(Message,'') + @msg
-													where executionid = @executionuid and uid = @assetTypeUid",
-                                                        new
-                                                        {
-                                                            executionuid = execution.ExecutionID,
-                                                            assetTypeUid = at.uid,
-                                                            msg = $@"Error occurred while deleting asset type : ({ex.Message})"
-                                                        }
-                                                    );
-
-                                                    AddMeasurement(metrics, $"Asset Type '{at.uid}' > Deleting Asset Type Data > Error Occurred", sw.ElapsedMilliseconds, 1);
-                                                    sw.Restart();
-
-                                                    throw;
-                                                }
-                                            }
-
-                                            #endregion
-                                        }
-
-                                        AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion finished", sw.ElapsedMilliseconds, 1);
-                                        sw.Restart();
-                                    }
-
-                                    if (hasError)
-                                    {
-                                        failed++;
-                                    }
-                                    else
-                                    {
-                                        success++;
-                                    }
-                                }
-
-                                Connection.Query(@"update api.execution
-													set Processed = @success,
-													Error = @failed
-													where executionid = @executionuid",
-                                                        new
-                                                        {
-                                                            success,
-                                                            failed,
-                                                            executionUid = execution.ExecutionID
-                                                        });
-
-                                results = Connection.Query<DatabaseBulkAssetTypeResult>(@"select	*
-																from	api.ExecutionDeletedAssetType
-																where	ExecutionID = @executionUid 
-																		and FromHierarchy = 0;", new { executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, commandTimeout: timeout).ToList();
-
-
-                                runCompleted = true;
-                            }
-                            catch (Exception ex)
-                            {
-                                retryCount++;
-
-                                if (retryCount > maxRetryCount)
-                                {
-                                    LogLoopExecutionError(execution.ExecutionID, itemNumber, itemNumber, "api.ExecutionDeletedAssetType", ex.GetFullExceptionData(false), timeout);
-                                }
-                            }
-                        }
-
-                        Connection.Close();
-
-                        // Queue successfully deleted asset types for reindexing
-                        results.Where(r => r.Success).ToList().ForEach(r =>
-                            {
-                                Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
-                                {
-                                    CompanyID = CurrentCompanyID,
-                                    AssetTypeUid = r.uid,
-                                    Origin = "RemoveAssetTypes, uid: " + r.uid.ToString()
-                                });
-                            });
-                    }
+						#endregion
+
+					Connection.Execute($@"exec api.DeleteAssetTypesByExecution @ExecutionID, @stateChangeOnly", new { execution.ExecutionID, stateChangeOnly }, commandTimeout: timeout);
+
+					results = Connection.Query<DatabaseBulkAssetTypeResult>(
+						"select * from api.ExecutionDeletedAssetType where ExecutionID = @ExecutionID",
+						new { execution.ExecutionID }
+						).ToList();
+
+					// Data Quality Scoring - send to engine to determine what scores need to be recalculated.
+					var assetUids = Connection.Query<Guid>(
+						"select Uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID",
+						new { execution.ExecutionID }
+						).ToList();
+					if (assetUids.Count > 0) 
+					{
+						CreateRulesRemovedExecution(execution.ExecutionID, assetUids);
+					}
+
+					// Queue successfully deleted asset types for reindexing
+					results.Where(r => r.Success).ToList().ForEach(r =>
+					{
+						Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+						{
+							CompanyID = CurrentCompanyID,
+							AssetTypeUid = r.uid,
+							Origin = "RemoveAssetTypes, uid: " + r.uid.ToString()
+						});
+					});
+
+                    AddMeasurement(metrics, "Building data tables and initialization completed", sw.ElapsedMilliseconds, 1);
+                    sw.Restart();
                 }
             }
 
-            AITrackMetric(client, execution, METHOD_NAME, metrics, isLog);
+            AITrackMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
 
             return results;
-        }
-
-        private void RemoveAssetsGraphDataByChunk(ApiExecution execution, int timeout, int itemNumber, AssetTypeDeleteObject at, SqlTransaction trans)
-        {
-            Connection.Execute(@"
-								drop table if exists #deleteAssets
-								create table #deleteAssets (id bigint)
-
-								insert into #deleteAssets
-								select top (@deleteCount) id from asset where assettypeid = @assettypeid
-
-								create clustered index CIX_TempDeleteAssetsIds on #deleteAssets (id)
-												
-								-- Delete rule results where the asset we are deleting is the owner of the results (i.e. a Rule).
-								drop table if exists #Uids
-								create table #Uids (Uid uniqueidentifier)
-
-								insert into #Uids
-									select	R.Uid
-									from	dbo.Asset A
-											INNER JOIN
-											dbo.AssetResult R on A.Uid = R.OwningAssetUid
-									where	A.AssetTypeID = @AssetTypeId
-									        and exists (select 1 from #deleteAssets d where A.Id = d.Id);
-
-								create clustered index CIX_TempUids on #Uids (Uid)								
-
-						        if exists (select 1 from #Uids)
-						        begin
-							        delete	T
-							        from	dbo.AssetResult T
-									        inner join #Uids S on S.Uid = T.Uid;
-						        end
-
-					", new { deleteCount = SqlBulkAssetDeleteSize, assetTypeUid = at.uid, at.AssetTypeId, at.Object, at.ObjectId, at.IntersectTypeId, executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
-        }
-
-        private void RemoveAssetsDataByChunk(ApiExecution execution, int timeout, int itemNumber, AssetTypeDeleteObject at, SqlTransaction trans)
-        {
-            Connection.Execute(@"
-								drop table if exists #deleteAssets
-                                create table #deleteAssets (id bigint,Uid uniqueidentifier,Object varchar(100),ObjectID bigint)
-
-								insert into #deleteAssets(id, Uid, Object, ObjectID)
-								select top (@deleteCount) id, Uid, Object, ObjectID from asset where assettypeid = @assettypeid
-
-                                create index Idx_TempDeleteAssetsIds on #deleteAssets (id);
-                                create index Idx_TempDeleteAssetsUid on #deleteAssets (Uid);
-                                create index Idx_TempDeleteAssetsObjectObjectID on #deleteAssets (Object,ObjectID);
-
-                                if exists (select 1 from api.ExecutionDeletedAssetType S where S.AssetTypeID = @assettypeid and S.ExecutionID = @executionUid)
-                                begin
-								    delete	T
-								    from	ResponsibilityTypeRelationOverrideItem T
-										    inner join #deleteAssets A on A.ID = T.AssetID;
-
-								    delete	T
-								    from	AssetCrossReference T
-										    inner join #deleteAssets A on A.Uid = T.Uid;
-
-								    delete	T
-								    from	CommentRelation T
-										    inner join #deleteAssets O on O.ID = T.AssetID;
-
-								    delete	T
-								    from	CommentVote T
-										    inner join Comment C on C.ID = T.CommentID
-										    inner join #deleteAssets O on O.ID = C.AssetID;
-
-								    delete	T
-								    from	Comment T
-										    inner join #deleteAssets O on O.ID = T.AssetID;
-
-								    delete	T
-								    from	Favorite T
-										    inner join #deleteAssets O on O.ID = T.AssetID;
-
-								    delete	T
-								    from	Follow T
-										    inner join #deleteAssets O on O.ID = T.AssetID;
-												
-								    delete	T
-								    from	Nym T
-										    inner join #deleteAssets O on O.Object = T.Object and O.ObjectID = T.ObjectID ;
-
-                                end
-
-								delete	T
-								from	reporting.Global_Audit T
-										inner join #deleteAssets A on A.Object = T.Object and A.ObjectID = T.ObjectID;
-
-								delete	T
-								from	AssetDisplayValue T
-                                        inner join #deleteAssets O on O.id = T.AssetId;
-
-							
-								-- Delete where assets are on the subject side and object side of relationship.
-								drop table if exists #tempIntersect;
-								create table #tempIntersect (ID int);
-								create index idx_tempIntersect on #tempIntersect(ID);
-
-								insert into #tempIntersect (ID)
-								select id from
-								(
-								select T.id
-								from	[Intersect] T
-										inner join #deleteAssets A on A.Object = T.Subject and A.ObjectID = T.SubjectID
-								union 
-								select T.id
-								from	[Intersect] T
-										inner join #deleteAssets A on A.Object = T.Object and A.ObjectID = T.ObjectID
-								) a;
-
-								
-								if exists(select 1 from #tempIntersect)
-								begin
-
-									delete T
-									from	[Field] T
-											inner join #tempIntersect A on T.ObjectType = 'Intersect' and T.ObjectID = A.ID
-
-									delete T
-									from	[Intersect] T
-											inner join #tempIntersect A on A.ID = T.ID;
-								end
-
-								delete	T
-								from	Field T
-										inner join #deleteAssets O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID;
-												
-								delete	T
-								from	Field T
-										inner join Issue I on T.ObjectType = 'Issue' and I.ID = T.ObjectID
-										inner join #deleteAssets O on O.Object = I.Object and O.ObjectID = I.ObjectID;
-												
-								delete	T
-								from	Issue T
-										inner join #deleteAssets O on O.Object = T.Object and O.ObjectID = T.ObjectID;
-
-	                            drop table if exists #s;
-	                            create table #s (ScoreUid uniqueidentifier)
-	
-	                            insert into #s
-	                            select S.Uid ScoreUid
-	                            from metrics.Score S 
-	                            inner join #deleteAssets O on O.Uid = S.AssetUid;
-	
-	                            create index ix_s_scoreuid on #s(ScoreUid);
-
-	                            if exists (select 1 from #s)
-	                            begin
-								    delete	T
-								    from	[metrics].[ScoreItem] T
-										    inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
-										    inner join #s S on S.ScoreUid = L.ScoreUid;
-
-								    delete	T
-								    from	[metrics].[Score] T
-										    inner join #s O on O.ScoreUid = T.Uid;
-                                end
-
-								delete	T
-								from	Asset T
-										inner join #deleteAssets O on O.id = T.id;",
-                        new { deleteCount = SqlBulkAssetDeleteSize, assetTypeUid = at.uid, at.AssetTypeId, at.Object, at.ObjectId, at.IntersectTypeId, executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
-        }
-
-        private void RemoveAssetTypeData(ApiExecution execution, int timeout, int itemNumber, AssetTypeDeleteObject at, SqlTransaction trans)
-        {
-            Connection.Execute(@"
-											drop table if exists #w;
-											create table #w (ID int);
-											create index idx_w on #w(ID);
-
-											insert into #w
-												select	distinct 
-														wi.ID 
-												from	workflow.[Type] wt
-														inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
-														inner join workflow.[Version] wv on wt.id = wv.typeId
-														inner join workflow.Item wi on 	wv.id = wi.VersionID
-														inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-											insert into #w
-												select	wi.id 
-												from	workflow.Item wi
-														inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
-														inner join Asset A on A.Object = i.ObjectType and A.ObjectID = i.ObjectID
-														inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-											
-											if exists(select 1 from #w)
-											begin
-												delete  T
-												from	[workflow].[ItemStepTransition] T
-														inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
-														inner join #w S on S.ID = wis.ItemID;
-
-												delete  workflow.itemstep 
-												where	ItemID in (Select ID from #w);
-
-												delete	T
-												from	[workflow].[ItemAssignment] T
-														inner join #w S on S.ID = T.ItemID;
-
-												delete  [workflow].[Item] 
-												where	ID in (Select ID from #w);
-											end
-
-											truncate table #w;
-											insert into #w
-												select	distinct 
-														wt.ID 
-												from	workflow.[Type] wt
-														inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
-														inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-
-											if exists(select 1 from #w)
-											begin
-												delete  T
-												from	[workflow].[VersionStepTransition] T
-														inner join workflow.Versionstep wis on (wis.ID = T.ToVersionStepID or wis.ID = T.FromVersionStepID)
-														inner join [workflow].[Version] v on v.ID = wis.VersionID
-														inner join [workflow].[Type] wt on wt.ID = v.TypeID
-														inner join #w S on S.ID = wt.ID;
-
-												delete  wis
-												from	workflow.Versionstep wis
-														inner join [workflow].[Version] v on v.ID = wis.VersionID
-														inner join [workflow].[Type] wt on wt.ID = v.TypeID
-														inner join #w S on S.ID = wt.ID;
-
-												update	wt
-												set		PublishedVersionID = null
-												from	workflow.type wt
-														inner join #w S on S.ID = wt.ID;
-
-												delete  v
-												from	[workflow].[Version] v
-														inner join [workflow].[Type] wt on wt.ID = v.TypeID
-														inner join #w S on S.ID = wt.ID;
-
-												delete  wt
-												from	[workflow].[Type] wt
-														inner join #w S on S.ID = wt.ID;
-											end
-
-											drop table if exists #r;
-											create table #r (ID int);
-											create index idx_r on #r(ID);
-
-											insert into #r
-											select T.ID
-											from   ResponsibilityTypeRelationRule T
-												   inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID 
-													and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-
-											if exists (select 1 from #r)
-											 begin
-												delete	T
-												from	ResponsibilityRuleResultAsset T
-														inner join #r R on R.ID = T.RuleID;
-												delete	T
-												from	ResponsibilityRuleResultSecurityAsset T
-														inner join #r R on R.ID = T.RuleID;
-
-												delete	T
-												from	ResponsibilityTypeRelationRule T
-														inner join #r S on S.ID = T.ID;
-											end
-
-											delete	T
-											from	ResponsibilityTypeRelation T
-													inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-
-											delete	T
-											from	[Load] T
-													inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-
-
-											drop table if exists #s;
-											create table #s (ID int);
-											create index idx_s on #s(ID);
-
-											insert into #s
-											select O.ID
-											from	SiteNav O 
-													inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-
-											if exists(select 1 from #s)
-											begin
-												delete	T
-												from	SiteNavPermission T
-												inner join #s O on O.ID = T.SiteNavID;
-
-												delete	O
-												from	SiteNav O
-												inner join #s S on S.ID = O.ID;
-
-											end
-
-								delete	T
-								from	NymRelation T
-										inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-
-								delete  T
-								from    AssetTypeExportTemplateStyle T
-										inner join AssetTypeExportTemplate E on E.ID = T.AssetTypeExportTemplateID
-										inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-
-								delete  E
-								from    AssetTypeExportTemplate E 
-										inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-
-								delete  E
-								from    AssetTypeLevel E 
-										inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-
-								delete  E
-								from    AssetTypeStyle E 
-										inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.ID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-												
-								delete	T
-								from	[metrics].[ScoreItem] T
-										inner join [metrics].[AssetVersion] MV on MV.Uid = T.AssetVersionUid
-										inner join [metrics].[Asset] MA on MA.Uid = MV.AssetUid
-										inner join [metrics].Allocation A on A.Uid = MA.AllocationUid
-										where A.AssetTypeUid = @assetTypeUid;
-
-								delete	T
-								from	[metrics].[Score] T
-										inner join Asset MA on MA.Uid = T.AssetUid and MA.AssetTypeID = @assetTypeId;
-
-								delete  [metrics].[RollupPathSegment] 
-								where   AssetTypeID = @assetTypeId;
-
-								delete  [metrics].[AssetVersionRollupPathFilter] 
-								where   AssetTypeID = @assetTypeId;
-
-								delete	[metrics].Allocation where AssetTypeUid = @assetTypeUid;
-
-								drop table if exists #tempITIDField;
-								create table #tempITIDField (FieldTypeID int);
-								create index idx_tempITIDField on #tempITIDField(FieldTypeID)
-
-								drop table if exists #tempITID;
-								create table #tempITID (IntersectTypeID int);
-								create index idx_ittempITID on #tempITID(IntersectTypeID)
-
-								insert into #tempITID
-								select distinct IntersectTypeID from (
-								select	T.ID IntersectTypeID
-								from	[IntersectType] T
-										where T.Subject = @Object and T.SubjectID = @ObjectId
-								Union
-								select	T.ID IntersectTypeID
-								from	[IntersectType] T
-										where T.Object = @Object and T.ObjectID = @ObjectId
-								) a;
-
-								if exists(select 1 from #tempITID)
-								begin
-										delete from #tempITIDField;
-
-										insert into #tempITIDField
-										select distinct ft.id
-										from FieldType ft
-										inner join #tempITID tempit on ft.[object] = 'IntersectType' and ft.[ObjectID] = tempit.IntersectTypeID;
-
-										
-										if exists (select 1 from #tempITIDField)
-										begin
-											delete ft 
-											from fieldType ft
-											inner join #tempITIDField tempfield on ft.id = tempfield.FieldTypeID;
-										end
-										
-										delete IType
-										from [intersectType] IType
-										inner join #tempITID tempIT on tempIT.IntersectTypeID = IType.ID;
-								end
-
-								-- Delete parent/child relationships.
-								delete	T
-								from	[Intersect] T 
-										where T.IntersectTypeID = @IntersectTypeId; 
-
-								-- Delete counter field values.
-								delete T 
-								from dbo.FieldCounterValue T
-								inner join FieldType FT ON FT.Object = @Object and FT.ObjectID = @ObjectId and [Type] = 'Counter'
-								where FT.Id = T.FieldTypeId
-
-								delete	T
-								from	FieldType T
-										where T.Object = @Object and T.ObjectID = @ObjectId;
-
-								delete	T
-								from	FieldType T
-										where T.LookupObjectType = REPLACE(@Object,'Type','') and T.LookupObjectId = @ObjectId;
-											   
-								delete	T
-								from	IssueTypeRelation T
-										where T.AssetTypeID = @AssetTypeId;
-
-								delete T
-								from	AssetType T
-										where @Object = 'ArtifactType' and T.ID = @AssetTypeId;
-																								
-											
-								delete T
-								from	AssetType T
-										where @Object = 'PolicyType' and @AssetTypeId = T.ID;
-
-								delete T
-								from	AssetType T
-										where @Object = 'ReferenceItemType' and @AssetTypeId = T.ID;
-
-								delete T
-								from	AssetType T
-										where @Object = 'TaxonomyType' and @AssetTypeId = T.ID;
-
-								update	OrganizationType
-								set		State = 3,
-										UpdatedBy = @resource,
-										UpdatedOn = getutcdate()
-								from	OrganizationType T
-								where @Object = 'OrganizationType' and @ObjectId = T.ID;
-
-								delete	T
-								from	AssetType T
-										where @AssetTypeId = T.ID;
-
-								update	api.ExecutionDeletedAssetType
-								set		[Message] = 'Removed Asset type from environment, along with all related assets, scores, and relationships.',
-										Success = 1
-								where	ExecutionID = @executionUid 
-										and Uid = @assetTypeUid
-					", new { assetTypeUid = at.uid, at.AssetTypeId, at.Object, at.ObjectId, at.IntersectTypeId, executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
-        }
-
-        private List<AssetTypeDeleteObject> BuildDeletionTree(ApiExecution execution, int timeout, int itemNumber, SqlTransaction trans)
-        {
-            return Connection
-                .Query<AssetTypeDeleteObject>(@";with h as (
-												select	D.ExecutionID,
-														D.ItemNumber,
-														D.AssetTypeID,
-														D.[Uid],
-														A.Object,
-														A.ObjectID, 
-														D.IntersectTypeID,
-														0 as [Level]
-												from	api.ExecutionDeletedAssetType D
-														inner join AssetType A on D.ExecutionID = @executionUid and A.ID = D.AssetTypeID
-												where	D.AssetTypeID is not null and D.Success is null
-												union all
-												select	P.ExecutionID,
-														P.ItemNumber,
-														C.ID as AssetTypeID,
-														C.[Uid],
-														C.Object,
-														C.ObjectID, 
-														I.ID as IntersectTypeID,
-														P.[Level] + 1 as [Level]
-												from	IntersectType I 
-														inner join h as P on P.ExecutionID = @executionUid and P.Object = I.Subject and P.ObjectID = I.SubjectID
-														inner join AssetType C on C.Object = I.Object and C.ObjectID = I.ObjectID and C.ID <> P.AssetTypeID
-														inner join [Predicate] PR on PR.ID = I.PredicateID and PR.[Type] in (3,4)
-												where   P.[Level] <= 15
-											)
-											insert into api.ExecutionDeletedAssetType ([ExecutionID],[ItemNumber],[Uid],[AssetTypeID],Object,ObjectID,[IntersectTypeID],[FromHierarchy],[HierarchyLevel])
-												select  distinct 
-														ExecutionID, 
-														ItemNumber, 
-														[Uid], 
-														AssetTypeID, 
-														Object,
-														ObjectID,
-														IntersectTypeID, 
-														1,
-														[Level]
-												from    h 
-												where   IntersectTypeID is not null 
-														and [Level] > 0 
-														and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = @executionUid and Success is null);
-			
-											INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-												select	'ObjectIndex', 
-														'D',
-														A.Object, 
-														A.ObjectID, 
-														A.ID
-												from	Asset A
-														inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid;
-
-												select D.uid, 
-																		T.Class,
-																		D.ObjectId, 
-																		D.Object,
-																		D.AssetTypeId,
-																		isnull(D.HierarchyLevel,0) as Level,
-																		D.ItemNumber 
-																		from api.ExecutionDeletedAssetType D inner join AssetType T on T.ID = D.AssetTypeId
-																		where D.executionid = @executionUid and D.success is null
-										", new
-                {
-                    executionUid = execution.ExecutionID,
-                    itemNumber,
-                    resource = CurrentResourceID
-                }, transaction: trans, commandTimeout: timeout).ToList();
         }
 
         public List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600)

@@ -322,6 +322,7 @@
 
 	<!-- Procedures (object-based naming) -->
 	<include file="scripts/Procedure.analytics.AddStatistic.xml"/>
+	<include file="scripts/Procedure.api.DeleteAssetTypesByExecution.xml"/>
 	<include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>
 	<include file="scripts/Procedure.api.MergeAssetPaths.xml"/>
 	<include file="scripts/Procedure.bulkload.GetLoadColumns.xml"/>

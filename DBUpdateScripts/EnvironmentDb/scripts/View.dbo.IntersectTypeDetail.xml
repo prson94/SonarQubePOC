@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.dbo.IntersectTypeDetail-v5.1">
+  <changeSet author="Pappas" id="View.dbo.IntersectTypeDetail-v5.2">
 	<comment>GOV-18449</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -18,7 +18,7 @@ as
 				IT.ID,
 			    IT.[State],
 				iif (IT.SubjectClass = 9, 'Reference List', SATT.Name) + ' ' + P.Name + ' ' + iif (IT.ObjectClass = 9, 'Reference List', OATT.Name)	as Name,
-				IT.SubjectClass,
+				coalesce(IT.SubjectClass, 0) as SubjectClass,
 				IT.SubjectAssetTypeID,
 				SATT.Uid as SubjectUid,
 				IT.SubjectCardinality, 
@@ -27,7 +27,7 @@ as
 				COALESCE (SIcon.IconForeColor, '#fff') AS SubjectIconForeColor, 
 				COALESCE (SIcon.IconText, SUBSTRING(COALESCE (SATT.Name, 'Re'), 1, 2)) AS SubjectIconText,
 				SP.Path as SubjectAssetTypePath,
-				IT.ObjectClass,
+				coalesce(IT.ObjectClass, 0) as ObjectClass,
 				IT.ObjectAssetTypeID,
 				OATT.Uid as ObjectUid,
 				IT.ObjectCardinality, 

@@ -3790,7 +3790,7 @@ where an.Uid = fam.uid)
 			};
 		}
 
-		public List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, AssetType assetType, ApiExecution execution)
+		public List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true)
 		{
 			if (assetTypes.Count > 1)
 			{
@@ -3801,13 +3801,7 @@ where an.Uid = fam.uid)
 			List<DatabaseBulkAssetTypeResult> results = null;
 			try
 			{
-				var deletes = new AssetTypeDeletes();
-				results = CompanyContext.RemoveAssetTypes(execution, assetTypes, ApiTimeout, 0); // single endpoint should not retry otherwise timeout will cause 10x attempts to delete.
-																								 // Close execution record.
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
+				results = CompanyContext.RemoveAssetTypes(execution, assetTypes, ApiTimeout, stateChangeOnly);
 			}
 			catch (Exception ex)
 			{

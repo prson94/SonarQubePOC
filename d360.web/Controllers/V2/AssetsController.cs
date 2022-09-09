@@ -2522,7 +2522,7 @@ namespace d360.web.Controllers.V2
 					new AssetTypeDelete() { Cascade = assetType.Cascade, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.Uid }
 				};
 
-				var deleteAssetTypesResults = AssetRepository.DeleteSingleAssetType(deletes, type, execution);
+				var deleteAssetTypesResults = AssetRepository.DeleteSingleAssetType(deletes, execution, false);
 				Company.CreateRollupPathChangedExecution(assetTypeId: type.ID);
 
 				return await Task.FromResult<IHttpActionResult>(
