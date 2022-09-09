@@ -83,7 +83,6 @@ namespace d360.model.helpers.filters
 			}
 
 			value = valueValidation.UpdatedValue;
-			UpdateValueWithWildCards();
 
 			UpdateValueWithWildCards();
 			bool isListField = lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower());
