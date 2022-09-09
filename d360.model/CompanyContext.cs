@@ -2582,7 +2582,7 @@ namespace d360.model
 					filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
 					Dictionary<string, object> sqlParams = new Dictionary<string, object>();
 					List<int> filteredFields = new List<int>();
-					whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
+					whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams, out filteredFields));
 
 					foreach (KeyValuePair<string, object> item in sqlParams)
 					{

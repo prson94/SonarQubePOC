@@ -338,7 +338,7 @@ namespace d360.model.DataAccessLayer
 					var filterDataProvider = new FilterDataProvider(CompanyContext);
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.Semantics, false, false, false);
 					var sqlParams = new Dictionary<string, object>();
-					whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out _) + ")");
+					whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams, out _));
 					foreach (var item in sqlParams)
 					{
 						dbArgs.Add(item.Key, item.Value);

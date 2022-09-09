@@ -36,6 +36,7 @@ namespace d360.model.helpers.filters
 			}
 
 			sqlParamsRef = sqlParams;
+
 			stringBuilder.Clear();
 
 			if (!IsNullValue)
@@ -215,20 +216,6 @@ namespace d360.model.helpers.filters
 				}
 			}
 
-			if (type == "Relationship")
-			{
-				string condition = "exists";
-				if (@operator == "ne")
-				{
-					condition = "not exists";
-				}
-
-				filterExpression = $@"{condition}
-                                    (select id from intersectdetail where intersecttypeid = {lookupObjectId} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx}
-                                    union select id from IntersectDetail where intersecttypeid = {lookupObjectId} and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx})";
-
-			}
-
 			this.tempTableInfo.TempTableQuery = @$"				
 				drop table if exists #advanced_filter_{parameterIdx}
 				create table #advanced_filter_{parameterIdx} (AssetId int)
@@ -238,6 +225,8 @@ namespace d360.model.helpers.filters
 				from Asset A
 				{joinSql}
 				where {filterExpression}";
+
+			stringBuilder.Append($"(A.ID in (select AssetID from #advanced_filter_{parameterIdx}))");
 		}
 
 		public void LoadFieldType(FieldType ft, IReadOnlyList<string> fieldColumns, DynamicQueryJoins dynamicQueryJoins)

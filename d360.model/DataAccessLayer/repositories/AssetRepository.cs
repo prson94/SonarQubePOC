@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -274,6 +275,7 @@ namespace d360.model.DataAccessLayer
 			string profilingCheckSql = "";
 			string profilingCheckFields = "";
 			bool includeProfilingCheck = false;
+			bool hasFilters = false;
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -292,7 +294,7 @@ namespace d360.model.DataAccessLayer
 			List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "RefListRelationship" };
 			var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).AsNoTracking().ToList();
 			var fieldTypes = allFieldTypes.Where(f => !hiddenFieldTypes.Contains(f.Type)).ToList();
-
+			
 			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
 			{
 				includeRelationships = true;
@@ -867,11 +869,11 @@ namespace d360.model.DataAccessLayer
 					getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
 					var filterDataProvider = new FilterDataProvider(CompanyContext);
-					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, includeParent);
+					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, includeParent, allowTempTableFiltering: true);
 					filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns.GetStatements(), tempJoins);
 					Dictionary<string, object> sqlParams = new Dictionary<string, object>();
 					List<int> filteredFields = new List<int>();
-					whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
+					whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams, out filteredFields));
 					fieldsUsedInMainQuery.AddRange(filteredFields.Select(x => "F" + x));
 					fieldsUsedInMainQuery.AddRange(filterExpressionParser.filteredCustomFields);
 
@@ -925,7 +927,7 @@ namespace d360.model.DataAccessLayer
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.Relationships);
 					Dictionary<string, object> sqlParams = new Dictionary<string, object>();
 					List<int> filteredFields = new List<int>();
-					whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
+					whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams, out filteredFields));
 
 					foreach (var item in sqlParams)
 					{
@@ -992,22 +994,8 @@ namespace d360.model.DataAccessLayer
 					dbArgs.Add("@simpleFilter", simpleFilter);
 					var simpleFilterFields = fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString());
 
-					bool IsPathSegmentFilter(FieldType fieldType)
-					{
-						if (fieldType.Type == DataType.Path.ToString())
-						{
-							var definition = JsonConvert.DeserializeObject<JObject>(fieldType.Definition ?? "{}");
-							if (definition.TryGetValue("AssetTypeUid", out _))
-							{
-								return Guid.TryParse(definition.GetValue("AssetTypeUid").ToString(), out _); ;
-							}
-						}
-
-						return false;
-					};
-
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
-					foreach (var ft in simpleFilterFields.Where(x => !IsPathSegmentFilter(x)))
+					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment))
 					{
 						bool isNumbericFieldType = ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
 
@@ -1052,10 +1040,10 @@ namespace d360.model.DataAccessLayer
 						}
 					}
 
-					if (simpleFilterFields.Any(x => IsPathSegmentFilter(x)))
+					if (simpleFilterFields.Any(x => x.IsPathSegment))
 					{
 						List<Guid> assetTypeUids = new List<Guid>();
-						foreach (var ft in simpleFilterFields.Where(x => IsPathSegmentFilter(x)))
+						foreach (var ft in simpleFilterFields.Where(x => x.IsPathSegment))
 						{
 							var definition = JsonConvert.DeserializeObject<JObject>(ft.Definition);
 							assetTypeUids.Add(Guid.Parse(definition.GetValue("AssetTypeUid").ToString()));
@@ -1435,11 +1423,17 @@ namespace d360.model.DataAccessLayer
 			}
 
 			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
-			var filteredSelect = $@"
+
+			string GetBaseQuery(bool excludeFilterQueries = false)
+			{
+				bool needsNodeData = OrderMainQuery.ToLower().Contains("node.") || whereSql.ToLower().Contains("node.");
+
+				return $@"
 				select  A.ID
 				from    Asset A 
-				inner join AssetPath Node on Node.ID = a.ID 
-				{(useSimpleFilterTempTable ? "inner join #TempFilteredAssets ta on ta.AssetId = a.ID" : "")}
+				{(needsNodeData ? "inner join AssetPath Node on Node.ID = a.ID" : "")} 
+				{(excludeFilterQueries ? "inner join #filtered_results fr on fr.AssetId = a.ID" : "")}
+				{(!excludeFilterQueries && useSimpleFilterTempTable ? "inner join #TempFilteredAssets ta on ta.AssetId = a.ID" : "")}
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
 				{includedJoins.SQLJoinStatement}
@@ -1448,7 +1442,9 @@ namespace d360.model.DataAccessLayer
 				{(includePermissionDetails ? permissionDetailSQL : "")}
 				{(includeParentUIDSelect ? hierarchyParentUidSelect : "")}
 				{(includeParentQuery ? parentApplySQL : "")}
-				{whereSql}";
+				{(!excludeFilterQueries ? whereSql : "")}";
+			};
+
 
 			var baseSQL = $@"
 				{TempTableScriptStr}
@@ -1456,12 +1452,18 @@ namespace d360.model.DataAccessLayer
 				{advancedFilterTempTableInfos.TempTableSQL()}
 				
 				{simpleFiltersTempTablesQuery}
+
+				drop table if exists #filtered_results
+				create table #filtered_results (AssetId int)
+
+				insert into #filtered_results
+				{GetBaseQuery()}
 				
 				DROP TABLE IF EXISTS #tempasset;
 				create table #tempasset (id int identity(1,1), AssetId bigint);
 
 				insert into #tempasset
-				{filteredSelect}
+				{GetBaseQuery(true)}
 				{OrderMainQuery}
 				{pagingSql[1]};
 
@@ -1469,7 +1471,7 @@ namespace d360.model.DataAccessLayer
 
 			#endregion
 
-			var countSQL = $@"{(includeTotal ? $"select count(1) from ({filteredSelect}) as sub_query" : "")}";
+			var countSQL = $@"{(includeTotal ? $"select count(1) from #filtered_results;" : "")}";
 
 			if (previousCount.HasValue)
 			{
@@ -1542,6 +1544,7 @@ namespace d360.model.DataAccessLayer
 				includeTotal = false;
 			}
 
+			File.WriteAllText(@"C:\Temp\query.txt", getAllQuery);
 			var assetsResult = await CompanyContext.ExecuteGetAssetsQuery(getAllQuery, cancellationToken.Value, dbArgs, includeTotal, hasOwnershipData);
 
 			if (previousCount.HasValue)

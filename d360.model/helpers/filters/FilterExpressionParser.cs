@@ -7,6 +7,8 @@ using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.model.helpers.filters;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace d360.model.helpers
 {
@@ -22,21 +24,28 @@ namespace d360.model.helpers
         private readonly List<string> disallowedFieldTypes = new List<string> { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
 
         private readonly bool registerTokensAsFields;
+        private readonly bool allowTempTableFiltering;
+
 		private bool hasSingleParentFilter;
 		List<IFilterToken> filterTokens = new List<IFilterToken>();
 		DynamicQueryJoins dynamicQueryJoins;
+
+		int AssetTypeLevels;
+		List<AssetTypeKeyFieldMap> AssetTypeKeyFieldMaps;
 
 		public FilterExpressionParser(
             IFilterDataProvider fdp,
             FilterExpressionParseType type = FilterExpressionParseType.CustomFields,
             bool includeParent = false,
             bool useUserDefaultFields = false,
-            bool registerTokensAsFields = false
+            bool registerTokensAsFields = false,
+			bool allowTempTableFiltering = false
         )
         {
             dataProvider = fdp;
             parseType = type;
-            this.registerTokensAsFields = registerTokensAsFields;
+			this.allowTempTableFiltering = allowTempTableFiltering;
+			this.registerTokensAsFields = registerTokensAsFields;
             allowedDefaultFields.Add(new DefaultFilter("Code", "A.Code", SqlFieldType.Text));
             allowedDefaultFields.Add(new DefaultFilter("Color", "JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name')", SqlFieldType.Text));
             allowedDefaultFields.Add(new DefaultFilter("[Path]", "Node.KeyPath", SqlFieldType.Text));
@@ -180,7 +189,7 @@ namespace d360.model.helpers
         {
             try
             {
-                fieldIds = filteredFieldIDs;
+				fieldIds = filteredFieldIDs;
 				filteredCustomFields.Clear();
 
 				sqlParams = new Dictionary<string, object>();
@@ -189,7 +198,19 @@ namespace d360.model.helpers
                     return "";
                 }
 
-                filterString = filterString.Trim();
+				if (fieldTypes.Any(x => x.IsPathSegment))
+				{
+					List<Guid> assetTypeUids = new List<Guid>();
+					foreach (var ft in fieldTypes.Where(x => x.IsPathSegment))
+					{
+						var definition = JsonConvert.DeserializeObject<JObject>(ft.Definition);
+						assetTypeUids.Add(Guid.Parse(definition.GetValue("AssetTypeUid").ToString()));
+					}
+
+					(AssetTypeLevels, AssetTypeKeyFieldMaps) = dataProvider.GetPathSegmentsMappingInfo(fieldTypes.First().AssetTypeID.Value, assetTypeUids);
+				}
+
+				filterString = filterString.Trim();
 				hasSingleParentFilter = filterString.ToLowerInvariant().Split(new [] { "parentuid" }, StringSplitOptions.None).Length == 2;
 
 				StringBuilder sb = new StringBuilder();
@@ -198,12 +219,14 @@ namespace d360.model.helpers
 
                 LoadRelationshipDataForTokens(filterTokens);
 
-                foreach (IFilterToken token in filterTokens)
+				foreach (IFilterToken token in filterTokens)
                 {
-                    sb.Append($"{token.GetSqlExpression(sqlParams)}");
+					sb.Append($"{token.GetSqlExpression(sqlParams)}");
                 }
 
-                return sb.ToString();
+				var query = $"({sb.ToString()})";
+
+				return query;
             }
             catch (IndexOutOfRangeException)
             {
@@ -219,7 +242,7 @@ namespace d360.model.helpers
             }
         }
 
-        private List<IFilterToken> Tokenize(string filterString)
+		private List<IFilterToken> Tokenize(string filterString)
         {
             List<IFilterToken> ret = new List<IFilterToken>();
             Regex regex = new Regex(@"\'(.+?)\'");
@@ -353,7 +376,6 @@ namespace d360.model.helpers
             }
             else
             {
-                filteredFieldIDs.Add(fieldType.ID);
 				List<string> filterTypesWithTempTables = new List<string>
 				{
 					DataType.Text.ToString(),
@@ -363,11 +385,13 @@ namespace d360.model.helpers
 					DataType.Date.ToString(),
 					DataType.DateTime.ToString(),
 					DataType.Lookup.ToString()
-
 				};
+
                 if (parseType == FilterExpressionParseType.ComplexLookupField)
                 {
-                    if (fieldName.StartsWith("$related"))
+					filteredFieldIDs.Add(fieldType.ID);
+
+					if (fieldName.StartsWith("$related"))
                     {
                         return new RelationshipComplexFieldToken(fdp, field, op, value, fieldTypes);
                     }
@@ -377,7 +401,14 @@ namespace d360.model.helpers
                     
                     return token;
                 }
-				else if (filterTypesWithTempTables.Contains(fieldType.Type))
+				else if (allowTempTableFiltering && fieldType.IsPathSegment)
+				{
+					TempTablePathSegmentToken token = new TempTablePathSegmentToken(fdp, field, op, value, AssetTypeKeyFieldMaps, paramIdx);
+					token.LoadFieldType(fieldType, fieldColumns);
+
+					return token;
+				}
+				else if (allowTempTableFiltering && filterTypesWithTempTables.Contains(fieldType.Type))
 				{
 					TempTableFieldToken token = new TempTableFieldToken(fdp, field, op, value, paramIdx);
 					token.LoadFieldType(fieldType, fieldColumns, dynamicQueryJoins);
@@ -386,7 +417,9 @@ namespace d360.model.helpers
 				}
 				else
                 {
-                    FieldToken token = new FieldToken(fdp, field, op, value, paramIdx);
+					filteredFieldIDs.Add(fieldType.ID);
+
+					FieldToken token = new FieldToken(fdp, field, op, value, paramIdx);
                     token.LoadFieldType(fieldType, fieldColumns);
                     
                     return token;
@@ -530,6 +563,64 @@ namespace d360.model.helpers
 		public AdvancedFilterTempTableFilters GetAdvancedFilterTempTableFilters()
 		{
 			var data = new AdvancedFilterTempTableFilters();
+
+			if (filterTokens.Any(x => x is ISegmentPathFilterToken))
+			{
+				List<Guid> assetTypeUids = new List<Guid>();
+				foreach (var ft in fieldTypes.Where(x => x.IsPathSegment))
+				{
+					var definition = JsonConvert.DeserializeObject<JObject>(ft.Definition);
+					assetTypeUids.Add(Guid.Parse(definition.GetValue("AssetTypeUid").ToString()));
+				}
+
+				if (AssetTypeLevels > 0)
+				{
+					StringBuilder sb = new StringBuilder();
+
+					sb.AppendLine(@"
+								drop table if exists #parent_relationships
+								select IT.ID
+								into #parent_relationships
+								from [IntersectType] IT 
+								inner join [Predicate] P on P.ID  = IT.PredicateID AND p.Type in (3,4)");
+
+					List<string> temp_table_columns = new List<string>();
+					List<string> targetJoins = new List<string>();
+
+					temp_table_columns.Add("AssetId int");
+
+					for (int i = AssetTypeLevels; i > 0; i--)
+					{
+						temp_table_columns.Add($"[lvl_{assetTypeUids[i-1]}] int");
+						targetJoins.Add($"ATarget{i}.ID");
+					}
+					targetJoins.Reverse();
+
+					sb.AppendLine($@"
+								drop table if exists #assets_hierarchy
+								create table #assets_hierarchy({string.Join(",", temp_table_columns)})");
+
+					List<string> filtersPerField = new List<string>();
+
+
+					sb.AppendLine(@$"insert into #assets_hierarchy
+											select a.id,{string.Join(",", targetJoins)}
+											from asset a
+											left join[Intersect] I1 on I1.ObjectAssetID = A.ID and I1.IntersectTypeID in (select id from #parent_relationships)");
+					for (int i = 2; i <= AssetTypeLevels; i++)
+					{
+						sb.AppendLine($"left join[Intersect] I{i} on I{i}.ObjectAssetID = I{i - 1}.SubjectAssetID and I{i}.IntersectTypeID in (select id from #parent_relationships)");
+					}
+					for (int i = 1; i <= AssetTypeLevels; i++)
+					{
+						sb.AppendLine($"left join Asset ATarget{i} on ATarget{i}.ID = I{i}.SubjectAssetID");
+					}
+					sb.Append("where a.AssetTypeID = @assettypeid");
+
+					data.Add(new AdvancedFilterTempTableInfo { TempTableQuery = sb.ToString() });
+				}
+			}
+
 			foreach(var token in filterTokens)
 			{
 				if (token is ITempTableFilter)
@@ -537,6 +628,7 @@ namespace d360.model.helpers
 					data.Add((token as ITempTableFilter).GetTempTableFilterData());
 				}
 			}
+
 			return data;
 		}
 	}

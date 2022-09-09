@@ -463,7 +463,7 @@ namespace d360.model.DataAccessLayer
 
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.RelationshipCustomFields);
 					filterExpressionParser.LoadFieldTypes(fieldTypes, tempFieldColumns.GetStatements());
-					var fieldsQuery = "(" + filterExpressionParser.Parse(value, out Dictionary<string, object> sqlParams, out List<int> filteredFields) + ")";
+					var fieldsQuery = filterExpressionParser.Parse(value, out Dictionary<string, object> sqlParams, out List<int> filteredFields);
 
 					whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + fieldsQuery;
 

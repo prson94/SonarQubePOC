@@ -153,7 +153,7 @@ namespace d360.model.DataAccessLayer.repositories
                 var filterDataProvider = new FilterDataProvider(companyContext);
                 var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, false);
                 filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
-                whereStatements.Add("(" + filterExpressionParser.Parse(filter, out var sqlParams, out _) + ")");
+                whereStatements.Add(filterExpressionParser.Parse(filter, out var sqlParams, out _));
 
                 foreach (var item in sqlParams)
                 {
