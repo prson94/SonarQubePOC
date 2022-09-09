@@ -13,6 +13,19 @@
         .gallery-section h4 {
             padding-bottom: 8px;
         }
+		
+		.gallery-flex {
+			display: flex;
+			justify-content: flex-start;
+		}
+		
+		.gallery-flex .gallery-column .gallery-section {
+			min-height: 91px;
+		}
+		
+		.gallery-column {
+			min-width: 200px;
+		}
         `
     ],    changeDetection: ChangeDetectionStrategy.OnPush
 })
