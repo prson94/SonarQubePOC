@@ -136,7 +136,8 @@ namespace d360.model.helpers.filters
 				select A.Id 
 				from Asset A
 				inner join #assets_hierarchy ah on ah.AssetId = a.ID
-				inner join {filteredTable} fh on ah.{matchField} = fh.assetid";
+				inner join {filteredTable} fh on ah.{matchField} = fh.assetid
+				where a.assettypeid = @assettypeid";
 
 			if (sqlParamsRef != null)
 			{

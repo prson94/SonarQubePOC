@@ -37,21 +37,36 @@ namespace d360.model.helpers.filters
 
 			sqlParamsRef = sqlParams;
 
-			stringBuilder.Clear();
-
+			string filterExpression = "";
 			if (!IsNullValue)
 			{
-				NotNullValueExpression();
+				filterExpression = NotNullValueExpression();
 			}
 			else
 			{
-				UpdateTokenForNullValue();
+				filterExpression = UpdateTokenForNullValue();
 			}
 
-			return stringBuilder.ToString();
+			this.tempTableInfo.TempTableQuery = @$"				
+				drop table if exists #advanced_filter_{parameterIdx}
+				create table #advanced_filter_{parameterIdx} (AssetId int)
+
+				insert into #advanced_filter_{parameterIdx}
+				select A.Id 
+				from Asset A
+				{joinSql}
+				where a.AssetTypeID = @assettypeid and {filterExpression}
+				option(recompile)";
+
+			if (sqlParamsRef != null)
+			{
+				sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+			}
+
+			return $"(A.ID in (select AssetID from #advanced_filter_{parameterIdx}))";
 		}
 
-		void UpdateTokenForNullValue()
+		string UpdateTokenForNullValue()
 		{
 			if (!new[] { "eq", "ne" }.Contains(@operator))
 			{
@@ -60,13 +75,10 @@ namespace d360.model.helpers.filters
 
 			var fieldSql = GetColumnValueSyntax(fieldType.ID);
 
-			stringBuilder.Append(fieldSql);
-			stringBuilder.Append(FilterHelpers.GetSQLNullOperator(@operator));
+			return $"{fieldSql} {FilterHelpers.GetSQLNullOperator(@operator)}";
 		}
 
-
-
-		void NotNullValueExpression()
+		string NotNullValueExpression()
 		{
 			if (!FilterHelpers.IsValidOperatorForFieldType(CurrentFieldType, @operator))
 			{
@@ -89,24 +101,16 @@ namespace d360.model.helpers.filters
 
 			if (isListField)
 			{
-				LoadListFieldQueryWithTempTables();
-			}
-			else if (fieldType.Type == DataType.Color.ToString())
-			{
-				//LoadColorFieldQuery(complexField);
+				return LoadListFieldQueryWithTempTables();
 			}
 			else
 			{
-				LoadFieldQueryForTemporaryTables();
+				return LoadFieldQueryForTemporaryTables();
 			}
 
-			if (sqlParamsRef != null)
-			{
-				sqlParamsRef.Add($"@filter_{parameterIdx}", value);
-			}
 		}
 
-		private void LoadFieldQueryForTemporaryTables()
+		private string LoadFieldQueryForTemporaryTables()
 		{
 			var fieldSql = GetColumnValueSyntax(fieldType.ID);
 			if (@operator == "ct" && fieldType.Type != "Text")
@@ -124,21 +128,11 @@ namespace d360.model.helpers.filters
 				fieldSql = $"CONVERT(DECIMAL(7,2),REPLACE({fieldSql},'%',''))";
 			}
 
-			stringBuilder.Append($"(A.ID in (select AssetID from #advanced_filter_{parameterIdx}))");
+			return $"{fieldSql} {FilterHelpers.GetSQLOperator(@operator)} @filter_{parameterIdx}";
 
-			string filterExpression = $"{fieldSql} {FilterHelpers.GetSQLOperator(@operator)} @filter_{parameterIdx}";
-			this.tempTableInfo.TempTableQuery = @$"				
-				drop table if exists #advanced_filter_{parameterIdx}
-				create table #advanced_filter_{parameterIdx} (AssetId int)
-
-				insert into #advanced_filter_{parameterIdx}
-				select A.Id 
-				from Asset A
-				{joinSql}
-				where {filterExpression}";
 		}
 
-		public void LoadListFieldQueryWithTempTables()
+		public string LoadListFieldQueryWithTempTables()
 		{
 			if (fieldType.LookupObjectID == null)
 			{
@@ -214,18 +208,7 @@ namespace d360.model.helpers.filters
 					}
 				}
 			}
-
-			this.tempTableInfo.TempTableQuery = @$"				
-				drop table if exists #advanced_filter_{parameterIdx}
-				create table #advanced_filter_{parameterIdx} (AssetId int)
-
-				insert into #advanced_filter_{parameterIdx}
-				select A.Id 
-				from Asset A
-				{joinSql}
-				where {filterExpression}";
-
-			stringBuilder.Append($"(A.ID in (select AssetID from #advanced_filter_{parameterIdx}))");
+			return filterExpression;
 		}
 
 		public void LoadFieldType(FieldType ft, IReadOnlyList<string> fieldColumns, DynamicQueryJoins dynamicQueryJoins)
