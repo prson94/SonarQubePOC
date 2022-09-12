@@ -1544,7 +1544,6 @@ namespace d360.model.DataAccessLayer
 				includeTotal = false;
 			}
 
-			File.WriteAllText(@"C:\Temp\query.txt", getAllQuery);
 			var assetsResult = await CompanyContext.ExecuteGetAssetsQuery(getAllQuery, cancellationToken.Value, dbArgs, includeTotal, hasOwnershipData);
 
 			if (previousCount.HasValue)
