@@ -850,36 +850,27 @@ namespace d360.web.Controllers.V2
 
 				foreach (var issueModel in issueModels)
 				{
-					var assetType = Company.AssetTypes.FirstOrDefault(i => i.Object == issueModel.Issue.ObjectType && i.ObjectID == issueModel.Issue.ObjectTypeID);
-
-					if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
+					if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(issueModel.Issue.AssetTypeID, Permission.ReadAsset))
 					{
 						return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetTypeAddActionPermissionsDenied)).ConfigureAwait(false);
 					}
 
-					if (isWriteActionDescriptionEnabled)
+					if (isWriteActionDescriptionEnabled && issueModel.Issue.AssetID != null)
 					{
-						var actionAsset = assetRepository.GetAssetByObjectId(issueModel.Issue.Object, issueModel.Issue.ObjectID);
-
-						if (actionAsset != null)
+  						var comment = new CommentApiPostModel
 						{
-							var comment = new CommentApiPostModel
-							{
-								AssetUid = actionAsset.uid,
-								Body = issueModel.Comment ?? string.Format(ActionApiMessages.ActionAssetCommentBody, issueType.Name),
-								Tags = new List<Guid> { actionAsset.uid }       // Add relation to current artifact
-							};
-							var dtl = await commentRepository.AddComment(comment, CommentType.Issue);
-							issueModel.Issue.CommentID = dtl.ID;
-						}
+							AssetUid = issueModel.AssetUid,
+							Body = issueModel.Comment ?? string.Format(ActionApiMessages.ActionAssetCommentBody, issueType.Name),
+							Tags = new List<Guid> { issueModel.AssetUid }       // Add relation to current artifact
+						};
+						var dtl = await commentRepository.AddComment(comment, CommentType.Issue);
+						issueModel.Issue.CommentID = dtl.ID;
 					}
 
 					var insertSQL = $@"INSERT INTO [dbo].[Issue]
 												   ([IssueTypeID]
-												   ,[Object]
-												   ,[ObjectID]
-												   ,[ObjectType]
-												   ,[ObjectTypeID]
+												   ,[AssetID]
+												   ,[AssetTypeID]
 												   ,[CreatedOn]
 												   ,[CreatedBy]
 												   ,[UpdatedOn]
@@ -888,17 +879,15 @@ namespace d360.web.Controllers.V2
 											OUTPUT inserted.Uid, inserted.ID
 											   VALUES
 												   (@issueTypeID
-												   ,@object
-												   ,@objectID
-												   ,@objectType
-												   ,@objectTypeID
+												   ,@assetID
+												   ,@assetTypeID
 												   ,GETDATE()
 												   ,@userId
 												   ,GETDATE()
 												   ,@userId
 												   ,@commentId)";
 
-					var res = await Company.Database.Connection.QueryAsync<(Guid uid, int id)>(insertSQL, new { issueTypeID = issueType.ID, @object = issueModel.Issue.Object, objectID = issueModel.Issue.ObjectID, objectType = issueModel.Issue.ObjectType, objectTypeID = issueModel.Issue.ObjectTypeID, userId = Company.CurrentResourceID, commentId = issueModel.Issue.CommentID });
+					var res = await Company.Database.Connection.QueryAsync<(Guid uid, int id)>(insertSQL, new { issueTypeID = issueType.ID, assetID = issueModel.Issue.AssetID, assetTypeID = issueModel.Issue.AssetTypeID, userId = Company.CurrentResourceID, commentId = issueModel.Issue.CommentID });
 
 					issueModel.Issue.ID = res.FirstOrDefault().id;
 					issueModel.Issue.UID = res.FirstOrDefault().uid;
@@ -1098,24 +1087,25 @@ namespace d360.web.Controllers.V2
 					CommentID = 0
 				};
 
-				if (asset != null)
+				if (assetType != null)
 				{
-					issue.Object = asset.Object;
-					issue.ObjectID = asset.ObjectID;
-					issue.ObjectType = asset.AssetType.Object;
-					issue.ObjectTypeID = asset.AssetType.ObjectID;
+					issue.AssetTypeID = assetType.ID;
 				}
-				else if (assetType != null)
+				else if (asset != null)
 				{
-					issue.Object = assetType.Object;
-					issue.ObjectID = assetType.ObjectID;
-					issue.ObjectType = assetType.Object;
-					issue.ObjectTypeID = assetType.ObjectID;
+					issue.AssetID = asset.ID;
+					issue.AssetTypeID = asset.AssetTypeID;
 				}
 
 				var fields = PopulateActionFields(issueType.ID, issue.ID, model.Fields);
 
-				issues.Add(new IssueInsertAPIModel { Issue = issue, fields = fields, Comment = model.Fields.ContainsKey("ProblemDesc") ? model.Fields["ProblemDesc"] : null });
+				issues.Add(new IssueInsertAPIModel
+				{
+					Issue = issue,
+					fields = fields,
+					Comment = model.Fields.ContainsKey("ProblemDesc") ? model.Fields["ProblemDesc"] : null,
+					AssetUid = (asset != null) ? asset.uid : Guid.Empty
+				});
 			}
 
 			return new WorkHttpStatus(HttpStatusCode.OK, "", "");

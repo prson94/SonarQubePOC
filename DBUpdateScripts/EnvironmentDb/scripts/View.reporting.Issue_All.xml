@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.reporting.Issue_All-v1">
+  <changeSet author="TKlok" id="View.reporting.Issue_All-v2">
+    <comment>GOV-18453 Convert Object/ObjectID/ObjectType/ObjectTypeID columns in dbo.Issue table</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -27,13 +28,30 @@
 			,ATT.[Uid] as AssetTypeUid
 	from    Issue i
 			inner Join IssueType t on t.ID = i.IssueTypeID
-			left join AssetType ATT on ATT.[Object] = i.ObjectType and ATT.ObjectID = i.ObjectTypeID
-			left join Asset A on A.[Object] = i.[Object] and A.[ObjectID] = i.ObjectID
+			left join AssetType ATT on ATT.ID = i.AssetTypeID
+			left join Asset A on A.ID = i.AssetID
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+ CREATE OR ALTER VIEW [reporting].[Issue_All] AS
+    select  t.ID as IssueTypeID
+			,t.Name as IssueTypeName
+			,i.[ID] as IssueID
+			,i.[CreatedOn]
+			,i.[CreatedBy]
+			,i.[UpdatedOn]
+			,i.[UpdatedBy]
+			,ATT.ObjectID as AssetTypeID
+			,ATT.Name as AssetTypeName
+			,i.ObjectType as [Type]
+			,a.ID as AssetID
+			,a.[Uid]
+			,ATT.[Uid] as AssetTypeUid
+	from    Issue i
+			inner Join IssueType t on t.ID = i.IssueTypeID
+			left join AssetType ATT on ATT.[Object] = i.ObjectType and ATT.ObjectID = i.ObjectTypeID
+			left join Asset A on A.[Object] = i.[Object] and A.[ObjectID] = i.ObjectID
 		]]>
 	</rollback>
   </changeSet>

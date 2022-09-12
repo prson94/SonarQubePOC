@@ -92,8 +92,12 @@ namespace d360.model
 					return false;
 				}
 
-				issueObjectType = issueDetail.ObjectType;
-				issueObjectId = issueDetail.ObjectTypeID;
+				AssetType issueAssetType = AssetTypes.Where(x => x.ID == issueDetail.AssetTypeID).FirstOrDefault();
+				if(issueAssetType != null)
+				{
+					issueObjectType = issueAssetType.Object;
+					issueObjectId = issueAssetType.ObjectID;
+				}
 			}
 
 			if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, objectInfo.ChangedFieldIds, issueObjectType, issueObjectId, (int?)objectInfo.ScoreType))
@@ -331,10 +335,8 @@ namespace d360.model
 			//add new issue record
 			Issue issue = new Issue
 			{
-				Object = @object,
-				ObjectID = objectId,
-				ObjectType = obj.Type,
-				ObjectTypeID = obj.TypeID,
+				AssetID = obj.AssetID,
+				AssetTypeID = obj.AssetTypeID ?? 0,
 				CreatedBy = CurrentResourceID,
 				CreatedOn = DateTime.UtcNow,
 				UpdatedBy = CurrentResourceID,
@@ -481,7 +483,7 @@ namespace d360.model
 										from 
 											Issue I
 											inner join IssueType T on T.ID = I.IssueTypeID
-											inner join AssetDetail D on D.Object = I.Object and D.ObjectID = I.ObjectID
+											inner join AssetDetail D on D.ID = I.AssetID
 										where 
 											T.ID = @id";
 
@@ -755,9 +757,9 @@ namespace d360.model
 					if (item.Object == "Issue")
 					{
 						Issue issue = Issues.Find(item.ObjectID);
-						if (issue != null)
+						if (issue != null && issue.AssetID != null)
 						{
-							issueObject = Assets.FirstOrDefault(a => a.Object == issue.Object && a.ObjectID == issue.ObjectID);
+							issueObject = Assets.FirstOrDefault(a => a.ID == issue.AssetID);
 						}
 					}
 
@@ -784,9 +786,9 @@ namespace d360.model
 							{
 								Issue issue = Issues.Find(item.ObjectID);
 
-								if (issue != null)
+								if (issue != null && issue.AssetID != null)
 								{
-									issueObject = Assets.FirstOrDefault(a => a.Object == issue.Object && a.ObjectID == issue.ObjectID);
+									issueObject = Assets.FirstOrDefault(a => a.ID == issue.AssetID);
 								}
 							}
 
@@ -1287,17 +1289,20 @@ namespace d360.model
 				{
 					Issue issue = Issues.FirstOrDefault(i => i.ID == objectInfo.ObjectID);
 
-					if (issue == null)
+					if (issue == null || issue.AssetID == null)
 					{
 						throw new ArgumentNullException(nameof(issue), $"ERROR - ASSET FOR ACTION ID [{objectInfo.ObjectID}] NOT FOUND");
 					}
 
+					Asset issueAsset = Assets.FirstOrDefault(a => a.ID == issue.AssetID);
+					AssetType issueAssetType = AssetTypes.FirstOrDefault(at => at.ID == issue.AssetTypeID);
+
 					assetInfo = new EventObjectInfo
 					{
-						Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), issue.Object),
-						ObjectID = issue.ObjectID,
-						ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), issue.ObjectType),
-						ObjectTypeID = issue.ObjectTypeID
+						Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), issueAsset.Object),
+						ObjectID = issueAsset.ObjectID,
+						ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), issueAssetType.Object),
+						ObjectTypeID = issueAssetType.ObjectID
 					};
 				}
 				else
@@ -1504,10 +1509,8 @@ namespace d360.model
 
 				if (objectInfo.Object.ToString() == "Issue" && !string.IsNullOrEmpty(item.ObjectType) && item.ObjectType != "Issue")
 				{
-					objectType = issue.Object;
-					objectId = issue.ObjectID;
-					asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
-					assetType = AssetTypes.FirstOrDefault(a => a.Object == issue.ObjectType && a.ObjectID == issue.ObjectTypeID);
+					asset = Assets.Where(x => x.ID == issue.AssetID).FirstOrDefault();
+					assetType = AssetTypes.FirstOrDefault(a => a.ID == issue.AssetTypeID);
 					ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
 					isAssetEdited = true;
 				}
@@ -2650,7 +2653,7 @@ namespace d360.model
 
 					if (issue != null)
 					{
-						item = GetObjectDetail(issue.Object, issue.ObjectID);
+						item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
 					}
 				}
 				else
@@ -2744,7 +2747,7 @@ namespace d360.model
 
 				if (issue != null)
 				{
-					ObjectDetail item = GetObjectDetail(issue.Object, issue.ObjectID);
+					ObjectDetail item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
 
 					if (item != null)
 					{
@@ -2838,7 +2841,7 @@ namespace d360.model
 
 					if (issue != null)
 					{
-						item = GetObjectDetail(issue.Object, issue.ObjectID);
+						item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
 					}
 				}
 				else
@@ -2867,7 +2870,7 @@ namespace d360.model
 
 					if (issue != null)
 					{
-						item = GetObjectDetail(issue.Object, issue.ObjectID);
+						item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
 					}
 				}
 				else
@@ -2894,7 +2897,7 @@ namespace d360.model
 
 					if (issue != null)
 					{
-						item = GetObjectDetail(issue.Object, issue.ObjectID);
+						item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
 					}
 				}
 				else
@@ -2922,7 +2925,7 @@ namespace d360.model
 
 					if (issue != null)
 					{
-						item = GetObjectDetail(issue.Object, issue.ObjectID);
+						item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
 					}
 				}
 				else
@@ -2965,7 +2968,7 @@ namespace d360.model
 						if (fieldRecord == null && obj == SystemObjects.Issue)
 						{
 							Issue issue = Issues.FirstOrDefault(x => x.ID == objectID);
-							fieldRecord = Fields.Where(x => x.ObjectID == issue.ObjectID && x.ObjectType == issue.Object && x.FieldTypeID == fieldId).FirstOrDefault();
+							fieldRecord = Fields.Where(x => x.AssetID == issue.AssetID && x.FieldTypeID == fieldId).FirstOrDefault();
 						}
 
 						if ((obj.ToString() ?? "").ToUpper() == "INTERSECT")
@@ -3203,7 +3206,8 @@ namespace d360.model
 
 					if (issue != null)
 					{
-						path = GetObjectTypePath(issue.Object, issue.ObjectID);
+						var issueObjectDetail = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+						path = issueObjectDetail.TypeName;
 					}
 				}
 				else
@@ -3327,7 +3331,7 @@ namespace d360.model
 
 					if (issue != null)
 					{
-						item = GetObjectDetail(issue.Object, issue.ObjectID);
+						item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
 					}
 				}
 				else
@@ -3351,7 +3355,7 @@ namespace d360.model
 
 					if (issue != null)
 					{
-						Asset issueAsset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
+						Asset issueAsset = Assets.Where(x => x.ID == issue.AssetID).FirstOrDefault();
 
 						if (issueAsset != null)
 						{
@@ -3460,7 +3464,7 @@ namespace d360.model
 			if (eventInfo.Object.Object == SystemObjects.Issue)
 			{
 				assetSql = @"left join Issue SS on SS.ID = I.ObjectID and I.Object = 'Issue'
-							left join Asset A on A.Object = SS.Object and A.ObjectID = SS.ObjectID";
+							left join Asset A on A.ID = SS.AssetID";
 			}
 
 			DateTime? createdOnDate = await QueryFirstOrDefaultAsync<DateTime?>($@"

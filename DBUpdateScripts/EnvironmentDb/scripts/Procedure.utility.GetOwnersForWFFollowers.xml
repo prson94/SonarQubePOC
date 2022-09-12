@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.utility.GetOwnersForWFFollowers-v3">
-	<comment>GOV-19395</comment>
+  <changeSet author="TKlok" id="Procedure.utility.GetOwnersForWFFollowers-v4">
+    <comment>GOV-18453 Convert Object/ObjectID/ObjectType/ObjectTypeID columns in dbo.Issue table</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -40,12 +40,12 @@ begin
 		begin				
 			select 
 				@issueId = i.id, 
-				@objectType = i.[object], 
-				@objectId = i.[objectid],
+				@objectType = a.[object], 
+				@objectId = a.[objectid],
 				@assetId = a.id,
 				@assetTypeId = a.assetTypeID
 			from Issue i
-			left join Asset a on a.Object = i.Object and a.ObjectID = i.ObjectID
+			left join Asset a on a.ID = i.AssetID
 			where i.id = @objectId
 		end
 			
@@ -120,7 +120,7 @@ begin
 					inner join reporting.Global_Resource R on 
 							FD.ResourceID = R.ResourceID
 							and R.State = 1
-			where FD.Objecttype = @objectType and FD.ObjectID = @objectId
+			where FD.Assetid = @assetId
 			and FD.FollowerEmail not like '%?subject=%';
 	end		
 

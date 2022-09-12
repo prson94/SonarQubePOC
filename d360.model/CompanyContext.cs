@@ -725,10 +725,72 @@ OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 			return model;
 		}
 
+		public ObjectDetail GetObjectDetailByAssetAssetTypeId(long? assetId, int? assetTypeId)
+		{
+			ObjectDetail model = null;
+			if(assetId != null)
+			{
+				model = Database.Connection.QuerySingleOrDefault<ObjectDetail>(@"SELECT
+					ObjectID as ID,
+					UID,
+					ID as AssetID,
+					AssetTypeID,
+					AssetTypeUid,
+					DisplayValue as Name,
+					DisplayValue as TextPath,
+					NULL as [Description],
+					NULL as ParentID,
+					NULL as ParentType,
+					case
+						when Object in ('Task') then NULL
+						else dbo.GenerateAssetUrl(ID)
+					end as Url,
+					TypeID,
+					Type,
+					TypeName,
+					AssetTypeClass as [Class]
+				FROM AssetDetail
+				WHERE ID = @assetId", new { assetId });
+			} else if (assetTypeId != null)
+			{
+				model = Database.Connection.QuerySingleOrDefault<ObjectDetail>(@"SELECT
+					O.ObjectID as ID,
+					O.[Uid] as AssetTypeUid,
+					O.[Uid] as [Uid],
+					O.Name as Name,
+					O.Name as TextPath,
+					O.Description as [Description],
+					NULL as ParentID,
+					NULL as ParentType,
+					case
+						when Object in ('TaskType') then null
+						else turl.[url]
+					end as Url,
+					O.ObjectID as TypeID,
+					O.[Object] as [Type],
+					'Asset Type' as TypeName,
+					O.[Class] as [Class]
+				FROM	AssetType O
+				cross apply [dbo].GetAssetTypeUrlById(O.ID) turl
+				WHERE O.ID = @assetTypeId", new { assetTypeId });
+			}
+
+			PluralizeModelName(ref model);
+
+			return model;
+		}
+
 		public ObjectDetail GetObjectDetail(string type, long id)
 		{
 			ObjectDetail model = Database.Connection.QuerySingleOrDefault<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@type, @id)", new { type = new DbString { Value = type, IsAnsi = true, Length = 50 }, id });
 
+			PluralizeModelName(ref model);
+
+			return model;
+		}
+
+		private void PluralizeModelName(ref ObjectDetail model)
+		{
 			try
 			{
 				if ((model != null) && PluralCultureHelper.IsNeutralCultureEnglish())
@@ -748,8 +810,6 @@ OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 				//It should be traced someday, but today I won't inject any logger this deep.
 				//At this moment it will be enough to stop diying because of exception from Plurarization module.
 			}
-
-			return model;
 		}
 
 		public string GetObjectTypePath(string type, long id)

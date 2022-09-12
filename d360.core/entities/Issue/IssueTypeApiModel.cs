@@ -54,6 +54,8 @@ namespace d360.core.entities
         public List<Field> fields = new List<Field>();
 
         public string Comment { get; set; }
+
+		public Guid AssetUid { get; set; }
     }
 
     public class IssueTypeAllocationsResponse

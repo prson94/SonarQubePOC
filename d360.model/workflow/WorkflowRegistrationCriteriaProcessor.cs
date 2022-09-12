@@ -90,7 +90,7 @@ namespace d360.model.workflow
                 Issue issue = context.Issues.FirstOrDefault(x => x.ID == objectId);
                 if (issue != null)
                 {
-                    fields = fields.Union(context.Fields.Where(x => x.ObjectID == issue.ObjectID && x.ObjectType == issue.Object));
+                    fields = fields.Union(context.Fields.Where(x => x.AssetID == issue.AssetID));
                 }
             }
 

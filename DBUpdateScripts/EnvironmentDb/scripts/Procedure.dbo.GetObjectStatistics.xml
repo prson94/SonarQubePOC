@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetObjectStatistics-v5">
-    <comment>GOV-19408</comment>
+  <changeSet author="TKlok" id="Procedure.dbo.GetObjectStatistics-v6">
+	<comment>GOV-18453 Convert Object/ObjectID/ObjectType/ObjectTypeID columns in dbo.Issue table</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -68,7 +68,7 @@ BEGIN
 			from workflow.item wi
 				inner join issue i on (wi.objectid = i.id and wi.[object] = 'Issue')
 			where 
-				i.object = @type and i.objectid = @id and wi.completedon is null		
+				i.AssetID = @assetId and wi.completedon is null		
 	end
 	select * from @table
 END
@@ -93,7 +93,7 @@ BEGIN
 		select NULL, count(1), 'Followers', '', max(datecreated),null
 		from	Follow F
 		inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID
-		where	F.ObjectType = @type and F.ObjectID = @id
+		where	F.AssetId = @assetId
 	
 	insert into @table
 		select	NULL, count(1), 'Comments', '', max(CreatedOn),null
