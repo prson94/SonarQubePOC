@@ -75,9 +75,9 @@ namespace d360.web.Controllers.V2
 					insert into #govRoles
 					select distinct GOV.uid from asset a
 						inner join AssetType AT on At.id = a.AssetTypeID
-						inner join IntersectType It on it.Subject = at.Object and it.SubjectID = at.ObjectID
+						inner join IntersectType It on it.SubjectAssetTypeID = at.ID
 						inner join Predicate P on it.PredicateID = p.ID and p.Type = 15
-						inner join AssetType Task on Task.Object = it.Object and task.ObjectID = it.ObjectID
+						inner join AssetType Task on Task.ID = it.ObjectAssetTypeID 
 						inner join FieldType FT on FT.Object = task.object and ft.objectid = task.objectid and ft.Name ='GovernanceRole'
 						inner join AssetType GOV on GOV.ObjectId = FT.LookupObjectId and gov.Object ='ReferenceItemType'
 						where a.uid = @assetuid
@@ -86,7 +86,7 @@ namespace d360.web.Controllers.V2
 										from #govRoles gov
 										inner join AssetType at on at.uid = gov.GovRoleUid
 										inner join asset a on a.AssetTypeID = at.ID
-										inner join dbo.GetAssetDisplayValue() adv on adv.id = a.id
+										inner join AssetDisplayValue adv on adv.AssetID = a.ID
 										outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
 					", new { governanceRoleUid, assetUid }
 					 , ApiTimeout);
@@ -252,14 +252,14 @@ namespace d360.web.Controllers.V2
 
 
 															select ass.assetUid as keyUid, I.Id as IntersectId, 'Object' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
-																 inner join Asset a on a.uid = ass.assetuid
-																 inner join [Intersect] i on i.objectassetid = a.id
-																 inner join [IntersectType] it on i.IntersectTypeID = it.ID
+																 inner join Asset a on a.uid = ass.assetuid 
+																 inner join [Intersect] i on i.ObjectAssetID = a.ID 
+																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
 															 union
 															 select ass.assetUid as keyUid, I.Id as IntersectId, 'Subject' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
-																 inner join Asset a on a.uid = ass.assetuid
-																 inner join [Intersect] i on i.subjectassetid = a.id
-																 inner join [IntersectType] it on i.IntersectTypeID = it.ID
+																 inner join Asset a on a.uid = ass.assetuid 
+																 inner join [Intersect] i on i.SubjectAssetID = a.ID 
+																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
 															", new { assetUid = sourceAsset.uid }).ToList();
 
 					rejectedRelationsipsCopy = copyRelationshipModel.Where(x => x.ObjectCardinality == 1 || x.SubjectCardinality == 1).ToList();
@@ -657,26 +657,29 @@ namespace d360.web.Controllers.V2
 					select diagramassetuid as uid, FromUid as duid from processexpandeddata where diagramassetuid = @targetassetuid
 					union
 					select diagramassetuid as uid, ToUid as duid from processexpandeddata where diagramassetuid = @targetassetuid)
-					select 
-						assets.uid,
-						utility.GetAssetDisplayValue(a.id) as 'FlowObject',
-						utility.GetAssetDisplayValue(a2.id) as 'RelatedAsset'
-					 from assets
-						inner join asset a on a.uid = assets.duid
-						inner join [intersect] i on i.subjectassetid = a.id
-						inner join intersecttype it on i.intersecttypeid = it.id
-						inner join asset a2 on a2.Object = i.Object and a2.ObjectID = i.ObjectID
-					where it.objectcardinality = 1 or it.SubjectCardinality = 1
+					select	assets.uid,
+							adv.DisplayValue as 'FlowObject',
+							adv2.DisplayValue as 'RelatedAsset'
+					 from	assets
+							inner join asset a on a.uid = assets.duid
+							inner join AssetDisplayValue adv on adv.AssetID = a.ID
+							inner join [intersect] i on i.SubjectAssetID = a.ID 
+							inner join intersecttype it on i.intersecttypeid = it.id
+							inner join asset a2 on a2.ID = i.ObjectAssetID
+							inner join AssetDisplayValue adv2 on adv2.AssetID = a2.ID
+					where	it.objectcardinality = 1 or it.SubjectCardinality = 1
 					union
 					select 
 						assets.uid,
-						utility.GetAssetDisplayValue(a.id) as 'FlowObject',
-						utility.GetAssetDisplayValue(a2.id) as 'RelatedAsset'
+						adv.DisplayValue as 'FlowObject',
+						adv2.DisplayValue as 'RelatedAsset'
 					 from assets
 						inner join asset a on a.uid = assets.duid
-						inner join [intersect] i on i.objectassetid = a.id
+						inner join AssetDisplayValue adv on adv.AssetID = a.ID
+						inner join [intersect] i on i.ObjectAssetID = a.ID 
 						inner join intersecttype it on i.intersecttypeid = it.id
-						inner join asset a2 on a2.Object = i.subject and a2.ObjectID = i.subjectid
+						inner join asset a2 on a2.ID = i.SubjectAssetID 
+						inner join AssetDisplayValue adv2 on adv2.AssetID = a2.ID
 					where it.objectcardinality = 1 or it.SubjectCardinality = 1
 					", new { targetAssetUid });
 

@@ -600,11 +600,11 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 			var baseTableSql = @"from [Intersect] I 
 								inner join IntersectType T on T.ID = I.IntersectTypeID 
 								left join [Predicate] P on P.ID = T.PredicateID 
-								left join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID 
+								left join Asset S on S.ID = I.SubjectAssetID 
 								left join AssetType ST1 on S.ID is not null and ST1.ID = S.AssetTypeID
 								left join AssetType ST2 on S.ID is null and ST2.Object = I.Subject and ST2.ObjectID = I.SubjectID
 								left join dbo.AssetPath SKP on SKP.ID = S.ID
-								left join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID 
+								left join Asset O on O.ID = I.ObjectAssetID 
 								left join AssetType OT1 on O.ID is not null and OT1.ID = O.AssetTypeID
 								left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.ObjectID = I.ObjectID
 								left join dbo.AssetPath OKP on OKP.ID = O.ID 
@@ -753,9 +753,9 @@ select	I.Id,
 								end as 'HasFieldTypes'" : "")}
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
-		left join AssetType S on (S.Object = I.Subject and S.ObjectID = I.SubjectID)
+		left join AssetType S on S.ID = I.SubjectAssetTypeID
 		outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
-		left join AssetType O on (O.Object = I.Object and O.ObjectID = I.ObjectID)
+		left join AssetType O on O.ID = I.ObjectAssetTypeID
 		outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
 		{whereClause} for json path";
 
@@ -963,19 +963,13 @@ from	IntersectType I
 		public async Task<bool> IsTransformPredicateExists(int assetTypeId)
 		{
 			string sql = @"
-						   Select A.Name from AssetType A
-						where Id=@Id
-						and 
-						(
-							exists (select 1 from IntersectType I
-							inner join [Predicate] P on
-							P.Id = I.PredicateID
-							where P.[Type]  = @type and I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID )
-							or exists (select 1 from IntersectType I
-							inner join [Predicate] P on
-							P.Id = I.PredicateID
-							where P.[Type] = @type and I.[Object] = A.[Object] and I.ObjectID = A.ObjectID )
-						)     ";
+Select	A.Name 
+from	AssetType A
+where	Id = @Id
+		and (
+			exists (select 1 from IntersectType I inner join [Predicate] P on P.Id = I.PredicateID and P.[Type]  = @type and I.SubjectAssetTypeID = A.ID )
+			or exists (select 1 from IntersectType I inner join [Predicate] P on P.Id = I.PredicateID and P.[Type] = @type and I.ObjectAssetTypeID = A.ID )
+		)";
 			var result = await companyContext.QueryAsync<string>(sql, new { id = assetTypeId, type = (int)PredicateType.Transformation });
 			
 			return !string.IsNullOrEmpty(result.FirstOrDefault());

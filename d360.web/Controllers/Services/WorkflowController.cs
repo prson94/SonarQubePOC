@@ -808,9 +808,10 @@ namespace d360.web.Controllers.Services
 					var obj = reg.Object;
 					var objId = reg.ObjectID;
 
+					Issue issue = null;
 					if (reg.Object == "IssueType")
 					{
-						var issue = Company.Issues.FirstOrDefault(i => i.ID == itemStep.Item.ObjectID);
+						issue = Company.Issues.FirstOrDefault(i => i.ID == itemStep.Item.ObjectID);
 
 						if (issue == null)
 						{
@@ -821,27 +822,31 @@ namespace d360.web.Controllers.Services
 						obj = issue.ObjectType;
 						objId = issue.ObjectTypeID;
 					}
-
-					var itemSql = "select A.DisplayValue as [Text], A.Object + '|' + cast(A.ObjectID as varchar) as [Value] from AssetDetail A where A.Type = @objectType and A.TypeID = @objectTypeId order by 1";
-
-					item.Values = new List<System.Web.Mvc.SelectListItem>();
-
-					if (obj == intersectType.Subject && objId == intersectType.SubjectID)
-					{
-						// load the object items into the values array                        
-						item.AllowMultipleValues = intersectType.ObjectCardinality != Cardinality.One;
-
-						item.Values.AddRange(
-							Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Object, objectTypeId = intersectType.ObjectID })
-						);
-					}
 					else
 					{
-						item.AllowMultipleValues = intersectType.SubjectCardinality != Cardinality.One;
-						// load the subject items into the value array
-						item.Values.AddRange(
-							Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Subject, objectTypeId = intersectType.SubjectID })
-						);
+						item.Values = new List<System.Web.Mvc.SelectListItem>();
+
+						var assetType = Company.Filter<AssetType>(a => a.Object == reg.Object && a.ObjectID == reg.ObjectID).SingleOrDefault();
+						if (assetType != null)
+						{
+							var itemSql = "select DisplayValue as [Text], Object + '|' + cast(ObjectID as varchar) as [Value] from AssetDetail where AssetTypeID = @ID order by 1";
+
+
+							if (intersectType.SubjectAssetTypeID == assetType.ID)
+							{
+								item.AllowMultipleValues = intersectType.ObjectCardinality != Cardinality.One;
+								item.Values.AddRange(
+									Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { ID = intersectType.ObjectAssetTypeID })
+								);
+							}
+							else
+							{
+								item.AllowMultipleValues = intersectType.SubjectCardinality != Cardinality.One;
+								item.Values.AddRange(
+									Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { ID = intersectType.SubjectAssetTypeID })
+								);
+							}
+						}
 					}
 				}
 
@@ -1077,26 +1082,29 @@ namespace d360.web.Controllers.Services
 							objId = issue.ObjectTypeID;
 						}
 
-						var itemSql = "select i.Name as Text, i.Object + '|' + cast(i.ObjectID as varchar) as Value from AssetType i where i.object = @objectType and i.objectid = @objectTypeId order by 1";
-
 						item.Values = new List<System.Web.Mvc.SelectListItem>();
-
-						if (obj == intersectType.Subject && objId == intersectType.SubjectID)
+						if (obj != "IssueType")
 						{
-							// load the object items into the values array                        
-							item.AllowMultipleValues = intersectType.ObjectCardinality != Cardinality.One;
+							var assetType = Company.Filter<AssetType>(a => a.Object == reg.Object && a.ObjectID == reg.ObjectID).SingleOrDefault();
+							var itemSql = "select Name as Text, Object + '|' + cast(ObjectID as varchar) as Value from AssetType where ID = @ID";
 
-							item.Values.AddRange(
-								Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Object, objectTypeId = intersectType.ObjectID })
-							);
-						}
-						else
-						{
-							item.AllowMultipleValues = intersectType.SubjectCardinality != Cardinality.One;
-							// load the subject items into the value array
-							item.Values.AddRange(
-								Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Subject, objectTypeId = intersectType.SubjectID })
-							);
+							if (assetType != null)
+							{
+								if (intersectType.SubjectAssetTypeID == assetType.ID)
+								{
+									item.AllowMultipleValues = intersectType.ObjectCardinality != Cardinality.One;
+									item.Values.AddRange(
+										Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { ID = intersectType.ObjectAssetTypeID })
+									);
+								}
+								else
+								{
+									item.AllowMultipleValues = intersectType.SubjectCardinality != Cardinality.One;
+									item.Values.AddRange(
+										Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { ID = intersectType.SubjectAssetTypeID })
+									);
+								}
+							}
 						}
 					}
 
@@ -1300,32 +1308,6 @@ namespace d360.web.Controllers.Services
 					//swallow exception
 				}
 			}
-
-			return Request.CreateResponse(HttpStatusCode.OK, types);
-		}
-
-		[Route("items/{versionId:int}"), HttpGet]
-		public HttpResponseMessage GetItemsForWorkflow(int versionId)
-		{
-			string sql = @"select
-							i.[object] as 'Object'
-							,i.objectid as 'ObjectId'
-							,i.updatedon as 'UpdatedOn'
-							,i.completedon as 'CompletedOn'
-							,i.numberofevents as 'NumberOfEvents'
-							,od.DisplayValue as 'Name'
-							,AUrl.[Url] as 'Url'
-							,i.id as 'ItemID'
-						  from
-							[workflow].[version] v
-							inner join [workflow].item i on v.id = i.versionid
-							left join AssetDetail od on i.objectid = od.objectid and i.[object] = od.[object] 
-							outer apply [dbo].[GetAssetUrlById](od.ID) AUrl
-							left join [Intersect] IT on i.Object = 'Intersect' and I.ObjectID = IT.ID
-						  where 
-							coalesce(od.ID, it.ID) is not null and v.id = @id";
-
-			var types = Company.Query<dynamic>(sql, new { id = versionId }).ToList();
 
 			return Request.CreateResponse(HttpStatusCode.OK, types);
 		}
@@ -1809,6 +1791,24 @@ namespace d360.web.Controllers.Services
 								State = State.Active
 							};
 
+							switch (@event.Object)
+							{
+								case "IntersectType":
+									@event.IntersectTypeID = @event.ObjectID;
+									break;
+								case "IssueType":
+									@event.IssueTypeID = @event.ObjectID;
+									break;
+								default:
+									var assetType = Company.AssetTypes.SingleOrDefault(a => a.Object == @event.Object && a.ObjectID == @event.ObjectID);
+									if (assetType != null)
+									{
+										@event.AssetTypeID = assetType.ID;
+									}
+									assetType = null;
+									break;
+							}
+
 							Company.Add(@event);
 							Company.SaveChanges();
 						}
@@ -1818,6 +1818,9 @@ namespace d360.web.Controllers.Services
 
 							@event.Object = model.Event.Object;
 							@event.ObjectID = model.Event.ObjectID;
+							@event.AssetTypeID = model.Event.AssetTypeID;
+							@event.IntersectTypeID = model.Event.IntersectTypeID;
+							@event.IssueTypeID = model.Event.IssueTypeID;
 							@event.TypeID = model.Type.ID;
 							@event.ChangeType = model.Event.ChangeType;
 
@@ -2368,7 +2371,7 @@ namespace d360.web.Controllers.Services
 									,assettype.ObjectID as 'ObjectTypeID'	                                
 									,case 
 										when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
-										else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)')
+										else coalesce(ADV.DisplayValue,'(unknown)')
 									end as 'ObjectName'
 									,wis.id as 'ItemStepID'
 									,wvs.name as 'StepName'
@@ -2376,10 +2379,11 @@ namespace d360.web.Controllers.Services
 									,wvs.activitytype as 'ActivityType'
 									,iss.[object] as 'IssueObject'
 									,iss.[objectid] as 'IssueObjectID'
-									,utility.getassetdisplayvalue(cod.id) as 'IssueObjectName'  
-									,case when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id)
-									  when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
-										else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)')
+									,CODV.DisplayValue as 'IssueObjectName'  
+									,case 
+										when wi.[object] = 'Issue' then CODV.DisplayValue
+										when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
+										else coalesce(ADV.DisplayValue,'(unknown)')
 									end as Name,
 									wvs.Settings.query('settings/FormResponseType').value('.', 'varchar(50)') as 'responseType',
 									itemCount.assignedCount as 'countAssigned'
@@ -2387,7 +2391,8 @@ namespace d360.web.Controllers.Services
 									[workflow].[type] wt
 									inner join [workflow].[version] wv on (wt.id = wv.typeid)
 									inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
-									left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid])
+									left join Asset ass on ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]
+									left join AssetDisplayValue ADV on ADV.AssetID = ass.ID
 									left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
 									inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
 									inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
@@ -2399,6 +2404,7 @@ namespace d360.web.Controllers.Services
 									inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
 									left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
 									left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+									left join AssetDisplayValue CODV on CODV.AssetID = cod.ID
 									left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
 								where
 									wt.id = @typeId and wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3 
@@ -2808,11 +2814,7 @@ namespace d360.web.Controllers.Services
 									.FirstOrDefault(o => o["@type"] != null && o["@type"].ToString() == "relationshipType" && o["@intersectTypeId"] != null);
 
 							int IntersectTypeId = jo != null && jo["@intersectTypeId"] != null ? Convert.ToInt32(jo["@intersectTypeId"]) : 0;
-							var interceptSql = @"SELECT	
-												 ITypeName.Name AS Name
-											FROM	IntersectType IT    
-												cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName	
-										 where IT.ID=@intersectTypeId";
+							var interceptSql = @"select	SubjectName + ' ' + PredicateName + ' ' + ObjectName AS Name from IntersectTypeDetail where ID = @intersectTypeId";
 							relChange.TypeName = Company.Query<string>(interceptSql, new { intersectTypeId = IntersectTypeId }).FirstOrDefault();
 						}
 
@@ -3034,9 +3036,8 @@ namespace d360.web.Controllers.Services
 							int objectId = (int)reassigned["@objectId"];
 							var objectType = reassigned["@objectType"];
 							var sql = @"Select A.Uid, D.DisplayValue as ObjectName
-						From
-						Asset A
-						cross apply dbo.GetAssetDisplayValueById(A.ID) D
+						from	Asset A
+								inner join AssetDisplayValue D on D.AssetID = A.ID
 						where   A.Object = @obj and A.ObjectID = @objId";
 							var objectDetails = Company.Query<dynamic>(sql, new { obj = objectType.Value, objId = objectId }).FirstOrDefault();
 							reassigned["@objectName"] = objectDetails.ObjectName;
@@ -3136,11 +3137,9 @@ namespace d360.web.Controllers.Services
 								}
 								else
 								{
-									var sql = @"Select D.DisplayValue as ObjectName
-												From
-												Asset A
-												cross apply dbo.GetAssetDisplayValueById(A.ID) D
-												where   A.Object = @obj and A.ObjectID = @objId";
+									var sql = @"select	D.DisplayValue as ObjectName
+												from	Asset A
+														inner join AssetDisplayValue D on D.AssetID = A.ID and A.Object = @obj and A.ObjectID = @objId";
 									previousObjectName = " - " + Company.Query<string>(sql, new { obj = objectType, objId = objectId }).FirstOrDefault();
 
 								}
@@ -3203,7 +3202,7 @@ namespace d360.web.Controllers.Services
 			from workflow.itemstep si
 			inner join workflow.item i on i.id = si.itemid
 			left join Asset a on a.[Object] = i.Object and a.ObjectID = i.ObjectID
-			cross apply dbo.GetAssetDisplayValueById(a.id) d
+			inner join AssetDisplayValue d on d.AssetID = a.ID
 			inner join workflow.versionstep vs on vs.id = si.stepid
 			inner join workflow.version v on v.ID = vs.VersionID
 			inner join workflow.[type] t on t.id = v.typeid
@@ -3299,7 +3298,7 @@ namespace d360.web.Controllers.Services
 					inner join IssueType t on t.id = s.IssueTypeID
 					inner join Asset A on A.Object = s.Object and A.ObjectID = s.ObjectID
 					inner join AssetType TA on TA.ID = A.AssetTypeID
-					cross apply dbo.GetAssetDisplayValueById(A.ID) D
+					inner join AssetDisplayValue D on D.AssetID = A.ID
 					 where i.ID = @itemId";
 
 					var issueDetails = Company.Query<WorkflowStepIssueDetail>(issueSql, new { itemId = detail.ItemID }).FirstOrDefault();

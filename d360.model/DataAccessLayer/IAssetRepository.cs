@@ -92,7 +92,7 @@ namespace d360.model.DataAccessLayer
         
         Task<dynamic> GetExecutionStatusModel(Guid executionUid, bool includeResults = true);
         
-        List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, AssetType assetType, ApiExecution execution);
+        List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true);
         
         List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model, bool validateFields = true, bool nullifyEmptyFields = false);
         

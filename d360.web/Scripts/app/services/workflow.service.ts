@@ -326,14 +326,6 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    getWorkflowItems(versionId: number) : Observable<any[]> {
-        return this.http.get(`services/workflow/items/${versionId}`)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
     getWorkflowObjectTypes(changeType: WorkflowChangeType): Observable<WorkflowObjectType[]> {
         if (changeType == null || <any>changeType == '')
             return of([]);

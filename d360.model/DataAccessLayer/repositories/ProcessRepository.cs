@@ -468,7 +468,7 @@ namespace d360.model.DataAccessLayer
 														SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
 												from    api.ExecutionDiagramAsset EDA
 														inner join Asset A on a.uid = EDA.uid
-														cross apply GetAssetDisplayValueByID(A.Id) ADV
+														inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
 												where   EDA.ExecutionID = @executionID 
 														and EDA.uid is not null
 														and ADV.DisplayValue is not null
@@ -877,10 +877,10 @@ namespace d360.model.DataAccessLayer
 				inner join Asset A on a.uid = links.AssetUid
 				left join FieldDetail FD ON FD.AssetId = A.Id and FD.Name = 'StepNo'
 				left join FieldDetail FD2 ON FD2.AssetId = A.Id and FD2.Name = 'Name'
-				inner join [Intersect] I on I.Subject = A.Object and I.SubjectID = A.ObjectID
+				inner join [Intersect] I on I.SubjectAssetID = A.ID
 				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
 				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 16
-				inner join Asset O on O.Object = I.Object and O.ObjectID = I.objectid
+				inner join Asset O on O.ID = I.ObjectAssetID 
 				inner join AssetType AT on AT.Id = O.AssetTypeID
 				order by FD.FormattedValue,FD2.FormattedValue
 				", new { assetUid = asset.uid }, ApiTimeout);
@@ -901,7 +901,7 @@ namespace d360.model.DataAccessLayer
 				var assets = await AssetRepository.GetAssets(assetType, par, true);
 
 				var hierarchy = Company.IntersectTypes
-				.FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
+				.FirstOrDefault(x => x.ObjectAssetTypeID == assetType.ID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
 
 				bool includeParent = true;
 

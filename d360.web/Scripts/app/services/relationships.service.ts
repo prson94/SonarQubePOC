@@ -174,8 +174,8 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
-    getObjectRelations(objectType: string, objectId: number): Observable<ObjectRelationship[]> {
-        return this.http.get(`/api/${objectType}/${objectId}/relationshipTypes`)
+    getObjectRelations(subjectUid: string, predicateUid: string): Observable<ObjectRelationship[]> {
+		return this.http.get(`/api/v2/relationships/types/possibilities?subjectUid=${subjectUid}`)
             .pipe(
                 map((response) => <ObjectRelationship[]>response),
                 catchError((err) => this.handleError(err))

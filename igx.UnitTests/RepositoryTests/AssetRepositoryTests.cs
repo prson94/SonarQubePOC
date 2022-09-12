@@ -516,7 +516,7 @@ namespace igx.UnitTests.RepositoryTests
 
             List<string> queryMustContain = new List<string>();
 
-            queryMustContain.Add("inner join IntersectType I on I.Subject"); //filter by subject
+            queryMustContain.Add("inner join IntersectType I on I.SubjectAssetTypeID"); //filter by subject
             queryMustContain.Add("and P.[Uid] = @puid"); // filter by predicate
             queryMustContain.Add("where T.[Class] = @class"); //class filter
             queryMustContain.Add("T.[Uid] = @uid"); //by uid

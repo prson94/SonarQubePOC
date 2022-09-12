@@ -18,10 +18,10 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     private id: number = null;
     private subject: string = "";
     private predicate: string = "";
-    private object: string = "";
 
     @Input() filterToName: string = "";
 
+	@Input() object: string;
     @Input() objectType: string;
     @Input() objectID: number;
 

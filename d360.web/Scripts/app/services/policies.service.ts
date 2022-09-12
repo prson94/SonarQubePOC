@@ -21,32 +21,11 @@ export class PoliciesService extends BaseObservableService {
         super(messagesService);
     }
 
-    getPolicies(
-        assetTypeUid: string,
-        stripHtml: boolean = false
-    ): Observable<Policy[]> {
-		return this.http.get(`api/policytypes/${assetTypeUid}/policies?stripHtml=${stripHtml}`)
-            .pipe(
-                map((response) => <Policy[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
 	getPolicyType(assetTypeUid: string): Observable<PolicyType> {
 		return this.http.get(`api/policytypes/${assetTypeUid}`)
             .pipe(
                 map((response) => <PolicyType>response),
                 catchError((err) => this.handleError(err))
             );
-    }
-
-    savePolicy(policy: Policy): Observable<JsonResult> {
-        let methodName = 'putDynamic';
-
-        if (policy.ID == undefined || !policy.ID) {
-            methodName = 'postDynamic';
-        }
-
-        return this[methodName](this.http, 'policy', policy);
     }
 }

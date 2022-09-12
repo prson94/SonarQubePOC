@@ -32,7 +32,6 @@
     </ng-container>
 </div>
 
-<d3s-rule-column-filter [hidden]="showSimpleFilter" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
 <p-table #dt
          [value]="items"
          selectionMode="single"

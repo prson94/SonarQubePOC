@@ -806,7 +806,7 @@ namespace d360.web.Controllers.V2
 				switch (load.Action)
 				{
 					case "P":
-						AssetType assetType = Company.Filter<AssetType>(a => a.uid == load.AssetTypeUid).FirstOrDefault();
+						var assetType = Company.Filter<AssetType>(a => a.uid == load.AssetTypeUid).FirstOrDefault();
 						SystemObjects type = core.SystemObjects.Load;
 
 						if (Enum.TryParse(assetType.Object, out SystemObjects pObject))
@@ -814,7 +814,7 @@ namespace d360.web.Controllers.V2
 							type = pObject;
 						}
 
-						AssetType parentAssetType = assetType == null ? null : Company.GetParentType(assetType.ID, type);
+						var parentAssetType = assetType == null ? null : Company.GetParentType(assetType.ID);
 
 						sqlColumns = $"select I.RowIndex as RowIndex\n";
 						sqlTables = @"

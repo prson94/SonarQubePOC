@@ -178,7 +178,7 @@ namespace d360.core.validators
 			if (!isInsert)
 			{
 				int assetCount = CompanyContext.Filter<Asset>(x => x.AssetTypeID == assetType.ID).Count();
-				AssetType currentParentType = CompanyContext.GetParentType(assetType.ID, SystemObjectHelper.GetSystemObjects(model.Class));
+				AssetType currentParentType = CompanyContext.GetParentType(assetType.ID);
 				if (assetCount != 0 && currentParentType != null && currentParentType.uid != model.ParentUid)
 				{
 					return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.AssetsWithAssignedParents);
@@ -245,16 +245,22 @@ namespace d360.core.validators
 							from
 								intersecttype I
 								inner join [Predicate] P on P.ID = I.PredicateID
-								inner join AssetType a on a.object = i.object and a.objectid = i.objectid
-							where  a.[class] = @cls and P.[Type] = 3 and i.[subject] = 'ArtifactType' and i.[subjectID] = @parentObjectId and a.name = @name", new { parentObjectId = parentAssetType.ObjectID, name = model.Name.Trim(), cls = model.Class });
+								inner join AssetType a on a.ID = i.ObjectAssetTypeID and a.[class] = @cls and P.[Type] = 3 and i.SubjectAssetTypeID = @parentId and a.name = @name", new { parentId = parentAssetType.ID, name = model.Name.Trim(), cls = model.Class });
 					}
 					else
 					{
 						// only root level artifact types with the same class type IE tech asset vs business asset
 						count = CompanyContext.Database.Connection.QuerySingleOrDefault<int>($@"
-								select count(1) from assettype a
-								where a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.Subject = 'ArtifactType' and i.ObjectID = a.ObjectID)
-										and a.Name = @name", new { name = model.Name.Trim(), cls = model.Class });
+select	count(1) 
+from	assettype a
+where	a.[class] = @cls 
+		and not exists (
+			select	1 
+			from	intersecttype I 
+					inner join [predicate] p on P.id = I.PredicateID and p.[Type] = 3 
+						and i.SubjectAssetTypeID = a.ID
+		)
+		and a.Name = @name", new { name = model.Name.Trim(), cls = model.Class });
 					}
 
 					return count > 0;
@@ -278,8 +284,8 @@ namespace d360.core.validators
 							from
 								intersecttype I
 								inner join [Predicate] P on P.ID = I.PredicateID
-								inner join AssetType a on a.object = i.object and a.objectid = i.objectid
-							where  a.[class] = @cls and P.[Type] = 3 and i.[subject] = 'ArtifactType' and i.[subjectID] = @parentObjectId and a.name = @name and a.uid <> @uid", new { parentObjectId = parentAssetType.ObjectID, name = model.Name.Trim(), cls = model.Class, uid = model.Uid });
+								inner join AssetType a on a.ID = i.ObjectAssetTypeID
+							where  a.[class] = @cls and P.[Type] = 3 and i.SubjectAssetTypeID = @parentId and a.name = @name and a.uid <> @uid", new { parentId = parentAssetType.ID, name = model.Name.Trim(), cls = model.Class, uid = model.Uid });
 					}
 					else
 					{
@@ -287,7 +293,7 @@ namespace d360.core.validators
 						count = CompanyContext.Database.Connection.QuerySingleOrDefault<int>($@"
 								select count(1) from assettype a
 								where
-									a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.Subject = 'ArtifactType' and i.ObjectID = a.ObjectID)
+									a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.SubjectAssetTypeID = a.ID)
 										and a.Name = @name and a.UID <> @uid", new { name = model.Name.Trim(), cls = model.Class, uid = model.Uid });
 					}
 

@@ -38,10 +38,15 @@ import { CompanySettingsService } from '../../../services/settings.service';
 export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
     @Input() field: EditorField;
     @Input() form: FormGroup;
-    @Input() object: string;
-    @Input() objectID: number = null;
-    @Input() selectedObject: string;
-    @Input() selectedObjectID: number;
+
+	@Input() object: string;
+	@Input() objectID: number = null;
+	@Input() selectedObject: string;
+	@Input() selectedObjectID: number;
+
+	@Input() objectUid: string;
+	@Input() selectedObjectUid: string;
+
     @Input() editorChange: Observable<any>;
 
     @Input() useNewUI: boolean = false;

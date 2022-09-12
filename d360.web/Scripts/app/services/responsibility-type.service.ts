@@ -228,8 +228,8 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
-    getRelationRuleFormDataRelationshipsForDropdown(type: string, id: number, intersectTypeId: number): Observable<(SelectItem & { assetUid: string })[]> {
-        return this.http.get(`form/ResponsibilityTypeRelationRuleRelationships_FormData?type=${type}&id=${id}&intersectTypeID=${intersectTypeId}`)
+	getRelationRuleFormDataRelationshipsForDropdown(assetTypeUid: string, intersectTypeId: number): Observable<(SelectItem & { assetUid: string })[]> {
+		return this.http.get(`form/ResponsibilityTypeRelationRuleRelationships_FormData?assetTypeUid=${assetTypeUid}&intersectTypeID=${intersectTypeId}`)
             .pipe(
                 map((response) => <(SelectItem & { assetUid: string })[]>response),
                 catchError((err) => this.handleError(err))

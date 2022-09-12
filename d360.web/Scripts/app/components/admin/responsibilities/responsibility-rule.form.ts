@@ -597,7 +597,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     private loadValuesForIntersectType(item: ResponsibilityTypeRelationRuleDefinitionWhenItem): Promise<void> {
         item.IsloadValuesForIntersectType = true;
-        this.responsibilityTypeService.getRelationRuleFormDataRelationshipsForDropdown(this.model.Object, this.model.ObjectID, item.IntersectTypeID)
+        this.responsibilityTypeService.getRelationRuleFormDataRelationshipsForDropdown(this.model.AssetTypeUid, item.IntersectTypeID)
             .subscribe((d) => {
                 item.IsloadValuesForIntersectType = false;
                 item.IsBool = false;

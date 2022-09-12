@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29215.179
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.model", "d360.model\d360.model.csproj", "{B12A1078-5835-43B8-AFB2-C3D24C4AA098}"
 EndProject
@@ -10,8 +10,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.extensions", "d360.extensions\d360.extensions.csproj", "{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Applications", "2. Applications", "{2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.web", "d360.web\d360.web.csproj", "{DF57BE56-958B-4C4D-B82C-6B61297434AB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Tests", "3. Tests", "{F2954AF7-C35D-4A24-8D64-CFF2D2030528}"
 EndProject
@@ -69,6 +67,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.utils.excel", "d360.ut
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.ThemeMigration", "utilities\igx.ThemeMigration\igx.ThemeMigration.csproj", "{2D8D0F71-4DAD-4919-8EF8-2A80CE73F602}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.web", "d360.web\d360.web.csproj", "{DF57BE56-958B-4C4D-B82C-6B61297434AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,10 +83,6 @@ Global
 		{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DF57BE56-958B-4C4D-B82C-6B61297434AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DF57BE56-958B-4C4D-B82C-6B61297434AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DF57BE56-958B-4C4D-B82C-6B61297434AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DF57BE56-958B-4C4D-B82C-6B61297434AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CAFAC467-D243-4CC4-BC7F-9F1DA0FBFFFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CAFAC467-D243-4CC4-BC7F-9F1DA0FBFFFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAFAC467-D243-4CC4-BC7F-9F1DA0FBFFFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -167,6 +163,10 @@ Global
 		{2D8D0F71-4DAD-4919-8EF8-2A80CE73F602}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D8D0F71-4DAD-4919-8EF8-2A80CE73F602}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D8D0F71-4DAD-4919-8EF8-2A80CE73F602}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF57BE56-958B-4C4D-B82C-6B61297434AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF57BE56-958B-4C4D-B82C-6B61297434AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF57BE56-958B-4C4D-B82C-6B61297434AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF57BE56-958B-4C4D-B82C-6B61297434AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -174,7 +174,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{B12A1078-5835-43B8-AFB2-C3D24C4AA098} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
 		{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
-		{DF57BE56-958B-4C4D-B82C-6B61297434AB} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
 		{CAFAC467-D243-4CC4-BC7F-9F1DA0FBFFFE} = {757CF48D-6728-4702-AC12-754629196548}
 		{8A6EF61F-12E0-4FA4-8CFA-588EBAB47490} = {757CF48D-6728-4702-AC12-754629196548}
 		{757CF48D-6728-4702-AC12-754629196548} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
@@ -198,9 +197,10 @@ Global
 		{E847AC05-71C8-4D30-AAC6-C88B56C45A5D} = {27F0D451-FD9F-4E23-AFCF-F2CE94522A50}
 		{82FAA62E-0A4F-4D1A-BA72-6689705A59A0} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
 		{2D8D0F71-4DAD-4919-8EF8-2A80CE73F602} = {E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}
+		{DF57BE56-958B-4C4D-B82C-6B61297434AB} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 EndGlobal

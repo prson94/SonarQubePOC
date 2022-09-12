@@ -6,7 +6,6 @@ import { Table } from 'primeng/table';
 import { RuleResultPagedResults } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';
 import { GridColumn, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../models/grid-definition.model';
-import { RuleColumnFilterComponent } from './rule-column-filter.component';
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AdvancedFilterFieldType, Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
@@ -36,8 +35,6 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
     items;
     columns: GridColumn[] = [];
     filtercolumns: GridFilterColumn[] = [];
-
-    @ViewChild(RuleColumnFilterComponent, { static: false }) private filtersComponent: RuleColumnFilterComponent;
 
     currentPageNumber: number = 0;
     sortField: string = "";
@@ -153,7 +150,6 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
 
     resetFilters() {
         this.simpleTextFilter = '';
-        this.filtersComponent.resetFilters();
     }
 
     onFiltersLoaded() {

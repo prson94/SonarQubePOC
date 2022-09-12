@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Function.dbo.GetAssetTypeTextPathById-v2">
+  <changeSet author="Pappas" id="Function.dbo.GetAssetTypeTextPathById-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -21,27 +21,25 @@ AS
 RETURN 
 (
 	with c as (
-		select	I.SubjectID as ParentID,
-				T.Object,
-				T.ObjectID,
+		select	I.SubjectAssetTypeID as ParentID,
+				T.ID,
 				cast(T.Name as nvarchar(2500)) as [Path],
 				1 as [Level]
 		from	AssetType T
-				left join IntersectType I on I.Object = T.Object and I.ObjectID = T.ObjectID and (I.[Object] <> I.[Subject] or I.ObjectID <> I.SubjectID) and I.PredicateID in (select ID from [Predicate] where Type = 3)
+				left join IntersectType I on I.ObjectAssetTypeID = T.ID and (I.ObjectAssetTypeID <> I.SubjectAssetTypeID) and I.PredicateID in (select ID from [Predicate] where Type = 3)
 		where	T.ID = @Id
 				
 		union all
-		select	I.SubjectID as ParentID,
-				T.Object,
-				T.ObjectID,
+		select	I.SubjectAssetTypeID as ParentID,
+				T.ID,
 				cast(T.Name + @delimiter + C.[Path] as nvarchar(2500)) as [Path],
 				C.Level + 1 as Level
 		from	AssetType T
-				inner join c on T.Object = c.Object and T.ObjectID = c.ParentID
+				inner join c on T.ID = c.ParentID
 				outer apply (
-							select	SubjectID
+							select	SubjectAssetTypeID
 							from	IntersectType 
-							where	Object = T.Object and ObjectID = T.ObjectID and PredicateID in (select ID from [Predicate] where Type = 3)
+							where	ObjectAssetTypeID = T.ID and PredicateID in (select ID from [Predicate] where Type = 3)
 							) I
 	)
 
@@ -71,8 +69,9 @@ RETURN
 				cast(T.Name as nvarchar(2500)) as [Path],
 				1 as [Level]
 		from	AssetType T
-				left join IntersectType I on I.Object = T.Object and I.ObjectID = T.ObjectID and I.PredicateID in (select ID from [Predicate] where Type = 3)
+				left join IntersectType I on I.Object = T.Object and I.ObjectID = T.ObjectID and (I.[Object] <> I.[Subject] or I.ObjectID <> I.SubjectID) and I.PredicateID in (select ID from [Predicate] where Type = 3)
 		where	T.ID = @Id
+				
 		union all
 		select	I.SubjectID as ParentID,
 				T.Object,

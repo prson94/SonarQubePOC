@@ -5,12 +5,25 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bhoward" id="Function.dbo.FieldLookupValueByFieldTypeID-v2">
+  <changeSet author="Pappas" id="Function.dbo.FieldLookupValueByFieldTypeID-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter function [dbo].[FieldLookupValueByFieldTypeID]
+(
+	@fieldTypeID int
+)
+returns table
+as
+return(
+	select * from FieldLookupValue where FieldTypeID = @fieldTypeID
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [dbo].[FieldLookupValueByFieldTypeID]
 (
 	@fieldTypeID int
@@ -118,11 +131,6 @@ return(
 				INNER JOIN AssetType A on A.Object = 'TaxonomyType'	and T.LookupObjectType = 'TaxonomyType'
 	WHERE	T.ID = @fieldTypeID 
 	)
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

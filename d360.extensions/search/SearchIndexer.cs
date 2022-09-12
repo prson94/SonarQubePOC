@@ -697,7 +697,7 @@ namespace d360.extensions.search
 	                        cast(A.ID as varchar) as ItemUniqueID,
 	                        A.ObjectID as ID,
 	                        att.ObjectID as TypeID,
-	                        ISNULL(adv.DisplayValue, [utility].GetAssetDisplayValue(A.ID)) DisplayValue,
+	                        adv.DisplayValue,
 	                        att.Name as TypeName,
                             att.uid as AssetTypeUid,
 	                        a.uid as Uid,
@@ -707,14 +707,12 @@ namespace d360.extensions.search
                                 THEN '0'
                                 ELSE '1'
                             END as Data3SixtyUser
-                        from
-	                        [dbo].Asset a
-	                        inner join reporting.global_resource u on u.ResourceID = a.ObjectID and a.[Object] = 'Resource'
-	                        inner join [dbo].assettype att on a.assettypeid = att.id
-                            {joinBatchTable}
-	                        left outer join [dbo].assetdisplayvalue adv on adv.assetid = a.id
-                        where
-                            {whereCondition}
+                        from	Asset a
+								inner join reporting.global_resource u on u.ResourceID = a.ObjectID and a.[Object] = 'Resource'
+								inner join AssetType att on a.assettypeid = att.id
+								{joinBatchTable}
+								inner join AssetDisplayValue adv on adv.AssetID = a.ID
+                        where	{whereCondition}
                         ORDER BY A.ID";
                     shaper = (dynamic o) =>
                     {

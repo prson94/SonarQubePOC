@@ -70,11 +70,11 @@ namespace d360.web.Controllers
 															T.ID as TypeID,
 															T.ObjectID as HierarchyTypeID,
 															T.HierarchyMaximumDepth as MaximumDepth,
-															P.TextPath,
+															P.DisplayPath as TextPath,
 															L.Level
 													from	Asset A
 															inner join AssetType T on T.ID = A.AssetTypeID
-															cross apply dbo.GetAssetTextPathById(A.ID, '/') P
+															inner join AssetPath P on P.ID = A.ID
 															cross apply dbo.GetAssetLevelById(A.ID) L
 													where	A.Object = '{hierarchy}' and A.ObjectID = @id
 													", new { id }).SingleOrDefault();
@@ -86,15 +86,15 @@ namespace d360.web.Controllers
 				{
 					var ddlSelectedItem = Company.Query<dynamic>($@"
 								select	A.ObjectID as ID,
-										P.TextPath as Name,
+										P.DisplayPath as Name,
 										A.uid as Uid,
 										coalesce(LV.[Level], 1) as [Level]
 								from	Asset A
 										inner join AssetType T on T.ID = A.AssetTypeID and T.Object = '{hierarchy}Type' and T.ObjectID = @t
-										cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
+										inner join AssetPath P on P.ID = A.ID
 										cross apply dbo.GetAssetLevelById(A.ID) LV
 								where coalesce(LV.[Level], 1) <= @currentLevel and A.Uid = @uid
-								order by P.TextPath 
+								order by P.DisplayPath 
 								option (maxrecursion 100)",
 								new { t = model.HierarchyTypeID, currentLevel = model.Level ?? 1, uid = parent.uid }).Select(i => new { i.Uid, i.Name }).ToList();
 

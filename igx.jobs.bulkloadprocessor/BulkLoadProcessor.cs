@@ -554,7 +554,7 @@ using       (
                 from    Asset A
                         inner join [Group] G on G.ID = A.ObjectID and A.Object = 'Group'
                         inner join #GroupInsertResult L on L.ID = G.ID
-                        cross apply GetAssetDisplayValueByID(A.ID) ADV
+						inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
                 where   ADV.DisplayValue is not null
             ) as S 
 on          ( T.AssetID = S.ID )

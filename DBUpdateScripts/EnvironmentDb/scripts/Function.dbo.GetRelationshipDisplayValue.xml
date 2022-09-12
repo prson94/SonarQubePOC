@@ -5,12 +5,39 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.dbo.GetRelationshipDisplayValue-v3">
+  <changeSet author="Pappas" id="Function.dbo.GetRelationshipDisplayValue-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetRelationshipDisplayValue]
+(
+	@o varchar(50),
+	@oid int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select	DV.DisplayValue
+	from	Asset A
+			inner join AssetDisplayValue DV on DV.AssetID = A.ID		
+	where	@o not in('Policy', 'Taxonomy') and A.[Object] = @o and A.ObjectID = @oid
+	union
+	select	AT.Name as DisplayValue
+	from	AssetType AT
+	where	@o = 'ReferenceItemType' and AT.[Object] = @o and AT.ObjectID = @oid
+	union all
+	select	P.DisplayPath as DisplayValue
+	from	Asset A
+			inner join AssetPath P on P.ID = A.ID
+	where	@o in('Policy', 'Taxonomy') and A.[Object] = @o and A.ObjectID = @oid
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [dbo].[GetRelationshipDisplayValue]
 (
 	@o varchar(50),
@@ -40,43 +67,6 @@ RETURN
 		cross apply [dbo].GetAssetTextPathById(A.ID,'/')
 	where 
 		@o in('Policy', 'Taxonomy') and A.[Object] = @o and A.ObjectID = @oid		
-)
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE OR ALTER FUNCTION [dbo].[GetRelationshipDisplayValue]
-(
-	@o varchar(50),
-	@oid int
-)
-RETURNS TABLE 
-AS
-RETURN 
-(
-select
-		DisplayValue
-	from
-		dbo.Asset A
-		cross apply [dbo].[GetAssetDisplayValueById](A.ID) DV		
-	where 
-		@o = 'FusionAttribute' and A.[Object] = @o and A.ObjectID = @oid
-	union
-	select
-		DV.DisplayValue
-	from
-		dbo.Asset A
-		inner join dbo.AssetDisplayValue DV on DV.AssetID = A.ID		
-	where 
-		@o not in('Taxonomy','FusionAttribute') and A.[Object] = @o and A.ObjectID = @oid
-	union all
-	select 
-		TextPath
-	from 
-		dbo.Asset A
-		cross apply [dbo].GetAssetTextPathById(A.ID,'/')
-	where 
-		@o = 'Taxonomy' and A.[Object] = @o and A.ObjectID = @oid		
 )
 		]]>
 	</rollback>

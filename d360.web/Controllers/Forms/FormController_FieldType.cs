@@ -67,30 +67,26 @@ namespace d360.web.Controllers
 
 				if (exceptionMessage == "")
 				{
+					var lookupObjectType = Company.AssetTypes.FirstOrDefault(a => a.Object == ft.LookupObjectType + "Type" && a.ObjectID == ft.LookupObjectID);
 					if (ft.FilterPredicateDirection == true)
 					{
 						it = Company.Filter<IntersectType>(i =>
-							i.Object == ft.LookupObjectType + "Type" &&
-							i.ObjectID == ft.LookupObjectID &&
-							i.Subject == filterObject.AssetType.Object &&
-							i.SubjectID == filterObject.AssetType.ObjectID &&
+							i.ObjectAssetTypeID == lookupObjectType.ID &&
+							i.SubjectAssetTypeID == filterObject.AssetType.ID &&
 							i.PredicateID == ft.FilterPredicateID
 						).SingleOrDefault();
 					}
 					else
 					{
 						it = Company.Filter<IntersectType>(i =>
-							i.Subject == ft.LookupObjectType + "Type" &&
-							i.SubjectID == ft.LookupObjectID &&
-							i.Object == filterObject.AssetType.Object &&
-							i.ObjectID == filterObject.AssetType.ObjectID &&
+							i.SubjectAssetTypeID == lookupObjectType.ID &&
+							i.ObjectAssetTypeID == filterObject.AssetType.ID &&
 							i.PredicateID == ft.FilterPredicateID
 						).SingleOrDefault();
 					}
 
 					if (it == null)
 					{
-						var lookupObjectType = Company.Filter<AssetType>(i => i.ObjectID == ft.LookupObjectID && i.Object == ft.LookupObjectType + "Type").SingleOrDefault();
 						string listObjectType = lookupObjectType.Class + ":" + lookupObjectType.Name;
 						Predicate pred = Company.GetById<Predicate>(ft.FilterPredicateID.GetValueOrDefault());
 						string predicate = (ft.FilterPredicateDirection == true) ? pred.Inverse : pred.Name;

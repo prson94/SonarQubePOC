@@ -1442,7 +1442,8 @@ order by Sort, title";
 			list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Color", Name = "Color", FieldType = DataType.Color.ToString() });
 
 			//if the reference type has a parent we need to add parent field with the values from the parent
-			var parentType = Company.GetParentType(id, SystemObjects.ReferenceItemType);
+			var assetType = Company.AssetTypes.SingleOrDefault(a => a.Object == "ReferenceItemType" && a.ObjectID == id);
+			var parentType = Company.GetParentType(assetType.ID);
 			
 			if (parentType != null)
 			{
@@ -1477,7 +1478,7 @@ order by Sort, title";
 
 			//if the reference type has a parent we need to add parent field with the values from the parent
 
-			var parentType = Company.GetParentType(a.AssetType.ObjectID, SystemObjects.ReferenceItemType);
+			var parentType = Company.GetParentType(a.AssetType.ID);
 
 			if (parentType != null)
 			{

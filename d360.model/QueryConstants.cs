@@ -35,11 +35,12 @@ namespace d360.model
 				where exists
 					(SELECT *  
 					FROM IntersectType IT
-					WHERE P.[type] = 6 and P.ID = IT.PredicateID and ((IT.Subject = @ot and IT.SubjectID = @id) OR (IT.Object = @ot and IT.ObjectID = @id)))
+					WHERE P.[Type] = 6 and P.ID = IT.PredicateID and (IT.SubjectAssetTypeID = @id or IT.ObjectAssetTypeID = @id))
 				union
-					select 
-						P.ID as [ID], P.Name as [Name] 
-				from  [dbo].[NymRelation] R inner join [dbo].[predicate] P on P.ID = R.PredicateID where R.[Object] = @ot and R.ObjectID = @id";
+				select	P.ID as [ID], P.Name as [Name] 
+				from	NymRelation R 
+						inner join [Predicate] P on P.ID = R.PredicateID 
+						inner join AssetType T on T.ID = @id and T.Object = R.[Object] and T.ObjectID = R.ObjectID";
 
 		public static readonly string GroupResourceInfoList = @"
 				select  RG.GroupID,
@@ -79,7 +80,7 @@ namespace d360.model
 						outer apply (
 									select	I.SubjectID
 									from	[Intersect] I
-											inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+											inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.ObjectAssetID = A.ID
 											inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 									) P
 				where   A.AssetTypeUid = @uid AND A.[State] = 1";
@@ -275,7 +276,8 @@ namespace d360.model
 				order by case when (Subject = @type and SubjectID = @id) then ObjectName else SubjectName end";
 
 		public static readonly string PolicySettingsItem = @"
-				select	T.Name, 
+				select	T.ID,
+						T.Name, 
 						T.Description, 
 						T.HierarchyMaximumDepth,
 						T.Uid,
@@ -301,10 +303,12 @@ namespace d360.model
 
 		public static readonly string SynonymTypes = @"
 				declare	@ot varchar(50),
-						@otid int
+						@otid int,
+						@assetTypeId int
 
 				select	@ot = T.Object,
-						@otid = T.ObjectID
+						@otid = T.ObjectID,
+						@assetTypeId = T.ID
 				from	Asset A 
 						inner join AssetType T on T.ID = A.AssetTypeID  and A.Object = @type and A.ObjectID = @id 
 
@@ -315,66 +319,38 @@ namespace d360.model
 					d.[Object], 
 					d.ObjectID, 
 					IT.[uid],
-					case when IT.Subject = @ot and IT.SubjectID = @otid then
-						1
-					else
-						0
-					end as IntersectTypeIsSubjectSide
-				from intersecttype IT        
+					iif(IT.SubjectAssetTypeID = @assetTypeId, 1, 0) as IntersectTypeIsSubjectSide
+				from IntersectType IT 
 				inner join (
-					select A.[Name], A.[Object], A.ObjectID from AssetType A
+					select [Name], [Object], ObjectID, ID from AssetType
 					union all
-					select TN.[Name], 'IntersectType' as [Object], ID as ObjectID from IntersectType T
-					cross apply dbo.GetIntersectTypeNames(T.ID) TN
-				) d on
-					case when IT.Subject = @ot then
-						IT.Object
-					else
-						IT.Subject
-					end = d.[Object] 
-					and
-					case when IT.SubjectID = @otid then
-						IT.ObjectID
-					else
-						IT.SubjectID
-					end = d.ObjectID
-				where 
-					((IT.Subject = @ot and IT.SubjectID = @otid) OR (IT.Object = @ot and IT.ObjectID = @otid)) and IT.predicateid = @predicateId";
+					select Name, 'IntersectType' as [Object], ID as ObjectID, ID from IntersectTypeDetail
+				) d on iif(IT.SubjectAssetTypeID = @assetTypeId, IT.ObjectAssetTypeID, IT.SubjectAssetTypeID) = d.ID
+				where (IT.SubjectAssetTypeID = @assetTypeId or IT.ObjectAssetTypeID = @assetTypeId) and IT.predicateid = @predicateId";
 
 		public static readonly string SynonymOptions = @"
 				declare	@ot varchar(50),
-						@otid int 
+						@otid int,
+						@assetTypeId int
 
 				select	@ot = T.Object,
-						@otid = T.ObjectID
+						@otid = T.ObjectID,
+						@assetTypeId = T.ID
 				from	Asset A 
 						inner join AssetType T on T.ID = A.AssetTypeID  and A.Object = @object and A.ObjectID = @objectId 
 
 				select		D.TypeName + ' :: ' + D.DisplayValue as Name,
 							O.TargetingSubject,
 							d.uid as [uid]
-				from AssetDetail d		
+				from		AssetDetail d		
 							inner join (
-										select	case 
-													when IT.Subject = @ot and IT.SubjectID = @otid then IT.Object
-													else IT.Subject
-												end as Object,
-												case 
-													when IT.Subject = @ot and IT.SubjectID = @otid then IT.ObjectID
-													else IT.SubjectID
-												end as ObjectID,
-												case 
-													when IT.Subject = @ot and IT.SubjectID = @otid then cast(0 as bit)
-													else cast(1 as bit)
-												end as TargetingSubject
+										select	iif(IT.SubjectAssetTypeID = @assetTypeId, IT.ObjectAssetTypeID, IT.SubjectAssetTypeID) as AssetTypeID,
+												iif(IT.SubjectAssetTypeID = @assetTypeId, (0 as bit), (1 as bit)) as TargetingSubject
 										from	IntersectType IT
 												inner join Predicate P on   P.ID = IT.PredicateID 
 																			and P.ID = @predicateId
-																			and (
-																				(IT.Subject = @ot and IT.SubjectID = @otid) OR
-																				(IT.Object = @ot and IT.ObjectID = @otid)
-																				)
-										) O on O.Object = D.Type and O.ObjectID = D.TypeID and D.Object + '|' + cast(D.ObjectID as varchar) <> @object + '|' + cast(@objectId as varchar)
+																			and (IT.SubjectAssetTypeID = @assetTypeId or IT.ObjectAssetTypeID = @assetTypeId)
+										) O on O.AssetTypeID = D.AssetTypeID
 							inner join [Predicate] P on P.ID = @predicateId
 							where (@query = '') or (@query != '' and d.DisplayValue like '%'+@query+'%') and d.Type = @type and d.typeid = @typeid
 				order by	D.TypeName,
@@ -410,15 +386,15 @@ namespace d360.model
 								else I.SubjectID 
 							end	
 						inner join AssetType ST on ST.ID = S.AssetTypeID
-						cross apply dbo.GetAssetDisplayValueById(S.ID) D
+						inner join AssetDisplayValue D on D.AssetID = S.ID
 						outer apply (
 							select I.* from [Intersect] I
-							inner join IntersectTypeDetail D on D.[Object] = ST.[Object] and D.ObjectID = ST.ObjectID and PredicateType = 3
+							inner join IntersectTypeDetail D on D.ObjectAssetTypeID = ST.ID and PredicateType = 3
 							where I.IntersectTypeID = D.ID and I.ObjectID = S.ObjectID and I.[Object] = S.[Object]
 						) P
 						left join Asset SP on SP.[Object] = P.[Subject] and SP.ObjectID = P.SubjectID
 						left join AssetType SPT on SPT.ID = SP.AssetTypeID
-						cross apply dbo.GetAssetDisplayValueById(SP.ID) DP
+						inner join AssetDisplayValue DP on DP.AssetID = SP.ID
 				where	(I.Subject = @type and I.SubjectID = @id) or (I.[Object] = @type and I.ObjectID = @id) and I.visible = 1
 				union
 				select 
@@ -464,7 +440,7 @@ namespace d360.model
 												select	IT.ID
 												from	IntersectType IT
 														inner join [Predicate] ITP on ITP.ID = IT.PredicateID and ITP.Type = 6 -- Synonym
-												where	(IT.SubjectUid = @assetTypeUid) OR (IT.ObjectUid = @assetTypeUid)
+												where	IT.SubjectAssetTypeID = T.ID OR IT.ObjectAssetTypeID = T.ID
 											) O
 									) S
 				where	T.Uid = @assetTypeUid";
@@ -548,17 +524,17 @@ namespace d360.model
 					[object] + '|' + cast(objectId as varchar) as [value],
 					objectId as id,
 					[object] as [type],		
-					case when T.[object] = 'ArtifactType' and T.[Class] = 1 then
+					case when T.[Class] = 1 then
 						'{CommonNames.AssetTypeClass_Business}'
-					when T.[object] = 'ArtifactType' and T.[Class] = 8 then
+					when T.[Class] = 8 then
 						'{CommonNames.AssetTypeClass_Technical}'
-					when T.[object] = 'RuleType' then
+					when T.[Class] = 7 then
 						'{CommonNames.AssetTypeClass_RuleType}'
-					when T.[object] = 'PolicyType' then
+					when T.[Class] = 6 then
 						'{CommonNames.AssetTypeClass_PolicyType}'
-					when T.[object] = 'ReferenceItemType' then
+					when T.[Class] = 9 then
 						'{CommonNames.AssetTypeClass_ReferenceList}'
-					when T.[object] = 'TaxonomyType' then
+					when T.[Class] = 2 then
 						'{CommonNames.AssetTypeClass_ModelType}'
 					when T.[object] = 'ShoppingCartType' then
 						'Shopping Cart'
@@ -577,11 +553,9 @@ namespace d360.model
 				where
 					T.[object] in ('ArtifactType','TaxonomyType','PolicyType','RuleType','ShoppingCartType','ReferenceItemType')
 				union all
-				select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], '{CommonNames.AssetTypeClass_Relationship} :: ' + t_name.Name as [label], 1 as [count] 
-				from intersecttype t
-				inner join [Predicate] p on p.ID=t.PredicateID and p.Type not in ({(int)PredicateType.Diagram}, {(int)PredicateType.DiagramUse}, {(int)PredicateType.DiagramReference})
-				cross apply dbo.GetIntersectTypeNames(t.ID) t_name			
-				group by t.id, t_name.name
+				select 'IntersectType|' + cast(id as varchar) as value, id, 'IntersectType' as [type], '{CommonNames.AssetTypeClass_Relationship} :: ' + Name as [label], 1 as [count] 
+				from IntersectTypeDetail
+				where PredicateType not in ({(int)PredicateType.Diagram}, {(int)PredicateType.DiagramUse}, {(int)PredicateType.DiagramReference})
 				union all
 				select 'IssueType|' + cast(t.id as varchar) as value, t.id, 'IssueType' as [type], '{CommonNames.AssetTypeClass_ActionType} :: ' + t.Name as [label], count(*) as [count] 
 				from issuetype t
@@ -631,9 +605,9 @@ namespace d360.model
 					t.State as State
 				from workflow.type t
 				inner join workflow.eventregistration e on e.typeid = t.id
-				left join AssetType D on D.Object = E.Object and D.ObjectID = e.ObjectID 
-				left join issuetype it_t on e.object = 'IssueType' and it_t.id = e.objectid
-				left join IntersectType IT on e.Object = 'IntersectType' and e.objectid = IT.ID
+				left join AssetType D on D.ID = E.AssetTypeID
+				left join issuetype it_t on e.IssueTypeID = it_t.id 
+				left join IntersectType IT on e.IntersectTypeID = IT.ID
 				outer apply dbo.GetIntersectTypeNames(IT.ID) ITN
 				left join ShoppingCartType st on st.ID = e.objectid and e.object = 'ShoppingCartType'
 				left join workflow.version v on v.id = t.publishedversionid
@@ -653,9 +627,9 @@ namespace d360.model
 				coalesce(s.[Object], I.[Object]) as [Object],
 				coalesce(s.ObjectID, I.ObjectID) as ObjectID,
 				coalesce(dv.DisplayValue, ISD.SubjectShortName + ' [' + ISD.PredicateName + '] ' + ISD.ObjectShortName , '[unknown]') as [Name], 
-				coalesce(D.TypeName, DITN.Name, '[unknown]') as ObjectTypeName,
+				coalesce(D.TypeName, DIT.Name, '[unknown]') as ObjectTypeName,
 				UL.[Url] as NgUrl, 
-				coalesce(D.DisplayValue, DIN.Name, '[unknown]') as TextPath,
+				coalesce(D.DisplayValue, DI.Name, '[unknown]') as TextPath,
 				VS.[Name] as StepName, 
 				dbo.GetWorkflowResponsibleUsers(IST.ID, 0) as Assignments,
 				convert(nvarchar(max),VS.Settings) as Settings,
@@ -706,14 +680,12 @@ namespace d360.model
 				left join [IntersectDetail] ISD on coalesce(s.[Object], I.[Object]) = 'Intersect' and ISD.ID = coalesce(s.ObjectID, I.ObjectID)
 				left join Asset A on A.[Object] = coalesce(s.[Object], I.[Object]) and A.ObjectID = coalesce(s.ObjectID, I.ObjectID)
 				left join AssetType AST on AST.id = A.AssetTypeID
-				outer apply dbo.GetAssetDisplayValueById(A.ID) DV
+				left join AssetDisplayValue DV on DV.AssetID = A.ID
 				outer apply dbo.GetAssetUrlById(A.ID) UL
 				inner join workflow.VersionStep VS on VS.ID = IST.StepID
 				left join AssetDetail D on D.Object = I.Object and D.ObjectID = I.ObjectID
-				left join [Intersect] DI on 'Intersect' = I.Object and DI.ID = I.ObjectID
-				left join IntersectType DIT on DIT.ID = DI.IntersectTypeID
-				outer apply dbo.GetIntersectNames(DI.ID) DIN	
-				outer apply dbo.GetIntersectTypeNames(DIT.ID) DITN
+				left join IntersectDetail DI on 'Intersect' = I.Object and DI.ID = I.ObjectID
+				left join IntersectTypeDetail DIT on DIT.ID = DI.IntersectTypeID
 				left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
 				left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
 				inner join workflow.[Version] V on V.ID = VS.VersionID

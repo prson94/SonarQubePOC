@@ -17,25 +17,22 @@ namespace d360.model.DataAccessLayer
         public async Task<ICollection<AssetType>> GetAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default)
         {
             const string sql = @"
-                WITH cte AS (  
-                   SELECT *
-                        , 0 as lvl
-                     FROM AssetType
-                    WHERE AssetType.[uid] = @assetUid
-                   
-                   UNION ALL
-                   
-                   SELECT AssetType.*
-                        , cte.lvl - 1 
-                     FROM IntersectType it
-                    INNER JOIN[Predicate] p ON it.PredicateID = p.ID
-                    INNER JOIN cte ON cte.ObjectID = it.ObjectID
-                    INNER JOIN AssetType ON AssetType.ObjectID = it.SubjectID
-                    WHERE it.[Object] = 'ArtifactType' AND p.Type IN(3,4)
-                )
-                SELECT *
-                  FROM cte
-                 ORDER BY lvl
+WITH cte AS (  
+	select	*, 
+			0 as lvl
+	from	AssetType
+	where	[uid] = @assetUid
+	union all
+	select	a.*,
+			cte.lvl - 1 
+	from	IntersectType it
+            inner join [Predicate] p on it.PredicateID = p.ID and p.Type IN (3) 
+			inner join cte on cte.ID = it.ObjectAssetTypeID 
+            inner join AssetType a on a.ID = it.SubjectAssetTypeID
+)
+select		*
+from		cte
+order by	lvl
             ";
             var result = await QueryComposer.QueryListAsync<AssetType>(sql, new { assetUid });
             return result.ToList();

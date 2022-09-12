@@ -391,9 +391,8 @@ namespace d360.core.entities
         
         public int IntersectTypeID { get; set; }
         
-        public string Object { get; set; }
-        
-        public int ObjectID { get; set; }
+		public AssetTypeClass AssetClass { get; set; }
+        public int AssetTypeID { get; set; }
     }
 
     public class TypeIdentifierInfoModel

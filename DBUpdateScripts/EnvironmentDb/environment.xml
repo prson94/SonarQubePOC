@@ -36,21 +36,14 @@
 	<include file="scripts/Function.dbo.GetDisplayPath.xml"/>
 	<include file="scripts/Function.dbo.GetKeyPath.xml"/>
 	<include file="scripts/Function.dbo.GetKeyPathHash.xml"/>
-	<include file="scripts/Function.graph.GetKeyPath.xml"/>
-	<include file="scripts/Function.graph.GetPath.xml"/>
 	<include file="scripts/Function.graph.GetPathByAssetId.xml"/>
-	<include file="scripts/Function.graph.ReformatSegments.xml"/>
 	<include file="scripts/Function.queue.WriteIndexXml.xml"/>
 	<include file="scripts/Function.reporting.StripHTML.xml"/>
-	<include file="scripts/Function.utility.GetAssetDisplayValue.xml"/>
-	<include file="scripts/Function.utility.GetAssetDisplayValueWrapper.xml"/>
 	<include file="scripts/Function.utility.GetFormattedFieldLinkValue.xml"/>
 	<include file="scripts/Function.utility.GetFormattedFieldLookupValue.xml"/>
 	<include file="scripts/Function.utility.GetFormattedFieldLookupValueWithMultiple.xml"/>
 	<include file="scripts/Function.utility.GetFormattedFieldLookupValueWrapper.xml"/>
 	<include file="scripts/Function.utility.GetHash.xml"/>
-	<include file="scripts/Function.utility.GetObjectDisplayValue.xml"/>
-	<include file="scripts/Function.utility.GetObjectDisplayValueWrapper.xml"/>
 	<include file="scripts/Function.utility.JS_Hashcode.xml"/>
 	<include file="scripts/Function.utility.OrderedSplit.xml"/>
 	<include file="scripts/Function.utility.GetObjectObjectIdByUID.xml"/>
@@ -219,9 +212,7 @@
 	<include file="scripts/Table.Deletions.xml"/>	  
 
 	<!-- Views (object-based naming) -->
-	<include file="scripts/Function.dbo.GetAssetDisplayValue.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetDisplayValueById.xml"/>			<!--Function used for computed column-->
-	<include file="scripts/Function.dbo.GetAssetDisplayValueByObjectId.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetUrlById.xml"/>					<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetTypeUrlById.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetIntersectNames.xml"/>				<!--Function used for computed column-->
@@ -259,11 +250,10 @@
 	<include file="scripts/View.dbo.ProcessExpandedData.xml"/>
 	<include file="scripts/View.workflow.ItemAsset.xml"/>
 	<include file="scripts/View.workflow.ItemIssue.xml"/>
-        <include file="scripts/View.dbo.AuditView.xml"/>
+    <include file="scripts/View.dbo.AuditView.xml"/>
 
 	<include file="scripts/Function.dbo.GetAssetLevelById.xml"/>	<!--dependency-->
 	<include file="scripts/Function.dbo.GetParentByAssetID.xml"/> 	<!--dependency-->
-	<include file="scripts/Function.dbo.GetAssetTextPathById.xml"/> <!--dependency-->
 	<include file="scripts/Function.graph.GetPathAsJson.xml"/>		<!--dependency-->
 	
 	<!-- Views: REPORTING -->
@@ -301,17 +291,11 @@
 	<include file="scripts/Function.dbo.AssetsByTypeUserCantRead.xml"/>
 	<include file="scripts/Function.dbo.AssetTypesUserCantRead.xml"/>
 	<include file="scripts/Function.dbo.AssetWithAssetsByTypeUserCantRead.xml"/>
-	<include file="scripts/Function.dbo.CheckIfAssetExistsWithParent.xml"/>
-	<include file="scripts/Function.dbo.CheckIfObjectExistsWithParent.xml"/>
 	<include file="scripts/Function.dbo.CustomSiteNavigation.xml"/>
 	<include file="scripts/Function.dbo.FieldLookupValueByFieldTypeID.xml"/>
 	<include file="scripts/Function.dbo.GetArtifactChildByAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetAssetBreadcrumbs.xml"/>
 	<include file="scripts/Function.dbo.GetAssetColorJsonByColor.xml"/>	
-	<include file="scripts/Function.dbo.GetAssetHasChildrenByAssetID.xml"/>
-	<include file="scripts/Function.dbo.GetAssetKeyHash.xml"/>
-	<include file="scripts/Function.dbo.GetAssetKeyHashById.xml"/>
-	<include file="scripts/Function.dbo.GetAssetTextPath.xml"/>
 	<include file="scripts/Function.dbo.GetAssetTypeBreadcrumbs.xml"/>
 	<include file="scripts/Function.dbo.GetContractValidations.xml"/>
 	<include file="scripts/Function.dbo.GetEmailStepRecipients.xml"/>
@@ -324,14 +308,12 @@
 	<include file="scripts/Function.dbo.HasSiteNavPermission.xml"/>
 	<include file="scripts/Function.dbo.UserAssetPermissions.xml"/>
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
-	<include file="scripts/Function.graph.Hop_GenerateSalt.xml"/>
 	<include file="scripts/Function.graph.GetBackwardLineage.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
     <include file="scripts/Function.utility.DeriveIntersectName.xml"/>
     <include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.FieldDetailsByAssetId.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
-	<include file="scripts/Function.utility.GetAssetBusinessKey.xml"/>
 	<include file="scripts/Function.utility.GetIntersectNames.xml"/>
 	<include file="scripts/Function.utility.GetIntersectTypesByType.xml"/>
 	<include file="scripts/Function.utility.GetObjectTypePath.xml"/>
@@ -340,6 +322,7 @@
 
 	<!-- Procedures (object-based naming) -->
 	<include file="scripts/Procedure.analytics.AddStatistic.xml"/>
+	<include file="scripts/Procedure.api.DeleteAssetTypesByExecution.xml"/>
 	<include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>
 	<include file="scripts/Procedure.api.MergeAssetPaths.xml"/>
 	<include file="scripts/Procedure.bulkload.GetLoadColumns.xml"/>
@@ -358,7 +341,6 @@
 	<include file="scripts/Procedure.dbo.GetAllowedIntersectionTypes.xml"/>
 	<include file="scripts/Procedure.dbo.GetAssetHierarchy.xml"/>
 	<include file="scripts/Procedure.dbo.GetAttributeAndIntersectHierarchyByObject.xml"/>
-	<include file="scripts/Procedure.dbo.GetAverageScoreByObjectType.xml"/>
 	<include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.dbo.GetPageInformation.xml"/>
 	<include file="scripts/Procedure.dbo.GetReferenceItemValues.xml"/>

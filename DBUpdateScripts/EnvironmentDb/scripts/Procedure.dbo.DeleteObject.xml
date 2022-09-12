@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.DeleteObject-v19">
-    <comment>GOV-19408</comment>
+  <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v20">
+    <comment>GOV-18449</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -118,40 +118,46 @@ create or alter procedure [dbo].[DeleteObject]
 		  begin
 			  if @IsType = 1
 			  begin
-				  while exists(select 1 from #types where Processed = 0)
-				  begin
-					  insert into #types
-						  select	C.ID,
-								  C.Object,
-								  C.ObjectID,
-								  null
-						  from	AssetType C
-								  inner join IntersectType I on I.Subject = @Object and I.Object = @Object and I.ObjectID = C.ObjectID and C.[Object] = @Object
-								  inner join [Predicate] PR on PR.ID = I.PredicateID and PR.[Type] = @predicateType
-								  inner join AssetType P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-								  inner join #types T on T.ID = P.ID and T.Processed = 0
-
-					  update #types set Processed = 1 where Processed = 0
-					  update #types set Processed = 0 where Processed is null
-				   end;
+				declare @startAssetTypeID int
+				select @startAssetTypeID = ID from AssetType where Object = @Object and ObjectID = @ObjectID
+				;with typeCte as (
+					select	C.ID,
+							C.Object,
+							C.ObjectID
+					from	IntersectType T
+							inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = @predicateType and T.SubjectAssetTypeID = @startAssetTypeID
+							inner join AssetType C on C.ID = T.ObjectAssetTypeID
+					union all
+					select	C.ID,
+							C.Object,
+							C.ObjectID
+					from	typeCte P
+							inner join IntersectType T on T.SubjectAssetTypeID = P.ID
+							inner join [Predicate] Pr on Pr.ID = T.PredicateID and Pr.[Type] = @predicateType
+							inner join AssetType C on C.ID = T.ObjectAssetTypeID
+				)
+				insert into #types
+					select ID, Object, ObjectID, 1 from typeCte;
 			  end
 			  else
 			  begin
-				  while exists(select 1 from #items where Processed = 0)
-				  begin
-					  insert into #items
-						  select	C.ID,
-								  C.Object,
-								  C.ObjectID,
-								  null
-						  from	Asset C
-								  inner join PredicateIntersect I on I.PredicateType = @predicateType and I.Subject = @Object and I.Object = @Object and I.ObjectID = C.ObjectID
-								  inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-								  inner join #items T on T.ID = P.ID and T.Processed = 0
-
-					  update #items set Processed = 1 where Processed = 0
-					  update #items set Processed = 0 where Processed is null
-				  end;
+				declare @startAssetID bigint
+				select @startAssetID = ID from Asset where Object = @Object and ObjectID = @ObjectID
+				;with itemCte as (
+					select	ObjectAssetID as ID,
+							Object,
+							ObjectID
+					from	PredicateIntersect 
+					where	SubjectAssetID = @startAssetID and PredicateType = @predicateType
+					union all
+					select	I.ObjectAssetID as ID,
+							I.Object,
+							I.ObjectID
+					from	itemCte P
+							inner join PredicateIntersect I on I.SubjectAssetID = P.ID and I.PredicateType = @predicateType
+				)
+				insert into #items
+					select ID, Object, ObjectID, 1 from itemCte;
 			  end;
 		  end;
   
@@ -315,14 +321,13 @@ create or alter procedure [dbo].[DeleteObject]
 			  -- Delete intersect types related to types that you are removing.
 			  if @IsType = 1
 			  begin
+				  delete	O
+				  from		IntersectType O
+							inner join #types I on O.ID = I.SubjectAssetTypeID;
 
 				  delete	O
-				  from	IntersectType O
-						  inner join #types I on O.Subject = I.Object and O.SubjectID = I.ObjectID;
-
-				  delete	O
-				  from	IntersectType O
-						  inner join #types I on O.Object = I.Object and O.ObjectID = I.ObjectID;
+				  from		IntersectType O
+							inner join #types I on O.ID = I.ObjectAssetTypeID;
 			  end
 			  else
 			  begin
@@ -331,14 +336,14 @@ create or alter procedure [dbo].[DeleteObject]
 				  create clustered index CIX_TempIntersects on #intersects (ID);
 
 				  insert into #intersects
-					  select	I.ID
-					  from	[Intersect] I
-							  inner join #items O on I.Subject = O.Object and I.SubjectID = O.ObjectID;
+					  select I.ID
+					  from	 [Intersect] I
+							 inner join #items O on I.SubjectAssetID = O.ID;
 
 				  insert into #intersects
-					  select	I.ID
-					  from	[Intersect] I
-							  inner join #items O on I.Object = O.Object and I.ObjectID = O.ObjectID;
+					  select I.ID
+					  from	 [Intersect] I
+							 inner join #items O on I.ObjectAssetID = O.ID;
 
 				  delete [Intersect] where ID in (select ID from #intersects);
 			  end;

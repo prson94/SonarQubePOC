@@ -11,12 +11,20 @@ namespace d360.core.entities.Transitive
         public int IntersectTypeID { get; set; }
         
         public Guid IntersectTypeUid { get; set; }
-        
-        public string Subject { get; set; }
+
+		public long SubjectAssetID { get; set; }
+
+		public int? SubjectAssetTypeID { get; set; }
+
+		public string Subject { get; set; }
         
         public int SubjectID { get; set; }
-        
-        public string Object { get; set; }
+
+		public long ObjectAssetID { get; set; }
+
+		public int? ObjectAssetTypeID { get; set; }
+
+		public string Object { get; set; }
         
         public int ObjectID { get; set; }
         

@@ -69,14 +69,14 @@ namespace d360.web.Controllers
             }
 
             var list = new List<EditableField>();
+			var assetType = Company.AssetTypes.SingleOrDefault(a => a.Object == sType && a.ObjectID == at);
 
             var intersectType = Company.Filter<IntersectTypeDetail>(i =>
-                i.Object == sType &&
-                i.ObjectID == at &&
+                i.ObjectAssetTypeID == assetType.ID &&
                 i.PredicateType.Value == PredicateType.InterTypeHierarchy
             ).SingleOrDefault();
 
-            var parentType = Company.GetParentType(at, type);
+            var parentType = Company.GetParentType(assetType.ID);
 
             if (intersectType != null)
             {
@@ -104,7 +104,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { FieldName = "AssetTypeUid", FieldType = DataType.Hidden.ToString(), Value = a.AssetType.uid.ToString() });
 
-            var parentType = Company.GetParentType(a.AssetType.ObjectID, type);
+            var parentType = Company.GetParentType(a.AssetType.ID);
 
             if (PluralCultureHelper.IsNeutralCultureEnglish())
             {
@@ -315,11 +315,7 @@ namespace d360.web.Controllers
 
                     if (@class == AssetTypeClass.BusinessAsset || @class == AssetTypeClass.TechnicalAsset || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference)
                     {
-                        var intersectType = Company.Filter<IntersectType>(i =>
-                            i.Object == assetType.Object &&
-                            i.ObjectID == assetType.ObjectID &&
-                            i.Predicate.Type == parentPredicateType
-                        ).FirstOrDefault();
+                        var intersectType = Company.Filter<IntersectType>(i => i.ObjectAssetTypeID == assetType.ID && i.Predicate.Type == parentPredicateType).FirstOrDefault();
 
                         if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference) //If model or policy you must always have a predicate to load.
                         {
@@ -329,17 +325,8 @@ namespace d360.web.Controllers
                         if (intersectType != null)
                         {
                             loadPredicates = true;
-
-                            if (intersectType.SubjectUid.HasValue)
-                            {
-                                model.AssetType.ParentUid = intersectType.SubjectUid;
-                            }
-                            else
-                            {
-                                var parentAssetType = Company.AssetTypes.FirstOrDefault(x => x.Object == intersectType.Subject && x.ObjectID == intersectType.SubjectID);
-                                model.AssetType.ParentUid = parentAssetType.uid;
-                            }
-
+                            var parentAssetType = Company.GetById<AssetType>(intersectType.SubjectAssetTypeID);
+                            model.AssetType.ParentUid = parentAssetType.uid;
                             model.AssetType.Hierarchy.PredicateUid = intersectType.Predicate.UID;
                         }
                     }
@@ -411,20 +398,18 @@ with u as (
 					and Subject = 'ReferenceItemType' and A.Uid <> u.Uid
 			) I
 ), d as (
-	select	A.Uid, I.Object, I.ObjectID
+	select	A.Uid, I.ObjectAssetTypeID
 	from	AssetType A
-			inner join IntersectType I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.Object = 'ReferenceItemType'
+			inner join IntersectType I on I.SubjectAssetTypeID = A.ID and I.ObjectClass = 9
 	where	A.Uid = @Uid
 	union all
-	select	A.Uid, I.Object, I.ObjectID
+	select	A.Uid, I.ObjectAssetTypeID
 	from	AssetType A
-			inner join d on d.Object = A.Object and d.ObjectID = A.ObjectID
+			inner join d on d.ObjectAssetTypeID = A.ID
 			outer apply (
-			select	Object, ObjectID
+			select	ObjectAssetTypeID
 			from	IntersectType 
-					where Subject = A.Object 
-					and SubjectID = A.ObjectID 
-					and Object = 'ReferenceItemType' and A.Uid <> d.Uid
+			where	SubjectAssetTypeID = A.ID and ObjectClass = 9 and A.Uid <> d.Uid
 			) I
 ) 
 select	LOWER(CAST(uid AS char(36))) as value, 

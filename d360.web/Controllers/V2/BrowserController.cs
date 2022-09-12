@@ -403,8 +403,6 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 										select	O.Class,
 												O.[uid],
 												O.ID as AssetTypeID,
-												O.Object,
-												O.ObjectID,
 												cast(O.Name as nvarchar(2500)) as [Path],
 												cast(null as int) as ParentAssetTypeID,
 												1 as [Level]
@@ -412,7 +410,7 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 												outer apply (
 															select	I.ID 
 															from	IntersectType I 
-																	inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = 3 and I.Object = O.Object and I.ObjectID = O.ObjectID
+																	inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = 3 and I.ObjectAssetTypeID = O.ID
 															) I
 										where	I.ID is null
 												and O.Class in (1,7,8)
@@ -420,14 +418,12 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 										select	O.Class,
 												O.[uid],
 												O.ID as AssetTypeID,
-												O.Object,
-												O.ObjectID,
 												cast(H.Path + ' > ' + O.Name as nvarchar(2500)) as [Path],
 												H.AssetTypeID as ParentAssetTypeID,
 												H.[Level]+1 as [Level]
 										from	AssetType O
-												inner join IntersectType I on I.Object = O.Object and I.ObjectID = O.ObjectID
-												inner join H on H.Object = I.Subject and H.ObjectID = I.SubjectID
+												inner join IntersectType I on I.ObjectAssetTypeID = O.ID
+												inner join H on H.AssetTypeID = I.SubjectAssetTypeID
 												inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = 3
 										)
 
@@ -440,15 +436,14 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 																	select	A.ID
 																	from	AssetType A
 																			inner join	(
-																						select	I.Subject,
-																								I.SubjectID
+																						select	I.SubjectAssetTypeID
 																						from	AssetType O
-																								inner join IntersectType I on I.Object = O.Object and I.ObjectID = O.ObjectID
+																								inner join IntersectType I on I.ObjectAssetTypeID = O.ID
 																								inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4)
-																								left join IntersectType SI on SI.Subject = O.Object and SI.SubjectID = O.ObjectID and SI.PredicateID = P.ID
+																								left join IntersectType SI on SI.SubjectAssetTypeID = O.ID and SI.PredicateID = P.ID
 																						where	O.Class in (1,7,8)
 																								and SI.ID is null
-																						) S on S.Subject = A.Object and S.SubjectID = A.ObjectID			
+																						) S on S.SubjectAssetTypeID = A.ID
 																)
 									union
 									select	O.[Uid],

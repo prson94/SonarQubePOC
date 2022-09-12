@@ -145,11 +145,11 @@ namespace d360.web.Controllers
 						break;
 					case "Asset":
 						dbArgs.Add($"{ff.FieldName}{count}", $"%{ff.RawValue}%");
-						typeClause.Add($@"coalesce(wiis.AssetName,IntersectName.Name,wia1.AssetName) Like @{ff.FieldName}{count}");
+						typeClause.Add($@"coalesce(wiis.AssetName, wia1.AssetName) Like @{ff.FieldName}{count}");
 						break;
 					case "TypeName":
 						dbArgs.Add($"{ff.FieldName}{count}", $"%{ff.RawValue}%");
-						typeClause.Add($@"coalesce(assettype.Name, it.Name,ITypeName.Name) LIKE @{ff.FieldName}{count}");
+						typeClause.Add($@"coalesce(assettype.Name, it.Name) LIKE @{ff.FieldName}{count}");
 						break;
 					case "Type":
 						switch (ff.RawValue)
@@ -231,7 +231,7 @@ namespace d360.web.Controllers
 			}
 
 			var groupby = @"group by wi.id,wt.name, wi.startedOn,wi.CompletedOn,wi.[object],wi.objectid,cod.id,ass.id, wi.startedOn, wi.CompletedOn,
-								gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],assettype.[Class],ITypeName.Name, assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId), wi.Uid,IntersectName.Name,wia1.AssetName, wiis.AssetName";
+								gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],assettype.[Class], assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId), wi.Uid, wia1.AssetName, wiis.AssetName";
 
 			var fromSql = @"		from [workflow].[type] wt 
 								inner join [workflow].[version] wv on (wt.id = wv.typeid) 
@@ -245,10 +245,8 @@ namespace d360.web.Controllers
 								left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
 								left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) 
 								left  join [dbo].[intersect] inter on (wi.[object]='Intersect' and inter.id=wi.[objectId])
-								outer apply dbo.GetIntersectTypeNames(inter.IntersectTypeId) ITypeName
 								left join [workflow].[ItemAsset] wia1 on wia1.WorkFlowItemId = wi.id
-								left join [workflow].[ItemIssue] wiis on wiis.WorkFlowItemId = wi.id
-								outer apply (select utility.deriveintersectname(wi.objectid))IntersectName(Name)";
+								left join [workflow].[ItemIssue] wiis on wiis.WorkFlowItemId = wi.id";
 			var sql = $@"
 							select wi.id as Id,                    
 							wt.name as 'WorkflowName' ,                    
@@ -271,10 +269,10 @@ namespace d360.web.Controllers
 							else
 							''
 							end as 'Type',                    
-						 coalesce(assettype.Name, it.Name,ITypeName.Name) as TypeName,                    
-						 case when wi.[object] = 'Intersect' then coalesce(IntersectName.Name,'(unknown relationship)')   
+						 coalesce(assettype.Name, it.Name) as TypeName,                    
+						 case when wi.[object] = 'Intersect' then '(unknown relationship)'   
 						 else coalesce(wiis.AssetName,wia1.AssetName,'(unknown)') end as 'Asset',                     
-						 gr.firstName + ' ' + gr.lastName as 'Initiator' ,                    
+						 gr.firstName + ' ' + gr.lastName as 'Initiator',                    
 						 wi.startedOn as 'StartedOn',                    wi.CompletedOn as 'CompletedOn',
 						case when   wi.CompletedOn is null then    'Pending'            
 						else        'Complete'    end as [Status],
