@@ -994,10 +994,6 @@ namespace d360.model.DataAccessLayer.repositories
 
 				if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
 				{
-					if(ft.Type == "Lookup" && CompanyContext.LookupFieldHasColorItem(ft))
-					{
-						val = $"F{val}";
-					}
 					val = $"coalesce({val}, '{ft.DefaultFormattedValue}')";
 				}
 
