@@ -250,49 +250,82 @@ end
     </sql>
   </changeSet>
 
-    <changeSet author="Pappas" id="DataConv.dbo.IntersectType-v1.1">
+    <changeSet author="Pappas" id="DataConv.dbo.IntersectType-v1.2">
     <comment>GOV-18449</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-update	T
-set		T.SubjectClass = S.Class,
-		T.SubjectAssetTypeID = S.ID
-from	[IntersectType] T inner join AssetType S on S.Object = T.Subject and S.ObjectId = T.SubjectID;
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'SubjectID')
+begin
+	EXEC('
+	update	T
+	set		T.SubjectClass = S.Class,
+			T.SubjectAssetTypeID = S.ID
+	from	[IntersectType] T inner join AssetType S on S.Object = T.Subject and S.ObjectId = T.SubjectID
 
-update	T
-set		T.ObjectClass = S.Class,
-		T.ObjectAssetTypeID = S.ID
-from	[IntersectType] T inner join AssetType S on S.Object = T.Object and S.ObjectId = T.ObjectID;
+	update	[IntersectType]
+	set		SubjectClass = 9,
+			SubjectAssetTypeID = 0
+	where	Subject = ''ReferenceItemType'' and SubjectID = 0
+	')
+end
 
-update	[IntersectType]
-set		SubjectClass = 9,
-		SubjectAssetTypeID = 0
-where	Subject = 'ReferenceItemType' and SubjectID = 0;
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'ObjectID')
+begin
+	EXEC('
+	update	T
+	set		T.ObjectClass = S.Class,
+			T.ObjectAssetTypeID = S.ID
+	from	[IntersectType] T inner join AssetType S on S.Object = T.Object and S.ObjectId = T.ObjectID
 
-update	[IntersectType]
-set		ObjectClass = 9,
-		ObjectAssetTypeID = 0
-where	Object = 'ReferenceItemType' and ObjectID = 0;
+	update	[IntersectType]
+	set		ObjectClass = 9,
+			ObjectAssetTypeID = 0
+	where	Object = ''ReferenceItemType'' and ObjectID = 0
+	')
+end
 		]]>
     </sql>
   </changeSet>
 
-    <changeSet author="Pappas" id="Deletion.dbo.IntersectType-v1">
+    <changeSet author="Pappas" id="Deletion.dbo.IntersectType-v1.1">
     <comment>GOV-18449</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-alter table IntersectType drop column Subject;
-alter table IntersectType drop column SubjectID;
-alter table IntersectType drop column SubjectUid;
-alter table IntersectType drop column Object;
-alter table IntersectType drop column ObjectID;
-alter table IntersectType drop column ObjectUid;
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'Subject')
+begin
+	alter table IntersectType drop column Subject
+end
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'SubjectID')
+begin
+	alter table IntersectType drop column SubjectID
+end
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'SubjectUid')
+begin
+	alter table IntersectType drop column SubjectUid
+end
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'Object')
+begin
+	alter table IntersectType drop column Object
+end
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'ObjectID')
+begin
+	alter table IntersectType drop column ObjectID
+end
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'ObjectUid')
+begin
+	alter table IntersectType drop column ObjectUid
+end
 		]]>
     </sql>
   </changeSet>
