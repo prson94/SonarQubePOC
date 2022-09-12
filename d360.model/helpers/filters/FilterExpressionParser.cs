@@ -380,11 +380,17 @@ namespace d360.model.helpers
 				{
 					DataType.Text.ToString(),
 					DataType.Number.ToString(),
-					DataType.Decimal.ToString(),
+					DataType.Lookup.ToString(),
 					DataType.Boolean.ToString(),
+					DataType.Counter.ToString(),
 					DataType.Date.ToString(),
 					DataType.DateTime.ToString(),
-					DataType.Lookup.ToString()
+					DataType.Decimal.ToString(),
+					DataType.Html.ToString(),
+					DataType.Number.ToString(),
+					DataType.Tag.ToString(),
+					DataType.Link.ToString(),
+					DataType.Score.ToString()
 				};
 
                 if (parseType == FilterExpressionParseType.ComplexLookupField)
