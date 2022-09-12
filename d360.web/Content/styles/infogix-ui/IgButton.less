@@ -56,11 +56,11 @@
     color: var(--calculatedPrimaryButtonTextColor);
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: linear-gradient(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.16)), var(--primaryButtonBackColor);
+      background: linear-gradient(rgba(32, 32, 32, 0.2), rgba(32, 32, 32, 0.2)), var(--primaryButtonBackColor);
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: linear-gradient(rgba(0, 0, 0, 0.39), rgba(0, 0, 0, 0.39)), var(--primaryButtonBackColor);
+      background: linear-gradient(rgba(32, 32, 32, 0.4), rgba(32, 32, 32, 0.4)), var(--primaryButtonBackColor);
     }
   }
 
@@ -104,11 +104,11 @@
     }
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: linear-gradient(rgba(255, 255, 255, 0.93), rgba(255, 255, 255, 0.93)), var(--primaryButtonBackColor);
+      background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), var(--primaryButtonBackColor);
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), var(--primaryButtonBackColor);
+      background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), var(--primaryButtonBackColor);
     }
 
     &:disabled {
@@ -154,6 +154,14 @@
     color: @ig-black;
     border-radius: 0;
 
+    &:first-child {
+      border-radius: @ig-field-border-radius 0 0 @ig-field-border-radius;
+    }
+
+    &:last-child {
+      border-radius: 0 @ig-field-border-radius @ig-field-border-radius 0;
+    }
+
     &:focus:not(:disabled), &.ig-state-focus {
       border: 1px solid @ig-focus-color;
     }
@@ -163,19 +171,11 @@
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: linear-gradient(rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.65)), var(--primaryButtonBackColor);
+      background: linear-gradient(rgba(255, 255, 255, 0.60), rgba(255, 255, 255, 0.60)), var(--primaryButtonBackColor);
     }
 
     &:disabled > * {
       opacity: @ig-field-disabled-opacity;
-    }
-
-    &:first-child {
-      border-radius: @ig-field-border-radius 0 0 @ig-field-border-radius;
-    }
-
-    &:last-child {
-      border-radius: 0 @ig-field-border-radius @ig-field-border-radius 0;
     }
   }
 
@@ -231,7 +231,8 @@
         background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), var(--primaryButtonBackColor);
       }
 
-      &:disabled, &.ig-state-loading {
+      &:disabled,
+      &.ig-state-loading {
         background: none;
       }
     }
