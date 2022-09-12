@@ -87,8 +87,6 @@ namespace d360.model.helpers.filters
 			value = valueValidation.UpdatedValue;
 			UpdateValueWithWildCards();
 
-			var fieldSql = GetColumnValueSyntax(fieldType.ID);
-
 			stringBuilder.Append($"(A.ID in (select AssetID from #advanced_filter_{parameterIdx}))");
 
 			var definition = JsonConvert.DeserializeObject<JObject>(fieldType.Definition ?? "{}");
