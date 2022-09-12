@@ -1570,6 +1570,23 @@ namespace d360.model.DataAccessLayer
 			#region build sql
 			var responsibilityTypeUidFilter = responsibilityTypeUid == null ? "1=1" : "responsibilityType.[uid] = @responsibilityTypeUid";
 
+			var nonApplyToTypeResponsibilityDetailsSql = $@"
+			SELECT responsibilityDetail.AssetID
+			  FROM ResponsibilityDetail responsibilityDetail
+			 INNER JOIN [dbo].[ResponsibilityType] responsibilityType
+			    ON responsibilityType.[ID] = responsibilityDetail.[ResponsibilityTypeID]
+			 INNER JOIN AssetType assetType
+			    ON assetType.[ObjectID] = responsibilityDetail.[TypeID]
+			       AND assetType.Object = responsibilityDetail.[Type]
+			       AND assetType.[ObjectID] = C.[TypeID]
+			       AND assetType.Object = C.[Type]       
+			 WHERE responsibilityDetail.ApplyToType = 0
+			   AND responsibilityDetail.IsVisible = 1   
+			   AND responsibilityDetail.ResourceUid = @resourceUid
+			   AND {responsibilityTypeUidFilter}
+
+			";
+
 			var applyToTypeResponsibilityDetailsSql = $@"
 			SELECT responsibilityDetail.AssetID
 			  FROM [dbo].[ResponsibilityDetail] responsibilityDetail
@@ -1587,22 +1604,10 @@ namespace d360.model.DataAccessLayer
 			   AND responsibilityDetail.[IsVisible] = 1
 			   AND responsibilityDetail.ResourceUid = @resourceUid
 			   AND {responsibilityTypeUidFilter}
-			";
-
-			var nonApplyToTypeResponsibilityDetailsSql = $@"
-			SELECT responsibilityDetail.AssetID
-			  FROM ResponsibilityDetail responsibilityDetail
-			 INNER JOIN [dbo].[ResponsibilityType] responsibilityType
-			    ON responsibilityType.[ID] = responsibilityDetail.[ResponsibilityTypeID]
-			 INNER JOIN AssetType assetType
-			    ON assetType.[ObjectID] = responsibilityDetail.[TypeID]
-			       AND assetType.Object = responsibilityDetail.[Type]
-			       AND assetType.[ObjectID] = C.[TypeID]
-			       AND assetType.Object = C.[Type]       
-			 WHERE responsibilityDetail.ApplyToType = 0
-			   AND responsibilityDetail.IsVisible = 1   
-			   AND responsibilityDetail.ResourceUid = @resourceUid
-			   AND {responsibilityTypeUidFilter}
+			   AND NOT EXISTS
+			   (
+				  {nonApplyToTypeResponsibilityDetailsSql}
+			   )
 			";
 
 			var detailsCountSql = $@"
@@ -1617,7 +1622,7 @@ namespace d360.model.DataAccessLayer
 			    SELECT COUNT(*) as 'Count'
 			      FROM (
 					{applyToTypeResponsibilityDetailsSql}
-			        UNION ALL
+			        UNION
 					{nonApplyToTypeResponsibilityDetailsSql}
 			    ) A
 			) AC(Count)
