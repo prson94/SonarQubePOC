@@ -13,8 +13,8 @@ namespace d360.model.helpers.filters
 	public class TempTablePathSegmentToken : FilterBaseToken, IFilterToken, ITempTableFilter, ISegmentPathFilterToken
 	{
 		private IFieldValueValidator fieldValueValidator;
-		private AdvancedFilterTempTableInfo tempTableInfo = new AdvancedFilterTempTableInfo();
-		private List<AssetTypeKeyFieldMap> AssetTypeKeyFieldMaps = new List<AssetTypeKeyFieldMap>();
+		private readonly AdvancedFilterTempTableInfo tempTableInfo = new AdvancedFilterTempTableInfo();
+		private readonly List<AssetTypeKeyFieldMap> AssetTypeKeyFieldMaps = new List<AssetTypeKeyFieldMap>();
 
 		public TempTablePathSegmentToken(IFilterDataProvider fdp, string field, string op, object value, List<AssetTypeKeyFieldMap> typeKeyFieldMap, int? paramIdx = null)
 		{
@@ -91,7 +91,6 @@ namespace d360.model.helpers.filters
 
 			stringBuilder.Append($"(A.ID in (select AssetID from #advanced_filter_{parameterIdx}))");
 
-			string filterExpression = $"{fieldSql} {FilterHelpers.GetSQLOperator(@operator)} @filter_{parameterIdx}";
 			var definition = JsonConvert.DeserializeObject<JObject>(fieldType.Definition ?? "{}");
 
 			Guid uid = Guid.Parse(definition.GetValue("AssetTypeUid").ToString());

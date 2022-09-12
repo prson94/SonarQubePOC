@@ -35,7 +35,7 @@ namespace d360.model.helpers.filters
         
         protected DefaultFilter defaultFilter { get; set; }
 
-		public readonly string[] lookupFieldTypes = new[] { "Lookup", "Relationship" };
+		private readonly string[] lookupFieldTypes = new[] { "Lookup", "Relationship" };
 
 		public string CurrentFieldType
         {

@@ -606,9 +606,6 @@ namespace d360.model.helpers
 								drop table if exists #assets_hierarchy
 								create table #assets_hierarchy({string.Join(",", temp_table_columns)})");
 
-					List<string> filtersPerField = new List<string>();
-
-
 					sb.AppendLine(@$"insert into #assets_hierarchy
 											select a.id,{string.Join(",", targetJoins)}
 											from asset a

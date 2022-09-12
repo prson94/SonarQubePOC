@@ -12,7 +12,8 @@ namespace d360.model.helpers.filters
 	public class TempTableFieldToken : FilterBaseToken, IFilterToken, ITempTableFilter
 	{
 		private IFieldValueValidator fieldValueValidator;
-		private AdvancedFilterTempTableInfo tempTableInfo = new AdvancedFilterTempTableInfo();
+		private readonly AdvancedFilterTempTableInfo tempTableInfo = new AdvancedFilterTempTableInfo();
+		private readonly string[] lookupFieldTypes = new[] { "Lookup", "Relationship" };
 		private string joinSql = "";
 		public TempTableFieldToken(IFilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
 		{

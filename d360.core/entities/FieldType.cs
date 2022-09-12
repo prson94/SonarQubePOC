@@ -182,7 +182,7 @@ namespace d360.core.entities
 					var definition = JsonConvert.DeserializeObject<JObject>(this.Definition ?? "{}");
 					if (definition.TryGetValue("AssetTypeUid", out _))
 					{
-						return Guid.TryParse(definition.GetValue("AssetTypeUid").ToString(), out _); ;
+						return Guid.TryParse(definition.GetValue("AssetTypeUid").ToString(), out _);
 					}
 				}
 
