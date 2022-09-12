@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -84,15 +83,27 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A responsibility type.", typeof(List<ResponsibilityTypeViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied"),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "You have not provided a valid Responsibility type uid for this request.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Responsibility with UID 'provided uid' does not exist.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-        public async Task<IHttpActionResult> GetResponsibilityTypeAsync(Guid uid)
-        {
-           dynamic responsibilityTypes = await ResponsibilityRepository.GetResponsibilityType(uid);
+		public async Task<IHttpActionResult> GetResponsibilityTypeAsync(Guid uid)
+		{
+			if (uid == null || uid == Guid.Empty)
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+			}
 
-           return Ok(new { data = responsibilityTypes });
-        }
+			dynamic responsibilityTypes = await ResponsibilityRepository.GetResponsibilityType(uid);
+
+			if (responsibilityTypes == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ResponsibilityApiMessages.ResponsibilityTypeUidNotExist, uid.ToString()));
+			}
+
+			return Ok(new { data = responsibilityTypes });
+		}
 
 		/// <summary>
 		/// Get a list of all claims that are available for assignment.
@@ -826,7 +837,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ResponsibilityTypeDeleteResult)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility types.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Responsibility with UID 'provided uid' does not exist.", typeof(ErrorResponse))
         ]
         public IHttpActionResult DeleteResponsibilityTypes(ResponsibilityTypeDeleteModel responsibilityTypes)
         {
@@ -835,7 +847,23 @@ namespace d360.web.Controllers.V2
 				throw new ArgumentException(ApiMessages.JSONValidMessage);
 			}
 
-			ResponsibilityTypeDeleteResult results = ResponsibilityRepository.DeleteResponsibilityTypes(responsibilityTypes);
+			if (responsibilityTypes.Uid == null || responsibilityTypes.Uid == Guid.Empty)
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+			}
+
+			var results = ResponsibilityRepository.DeleteResponsibilityTypes(responsibilityTypes);
+
+			if (results.Message == "Not found")
+			{
+				var notFoundResponsibilityMessage = string.Format(ResponsibilityApiMessages.ResponsibilityTypeUidNotExist, results.Uid);
+				throw new NotFoundBusinessLayerException(notFoundResponsibilityMessage);
+			}
+
+			else if (results.Message == "Has asset assignments")
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.ResponsibilityTypeHasAssetAssigments);
+			}
 
 			return Ok(results);
 		}

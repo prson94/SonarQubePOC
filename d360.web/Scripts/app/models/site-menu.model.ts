@@ -48,6 +48,8 @@ export class SiteNav {
 
     Permissions: SiteNavPermission[] = [];
     public static zindex: number = 1000;
+
+    index?: number;
 }
 
 export class SiteNavPermission {

@@ -586,17 +586,11 @@ namespace d360.model.DataAccessLayer
 				Success = false
 			};
 
-			if (result.Uid == null || result.Uid == Guid.Empty)
-			{
-				result.Message = "Invalid Uid";
-				return result;
-			}
-
 			var resType = Company.ResponsibilityTypes.FirstOrDefault(x => x.UID == result.Uid);
 			
 			if (resType == null)
 			{
-				result.Message = $"Responsibility type with uid {result.Uid} not found";
+				result.Message = "Not found";
 				return result;
 			}
 
@@ -604,7 +598,7 @@ namespace d360.model.DataAccessLayer
 
 			if (relations.Count() > 0 && model.Cascade != true)
 			{
-				result.Message = $"Responsibility type has asset assignments and cannot be deleted. Use cascade=true to delete all assignments and rules";
+				result.Message = "Has asset assignments";
 				return result;
 			}
 

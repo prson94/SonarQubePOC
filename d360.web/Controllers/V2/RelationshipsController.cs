@@ -1773,6 +1773,14 @@ namespace d360.web.Controllers.V2
 				Company.Update(execution);
 			}
 
+			results.ForEach(relationship =>
+			{
+				if (relationship.Success)
+				{
+					relationship.Message = RelationshipsApiMessages.RelationshipSucessfullyRemoved;
+				}
+			});
+
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 		}
 

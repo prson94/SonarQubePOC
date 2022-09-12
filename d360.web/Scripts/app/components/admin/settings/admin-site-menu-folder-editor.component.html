@@ -114,61 +114,73 @@
 								<div class="buttons-grid">
 									<div style="height:100px"></div>
 									<div class="buttons-vertical">
-										<button igButton
-												class="ig-lookup-grid-button"
-												[disabled]="!_tempSelectedFolderItems || _tempSelectedFolderItems.length === 0"
-												icon="fa-arrow-right"
-												(click)="addToSelectedFolderItems()"
-												i18n-pTooltip
-												pTooltip="Add to selected folder items"
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-										<button igButton
-												class="ig-lookup-grid-button"
-												[disabled]="!selectedNewFolderItems || selectedNewFolderItems.length === 0"
-												icon="fa-arrow-left"
-												(click)="removeFromSelectedFolderItems()"
-												i18n-pTooltip
-												pTooltip="Remove from selected folder items"
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
+										<div 
+											i18n-pTooltip
+											pTooltip="Add to selected folder items"
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip">
+											<button igButton
+													class="ig-lookup-grid-button"
+													[disabled]="!_tempSelectedFolderItems || _tempSelectedFolderItems.length === 0"
+													icon="fa-arrow-right"
+													(click)="addToSelectedFolderItems()"></button>
+										</div>
+										<div 
+											i18n-pTooltip
+											pTooltip="Remove from selected folder items"
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip">
+											<button igButton
+													class="ig-lookup-grid-button"
+													[disabled]="!selectedItemsFromTarget || selectedItemsFromTarget.length === 0"
+													icon="fa-arrow-left"
+													(click)="removeFromSelectedFolderItems()"></button>
+										</div>
 										<div style="height:16px"></div>
-										<button igButton
-												class="ig-lookup-grid-button rotateRight"
-												[disabled]="disableBtnMoveToTop()"
-												icon="fa-step-backward"
-												(click)="moveToTop()"
-												i18n-pTooltip
-												pTooltip="Move to top"
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-										<button igButton
-												class="ig-lookup-grid-button"
-												[disabled]="disableBtnMoveUp()"
-												icon="fa-caret-up"
-												(click)="moveUp()"
-												i18n-pTooltip
-												pTooltip="Move up"
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-										<button igButton
-												class="ig-lookup-grid-button"
-												[disabled]="disableBtnMoveDown()"
-												icon="fa-caret-down"
-												(click)="moveDown()"
-												i18n-pTooltip
-												pTooltip="Move down"
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-										<button igButton
-												class="ig-lookup-grid-button rotateLeft"
-												[disabled]="disableBtnMoveToBottom()"
-												icon="fa-step-backward"
-												(click)="moveToBottom()"
-												i18n-pTooltip
-												pTooltip="Move to bottom"
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
+										<div
+											i18n-pTooltip
+											pTooltip="Move to top"
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip">
+											<button igButton
+													class="ig-lookup-grid-button rotateRight"
+													[disabled]="!isMoveUpPossible()"
+													icon="fa-step-backward"
+													(click)="moveToTop()"></button>
+										</div>
+										<div
+											i18n-pTooltip
+											pTooltip="Move up"
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip">
+											<button igButton
+													class="ig-lookup-grid-button"
+													[disabled]="!isMoveUpPossible()"
+													icon="fa-caret-up"
+													(click)="moveUp()"></button>
+										</div>
+										<div
+											i18n-pTooltip
+											pTooltip="Move down"
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip">
+											<button igButton
+													class="ig-lookup-grid-button"
+													[disabled]="!isMoveDownPossible()"
+													icon="fa-caret-down"
+													(click)="moveDown()"></button>
+										</div>
+										<div 
+											i18n-pTooltip
+											pTooltip="Move to bottom"
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip">
+											<button igButton
+													class="ig-lookup-grid-button rotateLeft"
+													[disabled]="!isMoveDownPossible()"
+													icon="fa-step-backward"
+													(click)="moveToBottom()"></button>
+										</div>
 									</div>
 								</div>
 								<div class="table-content">
@@ -181,15 +193,15 @@
 														 (onSearch)="dt4.filterGlobal($event, 'contains')"
 														 style="width:100%; padding-bottom:8px;"></ig-search-field>
 										<div class="selected-count"
-											 *ngIf="selectedNewFolderItems && selectedNewFolderItems.length > 0"
-											 i18n>{{selectedNewFolderItems.length}} item{{selectedNewFolderItems.length > 1 ? "s":""}} selected</div>
+											 *ngIf="selectedItemsFromTarget && selectedItemsFromTarget.length > 0"
+											 i18n>{{selectedItemsFromTarget.length}} item{{selectedItemsFromTarget.length > 1 ? "s":""}} selected</div>
 									</div>
 									<div class="table-wrapper" style="max-height: calc(100vh - 420px); min-height:300px">
 										<p-table #dt4
-													[value]="newFolderItems"
+													[value]="itemsFromTarget"
 													[globalFilterFields]="['Title']"
 													selectionMode="multiple"
-													[(selection)]="selectedNewFolderItems"
+													[(selection)]="selectedItemsFromTarget"
 													[metaKeySelection]="false"
 													(onHeaderCheckboxToggle)="selectAllSelectedFolderItems($event, dt4)"
 												 	(onChange)="setRequiredCount()"
@@ -203,7 +215,7 @@
 													</th>
 													<th i18n>Selected Folder Items</th>
 												</tr>
-												<tr *ngIf="!newFolderItems || newFolderItems?.length == 0">
+												<tr *ngIf="!itemsFromTarget || itemsFromTarget?.length == 0">
 													<div i18n class="invalid-table">Please select at least one item</div>
 												</tr>
 											</ng-template>
@@ -290,24 +302,28 @@
 								<div class="buttons-grid">
 									<div style="height:100px"></div>
 									<div class="buttons-vertical">
-										<button igButton
-												class="ig-lookup-grid-button"
-												icon="fa-arrow-right"
-												(click)="addPermissionAssets()"
-												[disabled]="!_tempSelectedPermissionAssets || _tempSelectedPermissionAssets.length === 0"
-												pTooltip="Add to selected users/groups"
-												i18n-pTooltip
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-										<button igButton
-												class="ig-lookup-grid-button"
-												icon="fa-arrow-left"
-												(click)="removePermissionAssets()"
-												[disabled]="!_selectedPermissionAsset || _selectedPermissionAsset.length === 0"
-												pTooltip="Remove from selected users/groups"
-												i18n-pTooltip
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
+										<div 
+											pTooltip="Add to selected users/groups"
+											i18n-pTooltip
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip">
+											<button igButton
+													class="ig-lookup-grid-button"
+													icon="fa-arrow-right"
+													(click)="addPermissionAssets()"
+													[disabled]="!_tempSelectedPermissionAssets || _tempSelectedPermissionAssets.length === 0"></button>
+										</div>
+										<div
+											pTooltip="Remove from selected users/groups"
+											i18n-pTooltip
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip">
+											<button igButton
+													class="ig-lookup-grid-button"
+													icon="fa-arrow-left"
+													(click)="removePermissionAssets()"
+													[disabled]="!_selectedPermissionAsset || _selectedPermissionAsset.length === 0"></button>
+										</div>
 									</div>
 								</div>
 								<div class="table-content">
@@ -364,7 +380,7 @@
 						label="{{isEdit ? labelSaveChanges : labelAddFolder}}"
 						(click)="save()"
 						[loading]="savingInProgress"
-						[disabled]="(isEdit && !hasChanges) || savingInProgress || folderModel == null || folderModel.Title == null || folderModel.Title == '' || newFolderItems == null || (folderModel.IsCustom && newFolderItems.length < 1)"></button>
+						[disabled]="(isEdit && !hasChanges) || savingInProgress || folderModel == null || folderModel.Title == null || folderModel.Title == '' || itemsFromTarget == null || (folderModel.IsCustom && itemsFromTarget.length < 1)"></button>
 			</div>
 		</div>
 	</div>

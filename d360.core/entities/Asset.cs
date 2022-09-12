@@ -422,7 +422,20 @@ namespace d360.core.entities
 		public string FieldIdentifier { get; set; }
 		public string SimpleStatement { get; set; }
 
+		private string _filterStatement;
+		public string FilterStatement
+		{
+			get
+			{
+				return string.IsNullOrEmpty(_filterStatement) ? StatementWithoutColumnName : _filterStatement;
+			}
+			set
+			{
+				_filterStatement = value;
+			}
+		}
+
 		public string StatementWithoutColumnName => 
-			Regex.Replace(this.Statement, @" as \[?\w*\]?$", "");
+			Regex.Replace(SimpleStatement ?? Statement, @" as \[?\w*\]?$", "");
 	}
 }

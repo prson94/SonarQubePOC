@@ -67,7 +67,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     matchAllLabel = $localize`Match all`;
     matchAnyLabel = $localize`Match any`;
 
-    saveLabel = $localize`Add Rule`;
+	addLabel = $localize`Add Rule`;
+	editLabel = $localize`Edit Rule`;
 	cancelLabel = $localize`Cancel`;
 
 	showResultsLabel = $localize`Show Results`;
@@ -621,10 +622,6 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 	}
 
 	isThenValid() {
-		if (this.model.StructuredDefinition.Then.Conditions.length === 0 || !this.model.StructuredDefinition.Then.Conditions[this.model.StructuredDefinition.Then.Conditions.length-1].Object) {
-			return true;
-		}
-		
 		if (this.model.StructuredDefinition.Then.Conditions.every((c) => c.FieldTypeID >= 0
 			&& c.FieldTypeName && c.FieldTypeName.length > 0
 			&& c.Object && c.Object.length > 0
@@ -693,7 +690,10 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             });
 		}
 
-		this.model.StructuredDefinition.Then.Conditions = this.model.StructuredDefinition.Then.Conditions.filter((c) => c.FieldTypeID && c.Object && (c.Value || c.Operator === Operator[Operator.Populated] || c.Operator === Operator[Operator.Populated] ));
+		this.model.StructuredDefinition.Then.Conditions = this.model.StructuredDefinition.Then.Conditions.filter((c) => c.FieldTypeID != null
+			&& c.Object
+			&& (c.Value || c.Operator === Operator[Operator.Populated] || c.Operator === Operator[Operator.NotPopulated])
+		);
 		if (this.model.StructuredDefinition.Then.Conditions.length === 0) {
 			this.model.StructuredDefinition.Then === null;
 		}

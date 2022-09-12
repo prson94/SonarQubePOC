@@ -93,6 +93,9 @@ namespace d360.model.DataAccessLayer.repositories
 																		((favorite.ObjectType is null) or (favorite.ObjectType = asset.Object))
 																		and favorite.Uid = asset.Uid
 																	)
+																	or (
+																		favorite.ObjectId = asset.ID
+																	)
 																	or (favorite.Uid = asset.Uid)
 																inner join AssetType assetType on asset.AssetTypeId = assetType.Id
 																inner join AssetDisplayValue AssetName on AssetName.AssetID = asset.ID

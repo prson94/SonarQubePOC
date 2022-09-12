@@ -162,6 +162,12 @@
   <data name="ResponsibilitySuccessDeleteMessage" xml:space="preserve">
     <value>Responsibility successfully deleted</value>
   </data>
+  <data name="ResponsibilityTypeHasAssetAssigments" xml:space="preserve">
+    <value>Responsibility type has asset assignments and cannot be deleted. Use [cascade]=true to delete all assignments and rules</value>
+  </data>
+  <data name="ResponsibilityTypeUidNotExist" xml:space="preserve">
+    <value>Responsibility type with UID '{0}' does not exist.</value>
+  </data>
   <data name="ResponsibilityUidNonUnique" xml:space="preserve">
     <value>Non Unique Responsibility Uids: {0}. Identifiers must be unique within a table.</value>
   </data>

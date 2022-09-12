@@ -977,9 +977,16 @@ from	Asset A
 					var rulegroups = rule.StructuredDefinition.Then.Conditions.GroupBy(c => c.Object);
 					foreach(var rulegroup in rulegroups)
                     {
+						Dictionary<string, string> objectIds = new Dictionary<string, string>()
+						{
+							{ "Resource", "RO" },
+							{ "Organization", "O" },
+							{ "Group", "OG" },
+							{ "DefaultValue", "OG"}
+						};
 						StringBuilder rulegroupSql = new StringBuilder();
 						StringBuilder whenSuffix = new StringBuilder();
-						obj = "";
+						obj = "DefaultValue";
 						uniqueIdField = "ID";
 
 						rulegroupSql.Append($@"select distinct {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}");
@@ -1009,8 +1016,9 @@ from	Asset A
 
 							if (rc.FieldTypeID > 0)
 							{
+
 								var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();
-								whenSuffix.Append((whenSuffix.Length==0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = {(obj == "Resource" ? "RO" : "OG")}.{uniqueIdField} ");
+								whenSuffix.Append((whenSuffix.Length==0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = {objectIds[obj]}.{uniqueIdField} ");
 								if (thenFieldType != null)
 								{
 									if (thenFieldType.AllowMultipleValues)// multiselect list
@@ -1065,11 +1073,11 @@ from	Asset A
 								{
 									if (rc.FieldTypeName == "Name")
 									{
-										whenSuffix.Append((whenSuffix.Length==0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"{(obj == "Resource" ? "RO" : "OG")}.{uniqueIdField} = {rc.Value}");
+										whenSuffix.Append((whenSuffix.Length==0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"{objectIds[obj]}.{uniqueIdField} = {rc.Value}");
 									}
 									else
 									{
-										whenSuffix.Append((whenSuffix.Length == 0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"{(obj == "Resource" ? "RO" : "OG")}.{rc.FieldTypeName} = '{sqlEscapedValue}'");
+										whenSuffix.Append((whenSuffix.Length == 0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"{objectIds[obj]}.{rc.FieldTypeName} = '{sqlEscapedValue}'");
 									}
 								}
 							}																				

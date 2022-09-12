@@ -394,6 +394,7 @@ namespace d360.model.DataAccessLayer
 			List<string> TempTableScriptList = new List<string>();
 			List<string> fieldsUsedInMainQuery = new List<string>();
 			string TempTableScriptStr = " ";
+			var tempincludeRelationships = "";
 
 			var dbArgs = new DynamicParameters();
 			var model = new AssetsApiViewModel();
@@ -421,22 +422,13 @@ namespace d360.model.DataAccessLayer
 
 			if (includeRelationships)
 			{
-				var subjectAlias = "B";
-				var objectAlias = "A";
-				var ATsubjectAlias = "TB";
-				var ATobjectAlias = "T";
 				string relatedAssetUIDString = "";
 				Guid relatedAssetUID;
 
 				var predicateUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value;
-				var intersectJoin = "";
-				var intersecTypeJoin = "";
-				var IntersectTypeIDField = "";
-				var reverseIntersectJoin = "";
-				var relatedAssetSql = " 1=1 ";
 				bool includeBoth = false;
-				var addtop1hint = "";
 
+				var finalstring = "";
 
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_objectuid"))
 				{
@@ -444,10 +436,18 @@ namespace d360.model.DataAccessLayer
 					if (Guid.TryParse(relatedAssetUIDString, out relatedAssetUID))
 					{
 						dbArgs.Add("@relatedAssetUid", relatedAssetUID);
-						relatedAssetSql = $"{objectAlias}.[UID] = @relatedAssetUid";
+
+						finalstring = $@"
+									select I.[SubjectAssetID] ObjectAssetID,
+									I.[SubjectAssetTypeID] ObjectAssetTypeID,
+									I.ObjectAssetID BID,
+									I.ObjectAssetTypeID BAssetTypeID
+									from Asset A
+									inner join [intersect] I on I.[SubjectAssetID] = A.ID and I.[SubjectAssetTypeID] = A.AssetTypeID 
+									inner join IntersectType IT on IT.ID = I.IntersectTypeID
+									inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+									where A.[UID] =  @relatedAssetUid";
 					}
-					intersectJoin = $"I.SubjectAssetID = {objectAlias}.ID and I.ObjectAssetID = {subjectAlias}.ID ";
-					intersecTypeJoin = $"IT.SubjectAssetTypeID = {ATobjectAlias}.ID and IT.ObjectAssetTypeID = {ATsubjectAlias}.ID ";
 				}
 				else if (queryParams.ToList().Any(q => q.Key.ToLower() == "_subjectuid"))
 				{
@@ -455,28 +455,59 @@ namespace d360.model.DataAccessLayer
 					if (Guid.TryParse(relatedAssetUIDString, out relatedAssetUID))
 					{
 						dbArgs.Add("@relatedAssetUid", relatedAssetUID);
-						relatedAssetSql = $"{subjectAlias}.[UID] = @relatedAssetUid";
+						finalstring = $@"
+									select I.[ObjectAssetID] ObjectAssetID,
+									I.[ObjectAssetTypeID] ObjectAssetTypeID,
+									I.SubjectAssetID BID,
+									I.SubjectAssetTypeID BAssetTypeID
+									from Asset B
+									inner join [intersect] I on I.[SubjectAssetID] = B.ID and I.[SubjectAssetTypeID] = B.AssetTypeID 
+									inner join IntersectType IT on IT.ID = I.IntersectTypeID
+									inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+									where B.[UID] =  @relatedAssetUid";
 					}
-					intersectJoin = $"I.SubjectAssetID = {subjectAlias}.ID and I.ObjectAssetID = {objectAlias}.ID";
-					intersecTypeJoin = $"IT.SubjectAssetTypeID = {ATsubjectAlias}.ID and IT.ObjectAssetTypeID = {ATobjectAlias}.ID";
+							 
 				}
 				else
 				{
 					//subject and object not specified
 					includeBoth = true;
-					IntersectTypeIDField = ", I.IntersectTypeID ";
-					intersectJoin = $"I.SubjectAssetID = {objectAlias}.ID and I.ObjectAssetID = {subjectAlias}.ID";
-					reverseIntersectJoin = $"I.SubjectAssetID = {subjectAlias}.ID and I.ObjectAssetID = {objectAlias}.ID";
+					finalstring = $@"
+									select I.[SubjectAssetID] ObjectAssetID,
+									I.[SubjectAssetTypeID] ObjectAssetTypeID,
+									I.ObjectAssetID BID,
+									I.ObjectAssetTypeID BAssetTypeID
+									from [intersect] I
+									inner join IntersectType IT on IT.ID = I.IntersectTypeID
+									inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+									where I.[SubjectAssetTypeID] =  @assetTypeID
+									UNION ALL
+									select I.[ObjectAssetID] ObjectAssetID,
+									I.[ObjectAssetTypeID] ObjectAssetTypeID,
+									I.SubjectAssetID BID,
+									I.SubjectAssetTypeID BAssetTypeID
+									from [intersect] I 
+									inner join IntersectType IT on IT.ID = I.IntersectTypeID
+									inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+									where I.[ObjectAssetTypeID] =  @assetTypeID";
 				}
 
+				tempincludeRelationships = $@"
+						drop table if exists #tempInclRela;
+						select distinct * into #tempInclRela
+						from ( {finalstring}) P
+						OPTION(RECOMPILE);
+						
+						create index idx_tempInclRela on #tempInclRela(ObjectAssetID) include (BID)";
+
 				var innerSql = $@"
-							select 
+								Select
 								B.[UID] as AssetUid 
 								,BD.DisplayValue
 								,TB.[Name] as TypeName
 								,@predicateUid as PredicateUid
-								{IntersectTypeIDField}
-							from Asset B
+							from #tempInclRela TIR
+							inner join Asset B on B.ID = TIR.BID
 							inner join AssetType TB on TB.ID = B.AssetTypeID
 							inner join AssetDisplayValue BD on BD.AssetID = B.ID
 							inner join [Intersect] I on {intersectJoin}";
@@ -1014,13 +1045,7 @@ namespace d360.model.DataAccessLayer
 
 						if (select != null && join != null)
 						{
-							//search for beggining of alias part  
-							//F26650.FormattedValue as [x]
-							//and trim take only part before that
-							var selectStatement = select.SimpleStatement ?? select.Statement;
-							var splitIdx = selectStatement.ToLowerInvariant().IndexOf(" as [");
-
-							var selectField = splitIdx < 0 ? selectStatement : selectStatement.Substring(0, splitIdx);
+							var selectField = select.StatementWithoutColumnName;
 
 							var joinStatement = !string.IsNullOrEmpty(join.SimpleStatement) ? join.SimpleStatement : join.SQLStatement;
 
@@ -1352,6 +1377,8 @@ namespace d360.model.DataAccessLayer
 
 			var baseSQL = $@"
 				{TempTableScriptStr}
+
+				{tempincludeRelationships}
 
 				{advancedFilterTempTableInfos.TempTableSQL()}
 				

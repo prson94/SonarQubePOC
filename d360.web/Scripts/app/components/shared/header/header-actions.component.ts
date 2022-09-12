@@ -163,7 +163,7 @@ export class HeaderActionsComponent {
 		
 		this.subShowFollow = this.headerBreadcrumbService.currentObjectInfo$.subscribe((currentObject) => {
 			let headerActions = new HeaderActions();
-			headerActions.showFollow = currentObject.type && currentObject.id > 0;
+			headerActions.showFollow = currentObject.AssetTypeUid?.length > 0 || currentObject.assetUId?.length > 0;
 			this.headerActionsService.setCurrentHeaderActions(headerActions);
 		});
 

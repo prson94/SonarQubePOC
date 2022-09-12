@@ -1,6 +1,81 @@
 ﻿@import "../../../../Content/styles/infogix-ui/infogix-ui.less";
 @import '../../../../Content/styles/_Variables.less';
 
+// By this we guarantee that vertical scroll will be on <table>, not on parent
+// The overall approach is to force table height collapse if it doesn't fits to screen
+as-split-area.main-panel {
+  display: flex;
+  flex-direction: column;
+
+  .asset-grid-wrapper {
+    overflow: hidden;
+    // By this we guarantee that table will be visible even if screen height is too small
+    // In such case, double vertical scroll will be introduced 
+    min-height: 250px;
+
+    > div {
+      height: 100%;
+
+      p-table ::ng-deep .p-datatable-responsive-scroll {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+    }
+  }
+}
+
+// By this we guarantee that column headings are always visible (sticky) even if user scrolls vertically
+:host as-split-area.main-panel p-table ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+// This is a fix to add horizontal scroll on table when [responsiveLayout]="scroll"
+:host as-split-area.main-panel p-table ::ng-deep table {
+  width: max-content;
+}
+
+// This makes kebab menu to be sticky
+:host as-split-area.main-panel p-table ::ng-deep table {
+  th, td {
+    &.asset-grid-tools {
+      position: sticky;
+      right: -1px; // This 1px compensates transparent border
+      z-index: 1;
+    }
+  }
+
+  // This makes sure that kebab menu can inherit white background from p-table
+  td.asset-grid-tools {
+    background: inherit;
+  }
+}
+
+// This ensures that only column headings affects calculation of column width
+:host as-split-area.main-panel p-table ::ng-deep td {
+  max-width: 0;
+
+  // For some reason, max-width: 0 makes kebab menu to extend table width. Thus we undo this to avoid weird mess
+  &.asset-grid-tools {
+    max-width: unset;
+  }
+}
+
+p-table as-split-area.main-panel ::ng-deep table {
+  th, 
+  td {
+    &:not(:last-child) {
+      padding-right: 16px;
+    }
+
+    &:not(:first-child) {
+      padding-left: 16px;
+    }
+  }
+}
+
 .grid-actions-header {
   display: inline-flex;
   padding: 8px 10px;

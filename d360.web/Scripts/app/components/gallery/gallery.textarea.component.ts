@@ -22,8 +22,9 @@ export class GalleryTextAreaComponent implements OnInit {
     sampleUsage: string = '<textarea igTextArea></textarea>';
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Whether or not the textarea control is disabled", Default: "" });
         this.properties.push({ Name: "required", Type: "Boolean", Description: "Whether or not the textarea control is required", Default: "" });
+		this.properties.push({ Name: "autoresize", Type: "Boolean", Description: "Whether or not the textarea control is auto-resizable", Default: "" });
     }
 }
