@@ -290,7 +290,10 @@ end
     </sql>
   </changeSet>
 
-    <changeSet author="Pappas" id="Deletion.dbo.IntersectType-v1.1">
+    <changeSet author="TDuric" id="Deletion.dbo.IntersectType-v1.2">
+	 <preConditions onFail="MARK_RAN">
+		<columnExists tableName="IntersectType" schemaName="dbo" columnName="Subject" />
+	</preConditions>
     <comment>GOV-18449</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
