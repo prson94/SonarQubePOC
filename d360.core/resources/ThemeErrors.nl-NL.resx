@@ -116,19 +116,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="BackColorFormat" xml:space="preserve">
-    <value>backColor is geen geldige RGB-kleur.</value>
+    <value>[backColor] is geen geldige RGB-kleur.</value>
   </data>
   <data name="BackgroundSize" xml:space="preserve">
-    <value>homeBackground mag niet groter zijn dan 2048K.</value>
+    <value>[homeBackground] mag niet groter zijn dan 2048K.</value>
   </data>
   <data name="BackgroundType" xml:space="preserve">
-    <value>homeBackground moet een *.gif-, *jpg- of *.png-bestand zijn.</value>
+    <value>[homeBackground]moet een *.gif-, *jpg- of *.png-bestand zijn.</value>
   </data>
   <data name="BreadcrumbColorFormat" xml:space="preserve">
-    <value>breadcrumbLinkColor is geen geldige RGB-kleur.</value>
+    <value>[breadcrumbLinkColor] is geen geldige RGB-kleur.</value>
   </data>
   <data name="ButtonColorFormat" xml:space="preserve">
-    <value>buttonBackColor is geen geldige RGB-kleur.</value>
+    <value>[buttonBackColor] is geen geldige RGB-kleur.</value>
   </data>
   <data name="CustomCssNotAllowed" xml:space="preserve">
     <value>In uw omgeving is het niet toegestaan om aangepaste CSS te definiëren binnen een thema.</value>
@@ -152,7 +152,7 @@
     <value>Fout bij bijwerken van thema</value>
   </data>
   <data name="HeaderColorFormat" xml:space="preserve">
-    <value>headerBackColor is geen geldige RGB-kleur.</value>
+    <value>[headerBackColor] is geen geldige RGB-kleur.</value>
   </data>
   <data name="IconSize" xml:space="preserve">
     <value>icon mag niet groter zijn dan 512K.</value>
@@ -164,19 +164,19 @@
     <value>U hebt geen geldige UID-parameterwaarde opgegeven.</value>
   </data>
   <data name="LogoSize" xml:space="preserve">
-    <value>headerLogo mag niet groter zijn dan 1024K.</value>
+    <value>[headerLogo] mag niet groter zijn dan 1024K.</value>
   </data>
   <data name="LogoType" xml:space="preserve">
-    <value>headerLogo moet een *.gif-, *jpg- of *.png-bestand zijn.</value>
+    <value>[headerLogo] moet een *.gif-, *jpg- of *.png-bestand zijn.</value>
   </data>
   <data name="NameNotEmpty" xml:space="preserve">
-    <value>name mag niet leeg zijn.</value>
+    <value>[name] mag niet leeg zijn.</value>
   </data>
   <data name="NavbarColorFormat" xml:space="preserve">
-    <value>navbarBackColor is geen geldige RGB-kleur.</value>
+    <value>[navbarBackColor] is geen geldige RGB-kleur.</value>
   </data>
   <data name="NavbarSelectedColorFormat" xml:space="preserve">
-    <value>navbarBackColorSelected is geen geldige RGB-kleur.</value>
+    <value>[navbarBackColorSelected] is geen geldige RGB-kleur.</value>
   </data>
   <data name="NoActiveThemeExists" xml:space="preserve">
     <value>Er bestaat momenteel geen actief thema.</value>
@@ -188,19 +188,19 @@
     <value>Eigenschap {0} heeft geen geldige Base64-waarde.</value>
   </data>
   <data name="PrimaryButtonColorFormat" xml:space="preserve">
-    <value>primaryButtonBackColor is geen geldige RGB-kleur.</value>
+    <value>[primaryButtonBackColor] is geen geldige RGB-kleur.</value>
   </data>
   <data name="TableHeaderColorFormat" xml:space="preserve">
-    <value>tableHeaderBackColor is geen geldige RGB-kleur.</value>
+    <value>[tableHeaderBackColor] is geen geldige RGB-kleur.</value>
   </data>
   <data name="TableRowColorFormat" xml:space="preserve">
-    <value>tableRowBackColor is geen geldige RGB-kleur.</value>
+    <value>[tableRowBackColor] is geen geldige RGB-kleur.</value>
   </data>
   <data name="TabLinkColorFormat" xml:space="preserve">
-    <value>tabLinkColor is geen geldige RGB-kleur.</value>
+    <value>[tabLinkColor] is geen geldige RGB-kleur.</value>
   </data>
   <data name="ThemeInUseForIsCurrentEdit" xml:space="preserve">
-    <value>Dit thema is ingesteld als het momenteel gebruikte thema in deze omgeving en de eigenschap IsCurrent kan niet op Niet waar worden ingesteld.</value>
+    <value>Dit thema is ingesteld als het momenteel gebruikte thema in deze omgeving en de eigenschap [IsCurrent] kan niet op False worden ingesteld.</value>
   </data>
   <data name="ThemeInUseForRemoval" xml:space="preserve">
     <value>Dit thema is ingesteld als het momenteel gebruikte thema in deze omgeving en kan niet worden verwijderd.</value>

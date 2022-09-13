@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeleteCascadeTagRelateAsset" xml:space="preserve">
-    <value>Tag mit UID '{0}' verfügt über zugehörige Assets. Tag wird mit cascade='true' gelöscht.</value>
+    <value>Tag mit UID '{0}' verfügt über zugehörige Assets. [cascade] auf 'true' festlegen, um dieses Tag zu löschen.</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Ungültiger Wert [{0}] in der Anforderung übergeben.</value>
@@ -125,25 +125,25 @@
     <value>Ungültiger Wert [{0}] in der Anforderung übergeben</value>
   </data>
   <data name="InvalidPageNumber" xml:space="preserve">
-    <value>Ungültiger Wert für Parameter 'Seitenanzahl'.</value>
+    <value>Ungültiger Wert für Parameter [_pagenum].</value>
   </data>
   <data name="InvalidPageSize" xml:space="preserve">
-    <value>Ungültiger Wert für Parameter 'Seitengröße'.</value>
+    <value>Ungültiger Wert für Parameter [_pagesize].</value>
   </data>
   <data name="InvalidParaMeter" xml:space="preserve">
-    <value>Ungültiger Parameter bereitgestellt. Parameter DisplayValue, AssetType, TagsasString nicht zulässig, wenn Parameter 'globalSearch' vorhanden ist.</value>
+    <value>Ungültiger Parameter bereitgestellt. Parameter [DisplayValue], [AssetType], [TagsAsString] nicht zulässig, wenn Parameter [globalSearch] vorhanden ist.</value>
   </data>
   <data name="InvalidSortBy" xml:space="preserve">
-    <value>Ungültiger 'sortby'-Wert in der Anforderung angegeben.</value>
+    <value>Ungültiger '[sortby]'-Wert in der Anforderung angegeben.</value>
   </data>
   <data name="InvalidSortOrder" xml:space="preserve">
-    <value>Ungültiger 'sort order'-Wert in der Anforderung angegeben.</value>
+    <value>Ungültiger '[sortorder]'-Wert in der Anforderung angegeben.</value>
   </data>
   <data name="InvalidTagUid" xml:space="preserve">
     <value>Ungültiger Wert [{0}] in der Anforderung übergeben</value>
   </data>
   <data name="Invalid_IncludeTotal" xml:space="preserve">
-    <value>Ungültiger Wert [{0}] für Parameter _includetotal in Anforderung angegeben.</value>
+    <value>Ungültiger Wert [{0}] für Parameter [_includetotal] in Anforderung angegeben.</value>
   </data>
   <data name="InvalueTotalValue" xml:space="preserve">
     <value>Ungültiger Wert [{0}] in der Anforderung übergeben.</value>

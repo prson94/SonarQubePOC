@@ -116,13 +116,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AllocationScoreTypeNotRecognised" xml:space="preserve">
-    <value>Scoretype Toewijzing niet herkend.  Waarde {0}</value>
+    <value>[Allocation.ScoreType] is niet herkend.  Waarde {0}</value>
   </data>
   <data name="AllocationUidInvalid" xml:space="preserve">
-    <value>U moet een geldige AllocationUid opgeven.</value>
+    <value>U moet een geldige [AllocationUid] opgeven.</value>
   </data>
   <data name="ConditionGroupThresholdValue" xml:space="preserve">
-    <value>Voorwaardegroep in positie {0} moet een drempelwaarde tussen 0 en 1 bevatten</value>
+    <value>Voorwaardegroep in positie {0} moet een [Threshold]-waarde tussen 0 en 1 bevatten</value>
   </data>
   <data name="ConditionOperatorNotValid" xml:space="preserve">
     <value>Een voorwaarde gebruikt een operator ({0}) die niet geldig is voor velden met het gegevenstype {1}. </value>
@@ -182,7 +182,7 @@
     <value>U mag het gewicht van dit metrische gegeven niet aanpassen als u niet ook de ingangsdatum ervan aanpast.</value>
   </data>
   <data name="FieldTypeNotFound" xml:space="preserve">
-    <value>FieldType bestaat niet.</value>
+    <value>Veldtype bestaat niet!</value>
   </data>
   <data name="GovernanceFieldCheck" xml:space="preserve">
     <value>Veldcontrole governance</value>
@@ -200,7 +200,7 @@
     <value>Instructies voor de externe controle mogen niet langer zijn dan 500 tekens.</value>
   </data>
   <data name="InvalidFieldTypeAsset" xml:space="preserve">
-    <value>Ongeldig FieldType voor deze asset.</value>
+    <value>Ongeldig veldtype voor deze asset!</value>
   </data>
   <data name="InvalidFieldTypeGovernanceFieldCheck" xml:space="preserve">
     <value>De veldtypenaam ({0}) die in Veldcontrole governance wordt gebruikt, bestaat niet in dit assettype.</value>
@@ -239,10 +239,10 @@
     <value>De naam mag niet langer zijn dan 250 tekens.</value>
   </data>
   <data name="NotProvideDataQualityUnderDefinition" xml:space="preserve">
-    <value>U mag geen DataQuality-objecteigenschap opgeven onder Definitie.</value>
+    <value>U mag geen [DataQuality]-objecteigenschap opgeven onder [Definition].</value>
   </data>
   <data name="NotProvideGovernanceUnderDefinition" xml:space="preserve">
-    <value>U mag geen Governance-objecteigenschap opgeven onder Definitie.</value>
+    <value>U mag geen [Governance]-objecteigenschap opgeven onder [Definition].</value>
   </data>
   <data name="OneMoreValueDataQualityNotSupportDataType" xml:space="preserve">
     <value>Een of meer waarden die in uw DataQuality-filters zijn gebruikt, worden niet ondersteund door het gegevenstype ({0}) van het veld waarnaar wordt verwezen.</value>
@@ -266,28 +266,28 @@
     <value>Bovenliggend metrisch gegeven niet gevonden.</value>
   </data>
   <data name="ProvideDataQualityUnderDefinition" xml:space="preserve">
-    <value>U moet de DataQuality-objecteigenschap opgeven onder Definitie.</value>
+    <value>U moet de [DataQuality]-objecteigenschap opgeven onder [Definition].</value>
   </data>
   <data name="ProvideGovernanceUnderDefinition" xml:space="preserve">
-    <value>U moet de Governance-objecteigenschap opgeven onder Definitie.</value>
+    <value>U moet de [Governance]-objecteigenschap opgeven onder [Definition].</value>
   </data>
   <data name="ProvideValueForNotThresholdBasedScoring" xml:space="preserve">
-    <value>U moet geen waarde voor de eigenschap Drempelwaarde opgeven, aangezien de meetwaarde die u toevoegt niet bij een scoredefinitie hoort waarvoor een drempelwaarde geldt.</value>
+    <value>U moet geen waarde voor de eigenschap [Threshold] opgeven, aangezien de meetwaarde die u toevoegt niet bij een scoredefinitie hoort waarvoor een drempelwaarde geldt.</value>
   </data>
   <data name="ReferInvalidFieldDataQualityFilters" xml:space="preserve">
     <value>U hebt verwezen naar een ongeldig veld als onderdeel van uw DataQuality-filters omdat dit veld niet is gevonden of omdat een onjuiste operator is gebruikt.</value>
   </data>
   <data name="ResultPathUidNotEmpty" xml:space="preserve">
-    <value>ResultPathUid mag geen lege ID zijn.</value>
+    <value>[ResultPathUid] mag geen lege ID zijn.</value>
   </data>
   <data name="ResultPathUidNotValid" xml:space="preserve">
-    <value>ResultPathUid met de opgegeven ID {0} bestaat niet of komt niet overeen met het assettype dat u van een score voorziet.</value>
+    <value>[ResultPathUid] met de opgegeven ID {0} bestaat niet of komt niet overeen met het assettype dat u van een score voorziet.</value>
   </data>
   <data name="ScoreDefinitionNotThresholdBased" xml:space="preserve">
-    <value>Voorwaardegroep in positie {0} moet geen waarde voor de eigenschap Drempelwaarde opgeven, aangezien de meetwaarde die u toevoegt niet bij een meetwaarde hoort waarvoor een drempelwaarde geldt.</value>
+    <value>Voorwaardegroep in positie {0} moet geen waarde voor de eigenschap [Threshold]opgeven, aangezien de meetwaarde die u toevoegt niet bij een meetwaarde hoort waarvoor een drempelwaarde geldt.</value>
   </data>
   <data name="ThresholdRangeCheck" xml:space="preserve">
-    <value>Drempelwaarde moet een waarde tussen 0 en 1 zijn</value>
+    <value>[Threshold] moet een waarde tussen 0 en 1 zijn</value>
   </data>
   <data name="UidGovernanceOwnerCheck" xml:space="preserve">
     <value>De UID-controle van de governance-eigenaar resulteert niet in een bekend verantwoordelijkheidstype.</value>

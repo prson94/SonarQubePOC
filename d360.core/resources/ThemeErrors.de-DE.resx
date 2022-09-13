@@ -116,19 +116,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="BackColorFormat" xml:space="preserve">
-    <value>backColor ist keine gültige RGB-Farbe.</value>
+    <value>[backColor] ist keine gültige RGB-Farbe.</value>
   </data>
   <data name="BackgroundSize" xml:space="preserve">
-    <value>homeBackground darf nicht größer als 2048 K sein.</value>
+    <value>[homeBackground] darf nicht größer als 2048 K sein.</value>
   </data>
   <data name="BackgroundType" xml:space="preserve">
-    <value>homeBackground muss entweder eine GIF-, JPG- oder PNG-Datei sein.</value>
+    <value>[homeBackground] muss entweder eine GIF-, JPG- oder PNG-Datei sein.</value>
   </data>
   <data name="BreadcrumbColorFormat" xml:space="preserve">
-    <value>breadcrumbLinkColor ist keine gültige RGB-Farbe.</value>
+    <value>[breadcrumbLinkColor] ist keine gültige RGB-Farbe.</value>
   </data>
   <data name="ButtonColorFormat" xml:space="preserve">
-    <value>buttonBackColor ist keine gültige RGB-Farbe.</value>
+    <value>[buttonBackColor] ist keine gültige RGB-Farbe.</value>
   </data>
   <data name="CustomCssNotAllowed" xml:space="preserve">
     <value>In Designs in der Umgebung ist kein benutzerdefiniertes CSS zulässig.</value>
@@ -152,7 +152,7 @@
     <value>Fehler beim Aktualisieren des Designs</value>
   </data>
   <data name="HeaderColorFormat" xml:space="preserve">
-    <value>headerBackColor ist keine gültige RGB-Farbe.</value>
+    <value>[headerBackColor] ist keine gültige RGB-Farbe.</value>
   </data>
   <data name="IconSize" xml:space="preserve">
     <value>icon darf nicht größer als 512 K sein.</value>
@@ -164,19 +164,19 @@
     <value>Es wurde kein gültiger UID-Parameterwert angegeben.</value>
   </data>
   <data name="LogoSize" xml:space="preserve">
-    <value>headerLogo darf nicht größer als 1024 K sein.</value>
+    <value>[headerLogo] darf nicht größer als 1024 K sein.</value>
   </data>
   <data name="LogoType" xml:space="preserve">
-    <value>headerLogo muss eine GIF-, JPG- oder PNG-Datei sein.</value>
+    <value>[headerLogo] muss eine GIF-, JPG- oder PNG-Datei sein.</value>
   </data>
   <data name="NameNotEmpty" xml:space="preserve">
-    <value>name darf nicht leer sein.</value>
+    <value>[name] darf nicht leer sein.</value>
   </data>
   <data name="NavbarColorFormat" xml:space="preserve">
-    <value>navbarBackColor ist keine gültige RGB-Farbe.</value>
+    <value>[navbarBackColor] ist keine gültige RGB-Farbe.</value>
   </data>
   <data name="NavbarSelectedColorFormat" xml:space="preserve">
-    <value>navbarBackColorSelected ist keine gültige RGB-Farbe.</value>
+    <value>[navbarBackColorSelected] ist keine gültige RGB-Farbe.</value>
   </data>
   <data name="NoActiveThemeExists" xml:space="preserve">
     <value>Derzeit ist kein aktives Design vorhanden.</value>
@@ -188,19 +188,19 @@
     <value>Eigenschaft {0} weist keinen gültigen Base64-Wert auf.</value>
   </data>
   <data name="PrimaryButtonColorFormat" xml:space="preserve">
-    <value>primaryButtonBackColor ist keine gültige RGB-Farbe.</value>
+    <value>[primaryButtonBackColor] ist keine gültige RGB-Farbe.</value>
   </data>
   <data name="TableHeaderColorFormat" xml:space="preserve">
-    <value>tableHeaderBackColor ist keine gültige RGB-Farbe.</value>
+    <value>[tableHeaderBackColor] ist keine gültige RGB-Farbe.</value>
   </data>
   <data name="TableRowColorFormat" xml:space="preserve">
-    <value>tableRowBackColor ist keine gültige RGB-Farbe.</value>
+    <value>[tableRowBackColor] ist keine gültige RGB-Farbe.</value>
   </data>
   <data name="TabLinkColorFormat" xml:space="preserve">
-    <value>tabLinkColor ist keine gültige RGB-Farbe.</value>
+    <value>[tabLinkColor] ist keine gültige RGB-Farbe.</value>
   </data>
   <data name="ThemeInUseForIsCurrentEdit" xml:space="preserve">
-    <value>Dieses Design ist als derzeit in dieser Umgebung verwendetes Design festgelegt und die Eigenschaft 'IsCurrent' kann nicht auf 'false' festgelegt werden.</value>
+    <value>Dieses Design ist als derzeit in dieser Umgebung verwendetes Design festgelegt und die Eigenschaft '[IsCurrent]' kann nicht auf 'false' festgelegt werden.</value>
   </data>
   <data name="ThemeInUseForRemoval" xml:space="preserve">
     <value>Dieses Design ist als derzeit in dieser Umgebung verwendetes Design festgelegt und darf nicht entfernt werden.</value>

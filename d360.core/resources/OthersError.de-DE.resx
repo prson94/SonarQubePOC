@@ -125,7 +125,7 @@
     <value>Die Anfrage enthält Kombinationen mit doppelten Einträgen für assetUid, metricAssetUid und effectiveDate. Die drei Felder müssen in den verwendeten Kombinationen eindeutig sein.</value>
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Ungültiger Wert für assetTypeUid-Parameter</value>
+    <value>Ungültiger Wert für Parameter [assetTypeUid]</value>
   </data>
   <data name="InvalidMeasureFound" xml:space="preserve">
     <value>Ungültiger Messwert gefunden</value>

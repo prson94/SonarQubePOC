@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CanNotProvideStateOfNewUser" xml:space="preserve">
-    <value>No se puede proporcionar el estado para un nuevo usuario</value>
+    <value>No se puede proporcionar el [State] para un nuevo usuario</value>
   </data>
   <data name="CurrentPasswordWrong" xml:space="preserve">
     <value>Su contraseña no se actualizó, ya que la contraseña actual proporcionada no coincide.</value>
@@ -125,25 +125,25 @@
     <value>El tipo de campo para la clave [{0}] no se encuentra en este activo</value>
   </data>
   <data name="FirstNameMissing" xml:space="preserve">
-    <value>Debe proporcionar un nombre</value>
+    <value>Debe proporcionar un [FirstName]</value>
   </data>
   <data name="FirstNameTooLong" xml:space="preserve">
-    <value>El nombre debe tener una longitud de 250 caracteres o inferior</value>
+    <value>El [FirstName] debe tener una longitud de 250 caracteres o inferior</value>
   </data>
   <data name="InternalServerErrorMsg" xml:space="preserve">
     <value>Se ha producido un error en el servidor interno</value>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
-    <value>El nombre de usuario no tiene un formato de correo electrónico válido</value>
+    <value>El [Username] no tiene un formato de correo electrónico válido</value>
   </data>
   <data name="LastNameMissing" xml:space="preserve">
-    <value>Debe proporcionar un apellido</value>
+    <value>Debe proporcionar un [LastName]</value>
   </data>
   <data name="LastNameTooLong" xml:space="preserve">
-    <value>El apellido debe tener una longitud de 250 caracteres o inferior</value>
+    <value>El [LastName] debe tener una longitud de 250 caracteres o inferior</value>
   </data>
   <data name="MissingCurrentPasswordParameter" xml:space="preserve">
-    <value>Falta el valor del parámetro CurrentPassword.</value>
+    <value>Falta el valor del parámetro [CurrentPassword].</value>
   </data>
   <data name="NewAndCurrentNotSame" xml:space="preserve">
     <value>La nueva contraseña no puede ser igual que la contraseña actual</value>

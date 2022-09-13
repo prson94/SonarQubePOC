@@ -140,7 +140,7 @@
     <value>Assetpad</value>
   </data>
   <data name="FollowedResources_DocumentName" xml:space="preserve">
-    <value>Items gevolg met ingang van {Now:d}</value>
+    <value>Gevolgde items met ingang van {Now:d}</value>
   </data>
   <data name="OwnedResources_AssetID" xml:space="preserve">
     <value>Asset-ID</value>

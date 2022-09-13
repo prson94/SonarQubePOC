@@ -119,13 +119,13 @@
     <value>Kein Asset mit der ID {0} gefunden.</value>
   </data>
   <data name="ConditionFieldTypeNameNotEmpty" xml:space="preserve">
-    <value>ConditionFieldTypeName darf nicht leer sein.</value>
+    <value>[ConditionFieldTypeName] darf nicht leer sein.</value>
   </data>
   <data name="ConditionIntersectTypeUidNotValid" xml:space="preserve">
-    <value>ConditionIntersectTypeUid muss gültig sein.</value>
+    <value>[ConditionIntersectTypeUid] muss gültig sein.</value>
   </data>
   <data name="ConditionNotEmpty" xml:space="preserve">
-    <value>In einer Bedingung muss ConditionFieldTypeName oder ConditionIntersectTypeUid verwendet werden.</value>
+    <value>In einer Bedingung muss entweder '[ConditionFieldTypeName]' oder '[ConditionIntersectTypeUid ]' verwendet werden.</value>
   </data>
   <data name="ConditionValueMaxChar250" xml:space="preserve">
     <value>Der Bedingungswert darf maximal 250 Zeichen enthalten.</value>
@@ -152,7 +152,7 @@
     <value>{0} {1} ist keine gültige UID.</value>
   </data>
   <data name="DescriptionLengthValidation" xml:space="preserve">
-    <value>Beschreibung ({0} Zeichen) ist zu lang. Sie darf maximal 4000 Zeichen enthalten.</value>
+    <value> [Description] ({0} Zeichen) ist zu lang. Sie darf maximal 4000 Zeichen enthalten.</value>
   </data>
   <data name="Errorlocatingmetric" xml:space="preserve">
     <value>Fehler bei der Suche nach der Metrik</value>
@@ -182,10 +182,10 @@
     <value>Der Wert {0} ist kein gültiges Datum. Das Jahr muss zwischen 1900 und dem laufenden Jahr liegen.</value>
   </data>
   <data name="InvalidEffectiveDate" xml:space="preserve">
-    <value>Ungültiges Gültigkeitsdatum angegeben.</value>
+    <value>Ungültige/r/s [EffectiveDate] angegeben.</value>
   </data>
   <data name="IsGroupTrueParentMetric" xml:space="preserve">
-    <value>Für die übergeordnete Metrik muss der 'IsGroup'-Wert auf 'true' festgelegt sein.</value>
+    <value>Für die übergeordnete Metrik muss der '[IsGroup]'-Wert auf 'true' festgelegt sein.</value>
   </data>
   <data name="MetricAdded" xml:space="preserve">
     <value>Metrik hinzugefügt</value>
@@ -233,7 +233,7 @@
     <value>Keine Bewertungszuordnung für Asset mit der Kennung {0} gefunden.</value>
   </data>
   <data name="UseSingleCondition" xml:space="preserve">
-    <value>ConditionFieldTypeName und ConditionIntersectTypeUid dürfen nicht gleichzeitig in einer Bedingung verwendet werden.</value>
+    <value>Innerhalb einer einzigen Bedingung können [ConditionFieldTypeName] und [ConditionIntersectTypeUid] nicht gleichzeitig verwenden werden.</value>
   </data>
   <data name="WeightDecimalValidation" xml:space="preserve">
     <value>Bei der Gewichtung muss es sich um einen Dezimalwert zwischen 0 und 1 handeln.</value>

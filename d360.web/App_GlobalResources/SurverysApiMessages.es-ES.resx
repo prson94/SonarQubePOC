@@ -119,16 +119,16 @@
     <value>El tipo de activo no coincide con ninguna encuesta.</value>
   </data>
   <data name="InvalidFormatSurveyTypeUid" xml:space="preserve">
-    <value>Formato no válido para surveyTypeUid</value>
+    <value>Formato no válido para [surveyTypeUid]</value>
   </data>
   <data name="InvalidValueAsOfDate" xml:space="preserve">
-    <value>Valor de fecha no válido para el parámetro AsOfDate.</value>
+    <value>Valor de fecha no válido para el parámetro [AsOfDate]</value>
   </data>
   <data name="NotavalidEndDateRange" xml:space="preserve">
-    <value>No es un EndDateRange válido</value>
+    <value>No es un [EndDateRange] válido</value>
   </data>
   <data name="NotvalidStartDateRange" xml:space="preserve">
-    <value>No es un StartDateRange válido</value>
+    <value>No es un [StartDateRange] válido</value>
   </data>
   <data name="ResultRemoved" xml:space="preserve">
     <value>Se han eliminado {0} resultados.</value>
@@ -143,7 +143,7 @@
     <value>No se ha encontrado el tipo de pregunta de la encuesta para el UID {0}</value>
   </data>
   <data name="SurveyResourceAssetUidPopulated" xml:space="preserve">
-    <value>Se debe rellenar SurveyTypeUid, ResourceUid o AssetUid</value>
+    <value>Se debe rellenar [SurveyTypeUid], [ResourceUid] o [AssetUid]</value>
   </data>
   <data name="SurveyUidNotFound" xml:space="preserve">
     <value>No se ha encontrado el tipo de encuesta con el UID {0}.</value>

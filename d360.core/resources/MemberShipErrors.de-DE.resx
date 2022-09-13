@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CanNotProvideStateOfNewUser" xml:space="preserve">
-    <value>Zustand kann für einen neuen Benutzer nicht angegeben werden</value>
+    <value>[State] kann für einen neuen Benutzer nicht angegeben werden</value>
   </data>
   <data name="CurrentPasswordWrong" xml:space="preserve">
     <value>Ihr Passwort wurde nicht aktualisiert, da das angegebene aktuelle Passwort nicht stimmt.</value>
@@ -125,25 +125,25 @@
     <value>Feldtyp für Schlüssel [{0}] in diesem Asset nicht gefunden</value>
   </data>
   <data name="FirstNameMissing" xml:space="preserve">
-    <value>Vorname muss angegeben werden</value>
+    <value>[FirstName] muss angegeben werden</value>
   </data>
   <data name="FirstNameTooLong" xml:space="preserve">
-    <value>Vorname darf höchstens 250 Zeichen lang sein</value>
+    <value>[FirstName] darf höchstens 250 Zeichen lang sein</value>
   </data>
   <data name="InternalServerErrorMsg" xml:space="preserve">
     <value>Interner Serverfehler aufgetreten</value>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
-    <value>Benutzername weist kein gültiges E-Mail-Format auf</value>
+    <value>[Username] weist kein gültiges E-Mail-Format auf</value>
   </data>
   <data name="LastNameMissing" xml:space="preserve">
-    <value>Nachname muss angegeben werden</value>
+    <value>[LastName] muss angegeben werden</value>
   </data>
   <data name="LastNameTooLong" xml:space="preserve">
-    <value>Nachname darf höchstens 250 Zeichen lang sein</value>
+    <value>[LastName] darf höchstens 250 Zeichen lang sein</value>
   </data>
   <data name="MissingCurrentPasswordParameter" xml:space="preserve">
-    <value>Parameterwert CurrentPassword fehlt.</value>
+    <value>Parameterwert '[CurrentPassword]' nicht vorhanden.</value>
   </data>
   <data name="NewAndCurrentNotSame" xml:space="preserve">
     <value>Das neue Passwort darf nicht mit dem aktuellen Passwort übereinstimmen.</value>

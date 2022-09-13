@@ -134,22 +134,22 @@
     <value>Error al actualizar el dashboard</value>
   </data>
   <data name="InvalidDashboardDashboardAssetTypeUid" xml:space="preserve">
-    <value>UID de tipo de activo no válido proporcionado.</value>
+    <value>[AssetTypeUid] proporcionado no válido.</value>
   </data>
   <data name="InvalidDashboardDashboardAssetUid" xml:space="preserve">
-    <value>UID de activo no válido proporcionado.</value>
+    <value>[AssetUid] proporcionado no válido.</value>
   </data>
   <data name="InvalidDashboardLocation" xml:space="preserve">
-    <value>La ubicación debe ser uno de los siguientes valores: List, Detail o Homepage</value>
+    <value>La [Location] debe ser uno de los siguientes valores: List, Detail o Homepage</value>
   </data>
   <data name="InvalidDashboardType" xml:space="preserve">
-    <value>ReportType debe ser uno de los siguientes valores: DqPlus o PowerBi</value>
+    <value>[ReportType] debe ser uno de los siguientes valores: DqPlus o PowerBi</value>
   </data>
   <data name="InvalidDashboardUid" xml:space="preserve">
     <value>UID no válido proporcionado.</value>
   </data>
   <data name="InvalidDefinitionValue" xml:space="preserve">
-    <value>Valor JSON no válido para el campo "Definición"</value>
+    <value>Valor JSON no válido para [Definition]</value>
   </data>
   <data name="NameExists" xml:space="preserve">
     <value>Ya existe un dashboard con el mismo nombre</value>

@@ -116,12 +116,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="InvalidActionUid" xml:space="preserve">
-    <value>Ongeldige UID-waarde voor actietype opgegeven</value>
+    <value>Ongeldige [actionTypeUid] waarde opgegeven</value>
   </data>
   <data name="InvalidLimitProvided" xml:space="preserve">
-    <value>Ongeldige waarde opgegeven voor Limiet voor actieve workflows</value>
+    <value>Ongeldige [_limitToActiveWorkflows] waarde opgegeven</value>
   </data>
   <data name="InvalidResourceUid" xml:space="preserve">
-    <value>Ongeldige UID-waarde voor resource opgegeven</value>
+    <value>Ongeldige [resourceUid] waarde opgegeven</value>
   </data>
 </root>

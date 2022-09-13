@@ -140,9 +140,9 @@
     <value>Il numero massimo di livelli per le misure è {0}.</value>
   </data>
   <data name="InvalidPageNum" xml:space="preserve">
-    <value>Valore pageNum fornito non valido.</value>
+    <value>Valore [pageNum] non valido fornito.</value>
   </data>
   <data name="InvalidPageSize" xml:space="preserve">
-    <value>Valore pageSize fornito non valido.</value>
+    <value>Valore [pageSize] non valido fornito.</value>
   </data>
 </root>

@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DirectionAllowedForRelation" xml:space="preserve">
-    <value>De parameter _direction is alleen toegestaan als RelationshipTypeUid of AssetUid is doorgevoerd</value>
+    <value>De parameter voor [_direction] is alleen toegestaan als [RelationshipTypeUid] of [AssetUid] is doorgevoerd</value>
   </data>
   <data name="InvalidIntersectTypeUid" xml:space="preserve">
     <value>Ongeldig snijpunttype-UID opgegeven {0}.</value>
@@ -131,7 +131,7 @@
     <value>Ongeldige object-UID doorgevoerd in de aanvraag</value>
   </data>
   <data name="InvalidOrderValue" xml:space="preserve">
-    <value>Ongeldige -order-waarde doorgevoerd in de aanvraag</value>
+    <value>Ongeldige waarde voor [_order] in de aanvraag</value>
   </data>
   <data name="InvalidParameter" xml:space="preserve">
     <value>Het type parameter is ongeldig.</value>
@@ -146,10 +146,10 @@
     <value>Ongeldige onderwerp-UID doorgevoerd in de aanvraag</value>
   </data>
   <data name="Invalid_includeTotal" xml:space="preserve">
-    <value>Ongeldige _includeTotal-parameter doorgevoerd in de aanvraag. De waarde moet zijn Waar, Niet waar of Niet opgegeven</value>
+    <value>Ongeldige [_includeTotal]-parameter doorgevoerd in de aanvraag. De waarde moet zijn True, False of Not specified</value>
   </data>
   <data name="Invalid_owner" xml:space="preserve">
-    <value>Ongeldige parameter _owner doorgevoerd in de aanvraag. Maximumlengte is 100 tekens.</value>
+    <value>Ongeldige [_owner]-parameter doorgevoerd in de aanvraag. Maximumlengte is 100 tekens.</value>
   </data>
   <data name="MaxRelationShipLimit" xml:space="preserve">
     <value>U mag maximaal maar {0} relaties in deze aanvraag opgeven. Roep de BATCH API aan om meer dan {1} items in te dienen.</value>
@@ -158,7 +158,7 @@
     <value>Kan object met UID [{0}] niet vinden.</value>
   </data>
   <data name="OrderForRelation" xml:space="preserve">
-    <value>De parameter _order is alleen toegestaan als RelationshipTypeUid is doorgevoerd</value>
+    <value>De parameter voor [_order] is alleen toegestaan als [RelationshipTypeUid] is doorgevoerd</value>
   </data>
   <data name="PassedValidForExistingRelationType" xml:space="preserve">
     <value>Ongeldige relatietype-UID opgegeven.  Geef een geldige UID op voor een bestaand relatietype.</value>

@@ -152,16 +152,16 @@
     <value>Beleid</value>
   </data>
   <data name="Responsibility_Then_Filter_Value_Required" xml:space="preserve">
-    <value>De waarde voor het filter Verantwoordelijkheid - Dan is vereist</value>
+    <value>'Then' is vereist.</value>
   </data>
   <data name="Responsibility_Then_InvalidFieldType" xml:space="preserve">
-    <value>Ongeldig veldtype in Wanneer-filters voor dit assettype.</value>
+    <value>'When' bevat een ongeldige FieldTypeId voor dit assettype.</value>
   </data>
   <data name="Responsibility_When_Filter_Required_Based_ApplyToType_Value" xml:space="preserve">
-    <value>Ten minste één Wanneer-filter vereist indien van toepassing op hele type is uitgeschakeld.</value>
+    <value>'When' is vereist als ApplyToType is ingesteld op False.</value>
   </data>
   <data name="Responsibility_When_Filter_Value_Required" xml:space="preserve">
-    <value>De waarde voor het filter Verantwoordelijkheid - Wanneer is vereist.</value>
+    <value>'When' is vereist.</value>
   </data>
   <data name="RuleType" xml:space="preserve">
     <value>Regel</value>
@@ -170,6 +170,6 @@
     <value>Model</value>
   </data>
   <data name="Taxonomy_ChangeParent_Warning" xml:space="preserve">
-    <value>Als u het bovenliggende element van en model wijzigt, kan dit aanzienlijke gevolgen hebben voor het eigenaarschap in het hele systeem.</value>
+    <value>Als u het bovenliggende element van een model wijzigt, kan dit aanzienlijke gevolgen hebben voor het eigenaarschap in het hele systeem.</value>
   </data>
 </root>

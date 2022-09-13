@@ -140,9 +140,9 @@
     <value>Maximale Anzahl an Ebenen für Messgrößen ist {0}.</value>
   </data>
   <data name="InvalidPageNum" xml:space="preserve">
-    <value>Ungültiger pageNum-Wert angegeben.</value>
+    <value>Ungültiger [pageNum]-Wert angegeben.</value>
   </data>
   <data name="InvalidPageSize" xml:space="preserve">
-    <value>Ungültiger pageSize-Wert angegeben.</value>
+    <value>Ungültiger [pageSize]-Wert angegeben.</value>
   </data>
 </root>

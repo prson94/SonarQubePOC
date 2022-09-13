@@ -119,13 +119,13 @@
     <value>Impossibile trovare la risorsa corrispondente all'identificatore di {0}.</value>
   </data>
   <data name="ConditionFieldTypeNameNotEmpty" xml:space="preserve">
-    <value>ConditionFieldTypeName non deve essere vuoto.</value>
+    <value>[ConditionFieldTypeName] non deve essere vuoto.</value>
   </data>
   <data name="ConditionIntersectTypeUidNotValid" xml:space="preserve">
-    <value>ConditionIntersectTypeUid deve essere valido.</value>
+    <value>[ConditionIntersectTypeUid] deve essere valido.</value>
   </data>
   <data name="ConditionNotEmpty" xml:space="preserve">
-    <value>È necessario utilizzare un ConditionFieldTypeName o un ConditionIntersectTypeUid all'interno di una condizione.</value>
+    <value>È necessario usare [ConditionFieldTypeName] o [ConditionIntersectTypeUid ] all'interno di una condizione.</value>
   </data>
   <data name="ConditionValueMaxChar250" xml:space="preserve">
     <value>Il valore della condizione non deve superare i 250 caratteri.</value>
@@ -152,7 +152,7 @@
     <value>{0} {1} non è un UID valido.</value>
   </data>
   <data name="DescriptionLengthValidation" xml:space="preserve">
-    <value>La lunghezza della descrizione ({0} caratteri) è troppo lunga. La lunghezza massima deve essere di 4000 caratteri.</value>
+    <value>La lunghezza di [Description] ({0} caratteri) è troppo lunga. La lunghezza massima deve essere di 4000 caratteri.</value>
   </data>
   <data name="Errorlocatingmetric" xml:space="preserve">
     <value>Errore durante l'individuazione della metrica</value>
@@ -182,10 +182,10 @@
     <value>Il valore {0} non è una data valida. L'anno deve essere compreso tra il 1900 e l'anno in corso.</value>
   </data>
   <data name="InvalidEffectiveDate" xml:space="preserve">
-    <value>Data di validità in vigore fornita non valida.</value>
+    <value>[EffectiveDate] fornito non valido.</value>
   </data>
   <data name="IsGroupTrueParentMetric" xml:space="preserve">
-    <value>La metrica principale deve avere il valore 'IsGroup' impostato su True.</value>
+    <value>La metrica principale deve avere il valore [IsGroup] impostato su True.</value>
   </data>
   <data name="MetricAdded" xml:space="preserve">
     <value>Metrica aggiunta</value>
@@ -233,7 +233,7 @@
     <value>Impossibile trovare l'allocazione del punteggio corrispondente alla risorsa con identificatore di {0}.</value>
   </data>
   <data name="UseSingleCondition" xml:space="preserve">
-    <value>Non è possibile utilizzare sia ConditionFieldTypeName sia ConditionIntersectTypeUid all'interno di una singola condizione</value>
+    <value>Non è possibile usare sia [ConditionFieldTypeName] che [ConditionIntersectTypeUid] in una sola condizione</value>
   </data>
   <data name="WeightDecimalValidation" xml:space="preserve">
     <value>Il peso deve essere un numero decimale maggiore di 0 e minore o uguale a 1</value>

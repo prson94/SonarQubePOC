@@ -116,16 +116,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AggregationFilterUnsupported" xml:space="preserve">
-    <value>De aggregatiefilters {0} worden niet ondersteund</value>
+    <value>De aggregatiefilters “{0}” worden niet ondersteund</value>
   </data>
   <data name="AggregationUnsupported" xml:space="preserve">
-    <value>De aggregaties {0} worden niet ondersteund</value>
+    <value>De aggregaties “{0}” worden niet ondersteund</value>
   </data>
   <data name="CategoryNotAvailable" xml:space="preserve">
-    <value>De waarden {0} zijn niet geldig voor Categorie</value>
+    <value>De waarden '{0}' zijn niet geldig voor [Category].</value>
   </data>
   <data name="FieldUnsupported" xml:space="preserve">
-    <value>De veldfilters {0} worden niet ondersteund</value>
+    <value>De veldfilters “{0}” worden niet ondersteund</value>
   </data>
   <data name="NoSearchServerConnection" xml:space="preserve">
     <value>Kan geen verbinding maken met de zoekserver</value>

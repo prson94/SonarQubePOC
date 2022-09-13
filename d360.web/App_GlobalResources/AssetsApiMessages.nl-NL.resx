@@ -158,7 +158,7 @@
     <value>ExecutionUid</value>
   </data>
   <data name="ExportTemplateMessage" xml:space="preserve">
-    <value>Parameter voor UID van exportsjabloon moet worden gebruikt met de header 'Accept' ingesteld op 'application/octet-stream'.</value>
+    <value>Parameter voor [_exportTemplateUid] moet worden gebruikt met de header 'Accept' ingesteld op 'application/octet-stream'.</value>
   </data>
   <data name="ExportTemplateUidNotExist" xml:space="preserve">
     <value>Exportsjabloon met UID '{0}' bestaat niet.</value>
@@ -170,7 +170,7 @@
     <value>Veldtype '{0}' wordt niet ondersteund. Toegestande veldtypen zijn ComplexRelationLookup, RefListRelationship en OwnershipLookup</value>
   </data>
   <data name="FilterResrictPredicateUid" xml:space="preserve">
-    <value>Filteren met _relationFilter kan niet worden gebruikt met de parameter _predicateUid</value>
+    <value>Filteren met [_relationFilter] kan niet worden gebruikt met de parameter [_predicateUid]</value>
   </data>
   <data name="GovernRoleReferListNotExists" xml:space="preserve">
     <value>Referentielijst van governanceregel met UID '{0}' bestaat niet</value>
@@ -191,7 +191,7 @@
     <value>ONGELDIG TYPE EXPORTWEERGAVE OPGEGEVEN</value>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
-    <value>{0} is geen geldig veld voor _order</value>
+    <value>{0} is geen geldig veld voor [_order]</value>
   </data>
   <data name="InvalidPageNumber" xml:space="preserve">
     <value>Paginanummer is geen geldig getal.</value>
@@ -200,34 +200,34 @@
     <value>Paginanummer is ongeldig, moet groter zijn dan 0.</value>
   </data>
   <data name="InvalidParameteforUI" xml:space="preserve">
-    <value>Ongeldige Booleaanse waarde voor parameter forUI</value>
+    <value>Ongeldige Booleaanse waarde voor parameter [forUI]</value>
   </data>
   <data name="InvalidParameterIncludeTotal" xml:space="preserve">
-    <value>Inclusief totaal is geen geldige Booleaanse waarde.</value>
+    <value>Inclusief totaal is geen geldige Boolean.</value>
   </data>
   <data name="InvalidParameteruseUidUrls" xml:space="preserve">
-    <value>Ongeldige Booleaanse waarde voor parameter useUidUrls</value>
+    <value>Ongeldige Booleaanse waarde voor parameter [useUidUrls]</value>
   </data>
   <data name="InvalidParameteruseUnflattedStructure" xml:space="preserve">
-    <value>Ongeldige Booleaanse waarde voor parameter useUnflattedStructure</value>
+    <value>Ongeldige Booleaanse waarde voor parameter [useUnflattedStructure]</value>
   </data>
   <data name="InvalidParameteruseuseFriendlyNames" xml:space="preserve">
-    <value>Ongeldige Booleaanse waarde voor parameter useFriendlyNames</value>
+    <value>Ongeldige Booleaanse waarde voor parameter [useFriendlyNames]</value>
   </data>
   <data name="InvalidParameter_order" xml:space="preserve">
-    <value>Ongeldige veldwaarde voor parameter _order.</value>
+    <value>Ongeldige veldwaarde voor parameter [_order].</value>
   </data>
   <data name="InvalidParameter_pageNum" xml:space="preserve">
-    <value>Ongeldige waarde als geheel getal voor parameter _pageNum.</value>
+    <value>Ongeldige waarde als geheel getal voor parameter [_pageNum]</value>
   </data>
   <data name="InvalidParameter_pageSize" xml:space="preserve">
-    <value>Ongeldige waarde als geheel getal voor parameter _pageSize.</value>
+    <value>Ongeldige waarde als geheel getal voor parameter [_pageSize]</value>
   </data>
   <data name="InvalidParentAssetUid" xml:space="preserve">
-    <value>ParentAssetUid {0} is ongeldig</value>
+    <value>[ParentAssetUid] {0} is ongeldig</value>
   </data>
   <data name="InvalidResourceUID" xml:space="preserve">
-    <value>Ongeldige resourceUid opgegeven</value>
+    <value>Ongeldige [resourceUid] opgegeven</value>
   </data>
   <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
     <value>Ongeldige gebruikers- of groeps-UID omdat er een niet-eigenaar is doorgegeven in de aanvraag</value>

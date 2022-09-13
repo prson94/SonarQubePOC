@@ -119,7 +119,7 @@
     <value>Asset met opgegeven UID bestaat niet.</value>
   </data>
   <data name="BodyNotEmpty" xml:space="preserve">
-    <value>U moet een waarde voor de eigenschap Hoofdtekst opgeven.</value>
+    <value>U moet een waarde voor de eigenschap [Body] opgeven.</value>
   </data>
   <data name="comment" xml:space="preserve">
     <value>opmerking</value>
@@ -143,7 +143,7 @@
     <value>U bent niet de maker of beheerder van deze opmerking en mag deze opmerking niet bijwerken.</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>U moet een geldige UID voor de eigenschap AssetUid opgeven.</value>
+    <value>U moet een geldige [Uid] voor de eigenschap [AssetUid] opgeven.</value>
   </data>
   <data name="NoContentProvided" xml:space="preserve">
     <value>Geen inhoud opgegeven om een opmerking mee te maken.</value>

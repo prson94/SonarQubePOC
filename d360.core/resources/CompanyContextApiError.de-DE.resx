@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DuplicateExecutionItem" xml:space="preserve">
-    <value>Doppelte Ausführungselementkennungen: {0}. Kennungen müssen innerhalb eines Batches eindeutig sein.</value>
+    <value>[ExecutionItemUid] duplizieren: {0}. Kennungen müssen innerhalb eines Batches eindeutig sein.</value>
   </data>
   <data name="FieldNotAllowedMultipleValies" xml:space="preserve">
     <value>{0} lässt die Auswahl mehrerer Werte nicht zu.</value>

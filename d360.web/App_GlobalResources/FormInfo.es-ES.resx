@@ -152,16 +152,16 @@
     <value>Política</value>
   </data>
   <data name="Responsibility_Then_Filter_Value_Required" xml:space="preserve">
-    <value>El valor del filtro Then de la responsabilidad es obligatorio</value>
+    <value>Se requiere Luego.</value>
   </data>
   <data name="Responsibility_Then_InvalidFieldType" xml:space="preserve">
-    <value>Tipo de campo no válido en los filtros Fecha para este tipo de activo.</value>
+    <value>Fecha contiene un FieldTypeId no válido para este tipo de activo.</value>
   </data>
   <data name="Responsibility_When_Filter_Required_Based_ApplyToType_Value" xml:space="preserve">
-    <value>Se requiere al menos un filtro Fecha si la opción ¿Se aplica a todo el tipo? no está marcada.</value>
+    <value>Se requiere Fecha cuando ApplyToType se establezca en false.</value>
   </data>
   <data name="Responsibility_When_Filter_Value_Required" xml:space="preserve">
-    <value>El valor del filtro Fecha de la responsabilidad es obligatorio.</value>
+    <value>Se requiere Fecha.</value>
   </data>
   <data name="RuleType" xml:space="preserve">
     <value>Regla</value>

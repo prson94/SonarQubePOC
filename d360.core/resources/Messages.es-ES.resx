@@ -134,10 +134,10 @@
     <value>Uno o más campos de atributos JSON hacen referencia al campo que se intenta eliminar.</value>
   </data>
   <data name="Error_Duplicate_Relationship_Uid" xml:space="preserve">
-    <value>Identificadores UID de relación duplicados: {0}. Los identificadores de un mismo lote deben ser únicos.</value>
+    <value>Identificadores UID de relación duplicados: {0}. Los identificadores [Uid] de un mismo lote deben ser únicos.</value>
   </data>
   <data name="Error_Responsibility_ApplyToType_False" xml:space="preserve">
-    <value>Debe utilizar las condiciones Fecha cuando el valor de ApplyToType sea false.</value>
+    <value>Debe utilizar las condiciones [When] cuando el valor de [ApplyToType] sea false.</value>
   </data>
   <data name="Error_Parameter_InvalidUidValue" xml:space="preserve">
     <value>El parámetro '{0}' tiene un valor GUID no válido</value>
@@ -149,7 +149,7 @@
     <value>No se ha encontrado el tipo de activo con el UID {0}</value>
   </data>
   <data name="AssetTypeInvalidClass" xml:space="preserve">
-    <value>Clase de tipo de activo no válida. Las clases permitidas son {0}</value>
+    <value>Valor [Class] no válido. Las clases permitidas son {0}</value>
   </data>
   <data name="AssetNotFound" xml:space="preserve">
     <value>No se ha encontrado el activo con el UID {0}</value>

@@ -146,13 +146,13 @@
     <value>Sie dürfen diesem Asset-Typ keine Aktionen hinzufügen.</value>
   </data>
   <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Asset-Typ verfügt über eine ungültige Klasse.</value>
+    <value>Asset-Typ weist ungültige/n/s [Class] auf.</value>
   </data>
   <data name="AssetTypeNotFound" xml:space="preserve">
     <value>Asset-Typ mit UID {0} wurde nicht gefunden.</value>
   </data>
   <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>AssetTypeUid oder AssetUid muss angegeben werden.</value>
+    <value>Entweder [AssetTypeUid] oder [AssetUid] muss angegeben werden.</value>
   </data>
   <data name="AssetTypeUidIsNotValid" xml:space="preserve">
     <value>{0} ist keine gültige Asset-Typ-UID.</value>
@@ -161,7 +161,7 @@
     <value>{0} ist keine gültige Asset-UID.</value>
   </data>
   <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Aktionstyp verfügt über zugeordnete Aktionen. Für kaskadierende Anforderung zum Löschen aktivieren.</value>
+    <value>Aktionstyp verfügt über zugeordnete Aktionen. Für '[cascade]'-Anforderung zum Löschen aktivieren.</value>
   </data>
   <data name="ChildRecordExistsIssueType" xml:space="preserve">
     <value>Der ausgewählte Aktionstyp ({0}) verfügt über zugeordnete Aktionen und kann daher nicht gelöscht werden.</value>
@@ -173,34 +173,34 @@
     <value>Es wurden keine Asset-Typ-UIDs angegeben.</value>
   </data>
   <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>Es ist eine gültige Aktionstyp-UID erforderlich.</value>
+    <value>Gültige/r/s [ActionTypeUid] erforderlich.</value>
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Ungültige AssetTypeUid angegeben.</value>
+    <value>Ungültige [AssetTypeUid] angegeben.</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Ungültige AssetUid angegeben.</value>
+    <value>Ungültige [AssetUid] angegeben.</value>
   </data>
   <data name="InvalidDirectionPassed" xml:space="preserve">
     <value>Ungültige Richtung in der Anforderung übergeben.</value>
   </data>
   <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>Der für 'Auf aktive Workflows begrenzen' angegebene Wert ist nicht gültig.</value>
+    <value>Angegebener [_limitToActiveWorkflows]-Wert ist nicht gültig.</value>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
     <value>Ungültige Reihenfolge in der Anforderung übergeben.</value>
   </data>
   <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} ist eine ungültige responsibilityTypeUid für {1}.</value>
+    <value>'{0}' ist ein/e ungültige/r/s [responsibilityTypeUid] für {1}.</value>
   </data>
   <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>Der angegebene Name muss weniger als 250 Zeichen lang sein.</value>
+    <value>[Name] muss weniger als 250 Zeichen lang sein.</value>
   </data>
   <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Leere Zeichenfolge für Name angegeben. Darf nicht leer sein.</value>
+    <value>Leere Zeichenfolge für [Name] angegeben. Darf nicht leer sein.</value>
   </data>
   <data name="NameNotNull" xml:space="preserve">
-    <value>Name ist ein Pflichtfeld.</value>
+    <value>[Name] ist ein Pflichtfeld.</value>
   </data>
   <data name="NoMatchingAllocation" xml:space="preserve">
     <value>Keine passende Zuordnung für '{0}' in Aktionstyp '{1}'</value>

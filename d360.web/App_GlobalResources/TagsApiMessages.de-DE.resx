@@ -152,7 +152,7 @@
     <value>Übergeordnetes Tag darf nicht in untergeordneten Tags enthalten sein.</value>
   </data>
   <data name="TagExists" xml:space="preserve">
-    <value>Ungültiges Tag angegeben [identisches Tag bereits vorhanden].</value>
+    <value>Ungültiges Tag angegeben (identisches Tag bereits vorhanden).</value>
   </data>
   <data name="TagNotFound" xml:space="preserve">
     <value>Tag nicht gefunden.</value>

@@ -128,7 +128,7 @@
     <value>Ungültiges Beziehungsfeld gefunden; kein Beziehungstyp für die Suche in Definition gefunden.</value>
   </data>
   <data name="InvalidTypeIdentifierInfoModel" xml:space="preserve">
-    <value>Ungültiges TypeIdentifierInfoModel.</value>
+    <value>[TypeIdentifierInfoModel] ungültig.</value>
   </data>
   <data name="MultiRelationshipsReferRelationship" xml:space="preserve">
     <value>Mindestens eine Beziehung verweist auf diese Beziehung.</value>

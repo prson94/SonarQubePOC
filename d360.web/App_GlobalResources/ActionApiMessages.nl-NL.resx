@@ -146,13 +146,13 @@
     <value>U mag geen acties toevoegen aan dit assettype.</value>
   </data>
   <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Assettype heeft een ongeldige klasse.</value>
+    <value>Assettype heeft een ongeldige [Class]</value>
   </data>
   <data name="AssetTypeNotFound" xml:space="preserve">
     <value>Kan assettype met UID {0} niet vinden.</value>
   </data>
   <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>AssetTypeUid of AssetUid moet worden opgegeven.</value>
+    <value>Er moet ofwel [AssetTypeUid] of [AssetUid] worden opgegeven.</value>
   </data>
   <data name="AssetTypeUidIsNotValid" xml:space="preserve">
     <value>{0} is geen geldige assettype-UID.</value>
@@ -161,7 +161,7 @@
     <value>{0} is geen geldige asset-UID.</value>
   </data>
   <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Actietype heeft gekoppelde acties. Inschakelen bij trapsgewijze aanvraag voor verwijderen.</value>
+    <value>Actietype heeft gekoppelde acties. Inschakelen bij [cascade] aanvraag voor verwijderen.</value>
   </data>
   <data name="ChildRecordExistsIssueType" xml:space="preserve">
     <value>Het geselecteerde actietype ({0}) heeft gekoppelde acties en kan daarom niet worden verwijderd.</value>
@@ -173,34 +173,34 @@
     <value>Er zijn geen assettype-UID's opgegeven.</value>
   </data>
   <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>Een geldige actietype-UID is vereist.</value>
+    <value>Er is een geldige [ActionTypeUid] vereist.</value>
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Ongeldige AssetTypeUid opgegeven.</value>
+    <value>Ongeldige [AssetTypeUid] opgegeven.</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Ongeldige AssetUid opgegeven.</value>
+    <value>Ongeldige [AssetUid] opgegeven.</value>
   </data>
   <data name="InvalidDirectionPassed" xml:space="preserve">
     <value>Ongeldige richting doorgevoerd in de aanvraag.</value>
   </data>
   <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>De opgegeven waarde voor Limiet voor actieve workflows is ongeldig.</value>
+    <value>De opgegeven waarde [_limitToActiveWorkflows] is ongeldig.</value>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
     <value>Ongeldige volgorde doorgevoerd in de aanvraag.</value>
   </data>
   <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} is een ongeldige responsibilityTypeUid voor {1}.</value>
+    <value>{0} is een ongeldige [responsibilityTypeUid] voor {1}.</value>
   </data>
   <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>Opgegeven naam mag niet langer zijn dan 250 tekens.</value>
+    <value>Opgegeven [Name] mag niet langer zijn dan 250 tekens.</value>
   </data>
   <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Lege tekenreeks opgegeven voor Name. Mag niet leeg zijn.</value>
+    <value>Lege tekenreeks opgegeven voor [Name]. Mag niet leeg zijn.</value>
   </data>
   <data name="NameNotNull" xml:space="preserve">
-    <value>Naam is een vereist veld.</value>
+    <value>[Name] is een vereist veld.</value>
   </data>
   <data name="NoMatchingAllocation" xml:space="preserve">
     <value>Geen overeenkomende toewijzing voor '{0}' op actietype '{1}'</value>

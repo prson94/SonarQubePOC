@@ -158,7 +158,7 @@
     <value>ExecutionUid</value>
   </data>
   <data name="ExportTemplateMessage" xml:space="preserve">
-    <value>Le paramètre UID du modèle d’exportation doit être utilisé avec l’en-tête 'Accept' défini sur 'application/octet-stream'.</value>
+    <value>Le paramètre [_exportTemplateUid] doit être utilisé avec l’en-tête 'Accept' défini sur ’application/octet-stream’.</value>
   </data>
   <data name="ExportTemplateUidNotExist" xml:space="preserve">
     <value>Le modèle d’exportation dont l’UID est '{0}' n’existe pas.</value>
@@ -170,7 +170,7 @@
     <value>Le type de champ '{0}' n’est pas pris en charge. Les types de champs autorisés sont ComplexRelationLookup, RefListRelationship et OwnershipLookup</value>
   </data>
   <data name="FilterResrictPredicateUid" xml:space="preserve">
-    <value>Le filtrage à l’aide de _relationFilter ne peut pas être utilisé avec le paramètre _predicateUid</value>
+    <value>Le filtrage à l’aide de [_relationFilter] ne peut pas être utilisé avec le paramètre [_predicateUid]</value>
   </data>
   <data name="GovernRoleReferListNotExists" xml:space="preserve">
     <value>La liste de référence des rôles de gouvernance dont l’UID est '{0}' n’existe pas</value>
@@ -191,7 +191,7 @@
     <value>TYPE DE VUE D’EXPORTATION SPÉCIFIÉ NON VALIDE</value>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
-    <value>{0} n’est pas un champ _order valide</value>
+    <value>{0} n’est pas un [_order] valide</value>
   </data>
   <data name="InvalidPageNumber" xml:space="preserve">
     <value>Le numéro de page n’est pas une valeur valide.</value>
@@ -200,34 +200,34 @@
     <value>Le numéro de page n’est pas valide, il doit être supérieur à 0.</value>
   </data>
   <data name="InvalidParameteforUI" xml:space="preserve">
-    <value>Valeur booléenne non valide pour le paramètre 'forUI'</value>
+    <value>Valeur booléenne non valide pour le paramètre [forUI]</value>
   </data>
   <data name="InvalidParameterIncludeTotal" xml:space="preserve">
     <value>Inclure le total n’est pas un booléen valide.</value>
   </data>
   <data name="InvalidParameteruseUidUrls" xml:space="preserve">
-    <value>Valeur booléenne non valide pour le paramètre 'useUidUrls'</value>
+    <value>Valeur booléenne non valide pour le paramètre [useUidUrls]</value>
   </data>
   <data name="InvalidParameteruseUnflattedStructure" xml:space="preserve">
-    <value>Valeur booléenne non valide pour le paramètre 'useUnflattedStructure'</value>
+    <value>Valeur booléenne non valide pour le paramètre [useUnflattedStructure]</value>
   </data>
   <data name="InvalidParameteruseuseFriendlyNames" xml:space="preserve">
-    <value>Valeur booléenne non valide pour le paramètre 'useFriendlyNames'</value>
+    <value>Valeur booléenne non valide pour le paramètre [useFriendlyNames]</value>
   </data>
   <data name="InvalidParameter_order" xml:space="preserve">
-    <value>Valeur du champ du paramètre '_direction' non valide.</value>
+    <value>Valeur du champ du paramètre [_order] non valide.</value>
   </data>
   <data name="InvalidParameter_pageNum" xml:space="preserve">
-    <value>Valeur entière pour le paramètre '_pageNum' non valide</value>
+    <value>Valeur entière pour le paramètre [_pageNum] non valide</value>
   </data>
   <data name="InvalidParameter_pageSize" xml:space="preserve">
-    <value>Valeur entière pour le paramètre '_pageSize' non valide</value>
+    <value>Valeur entière pour le paramètre [_pageSize] non valide</value>
   </data>
   <data name="InvalidParentAssetUid" xml:space="preserve">
-    <value>ParentAssetUid {0} non valide</value>
+    <value>[ParentAssetUid] {0} n’est pas valide</value>
   </data>
   <data name="InvalidResourceUID" xml:space="preserve">
-    <value>Valeur resourceUid fournie non valide</value>
+    <value>Valeur [resourceUid] fournie non valide</value>
   </data>
   <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
     <value>UID d’utilisateur ou de groupe non-propriétaire transmis dans la requête non valide</value>

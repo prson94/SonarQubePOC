@@ -122,7 +122,7 @@
     <value>Asset-Typ bereits vorhanden</value>
   </data>
   <data name="AssetTypeWithUidExists" xml:space="preserve">
-    <value>Ein Asset-Typ mit der angegebenen UID ist bereits vorhanden.</value>
+    <value>Ein Asset-Typ mit [Uid] (angegeben) ist bereits vorhanden.</value>
   </data>
   <data name="CheckRequest" xml:space="preserve">
     <value>Prüfen Sie Ihre Anforderung und versuchen Sie es erneut.</value>
@@ -134,7 +134,7 @@
     <value>Sie haben kein ordnungsgemäßes Prädikat basierend auf der Asset-Typ-Klasse angegeben.</value>
   </data>
   <data name="InvalidDisplayFormat" xml:space="preserve">
-    <value>Das angegebene DisplayFormat ist ungültig.</value>
+    <value>Angegebene/r/s [DisplayFormat] ist ungültig.</value>
   </data>
   <data name="InvalidModelDepth" xml:space="preserve">
     <value>Ungültige maximale Tiefe. Die angegebene Modellebene muss einen Wert zwischen 1 und 10 aufweisen.</value>
@@ -143,22 +143,22 @@
     <value>Ungültige maximale Tiefe. Die angegebene Richtlinienebene muss einen Wert zwischen 1 und 10 aufweisen.</value>
   </data>
   <data name="InvalidParentUid" xml:space="preserve">
-    <value>Ungültige ParentUid angegeben.</value>
+    <value>Ungültige [ParentUid] angegeben.</value>
   </data>
   <data name="InvalidRequestHttpErrorTitle" xml:space="preserve">
     <value>Ungültige Anforderung</value>
   </data>
   <data name="InvalidStyle" xml:space="preserve">
-    <value>Ungültiger Symbolstil angegeben.</value>
+    <value>Ungültiger [IconStyle]-Wert angegeben.</value>
   </data>
   <data name="NotFoundBasedOnClass" xml:space="preserve">
-    <value>Asset-Typ anhand der angegebenen Klasse nicht gefunden.</value>
+    <value>Asset-Typ anhand von [Class] (angegeben) nicht gefunden.</value>
   </data>
   <data name="ErrorNameTaken" xml:space="preserve">
     <value>Der Name ist vergeben. Geben Sie einen anderen Namen an.</value>
   </data>
   <data name="NotFoundBasedOnUid" xml:space="preserve">
-    <value>Asset-Typ anhand der angegebenen UID nicht gefunden.</value>
+    <value>Asset-Typ anhand von [Uid] (angegeben) nicht gefunden.</value>
   </data>
   <data name="NotFoundGeneric" xml:space="preserve">
     <value>Asset-Typ nicht gefunden.</value>
@@ -167,7 +167,7 @@
     <value>Beziehung ODER Beziehungstyp mit diesem Asset-Typ ist bereits vorhanden oder ein beliebiges Asset dieses Typs ist in dieser Beziehung beteiligt.</value>
   </data>
   <data name="TransformationClassRestriction" xml:space="preserve">
-    <value>'Als Transformation verwenden' kann nur Asset-Typen der Klasse 'Business' oder 'Technisch' festlegen.</value>
+    <value>[UseAsTransformation] kann nur Asset-Typen der Klasse 'Business' oder 'Technisch' festlegen.</value>
   </data>
   <data name="TransformationLimitExceeded" xml:space="preserve">
     <value>Die Gesamtzahl der Asset-Typen überschreitet das Transformationslimit.</value>
@@ -176,16 +176,16 @@
     <value>Nicht unterstützte Asset-Klasse.</value>
   </data>
   <data name="MatchingIconStyle" xml:space="preserve">
-    <value>ForeColor und BackColor für Symbolstil können nicht den gleichen Wert aufweisen.</value>
+    <value>[IconStyle.BackColor] und [IconStyle.ForeColor] dürfen nicht den gleichen Wert aufweisen.</value>
   </data>
   <data name="AutoDisplayParentRestriction" xml:space="preserve">
-    <value>'Übergeordnetes Element automatisch anzeigen' kann nur Asset-Typen der Klasse 'Business' oder 'Technisch' festlegen, die untergeordnete Elemente eines anderen Asset-Typs sind.</value>
+    <value>[AutoDisplayParent] kann nur Asset-Typen der Klasse 'Business' oder 'Technisch' festlegen, die untergeordnete Elemente eines anderen Asset-Typs sind.</value>
   </data>
   <data name="MissingFlowObjectType" xml:space="preserve">
-    <value>FlowObjectType ist ein Pflichtfeld für den Asset-Typ mit der Klasse 'Diagramm'.</value>
+    <value>[FlowObjectType] ist ein Pflichtfeld für den Asset-Typ mit der Klasse 'Diagramm'.</value>
   </data>
   <data name="UnsupportedFlowObjectType" xml:space="preserve">
-    <value>FlowObjectType wird für Klasse {0} nicht unterstützt.</value>
+    <value>[FlowObjectType] wird für Klasse {0} nicht unterstützt.</value>
   </data>
   <data name="GovernanceRoleNotSet" xml:space="preserve">
     <value>Asset-Typ der Klasse 'Diagramm' kann nicht hinzugefügt werden. Governance-Rollen-Referenz-UID ist nicht festgelegt.</value>
@@ -200,7 +200,7 @@
     <value>Ungültige {0} angegeben</value>
   </data>
   <data name="CanEditParentClassRestriction" xml:space="preserve">
-    <value>'Kann übergeordnetes Element bearbeiten' kann nur Asset-Typen der Klasse 'Business' oder 'Technisch' festlegen, die untergeordnete Elemente eines anderen Asset-Typs sind.</value>
+    <value>[CanEditParent] kann nur Asset-Typen der Klasse 'Business' oder 'Technisch' festlegen, die untergeordnete Elemente eines anderen Asset-Typs sind.</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Ungültige Reihenfolgenrichtung in der Anforderung übergeben.</value>
@@ -215,13 +215,13 @@
     <value>Prädikat</value>
   </data>
   <data name="InvalidAssetType" xml:space="preserve">
-    <value>Ungültiger assetType angegeben</value>
+    <value>Ungültige/r/s [assetType] angegeben</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
     <value>Ungültige Asset-UID in Parametern.</value>
   </data>
   <data name="InvalidMaximumDepthTitle" xml:space="preserve">
-    <value>Ungültige maximale Tiefe</value>
+    <value>Ungültiger [HierarchyMaximumDepth]-Wert</value>
   </data>
   <data name="InvalidOwnerUid" xml:space="preserve">
     <value>Ungültige Eigner-UID in Parametern.</value>
@@ -245,13 +245,13 @@
     <value>Ungültiger Wert für Parameter [objID]</value>
   </data>
   <data name="InvalueValue_includeFields" xml:space="preserve">
-    <value>Ungültiger Wert {0} in Parameter _includeFields, Feld mit diesem Namen wurde nicht gefunden.</value>
+    <value>Ungültiger Wert {0} in Parameter [_includeFields], Feld mit diesem Namen wurde nicht gefunden.</value>
   </data>
   <data name="UnableParse_IncludeFields" xml:space="preserve">
-    <value>Wert von _includeFields konnte nicht geparst werden</value>
+    <value>Wert von [_includeFields] konnte nicht geparst werden</value>
   </data>
   <data name="UseAsAdminUseWithAssetUid" xml:space="preserve">
-    <value>Parameter UseAsAdmin kann nur mit angegebener _assetUid verwendet werden.</value>
+    <value>Parameter [UseAsAdmin] kann nur verwendet werden, wenn [_assetUid] angegeben ist.</value>
   </data>
   <data name="WrongNameHttpErrorTitle" xml:space="preserve">
     <value>Falscher Name</value>
@@ -293,10 +293,10 @@
     <value>{0} falsch</value>
   </data>
   <data name="_parentuidNotValidAsset" xml:space="preserve">
-    <value>_parentUid mit Wert {0} entspricht nicht einem gültigen Asset.</value>
+    <value>[_parentUid] mit Wert {0} entspricht nicht einem gültigen Asset.</value>
   </data>
   <data name="_parentUidNotValidUid" xml:space="preserve">
-    <value>Parameter _parentUid muss eine gültige GUID sein, auf null festgelegt sein oder darf nicht vorhanden sein.</value>
+    <value>Parameter [_parentUid] muss eine gültige GUID sein, auf null festgelegt sein oder darf nicht vorhanden sein.</value>
   </data>
   <data name="BadRequest" xml:space="preserve">
     <value>Unzulässige Anforderung</value>

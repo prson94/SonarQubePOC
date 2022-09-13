@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DashboardNotFound" xml:space="preserve">
-    <value>Dashboard met opgegeven UID niet gevonden</value>
+    <value>Het dashboard is niet gevonden op basis van de opgegeven unieke ID.</value>
   </data>
   <data name="DashboardRemoved" xml:space="preserve">
     <value>Dashboard verwijderd</value>
@@ -134,22 +134,22 @@
     <value>Fout bij bijwerken van dashboard</value>
   </data>
   <data name="InvalidDashboardDashboardAssetTypeUid" xml:space="preserve">
-    <value>Ongeldige assettype-UID opgegeven.</value>
+    <value>Ongeldige [AssetTypeUid] opgegeven.</value>
   </data>
   <data name="InvalidDashboardDashboardAssetUid" xml:space="preserve">
-    <value>Ongeldige asset-UID opgegeven.</value>
+    <value>Ongeldige [AssetUid] opgegeven.</value>
   </data>
   <data name="InvalidDashboardLocation" xml:space="preserve">
-    <value>Ongeldige locatie. Geldige waarden zijn List, Detail of Homepage</value>
+    <value>[Location] moet een van de volgende waarden zijn: List, Detail of Homepage</value>
   </data>
   <data name="InvalidDashboardType" xml:space="preserve">
-    <value>Ongeldig DashboardType. Geldige waarden zijn PowerBi of DqPlus</value>
+    <value>[ReportType] moet een van de volgende waarden zijn: DqPlus of PowerBi</value>
   </data>
   <data name="InvalidDashboardUid" xml:space="preserve">
     <value>Ongeldige UID opgegeven.</value>
   </data>
   <data name="InvalidDefinitionValue" xml:space="preserve">
-    <value>Ongeldige JSON-waarde voor het veld 'Definitie'</value>
+    <value>Ongeldige JSON-waarde voor [Definition]</value>
   </data>
   <data name="NameExists" xml:space="preserve">
     <value>Er bestaat al een dashboard met deze naam</value>

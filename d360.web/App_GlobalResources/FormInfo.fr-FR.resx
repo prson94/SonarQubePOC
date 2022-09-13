@@ -152,16 +152,16 @@
     <value>Politique</value>
   </data>
   <data name="Responsibility_Then_Filter_Value_Required" xml:space="preserve">
-    <value>La valeur Responsibility Then Filter est requise</value>
+    <value>La valeur Then est requise.</value>
   </data>
   <data name="Responsibility_Then_InvalidFieldType" xml:space="preserve">
-    <value>Type de champ dans les filtres Quand non valide pour ce type d’actif.</value>
+    <value>La valeur When contient une valeur FieldTypeId non valide pour ce type d’actif.</value>
   </data>
   <data name="Responsibility_When_Filter_Required_Based_ApplyToType_Value" xml:space="preserve">
-    <value>Au moins un filtre Quand est nécessaire si l’option S’applique à l’ensemble du type n’est pas cochée.</value>
+    <value>La valeur When est requise lorsque la valeur ApplyToType est définie sur false.</value>
   </data>
   <data name="Responsibility_When_Filter_Value_Required" xml:space="preserve">
-    <value>La valeur Responsibility When Filter est requise.</value>
+    <value>La valeur When est requise.</value>
   </data>
   <data name="RuleType" xml:space="preserve">
     <value>Règle</value>

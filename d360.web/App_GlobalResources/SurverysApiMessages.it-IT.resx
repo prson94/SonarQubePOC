@@ -119,16 +119,16 @@
     <value>Il tipo di risorsa non corrisponde ad alcun sondaggio.</value>
   </data>
   <data name="InvalidFormatSurveyTypeUid" xml:space="preserve">
-    <value>Formato non valido per surveyTypeUid</value>
+    <value>Formato non valido per [surveyTypeUid]</value>
   </data>
   <data name="InvalidValueAsOfDate" xml:space="preserve">
-    <value>Valore della data non valido per il parametro AsOfDate.</value>
+    <value>Valore della data non valido per il parametro [AsOfDate].</value>
   </data>
   <data name="NotavalidEndDateRange" xml:space="preserve">
-    <value>EndDateRange non valido</value>
+    <value>[EndDateRange] non valido</value>
   </data>
   <data name="NotvalidStartDateRange" xml:space="preserve">
-    <value>StartDateRange non valido</value>
+    <value>[StartDateRange] non valido</value>
   </data>
   <data name="ResultRemoved" xml:space="preserve">
     <value>{0} risultati rimossi.</value>
@@ -143,7 +143,7 @@
     <value>Tipo di domanda del sondaggio per l'UID {0} non trovato</value>
   </data>
   <data name="SurveyResourceAssetUidPopulated" xml:space="preserve">
-    <value>Dovrebbe essere compilato SurveyTypeUid, ResourceUid o AssetUid</value>
+    <value>[SurveyTypeUid] o [ResourceUid] o [AssetUid] deve essere compilato</value>
   </data>
   <data name="SurveyUidNotFound" xml:space="preserve">
     <value>Tipo di sondaggio con l'UID {0} non trovato.</value>

@@ -128,7 +128,7 @@
     <value>Il campo Relazione non valida non ha rilevato alcun tipo di relazione da cercare nella definizione.</value>
   </data>
   <data name="InvalidTypeIdentifierInfoModel" xml:space="preserve">
-    <value>TypeIdentifierInfoModel non valido.</value>
+    <value>[TypeIdentifierInfoModel] non valido.</value>
   </data>
   <data name="MultiRelationshipsReferRelationship" xml:space="preserve">
     <value>Una o più relazioni fanno riferimento a questa relazione.</value>

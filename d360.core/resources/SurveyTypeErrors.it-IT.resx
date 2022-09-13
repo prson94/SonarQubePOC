@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DescriptionTooBig" xml:space="preserve">
-    <value>La descrizione non deve superare i {maxDescriptionLength} caratteri</value>
+    <value>[Description] non deve superare i {maxDescriptionLength} caratteri</value>
   </data>
   <data name="DuplicateName" xml:space="preserve">
     <value>Per questo tipo di risorsa esiste già un sondaggio con lo stesso nome.</value>
@@ -133,23 +133,26 @@
   <data name="DuplicateQuestionOptionValue" xml:space="preserve">
     <value>Inserire un identificatore di opzione univoco per #{index}</value>
   </data>
+  <data name="InvalidAssetType" xml:space="preserve">
+    <value>Il tipo di risorsa non è valida. I sondaggi possono essere creati solo per Risorse aziendali, Risorse tecniche, Modelli e Regole</value>
+  </data>
   <data name="InvalidDirection" xml:space="preserve">
-    <value>Valore non valido per il parametro della direzione. Usare asc|desc.</value>
+    <value>Valore non valido per il parametro [direction]. Usare asc|desc.</value>
   </data>
   <data name="InvalidDisplayStyle" xml:space="preserve">
-    <value>Stile di visualizzazione non valido</value>
+    <value>Non valido [DisplayStyle]</value>
   </data>
   <data name="MissingQuestionOptionName" xml:space="preserve">
-    <value>Nome mancante nell'opzione #{index}</value>
+    <value>[Name] mancante nell'opzione #{index}</value>
   </data>
   <data name="MissingQuestionOptions" xml:space="preserve">
     <value>Mancano una o più opzioni.</value>
   </data>
   <data name="NameIsTooBig" xml:space="preserve">
-    <value>Il nome non deve superare i {maxNameLength} caratteri</value>
+    <value>[Name] non deve superare i {maxNameLength} caratteri.</value>
   </data>
   <data name="NameShouldBeNotEmpty" xml:space="preserve">
-    <value>Il nome non deve essere vuoto.</value>
+    <value>[Name] non può essere vuoto.</value>
   </data>
   <data name="QuestionTypeNotFound" xml:space="preserve">
     <value>La domanda del sondaggio con l'UID specificato non esiste.</value>
@@ -161,9 +164,9 @@
     <value>Il sondaggio con l'UID specificato non esiste.</value>
   </data>
   <data name="ValidForDaysIsTooBig" xml:space="preserve">
-    <value>ValidForDays deve essere un valore massimo di {maxValidForDays} giorni.</value>
+    <value>[ValidForDays] deve essere un valore massimo di {maxValidForDays} giorni.</value>
   </data>
   <data name="ValidForDaysIsTooSmall" xml:space="preserve">
-    <value>ValidForDays deve essere un valore minimo di {minValidForDays} giorni.</value>
+    <value>[ValidForDays] deve essere un valore minimo di {minValidForDays} giorni.</value>
   </data>
 </root>

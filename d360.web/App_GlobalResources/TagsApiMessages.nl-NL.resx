@@ -152,7 +152,7 @@
     <value>Bovenliggende tag mag niet worden ingesloten in onderliggende tags.</value>
   </data>
   <data name="TagExists" xml:space="preserve">
-    <value>Ongeldige tag opgegeven [zelfde tag bestaat al].</value>
+    <value>Ongeldige tag opgegeven (dezelfde tag bestaat al).</value>
   </data>
   <data name="TagNotFound" xml:space="preserve">
     <value>Tag niet gevonden.</value>

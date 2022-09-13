@@ -152,7 +152,7 @@
     <value>La etiqueta principal no se debe incluir en las etiquetas secundarias.</value>
   </data>
   <data name="TagExists" xml:space="preserve">
-    <value>Etiqueta no válida especificada [ya existe la misma etiqueta].</value>
+    <value>Etiqueta no válida especificada (ya existe la misma etiqueta).</value>
   </data>
   <data name="TagNotFound" xml:space="preserve">
     <value>Etiqueta no encontrada.</value>

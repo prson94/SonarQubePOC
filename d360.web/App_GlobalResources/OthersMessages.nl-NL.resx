@@ -122,7 +122,7 @@
     <value>Toewijzings-ID met waarde {0} komt niet overeen met een geldige toewijzing.</value>
   </data>
   <data name="AllocationUidNotCorrectlyFormatted" xml:space="preserve">
-    <value>allocationUid {0} is geen goed geformatteerde ID.</value>
+    <value>[allocationUid] {0} is geen goed geformatteerde ID.</value>
   </data>
   <data name="AssetIdentifierDoesnotValidAsset" xml:space="preserve">
     <value>Asset-ID met waarde {0} komt niet overeen met een geldige asset.</value>
@@ -134,7 +134,7 @@
     <value>De asset-UID moet worden opgegeven.</value>
   </data>
   <data name="AssetuidNotCorrectlyFormatted" xml:space="preserve">
-    <value>assetUid {0} is geen goed geformatteerde ID.</value>
+    <value>[assetUid] {0} is geen goed geformatteerde ID.</value>
   </data>
   <data name="BadRequestSubmitted" xml:space="preserve">
     <value>Slechte aanvraag ingediend</value>
@@ -170,13 +170,13 @@
     <value>Dit e-mailadres lijkt niet geldig te zijn.</value>
   </data>
   <data name="InvalidFieldFilterParameter" xml:space="preserve">
-    <value>U hebt ongeldige velden in uw filterqueryparameters: {0}.</value>
+    <value>U hebt ongeldige velden in uw [filter]-filterqueryparameters: {0}.</value>
   </data>
   <data name="InvalidFieldSelectQueryParameter" xml:space="preserve">
-    <value>U hebt ongeldige velden in uw selectiequeryparameters: {0}.</value>
+    <value>U hebt ongeldige velden in uw [select]-filterqueryparameters: {0}.</value>
   </data>
   <data name="InvalidField_OrderParameter" xml:space="preserve">
-    <value>U hebt ongeldige velden in uw queryparameter voor _order.</value>
+    <value>U hebt ongeldige velden in uw [_order]-filterqueryparameter.</value>
   </data>
   <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
     <value>Ongeldig relatieveld gedetecteerd Ongeldig of verwijderd relatietype gedetecteerd.</value>
@@ -245,13 +245,13 @@
     <value>Resource niet beschikbaar voor deze gebruiker.</value>
   </data>
   <data name="SearchFilterInvalid" xml:space="preserve">
-    <value>Zoekfilters zijn ongeldig in uw filterqueryparameter: last_modified.</value>
+    <value>Zoekfilters zijn ongeldig in uw filterqueryparameter: [last_modified].</value>
   </data>
   <data name="ServerErrorOccurred" xml:space="preserve">
     <value>Serverfout opgetreden. Dien uw aanvraag later opnieuw in</value>
   </data>
   <data name="SourceAssetUidModelNotEmpty" xml:space="preserve">
-    <value>Wanneer u de kopieer-/vervangoptie gebruikt met sourceAssetUid moet het model leeg zijn.</value>
+    <value>Wanneer u de kopieer-/vervangoptie gebruikt met [sourceAssetUid] moet het model leeg zijn.</value>
   </data>
   <data name="SourceTargetNotSame" xml:space="preserve">
     <value>Bron- en doelasset mogen niet hetzelfde zijn.</value>
@@ -260,15 +260,15 @@
     <value>Bron- en doelassettypen moeten hetzelfde zijn.</value>
   </data>
   <data name="SourceUidNotExists" xml:space="preserve">
-    <value>sourceAssetUid is ongeldig of de asset bestaat niet.</value>
+    <value>[sourceAssetUid] is ongeldig of de asset bestaat niet.</value>
   </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Niet geautoriseerd</value>
   </data>
   <data name="_PageNumGT0" xml:space="preserve">
-    <value>De parameter voor _pageNum moet groter zijn dan 0.</value>
+    <value>De parameter voor [_pageNum] moet groter zijn dan 0.</value>
   </data>
   <data name="_PageSizeMax200" xml:space="preserve">
-    <value>De parameter voor _pageSize heeft een maximaal ondersteunde waarde van 200.</value>
+    <value>De parameter voor [_pageSize] heeft een maximaal ondersteunde waarde van 200.</value>
   </data>
 </root>

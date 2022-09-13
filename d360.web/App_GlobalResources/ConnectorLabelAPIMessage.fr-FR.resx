@@ -134,7 +134,7 @@
     <value>Erreur de mise à jour de l’étiquette de connecteur</value>
   </data>
   <data name="LabelAlreadyExists" xml:space="preserve">
-    <value>L’étiquette de connecteur spécifiée n’est pas valide [la même étiquette de connecteur existe déjà].</value>
+    <value>L’étiquette de connecteur spécifiée n’est pas valide (la même étiquette de connecteur existe déjà).</value>
   </data>
   <data name="LabelMax40Char" xml:space="preserve">
     <value>La longueur maximale d’étiquette est de 40 caractères.</value>

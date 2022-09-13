@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DuplicateExecutionItem" xml:space="preserve">
-    <value>Dubbele uitvoeringsitems-ID's: {0}. ID's binnen een batch moeten uniek zijn.</value>
+    <value>Duplicaat [ExecutionItemUid]: {0}. ID's binnen een batch moeten uniek zijn.</value>
   </data>
   <data name="FieldNotAllowedMultipleValies" xml:space="preserve">
     <value>{0} staat geen selectie van meerdere waarden toe</value>
@@ -128,7 +128,7 @@
     <value>U bent niet gemachtigd om relaties op de onderwerpasset aan te passen.</value>
   </data>
   <data name="OwnerValueMaxLength" xml:space="preserve">
-    <value>Maximumlengte van de waarde Eigenaar is overschreden: {0}. Maximumlengte van het veld Eigenaar is 100 tekens.</value>
+    <value>Maximumlengte van de Eigenaar waarde is overschreden: {0}. Maximumlengte van het veld Eigenaar is 100 tekens.</value>
   </data>
   <data name="RelationshipInvalidUid" xml:space="preserve">
     <value>UID van de relatie is ongeldig.</value>

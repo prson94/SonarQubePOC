@@ -128,7 +128,7 @@
     <value>Champ Relationship non valide rencontré, aucun type de relation à consulter trouvé dans la définition.</value>
   </data>
   <data name="InvalidTypeIdentifierInfoModel" xml:space="preserve">
-    <value>Valeur TypeIdentifierInfoModel non valide.</value>
+    <value>[TypeIdentifierInfoModel] non valide.</value>
   </data>
   <data name="MultiRelationshipsReferRelationship" xml:space="preserve">
     <value>Un ou plusieurs liens font référence à cette relation.</value>
