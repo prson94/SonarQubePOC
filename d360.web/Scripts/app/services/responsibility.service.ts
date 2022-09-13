@@ -32,8 +32,8 @@ export class ResponsibilityService extends BaseObservableService implements IRes
             );
     }
 
-    getResponsibilityItemEditor(assetID: number, responsibilityID: number, assetUid: string, responsibilityUid: string, resourceUid: string): Observable<ResponsibilityEditorModel> {
-        return this.http.get(`form/Responsibility?assetID=${assetID}&overrideID=${responsibilityID}&assetUid=${assetUid}&responsibilityUid=${responsibilityUid}&resourceUid=${resourceUid}`)
+    getResponsibilityItemEditor(responsibilityID: number, assetUid: string, responsibilityUid: string, resourceUid: string): Observable<ResponsibilityEditorModel> {
+        return this.http.get(`form/Responsibility?overrideID=${responsibilityID}&assetUid=${assetUid}&responsibilityUid=${responsibilityUid}&resourceUid=${resourceUid}`)
 
             .pipe(
                 map((response) => <ResponsibilityEditorModel>response),
