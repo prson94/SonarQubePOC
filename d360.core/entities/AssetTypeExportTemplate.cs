@@ -69,4 +69,10 @@ namespace d360.core.entities
         ]
         public int ID { get; set; }
     }
+
+	public class AssetTypeExportTemplateField
+	{
+		public int TemplateId { get; set; }
+		public string Name { get; set; }
+	}
 }

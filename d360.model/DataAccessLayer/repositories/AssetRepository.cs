@@ -4045,6 +4045,7 @@ where an.Uid = fam.uid)
 		public async Task<List<AssetTypeExportTemplate>> GetExportTemplates(Guid assetTypeUid = default(Guid), Guid exportTemplateUID = default(Guid))
 		{
 			List<AssetTypeExportTemplate> templateList = new List<AssetTypeExportTemplate>();
+			List<AssetTypeExportTemplateField> templateFieldList = new List<AssetTypeExportTemplateField>();
 
 			string whereSQL = "";
 
@@ -4087,13 +4088,16 @@ where an.Uid = fam.uid)
 											{whereSQL}
 											order by ATET.Name, ATET.ID";
 
+				string exportTemplateFields = $@"select FT.Name, ATETF.TemplateID from AssetTypeExportTemplateField ATETF 
+							inner join FieldType FT on ATETF.FieldTypeId = FT.ID order by [Order] asc";
+
 				templateList = (await CompanyContext.QueryAsync<AssetTypeExportTemplate>(exportTemplateSQL, timeout: ApiTimeout)).ToList();
+				templateFieldList = (await CompanyContext.QueryAsync<AssetTypeExportTemplateField>(exportTemplateFields, timeout: ApiTimeout)).ToList();
+
 
 				foreach (var template in templateList)
 				{
-					string templateFieldTypesSQL = $@"select FT.Name from AssetTypeExportTemplateField ATETF inner join FieldType FT on ATETF.FieldTypeId = FT.ID where ATETF.TemplateId = @templateId order by [Order] asc";
-
-					template.IncludeFieldTypes = (await CompanyContext.QueryAsync<string>(templateFieldTypesSQL, new { templateId = template.ID }, timeout: ApiTimeout)).ToArray();
+					template.IncludeFieldTypes = templateFieldList.Where(x => x.TemplateId == template.ID).Select(x => x.Name).ToArray();
 
 					if (template.AssetTypeExportTemplateStyleJson != null)
 					{
