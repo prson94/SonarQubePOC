@@ -2051,7 +2051,7 @@ namespace d360.web.Controllers.V2
 
 				if (followDetail.HardFollow)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.AlreadyWatch, (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.AlreadyWatch, (model.assetTypeUid != null) ? $"{ApiMessages.Type} '{name}'" : $"'{name}'"))).ConfigureAwait(false);
 				}
 				else
 				{
@@ -2066,7 +2066,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (followDetail == null)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.NotCurrentWatch, (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.NotCurrentWatch, (model.assetTypeUid != null) ? $"{ApiMessages.Type} '{name}'" : $"'{name}'"))).ConfigureAwait(false);
 				}
 
 				if (followDetail != null && !followDetail.HardFollow)
@@ -2077,7 +2077,8 @@ namespace d360.web.Controllers.V2
 
 			bool success = Company.UpdateFollowStatus(AssetTypeID, AssetID, null, includeChildren);
 
-			return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, string.Format(ApiMessages.YouAreWatching, (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))).ConfigureAwait(false);
+			return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, string.Format(success ? ApiMessages.YouAreNowWatching : ApiMessages.YouAreNoLongerWatching,
+																													  model.assetTypeUid != null ? $"{ApiMessages.Type} '{name}'" : $"'{name}'"))).ConfigureAwait(false);
 		}
 
 		/// <summary>
