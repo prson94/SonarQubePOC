@@ -662,11 +662,11 @@ namespace d360.model
             if (at.Class == AssetTypeClass.Reference)
             {
                 jointablesql = $@" left join {ApiExecutionFieldTable} C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' ";
-                DisplayValuesql = $@" inner join AssetDisplayValue ADV on ADV.AssetID = A.AssetID ";
+                DisplayValuesql = $@" cross apply GetAssetDisplayValueById(A.AssetID)ADV ";
             }
             else
             {
-                DisplayValuesql = $@" inner join AssetDisplayValue ADV on ADV.AssetID = A.AssetID ";
+                DisplayValuesql = $@" cross apply GetAssetDisplayValueById(A.AssetID)ADV ";
             }
 
             string fieldsSelectSql = $@"
