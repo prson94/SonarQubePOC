@@ -3956,7 +3956,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             bool enableJsonAttributes = false;
             bool hasCounterField = false;
 
-            try
+			try
             {
                 enableJsonAttributes = GetSettingValue<bool>(Setting.EnableJsonAttribute);
             }
@@ -4755,9 +4755,31 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                         }
                                     }
 
-                                    #endregion
+									#endregion
 
-                                    sw.Restart();
+									bool shouldRunMergeAssetPath = true;
+									if (!isInsert)
+									{
+										AddMeasurement(metrics, $"CheckIfKeyFieldsUpdated >> {currentLoop} > Begin", 0, ++step);
+
+										var checkUpdatedKeyFields = $@"
+											select count(*) from {ApiExecutionFieldTable} EF
+											inner join api.ExecutionAsset EA on EA.ItemNumber = EF.ItemNumber AND EA.ExecutionID = EF.ExecutionID
+											inner join FieldType FT ON FT.ID = EF.FieldTypeID AND FT.IsPartOfKey = 1
+											inner join Field F on F.AssetId = EA.AssetId and F.FieldTypeID = FT.ID
+											WHERE EF.ExecutionID = @ExecutionID AND EF.ItemNumber between @beginItemNumber and @endItemNumber
+											and F.FormattedValue <> EF.FieldValue";
+
+										var result = Connection.QueryFirst<int>(checkUpdatedKeyFields,
+											new { executionID = execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, timeout);
+
+										shouldRunMergeAssetPath = result > 0;
+
+										AddMeasurement(metrics, $"CheckIfKeyFieldsUpdated >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+										sw.Restart();
+									}
+
+									sw.Restart();
                                     List<AssetFieldTypeUpdate> transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, isInsert, hasLookupFieldTypes);
                                     AddMeasurement(metrics, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     sw.Restart();
@@ -4788,13 +4810,23 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                         AddMeasurement(metrics, $"MergeJsonFieldProperties >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
-									//call new procedure.
-									Connection.Execute(
-										"exec api.MergeAssetPaths @executionId, @class, @begin, @end",
-										new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber },
-										transaction: trans, timeout);
-									sw.Restart();
-									AddMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
+									if (shouldRunMergeAssetPath)
+									{
+										//call new procedure.
+										AddMeasurement(metrics, $"MergeAssetPaths >> {currentLoop} > Begin", 0, ++step);
+
+										Connection.Execute(
+											"exec api.MergeAssetPaths @executionId, @class, @begin, @end",
+											new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber },
+											transaction: trans, timeout);
+										AddMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
+										sw.Restart();
+									}
+									else
+									{
+										AddMeasurement(metrics, $"MergeAssetPaths >> {currentLoop} > Skipped", 0, ++step);
+									}
+
 
 									// Must execute BEFORE the Success flag is updated below.
 									sw.Restart();
