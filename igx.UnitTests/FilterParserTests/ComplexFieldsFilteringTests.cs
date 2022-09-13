@@ -64,7 +64,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("H1_00005 ne null", "H1_00005.FormattedValue is not null", 0)]
         public void TextTests(string input, string expectedOutput, int countOfParams = 1)
         {
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
+			expectedOutput = $"({expectedOutput})";
+
+			Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
             Assert.True(result == expectedOutput, "Got:" + result);
             Assert.True(parameters.Count == countOfParams);
@@ -79,7 +81,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("H1_00003 ne null", "H1_00003.FormattedValue is not null", 0)]
         public void BooleanTests(string input, string expectedOutput, int countOfParams = 1)
         {
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
+			expectedOutput = $"({expectedOutput})";
+
+			Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
             Assert.True(result == expectedOutput);
             Assert.True(parameters.Count == countOfParams);
@@ -104,7 +108,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("h1_00002 ne null", "H1_00002.FormattedValue is not null", 0)]
         public void NumberAndDecimalTests(string input, string expectedOutput, int countOfParams = 1)
         {
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
+			expectedOutput = $"({expectedOutput})";
+
+			Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
             Assert.True(result == expectedOutput, "Got:" + result);
             Assert.True(parameters.Count == countOfParams);
@@ -121,7 +127,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("h1_00007 ne null", "F7.FormattedValue is not null", 0)]
         public void CounterTests(string input, string expectedOutput, int countOfParams = 1)
         {
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
+			expectedOutput = $"({expectedOutput})";
+
+			Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
             Assert.True(result == expectedOutput, "Got:" + result);
             Assert.True(parameters.Count == countOfParams);
@@ -138,7 +146,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("h1_00004 ne null", "H1_00004.FormattedValue is not null", 0)]
         public void DateTests(string input, string expectedQuery, int countOfParams = 1)
         {
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
+			expectedQuery = $"({expectedQuery})";
+
+			Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
             Assert.True(result == expectedQuery, "Got:" + result);
             Assert.True(parameters.Count == countOfParams);
@@ -152,7 +162,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("h1_00006 ne null", "H1_00006.FormattedValue is not null")]
         public void LookupTests(string input, string expectedOutput)
         {
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
+			expectedOutput = $"({expectedOutput})";
+
+			Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
             Assert.True(result == expectedOutput, "Got:" + result);
         }
@@ -221,7 +233,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("H1__assetPath ne 'true > true1'", "H1p.Segments.exist('/path/segment[1][lower-case(.)=sql:variable(\"@filter_1_0\")]') = 0 and H1p.Segments.exist('/path/segment[2][lower-case(.)=sql:variable(\"@filter_1_1\")]') = 0")] // multiple tokens not-equal
         public void AssetPathTests(string input, string expectedResult)
         {
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
+			expectedResult = $"({expectedResult})";
+
+			Dictionary<string, object> parameters = new Dictionary<string, object>();
             var result = this.filterParser.Parse(input, out parameters, out _);
             Assert.Equal(result, expectedResult);
         }

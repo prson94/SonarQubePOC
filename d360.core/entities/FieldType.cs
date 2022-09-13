@@ -6,6 +6,8 @@ using System.Runtime.Serialization;
 
 using d360.core.entities.Contracts;
 using d360.core.enums;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace d360.core.entities
 {
@@ -170,6 +172,23 @@ namespace d360.core.entities
 
 		[DataMember]
 		public bool? DisplayInColumn { get; set; }
+
+		public bool IsPathSegment
+		{
+			get
+			{
+				if (this.Type == DataType.Path.ToString())
+				{
+					var definition = JsonConvert.DeserializeObject<JObject>(this.Definition ?? "{}");
+					if (definition.TryGetValue("AssetTypeUid", out _))
+					{
+						return Guid.TryParse(definition.GetValue("AssetTypeUid").ToString(), out _);
+					}
+				}
+
+				return false;
+			}
+		}
 	}
 
 	#region Definition property models
