@@ -578,7 +578,7 @@ namespace d360.web.Controllers.V2
 
 			if (assetType == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(AssetsApiMessages.AssetAssetTypeNotFound, uid));
+				throw new NotFoundBusinessLayerException(string.Format(AssetsApiMessages.AssetTypeNotFound, uid));
 			}
 
 			var res = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == assetType.ID);
