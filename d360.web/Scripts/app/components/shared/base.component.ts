@@ -455,7 +455,7 @@ export class BaseComponent {
 					$localize`Children`,
 					'children',
 					['fa-sitemap'],
-					`/asset/${this.baseAssetUid}`
+					`/asset/${this.baseAssetUid}/children`
 				);
 
 				this.secondaryNavService.showItem(this.childSidebar);
