@@ -183,7 +183,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">70,73</context>
+          <context context-type="linenumber">70,72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6756972429346638249" datatype="html">
@@ -223,7 +223,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">684,688</context>
+          <context context-type="linenumber">689,693</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6932865105766151309" datatype="html">
@@ -265,7 +265,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">71,73</context>
+          <context context-type="linenumber">72,74</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-type.form.ts</context>
@@ -883,7 +883,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">85,88</context>
+          <context context-type="linenumber">84,87</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-editor/asset-editor-field.component.html</context>
@@ -1054,15 +1054,15 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">180,182</context>
+          <context context-type="linenumber">192,194</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">239,241</context>
+          <context context-type="linenumber">251,253</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">318,320</context>
+          <context context-type="linenumber">334,336</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/asset-grid-top-level-list.component.html</context>
@@ -1186,7 +1186,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">134,136</context>
+          <context context-type="linenumber">135,137</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu.component.ts</context>
@@ -3251,7 +3251,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">197,200</context>
+          <context context-type="linenumber">198,201</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/assetbrowser/tools/savedfilter.component.ts</context>
@@ -3609,7 +3609,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/rule/rule-results-grid.component.html</context>
-          <context context-type="linenumber">59,62</context>
+          <context context-type="linenumber">58,61</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/responsibilities/responsibility-relation.form.html</context>
@@ -3858,7 +3858,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">93,96</context>
+          <context context-type="linenumber">92,95</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/workflow/workflow-history.component.html</context>
@@ -4898,29 +4898,36 @@
           <context context-type="linenumber">363,365</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="1933254055700896737" datatype="html">
+        <source>Edit Rule</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
+          <context context-type="linenumber">71,74</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="7969329807957588726" datatype="html">
         <source>Show Results</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">73,74</context>
+          <context context-type="linenumber">74,75</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3277098866708261439" datatype="html">
         <source>Hide Results</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">74,76</context>
+          <context context-type="linenumber">75,77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1967872567041002687" datatype="html">
         <source>Choose...</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">76,78</context>
+          <context context-type="linenumber">77,79</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">78,80</context>
+          <context context-type="linenumber">83,85</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-form/field-type.form.ts</context>
@@ -4931,7 +4938,7 @@
         <source>Field</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">80,81</context>
+          <context context-type="linenumber">81,82</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/admin-metric-pass-test-details.component.ts</context>
@@ -4942,10 +4949,6 @@
           <context context-type="linenumber">40,41</context>
         </context-group>
         <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/rule/rule-column-filter.component.ts</context>
-          <context context-type="linenumber">65,66</context>
-        </context-group>
-        <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/sidebar/audit/audit.component.ts</context>
           <context context-type="linenumber">70</context>
         </context-group>
@@ -4954,7 +4957,7 @@
         <source>Relationship</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">81,83</context>
+          <context context-type="linenumber">82,84</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/admin-metric-pass-test-details.component.ts</context>
@@ -4965,10 +4968,6 @@
           <context context-type="linenumber">42,43</context>
         </context-group>
         <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/rule/rule-column-filter.component.ts</context>
-          <context context-type="linenumber">181,182</context>
-        </context-group>
-        <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.ts</context>
           <context context-type="linenumber">196,198</context>
         </context-group>
@@ -4977,7 +4976,7 @@
         <source>True</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">84,85</context>
+          <context context-type="linenumber">85,86</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/advanced-filtering.component.ts</context>
@@ -4996,7 +4995,7 @@
         <source>False</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">85,88</context>
+          <context context-type="linenumber">86,89</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/advanced-filtering.component.ts</context>
@@ -5015,14 +5014,14 @@
         <source>Group</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">108,109</context>
+          <context context-type="linenumber">109,110</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2392488717875840729" datatype="html">
         <source>User</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
-          <context context-type="linenumber">109,111</context>
+          <context context-type="linenumber">110,112</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/sidebar/audit/audit.component.ts</context>
@@ -5666,7 +5665,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/rule/rule-results-grid.component.html</context>
-          <context context-type="linenumber">55,58</context>
+          <context context-type="linenumber">54,57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="236360fcb765c4f4027346b56c7ebd740a88f0f8" datatype="html">
@@ -5980,7 +5979,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/rule/rule-results-grid.component.html</context>
-          <context context-type="linenumber">71,74</context>
+          <context context-type="linenumber">70,73</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
@@ -7314,7 +7313,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">241,242</context>
+          <context context-type="linenumber">253,254</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/multiselect-grid.component.html</context>
@@ -7339,14 +7338,14 @@
         <source>Add to selected folder items</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">123,127</context>
+          <context context-type="linenumber">119,124</context>
         </context-group>
       </trans-unit>
       <trans-unit id="484ca1bb3a678e5762646a1b08db2053e964fd21" datatype="html">
         <source>Remove from selected folder items</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">132,136</context>
+          <context context-type="linenumber">130,135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7d94dabd04baf688b208c7b780f74a6e579624b8" datatype="html">
@@ -7360,50 +7359,49 @@
         <source>Move up</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">152,155</context>
+          <context context-type="linenumber">154,158</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7a91e24cda07c3ccff6a84d88c25de674bf288f0" datatype="html">
         <source>Move down</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">160,164</context>
+          <context context-type="linenumber">164,169</context>
         </context-group>
       </trans-unit>
       <trans-unit id="cc2a64c2c676a17696c280e710e1399dd964d5a8" datatype="html">
         <source>Move to bottom</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">169,174</context>
+          <context context-type="linenumber">175,179</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7df646284800b8c92d57be531b6d66c2b77720ef" datatype="html">
-        <source><x id="INTERPOLATION" equiv-text="&quot;&gt;
-										&lt;"/> item<x id="INTERPOLATION_1" equiv-text="{{selectedNewFo"/> selected</source>
+      <trans-unit id="ed02479514af426acabd262720a4a3734f8a3385" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="px&quot;&gt;"/> item<x id="INTERPOLATION_1" equiv-text="{{selectedItems"/> selected</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">185,188</context>
+          <context context-type="linenumber">197,200</context>
         </context-group>
       </trans-unit>
       <trans-unit id="a71d7228f359bb4c6d536ddbf253791f73ad16e2" datatype="html">
         <source>Selected Folder Items</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">204,207</context>
+          <context context-type="linenumber">216,219</context>
         </context-group>
       </trans-unit>
       <trans-unit id="62706fba938ff3628f75d82340727588243d5048" datatype="html">
         <source>Please select at least one item</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">207,212</context>
+          <context context-type="linenumber">219,224</context>
         </context-group>
       </trans-unit>
       <trans-unit id="70f45880fce6ac5d8e468e25e82aefbba8098cfe" datatype="html">
         <source>Permissions</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">225,228</context>
+          <context context-type="linenumber">237,240</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/responsibilities/responsibility-relation.form.html</context>
@@ -7414,28 +7412,28 @@
         <source>By default all users can see each navigation folder. If there are any permissions defined, only those users/groups will see the folder on their navigation.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">229,234</context>
+          <context context-type="linenumber">241,246</context>
         </context-group>
       </trans-unit>
       <trans-unit id="29a00857a9ba8bf619d4ada5d9254a678bd10c6c" datatype="html">
         <source><x id="INTERPOLATION" equiv-text="p-table #dt6"/> items selected</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">242,247</context>
+          <context context-type="linenumber">254,259</context>
         </context-group>
       </trans-unit>
       <trans-unit id="d689a5ba5e92c377411ec2878091d9635289af20" datatype="html">
         <source>Available Users/Groups</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">267,271</context>
+          <context context-type="linenumber">279,283</context>
         </context-group>
       </trans-unit>
       <trans-unit id="abae93b8ed78d0dcbde4d90a443fdc1b0b02518d" datatype="html">
         <source>View Information</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">278,282</context>
+          <context context-type="linenumber">290,294</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/multiselect-grid.component.html</context>
@@ -7446,28 +7444,28 @@
         <source>Add to selected users/groups</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">298,303</context>
+          <context context-type="linenumber">306,311</context>
         </context-group>
       </trans-unit>
       <trans-unit id="497e7ad4b5c38fb133f31a9777804d67307c42b2" datatype="html">
         <source>Remove from selected users/groups</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">307,313</context>
+          <context context-type="linenumber">317,322</context>
         </context-group>
       </trans-unit>
       <trans-unit id="288a69d8f01f663d3456aa2f57e7947f0a98f26c" datatype="html">
         <source>Selected Users/Groups </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">335,338</context>
+          <context context-type="linenumber">351,354</context>
         </context-group>
       </trans-unit>
       <trans-unit id="c43dc1967a603fefb886149ac35863a06d5b4ce5" datatype="html">
         <source>Information</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">376,378</context>
+          <context context-type="linenumber">392,394</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/artifact/artifact-item.component.html</context>
@@ -7495,7 +7493,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">202,205</context>
+          <context context-type="linenumber">201,204</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/relationship-grid/add-relationship.component.html</context>
@@ -7510,7 +7508,7 @@
         <source>Close side panel</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">378,382</context>
+          <context context-type="linenumber">394,398</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/relationship-grid/add-relationship.component.html</context>
@@ -7521,7 +7519,7 @@
         <source>Click the information button to display the properties of a referenced item</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">385,390</context>
+          <context context-type="linenumber">401,406</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5460977001163934315" datatype="html">
@@ -9217,7 +9215,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/rule/rule-results-grid.component.ts</context>
-          <context context-type="linenumber">56,57</context>
+          <context context-type="linenumber">53,54</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/search/search.component.ts</context>
@@ -10194,90 +10192,6 @@
           <context context-type="linenumber">114</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="5ca707824ab93066c7d9b44e1b8bf216725c2c22" datatype="html">
-        <source>Filter</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/rule/rule-column-filter.component.html</context>
-          <context context-type="linenumber">6,9</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-form/field-type.form.html</context>
-          <context context-type="linenumber">744,747</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="9e84eacbce095da9b066bd5a2a117ec1a250ce24" datatype="html">
-        <source>Choose a field</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/rule/rule-column-filter.component.html</context>
-          <context context-type="linenumber">40,44</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/controls/field-condition-grid/field-condition-grid.component.html</context>
-          <context context-type="linenumber">11,13</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/controls/field-condition-grid/field-condition-grid.component.html</context>
-          <context context-type="linenumber">27,30</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="1c31af3b6884f073365bfdb28f8436d0ab7d34e3" datatype="html">
-        <source>Enter a value</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/rule/rule-column-filter.component.html</context>
-          <context context-type="linenumber">54,58</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="a6e45b957e53a4651ea28d2bc3feb78c771f5092" datatype="html">
-        <source>Add Filter</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/rule/rule-column-filter.component.html</context>
-          <context context-type="linenumber">65,69</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list-column-filter.components.ts</context>
-          <context context-type="linenumber">42,43</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="a6bfad58bb363d5c891d0a5474b1d77ef90a34da" datatype="html">
-        <source>Remove Filter</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/rule/rule-column-filter.component.html</context>
-          <context context-type="linenumber">73,76</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list-column-filter.components.ts</context>
-          <context context-type="linenumber">45,47</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="6606aa0eb4faf3861fdfb9b61c50a4f1f5e2d117" datatype="html">
-        <source> **Warning: Only a single relationship filter is supported at a time! </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/rule/rule-column-filter.component.html</context>
-          <context context-type="linenumber">83,87</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="0a99f181d17732d057e2e56b0c33b7d5081d1f6d" datatype="html">
-        <source>Filter Results</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/rule/rule-column-filter.component.html</context>
-          <context context-type="linenumber">88,93</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list-column-filter.components.ts</context>
-          <context context-type="linenumber">53,54</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5bcee2ae3b89e38e58b1244b1088594795dc96da" datatype="html">
-        <source>Clear all Filters</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/rule/rule-column-filter.component.html</context>
-          <context context-type="linenumber">95,100</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list-column-filter.components.ts</context>
-          <context context-type="linenumber">54,58</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="80ed5b776a26a78099e230e0e89d96c33ba44e24" datatype="html">
         <source>Results</source>
         <context-group purpose="location">
@@ -10289,7 +10203,7 @@
         <source>Asset</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/rule/rule-results-grid.component.html</context>
-          <context context-type="linenumber">63,66</context>
+          <context context-type="linenumber">62,65</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
@@ -10328,7 +10242,7 @@
         <source>Run Date</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/rule/rule-results-grid.component.html</context>
-          <context context-type="linenumber">67,70</context>
+          <context context-type="linenumber">66,69</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
@@ -10339,7 +10253,7 @@
         <source>Pass Fraction</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/rule/rule-results-grid.component.html</context>
-          <context context-type="linenumber">75,78</context>
+          <context context-type="linenumber">74,77</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
@@ -10354,7 +10268,7 @@
         <source>Total Rows</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/rule/rule-results-grid.component.html</context>
-          <context context-type="linenumber">79,82</context>
+          <context context-type="linenumber">78,81</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
@@ -10365,7 +10279,7 @@
         <source>Rows Passed</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/rule/rule-results-grid.component.html</context>
-          <context context-type="linenumber">83,86</context>
+          <context context-type="linenumber">82,85</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
@@ -10376,7 +10290,7 @@
         <source>Rows Failed</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/rule/rule-results-grid.component.html</context>
-          <context context-type="linenumber">87,90</context>
+          <context context-type="linenumber">86,89</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
@@ -10387,7 +10301,7 @@
         <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;d3s-grid-pag"/>Outdated Rule Result<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt; - This"/> - This rule result will not be used in the calculation of the data quality score because another rule result for the same effective date has been posted. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/rule/rule-results-grid.component.html</context>
-          <context context-type="linenumber">133,141</context>
+          <context context-type="linenumber">132,140</context>
         </context-group>
       </trans-unit>
       <trans-unit id="e92a636d9186e68910145dfee1d4f8657cd1cccb" datatype="html">
@@ -10703,7 +10617,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">89,92</context>
+          <context context-type="linenumber">88,91</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/semantic-editor/semantic-editor.component.html</context>
@@ -10740,7 +10654,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">97,100</context>
+          <context context-type="linenumber">96,99</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/semantic-editor/semantic-editor.component.html</context>
@@ -10787,7 +10701,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">101,104</context>
+          <context context-type="linenumber">100,103</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.html</context>
@@ -11187,21 +11101,21 @@ Please refine your search.</source>
         <source>Disabled</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">107,110</context>
+          <context context-type="linenumber">106,109</context>
         </context-group>
       </trans-unit>
       <trans-unit id="07b85afd22aec80d7259423310153f0003e4f69e" datatype="html">
         <source> No semantic types found </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">170,175</context>
+          <context context-type="linenumber">169,174</context>
         </context-group>
       </trans-unit>
       <trans-unit id="40769e988bedf98178b0c368dd49f80e75eee15e" datatype="html">
         <source>Delete Semantic Type</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">243,247</context>
+          <context context-type="linenumber">242,246</context>
         </context-group>
       </trans-unit>
       <trans-unit id="30eecba37b0bad55c6b587d2206aa0687373ab3d" datatype="html">
@@ -11209,35 +11123,35 @@ Please refine your search.</source>
             Please note t"/> Please note that this operation cannot be undone. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">250,251</context>
+          <context context-type="linenumber">249,250</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3e00427f62cd0893afb3cea7d6bcb368769fe9d7" datatype="html">
         <source><x id="INTERPOLATION"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">272,276</context>
+          <context context-type="linenumber">271,275</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4de91395beff1f4db476460bb1fd4b3b5fdb4eaf" datatype="html">
         <source> Are you sure you want to disable this semantic type? </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">281,284</context>
+          <context context-type="linenumber">280,283</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7e1738d0569b6a41ffc8ed1627ec92472bcdc116" datatype="html">
         <source> It will be disabled as of today and will no longer be used to classify assets based on Profiling data. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">284,290</context>
+          <context context-type="linenumber">283,289</context>
         </context-group>
       </trans-unit>
       <trans-unit id="52f1446e61ef66bba2c659dd37c996d0b06c6903" datatype="html">
         <source> The Semantic Type will be enabled as of today (current date) and will be used to classify assets when profiling data is added to an asset. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">290,294</context>
+          <context context-type="linenumber">289,293</context>
         </context-group>
       </trans-unit>
       <trans-unit id="9197927300916194016" datatype="html">
@@ -11459,7 +11373,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">56,57</context>
+          <context context-type="linenumber">61,62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="199306376999756946" datatype="html">
@@ -11484,7 +11398,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">349</context>
+          <context context-type="linenumber">354</context>
         </context-group>
       </trans-unit>
       <trans-unit id="412937997256900695" datatype="html">
@@ -11495,7 +11409,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">514,515</context>
+          <context context-type="linenumber">519,520</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2423642627822697134" datatype="html">
@@ -11506,7 +11420,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">589,593</context>
+          <context context-type="linenumber">594,598</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8225633520098756564" datatype="html">
@@ -11524,7 +11438,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">597</context>
+          <context context-type="linenumber">602</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8291226388087336804" datatype="html">
@@ -11535,7 +11449,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">601</context>
+          <context context-type="linenumber">606</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5393355484359588446" datatype="html">
@@ -11546,7 +11460,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">605,609</context>
+          <context context-type="linenumber">610,614</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1171630381518146295" datatype="html">
@@ -11557,7 +11471,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">618</context>
+          <context context-type="linenumber">623</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4156051479642490782" datatype="html">
@@ -11568,7 +11482,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">622</context>
+          <context context-type="linenumber">627</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3326804381389332015" datatype="html">
@@ -11579,7 +11493,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">626</context>
+          <context context-type="linenumber">631</context>
         </context-group>
       </trans-unit>
       <trans-unit id="817158214518135008" datatype="html">
@@ -11590,7 +11504,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">630,636</context>
+          <context context-type="linenumber">635,641</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5647346705768535808" datatype="html">
@@ -11690,7 +11604,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">683</context>
+          <context context-type="linenumber">688</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1773189492656662756" datatype="html">
@@ -12650,6 +12564,17 @@ Please refine your search.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/controls/codearea/codearea.component.ts</context>
           <context context-type="linenumber">118,121</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9e84eacbce095da9b066bd5a2a117ec1a250ce24" datatype="html">
+        <source>Choose a field</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/controls/field-condition-grid/field-condition-grid.component.html</context>
+          <context context-type="linenumber">11,13</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/controls/field-condition-grid/field-condition-grid.component.html</context>
+          <context context-type="linenumber">27,30</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2e088d9755d1d420845352990f8311441d21f3fc" datatype="html">
@@ -16084,14 +16009,14 @@ Please refine your search.</source>
         <source>Please enter a valid integer.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">593,597</context>
+          <context context-type="linenumber">598,602</context>
         </context-group>
       </trans-unit>
       <trans-unit id="566532862877855079" datatype="html">
         <source><x id="PH" equiv-text="+= $localize`${"/> is required. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-field.component.ts</context>
-          <context context-type="linenumber">613</context>
+          <context context-type="linenumber">618</context>
         </context-group>
       </trans-unit>
       <trans-unit id="824e360e6a888b742691475a60e38252b6989462" datatype="html">
@@ -16744,6 +16669,13 @@ Please refine your search.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-form/field-type.form.html</context>
           <context context-type="linenumber">742,745</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5ca707824ab93066c7d9b44e1b8bf216725c2c22" datatype="html">
+        <source>Filter</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-form/field-type.form.html</context>
+          <context context-type="linenumber">744,747</context>
         </context-group>
       </trans-unit>
       <trans-unit id="24551d16e956a1007fb940e20fafd0b47d0a7e4b" datatype="html">
@@ -20347,6 +20279,34 @@ Please refine your search.</source>
           <context context-type="linenumber">54,56</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="a6e45b957e53a4651ea28d2bc3feb78c771f5092" datatype="html">
+        <source>Add Filter</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list-column-filter.components.ts</context>
+          <context context-type="linenumber">42,43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a6bfad58bb363d5c891d0a5474b1d77ef90a34da" datatype="html">
+        <source>Remove Filter</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list-column-filter.components.ts</context>
+          <context context-type="linenumber">45,47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="0a99f181d17732d057e2e56b0c33b7d5081d1f6d" datatype="html">
+        <source>Filter Results</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list-column-filter.components.ts</context>
+          <context context-type="linenumber">53,54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5bcee2ae3b89e38e58b1244b1088594795dc96da" datatype="html">
+        <source>Clear all Filters</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list-column-filter.components.ts</context>
+          <context context-type="linenumber">54,58</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="188313477943387511" datatype="html">
         <source>And</source>
         <context-group purpose="location">
@@ -20417,8 +20377,8 @@ Please refine your search.</source>
           <context context-type="linenumber">83,85</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="5247336458131883458" datatype="html">
-        <source>description text box</source>
+      <trans-unit id="8547620549038587295" datatype="html">
+        <source>text box</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/directives/ig-textarea-directive.ts</context>
           <context context-type="linenumber">102,104</context>
