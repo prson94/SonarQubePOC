@@ -136,7 +136,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("Outdated ne false", "(coalesce(E.IsDuplicate, R.IsDuplicate) <> @filter_1 or coalesce(E.IsDuplicate, R.IsDuplicate) is null)")]
         public void ValidValues(string expression, string expectedQuery)
         {
-            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+			expectedQuery = $"({expectedQuery})";
+
+			Dictionary<string, object> sqlParams = new Dictionary<string, object>();
 
             List<int> filteredFields = new List<int>();
             string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
