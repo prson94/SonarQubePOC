@@ -119,13 +119,13 @@
     <value>Allocazione non trovata.</value>
   </data>
   <data name="assigneeUidFilterValidation" xml:space="preserve">
-    <value>Per utilizzare il filtro _assigneeuid, è necessario specificare anche il filtro _assetTypeUid o _assetUid.</value>
+    <value>Per utilizzare il filtro [_assigneeuid], è necessario specificare anche il filtro [_assetTypeUid] o [_assetUid].</value>
   </data>
   <data name="DuplicateResponsibilityRule" xml:space="preserve">
     <value>UID delle regole di responsabilità non univoci: {0}. Gli identificatori devono essere univoci all'interno di una tabella.</value>
   </data>
   <data name="InvalidAssetTypeClass" xml:space="preserve">
-    <value>AssetTypeClass non valida. [{0}] non è una classe valida.</value>
+    <value>[AssetTypeClass] non valido. [{0}] non è valido.</value>
   </data>
   <data name="InvalidPermissionProvided" xml:space="preserve">
     <value>Autorizzazione fornita non valida. [{0}]</value>
@@ -134,7 +134,7 @@
     <value>L'UID '{0}' non è una risorsa o un gruppo valido.</value>
   </data>
   <data name="InvalidResponsibilityUid" xml:space="preserve">
-    <value>Non è stato fornito un UID ResponsibilityType valido per questa richiesta.</value>
+    <value>Non è stato fornito un UID Tipo di responsabilità valido per questa richiesta.</value>
   </data>
   <data name="InvalidTestType" xml:space="preserve">
     <value>Tipo di test non valido. I valori validi sono 'when' e 'then'</value>

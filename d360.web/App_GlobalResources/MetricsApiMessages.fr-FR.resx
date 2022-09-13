@@ -119,13 +119,13 @@
     <value>L’actif correspondant à l’identifiant de {0} est introuvable.</value>
   </data>
   <data name="ConditionFieldTypeNameNotEmpty" xml:space="preserve">
-    <value>ConditionFieldTypeName ne doit pas être vide.</value>
+    <value>[ConditionFieldTypeName] ne doit pas être vide.</value>
   </data>
   <data name="ConditionIntersectTypeUidNotValid" xml:space="preserve">
-    <value>ConditionIntersectTypeUid doit être valide.</value>
+    <value>[ConditionIntersectTypeUid] doit être valide.</value>
   </data>
   <data name="ConditionNotEmpty" xml:space="preserve">
-    <value>Vous devez utiliser soit ConditionFieldTypeName ou ConditionIntersectTypeUid dans une condition.</value>
+    <value>Vous devez utiliser [ConditionFieldTypeName] ou [ConditionIntersectTypeUid ] dans une condition.</value>
   </data>
   <data name="ConditionValueMaxChar250" xml:space="preserve">
     <value>La valeur de la condition ne doit pas dépasser 250 caractères.</value>
@@ -152,7 +152,7 @@
     <value>{0} {1} n’est pas un UID valide</value>
   </data>
   <data name="DescriptionLengthValidation" xml:space="preserve">
-    <value>La longueur de la description ({0} caractères) est trop longue. La longueur maximale autorisée est de 4 000 caractères.</value>
+    <value>La longueur de [Description] ({0} caractères) est trop longue. La longueur maximale autorisée est de 4 000 caractères.</value>
   </data>
   <data name="Errorlocatingmetric" xml:space="preserve">
     <value>Erreur de localisation de métrique</value>
@@ -182,10 +182,10 @@
     <value>La valeur {0} n’est pas une date valide. L’année doit être comprise entre 1900 et l’année en cours.</value>
   </data>
   <data name="InvalidEffectiveDate" xml:space="preserve">
-    <value>Date d’entrée en vigueur fournie non valide !</value>
+    <value>Valeur [EffectiveDate] fournie non valide !</value>
   </data>
   <data name="IsGroupTrueParentMetric" xml:space="preserve">
-    <value>La métrique parente doit avoir la valeur ’IsGroup’ définie sur True.</value>
+    <value>La métrique parente doit avoir la valeur [IsGroup] définie sur True.</value>
   </data>
   <data name="MetricAdded" xml:space="preserve">
     <value>Métrique ajoutée</value>
@@ -233,7 +233,7 @@
     <value>L’allocation du score correspondant à l’actif avec l’identifiant de {0} est introuvable.</value>
   </data>
   <data name="UseSingleCondition" xml:space="preserve">
-    <value>Vous ne pouvez pas utiliser ConditionFieldTypeName et ConditionIntersectTypeUid dans une même condition</value>
+    <value>Vous ne pouvez pas utiliser [ConditionFieldTypeName] et [ConditionIntersectTypeUid] dans une même condition</value>
   </data>
   <data name="WeightDecimalValidation" xml:space="preserve">
     <value>La pondération doit être une décimale supérieure à 0 et inférieure ou égale à 1</value>

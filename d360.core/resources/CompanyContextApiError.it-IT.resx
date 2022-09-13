@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DuplicateExecutionItem" xml:space="preserve">
-    <value>Identificatori degli elementi di esecuzione duplicati: {0}. Gli identificatori devono essere univoci all'interno di un batch.</value>
+    <value>[ExecutionItemUid] duplicato: {0}. Gli identificatori devono essere univoci all'interno di un batch.</value>
   </data>
   <data name="FieldNotAllowedMultipleValies" xml:space="preserve">
     <value>{0} non consente la selezione di più valori</value>

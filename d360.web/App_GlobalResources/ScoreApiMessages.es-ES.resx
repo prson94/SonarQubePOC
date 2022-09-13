@@ -122,10 +122,10 @@
     <value>La asignación con el UID {0} no existe.</value>
   </data>
   <data name="DuplicateMeasureUid" xml:space="preserve">
-    <value>measureUid duplicado especificado en la carga útil.</value>
+    <value>[measureUid] duplicado especificado en la carga útil.</value>
   </data>
   <data name="EffectiveDateNotGTToday" xml:space="preserve">
-    <value>effectiveDate no debe ser posterior a la fecha de hoy (en UTC).</value>
+    <value>[effectiveDate] no debe ser posterior a la fecha de hoy (en UTC).</value>
   </data>
   <data name="ErrorAddingScoreResults" xml:space="preserve">
     <value>Error al agregar los resultados de puntuación</value>
@@ -140,7 +140,7 @@
     <value>Debe establecerse un umbral inferior.</value>
   </data>
   <data name="RangeLimitThreshold" xml:space="preserve">
-    <value>Los valores de umbral deben ser entre 0 y 100.</value>
+    <value>Los valores de [Threshold] deben estar entre 0 y 100.</value>
   </data>
   <data name="RestrictDeleteScore" xml:space="preserve">
     <value>Lamentablemente, no se puede eliminar una puntuación con medidas definidas.</value>
@@ -176,9 +176,9 @@
     <value>La definición de puntuación con {0} no se ha calculado internamente.</value>
   </data>
   <data name="UpperGtLower" xml:space="preserve">
-    <value>El umbral inferior debe ser menor que el umbral superior.</value>
+    <value>El [lowerThreshold] debe ser menor que el [upperThreshold]</value>
   </data>
   <data name="UpperThreshold" xml:space="preserve">
-    <value>Debe establecerse un umbral superior.</value>
+    <value>Debe establecerse un [upperThreshold].</value>
   </data>
 </root>

@@ -116,16 +116,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ActionNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
-    <value>I tipi di azione non possono avere la proprietà del campo 'IsPartOfKey' impostata su true.</value>
+    <value>I tipi di azione non possono avere la proprietà del campo [IsPartOfKey] impostata su true.</value>
   </data>
   <data name="ActionNotAllowedScoreFieldType" xml:space="preserve">
-    <value>Le azioni non possono avere il tipo di campo Score.</value>
+    <value>Le azioni non possono avere il valore [Type.Score]</value>
   </data>
   <data name="ActionNotAllowedTagFieldType" xml:space="preserve">
-    <value>Le azioni non possono avere il tipo di campo Tag.</value>
+    <value>Le azioni non possono avere il valore [Type.Tag]</value>
   </data>
   <data name="ActionNotSupportPath" xml:space="preserve">
-    <value>Le azioni non possono avere il tipo di campo Path.</value>
+    <value>Le azioni non possono avere il valore [Type.Path]</value>
   </data>
   <data name="ActionTypeUidNotFound" xml:space="preserve">
     <value>Tipo di azione non trovato in base all'UID fornito [{0}].</value>
@@ -144,25 +144,25 @@
     <value>Questo tipo di risorsa potrebbe non avere campi chiave definiti.</value>
   </data>
   <data name="AssetTypeNotHaveScoreField" xml:space="preserve">
-    <value>Questo tipo di risorsa potrebbe non avere un tipo di campo Score.</value>
+    <value>Questo tipo di risorsa non può avere un valore [Type.Score]</value>
   </data>
   <data name="AssetTypeUidNotFound" xml:space="preserve">
     <value>Tipo di risorsa non trovato in base all'UID fornito [{0}].</value>
   </data>
   <data name="AssetTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
-    <value>Non è possibile fornire un AssetTypeUid poiché è stato già fornito un ActionTypeUid.</value>
+    <value>Non è possibile fornire un [AssetTypeUid] poiché è stato già fornito un [ActionTypeUid].</value>
   </data>
   <data name="ComputedOwnershipLookupNotSupported" xml:space="preserve">
-    <value>I campi ComputedOwnershipLookup non sono consentiti per il tipo di risorsa corrente.</value>
+    <value>I campi [ComputedOwnershipLookup] non sono consentiti per il tipo di risorsa corrente.</value>
   </data>
   <data name="ComputedRelationshipFieldNotSupported" xml:space="preserve">
-    <value>I campi ComputedRelationshipField non sono consentiti per il tipo di risorsa corrente.</value>
+    <value>I campi [ComputedRelationshipField] non sono consentiti per il tipo di risorsa corrente.</value>
   </data>
   <data name="ComputedRelationshipLookupNotSupported" xml:space="preserve">
-    <value>I campi ComputedRelationshipLookup non sono consentiti per il tipo di risorsa corrente.</value>
+    <value>I campi [ComputedRelationshipLookup] non sono consentiti per il tipo di risorsa corrente.</value>
   </data>
   <data name="ComputedRelationshipReferenceListNotSupported" xml:space="preserve">
-    <value>I campi ComputedRelationshipReferenceList non sono consentiti per il tipo di risorsa corrente.</value>
+    <value>I campi [ComputedRelationshipReferenceList] non sono consentiti per il tipo di risorsa corrente.</value>
   </data>
   <data name="Constantfalse" xml:space="preserve">
     <value>false</value>
@@ -193,28 +193,28 @@
     <comment>Constant Parameter value</comment>
   </data>
   <data name="CounterFieldNotSupportedThisAssetType" xml:space="preserve">
-    <value>Questo tipo di risorsa potrebbe non avere un tipo di campo Counter.</value>
+    <value>Questo tipo di risorsa non può avere un valore [Type.Counter]</value>
   </data>
   <data name="CounterPrefixMax10Char" xml:space="preserve">
-    <value>Il campo Counter Prefix non può contenere più di 10 caratteri.</value>
+    <value>Il campo [CounterPrefix] non può contenere più di 10 caratteri.</value>
   </data>
   <data name="CounterPrefixRule" xml:space="preserve">
-    <value>Il campo Counter Prefix deve essere composto da caratteri alfanumerici e/o dai simboli _ o -.</value>
+    <value>Il campo [CounterPrefix] deve essere composto da caratteri alfanumerici e/o dai simboli _ o -.</value>
   </data>
   <data name="CounterPrefixStartWithAlpha" xml:space="preserve">
-    <value>Il campo Counter Prefix deve iniziare con un carattere.</value>
+    <value>Il campo [CounterPrefix] deve iniziare con un carattere.</value>
   </data>
   <data name="CounterRange" xml:space="preserve">
-    <value>Il campo Counter Initial Value deve essere compreso tra 1 e 9999999.</value>
+    <value>[CounterInitialIndex] deve essere compreso tra 1 e 9999999.</value>
   </data>
   <data name="DefaultValueError" xml:space="preserve">
-    <value>Il valore predefinito deve essere compreso tra {0} e {1}</value>
+    <value>[DefaultValue] deve essere compreso tra {0} e {1}</value>
   </data>
   <data name="DiagramATCustomError" xml:space="preserve">
     <value>I campi non statici sul tipo di risorsa diagramma non possono avere '{0}' impostato su {1}.</value>
   </data>
   <data name="DisplayInColumnMustFlaseOnComputedWonerShipLookup" xml:space="preserve">
-    <value>DisplayInColumn su ComputedOwnershipLookup può essere impostato su True solo se DisplayAsList è impostato su True.</value>
+    <value>[DisplayInColumn] in [ComputedOwnershipLookup] può essere impostato su True solo se [DisplayAsList] è impostato su True.</value>
   </data>
   <data name="DuplicateFieldNames" xml:space="preserve">
     <value>Nomi dei campi duplicati</value>
@@ -247,19 +247,19 @@
     <value>Errore del tipo di campo</value>
   </data>
   <data name="FieldTypeListNotSpecified" xml:space="preserve">
-    <value>Tipo di campo: elenco non specificato</value>
+    <value>È necessario specificare [Lookup.List]</value>
   </data>
   <data name="FieldTypeNotFound" xml:space="preserve">
     <value>Tipo di campo non trovato</value>
   </data>
   <data name="FieldTypeNotFoundByName" xml:space="preserve">
-    <value>Tipo di campo non trovato in base al nome fornito [{0}].</value>
+    <value>Tipo di campo non trovato in base a [Name] fornito [{0}].</value>
   </data>
   <data name="FormDescriptionMustBeEmptyForRelationship" xml:space="preserve">
-    <value>Campo {0}. La descrizione del modulo deve essere vuota per il campo Relationship quando IsEditable è impostato su false.</value>
+    <value>Campo {0}. [Description.Form] deve essere vuoto per il campo Relazione quando [IsEditable] è impostato su false.</value>
   </data>
   <data name="FriendNameCannotBe" xml:space="preserve">
-    <value>FriendlyName non può essere [{0}].</value>
+    <value>[FriendlyName] non può essere [{0}].</value>
   </data>
   <data name="GreaterThanError" xml:space="preserve">
     <value>{0} deve essere maggiore di {1}</value>
@@ -274,25 +274,25 @@
     <value>Campo {0} non valido</value>
   </data>
   <data name="InvalidFieldFriendlyName" xml:space="preserve">
-    <value>Campo FriendlyName non valido</value>
+    <value>Campo [FriendlyName] non valido</value>
   </data>
   <data name="InvalidFieldName" xml:space="preserve">
-    <value>Nome campo non valido</value>
+    <value>Campo [Name] non valido</value>
   </data>
   <data name="InvalidFields" xml:space="preserve">
     <value>Campi non validi</value>
   </data>
   <data name="InvalidJsonFieldType" xml:space="preserve">
-    <value>Tipo di campo JSON Attribute non valido. I valori consentiti sono {0}!"</value>
+    <value>Attributo JSON [DataType] non valido. I valori consentiti sono {0}!"</value>
   </data>
   <data name="InvalidLookupDisplayFormat" xml:space="preserve">
-    <value>Formato di visualizzazione ricerca non valido</value>
+    <value>Valore [Lookup.Format] non valido</value>
   </data>
   <data name="InvalidModel" xml:space="preserve">
     <value>Non è stato fornito un modello valido. Controllare la richiesta e riprovare.</value>
   </data>
   <data name="InvalidparentField" xml:space="preserve">
-    <value>Campo padre non valido</value>
+    <value>Valore [ParentFieldTypeName] non valido</value>
   </data>
   <data name="InvalidRemoveKeyFields" xml:space="preserve">
     <value>Non è possibile rimuovere i campi chiave in quanto sono presenti elementi nell'ambiente. Non è possibile eseguire l'eliminazione finché tali elementi non vengono rimossi oppure i campi chiave definiti su questo tipo non vengono modificati.</value>
@@ -302,24 +302,24 @@
     <comment>Constant Parameter value</comment>
   </data>
   <data name="IsDisplayAbleTrueReferenceItemListForRelationship" xml:space="preserve">
-    <value>Campo {0}. Il valore del parametro IsDisplayable deve essere true per il tipo Reference Item List da Relationship</value>
+    <value>Campo {0}. Il valore del parametro [IsDisplayable] deve essere true per il tipo Elenco elementi di riferimento da Relazione</value>
   </data>
   <data name="IsDisplayAbleTrueRelationshipLookup" xml:space="preserve">
-    <value>Campo {0}. Il valore del parametro IsDisplayable deve essere true per il tipo Relation Lookup.</value>
+    <value>Campo {0}. Il valore del parametro [IsDisplayable] deve essere true per il tipo Ricerca relazione.</value>
   </data>
   <data name="IsEditable" xml:space="preserve">
     <value>IsEditable</value>
     <comment>Constant Parameter value</comment>
   </data>
   <data name="IsEditableCanotTrue" xml:space="preserve">
-    <value>IsEditable non può essere true per questo tipo di campo.</value>
+    <value>[IsEditable] non può essere true per questo tipo di campo.</value>
   </data>
   <data name="IsListable" xml:space="preserve">
     <value>IsListable</value>
     <comment>Constant Parameter value</comment>
   </data>
   <data name="IsListableParameterMustBeFalseForBooleanType" xml:space="preserve">
-    <value>Campo {0}. Il valore del parametro IsListable deve essere false per il campo di tipo booleano definito per il tipo di azione.</value>
+    <value>Campo {0}. Il valore del parametro [IsListable] deve essere false per il campo di tipo booleano definito per il tipo di azione.</value>
   </data>
   <data name="IsPartOfKey" xml:space="preserve">
     <value>IsPartOfKey</value>
@@ -330,26 +330,26 @@
     <comment>Constant Parameter value</comment>
   </data>
   <data name="IsPrimaryFilterMustBefalseForBooleanType" xml:space="preserve">
-    <value>Campo {0}. Il valore del parametro IsPrimaryFilter (Mostra come filtro di livello superiore) deve essere false per il campo di tipo booleano definito per il tipo di azione.</value>
+    <value>Campo {0}. Il valore del parametro [IsPrimaryFilter] (Mostra come filtro di livello superiore) deve essere false per il campo di tipo booleano definito per il tipo di azione.</value>
   </data>
   <data name="IsRequired" xml:space="preserve">
     <value>IsRequired</value>
     <comment>Constant Parameter value</comment>
   </data>
   <data name="JsonElementFieldTypeNotenabled" xml:space="preserve">
-    <value>I tipi di campo JsonElement non sono abilitati in questo ambiente.  Per utilizzare il tipo di campo JsonElement, è necessario abilitare l'impostazione di sistema 75.</value>
+    <value>I tipi di campo [JsonElement] non sono abilitati in questo ambiente.  Per utilizzare il tipo di campo [JsonElement], è necessario abilitare l'impostazione di sistema 75.</value>
   </data>
   <data name="JsonElementNotSupported" xml:space="preserve">
-    <value>I campi JsonElement non sono consentiti per il tipo di risorsa corrente.</value>
+    <value>I campi [JsonElement] non sono consentiti per il tipo di risorsa corrente.</value>
   </data>
   <data name="JsonFiledNotPartAssetType" xml:space="preserve">
     <value>Il campo JSON {0} non esiste o non fa parte di questo tipo di risorsa.</value>
   </data>
   <data name="JsonNotSupported" xml:space="preserve">
-    <value>I campi JSON non sono consentiti per il tipo di risorsa corrente.</value>
+    <value>[Type.Json] non sono consentiti per il tipo di risorsa corrente.</value>
   </data>
   <data name="JSONTypeNotSupportIsRequiredTrue" xml:space="preserve">
-    <value>La proprietà IsRequired non può essere true per i tipi di campo JSON definiti su questo tipo di risorsa.</value>
+    <value>La proprietà [IsRequired] non può essere true per [Type.Json] definiti su questo tipo di risorsa.</value>
   </data>
   <data name="KeyFieldNotDefined" xml:space="preserve">
     <value>Si è scelto di sostituire tutti i campi correnti, ma non è stata definita una chiave. È necessario definire almeno un campo come chiave oppure scegliere Merge come azione.</value>
@@ -358,34 +358,34 @@
     <value>{0} deve essere minore di {1}</value>
   </data>
   <data name="LinkTypeNotSupportIsPartOfKeyTrue" xml:space="preserve">
-    <value>I tipi di link non possono avere la proprietà del campo IsPartOfKey sul campo {0} impostata su true.</value>
+    <value>[Type.Link] non possono avere la proprietà del campo [IsPartOfKey] sul campo {0} impostata su true.</value>
   </data>
   <data name="ListAssetTypeNotFound" xml:space="preserve">
-    <value>Tipo di risorsa elenco non trovato</value>
+    <value>[Lookup.List] Tipo di risorsa non trovato</value>
   </data>
   <data name="LookupFieldTypeIsIncomplete" xml:space="preserve">
-    <value>Il tipo di campo Lookup è incompleto poiché non è stata specificata una classe valida.</value>
+    <value>[Type.Lookup.List] è incompleto poiché non è stato specificato un [Class] valido.</value>
   </data>
   <data name="LookupNotSpecifiedList" xml:space="preserve">
-    <value>Il tipo di campo Lookup è incompleto poiché non è stato specificato un elenco.</value>
+    <value>[Type.Lookup.List] è incompleto poiché non è stato specificato un [List].</value>
   </data>
   <data name="MaxDecimalFieldValue" xml:space="preserve">
     <value>10000000000</value>
   </data>
   <data name="MissingJsonAttribute" xml:space="preserve">
-    <value>La definizione dell'attributo JSON non è presente.</value>
+    <value>Definizione [JsonAttribute] mancante.</value>
   </data>
   <data name="MissingListDisplayFormat" xml:space="preserve">
-    <value>Il formato di visualizzazione elenco è richiesto per il tipo di campo Lookup.</value>
+    <value>[Lookup.Format] è obbligatorio per [Type.Lookup].</value>
   </data>
   <data name="MustProvideLinkTextValue" xml:space="preserve">
-    <value>È necessario fornire un valore Text del link se si imposta un valore predefinito per {0}.</value>
+    <value>È necessario fornire un valore [DefaultValue.Text] se si imposta un valore predefinito per {0}.</value>
   </data>
   <data name="MustProvideLinkUrlValue" xml:space="preserve">
-    <value>È necessario fornire un valore URL del link se si imposta un valore predefinito per {0}.</value>
+    <value>È necessario fornire un valore [DefaultValue.Url] se si imposta un valore predefinito per {0}.</value>
   </data>
   <data name="NameCannotBe" xml:space="preserve">
-    <value>Il nome non può essere [{0}].</value>
+    <value>[Name] non può essere [{0}].</value>
   </data>
   <data name="NameReservedword" xml:space="preserve">
     <value>Non è possibile usare {f.Name} come nome del campo perché è una parola riservata.</value>
@@ -394,34 +394,34 @@
     <value>Nessun modello trovato</value>
   </data>
   <data name="NoPrimaryKeyDefined" xml:space="preserve">
-    <value>Nessuna chiave primaria definita</value>
+    <value>Nessun campo con [IsPartOfKey] impostato su true</value>
   </data>
   <data name="NotIncludedValidTypeFieldType" xml:space="preserve">
     <value>Non è stato incluso un tipo valido per il tipo di campo [{0}].</value>
   </data>
   <data name="NotUseComputedRelationshipLookuptypeField" xml:space="preserve">
-    <value>Non è possibile utilizzare un tipo ComputedRelationshipLookup su una risorsa di tipo {0} per il campo {1}.</value>
+    <value>Non è possibile utilizzare un tipo [Type.ComputedRelationshipLookup] su una risorsa di tipo {0} per il campo {1}.</value>
   </data>
   <data name="NotUseJSONonActionType" xml:space="preserve">
-    <value>Non è possibile utilizzare un tipo JSON su un tipo di azione o di relazione per il campo {0}.</value>
+    <value>Non è possibile utilizzare [Type.Json] su un tipo di azione o di relazione per il campo {0}.</value>
   </data>
   <data name="NotUseReferenceListItemList" xml:space="preserve">
     <value>Non è possibile utilizzare un tipo Reference Item List da Relationship su un tipo di azione o di relazione per il campo {0}.</value>
   </data>
   <data name="NotUseRelationshipLookupField" xml:space="preserve">
-    <value>Non è possibile utilizzare un tipo Relationship Lookup su un tipo di azione o di relazione per il campo {0}.</value>
+    <value>Non è possibile utilizzare [Type.ComputedRelationshipReferenceList] su un tipo di azione o di relazione per il campo {0}.</value>
   </data>
   <data name="NotUserOwnershipLookup" xml:space="preserve">
-    <value>Non è possibile utilizzare un tipo Ownership Lookup su un tipo di azione o di relazione per il campo {0}.</value>
+    <value>Non è possibile utilizzare [Type.ComputedOwnershipLookup] su un tipo di azione o di relazione per il campo {0}.</value>
   </data>
   <data name="NotUseSCoreTypeAssetForField" xml:space="preserve">
-    <value>Non è possibile utilizzare un tipo Score su una risorsa di tipo {0} per il campo {1}.</value>
+    <value>Non è possibile utilizzare un [Type.Score] su una risorsa di tipo {0} per il campo {1}.</value>
   </data>
   <data name="NotUseScoreTypeOnActionAndRelationshipType" xml:space="preserve">
-    <value>Non è possibile utilizzare un tipo Score su un tipo di azione o di relazione per il campo {0}.</value>
+    <value>Non è possibile utilizzare [Type.Score] su un tipo di azione o di relazione per il campo {0}.</value>
   </data>
   <data name="NotValidRegex" xml:space="preserve">
-    <value>Il modello di convalida non è un'espressione Regex valida.</value>
+    <value>[Text.Validation.Pattern] non è un'espressione Regex valida.</value>
   </data>
   <data name="NoUidFound" xml:space="preserve">
     <value>Nessun UID trovato</value>
@@ -433,49 +433,49 @@
     <value>I seguenti campi hanno più di un tipo definito: {0}</value>
   </data>
   <data name="OnlyOneTagFieldAllowed" xml:space="preserve">
-    <value>Il tipo di risorsa può avere un solo tipo di campo Tag.</value>
+    <value>Il tipo di risorsa può avere un solo tipo di campo [Type.Tag].</value>
   </data>
   <data name="ParameterError" xml:space="preserve">
     <value>Errore di parametro</value>
   </data>
   <data name="ParentFieldRefernceItemNotfound" xml:space="preserve">
-    <value>Campo padre [{0}] di tipo ReferenceItem non trovato in questa risorsa.</value>
+    <value>Campo padre [{0}] di tipo Reference non trovato in questa risorsa.</value>
   </data>
   <data name="ProvideComputedRealtionshipLookupField" xml:space="preserve">
-    <value>È necessario fornire una definizione per il campo di ricerca di relazione calcolata {0}.</value>
+    <value>È necessario fornire una definizione per [Type.ComputedRelationshipLookup] sul campo {0}.</value>
   </data>
   <data name="ProvideOneValueActionAssetRelationship" xml:space="preserve">
-    <value>È necessario fornire solo una delle tre proprietà UID: ActionTypeUid, AssetTypeUid o RelationshipTypeUid.</value>
+    <value>È necessario fornire solo una delle tre proprietà Uid: [ActionTypeUid], [AssetTypeUid] o [RelationshipTypeUid].</value>
   </data>
   <data name="ReferenceItemIsPartOfKeyNotAllowedTrue" xml:space="preserve">
-    <value>I tipi di elementi di riferimento non possono avere la proprietà del campo 'IsPartOfKey' impostata su true.</value>
+    <value>I tipi di riferimento non possono avere la proprietà del campo [IsPartOfKey] impostata su true.</value>
   </data>
   <data name="ReferenceItemNotSupportJsonElement" xml:space="preserve">
-    <value>Tipo di campo JsonElement non supportato per il tipo di elemento di riferimento.</value>
+    <value>[Type.JsonElement] non supportato per il tipo di elemento di riferimento!</value>
   </data>
   <data name="ReferenceListNotSupportJson" xml:space="preserve">
-    <value>Tipo di campo JSON non supportato per il tipo di elemento di riferimento.</value>
+    <value>[Type.Json] non supportato per il tipo di elemento di riferimento!</value>
   </data>
   <data name="ReferenceListNotSupportTag" xml:space="preserve">
-    <value>Tipo di campo Tag non supportato per il tipo di elemento di riferimento</value>
+    <value>[Type.Tag] non supportato per il tipo di elemento di riferimento</value>
   </data>
   <data name="RelationNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
-    <value>I tipi di relazione non possono avere la proprietà del campo 'IsPartOfKey' impostata su true.</value>
+    <value>I tipi di relazione non possono avere la proprietà del campo [IsPartOfKey] impostata su true.</value>
   </data>
   <data name="RelationshipIDUsedMoreThanOnce" xml:space="preserve">
-    <value>I seguenti ID di relazione sono utilizzati più di una volta: {0}. La relazione deve essere univoca sullo stesso tipo di risorsa</value>
+    <value>I seguenti ID di relazione sono utilizzati più di una volta: {0}. [Type.Relationship] deve essere univoco sullo stesso tipo di risorsa</value>
   </data>
   <data name="RelationshipNotAllowedScoreFieldType" xml:space="preserve">
-    <value>Le relazioni non possono avere il tipo di campo Score.</value>
+    <value>[Type.Score] non supportato sulle relazioni</value>
   </data>
   <data name="RelationshipNotSupported" xml:space="preserve">
-    <value>I campi Relationship non sono consentiti per il tipo di risorsa corrente.</value>
+    <value>I campi [Type.Relationship] non sono consentiti per il tipo di risorsa corrente.</value>
   </data>
   <data name="RelationshipNotSupportPath" xml:space="preserve">
-    <value>Le relazioni non possono avere il tipo di campo Path.</value>
+    <value>[Type.Path] non supportato sulle relazioni</value>
   </data>
   <data name="RelationshipsNotAllowedTagFieldType" xml:space="preserve">
-    <value>Le relazioni non possono avere il tipo di campo Tag.</value>
+    <value>[Type.Tag] non supportato sulle relazioni</value>
   </data>
   <data name="RelationshipTypeFieldNotFound" xml:space="preserve">
     <value>Tipo di relazione/campo non trovato</value>
@@ -493,41 +493,41 @@
     <value>Tipo di relazione non trovato in base all'UID fornito [{0}].</value>
   </data>
   <data name="RelationShipTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
-    <value>Non è possibile fornire un RelationshipTypeUid poiché è stato già fornito un ActionTypeUid.</value>
+    <value>Non è possibile fornire un [RelationshipTypeUid] poiché è stato già fornito un [ActionTypeUid].</value>
   </data>
   <data name="RelationShipTypeUidNotRequiredIfAssetTypeUidProvided" xml:space="preserve">
     <value>Non è possibile fornire un RelationshipTypeUid poiché è stato già fornito un AssetTypeUid.</value>
   </data>
   <data name="RelationshipUidMustUniqueWithinAssetType" xml:space="preserve">
-    <value>I seguenti ID di relazione sono utilizzati più di una volta: {0}. La relazione deve essere univoca sullo stesso tipo di risorsa.</value>
+    <value>I seguenti UID di relazione sono utilizzati più di una volta: {0}. [Type.Relationship] deve essere univoco sullo stesso tipo di risorsa</value>
   </data>
   <data name="ScoreNotSupported" xml:space="preserve">
-    <value>I campi Score non sono consentiti per il tipo di risorsa corrente.</value>
+    <value>[Type.Score] non è supportato per il tipo di risorsa corrente</value>
   </data>
   <data name="ScoreTypeCannotAllocateAssetType" xml:space="preserve">
-    <value>Il tipo di punteggio {0} non può essere assegnato a questo tipo di risorsa per il campo {1}.</value>
+    <value>[Score.ScoreType] {0} non può essere assegnato a questo tipo di risorsa per il campo {1}.</value>
   </data>
   <data name="ShowIfEmpty" xml:space="preserve">
     <value>ShowIfEmpty</value>
     <comment>Constant Parameter value</comment>
   </data>
   <data name="SpecificHaveTagFieldType" xml:space="preserve">
-    <value>Solo gli artefatti, le policy, i modelli e le regole possono avere il tipo di campo Tag.</value>
+    <value>[Type.Tag] è consentito solo in Risorse aziendali, Risorse tecniche, Policy, Modelli e Regole</value>
   </data>
   <data name="TaskTypeGovernanceRoleCustomError" xml:space="preserve">
-    <value>I tipi di attività non possono avere la proprietà del campo '{0}' sul campo GovernanceRole impostata su {1}.</value>
+    <value>I tipi di attività non possono avere la proprietà del campo ''{0}" sul campo [GovernanceRole] impostata su {1}.</value>
   </data>
   <data name="TaskTypeNameCustomError" xml:space="preserve">
-    <value>I tipi di attività non possono avere la proprietà del campo '{0}' sul campo Name impostata su {1}.</value>
+    <value>I tipi di attività non possono avere la proprietà del campo ''{0}" sul campo [Name] impostata su {1}.</value>
   </data>
   <data name="TaskTypeStepNoCustomError" xml:space="preserve">
-    <value>I tipi di attività non possono avere la proprietà del campo '{0}' sul campo StepNo impostata su {1}.</value>
+    <value>I tipi di attività non possono avere la proprietà del campo ''{0}" sul campo [StepNo] impostata su {1}.</value>
   </data>
   <data name="ThisAssetTypeNotSupportPath" xml:space="preserve">
-    <value>Questo tipo di risorsa potrebbe non avere un tipo di campo Path.</value>
+    <value>[Type.Path] non è supportato per il tipo di risorsa corrente</value>
   </data>
   <data name="TypeObjectMissing" xml:space="preserve">
-    <value>L'oggetto 'Type' non è presente in una o più definizioni del tipo di campo.</value>
+    <value>L'oggetto [Type] non è presente in una o più definizioni del tipo di campo.</value>
   </data>
   <data name="WholeNumberError" xml:space="preserve">
     <value>{0} deve essere un numero intero</value>

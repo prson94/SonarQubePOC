@@ -122,7 +122,7 @@
     <value>L'identificatore di allocazione con valore {0} non corrisponde a un'allocazione valida.</value>
   </data>
   <data name="AllocationUidNotCorrectlyFormatted" xml:space="preserve">
-    <value>allocationUid {0} non è un identificatore formattato correttamente.</value>
+    <value>[allocationUid] {0} non è un identificatore formattato correttamente.</value>
   </data>
   <data name="AssetIdentifierDoesnotValidAsset" xml:space="preserve">
     <value>L'identificatore della risorsa con valore {0} non corrisponde a una risorsa valida.</value>
@@ -134,7 +134,7 @@
     <value>È necessario specificare l'UID della risorsa.</value>
   </data>
   <data name="AssetuidNotCorrectlyFormatted" xml:space="preserve">
-    <value>assetUid {0} non è un identificatore formattato correttamente.</value>
+    <value>[assetUid] {0} non è un identificatore formattato correttamente.</value>
   </data>
   <data name="BadRequestSubmitted" xml:space="preserve">
     <value>Richiesta non valida inviata</value>
@@ -170,13 +170,13 @@
     <value>Questa e-mail non sembra valida.</value>
   </data>
   <data name="InvalidFieldFilterParameter" xml:space="preserve">
-    <value>Sono presenti campi non validi nei parametri della query del filtro: {0}.</value>
+    <value>Sono presenti campi non validi nei parametri della query di [filter]: {0}.</value>
   </data>
   <data name="InvalidFieldSelectQueryParameter" xml:space="preserve">
-    <value>Sono presenti campi non validi nei parametri della query selezionati: {0}.</value>
+    <value>Sono presenti campi non validi nei parametri della query di [select]: {0}.</value>
   </data>
   <data name="InvalidField_OrderParameter" xml:space="preserve">
-    <value>Sono presenti campi non validi nel parametro della query _order.</value>
+    <value>Sono presenti campi non validi nei parametri della query di [_order].</value>
   </data>
   <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
     <value>Campo di relazione non valida rilevato non valido o tipo di relazione eliminata rilevato.</value>
@@ -245,13 +245,13 @@
     <value>Risorsa non disponibile per questo utente.</value>
   </data>
   <data name="SearchFilterInvalid" xml:space="preserve">
-    <value>I filtri di ricerca non sono validi nel parametro della query del filtro: last_modified.</value>
+    <value>I filtri di ricerca non sono validi nel parametro della query del filtro: [last_modified].</value>
   </data>
   <data name="ServerErrorOccurred" xml:space="preserve">
     <value>Si è verificato un errore del server. Riprovare a effettuare la richiesta più tardi</value>
   </data>
   <data name="SourceAssetUidModelNotEmpty" xml:space="preserve">
-    <value>Quando si utilizza l'opzione copia/sostituisci, il modello sourceAssetUid deve essere vuoto.</value>
+    <value>Quando si utilizza l'opzione copia/sostituisci, il modello [sourceAssetUid] deve essere vuoto.</value>
   </data>
   <data name="SourceTargetNotSame" xml:space="preserve">
     <value>La risorsa di origine e quella di destinazione non possono corrispondere.</value>
@@ -260,15 +260,15 @@
     <value>I tipi di risorse di origine e di destinazione devono essere gli stessi.</value>
   </data>
   <data name="SourceUidNotExists" xml:space="preserve">
-    <value>sourceAssetUid non è valido o la risorsa non esiste.</value>
+    <value>[sourceAssetUid] non è valido o la risorsa non esiste.</value>
   </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Autorizzazione non disponibile</value>
   </data>
   <data name="_PageNumGT0" xml:space="preserve">
-    <value>Il parametro _pageNum deve essere maggiore di 0.</value>
+    <value> Il parametro [_pageNum] deve essere maggiore di 0.</value>
   </data>
   <data name="_PageSizeMax200" xml:space="preserve">
-    <value>Il parametro _pageSize ha un valore massimo supportato di 200.</value>
+    <value> Il parametro [_pageSize] ha un valore massimo supportato di 200.</value>
   </data>
 </root>

@@ -119,16 +119,16 @@
     <value>Assettype komt met geen enkel onderzoek overeen.</value>
   </data>
   <data name="InvalidFormatSurveyTypeUid" xml:space="preserve">
-    <value>Ongeldige indeling voor surveyTypeUid</value>
+    <value>Ongeldige indeling voor [surveyTypeUid]</value>
   </data>
   <data name="InvalidValueAsOfDate" xml:space="preserve">
-    <value>Ongeldige datumwaarde voor parameter AsOfDate.</value>
+    <value>Ongeldige datumwaarde voor parameter [AsOfDate]!</value>
   </data>
   <data name="NotavalidEndDateRange" xml:space="preserve">
-    <value>Geen geldige EndDateRange</value>
+    <value>Geen geldige [EndDateRange]</value>
   </data>
   <data name="NotvalidStartDateRange" xml:space="preserve">
-    <value>Geen geldige StartDateRange</value>
+    <value>Geen geldige [StartDateRange]</value>
   </data>
   <data name="ResultRemoved" xml:space="preserve">
     <value>{0} resultaten verwijderd.</value>
@@ -143,7 +143,7 @@
     <value>Onderzoeksvraagtype voor UID {0} niet gevonden</value>
   </data>
   <data name="SurveyResourceAssetUidPopulated" xml:space="preserve">
-    <value>SurveyTypeUid, ResourceUid of AssetUid moet worden ingevuld</value>
+    <value>Ofwel [SurveyTypeUid] of [ResourceUid] of [AssetUid] moet worden ingevuld</value>
   </data>
   <data name="SurveyUidNotFound" xml:space="preserve">
     <value>Onderzoekstype met UID {0} niet gevonden.</value>

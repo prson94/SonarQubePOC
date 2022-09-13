@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DirectionAllowedForRelation" xml:space="preserve">
-    <value>Le paramètre _direction est autorisé uniquement lorsque le paramètre RelationshipTypeUid ou AssetUid est transmis</value>
+    <value>Le paramètre [_direction] est autorisé uniquement lorsque le paramètre [RelationshipTypeUid] ou [AssetUid] est transmis</value>
   </data>
   <data name="InvalidIntersectTypeUid" xml:space="preserve">
     <value>UID de type d’intersection fourni non valide {0}.</value>
@@ -131,7 +131,7 @@
     <value>UID d’objet non valide transmis dans la requête</value>
   </data>
   <data name="InvalidOrderValue" xml:space="preserve">
-    <value>Valeur _order non valide dans la requête</value>
+    <value>Valeur [_order] non valide dans la requête</value>
   </data>
   <data name="InvalidParameter" xml:space="preserve">
     <value>Le paramètre de type n’est pas valide.</value>
@@ -146,10 +146,10 @@
     <value>UID de sujet non valide transmis dans la requête</value>
   </data>
   <data name="Invalid_includeTotal" xml:space="preserve">
-    <value>Paramètre _includeTotal non valide transmis dans la requête, la valeur doit être true, false ou not specified</value>
+    <value>Paramètre [_includeTotal] non valide transmis dans la requête, la valeur doit être true, false ou not specified</value>
   </data>
   <data name="Invalid_owner" xml:space="preserve">
-    <value>Paramètre _owner non valide transmis dans la requête, la longueur maximale est de 100 caractères.</value>
+    <value>Paramètre [_owner] non valide transmis dans la requête, la longueur maximale est de 100 caractères.</value>
   </data>
   <data name="MaxRelationShipLimit" xml:space="preserve">
     <value>Vous pouvez fournir un maximum de {0} relations dans cette requête. Veuillez appeler l’API BATCH pour soumettre plus de {1} éléments.</value>
@@ -158,7 +158,7 @@
     <value>L’objet dont l’UID est [{0}] est introuvable.</value>
   </data>
   <data name="OrderForRelation" xml:space="preserve">
-    <value>Le paramètre _order est autorisé uniquement lorsque le paramètre RelationshipTypeUid est transmis</value>
+    <value>Le paramètre [_order] est autorisé uniquement lorsque le paramètre [RelationshipTypeUid] est transmis</value>
   </data>
   <data name="PassedValidForExistingRelationType" xml:space="preserve">
     <value>UID du type de relation spécifié non valide.  Veuillez indiquer un UID de type de relation existant valide.</value>

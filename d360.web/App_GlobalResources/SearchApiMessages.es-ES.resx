@@ -122,7 +122,7 @@
     <value>Las agregaciones '{0}' no son compatibles</value>
   </data>
   <data name="CategoryNotAvailable" xml:space="preserve">
-    <value>Los valores '{0}' no son válidos para la categoría.</value>
+    <value>Los valores '{0}' no son válidos para la [Category].</value>
   </data>
   <data name="FieldUnsupported" xml:space="preserve">
     <value>Los filtro del campo '{0}' no son compatibles</value>

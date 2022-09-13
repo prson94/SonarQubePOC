@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Error_NameTaken" xml:space="preserve">
-    <value>Der Name ist vergeben. Bitte anderen Namen eingeben.</value>
+    <value>Der Name ist vergeben. Geben Sie einen anderen Namen an.</value>
   </data>
   <data name="Error_NotRemoved_Tokenized" xml:space="preserve">
     <value>{0} konnte nicht entfernt werden.</value>
@@ -134,10 +134,10 @@
     <value>Mindestens ein JSON-Attribut verweist auf das Feld, das entfernt werden soll.</value>
   </data>
   <data name="Error_Duplicate_Relationship_Uid" xml:space="preserve">
-    <value>Doppelte Beziehungs-UID-Kennungen: {0}. Kennungen müssen innerhalb eines Batches eindeutig sein.</value>
+    <value>Doppelte Beziehungs-UID-Kennungen: {0}. [Uid]-Kennungen müssen innerhalb eines Batches eindeutig sein.</value>
   </data>
   <data name="Error_Responsibility_ApplyToType_False" xml:space="preserve">
-    <value>'When'-Bedingungen müssen verwendet werden, wenn ApplyToType-Wert auf 'false' festgelegt ist.</value>
+    <value>'[When]'-Bedingungen müssen verwendet werden, wenn [ApplyToType]-Wert auf 'false' festgelegt ist.</value>
   </data>
   <data name="Error_Parameter_InvalidUidValue" xml:space="preserve">
     <value>Parameter '{0}' weist einen ungültigen GUID-Wert auf.</value>
@@ -149,7 +149,7 @@
     <value>Asset-Typ mit UID {0} nicht gefunden</value>
   </data>
   <data name="AssetTypeInvalidClass" xml:space="preserve">
-    <value>Asset-Typ-Klasse ungültig. Zulässige Klassen: {0}</value>
+    <value>[Class]-Wert ungültig. Zulässige Klassen: {0}</value>
   </data>
   <data name="AssetNotFound" xml:space="preserve">
     <value>Asset mit UID {0} nicht gefunden</value>

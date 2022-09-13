@@ -134,22 +134,22 @@
     <value>Fehler beim Aktualisieren des Dashboards</value>
   </data>
   <data name="InvalidDashboardDashboardAssetTypeUid" xml:space="preserve">
-    <value>Ungültige Asset-Typ-UID angegeben.</value>
+    <value>Ungültige [AssetTypeUid] angegeben.</value>
   </data>
   <data name="InvalidDashboardDashboardAssetUid" xml:space="preserve">
-    <value>Ungültige Asset-UID angegeben.</value>
+    <value>Ungültige [AssetUid] angegeben.</value>
   </data>
   <data name="InvalidDashboardLocation" xml:space="preserve">
-    <value>Der Ort muss einen der folgenden Werte aufweisen: List, Detail oder Homepage</value>
+    <value>[Location] muss einen der folgenden Werte aufweisen: List, Detail oder Homepage</value>
   </data>
   <data name="InvalidDashboardType" xml:space="preserve">
-    <value>ReportType muss einen der folgenden Werte aufweisen: DqPlus oder PowerBi</value>
+    <value>[ReportType] muss einen der folgenden Werte aufweisen: DqPlus oder PowerBi</value>
   </data>
   <data name="InvalidDashboardUid" xml:space="preserve">
     <value>Ungültige UID angegeben.</value>
   </data>
   <data name="InvalidDefinitionValue" xml:space="preserve">
-    <value>Ungültiger JSON-Wert im Feld 'Definition'</value>
+    <value>Ungültiger JSON-Wert für [Definition]</value>
   </data>
   <data name="NameExists" xml:space="preserve">
     <value>Dashboard mit diesem Namen bereits vorhanden</value>

@@ -116,12 +116,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="InvalidActionUid" xml:space="preserve">
-    <value>El valor del UID del tipo de acción proporcionado no es válido</value>
+    <value>Valor [actionTypeUid] proporcionado no válido</value>
   </data>
   <data name="InvalidLimitProvided" xml:space="preserve">
-    <value>El valor de los flujos de trabajo Límite a Activo proporcionado no es válido</value>
+    <value>Valor [_limitToActiveWorkflows] proporcionado no válido</value>
   </data>
   <data name="InvalidResourceUid" xml:space="preserve">
-    <value>El valor del UID del recurso proporcionado no es válido</value>
+    <value>Valor [resourceUid] proporcionado no válido</value>
   </data>
 </root>

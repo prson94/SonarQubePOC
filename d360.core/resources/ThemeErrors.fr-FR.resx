@@ -116,19 +116,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="BackColorFormat" xml:space="preserve">
-    <value>backColor n’est pas une couleur RVB valide.</value>
+    <value>[backColor] n’est pas une couleur RVB valide.</value>
   </data>
   <data name="BackgroundSize" xml:space="preserve">
-    <value>homeBackground ne doit pas être supérieur à 2048K.</value>
+    <value>[homeBackground] ne doit pas être supérieur à 2048K.</value>
   </data>
   <data name="BackgroundType" xml:space="preserve">
-    <value>homeBackground doit être un fichier *.gif, *.jpg ou *.png.</value>
+    <value>[homeBackground] doit être un fichier *.gif, *.jpg ou *.png.</value>
   </data>
   <data name="BreadcrumbColorFormat" xml:space="preserve">
-    <value>breadcrumbLinkColor n’est pas une couleur RVB valide.</value>
+    <value>[breadcrumbLinkColor] n’est pas une couleur RVB valide.</value>
   </data>
   <data name="ButtonColorFormat" xml:space="preserve">
-    <value>buttonBackColor n’est pas une couleur RVB valide.</value>
+    <value>[buttonBackColor] n’est pas une couleur RVB valide.</value>
   </data>
   <data name="CustomCssNotAllowed" xml:space="preserve">
     <value>Votre environnement ne permet pas de définir des feuilles CSS personnalisées dans un thème.</value>
@@ -152,7 +152,7 @@
     <value>Erreur de mise à jour du thème</value>
   </data>
   <data name="HeaderColorFormat" xml:space="preserve">
-    <value>headerBackColor n’est pas une couleur RVB valide.</value>
+    <value>[headerBackColor] n’est pas une couleur RVB valide.</value>
   </data>
   <data name="IconSize" xml:space="preserve">
     <value>icon ne doit pas dépasser 512K.</value>
@@ -164,19 +164,19 @@
     <value>Vous n’avez pas fourni de valeur de paramètre UID valide.</value>
   </data>
   <data name="LogoSize" xml:space="preserve">
-    <value>headerLogo ne doit pas être supérieur à 1024K.</value>
+    <value>[headerLogo] ne doit pas être supérieur à 1024K.</value>
   </data>
   <data name="LogoType" xml:space="preserve">
-    <value>headerLogo doit être un fichier *.gif, *.jpg ou *.png.</value>
+    <value>[headerLogo] doit être un fichier *.gif, *.jpg ou *.png.</value>
   </data>
   <data name="NameNotEmpty" xml:space="preserve">
-    <value>name ne peut pas être vide.</value>
+    <value>[name] ne peut pas être vide.</value>
   </data>
   <data name="NavbarColorFormat" xml:space="preserve">
-    <value>navbarBackColor n’est pas une couleur RVB valide.</value>
+    <value>[navbarBackColor] n’est pas une couleur RVB valide.</value>
   </data>
   <data name="NavbarSelectedColorFormat" xml:space="preserve">
-    <value>navbarBackColorSelected n’est pas une couleur RVB valide.</value>
+    <value>[navbarBackColorSelected] n’est pas une couleur RVB valide.</value>
   </data>
   <data name="NoActiveThemeExists" xml:space="preserve">
     <value>Aucun thème n’est actuellement actif.</value>
@@ -188,19 +188,19 @@
     <value>La propriété {0} ne dispose pas de valeur Base64 valide.</value>
   </data>
   <data name="PrimaryButtonColorFormat" xml:space="preserve">
-    <value>primaryButtonBackColor n’est pas une couleur RVB valide.</value>
+    <value>[primaryButtonBackColor] n’est pas une couleur RVB valide.</value>
   </data>
   <data name="TableHeaderColorFormat" xml:space="preserve">
-    <value>tableHeaderBackColor n’est pas une couleur RVB valide.</value>
+    <value>[tableHeaderBackColor] n’est pas une couleur RVB valide.</value>
   </data>
   <data name="TableRowColorFormat" xml:space="preserve">
-    <value>tableRowBackColor n’est pas une couleur RVB valide.</value>
+    <value>[tableRowBackColor] n’est pas une couleur RVB valide.</value>
   </data>
   <data name="TabLinkColorFormat" xml:space="preserve">
-    <value>tabLinkColor n’est pas une couleur RVB valide.</value>
+    <value>[tabLinkColor] n’est pas une couleur RVB valide.</value>
   </data>
   <data name="ThemeInUseForIsCurrentEdit" xml:space="preserve">
-    <value>Ce thème est actuellement utilisé dans cet environnement et la propriété IsCurrent ne peut pas être définie sur false.</value>
+    <value>Ce thème est actuellement utilisé dans cet environnement et la propriété [IsCurrent] ne peut pas être définie sur false.</value>
   </data>
   <data name="ThemeInUseForRemoval" xml:space="preserve">
     <value>Ce thème est actuellement utilisé dans cet environnement et ne peut pas être supprimé.</value>

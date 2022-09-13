@@ -257,7 +257,7 @@
     <value>De UID van de referentielijst die de governancerollen bevat waarvan de Diagram Designer afhankelijk is.</value>
   </data>
   <data name="GovernanceRoleReferenceListUid_Name" xml:space="preserve">
-    <value>Referentielijst-UID van governanceregel</value>
+    <value>Referentielijst-UID van governancerol</value>
   </data>
   <data name="HasRegisterLink_Desc" xml:space="preserve">
     <value>Heeft registratiekoppeling op de aanmeldpagina</value>

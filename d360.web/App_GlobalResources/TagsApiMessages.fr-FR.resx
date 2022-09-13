@@ -152,7 +152,7 @@
     <value>La balise parente ne doit pas être incluse dans les balises enfants !</value>
   </data>
   <data name="TagExists" xml:space="preserve">
-    <value>Balise non valide spécifiée [la même balise existe déjà].</value>
+    <value>Balise non valide spécifiée (la même balise existe déjà).</value>
   </data>
   <data name="TagNotFound" xml:space="preserve">
     <value>Balise introuvable.</value>

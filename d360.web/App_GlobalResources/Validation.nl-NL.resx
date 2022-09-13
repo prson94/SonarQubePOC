@@ -140,9 +140,9 @@
     <value>Maximumaantal niveaus voor meetwaarden is {0}.</value>
   </data>
   <data name="InvalidPageNum" xml:space="preserve">
-    <value>Ongeldige waarde voor pageNum opgegeven.</value>
+    <value>Ongeldige [pageNum] waarde opgegeven.</value>
   </data>
   <data name="InvalidPageSize" xml:space="preserve">
-    <value>Ongeldige waarde voor pageSize opgegeven.</value>
+    <value>Ongeldige [pageSize] waarde opgegeven.</value>
   </data>
 </root>

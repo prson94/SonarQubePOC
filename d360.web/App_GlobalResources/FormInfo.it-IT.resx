@@ -152,16 +152,16 @@
     <value>Policy</value>
   </data>
   <data name="Responsibility_Then_Filter_Value_Required" xml:space="preserve">
-    <value>Il valore del filtro Then della responsabilità è obbligatorio</value>
+    <value>Allora è obbligatorio.</value>
   </data>
   <data name="Responsibility_Then_InvalidFieldType" xml:space="preserve">
-    <value>Tipo di campo non valido nei filtri When per questo tipo di risorsa.</value>
+    <value>Quando contiene un FieldTypeId non valido per questo tipo di risorsa.</value>
   </data>
   <data name="Responsibility_When_Filter_Required_Based_ApplyToType_Value" xml:space="preserve">
-    <value>È obbligatorio almeno un filtro When se l'opzione Applica all'intero tipo è deselezionata.</value>
+    <value>Quando è obbligatorio se ApplyToType è impostato su false.</value>
   </data>
   <data name="Responsibility_When_Filter_Value_Required" xml:space="preserve">
-    <value>Il valore del filtro When della responsabilità è obbligatorio.</value>
+    <value>Quando è obbligatorio.</value>
   </data>
   <data name="RuleType" xml:space="preserve">
     <value>Regola</value>

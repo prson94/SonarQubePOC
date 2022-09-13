@@ -116,16 +116,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ActionNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
-    <value>Voor actietypen mag de veldeigenschap IsPartOfKey niet zijn ingesteld op True.</value>
+    <value>Voor actietypen mag de veldeigenschap [IsPartOfKey] niet zijn ingesteld op True.</value>
   </data>
   <data name="ActionNotAllowedScoreFieldType" xml:space="preserve">
-    <value>Acties mogen niet het veldtype Score hebben</value>
+    <value>Acties kunnen niet de waarde [Type.Score] hebben</value>
   </data>
   <data name="ActionNotAllowedTagFieldType" xml:space="preserve">
-    <value>Acties mogen niet het veldtype Tag hebben.</value>
+    <value>Acties kunnen niet de waarde [Type.Tag] hebben</value>
   </data>
   <data name="ActionNotSupportPath" xml:space="preserve">
-    <value>Acties mogen niet het veldtype Path hebben.</value>
+    <value>Acties kunnen niet de waarde [Type.Path] hebben</value>
   </data>
   <data name="ActionTypeUidNotFound" xml:space="preserve">
     <value>Actietype niet gevonden op basis van opgegeven UID [{0}].</value>
@@ -144,25 +144,25 @@
     <value>Voor dit assettype is mogelijk geen sleutelveld gedefinieerd.</value>
   </data>
   <data name="AssetTypeNotHaveScoreField" xml:space="preserve">
-    <value>Dit assettype heeft mogelijk niet het veldtype Score.</value>
+    <value>Dit assettype mag niet een waarde [Type.Score] hebben</value>
   </data>
   <data name="AssetTypeUidNotFound" xml:space="preserve">
     <value>Assettype niet gevonden op basis van opgegeven UID [{0}].</value>
   </data>
   <data name="AssetTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
-    <value>U mag geen AssetTypeUid opgeven omdat u al een ActionTypeUid hebt opgegeven.</value>
+    <value>U mag geen [AssetTypeUid] opgeven omdat u al een [ActionTypeUid] hebt opgegeven.</value>
   </data>
   <data name="ComputedOwnershipLookupNotSupported" xml:space="preserve">
-    <value>ComputedOwnershipLookup-velden zijn niet toegestaan voor het huidige assettype.</value>
+    <value>[ComputedOwnershipLookup]-velden zijn niet toegestaan voor het huidige assettype!</value>
   </data>
   <data name="ComputedRelationshipFieldNotSupported" xml:space="preserve">
-    <value>ComputedRelationshipField-velden zijn niet toegestaan voor het huidige assettype.</value>
+    <value>[ComputedRelationshipField]-velden zijn niet toegestaan voor het huidige assettype!</value>
   </data>
   <data name="ComputedRelationshipLookupNotSupported" xml:space="preserve">
-    <value>ComputedRelationshipLookup-velden zijn niet toegestaan voor het huidige assettype.</value>
+    <value>[ComputedRelationshipLookup]-velden zijn niet toegestaan voor het huidige assettype!</value>
   </data>
   <data name="ComputedRelationshipReferenceListNotSupported" xml:space="preserve">
-    <value>ComputedRelationshipReferenceList-velden zijn niet toegestaan voor het huidige assettype.</value>
+    <value>[ComputedRelationshipReferenceList]-velden zijn niet toegestaan voor het huidige assettype!</value>
   </data>
   <data name="Constantfalse" xml:space="preserve">
     <value>false</value>
@@ -193,28 +193,28 @@
     <comment>Constant Parameter value</comment>
   </data>
   <data name="CounterFieldNotSupportedThisAssetType" xml:space="preserve">
-    <value>Dit assettype mag niet het veldtype Counter hebben.</value>
+    <value>Dit assettype mag niet een waarde [Type.Counter] hebben</value>
   </data>
   <data name="CounterPrefixMax10Char" xml:space="preserve">
-    <value>Het Counter-voorvoegsel mag niet langer zijn dan 10 tekens.</value>
+    <value>[CounterPrefix] mag niet langer zijn dan 10 tekens.</value>
   </data>
   <data name="CounterPrefixRule" xml:space="preserve">
-    <value>Het Counter-voorvoegsel moet bestaan uit alfanumerieke tekens en/of de symbolen _ of -.</value>
+    <value>[CounterPrefix] moet bestaan uit alfanumerieke tekens en/of de symbolen _ of -.</value>
   </data>
   <data name="CounterPrefixStartWithAlpha" xml:space="preserve">
-    <value>Het Counter-voorvoegsel moet met een teken beginnen.</value>
+    <value>[CounterPrefix] moet met een teken beginnen.</value>
   </data>
   <data name="CounterRange" xml:space="preserve">
-    <value>Beginwaarde van Counter moet tussen 1 en 9999999 liggen.</value>
+    <value>[CounterInitialIndex] moet tussen 1 en 9999999 zijn.</value>
   </data>
   <data name="DefaultValueError" xml:space="preserve">
-    <value>De standaardwaarde moet tussen {0} en {1} liggen</value>
+    <value>[DefaultValue] moet tussen {0} en {1} zijn</value>
   </data>
   <data name="DiagramATCustomError" xml:space="preserve">
     <value>Voor niet-statische velden in het assettype Diagram mag {0} niet zijn ingesteld op {1}.</value>
   </data>
   <data name="DisplayInColumnMustFlaseOnComputedWonerShipLookup" xml:space="preserve">
-    <value>DisplayInColumn in ComputedOwnershipLookup kan alleen worden ingesteld op Waar als DisplayAsList is ingesteld op True.</value>
+    <value>[DisplayInColumn] op [ComputedOwnershipLookup] kan alleen worden ingesteld op True als [DisplayAsList] is ingesteld op True.</value>
   </data>
   <data name="DuplicateFieldNames" xml:space="preserve">
     <value>Dubbele veldnamen</value>
@@ -247,19 +247,19 @@
     <value>Fout met veldtype</value>
   </data>
   <data name="FieldTypeListNotSpecified" xml:space="preserve">
-    <value>Veldtype - lijst niet opgegeven</value>
+    <value>[Lookup.List] moet zijn opgegeven</value>
   </data>
   <data name="FieldTypeNotFound" xml:space="preserve">
     <value>Veldtype niet gevonden</value>
   </data>
   <data name="FieldTypeNotFoundByName" xml:space="preserve">
-    <value>Veldtype niet gevonden op basis van de opgegeven naam [{0}].</value>
+    <value>Veldtype niet gevonden op basis van de opgegeven [Name] [{0}].</value>
   </data>
   <data name="FormDescriptionMustBeEmptyForRelationship" xml:space="preserve">
-    <value>Veld {0}. De formulierbeschrijving moet leeg zijn voor het veld Relatie als IsEditable is ingesteld op False.</value>
+    <value>Veld {0}. [Description.Form] moet leeg zijn voor het veld Relatie als [IsEditable] is ingesteld op False.</value>
   </data>
   <data name="FriendNameCannotBe" xml:space="preserve">
-    <value>FriendlyName mag niet [{0}] zijn.</value>
+    <value>[FriendlyName] kan geen [{0}] zijn.</value>
   </data>
   <data name="GreaterThanError" xml:space="preserve">
     <value>{0} moet hoger zijn dan {1}</value>
@@ -274,25 +274,25 @@
     <value>Ongeldig veld {0}</value>
   </data>
   <data name="InvalidFieldFriendlyName" xml:space="preserve">
-    <value>Ongeldige FriendlyName voor veld</value>
+    <value>Ongeldig veld [FriendlyName]</value>
   </data>
   <data name="InvalidFieldName" xml:space="preserve">
-    <value>Ongeldige veldnaam</value>
+    <value>Ongeldig veld [Name]</value>
   </data>
   <data name="InvalidFields" xml:space="preserve">
     <value>Ongeldige velden</value>
   </data>
   <data name="InvalidJsonFieldType" xml:space="preserve">
-    <value>Ongeldig veldtype van JSON-attribuut. Toegestane waarden zijn {0}.</value>
+    <value>Ongeldig JSON-attribuut [DataType]. Toegestane waarden zijn {0}.</value>
   </data>
   <data name="InvalidLookupDisplayFormat" xml:space="preserve">
-    <value>Ongeldige weergave-indeling voor opzoeken.</value>
+    <value>Ongeldige waarde van [Lookup.Format]</value>
   </data>
   <data name="InvalidModel" xml:space="preserve">
     <value>U hebt geen geldig model opgegeven. Controleer uw aanvraag en probeer het opnieuw.</value>
   </data>
   <data name="InvalidparentField" xml:space="preserve">
-    <value>Ongeldig bovenliggend veld</value>
+    <value>Ongeldige waarde van [ParentFieldTypeName]</value>
   </data>
   <data name="InvalidRemoveKeyFields" xml:space="preserve">
     <value>U kunt geen sleutelvelden verwijderen omdat er bestaande items in uw omgeving bestaan. U kunt geen verwijderactie uitvoeren totdat die items zijn verwijderd, tenzij u de sleutelvelden aanpast die voor dit type zijn gedefinieerd.</value>
@@ -302,24 +302,24 @@
     <comment>Constant Parameter value</comment>
   </data>
   <data name="IsDisplayAbleTrueReferenceItemListForRelationship" xml:space="preserve">
-    <value>Veld {0}. De waarde van de IsDisplayable-parameter moet True zijn voor het type Lijst met referentie-items van de relatie.</value>
+    <value>Veld {0}. De parameterwaarde van [IsDisplayable] moet True zijn voor het type Reference Item List from Relationship.</value>
   </data>
   <data name="IsDisplayAbleTrueRelationshipLookup" xml:space="preserve">
-    <value>Veld {0}. De waarde van de IsDisplayable-parameter moet True zijn voor het type Relatie opzoeken.</value>
+    <value>Veld {0}. De parameterwaarde van [IsDisplayable] moet True zijn voor het type Relation Lookup.</value>
   </data>
   <data name="IsEditable" xml:space="preserve">
     <value>IsEditable</value>
     <comment>Constant Parameter value</comment>
   </data>
   <data name="IsEditableCanotTrue" xml:space="preserve">
-    <value>IsEditable mag niet True zijn voor dit veldtype.</value>
+    <value>[IsEditable] kan niet True zijn voor dit veldtype.</value>
   </data>
   <data name="IsListable" xml:space="preserve">
     <value>IsListable</value>
     <comment>Constant Parameter value</comment>
   </data>
   <data name="IsListableParameterMustBeFalseForBooleanType" xml:space="preserve">
-    <value>Veld {0}. De waarde van de IsListable-parameter moet False zijn voor velden van het Booleaanse type dat voor het actietype is gedefinieerd.</value>
+    <value>Veld {0}. De parameterwaarde van [IsListable] moet False zijn voor velden van het Booleaanse type dat voor het actietype is gedefinieerd!</value>
   </data>
   <data name="IsPartOfKey" xml:space="preserve">
     <value>IsPartOfKey</value>
@@ -330,62 +330,62 @@
     <comment>Constant Parameter value</comment>
   </data>
   <data name="IsPrimaryFilterMustBefalseForBooleanType" xml:space="preserve">
-    <value>Veld {0}. De waarde van de IsPrimaryFilter-parameter (weergegeven als filter op het hoogste niveau) moet False zijn voor velden van het Booleaanse type dat voor het actietype is gedefinieerd.</value>
+    <value>Veld {0}. De parameterwaarde van [IsPrimaryFilter] (weergegeven als filter op het hoogste niveau) moet False zijn voor velden van het Booleaanse type dat voor het actietype is gedefinieerd!</value>
   </data>
   <data name="IsRequired" xml:space="preserve">
     <value>IsRequired</value>
     <comment>Constant Parameter value</comment>
   </data>
   <data name="JsonElementFieldTypeNotenabled" xml:space="preserve">
-    <value>JsonElement-veldtypen zijn niet ingeschakeld in deze omgeving.  Als u het JsonElement-veldtype wilt gebruiken, moet u systeeminstelling 75 inschakelen.</value>
+    <value>[JsonElement]-veldtypen zijn niet ingeschakeld in deze omgeving.  Als u het [JsonElement]-veldtype wilt gebruiken, moet u systeeminstelling 75 inschakelen.</value>
   </data>
   <data name="JsonElementNotSupported" xml:space="preserve">
-    <value>JsonElement-velden zijn niet toegestaan voor het huidige assettype.</value>
+    <value>[JsonElement]-velden zijn niet toegestaan voor het huidige assettype!</value>
   </data>
   <data name="JsonFiledNotPartAssetType" xml:space="preserve">
     <value>Het JSON-veld {0} bestaat niet of is geen onderdeel van dit assettype.</value>
   </data>
   <data name="JsonNotSupported" xml:space="preserve">
-    <value>Json-velden zijn niet toegestaan voor het huidige assettype.</value>
+    <value>[Type.Json] zijn niet toegestaan voor het huidige assettype!</value>
   </data>
   <data name="JSONTypeNotSupportIsRequiredTrue" xml:space="preserve">
-    <value>De eigenschap IsRequired mag niet True zijn voor JSON-veldtypen die voor dit assettype zijn gedefinieerd.</value>
+    <value>De eigenschap [IsRequired] mag niet True zijn voor [Type.Json] die voor dit assettype zijn gedefinieerd!</value>
   </data>
   <data name="KeyFieldNotDefined" xml:space="preserve">
-    <value>U wilt alle huidige velden vervangen, maar u hebt nog geen sleutel gedefinieerd. U moet ten minste één veld als sleutel definiëren of Merge als actie kiezen.</value>
+    <value>U wilt alle huidige velden vervangen, maar u hebt nog geen sleutel gedefinieerd. U moet ten minste één veld als sleutel definiëren of 'Merge' als actie kiezen.</value>
   </data>
   <data name="LessThanError" xml:space="preserve">
     <value>{0} moet lager zijn dan {1}</value>
   </data>
   <data name="LinkTypeNotSupportIsPartOfKeyTrue" xml:space="preserve">
-    <value>Voor koppelingstypen mag de veldeigenschap IsPartOfKey in veld {0} niet zijn ingesteld op True.</value>
+    <value>[Type.Link] mag geen veldeigenschap [IsPartOfKey] in veld {0} hebben die is ingesteld op True.</value>
   </data>
   <data name="ListAssetTypeNotFound" xml:space="preserve">
-    <value>Assettype Lijst niet gevonden</value>
+    <value>Assettype [Lookup.List] niet gevonden</value>
   </data>
   <data name="LookupFieldTypeIsIncomplete" xml:space="preserve">
-    <value>Veldtype Opzoeken is onvolledig omdat er geen geldige klasse is opgegeven.</value>
+    <value>[Type.Lookup.List] is onvolledig, omdat er geen geldige [Class] is opgegeven.</value>
   </data>
   <data name="LookupNotSpecifiedList" xml:space="preserve">
-    <value>Veldtype Opzoeken is onvolledig omdat er geen lijst is opgegeven.</value>
+    <value>[Type.Lookup.List] is onvolledig, omdat er geen [List] is opgegeven.</value>
   </data>
   <data name="MaxDecimalFieldValue" xml:space="preserve">
     <value>10000000000</value>
   </data>
   <data name="MissingJsonAttribute" xml:space="preserve">
-    <value>Ontbrekende definitie van JSON-attribuut.</value>
+    <value>Ontbrekende definitie voor [JsonAttribute]!</value>
   </data>
   <data name="MissingListDisplayFormat" xml:space="preserve">
-    <value>De weergave-indeling Lijst is vereist voor veldtype Opzoeken.</value>
+    <value>[Lookup.Format] is vereist voor [Type.Lookup].</value>
   </data>
   <data name="MustProvideLinkTextValue" xml:space="preserve">
-    <value>U moet een tekstwaarde voor de koppeling opgeven als u een standaardwaarde instelt voor {0}.</value>
+    <value>U moet een waarde voor [DefaultValue.Text] instellen indien u een standaardwaarde voor instelt voor {0}.</value>
   </data>
   <data name="MustProvideLinkUrlValue" xml:space="preserve">
-    <value>U moet een URL-waarde voor de koppeling opgeven als u een standaardwaarde instelt voor {0}.</value>
+    <value>U moet een waarde voor [DefaultValue.Url] instellen indien u een standaardwaarde voor instelt voor {0}.</value>
   </data>
   <data name="NameCannotBe" xml:space="preserve">
-    <value>De naam mag niet [{0}] zijn.</value>
+    <value>[Name] kan geen [{0}] zijn.</value>
   </data>
   <data name="NameReservedword" xml:space="preserve">
     <value>U mag {f.Name} niet als naam voor uw veld gebruiken omdat dit een gereserveerd woord is.</value>
@@ -394,34 +394,34 @@
     <value>Geen model gevonden</value>
   </data>
   <data name="NoPrimaryKeyDefined" xml:space="preserve">
-    <value>Geen primaire sleutel gedefinieerd</value>
+    <value>Geen velden waarvoor [IsPartOfKey] is ingesteld op True</value>
   </data>
   <data name="NotIncludedValidTypeFieldType" xml:space="preserve">
     <value>U hebt geen geldig type ingesloten voor het veldtype [{0}].</value>
   </data>
   <data name="NotUseComputedRelationshipLookuptypeField" xml:space="preserve">
-    <value>U kunt geen ComputedRelationshipLookup-type gebruiken op een asset van het type {0} voor veld {1}.</value>
+    <value>U kunt geen [Type.ComputedRelationshipLookup]-type gebruiken op een asset van het type {0} voor het veld {1}.</value>
   </data>
   <data name="NotUseJSONonActionType" xml:space="preserve">
-    <value>U kunt geen JSON-type gebruiken op een actietype of relatietype voor het veld {0}.</value>
+    <value>U kunt geen [Type.Json] gebruiken op een actietype of relatietype voor het veld {0}.</value>
   </data>
   <data name="NotUseReferenceListItemList" xml:space="preserve">
     <value>U kunt geen lijst met referentie-items van het relatietype gebruiken op een actietype of relatietype voor het veld {0}.</value>
   </data>
   <data name="NotUseRelationshipLookupField" xml:space="preserve">
-    <value>U kunt het type Relatie opzoeken niet gebruiken op een actietype of relatietype voor het veld {0}.</value>
+    <value>U kunt geen [Type.ComputedRelationshipReferenceList] gebruiken op een actietype of relatietype voor het veld {0}.</value>
   </data>
   <data name="NotUserOwnershipLookup" xml:space="preserve">
-    <value>U kunt het type Eigenaarschap opzoeken niet gebruiken op een actietype of relatietype voor het veld {0}.</value>
+    <value>U kunt geen [Type.ComputedOwnershipLookup] gebruiken op een actietype of relatietype voor het veld {0}.</value>
   </data>
   <data name="NotUseSCoreTypeAssetForField" xml:space="preserve">
-    <value>U kunt geen scoretype gebruiken op een asset van het type {0} voor het veld {1}.</value>
+    <value>U kunt geen [Type.Score] gebruiken op een asset van het type {0} voor het veld {1}.</value>
   </data>
   <data name="NotUseScoreTypeOnActionAndRelationshipType" xml:space="preserve">
-    <value>U kunt geen scoretype gebruiken op een actietype of relatietype voor het veld {0}.</value>
+    <value>U kunt geen [Type.Score] gebruiken op een actietype of relatietype voor het veld {0}.</value>
   </data>
   <data name="NotValidRegex" xml:space="preserve">
-    <value>Validatiepatroon is geen geldige Regex-expressie.</value>
+    <value>[Text.Validation.Pattern] is geen geldige Regex-expressie!</value>
   </data>
   <data name="NoUidFound" xml:space="preserve">
     <value>Geen UID gevonden</value>
@@ -433,49 +433,49 @@
     <value>Voor de volgende velden zijn meerdere typen gedefinieerd: {0}.</value>
   </data>
   <data name="OnlyOneTagFieldAllowed" xml:space="preserve">
-    <value>Assettype mag maar één Tag-veldtype hebben.</value>
+    <value>Assettype mag maar één [Type.Tag]-veldtype hebben!</value>
   </data>
   <data name="ParameterError" xml:space="preserve">
     <value>Parameterfout</value>
   </data>
   <data name="ParentFieldRefernceItemNotfound" xml:space="preserve">
-    <value>Kan het bovenliggende veld [{0}] van het type ReferenceItem niet vinden in deze asset.</value>
+    <value>Kan het bovenliggende veld [{0}] van het type Reference niet vinden in deze asset.</value>
   </data>
   <data name="ProvideComputedRealtionshipLookupField" xml:space="preserve">
-    <value>U moet een definitie opgeven voor het berekende veld Relatie opzoeken {0}.</value>
+    <value>U moet een definitie opgeven voor [Type.ComputedRelationshipLookup] in het veld {0}.</value>
   </data>
   <data name="ProvideOneValueActionAssetRelationship" xml:space="preserve">
-    <value>U moet één van de drie UID-eigenschappen opgeven: ActionTypeUid, AssetTypeUid of RelationshipTypeUid.</value>
+    <value>U moet slechts één van de drie UID-eigenschappen opgeven: [ActionTypeUid], [AssetTypeUid] of [RelationshipTypeUid].</value>
   </data>
   <data name="ReferenceItemIsPartOfKeyNotAllowedTrue" xml:space="preserve">
-    <value>Voor het type Referentie-item mag de veldeigenschap IsPartOfKey niet zijn ingesteld op True.</value>
+    <value>Voor de veldeigenschap van Reference-typen mag [IsPartOfKey] niet zijn ingesteld op True.</value>
   </data>
   <data name="ReferenceItemNotSupportJsonElement" xml:space="preserve">
-    <value>Het veldtype JsonElement wordt niet ondersteund voor het type Referentie-item.</value>
+    <value>[Type.JsonElement] wordt niet ondersteund voor het type Reference item!</value>
   </data>
   <data name="ReferenceListNotSupportJson" xml:space="preserve">
-    <value>Het veldtype Json wordt niet ondersteund voor het type Referentie-item.</value>
+    <value>[Type.Json] wordt niet ondersteund voor het type Reference item!</value>
   </data>
   <data name="ReferenceListNotSupportTag" xml:space="preserve">
-    <value>Het veldtype Tag wordt niet ondersteund voor het type Referentie-item</value>
+    <value>[Type.Tag] wordt niet ondersteund voor het type Reference item.</value>
   </data>
   <data name="RelationNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
-    <value>Voor relatietypen mag de veldeigenschap IsPartOfKey niet zijn ingesteld op True.</value>
+    <value>Voor de veldeigenschap voor Relationship-typen mag [IsPartOfKey] niet zijn ingesteld op True.</value>
   </data>
   <data name="RelationshipIDUsedMoreThanOnce" xml:space="preserve">
-    <value>De volgende relatie-ID's worden meerdere keren gebruikt: {0}. De relatie moet uniek zijn op hetzelfde assettype</value>
+    <value>De volgende relatie-ID's worden meerdere keren gebruikt: {0}. [Type.Relationship] moet uniek zijn in hetzelfde assettype</value>
   </data>
   <data name="RelationshipNotAllowedScoreFieldType" xml:space="preserve">
-    <value>Relaties mogen niet het veldtype Score hebben.</value>
+    <value>[Type.Score] wordt niet ondersteund in relaties</value>
   </data>
   <data name="RelationshipNotSupported" xml:space="preserve">
-    <value>Relatievelden zijn niet toegestaan voor het huidige assettype.</value>
+    <value>[Type.Relationship] zijn niet toegestaan voor het huidige assettype!</value>
   </data>
   <data name="RelationshipNotSupportPath" xml:space="preserve">
-    <value>Relaties mogen niet het veldtype Path hebben.</value>
+    <value>[Type.Path] wordt niet ondersteund in relaties</value>
   </data>
   <data name="RelationshipsNotAllowedTagFieldType" xml:space="preserve">
-    <value>Relaties mogen niet het veldtype Tag hebben.</value>
+    <value>[Type.Tag] wordt niet ondersteund in relaties</value>
   </data>
   <data name="RelationshipTypeFieldNotFound" xml:space="preserve">
     <value>Relatietype/-veld niet gevonden</value>
@@ -493,41 +493,41 @@
     <value>Relatietype niet gevonden op basis van de opgegeven UID [{0}].</value>
   </data>
   <data name="RelationShipTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
-    <value>U mag geen RelationshipTypeUid opgeven omdat u al een ActionTypeUid hebt opgegeven.</value>
+    <value>U mag geen [RelationshipTypeUid] opgeven omdat u al een [ActionTypeUid] hebt opgegeven.</value>
   </data>
   <data name="RelationShipTypeUidNotRequiredIfAssetTypeUidProvided" xml:space="preserve">
     <value>U mag geen RelationshipTypeUid opgeven omdat u al een AssetTypeUid hebt opgegeven.</value>
   </data>
   <data name="RelationshipUidMustUniqueWithinAssetType" xml:space="preserve">
-    <value>De volgende relatie-ID's worden meerdere keren gebruikt: {0}. De relatie moet uniek zijn op hetzelfde assettype.</value>
+    <value>De volgende relatie-UID's worden meerdere keren gebruikt: {0}. [Type.Relationship] moet uniek zijn in hetzelfde assettype</value>
   </data>
   <data name="ScoreNotSupported" xml:space="preserve">
-    <value>Scorevelden zijn niet toegestaan voor het huidige assettype.</value>
+    <value>[Type.Score] wordt niet ondersteund voor het huidige assettype</value>
   </data>
   <data name="ScoreTypeCannotAllocateAssetType" xml:space="preserve">
-    <value>Het scoretype {0} mag niet aan dit assettype worden toegewezen voor veld {1}.</value>
+    <value>[Score.ScoreType] {0} mag niet aan dit assettype worden toegewezen voor veld {1}.</value>
   </data>
   <data name="ShowIfEmpty" xml:space="preserve">
     <value>ShowIfEmpty</value>
     <comment>Constant Parameter value</comment>
   </data>
   <data name="SpecificHaveTagFieldType" xml:space="preserve">
-    <value>Alleen artefacten, beleidsregels, modellen en regels mogen het veldtype Tag hebben.</value>
+    <value>[Type.Tag] is alleen toegestaan in bedrijfs assets, technische middelen, beleidsregels, modellen en regels</value>
   </data>
   <data name="TaskTypeGovernanceRoleCustomError" xml:space="preserve">
-    <value>Taaktypen mogen niet de veldeigenschap {0} hebben als het veld GovernanceRole is ingesteld op {1}. </value>
+    <value>Taaktypen mogen niet de veldeigenschap '{0}' hebben als het veld [GovernanceRole] is ingesteld op {1}.</value>
   </data>
   <data name="TaskTypeNameCustomError" xml:space="preserve">
-    <value>Taaktypen mogen niet de veldeigenschap {0} hebben als het veld Naam is ingesteld op {1}. </value>
+    <value>Taaktypen mogen niet de veldeigenschap '{0}' hebben als het veld [Name] is ingesteld op {1}.</value>
   </data>
   <data name="TaskTypeStepNoCustomError" xml:space="preserve">
-    <value>Taaktypen mogen niet de veldeigenschap {0} hebben als het veld StepNo is ingesteld op {1}. </value>
+    <value>Taaktypen mogen niet de veldeigenschap '{0}' hebben als het veld [StepNo] is ingesteld op {1}.</value>
   </data>
   <data name="ThisAssetTypeNotSupportPath" xml:space="preserve">
-    <value>Dit assettype heeft mogelijk niet het veldtype Path.</value>
+    <value>[Type.Path] wordt niet ondersteund voor het huidige assettype</value>
   </data>
   <data name="TypeObjectMissing" xml:space="preserve">
-    <value>Het object Type ontbreekt in een of meer veldtypedefinities.</value>
+    <value>Het object [Type] ontbreekt in een of meer veldtypedefinities.</value>
   </data>
   <data name="WholeNumberError" xml:space="preserve">
     <value>{0} moet een geheel getal zijn</value>

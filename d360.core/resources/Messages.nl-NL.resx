@@ -134,10 +134,10 @@
     <value>Een of meer JSON-attribuutvelden verwijzen naar het veld dat u probeert te verwijderen.</value>
   </data>
   <data name="Error_Duplicate_Relationship_Uid" xml:space="preserve">
-    <value>Dubbele ID's van relatie-UID's: {0}. ID's binnen een batch moeten uniek zijn.</value>
+    <value>Dubbele ID's van relatie-UID's: {0}. [Uid]-ID's moeten uniek zijn binnen een batch.</value>
   </data>
   <data name="Error_Responsibility_ApplyToType_False" xml:space="preserve">
-    <value>Wanneer-voorwaarden moeten worden gebruikt wanneer de waarde ApplyToType is ingesteld op Niet waar.</value>
+    <value>U moet [When]-voorwaarden gebruiken als de waarde van [ApplyToType] is ingesteld op False.</value>
   </data>
   <data name="Error_Parameter_InvalidUidValue" xml:space="preserve">
     <value>Parameter {0} heeft een ongeldige GUID-waarde</value>
@@ -149,6 +149,9 @@
     <value>Assettype met UID {0} niet gevonden</value>
   </data>
   <data name="AssetTypeInvalidClass" xml:space="preserve">
-    <value>Assettypeklasse ongeldig Toegestane klassen zijn {0}</value>
+    <value>De waarde van [Class] is ongeldig. Toegestane klassen zijn {0}</value>
+  </data>
+  <data name="AssetNotFound" xml:space="preserve">
+    <value>Asset met UID {0} niet gevonden</value>
   </data>
 </root>

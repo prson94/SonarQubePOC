@@ -152,16 +152,16 @@
     <value>Richtlinie</value>
   </data>
   <data name="Responsibility_Then_Filter_Value_Required" xml:space="preserve">
-    <value>Der Wert für den 'Then'-Filter der Aufgabe ist erforderlich.</value>
+    <value>'Then' ist erforderlich.</value>
   </data>
   <data name="Responsibility_Then_InvalidFieldType" xml:space="preserve">
-    <value>Ungültiger Feldtyp in 'When'-Filtern für diesen Asset-Typ.</value>
+    <value>'When' enthält eine ungültige FieldTypeId für diesen Asset-Typ.</value>
   </data>
   <data name="Responsibility_When_Filter_Required_Based_ApplyToType_Value" xml:space="preserve">
-    <value>Es ist mindestens ein 'When'-Filter erforderlich, wenn die Option 'Gilt für den gesamten Typ' deaktiviert ist.</value>
+    <value> 'When' ist erforderlich, wenn ApplyToType auf 'false' festgelegt ist.</value>
   </data>
   <data name="Responsibility_When_Filter_Value_Required" xml:space="preserve">
-    <value>Der Wert für den 'When'-Filter der Aufgabe ist erforderlich.</value>
+    <value>'When' ist erforderlich.</value>
   </data>
   <data name="RuleType" xml:space="preserve">
     <value>Regel</value>

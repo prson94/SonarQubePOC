@@ -122,7 +122,7 @@
     <value>Les agrégations '{0}' ne sont pas prises en charge</value>
   </data>
   <data name="CategoryNotAvailable" xml:space="preserve">
-    <value>Les valeurs '{0}' ne sont pas valides pour la catégorie.</value>
+    <value>Les valeurs '{0}' ne sont pas valides pour [Category].</value>
   </data>
   <data name="FieldUnsupported" xml:space="preserve">
     <value>Les filtres de champ '{0}' ne sont pas pris en charge</value>

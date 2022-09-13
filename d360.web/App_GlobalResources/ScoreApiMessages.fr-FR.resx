@@ -122,10 +122,10 @@
     <value>L’allocation dont l’UID est {0} n’existe pas.</value>
   </data>
   <data name="DuplicateMeasureUid" xml:space="preserve">
-    <value>measureUid en double spécifié dans la charge utile.</value>
+    <value>[measureUid] en double spécifié dans la charge utile.</value>
   </data>
   <data name="EffectiveDateNotGTToday" xml:space="preserve">
-    <value>La valeur effectiveDate ne doit pas être ultérieure à la date du jour (en UTC).</value>
+    <value>La valeur de [effectiveDate] ne doit pas être ultérieure à la date d’aujourd’hui (en UTC).</value>
   </data>
   <data name="ErrorAddingScoreResults" xml:space="preserve">
     <value>Erreur lors de l’ajout des résultats des scores</value>
@@ -140,7 +140,7 @@
     <value>Un seuil inférieur doit être défini.</value>
   </data>
   <data name="RangeLimitThreshold" xml:space="preserve">
-    <value>Les valeurs de seuil doivent être comprises entre 0 et 100.</value>
+    <value>Les valeurs [Threshold] doivent être comprises entre 0 et 100.</value>
   </data>
   <data name="RestrictDeleteScore" xml:space="preserve">
     <value>Malheureusement, vous ne pouvez pas supprimer un score avec des mesures définies.</value>
@@ -176,9 +176,9 @@
     <value>La définition du score avec {0} n’est pas calculée en interne.</value>
   </data>
   <data name="UpperGtLower" xml:space="preserve">
-    <value>Le seuil inférieur doit être inférieur au seuil supérieur.</value>
+    <value>La valeur [lowerThreshold] doit être inférieure à la valeur [upperThreshold]</value>
   </data>
   <data name="UpperThreshold" xml:space="preserve">
-    <value>Le seuil supérieur doit être défini.</value>
+    <value>La valeur [upperThreshold] doit être définie.</value>
   </data>
 </root>

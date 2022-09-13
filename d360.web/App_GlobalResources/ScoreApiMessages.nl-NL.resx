@@ -122,10 +122,13 @@
     <value>Toewijzing met UID {0} bestaat niet.</value>
   </data>
   <data name="DuplicateMeasureUid" xml:space="preserve">
-    <value>Dubbele measureUid opgegeven in de payload.</value>
+    <value>Dubbele [measureUid] opgegeven in de payload.</value>
   </data>
   <data name="EffectiveDateNotGTToday" xml:space="preserve">
-    <value>effectiveDate mag niet later zijn dan de datum van vandaag (in UTC).</value>
+    <value>[effectiveDate] mag niet later zijn dan de datum van vandaag (in UTC).</value>
+  </data>
+  <data name="ErrorAddingScoreResults" xml:space="preserve">
+    <value>Fout bij het toevoegen van scoreresultaten</value>
   </data>
   <data name="ErrorGetDataQualityScore" xml:space="preserve">
     <value>Fout bij ophalen van bewijs van gegevenskwaliteit voor scoreresultaat</value>
@@ -137,7 +140,7 @@
     <value>De laagste drempelwaarde moet worden ingesteld.</value>
   </data>
   <data name="RangeLimitThreshold" xml:space="preserve">
-    <value>Drempelwaarden moeten tussen 0 en 100 liggen.</value>
+    <value>De waarden van [Threshold] moeten tussen 0 en 100 zijn.</value>
   </data>
   <data name="RestrictDeleteScore" xml:space="preserve">
     <value>U kunt een score waarvoor meetwaarden zijn gedefinieerd niet verwijderen.</value>
@@ -173,9 +176,9 @@
     <value>Scoredefinitie met {0} is niet intern berekend.</value>
   </data>
   <data name="UpperGtLower" xml:space="preserve">
-    <value>De laagste drempelwaarde moet lager zijn dan de hoogste drempelwaarde.</value>
+    <value>[lowerThreshold] moet kleiner zijn dan [upperThreshold]</value>
   </data>
   <data name="UpperThreshold" xml:space="preserve">
-    <value>De hoogste drempelwaarde moet worden ingesteld.</value>
+    <value>[upperThreshold] moet worden ingesteld.</value>
   </data>
 </root>

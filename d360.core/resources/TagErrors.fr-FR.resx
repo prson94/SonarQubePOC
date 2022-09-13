@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeleteCascadeTagRelateAsset" xml:space="preserve">
-    <value>Les balises dont l’UID est '{0}' ont des actifs associés. Utilisez cascade='true' pour supprimer cette balise !</value>
+    <value>Les balises dont l’UID est '{0}' ont des actifs associés. Définissez [cascade] sur 'true' pour supprimer cette balise !</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Valeur non valide [{0}] transmise dans la requête.</value>
@@ -125,25 +125,25 @@
     <value>Valeur non valide [{0}] transmise dans la requête</value>
   </data>
   <data name="InvalidPageNumber" xml:space="preserve">
-    <value>Valeur du paramètre numéro de page non valide !</value>
+    <value>Valeur du paramètre [_pagenum] non valide !</value>
   </data>
   <data name="InvalidPageSize" xml:space="preserve">
-    <value>Valeur du paramètre de taille de page non valide !</value>
+    <value>Valeur du paramètre [_pagesize] non valide !</value>
   </data>
   <data name="InvalidParaMeter" xml:space="preserve">
-    <value>Paramètres fournis non valides. Les paramètres DisplayValue, AssetType, TagsasString ne peuvent pas être utilisés en présence du paramètre globalSearch.</value>
+    <value>Paramètres fournis non valides. Les paramètres [DisplayValue], [AssetType], [TagsAsString] ne peuvent pas être utilisés en présence du paramètre [globalSearch].</value>
   </data>
   <data name="InvalidSortBy" xml:space="preserve">
-    <value>Valeur sortby fournie dans la requête non valide.</value>
+    <value>Valeur [sortby] fournie dans la requête non valide.</value>
   </data>
   <data name="InvalidSortOrder" xml:space="preserve">
-    <value>Valeur sort order fournie dans la requête non valide.</value>
+    <value>Valeur [sortorder] fournie dans la requête non valide.</value>
   </data>
   <data name="InvalidTagUid" xml:space="preserve">
     <value>Valeur non valide [{0}] transmise dans la requête</value>
   </data>
   <data name="Invalid_IncludeTotal" xml:space="preserve">
-    <value>Valeur non valide fournie [{0}] dans la requête pour le paramètre _includetotal.</value>
+    <value>Valeur non valide fournie [{0}] dans la requête pour le paramètre [_includetotal].</value>
   </data>
   <data name="InvalueTotalValue" xml:space="preserve">
     <value>Valeur non valide [{0}] transmise dans la requête.</value>

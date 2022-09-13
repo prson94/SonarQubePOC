@@ -119,16 +119,16 @@
     <value>Der Asset-Typ stimmt mit keiner Umfrage überein.</value>
   </data>
   <data name="InvalidFormatSurveyTypeUid" xml:space="preserve">
-    <value>Ungültiges Format für surveyTypeUid</value>
+    <value>Ungültiges Format für [surveyTypeUid]</value>
   </data>
   <data name="InvalidValueAsOfDate" xml:space="preserve">
-    <value>Ungültiger Datumswert für den Parameter 'AsOfDate'</value>
+    <value>Ungültiger Datumswert für den Parameter '[AsOfDate]'.</value>
   </data>
   <data name="NotavalidEndDateRange" xml:space="preserve">
-    <value>Ungültiger Wert für EndDateRange</value>
+    <value>[EndDateRange] nicht gültig</value>
   </data>
   <data name="NotvalidStartDateRange" xml:space="preserve">
-    <value>Ungültiger Wert für StartDateRange</value>
+    <value>[StartDateRange] nicht gültig</value>
   </data>
   <data name="ResultRemoved" xml:space="preserve">
     <value>{0} Ergebnisse entfernt.</value>
@@ -143,7 +143,7 @@
     <value>Umfrage-Fragetyp für UID {0} nicht gefunden</value>
   </data>
   <data name="SurveyResourceAssetUidPopulated" xml:space="preserve">
-    <value>SurveyTypeUid, ResourceUid oder AssetUid muss angegeben werden.</value>
+    <value>[SurveyTypeUid], [ResourceUid] oder [AssetUid] müssen ausgefüllt werden</value>
   </data>
   <data name="SurveyUidNotFound" xml:space="preserve">
     <value>Umfragetyp für UID {0} nicht gefunden.</value>

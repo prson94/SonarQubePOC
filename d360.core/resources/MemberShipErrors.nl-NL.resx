@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CanNotProvideStateOfNewUser" xml:space="preserve">
-    <value>Kan geen status opgeven voor een nieuwe gebruiker</value>
+    <value>Kan geen [State] opgeven voor een nieuwe gebruiker</value>
   </data>
   <data name="CurrentPasswordWrong" xml:space="preserve">
     <value>Uw wachtwoord is niet bijgewerkt omdat het opgegeven huidige wachtwoord niet overeenkomt.</value>
@@ -125,25 +125,25 @@
     <value>Veldtype voor sleutel [{0}] niet gevonden op deze asset</value>
   </data>
   <data name="FirstNameMissing" xml:space="preserve">
-    <value>Moet een voornaam opgeven</value>
+    <value>Er moet een [FirstName] worden opgegeven</value>
   </data>
   <data name="FirstNameTooLong" xml:space="preserve">
-    <value>Voornaam mag maximaal 250 tekens lang zijn</value>
+    <value>[FirstName] mag maximaal 250 tekens lang zijn</value>
   </data>
   <data name="InternalServerErrorMsg" xml:space="preserve">
     <value>Interne serverfout opgetreden</value>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
-    <value>Gebruikersnaam heeft geen geldige e-mailindeling</value>
+    <value>[Username] is geen geldige e-mailindeling</value>
   </data>
   <data name="LastNameMissing" xml:space="preserve">
-    <value>Moet een achternaam opgeven</value>
+    <value>Er moet een [LastName] worden opgegeven</value>
   </data>
   <data name="LastNameTooLong" xml:space="preserve">
-    <value>Achternaam mag maximaal 250 tekens lang zijn</value>
+    <value>[LastName] mag maximaal 250 tekens lang zijn</value>
   </data>
   <data name="MissingCurrentPasswordParameter" xml:space="preserve">
-    <value>De waarde voor de CurrentPassword-parameter ontbreekt.</value>
+    <value>Parameterwaarde van [CurrentPassword] ontbreekt.</value>
   </data>
   <data name="NewAndCurrentNotSame" xml:space="preserve">
     <value>Nieuw wachtwoord mag niet hetzelfde zijn als huidige wachtwoord</value>

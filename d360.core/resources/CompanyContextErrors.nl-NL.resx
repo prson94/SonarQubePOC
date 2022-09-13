@@ -128,7 +128,7 @@
     <value>Ongeldig relatieveld heeft geen relatietype om te zoeken gevonden in de definitie.</value>
   </data>
   <data name="InvalidTypeIdentifierInfoModel" xml:space="preserve">
-    <value>Ongeldig TypeIdentifierInfoModel.</value>
+    <value>Ongeldige [TypeIdentifierInfoModel].</value>
   </data>
   <data name="MultiRelationshipsReferRelationship" xml:space="preserve">
     <value>Een of meer relaties verwijzen naar deze relatie.</value>
