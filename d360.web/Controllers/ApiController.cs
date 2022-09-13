@@ -2628,6 +2628,7 @@ namespace d360.web.Controllers
 			var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
 			model.Object = type.ToString();
 			model.ObjectID = id;
+			
 
 			var metadataResult = await Company.QueryAsync<dynamic>(@"
 					select  V.DisplayValue as AssetName, 
@@ -2636,7 +2637,8 @@ namespace d360.web.Controllers
 							T.ObjectID as ObjectTypeID,
 							A.Uid as AssetUid,
 							A.ID as AssetID,
-							T.ID as AssetTypeID
+							T.ID as AssetTypeID,	
+							dbo.[GenerateAssetUrl](a.ID) as AssetUrl
 					from    Asset A 
 							inner join AssetDisplayValue V on V.AssetID = A.ID 
 							inner join AssetType T on T.ID = A.AssetTypeID 
@@ -2672,6 +2674,8 @@ namespace d360.web.Controllers
 
 				model.ObjectType = metadata.ObjectType;
 				model.ObjectTypeID = metadata.ObjectTypeID;
+
+				model.Url = metadata.AssetUrl;
 			}
 
 			if (includeHeader)
