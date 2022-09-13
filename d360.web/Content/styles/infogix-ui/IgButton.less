@@ -56,11 +56,11 @@
     color: var(--calculatedPrimaryButtonTextColor);
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: linear-gradient(rgba(32, 32, 32, 0.2), rgba(32, 32, 32, 0.2)), var(--primaryButtonBackColor);
+      background: @ig-dark-overlay-hover, var(--primaryButtonBackColor);
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: linear-gradient(rgba(32, 32, 32, 0.4), rgba(32, 32, 32, 0.4)), var(--primaryButtonBackColor);
+      background: @ig-dark-overlay-active, var(--primaryButtonBackColor);
     }
   }
 
@@ -104,11 +104,11 @@
     }
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), var(--primaryButtonBackColor);
+      background: @ig-light-overlay-hover, var(--primaryButtonBackColor);
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), var(--primaryButtonBackColor);
+      background: @ig-light-overlay-active, var(--primaryButtonBackColor);
     }
 
     &:disabled {
@@ -125,7 +125,7 @@
     &:hover:not(:disabled), &.ig-state-hover {
       -webkit-background-clip: text !important;
       -webkit-text-fill-color: transparent;
-      background: linear-gradient(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.16)), var(--primaryButtonBackColor);
+      background: @ig-dark-overlay-hover, var(--primaryButtonBackColor);
 
       .ig-button-label {
         text-decoration: underline;
@@ -135,7 +135,7 @@
     &:active:not(:disabled), &.ig-state-active {
       -webkit-background-clip: text !important;
       -webkit-text-fill-color: transparent;
-      background: linear-gradient(rgba(0, 0, 0, 0.39), rgba(0, 0, 0, 0.39)), var(--primaryButtonBackColor);
+      background: @ig-dark-overlay-active, var(--primaryButtonBackColor);
 
       .ig-button-label {
         text-decoration: underline;
@@ -167,11 +167,11 @@
     }
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), var(--primaryButtonBackColor);
+      background: @ig-toolbar-overlay-hover, var(--primaryButtonBackColor);
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: linear-gradient(rgba(255, 255, 255, 0.60), rgba(255, 255, 255, 0.60)), var(--primaryButtonBackColor);
+      background: @ig-toolbar-overlay-active, var(--primaryButtonBackColor);
     }
 
     &:disabled > * {
@@ -224,11 +224,11 @@
       color: @ig-black;
 
       &:hover:not(:disabled), &.ig-state-hover {
-        background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), var(--primaryButtonBackColor);
+        background: @ig-toolbar-overlay-hover, var(--primaryButtonBackColor);
       }
 
       &:active:not(:disabled), &.ig-state-active {
-        background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), var(--primaryButtonBackColor);
+        background: @ig-toolbar-overlay-active, var(--primaryButtonBackColor);
       }
 
       &:disabled,
@@ -274,6 +274,7 @@
 
   .ig-button-label {
     white-space: nowrap;
+    font-weight: 500;
   }
 
   &.ig-button-transparent {
@@ -310,11 +311,11 @@
     border: none;
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), var(--primaryButtonBackColor);
+      background: @ig-toolbar-overlay-hover, var(--primaryButtonBackColor);
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), var(--primaryButtonBackColor);
+      background: @ig-toolbar-overlay-active, var(--primaryButtonBackColor);
     }
   }
 
