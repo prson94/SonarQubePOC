@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.dbo.SiteNavAvailable-v1">
+  <changeSet author="TDuric" id="View.dbo.SiteNavAvailable-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -44,8 +44,8 @@
 								select	distinct 
 										AT.ID
 								from	IntersectType
-										inner join IntersectType IT on IT.ObjectID = u.ObjectID and IT.Object = u.Object
-										inner join AssetType AT on AT.Object = IT.Object and AT.ObjectID = IT.ObjectID
+										inner join IntersectType IT on IT.ObjectAssetTypeID = u.ID
+										inner join AssetType AT on AT.ID = IT.ObjectAssetTypeID
 								where	IT.PredicateID in (SELECT ID from Predicate WHERE Type = 3)
 								)
 		]]>
