@@ -5,12 +5,80 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetAllowedIntersectionTypes-v7">
+  <changeSet author="Pappas" id="Procedure.dbo.GetAllowedIntersectionTypes-v8">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [dbo].[GetAllowedIntersectionTypes]
+	@SourceType varchar(50),
+	@SourceTypeID int,
+	@IntersectID int = 0
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	declare @assetTypeId int;
+	select @assetTypeId = ID from AssetType where Object = @SourceType and ObjectID = @SourceTypeID;
+
+	declare @tbl table (IntersectTypeID int, TargetType varchar(50), TargetTypeID int, TargetName nvarchar(500), ParentIntersectID int, PredicateName nvarchar(100), SourceName nvarchar(500), SourceTypeID int, SourceType varchar(50), Uid uniqueidentifier);
+	
+	insert into @tbl
+		(IntersectTypeID, TargetType, TargetTypeID, TargetName, ParentIntersectID, PredicateName, SourceName, SourceTypeID, SourceType, uid)
+		SELECT	RT.ID,
+				iif(RT.SubjectAssetTypeID = @assetTypeId, O.Object, S.Object) as TargetType,
+				iif(RT.SubjectAssetTypeID = @assetTypeId, O.ObjectID, S.ObjectID) as TargetTypeID,
+				iif(RT.SubjectAssetTypeID = @assetTypeId, O.Name, S.Name) as TargetName,
+				NULL,
+				P.Name as PredicateName,
+				iif(RT.SubjectAssetTypeID = @assetTypeId, S.Name, O.Name) as SourceName,
+				iif(RT.SubjectAssetTypeID = @assetTypeId, S.ObjectID, O.ObjectID) as SourceTypeID,
+				iif(RT.SubjectAssetTypeID = @assetTypeId, S.Object, O.Object) as SourceType,
+				RT.uid
+		FROM	IntersectType RT
+				inner join AssetType S on S.ID = RT.SubjectAssetTypeID
+				inner join AssetType O on O.ID = RT.ObjectAssetTypeID
+				inner join [Predicate] P on P.ID = RT.PredicateID
+		WHERE	P.[Type] <> 15 
+				and P.[Type] <> 17 
+				and (
+						(RT.SubjectAssetTypeID = @assetTypeId) OR 
+						(RT.ObjectAssetTypeID = @assetTypeId)
+					)
+	
+	select		distinct
+				IntersectTypeID, 
+				TargetType, 
+				TargetTypeID, 
+				case
+					when TargetType = 'TaxonomyType' then 'Model: '
+					when TargetType = 'ArtifactType' and AT.Class = 1 then 'Business Asset: '
+					when TargetType = 'ArtifactType' and AT.Class = 8 then 'Technical Asset: '
+					when TargetType = 'RuleType' then 'Rules: '
+					when TargetType = 'PolicyType' then 'Policies: '
+					when TargetType = 'TaskType' then 'Diagram Asset: '
+					else ''
+				end + ' : ' + TargetName as TargetName, 
+				ParentIntersectID,
+				PredicateName,
+				T.Uid
+	from		@tbl T
+	left join dbo.AssetType AT on AT.Object = 'ArtifactType' and AT.ObjectID = @SourceTypeID
+	order by	case
+					when TargetType = 'TaxonomyType' then 'Model: '
+					when TargetType = 'ArtifactType' and AT.Class = 1 then 'Business Asset: '
+					when TargetType = 'ArtifactType' and AT.Class = 8 then 'Technical Asset: '
+					when TargetType = 'RuleType' then 'Rules: '
+					when TargetType = 'PolicyType' then 'Policies: '
+                    when TargetType = 'TaskType' then 'Diagram Asset: '
+					else ''
+				end + ' : ' + TargetName
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [dbo].[GetAllowedIntersectionTypes]
 	@SourceType varchar(50),
 	@SourceTypeID int,
@@ -87,11 +155,6 @@ BEGIN
 					else ''
 				end + ' : ' + TargetName
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>
