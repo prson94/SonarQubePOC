@@ -118,7 +118,7 @@ BEGIN
 								inner join AssetDisplayValue AD on AD.AssetID = A.ID
 								inner join [intersect] id on id.objectassetid = A.ID
 								inner join [intersect] id_2 on (id_2.[objectassetid] = @MyRefAssetID and id_2.subjectassetid = id.subjectassetid)
-								inner join [intersecttypedetail] it on (it.id = id.intersecttypeid and it.id = id_2.intersecttypeid and it.[objectclass]=14 and it.predicatetype = 3)
+								inner join [intersecttypedetail] it on (it.id = id.intersecttypeid and it.id = id_2.intersecttypeid and it.[objectclass] = 9 and it.predicatetype = 3)
 						where	AST.id = @MyRefAssetTypeID
 								and A.[State] = 1 
 								and A.ID not in (select AssetID from ResponsibilityDetail where ((PermissionsBitMask & 1) = 0) and ResourceID = @resourceId)
