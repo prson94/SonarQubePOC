@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.CalculateRollups-v4">
+  <changeSet author="TKlok" id="Procedure.metrics.CalculateRollups-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -32,8 +32,8 @@ begin
 				P.Inverse,
 				P.Type
 		from	IntersectType I
-				inner join AssetType S on S.Object = I.Subject and S.ObjectID = I.SubjectID and S.Class in (1,2,6,7,8,9) 
-				inner join AssetType O on O.Object = I.Object and O.ObjectID = I.ObjectID and O.Class in (1,2,6,7,8,9) 
+				inner join AssetType S on S.id = I.SubjectAssetTypeID and S.Class in (1,2,6,7,8,9) 
+				inner join AssetType O on O.id = I.ObjectAssetTypeID and O.Class in (1,2,6,7,8,9) 
 				inner join [Predicate] P on P.ID = I.PredicateID
 
 	drop table if exists #final
@@ -612,6 +612,24 @@ begin
 		end catch
 	end
 
+	delete	L
+	from	[metrics].[RollupPathLink] L
+			inner join metrics.RollupPath P on P.Uid = L.RollupPathUid
+			left join [metrics].[AssetVersionRollupPath] V on V.RollupPathUid = P.Uid
+	where	P.[State] = 3 and V.Uid is null
+
+	delete	S
+	from	[metrics].[RollupPathSegment] S
+			inner join metrics.RollupPath P on P.Uid = S.RollupPathUid
+			left join [metrics].[AssetVersionRollupPath] V on V.RollupPathUid = P.Uid
+	where	P.[State] = 3 and V.Uid is null
+
+	delete	P
+	from	metrics.RollupPath P
+			left join [metrics].[AssetVersionRollupPath] V on V.RollupPathUid = P.Uid
+	where	P.[State] = 3 and V.Uid is null
+
+
 /*	select * from [metrics].[RollupPath]
 	select * from [metrics].[RollupPathLink]
 	select * from [metrics].[RollupPathSegment]
@@ -625,6 +643,7 @@ begin
 			left join AssetType T on T.ID = P.AssetTypeID
 */
 end
+
 		]]>
 	</rollback>
   </changeSet>
