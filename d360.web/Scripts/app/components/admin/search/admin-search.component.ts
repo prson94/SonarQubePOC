@@ -122,7 +122,8 @@ export class AdminSearchComponent extends AdminBaseComponent {
                     if (this.indexableHash[this.getIndexableStatusId(s)]) {
                         let elem: IndexableStatus = this.indexableHash[this.getIndexableStatusId(s)].data;
                         elem.TargetCount = s.TargetCount;
-                        elem.CurrentCount = s.CurrentCount;
+						elem.CurrentCount = s.CurrentCount;
+						elem.DatabaseCount = s.DatabaseCount;
                         elem.Start = this.convertDate(s.Start);
                         elem.LastUpdate = this.convertDate(s.LastUpdate);
                         elem.Status = s.Status;
