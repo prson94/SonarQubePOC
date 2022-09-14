@@ -9,7 +9,8 @@ export class IndexableStatus extends IndexableType
 {
     Status: number;
     TargetCount: number;
-    CurrentCount: number;
+	CurrentCount: number;
+	DatabaseCount: number;
     Start: string;
     LastUpdate: string;
 	Menu: object[];

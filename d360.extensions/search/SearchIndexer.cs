@@ -104,6 +104,8 @@ namespace d360.extensions.search
             {
                 case AssetTypeClass.ReferenceItemType:
                     return "Reference";
+				case AssetTypeClass.Predicate:
+					return "Synonym";
                 default:
                     return typeClass.ToString();
             }
@@ -469,23 +471,40 @@ namespace d360.extensions.search
                         from [dbo].[nym]
                     ) A", param);
             }
-            else if (assetClass == AssetTypeClass.SemanticType)
-            {
-                _context.Execute(@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
+			else if (assetClass == AssetTypeClass.SemanticType)
+			{
+				_context.Execute(@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
                     SELECT @assetClass, @assetTypeUid, @status, sum(cnt) from (
                         select count(distinct Qualifier) as cnt
                         from [dbo].[semantic]
                     ) A", param);
-            }
-            else
-            {
-                _context.Execute(@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
+			}
+			else if (assetClass == AssetTypeClass.User)
+			{
+				_context.Execute($@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
+                    SELECT @assetClass, @assetTypeUid, @status, count(1)
+                    FROM [dbo].[asset] a
+					INNER JOIN [dbo].[assettype] at ON a.assettypeid = at.id
+					INNER JOIN [reporting].[global_resource] u on u.ResourceID = a.ObjectID and a.[Object] = 'Resource'
+				where u.[state] = {(int)CompanyResourceState.Active} and a.[state] = {(int)State.Active}
+				and at.class = @assetClass", param);
+			}
+			else if (assetClass == AssetTypeClass.ReferenceItemType)
+			{
+				_context.Execute($@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
+                    SELECT @assetClass, @assetTypeUid, @status, count(1)
+                    FROM [dbo].[assettype] at
+                    where at.class = {(int)AssetTypeClass.Reference}" + (assetTypeUid == null ? "" : " and at.uid = @assetTypeUid"), param);
+			}
+			else
+			{
+				_context.Execute(@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
                     SELECT @assetClass, @assetTypeUid, @status, count(1)
                     FROM [dbo].[asset] a INNER JOIN  [dbo].[assettype] at ON a.assettypeid = at.id
                     where at.class = @assetClass" + (assetTypeUid == null ? "" : " and at.uid = @assetTypeUid"), param);
-            }
+			}
 
-            if (assetTypeUid == null)
+			if (assetTypeUid == null)
             {
                 //When pending a Class/Categroy, archive all asset types under that category
                 _context.Execute("UPDATE [queue].[Search] SET Active=0 WHERE Active=1 and Class = @assetClass and AssetTypeUid <> @AssetTypeUid", param);
