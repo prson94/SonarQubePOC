@@ -56,28 +56,24 @@
     color: var(--calculatedPrimaryButtonTextColor);
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: @ig-dark-overlay-hover, var(--primaryButtonBackColor);
+      background: linear-gradient(@ig-dark-overlay-hover, @ig-dark-overlay-hover), var(--primaryButtonBackColor);
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: @ig-dark-overlay-active, var(--primaryButtonBackColor);
+      background: linear-gradient(@ig-dark-overlay-active, @ig-dark-overlay-active), var(--primaryButtonBackColor);
     }
   }
 
   &.ig-button-accent {
-    background: @ig-pink-t1;
-    color: @ig-white;
-
-    &:focus:not(:disabled), &.ig-state-focus {
-      background: @ig-pink-t1;
-    }
+    background: var(--buttonBackColor);
+    color: var(--calculatedButtonTextColor);
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: @ig-pink-s1;
+      background: linear-gradient(@ig-dark-overlay-hover, @ig-dark-overlay-hover), var(--buttonBackColor);
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: @ig-pink-s2;
+      background: linear-gradient(@ig-dark-overlay-active, @ig-dark-overlay-active), var(--buttonBackColor);
     }
   }
 
@@ -104,11 +100,11 @@
     }
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: @ig-light-overlay-hover, var(--primaryButtonBackColor);
+      background: linear-gradient(@ig-light-overlay-hover, @ig-light-overlay-hover), var(--primaryButtonBackColor);
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: @ig-light-overlay-active, var(--primaryButtonBackColor);
+      background: linear-gradient(@ig-light-overlay-active, @ig-light-overlay-active), var(--primaryButtonBackColor);
     }
 
     &:disabled {
@@ -125,7 +121,7 @@
     &:hover:not(:disabled), &.ig-state-hover {
       -webkit-background-clip: text !important;
       -webkit-text-fill-color: transparent;
-      background: @ig-dark-overlay-hover, var(--primaryButtonBackColor);
+      background: linear-gradient(@ig-dark-overlay-hover, @ig-dark-overlay-hover), var(--primaryButtonBackColor);
 
       .ig-button-label {
         text-decoration: underline;
@@ -135,7 +131,7 @@
     &:active:not(:disabled), &.ig-state-active {
       -webkit-background-clip: text !important;
       -webkit-text-fill-color: transparent;
-      background: @ig-dark-overlay-active, var(--primaryButtonBackColor);
+      background: linear-gradient(@ig-dark-overlay-active, @ig-dark-overlay-active), var(--primaryButtonBackColor);
 
       .ig-button-label {
         text-decoration: underline;
@@ -167,11 +163,11 @@
     }
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: @ig-toolbar-overlay-hover, var(--primaryButtonBackColor);
+      background: linear-gradient(@ig-group-overlay-hover, @ig-group-overlay-hover), var(--primaryButtonBackColor);
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: @ig-toolbar-overlay-active, var(--primaryButtonBackColor);
+      background: linear-gradient(@ig-group-overlay-active, @ig-group-overlay-active), var(--primaryButtonBackColor);
     }
 
     &:disabled > * {
@@ -224,11 +220,11 @@
       color: @ig-black;
 
       &:hover:not(:disabled), &.ig-state-hover {
-        background: @ig-toolbar-overlay-hover, var(--primaryButtonBackColor);
+        background: linear-gradient(@ig-toolbar-overlay-hover, @ig-toolbar-overlay-hover), var(--primaryButtonBackColor);
       }
 
       &:active:not(:disabled), &.ig-state-active {
-        background: @ig-toolbar-overlay-active, var(--primaryButtonBackColor);
+        background: linear-gradient(@ig-toolbar-overlay-active, @ig-toolbar-overlay-active), var(--primaryButtonBackColor);
       }
 
       &:disabled,
@@ -311,11 +307,11 @@
     border: none;
 
     &:hover:not(:disabled), &.ig-state-hover {
-      background: @ig-toolbar-overlay-hover, var(--primaryButtonBackColor);
+      background: linear-gradient(@ig-toolbar-overlay-hover, @ig-toolbar-overlay-hover), var(--primaryButtonBackColor);
     }
 
     &:active:not(:disabled), &.ig-state-active {
-      background: @ig-toolbar-overlay-active, var(--primaryButtonBackColor);
+      background: linear-gradient(@ig-toolbar-overlay-active, @ig-toolbar-overlay-active), var(--primaryButtonBackColor);
     }
   }
 
