@@ -747,4 +747,13 @@
   <data name="InvalidProfileIdentifier" xml:space="preserve">
     <value>Invalid profile identifier.</value>
   </data>
+  <data name="Type" xml:space="preserve">
+    <value>type</value>
+  </data>
+  <data name="YouAreNoLongerWatching" xml:space="preserve">
+    <value>You are no longer watching {0}.</value>
+  </data>
+  <data name="YouAreNowWatching" xml:space="preserve">
+    <value>You are now watching {0}.</value>
+  </data>
 </root>

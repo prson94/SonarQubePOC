@@ -1870,6 +1870,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to type.
+        /// </summary>
+        public static string Type {
+            get {
+                return ResourceManager.GetString("Type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Uid.
         /// </summary>
         public static string UidConstant {
@@ -1938,6 +1947,24 @@ namespace Resources {
         public static string UserremovedMessage {
             get {
                 return ResourceManager.GetString("UserremovedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are no longer watching {0}..
+        /// </summary>
+        public static string YouAreNoLongerWatching {
+            get {
+                return ResourceManager.GetString("YouAreNoLongerWatching", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are now watching {0}..
+        /// </summary>
+        public static string YouAreNowWatching {
+            get {
+                return ResourceManager.GetString("YouAreNowWatching", resourceCulture);
             }
         }
         
