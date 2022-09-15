@@ -20,7 +20,6 @@ import { ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
 import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
-import { conditionallyCreateMapObjectLiteral } from '@angular/compiler/src/render3/view/util';
 
 export class BaseComponent {
 	public isLoading = false;
@@ -1331,7 +1330,7 @@ export class BaseComponent {
 						currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${areaRootUriSegment}`
 					);
 					this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
-					console
+					
 					this.breadcrumbsService.showBreadcrumb(
 						new Breadcrumb(
 							data.TypeName,
