@@ -678,7 +678,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	selectAllAvailableFolderItems($event, table: Table) {
 		this._tempSelectedFolderItems = [];
 		for (let i = table.first; i < table.first + table.rows; i++) {
-			this._tempSelectedFolderItems.push(this.availableItems.find((item) => item.ID == table.selection[i]?.ID));
+			this._tempSelectedFolderItems.push(this.availableItems.find((item) => item.ID === table.selection[i]?.ID)); // eslint-disable-line
 		}
 	}
 
