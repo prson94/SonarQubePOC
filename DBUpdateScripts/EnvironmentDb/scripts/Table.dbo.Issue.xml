@@ -16,10 +16,6 @@ BEGIN
 	CREATE TABLE [dbo].[Issue](
 		[ID] [int] IDENTITY(1,1) NOT NULL,
 		[IssueTypeID] [int] NOT NULL,
-		[Object] [varchar](50) NULL,
-		[ObjectID] [int] NULL,
-		[ObjectType] [varchar](25) NULL,
-		[ObjectTypeID] [int] NULL,
 		[AssetID] [bigint] NULL,
 		[AssetTypeID] [int] NULL,
 		[CreatedOn] [datetime] NOT NULL,
@@ -72,29 +68,6 @@ end
 	</rollback>
   </changeSet>
   
-    <changeSet author="Puneet Gupta" id="Index.dbo.Issue-v1">
-   <comment>GOV-16460</comment>
-   <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Issue_ObjectID_Object_CompletedOn')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Issue_ObjectID_Object_CompletedOn] ON [dbo].[Issue] ( [ObjectID], [Object], [CompletedOn])
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_Issue_ObjectID_Object_CompletedOn')
-BEGIN
-	DROP INDEX [IX_Issue_ObjectID_Object_CompletedOn] ON [dbo].[Issue]
-END
-		]]>
-	</rollback>
-  </changeSet> 
-  
    <changeSet author="Puneet Gupta" id="Index.dbo.Issue-v2">
    <comment>GOV-18545</comment>
    <sql dbms="mssql"
@@ -132,6 +105,12 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_Issue_AssetTypeID')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Issue_AssetTypeID] ON [dbo].[Issue] ( [AssetTypeID])
 END
+
+IF EXISTS (select * from sys.indexes where name = 'IX_Issue_ObjectID_Object_CompletedOn')
+BEGIN
+	DROP INDEX [IX_Issue_ObjectID_Object_CompletedOn] ON [dbo].[Issue]
+END
+
 		]]>
     </sql>
 	<rollback>
