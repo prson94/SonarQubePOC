@@ -45,7 +45,7 @@
                         </button>
                     </div>
                 </div>
-    
+
             </div>
             <div class="cardlist">
                 <div *ngIf="(searchStateService.connectionError | async)">
@@ -57,8 +57,7 @@
                         </div>
                     </div>
                 </div>
-                <div
-                     *ngIf="!(searchStateService.loading | async) &&!(searchStateService.connectionError | async) && (searchStateService.resultCount | async) == 0">
+                <div *ngIf="!(searchStateService.loading | async) &&!(searchStateService.connectionError | async) && (searchStateService.resultCount | async) == 0">
                     <div class="row">
                         <div class="tile tile-detail search-nodata">
                             <header i18n>Your search did not find any results.</header>
@@ -86,6 +85,51 @@
                            [totalRecords]="searchStateService.resultCount | async"
                            (onPageChange)="paginate($event)"
                            [hideLastButton]="true"></d3s-paginator>
+            <ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen">
+                <div #semanticTile
+                     class="secondary-side-panel">
+                    <div class="panel-header">
+                        <span class="header-label"
+                              i18n>Information</span>
+                        <div class="button-container">
+                            <button igButton
+                                    [attr.data-cy]="'Semantic_Secondary_Close'"
+                                    icon="fa-times"
+                                    (click)="secondarySidePanelOpen=false;"
+                                    i18n-tooltip
+                                    tooltip="Close"
+                                    class="close-button"></button>
+                        </div>
+                    </div>
+                    <div class="details-container">
+                        <ng-container *ngIf="semanticType">
+                            <semantic-detail [qualifier]="semanticType.qualifier"
+                                             [isSidePanel]="true"
+                                             [showHeader]="true"
+                                             [semanticType]="semanticType"
+                                             (close)="secondarySidePanelOpen=false;"
+                                             (linkClicked)="secondaryPanelOpen($event)">
+                            </semantic-detail>
+                        </ng-container>
+                        <ng-container *ngIf="resourceUid && secondarySidePanel=='user'">
+                            <ig-asset-detail [objectUID]="resourceUid"
+                                             [objectType]="'Resource'"
+                                             [useAccordion]="true"
+                                             [shouldBePadded]="true"
+                                             [showHeader]="true"
+                                             [showHeaderLine]="false"
+                                             [spacerHeight]="'16px'"
+                                             [tooltipAlign]="'left'"
+                                             [isSidePanel]="true"
+                                             [interceptLinkClick]="true"
+                                             (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+                        </ng-container>
+                        <ng-container *ngIf="secondarySidePanel=='status'">
+                            <semantic-status-detail (close)="secondarySidePanelOpen=false;"></semantic-status-detail>
+                        </ng-container>
+                    </div>
+                </div>
+            </ng-container>
         </as-split-area>
         <as-split-area [size]="getSidePanelWidth()"
                        [minSize]="getSidePanelMinWidth()"
@@ -143,52 +187,7 @@
                                          [hasDeleteRelationshipsPermissions]="false"
                                          (onEditClick)="showEditor=true"></ig-asset-detail>
                     </ng-container>
-                </ng-container>
-                <ng-container *ngIf="secondarySidePanelOpen">
-                    <div #semanticTile
-                         class="secondary-side-panel">
-                        <div class="panel-header">
-                            <span class="header-label"
-                                  i18n>Information</span>
-                            <div class="button-container">
-                                <button igButton
-                                        [attr.data-cy]="'Semantic_Secondary_Close'"
-                                        icon="fa-times"
-                                        (click)="secondarySidePanelOpen=false;"
-                                        i18n-tooltip
-                                        tooltip="Close"
-                                        class="close-button"></button>
-                            </div>
-                        </div>
-                        <div class="details-container">
-                            <ng-container *ngIf="semanticType">
-                                <semantic-detail [qualifier]="semanticType.qualifier"
-                                                 [isSidePanel]="true"
-                                                 [showHeader]="true"
-                                                 [semanticType]="semanticType"
-                                                 (close)="secondarySidePanelOpen=false;"
-                                                 (linkClicked)="secondaryPanelOpen($event)">
-                                </semantic-detail>
-                            </ng-container>
-                            <ng-container *ngIf="resourceUid && secondarySidePanel=='user'">
-                                <ig-asset-detail [objectUID]="resourceUid"
-                                                 [objectType]="'Resource'"
-                                                 [useAccordion]="true"
-                                                 [shouldBePadded]="true"
-                                                 [showHeader]="true"
-                                                 [showHeaderLine]="false"
-                                                 [spacerHeight]="'16px'"
-                                                 [tooltipAlign]="'left'"
-                                                 [isSidePanel]="true"
-                                                 [interceptLinkClick]="true"
-                                                 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
-                            </ng-container>
-                            <ng-container *ngIf="secondarySidePanel=='status'">
-                                <semantic-status-detail (close)="secondarySidePanelOpen=false;"></semantic-status-detail>
-                            </ng-container>
-                        </div>
-                    </div>
-                </ng-container>
+                </ng-container>                
             </side-panel>
         </as-split-area>
     </as-split>
