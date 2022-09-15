@@ -26,7 +26,6 @@ import { IconService } from './icon.service';
 import { AssetTypeClass } from '../models/asset.model';
 import { IconProperties } from '../models/icon-properties.model';
 import { ApiResult } from '../models/apiresult.model';
-import { join } from 'core-js/library/es7/array';
 
 @Injectable({
     providedIn: 'root'
