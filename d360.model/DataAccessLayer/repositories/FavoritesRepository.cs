@@ -68,16 +68,26 @@ namespace d360.model.DataAccessLayer.repositories
 																	[Name] [varchar](max) not null,
 																	[AssetTypeClass] [int] not null
 																)
+																
 
 																insert into @assets
+																select 
+																distinct 
+																fav.FavoriteId,
+																fav.ObjectType,
+																fav.ObjectId,
+																fav.Uid,
+																assetType.ObjectID as TypeObjectId,
+																AssetName.DisplayValue,
+																assetType.Class
+																from (
 																select 
 																	favorite.FavoriteId,
 																	asset.Object as ObjectType,
 																	asset.ID as ObjectId,
 																	asset.uid as Uid,
-																	assetType.ObjectID as TypeObjectId,
-																	AssetName.DisplayValue,
-																	assetType.Class
+																	asset.AssetTypeId,
+																	asset.id
 																from @favorites favorite
 																join Asset asset 
 																	on 
@@ -85,26 +95,68 @@ namespace d360.model.DataAccessLayer.repositories
 																		((favorite.ObjectType is null) or (favorite.ObjectType = asset.Object))
 																		and favorite.ObjectId = asset.ObjectId
 																	)
-																	or (
+																	union all
+																	select 
+																		favorite.FavoriteId,
+																		asset.Object as ObjectType,
+																		asset.ID as ObjectId,
+																		asset.uid as Uid,
+																		asset.AssetTypeId,
+																		asset.id
+																	from @favorites favorite
+																	join Asset asset 
+																	on(
 																		((favorite.ObjectType is null) or (favorite.ObjectType = asset.Object))
 																		and favorite.AssetId = asset.Id
-																	) 
-																	or (
+																	)
+																	union all
+																	select 
+																		favorite.FavoriteId,
+																		asset.Object as ObjectType,
+																		asset.ID as ObjectId,
+																		asset.uid as Uid,
+																		asset.AssetTypeId,
+																		asset.id
+																	from @favorites favorite
+																	join Asset asset 
+																	on(
 																		((favorite.ObjectType is null) or (favorite.ObjectType = asset.Object))
 																		and favorite.Uid = asset.Uid
 																	)
-																	or (
+																	union all
+																	select 
+																		favorite.FavoriteId,
+																		asset.Object as ObjectType,
+																		asset.ID as ObjectId,
+																		asset.uid as Uid,
+																		asset.AssetTypeId,
+																		asset.id
+																	from @favorites favorite
+																	join Asset asset 
+																	on(
 																		favorite.ObjectId = asset.ID
 																	)
-																	or (favorite.Uid = asset.Uid)
-																inner join AssetType assetType on asset.AssetTypeId = assetType.Id
-																inner join AssetDisplayValue AssetName on AssetName.AssetID = asset.ID
+																	union all
+																	select 
+																		favorite.FavoriteId,
+																		asset.Object as ObjectType,
+																		asset.ID as ObjectId,
+																		asset.uid as Uid,
+																		asset.AssetTypeId,
+																		asset.id
+																	from @favorites favorite
+																	join Asset asset 
+																	on(
+																	favorite.Uid = asset.Uid)
+																) fav
+																inner join AssetType assetType on fav.AssetTypeId = assetType.Id
+																inner join AssetDisplayValue AssetName on AssetName.AssetID = fav.ID
 
 																insert into @assetTypes
 																select 
 																	favorite.FavoriteId,
 																	assetType.Object as ObjectType,
-																	assetType.ID as ObjectId,
+																	assetType.ObjectID as ObjectId,
 																	assetType.uid as Uid,
 																	null as TypeObjectId,
 																	assetType.Name,
@@ -126,8 +178,19 @@ namespace d360.model.DataAccessLayer.repositories
 																	)
 																	or (favorite.Uid = assetType.Uid)
 
+																drop table if exists #semsummy;
+																select favorite.Uid,
+																max(s.ID) as SemanticId
+																into #semsummy
+																from @favorites favorite
+																inner join Semantic s on s.[Uid]=favorite.Uid
+																group by favorite.Uid;
+
+
+																create index idx_semsummy on #semsummy(Uid);
+
 																insert into @semanticTypes
-																select top 1
+																select 
 																	favorite.FavoriteId,
 																	isnull(favorite.ObjectType, 'SemanticType') as ObjectType,
 																	s.ID as ObjectId,
@@ -136,7 +199,8 @@ namespace d360.model.DataAccessLayer.repositories
 																	s.Name,
 																	18
 																from @favorites favorite
-																inner join Semantic s on s.[Uid]=favorite.Uid
+																inner join #semsummy sy on sy.[Uid]=favorite.Uid
+																inner join Semantic s on s.[Uid]=sy.[Uid] and s.[id] = sy.[SemanticId]
 
 																select favorite.*
 																from @assets favorite
