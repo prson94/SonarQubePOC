@@ -17,7 +17,7 @@
                               [assetUid]="data ? data.key : null"
                               [objectType]="'TaskType'"
                               [title]="data ? 'Edit Asset' : 'Create New Asset'"
-                              [selection]="nodeData"
+                              [selection]="data"
                               [rowID]="rowID"
                               [objectTypeUid]="data?.assetTypeUid"
                               [assetTypePath]="data.assetTypeName"
@@ -25,7 +25,7 @@
                               [showActions]="false"
                               [useModelBinding]="true"
                               (closeClick)="showEditor=false"
-                              (modelChanged)="onModelChange($event)"></asset-editor>
+                              (modelChanged)="onModelChange($event, data)"></asset-editor>
             </div>
         </ng-container>
 

@@ -508,11 +508,8 @@ namespace d360.model.DataAccessLayer
 			});
 			predicateTypeSql += " end as 'Predicate.Type', ";
 
-			if (includeAssetPath || orderByAssetPath)
-			{
-				fieldJoins.Add(" left join dbo.AssetPath ANDP_Object on ANDP_Object.Id = O.Id ", "AssetPathObject");
-				fieldJoins.Add(" left join dbo.AssetPath ANDP_Subject on ANDP_Subject.Id = S.Id ", "AssetPathSubject");
-			}
+			fieldJoins.Add(" inner join AssetPath ANDP_Object on ANDP_Object.Id = O.Id ", "AssetPathObject");
+			fieldJoins.Add(" inner join AssetPath ANDP_Subject on ANDP_Subject.Id = S.Id ", "AssetPathSubject");
 
 			if (isExport)
 			{

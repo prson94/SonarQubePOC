@@ -53,7 +53,22 @@ export class BrowserService extends BaseObservableService {
             n.class = AssetTypeClass[n.class] as any;
             n.icon = this.getIconUnicode(n.icon, n.class);
             n.isGroup = !n.leaf;
-        });
+		});
+
+		response.links.forEach((l) => {
+			var fromRelIdx = l.from.split('|')[1];
+			var toRelIdx = l.to.split('|')[1];
+			l.links.forEach((link) => {
+				var partsFrom = link.from.split('|');
+				var partsTo = link.to.split('|');
+
+				partsFrom[1] = fromRelIdx;
+				partsTo[1] = toRelIdx;
+
+				link.from = partsFrom.join('|');
+				link.to = partsTo.join('|');
+			});
+		});
 
         //#region Load root data from hierarchy array
 

@@ -110,7 +110,7 @@ begin
 	if @uid is not null
 	begin
 		insert into @assetdata
-		select AD.ID,AD.AssetTypeID,AD.Uid,AT.Class, @uid, AD.Object,AD.Type,AD.TypeId, AD.ObjectID, AD.DisplayValue, 'Definition', at.Name 
+		select AD.ID,AD.AssetTypeID,AT.Uid,AT.Class, @uid, AD.Object,AD.Type,AD.TypeId, AD.ObjectID, AD.DisplayValue, 'Definition', at.Name 
 		from AssetDetail AD
 		inner join AssetType AT on AT.Id = AD.AssetTypeID
 		where AD.uid = @uid

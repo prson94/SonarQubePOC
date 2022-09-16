@@ -84,13 +84,13 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
     //process dynamiceditor onSubmit() form data
     //check for missing fields and set value to ''
     //ignore system fields (Uid/AssetTypeUid)
-    private onModelChange($event) {
-        if (this.isReadOnly && !this.nodeData) {
+    private onModelChange($event, node) {
+		if (this.isReadOnly && !node) {
             return;
         }
 
         var data = $event['values'];
-        data.key = this.nodeData.key;
+		data.key = node.key;
 
         if (data && data['Name']) {
             this.assetName = data['Name'];

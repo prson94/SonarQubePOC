@@ -563,12 +563,25 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
 			SwaggerResponse(HttpStatusCode.OK, "Check if the asset has custom export templates.", typeof(bool)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "You have not provided a valid Asset type uid for this request.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "No Asset type found for provided Guid [{0}]", typeof(ErrorResponse))
 		]
 		public IHttpActionResult HasCustomExport(Guid uid)
 		{
-			var assettype = Company.AssetTypes.FirstOrDefault(x => x.uid == uid);
-			var res = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == assettype.ID);
+			if (uid == null || uid == Guid.Empty)
+			{
+				throw new ArgumentException(AssetsApiMessages.InvalidAssetTypeUid);
+			}
+
+			var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == uid);
+
+			if (assetType == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(AssetsApiMessages.AssetTypeNotFound, uid));
+			}
+
+			var res = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == assetType.ID);
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res));
 		}
