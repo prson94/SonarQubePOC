@@ -369,8 +369,18 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 		this.headerBreadcrumbService.getFolderTitle(this.navFolderName).then((res) => {
 			this.headerBreadcrumbService.clearBreadcrumbs();
+			let rootUrl = '';
+			switch (this.assetTypeClass) {
+				case AssetTypeClass.Model:
+					rootUrl = `/${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/Model`;
+					break;
+				case AssetTypeClass.Policy:
+					rootUrl = `/${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/Policy`;
+					break;
+			}
+
 			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(currentAreaName ? currentAreaName : res,
-				`/${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/Model`,
+				rootUrl,
 				null,
 				this.objectType,
 				this.objectTypeId,

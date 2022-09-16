@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Tomislav Duric" id="Procedure.dbo.SecondaryNavSettings-v12.1">
-    <comment>GOV-19408</comment>
+  <changeSet author="Tomislav Duric" id="Procedure.dbo.SecondaryNavSettings-v13">
+    <comment>GOV-19647</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -110,7 +110,7 @@ begin
 	if @uid is not null
 	begin
 		insert into @assetdata
-		select AD.ID,AD.AssetTypeID,AD.Uid,AT.Class, @uid, AD.Object,AD.Type,AD.TypeId, AD.ObjectID, AD.DisplayValue, 'Definition', at.Name 
+		select AD.ID,AD.AssetTypeID,AT.Uid,AT.Class, @uid, AD.Object,AD.Type,AD.TypeId, AD.ObjectID, AD.DisplayValue, 'Definition', at.Name 
 		from AssetDetail AD
 		inner join AssetType AT on AT.Id = AD.AssetTypeID
 		where AD.uid = @uid
