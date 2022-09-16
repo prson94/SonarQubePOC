@@ -420,14 +420,14 @@ namespace d360.web.Controllers.V2
             {
                 index = 1;
                 rowNumber++;
-                document.SetCellValue(rowNumber, index++, row.Value.ToString());
-                document.SetCellValue(rowNumber, index++, row.UseCount.ToString());
-                document.SetCellValue(rowNumber, index++, row.CreatedOn.ToString());
-                document.SetCellValue(rowNumber, index++, row.CreatedBy.ToString());
-                document.SetCellValue(rowNumber, index++, row.UpdatedOn.ToString());
-                document.SetCellValue(rowNumber, index++, row.UpdatedBy.ToString());
-                document.SetCellValue(rowNumber, index++, row.uid.ToString());
-            }
+				document.SetCellValue(rowNumber, index++, (row.Value ?? "").ToString());
+				document.SetCellValue(rowNumber, index++, (row.UseCount ?? "").ToString());
+				document.SetCellValue(rowNumber, index++, (row.CreatedOn ?? "").ToString());
+				document.SetCellValue(rowNumber, index++, (row.CreatedBy ?? "").ToString());
+				document.SetCellValue(rowNumber, index++, (row.UpdatedOn ?? "").ToString());
+				document.SetCellValue(rowNumber, index++, (row.UpdatedBy ?? "").ToString());
+				document.SetCellValue(rowNumber, index++, (row.uid ?? "").ToString());
+			}
 
             #endregion
 
@@ -441,7 +441,7 @@ namespace d360.web.Controllers.V2
             result.Content.Headers.ContentLength = stream.Length;
             result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
             {
-                FileName = string.Format("Connector Labels {0}.xlsx", System.DateTime.Now.ToShortDateString())
+                FileName = string.Format("Connector Labels {0}.xlsx", DateTime.Now.ToShortDateString())
             };
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 
