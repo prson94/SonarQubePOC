@@ -3202,7 +3202,7 @@ namespace d360.web.Controllers.Services
 			from workflow.itemstep si
 			inner join workflow.item i on i.id = si.itemid
 			left join Asset a on a.[Object] = i.Object and a.ObjectID = i.ObjectID
-			inner join AssetDisplayValue d on d.AssetID = a.ID
+			left join AssetDisplayValue d on d.AssetID = a.ID
 			inner join workflow.versionstep vs on vs.id = si.stepid
 			inner join workflow.version v on v.ID = vs.VersionID
 			inner join workflow.[type] t on t.id = v.typeid
