@@ -146,12 +146,12 @@ namespace d360.model.DataAccessLayer
 			var baseTableSql = @"from [Intersect] I 
 								inner join IntersectType T on T.ID = I.IntersectTypeID 
 								left join [Predicate] P on P.ID = T.PredicateID 
-								left join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID 
+								left join Asset S on S.ID = I.SubjectAssetID 
 								left join AssetType ST1 on S.ID is not null and ST1.ID = S.AssetTypeID
-								left join AssetType ST2 on S.ID is null and ST2.Object = I.Subject and ST2.ObjectID = I.SubjectID
-								left join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID 
+								left join AssetType ST2 on S.ID is null and ST2.ID = I.SubjectAssetTypeID and I.SubjectAssetID = 0
+								left join Asset O on O.ID = I.ObjectAssetID 
 								left join AssetType OT1 on O.ID is not null and OT1.ID = O.AssetTypeID
-								left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.ObjectID = I.ObjectID
+								left join AssetType OT2 on O.ID is null and OT2.ID = I.ObjectAssetTypeID and I.ObjectAssetID = 0
 								";
 			whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + " coalesce(ISNULL(ST1.ID, ST2.ID),S.ID) is not null and coalesce(ISNULL(OT1.ID,OT2.ID),O.ID) is not null ";
 
@@ -259,29 +259,31 @@ namespace d360.model.DataAccessLayer
 					var assetUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "assetuid").Value;
 					if (Guid.TryParse(assetUidString, out assetUid))
 					{
-						var asset = companyContext.Assets.Where(x => x.uid == assetUid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+						var asset = companyContext.Assets.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
 
 						if (asset != null)
 						{
-							dbArgs.Add("@assetObject", asset.Object);
-							dbArgs.Add("@assetObjectId", asset.ObjectID);
+							dbArgs.Add("@assetId", asset.ID);
+							filteredIntersectsTempTable = @"drop table if exists #filteredIntersects;
+							;with assetIntersects as (
+								select * from [Intersect] where ObjectAssetID = @assetId
+								union
+								select * from [Intersect] where SubjectAssetID = @assetId
+							)
+							select ID into #filteredIntersects from assetIntersects";
 						}
 						else
 						{
-							var type = companyContext.AssetTypes.Where(x => x.uid == assetUid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
-							dbArgs.Add("@assetObject", type.Object);
-							dbArgs.Add("@assetObjectId", type.ObjectID);
+							var type = companyContext.AssetTypes.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
+							dbArgs.Add("@assetTypeId", type.ID);
+							filteredIntersectsTempTable = @"drop table if exists #filteredIntersects;
+							;with assetIntersects as (
+								select * from [Intersect] I where i.ObjectAssetTypeID = @assetTypeId and i.ObjectAssetID = 0
+								union
+								select * from [Intersect] I where i.SubjectAssetTypeID = @assetTypeId and i.SubjectAssetID = 0
+							)
+							select ID into #filteredIntersects from assetIntersects";
 						}
-
-						filteredIntersectsTempTable = @"drop table if exists #filteredIntersects;
-							;with assetIntersects as (select * from [Intersect] I
-							where i.Object = @assetObject and i.ObjectID = @assetObjectId
-							union
-							select * from [Intersect] I
-							where i.Subject = @assetObject and i.SubjectID = @assetObjectId)
-							select ID 
-							into #filteredIntersects
-							from assetIntersects";
 
 						//filter items by inner join
 						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (exists(select top 1 1 from #filteredIntersects fi where fi.id = i.ID))";
@@ -520,7 +522,7 @@ namespace d360.model.DataAccessLayer
 			if (isFilteredByAssetUID)
 			{
 				//apply data to check which side on relationship are we
-				fieldJoins.Add(@"outer apply (select case when I.Subject = @assetObject and I.SubjectID = @assetObjectId then 'Subject' else 'Object' end as Value)Side", null);
+				fieldJoins.Add(@"outer apply (select case when I.SubjectAssetID = @assetId then 'Subject' else 'Object' end as Value)Side", null);
 				//depending on relationship side reslove relationship type name and asset name
 				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ')),'---')
 				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ')),'---') end as RelationshipTypeName,

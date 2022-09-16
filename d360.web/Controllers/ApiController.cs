@@ -2747,7 +2747,7 @@ namespace d360.web.Controllers
 
 							if (type == SystemObjects.Artifact)
 							{
-								var parent = Company.GetParentObject(id, type);
+								var parent = Company.GetParentAsset(asset.ID);
 
 								if (parent != null)
 								{

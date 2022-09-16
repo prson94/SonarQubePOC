@@ -5,16 +5,16 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Procedure.dbo.GetPageInformation-v7.4">
-    <comment>GOV-18079, GOV-18449</comment>
+  <changeSet author="Pappas" id="Procedure.dbo.GetPageInformation-v7.5">
+    <comment>GOV-18079, GOV-18449, GOV-19673</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[    
-CREATE OR ALTER PROCEDURE [dbo].[GetPageInformation]
+create or alter procedure [dbo].[GetPageInformation]
 	@assetUid uniqueidentifier,
-	@rid int 
+	@rid int
 as
 begin
 	declare @breadcrumbsRaw table ([Level] int, [TypeName] nvarchar(500), [Name] nvarchar(max), [TypeUrl] nvarchar(2500), [Url] nvarchar(2500));
@@ -88,8 +88,7 @@ begin
 			cross apply (
 						select	count(1) as [Count]
 						from	[PredicateIntersect]
-						where	Subject = O.Object
-								and SubjectID = O.ObjectID
+						where	SubjectAssetID = O.ID
 								and PredicateType = 3
 						) Child
 			cross apply (
