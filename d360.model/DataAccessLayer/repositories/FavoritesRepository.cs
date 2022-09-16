@@ -156,7 +156,7 @@ namespace d360.model.DataAccessLayer.repositories
 																select 
 																	favorite.FavoriteId,
 																	assetType.Object as ObjectType,
-																	assetType.ObjectID as ObjectId,
+																	assetType.ID as ObjectId,
 																	assetType.uid as Uid,
 																	null as TypeObjectId,
 																	assetType.Name,
@@ -223,7 +223,7 @@ namespace d360.model.DataAccessLayer.repositories
 	
 																select favorite.FavoriteId, breadcrumbs.Level, breadcrumbs.TypeName as Name
 																from @assetTypes favorite
-																cross apply dbo.GetAssetTypeBreadcrumbs(favorite.ObjectType, favorite.ObjectId) as breadcrumbs	
+																cross apply dbo.GetAssetTypeBreadcrumbs(favorite.uid) as breadcrumbs	
 																union	
 																select favorite.FavoriteId, 0, favorite.Name as Name
 																from @semanticTypes favorite",
