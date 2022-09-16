@@ -135,6 +135,9 @@
   <data name="AssetTypeInProcessNotDelete" xml:space="preserve">
     <value>Deletion of Asset Type with UID {0} already in progress.</value>
   </data>
+  <data name="AssetTypeNotFound" xml:space="preserve">
+    <value>No Asset type found for provided Guid [{0}]</value>
+  </data>
   <data name="AssetTypeUid" xml:space="preserve">
     <value>AssetTypeUid</value>
   </data>
@@ -182,6 +185,9 @@
   </data>
   <data name="InvalidAssetTypeClass" xml:space="preserve">
     <value>Invalid Asset type class '{0}'</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>You have not provided a valid Asset type uid for this request.</value>
   </data>
   <data name="InvalidExportTemplateCurrent" xml:space="preserve">
     <value>Invalid Export Template for current Asset Type.</value>

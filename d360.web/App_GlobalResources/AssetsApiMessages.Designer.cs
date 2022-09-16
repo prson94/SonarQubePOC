@@ -115,6 +115,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No Asset type found for provided Guid [{0}].
+        /// </summary>
+        public static string AssetTypeNotFound {
+            get {
+                return ResourceManager.GetString("AssetTypeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to AssetTypeUid.
         /// </summary>
         public static string AssetTypeUid {
@@ -255,6 +264,15 @@ namespace Resources {
         public static string InvalidAssetTypeClass {
             get {
                 return ResourceManager.GetString("InvalidAssetTypeClass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have not provided a valid Asset type uid for this request..
+        /// </summary>
+        public static string InvalidAssetTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidAssetTypeUid", resourceCulture);
             }
         }
         
