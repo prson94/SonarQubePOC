@@ -122,4 +122,26 @@ end
 	</rollback>
   </changeSet> 
 
+  <changeSet author="Puneet Gupta" id="Index.metrics.Score-v5">
+  <comment>GOV-19660</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.indexes where name = 'IX_MetricScore_AllocationUid_EffectiveDate')
+begin
+	CREATE NONCLUSTERED INDEX [IX_MetricScore_AllocationUid_EffectiveDate] ON [metrics].[Score] ([AllocationUid],[EffectiveDate])
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (select * from sys.indexes where name = 'IX_MetricScore_AllocationUid_EffectiveDate')
+begin
+	DROP INDEX [IX_MetricScore_AllocationUid_EffectiveDate] ON [metrics].[Score]
+end
+		]]>
+	</rollback>
+  </changeSet> 
 </databaseChangeLog>
