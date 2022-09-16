@@ -821,39 +821,23 @@ from	IntersectType I
 			return Query<dynamic>(sql, new { type = (int)parentFunctionalType, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
 		}
 
-		public AssetDetail GetParentObject(int id, SystemObjects obj)
+		public AssetDetail GetParentAsset(long assetId)
 		{
-			PredicateType predicateType;
-
-			switch (obj)
-			{
-				case SystemObjects.Policy:
-					predicateType = PredicateType.IntraTypeHierarchy;
-					break;
-				case SystemObjects.Taxonomy:
-					predicateType = PredicateType.IntraTypeHierarchy;
-					break;
-				default:
-					predicateType = PredicateType.InterTypeHierarchy;
-					break;
-
-			}
-
-			if (id < 0)
+			if (assetId <= 0)
 			{
 				return default(AssetDetail);
 			}
 
-			string sql = @"select SubjectAssetID from PredicateIntersect where PredicateType = @type and [Object] = @obj and ObjectID = @objectId";
+			string sql = @"select D.* from AssetDetail D inner join [PredicateIntersect] I on I.SubjectAssetID = D.ID and I.ObjectAssetID = @assetId and I.[PredicateType] in (3,4)";
 
-			int parentId = Query<int>(sql, new { type = (int)predicateType, obj = new DbString { Value = obj.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, objectId = id }).FirstOrDefault();
-			
-			if (parentId < 1)
-			{
-				return default(AssetDetail);
+			var detail = Query<AssetDetail>(sql, new { assetId }).FirstOrDefault();
+
+			if (detail == null)
+			{ 
+				detail = default;
 			}
 
-			return Filter<AssetDetail>(i => i.ID == parentId).FirstOrDefault();
+			return detail;
 		}
 
 		public bool IsUserFollowing(int? AssetTypeID, long? AssetID, int? resourceID)

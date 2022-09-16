@@ -1482,7 +1482,7 @@ order by Sort, title";
 
 			if (parentType != null)
 			{
-				var parent = Company.GetParentObject(id, SystemObjects.ReferenceItem);
+				var parent = Company.GetParentAsset(a.ID);
 				var sql = "select DisplayValue, uid from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
 				list.Add(new EditableField
 				{
