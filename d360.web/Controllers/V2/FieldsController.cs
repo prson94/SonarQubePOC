@@ -2203,9 +2203,8 @@ namespace d360.web.Controllers.V2
 				if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")
 				{
 					string sql = "";
-					bool isHierarchyGrid = atype.Object == "TaxonomyType" || atype.Object == "PolicyType";
 
-					if (!isHierarchyGrid)
+					if (!atype.Hierarchical)
 					{
 						if (!string.IsNullOrEmpty(filter))
 						{
@@ -2244,7 +2243,7 @@ namespace d360.web.Controllers.V2
 						if (!string.IsNullOrEmpty(filter))
 						{
 							filter = "%" + filter + "%";
-							whereQuery += " and P.TextPath like @filter ";
+							whereQuery += " and P.DisplayPath like @filter ";
 						}
 
 						var hierarchyItem = Company.Query<dynamic>($@"
@@ -2262,7 +2261,7 @@ namespace d360.web.Controllers.V2
 										inner join AssetPath P on P.ID = A.ID
 										cross apply dbo.GetAssetLevelById(A.ID) LV
 								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
-								order by P.TextPath 
+								order by P.DisplayPath 
 								{pagingQuery}
 								option (maxrecursion 100)
 
@@ -2284,7 +2283,7 @@ namespace d360.web.Controllers.V2
 					var resultsAssets = await Company.Connection.QueryMultipleAsync(cmd);
 					var items = resultsAssets.Read<DDLSelectItem>().ToList();
 
-					if (isHierarchyGrid && (skip == null || skip == 0))
+					if (atype.Hierarchical && (skip == null || skip == 0))
 					{
 						items = items.Prepend(new DDLSelectItem { text = "- Root -", value = Guid.Empty.ToString() }).ToList();
 					}
