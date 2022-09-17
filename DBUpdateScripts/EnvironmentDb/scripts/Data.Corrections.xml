@@ -1557,6 +1557,40 @@ where S.Route is not null
 	]]>
 	</sql>
   </changeSet>
+<changeSet author="TKlok" id="Data.Corrections.GOV-18453">
+  <comment>Issue table new column data updates</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Issue' and COLUMN_NAME = 'Object')
+	and exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Issue' and COLUMN_NAME = 'AssetID')
+begin
+
+	update	T
+	set		T.AssetID = A.ID,
+			T.AssetTypeID = A.AssetTypeID
+	from	[Issue] T inner join Asset A on A.Object = T.Object and A.ObjectId = T.ObjectID
+	where   T.AssetID is null;
+
+	update	T
+	set		T.AssetTypeID = AT.ID
+	from	[Issue] T inner join AssetType AT on AT.Object = T.ObjectType and AT.ObjectID = T.ObjectTypeID
+	where	T.AssetTypeID is null;
+	
+	alter table [dbo].[Issue] drop column [Object];
+	alter table [dbo].[Issue] drop column [ObjectID];
+	alter table [dbo].[Issue] drop column [ObjectType];
+	alter table [dbo].[Issue] drop column [ObjectTypeID];
+
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>  
   
    <changeSet author="Pappas" id="Data.Corrections.GOV-18449-Workflow-1">
   <comment>Update columns for workflow.EventRegistration</comment>

@@ -2491,7 +2491,7 @@ namespace d360.model
 																				S.[Uid]
 																		from	workflow.Item wi
 																				inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
-																				inner join api.ExecutionDeletedAsset S on S.Object = i.Object and S.ObjectID = i.ObjectID 
+																				inner join api.ExecutionDeletedAsset S on S.AssetID = i.AssetID
 																		where   {querySuffix} ;
 
 																	drop table if exists #tempworkflow;
@@ -2809,7 +2809,7 @@ namespace d360.model
 									select	wi.id 
 									from	workflow.Item wi
 											inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
-											inner join #tempExecutionDeletedAsset S on S.Object = i.Object and S.ObjectID = i.ObjectID;
+											inner join #tempExecutionDeletedAsset S on S.AssetID = i.AssetID;
 
 								drop table if exists #tempExecutionDeletedAsset;
 
@@ -3237,7 +3237,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             Connection.Execute($@"
 								delete	T
 								from	Issue T
-										inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};
+										inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
 
 								delete	T
 								from	Nym T

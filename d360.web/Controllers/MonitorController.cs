@@ -242,7 +242,7 @@ namespace d360.web.Controllers
 								left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)	         
 								inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid) left 
 								outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue') 
-								left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+								left outer join [dbo].[asset] cod on (iss.AssetID = cod.ID) 
 								left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) 
 								left  join [dbo].[intersect] inter on (wi.[object]='Intersect' and inter.id=wi.[objectId])
 								left join [workflow].[ItemAsset] wia1 on wia1.WorkFlowItemId = wi.id

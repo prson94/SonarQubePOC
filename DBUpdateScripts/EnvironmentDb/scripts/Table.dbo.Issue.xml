@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.Issue-v1">
+  <changeSet author="TKlok" id="Table.dbo.Issue-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -16,10 +16,8 @@ BEGIN
 	CREATE TABLE [dbo].[Issue](
 		[ID] [int] IDENTITY(1,1) NOT NULL,
 		[IssueTypeID] [int] NOT NULL,
-		[Object] [varchar](50) NOT NULL,
-		[ObjectID] [int] NOT NULL,
-		[ObjectType] [varchar](25) NOT NULL,
-		[ObjectTypeID] [int] NOT NULL,
+		[AssetID] [bigint] NULL,
+		[AssetTypeID] [int] NULL,
 		[CreatedOn] [datetime] NOT NULL,
 		[CreatedBy] [int] NOT NULL,
 		[UpdatedOn] [datetime] CONSTRAINT [DF_Issue_UpdatedOn] DEFAULT (getutcdate()) NOT NULL,
@@ -28,6 +26,7 @@ BEGIN
 		[Uid] [uniqueidentifier] CONSTRAINT [DF_Issue_Uid] DEFAULT (newid()) NOT NULL,
 		[CompletedOn] [datetime] NULL,
 		[CompletedBy] [int] NULL,
+		[InitiatorID] [int] NULL,
 		CONSTRAINT [PK_Issue] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
 END
@@ -37,59 +36,37 @@ BEGIN
 	ALTER TABLE [dbo].[Issue] WITH CHECK ADD CONSTRAINT [FK_Issue_IssueType] FOREIGN KEY([IssueTypeID]) REFERENCES [dbo].[IssueType] ([ID]) ON DELETE CASCADE
 	ALTER TABLE [dbo].[Issue] CHECK CONSTRAINT [FK_Issue_IssueType]
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
-		]]>
-	</rollback>
-  </changeSet>
-  <changeSet author="MDonato" id="Table.dbo.Issue-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-<![CDATA[
 if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Issue' and COLUMN_NAME = 'InitiatorID')
 begin
 	alter table [dbo].[Issue] add [InitiatorID] int null
 end
-]]>
-    </sql>
-	<rollback>
-<![CDATA[
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Issue' and COLUMN_NAME = 'InitiatorID')
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Issue' and COLUMN_NAME = 'AssetID')
 begin
-	alter table [dbo].[Issue] drop column [InitiatorID]
+	alter table [dbo].[Issue] add AssetID bigint null;
 end
 
-]]>
-	</rollback>
-  </changeSet>
-  
-    <changeSet author="Puneet Gupta" id="Index.dbo.Issue-v1">
-   <comment>GOV-16460</comment>
-   <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Issue_ObjectID_Object_CompletedOn')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Issue_ObjectID_Object_CompletedOn] ON [dbo].[Issue] ( [ObjectID], [Object], [CompletedOn])
-END
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Issue' and COLUMN_NAME = 'AssetTypeID')
+begin
+	alter table [dbo].[Issue] add AssetTypeID int null;
+end
+
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Issue' and COLUMN_NAME = 'Object')
+begin
+	alter table [dbo].[Issue] alter column [Object] [varchar](50) NULL;
+	alter table [dbo].[Issue] alter column [ObjectID] [int] NULL;
+	alter table [dbo].[Issue] alter column [ObjectType] [varchar](25) NULL;
+	alter table [dbo].[Issue] alter column [ObjectTypeID] [int] NULL;
+end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_Issue_ObjectID_Object_CompletedOn')
-BEGIN
-	DROP INDEX [IX_Issue_ObjectID_Object_CompletedOn] ON [dbo].[Issue]
-END
+
 		]]>
 	</rollback>
-  </changeSet> 
+  </changeSet>
   
    <changeSet author="Puneet Gupta" id="Index.dbo.Issue-v2">
    <comment>GOV-18545</comment>
@@ -109,6 +86,42 @@ END
 IF EXISTS (select * from sys.indexes where name = 'IX_Issue_IssueTypeid')
 BEGIN
 	DROP INDEX [IX_Issue_IssueTypeid] ON [dbo].[Issue]
+END
+		]]>
+	</rollback>
+  </changeSet> 
+   <changeSet author="TKlok" id="Index.dbo.Issue-v3">
+   <comment>GOV-18453</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Issue_AssetID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Issue_AssetID] ON [dbo].[Issue] ( [AssetID])
+END
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Issue_AssetTypeID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Issue_AssetTypeID] ON [dbo].[Issue] ( [AssetTypeID])
+END
+
+IF EXISTS (select * from sys.indexes where name = 'IX_Issue_ObjectID_Object_CompletedOn')
+BEGIN
+	DROP INDEX [IX_Issue_ObjectID_Object_CompletedOn] ON [dbo].[Issue]
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_Issue_AssetID')
+BEGIN
+	DROP INDEX [IX_Issue_AssetID] ON [dbo].[Issue]
+END
+IF EXISTS (select * from sys.indexes where name = 'IX_Issue_AssetTypeID')
+BEGIN
+	DROP INDEX [IX_Issue_AssetTypeID] ON [dbo].[Issue]
 END
 		]]>
 	</rollback>

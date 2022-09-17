@@ -87,9 +87,9 @@ namespace d360.web.Controllers.Services
 												inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id)
 												inner join workflow.itemstep si on si.itemid = wi.id
 												inner join IssueType IT on (I.IssueTypeID = IT.ID)							
-												left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
+												left join AssetDetail D on D.[ID] = I.AssetID
 												outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
-												left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
+												left join AssetType T on T.ID = I.AssetTypeID
 												outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
 												left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 												left outer join Comment C on C.ID = I.CommentID
@@ -201,16 +201,26 @@ namespace d360.web.Controllers.Services
 		[Route("issue/type/{uid:Guid}"), HttpGet]
 		public HttpResponseMessage GetTaskByIDForUid(Guid uid)
 		{
-			var data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			var data = Company.Assets.Where(x => x.uid == uid).Select(x => new { AssetID = (long?)x.ID, x.AssetTypeID }).FirstOrDefault();
 			if (data == null)
 			{
-				data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+				data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { AssetID = (long?)null, AssetTypeID = x.ID }).FirstOrDefault();
 			}
-			return GetTaskByIDForObjectAndType(data.ObjectID, data.Object);
+			return GetTaskByIDForAssetIDAndAssetTypeID(data.AssetID, data.AssetTypeID);
 		}
 
 		[Route("issue/type/{objectid:int}/{objecttype}"), HttpGet]
 		public HttpResponseMessage GetTaskByIDForObjectAndType(int objectid, string objecttype)
+		{
+			var data = Company.Assets.Where(x => x.Object == objecttype && x.ObjectID == objectid).Select(x => new { AssetID = (long?)x.ID, x.AssetTypeID }).FirstOrDefault();
+			if (data == null)
+			{
+				data = Company.AssetTypes.Where(x => x.Object == objecttype && x.ObjectID == objectid).Select(x => new { AssetID = (long?)null, AssetTypeID = x.ID }).FirstOrDefault();
+			}
+			return GetTaskByIDForAssetIDAndAssetTypeID(data.AssetID, data.AssetTypeID);
+		}
+
+		private HttpResponseMessage GetTaskByIDForAssetIDAndAssetTypeID(long? AssetID, int AssetTypeID)
 		{
 			var sql = $@"
 						select		distinct 
@@ -245,11 +255,11 @@ namespace d360.web.Controllers.Services
 
 									end as ActivityName
 						from	    Issue I
-									inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id) and I.[object] = @obj and I.[objectid] = @id
+									inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id) and I.AssetID = @assetid and I.AssetTypeID = @assettypeid
 									inner join IssueType IT on (I.IssueTypeID = IT.ID)						
-									left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
+									left join AssetDetail D on D.ID = I.AssetID
 									outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
-									left join AssetType T on T.[Object] = I.[Object] and T.ObjectID = I.ObjectID
+									left join AssetType T on T.ID = I.AssetTypeID
 									outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl            		
 									left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 									left outer join Comment C on C.ID = I.CommentID
@@ -263,7 +273,7 @@ namespace d360.web.Controllers.Services
 										and ft.FriendlyName = 'Description')) as DD
 						order by wi.StartedOn desc";
 
-			var list = Company.Query<dynamic>(sql, new { id = objectid, obj = objecttype });
+			var list = Company.Query<dynamic>(sql, new { assetid = AssetID, assettypeid = AssetTypeID });
 
 			return Request.CreateResponse(HttpStatusCode.OK, list);
 		}
@@ -677,7 +687,7 @@ namespace d360.web.Controllers.Services
 							details = new ObjectDetail
 							{
 								Type = "Action",
-								Name = issue.Object,
+								Name = issue.ID.ToString(),
 								TypeName = issue.IssueType.Name
 							};
 						}
@@ -819,8 +829,10 @@ namespace d360.web.Controllers.Services
 							continue;
 						}
 
-						obj = issue.ObjectType;
-						objId = issue.ObjectTypeID;
+						var assetType = Company.Filter<AssetType>(a => a.ID == issue.AssetTypeID).SingleOrDefault();
+
+						obj = assetType.Object;
+						objId = assetType.ObjectID;
 					}
 					else
 					{
@@ -904,8 +916,8 @@ namespace d360.web.Controllers.Services
 						issueTypeName = issue.IssueType.Name;
 					}
 
-					issueItemDetails = Company.GetObjectDetail(issue.Object, issue.ObjectID);
-					issueObjectType = issue.Object;
+					issueItemDetails = Company.GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+					issueObjectType = issueItemDetails.Type;
 					typeName = details.TypeName;
 				}
 			}
@@ -1078,8 +1090,9 @@ namespace d360.web.Controllers.Services
 								throw new ArgumentNullException(nameof(issue), WorkflowApiMessages.RelationNotFoundIssueObject);
 							}
 
-							obj = issue.ObjectType;
-							objId = issue.ObjectTypeID;
+							var assetType = Company.Filter<AssetType>(a => a.ID == issue.AssetTypeID).SingleOrDefault();
+							obj = assetType.Object;
+							objId = assetType.ObjectID;
 						}
 
 						item.Values = new List<System.Web.Mvc.SelectListItem>();
@@ -1152,10 +1165,11 @@ namespace d360.web.Controllers.Services
 
 					if (issue != null)
 					{
+						var issueObjectDetail = Company.GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
 						details = new ObjectDetail
 						{
 							Type = "Action",
-							Name = issue.Object,
+							Name = issueObjectDetail.Type,
 							TypeName = issue.IssueType.Name
 						};
 					}
@@ -1357,7 +1371,7 @@ namespace d360.web.Controllers.Services
 				if (issue != null)
 				{
 					var comment = Company.Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
-					actionAsset = Company.Assets.FirstOrDefault(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID);
+					actionAsset = Company.Assets.FirstOrDefault(x => x.ID == issue.AssetID);
 
 					objectDetails = new ObjectDetail
 					{
@@ -2403,7 +2417,7 @@ namespace d360.web.Controllers.Services
 										) itemCount(assignedCount)                                    
 									inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
 									left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
-									left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+									left outer join [dbo].[asset] cod on (iss.AssetID = cod.ID) 
 									left join AssetDisplayValue CODV on CODV.AssetID = cod.ID
 									left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
 								where
@@ -2453,7 +2467,7 @@ namespace d360.web.Controllers.Services
 									left join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
 									inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
 									left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
-									left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
+									left outer join [dbo].[asset] cod on (iss.AssetID = cod.ID) 
 									left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
 								where
 									wt.id = @typeId  and wvs.steptype = 2 and wvs.activitytype = 3 
@@ -2521,9 +2535,12 @@ namespace d360.web.Controllers.Services
 								inner join workflow.[version] v on t.id = v.typeid
 								inner join workflow.item i on i.versionid = v.id
 								inner join issue s on s.id = i.objectid and i.object = 'Issue'
-								inner join asset a on a.object = s.object and a.objectid = s.objectid
+								inner join asset a on a.ID = s.AssetID
 								inner join assettype tt on tt.id = a.assettypeid
-								where t.state <> 3 and s.object = @filteredObject and s.objectid = @filteredObjectId))";
+								where t.state <> 3
+								and ( (a.object = @filteredObject and a.objectid = @filteredObjectId)
+									or (tt.object = @filteredObject and tt.objectid = @filteredObjectId)))
+								)";
 			}
 
 			var sql = string.Format(QueryConstants.WorkflowTypeList, typeSql, issueSql);
@@ -3296,7 +3313,7 @@ namespace d360.web.Controllers.Services
 					from workflow.item i
 					inner join Issue s on s.ID = i.ObjectID
 					inner join IssueType t on t.id = s.IssueTypeID
-					inner join Asset A on A.Object = s.Object and A.ObjectID = s.ObjectID
+					inner join Asset A on A.ID = s.AssetID
 					inner join AssetType TA on TA.ID = A.AssetTypeID
 					inner join AssetDisplayValue D on D.AssetID = A.ID
 					 where i.ID = @itemId";

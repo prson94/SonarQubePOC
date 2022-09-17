@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v20">
-    <comment>GOV-18449</comment>
+  <changeSet author="Tklok" id="Procedure.dbo.DeleteObject-v21">
+	<comment>GOV-18453 Convert Object/ObjectID/ObjectType/ObjectTypeID columns in dbo.Issue table</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -90,7 +90,7 @@ create or alter procedure [dbo].[DeleteObject]
 			  select	wi.id 
 			  from	workflow.item wi
 					  inner join Issue i on i.id = wi.objectid and wi.object = 'Issue'
-			  where	i.object = @Object and i.objectid = @ObjectID;
+					  inner join #items a on a.id = i.AssetID;
 
 	  if @IsType = 1
 	  begin
@@ -575,14 +575,14 @@ create or alter procedure [dbo].[DeleteObject]
 			  begin
 				  delete	O
 				  from	Issue O 
-						  inner join Asset A on A.Object = O.Object and A.ObjectID = O.ObjectID
+						  inner join Asset A on A.ID = O.AssetID
 						  inner join #types I on I.ID = A.AssetTypeID;
 			  end
 			  else
 			  begin
 				  delete	O
 				  from	Issue O
-						  inner join #items I on O.Object = I.Object and I.ObjectID =  O.ObjectID;
+						  inner join #items I on O.AssetID = I.ID;
 			  end
 		  end;
 

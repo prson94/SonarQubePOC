@@ -742,7 +742,7 @@ namespace d360.model
 			left join reporting.Global_resource r on r.ResourceID = v.UpdatedBy
 			left join (select distinct object, objectid, versionid from workflow.item where Object='Issue') i on i.versionid = v.id
 			left join Issue iss on i.Object ='Issue' and iss.ID = i.ObjectID
-			left join Asset issa on issa.Object = iss.Object and issa.ObjectID = iss.ObjectID
+			left join Asset issa on issa.ID = iss.AssetID
 			left join AssetType isst on isst.ID = issa.AssetTypeID
 			left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) 
 			left join workflow.versionstep vs on vs.versionid = v.id

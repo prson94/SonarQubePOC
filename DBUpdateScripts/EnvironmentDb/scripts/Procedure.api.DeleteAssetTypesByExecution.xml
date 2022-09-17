@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.DeleteAssetTypesByExecution-v1">
-    <comment>GOV-18449</comment>
+  <changeSet author="TKlok" id="Procedure.api.DeleteAssetTypesByExecution-v2">
+    <comment>GOV-18453</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -320,7 +320,7 @@ begin
 					inner join [workflow].[ItemStep] S on S.ID = R.FromItemStepID
 					inner join [workflow].[Item] I on I.ID = S.ItemID
 					inner join Issue AC on AC.ID = I.ObjectID and I.Object = 'Issue'
-					inner join Asset A on A.Object = AC.Object and A.ObjectID = AC.ObjectID
+					inner join Asset A on A.ID = AC.AssetID
 					inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
 
 			delete	R
@@ -335,7 +335,7 @@ begin
 					inner join [workflow].[ItemStep] S on S.ID = R.ToItemStepID
 					inner join [workflow].[Item] I on I.ID = S.ItemID
 					inner join Issue AC on AC.ID = I.ObjectID and I.Object = 'Issue'
-					inner join Asset A on A.Object = AC.Object and A.ObjectID = AC.ObjectID
+					inner join Asset A on A.ID = AC.AssetID
 					inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
 
 			delete	R
@@ -348,7 +348,7 @@ begin
 			from	[workflow].[ItemStep] R
 					inner join [workflow].[Item] I on I.ID = R.ItemID
 					inner join Issue AC on AC.ID = I.ObjectID and I.Object = 'Issue'
-					inner join Asset A on A.Object = AC.Object and A.ObjectID = AC.ObjectID
+					inner join Asset A on A.ID = AC.AssetID
 					inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
 
 			delete	R
@@ -361,7 +361,7 @@ begin
 			from	[workflow].[ItemAssignment] R
 					inner join [workflow].[Item] I on I.ID = R.ItemID
 					inner join Issue AC on AC.ID = I.ObjectID and I.Object = 'Issue'
-					inner join Asset A on A.Object = AC.Object and A.ObjectID = AC.ObjectID
+					inner join Asset A on A.ID = AC.AssetID
 					inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
 
 			delete	R
@@ -372,7 +372,7 @@ begin
 			delete	R
 			from	[workflow].[Item] R
 					inner join Issue AC on AC.ID = R.ObjectID and R.Object = 'Issue'
-					inner join Asset A on A.Object = AC.Object and A.ObjectID = AC.ObjectID
+					inner join Asset A on A.ID = AC.AssetID
 					inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
 
 			-- Remove workflow types.
@@ -431,12 +431,12 @@ begin
 			delete	R
 			from	Field R
 					inner join [Issue] I on R.ObjectType = 'Issue' and R.ObjectID = I.ID
-					inner join Asset A on I.ObjectType = A.Object and I.ObjectID = A.ObjectID
+					inner join Asset A on A.ID = I.AssetID
 					inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
 
 			delete	R
 			from	[Issue] R 
-					inner join Asset A on R.ObjectType = A.Object and R.ObjectID = A.ObjectID
+					inner join Asset A on A.ID = R.AssetID
 					inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
 
 			delete	R

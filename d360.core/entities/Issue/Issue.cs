@@ -23,17 +23,11 @@ namespace d360.core.entities
 
         public int? UpdatedBy { get; set; }
 
-        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
-        public string Object { get; set; }
+		[DataMember]
+		public long? AssetID { get; set; }
 
-        [DataMember]
-        public int ObjectID { get; set; }
-
-        [DataMember, Column(TypeName = "varchar"), StringLength(25)]
-        public string ObjectType { get; set; }
-
-        [DataMember]
-        public int ObjectTypeID { get; set; }
+		[DataMember]
+		public int AssetTypeID { get; set; }
 
         public virtual IssueType IssueType { get; set; }
 

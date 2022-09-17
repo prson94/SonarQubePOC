@@ -342,10 +342,12 @@ namespace d360.model
         string GetNoReadSqlStatement(string identifier = null);
         
         string GetNoReadSqlStatement(Permission permission, string identifier = null);
-        
-        ObjectDetail GetObjectDetail(string type, long id);
-        
-        ObjectStatisticTileModel GetObjectStatistics(string type, int id);
+
+		ObjectDetail GetObjectDetailByAssetAssetTypeId(long? assetId, int? assetTypeId);
+
+		ObjectDetail GetObjectDetail(string type, long id);
+
+		ObjectStatisticTileModel GetObjectStatistics(string type, int id);
         
         AssetTypeStyle GetAssetTypeStyle(int assetTypeId);
         
