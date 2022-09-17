@@ -116,13 +116,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AllocationScoreTypeNotRecognised" xml:space="preserve">
-    <value>Allocazione ScoreType non riconosciuta.  Valore {0}</value>
+    <value>[Allocation.ScoreType] non riconosciuto.  Valore {0}</value>
   </data>
   <data name="AllocationUidInvalid" xml:space="preserve">
-    <value>È necessario fornire un AllocationUid valido.</value>
+    <value>È necessario fornire un [AllocationUid] valido.</value>
   </data>
   <data name="ConditionGroupThresholdValue" xml:space="preserve">
-    <value>Il gruppo di condizioni in posizione {0} deve contenere un valore Threshold compreso tra 0 e 1</value>
+    <value>Il gruppo di condizioni in posizione {0} deve contenere un valore [Threshold] compreso tra 0 e 1</value>
   </data>
   <data name="ConditionOperatorNotValid" xml:space="preserve">
     <value>Una condizione utilizza un operatore ({0}) che non è valido per i campi con un tipo di dati {1}. </value>
@@ -182,7 +182,7 @@
     <value>Non è possibile modificare il peso di questa metrica senza alterarne anche la data di entrata in vigore.</value>
   </data>
   <data name="FieldTypeNotFound" xml:space="preserve">
-    <value>FieldType non esiste!</value>
+    <value>Il tipo di campo non esiste.</value>
   </data>
   <data name="GovernanceFieldCheck" xml:space="preserve">
     <value>Controllo sul campo di governance</value>
@@ -200,7 +200,7 @@
     <value>Le istruzioni per il controllo esterno non possono superare i 500 caratteri.</value>
   </data>
   <data name="InvalidFieldTypeAsset" xml:space="preserve">
-    <value>FieldType non valido per questa risorsa.</value>
+    <value>Tipo di campo non valido per questa risorsa.</value>
   </data>
   <data name="InvalidFieldTypeGovernanceFieldCheck" xml:space="preserve">
     <value>Il nome del tipo di campo ({0}) utilizzato nel controllo del campo di governance non esiste su questo tipo di risorsa.</value>
@@ -239,10 +239,10 @@
     <value>Il nome non può contenere più di 250 caratteri.</value>
   </data>
   <data name="NotProvideDataQualityUnderDefinition" xml:space="preserve">
-    <value>Non è possibile fornire una proprietà dell'oggetto DataQuality alla voce Definizione.</value>
+    <value>Non è possibile fornire una proprietà dell'oggetto [DataQuality] alla voce [Definition].</value>
   </data>
   <data name="NotProvideGovernanceUnderDefinition" xml:space="preserve">
-    <value>Non è possibile fornire una proprietà dell'oggetto Governance alla voce Definizione.</value>
+    <value>Non è possibile fornire una proprietà dell'oggetto [Governance] alla voce [Definition].</value>
   </data>
   <data name="OneMoreValueDataQualityNotSupportDataType" xml:space="preserve">
     <value>Uno o più valori utilizzati nei filtri DataQuality non sono supportati dal tipo di dati ({0}) del campo di riferimento.</value>
@@ -266,28 +266,28 @@
     <value>Metrica principale non trovata.</value>
   </data>
   <data name="ProvideDataQualityUnderDefinition" xml:space="preserve">
-    <value>È necessario fornire la proprietà dell'oggetto DataQuality alla voce Definizione.</value>
+    <value>È necessario fornire una proprietà dell'oggetto [DataQuality] alla voce [Definition].</value>
   </data>
   <data name="ProvideGovernanceUnderDefinition" xml:space="preserve">
-    <value>Non è possibile fornire la proprietà dell'oggetto Governance alla voce Definizione.</value>
+    <value>È necessario fornire una proprietà dell'oggetto [Governance] alla voce [Definition].</value>
   </data>
   <data name="ProvideValueForNotThresholdBasedScoring" xml:space="preserve">
-    <value>Non è necessario fornire un valore per la proprietà Threshold poiché la misura che si sta per aggiungere non appartiene a una definizione di punteggio basata sulla soglia.</value>
+    <value>Non è necessario fornire un valore per la proprietà [Threshold] poiché la misura che si sta per aggiungere non appartiene a una definizione di punteggio basata sulla soglia.</value>
   </data>
   <data name="ReferInvalidFieldDataQualityFilters" xml:space="preserve">
     <value>È stato utilizzato un campo non valido come parte dei filtri DataQuality, in quanto non è stato trovato o utilizza un operatore non corretto.</value>
   </data>
   <data name="ResultPathUidNotEmpty" xml:space="preserve">
-    <value>ResultPathUid potrebbe non essere un identificatore vuoto.</value>
+    <value>[ResultPathUid] potrebbe non essere un identificatore vuoto.</value>
   </data>
   <data name="ResultPathUidNotValid" xml:space="preserve">
-    <value>ResultPathUid con l'identificatore specificato {0} non esiste o non corrisponde al tipo di risorsa di cui si sta calcolando il punteggio.</value>
+    <value>[ResultPathUid] con l'identificatore specificato {0} non esiste o non corrisponde al tipo di risorsa di cui si sta calcolando il punteggio.</value>
   </data>
   <data name="ScoreDefinitionNotThresholdBased" xml:space="preserve">
-    <value>Il gruppo di condizioni in posizione {0} non deve fornire un valore per la proprietà Threshold poiché l'indicatore che si sta aggiungendo non appartiene a un indicatore basato sulla soglia.</value>
+    <value>Il gruppo di condizioni in posizione {0} non deve fornire un valore per la proprietà [Threshold] poiché l'indicatore che si sta aggiungendo non appartiene a un indicatore basato sulla soglia.</value>
   </data>
   <data name="ThresholdRangeCheck" xml:space="preserve">
-    <value>Threshold deve essere un valore compreso tra 0 e 1</value>
+    <value>[Threshold] deve essere un valore compreso tra 0 e 1</value>
   </data>
   <data name="UidGovernanceOwnerCheck" xml:space="preserve">
     <value>Il controllo del proprietario della governance dell'UID non corrisponde a un tipo di responsabilità noto.</value>

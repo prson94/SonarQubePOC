@@ -122,10 +122,10 @@
     <value>Zuordnung mit UID {0} ist nicht vorhanden.</value>
   </data>
   <data name="DuplicateMeasureUid" xml:space="preserve">
-    <value>Doppelte measureUid in der Payload angegeben.</value>
+    <value>Doppelte/r/s [measureUid] in der Payload angegeben.</value>
   </data>
   <data name="EffectiveDateNotGTToday" xml:space="preserve">
-    <value>effectiveDate darf nicht nach dem heutigen Datum (in UTC) liegen.</value>
+    <value>[effectiveDate] darf nicht nach dem heutigen Datum (in UTC) liegen.</value>
   </data>
   <data name="ErrorAddingScoreResults" xml:space="preserve">
     <value>Fehler beim Hinzufügen der Score-Ergebnisse</value>
@@ -140,7 +140,7 @@
     <value>Der untere Schwellenwert muss festgelegt werden.</value>
   </data>
   <data name="RangeLimitThreshold" xml:space="preserve">
-    <value>Die Werte für den Schwellenwert müssen zwischen 0 und 100 liegen.</value>
+    <value>Die Werte für '[Threshold]' müssen zwischen 0 und 100 liegen.</value>
   </data>
   <data name="RestrictDeleteScore" xml:space="preserve">
     <value>Ein Score mit definierten Messgrößen kann nicht gelöscht werden.</value>
@@ -176,9 +176,9 @@
     <value>Score-Definition mit {0} wird nicht intern berechnet.</value>
   </data>
   <data name="UpperGtLower" xml:space="preserve">
-    <value>Der untere Schwellenwert muss kleiner sein als der obere Schwellenwert.</value>
+    <value>[lowerThreshold] muss kleiner sein als [upperThreshold]</value>
   </data>
   <data name="UpperThreshold" xml:space="preserve">
-    <value>Der obere Schwellenwert muss festgelegt werden.</value>
+    <value>[upperThreshold] muss festgelegt werden.</value>
   </data>
 </root>

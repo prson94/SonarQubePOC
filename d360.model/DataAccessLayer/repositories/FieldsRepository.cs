@@ -839,21 +839,15 @@ namespace d360.model.DataAccessLayer
 										F.ID as FieldTypeID
 								from	IntersectType I
 										inner join FieldType F on 
-												F.Object = case 
-																when (@t = I.Subject and @tid = I.SubjectID) then I.Object 
-																else I.Subject end 
-												and F.ObjectID = case 
-																when (@t = I.Subject and @tid = I.SubjectID) then I.ObjectID 
-																else I.SubjectID 
-															end 
-												and I.Uid = @uid 
-												and F.Name = @n";
+												F.AssetTypeID = I.SubjectAssetTypeID
+												and F.AssetTypeID = @assetTypeId
+												and I.Uid = @intersectTypeUid 
+												and F.Name = @fieldTypeName";
 					var relationshipsFieldType = Company.Query<dynamic>(query, new
 					{
-						uid = f.Type.ComputedRelationshipField.IntersectTypeUid,
-						n = f.Type.ComputedRelationshipField.FieldTypeName,
-						t = typeIdentifierInfoModel.Object,
-						tid = typeIdentifierInfoModel.ObjectID
+						intersectTypeUid = f.Type.ComputedRelationshipField.IntersectTypeUid,
+						fieldTypeName = f.Type.ComputedRelationshipField.FieldTypeName,
+						assetTypeId = typeIdentifierInfoModel.ID
 					}).FirstOrDefault();
 					
 					if (relationshipsFieldType == null)

@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeleteCascadeTagRelateAsset" xml:space="preserve">
-    <value>Tag met UID {0} heeft gerelateerde assets. Gebruik cascade='true' om deze tag te verwijderen.</value>
+    <value>Tag met UID {0} heeft gerelateerde assets. Stel [cascade] in op 'True' om deze tag te verwijderen!</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Ongeldige waarde [{0}] doorgevoerd in de aanvraag.</value>
@@ -125,25 +125,25 @@
     <value>Ongeldige waarde [{0}] doorgevoerd in de aanvraag</value>
   </data>
   <data name="InvalidPageNumber" xml:space="preserve">
-    <value>Ongeldige waarde voor parameter voor paginanummer.</value>
+    <value>Ongeldige waarde voor parameter [_pagenum]!</value>
   </data>
   <data name="InvalidPageSize" xml:space="preserve">
-    <value>Ongeldige waarde voor parameter voor paginagrootte.</value>
+    <value>Ongeldige waarde voor parameter [_pagesize]!</value>
   </data>
   <data name="InvalidParaMeter" xml:space="preserve">
-    <value>Ongeldige parameters opgegeven. De parameters DisplayValue, AssetType, TagsasString mogen niet worden gebruikt als de globalSearch-parameter aanwezig is.</value>
+    <value>Ongeldige parameters opgegeven. Parameter [DisplayValue], [AssetType], [TagsAsString] zijn niet toegestaan als parameter [globalSearch] aanwezig is.</value>
   </data>
   <data name="InvalidSortBy" xml:space="preserve">
-    <value>Ongeldige sortby-waarde opgegeven in de aanvraag.</value>
+    <value>Ongeldige waarde voor [sortby] opgegeven in de aanvraag.</value>
   </data>
   <data name="InvalidSortOrder" xml:space="preserve">
-    <value>Ongeldige waarde voor sorteervolgorde opgegeven in de aanvraag.</value>
+    <value>Ongeldige waarde voor [sortorder] opgegeven in de aanvraag.</value>
   </data>
   <data name="InvalidTagUid" xml:space="preserve">
     <value>Ongeldige waarde [{0}] doorgevoerd in de aanvraag</value>
   </data>
   <data name="Invalid_IncludeTotal" xml:space="preserve">
-    <value>Ongeldige waarde [{0}] opgegeven voor de parameter _includetotal in de aanvraag.</value>
+    <value>Ongeldige waarde [{0}] voor [_includetotal] opgegeven in de aanvraag.</value>
   </data>
   <data name="InvalueTotalValue" xml:space="preserve">
     <value>Ongeldige waarde [{0}] doorgevoerd in de aanvraag.</value>

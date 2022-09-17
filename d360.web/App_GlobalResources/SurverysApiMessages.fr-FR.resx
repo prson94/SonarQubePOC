@@ -119,16 +119,16 @@
     <value>Le type d’actif ne correspond à aucune enquête.</value>
   </data>
   <data name="InvalidFormatSurveyTypeUid" xml:space="preserve">
-    <value>Format surveyTypeUid non valide</value>
+    <value>Format non valide pour [surveyTypeUid]</value>
   </data>
   <data name="InvalidValueAsOfDate" xml:space="preserve">
-    <value>Valeur de date non valide pour le paramètre AsOfDate !</value>
+    <value>Valeur de date non valide pour le paramètre [AsOfDate] !</value>
   </data>
   <data name="NotavalidEndDateRange" xml:space="preserve">
-    <value>EndDateRange non valide</value>
+    <value>[EndDateRange] n’est pas valide</value>
   </data>
   <data name="NotvalidStartDateRange" xml:space="preserve">
-    <value>StartDateRange non valide</value>
+    <value>[StartDateRange] n’est pas valide</value>
   </data>
   <data name="ResultRemoved" xml:space="preserve">
     <value>{0} résultats supprimés.</value>
@@ -143,7 +143,7 @@
     <value>Type de question d’enquête de l’UID {0} introuvable</value>
   </data>
   <data name="SurveyResourceAssetUidPopulated" xml:space="preserve">
-    <value>La valeur SurveyTypeUid, ResourceUid ou AssetUid doit être renseignée</value>
+    <value>La valeur [SurveyTypeUid], [ResourceUid] ou [AssetUid] doit être renseignée</value>
   </data>
   <data name="SurveyUidNotFound" xml:space="preserve">
     <value>Le type d’enquête dont l’UID est {0} est introuvable.</value>

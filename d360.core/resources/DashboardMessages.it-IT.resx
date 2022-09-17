@@ -134,22 +134,22 @@
     <value>Errore durante l'aggiornamento della dashboard</value>
   </data>
   <data name="InvalidDashboardDashboardAssetTypeUid" xml:space="preserve">
-    <value>UID del tipo di risorsa fornito non valido.</value>
+    <value>[AssetTypeUid] fornito non valido.</value>
   </data>
   <data name="InvalidDashboardDashboardAssetUid" xml:space="preserve">
-    <value>UID della risorsa fornito non valido.</value>
+    <value>[AssetUid] fornito non valido.</value>
   </data>
   <data name="InvalidDashboardLocation" xml:space="preserve">
-    <value>La posizione deve essere uno dei seguenti valori: List, Detail o Homepage</value>
+    <value> [Location] deve essere uno dei seguenti valori: Elenco, Dettagli o Homepage</value>
   </data>
   <data name="InvalidDashboardType" xml:space="preserve">
-    <value>ReportType deve essere uno dei seguenti valori: DqPlus o PowerBi</value>
+    <value>[ReportType] deve essere uno dei seguenti valori: DqPlus o PowerBi</value>
   </data>
   <data name="InvalidDashboardUid" xml:space="preserve">
     <value>UID fornito non valido.</value>
   </data>
   <data name="InvalidDefinitionValue" xml:space="preserve">
-    <value>Valore JSON per il campo "Definizione" non valido</value>
+    <value>Valore JSON non valido per [Definition]</value>
   </data>
   <data name="NameExists" xml:space="preserve">
     <value>Esiste già una dashboard con lo stesso nome</value>

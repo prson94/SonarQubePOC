@@ -2254,7 +2254,7 @@ namespace d360.model.DataAccessLayer
 
 				var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.RuleResults);
 				Dictionary<string, object> sqlParams;
-				var query = "(" + filterExpressionParser.Parse(_filter, out sqlParams, out _) + ")";
+				var query = filterExpressionParser.Parse(_filter, out sqlParams, out _);
 
 				foreach (var item in sqlParams)
 				{

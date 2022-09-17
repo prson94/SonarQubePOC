@@ -359,7 +359,7 @@ namespace d360.model
         
         JObject GetPageInformation(Guid assetUid);
         
-        AssetDetail GetParentObject(int id, SystemObjects obj);
+        AssetDetail GetParentAsset(long assetId);
         
         AssetType GetParentType(int id);
         

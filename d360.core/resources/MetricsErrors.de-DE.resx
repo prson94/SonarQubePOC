@@ -116,13 +116,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AllocationScoreTypeNotRecognised" xml:space="preserve">
-    <value>Zuweisungs-ScoreType nicht erkannt.  Wert {0}</value>
+    <value>[Allocation.ScoreType] nicht erkannt.  Wert {0}</value>
   </data>
   <data name="AllocationUidInvalid" xml:space="preserve">
-    <value>Sie müssen eine gültige AllocationUid bereitstellen.</value>
+    <value>Es muss ein/e gültige/r/s [AllocationUid] angegeben werden.</value>
   </data>
   <data name="ConditionGroupThresholdValue" xml:space="preserve">
-    <value>Bedingungsgruppe in Position {0} muss einen Schwellenwert zwischen 0 und 1 aufweisen.</value>
+    <value>Bedingungsgruppe in Position {0} muss einen [Threshold]-Wert zwischen 0 und 1 aufweisen.</value>
   </data>
   <data name="ConditionOperatorNotValid" xml:space="preserve">
     <value>Eine Bedingung verwendet einen Operator ({0}), der für Felder vom Datentyp '{1}' nicht gültig ist. </value>
@@ -182,7 +182,7 @@
     <value>Die Gewichtung dieser Metrik darf nicht geändert werden, ohne das Gültigkeitsdatum zu ändern.</value>
   </data>
   <data name="FieldTypeNotFound" xml:space="preserve">
-    <value>FieldType ist nicht vorhanden.</value>
+    <value>Feldtyp ist nicht vorhanden.</value>
   </data>
   <data name="GovernanceFieldCheck" xml:space="preserve">
     <value>Governance-Feldüberprüfung</value>
@@ -200,7 +200,7 @@
     <value>Anweisungen zur externen Überprüfung dürfen nicht mehr als 500 Zeichen lang sein.</value>
   </data>
   <data name="InvalidFieldTypeAsset" xml:space="preserve">
-    <value>Ungültiger FieldType für dieses Asset.</value>
+    <value>Ungültiger Feldtyp für dieses Asset.</value>
   </data>
   <data name="InvalidFieldTypeGovernanceFieldCheck" xml:space="preserve">
     <value>Der Feldtypname ({0}) für die Governance-Feldüberprüfung ist für diesen Asset-Typ nicht vorhanden.</value>
@@ -239,10 +239,10 @@
     <value>Der Name darf maximal 250 Zeichen lang sein.</value>
   </data>
   <data name="NotProvideDataQualityUnderDefinition" xml:space="preserve">
-    <value>Unter 'Definition' darf keine DataQuality-Objekteigenschaft angegeben werden.</value>
+    <value>Unter '[Definition]' darf keine [DataQuality]-Objekteigenschaft angegeben werden.</value>
   </data>
   <data name="NotProvideGovernanceUnderDefinition" xml:space="preserve">
-    <value>Unter 'Definition' darf keine Governance-Objekteigenschaft angegeben werden.</value>
+    <value>Unter '[Definition]' darf keine [Governance]-Objekteigenschaft angegeben werden.</value>
   </data>
   <data name="OneMoreValueDataQualityNotSupportDataType" xml:space="preserve">
     <value>Mindestens ein Wert in den DataQuality-Filtern wird vom Datentyp ({0}) des referenzierten Felds nicht unterstützt.</value>
@@ -266,28 +266,28 @@
     <value>Übergeordnete Metrik nicht gefunden.</value>
   </data>
   <data name="ProvideDataQualityUnderDefinition" xml:space="preserve">
-    <value>Unter 'Definition' muss die DataQuality-Objekteigenschaft angegeben werden.</value>
+    <value>Unter '[Definition]' muss die [DataQuality]-Objekteigenschaft angegeben werden.</value>
   </data>
   <data name="ProvideGovernanceUnderDefinition" xml:space="preserve">
-    <value>Unter 'Definition' muss die Governance-Objekteigenschaft angegeben werden.</value>
+    <value>Unter '[Definition]' muss die [Governance]-Objekteigenschaft angegeben werden.</value>
   </data>
   <data name="ProvideValueForNotThresholdBasedScoring" xml:space="preserve">
-    <value>Es darf kein Wert für die Eigenschaft 'Schwellenwert' angegeben werden, da die hinzugefügte Messgröße nicht zu einer schwellenwertbasierten Score-Definition gehört.</value>
+    <value>Es darf kein Wert für die Eigenschaft '[Threshold]' angegeben werden, da die hinzugefügte Messgröße nicht zu einer schwellenwertbasierten Score-Definition gehört.</value>
   </data>
   <data name="ReferInvalidFieldDataQualityFilters" xml:space="preserve">
     <value>Es wurde ein ungültiges Feld als Teil der DataQuality-Filter referenziert. Entweder wurde es nicht gefunden oder es verwendet einen ungültigen Operator.</value>
   </data>
   <data name="ResultPathUidNotEmpty" xml:space="preserve">
-    <value>Bei ResultPathUid darf es sich nicht um eine leere Kennung handeln.</value>
+    <value>Bei [ResultPathUid] darf es sich nicht um eine leere Kennung handeln.</value>
   </data>
   <data name="ResultPathUidNotValid" xml:space="preserve">
-    <value>ResultPathUid mit der angegebenen Kennung {0} ist nicht vorhanden oder entspricht nicht dem Asset-Typ der Bewertung.</value>
+    <value>[ResultPathUid] mit der angegebenen Kennung {0} ist nicht vorhanden oder entspricht nicht dem Asset-Typ der Bewertung.</value>
   </data>
   <data name="ScoreDefinitionNotThresholdBased" xml:space="preserve">
-    <value>Bedingungsgruppe in Position {0} darf keinen Wert für die Eigenschaft 'Schwellenwert' bereitstellen, da die hinzugefügte Messgröße nicht zu einer schwellenwertbasierten Messgröße gehört.</value>
+    <value>Bedingungsgruppe in Position {0} darf keinen Wert für die Eigenschaft '[Threshold]' bereitstellen, da die hinzugefügte Messgröße nicht zu einer schwellenwertbasierten Messgröße gehört.</value>
   </data>
   <data name="ThresholdRangeCheck" xml:space="preserve">
-    <value>Bei dem Schwellenwert muss es sich um einen Wert zwischen 0 und 1 handeln.</value>
+    <value>Bei '[Threshold]' muss es sich um einen Wert zwischen 0 und 1 handeln.</value>
   </data>
   <data name="UidGovernanceOwnerCheck" xml:space="preserve">
     <value>Die UID-Governance-Eignerüberprüfung darf keinem bekannten Aufgabentyp entsprechen.</value>

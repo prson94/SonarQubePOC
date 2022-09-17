@@ -62,6 +62,8 @@ namespace d360.extensions
         public int Status { get; set; }
         
         public int TargetCount { get; set; }
+
+		public int DatabaseCount { get; set; }
         
         public DateTime Start { get; set; }
         

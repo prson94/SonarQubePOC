@@ -1,6 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<root>
-  <!-- 
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
     Microsoft ResX Schema 
     
     Version 2.0
@@ -58,47 +57,46 @@
     value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
-    -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -145,16 +143,16 @@
     <value>Interdit</value>
   </data>
   <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
-    <value>L’utilisateur interdit n’est pas un administrateur.</value>
+    <value>L’utilisateur actuel n’est pas un administrateur.</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
     <value>AssetUid {0} non valide</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
-    <value>Valeur du paramètre '_direction' non valide. Les valeurs autorisées sont 'desc' et 'asc'.</value>
+    <value>Valeur du paramètre [_direction] non valide. Les valeurs autorisées sont 'desc' et 'asc'.</value>
   </data>
   <data name="InvalidIncludeTotal" xml:space="preserve">
-    <value>Valeur _includeTotal fournie non valide</value>
+    <value>Valeur [_includeTotal] fournie non valide</value>
   </data>
   <data name="InvalidHelpName" xml:space="preserve">
     <value>Le nom ne peut pas être vide.</value>
@@ -172,7 +170,7 @@
     <value>Requête non valide</value>
   </data>
   <data name="InvalidScoreType" xml:space="preserve">
-    <value>Le type de score fourni n’est pas valide. Veuillez fournir un type de score valide.</value>
+    <value>La valeur [scoreType] fournie n’est pas valide. Veuillez fournir un type de score valide.</value>
   </data>
   <data name="NotFound" xml:space="preserve">
     <value>Introuvable</value>
@@ -280,16 +278,16 @@
     <value>Conflit</value>
   </data>
   <data name="ConnectorStatusNotFound" xml:space="preserve">
-    <value>Le statut du connecteur ayant {0} comme externalId est introuvable.</value>
+    <value>Le statut du connecteur ayant [externalId] {0} est introuvable.</value>
   </data>
   <data name="CounterInitialValueHigherCurrentValue" xml:space="preserve">
-    <value>La valeur Counter Initial doit être supérieure au nombre d’actifs ({0})</value>
+    <value>La valeur [CounterInitialIndex] doit être supérieure au nombre d’actifs ({0})</value>
   </data>
   <data name="DataTypeValueNotMatched" xml:space="preserve">
     <value>La valeur fournie ne correspond pas au type de données attendu pour ce paramètre</value>
   </data>
   <data name="DiagramAssetTypeSystemFieldValidation" xml:space="preserve">
-    <value>Les champs Name, GovernanceRole et StepNo ne peuvent pas être supprimés du type Diagram Asset.</value>
+    <value>Les champs [Name], [GovernanceRole] et [StepNo] ne peuvent pas être supprimés du type Diagram Asset.</value>
   </data>
   <data name="DuplicateUserUidProvided" xml:space="preserve">
     <value>Le même UID d’utilisateur apparaît plusieurs fois.</value>
@@ -346,7 +344,7 @@
     <value>Éléments existants dans le système</value>
   </data>
   <data name="ExportViewMessage" xml:space="preserve">
-    <value>Une valeur ExportViewType valide est requise.</value>
+    <value>Une valeur [ExportViewType] valide est requise.</value>
   </data>
   <data name="FieldMovedSuccessfully" xml:space="preserve">
     <value>Champ correctement déplacé.</value>
@@ -363,6 +361,9 @@
   <data name="FileUploadMessage" xml:space="preserve">
     <value>Fichier correctement chargé</value>
   </data>
+  <data name="GroupIsAcitveDirectorNotManageManually" xml:space="preserve">
+    <value>L’UID de groupe fourni correspond à un groupe de répertoires actif et ne peut être géré manuellement.</value>
+  </data>
   <data name="GroupUidNotExists" xml:space="preserve">
     <value>L’UID de groupe fourni n’est pas un UID de groupe valide. Le groupe n’existe pas.</value>
   </data>
@@ -373,7 +374,7 @@
     <value>La valeur fournie n’est pas un booléen valide</value>
   </data>
   <data name="InvalidExternalID" xml:space="preserve">
-    <value>externalId {0} n’est pas un UID valide</value>
+    <value>[externalId] {0} n’est pas un UID valide</value>
   </data>
   <data name="InvalidNumber" xml:space="preserve">
     <value>La valeur fournie n’est pas un nombre valide</value>
@@ -382,16 +383,16 @@
     <value>Paramètre non valide</value>
   </data>
   <data name="InvalidResourceuid" xml:space="preserve">
-    <value>Valeur _resourceuid fournie non valide !</value>
+    <value>Valeur [_resourceuid] fournie non valide !</value>
   </data>
   <data name="InvalidUserUids" xml:space="preserve">
     <value>Un ou plusieurs UID utilisateur transmis ne correspondent pas à un utilisateur.</value>
   </data>
   <data name="Invalid_Order" xml:space="preserve">
-    <value>Valeur _order fournie non valide !</value>
+    <value>Valeur [_order] fournie non valide !</value>
   </data>
   <data name="ItemExistsNotReplaceMessage" xml:space="preserve">
-    <value>Des éléments sont présents dans votre environnement. Vous ne pouvez pas effectuer d'action Replace tant que ces éléments ne sont pas supprimés.</value>
+    <value>Des éléments sont présents dans votre environnement. Vous ne pouvez pas effectuer d’action Replace tant que ces éléments ne sont pas supprimés.</value>
   </data>
   <data name="JSONValidMessage" xml:space="preserve">
     <value>Vous n’avez pas fourni de structure JSON valide pour cette requête.</value>
@@ -403,7 +404,7 @@
     <value>Le modèle ne contient pas de style de modèle d’exportation existant valide.</value>
   </data>
   <data name="NotValidAssetActionRelationTypeProvided" xml:space="preserve">
-    <value>Aucune valeur assetTypeUid, actionTypeUid ou relationshipTypeUid n’est fournie</value>
+    <value>Aucune valeur [assetTypeUid], [actionTypeUid] ou [relationshipTypeUid] fournie</value>
   </data>
   <data name="NoUserUIDProvided" xml:space="preserve">
     <value>Aucun UID d’utilisateur n’est fourni.</value>
@@ -415,7 +416,7 @@
     <value>Paramètre avec cet ID introuvable</value>
   </data>
   <data name="SettingIDNotValid" xml:space="preserve">
-    <value>La valeur transmise pour _settingId n’est pas valide</value>
+    <value>La valeur transmise pour [_settingId] n’est pas valide</value>
   </data>
   <data name="SettingLocked" xml:space="preserve">
     <value>Ce paramètre est verrouillé et ne peut être mis à jour</value>
@@ -427,7 +428,7 @@
     <value>La valeur de début {0} n’est pas une adresse IP valide</value>
   </data>
   <data name="StatusInvalid" xml:space="preserve">
-    <value>Valeur de statut non valide. Les valeurs autorisées sont : START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION</value>
+    <value>Valeur non valide pour [Status]. Les valeurs autorisées sont : START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION</value>
   </data>
   <data name="StatusRequied" xml:space="preserve">
     <value>La valeur du paramètre de statut est requise.</value>
@@ -487,10 +488,10 @@
     <value>Requête non valide, taille d’image spécifiée non valide. La valeur doit être inférieure à 2 048 ou supérieure à 0</value>
   </data>
   <data name="InvalidApiKeyOrApiSecret" xml:space="preserve">
-    <value>Valeur apiKey ou apiSecret de currentUser non valide</value>
+    <value>Valeur [apiKey] ou [apiSecret] non valide pour l’utilisateur actuel</value>
   </data>
   <data name="InvalidOrgTypeUid" xml:space="preserve">
-    <value>Valeur organizationTypeUid fournie non valide</value>
+    <value>Valeur [organizationTypeUid] fournie non valide</value>
   </data>
   <data name="InvalidOrgUid" xml:space="preserve">
     <value>UID d’organisation fourni non valide</value>
@@ -499,13 +500,13 @@
     <value>Informations sur l’utilisateur non valides</value>
   </data>
   <data name="IsChangePwdReqAuthOtherThanForm" xml:space="preserve">
-    <value>Valeur IsChangePasswordReqeust définie sur true (configuration non autorisée pour les types d’authentification autres que Forms)</value>
+    <value>Valeur [IsChangePasswordReqeust] définie sur true (configuration non autorisée pour les types d’authentification autres que Forms)</value>
   </data>
   <data name="IsChangePwdReqCurrentUser" xml:space="preserve">
-    <value>Valeur IsChangePasswordReqeust définie sur true uniquement pour l’utilisateur actuel</value>
+    <value>Valeur [IsChangePasswordReqeust] définie sur true uniquement pour l’utilisateur actuel</value>
   </data>
   <data name="IsChangePwdReqOneReq" xml:space="preserve">
-    <value>Une seule requête est acceptée si la valeur IsChangePasswordReqeust est définie sur true.</value>
+    <value>Une seule requête est acceptée si la valeur [IsChangePasswordReqeust] est définie sur true.</value>
   </data>
   <data name="NameMissingInGroupPayload" xml:space="preserve">
     <value>Le nom est manquant dans un ou plusieurs groupes de la charge utile. Le nom doit être fourni.</value>
@@ -547,10 +548,10 @@
     <value>Une erreur inconnue s’est produite et a été consignée pour une enquête plus approfondie. Veuillez réessayer votre requête plus tard.</value>
   </data>
   <data name="InvalidEndDate" xml:space="preserve">
-    <value>Valeur _endDate non valide fournie</value>
+    <value>Valeur [_endDate] fournie non valide</value>
   </data>
   <data name="InvalidStartDate" xml:space="preserve">
-    <value>Valeur _startDate non valide fournie</value>
+    <value>Valeur [_startDate] fournie non valide</value>
   </data>
   <data name="StartEndDateValidation" xml:space="preserve">
     <value>La date de début doit être antérieure à la date de fin</value>
@@ -559,16 +560,16 @@
     <value>Erreur lors de l’analyse de l’expression du filtre</value>
   </data>
   <data name="Invalid_PageNum" xml:space="preserve">
-    <value>Paramètre _pageNum non valide transmis dans la requête</value>
+    <value>Paramètre [_pageNum] non valide transmis dans la requête</value>
   </data>
   <data name="Invalid_PageSize" xml:space="preserve">
-    <value>Paramètre _pageSize non valide transmis dans la requête</value>
+    <value>Paramètre [_pageSize] non valide transmis dans la requête</value>
   </data>
   <data name="_PageSizeLimit" xml:space="preserve">
-    <value>Le paramètre _pageSize transmis dans la requête n’est pas valide. La valeur est supérieure à la valeur maximale prise en charge de 100 000.</value>
+    <value>Le paramètre [_pageSize] transmis dans la requête n’est pas valide. La valeur est supérieure à la valeur maximale prise en charge de 100 000.</value>
   </data>
   <data name="_PageSizePassedZeroLess" xml:space="preserve">
-    <value>Le paramètre _pageSize transmis dans la requête n’est pas valide. La valeur est inférieure ou égale à zéro.</value>
+    <value>Le paramètre [_pageSize] transmis dans la requête n’est pas valide. La valeur est inférieure ou égale à zéro.</value>
   </data>
   <data name="EndpointMethod" xml:space="preserve">
     <value>Méthode du point de terminaison</value>
@@ -604,7 +605,7 @@
     <value>Il manque à Govern des informations de configuration relatives au fournisseur d’identités OpenID, telles que ClientID et/ou Authority.</value>
   </data>
   <data name="LookupFieldTypeInUse" xml:space="preserve">
-    <value>Des actifs sont présents dans votre environnement avec des valeurs dans le champ '{0}'. Vous ne pouvez pas modifier la propriété 'Type of List' tant que les valeurs de ces champs n’ont pas été supprimées.</value>
+    <value>Des actifs sont présents dans votre environnement avec des valeurs dans le champ '{0}'. Vous ne pouvez pas modifier la propriété [Type.Lookup.List] tant que les valeurs de ces champs n’ont pas été supprimées.</value>
   </data>
   <data name="InvalidIntersecttypeid" xml:space="preserve">
     <value>ID du type d’intersection non valide</value>
@@ -622,7 +623,7 @@
     <value>Le modèle de référence croisée des actifs ne contient pas de champs obligatoires.</value>
   </data>
   <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
-    <value>Valeur _includeChildAssets fournie non valide</value>
+    <value>Valeur [_includeChildAssets] fournie non valide</value>
   </data>
   <data name="ModelNotContainFields" xml:space="preserve">
     <value>Le modèle ne contient pas de champs obligatoires</value>
@@ -703,7 +704,7 @@
     <value>Éléments du menu d’aide supprimés.</value>
   </data>
   <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
-    <value>La longueur de la valeur ApplicationId ne peut pas dépasser 200 caractères</value>
+    <value>La longueur de la valeur [ApplicationId] ne peut pas dépasser 200 caractères</value>
   </data>
   <data name="FavoritesSuccessfullyDeleted" xml:space="preserve">
     <value>Suppression des favoris spécifiés réussie</value>
@@ -721,7 +722,7 @@
     <value>L’ordre ne peut être un nombre négatif.</value>
   </data>
   <data name="InvalidLoadUid" xml:space="preserve">
-    <value>Valeur LoadUid fournie non valide.</value>
+    <value>Valeur [LoadUid] fournie non valide.</value>
   </data>
   <data name="ArtifactNotFound" xml:space="preserve">
     <value>Artefact introuvable.</value>
@@ -739,7 +740,7 @@
     <value>L’itinéraire {Route} est inconnu ou obsolète</value>
   </data>
   <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
-    <value>Aucun type d’actif n’a été trouvé avec la valeur assetTypeUid fournie.</value>
+    <value>Aucun type d’actif n’a été trouvé avec la valeur [assetTypeUid] fournie.</value>
   </data>
   <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
     <value>Aucun type d’intersection n’a été trouvé avec la valeur intersectTypeUid fournie.</value>

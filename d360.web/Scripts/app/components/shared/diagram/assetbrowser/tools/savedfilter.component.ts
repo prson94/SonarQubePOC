@@ -1,9 +1,20 @@
-import * as _ from 'lodash';
-import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+	AfterViewInit,
+	Component,
+	Input,
+	OnInit,
+	ChangeDetectionStrategy,
+	ChangeDetectorRef,
+	Output,
+	EventEmitter,
+	OnChanges,
+	SimpleChanges,
+	ViewChild
+} from '@angular/core';
 import { StoredAssetBrowserFilterModel, AssetBrowserFilterModel, FilterSelectionsModel, DiagramType } from '../../../../../models/lineage.model';
 import { BrowserService } from '../../../../../services/browser.service';
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
-import { MenuItem } from 'primeng/api';
+import { Dropdown } from "primeng/dropdown";
 
 @Component({
     selector: 'd3s-assetbrowser-savedfilter',
@@ -28,6 +39,8 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
     saveFilterModalWorking: boolean = false;
     deleteFilterModalVisible: boolean = false;
     deleteFilterModalWorking: boolean = false;
+	
+	@ViewChild('dropdown') dropdown: Dropdown;
 
     removeTitle = $localize`Remove`;
     saveTitle = $localize`Save`;
@@ -91,7 +104,8 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
     }
 
     apply(e) {
-        this.menuitems.forEach(x => {
+		this.selectedFilter = e.value;
+        this.menuitems.forEach((x) => {
             if (x.title == this.removeTitle || x.title == this.saveTitle) {
                 x.disabled = !this.hasSelectedUserFilter();
                 this.cdRef.markForCheck();
@@ -103,15 +117,15 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
 
         let model: AssetBrowserFilterModel = this.filterModel;
 
-        var selectedAssetTypes = this.options.AssetTypeOptions
+        const selectedAssetTypes = this.options.AssetTypeOptions
             .filter((a) => this.selectedFilter.assetTypes.findIndex((f) => f.uid == a.Uid) > -1)
             .map((a) => a.AssetTypeId);
 
-        var selectedPredicates = this.options.PredicateOptions
+		const selectedPredicates = this.options.PredicateOptions
             .filter(p => this.selectedFilter.predicates.findIndex((f) => f.uid == p.Uid) > -1)
             .map((p) => p.Id);
 
-        var selectedResponsibilityTypes = this.options.ResponsibilityTypeOptions
+		const selectedResponsibilityTypes = this.options.ResponsibilityTypeOptions
             .filter((r) => this.selectedFilter.responsibilityTypes.findIndex((f) => f.uid == r.Uid) > -1)
             .map((r) => r.Id);
 
@@ -148,13 +162,14 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         this.saveFilterModalWorking = true;
         this.browserService
             .saveUserFilter(this.createUserFilter)
-            .subscribe(filter => {
+            .subscribe((filter) => {
                 this.saveFilterModalVisible = false;
                 this.saveFilterModalWorking = false;
                 this.allFilters.push(filter);
                 this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
                 this.selectedFilter = filter;
-                this.menuitems.forEach(x => {
+				this.dropdown.value = filter;
+                this.menuitems.forEach((x) => {
                     if (x.title == this.removeTitle || x.title == this.saveTitle) {
                         x.disabled = !this.hasSelectedUserFilter();
                         this.cdRef.markForCheck();
@@ -170,13 +185,14 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         if (this.hasSelectedUserFilter()) {
             this.browserService
                 .deleteUserFilter(this.selectedFilter)
-                .subscribe(success => {
+                .subscribe((success) => {
                     if (success) {
-                        var filters = this.savedFilters;
-                        var idx = filters.findIndex(f => f.uid == this.selectedFilter.uid);
+                        const filters = this.savedFilters;
+						const idx = filters.findIndex((f) => f.uid === this.selectedFilter.uid);
                         filters.splice(idx, 1);
-                        this.savedFilters = filters.filter(f => true);
+                        this.savedFilters = filters.filter(() => true);
                         this.selectedFilter = undefined;
+						this.dropdown.value = null;
                         this.menuitems.forEach(x => {
                             if (x.title == this.removeTitle || x.title == this.saveTitle) {
                                 x.disabled = !this.hasSelectedUserFilter();
@@ -200,10 +216,11 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         if (this.allFilters.length == 0) {
             this.browserService
                 .getUserFilters()
-                .subscribe(filters => {
+                .subscribe((filters) => {
                     this.allFilters = filters;
                     this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
                     this.selectedFilter = this.savedFilters.find(f => f.isDefault == true);
+					this.dropdown.value = this.selectedFilter;
                 });
         }
     }
@@ -234,12 +251,13 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
 
         this.browserService
             .saveUserFilter(this.createUserFilter)
-            .subscribe(filter => {
-                var idx = this.allFilters.findIndex(f => f.uid == filter.uid);
+            .subscribe((filter) => {
+                const idx = this.allFilters.findIndex((f) => f.uid === filter.uid);
                 this.allFilters[idx] = filter;
-                this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
+				this.savedFilters = this.allFilters.filter((f) => f.diagramType === this.diagramType);
                 this.selectedFilter = filter;
-                this.menuitems.forEach(x => {
+				this.dropdown.value = filter;
+				this.menuitems.forEach((x) => {
                     if (x.title == this.removeTitle || x.title == this.saveTitle) {
                         x.disabled = !this.hasSelectedUserFilter();
                         this.cdRef.markForCheck();

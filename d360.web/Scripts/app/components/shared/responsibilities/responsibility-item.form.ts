@@ -26,7 +26,6 @@ import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
@@ -38,7 +37,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
 export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     @Input() item: ResponsibilityItemDetailV2;
     @Input() assetUid: string;
-    @Input() assetID: number;
     @Output() onSaveComplete = new EventEmitter();
     @Output() onLoadComplete = new EventEmitter();
     @Output() onCancel = new EventEmitter();
@@ -72,8 +70,8 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
         this.setResouceAssigned();
 
-        if (this.item == null || (!this.item.ResponsibilityUid && !this.assetID)) {
-            throw new Error("responsibility-item-editor [item] requires either a ResponsibilityID or a AssetID");
+        if (this.item == null || (!this.item.ResponsibilityUid && !this.assetUid)) {
+			throw new Error("responsibility-item-editor [item] requires either a ResponsibilityID or an AssetUid");
         }
         this.load();
     }
@@ -87,7 +85,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
         this.isLoading = true;
 
-        this.responsibilityService.getResponsibilityItemEditor(this.assetID, null, this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, this.itemToSave.ResourceUid)
+        this.responsibilityService.getResponsibilityItemEditor(null, this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, this.itemToSave.ResourceUid)
             .subscribe(data => {
                 this.model = data;
                 this.onLoadComplete.emit({ item: this.item });
@@ -262,7 +260,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         }
 
         this.field = new EditorField();
-        this.field.TypeaheadUri = `form/Responsibility/Resources?assetID=${this.assetID}&resTypeId=${resTypeId}&secAssetType=${securityAsset}&secAssetTypeid=${securityAssetId}&resTypeUid=${resTypeUid}`;
+        this.field.TypeaheadUri = `form/Responsibility/Resources?assetID=0&resTypeId=${resTypeId}&secAssetType=${securityAsset}&secAssetTypeid=${securityAssetId}&resTypeUid=${resTypeUid}`;
         this.field.FieldName = "resources";
         this.field.MultiSelect = false;
         this.field.Value = [];

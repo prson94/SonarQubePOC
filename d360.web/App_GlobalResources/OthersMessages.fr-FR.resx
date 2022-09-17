@@ -122,7 +122,7 @@
     <value>L’identifiant d’allocation avec la valeur {0} ne correspond pas à une allocation valide.</value>
   </data>
   <data name="AllocationUidNotCorrectlyFormatted" xml:space="preserve">
-    <value>allocationUid {0} n’est pas un identifiant correctement formaté.</value>
+    <value>[allocationUid] {0} n’est pas un identifiant correctement formaté.</value>
   </data>
   <data name="AssetIdentifierDoesnotValidAsset" xml:space="preserve">
     <value>L’identifiant d’actif avec la valeur {0} ne correspond pas à un actif valide.</value>
@@ -134,7 +134,7 @@
     <value>L’UID de l’actif doit être spécifié.</value>
   </data>
   <data name="AssetuidNotCorrectlyFormatted" xml:space="preserve">
-    <value>assetUid {0} n’est pas un identifiant correctement formaté.</value>
+    <value>[assetUid] {0} n’est pas un identifiant correctement formaté.</value>
   </data>
   <data name="BadRequestSubmitted" xml:space="preserve">
     <value>Mauvaise requête soumise</value>
@@ -170,13 +170,13 @@
     <value>Cette adresse e-mail ne semble pas valide.</value>
   </data>
   <data name="InvalidFieldFilterParameter" xml:space="preserve">
-    <value>Vous avez des champs non valides dans les paramètres de votre requête de filtre : {0}.</value>
+    <value>Vous avez des champs non valides dans les paramètres de votre requête [filter] : {0}.</value>
   </data>
   <data name="InvalidFieldSelectQueryParameter" xml:space="preserve">
-    <value>Vous avez des champs non valides dans les paramètres de votre requête de sélection : {0}.</value>
+    <value>Vous avez des champs non valides dans les paramètres de votre requête [select] : {0}.</value>
   </data>
   <data name="InvalidField_OrderParameter" xml:space="preserve">
-    <value>Vous avez des champs non valides dans le paramètre de votre requête _order.</value>
+    <value>Vous avez des champs non valides dans le paramètre de votre requête [_order].</value>
   </data>
   <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
     <value>Champ Relationship non valide rencontré, type de relation non valide ou supprimé rencontré.</value>
@@ -245,13 +245,13 @@
     <value>Ressource non disponible pour cet utilisateur.</value>
   </data>
   <data name="SearchFilterInvalid" xml:space="preserve">
-    <value>Les filtres de recherche ne sont pas valides dans votre paramètre de requête de filtre : last_modified.</value>
+    <value>Les filtres de recherche ne sont pas valides dans votre paramètre de requête de filtre : [last_modified].</value>
   </data>
   <data name="ServerErrorOccurred" xml:space="preserve">
     <value>Une erreur de serveur s’est produite. Veuillez reformuler votre requête ultérieurement</value>
   </data>
   <data name="SourceAssetUidModelNotEmpty" xml:space="preserve">
-    <value>Lorsque vous utilisez l’option copier/remplacer avec le modèle sourceAssetUid, celui-ci doit être vide.</value>
+    <value>Lorsque vous utilisez l’option copier/remplacer avec le modèle [sourceAssetUid], celui-ci doit être vide.</value>
   </data>
   <data name="SourceTargetNotSame" xml:space="preserve">
     <value>L’actif source et l’actif cible ne peuvent pas être identiques.</value>
@@ -260,15 +260,15 @@
     <value>Les types d’actifs source et cible doivent être identiques.</value>
   </data>
   <data name="SourceUidNotExists" xml:space="preserve">
-    <value>sourceAssetUid n’est pas valide ou l’actif n’existe pas.</value>
+    <value>[sourceAssetUid] n’est pas valide ou l’actif n’existe pas.</value>
   </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Non autorisé</value>
   </data>
   <data name="_PageNumGT0" xml:space="preserve">
-    <value>Le paramètre _pageNum doit être supérieur à 0.</value>
+    <value>Le paramètre [_pageNum] doit être supérieur à 0.</value>
   </data>
   <data name="_PageSizeMax200" xml:space="preserve">
-    <value>La valeur maximale du paramètre _pageSize est de 200.</value>
+    <value>La valeur maximale du paramètre [_pageSize] est de 200.</value>
   </data>
 </root>

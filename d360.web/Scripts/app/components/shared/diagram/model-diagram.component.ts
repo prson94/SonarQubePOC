@@ -1,6 +1,6 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { HierarchyDiagramModel, Model } from '../../../models/model.model';
 import { DiagramBaseComponent } from './diagram-base.component';
@@ -15,13 +15,15 @@ import { AssetTypeClass } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { forkJoin } from 'rxjs';
 
 declare var window: any;
 declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-model-diagram',
-    templateUrl: './model-diagram.component.html',
+	templateUrl: './model-diagram.component.html',
+	changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [ModelsService]
 })
 
@@ -59,19 +61,18 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         this.secondaryNavService = secondaryNavService;
     }
 
-    public ngOnInit() {
+	public ngOnInit() {
         this.menuItems.push(
             { icon: 'fa fa-refresh menu-icon' },
             { icon: 'fa fa-info-circle menu-icon' }
         );
 
-        this.sidePanelStorageKey = 'detail_' + AssetTypeClass.Model + '_' + CurrentResourceID;
-        this.initializeDiagram();
+		this.sidePanelStorageKey = 'detail_' + AssetTypeClass.Model + '_' + CurrentResourceID;
+		setTimeout(() => this.initializeDiagram(), 50);
     }
 
-    public ngOnDestroy() {
-        //garbage collection
-        this.diagram.div = null;
+	public ngOnDestroy() {
+		this.diagram = this.diagramRef = null;
     }
 
     private initializeDiagram() {
@@ -88,27 +89,28 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
     public populateDiagram() {
 		this.isLoading = true;
-		this.modelsService.getCatalogDiagram(this.assetTypeUid).subscribe(
-            data => {
-                let root = data.find(x => x.parent === null);
-                if (root) {
-                    delete root.parent;
-                }
 
-                this.items = data;
+		forkJoin(this.modelsService.getModel(this.assetTypeUid)
+			,this.modelsService.getCatalogDiagram(this.assetTypeUid))
+			.subscribe((res) => {
+				var data = res[1];
+				var result = res[0];
 
-                this.diagram.model = new go.TreeModel(this.items);
-                this.isLoading = false;
-                this.resizeDiagram();
-            }
-        );
+				this.assetType = result;
+				let root = data.find(x => x.parent === null);
+				if (root) {
+					delete root.parent;
+				}
 
-		this.modelsService.getModel(this.assetTypeUid)
-            .subscribe(result => {
-                this.assetType = result;
-                this.buildNav();
-            });
+				this.items = data;
 
+				this.diagram.model = new go.TreeModel(this.items);
+				this.isLoading = false;
+				this.resizeDiagram();
+
+				this.buildNav();
+				this.isLoading = false;
+			});
     }
 
     getSidePanelWidth(): number {
@@ -146,8 +148,10 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
     private resizeDiagram() {
         //set the diagram div to a specific height
-        //required for GoJS
-
+		//required for GoJS
+		if (!this.diagramRef) {
+			return;
+		}
         let offset = this.diagramRef.nativeElement.offsetTop;
         let height = window.innerHeight;
 

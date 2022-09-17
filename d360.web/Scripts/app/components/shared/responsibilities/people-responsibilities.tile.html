@@ -91,7 +91,7 @@
             </p-table>
         </div>
         <div *ngIf="isEditing">
-            <d3s-responsibility-item-form [item]="selectedRow" [assetID]="assetID" [assetUid]="assetUid" (onSaveComplete)="load(); isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
+            <d3s-responsibility-item-form [item]="selectedRow" [assetUid]="assetUid" (onSaveComplete)="load(); isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
         </div>
         <div *ngIf="isDeleting" style="padding:15px;">
             <d3s-delete-form [callback]="deleteCallback"
@@ -102,7 +102,7 @@
             </d3s-delete-form>
         </div>
         <div *ngIf="isAdding">
-            <d3s-responsibility-item-form [item]="addingRow" [assetID]="assetID" [assetUid]="assetUid" (onSaveComplete)="load(); isAdding=false;" (onCancel)="isAdding=false;"></d3s-responsibility-item-form>
+            <d3s-responsibility-item-form [item]="addingRow" [assetUid]="assetUid" (onSaveComplete)="load(); isAdding=false;" (onCancel)="isAdding=false;"></d3s-responsibility-item-form>
         </div>
     </div>
 </div>

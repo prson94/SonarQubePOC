@@ -26,7 +26,8 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     selector: 'd3s-multiselect-grid',
     templateUrl: "multiselect-grid.component.html",
     providers: [MULTISELECT_GRID_VALUE_ACCESSOR, AssetService, AssetTypeService, ResourcesService],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+	styleUrls: ['./multiselect-grid.component.less']
 })
 
 export class MultiSelectGridComponent extends BaseComponent implements ControlValueAccessor, OnInit, OnDestroy {

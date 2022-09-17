@@ -140,7 +140,7 @@
     <value>Bedrijf</value>
   </data>
   <data name="TaxonomyTypeLevel" xml:space="preserve">
-    <value>Informatiemodel</value>
+    <value>Informatiemodel Niveau</value>
   </data>
   <data name="Artifact" xml:space="preserve">
     <value>Artefact</value>

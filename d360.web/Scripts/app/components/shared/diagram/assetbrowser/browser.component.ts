@@ -1992,7 +1992,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
     }
 
-    private savedfilter_Apply(e: AssetBrowserFilterModel) {
+	applySavedFilter(e: AssetBrowserFilterModel) {
         let diagramTypeChanged: boolean = (this.displayConfiguration.DiagramType !== e.DiagramType);
         this.displayConfiguration = new AssetBrowserFilterModel();
         this.displayConfiguration = e;

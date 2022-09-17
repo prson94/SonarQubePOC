@@ -119,13 +119,13 @@
     <value>Kan asset dat overeenkomt met ID {0} niet vinden.</value>
   </data>
   <data name="ConditionFieldTypeNameNotEmpty" xml:space="preserve">
-    <value>ConditionFieldTypeName mag niet leeg zijn.</value>
+    <value>[ConditionFieldTypeName] mag niet leeg zijn.</value>
   </data>
   <data name="ConditionIntersectTypeUidNotValid" xml:space="preserve">
-    <value>ConditionIntersectTypeUid moet geldig zijn.</value>
+    <value>[ConditionIntersectTypeUid] moet geldig zijn.</value>
   </data>
   <data name="ConditionNotEmpty" xml:space="preserve">
-    <value>U moet ConditionFieldTypeName of ConditionIntersectTypeUid gebruiken binnen een voorwaarde.</value>
+    <value>U moet ofwel een [ConditionFieldTypeName] of [ConditionIntersectTypeUid ] in een voorwaarde gebruiken.</value>
   </data>
   <data name="ConditionValueMaxChar250" xml:space="preserve">
     <value>Waarde voor voorwaarde mag niet langer zijn dan 250 tekens.</value>
@@ -152,7 +152,7 @@
     <value>{0} {1} is geen geldige UID</value>
   </data>
   <data name="DescriptionLengthValidation" xml:space="preserve">
-    <value>Beschrijving ({0} tekens) is te lang. De lengte mag maximaal 4000 tekens zijn.</value>
+    <value>De lengte van [Description] ({0} tekens) is te lang. De lengte mag maximaal 4000 tekens zijn.</value>
   </data>
   <data name="Errorlocatingmetric" xml:space="preserve">
     <value>Fout bij zoeken van metrisch gegeven</value>
@@ -182,10 +182,10 @@
     <value>De waarde {0} is geen geldige datum. Het jaar moet tussen 1900 en het huidige jaar liggen.</value>
   </data>
   <data name="InvalidEffectiveDate" xml:space="preserve">
-    <value>Ongeldige ingangsdatum opgegeven.</value>
+    <value>Ongeldige [EffectiveDate] opgegeven!</value>
   </data>
   <data name="IsGroupTrueParentMetric" xml:space="preserve">
-    <value>Voor bovenliggend metrisch gegeven moet de waarde IsGroup zijn ingesteld op Waar.</value>
+    <value>Voor bovenliggend metrisch gegeven moet de waarde [IsGroup] zijn ingesteld op True.</value>
   </data>
   <data name="MetricAdded" xml:space="preserve">
     <value>Metrisch gegeven toegevoegd</value>
@@ -233,7 +233,7 @@
     <value>Kan scoretoewijzing die overeenkomt met asset met ID {0} niet vinden.</value>
   </data>
   <data name="UseSingleCondition" xml:space="preserve">
-    <value>U mag niet zowel ConditionFieldTypeName als ConditionIntersectTypeUid gebruiken binnen één voorwaarde</value>
+    <value>U mag niet zowel [ConditionFieldTypeName] als [ConditionIntersectTypeUid] in een enkele voorwaarde gebruiken</value>
   </data>
   <data name="WeightDecimalValidation" xml:space="preserve">
     <value>Gewicht moet een decimaal getal zijn dat groter is dan 0 en minder dan of gelijk is aan 1</value>

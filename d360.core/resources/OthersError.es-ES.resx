@@ -125,7 +125,7 @@
     <value>La solicitud contiene combinaciones duplicadas de assetUid, metricAssetUid y effectiveDate. Debe enviarla en combinaciones únicas para esos tres campos.</value>
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Valor no válido para el parámetro assetTypeUid</value>
+    <value>Valor no válido para el parámetro [assetTypeUid]</value>
   </data>
   <data name="InvalidMeasureFound" xml:space="preserve">
     <value>Medida encontrada no válida</value>

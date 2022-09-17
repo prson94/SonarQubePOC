@@ -140,9 +140,9 @@
     <value>El número máximo de niveles para las mediciones es {0}.</value>
   </data>
   <data name="InvalidPageNum" xml:space="preserve">
-    <value>Valor pageNum proporcionado no válido.</value>
+    <value>Valor [pageNum] proporcionado no válido.</value>
   </data>
   <data name="InvalidPageSize" xml:space="preserve">
-    <value>Valor pageSize proporcionado no válido.</value>
+    <value>Valor [pageSize] proporcionado no válido.</value>
   </data>
 </root>

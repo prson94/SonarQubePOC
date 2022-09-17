@@ -99,7 +99,7 @@ export class TextAreaDirective implements AfterViewInit, OnDestroy {
 	}
 	
 	getCollapseButtonLabel(): string {
-		let label = $localize`description text box`;
+		let label = $localize`text box`;
 		if (this.collapsed) {
 			label = $localize`expand ` + label;
 		} else {

@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DirectionAllowedForRelation" xml:space="preserve">
-    <value>Der Parameter _direction ist nur zulässig, wenn RelationshipTypeUid oder AssetUid übergeben werden</value>
+    <value>Parameter [_direction] ist nur zulässig, wenn [RelationshipTypeUid] oder [AssetUid] übergeben wird.</value>
   </data>
   <data name="InvalidIntersectTypeUid" xml:space="preserve">
     <value>Ungültige Überschneidungstyp-UID angegeben ({0}).</value>
@@ -131,7 +131,7 @@
     <value>Ungültige Objekt-UID in der Anforderung übergeben</value>
   </data>
   <data name="InvalidOrderValue" xml:space="preserve">
-    <value>Ungültiger _order-Wert in der Anforderung übergeben</value>
+    <value>Ungültiger [_order]-Wert in der Anforderung übergeben</value>
   </data>
   <data name="InvalidParameter" xml:space="preserve">
     <value>Der Typparameter ist ungültig.</value>
@@ -146,10 +146,10 @@
     <value>Ungültige Subjekt-UID in der Anforderung übergeben</value>
   </data>
   <data name="Invalid_includeTotal" xml:space="preserve">
-    <value>Ungültiger Parameter _includeTotal in der Anforderung übergeben, Wert muss 'true', 'false' oder leer sein</value>
+    <value>Ungültiger Parameter [_includeTotal] in der Anforderung übergeben, Wert muss 'true', 'false' oder leer sein</value>
   </data>
   <data name="Invalid_owner" xml:space="preserve">
-    <value>Ungültiger Parameter Invalid _owner in der Anforderung übergeben, es sind max. 100 Zeichen zulässig.</value>
+    <value>Ungültiger Parameter [_owner] in der Anforderung übergeben, es sind max. 100 Zeichen zulässig.</value>
   </data>
   <data name="MaxRelationShipLimit" xml:space="preserve">
     <value>In dieser Anforderung dürfen maximal {0} Beziehungen angegeben werden. Rufen Sie die BATCH-API auf, um mehr als {1} Elemente zu übermitteln.</value>
@@ -158,7 +158,7 @@
     <value>Objekt mit UID [{0}] wurde nicht gefunden.</value>
   </data>
   <data name="OrderForRelation" xml:space="preserve">
-    <value>Parameter _order ist nur zulässig, wenn RelationshipTypeUid übergeben wird</value>
+    <value>Parameter [_order] ist nur zulässig, wenn [RelationshipTypeUid] übergeben wird.</value>
   </data>
   <data name="PassedValidForExistingRelationType" xml:space="preserve">
     <value>Ungültige Beziehungstyp-UID angegeben.  Geben Sie eine gültige UID für einen vorhandenen Beziehungstyp an.</value>

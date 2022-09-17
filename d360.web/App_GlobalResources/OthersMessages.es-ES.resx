@@ -122,7 +122,7 @@
     <value>El identificador de asignación con valor {0} no se corresponde con una asignación válida.</value>
   </data>
   <data name="AllocationUidNotCorrectlyFormatted" xml:space="preserve">
-    <value>allocationUid {0} no es un identificador con un formato correcto.</value>
+    <value>[allocationUid] {0} no es un identificador con un formato correcto.</value>
   </data>
   <data name="AssetIdentifierDoesnotValidAsset" xml:space="preserve">
     <value>El identificador de activo con valor {0} no se corresponde con un activo válido.</value>
@@ -134,7 +134,7 @@
     <value>Se debe especificar el UID del activo.</value>
   </data>
   <data name="AssetuidNotCorrectlyFormatted" xml:space="preserve">
-    <value>assetUid {0} no es un identificador con un formato correcto.</value>
+    <value>[assetUid] {0} no es un identificador con un formato correcto.</value>
   </data>
   <data name="BadRequestSubmitted" xml:space="preserve">
     <value>Se ha presentado una solicitud incorrecta</value>
@@ -170,13 +170,13 @@
     <value>Este correo electrónico no parece válido.</value>
   </data>
   <data name="InvalidFieldFilterParameter" xml:space="preserve">
-    <value>Tiene campos no válidos en los parámetros de consulta del filtro: {0}.</value>
+    <value>Tiene campos no válidos en los parámetros de consulta del [filter]: {0}.</value>
   </data>
   <data name="InvalidFieldSelectQueryParameter" xml:space="preserve">
-    <value>Tiene campos no válidos en los parámetros de consulta de selección: {0}.</value>
+    <value>Tiene campos no válidos en los parámetros de consulta del [select]: {0}.</value>
   </data>
   <data name="InvalidField_OrderParameter" xml:space="preserve">
-    <value>Tiene campos no válidos en su parámetro de consulta _order.</value>
+    <value>Tiene campos no válidos en su parámetro de consulta [_order].</value>
   </data>
   <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
     <value>Se ha encontrado un campo de relación no válido o un tipo de relación eliminado.</value>
@@ -209,7 +209,7 @@
     <value>No se ha encontrado ningún registro.</value>
   </data>
   <data name="NoRelationshipTypeFoundToLookup" xml:space="preserve">
-    <value>Campo de relación no válido encontrado; no se encontró ningún tipo de relación para buscar en la definición. </value>
+    <value>Campo de relación no válido encontrado; no se encontró ningún tipo de relación para buscar en la definición.</value>
   </data>
   <data name="NoResourceAccount" xml:space="preserve">
     <value>No se ha podido localizar ninguna cuenta de recursos para usted.</value>
@@ -245,13 +245,13 @@
     <value>Recurso no disponible para este usuario.</value>
   </data>
   <data name="SearchFilterInvalid" xml:space="preserve">
-    <value>Los filtros de búsqueda no son válidos en su parámetro de consulta del filtro: last_modified.</value>
+    <value>Los filtros de búsqueda no son válidos en su parámetro de consulta del filtro: [last_modified].</value>
   </data>
   <data name="ServerErrorOccurred" xml:space="preserve">
     <value>Se ha producido un error en el servidor. Intente su solicitud de nuevo más tarde</value>
   </data>
   <data name="SourceAssetUidModelNotEmpty" xml:space="preserve">
-    <value>Al utilizar la opción de copiar/reemplazar con sourceAssetUid, el modelo debe estar vacío.</value>
+    <value>Al utilizar la opción de copiar/reemplazar con [sourceAssetUid], el modelo debe estar vacío.</value>
   </data>
   <data name="SourceTargetNotSame" xml:space="preserve">
     <value>El activo de origen y el de destino no pueden ser iguales.</value>
@@ -260,15 +260,15 @@
     <value>Los tipos de activos de origen y destino deben ser los mismos.</value>
   </data>
   <data name="SourceUidNotExists" xml:space="preserve">
-    <value>sourceAssetUid no es válido o el activo no existe.</value>
+    <value>[sourceAssetUid] no es válido o el activo no existe.</value>
   </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>No autorizado</value>
   </data>
   <data name="_PageNumGT0" xml:space="preserve">
-    <value>El parámetro _pageNum debe ser mayor que 0.</value>
+    <value>El parámetro [_pageNum] debe ser mayor que 0.</value>
   </data>
   <data name="_PageSizeMax200" xml:space="preserve">
-    <value>El parámetro _pageSize tiene un valor máximo admitido de 200.</value>
+    <value>El parámetro [_pageSize] tiene un valor máximo admitido de 200.</value>
   </data>
 </root>

@@ -937,10 +937,14 @@ from	Asset A
 										SELECT TargetAsset.Uid as TargetAssetId
 										FROM  
 											[Intersect] I
-											Inner join [IntersectType] IT ON IT.ID = I.IntersectTypeId
-											inner join [Asset] TargetAsset on TargetAsset.Object = '{w.TargetObject}' and TargetAsset.ObjectID = {w.TargetObjectID}
+											inner join [Asset] TargetAsset on TargetAsset.Object = '{w.TargetObject}' and TargetAsset.ObjectID = {w.TargetObjectID} and
+											(I.ObjectAssetId = TargetAsset.Id or I.SubjectAssetId = TargetAsset.Id)
 										WHERE 
-											IT.ID = {w.IntersectTypeID} AND I.SubjectAssetId = A.Id and I.ObjectAssetId = TargetAsset.Id
+											I.IntersectTypeID = {w.IntersectTypeID}			   								   
+											and 
+											((I.SubjectAssetId = A.Id and I.ObjectAssetId = TargetAsset.Id) 
+											or 
+											(I.ObjectAssetId = A.Id and I.SubjectAssetId = TargetAsset.Id))
 										)
 							)"
 							);						

@@ -6,8 +6,8 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
 
-  <changeSet author="TKlok" id="Function.graph.GetBackwardLineage-v2">
-    <comment>GOV-19308 : Performance and Intersect join</comment>
+  <changeSet author="Puneet Gupta" id="Function.graph.GetBackwardLineage-v2.1">
+    <comment>GOV-19655,GOV-19308</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -37,7 +37,7 @@ RETURN
 				O.ID as ObjectID
 		from	@assetIds H
 				inner join Asset O on O.ID = H.ID
-				inner join PredicateIntersect I on I.ObjectAssetID = O.ID and I.PredicateType in (1, 12, 13) and I.IntersectID not in (select Id from @intersectIds)
+				inner join PredicateIntersect I on I.ObjectAssetID = O.ID and I.PredicateType in (1, 12, 13) and not exists (select 1 from @intersectIds ids where ids.Id = I.IntersectID)
 				inner join Asset S on S.ID = I.SubjectAssetID
 		union all
 		select	I.IntersectID,
@@ -51,8 +51,8 @@ RETURN
 				O.ID as ObjectID
 		from	b
 				inner join Asset O on O.ID = b.SubjectID and b.SubjectHop >= @endHop
-				inner join PredicateIntersect I on I.Object = O.Object and I.ObjectID = O.ObjectID and I.PredicateType in (1, 12, 13) and I.IntersectID <> b.IntersectID and I.IntersectID not in (select Id from @intersectIds)
-				inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+				inner join PredicateIntersect I on I.ObjectAssetID = O.ID and I.PredicateType in (1, 12, 13) and I.IntersectID <> b.IntersectID and not exists (select 1 from @intersectIds ids where ids.Id = I.IntersectID)
+				inner join Asset S on S.ID = I.SubjectAssetID
 	)
 	select * from b
 )

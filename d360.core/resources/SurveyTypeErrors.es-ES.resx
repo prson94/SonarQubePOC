@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DescriptionTooBig" xml:space="preserve">
-    <value>La descripción no debe superar los {maxDescriptionLength} caracteres</value>
+    <value>La [Description] no debe superar los {maxDescriptionLength} caracteres</value>
   </data>
   <data name="DuplicateName" xml:space="preserve">
     <value>Ya existe una encuesta con el mismo nombre para este tipo de activo.</value>
@@ -133,23 +133,26 @@
   <data name="DuplicateQuestionOptionValue" xml:space="preserve">
     <value>Introduzca un identificador de opción único para la opción núm. {index}.</value>
   </data>
+  <data name="InvalidAssetType" xml:space="preserve">
+    <value>Tipo de activo no válido. Las encuestas solo se pueden crear para Activos empresariales, Activos técnicos, Modelos y Reglas</value>
+  </data>
   <data name="InvalidDirection" xml:space="preserve">
-    <value>Valor no válido para el parámetro de dirección. Utilice asc|desc.</value>
+    <value>Valor no válido para el parámetro [direction]. Utilice asc|desc.</value>
   </data>
   <data name="InvalidDisplayStyle" xml:space="preserve">
-    <value>Estilo de visualización no válido.</value>
+    <value>No válida [DisplayStyle]</value>
   </data>
   <data name="MissingQuestionOptionName" xml:space="preserve">
-    <value>Falta un nombre en la opción núm. {index}</value>
+    <value>Falta un [Name] en la opción núm. {index}</value>
   </data>
   <data name="MissingQuestionOptions" xml:space="preserve">
     <value>Faltan una o más opciones.</value>
   </data>
   <data name="NameIsTooBig" xml:space="preserve">
-    <value>El nombre no debe superar los {maxNameLength} caracteres.</value>
+    <value>La [Name] no debe superar los {maxNameLength} caracteres.</value>
   </data>
   <data name="NameShouldBeNotEmpty" xml:space="preserve">
-    <value>El nombre no debe estar vacío.</value>
+    <value>[Name] no debe estar vacío.</value>
   </data>
   <data name="QuestionTypeNotFound" xml:space="preserve">
     <value>La pregunta de la encuesta con el UID especificado no existe.</value>
@@ -161,9 +164,9 @@
     <value>La encuesta con el UID especificado no existe.</value>
   </data>
   <data name="ValidForDaysIsTooBig" xml:space="preserve">
-    <value>ValidForDays debe ser de {maxValidForDays} días o menos.</value>
+    <value>[ValidForDays] debe ser de {maxValidForDays} días o menos.</value>
   </data>
   <data name="ValidForDaysIsTooSmall" xml:space="preserve">
-    <value>ValidForDays debe ser de {minValidForDays} días o más.</value>
+    <value>[ValidForDays]debe ser de {minValidForDays} días o más.</value>
   </data>
 </root>

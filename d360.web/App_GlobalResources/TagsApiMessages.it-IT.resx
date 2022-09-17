@@ -152,7 +152,7 @@
     <value>Il tag padre non deve essere incluso nei tag figli.</value>
   </data>
   <data name="TagExists" xml:space="preserve">
-    <value>Tag specificato non valido [lo stesso tag esiste già].</value>
+    <value>Tag specificato non valido (lo stesso tag esiste già).</value>
   </data>
   <data name="TagNotFound" xml:space="preserve">
     <value>Tag non trovato.</value>

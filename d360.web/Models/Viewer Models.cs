@@ -64,6 +64,8 @@ namespace d360.web.Models
         public string ResourceFirstName { get; set; }
 
         public string ResourceEmail { get; set; }
+
+		public string Url { get; set; }
     }
 
     public class LookupDataReadOnlyModel

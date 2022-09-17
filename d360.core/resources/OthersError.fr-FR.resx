@@ -125,7 +125,7 @@
     <value>La requête contient des combinaisons doubles d’assetUid, de metricAssetUid et d’effectiveDate. Vous devez envoyer des combinaisons uniques pour ces trois champs.</value>
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Valeur du paramètre assetTypeUid non valide</value>
+    <value>Valeur du paramètre [assetTypeUid] non valide</value>
   </data>
   <data name="InvalidMeasureFound" xml:space="preserve">
     <value>Mesure non valide trouvée</value>

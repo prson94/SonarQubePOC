@@ -146,13 +146,13 @@
     <value>No tiene permisos para añadir acciones a este tipo de activo.</value>
   </data>
   <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>El tipo de activo tiene una clase no válida.</value>
+    <value>El tipo de activo tiene una [Class] no válida.</value>
   </data>
   <data name="AssetTypeNotFound" xml:space="preserve">
     <value>No se pudo encontrar el tipo de activo con el UID {0}.</value>
   </data>
   <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>Se debe proporcionar el AssetTypeUid o AssetUid.</value>
+    <value>Se debe proporcionar el [AssetTypeUid] o [AssetUid].</value>
   </data>
   <data name="AssetTypeUidIsNotValid" xml:space="preserve">
     <value>{0} no es un UID de tipo de activo válido.</value>
@@ -161,7 +161,7 @@
     <value>{0} no es un UID de activo válido.</value>
   </data>
   <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>El tipo de acción tiene acciones asociadas. Habilite la solicitud en cascada que desee eliminar.</value>
+    <value>El tipo de acción tiene acciones asociadas. Habilite la solicitud en [cascade] que desee eliminar.</value>
   </data>
   <data name="ChildRecordExistsIssueType" xml:space="preserve">
     <value>El tipo de acción seleccionado ({0}) tiene acciones asociadas, por lo que no se puede eliminar.</value>
@@ -173,34 +173,34 @@
     <value>No se han proporcionado UID de tipos de activos.</value>
   </data>
   <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>Se necesita un UID de tipo de acción válido.</value>
+    <value>Se necesita un [ActionTypeUid] válido.</value>
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>AssetTypeUid no válido proporcionado.</value>
+    <value>[AssetTypeUid] proporcionado no válido.</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>AssetUid no válido proporcionado.</value>
+    <value>[AssetUid] proporcionado no válido.</value>
   </data>
   <data name="InvalidDirectionPassed" xml:space="preserve">
     <value>Dirección pasada en la solicitud no válida.</value>
   </data>
   <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>El valor de los flujos de trabajo Límite a Activo proporcionado no es válido.</value>
+    <value>El valor [_limitToActiveWorkflows] proporcionado no es válido.</value>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
     <value>Orden no válida pasada en la solicitud.</value>
   </data>
   <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} es un responsibilityTypeUid no válido para {1}.</value>
+    <value>{0} no es un [responsibilityTypeUid] válido para {1}.</value>
   </data>
   <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>El nombre proporcionado debe tener menos de 250 caracteres.</value>
+    <value>El [Name] proporcionado debe tener menos de 250 caracteres.</value>
   </data>
   <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Cadena vacía proporcionada para el nombre. No puede estar vacío.</value>
+    <value>Cadena vacía proporcionada para el [Name]. No puede estar vacío.</value>
   </data>
   <data name="NameNotNull" xml:space="preserve">
-    <value>El nombre es un campo obligatorio.</value>
+    <value>[Name] es un campo obligatorio.</value>
   </data>
   <data name="NoMatchingAllocation" xml:space="preserve">
     <value>No existe ninguna asignación de correspondencia para '{0}' en el tipo de acción '{1}'</value>

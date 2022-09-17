@@ -81,7 +81,7 @@ namespace d360.web.Controllers
 			if (model != null)
 			{
 				var parentItems = new List<SelectListItem>();
-				var parent = Company.GetParentObject(model.ObjectID, hierarchy);
+				var parent = Company.GetParentAsset(model.AssetID);
 				if (parent != null)
 				{
 					var ddlSelectedItem = Company.Query<dynamic>($@"

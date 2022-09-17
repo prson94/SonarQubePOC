@@ -368,30 +368,41 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
 			}
 
-			List<IndexableStatus> status = Company.Query<IndexableStatus>("SELECT Class, AssetTypeUid, Status, TargetCount, Start, LastUpdate FROM [queue].[Search] WHERE Active = 1").ToList();
-			status.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
-
+			List<IndexableCount> dbCounts = GetDatabaseCounts();
 			List<IndexableCount> esStatus = SearchSource.GetStatusList(Company.CurrentCompanyID);
-			esStatus.ForEach((es) =>
-			{
-				es.Class = SearchIndexer.GetClassFromCategory(es.ClassName);
-				IndexableStatus st = status.Find((s) => s.Class == es.Class && s.AssetTypeUid == es.AssetTypeUid);
+			List<IndexableStatus> queueStatus = Company.Query<IndexableStatus>("SELECT Class, AssetTypeUid, Status, TargetCount, Start, LastUpdate FROM [queue].[Search] WHERE Active = 1").ToList();
 
-				if (st != null)
+			IEnumerable<IndexableStatus> status = dbCounts.Select(db => {
+				var res = new IndexableStatus
 				{
-					st.CurrentCount = es.CurrentCount;
-				}
-				else
+					Class = db.Class,
+					ClassName = SearchIndexer.GetCategoryFromClass(db.Class),
+					AssetTypeUid = db.AssetTypeUid,
+					DatabaseCount = db.CurrentCount,
+					Status = 0
+				};
+
+				var st = queueStatus.Find((s) => s.Class == db.Class && s.AssetTypeUid == db.AssetTypeUid);
+				if(st != null)
 				{
-					status.Add(new IndexableStatus
-					{
-						Class = es.Class,
-						ClassName = es.ClassName,
-						AssetTypeUid = es.AssetTypeUid,
-						CurrentCount = es.CurrentCount,
-						Status = 0
-					});
+					res.TargetCount = st.TargetCount;
+					res.Start = st.Start;
+					res.LastUpdate = st.LastUpdate;
+					res.Status = st.Status;
 				}
+
+				var es = esStatus.Find((s) => s.ClassName == res.ClassName && s.AssetTypeUid == res.AssetTypeUid);
+				if (es != null)
+				{
+					res.CurrentCount = es.CurrentCount;
+				}
+
+				if(res.Class == (int)AssetTypeClass.Reference)
+				{
+					res.Class = (int)AssetTypeClass.ReferenceItemType;
+				}
+
+				return res;
 			});
 
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, status))).ConfigureAwait(false);
@@ -493,6 +504,69 @@ namespace d360.web.Controllers.V2
 			}
 
 			return visibleCategories;
+		}
+
+		private List<IndexableCount> GetDatabaseCounts()
+		{
+			var semanticTypesEnabled = GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API);
+
+			var sql = $@"WITH AssetTypesCTE (Class, AssetTypeUid, CurrentCount)
+				as
+				(
+					select at.Class, at.Uid, count(*)
+					from assettype at
+					inner join asset a on a.AssetTypeID = at.id
+					where at.class in (
+						{(int)AssetTypeClass.BusinessAsset}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy},
+						{(int)AssetTypeClass.Rule}, {(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.Group},
+						{(int)AssetTypeClass.Diagram}
+					)
+					group by at.Class, at.Uid
+					union all
+					select at.Class, at.Uid, count(*)
+					from assettype at
+					inner join asset a on a.AssetTypeID = at.id
+					inner join reporting.Global_Resource u on a.ObjectID = u.ResourceID
+					where at.class = {(int)AssetTypeClass.User} and a.State = {(int)State.Active} and u.State = {(int)CompanyResourceState.Active}
+					group by at.Class, at.Uid
+					union all
+					select Class, Uid, 1
+					from assettype
+					where Class = {(int)AssetTypeClass.Reference}
+				)
+				select Class, AssetTypeUid, CurrentCount
+				from AssetTypesCTE
+				union all
+				select Class, '00000000-0000-0000-0000-000000000000', sum(CurrentCount)
+				from AssetTypesCTE
+				group by Class
+				union all
+				SELECT 17, '00000000-0000-0000-0000-000000000000', sum(cnt) from (
+					select count(*) * 2 as cnt
+					from [dbo].[intersect] I
+					inner join IntersectType T on T.ID = I.IntersectTypeID
+					inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+					union all
+					select count(*) as cnt
+					from [dbo].[nym]
+				) Syns";
+
+			if(semanticTypesEnabled)
+			{
+				sql += @" union all
+				SELECT 18, '00000000-0000-0000-0000-000000000000', sum(cnt) from(
+					select count(distinct Qualifier) as cnt
+
+					from[dbo].[semantic]
+				) Sems";
+			}
+
+			List<IndexableCount> dbCounts = Company.Query<IndexableCount>(sql).ToList();
+
+			//Reclassify Reference/ReferenceItemType
+			dbCounts.Where((c) => c.Class == 9).ToList().ForEach((c) => c.Class = 14);
+
+			return dbCounts;
 		}
 
 		private string ValidateQueryRequest(QueryRequest queryRequest)

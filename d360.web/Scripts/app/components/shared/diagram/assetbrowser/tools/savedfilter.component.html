@@ -1,6 +1,5 @@
 ﻿<div class="saved-filter-controls">
-    <p-dropdown igDropdown
-                [(ngModel)]="selectedFilter"
+    <p-dropdown igDropdown #dropdown
                 [options]="savedFilters"
                 [showClear]="true"
                 [style]="{'width':'100%'}"

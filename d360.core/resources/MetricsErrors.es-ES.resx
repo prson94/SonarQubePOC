@@ -116,13 +116,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AllocationScoreTypeNotRecognised" xml:space="preserve">
-    <value>Asignación ScoreType no reconocida.  Valor {0}</value>
+    <value>[Allocation.ScoreType] no reconocida.  Valor {0}</value>
   </data>
   <data name="AllocationUidInvalid" xml:space="preserve">
-    <value>Debe proporcionar un AllocationUid válido.</value>
+    <value>Debe proporcionar un [AllocationUid] válido.</value>
   </data>
   <data name="ConditionGroupThresholdValue" xml:space="preserve">
-    <value>El grupo de condiciones en posición {0} debe contener un valor Umbral de entre 0 y 1</value>
+    <value>El grupo de condiciones en posición {0} debe contener un valor [Threshold] de entre 0 y 1</value>
   </data>
   <data name="ConditionOperatorNotValid" xml:space="preserve">
     <value>Una condición utiliza un operador ({0}) que no es válido para campos con un tipo de datos de {1}. </value>
@@ -182,7 +182,7 @@
     <value>No puede modificar el peso de esta métrica sin modificar también su fecha de entrada en vigor.</value>
   </data>
   <data name="FieldTypeNotFound" xml:space="preserve">
-    <value>FieldType no existe.</value>
+    <value>El tipo de campo no existe.</value>
   </data>
   <data name="GovernanceFieldCheck" xml:space="preserve">
     <value>Comprobación del campo Gestión</value>
@@ -200,7 +200,7 @@
     <value>Las instrucciones de la comprobación externa no pueden tener más de 500 caracteres.</value>
   </data>
   <data name="InvalidFieldTypeAsset" xml:space="preserve">
-    <value>FieldType no válido para este activo.</value>
+    <value>Tipo de campo no válido para este activo.</value>
   </data>
   <data name="InvalidFieldTypeGovernanceFieldCheck" xml:space="preserve">
     <value>El nombre del tipo de campo ({0}) utilizado en Comprobación del campo Gestión no existe en este tipo de activo.</value>
@@ -239,10 +239,10 @@
     <value>El nombre no puede tener más de 250 caracteres.</value>
   </data>
   <data name="NotProvideDataQualityUnderDefinition" xml:space="preserve">
-    <value>No puede proporcionar una propiedad del objeto DataQuality en Definición.</value>
+    <value>No puede proporcionar una propiedad del objeto [DataQuality] en [Definition].</value>
   </data>
   <data name="NotProvideGovernanceUnderDefinition" xml:space="preserve">
-    <value>No puede proporcionar una propiedad del objeto Gestión en Definición.</value>
+    <value>No puede proporcionar una propiedad del objeto [Governance] en [Definition].</value>
   </data>
   <data name="OneMoreValueDataQualityNotSupportDataType" xml:space="preserve">
     <value>Uno o más de los valores utilizados en sus filtros de DataQuality no son compatibles con el tipo de datos ({0}) del campo referenciado.</value>
@@ -266,28 +266,28 @@
     <value>No se ha encontrado la métrica principal.</value>
   </data>
   <data name="ProvideDataQualityUnderDefinition" xml:space="preserve">
-    <value>Debe proporcionar la propiedad del objeto DataQuality en Definición.</value>
+    <value>Debe proporcionar la propiedad del objeto [DataQuality] en [Definition].</value>
   </data>
   <data name="ProvideGovernanceUnderDefinition" xml:space="preserve">
-    <value>Debe proporcionar la propiedad del objeto Gestión en Definición.</value>
+    <value>Debe proporcionar la propiedad del objeto [Governance] en [Definition].</value>
   </data>
   <data name="ProvideValueForNotThresholdBasedScoring" xml:space="preserve">
-    <value>No debe proporcionar un valor para la propiedad Umbral, ya que la medición que está añadiendo no pertenece a una definición de puntuación basada en un umbral.</value>
+    <value>No debe proporcionar un valor para la propiedad [Threshold], ya que la medición que está añadiendo no pertenece a una definición de puntuación basada en un umbral.</value>
   </data>
   <data name="ReferInvalidFieldDataQualityFilters" xml:space="preserve">
     <value>Ha hecho referencia a un campo no válido como parte de sus filtros de DataQuality, ya sea porque no se encontró o porque está utilizando un operador incorrecto.</value>
   </data>
   <data name="ResultPathUidNotEmpty" xml:space="preserve">
-    <value>ResultPathUid no puede ser un identificador vacío.</value>
+    <value>[ResultPathUid] no puede ser un identificador vacío.</value>
   </data>
   <data name="ResultPathUidNotValid" xml:space="preserve">
-    <value>El ResultPathUid con el identificador {0} especificado no existe o no corresponde al tipo de activo que está puntuando.</value>
+    <value>El [ResultPathUid] con el identificador {0} especificado no existe o no corresponde al tipo de activo que está puntuando.</value>
   </data>
   <data name="ScoreDefinitionNotThresholdBased" xml:space="preserve">
-    <value>El grupo de condiciones en posición {0} no debe proporcionar un valor para la propiedad Umbral, ya que la medición que está añadiendo no pertenece a una medición basada en el umbral.</value>
+    <value>El grupo de condiciones en posición {0} no debe proporcionar un valor para la propiedad [Threshold], ya que la medición que está añadiendo no pertenece a una medición basada en un umbral.</value>
   </data>
   <data name="ThresholdRangeCheck" xml:space="preserve">
-    <value>El umbral debe tener un valor de entre 0 y 1</value>
+    <value>El [Threshold] debe tener un valor de entre 0 y 1</value>
   </data>
   <data name="UidGovernanceOwnerCheck" xml:space="preserve">
     <value>Comprobación del propietario Gestión del UID no se corresponde con un tipo de responsabilidad conocido.</value>

@@ -6,4 +6,8 @@ namespace d360.model.helpers.filters
     {
         string GetSqlExpression(Dictionary<string, object> sqlParams);
     }
+
+	public interface ISegmentPathFilterToken
+	{
+	}
 }

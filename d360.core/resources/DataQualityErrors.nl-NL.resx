@@ -134,7 +134,7 @@
     <value>{0}-indeling ongeldig. De juiste indeling is: {1}</value>
   </data>
   <data name="InvalidUpdateError" xml:space="preserve">
-    <value>U moet ten minste een van de volgende parameters opgeven: EvaluatedAssetUid, RunDate, PassCount, FailCount.</value>
+    <value>U moet ten minste een van de volgende opgeven: [EvaluatedAssetUid], [RunDate], [PassCount], [FailCount].</value>
   </data>
   <data name="RequiredFieldError" xml:space="preserve">
     <value>{0} is een vereist veld.</value>

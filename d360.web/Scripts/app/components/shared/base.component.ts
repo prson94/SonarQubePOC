@@ -455,7 +455,7 @@ export class BaseComponent {
 					$localize`Children`,
 					'children',
 					['fa-sitemap'],
-					`/asset/${this.baseAssetUid}`
+					`/asset/${this.baseAssetUid}/children`
 				);
 
 				this.secondaryNavService.showItem(this.childSidebar);
@@ -1325,16 +1325,16 @@ export class BaseComponent {
 						this.secondaryNavService.setCurrentArea(data.DisplayValue, res, $localize`Definition`);
 					});
 
-					let areaRootUriSegment: string = (objectName.toLowerCase() == 'policy') ? SiteUrlHelpers.SITE_URL_POLICY_ROOT : SiteUrlHelpers.SITE_URL_MODEL_ROOT;
+					let areaRootUriSegment: string = (objectName.toLowerCase() == 'policy') ? 'Policy' : 'Model';
 					let areaBreadcrumb = new Breadcrumb(
 						currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${areaRootUriSegment}`
 					);
 					this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
-
+					
 					this.breadcrumbsService.showBreadcrumb(
 						new Breadcrumb(
 							data.TypeName,
-							SiteUrlHelpers.getObjectUrl(objectTypeName, data.ObjectTypeId), undefined, objectTypeName.toUpperCase(), data.ObjectTypeId, undefined, undefined, true
+							SiteUrlHelpers.getAssetTypeUrl(data.AssetTypeUid), undefined, objectTypeName.toUpperCase(), data.ObjectTypeId, undefined, undefined, true
 						)
 					);
 

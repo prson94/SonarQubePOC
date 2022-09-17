@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.dbo.SecondaryNavSettings-v13">
-    <comment>GOV-18453</comment>
+  <changeSet author="TKlok" id="Procedure.dbo.SecondaryNavSettings-v15">
+    <comment>GOV-18453, GOV-19673</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -110,7 +110,7 @@ begin
 	if @uid is not null
 	begin
 		insert into @assetdata
-		select AD.ID,AD.AssetTypeID,AD.Uid,AT.Class, @uid, AD.Object,AD.Type,AD.TypeId, AD.ObjectID, AD.DisplayValue, 'Definition', at.Name 
+		select AD.ID,AD.AssetTypeID,AT.Uid,AT.Class, @uid, AD.Object,AD.Type,AD.TypeId, AD.ObjectID, AD.DisplayValue, 'Definition', at.Name 
 		from AssetDetail AD
 		inner join AssetType AT on AT.Id = AD.AssetTypeID
 		where AD.uid = @uid
@@ -169,9 +169,10 @@ begin
 		end
 	
 		-- has child
-		if exists(select a.uid from Asset A 
-					inner join [PredicateIntersect] ON	Subject = A.Object and SubjectID = A.ObjectID and PredicateType = 3
-					where A.uid = @assetUid
+		if exists(
+			select	a.uid 
+			from	Asset A 
+					inner join [PredicateIntersect] ON	SubjectAssetID = A.ID and PredicateType = 3 and A.uid = @assetUid
 		)
 		begin
 			update @navItems set HasChild = 1

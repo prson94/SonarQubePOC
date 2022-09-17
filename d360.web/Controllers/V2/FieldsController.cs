@@ -1413,7 +1413,7 @@ namespace d360.web.Controllers.V2
 				string objectType = "";
 				int objectId = 0;
 				string listAssetObjectType = "";
-				int listAssetObjectId = 0;
+				int listAssetTypeId = 0;
 
 				//Get Object/ObjectID of Assettype that will be listed
 				if (Guid.TryParse(uid, out Guid assetUid))
@@ -1422,7 +1422,7 @@ namespace d360.web.Controllers.V2
 					if (listAssetType != null)
 					{
 						listAssetObjectType = listAssetType.Object;
-						listAssetObjectId = listAssetType.ObjectID;
+						listAssetTypeId = listAssetType.ID;
 					}
 				}
 
@@ -1479,8 +1479,7 @@ namespace d360.web.Controllers.V2
 						A.Direction,
 						A.PredicateName, 
 						A.ObjectName, 
-						A.[Object], 
-						A.[ObjectID], 
+						A.ObjectAssetTypeID, 
 						B.FieldTypeID, 
 						B.[FriendlyName],
 						B.FieldTypeName,
@@ -1494,16 +1493,14 @@ namespace d360.web.Controllers.V2
 							p.[UID] as PredicateUID, 
 							p.[Name] as PredicateName, 
 							ot.[Name] as ObjectName, 
-							it.[Object] as [Object], 
-							it.[ObjectID] as [ObjectID] 
+							it.[ObjectAssetTypeID] as [ObjectAssetTypeID] 
 						FROM [dbo].[IntersectType] it 
 							join [dbo].[Predicate] p on it.[PredicateID] = p.[ID] 
-							join [dbo].[AssetType] ot on ot.[Object] = it.[Object] and ot.[ObjectId] = it.[ObjectID] 
-							join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
-						where it.[Subject] = @listAssetObjectType 
-						and it.[SubjectID] = @listAssetObjectId
-						and p.Type IN ({predicateTypes})
-						and it.[Object] in ('ArtifactType', 'TaxonomyType')
+							join [dbo].[AssetType] ot on ot.ID = it.ObjectAssetTypeID
+							join [dbo].[AssetType] st on st.ID = it.SubjectAssetTypeID
+						where it.[SubjectAssetTypeID] = @listAssetTypeId
+						  and p.Type IN ({predicateTypes})
+						  and it.ObjectClass in (4,18)
 						UNION ALL 
 						SELECT 
 							it.[ID], 
@@ -1511,16 +1508,14 @@ namespace d360.web.Controllers.V2
 							p.[UID] as PredicateUID, 
 							p.[Inverse] as PredicateName,
 							st.[Name] as ObjectName, 
-							it.[Subject] as [Object], 
-							it.[SubjectID] as [ObjectID] 
+							it.SubjectAssetTypeID as ObjectAssetTypeID
 						FROM [dbo].[IntersectType] it 
 							join [dbo].[Predicate] p on it.[PredicateID] = p.[ID] 
-							join [dbo].[AssetType] ot on ot.[Object] = it.[Object] and ot.[ObjectId] = it.[ObjectID] 
-							join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
-						 where it.[Object] = @listAssetObjectType 
-						 and it.[ObjectID] = @listAssetObjectId 
+							join [dbo].[AssetType] ot on ot.ID = it.ObjectAssetTypeID
+							join [dbo].[AssetType] st on st.ID = it.SubjectAssetTypeID
+						 where it.ObjectAssetTypeID = @listAssetTypeId
 						 and p.Type IN ({predicateTypes})
-						 and it.[Subject] in ('ArtifactType', 'TaxonomyType')
+						 and it.[SubjectClass] in (4,18)
 						) A LEFT OUTER JOIN
 					(SELECT 
 						ft.[ID] as FieldTypeID,
@@ -1528,24 +1523,23 @@ namespace d360.web.Controllers.V2
 						ft.[FriendlyName], 
 						ft.[Object], 
 						ft.[ObjectID], 
-						at.Object as LookupObject, 
-						ft.LookupObjectID,
+						ft.AssetTypeID, 
 						ft.Type,
 						at.Class,
 						at.Name
 					FROM [dbo].[FieldType] ft
 					INNER JOIN [dbo].[AssetType] at ON ft.LookupObjectType +'Type' = at.Object AND ft.LookupObjectID = at.ObjectID
 					WHERE ft.[ObjectID] = @objectId AND ft.[Object] = @objectType  
-					) B ON A.[Object] = B.LookupObject AND A.ObjectID = B.LookupObjectID";
+					) B ON A.ObjectAssetTypeID = B.AssetTypeID";
 
-				var parms = new
+				var parameters = new
 				{
-					listAssetObjectType,
-					listAssetObjectId,
+					listAssetTypeId,
 					objectType,
 					objectId
 				};
-				var list = await Company.QueryAsync<dynamic>(sql, parms, ApiTimeout);
+
+				var list = await Company.QueryAsync<dynamic>(sql, parameters, ApiTimeout);
 
 				return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new
 				{
@@ -2209,9 +2203,8 @@ namespace d360.web.Controllers.V2
 				if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")
 				{
 					string sql = "";
-					bool isHierarchyGrid = atype.Object == "TaxonomyType" || atype.Object == "PolicyType";
 
-					if (!isHierarchyGrid)
+					if (!atype.Hierarchical)
 					{
 						if (!string.IsNullOrEmpty(filter))
 						{
@@ -2250,7 +2243,7 @@ namespace d360.web.Controllers.V2
 						if (!string.IsNullOrEmpty(filter))
 						{
 							filter = "%" + filter + "%";
-							whereQuery += " and P.TextPath like @filter ";
+							whereQuery += " and P.DisplayPath like @filter ";
 						}
 
 						var hierarchyItem = Company.Query<dynamic>($@"
@@ -2268,7 +2261,7 @@ namespace d360.web.Controllers.V2
 										inner join AssetPath P on P.ID = A.ID
 										cross apply dbo.GetAssetLevelById(A.ID) LV
 								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
-								order by P.TextPath 
+								order by P.DisplayPath 
 								{pagingQuery}
 								option (maxrecursion 100)
 
@@ -2290,7 +2283,7 @@ namespace d360.web.Controllers.V2
 					var resultsAssets = await Company.Connection.QueryMultipleAsync(cmd);
 					var items = resultsAssets.Read<DDLSelectItem>().ToList();
 
-					if (isHierarchyGrid && (skip == null || skip == 0))
+					if (atype.Hierarchical && (skip == null || skip == 0))
 					{
 						items = items.Prepend(new DDLSelectItem { text = "- Root -", value = Guid.Empty.ToString() }).ToList();
 					}

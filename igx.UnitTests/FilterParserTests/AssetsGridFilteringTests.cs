@@ -229,7 +229,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("counter ne null", "F7.FormattedValue is not null", false)]
         public void ValidCounterTests(string expression, string expectedQuery, bool checkParamCount = true)
         {
-            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+			expectedQuery = $"({expectedQuery})";
+
+			Dictionary<string, object> sqlParams = new Dictionary<string, object>();
 
             List<int> filteredFields = new List<int>();
             string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
@@ -345,7 +347,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("number gt 100 and text eq '100' or boolean eq true", "F1.FormattedValue > @filter_1 and F5.FormattedValue = @filter_2 or F3.FormattedValue = @filter_3")]
         public void CheckSQLStatementForOperators(string expression, string expectedQuery)
         {
-            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+			expectedQuery = $"({expectedQuery})";
+
+			Dictionary<string, object> sqlParams = new Dictionary<string, object>();
             List<int> fieldIds = new List<int>();
             string sql = filterParser.Parse(expression, out sqlParams, out fieldIds);
             foreach (var param in sqlParams)
@@ -369,7 +373,9 @@ namespace igx.UnitTests.FilterExpressionTests
 
         public void CheckSQLStatementForOperatorsAndRelationships(string expression, string expectedQuery)
         {
-            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+			expectedQuery = $"({expectedQuery})";
+
+			Dictionary<string, object> sqlParams = new Dictionary<string, object>();
             List<int> fieldIds = new List<int>();
             string sql = filterParser.Parse(expression, out sqlParams, out fieldIds);
             foreach (var param in sqlParams)
@@ -387,7 +393,8 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("text_field ne 'Data'", "(sql_expression <> @filter_1 or sql_expression is null)")]
         public void CheckDefaultFilterStringValidation(string expression, string expectedQuery)
         {
-            var filterDataProvider = new FilterDataProvider(GetCompany());
+			expectedQuery = $"({expectedQuery})";
+			var filterDataProvider = new FilterDataProvider(GetCompany());
 
             var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, false);
             filterExpressionParser.OverrideAllowedDefaultFields(new List<DefaultFilter> { new DefaultFilter("text_field", "sql_expression", SqlFieldType.Text) });
@@ -504,8 +511,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("UpdatedOn ct '2021-08-10'", "CONVERT(VARCHAR,A.UpdatedOn,120) like @filter_1")] //UI can use contains on date
         public void SystemFieldsTest(string expression, string expected)
         {
+			expected = $"({expected})";
 
-            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+			Dictionary<string, object> sqlParams = new Dictionary<string, object>();
             List<int> filteredFields = new List<int>();
             var sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sql == expected);
@@ -539,7 +547,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("PathField ct '*GC 103'", "Node.Segments.exist('/path/segment[last()][contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 1")]
         public void TestAssetPathFields(string expression, string expectedQuery)
         {
-            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+			expectedQuery = $"({expectedQuery})";
+
+			Dictionary<string, object> sqlParams = new Dictionary<string, object>();
             var value = filterParser.Parse(expression, out sqlParams, out _);
 
             Assert.True(value == expectedQuery);

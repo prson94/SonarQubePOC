@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CanNotProvideStateOfNewUser" xml:space="preserve">
-    <value>Impossible de fournir l’état d’un nouvel utilisateur</value>
+    <value>Impossible de fournir la valeur [State] pour un nouvel utilisateur</value>
   </data>
   <data name="CurrentPasswordWrong" xml:space="preserve">
     <value>Votre mot de passe n’a pas été mis à jour, car le mot de passe actuel fourni ne correspond pas.</value>
@@ -125,25 +125,25 @@
     <value>Le type de champ pour la clé [{0}] est introuvable pour cet actif</value>
   </data>
   <data name="FirstNameMissing" xml:space="preserve">
-    <value>Vous devez fournir un prénom</value>
+    <value>Vous devez fournir un [FirstName]</value>
   </data>
   <data name="FirstNameTooLong" xml:space="preserve">
-    <value>Le prénom doit avoir une longueur inférieure ou égale à 250 caractères</value>
+    <value>[FirstName] doit avoir une longueur inférieure ou égale à 250 caractères</value>
   </data>
   <data name="InternalServerErrorMsg" xml:space="preserve">
     <value>Une erreur de serveur interne est survenue</value>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
-    <value>Le format d’adresse e-mail du nom d’utilisateur n’est pas valide</value>
+    <value>[Username] n’est pas dans un format d’e-mail valide</value>
   </data>
   <data name="LastNameMissing" xml:space="preserve">
-    <value>Vous devez fournir un nom de famille</value>
+    <value>Vous devez fournir un [LastName]</value>
   </data>
   <data name="LastNameTooLong" xml:space="preserve">
-    <value>Le nom de famille doit avoir une longueur inférieure ou égale à 250 caractères</value>
+    <value>[LastName] doit avoir une longueur inférieure ou égale à 250 caractères</value>
   </data>
   <data name="MissingCurrentPasswordParameter" xml:space="preserve">
-    <value>La valeur du paramètre CurrentPassword est manquante.</value>
+    <value>La valeur du paramètre [CurrentPassword] est manquante.</value>
   </data>
   <data name="NewAndCurrentNotSame" xml:space="preserve">
     <value>Le nouveau mot de passe peut être différent du mot de passe actuel</value>

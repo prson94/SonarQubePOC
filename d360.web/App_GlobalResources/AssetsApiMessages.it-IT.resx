@@ -158,7 +158,7 @@
     <value>ExecutionUid</value>
   </data>
   <data name="ExportTemplateMessage" xml:space="preserve">
-    <value>Il parametro UID del modello di esportazione deve essere utilizzato con l'intestazione 'Accept' impostata su 'application/octet-stream".</value>
+    <value> Il parametro [_exportTemplateUid] deve essere utilizzato con l'intestazione "Accept" impostata su "application/octet-stream".</value>
   </data>
   <data name="ExportTemplateUidNotExist" xml:space="preserve">
     <value>Il modello di esportazione con l'UID '{0}' non esiste.</value>
@@ -170,7 +170,7 @@
     <value>Tipo di campo '{0}' non supportato. I tipi di campo consentiti sono ComplexRelationLookup, RefListRelationship e OwnershipLookup</value>
   </data>
   <data name="FilterResrictPredicateUid" xml:space="preserve">
-    <value>Il filtro che utilizza _relationFilter non può essere utilizzato con il parametro _predicateUid</value>
+    <value>Il filtro che utilizza [_relationFilter] non può essere utilizzato con il parametro [_predicateUid]</value>
   </data>
   <data name="GovernRoleReferListNotExists" xml:space="preserve">
     <value>L'elenco di riferimento del ruolo di governance con l'UID '{0}' non esiste</value>
@@ -191,7 +191,7 @@
     <value>TIPO DI VISUALIZZAZIONE ESPORTAZIONE SPECIFICATA NON VALIDA</value>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
-    <value>{0} non è un campo _order valido</value>
+    <value>{0} non è un campo [_order] valido</value>
   </data>
   <data name="InvalidPageNumber" xml:space="preserve">
     <value>Il numero di pagina non è un numero valido.</value>
@@ -200,34 +200,34 @@
     <value>Il numero di pagina non è valido. Deve essere maggiore di 0.</value>
   </data>
   <data name="InvalidParameteforUI" xml:space="preserve">
-    <value>Valore booleano non valido per il parametro 'forUI'</value>
+    <value>Valore booleano non valido per il parametro [forUI]</value>
   </data>
   <data name="InvalidParameterIncludeTotal" xml:space="preserve">
     <value>Includi totale non è un valore booleano valido.</value>
   </data>
   <data name="InvalidParameteruseUidUrls" xml:space="preserve">
-    <value>Valore booleano non valido per il parametro 'useUidUrls'</value>
+    <value>Valore booleano non valido per il parametro [useUidUrls]</value>
   </data>
   <data name="InvalidParameteruseUnflattedStructure" xml:space="preserve">
-    <value>Valore booleano non valido per il parametro 'useUnflattedStructure'</value>
+    <value>Valore booleano non valido per il parametro [useUnflattedStructure]</value>
   </data>
   <data name="InvalidParameteruseuseFriendlyNames" xml:space="preserve">
-    <value>Valore booleano non valido per il parametro 'useFriendlyNames'</value>
+    <value>Valore booleano non valido per il parametro [useFriendlyNames]</value>
   </data>
   <data name="InvalidParameter_order" xml:space="preserve">
-    <value>Valore campo non valido per il parametro '_order'.</value>
+    <value>Valore non valido per il parametro [_order].</value>
   </data>
   <data name="InvalidParameter_pageNum" xml:space="preserve">
-    <value>Valore intero non valido per il parametro '_pageNum'</value>
+    <value>Valore intero non valido per il parametro [_pageNum]</value>
   </data>
   <data name="InvalidParameter_pageSize" xml:space="preserve">
-    <value>Valore intero non valido per il parametro '_pageSize'</value>
+    <value>Valore intero non valido per il parametro [_pageSize]</value>
   </data>
   <data name="InvalidParentAssetUid" xml:space="preserve">
-    <value>ParentAssetUid {0} non valido</value>
+    <value>[ParentAssetUid] {0} non è valido</value>
   </data>
   <data name="InvalidResourceUID" xml:space="preserve">
-    <value>resourceUid fornito non valido</value>
+    <value>[resourceUid] fornito non valido</value>
   </data>
   <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
     <value>UID utente o gruppo non valido come non proprietario trasmesso nella richiesta</value>

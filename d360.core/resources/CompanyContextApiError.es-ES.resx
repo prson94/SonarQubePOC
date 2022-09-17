@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DuplicateExecutionItem" xml:space="preserve">
-    <value>Identificadores de elementos de ejecución duplicados: {0}. Los identificadores de un mismo lote deben ser únicos.</value>
+    <value>Duplicar [ExecutionItemUid]: {0}. Los identificadores de un mismo lote deben ser únicos.</value>
   </data>
   <data name="FieldNotAllowedMultipleValies" xml:space="preserve">
     <value>{0} no permite la selección de varios valores</value>

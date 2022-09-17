@@ -122,7 +122,7 @@
     <value>Weergavewaarden opnieuw bouwen voor alle assets is uw omgeving.</value>
   </data>
   <data name="CompanyRebuildJobToken_SearchIndex" xml:space="preserve">
-    <value>Index zoeken</value>
+    <value>Zoek Index</value>
   </data>
   <data name="CompanyRebuildJobToken_SearchIndex_Desc" xml:space="preserve">
     <value>Hiermee wordt de full-text index voor alle assets binnen uw omgeving opnieuw gebouwd. Het kan tot zestig minuten duren om de index volledig opnieuw te bouwen.</value>
@@ -242,7 +242,7 @@
     <value>is onwaar</value>
   </data>
   <data name="OperatorIsInBand" xml:space="preserve">
-    <value>is in bereik</value>
+    <value>is in band</value>
   </data>
   <data name="OperatorIsTrue" xml:space="preserve">
     <value>is waar</value>
@@ -305,7 +305,7 @@
     <value>Formulier</value>
   </data>
   <data name="WorkflowActivityType_HTTPRequest" xml:space="preserve">
-    <value>HTTP-aanvraag</value>
+    <value>HTTP-request</value>
   </data>
   <data name="WorkflowActivityType_HTTPResponse" xml:space="preserve">
     <value>HTTP-reactie</value>

@@ -167,7 +167,7 @@
                                                                           [diagramType]="displayConfiguration.DiagramType"
                                                                           [options]="filter_AvailableOptions"
                                                                           [filterModel]="displayConfiguration"
-                                                                          (applySavedFilter)="savedfilter_Apply($event)">
+                                                                          (applySavedFilter)="applySavedFilter($event)">
                                             </d3s-assetbrowser-savedfilter>
                     
                                             <button *ngIf="panelModel.AlertVisible"

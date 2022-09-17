@@ -119,7 +119,7 @@
     <value>La risorsa con l'UID fornito non esiste.</value>
   </data>
   <data name="BodyNotEmpty" xml:space="preserve">
-    <value>È necessario fornire un valore per la proprietà Body.</value>
+    <value>È necessario fornire un valore per la proprietà [Body].</value>
   </data>
   <data name="comment" xml:space="preserve">
     <value>commento</value>
@@ -143,7 +143,7 @@
     <value>L'utente non è l'autore di questo commento né l'amministratore e non può aggiornarlo.</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>È necessario fornire un UID valido per la proprietà AssetUid.</value>
+    <value>È necessario fornire un [Uid] valido per la proprietà [AssetUid].</value>
   </data>
   <data name="NoContentProvided" xml:space="preserve">
     <value>Nessun contenuto fornito con cui creare un commento.</value>

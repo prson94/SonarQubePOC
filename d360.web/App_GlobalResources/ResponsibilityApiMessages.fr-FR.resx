@@ -119,13 +119,13 @@
     <value>Allocation introuvable.</value>
   </data>
   <data name="assigneeUidFilterValidation" xml:space="preserve">
-    <value>Afin d’utiliser le filtre _assigneeuid, le filtre _assetTypeUid ou _assetUid doit également être spécifié.</value>
+    <value>Afin d’utiliser le filtre [_assigneeuid], le filtre [_assetTypeUid] ou [_assetUid] doit également être spécifié.</value>
   </data>
   <data name="DuplicateResponsibilityRule" xml:space="preserve">
     <value>UID de règle de responsabilité non uniques : {0}. Les identifiants d’une même table doivent être uniques.</value>
   </data>
   <data name="InvalidAssetTypeClass" xml:space="preserve">
-    <value>Valeur AssetTypeClass non valide. [{0}] n’est pas valide.</value>
+    <value>Valeur [AssetTypeClass] non valide. [{0}] n’est pas valide.</value>
   </data>
   <data name="InvalidPermissionProvided" xml:space="preserve">
     <value>Autorisation fournie non valide. [{0}]</value>
@@ -134,7 +134,7 @@
     <value>L’UID '{0}' n’est ni une ressource ni un groupe valide.</value>
   </data>
   <data name="InvalidResponsibilityUid" xml:space="preserve">
-    <value>Vous n’avez pas fourni d’UID ResponsibilityType valide pour cette requête.</value>
+    <value>Vous n’avez pas fourni d’UID du type de responsabilité valide pour cette requête.</value>
   </data>
   <data name="InvalidTestType" xml:space="preserve">
     <value>Type de test non valide. Les valeurs valides sont 'when' et 'then'</value>

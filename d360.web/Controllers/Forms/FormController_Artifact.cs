@@ -110,7 +110,7 @@ namespace d360.web.Controllers
             {
                 if (parentType != null)
                 {
-                    var parent = Company.GetParentObject(a.ObjectID, obj);
+                    var parent = Company.GetParentAsset(a.ID);
 
                     var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                     var parents = Company.Query<SelectListItem>($@"select 

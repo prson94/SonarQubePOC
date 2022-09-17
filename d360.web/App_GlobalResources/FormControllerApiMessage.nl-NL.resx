@@ -184,9 +184,6 @@
   <data name="AuthenticationFailed" xml:space="preserve">
     <value>Verificatie mislukt</value>
   </data>
-  <data name="bottomConstant" xml:space="preserve">
-    <value>Onder.</value>
-  </data>
   <data name="Contract" xml:space="preserve">
     <value>Contract</value>
   </data>
@@ -284,13 +281,13 @@
     <value>Grammaticatoewijzing is aangepast.</value>
   </data>
   <data name="InvalidCreateType" xml:space="preserve">
-    <value>Ongeldig/niet ondersteund maaktype</value>
+    <value>Ongeldig/niet ondersteund creatie type</value>
   </data>
   <data name="InvalidDeleteType" xml:space="preserve">
     <value>Ongeldig/niet ondersteund verwijdertype</value>
   </data>
   <data name="InvalidEditorType" xml:space="preserve">
-    <value>Ongeldig of niet-geïmplementeerde bewerktype</value>
+    <value>Ongeldig of niet-geïmplementeerde editor type</value>
   </data>
   <data name="InvalidEditType" xml:space="preserve">
     <value>Ongeldig/niet ondersteund bewerktype</value>
@@ -496,8 +493,11 @@
   <data name="ShortcutAdded" xml:space="preserve">
     <value>Snelkoppeling is toegevoegd</value>
   </data>
-  <data name="ShortcutAlreadySorted" xml:space="preserve">
-    <value>Snelkoppeling is al gesorteerd naar de {0}</value>
+  <data name="ShortcutAlreadySortedBottom" xml:space="preserve">
+    <value>Snelkoppeling is al gesorteerd naar de onderkant.</value>
+  </data>
+  <data name="ShortcutAlreadySortedTop" xml:space="preserve">
+    <value>Snelkoppeling is al gesorteerd naar de bovenkant.</value>
   </data>
   <data name="ShortcutDeleted" xml:space="preserve">
     <value>Snelkoppeling is verwijderd.</value>
@@ -540,9 +540,6 @@
   </data>
   <data name="TaxonomyTypeLevel" xml:space="preserve">
     <value>Taxonomietypeniveau</value>
-  </data>
-  <data name="TopConstant" xml:space="preserve">
-    <value>Boven.</value>
   </data>
   <data name="TypeConstant" xml:space="preserve">
     <value>Type</value>

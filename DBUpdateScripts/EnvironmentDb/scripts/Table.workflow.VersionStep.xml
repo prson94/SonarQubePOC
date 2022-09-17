@@ -49,4 +49,27 @@ END
 	</rollback>
   </changeSet>
 
+    <changeSet author="Puneet Gupta" id="Table.workflow.VersionStep-Indices-v1.0">
+    <comment>GOV-19660</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'ix_workflowversionstep_versionid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [ix_workflowversionstep_versionid] ON [workflow].[VersionStep] ([VERSIONID] ASC)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF EXISTS (select 1 from [sys].[indexes] i where name = 'ix_workflowversionstep_versionid')
+BEGIN
+	drop index [ix_workflowversionstep_versionid] ON [workflow].[VersionStep]
+END
+]]>
+	</rollback>
+  </changeSet>
+  
 </databaseChangeLog>

@@ -119,7 +119,7 @@
     <value>L’actif avec l’UID fourni n’existe pas.</value>
   </data>
   <data name="BodyNotEmpty" xml:space="preserve">
-    <value>Vous devez fournir une valeur pour la propriété Body.</value>
+    <value>Vous devez fournir une valeur pour la propriété [Body].</value>
   </data>
   <data name="comment" xml:space="preserve">
     <value>commentaire</value>
@@ -143,7 +143,7 @@
     <value>Vous n’êtes ni le créateur ni l’administrateur de ce commentaire et ne pouvez pas le mettre à jour.</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Vous devez fournir un UID valide pour la propriété AssetUid.</value>
+    <value>Vous devez fournir un [Uid] valide pour la propriété [AssetUid].</value>
   </data>
   <data name="NoContentProvided" xml:space="preserve">
     <value>Aucun contenu fourni pour créer un commentaire.</value>

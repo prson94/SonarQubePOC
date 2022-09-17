@@ -122,7 +122,7 @@
     <value>Il tipo di risorsa esiste già</value>
   </data>
   <data name="AssetTypeWithUidExists" xml:space="preserve">
-    <value>Esiste già un tipo di risorsa con l'UID specificato.</value>
+    <value>Esiste già un tipo di risorsa con [Uid] specificato.</value>
   </data>
   <data name="CheckRequest" xml:space="preserve">
     <value>Controllare la richiesta e riprovare.</value>
@@ -134,7 +134,7 @@
     <value>Non è stato fornito un predicato adeguato in base alla classe del tipo di risorsa.</value>
   </data>
   <data name="InvalidDisplayFormat" xml:space="preserve">
-    <value>DisplayFormat fornito non è valido.</value>
+    <value>[DisplayFormat] fornito non valido.</value>
   </data>
   <data name="InvalidModelDepth" xml:space="preserve">
     <value>Profondità massima non valida. Il livello del modello specificato deve essere un valore compreso tra 1 e 10.</value>
@@ -143,22 +143,22 @@
     <value>Profondità massima non valida. Il livello della policy specificata deve essere un valore compreso tra 1 e 10.</value>
   </data>
   <data name="InvalidParentUid" xml:space="preserve">
-    <value>ParentUid fornito non valido.</value>
+    <value>[ParentUid] fornito non valido.</value>
   </data>
   <data name="InvalidRequestHttpErrorTitle" xml:space="preserve">
     <value>Richiesta non valida</value>
   </data>
   <data name="InvalidStyle" xml:space="preserve">
-    <value>Stile icona fornito non valido.</value>
+    <value>Valore [IconStyle] non valido fornito.</value>
   </data>
   <data name="NotFoundBasedOnClass" xml:space="preserve">
-    <value>Tipo di risorsa non trovato in base alla classe fornita.</value>
+    <value>Tipo di risorsa non trovato in base a [Class] fornito.</value>
   </data>
   <data name="ErrorNameTaken" xml:space="preserve">
     <value>Il nome è già in uso. Provarne un altro.</value>
   </data>
   <data name="NotFoundBasedOnUid" xml:space="preserve">
-    <value>Tipo di risorsa non trovato in base all'UID fornito.</value>
+    <value>Tipo di risorsa non trovato in base a [Uid] fornito.</value>
   </data>
   <data name="NotFoundGeneric" xml:space="preserve">
     <value>Tipo di risorsa non trovato</value>
@@ -167,7 +167,7 @@
     <value>La relazione o il tipo di relazione esiste: il tipo di risorsa o qualsiasi risorsa di questo tipo partecipa alla relazione.</value>
   </data>
   <data name="TransformationClassRestriction" xml:space="preserve">
-    <value>L'opzione Usa come trasformazione può essere impostata solo su tipi di risorse che sono di classe Aziendale o Tecnica.</value>
+    <value>L'opzione [UseAsTransformation] può essere impostata solo su tipi di risorse che sono di classe Aziendale o Tecnica.</value>
   </data>
   <data name="TransformationLimitExceeded" xml:space="preserve">
     <value>Il numero totale di tipi di risorse supera il limite di trasformazione.</value>
@@ -176,16 +176,16 @@
     <value>Classe di risorse non supportata.</value>
   </data>
   <data name="MatchingIconStyle" xml:space="preserve">
-    <value>Lo stile icona ForeColor e BackColor non possono avere lo stesso valore.</value>
+    <value>[IconStyle.BackColor] e [IconStyle.ForeColor] non possono avere lo stesso valore.</value>
   </data>
   <data name="AutoDisplayParentRestriction" xml:space="preserve">
-    <value>L'opzione Visualizza automaticamente l'entità principale può essere impostata solo per i tipi di risorsa che sono di classe Aziendale o Tecnica e sono figli di un altro tipo di risorsa.</value>
+    <value>L'opzione [AutoDisplayParent] può essere impostata solo per i tipi di risorsa che sono di classe Aziendale o Tecnica e sono figli di un altro tipo di risorsa.</value>
   </data>
   <data name="MissingFlowObjectType" xml:space="preserve">
-    <value>FlowObjectType è un campo obbligatorio per il tipo di risorsa con la classe Diagramma.</value>
+    <value>[FlowObjectType] è un campo obbligatorio per il tipo di risorsa con la classe Diagramma.</value>
   </data>
   <data name="UnsupportedFlowObjectType" xml:space="preserve">
-    <value>FlowObjectType non supporta la classe {0}.</value>
+    <value>[FlowObjectType] non supporta la classe {0}.</value>
   </data>
   <data name="GovernanceRoleNotSet" xml:space="preserve">
     <value>Impossibile aggiungere il tipo di risorsa del diagramma di classe. L'UID di riferimento del ruolo di governance non è impostato.</value>
@@ -200,7 +200,7 @@
     <value>{0} fornito non valido</value>
   </data>
   <data name="CanEditParentClassRestriction" xml:space="preserve">
-    <value>L'opzione Può modificare l'entità principale può essere impostata solo per i tipi di risorsa che sono di classe Aziendale o Tecnica e sono figli di un altro tipo di risorsa.</value>
+    <value>L'opzione [CanEditParent] può essere impostata solo per i tipi di risorsa che sono di classe Aziendale o Tecnica e sono figli di un altro tipo di risorsa.</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Direzione dell'ordine non valida trasmessa nella richiesta.</value>
@@ -215,13 +215,13 @@
     <value>Predicato</value>
   </data>
   <data name="InvalidAssetType" xml:space="preserve">
-    <value>AssetType specificato non valido</value>
+    <value>[assetType] specificato non valido</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
     <value>UID risorsa non valido nei parametri.</value>
   </data>
   <data name="InvalidMaximumDepthTitle" xml:space="preserve">
-    <value>Profondità massima non valida</value>
+    <value>Valore [HierarchyMaximumDepth] non valido</value>
   </data>
   <data name="InvalidOwnerUid" xml:space="preserve">
     <value>UID proprietario non valido nei parametri.</value>
@@ -245,13 +245,13 @@
     <value>Valore non valido per il parametro [objID]</value>
   </data>
   <data name="InvalueValue_includeFields" xml:space="preserve">
-    <value>Valore non valido {0} nel parametro _includeFields; il campo con questo nome non è stato trovato.</value>
+    <value>Valore {0} non valido nel parametro [_includeFields]; il campo con questo nome non è stato trovato.</value>
   </data>
   <data name="UnableParse_IncludeFields" xml:space="preserve">
-    <value>Impossibile analizzare il valore di _includeFields</value>
+    <value>Impossibile analizzare il valore di [_includeFields]</value>
   </data>
   <data name="UseAsAdminUseWithAssetUid" xml:space="preserve">
-    <value>Il parametro UseAsAdmin può essere utilizzato solo con _assetUid specificato.</value>
+    <value>Il parametro [UseAsAdmin] può essere utilizzato solo con [_assetUid] specificato.</value>
   </data>
   <data name="WrongNameHttpErrorTitle" xml:space="preserve">
     <value>Nome errato</value>
@@ -293,10 +293,10 @@
     <value>{0} errata</value>
   </data>
   <data name="_parentuidNotValidAsset" xml:space="preserve">
-    <value>_parentUid con valore {0} non corrispondente a una risorsa valida.</value>
+    <value>[_parentUid] con valore {0} non corrispondente a una risorsa valida.</value>
   </data>
   <data name="_parentUidNotValidUid" xml:space="preserve">
-    <value>Il parametro _parentUid deve essere un GUID valido, essere impostato su null o non essere presente.</value>
+    <value>Il parametro [_parentUid] deve essere un GUID valido, essere impostato su null o non essere presente.</value>
   </data>
   <data name="BadRequest" xml:space="preserve">
     <value>Richiesta non valida</value>

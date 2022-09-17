@@ -119,13 +119,13 @@
     <value>Toewijzing niet gevonden.</value>
   </data>
   <data name="assigneeUidFilterValidation" xml:space="preserve">
-    <value>Als u het filter _assigneeuid wilt gebruiken, moet ook het filter _assetTypeUid of _assetUid filter zijn opgegeven.</value>
+    <value>Als u het filter [_assigneeuid] wilt gebruiken, moet ook het filter [_assetTypeUid] of [_assetUid] zijn opgegeven.</value>
   </data>
   <data name="DuplicateResponsibilityRule" xml:space="preserve">
     <value>Geen unieke UID's voor verantwoordelijkheidsregel: {0}. ID's binnen een tabel moeten uniek zijn.</value>
   </data>
   <data name="InvalidAssetTypeClass" xml:space="preserve">
-    <value>Ongeldige AssetTypeClass. [{0}] is niet geldig.</value>
+    <value>Ongeldige [AssetTypeClass]. [{0}] is ongeldig.</value>
   </data>
   <data name="InvalidPermissionProvided" xml:space="preserve">
     <value>Ongeldige machtiging opgegeven. [{0}]</value>
@@ -134,13 +134,13 @@
     <value>UID {0} is geen geldige resource of groep.</value>
   </data>
   <data name="InvalidResponsibilityUid" xml:space="preserve">
-    <value>U hebt geen geldige ResponsibilityType-UID opgegeven voor deze aanvraag.</value>
+    <value>U hebt geen geldige Verantwoordelijkheidstype-UID opgegeven voor deze aanvraag.</value>
   </data>
   <data name="InvalidTestType" xml:space="preserve">
-    <value>Ongeldig testtype. Geldige waarden zijn wanneer en dan</value>
+    <value>Ongeldig testtype. Geldige waarden zijn ‘wanneer’ en ‘dan’</value>
   </data>
   <data name="ReponsibilityOverrideExists" xml:space="preserve">
-    <value>Wijziging van verantwoordelijkheid voor {0} bestaat al.</value>
+    <value>Verantwoordelijkheid overschrijving voor “{0}” bestaat al.   </value>
   </data>
   <data name="ReposibilityTypeNotValidForAsset" xml:space="preserve">
     <value>Verantwoordelijkheidstype niet geldig voor huidige asset.</value>

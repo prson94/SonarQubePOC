@@ -109,6 +109,30 @@ end
 	</rollback>
   </changeSet>
 
+    <changeSet author="Puneet Gupta" id="Table.dbo.Predicate-Indices-v2.0">
+    <comment>GOV-19660</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_Predicate_UID_Type')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Predicate_UID_Type] ON [dbo].[Predicate] ( [Uid] ASC,[Type] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_Predicate_UID_Type')
+BEGIN
+	drop index [IX_Predicate_UID_Type] ON [dbo].[Predicate]
+END
+]]>
+	</rollback>
+  </changeSet>
+  
+
   <changeSet author="sdooley" id="Table.dbo.Predicate-v2-RemoveTrigger">
     <sql dbms="mssql"
             endDelimiter="\nGO"

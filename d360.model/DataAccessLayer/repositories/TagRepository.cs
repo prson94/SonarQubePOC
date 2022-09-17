@@ -294,7 +294,7 @@ namespace d360.model.DataAccessLayer
 								var filterDataProvider = new FilterDataProvider(companyContext);
 								var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.Tags);
 								var sqlParams = new Dictionary<string, object>();
-								whereClauses.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out _) + ")");
+								whereClauses.Add(filterExpressionParser.Parse(value, out sqlParams, out _));
 								foreach (var item in sqlParams)
 								{
 									dbArgs.Add(item.Key, item.Value);
@@ -843,7 +843,7 @@ namespace d360.model.DataAccessLayer
 								var filterDataProvider = new FilterDataProvider(companyContext);
 								var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.TagDetails);
 								var sqlParams = new Dictionary<string, object>();
-								whereClauses.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out _) + ")");
+								whereClauses.Add(filterExpressionParser.Parse(value, out sqlParams, out _));
 								foreach (var item in sqlParams)
 								{
 									dbArgs.Add(item.Key, item.Value);

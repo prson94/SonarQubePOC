@@ -161,10 +161,10 @@
     <value>De naam die wordt gebruikt wanneer deze veldwaarde voor uw publiek wordt weergegeven.</value>
   </data>
   <data name="FriendlyName_ErrorRequired" xml:space="preserve">
-    <value>Omschrijving is vereist.</value>
+    <value>Beschrijvende naam is vereist.</value>
   </data>
   <data name="FriendlyName_Name" xml:space="preserve">
-    <value>Omschrijving</value>
+    <value>Beschrijvende naam</value>
   </data>
   <data name="ID_Description" xml:space="preserve">
     <value>De unieke ID voor dit item.</value>

@@ -134,7 +134,7 @@
     <value>Formato no válido de {0}. El formato correcto es: {1}</value>
   </data>
   <data name="InvalidUpdateError" xml:space="preserve">
-    <value>Debe proporcionar al menos uno de los siguientes datos: EvaluatedAssetUid, RunDate, PassCount, FailCount.</value>
+    <value>Debe proporcionar al menos uno de los siguientes: [EvaluatedAssetUid], [RunDate], [PassCount], [FailCount].</value>
   </data>
   <data name="RequiredFieldError" xml:space="preserve">
     <value>{0} es un campo obligatorio.</value>

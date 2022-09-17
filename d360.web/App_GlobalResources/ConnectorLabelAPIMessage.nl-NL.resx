@@ -134,7 +134,7 @@
     <value>Fout bij bijwerken van connectorlabel</value>
   </data>
   <data name="LabelAlreadyExists" xml:space="preserve">
-    <value>Ongeldig connectorlabel opgegeven [er bestaat al een connectorlabel met deze naam].</value>
+    <value>Ongeldig connectorlabel opgegeven (er bestaat al een connectorlabel met deze naam).</value>
   </data>
   <data name="LabelMax40Char" xml:space="preserve">
     <value>Maximumlengte van label is 40 tekens.</value>

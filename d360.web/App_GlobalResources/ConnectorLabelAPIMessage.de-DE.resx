@@ -134,7 +134,7 @@
     <value>Fehler beim Aktualisieren der Konnektor-Bezeichnung</value>
   </data>
   <data name="LabelAlreadyExists" xml:space="preserve">
-    <value>Ungültige Konnektor-Bezeichnung angegeben [Es ist bereits ein Konnektor mit dieser Bezeichnung vorhanden.]</value>
+    <value>Ungültige Konnektor-Bezeichnung angegeben (Es ist bereits ein Konnektor mit dieser Bezeichnung vorhanden.)</value>
   </data>
   <data name="LabelMax40Char" xml:space="preserve">
     <value>Die Bezeichnung darf maximal 40 Zeichen enthalten.</value>

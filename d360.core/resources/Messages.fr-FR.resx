@@ -134,10 +134,10 @@
     <value>Un ou plusieurs champs d’attributs JSON référencent le champ que vous tentez de supprimer.</value>
   </data>
   <data name="Error_Duplicate_Relationship_Uid" xml:space="preserve">
-    <value>Identifiants d’UID de relation en double : {0}. Les identifiants d’un même lot doivent être uniques.</value>
+    <value>Identifiants d’UID de relation en double : {0}. Les identifiants [Uid] d’un même lot doivent être uniques.</value>
   </data>
   <data name="Error_Responsibility_ApplyToType_False" xml:space="preserve">
-    <value>Doit utiliser les conditions When lorsque la valeur ApplyToType est définie sur false.</value>
+    <value>Doit utiliser les conditions [When] lorsque la valeur [ApplyToType] est définie sur false.</value>
   </data>
   <data name="Error_Parameter_InvalidUidValue" xml:space="preserve">
     <value>Le paramètre '{0}' a une valeur GUID non valide</value>
@@ -149,7 +149,7 @@
     <value>Type d’actif dont l’UID {0} est introuvable</value>
   </data>
   <data name="AssetTypeInvalidClass" xml:space="preserve">
-    <value>Classe de type d’actif non valide. Les classes autorisées sont {0}</value>
+    <value>Valeur [Class] non valide. Les classes autorisées sont {0}</value>
   </data>
   <data name="AssetNotFound" xml:space="preserve">
     <value>Actif dont l’UID est {0} est introuvable</value>

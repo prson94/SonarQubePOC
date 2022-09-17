@@ -119,13 +119,13 @@
     <value>Zuordnung nicht gefunden.</value>
   </data>
   <data name="assigneeUidFilterValidation" xml:space="preserve">
-    <value>Um den Filter _assigneeuid zu verwenden, muss auch der Filter _assetTypeUid oder _assetUid angegeben werden.</value>
+    <value>Um den Filter [_assigneeuid] zu verwenden, muss auch der Filter [_assetTypeUid] oder [_assetUid] angegeben werden.</value>
   </data>
   <data name="DuplicateResponsibilityRule" xml:space="preserve">
     <value>Keine eindeutigen Aufgabenregel-UIDs: {0}. Kennungen müssen innerhalb einer Tabelle eindeutig sein.</value>
   </data>
   <data name="InvalidAssetTypeClass" xml:space="preserve">
-    <value>AssetTypeClass ungültig. [{0}] ist nicht gültig.</value>
+    <value>[AssetTypeClass] ungültig. [{0}] ist nicht gültig.</value>
   </data>
   <data name="InvalidPermissionProvided" xml:space="preserve">
     <value>Ungültige Berechtigung angegeben. [{0}]</value>
@@ -134,7 +134,7 @@
     <value>UID '{0}' ist keine gültige Ressource oder Gruppe.</value>
   </data>
   <data name="InvalidResponsibilityUid" xml:space="preserve">
-    <value>Sie haben keine gültige ResponsibilityType-UID für diese Anforderung angegeben.</value>
+    <value>Sie haben keine gültige Aufgabentyp-UID für diese Anforderung angegeben.</value>
   </data>
   <data name="InvalidTestType" xml:space="preserve">
     <value>Ungültiger Testtyp. Gültige Werte sind 'when' und 'then'</value>

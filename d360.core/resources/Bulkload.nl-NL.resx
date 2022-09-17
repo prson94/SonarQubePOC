@@ -116,10 +116,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Lineage" xml:space="preserve">
-    <value>Verwantschapslijn</value>
+    <value>Lineage</value>
   </data>
   <data name="LineageTechnical" xml:space="preserve">
-    <value>Verwantschapslijn: technisch</value>
+    <value>Lineage: technisch</value>
   </data>
   <data name="Object_Default" xml:space="preserve">
     <value>Standaard</value>

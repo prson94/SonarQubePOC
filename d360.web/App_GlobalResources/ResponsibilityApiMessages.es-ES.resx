@@ -119,13 +119,13 @@
     <value>Asignación no encontrada.</value>
   </data>
   <data name="assigneeUidFilterValidation" xml:space="preserve">
-    <value>Para utilizar el filtro _assigneeuid es necesario especificar también el filtro _assetTypeUid o _assetUid.</value>
+    <value>Para utilizar el filtro [_assigneeuid] es necesario especificar también el filtro [_assetTypeUid] o [_assetUid].</value>
   </data>
   <data name="DuplicateResponsibilityRule" xml:space="preserve">
     <value>UID de regla de responsabilidad no únicos: {0}. Los identificadores deben ser únicos dentro de una tabla.</value>
   </data>
   <data name="InvalidAssetTypeClass" xml:space="preserve">
-    <value>AssetTypeClass no válido. [{0}] no es válido.</value>
+    <value>[AssetTypeClass] no válido. [{0}] no es válido.</value>
   </data>
   <data name="InvalidPermissionProvided" xml:space="preserve">
     <value>Permiso proporcionado no válido. [{0}]</value>
@@ -134,7 +134,7 @@
     <value>El UID '{0}' no es un recurso o grupo válidos.</value>
   </data>
   <data name="InvalidResponsibilityUid" xml:space="preserve">
-    <value>No ha proporcionado un UID válido de ResponsibilityType para esta solicitud.</value>
+    <value>No ha proporcionado un UID válido de tipo de responsabilidad para esta solicitud.</value>
   </data>
   <data name="InvalidTestType" xml:space="preserve">
     <value>Tipo de prueba no válido. Los valores válidos son 'when' y 'then'</value>

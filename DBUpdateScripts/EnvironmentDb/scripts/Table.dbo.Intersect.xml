@@ -137,6 +137,29 @@ end
 	</rollback>
   </changeSet>
 
+    <changeSet author="Puneet Gupta" id="Table.dbo.Intersect-Indices-v2.0">
+    <comment>GOV-19660</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_Intersect_IntersectTypeID_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Intersect_IntersectTypeID_Include] ON [dbo].[Intersect] ( [IntersectTypeID] ASC ) INCLUDE([ObjectAssetID], [SubjectAssetID])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_Intersect_IntersectTypeID_Include')
+BEGIN
+	drop index [IX_Intersect_IntersectTypeID_Include] ON [dbo].[Intersect]
+END
+]]>
+	</rollback>
+  </changeSet>
+  
   
   <changeSet author="Core" id="Table.dbo.Intersect-Intersect_AfterDelete-v1">
     <sql dbms="mssql"

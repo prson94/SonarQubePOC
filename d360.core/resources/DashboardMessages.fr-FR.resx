@@ -134,22 +134,22 @@
     <value>Erreur de mise à jour du tableau de bord</value>
   </data>
   <data name="InvalidDashboardDashboardAssetTypeUid" xml:space="preserve">
-    <value>UID de type Asset fourni non valide.</value>
+    <value>Valeur [AssetTypeUid] fournie non valide.</value>
   </data>
   <data name="InvalidDashboardDashboardAssetUid" xml:space="preserve">
-    <value>UID d’actif fourni non valide.</value>
+    <value>Valeur [AssetUid] fournie non valide.</value>
   </data>
   <data name="InvalidDashboardLocation" xml:space="preserve">
-    <value>L’option Emplacement doit être l’une des valeurs suivantes : Liste, Détail ou Page d’accueil</value>
+    <value>L’option [Location] doit être l’une des valeurs suivantes : Liste, Détail ou Page d’accueil</value>
   </data>
   <data name="InvalidDashboardType" xml:space="preserve">
-    <value>L’option ReportType doit être l’une des valeurs suivantes : DqPlus ou PowerBi</value>
+    <value>L’option [ReportType] doit être l’une des valeurs suivantes : DqPlus ou PowerBi</value>
   </data>
   <data name="InvalidDashboardUid" xml:space="preserve">
     <value>UID non valide fourni.</value>
   </data>
   <data name="InvalidDefinitionValue" xml:space="preserve">
-    <value>Valeur JSON non valide pour le champ "Définition"</value>
+    <value>Valeur JSON non valide pour [Definition]</value>
   </data>
   <data name="NameExists" xml:space="preserve">
     <value>Un tableau de bord portant le même nom existe déjà</value>

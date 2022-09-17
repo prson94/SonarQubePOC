@@ -116,12 +116,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="InvalidActionUid" xml:space="preserve">
-    <value>Ungültiger Aktionstyp-UID-Wert angegeben</value>
+    <value>Ungültiger [actionTypeUid]-Wert angegeben</value>
   </data>
   <data name="InvalidLimitProvided" xml:space="preserve">
-    <value>Ungültiger Wert für 'Auf aktive Workflows begrenzen' angegeben</value>
+    <value>Ungültiger [_limitToActiveWorkflows]-Wert angegeben</value>
   </data>
   <data name="InvalidResourceUid" xml:space="preserve">
-    <value>Ungültiger Ressourcen-UID-Wert angegeben</value>
+    <value>Ungültiger [resourceUid]-Wert angegeben</value>
   </data>
 </root>

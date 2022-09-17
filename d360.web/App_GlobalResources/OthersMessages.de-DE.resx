@@ -122,7 +122,7 @@
     <value>Zuordnungskennung mit Wert {0} entspricht keiner gültigen Zuordnung.</value>
   </data>
   <data name="AllocationUidNotCorrectlyFormatted" xml:space="preserve">
-    <value>allocationUid {0} ist keine korrekt formatierte Kennung.</value>
+    <value>[allocationUid] {0} ist keine korrekt formatierte Kennung.</value>
   </data>
   <data name="AssetIdentifierDoesnotValidAsset" xml:space="preserve">
     <value>Asset-Kennung mit Wert {0} entspricht keinem gültigen Asset.</value>
@@ -134,7 +134,7 @@
     <value>Die Asset-UID muss angegeben werden.</value>
   </data>
   <data name="AssetuidNotCorrectlyFormatted" xml:space="preserve">
-    <value>assetUid {0} ist keine korrekt formatierte Kennung.</value>
+    <value>[assetUid] {0} ist keine korrekt formatierte Kennung.</value>
   </data>
   <data name="BadRequestSubmitted" xml:space="preserve">
     <value>Ungültige Anforderung übermittelt</value>
@@ -170,13 +170,13 @@
     <value>Diese E-Mail-Adresse scheint ungültig zu sein.</value>
   </data>
   <data name="InvalidFieldFilterParameter" xml:space="preserve">
-    <value>Ungültige Felder in Ihren Filter-Abfrageparametern: {0}.</value>
+    <value>Ungültige Felder in Ihren [filter]-Abfrageparametern: {0}.</value>
   </data>
   <data name="InvalidFieldSelectQueryParameter" xml:space="preserve">
-    <value>Ungültige Felder in Ihren Auswahl-Abfrageparametern: {0}.</value>
+    <value>Ungültige Felder in Ihren [select]-Abfrageparametern: {0}.</value>
   </data>
   <data name="InvalidField_OrderParameter" xml:space="preserve">
-    <value>Ungültige Felder in Ihrem _order-Abfrageparameter.</value>
+    <value>Ungültige Felder in Ihrem [_order]-Abfrageparameter.</value>
   </data>
   <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
     <value>Ungültiges Beziehungsfeld in ungültigem oder gelöschtem Beziehungstyp gefunden.</value>
@@ -245,13 +245,13 @@
     <value>Ressource ist für diesen Benutzer nicht verfügbar.</value>
   </data>
   <data name="SearchFilterInvalid" xml:space="preserve">
-    <value>Suchfilter in Ihrem Filter-Abfrageparameter sind ungültig: last_modified.</value>
+    <value>Suchfilter in Ihrem Filter-Abfrageparameter sind ungültig: [last_modified].</value>
   </data>
   <data name="ServerErrorOccurred" xml:space="preserve">
     <value>Es ist ein Serverfehler aufgetreten. Bitte versuchen Sie es zu einem späteren Zeitpunkt erneut.</value>
   </data>
   <data name="SourceAssetUidModelNotEmpty" xml:space="preserve">
-    <value>Bei Verwendung der Option zum Kopieren/Ersetzen mit sourceAssetUid muss das Modell leer sein.</value>
+    <value>Bei Verwendung der Option zum Kopieren/Ersetzen mit [sourceAssetUid] muss das Modell leer sein.</value>
   </data>
   <data name="SourceTargetNotSame" xml:space="preserve">
     <value>Quell- und Ziel-Asset dürfen nicht identisch sein.</value>
@@ -260,15 +260,15 @@
     <value>Quell- und Ziel-Asset-Typen müssen identisch sein.</value>
   </data>
   <data name="SourceUidNotExists" xml:space="preserve">
-    <value>sourceAssetUid ist ungültig oder Asset ist nicht vorhanden.</value>
+    <value>[sourceAssetUid] ist ungültig oder Asset ist nicht vorhanden.</value>
   </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Nicht autorisiert</value>
   </data>
   <data name="_PageNumGT0" xml:space="preserve">
-    <value>Parameter _pageNum muss größer als 0 sein.</value>
+    <value>Parameter [_pageNum] muss größer als 0 sein.</value>
   </data>
   <data name="_PageSizeMax200" xml:space="preserve">
-    <value>Für Parameter _pageSize wird ein Wert von maximal 200 unterstützt.</value>
+    <value>Für Parameter [_pageSize] wird ein Wert von maximal 200 unterstützt.</value>
   </data>
 </root>

@@ -119,7 +119,7 @@
     <value>El activo con el UID proporcionado no existe.</value>
   </data>
   <data name="BodyNotEmpty" xml:space="preserve">
-    <value>Debe proporcionar un valor para la propiedad Body.</value>
+    <value>Debe proporcionar un valor para la propiedad [Body].</value>
   </data>
   <data name="comment" xml:space="preserve">
     <value>Comentario</value>
@@ -143,7 +143,7 @@
     <value>Usted no es ni el creador de este comentario ni el administrador y no puede actualizarlo.</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Debe proporcionar un UID válido para la propiedad AssetUid.</value>
+    <value>Debe proporcionar un [Uid] válido para la propiedad [AssetUid].</value>
   </data>
   <data name="NoContentProvided" xml:space="preserve">
     <value>No se ha proporcionado contenido con el que crear un comentario.</value>
