@@ -666,7 +666,8 @@ namespace d360.web.Controllers.V2
 
 					select	cteParents.AssetTypeUid, nav.Icon, nav.ImageIconUrl
 					from	cteParents
-							inner join SiteNav nav1 on cteParents.Subject = nav1.Object and cteParents.SubjectID = nav1.ObjectID
+							inner join AssetType sat on sat.ID = cteParents.SubjectAssetTypeID
+							inner join SiteNav nav1 on sat.[Object] = nav1.Object and sat.ObjectID = nav1.ObjectID
 							inner join SiteNav nav on nav1.ParentID = nav.ID
 					UNION ALL
 					select	at.Uid as AssetTypeUid, nav.Icon, nav.ImageIconUrl
