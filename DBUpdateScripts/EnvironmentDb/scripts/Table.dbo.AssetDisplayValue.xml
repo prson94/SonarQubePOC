@@ -35,5 +35,18 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  
+  <changeSet author="Andrii Kunetskyi" id="Table.dbo.AssetDisplayValue-v2">
+	<preConditions onFail="MARK_RAN">
+        <indexExists indexName="IX_AssetDisplayValue_DisplayValuePrefix_AssetID" />
+    </preConditions>
+    <dropIndex tableName="AssetDisplayValue" indexName="IX_AssetDisplayValue_DisplayValuePrefix_AssetID" />
+  </changeSet>
+  
+  <changeSet author="Andrii Kunetskyi" id="Table.dbo.AssetDisplayValue-v3">
+	<createIndex clustered="true" indexName="IX_AssetDisplayValue_AssetID" tableName="AssetDisplayValue">
+      <column name="AssetID"/>
+	</createIndex>
+  </changeSet>
 
 </databaseChangeLog>
