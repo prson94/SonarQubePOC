@@ -1589,8 +1589,10 @@ namespace d360.web.Controllers.V2
 			try
 			{
 				var intersectTypes = await Company.QueryAsync<dynamic>($@"select value, title from utility.GetIntersectTypesByType(@assetTypeUid) t 
-																		  where not exists(select 1 from intersecttypedetail itd where itd.uid = t.uid and ((itd.object = @ObjectType and itd.ObjectID = 0) or (itd.subject = @ObjectType and itd.subjectID = 0)))",
-																		  new { assetTypeUid, ObjectType = SystemObjects.ReferenceItemType.ToString() }, ApiTimeout);
+																		  where not exists(select 1 from intersecttypedetail itd 
+																		  where itd.uid = t.uid and ((itd.objectclass = @AssetTypeClass and itd.ObjectAssetTypeID = 0) or (itd.subjectclass = @AssetTypeClass and itd.subjectAssetTypeID = 0)))",
+																		  new { assetTypeUid, AssetTypeClass = AssetTypeClass.Reference }, ApiTimeout);
+
 
 				return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
 			}

@@ -933,8 +933,8 @@ namespace d360.model.DataAccessLayer
 						}
 
 						var relationRefListInfo = Company.Query<dynamic>(
-							"select T.ID as IntersectTypeID from IntersectType T where T.uid = @intersectUid and (T.ObjectClass = @AssetType or T.SubjectClass = @AssetType)",
-							new { intersectUid = i.IntersectTypeUid, AssetType = SystemObjects.ReferenceItemType }
+							"select T.ID as IntersectTypeID from IntersectType T where T.uid = @intersectUid and ((T.objectclass = @AssetTypeClass and T.ObjectAssetTypeID = 0) or (T.SubjectClass = @AssetTypeClass and T.subjectAssetTypeID = 0))",
+							new { intersectUid = i.IntersectTypeUid, AssetTypeClass = AssetTypeClass.Reference}
 						).SingleOrDefault();
 
 						if (relationRefListInfo != null)
@@ -2287,12 +2287,16 @@ namespace d360.model.DataAccessLayer
 
 			foreach (var relFt in definition.Fields.Where(x => x.FieldTypeName.StartsWith("Related Item.")))
 			{
-				bool isSubject = Company.Query<bool>(@"declare @object nvarchar(255)
-					declare @objectid int
-					select @object = object, @objectid = objectid from AssetType where uid = @AssetTypeUid
+				bool isSubject = Company.Query<bool>(@"
+					declare @AssetTypeid int,
+					@AssetTypeClass int;
+
+					select @AssetTypeid = ID,
+							@AssetTypeClass = Class
+					from AssetType where uid = @AssetTypeUid
 
 					select count(1) from intersecttype
-					where id = @FieldTypeID and Subject = @object and SubjectID = @objectid",
+					where id = @FieldTypeID and SubjectAssetTypeID = @AssetTypeid and SubjectClass = @AssetTypeClass",
 					new { relFt.FieldTypeID, relFt.AssetTypeUid })
 					.FirstOrDefault();
 
