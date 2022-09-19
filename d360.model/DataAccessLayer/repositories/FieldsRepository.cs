@@ -932,12 +932,12 @@ namespace d360.model.DataAccessLayer
 							return;
 						}
 
-						var RelationRefListInfo = Company.Query<dynamic>(
-							"select T.ID as IntersectTypeID from IntersectType T where T.uid = @intersectUid and ((T.object = @AssetType and T.ObjectID = 0) or (T.Subject = @AssetType and T.SubjectID = 0))",
-							new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid, AssetType = SystemObjects.ReferenceItemType.ToString() }
+						var relationRefListInfo = Company.Query<dynamic>(
+							"select T.ID as IntersectTypeID from IntersectType T where T.uid = @intersectUid and (T.ObjectClass = @AssetType or T.SubjectClass = @AssetType)",
+							new { intersectUid = i.IntersectTypeUid, AssetType = SystemObjects.ReferenceItemType }
 						).SingleOrDefault();
 
-						if (RelationRefListInfo != null)
+						if (relationRefListInfo != null)
 						{
 							hasDefinitionError = true;
 							return;
