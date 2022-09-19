@@ -232,4 +232,21 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Ladchenko" id="Table.dbo.Theme-Data-v2">
+	<sql dbms="mssql"
+			 endDelimiter="\nGO"
+			 splitStatements="true"
+			 stripComments="false">
+		<![CDATA[
+			update 	[Theme]
+			set		[PrimaryButtonBackColor] = '#6D18DD'
+			where	Uid = 'AAAAAAAA-0000-0000-0000-000000000001'
+		]]>
+	</sql>
+	<rollback>
+		<![CDATA[
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>
