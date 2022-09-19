@@ -304,6 +304,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                     item.color = obj.color;
                     item.label = obj.name;
                 }
+				item.value = item.Value;
             });
 
 			let value: any = this.field.Value;
@@ -319,10 +320,11 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             if (value) {
                 this.lookupSelectedValue = [];
                 this.field.Items.forEach((item) => {
-					item['value'] = item['Value'];
                     this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
                 });
                 this.selectSingleItem(null, { value: null });
+            } else {
+				this.field.Items = [];
             }
 			this.form.controls[this.field.FieldName].setValue(value);
 
