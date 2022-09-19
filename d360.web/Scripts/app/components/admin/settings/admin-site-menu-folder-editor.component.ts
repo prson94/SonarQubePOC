@@ -60,7 +60,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	folderItems: SiteNav[] = [];
 	formMode = FormMode.Default;
 	matchTypes: any[];
-	checkBoxAllForNewFolderItemsDisabled: boolean = true;
 	savingInProgress: boolean = false;
 	hasHeader: boolean = false;
 	iconType = 'icon';
@@ -500,7 +499,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
 		let i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
 		this.itemsFromTarget.push(i);
-		this.checkBoxAllForNewFolderItemsDisabled = false;
 		this.setRequiredCount();
 	}
 
@@ -528,8 +526,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			this.itemsFromTarget = this.itemsFromTarget.sort((a, b) => a.Title.localeCompare(b.Title));
 			this._tempSelectedFolderItems = [];
 			this.setRequiredCount();
-			this.checkBoxAllForNewFolderItemsDisabled = false;
 		}
+		this.itemsFromTarget = [...this.itemsFromTarget];
 		this.cdRef.markForCheck();
 	}
 
@@ -680,7 +678,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	selectAllAvailableFolderItems($event, table: Table) {
 		this._tempSelectedFolderItems = [];
 		for (let i = table.first; i < table.first + table.rows; i++) {
-			this._tempSelectedFolderItems.push(this.availableItems.find((item) => item.ID == table.selection[i].ID));
+			this._tempSelectedFolderItems.push(this.availableItems.find((item) => item.ID === table.selection[i]?.ID)); // eslint-disable-line
 		}
 	}
 
