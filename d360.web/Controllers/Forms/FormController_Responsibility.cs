@@ -680,18 +680,20 @@ for json path, WITHOUT_ARRAY_WRAPPER
 
 			var fieldTypeArray = JArray.Parse(fieldTypeString);
 
-            var intersectTypes = Company.Query<dynamic>($@"
-select	ID as [value],
-        uid,
+            var intersectTypes = Company.Query<dynamic>(@"
+select	d.ID as [value],
+        d.uid,
 		case
-			when (Subject = @type and SubjectID = @id) then ObjectName + ' (' + coalesce(PredicateName, '') + ')'
+			when (subjectType.Object = @type and subjectType.ObjectID = @id) then ObjectName + ' (' + coalesce(PredicateName, '') + ')'
 			else SubjectName + ' (' + coalesce(PredicateInverse, 'inverse') + ')'
 		end as label
-from	IntersectTypeDetail 
-where	(Subject = @type and SubjectID = @id) 
-		or (Object = @type and ObjectID = @id)
+from	IntersectTypeDetail d
+	join dbo.AssetType subjectType on d.SubjectAssetTypeID = subjectType.Id
+	join dbo.AssetType objectType on d.ObjectAssetTypeID = objectType.Id
+where	(subjectType.Object = @type and subjectType.ObjectID = @id) 
+		or (objectType.Object = @type and objectType.ObjectID = @id)
 order by	case
-				when (Subject = @type and SubjectID = {id}) then ObjectName + ' (' + coalesce(PredicateName, '') + ')'
+				when (subjectType.Object = @type and subjectType.ObjectID = @id) then ObjectName + ' (' + coalesce(PredicateName, '') + ')'
 				else SubjectName + ' (' + coalesce(PredicateInverse, 'inverse') + ')'
 			end", new { type = type.ToString(), id });
 

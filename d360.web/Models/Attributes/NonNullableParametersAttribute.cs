@@ -49,6 +49,10 @@ namespace d360.web.Models.Attributes
                 {
                     return (Enum.Parse(destinationType, rawValue.ToString()) != null);
                 }
+				else if (destinationType == typeof(Guid))
+				{
+					return Guid.TryParse((string)rawValue, out var result);
+				}
                 else
                 {
                     return (Convert.ChangeType(rawValue, destinationType, formatProvider) != null);
