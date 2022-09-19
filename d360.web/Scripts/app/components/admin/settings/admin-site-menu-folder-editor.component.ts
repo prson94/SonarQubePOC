@@ -642,7 +642,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 	}
 
-	lastLoadedEvent: any;
 	addPermissionAssets() {
 		if (!this.selectedPermissionAssets) {
 			this.selectedPermissionAssets = [];
@@ -658,6 +657,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		});
 		this.permissionAssetsTotalCount = this.permissionAssets.length;
 		this._tempSelectedPermissionAssets = [];
+		this.selectedPermissionAssets = [...this.selectedPermissionAssets];
 
 		this.cdRef.markForCheck();
 	}
