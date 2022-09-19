@@ -4851,16 +4851,15 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 										drop table if exists #HashData
 										select AssetID, Ap.KeyPathHash 
-										into #HashData
+											into #HashData
 										from api.ExecutionAsset ea
-										inner join Asset A on a.ID = ea.AssetID
-										inner join AssetPath AP on AP.ID = A.ID
-
+											inner join Asset A on a.ID = ea.AssetID
+											inner join AssetPath AP on AP.ID = A.ID
 										where ea.ExecutionID = @executionid 
 										and ItemNumber between @beginItemNumber and @endItemNumber 
 
-										select count(1) from Asset A
-										inner join AssetPath ap on ap.ID = a.ID
+										select count(1) from Asset A WITH (NOLOCK)
+										inner join AssetPath ap WITH (NOLOCK) on ap.ID = a.ID
 										inner join #HashData hd on hd.assetid != a.ID and hd.KeyPathHash = ap.KeyPathHash
 										where a.AssetTypeID = @assetTypeId
 										option(recompile)
@@ -4869,7 +4868,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 									if (invalidHashState > 0)
 									{
-										throw new DuplicateHashException("Key values match another asset under a different set of key fields.");
+										throw new DuplicateHashException("Key values match another asset under a different set of key fields or 2 or more concurrent requests contains same key field values.");
 									}
 
 									AddMeasurement(metrics, "CheckKeyHashes", sw.ElapsedMilliseconds, ++step);
