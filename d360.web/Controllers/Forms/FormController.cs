@@ -1364,7 +1364,7 @@ order by Sort, title";
 			var loadItemColumns = Company.Query<dynamic>(itemColumnSql, new { id }).ToList();
 			var columnCount = loadColumns.Count();
 
-			var document = new ExcelDocument($"Errors-{id}.xlsx")
+			var document = new ExcelDocument($"Errors-{id}")
 			{
 				new ExcelSheet("Items")
 				{
@@ -1381,8 +1381,6 @@ order by Sort, title";
 							.Select(lic => lic.Value)
 							.Concat(new []{ row.StatusMessage })
 						)).ToList(),
-
-					FreezeColumns = columnCount,
 
 					ColumnSettings = {
 						{
@@ -1418,7 +1416,7 @@ order by Sort, title";
 				bytes = Encoding.Default.GetBytes(fileString);
 			}
 
-			return File(bytes, "application/vnd.ms-excel", $"{load.DateCompleted.ToString()}.xlsx");
+			return File(bytes, "application/vnd.ms-excel", $"{load.DateCompleted}.xlsx");
 		}
 
 		#endregion
