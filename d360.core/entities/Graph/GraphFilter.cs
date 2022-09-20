@@ -98,7 +98,9 @@ namespace d360.core.entities.Graph
 
         public int? DiagramType { get; set; }
 
-        public List<FilterSetttingAssetType> AssetTypes { get; set; }
+		public int Descendancy { get; set; } = 1;
+
+		public List<FilterSetttingAssetType> AssetTypes { get; set; }
 
         public List<FilterSetttingPredicate> Predicates { get; set; }
 

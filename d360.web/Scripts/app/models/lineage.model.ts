@@ -314,7 +314,6 @@ export class AssetBrowserFilterModel {
     SelectedAssetTypes: number[] = [];
     SelectedPredicates: number[] = [];
     SelectedResponsibilityTypes: number[] = [];
-    DisplayDescendantAssets: boolean = true;
     Descendancy: FilterDescendancyMode = FilterDescendancyMode.None;
 }
 
@@ -421,7 +420,8 @@ export class StoredAssetBrowserFilterModel {
     assetTypes: StoredAssetBrowserAssetTypeFilterModel[] = [];
     predicates: StoredAssetBrowserPredicateFilterModel[] = [];
     responsibilityTypes: StoredAssetBrowserResponsibilityTypeFilterModel[] = [];
-    ancestryMode: number;
+	ancestryMode: number;
+	descendancy: number;
     numberOfHops: number;
     diagramType: number;
     isDefault: boolean;
