@@ -5,12 +5,69 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Function.dbo.GetAssetBreadcrumbs-v2.2">
+  <changeSet author="Puneet Gupta" id="Function.dbo.GetAssetBreadcrumbs-v2.3">
+  <comment>GOV-19676</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter function [dbo].[GetAssetBreadcrumbs]
+(		        
+	@assetUid uniqueidentifier
+)
+returns table
+as
+return 
+(
+	with h as
+		(
+		select	A.ID,
+				A.[ObjectID], 
+				A.Object,
+				A.AssetTypeID,
+				I.SubjectAssetID as [ParentID], 
+				0 as [Level]
+		from	dbo.Asset A
+				left join dbo.PredicateIntersect I on I.ObjectAssetID = A.ID and I.PredicateType = 3
+		where	A.Uid = @assetUid
+		
+		union all
+		
+		select	P.ID,
+				P.[ObjectID] as ID, 
+				P.Object,
+				P.AssetTypeID,
+				I.SubjectAssetID as ParentID, 
+				h.[Level]-1 as [Level]
+		from	dbo.Asset P
+				inner join h on P.ID = h.ParentID
+				outer apply (
+							select	SubjectAssetID
+							from	dbo.PredicateIntersect i
+							where	i.ObjectAssetID = P.ID 
+									and PredicateType = 3
+							) I
+		)
+	select		distinct top 1000000 	
+				[Level],
+				ltrim(rtrim(T.Name)) as TypeName,
+				ltrim(rtrim(D.DisplayValue)) as Name,
+				UT.Url as TypeUrl,
+				U.Url as Url
+	from		h 
+				inner join dbo.AssetType T on T.ID = h.AssetTypeID
+				left join dbo.AssetDisplayValue D on D.AssetID = h.ID
+				cross apply dbo.GetAssetUrlByID(h.ID) U
+				cross apply dbo.GetAssetTypeUrlById(T.ID) UT
+	where		ltrim(rtrim(T.Name)) is not null
+				and ltrim(rtrim(D.DisplayValue)) is not null
+	order by	[Level]
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter function [dbo].[GetAssetBreadcrumbs]
 (		        
 	@assetUid uniqueidentifier
@@ -64,11 +121,6 @@ return
 				and ltrim(rtrim(D.DisplayValue)) is not null
 	order by	[Level]
 )
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-drop function [dbo].[GetAssetBreadcrumbs]
 		]]>
 	</rollback>
   </changeSet>
