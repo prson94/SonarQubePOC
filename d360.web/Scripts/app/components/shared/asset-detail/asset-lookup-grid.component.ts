@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from "@angular/core";
+﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, ViewChild } from "@angular/core";
 import { LookupGrid, GridFilterColumn, LookupGridField } from "../../../models/grid-definition.model";
 import { NavigationEnd, Router } from "@angular/router";
 import { SiteUrlHelpers } from "../../../static/site-url-helpers";
@@ -13,6 +13,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
 import { ObjectIdService } from "../../../services/object-id.service";
 import { LinkClickInterceptor } from "../../../services/href-click-service";
 import { StringConstants } from "../../../static/string-constants";
+import { Table } from "primeng/table";
 
 declare var CurrentResourceID;
 
@@ -56,8 +57,9 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
     }
 
     hideDescLabel = $localize`Hide Description`;
-    showDescLabel = $localize`Show Description`;
+	showDescLabel = $localize`Show Description`;
 
+	@ViewChild('dt', { static: true }) table: Table;
     constructor(private router: Router,
         private assetService: AssetService,
         protected settingsService: CompanySettingsService,
@@ -71,7 +73,8 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
     ngOnInit() {
         this.showAdvancedFilterField = !this.router.url.startsWith("/sidebar/visualization/") && !this.isSidePanel;
-        this.areFiltersLoaded = true;
+		this.areFiltersLoaded = true;
+		this.isLoading = true;
     }
 
     ngOnDestroy() {
@@ -191,13 +194,14 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         this.assetService.getAssetsComplexFieldValue(this.assetUid, this.field.FieldName, params, true, fileName);
     }
 
-    loadData(event) {
+	loadData(event) {
+		this.isLoading = true;
+
         this.eventData = event;
 
         if (!this.areFiltersLoaded) {
             return;
         }
-        this.isLoading = true;
         var params = {};
         if (event.rows) {
             params['_pageSize'] = event.rows;
@@ -244,17 +248,15 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         this.loadSubscription = this.assetService.getAssetsComplexFieldValue(this.assetUid, this.field.FieldName, params)
             .subscribe((result) => {
                 if (result) {
-                    this.data = result;
-                    this.loadInitialInfo();
+					this.data = result;
+					this.loadInitialInfo();
+					setTimeout(() => {
+						//change detection fails when switching tabs back to definition page
+						this.table.reset();
+						this.isLoading = false;
+						this.cdRef.markForCheck();
+					}, 50);
                 }
-                this.isLoading = false;
-                this.cdRef.markForCheck();
-            }, () => {
-                this.isLoading = false;
-                this.cdRef.markForCheck();
-            }, () => {
-                this.isLoading = false;
-                this.cdRef.markForCheck();
             });
     }
 
