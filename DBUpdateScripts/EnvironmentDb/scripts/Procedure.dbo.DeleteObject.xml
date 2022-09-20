@@ -322,12 +322,12 @@ create or alter procedure [dbo].[DeleteObject]
 			  if @IsType = 1
 			  begin
 				  delete	O
-				  from		IntersectType O
-							inner join #types I on O.ID = I.SubjectAssetTypeID;
+				  from		IntersectType I
+							inner join #types O on O.ID = I.SubjectAssetTypeID;
 
 				  delete	O
-				  from		IntersectType O
-							inner join #types I on O.ID = I.ObjectAssetTypeID;
+				  from		IntersectType I
+							inner join #types O on O.ID = I.ObjectAssetTypeID;
 			  end
 			  else
 			  begin

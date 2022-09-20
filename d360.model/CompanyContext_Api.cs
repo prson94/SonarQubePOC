@@ -156,7 +156,47 @@ namespace d360.model
             return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [object] = @obj and [objectid] = @objId and [state] = 1 ), 0)", new { obj = new DbString { Value = @object, IsFixedLength = true, Length = 50, IsAnsi = true }, objId = objectID }) > 0;
         }
 
-        private CurrentExecutionLocationModel GetCurrentExecutionLocation(Guid executionID, string targetTable)
+		private bool TypeHasWorkflows(int? AssetTypeID, int? IntersectTypeID, int? IssueTypeID, ChangeType? changeType)
+		{
+			if (changeType.HasValue)
+			{
+				if (AssetTypeID.HasValue)
+				{
+					return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [AssetTypeId] = @AssetTypeID and [state] = 1 and [changetype] = @change), 0)", new { AssetTypeID = AssetTypeID, change = changeType.Value }) > 0;
+				}
+				else if (IntersectTypeID.HasValue)
+				{
+					return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [IntersectTypeID] = @IntersectTypeID and [state] = 1 and [changetype] = @change), 0)", new { IntersectTypeID = IntersectTypeID, change = changeType.Value }) > 0;
+				}
+				else if (IssueTypeID.HasValue)
+				{
+					return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [IssueTypeID] = @IssueTypeID and [state] = 1 and [changetype] = @change), 0)", new { IssueTypeID = IssueTypeID, change = changeType.Value }) > 0;
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			if (AssetTypeID.HasValue)
+			{
+				return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [AssetTypeId] = @AssetTypeID and [state] = 1 ), 0)", new { AssetTypeID = AssetTypeID }) > 0;
+			}
+			else if (IntersectTypeID.HasValue)
+			{
+				return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [IntersectTypeID] = @IntersectTypeID and [state] = 1), 0)", new { IntersectTypeID = IntersectTypeID }) > 0;
+			}
+			else if (IssueTypeID.HasValue)
+			{
+				return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [IssueTypeID] = @IssueTypeID and [state] = 1), 0)", new { IssueTypeID = IssueTypeID }) > 0;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		private CurrentExecutionLocationModel GetCurrentExecutionLocation(Guid executionID, string targetTable)
         {
             return Connection
                 .Query<CurrentExecutionLocationModel>($@"
@@ -2147,7 +2187,7 @@ namespace d360.model
 
             //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
             Stopwatch sw = Stopwatch.StartNew();
-            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.Object, at.ObjectID, ChangeType.Delete);
+            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.ID,null,null, ChangeType.Delete);
 
             AddMeasurement(metrics, "Check for workflows", sw.ElapsedMilliseconds, ++step);
             sw.Restart();
@@ -2789,7 +2829,7 @@ namespace d360.model
 
 								drop table if exists #tempExecutionDeletedAsset;
 	
-								select S.[Object], S.[ObjectID]
+								select S.[Object], S.[ObjectID],s.[AssetID]
 								into #tempExecutionDeletedAsset
 								from api.ExecutionDeletedAsset S
 								where {querySuffix};
@@ -4007,7 +4047,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                 Stopwatch sw = Stopwatch.StartNew();
 
                 //check if trigger workflows is set to true and there are actually no workflows
-                sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.Object, at.ObjectID, isInsert ? ChangeType.Add : ChangeType.Update);
+                sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.ID, null, null, isInsert ? ChangeType.Add : ChangeType.Update);
 
                 AddMeasurement(metrics, "Check for workflows", sw.ElapsedMilliseconds, ++step);
 
@@ -5096,7 +5136,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             //check if trigger workflows is set to true and there are actually no workflows
-            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), rt.ID, null);
+            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(null, rt.ID, null, null);
 
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             List<RelationshipInsert> tooLongOwners = import.Where(x => !string.IsNullOrEmpty(x.Owner) && x.Owner.Length > 100).ToList();
@@ -5915,7 +5955,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             //check if trigger workflows is set to true and there are actually no workflows
-            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), rt.ID, null);
+            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(null, rt.ID, null, null);
 
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             List<RelationshipUpdate> tooLongOwners = import.Where(x => !string.IsNullOrEmpty(x.Owner) && x.Owner.Length > 100).ToList();
@@ -6535,7 +6575,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
-            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), it.ID, ChangeType.Delete);
+            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(null, it.ID, null, ChangeType.Delete);
 
             try
             {
