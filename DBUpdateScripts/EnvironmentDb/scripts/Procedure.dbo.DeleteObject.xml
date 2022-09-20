@@ -5,8 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Tklok" id="Procedure.dbo.DeleteObject-v21">
-	<comment>GOV-18453 Convert Object/ObjectID/ObjectType/ObjectTypeID columns in dbo.Issue table</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.DeleteObject-v22">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"

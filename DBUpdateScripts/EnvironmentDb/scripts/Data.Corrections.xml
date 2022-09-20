@@ -1558,6 +1558,9 @@ where S.Route is not null
 	</sql>
   </changeSet>
 <changeSet author="TKlok" id="Data.Corrections.GOV-18453">
+  <preConditions onFail="MARK_RAN">
+    <columnExists tableName="Issue" schemaName="dbo" columnName="Object" />
+  </preConditions>
   <comment>Issue table new column data updates</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
