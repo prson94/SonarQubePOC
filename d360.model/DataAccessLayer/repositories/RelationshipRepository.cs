@@ -737,13 +737,13 @@ select	I.Id,
 		coalesce(P.[Type],0) as 'Predicate.Type',
 		coalesce(P.Name,'') as 'Predicate.Name',
 		coalesce(P.Inverse,'') as 'Predicate.Inverse',
-		S.Uid as 'Subject.Uid',		
-		coalesce(SP.[Path], S.Name) as 'Subject.Name',
-		coalesce(S.Class, 0) as 'Subject.Class',
+		coalesce(S.Uid,S9.Uid ) as 'Subject.Uid',		
+		coalesce(SP.[Path], S.Name, S9.Name) as 'Subject.Name',
+		coalesce(I.SubjectClass,0) as 'Subject.Class',
 		I.SubjectCardinality as 'Subject.Cardinality',
-		O.Uid as 'Object.Uid',
-		coalesce(OP.[Path], O.Name)  as 'Object.Name',
-		coalesce(O.Class, 0) as 'Object.Class',
+		coalesce(O.Uid,O9.Uid) as 'Object.Uid',
+		coalesce(OP.[Path], O.Name, O9.Name)  as 'Object.Name',
+		coalesce(I.ObjectClass,0) as 'Object.Class',
 		I.ObjectCardinality as 'Object.Cardinality'
 		{(includeHasFieldTypes ? @",case 
 								when exists (select top 1 1 from FieldType where [Object] = 'IntersectType' and [ObjectId] = I.ID)
@@ -752,9 +752,11 @@ select	I.Id,
 								end as 'HasFieldTypes'" : "")}
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
-		left join AssetType S on S.ID = I.SubjectAssetTypeID
+		left join AssetType S on S.ID = I.SubjectAssetTypeID and I.SubjectAssetTypeID > 0
+		left join AssetType S9 on S9.OBJECTID = 0 AND S9.CLASS = 9 AND S9.CLASS = I.SUBJECTCLASS and I.SubjectAssetTypeID = 0
 		outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
-		left join AssetType O on O.ID = I.ObjectAssetTypeID
+		left join AssetType O on O.ID = I.ObjectAssetTypeID and I.ObjectAssetTypeID > 0
+		left join AssetType O9 on O9.OBJECTID = 0 AND O9.CLASS = 9 AND O9.CLASS = I.OBJECTCLASS and I.ObjectAssetTypeID = 0
 		outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
 		{whereClause} for json path";
 

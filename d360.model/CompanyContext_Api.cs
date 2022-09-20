@@ -7062,14 +7062,16 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 												and ER.Success is null;
 
 									Update  T
-									set     SubjectClass = SA.[Class], SubjectAssetTypeID = SA.ID
+									set     SubjectClass = SA.[Class], 
+											SubjectAssetTypeID = CASE WHEN SA.Class = 9 and SA.ObjectID = 0 then 0 else SA.ID end
 									from    [api].[ExecutionRelationshipType] T
 											inner join IntersectType S on S.Uid = T.Uid
 											inner join AssetType SA on SA.Uid = T.SubjectUid
 									where   T.ExecutionID = @ExecutionID and T.Success is null;
 
 									Update  T
-									set     ObjectClass = OA.[Class], ObjectAssetTypeID = OA.ID
+									set     ObjectClass = OA.[Class], 
+											ObjectAssetTypeID = CASE WHEN OA.Class = 9 and OA.ObjectID = 0 then 0 else OA.ID end
 									from    [api].[ExecutionRelationshipType] T
 											inner join IntersectType S on S.Uid = T.Uid
 											inner join AssetType OA on OA.Uid = T.ObjectUid
@@ -7184,14 +7186,14 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );
 
 								Update  ER 
-								set     ER.SubjectAssetTypeID = AST.ID,
+								set     ER.SubjectAssetTypeID = CASE WHEN AST.Class = 9 and AST.ObjectID = 0 then 0 else AST.ID end,
 										ER.SubjectClass = AST.Class
 								from    [api].[ExecutionRelationshipType] ER 
 										inner join AssetType AST on AST.UID = ER.SubjectUID 
 								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
 
 								Update  ER 
-								set     ER.ObjectAssetTypeID = AST.ID,
+								set     ER.ObjectAssetTypeID = CASE WHEN AST.Class = 9 and AST.ObjectID = 0 then 0 else AST.ID end,
 										ER.ObjectClass = AST.Class 
 								from    [api].[ExecutionRelationshipType] ER 
 										inner join AssetType AST on AST.UID = ER.ObjectUID 
