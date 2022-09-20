@@ -317,5 +317,16 @@ export class AssetService extends BaseObservableService {
             .get(`/api/v2/assets/asset/${assetUid}/descendants${qString}`)
             .pipe(map((res) => { return <any>res; }),
                 catchError((err) => this.handleError(err, true)));
-    }
+	}
+
+
+	getAssetHierarchy(
+		assetTypeUid: string
+	): Observable<any[]> {
+		return this.http.get(`api/v2/assets/asset/${assetTypeUid}/hierarchy`)
+			.pipe(
+				map((response) => <any[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 }

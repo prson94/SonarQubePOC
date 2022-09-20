@@ -55,8 +55,8 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 	selectedTag: any;
 	selectedReferenceItem: any;
 
-    sidePanelOpen: boolean = false;
-    sidePanelStorageKey = 'side_panel_width_detail_';
+	sidePanelOpen: boolean = false;
+	sidePanelStorageKey = 'side_panel_width_detail_';
 
 	synonymPermission: SynonymPermission;
 
@@ -141,21 +141,21 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 		this.clearSidebar();
 	}
 
-    getSidePanelWidth(): number {
-        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
-    }
+	getSidePanelWidth(): number {
+		return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+	}
 
-    getSidePanelMaxWidth(): number {
-        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
-    }
+	getSidePanelMaxWidth(): number {
+		return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+	}
 
-    getSidePanelMinWidth(): number {
-        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
-    }
+	getSidePanelMinWidth(): number {
+		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+	}
 
-    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
-        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
-    }
+	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+	}
 
 	private load() {
 		switch (this.assetTypeClass) {
@@ -163,14 +163,14 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 				this.modelsService.getModel(this.baseAssetTypeUid)
 					.subscribe(result => {
 						this.assetType = result;
-						this.buildBreadcrumb();
+						this.loadHierarchy();
 					});
 				break;
 			case AssetTypeClass.Policy:
 				this.policiesService.getPolicyType(this.baseAssetTypeUid)
 					.subscribe(result => {
 						this.assetType = result;
-						this.buildBreadcrumb();
+						this.loadHierarchy();
 					});
 				break;
 		}
@@ -180,13 +180,16 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 		this.load();
 	}
 
-	private showHierarchy(id: number) {
-		window.alert("showHierarchy");
-		this.router.navigateByUrl("asset/");
-		this.buildBreadcrumb();
-	}
-
 	private buildBreadcrumb() {
 		this.buildSecondaryNavigationByAssetUid(this.baseAssetUid);
+	}
+
+	private loadHierarchy(): void {
+		this.assetService.getAssetHierarchy(this.baseAssetUid)
+			.subscribe(result => {
+				this.preloadedTreeData = result;
+				this.baseTreeNodeArray = this.buildTreeNodeArrayBase(this.preloadedTreeData, null, true);
+				this.buildBreadcrumb();
+			});
 	}
 }

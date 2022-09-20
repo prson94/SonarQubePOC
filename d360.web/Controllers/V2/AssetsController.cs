@@ -3725,6 +3725,39 @@ namespace d360.web.Controllers.V2
 			return Ok(AssetRepository.GetAssetClassByUID(assetUid));
 		}
 
+		/// <summary>
+		/// Hidden API that returns hierarchy of asset to build breacrumbs for Policies and Models
+		/// </summary>
+		[HttpGet]
+		[ApiExplorerSettings(IgnoreApi = true)]
+		[Route("asset/{assetUid:Guid}/hierarchy")]
+		public IEnumerable<dynamic> GetAssetHierarchy(Guid assetUid)
+		{
+			var querySql = $@";with hierarchy as(
+								select A.ID as ID, 
+									A.[Uid],
+									P.Id as ParentID,
+									TD.DisplayValue
+								from Asset A
+								inner join dbo.AssetDisplayValue TD on TD.AssetID = A.ID
+								outer apply GetParentByAssetID(A.ID) P
+								where A.uid = @assetUid
+							union all
+								select A.ID as ID, 
+									A.[Uid],
+									P.Id as ParentID,
+									TD.DisplayValue
+								from hierarchy
+								inner join Asset A on A.ID = hierarchy.ParentID
+								inner join dbo.AssetDisplayValue TD on TD.AssetID = A.ID
+								outer apply GetParentByAssetID(A.ID) P
+								where A.ID = hierarchy.ParentID
+							)
+							select * from hierarchy";
+
+			return Company.Query<dynamic>(querySql, new { assetUid }).ToList();
+		}
+
 		#region Request / Response models
 
 		public class AssetTypeAncestryModel

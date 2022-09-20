@@ -685,7 +685,7 @@ export class BaseComponent {
 			if (parentAr.length > 0) {
 				parent = parentAr[0];
 				let crumb = new Breadcrumb(parent.DisplayValue,
-					SiteUrlHelpers.getObjectUrl(objectName.toUpperCase(), parent.ID, typeId),
+					SiteUrlHelpers.getAssetUrl(parent.Uid),
 					true,
 					objectName,
 					parent.ID,
@@ -1294,7 +1294,7 @@ export class BaseComponent {
 
 	//used for policy/model
 	private setTreeBreadcrumbs(data, objectName: string) {
-		var selected = this.preloadedTreeData.find(x => x.ID == data.ObjectID);
+		var selected = this.preloadedTreeData.find(x => x.ID == data.AssetId);
 		var objectTypeName = objectName + "Type";
 		this.breadcrumbsService.clearBreadcrumbs();
 
@@ -1344,6 +1344,7 @@ export class BaseComponent {
 						this.setObjectInfo(objectName, selected.ID, selected.DisplayValue, selected.AssetID, undefined, selected.Uid);
 						this.baseCrumbs = [];
 						this.checkParentBase(selected, this.preloadedTreeData, data.ObjectTypeId, objectName);
+						
 						this.breadcrumbsService.showBreadcrumb(
 							new Breadcrumb(
 								selected.DisplayValue,
