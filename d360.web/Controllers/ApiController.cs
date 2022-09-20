@@ -2070,7 +2070,7 @@ namespace d360.web.Controllers
 							T.Name as TypeName,
 							A.Object,
 							A.ObjectID,
-							display.DisplayValue as ObjectName,
+							disp.DisplayValue as ObjectName,
 							RD.ResponsibilityTypeName,
 							case RD.SecurityAsset
 								when 'G' then 'Via Group'
@@ -2083,7 +2083,7 @@ namespace d360.web.Controllers
 						inner join AssetType T on T.ObjectID = RD.TypeID and T.Object = RD.Type and T.Object = @type and T.ObjectID = @id
 						inner join Asset A on A.AssetTypeID = T.ID
 						inner join AssetDisplayValue disp on disp.AssetID = A.ID
-						where RD.SecurityAsset = 'G' and RD.SecurityAssetID = @groupID and AssetID = 0 and ApplyToType = 1 and RD.IsVisible = 1
+						where RD.SecurityAsset = 'G' and RD.SecurityAssetID = @groupID and RD.AssetID = 0 and ApplyToType = 1 and RD.IsVisible = 1
 		
 						union all
 
