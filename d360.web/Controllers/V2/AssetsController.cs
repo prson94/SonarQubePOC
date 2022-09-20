@@ -2833,6 +2833,18 @@ namespace d360.web.Controllers.V2
 					continue;
 				}
 
+				if (!Company.HasAssetPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
+				{
+					result = new AssetTagSuccessApiModel()
+					{
+						Message = $"A non-admin user can only delete a tag association from assets they have access to",
+						Success = false
+					};
+					resultList.Add(result);
+
+					continue;
+				}
+
 				AssetTag assetTag = tagRepository.GetAssetTag(currentTag.ID, asset.ID);
 
 				if (assetTag != null && tagRepository.DeleteAssetTag(currentTag.ID, asset.ID))
