@@ -547,6 +547,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			this.selectedItemsFromTarget = [];
 			this.setRequiredCount();
 		}
+		this.itemsFromTarget = [...this.itemsFromTarget];
+		this.availableItems = [...this.availableItems];
 		this.cdRef.markForCheck();
 	}
 
@@ -557,6 +559,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				this.itemsFromTarget.splice(j, 0, this.itemsFromTarget.splice(x, 1)[0]);
 			}
 		}
+		this.itemsFromTarget = [...this.itemsFromTarget];
 	}
 
 	isMoveUpPossible(): boolean {
@@ -583,6 +586,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.selectedItemsFromTarget.forEach((selectedItemFromTarget: SiteNav) => {
 			this.itemsFromTarget.splice(selectedItemFromTarget.index - 1, 0, this.itemsFromTarget.splice(selectedItemFromTarget.index, 1)[0]);
 		});
+		this.itemsFromTarget = [...this.itemsFromTarget];
 	}
 
 	isMoveDownPossible(): boolean {
@@ -595,6 +599,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.selectedItemsFromTarget.forEach((selectedItemFromTarget: SiteNav) => {
 			this.itemsFromTarget.splice(selectedItemFromTarget.index + 1, 0, this.itemsFromTarget.splice(selectedItemFromTarget.index, 1)[0]);
 		});
+		this.itemsFromTarget = [...this.itemsFromTarget];
 	}
 
 	moveToBottom() {
@@ -605,6 +610,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				this.itemsFromTarget.splice(newPosition - 1, 0, this.itemsFromTarget.splice(x, 1)[0]);
 			}
 		}
+		this.itemsFromTarget = [...this.itemsFromTarget];
 	}
 
 	setRequiredCount() {
@@ -672,6 +678,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.permissionAssets = this.permissionAssets.sort((a, b) => a.Text.localeCompare(b.Text));
 		this.permissionAssetsTotalCount = this.permissionAssets.length;
 		this._selectedPermissionAsset = [];
+		this.permissionAssets = [...this.permissionAssets];
 		this.cdRef.markForCheck();
 	}
 
