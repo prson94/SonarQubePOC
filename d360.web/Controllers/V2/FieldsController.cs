@@ -420,7 +420,7 @@ namespace d360.web.Controllers.V2
 
 				#endregion
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Fields successfully updated.", Success = true, Uid = typeIdentifierInfoModel.Uid }))).ConfigureAwait(false);
+				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = Fields.FieldsUpdated, Success = true, Uid = typeIdentifierInfoModel.Uid }))).ConfigureAwait(false);
 			}
 			catch (RestApiException ex)
 			{
@@ -526,7 +526,7 @@ namespace d360.web.Controllers.V2
 
 			#endregion
 
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Fields successfully removed.", Success = true, Uid = typeIdentifierInfoModel?.Uid ?? Guid.Empty })));
+			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = Fields.FieldsRemoved, Success = true, Uid = typeIdentifierInfoModel?.Uid ?? Guid.Empty })));
 		}
 
 		/// <summary>
