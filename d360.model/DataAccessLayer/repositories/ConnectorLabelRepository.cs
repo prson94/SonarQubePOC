@@ -249,6 +249,7 @@ namespace d360.model.DataAccessLayer
 
 			var dbArgs = new DynamicParameters();
 			List<string> whereClauses = new List<string>();
+			string sortClause = "";
 			string sortField = "";
 			string sortOrder = "";
 			string whereOperater = " and ";
@@ -303,7 +304,10 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
-			string sortClause = $"ORDER BY {sortField} {sortOrder}";
+			if (!string.IsNullOrWhiteSpace(sortField) && !string.IsNullOrWhiteSpace(sortOrder))
+			{ 
+				sortClause = $"ORDER BY {sortField} {sortOrder}";
+			}
 
 			string whereClause = $"WHERE t.State = 1";
 			if (whereClauses.Count > 0)
