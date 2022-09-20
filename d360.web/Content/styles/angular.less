@@ -7223,3 +7223,10 @@ p-treeTableHeaderCheckbox {
     }
   }
 }
+
+//advanced filters flickerin when scrolling on list of assets https://github.com/primefaces/primeng/issues/4096
+.cdk-virtual-scroll-content-wrapper {
+  .p-datatable-tbody {
+    overflow-anchor: none;
+  }
+}
