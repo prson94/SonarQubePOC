@@ -336,9 +336,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private discardChanged() {
         this.myDiagram.model = go.Model.fromJson(this.savedState.toJson());
+		this.selectedLinkData = this.selectedNodeData = null;
         if (this.actionAfterSaved) {
             this.actionAfterSaved();
-            this.isSavingChangesModalOpened = false;
+			this.isSavingChangesModalOpened = false;
             this.isErrorModalOpened = false;
             this.actionAfterSaved = null;
             this.saveState.emit(this.isCurrentStateSaved());
