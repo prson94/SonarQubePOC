@@ -592,7 +592,7 @@ namespace d360.model.DataAccessLayer.repositories
 						 if (f.AllowMultipleValues)
 						 {
 							 displayName = $@"ADV{tableAlias}.DisplayValue";
-							 lookupValueJoinCriteria = $"inner join AssetDisplayValue ADV{tableAlias} on disp.AssetID = ACF{tableAlias}.ID cross apply STRING_SPLIT(F{tableAlias}.Value, ',') SPF{tableAlias} where ACF{tableAlias}.Object = '{f.LookupObjectType}' and ACF{tableAlias}.ObjectID = try_cast(SPF{tableAlias}.value as int)";
+							 lookupValueJoinCriteria = $"inner join AssetDisplayValue ADV{tableAlias} on ADV{tableAlias}.AssetID = ACF{tableAlias}.ID cross apply STRING_SPLIT(F{tableAlias}.Value, ',') SPF{tableAlias} where ACF{tableAlias}.Object = '{f.LookupObjectType}' and ACF{tableAlias}.ObjectID = try_cast(SPF{tableAlias}.value as int)";
 						 }
 						 else
 						 {
