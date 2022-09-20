@@ -1081,7 +1081,6 @@ namespace d360.model.DataAccessLayer
 						select 
 						ADV.*, 
 						node.DisplayPath,
-						A.Id as AssetID,
 						A.[Uid] as AssetUid,
 						AST.[Uid] as AssetTypeUid,
 						CASE 
