@@ -850,7 +850,6 @@ namespace d360.web.Controllers.V2
 				}
 
 				var disallowedPathClasses = new List<AssetTypeClass> {
-					AssetTypeClass.Organization,
 					AssetTypeClass.User,
 				};
 
@@ -860,7 +859,6 @@ namespace d360.web.Controllers.V2
 				}
 
 				var disallowedScoreClasses = new List<AssetTypeClass> {
-					AssetTypeClass.Organization,
 					AssetTypeClass.User,
 					AssetTypeClass.ReferenceItemType,
 					AssetTypeClass.Diagram

@@ -348,9 +348,6 @@ namespace d360.web.Controllers
 				case "RULE":
 					res = Asset_EditFields(SystemObjects.RuleType, SystemObjects.Rule, oid);
 					break;
-				case "CONTRACT":
-					res = Contract_EditFields(oid);
-					break;
 				case "EXPORTTEMPLATE":
 					res = ExportTemplate_EditFields(oid);
 					break;
@@ -359,15 +356,6 @@ namespace d360.web.Controllers
 					break;
 				case "ISSUETYPE":
 					res = IssueType_EditFields(oid);
-					break;
-				case "ORGANIZATION":
-					res = Organization_EditFields(oid);
-					break;
-				case "ORGANIZATIONDOMAIN":
-					res = OrganizationDomain_EditFields(oid);
-					break;
-				case "ORGANIZATIONINVITATION":
-					res = OrganizationInvitation_EditFields(oid);
 					break;
 				case "POLICY":
 					res = Hierarchy_EditFields(SystemObjects.Policy, oid);
@@ -501,9 +489,6 @@ namespace d360.web.Controllers
 				case "RULE":
 					res = Asset_AddFields(SystemObjects.RuleType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
 					break;
-				case "CONTRACT":
-					res = Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
-					break;
 				case "EXPORTTEMPLATE":
 					res = ExportTemplate_AddFields();
 					break;
@@ -515,15 +500,6 @@ namespace d360.web.Controllers
 					break;
 				case "ISSUETYPERELATION":
 					res = IssueTypeRelation_AddFields(objectID.GetValueOrDefault());
-					break;
-				case "ORGANIZATION":
-					res = Organization_AddFields(objectID.GetValueOrDefault());
-					break;
-				case "ORGANIZATIONDOMAIN":
-					res = OrganizationDomain_AddFields(objectID.Value);
-					break;
-				case "ORGANIZATIONINVITATION":
-					res = OrganizationInvitation_AddFields(objectID.Value);
 					break;
 				case "POLICY":
 					res = Hierarchy_AddFields(SystemObjects.PolicyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
@@ -583,12 +559,6 @@ namespace d360.web.Controllers
 			{
 				case "INTERSECT":
 					return EditRelationship(form);
-				case "ORGANIZATION":
-					return PutOrganization(form);
-				case "ORGANIZATIONDOMAIN":
-					return PutOrganizationDomain(form);
-				case "ORGANIZATIONINVITATION":
-					return PutOrganizationInvitation(form);
 				case "POLICYTYPELEVEL":
 					return EditPolicyTypeLevel(form);
 				case "TAXONOMYTYPELEVEL":
@@ -608,16 +578,8 @@ namespace d360.web.Controllers
 
 			switch ((objectType ?? "").ToUpper())
 			{
-				case "CONTRACT":
-					return DeleteContract(objectID);
 				case "CUSTOMSYNONYM":
 					return DeleteCustomSynonym(form);
-				case "ORGANIZATION":
-					return DeleteOrganization(objectID);
-				case "ORGANIZATIONDOMAIN":
-					return DeleteOrganizationDomain(objectID);
-				case "ORGANIZATIONINVITATION":
-					return DeleteOrganizationInvitation(objectID);
 				case "POLICYTYPELEVEL":
 					return DeletePolicyTypeLevel(form);
 				case "TAXONOMYTYPELEVEL":
@@ -644,12 +606,6 @@ namespace d360.web.Controllers
 					return AddCustomSynonym(form);
 				case "INTERSECT":
 					return AddRelationship(form);
-				case "ORGANIZATION":
-					return PostOrganization(form);
-				case "ORGANIZATIONDOMAIN":
-					return PostOrganizationDomain(form);
-				case "ORGANIZATIONINVITATION":
-					return PostOrganizationInvitation(form);
 				case "POLICYTYPELEVEL":
 					return AddPolicyTypeLevel(form);
 				case "TAXONOMYTYPELEVEL":
@@ -1969,7 +1925,7 @@ order by Sort, title";
 			};
 		}
 
-		[HttpGet, ValidateContracts(Ignore = true), Route("shortcut/list")]
+		[HttpGet, Route("shortcut/list")]
 		public JsonNetResult ListShortcuts()
 		{
 			return new JsonNetResult

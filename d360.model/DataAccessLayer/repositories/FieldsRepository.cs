@@ -738,7 +738,6 @@ namespace d360.model.DataAccessLayer
 					var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 
 					var disallowedClasses = new List<AssetTypeClass>() {
-						AssetTypeClass.Organization,
 						AssetTypeClass.User,
 						AssetTypeClass.ReferenceItemType
 					};

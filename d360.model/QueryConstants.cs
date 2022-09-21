@@ -20,7 +20,6 @@ namespace d360.model
 					when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()}: '
 					when T.Object = 'AttributeType' then 'Attribute: '
 					when T.Object = 'GroupType' then '{CommonNames.AssetTypeClass_Group.CleanForSql()}: '
-					when T.Object = 'OrganizationType' then '{CommonNames.AssetTypeClass_Organization.CleanForSql()}: '
 					when T.Object = 'ResourceType' then '{CommonNames.AssetTypeClass_Resource.CleanForSql()}: '
 					else ''
 				end ";

@@ -57,13 +57,13 @@ namespace d360.core.enums
         ]
         Reference = 9,
 
-        [
-            Name("Organization"),
-            Description("Organization asset.")
-        ]
-        Organization = 10,
+		[
+			Name("Organization"),
+			Description("Organization asset.")
+		]
+		Organization = 10,
 
-        [
+		[
             Name("User"),
             Description("User asset.")
         ]
@@ -203,7 +203,6 @@ namespace d360.core.enums
                 case AssetTypeClass.Policy: return CommonNames.AssetTypeClass_Policy;
                 case AssetTypeClass.Rule: return CommonNames.AssetTypeClass_Rule;
                 case AssetTypeClass.Diagram: return CommonNames.AssetTypeClass_Task;
-                case AssetTypeClass.Organization: return CommonNames.AssetTypeClass_Organization;
                 case AssetTypeClass.User: return CommonNames.AssetTypeClass_User;
                 case AssetTypeClass.Group: return CommonNames.AssetTypeClass_Group;
                 case AssetTypeClass.Reference: return CommonNames.AssetTypeClass_Reference;

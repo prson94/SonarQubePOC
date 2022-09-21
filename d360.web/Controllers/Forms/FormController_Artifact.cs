@@ -196,11 +196,6 @@ namespace d360.web.Controllers
                         appendTitle = FormInfo.TaxonomyType;
                         parentPredicateType = PredicateType.IntraTypeHierarchy;
                         break;
-                    case AssetTypeClass.Organization:
-                        ot = SystemObjects.OrganizationType;
-                        appendTitle = FormInfo.OrganizationType;
-                        parentPredicateType = PredicateType.IntraTypeHierarchy;
-                        break;
                     case AssetTypeClass.Policy:
                         ot = SystemObjects.PolicyType;
                         appendTitle = FormInfo.PolicyType;
@@ -277,13 +272,6 @@ namespace d360.web.Controllers
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
-                            break;
-                        case AssetTypeClass.Organization:
-                            var o = Company.GetById<OrganizationType>(assetType.ObjectID);
-                            model.AssetType.Hierarchy.MaximumDepth = 1;
-                            model.AssetType.Name = o.Name;
-                            model.AssetType.Description = o.Description;
-                            model.AssetType.DisplayFormat = o.DisplayFormat;
                             break;
                         case AssetTypeClass.Policy:
                             model.AssetType.Hierarchy.MaximumDepth = assetType.HierarchyMaximumDepth;

@@ -60,9 +60,6 @@ namespace d360.model
         
         DbSet<Comment> Comments { get; set; }
         
-        DbSet<ContractAcceptance> ContractAcceptance { get; set; }
-        
-        DbSet<Contract> Contracts { get; set; }
         
         DbSet<Favorite> Favorites { get; set; }
         
@@ -126,23 +123,6 @@ namespace d360.model
         
         DbSet<Nym> Nyms { get; set; }
         
-        DbSet<OrganizationDetail> OrganizationDetails { get; set; }
-        
-        DbSet<OrganizationDomain> OrganizationDomains { get; set; }
-        
-        DbSet<OrganizationInvitationDetail> OrganizationInvitationDetails { get; set; }
-        
-        DbSet<OrganizationInvitation> OrganizationInvitations { get; set; }
-        
-        DbSet<OrganizationRegistration> OrganizationRegistrations { get; set; }
-        
-        DbSet<OrganizationResourceDetail> OrganizationResourceDetails { get; set; }
-        
-        DbSet<OrganizationResource> OrganizationResources { get; set; }
-             
-        DbSet<Organization> Organizations { get; set; }
-        
-        DbSet<OrganizationType> OrganizationTypes { get; set; }
         
         DbSet<Predicate> Predicates { get; set; }
         

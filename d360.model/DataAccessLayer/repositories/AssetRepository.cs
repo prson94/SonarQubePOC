@@ -2605,34 +2605,6 @@ where an.Uid = fam.uid)
 
 					#endregion
 					break;
-				case AssetTypeClass.Organization:
-					#region
-					var org = new OrganizationType
-					{
-						Name = model.Name,
-						Description = model.Description,
-						DisplayFormat = model.DisplayFormat
-					};
-
-					var existing = CompanyContext.Filter<OrganizationType>(o => o.Name == org.Name && o.State == State.Active).FirstOrDefault();
-					if (existing != null)
-					{
-						return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, AssetTypeErrors.WrongNameHttpErrorTitle, AssetTypeErrors.ExistingOrganizationType);
-					}
-
-					CompanyContext.Add(org);
-					parentType = SystemObjects.OrganizationType;
-					model.ObjectID = org.ID;
-					model.Object = SystemObjects.OrganizationType.ToString();
-					at = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
-					if (at != null)
-					{
-						at.Notes = model.Notes;
-						at.uid = uid;
-						CompanyContext.Update(at);
-					}
-					#endregion
-					break;
 				case AssetTypeClass.Model:
 				case AssetTypeClass.Policy:
 					#region
@@ -2855,29 +2827,6 @@ where an.Uid = fam.uid)
 						assetType.FlowObjectType = model.FlowObjectType;
 					}
 
-					assetType.CanEditParent = model.CanEditParent;
-
-					#endregion
-					break;
-				case AssetTypeClass.Organization:
-					#region
-
-					var org = CompanyContext.GetById<OrganizationType>(model.ObjectID);
-					if (org == null)
-					{
-						return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, AssetTypeErrors.TitleWrongOrganization, $"{AssetTypeErrors.InvalidOrganization} {AssetTypeErrors.CheckRequest}");
-					}
-
-					org.Name = model.Name;
-					org.Description = model.Description;
-					org.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
-					CompanyContext.Update(org);
-
-					//also update asset type record
-					assetType.Name = model.Name;
-					assetType.Description = model.Description;
-					assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
-					assetType.Notes = model.Notes ?? assetType.Notes;
 					assetType.CanEditParent = model.CanEditParent;
 
 					#endregion
@@ -3629,7 +3578,6 @@ where an.Uid = fam.uid)
 				AssetTypeClass.Diagram,
 				AssetTypeClass.Group,
 				AssetTypeClass.Model,
-				AssetTypeClass.Organization,
 				AssetTypeClass.Policy,
 				AssetTypeClass.Reference,
 				AssetTypeClass.Rule,

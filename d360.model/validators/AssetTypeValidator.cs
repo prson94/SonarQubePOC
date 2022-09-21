@@ -19,7 +19,7 @@ namespace d360.core.validators
 	{
 		private readonly List<AssetTypeClass> PredicateSupportingClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Glossary };
 		private readonly List<AssetTypeClass> ParentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference, AssetTypeClass.Glossary };
-		private readonly List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule, AssetTypeClass.Glossary, AssetTypeClass.Diagram };
+		private readonly List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule, AssetTypeClass.Glossary, AssetTypeClass.Diagram };
 		private readonly string ColorRegex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 		private Guid? _governanceRoleUid = null;
 		private readonly bool IsEnableOrganizations;
@@ -214,11 +214,6 @@ namespace d360.core.validators
 			if (model.Class != AssetTypeClass.Diagram && model.FlowObjectType != null)
 			{
 				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.UnsupportedFlowObjectType}");
-			}
-
-			if (model.Class == AssetTypeClass.Organization && !IsEnableOrganizations)
-			{
-				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.UnsupportedAssetClass}");
 			}
 
 			return new WorkHttpStatus(HttpStatusCode.OK, "", "");

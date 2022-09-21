@@ -125,7 +125,6 @@ namespace d360.extensions
         {
             AggregationFilters = new List<AggregationFilter>();
             ResourceGroupIDs = new List<int>();
-            ResourceOrgIDs = new List<int>();
         }
         
         public List<AggregationFilter> AggregationFilters { get; set; }

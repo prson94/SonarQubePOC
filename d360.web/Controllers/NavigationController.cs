@@ -111,7 +111,7 @@ namespace d360.web.Controllers
 		}
 
 
-		[ValidateContracts(Ignore = true), Route("sitemenu")]
+		[Route("sitemenu")]
 		public JsonNetResult SiteMenu()
 		{
 			var techAssets = Company.Query<int>($"select count(*) from AssetType where Class = {(int)AssetTypeClass.TechnicalAsset}").First();

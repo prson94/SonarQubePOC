@@ -1037,13 +1037,6 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, AssetsApiMessages.AssetTypeAddAssetPermissionsDenied));
 				}
 
-				var EnableOrganizations = SettingsRepository.GetSettingValue<bool>(Setting.EnableOrganizations);
-
-				if (assetType.Class == AssetTypeClass.Organization && !EnableOrganizations)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.UnsupportedAssetClass}"));
-				}
-
 				if (assets == null)
 				{
 					assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;

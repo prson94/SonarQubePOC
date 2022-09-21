@@ -101,8 +101,6 @@ namespace d360.model
 
 		public DbSet<CommentVote> CommentVotes { get; set; }
 
-		public DbSet<ContractAcceptance> ContractAcceptance { get; set; }
-
 		public DbSet<Favorite> Favorites { get; set; }
 
 		public DbSet<Field> Fields { get; set; }
