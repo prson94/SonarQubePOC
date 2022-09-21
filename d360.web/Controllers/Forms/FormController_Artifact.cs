@@ -394,7 +394,7 @@ with u as (
 			select	SubjectAssetTypeID, PredicateID 
 			from	IntersectType 
 					where ObjectAssetTypeID = A.ID
-					and SubjectClass = 9 and A.Uid <> u.Uid
+					and SubjectClass = {(int)AssetTypeClass.Reference} and A.Uid <> u.Uid
 			) I
 ), d as (
 	select	A.Uid, I.ObjectAssetTypeID
@@ -408,13 +408,13 @@ with u as (
 			outer apply (
 			select	ObjectAssetTypeID
 			from	IntersectType 
-			where	SubjectAssetTypeID = A.ID and ObjectClass = 9 and A.Uid <> d.Uid
+			where	SubjectAssetTypeID = A.ID and ObjectClass = {(int)AssetTypeClass.Reference} and A.Uid <> d.Uid
 			) I
 ) 
 select	LOWER(CAST(uid AS char(36))) as value, 
 		Name as label 
 from	assettype 
-where	[Class] = 9 
+where	[Class] = {(int)AssetTypeClass.Reference} 
 		and Uid not in (select Uid from u where [Level] <> 1) 
 		and Uid not in (select Uid from d) 
 order by Name";
