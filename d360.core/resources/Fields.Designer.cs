@@ -214,6 +214,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fields successfully removed..
+        /// </summary>
+        public static string FieldsRemoved {
+            get {
+                return ResourceManager.GetString("FieldsRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fields successfully updated..
+        /// </summary>
+        public static string FieldsUpdated {
+            get {
+                return ResourceManager.GetString("FieldsUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The first name for this resource..
         /// </summary>
         public static string FirstName_Description {

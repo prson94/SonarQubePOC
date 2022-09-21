@@ -388,4 +388,10 @@
   <data name="LastSeen_Name" xml:space="preserve">
     <value>Last Seen</value>
   </data>
+  <data name="FieldsRemoved" xml:space="preserve">
+    <value>Fields successfully removed.</value>
+  </data>
+  <data name="FieldsUpdated" xml:space="preserve">
+    <value>Fields successfully updated.</value>
+  </data>
 </root>

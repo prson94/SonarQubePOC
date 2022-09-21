@@ -27,6 +27,7 @@ using Microsoft.Owin;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Resources;
 
 namespace d360.web
 {
@@ -227,7 +228,7 @@ namespace d360.web
 					{
 						u = null;
 						System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
-						context.Response.Write("\"Not authorized\"");
+						context.Response.Write($"\"{ApiMessages.EndpointNotAuthorizedHeading}\"");
 						context.Response.StatusCode = 401;
 
 						return;
