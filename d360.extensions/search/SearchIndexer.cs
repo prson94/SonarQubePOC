@@ -161,7 +161,12 @@ namespace d360.extensions.search
                 batchTable.Rows.Add(batchRow);
             });
 
-            _context.Execute($@"DROP TABLE IF EXISTS {batchTableName};
+			if (_context.State != ConnectionState.Open)
+			{
+				_context.Open();
+			}
+			
+			_context.Execute($@"DROP TABLE IF EXISTS {batchTableName};
             CREATE TABLE {batchTableName} (AssetUid uniqueidentifier, AssetTypeUid uniqueidentifier, class int, AssetID bigint);");
 
             using (SqlBulkCopy bulkCopy = new SqlBulkCopy(_context))
@@ -430,22 +435,27 @@ namespace d360.extensions.search
                 origin += ", asset type uid: " + assetTypeUid.ToString();
             }
             model.Origin = origin;
-			if (!IsPendingOrActive(assetClass, assetTypeUid))
+			if (CanCreatePendingDBLog(assetClass, assetTypeUid))
 			{
-				CreatePendingDBLog(assetClass, assetTypeUid);
 				queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
 			}
         }
 
-		private bool IsPendingOrActive(AssetTypeClass assetClass, Guid? assetTypeUid)
+		public bool CanCreatePendingDBLog(AssetTypeClass assetClass, Guid? assetTypeUid, bool force = false)
 		{
 			object param = new { assetClass, assetTypeUid = assetTypeUid ?? Guid.Empty, status = SearchJobStatus.Pending };
-			int count = _context.QuerySingle<int>(@"SELECT COUNT(1) FROM [queue].[Search]
+			var pending = _context.QuerySingle<int>(@"SELECT COUNT(1) FROM [queue].[Search]
 				WHERE Class = @assetClass AND AssetTypeUid = @AssetTypeUid
 				AND (Active = 1 OR status = @status)
 				AND LastUpdate > DATEADD(MINUTE, -5, GETUTCDATE())
-			", param);
-			return count > 0;
+			", param) > 0;
+
+			if (!pending || force)
+			{
+				CreatePendingDBLog(assetClass, assetTypeUid);
+				return true;
+			}
+			return false;
 		}
 
 		private int CreatePendingDBLog(AssetTypeClass assetClass, Guid? assetTypeUid)
@@ -635,6 +645,11 @@ namespace d360.extensions.search
 	                          {whereCondition}
                         ) q ORDER BY q.ID";
                     mode = IndexMode.WithFields | IndexMode.WithTags | IndexMode.WithResponsibility;
+
+					if(assetClass == AssetTypeClass.BusinessAsset || assetClass == AssetTypeClass.TechnicalAsset)
+					{
+						mode |= IndexMode.WithSemantic;
+					}
                     shaper = (dynamic o) =>
                     {
                         return new IndexObjectModel
@@ -817,7 +832,7 @@ namespace d360.extensions.search
                     }
                     else if (!string.IsNullOrEmpty(batchTable))
                     {
-                        joinBatchTable = $"inner join {batchTable} bt on bt.uid = s.uid and bt.class = {(int)AssetTypeClass.SemanticType}";
+                        joinBatchTable = $"inner join {batchTable} bt on bt.AssetUid = s.uid and bt.class = {(int)AssetTypeClass.SemanticType}";
                     }
 
                     whereCondition = string.Join(" ", where.Select(w => " and " + w).ToArray());
@@ -1030,6 +1045,7 @@ namespace d360.extensions.search
             IPagedQuery<FieldSqlModel> FieldQuery = null;
             PagedQuery<TagSqlModel> TagsQuery = null;
             PagedQuery<ResponsibilitySqlModel> ResponsibilityQuery = null;
+			PagedQuery<SemanticTypeSqlModel> SemanticQuery = null;
 
             if (mode.HasFlag(IndexMode.WithFields))
             {
@@ -1058,6 +1074,11 @@ namespace d360.extensions.search
             {
                 ResponsibilityQuery = new PagedQuery<ResponsibilitySqlModel>(context, GetResponsibilityQuery(parameters), parameters);
             }
+
+			if(mode.HasFlag(IndexMode.WithSemantic))
+			{
+				SemanticQuery = new PagedQuery<SemanticTypeSqlModel>(context, GetSemanticQuery(parameters), parameters);
+			}
             
             IEnumerable<IndexObjectModel> list = context.Query(sql, parameters, commandTimeout: _defaultQueryCommandTimeout, buffered: false).Select<dynamic, IndexObjectModel>(a => convertToDictionary(a));
 
@@ -1086,6 +1107,19 @@ namespace d360.extensions.search
                         { "O" , secset.Where(r => r.SecurityAsset == "O").Select(r => r.SecurityAssetID).ToList() }
                     };
                 }
+
+				if(SemanticQuery != null)
+				{
+					var semantic = SemanticQuery.GetByAssetID(item.AssetID).FirstOrDefault();
+					if(semantic != null)
+					{
+						item.Semantic = new IndexObjectSemanticModel { 
+							Name = semantic.Name,
+							Qualifier = semantic.Qualifier,
+							Uid = semantic.SemanticUID
+						};
+					}
+				}
 
                 item.IndexFlags = mode;
                 yield return item;
@@ -1177,7 +1211,58 @@ namespace d360.extensions.search
             return tagsSql;
         }
 
-        private static string GetResponsibilityQuery(DynamicParameters parameters)
+		private static string GetSemanticQuery(DynamicParameters parameters)
+		{
+			List<string> semanticWhere = new List<string>();
+			List<string> semanticJoin = new List<string>();
+
+			if (parameters.ParameterNames.Contains("assettypeuid"))
+			{
+				semanticWhere.Add("att.uid = @assettypeuid");
+				semanticJoin.Add("INNER JOIN [dbo].[Asset] a ON a.ID = adp.AssetID");
+				semanticJoin.Add("INNER JOIN [dbo].[AssetType] att ON att.ID = a.AssetTypeID");
+			}
+
+			if (parameters.ParameterNames.Contains("assetuid"))
+			{
+				semanticWhere.Add("a.uid = @assetuid");
+				semanticJoin.Add("INNER JOIN [dbo].[Asset] a ON a.ID = adp.AssetID");
+			}
+
+			if (parameters.ParameterNames.Contains("batchtable"))
+			{
+				semanticJoin.Add($"inner join {parameters.Get<string>("batchtable")} bt on adp.AssetID = bt.AssetID");
+			}
+
+			string semanticSql = @"SELECT adp.AssetID, s.Qualifier, s.Name, s.uid AS SemanticUid
+				FROM [dbo].[AssetDataProfile] adp
+				OUTER APPLY (
+					SELECT MAX(ProfileSetDate) profileSetDate 
+					FROM AssetDataProfile 
+					WHERE AssetID = adp.AssetID
+				) maxProfileDate
+				INNER JOIN (
+					SELECT ROW_NUMBER() OVER (PARTITION BY Qualifier ORDER BY EffectiveDate desc ) AS RowNum,
+						Qualifier, Name, uid
+					FROM Semantic
+				) S on S.RowNum = 1 and adp.TypeQualifier = s.Qualifier";
+
+			semanticWhere.Add("ADP.ProfileSetDate = maxProfileDate.profileSetDate");
+
+			if (semanticJoin.Any())
+			{
+				semanticSql += " " + string.Join(" " + Environment.NewLine, semanticJoin.ToArray());
+			}
+
+			if (semanticWhere.Any())
+			{
+				semanticSql += " WHERE " + string.Join(" AND " + Environment.NewLine, semanticWhere.ToArray());
+			}
+
+			return semanticSql;
+		}
+
+		private static string GetResponsibilityQuery(DynamicParameters parameters)
         {
             List<string> joins = new List<string>();
             List<string> conditions = new List<string>();
@@ -1285,6 +1370,16 @@ namespace d360.extensions.search
         
         public string Value { get; set; }
     }
+
+	internal class SemanticTypeSqlModel : IPagedQuerySqlModel
+	{
+		public long AssetID { get; set; }
+
+		public string Name { get; set; }
+
+		public string Qualifier { get; set; }
+		public Guid SemanticUID { get; set; }
+	}
 
     internal class ResponsibilitySqlModel : IPagedQuerySqlModel
     {

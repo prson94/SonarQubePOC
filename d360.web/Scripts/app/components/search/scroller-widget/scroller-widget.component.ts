@@ -1,0 +1,90 @@
+﻿import { Component, OnInit, ViewChild, ChangeDetectionStrategy, ElementRef, ChangeDetectorRef } from '@angular/core';
+
+
+@Component({
+	selector: "scroller-widget",
+	templateUrl: "./scroller-widget.component.html",
+	styleUrls: ["./scroller-widget.component.less"],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	host: { '(window:resize)': 'checkSize()' }
+})
+export class ScrollerWidgetComponent implements OnInit {
+
+	showScrollButtons: boolean = false;
+	disableScrollLeft: boolean = false;
+	disableScrollRight: boolean = false;
+
+	@ViewChild('fieldScroller', { static: false }) fieldScroller: ElementRef;
+
+	constructor(
+		private ref: ChangeDetectorRef,
+		private elementRef: ElementRef) {
+		
+	}
+
+	ngOnInit() {
+		//Need to wait for ViewChildren, but can't use AfterOnInit
+		setTimeout(() => {
+			this.checkSize();
+		});
+	}
+
+	/* Field scroller section */
+
+	checkSize() {
+		if (this.fieldScroller) {
+			let maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
+			let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastElementChild);
+			this.showScrollButtons = lastTab > maxWidth;
+		}
+		this.checkScrollPos();
+	}
+
+	checkScrollPos() {
+		if (this.fieldScroller) {
+			let currentPosition = this.fieldScroller.nativeElement.scrollLeft;
+			this.disableScrollLeft = currentPosition == 0;
+
+			let maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
+			let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastElementChild);
+			this.disableScrollRight = lastTab <= maxWidth;
+
+			this.ref.markForCheck();
+		}
+	}
+
+	private getElementRightPosition(element) {
+		if (element && element.getBoundingClientRect) {
+			return element.getBoundingClientRect().right;
+		}
+		return NaN;
+	}
+
+	private getElementWidth(element) {
+		if (element && element.getBoundingClientRect) {
+			return element.getBoundingClientRect().right - element.getBoundingClientRect().left;
+		}
+		return NaN;
+	}
+
+	scroll(direction: string) {
+		let el = this.fieldScroller.nativeElement;
+		let scrollAmount = 0;
+		let scrollDistance = Math.floor(this.getElementWidth(el) * 0.95);
+		let move = () => {
+			if (direction == 'L') {
+				el.scrollLeft -= 10;
+			} else {
+				el.scrollLeft += 10;
+			}
+			scrollAmount += 10;
+			if (scrollAmount >= scrollDistance) {
+				this.checkScrollPos();
+				window.clearInterval(id);
+			}
+			this.checkScrollPos();
+		};
+
+		let id = window.setInterval(move, 5);
+	}
+}

@@ -28,31 +28,33 @@
         <div class="path category elided" title="{{formatPathAsString()}}">
             {{result?.Group}}<span *ngIf="result?.AssetPath?.length"><i class="fa fa-angle-right"></i><asset-path-widget [path]="result.AssetPath" [withType]="true"></asset-path-widget></span>
         </div>
-        
+
     </div>
     <div class="card-row elide-container description" *ngIf="result?.Description"><div class="elided" [innerHtml]="result.Description" title="{{result.Description}}"></div></div>
     <div *ngIf="result?.Tags && result?.Tags.length > 0" class="card-row tags tagsnomanagewidth">
         <d3s-tag-view [ignoreResizing]="true" [data]="parseTagResult(result?.Tags)" [assetUID]="result?.Uid"></d3s-tag-view>
     </div>
-    <div *ngIf="result?.Fields && result?.Fields.length > 0" class="scrollcontainer card-row">
-        <div class="field-bar-outer">
-            <button *ngIf="showScrollButtons" class="left field-scroller" (click)="scroll('L')" [ngClass]="{'disabled':disableScrollLeft}" [disabled]="disableScrollLeft">
-                <i class="fa fa-chevron-circle-left"></i>
-            </button>
-            <div #fieldScroller class="field-bar can-overflow" [ngClass]="{'is-overflowing' : showScrollButtons}">
-                <div class="search-result-field" *ngFor="let item of result?.Fields">
-                    <ng-container *ngIf="item.Prefix || item.Suffix; else labelvalue">
-                        <div class="statement" title="{{getFieldDisplayValue(item, true)}}" [innerHtml]="getFieldDisplayValue(item)"></div>
-                    </ng-container>
-                    <ng-template #labelvalue>
-                        <div class="label" title="{{item.Label}}">{{item.Label}}:</div><div class="value" title="{{getFieldDisplayValue(item, true)}}" [innerHtml]="getFieldDisplayValue(item)"></div>
-                    </ng-template>
-                </div>
+    <div *ngIf="result?.Fields && result?.Fields.length > 0" class="card-row">
+        <scroller-widget>
+            <div class="search-result-field" *ngFor="let item of result?.Fields">
+                <ng-container *ngIf="item.Prefix || item.Suffix; else labelvalue">
+                    <div class="statement" title="{{getFieldDisplayValue(item, true)}}" [innerHtml]="getFieldDisplayValue(item)"></div>
+                </ng-container>
+                <ng-template #labelvalue>
+                    <div class="label" title="{{item.Label}}">{{item.Label}}:</div><div class="value" title="{{getFieldDisplayValue(item, true)}}" [innerHtml]="getFieldDisplayValue(item)"></div>
+                </ng-template>
             </div>
-            <button *ngIf="showScrollButtons" class="right field-scroller" (click)="scroll('R')" [ngClass]="{'disabled':disableScrollRight}" [disabled]="disableScrollRight">
-                <i class="fa fa-chevron-circle-right"></i>
-            </button>
-        </div>
+        </scroller-widget>
     </div>
-    <div class="card-row" *ngIf="result?.Explanation"><explain-widget [json]="result?.Explanation"></explain-widget></div>
-</div>
+    <div *ngIf="result?.SemanticName" class="card-row">
+        <scroller-widget>
+            <div class="search-result-field">
+                <div class="label nomax"><ng-container i18n>Semantic Type Name</ng-container>:</div><div class="value nomax">{{ result.SemanticName }}</div>
+            </div>
+            <div class="search-result-field">
+                <div class="label nomax"><ng-container i18n>Semantic Type Qualifier</ng-container>:</div><div class="value nomax">{{ result.SemanticQualifier }}</div>
+            </div>
+        </scroller-widget>
+    </div>
+        <div class="card-row" *ngIf="result?.Explanation"><explain-widget [json]="result?.Explanation"></explain-widget></div>
+    </div>

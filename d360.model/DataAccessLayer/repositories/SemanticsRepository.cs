@@ -765,7 +765,23 @@ namespace d360.model.DataAccessLayer
 
 		private void queueForSearchIndex(string transactionId)
 		{
-			var uids = CompanyContext.Semantics.Where(s => s.TransactionId == transactionId).Select(s => s.Uid).Distinct();
+			var sql = @"SELECT uid
+						FROM Semantic
+						WHERE TransactionId = @transactionId
+						UNION ALL
+						SELECT DISTINCT a.uid
+						FROM [dbo].[AssetDataProfile] adp
+						INNER JOIN [dbo].[Asset] a on a.id = adp.AssetID
+						INNER JOIN [dbo].[Semantic] s on s.Qualifier = adp.TypeQualifier
+						OUTER APPLY (
+							SELECT MAX(ProfileSetDate) profileSetDate 
+							FROM AssetDataProfile 
+							WHERE AssetID = adp.AssetID
+						) maxProfileDate
+						where ADP.ProfileSetDate = maxProfileDate.profileSetDate
+						and s.TransactionId = @transactionId";
+
+			var uids = CompanyContext.Query<Guid>(sql, new { transactionId });
 
 			QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
 			{
