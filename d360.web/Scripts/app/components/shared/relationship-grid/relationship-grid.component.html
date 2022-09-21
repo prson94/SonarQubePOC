@@ -72,7 +72,8 @@
                          [lazy]="true"
                          [scrollHeight]="selectionScrollHeight"
                          responsiveLayout="scroll"
-                         (onLazyLoad)="loadRelationshipLazy($event)">
+                         (onLazyLoad)="loadRelationshipLazy($event)"
+                         class="relationship-detail-table">
                     <ng-template pTemplate="emptymessage"
                                  let-columns>
                         <tr>
