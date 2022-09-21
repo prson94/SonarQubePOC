@@ -382,25 +382,24 @@ namespace d360.web.Controllers
                     {
 						sql = $@"
 with u as (
-	select	A.Uid, I.Subject, I.SubjectID, cast(0 as int) as [Level] , A.Name, I.PredicateID
+	select	A.Uid, I.SubjectAssetTypeID, cast(0 as int) as [Level] , A.Name, I.PredicateID
 	from	AssetType A
-			left join IntersectType I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject = 'ReferenceItemType'
+			left join IntersectType I on I.ObjectAssetTypeID = A.ID and I.SubjectClass = {(int)AssetTypeClass.Reference}
 	where	A.Uid = @Uid
 	union all
-	select	A.Uid, I.Subject, I.SubjectID, u.Level+1 as [Level], A.Name, I.PredicateID
+	select	A.Uid, I.SubjectAssetTypeID, u.Level+1 as [Level], A.Name, I.PredicateID
 	from	AssetType A
-			inner join u on u.Subject = A.Object and u.SubjectID = A.ObjectID
+			inner join u on u.SubjectAssetTypeID = A.ID
 			outer apply (
-			select	Subject, SubjectID, PredicateID 
+			select	SubjectAssetTypeID, PredicateID 
 			from	IntersectType 
-					where Object = A.Object 
-					and ObjectID = A.ObjectID 
-					and Subject = 'ReferenceItemType' and A.Uid <> u.Uid
+					where ObjectAssetTypeID = A.ID
+					and SubjectClass = 9 and A.Uid <> u.Uid
 			) I
 ), d as (
 	select	A.Uid, I.ObjectAssetTypeID
 	from	AssetType A
-			inner join IntersectType I on I.SubjectAssetTypeID = A.ID and I.ObjectClass = 9
+			inner join IntersectType I on I.SubjectAssetTypeID = A.ID and I.ObjectClass = {(int)AssetTypeClass.Reference}
 	where	A.Uid = @Uid
 	union all
 	select	A.Uid, I.ObjectAssetTypeID
