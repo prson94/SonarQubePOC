@@ -1360,7 +1360,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (this.currentType != 'ComplexRelationLookup') {
             this.displayFieldSelected = true;
 
-            if (this.lookups.Field_FieldFromRelRelationships.length > 0) {
+			if (this.lookups.Field_FieldFromRelRelationships.length > 0 && this.assetTypeUid) {
                 this.cardinalFieldFromRelationshipSelected(this.lookups.Field_FieldFromRelRelationships[0].value).subscribe();
             }
 
