@@ -5441,18 +5441,18 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                         #region Validate Relationship Uid - Add
 
                         Connection.Execute(@"
-											declare @st varchar(50),
+											declare @sc int,
 												@stid int,
-												@ot varchar(50),
+												@oc int,
 												@otid int,
 												@it int
 
 
-											select	@st = Subject,
-												@stid = SubjectID,
-												@ot = Object,
-												@otid = ObjectID,
-												@it = ID
+											select	@sc = SubjectClass,
+													@stid = SubjectAssetTypeID,
+													@oc = ObjectClass,
+													@otid = ObjectAssetTypeID,
+													@it = ID
 											from	IntersectType
 											where	[uid] = @uid
 
@@ -5469,10 +5469,10 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 											if exists ( select 1
 														from	api.ExecutionRelationship T
 														inner join #tempNewuid N on T.uid = N.uid
-														left join AssetWithType S on S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
-														left join AssetWithType O on O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid
+														left join AssetWithType S on S.AssetTypeID = @stid and S.[uid] = T.SubjectUid
+														left join AssetWithType O on O.AssetTypeID = @otid and O.[uid] = T.ObjectUid
 														left join IntersectType IT on IT.uid = @uid
-														left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectId= S.ObjectId and I.ObjectId = O.ObjectId and I.Subject = S.Object and I.Object = O.Object
+														left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectAssetId= S.Id and I.ObjectAssetId = O.Id 
 														where   T.ExecutionId = @ExecutionID and I.id is not null
 													  )
 											   begin
