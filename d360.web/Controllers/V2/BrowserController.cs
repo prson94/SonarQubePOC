@@ -27,6 +27,7 @@ using static Dapper.SqlMapper;
 using d360.core.exceptions;
 
 using Swashbuckle.Swagger.Annotations;
+using d360.model.validators;
 
 namespace d360.web.Controllers.V2
 {
@@ -42,10 +43,15 @@ namespace d360.web.Controllers.V2
 	public class BrowserController : BaseV2ApiController
 	{
 		private readonly IGraphFilterRepository GraphFilterRepository;
+		private readonly GraphFilterValidator GraphFilterValidator;
 
-		public BrowserController(ICoreComponentSet set, IGraphFilterRepository graphFilterRepository) : base(set)
+		public BrowserController(
+			ICoreComponentSet set, 
+			IGraphFilterRepository graphFilterRepository, 
+			GraphFilterValidator graphFilterValidator) : base(set)
 		{
 			GraphFilterRepository = graphFilterRepository;
+			GraphFilterValidator = graphFilterValidator;
 		}
 
         private HttpResponseMessage buildAssetBrowserResponseModel(GridReader reader, bool readReveal, bool checkDataLimit = true)
@@ -541,6 +547,12 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 		]
 		public async Task<IHttpActionResult> CreateAssetBrowserFilter(GraphFilter model)
 		{
+			var validationStatus = await GraphFilterValidator.ValidateFilterCreateOrUpdate(model);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
 			try
 			{
 				if (GraphFilterRepository.CreateGraphFilter(model))
@@ -579,6 +591,12 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 		]
 		public async Task<IHttpActionResult> UpdateAssetBrowserFilterById(Guid uid, GraphFilter model)
 		{
+			var validationStatus = await GraphFilterValidator.ValidateFilterCreateOrUpdate(model);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
 			try
 			{
 				GraphFilter orig = GraphFilterRepository.GetGraphFilterByUid(uid);

@@ -79,6 +79,11 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Update="resources\GraphFilterErrors.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>GraphFilterErrors.resx</DependentUpon>
+    </Compile>
     <Compile Update="resources\IssueErrors.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -218,6 +223,10 @@
       <SubType>Designer</SubType>
       <LastGenOutput>Fields.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\GraphFilterErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>GraphFilterErrors.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\IssueErrors.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
