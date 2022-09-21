@@ -97,7 +97,8 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         this.createUserFilter.predicates = this.options.PredicateOptions
             .filter((p) => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
             .map((p) => { return { uid: p.Uid, type: p.Name }; });
-        this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
+		this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
+		this.createUserFilter.descendancy = this.filterModel.Descendancy;
         this.createUserFilter.numberOfHops = this.numberOfHops();
         this.createUserFilter.diagramType = this.diagramType;
         this.createUserFilter.name = '';
@@ -148,7 +149,11 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
 
         if (this.selectedFilter.ancestryMode) {
             model.AncestryMode = this.selectedFilter.ancestryMode;
-        }
+		}
+
+		if (this.selectedFilter.descendancy) {
+			model.Descendancy = this.selectedFilter.descendancy;
+		}
 
         this.applySavedFilter.emit(model);
     }
@@ -245,7 +250,8 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
             .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
             .map((p) => { return { uid: p.Uid, type: p.Name }; });
 
-        this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
+		this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
+		this.createUserFilter.descendancy = this.filterModel.Descendancy;
         this.createUserFilter.diagramType = this.filterModel.DiagramType;
         this.createUserFilter.numberOfHops = this.numberOfHops();
 
