@@ -5,13 +5,768 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.api.DeleteAssetTypesByExecution-v2">
-    <comment>GOV-18453</comment>
+  <changeSet author="Pappas" id="Procedure.api.DeleteAssetTypesByExecution-v3">
+    <comment>GOV-19637</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure api.DeleteAssetTypesByExecution
+	@ExecutionID uniqueidentifier,
+	@stateChangeOnly bit = 0
+as
+begin
+	set nocount on;
+
+	if @stateChangeOnly = 1
+	begin
+		-- Mark the execution as started processing, but not complete.
+		update	T
+		set		T.MarkedForProcessing = 1,
+				T.CompletedOn = null,
+				T.ProcessingStartedOn = getutcdate(),
+				T.Processed = 0
+		from	api.Execution T
+		where	T.ExecutionID = @ExecutionID;
+	end
+
+	-- Lookup the asset type Id.
+	update	T
+	set		T.AssetTypeID = S.ID
+	from	api.ExecutionDeletedAssetType T
+			inner join AssetType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID;	
+
+	-- Invalid Uid message.
+	update	api.ExecutionDeletedAssetType
+	set		Success = 0,
+			[Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid for this asset type when you are attempting to delete it'
+	where	ExecutionID = @ExecutionID and ([Uid] is null or [Uid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER)); 
+
+	-- Asset type not found message.
+	update	api.ExecutionDeletedAssetType
+	set		Success = 0,
+			[Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
+	where	ExecutionID = @ExecutionID and AssetTypeID is null;
+
+	-- Cascade error, assets present message.
+	update	T
+	set		T.Success = 0,
+			T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(A.AssetCount as nvarchar) + ' asset(s) present for this type.'
+	from    api.ExecutionDeletedAssetType T
+			cross apply (
+				select  count(1) as AssetCount
+				from    Asset
+				where   AssetTypeID = T.AssetTypeID
+						and [State] not in (3,4)
+			) A 
+	where	T.ExecutionID = @ExecutionID
+			and T.[Cascade] = 0
+			and A.AssetCount > 0; 
+
+	-- Cascade error, child asset types present message.
+	update	T
+	set		T.Success = 0,
+			T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(A.ChildCount as nvarchar) + ' child asset type(s) present for this type.'
+	from    api.ExecutionDeletedAssetType T
+			cross apply (
+				select  count(1) as ChildCount
+				from	IntersectType I
+						inner join AssetType A on I.ObjectAssetTypeID = A.ID and I.SubjectAssetTypeID = T.AssetTypeID and A.[State] not in (3,4)
+						inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4)
+			) A 
+	where	T.ExecutionID = @ExecutionID
+			and T.[Cascade] = 0
+			and A.ChildCount > 0;
+
+	-- Cascade error, Asset Results present message.
+	update	T
+	set		T.Success = 0,
+			T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(ARE.ResultCount as nvarchar) + ' results(s) present for this rule type.'
+	from    api.ExecutionDeletedAssetType T
+			inner join Asset AN on AN.AssetTypeID = T.AssetTypeID
+			inner join AssetType AT on AT.ID = AN.AssetTypeID and AT.Class = 7 -- Rule
+			cross apply (select count(1) as ResultCount from AssetResult where AN.uid = OwningAssetUid or AN.uid = EvaluatedAssetUid) ARE
+	where	T.ExecutionID = @ExecutionID
+			and T.[Cascade] = 0
+			and ARE.ResultCount > 0;
+
+	-- Cascade error, related lookup fields present
+	update	T
+	set		T.Success = 0,
+			T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(LFT.FieldCount as nvarchar) + ' Lookup fields referenced to this type.'
+	from    api.ExecutionDeletedAssetType T
+			inner join AssetType AT on AT.ID = T.AssetTypeID
+			cross apply (select count(1) as FieldCount
+				from fieldtype ft 
+				where ft.type = 'Lookup' 
+					and ft.LookupObjectType = REPLACE(AT.Object,'Type','') 
+					and ft.LookupObjectID = AT.ObjectId) LFT
+	where	T.ExecutionID = @ExecutionID
+			and T.[Cascade] = 0 and LFT.FieldCount > 0;
+
+	begin try
+
+		-- Load child asset type hierarchy.
+		with h as (
+			select	D.ExecutionID,
+					D.ItemNumber,
+					C.[Uid],
+					C.ID as AssetTypeID,
+					I.ID as IntersectTypeID,
+					1 as [Level]
+			from	api.ExecutionDeletedAssetType D
+					inner join IntersectType I on I.SubjectAssetTypeID = D.AssetTypeID and D.AssetTypeID is not null and D.Success is null and D.ExecutionID = @ExecutionID
+					inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = 3
+					inner join AssetType C on C.ID = I.ObjectAssetTypeID
+			union all
+			select	D.ExecutionID,
+					D.ItemNumber,
+					C.[Uid],
+					C.ID as AssetTypeID,
+					I.ID as IntersectTypeID,
+					1 as [Level]
+			from	api.ExecutionDeletedAssetType D
+					inner join h on h.ExecutionID = D.ExecutionID and h.ItemNumber = D.ItemNumber
+					inner join IntersectType I on I.SubjectAssetTypeID = h.AssetTypeID
+					inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = 3
+					inner join AssetType C on C.ID = I.ObjectAssetTypeID
+		)
+		insert into api.ExecutionDeletedAssetType (ExecutionID, ItemNumber, Uid, AssetTypeID, IntersectTypeID, FromHierarchy)
+			select  distinct 
+					h.ExecutionID, 
+					h.ItemNumber, 
+					h.Uid, 
+					h.AssetTypeID, 
+					h.IntersectTypeID, 
+					1
+			from    h
+					left join api.ExecutionDeletedAssetType E on E.ExecutionID = h.ExecutionID and E.AssetTypeID = h.AssetTypeID
+			where	E.AssetTypeID is null;
+
+		if @stateChangeOnly = 1
+		begin
+			update	T
+			set		T.State = 3
+			from	AssetType T
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.ID and S.ExecutionID = @ExecutionID and S.Success is null;
+		end
+		else
+		begin
+			-- Remove comment data
+			begin try
+				delete	R
+				from	CommentRelation R
+						inner join Asset A on A.ID = R.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	CommentVote R
+						inner join Comment C on C.ID = R.CommentID
+						inner join Asset A on A.ID = C.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	Comment R
+						inner join Asset A on A.ID = R.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove Comments. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Remove favorites / followers.
+			begin try
+				delete	R
+				from	Favorite R
+						inner join Asset A on A.ID = R.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	Follow R
+						inner join Asset A on A.ID = R.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove Favorites/Followers. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Remove audit.
+			begin try
+				delete	R
+				from	reporting.Global_Audit R
+						inner join Asset A on A.Object = R.Object and A.ObjectID = R.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove Audit data. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			--Remove cross references.
+			begin try
+				delete	R
+				from	AssetCrossReference R
+						inner join Asset A on A.Uid = R.uid
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove Cross Reference data. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			--Remove asset profiles.
+			begin try
+				delete	R
+				from	AssetDataProfileSampleJson R
+						inner join AssetDataProfile P on P.ID = R.AssetDataProfileID
+						inner join Asset A on A.ID = P.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	AssetDataProfileSample R
+						inner join AssetDataProfile P on P.ID = R.AssetDataProfileID
+						inner join Asset A on A.ID = P.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	AssetDataProfile R
+						inner join Asset A on A.ID = R.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove Data Profiles. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			--Remove asset display values'
+			begin try
+				delete	R
+				from	AssetDisplayValue R
+						inner join Asset A on A.ID = R.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove display values. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			--Remove asset path'
+			begin try
+				delete	R
+				from	AssetPath R
+						inner join Asset A on A.ID = R.ID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove asset paths. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			--Remove process diagram'
+			begin try
+				delete	R
+				from	AssetProcessDiagram R
+						inner join Asset A on A.ID = R.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove process diagrams. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			--Remove asset results'
+			begin try
+				-- Remove owning asset results.
+				delete	R
+				from	AssetResult R
+						inner join Asset A on A.Uid = R.OwningAssetUid
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				-- Remove evaluated asset results.
+				delete	R
+				from	AssetResult R
+						inner join Asset A on A.Uid = R.EvaluatedAssetUid
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove asset results. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			--Remove asset tags'
+			begin try
+				delete	R
+				from	AssetTag R
+						inner join Asset A on A.ID = R.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove asset tags. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Remove Nym data.
+			begin try
+				delete	R
+				from	Nym R
+						inner join Asset A on A.Object = R.Object and A.ObjectID = R.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	NymRelation R
+						inner join AssetType A on A.Object = R.Object and A.ObjectID = R.ObjectID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.ID and S.ExecutionID = @ExecutionID and S.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove synonyms. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Determine which assets would need a score recalculation.
+			begin try
+				create table #RelyingAssets (ItemNumber int identity, Uid uniqueidentifier, ID bigint)
+				insert into #RelyingAssets
+					select	RelyAsset.Uid,
+							RelyAsset.ID
+					from	[metrics].[ScoreItem] R
+							inner join [metrics].[AssetVersion] V on V.Uid = R.AssetVersionUid
+							inner join [metrics].[Asset] M on M.Uid = V.AssetUid
+							inner join [metrics].[Allocation] S on S.Uid = M.AllocationUid and S.ScoreType = 2
+							inner join AssetType [AT] on [AT].Uid = S.AssetTypeUid and [AT].[Class] = 7 -- Rule
+							inner join Asset A on A.AssetTypeID = [AT].ID
+							inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = [AT].ID and T.ExecutionID = @ExecutionID and T.Success is null
+							cross apply openjson(R.Evidence, '$') RE
+							cross apply openjson(RE.[value]) REP
+							cross apply openjson(REP.[value]) with (Uid uniqueidentifier '$.Uid') REPI
+							inner join Asset RelyAsset on RelyAsset.Uid = REPI.Uid
+					where	ISNUMERIC(RE.[key]) = 1 
+							and REP.[key] = 'RollupPath';
+
+				insert into [api].[ExecutionAsset] (ExecutionID, ItemNumber, Uid, AssetID)
+					select	@ExecutionID, ItemNumber, Uid, ID from #RelyingAssets;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'WARNING: Failed to get relying assets.'
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Remove scoring data.
+			begin try
+				delete	R
+				from	[metrics].[ScoreItem] R
+						inner join [metrics].[AssetVersion] V on V.Uid = R.AssetVersionUid
+						inner join [metrics].[Asset] M on M.Uid = V.AssetUid
+						inner join [metrics].[Allocation] S on S.Uid = M.AllocationUid
+						inner join AssetType A on A.Uid = S.AssetTypeUid
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[metrics].[Score] R
+						inner join [metrics].[Allocation] S on S.Uid = R.AllocationUid
+						inner join AssetType A on A.Uid = S.AssetTypeUid
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[metrics].[Allocation] R
+						inner join AssetType A on A.Uid = R.AssetTypeUid
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[metrics].[RollupPathSegment] R
+						inner join AssetType A on A.ID = R.AssetTypeID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[metrics].[AssetVersionRollupPathFilter] R
+						inner join AssetType A on A.ID = R.AssetTypeID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove scores. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Remove workflow instances.
+			begin try
+				delete	R
+				from	[workflow].[ItemStepTransition] R
+						inner join [workflow].[ItemStep] S on S.ID = R.FromItemStepID
+						inner join [workflow].[Item] I on I.ID = S.ItemID
+						inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[ItemStepTransition] R
+						inner join [workflow].[ItemStep] S on S.ID = R.FromItemStepID
+						inner join [workflow].[Item] I on I.ID = S.ItemID
+						inner join Issue AC on AC.ID = I.ObjectID and I.Object = 'Issue'
+						inner join Asset A on A.ID = AC.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[ItemStepTransition] R
+						inner join [workflow].[ItemStep] S on S.ID = R.ToItemStepID
+						inner join [workflow].[Item] I on I.ID = S.ItemID
+						inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[ItemStepTransition] R
+						inner join [workflow].[ItemStep] S on S.ID = R.ToItemStepID
+						inner join [workflow].[Item] I on I.ID = S.ItemID
+						inner join Issue AC on AC.ID = I.ObjectID and I.Object = 'Issue'
+						inner join Asset A on A.ID = AC.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[ItemStep] R
+						inner join [workflow].[Item] I on I.ID = R.ItemID
+						inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[ItemStep] R
+						inner join [workflow].[Item] I on I.ID = R.ItemID
+						inner join Issue AC on AC.ID = I.ObjectID and I.Object = 'Issue'
+						inner join Asset A on A.ID = AC.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[ItemAssignment] R
+						inner join [workflow].[Item] I on I.ID = R.ItemID
+						inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[ItemAssignment] R
+						inner join [workflow].[Item] I on I.ID = R.ItemID
+						inner join Issue AC on AC.ID = I.ObjectID and I.Object = 'Issue'
+						inner join Asset A on A.ID = AC.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[Item] R
+						inner join Asset A on A.Object = R.Object and A.ObjectID = R.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[Item] R
+						inner join Issue AC on AC.ID = R.ObjectID and R.Object = 'Issue'
+						inner join Asset A on A.ID = AC.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove workflow instances. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Remove workflow types.
+			begin try
+				delete	R
+				from	[workflow].[VersionStepTransition] R
+						inner join [workflow].[VersionStep] S on S.ID = R.FromVersionStepID
+						inner join [workflow].[Version] I on I.ID = S.VersionID
+						inner join [workflow].[Type] W on W.ID = I.TypeID
+						inner join [workflow].[EventRegistration] E on E.TypeID = W.ID
+						inner join AssetType A on A.Object = E.Object and A.ObjectID = E.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[VersionStepTransition] R
+						inner join [workflow].[VersionStep] S on S.ID = R.ToVersionStepID
+						inner join [workflow].[Version] I on I.ID = S.VersionID
+						inner join [workflow].[Type] W on W.ID = I.TypeID
+						inner join [workflow].[EventRegistration] E on E.TypeID = W.ID
+						inner join AssetType A on A.Object = E.Object and A.ObjectID = E.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[VersionStep] R
+						inner join [workflow].[Version] I on I.ID = R.VersionID
+						inner join [workflow].[Type] W on W.ID = I.TypeID
+						inner join [workflow].[EventRegistration] E on E.TypeID = W.ID
+						inner join AssetType A on A.Object = E.Object and A.ObjectID = E.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				update	R
+				set		R.PublishedVersionID = null
+				from	[workflow].[Type] R
+						inner join [workflow].[EventRegistration] E on E.TypeID = R.ID
+						inner join AssetType A on A.Object = E.Object and A.ObjectID = E.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[Version] R 
+						inner join [workflow].[Type] W on W.ID = R.TypeID
+						inner join [workflow].[EventRegistration] E on E.TypeID = W.ID
+						inner join AssetType A on A.Object = E.Object and A.ObjectID = E.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[Type] R
+						inner join [workflow].[EventRegistration] E on E.TypeID = R.ID
+						inner join AssetType A on A.Object = E.Object and A.ObjectID = E.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[workflow].[EventRegistration] R
+						inner join AssetType A on A.Object = R.Object and A.ObjectID = R.ObjectID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove workflow types. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Remove issues.
+			begin try
+				delete	R
+				from	Field R
+						inner join [Issue] I on R.ObjectType = 'Issue' and R.ObjectID = I.ID
+						inner join Asset A on A.ID = I.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[Issue] R 
+						inner join Asset A on A.ID = R.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	IssueTypeRelation R 
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = R.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove Issues. '
+				where	ExecutionID = @ExecutionID
+			end catch
+			
+			-- Remove security data.
+			begin try
+				delete	R
+				from	ResponsibilityTypeRelationOverrideItem R
+						inner join Asset A on A.ID = R.AssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	ResponsibilityRuleResultAsset R
+						inner join ResponsibilityTypeRelationRule T on T.ID = R.RuleID
+						inner join AssetType A on A.Object = T.Object and A.ObjectID = T.ObjectID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.ID and S.ExecutionID = @ExecutionID and S.Success is null;
+
+				delete	R
+				from	ResponsibilityRuleResultSecurityAsset R
+						inner join ResponsibilityTypeRelationRule T on T.ID = R.RuleID
+						inner join AssetType A on A.Object = T.Object and A.ObjectID = T.ObjectID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.ID and S.ExecutionID = @ExecutionID and S.Success is null;
+
+				delete	R
+				from	ResponsibilityTypeRelationRule R
+						inner join AssetType A on A.Object = R.Object and A.ObjectID = R.ObjectID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.ID and S.ExecutionID = @ExecutionID and S.Success is null;
+
+				delete	R
+				from	ResponsibilityTypeRelation R
+						inner join AssetType A on A.Object = R.ObjectType and A.ObjectID = R.ObjectID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.ID and S.ExecutionID = @ExecutionID and S.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove security data. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Remove bulk load data.
+			begin try
+				delete	R
+				from	[Load] R
+						inner join AssetType A on A.Object = R.Object and A.ObjectID = R.ObjectID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.ID and S.ExecutionID = @ExecutionID and S.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove bulk load data. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Remove nav settings.
+			begin try
+				delete	R
+				from	SiteNavPermission R
+						inner join SiteNav N on N.ID = R.SiteNavID 
+						inner join AssetType A on A.Object = N.Object and A.ObjectID = N.ObjectID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.ID and S.ExecutionID = @ExecutionID and S.Success is null;
+
+				delete	R
+				from	SiteNav R 
+						inner join AssetType A on A.Object = R.Object and A.ObjectID = R.ObjectID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.ID and S.ExecutionID = @ExecutionID and S.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove navigation. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Remove type-level dependencies.
+			begin try
+				delete  R
+				from    AssetTypeExportTemplateStyle R
+						inner join AssetTypeExportTemplate E on E.ID = R.AssetTypeExportTemplateID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @ExecutionID and S.Success is null;
+
+				delete  R
+				from    AssetTypeExportTemplate R
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = R.AssetTypeID and S.ExecutionID = @ExecutionID and S.Success is null;
+
+				delete  R
+				from    AssetTypeLevel R
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = R.AssetTypeID and S.ExecutionID = @ExecutionID and S.Success is null;
+
+				delete  R
+				from    AssetTypeStyle R
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = R.ID and S.ExecutionID = @ExecutionID and S.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove asset type depedent settings. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Remove relationship data.
+			begin try
+				delete	R
+				from	Field R
+						inner join [Intersect] I on R.ObjectType = 'Intersect' and R.ObjectID = I.ID
+						inner join Asset A on A.ID = I.ObjectAssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[Intersect] R 
+						inner join Asset A on A.ID = R.ObjectAssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	Field R
+						inner join [Intersect] I on R.ObjectType = 'Intersect' and R.ObjectID = I.ID
+						inner join Asset A on A.ID = I.SubjectAssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[Intersect] R 
+						inner join Asset A on A.ID = R.SubjectAssetID
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	FieldType R
+						inner join [IntersectType] I on I.ID = R.ObjectID and R.Object = 'IntersectType'
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = I.SubjectAssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[IntersectType] R 
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = R.SubjectAssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	FieldType R
+						inner join [IntersectType] I on I.ID = R.ObjectID and R.Object = 'IntersectType'
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = I.ObjectAssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	[IntersectType] R 
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = R.ObjectAssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove relationships. '
+				where	ExecutionID = @ExecutionID
+			end catch
+			
+			-- Remove field type definition data.
+			begin try
+				delete	R
+				from	FieldCounterValue R
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = R.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+				delete	R
+				from	FieldType R
+						inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = R.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+			end try
+			begin catch
+				update	api.Execution
+				set		ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + 'Unable to remove field types. '
+				where	ExecutionID = @ExecutionID
+			end catch
+
+			-- Remove the underlying asset records.
+			delete	R
+			from	Asset R
+					inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = R.AssetTypeID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+			-- Remove the impacted asset types.
+			delete	R
+			from	AssetType R
+					inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = R.ID and T.ExecutionID = @ExecutionID and T.Success is null;
+
+			-- Update the status on the execution records.
+			update	api.ExecutionDeletedAssetType
+			set		[Message] = 'Removed Asset type from environment, along with all related assets, scores, and relationships.',
+					Success = 1
+			where	ExecutionID = @ExecutionID 
+					and Success is null;
+		end;
+
+		if @stateChangeOnly = 0
+		begin
+			-- Mark the execution as complete.
+			update	T
+			set		T.MarkedForProcessing = 0,
+					T.CompletedOn = getutcdate(),
+					T.Error = Err.[Count],
+					T.Processed = Pro.[Count],
+					T.Total = Tot.[Count]
+			from	api.Execution T
+					cross apply (select count(1) as [Count] from api.ExecutionDeletedAssetType where ExecutionID = @ExecutionID and Success = 0) Err
+					cross apply (select count(1) as [Count] from api.ExecutionDeletedAssetType where ExecutionID = @ExecutionID and Success = 1) Pro
+					cross apply (select count(1) as [Count] from api.ExecutionDeletedAssetType where ExecutionID = @ExecutionID) Tot
+			where	T.ExecutionID = @ExecutionID
+		end;
+	end try
+	begin catch
+		if @stateChangeOnly = 0
+		begin
+			update	T
+			set		T.MarkedForProcessing = 0,
+					T.CompletedOn = null,
+					T.ProcessingStartedOn = null,
+					T.Processed = 0,
+					T.ErrorMessage = iif(ErrorMessage is null, '', ErrorMessage) + ERROR_MESSAGE()
+			from	api.Execution T
+			where	T.ExecutionID = @ExecutionID
+		end;
+	end catch
+end
+		]]>
+	</sql>
+	<rollback>
+	<![CDATA[
 create or alter procedure api.DeleteAssetTypesByExecution
 	@ExecutionID uniqueidentifier,
 	@stateChangeOnly bit = 1
@@ -606,9 +1361,9 @@ begin
 			where	T.ExecutionID = @ExecutionID
 		end;
 	end catch
-end
-		]]>
-	</sql>
+end	
+	]]>
+	</rollback>
   </changeSet>
 
 </databaseChangeLog>
