@@ -992,6 +992,10 @@ from	Asset A
 					var rulegroups = rule.StructuredDefinition.Then.Conditions.GroupBy(c => c.Object);
 					foreach(var rulegroup in rulegroups)
                     {
+						//As it was discussed here https://infogix.slack.com/archives/GCYCRNR54/p1663685002231019
+						//we can not be inside this loop whitout that key (https://infogix.slack.com/archives/GCYCRNR54/p1663751303398119?thread_ts=1663685002.231019&cid=GCYCRNR54)
+						var rulegroupKey = rulegroup.Key ?? rule.StructuredDefinition.Then.Object;
+
 						Dictionary<string, string> objectIds = new Dictionary<string, string>()
 						{
 							{ "Resource", "RO" },
@@ -1006,19 +1010,19 @@ from	Asset A
 
 						rulegroupSql.Append($@"select distinct {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}");
 
-						if (rulegroup.Key == "OrganizationType")
+						if (rulegroupKey == "OrganizationType")
 						{
 							obj = "Organization";
 							rulegroupSql.Append($"'O' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, Z.uid " : "")} from Organization O {(includeUid ? " inner join Asset Z on Z.ObjectID=O.ID and Z.Object='Organization' " : "")}  ");
 						}
 
-						if (rulegroup.Key == "GroupType")
+						if (rulegroupKey == "GroupType")
 						{
 							obj = "Group";
 							rulegroupSql.Append($"'G' as SecurityAsset, OG.ID as SecurityAssetID{(includeName ? ", OG.Name" : "")} {(includeUid ? ", OG.Name as Path, Z.uid " : "")} from	[Group] OG {(includeUid ? " inner join Asset Z on Z.ObjectID=OG.ID and Z.Object='Group' " : "")}");
 						}
 
-						if (rulegroup.Key == "ResourceType")
+						if (rulegroupKey == "ResourceType")
 						{
 							obj = "Resource";
 							uniqueIdField = "ResourceID";
@@ -1098,7 +1102,7 @@ from	Asset A
 							}																				
 						}
 
-						if (rulegroup.Key == "ResourceType")
+						if (rulegroupKey == "ResourceType")
 						{
 							whenSuffix.Append((whenSuffix.Length == 0 ? $" where " : " and ") + $"RO.[State] = 1");
 							if (IsHideData3SixtyUsers)
