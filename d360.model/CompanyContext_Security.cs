@@ -581,10 +581,11 @@ namespace d360.model
 					thenSql = string.Format(thenSql, "");
 
 					//create impacted assets temporary table.
-					await Connection.ExecuteAsync("create table #changes (ActionType varchar(50), RuleID int, AssetID bigint)", transaction: transaction);
+					sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetID bigint)";
+					await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
 					//merge into the asset table 
-					await Connection.ExecuteAsync($@"
+					sqlToExecute = $@"
 							merge [dbo].[ResponsibilityRuleResultAsset] as T
 									using	(
 												{whenSql}
@@ -599,12 +600,13 @@ namespace d360.model
 									output  $action as ActionType, 
 											iif($action = 'DELETE', deleted.RuleID, inserted.RuleID), 
 											iif($action = 'DELETE', deleted.AssetID, inserted.AssetID)
-									into #changes;", new { ruleId = rule.ID }, transaction: transaction);
+									into #changes;";
+					await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
 
 					//merge into the resource table
 					if(thenSql != null && thenSql.Length > 0)
 					{
-						await Connection.ExecuteAsync($@"
+						sqlToExecute = $@"
 							merge [dbo].[ResponsibilityRuleResultSecurityAsset] as T
 									using	(
 												{thenSql}
@@ -615,12 +617,11 @@ namespace d360.model
 									when	not matched by target then
 											insert (RuleID, SecurityAsset, SecurityAssetID ,UpdatedOn, UpdatedBy ) values (S.RuleID,S.SecurityAsset,S.SecurityAssetID,getutcdate(),0)
 									when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
-											delete;
-						", new { ruleId = rule.ID, appliesToType = rule.ApplyToType }, transaction: transaction);
-					}					
+											delete;";
+						await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID, appliesToType = rule.ApplyToType }, transaction: transaction);
+					}
 
-					IEnumerable<ResponsibilityAssetMeasureProcessedResult> ruleResults = 
-						await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(@"
+					sqlToExecute = @"
 									select  A.Uid as AssetUid, 
 											M.AllocationUid,
 											M.Uid as MetricAssetUid,
@@ -639,21 +640,26 @@ namespace d360.model
 											) 
 										and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
 										and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
-										and V.Definition <> '{}'", new { today = DateTime.UtcNow.Date }, transaction: transaction);
+										and V.Definition <> '{}'";
+					IEnumerable<ResponsibilityAssetMeasureProcessedResult> ruleResults = 
+						await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(sqlToExecute, new { today = DateTime.UtcNow.Date }, transaction: transaction);
 
 					results.AddRange(ruleResults);
 
 					//drop impacted assets temporary table.
-					await Connection.ExecuteAsync("drop table if exists #changes", transaction: transaction);
+					sqlToExecute = "drop table if exists #changes";
+					await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
 					//First time a rule runs, queue the asset type for search re-indexing
 					if (rule.LastRunOn == null)
 					{
+						sqlToExecute = "select * from [dbo].[AssetType] at WHERE at.[Object] = @Object and at.ObjectID = @ObjectID";
 						AssetType assetType = Connection.Query<AssetType>(
-							"select * from [dbo].[AssetType] at WHERE at.[Object] = @Object and at.ObjectID = @ObjectID",
+							sqlToExecute,
 							new { rule.Object, rule.ObjectID },
 							transaction: transaction
 						).SingleOrDefault();
+
 						Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
 						{
 							CompanyID = CurrentCompanyID,
@@ -697,10 +703,11 @@ namespace d360.model
 					thenSql = string.Format(thenSql, "");
 
 					//create impacted assets temporary table.
-					await Connection.ExecuteAsync("create table #changes (ActionType varchar(50), RuleID int, AssetTypeID int)", transaction: transaction);
+					sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetTypeID int)";
+					await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
 					//merge into the asset table 
-					await Connection.ExecuteAsync(@"
+					sqlToExecute = @"
 							merge   [dbo].[ResponsibilityRuleResultAsset] as T
 							using	(
 									select	T.ID as AssetTypeID,		
@@ -720,10 +727,11 @@ namespace d360.model
 							output  $action as ActionType, 
 									iif($action = 'DELETE', deleted.RuleID, inserted.RuleID), 
 									iif($action = 'DELETE', deleted.AssetTypeID, inserted.AssetTypeID)
-							into #changes;", new { ruleId = rule.ID }, transaction: transaction);
+							into #changes;";
+					await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
 
 					//merge into the resource table
-					await Connection.ExecuteAsync($@"
+					sqlToExecute = $@"
 							merge   [dbo].[ResponsibilityRuleResultSecurityAsset] as T
 							using	(
 									{thenSql}
@@ -734,11 +742,10 @@ namespace d360.model
 							when	not matched by target then
 									insert (RuleID, SecurityAsset, SecurityAssetID ,UpdatedOn, UpdatedBy ) values (S.RuleID,S.SecurityAsset,S.SecurityAssetID,getutcdate(),0)
 							when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
-									delete;
-				", new { ruleId = rule.ID }, transaction: transaction);
+									delete;";
+					await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
 
-					IEnumerable<ResponsibilityAssetMeasureProcessedResult> ruleResults = 
-						await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(@"
+					sqlToExecute = @"
 							select  A.Uid as AssetUid, 
 									M.AllocationUid,
 									M.Uid as MetricAssetUid,
@@ -757,18 +764,22 @@ namespace d360.model
 											) 
 										and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
 										and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
-										and V.Definition <> '{}'", new { today = DateTime.UtcNow.Date }, transaction: transaction);
+										and V.Definition <> '{}'";
+					IEnumerable<ResponsibilityAssetMeasureProcessedResult> ruleResults = 
+						await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(sqlToExecute, new { today = DateTime.UtcNow.Date }, transaction: transaction);
 
 					results.AddRange(ruleResults);
 
 					//drop impacted assets temporary table.
-					await Connection.ExecuteAsync("drop table if exists #changes", transaction: transaction);
+					sqlToExecute = "drop table if exists #changes";
+					await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
 					//First time a rule runs, queue the asset type for search re-indexing
 					if (rule.LastRunOn == null)
 					{
+						sqlToExecute = "select * from [dbo].[AssetType] at WHERE at.[Object] = @Object and at.ObjectID = @ObjectID";
 						AssetType assetType = Connection.Query<AssetType>(
-							"select * from [dbo].[AssetType] at WHERE at.[Object] = @Object and at.ObjectID = @ObjectID",
+							sqlToExecute,
 							new { rule.Object, rule.ObjectID },
 							transaction: transaction
 						).SingleOrDefault();
@@ -981,6 +992,10 @@ from	Asset A
 					var rulegroups = rule.StructuredDefinition.Then.Conditions.GroupBy(c => c.Object);
 					foreach(var rulegroup in rulegroups)
                     {
+						//As it was discussed here https://infogix.slack.com/archives/GCYCRNR54/p1663685002231019
+						//we can not be inside this loop whitout that key (https://infogix.slack.com/archives/GCYCRNR54/p1663751303398119?thread_ts=1663685002.231019&cid=GCYCRNR54)
+						var rulegroupKey = rulegroup.Key ?? rule.StructuredDefinition.Then.Object;
+
 						Dictionary<string, string> objectIds = new Dictionary<string, string>()
 						{
 							{ "Resource", "RO" },
@@ -995,19 +1010,19 @@ from	Asset A
 
 						rulegroupSql.Append($@"select distinct {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}");
 
-						if (rulegroup.Key == "OrganizationType")
+						if (rulegroupKey == "OrganizationType")
 						{
 							obj = "Organization";
 							rulegroupSql.Append($"'O' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, Z.uid " : "")} from Organization O {(includeUid ? " inner join Asset Z on Z.ObjectID=O.ID and Z.Object='Organization' " : "")}  ");
 						}
 
-						if (rulegroup.Key == "GroupType")
+						if (rulegroupKey == "GroupType")
 						{
 							obj = "Group";
 							rulegroupSql.Append($"'G' as SecurityAsset, OG.ID as SecurityAssetID{(includeName ? ", OG.Name" : "")} {(includeUid ? ", OG.Name as Path, Z.uid " : "")} from	[Group] OG {(includeUid ? " inner join Asset Z on Z.ObjectID=OG.ID and Z.Object='Group' " : "")}");
 						}
 
-						if (rulegroup.Key == "ResourceType")
+						if (rulegroupKey == "ResourceType")
 						{
 							obj = "Resource";
 							uniqueIdField = "ResourceID";
@@ -1087,7 +1102,7 @@ from	Asset A
 							}																				
 						}
 
-						if (rulegroup.Key == "ResourceType")
+						if (rulegroupKey == "ResourceType")
 						{
 							whenSuffix.Append((whenSuffix.Length == 0 ? $" where " : " and ") + $"RO.[State] = 1");
 							if (IsHideData3SixtyUsers)
