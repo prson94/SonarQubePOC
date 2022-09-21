@@ -1,11 +1,11 @@
 ﻿// By this we guarantee that column headings are always visible (sticky) even if user scrolls vertically
-.relationship-detail p-table thead tr th {
+.relationship-detail .relationship-detail-table thead tr th {
   position: sticky;
   top: 0;
   z-index: 2;
 }
 
-.relationship-detail p-table table {
+.relationship-detail .relationship-detail-table table {
   th, 
   td {
     &:not(:last-child) {
@@ -19,12 +19,12 @@
 }
 
 // This is a fix to add horizontal scroll on table when [responsiveLayout]="scroll"
-.relationship-detail p-table table {
+.relationship-detail .relationship-detail-table table {
     width: max-content;
 }
 
 // This makes kebab menu to be sticky
-.relationship-detail p-table table  {
+.relationship-detail .relationship-detail-table table  {
   th.asset-grid-tools, td.asset-grid-tools {
     position: sticky;
     right: -1px; // This 1px compensates transparent border
@@ -36,14 +36,14 @@
 }
 
 // This makes sure that kebab menu can inherit white background from p-table
-.relationship-detail p-table {
+.relationship-detail .relationship-detail-table {
   .p-datatable-wrapper, table, tbody, tr, td {
     background: inherit;
   }
 }
 
 // This ensures that only column headings affects calculation of column width
-.relationship-detail p-table td {
+.relationship-detail .relationship-detail-table td {
   max-width: 0;
 
   // For some reason, max-width: 0 makes kebab menu to extend table width. Thus we undo this to avoid weird mess
@@ -52,7 +52,7 @@
   }
 }
 
-.relationship-detail p-table table tr {
+.relationship-detail .relationship-detail-table table tr {
   background: inherit;
 }
 
