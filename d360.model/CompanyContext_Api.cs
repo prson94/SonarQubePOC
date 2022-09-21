@@ -118,7 +118,7 @@ namespace d360.model
 
         private bool TypeHasProcessRelationshipTypes(AssetType at)
         {
-            return Database.Connection.QuerySingle<bool>(@"select iif(count(*) = 0, 0, 1) from IntersectTypeDetail where SubjectUid = @uid or objectuid = @uid and PredicateType = 15", new { at.uid });
+            return Database.Connection.QuerySingle<bool>(@"select iif(count(*) = 0, 0, 1) from IntersectTypeDetail where SubjectAssetTypeID = @ID or ObjectAssetTypeID = @ID and PredicateType = 15", new { at.ID });
         }
 
         private PredicateType? DeterminePredicateType(string obj)
@@ -5647,8 +5647,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 																	count(1) as RelationshipCount
 															from	api.ExecutionRelationship ER
 																	inner join Asset S on S.Uid = ER.SubjectUid and ER.ExecutionID = @ExecutionID
-																	inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.Subject = S.Object and I.SubjectID = S.ObjectID
-																	inner join Asset O on O.Uid <> ER.ObjectUid and O.Object = I.Object and O.ObjectID = I.ObjectID 
+																	inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.SubjectAssetID = S.ID 
+																	inner join Asset O on O.Uid <> ER.ObjectUid and O.ID = I.ObjectAssetID 
 															group by ER.ExecutionID, ER.ItemNumber
 															) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 
@@ -10337,7 +10337,7 @@ where   ER.ExecutionID = @ExecutionID
 				left join IntersectType it on it.ID= IntersectTypeId
 				left join Asset A on a.object = TargetObject and a.objectid = targetobjectid
 				left join assettype at on a.AssetTypeID = at.ID 
-				where CheckType = 'R' and (at.uid <> it.subjectuid and at.uid <> it.objectuid)
+				where CheckType = 'R' and (at.ID <> it.SubjectAssetTypeID and at.ID <> it.ObjectAssetTypeID)
 
 				update #parsedData
 				set ErrorMessage = 'AssigneeType not found.'
