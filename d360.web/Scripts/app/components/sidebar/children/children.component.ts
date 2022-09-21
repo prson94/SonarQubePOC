@@ -91,10 +91,11 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
             });
 
 		this.objectDetailService.getObjectDetailByObjectUid(this.baseAssetUid).subscribe(
-            res => {
+			(res) => {
+				console.log(res);
                 this.displayName = res.DisplayValue;
                 this.objectName = res.DisplayValue;
-                this.parentUid = res['Uid']; 
+				this.parentUid = res['AssetUid']; 
             }
         );
 

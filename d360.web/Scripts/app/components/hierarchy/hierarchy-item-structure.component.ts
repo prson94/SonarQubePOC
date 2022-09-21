@@ -386,7 +386,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				this.objectTypeId,
 				null,
 				null,
-				true
+				false
 			));
 			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
 
