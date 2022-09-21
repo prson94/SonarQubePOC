@@ -25,7 +25,6 @@ const routes: Routes = [
             { path: 'assets', loadChildren: () => import('./artifacts/admin-artifacts.module').then((m) => m.AdminArtifactsModule) },
             { path: 'issuetypes', loadChildren: () => import('./issuetypes/admin-issue-types.module').then((m) => m.AdminIssueTypesModule) },
             { path: 'predicates', loadChildren: () => import('./predicates/admin-predicates.module').then((m) => m.AdminPredicatesModule) },
-            { path: 'organizations', loadChildren: () => import('./organizations/admin-organizations.module').then((m) => m.AdminOrganizationsModule) },
             { path: 'customizations', loadChildren: () => import('./customizations/admin-customizations.module').then((m) => m.AdminCustomizationsModule) },
             { path: 'exporttemplates', loadChildren: () => import('./exporttemplates/admin-export-templates.module').then((m) => m.AdminExportTemplatesModule) },
             { path: 'tags', loadChildren: () => import('./tags/admin-tags.module').then((m) => m.AdminTagsModule) },
