@@ -357,7 +357,7 @@ namespace d360.web.Services.Favorites
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "asset/:uid/ownership",
+                RoutePattern = "asset/:uid/owners",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(() => PageNames.ResponsibilitiesTab),
             },
