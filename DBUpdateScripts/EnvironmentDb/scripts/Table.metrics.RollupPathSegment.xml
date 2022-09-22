@@ -93,5 +93,19 @@ end
 		]]>
 	</rollback>
   </changeSet> 
+  
+  <changeSet author="Andrii Kunetskyi" id="Index.metrics.RollupPathSegment-v3">
+	<preConditions onFail="MARK_RAN">
+        <primaryKeyExists primaryKeyName="PK_MetricRollupPathSegment" />
+    </preConditions>
+    <dropPrimaryKey constraintName="PK_MetricRollupPathSegment" schemaName="metrics" tableName="RollupPathSegment" />
+  </changeSet>
+  
+  <changeSet author="Andrii Kunetskyi" id="Index.metrics.RollupPathSegment-v4">
+	<createIndex clustered="false" unique="true" indexName="IX_MetricRollupPathSegment" schemaName="metrics" tableName="RollupPathSegment" >
+		<column name="RollupPathUid" />
+		<column name="Position" />
+	</createIndex>
+  </changeSet>
 
 </databaseChangeLog>
