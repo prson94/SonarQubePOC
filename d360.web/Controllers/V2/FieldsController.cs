@@ -2332,22 +2332,18 @@ namespace d360.web.Controllers.V2
 				if (fieldType.Type == "Relationship")
 				{
 					var sql = $@"
-								declare @target nvarchar(255) 
-								declare @targetid int
+								declare @targetassettypeid int
 
 								select  
-								@targetid = 
-								case when ft.object = it.subject and ft.objectid = it.subjectid then it.ObjectID
-								else it.SubjectID
-								end, 
-								@target = case when ft.object = it.subject and ft.objectid = it.subjectid then it.Object
-								else it.Subject
+								@targetassettypeid = 
+								case when ft.AssetTypeID = it.SubjectAssetTypeID then it.ObjectAssetTypeID
+								else it.SubjectAssetTypeID
 								end
 								 from fieldtype ft
 								inner join [IntersectType] IT on IT.ID = ft.LookupObjectID
 								where ft.id = @fieldtypeid
 
-								declare @assetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
+								declare @assetTypeId int = (select top 1 id from assettype where id = @targetassettypeid)
 
 								select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
 								 inner join AssetPath Node on Node.id = a.id
