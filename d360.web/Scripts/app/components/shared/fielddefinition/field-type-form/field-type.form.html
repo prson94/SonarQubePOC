@@ -854,12 +854,20 @@
                 <div class="col l6 m6 s12"
                      style="margin: 10px 0 10px 0">
                     <div class="FieldName" i18n>Selected Field</div>
-                    <p-dropdown [ngModelOptions]="{standalone: true}"
+                    <p-dropdown *ngIf="!isLoadingDefaultFieldTypeName; else lookupDefaultFieldValuesAbsent"
+                                [ngModelOptions]="{standalone: true}"
                                 [options]="fieldsFromRelation"
                                 [ngModel]="model.FieldType.Type[currentType].FieldTypeName"
                                 (ngModelChange)="cardinalFieldFromRelationship_FieldSelected($event);"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
+                    <ng-template #lookupDefaultFieldValuesAbsent>
+                        <p-dropdown [options]="[loadingLabel]"
+                                    [(ngModel)]="loadingLabel"
+                                    [style]="{ 'width': '98%' }"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [disabled]="true" ngDefaultControl></p-dropdown>
+                    </ng-template>
                 </div>
             </div>
         </simple-accordion>
