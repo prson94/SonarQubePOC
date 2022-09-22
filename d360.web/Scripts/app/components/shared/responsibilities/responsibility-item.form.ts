@@ -96,8 +96,6 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     private setResouceAssigned() {
         switch (this.item.ResourceType) {
             case "Group":
-            case "Organization":
-            case "Organisation":
                 this.resouceAssigned = `${this.item.ResourceType}: ${this.item.Group}`;
                 break;
             case "User":
@@ -125,10 +123,6 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
             case "R":
                 atype = "R";
                 break;
-            case "Organization":
-            case "O":
-                atype = "O";
-                break;
             default:
                 atype = null;
                 break;
@@ -149,11 +143,6 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                 case "Group":
                 case "G":
                     selectedResourceType = "G";
-                    break;
-                case "Organization":
-                case "Organisation":
-                case "O":
-                    selectedResourceType = "O";
                     break;
             }
 

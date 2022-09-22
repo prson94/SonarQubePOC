@@ -41,9 +41,6 @@ export class SegmentsTooltipComponent implements OnInit {
                     case AssetTypeClass.Model:
                         this.assetTypeText = "Model";
                         break;
-                    case AssetTypeClass.Organization:
-                        this.assetTypeText = "Organization";
-                        break;
                     case AssetTypeClass.Policy:
                         this.assetTypeText = "Policy";
                         break;

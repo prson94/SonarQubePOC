@@ -58,8 +58,6 @@ namespace d360.core.entities
                         return "resource";
                     case "G":
                         return "group";
-                    case "O":
-                        return "organization";
                     default:
                         return null;
                 }

@@ -403,24 +403,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allow the creation and management of organizations as well as registration of users belonging to these organizations into the system..
-        /// </summary>
-        internal static string EnableOrganizations_Desc {
-            get {
-                return ResourceManager.GetString("EnableOrganizations_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Enable Organizations.
-        /// </summary>
-        internal static string EnableOrganizations_Name {
-            get {
-                return ResourceManager.GetString("EnableOrganizations_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Enables the use of DQ+ Dashboards.
         /// </summary>
         internal static string EnableSagacity_Desc {

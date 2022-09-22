@@ -612,7 +612,6 @@ namespace d360.web.Controllers.V2
 		/// This endpoint can add the following asset type classes:  
 		/// - BusinessAsset
 		/// - Model
-		/// - Organization
 		/// - Policy
 		/// - Reference
 		/// - Rule
@@ -650,9 +649,8 @@ namespace d360.web.Controllers.V2
 				}
 
 				var governanceRoleReferenceListUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
-				var EnableOrganizations = SettingsRepository.GetSettingValue<bool>(Setting.EnableOrganizations);
 
-				var validator = new AssetTypeValidator(Company, governanceRoleReferenceListUid, EnableOrganizations);
+				var validator = new AssetTypeValidator(Company, governanceRoleReferenceListUid);
 
 				AssetType parentAssetType = null;
 
@@ -856,7 +854,6 @@ namespace d360.web.Controllers.V2
 		/// This endpoint can update the following asset type classes:  
 		/// - BusinessAsset 
 		/// - Model
-		/// - Organization
 		/// - Policy
 		/// - Reference
 		/// - Rule
@@ -891,8 +888,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
-				var EnableOrganizations = SettingsRepository.GetSettingValue<bool>(Setting.EnableOrganizations);
-				var validator = new AssetTypeValidator(Company, govRoleUid, EnableOrganizations);
+				var validator = new AssetTypeValidator(Company, govRoleUid);
 
 				if (model.Class == AssetTypeClass.Glossary)
 				{

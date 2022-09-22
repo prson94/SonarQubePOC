@@ -56,13 +56,6 @@ namespace d360.core.enums
             Description("Reference asset.")
         ]
         Reference = 9,
-
-		[
-			Name("Organization"),
-			Description("Organization asset.")
-		]
-		Organization = 10,
-
 		[
             Name("User"),
             Description("User asset.")

@@ -505,7 +505,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Retrieves a list of responsibility type ownership rules for the specified responsibility type.  Rules applied to groups and organizations are enumerated to the actual count of users contained therein.  Rules applying to a type are enumerated down to the count of assets within the given type.
+        /// Retrieves a list of responsibility type ownership rules for the specified responsibility type.  Rules applied to groups are enumerated to the actual count of users contained therein.  Rules applying to a type are enumerated down to the count of assets within the given type.
         /// </summary>
         /// <param name="responsibilityTypeRuleUid">The unique identifier of the responsibility type ownership rule to get stats for.</param>
         /// <returns>Returns a stats for the specified responsibility type ownership rules.</returns>
@@ -1072,11 +1072,11 @@ namespace d360.web.Controllers.V2
         /// 
         /// <remarks>
         ///###Rules###
-        /// Conditions can be specified as Field condition (filter by field and its value), Relation condition (filter by relationship) and Assignee (filter by Resource, Group or Organization)
+        /// Conditions can be specified as Field condition (filter by field and its value), Relation condition (filter by relationship) and Assignee (filter by Resource or Group)
         /// <table>
         /// <tr><td>**Object**</td><td>**Description**</td><td>**Validation**</td></tr>
         /// <tr><td>When</td><td>List of conditions which filter assets to which rule applies to</td><td>Can be empty - applies to all asset within asset type</td></tr>
-        /// <tr><td>Then</td><td>List of conditions which specify to which Resrouce, Group or Organization rule applies to</td><td>Cannot be empty</td></tr>
+        /// <tr><td>Then</td><td>List of conditions which specify to which Resource or Group rule applies to</td><td>Cannot be empty</td></tr>
         ///</table>
         /// <br/>
         /// <table>
@@ -1085,8 +1085,8 @@ namespace d360.web.Controllers.V2
         /// <tr><td>Field</td><td>Value</td><td>Field value for comparison. Only assets that match this value will be considered as a part of rule.</td><td>Must NOT be empty</td></tr>
         /// <tr><td>Relation</td><td>IntersectTypeUid</td><td>Relationship Type Uid</td><td>Must be valid relationship type for given Asset Type</td></tr>
         /// <tr><td>Relation</td><td>AssetUid</td><td>UID of matching Asset</td><td>Must be valid asset for Relationship Type specified on subject or object side.</td></tr>
-        /// <tr><td>Assignee</td><td>Uid</td><td>UID of Resource, Group or Organization</td><td>Type must match to AssigneeTypeUid.</td></tr>
-        /// <tr><td>Then</td><td>AssigneeTypeUid</td><td>UID of ResourceType, GroupType or OrganizationType</td><td>Must be valid UID</td></tr>
+        /// <tr><td>Assignee</td><td>Uid</td><td>UID of Resource or Group</td><td>Type must match to AssigneeTypeUid.</td></tr>
+        /// <tr><td>Then</td><td>AssigneeTypeUid</td><td>UID of ResourceType or GroupType</td><td>Must be valid UID</td></tr>
         /// </table>
         /// <br/>
         /// **Notes:** 
@@ -1138,11 +1138,11 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <remarks>
         ///###Rules###
-        /// Conditions can be specified as Field condition (filter by field and its value), Relation condition (filter by relationship) and Assignee (filter by Resource, Group or Organization)
+        /// Conditions can be specified as Field condition (filter by field and its value), Relation condition (filter by relationship) and Assignee (filter by Resource or Group)
         /// <table>
         /// <tr><td>**Object**</td><td>**Description**</td><td>**Validation**</td></tr>
         /// <tr><td>When</td><td>List of conditions which filter assets to which rule applies to</td><td>Can be empty - applies to all asset within asset type</td></tr>
-        /// <tr><td>Then</td><td>List of conditions which specify to which Resrouce, Group or Organization rule applies to</td><td>Cannot be empty</td></tr>
+        /// <tr><td>Then</td><td>List of conditions which specify to which Resrouce or Group rule applies to</td><td>Cannot be empty</td></tr>
         ///</table>
         /// <br/>
         /// <table>
@@ -1151,8 +1151,8 @@ namespace d360.web.Controllers.V2
         /// <tr><td>Field</td><td>Value</td><td>Field value for comparison. Only assets that match this value will be considered as a part of rule.</td><td>Must NOT be empty</td></tr>
         /// <tr><td>Relation</td><td>IntersectTypeUid</td><td>Relationship Type Uid</td><td>Must be valid relationship type for given Asset Type</td></tr>
         /// <tr><td>Relation</td><td>AssetUid</td><td>UID of matching Asset</td><td>Must be valid asset for Relationship Type specified on subject or object side.</td></tr>
-        /// <tr><td>Assignee</td><td>Uid</td><td>UID of Resource, Group or Organization</td><td>Type must match to AssigneeTypeUid.</td></tr>
-        /// <tr><td>Then</td><td>AssigneeTypeUid</td><td>UID of ResourceType, GroupType or OrganizationType</td><td>Must be valid UID</td></tr>
+        /// <tr><td>Assignee</td><td>Uid</td><td>UID of Resource or Group</td><td>Type must match to AssigneeTypeUid.</td></tr>
+        /// <tr><td>Then</td><td>AssigneeTypeUid</td><td>UID of ResourceType or GroupType</td><td>Must be valid UID</td></tr>
         /// </table>
         /// <br/>
         /// **Notes:** 
@@ -1304,11 +1304,11 @@ namespace d360.web.Controllers.V2
         /// 
         /// <remarks>
         ///###Rules###
-        /// Conditions can be specified as Field condition (filter by field and its value), Relation condition (filter by relationship) and Assignee (filter by Resource, Group or Organization)
+        /// Conditions can be specified as Field condition (filter by field and its value), Relation condition (filter by relationship) and Assignee (filter by Resource or Group)
         /// <table>
         /// <tr><td>**Object**</td><td>**Description**</td><td>**Validation**</td></tr>
         /// <tr><td>When</td><td>List of conditions which filter assets to which rule applies to</td><td>Can be empty - applies to all asset within asset type</td></tr>
-        /// <tr><td>Then</td><td>List of conditions which specify to which Resrouce, Group or Organization rule applies to</td><td>Cannot be empty</td></tr>
+        /// <tr><td>Then</td><td>List of conditions which specify to which Resrouce or Group rule applies to</td><td>Cannot be empty</td></tr>
         ///</table>
         /// <br/>
         /// <table>
@@ -1317,8 +1317,8 @@ namespace d360.web.Controllers.V2
         /// <tr><td>Field</td><td>Value</td><td>Field value for comparison. Only assets that match this value will be considered as a part of rule.</td><td>Must NOT be empty</td></tr>
         /// <tr><td>Relation</td><td>IntersectTypeUid</td><td>Relationship Type Uid</td><td>Must be valid relationship type for given Asset Type</td></tr>
         /// <tr><td>Relation</td><td>AssetUid</td><td>UID of matching Asset</td><td>Must be valid asset for Relationship Type specified on subject or object side.</td></tr>
-        /// <tr><td>Assignee</td><td>Uid</td><td>UID of Resource, Group or Organization</td><td>Type must match to AssigneeTypeUid.</td></tr>
-        /// <tr><td>Then</td><td>AssigneeTypeUid</td><td>UID of ResourceType, GroupType or OrganizationType</td><td>Must be valid UID</td></tr>
+        /// <tr><td>Assignee</td><td>Uid</td><td>UID of Resource or Group</td><td>Type must match to AssigneeTypeUid.</td></tr>
+        /// <tr><td>Then</td><td>AssigneeTypeUid</td><td>UID of ResourceType or GroupType</td><td>Must be valid UID</td></tr>
         /// </table>
         /// <br/>
         /// **Notes:** 

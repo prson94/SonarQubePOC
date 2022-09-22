@@ -78,10 +78,6 @@ namespace igx.UnitTests.ServicesTests
             expectedResult = $"Group: {assetType.Name}";
             yield return new object[] { assetType, expectedResult };
 
-            assetType = new AssetType() { Object = "OrganizationType", Class = It.IsAny<AssetTypeClass>(), Name = f.Create<string>() };
-            expectedResult = $"Organization: {assetType.Name}";
-            yield return new object[] { assetType, expectedResult };
-
             assetType = new AssetType() { Object = "ResourceType", Class = It.IsAny<AssetTypeClass>(), Name = f.Create<string>() };
             expectedResult = $"Resource: {assetType.Name}";
             yield return new object[] { assetType, expectedResult };

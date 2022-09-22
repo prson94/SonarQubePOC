@@ -77,8 +77,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             case AssetTypeClass.Model:
                 this.showAssetDepthSettings = true;
                 break;
-            case AssetTypeClass.Organization:
-                break;
             case AssetTypeClass.Policy:
                 this.showAssetDepthSettings = true;
                 break;

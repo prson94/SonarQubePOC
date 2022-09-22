@@ -89,7 +89,6 @@ namespace igx.UnitTests.ValidatorTests
                 "ArtifactType",
                 "AttributeType",
                 "GroupType",
-                "OrganizationType",
                 "PolicyType",
                 "ReferenceItemType",
                 "ResourceType",

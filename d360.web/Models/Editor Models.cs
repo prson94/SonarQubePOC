@@ -114,8 +114,6 @@ namespace d360.web.Models
 
         public bool EnableShoppingCart { get; set; }
 
-        public bool EnableOrganizations { get; set; }
-
         public string DefaultRoute { get; set; }
 
         public bool EnableSagacity { get; set; }

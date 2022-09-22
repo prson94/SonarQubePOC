@@ -22,14 +22,12 @@ namespace d360.core.validators
 		private readonly List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule, AssetTypeClass.Glossary, AssetTypeClass.Diagram };
 		private readonly string ColorRegex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 		private Guid? _governanceRoleUid = null;
-		private readonly bool IsEnableOrganizations;
 		private readonly ICompanyContext CompanyContext;
 
-		public AssetTypeValidator(ICompanyContext companyContext, Guid? govRoleUid = null, bool EnableOrganizations = false)
+		public AssetTypeValidator(ICompanyContext companyContext, Guid? govRoleUid = null)
 		{
 			CompanyContext = companyContext;
 			_governanceRoleUid = govRoleUid;
-			IsEnableOrganizations = EnableOrganizations;
 		}
 
 		public WorkHttpStatus ValidateModel(bool isInsert, AssetTypeUpsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType = null)
@@ -397,7 +395,7 @@ where	a.[class] = @cls
 						return false;
 					}
 					
-					if (!CompanyContext.Assets.Any(a => a.uid == ownerguid && (a.Object == SystemObjects.Group.ToString() || a.Object == SystemObjects.Resource.ToString() || a.Object == SystemObjects.Organization.ToString())))
+					if (!CompanyContext.Assets.Any(a => a.uid == ownerguid && (a.Object == SystemObjects.Group.ToString() || a.Object == SystemObjects.Resource.ToString())))
 					{
 						return false;
 					}

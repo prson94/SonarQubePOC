@@ -146,29 +146,12 @@ namespace d360.core
         
         [Description("Score Type Metric"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
         ScoreTypeMetric = 51,
-        
-        [Description("Organization"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        Organization = 52,
-        
-        [Description("Organization Domain"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        OrganizationDomain = 53,
-        
-        [Description("Organization Invitation"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        OrganizationInvitation = 54,
-        
-        [Description("Contract"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        Contract = 55,
-        
+
         [Description("Shopping Cart Type"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
         ShoppingCartType = 56,
         
         [Description("Shopping Cart"), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
         ShoppingCart = 57,
-        
-        [Description("Organization Type"), IsType(true),
-            ExcludeDataType(DataType.FieldFromRelationship |
-            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter)]
-        OrganizationType = 58,
         
         [Description("Export Template"), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter)]
         ExportTemplate = 59,

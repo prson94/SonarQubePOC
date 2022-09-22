@@ -107,7 +107,6 @@ namespace d360.web.Controllers.V2
 		/// <param name="_direction">The direction in which to return results by asc/desc. </param>
 		/// <param name="_filter">The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
 		/// <param name="_simpleFilter">The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
-		/// <param name="_includeOrganization">Include the users organization uid if they are part of an organization.</param>
 		[
 			HttpGet,
 			MapToApiVersion("2.0"),
@@ -117,7 +116,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 		]
-		public async Task<IHttpActionResult> GetUsers(CancellationToken Cancellationtoken, Guid? Uid = null, int? ResourceID = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "", bool _includeOrganization = false)
+		public async Task<IHttpActionResult> GetUsers(CancellationToken Cancellationtoken, Guid? Uid = null, int? ResourceID = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "")
 		{
 			try
 			{
@@ -177,11 +176,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				var joinBulder = new StringBuilder();
-				joinBulder.Append($@" outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A 
-										{(_includeOrganization ?
-													@" left join dbo.OrganizationResource org on org.ResourceID = GR.ResourceID 
-													left join dbo.asset ao on ao.Object like 'Organization' and ao.ObjectID = org.OrganizationID "
-									: "")}");
+				joinBulder.Append($@" outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A");
 
 				var whereBuilder = new StringBuilder();
 				var selectBuilder = new StringBuilder();
@@ -230,7 +225,6 @@ namespace d360.web.Controllers.V2
 				{
 					selectBuilder.Append($@"select
 					gr.uid,
-					{(_includeOrganization ? " ao.Uid as OrganizationUid, " : "")} 
 					gr.ResourceID, 
 					gr.FirstName, 
 					gr.LastName,

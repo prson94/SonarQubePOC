@@ -117,7 +117,6 @@ namespace d360.web.Controllers
 								P.DisplayPath as [Path],
 								case RD.SecurityAsset
 									when 'G' then 'Via Group'
-									when 'O' then 'Via Organization'
 									else ''
 								end as ViaType,
 								A.Uid as UID,
@@ -137,7 +136,6 @@ namespace d360.web.Controllers
 									P.DisplayPath as [Path],
 									case RD.SecurityAsset
 										when 'G' then 'Via Group'
-										when 'O' then 'Via Organization'
 										else ''
 									end as ViaType,
 									A.Uid as UID,

@@ -48,9 +48,6 @@ namespace d360.web.Services
                 case "GroupType":
                     result = "Group";
                     break;
-                case "OrganizationType":
-                    result = "Organization";
-                    break;
                 case "ResourceType":
                     result = "Resource";
                     break;
