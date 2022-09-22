@@ -45,6 +45,7 @@ export class BaseComponent {
 	basePredicateTypeUid: string;
 	baseResponsibilityUid: string;
 	baseAssetUid: string;
+	baseSemanticTypeUid: string;
 	infoIconHtmlString: string = `<i class='fa fa-info-circle help-icon'></i>`;
 
 	public preloadedTreeData: any[] = [];
@@ -296,7 +297,7 @@ export class BaseComponent {
 
 			if ((opts.hasAudit || opts.hasAudit === undefined) && this.getBooleanSetting(CompanySettingEnum.ShowChangeLogTab)) {
 				let url = `/asset/${this.uid}/log`;
-
+				
 				if (this.baseAssetUid) {
 					url = `/asset/${this.baseAssetUid}/log`;
 				}
@@ -308,6 +309,10 @@ export class BaseComponent {
 				}
 				else if (this.baseResponsibilityUid) {
 					url = `/assets/${this.baseResponsibilityUid}/log`;
+				}
+
+				if (this.baseSemanticTypeUid) {
+					url = `/semantics/${this.baseSemanticTypeUid}/log`;
 				}
 
 				this.auditSidebar = new SecondaryNavItem(
@@ -1013,6 +1018,10 @@ export class BaseComponent {
 			}
 			else if (r?.AssetTypeClass === AssetTypeClass.User) {
 				homeUrl = "users/" + this.uid;
+			}
+			else if (r?.AssetTypeClass === AssetTypeClass.SemanticType) {
+				homeUrl = "semantics";
+				this.baseSemanticTypeUid = r.Uid;
 			}
 			else if (r?.ObjectType === `Tag`) {
 				homeUrl = SiteUrlHelpers.SITE_URL_TAG_ROOT + "/" + this.uid;

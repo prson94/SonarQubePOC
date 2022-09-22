@@ -456,7 +456,7 @@ namespace d360.web.Controllers.V2
 
 			if (result == null)
 			{
-				result = Company.Query<dynamic>($@"select 'Semantic' as Object, ID as ObjectId, Name as DisplayValue from semantic where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+				result = Company.Query<dynamic>($@"select 'SemanticType' as Object, ID as ObjectId, Name as DisplayValue from semantic where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
 			}
 
 			return result;

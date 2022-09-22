@@ -1616,5 +1616,20 @@ from	workflow.EventRegistration T
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
-
+    <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-19677">
+	<comment>GOV-19677 - Update Semantic change log for new routing.</comment>	
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		update dbo.Favorite
+		set Route = CONCAT('semantics/',LOWER(cast(S.uid as nvarchar(max))),'/log') 
+		from dbo.Favorite F
+		inner join Semantic S on S.ID = F.SemanticID
+		where F.SemanticID is not null
+		and (Route like '%sidebar/audit%' or Route like '%log%')
+	]]>
+	</sql>
+  </changeSet>
 </databaseChangeLog>
