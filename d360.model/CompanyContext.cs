@@ -486,17 +486,17 @@ namespace d360.model
 				cardinalityCheckSQL += " and not exists (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.ObjectCardinality = 1 and SubjectAssetID = {0} and I.Id is null)";
 			}
 
-			string intersectJoin = @"((I.SubjectAssetID = {0} and I.ObjectAssetID = @fieldAssetID) or (I.ObjectAssetID = {0} and I.SubjectAssetID = @fieldAssetID))";
+			string intersectJoin = @"((I.SubjectAssetID = {0} and I.ObjectAssetID = @assetId) or (I.ObjectAssetID = {0} and I.SubjectAssetID = @assetId))";
 
 			if (!sameSubjectObject)
 			{
 				if (isSubject)
 				{
-					intersectJoin = @"(I.SubjectAssetID = {0} and I.ObjectAssetID = @fieldAssetID)";
+					intersectJoin = @"(I.SubjectAssetID = {0} and I.ObjectAssetID = @assetId)";
 				}
 				else
 				{
-					intersectJoin = @"(I.ObjectAssetID = {0} and I.SubjectAssetID = @fieldAssetID)";
+					intersectJoin = @"(I.ObjectAssetID = {0} and I.SubjectAssetID = @assetId)";
 				}
 			}
 
@@ -504,13 +504,13 @@ namespace d360.model
 			string formattedIntersectJoin = string.Format(intersectJoin, "AD.ID");
 
 			selectedSql = @"
-select	iif(i.SubjectAssetID = @assetId, i.ObjectAssetID, i.SubjectAssetID) as [Value],
-		P.DisplayPath as [Text],
-		1 as Selected 
-from	[Intersect] i
-		inner join Asset A on A.ID = iif(i.SubjectAssetID = @assetId, i.ObjectAssetID, i.SubjectAssetID)
-		inner join AssetPath P on P.ID = A.ID
-where	i.intersectTypeID = @intersectTypeID and i.State = 1 and (i.SubjectAssetID = @assetId or i.ObjectAssetID = @assetId)";
+						select	iif(i.SubjectAssetID = @assetId, i.ObjectAssetID, i.SubjectAssetID) as [Value],
+								P.DisplayPath as [Text],
+								1 as Selected 
+						from	[Intersect] i
+								inner join Asset A on A.ID = iif(i.SubjectAssetID = @assetId, i.ObjectAssetID, i.SubjectAssetID)
+								inner join AssetPath P on P.ID = A.ID
+						where	i.intersectTypeID = @intersectTypeID and i.State = 1 and (i.SubjectAssetID = @assetId or i.ObjectAssetID = @assetId)";
 
 			switch (objectAssetClass)
 			{
@@ -522,30 +522,30 @@ where	i.intersectTypeID = @intersectTypeID and i.State = 1 and (i.SubjectAssetID
 						formattedIntersectJoin = string.Format(intersectJoin, "A.ID");
 
 						countSql = $@"
-select	count(*) 
-from	AssetType A 
-		inner join [IntersectType] IT on IT.Id = @intersectTypeID 
-		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-where	A.ID = @assetID and (@query is null or A.Name like '%' + @query + '%') {formattedCardinalityCheck}";
+								select	count(*) 
+								from	AssetType A 
+										inner join [IntersectType] IT on IT.Id = @intersectTypeID 
+										left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+								where	A.ID = @assetID and (@query is null or A.Name like '%' + @query + '%') {formattedCardinalityCheck}";
 
 						sql = $@"
-select  A.ObjectID as [Value], 
-		A.[Name] as [Text], 
-		case when I.ID is not null then 1 else 0 end as Selected
-from	AssetType A 
-		inner join [IntersectType] IT on IT.Id = @intersectTypeID
-		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin} 
-where	A.ID = @assetId and (@query is null or A.[Name] like '%' + @query + '%') {formattedCardinalityCheck}
-order by 3 desc, A.[Name] asc
-OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+								select  A.ObjectID as [Value], 
+										A.[Name] as [Text], 
+										case when I.ID is not null then 1 else 0 end as Selected
+								from	AssetType A 
+										inner join [IntersectType] IT on IT.Id = @intersectTypeID
+										left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin} 
+								where	A.ID = @assetId and (@query is null or A.[Name] like '%' + @query + '%') {formattedCardinalityCheck}
+								order by 3 desc, A.[Name] asc
+								OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 
 						selectedSql = @"
-select	case when i.Subject = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end as [Value], 
-		A.[Name] as [Text], 
-		1 as Selected 
-from	[intersect] i
-		inner join AssetType A on A.ID = iif(i.SubjectAssetID = @assetID, i.ObjectAssetTypeID, i.SubjectAssetTypeID)
-where	i.IntersectTypeID = @intersectTypeID and i.State = 1 and (i.SubjectAssetID = @assetId or i.ObjectAssetID = @assetId)";
+								select	case when i.SubjectAssetID = @assetId then i.ObjectAssetID else i.SubjectAssetID end as [Value], 
+										A.[Name] as [Text], 
+										1 as Selected 
+								from	[intersect] i
+										inner join AssetType A on A.ID = iif(i.SubjectAssetID = @assetId, i.ObjectAssetTypeID, i.SubjectAssetTypeID)
+								where	i.IntersectTypeID = @intersectTypeID and i.State = 1 and (i.SubjectAssetID = @assetId or i.ObjectAssetID = @assetId)";
 					}
 					else
 					{
@@ -553,31 +553,31 @@ where	i.IntersectTypeID = @intersectTypeID and i.State = 1 and (i.SubjectAssetID
 						formattedIntersectJoin = string.Format(intersectJoin, "A.ID");
 
 						countSql = $@"
-select	count(*) 
-from	Asset A 
-		inner join AssetType T on T.ID = A.AssetTypeID
-		inner join [IntersectType] IT on IT.Id = @intersectTypeID 
-		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-		inner join AssetDisplayValue D on D.AssetID = A.ID
-where	T.[Object] = @obj and T.ObjectID = @objID 
-		and (@query is null or D.DisplayValue like '%' + @query + '%')
-		and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID) {formattedCardinalityCheck}";
+								select	count(*) 
+								from	Asset A 
+										inner join AssetType T on T.ID = A.AssetTypeID
+										inner join [IntersectType] IT on IT.Id = @intersectTypeID 
+										left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+										inner join AssetDisplayValue D on D.AssetID = A.ID
+								where	T.ID = @objectAssetTypeID
+										and (@query is null or D.DisplayValue like '%' + @query + '%')
+										and not A.ID = @assetId {formattedCardinalityCheck}";
 
 						sql = $@"
-select	A.ObjectID as [Value], 
-		D.DisplayValue as [Text], 
-		case when I.ID is not null then 1 else 0 end as Selected
-from	Asset A 
-		inner join AssetType T with (nolock) on T.ID = A.AssetTypeID
-		inner join [IntersectType] IT on IT.Id = @intersectTypeID
-		inner join AssetDisplayValue D on D.AssetID = A.ID
-		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-where	T.[Object] = @obj and T.ObjectID = @objID 
-		and (@query is null or D.DisplayValue like '%' + @query + '%')
-		and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID)                            
-		{formattedCardinalityCheck}
-order by 3 desc, D.DisplayValue asc
-OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+								select	A.ObjectID as [Value], 
+										D.DisplayValue as [Text], 
+										case when I.ID is not null then 1 else 0 end as Selected
+								from	Asset A 
+										inner join AssetType T with (nolock) on T.ID = A.AssetTypeID
+										inner join [IntersectType] IT on IT.Id = @intersectTypeID
+										inner join AssetDisplayValue D on D.AssetID = A.ID
+										left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+								where	T.ID = @objectAssetTypeID
+										and (@query is null or D.DisplayValue like '%' + @query + '%')
+										and not A.ID = @assetId                            
+										{formattedCardinalityCheck}
+								order by 3 desc, D.DisplayValue asc
+								OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 					}
 
 					break;
@@ -586,61 +586,62 @@ OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 					formattedIntersectJoin = string.Format(intersectJoin, "'Resource'", "R.ResourceID");
 
 					countSql = $@"
-select	count(*) 
-from	reporting.Global_Resource R 
-		inner join [IntersectType] IT on IT.Id = @intersectTypeID
-		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
-		and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
-		{formattedCardinalityCheck}";
+							select	count(*) 
+							from	reporting.Global_Resource R 
+									inner join [IntersectType] IT on IT.Id = @intersectTypeID
+									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+							where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
+									and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
+									{formattedCardinalityCheck}";
 
 					sql = $@"
-select	R.ResourceID as Value, 
-		R.LastName + ', ' + R.FirstName as Text, 
-		case when I.ID is not null then 1 else 0 end as Selected 
-from	reporting.[Global_Resource] R
-		inner join [IntersectType] IT on IT.Id = @intersectTypeID
-		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
-		and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
-		{formattedCardinalityCheck} 
-order by 3 desc, R.LastName + ', ' + R.FirstName asc 
-OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+							select	R.ResourceID as Value, 
+									R.LastName + ', ' + R.FirstName as Text, 
+									case when I.ID is not null then 1 else 0 end as Selected 
+							from	reporting.[Global_Resource] R
+									inner join [IntersectType] IT on IT.Id = @intersectTypeID
+									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+							where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
+									and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
+									{formattedCardinalityCheck} 
+							order by 3 desc, R.LastName + ', ' + R.FirstName asc 
+							OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 					break;
 				default:
 					formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.ID");
 					formattedIntersectJoin = string.Format(intersectJoin, "A.ID");
 
 					countSql = $@"
-select	count(*) 
-from	AssetWithType A 
-		inner join AssetPath P on P.ID = A.ID
-		inner join [IntersectType] IT on IT.Id = @intersectTypeID
-		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-where	A.[Type] = @obj and A.TypeID = @objID 
-		and not (A.Object = @fieldObject and A.ObjectID = @fieldObjectID)
-						{(string.IsNullOrEmpty(query) ? "" : " and (P.DisplayPath like '%' + @query + '%')")}
-						{formattedCardinalityCheck}";
+							select	count(*) 
+							from	AssetWithType A 
+									inner join AssetPath P on P.ID = A.ID
+									inner join [IntersectType] IT on IT.Id = @intersectTypeID
+									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+							where	A.AssetTypeID = @objectAssetTypeID 
+									and not A.ID = @assetId
+													{(string.IsNullOrEmpty(query) ? "" : " and (P.DisplayPath like '%' + @query + '%')")}
+													{formattedCardinalityCheck}";
+					
 					sql = $@"
-select	distinct 
-		A.ID as Value, 
-		P.DisplayPath as Text, 
-		case when I.ID is not null then 1 else 0 end as Selected 
-from	AssetWithType A 
-		inner join AssetPath P on P.ID = A.ID
-		inner join [IntersectType] IT on IT.Id = @intersectTypeID
-		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-where	A.[Type] = @obj and A.TypeID = @objID 
-		and (@query is null or P.TextPath like '%' + @query + '%')
-		and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID) {formattedCardinalityCheck}
-order by 3 desc, P.TextPath asc
-OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+							select	distinct 
+									A.ID as Value, 
+									P.DisplayPath as Text, 
+									case when I.ID is not null then 1 else 0 end as Selected 
+							from	AssetWithType A 
+									inner join AssetPath P on P.ID = A.ID
+									inner join [IntersectType] IT on IT.Id = @intersectTypeID
+									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+							where	A.AssetTypeID = @objectAssetTypeID
+									and (@query is null or P.TextPath like '%' + @query + '%')
+									and not A.ID = @assetId {formattedCardinalityCheck}
+							order by 3 desc, P.TextPath asc
+							OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 					break;
 			}
 
 			if (offset == 0 || query != null)
 			{
-				count = Database.Connection.QueryFirstOrDefault<int>(countSql, new { assetId, query, intersectTypeID = intersectType.ID }); // fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID,
+				count = Database.Connection.QueryFirstOrDefault<int>(countSql, new { assetId, query, intersectTypeID = intersectType.ID, objectAssetTypeID });
 			}
 
 			List<dynamic> selected = null, items = null;
@@ -659,8 +660,6 @@ OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 						rows, 
 						query,
 						assetId,
-						//fieldObject = @object ?? obj, 
-						//fieldObjectID = objectID ?? objID, 
 						intersectTypeID = intersectType.ID 
 					}
 					).ToList();
