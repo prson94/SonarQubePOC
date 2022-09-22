@@ -162,6 +162,9 @@ namespace d360.extensions.search
 		private const string NGRAM_FIELD = "ngram";
 		public static readonly string NGRAM_FIELD_PREFIX = NGRAM_FIELD + ".";
 
+		private const string UNDERSCORE_FIELD = "underscore";
+		public static readonly string UNDERSCORE_FIELD_PREFIX = UNDERSCORE_FIELD + ".";
+
 		private readonly string CommunityConnectionString;
 
         public ElasticSearchSource()
@@ -213,9 +216,15 @@ namespace d360.extensions.search
             {
                 d3sFields.Add("AssetTypeUid", item.AssetTypeUid.ToString());
             }
+			if (item.Semantic != null)
+			{
+				d3sFields.Add("SemanticName", item.Semantic.Name);
+				d3sFields.Add("SemanticQualifier", item.Semantic.Qualifier);
+				d3sFields.Add("SemanticUid", item.Semantic.Uid.ToString());
+			}
 
-            //For users move Data3SixtyUser from Fields to d3sFields
-            if (item.Category == AssetTypeClass.User.ToString() && item.AssetType == "User" && dynamicFields.ContainsKey("Data3SixtyUser"))
+			//For users move Data3SixtyUser from Fields to d3sFields
+			if (item.Category == AssetTypeClass.User.ToString() && item.AssetType == "User" && dynamicFields.ContainsKey("Data3SixtyUser"))
             {
                 d3sFields.Add("Data3SixtyUser", dynamicFields["Data3SixtyUser"] == "1" ? "true" : "false");
                 dynamicFields.Remove("Data3SixtyUser");
@@ -369,15 +378,14 @@ namespace d360.extensions.search
                                     .MaxGram(NGramMax == 0 ? 99 : NGramMax)
                                     .TokenChars( new[] { TokenChar.Letter, TokenChar.Digit } )
                                 )
-                            )
-                            .Analyzers(aa => aa
-                                .Custom("default", ca => ca
+							)
+							.Analyzers(aa => aa
+                                .Custom("default_underscore", ca => ca
                                     .CharFilters("underscore2space")
                                     .Tokenizer("standard")
                                     .Filters("standard", "lowercase")
                                 )
                                 .Custom("default_ngram", ca => ca
-                                    .CharFilters("underscore2space")
                                     .Tokenizer("d3s_ngram")
                                     .Filters("standard", "lowercase")
                                 )
@@ -399,10 +407,36 @@ namespace d360.extensions.search
                                                     .IgnoreAbove(256)
                                                 )
                                             )
-											.CopyTo(ct => NGramMin == 0 ? null : ct.Field(NGRAM_FIELD_PREFIX + "Name"))
-                                        )
-                                    )
+											.CopyTo(ct =>
+												{
+													var flds = new List<Nest.Field>
+													{
+														UNDERSCORE_FIELD_PREFIX + "Name"
+													};
+													if( NGramMin > 0 )
+													{
+														flds.Add(NGRAM_FIELD_PREFIX + "Name");
+													}
+													return ct.Fields(flds);
+												}
+											)
+										)
+									)
                                 )
+								.Object<dynamic>(o => o
+									.Dynamic(false)
+									.Name(UNDERSCORE_FIELD)
+									.Properties(p => p
+										.Text(t => t
+											.Name("Name")
+											.Analyzer("default_underscore")
+										)
+										.Text(t => t
+											.Name("SemanticQualifier")
+											.Analyzer("default_underscore")
+										)
+									)
+								)
 								.Object<dynamic>(o => o
 									.Dynamic(false)
 									.Name(NGRAM_FIELD)
@@ -413,7 +447,7 @@ namespace d360.extensions.search
 										)
 									)
 								)
-                                .Object<dynamic>(o => o
+								.Object<dynamic>(o => o
                                     .Name(D3S_FIELD)
                                     .Properties(p => p
                                         .Keyword(s => s.Name("Category"))
@@ -441,8 +475,20 @@ namespace d360.extensions.search
                                         .Keyword(s => s.Name("NoReadOrgID"))
                                         .Boolean(b => b.Name("Data3SixtyUser"))
                                         .Text(s => s.Name("Path"))
-                                    )
-                                )
+										.Text(s => s.Name("SemanticName"))
+										.Text(s => s
+											.Name("SemanticQualifier")
+											.Fields(f => f
+												.Keyword(k => k
+													.Name("keyword")
+													.IgnoreAbove(256)
+												)
+											)
+											.CopyTo(ct => ct.Field(UNDERSCORE_FIELD_PREFIX + "SemanticQualifier"))
+										)
+										.Keyword(s => s.Name("SemanticUid"))
+									)
+								)
                             )
                         )
                     );
@@ -522,15 +568,11 @@ namespace d360.extensions.search
 		private static bool IndexHasLatestFeatures(IElasticClient client, int companyID)
 		{
 			bool hasLatest = false;
-			//Latest feature is 'underscore2space' char filter converting period to space, so the number of mappings should be 2
+			//Latest feature is 'default_underscore' analyzer
 			var state = GetIndexSettings(client, companyID);
-			if (state.Settings.Analysis?.CharFilters?.ContainsKey("underscore2space") ?? false)
+			if (state.Settings.Analysis?.Analyzers?.ContainsKey("default_underscore") ?? false)
 			{
-				var filter = (MappingCharFilter)state.Settings.Analysis.CharFilters["underscore2space"];
-				if(filter.Mappings.Count() == 2)
-				{
-					hasLatest = true;
-				}
+				hasLatest = true;
 			}
 
 			//If nGram is enabled, the fields.Name field should be copied to the ngram.Name field
@@ -1171,9 +1213,13 @@ namespace d360.extensions.search
                         Query = phrase,
                         Type = MapStrategyToType(_strategy[2])
                     });
-					//nGram query
+					//nGram/underscore query
 					mainQueries.Add(new MatchQuery {
 						Field = NGRAM_FIELD_PREFIX + "Name",
+						Query = phrase
+					});
+					mainQueries.Add(new MatchPhrasePrefixQuery {
+						Field = UNDERSCORE_FIELD_PREFIX + "Name",
 						Query = phrase
 					});
 
@@ -1238,165 +1284,206 @@ namespace d360.extensions.search
                     continue;
                 }
                 string[] values = fieldFilter.Values.Select(v => EscapeSpecialCharacters(v).ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToArray();
-                if (fieldFilter.Field == "Tags")
-                {
-                    string path = D3S_FIELD_PREFIX + "Tags";
-                    Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
+				if (fieldFilter.Field == "Tags")
+				{
+					string path = D3S_FIELD_PREFIX + "Tags";
+					Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
 
-                    if (fieldFilter.Connector == SearchConnector.And)
-                    {
-                        qry = new BoolQuery
-                        {
-                            Must = values.Select(v =>
-                            {
-                                QueryContainer q = new NestedQuery
-                                {
-                                    Path = path,
-                                    Query = new MatchQuery
-                                    {
-                                        Field = fldTag,
-                                        Query = v,
-                                        Operator = Nest.Operator.And
-                                    }
-                                };
-                                return q;
-                            })
-                        };
-                    }
-                    else
-                    {
-                        qry = new NestedQuery
-                        {
-                            Path = path,
-                            Query = new BoolQuery
-                            {
-                                Should = values.Select(v =>
-                                {
-                                    QueryContainer q = new MatchQuery
-                                    {
-                                        Field = fldTag,
-                                        Query = v,
-                                        Operator = Nest.Operator.And
-                                    };
-                                    return q;
-                                }),
-                                MinimumShouldMatch = 1
-                            }
-                        };
-                    }
-                }
-                else if (fieldFilter.Field == "TagUids")
-                {
-                    string path = D3S_FIELD_PREFIX + "Tags";
-                    Nest.Field fldTagUid = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
-                    if (fieldFilter.Connector == SearchConnector.And)
-                    {
-                        qry = new BoolQuery
-                        {
-                            Must = fieldFilter.Values.Select(v =>
-                            {
-                                QueryContainer q = new NestedQuery
-                                {
-                                    Path = path,
-                                    Query = new TermQuery
-                                    {
-                                        Field = fldTagUid,
-                                        Value = v
-                                    }
-                                };
-                                return q;
-                            })
-                        };
-                    }
-                    else
-                    {
-                        qry = new NestedQuery
-                        {
-                            Path = path,
-                            Query = new BoolQuery
-                            {
-                                Should = fieldFilter.Values.Select(v =>
-                                {
-                                    QueryContainer q = new TermQuery
-                                    {
-                                        Field = fldTagUid,
-                                        Value = v
-                                    };
-                                    return q;
-                                }),
-                                MinimumShouldMatch = 1
-                            }
-                        };
-                    }
-                }
-                else if (fieldFilter.Field == "Path")
-                {
-                    Nest.Field fldPath = new Nest.Field(D3S_FIELD_PREFIX + "Path");
-                    var segmentQueries = values.Select(v =>
-                    {
-                        QueryContainer q = new MatchQuery
-                        {
-                            Field = fldPath,
-                            Query = v
-                        };
-                        return q;
-                    });
+					if (fieldFilter.Connector == SearchConnector.And)
+					{
+						qry = new BoolQuery
+						{
+							Must = values.Select(v =>
+							{
+								QueryContainer q = new NestedQuery
+								{
+									Path = path,
+									Query = new MatchQuery
+									{
+										Field = fldTag,
+										Query = v,
+										Operator = Nest.Operator.And
+									}
+								};
+								return q;
+							})
+						};
+					}
+					else
+					{
+						qry = new NestedQuery
+						{
+							Path = path,
+							Query = new BoolQuery
+							{
+								Should = values.Select(v =>
+								{
+									QueryContainer q = new MatchQuery
+									{
+										Field = fldTag,
+										Query = v,
+										Operator = Nest.Operator.And
+									};
+									return q;
+								}),
+								MinimumShouldMatch = 1
+							}
+						};
+					}
+				}
+				else if (fieldFilter.Field == "TagUids")
+				{
+					string path = D3S_FIELD_PREFIX + "Tags";
+					Nest.Field fldTagUid = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
+					if (fieldFilter.Connector == SearchConnector.And)
+					{
+						qry = new BoolQuery
+						{
+							Must = fieldFilter.Values.Select(v =>
+							{
+								QueryContainer q = new NestedQuery
+								{
+									Path = path,
+									Query = new TermQuery
+									{
+										Field = fldTagUid,
+										Value = v
+									}
+								};
+								return q;
+							})
+						};
+					}
+					else
+					{
+						qry = new NestedQuery
+						{
+							Path = path,
+							Query = new BoolQuery
+							{
+								Should = fieldFilter.Values.Select(v =>
+								{
+									QueryContainer q = new TermQuery
+									{
+										Field = fldTagUid,
+										Value = v
+									};
+									return q;
+								}),
+								MinimumShouldMatch = 1
+							}
+						};
+					}
+				}
+				else if (fieldFilter.Field == "Path")
+				{
+					Nest.Field fldPath = new Nest.Field(D3S_FIELD_PREFIX + "Path");
+					var segmentQueries = values.Select(v =>
+					{
+						QueryContainer q = new MatchQuery
+						{
+							Field = fldPath,
+							Query = v
+						};
+						return q;
+					});
 
-                    if (fieldFilter.Connector == SearchConnector.And)
-                    {
-                        qry = new BoolQuery
-                        {
-                            Must = segmentQueries
-                        };
-                    }
-                    else
-                    {
-                        qry = new BoolQuery
-                        {
-                            Should = segmentQueries,
-                            MinimumShouldMatch = 1
-                        };
-                    }
-                }
-                else
-                {
-                    Nest.Field fld = new Nest.Field(DYNAMIC_FIELD_PREFIX + fieldFilter.Field);
-                    if (fieldFilter.MatchWords)
-                    {
-                        qry = new MatchPhraseQuery
-                        {
-                            Field = fld,
-                            Query = values.First()
-                        };
-                    }
-                    else
-                    {
-                        string p = fieldFilter.Values.First();
-                        if (p.Contains("*"))
-                        {
-                            if (p.EndsWith("*")) //If we have trailing *, remove before escaping
-                            {
-                                p = p.Remove(p.Length - 1);
-                            }
-                            p = EscapeSpecialCharacters(p) + "*";
+					if (fieldFilter.Connector == SearchConnector.And)
+					{
+						qry = new BoolQuery
+						{
+							Must = segmentQueries
+						};
+					}
+					else
+					{
+						qry = new BoolQuery
+						{
+							Should = segmentQueries,
+							MinimumShouldMatch = 1
+						};
+					}
+				}
+				else
+				{
+					var flds = new List<Nest.Field>();
+					IEnumerable<QueryContainer> subqueries;
 
-                            qry = new QueryStringQuery
-                            {
-                                Fields = fld,
-                                Query = p,
-                                AnalyzeWildcard = true
-                            };
-                        }
-                        else
-                        {
-                            qry = new MatchPhrasePrefixQuery
-                            {
-                                Field = fld,
-                                Query = values.First()
-                            };
-                        }
-                    }
-                }
+					if (fieldFilter.Field == "Semantictype")
+					{
+						flds.Add(D3S_FIELD_PREFIX + "SemanticName");
+						flds.Add(D3S_FIELD_PREFIX + "SemanticQualifier");
+
+						if(IsPhraseGuid(values.First()) > 0)
+						{
+							flds.Add(D3S_FIELD_PREFIX + "SemanticUid");
+						}
+					}
+					else
+					{
+						flds.Add(D3S_FIELD_PREFIX + fieldFilter.Field);
+					}
+
+					if (fieldFilter.MatchWords)
+					{
+						subqueries = flds.Select(f => {
+							QueryContainer q = new MatchPhraseQuery
+							{
+								Field = f,
+								Query = values.First()
+							};
+							return q;
+						});
+					}
+					else
+					{
+						string p = fieldFilter.Values.First();
+						if (p.Contains("*"))
+						{
+							if (p.EndsWith("*")) //If we have trailing *, remove before escaping
+							{
+								p = p.Remove(p.Length - 1);
+							}
+							p = EscapeSpecialCharacters(p) + "*";
+
+							subqueries = flds.Select(f =>
+							{
+								QueryContainer q = new QueryStringQuery
+								{
+									Fields = f,
+									Query = p,
+									AnalyzeWildcard = true
+								};
+								return q;
+							});
+						}
+						else
+						{
+							subqueries = flds.Select(f =>
+							{
+								QueryContainer q = new MatchPhrasePrefixQuery
+								{
+									Field = f,
+									Query = values.First()
+								};
+								return q;
+							});
+						}
+					}
+
+					if(subqueries.Count() == 1)
+					{
+						qry = subqueries.First();
+					}
+					else
+					{
+						qry = new BoolQuery
+						{
+							Should = subqueries,
+							MinimumShouldMatch = 1
+						};
+					}
+				}
 
                 if (fieldFilter.Operator == SearchOperator.NotContains)
                 {
@@ -1554,8 +1641,11 @@ namespace d360.extensions.search
                 Uid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "Uid"),
                 AssetTypeUid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "AssetTypeUid"),
                 Tags = GetTags(h),
-                Explanation = queryRequest.Explain ? h._explanation.ToString() : ""
-            }).ToList();
+                Explanation = queryRequest.Explain ? h._explanation.ToString() : "",
+				SemanticName = GetHighlightedPropertyValueIfExists(h, D3S_FIELD_PREFIX + "SemanticName"),
+				SemanticQualifier = GetHighlightedPropertyValueIfExists(h, D3S_FIELD_PREFIX + "SemanticQualifier"),
+				SemanticUid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "SemanticUid")
+			}).ToList();
 
 
             if (searchResults.aggregations != null && searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)

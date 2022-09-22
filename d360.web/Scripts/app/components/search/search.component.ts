@@ -255,9 +255,12 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         fields.push({
             Name: "Path", FriendlyName: "Asset Path", Type: new FieldType("Path"), Category: "", RemovePopulatedOperator: true
         });
-        fields.push({
-            Name: "Tags", FriendlyName: "Tags", Type: new FieldType("Tag"), Category: "", RemovePopulatedOperator: true
-        });
+		fields.push({
+			Name: "Tags", FriendlyName: "Tags", Type: new FieldType("Tag"), Category: "", RemovePopulatedOperator: true
+		});
+		fields.push({
+			Name: "Semantictype", FriendlyName: "Semantic Type", Type: new FieldType("Text"), Category: "", RemovePopulatedOperator: true
+		});
         this.filterFieldsSubject.next(fields);
         this.filterFieldsSubject.complete();
     }

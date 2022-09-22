@@ -110,13 +110,21 @@ namespace d360.model
         protected virtual void OnDataProfilesPartiallyProcessed(DataProfilesPartiallyProcessedEventArgs e)
         {
             DataProfilesPartiallyProcessed?.Invoke(this, e);
-        }
 
-        #endregion
+			QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+			{
+				CompanyID = CurrentCompanyID,
+				BatchUids = e.Results.Where(r => r.uid.HasValue).Select(r => r.uid ?? Guid.Empty).ToList(),
+				BatchOperation = ReindexBatchOperation.Update
+			});
 
-        #region Utility Methods
+		}
 
-        private bool TypeHasProcessRelationshipTypes(AssetType at)
+		#endregion
+
+		#region Utility Methods
+
+		private bool TypeHasProcessRelationshipTypes(AssetType at)
         {
             return Database.Connection.QuerySingle<bool>(@"select iif(count(*) = 0, 0, 1) from IntersectTypeDetail where SubjectAssetTypeID = @ID or ObjectAssetTypeID = @ID and PredicateType = 15", new { at.ID });
         }

@@ -20,6 +20,7 @@ import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/share
 import { SearchRoutingModule } from './search.routes';
 import { ExplainWidgetModule } from './explain-widget/explain-widget.module';
 import { AssetPathWidgetModule } from './asset-path-widget/asset-path-widget.module';
+import { ScrollerWidgetModule } from './scroller-widget/scroller-widget.module';
 
 import { CheckboxModule } from 'primeng/checkbox';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -78,7 +79,8 @@ import { AngularSplitModule } from 'angular-split';
         ExplainWidgetModule,
         IgBadgeModule,
         AdvancedFiltersModule,
-        AssetPathWidgetModule,
+		AssetPathWidgetModule,
+		ScrollerWidgetModule,
         SidePanelModule,
         AssetDetailModule,
         DataProfileModule,

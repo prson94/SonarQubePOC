@@ -179,13 +179,18 @@ namespace igx.jobs.indexer
                 AssetTypeClass.ReferenceItemType,
                 AssetTypeClass.Group,
                 AssetTypeClass.User,
-                AssetTypeClass.SemanticType
+                AssetTypeClass.SemanticType,
+				AssetTypeClass.Predicate
             };
+
+			classes.ForEach(cls => {
+				indexer.CanCreatePendingDBLog(cls, null, true);
+			});
 
             source.ClearIndex(CompanyID);
 
             classes.ForEach(cls => {
-                LogReindexStart(cls.ToString(), CompanyID);
+                LogReindexStart(cls == AssetTypeClass.Predicate ? "Synonym" : cls.ToString(), CompanyID);
                 try
                 {
                     indexer.IndexAssetClass(cls);
@@ -196,16 +201,6 @@ namespace igx.jobs.indexer
                 }
 
             });
-
-            LogReindexStart("Synonyms", CompanyID);
-            try
-            {
-                indexer.IndexAssetClass(AssetTypeClass.Predicate);
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex, CompanyID);
-            }
 
             await LogCompanyReindexComplete(CompanyID);
             if (companyConn.State != System.Data.ConnectionState.Closed)

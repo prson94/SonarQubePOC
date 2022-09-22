@@ -1,0 +1,11 @@
+﻿<div class="field-bar-outer">
+	<button *ngIf="showScrollButtons" class="left field-scroller" (click)="scroll('L')" [ngClass]="{'disabled':disableScrollLeft}" [disabled]="disableScrollLeft">
+		<i class="fa fa-chevron-circle-left"></i>
+	</button>
+	<div #fieldScroller class="field-bar can-overflow" [ngClass]="{'is-overflowing' : showScrollButtons}">
+		<ng-content></ng-content>
+	</div>
+	<button *ngIf="showScrollButtons" class="right field-scroller" (click)="scroll('R')" [ngClass]="{'disabled':disableScrollRight}" [disabled]="disableScrollRight">
+		<i class="fa fa-chevron-circle-right"></i>
+	</button>
+</div>
