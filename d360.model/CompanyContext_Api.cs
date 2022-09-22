@@ -623,7 +623,7 @@ namespace d360.model
 						inner join AssetDetail ad on AD.[AssetTypeID] = V.SubjectAssetTypeID and {assetJoin} 
 						where isfound = 0;
 
-						if exists(Select 1 from #tempdata t where t.ObjectClass = 4  and isfound = 0)
+						if exists(Select 1 from #tempdata t where t.ObjectClass = 14  and isfound = 0)
 						begin
 							update V
 							set isfound = 3
@@ -632,7 +632,7 @@ namespace d360.model
 							where isfound = 0;
 						end
 
-						if exists(Select 1 from #tempdata t where t.SubjectClass = 4 and isfound = 0)
+						if exists(Select 1 from #tempdata t where t.SubjectClass = 14 and isfound = 0)
 						begin
 							update V
 							set isfound = 4
@@ -1119,7 +1119,7 @@ namespace d360.model
 				inner join AssetDetail ad on AD.AssetTypeID = V.ITSUBJECTASSETTYPEID and {assetJoin} 
 				where isfound = 0;
 
-				if exists(Select 1 from #tempdata t where T.OBJECTCLASS = 4  and isfound = 0)
+				if exists(Select 1 from #tempdata t where T.OBJECTCLASS = 14  and isfound = 0)
 				begin
 					update V
 					set [SubjectAssetID] = 0,
@@ -1134,7 +1134,7 @@ namespace d360.model
 					where isfound = 0;
 				end
 
-				if exists(Select 1 from #tempdata t where T.SUBJECTCLASS = 4  and isfound = 0)
+				if exists(Select 1 from #tempdata t where T.SUBJECTCLASS = 14  and isfound = 0)
 				begin
 					update V
 					set [SubjectAssetID] = 0,
