@@ -838,8 +838,7 @@ namespace d360.model.DataAccessLayer
 										F.ID as FieldTypeID
 								from	IntersectType I
 										inner join FieldType F on 
-												F.AssetTypeID = I.SubjectAssetTypeID
-												and F.AssetTypeID = @assetTypeId
+												F.AssetTypeID = case when I.SubjectAssetTypeID = @assetTypeId then I.objectAssetTypeID else I.SubjectAssetTypeID end
 												and I.Uid = @intersectTypeUid 
 												and F.Name = @fieldTypeName";
 					var relationshipsFieldType = Company.Query<dynamic>(query, new

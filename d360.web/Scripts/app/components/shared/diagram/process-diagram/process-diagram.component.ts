@@ -214,8 +214,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.editorRef.nativeElement.style.height = this.diagramRef.nativeElement.style.height;
         }
         if (this.myDiagram) {
-            var diagramPlaceholderWidth = document.getElementById('process-diagram-placeholder').getBoundingClientRect().width;
-            this.diagramRef.nativeElement.style.width = diagramPlaceholderWidth + 'px';
             setTimeout(() => {
                 if (this.myDiagram)
                     this.myDiagram.redraw();
@@ -288,6 +286,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         setTimeout(() => {
             this.onResize(null);
+			this.myDiagram.alignDocument(go.Spot.Center, go.Spot.Center);
         }, 200);
     }
 

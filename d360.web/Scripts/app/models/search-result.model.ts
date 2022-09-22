@@ -55,12 +55,15 @@ export class SearchFullResult extends SearchResult {
     Icon: string;
     Uid: string;
     Explanation: string;
-    Fields: SearchResultFieldDisplay[];
+	Fields: SearchResultFieldDisplay[];
     Status: string;
     Object: string;
     ObjectId: number;
     HasProfiling: boolean;
-    Scores: AssetScore[];
+	Scores: AssetScore[];
+	SemanticName: string;
+	SemanticQualifier: string;
+	SemanticUid: string;
 }
 
 export interface SearchAggregation {

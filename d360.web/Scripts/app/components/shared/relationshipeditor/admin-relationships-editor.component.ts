@@ -122,6 +122,7 @@ export class AdminRelationshipsEditor {
         if (predicate != null && predicate.isSemantic == true) {
             this.canChangeObject = false;
             this.objectOptions = this.subjectOptions.slice();
+			this.cdRef.detectChanges();
             this.relationshipType.Object.Uid = this.relationshipType.Subject.Uid;
         }
         else {

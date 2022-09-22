@@ -322,7 +322,13 @@ namespace d360.web.Services.Favorites
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(() => PageNames.ChangeLogTab)
             },
-            new FavoriteRouteMatcher
+			new FavoriteRouteMatcher
+			{
+				RoutePattern = "semantics/:uid/log",
+				PageType = FavoritePageType.Artifact,
+				GetName = WithTabName(() => PageNames.ChangeLogTab)
+			},
+			new FavoriteRouteMatcher
             {
                 RoutePattern = "asset/:uid/diagrams",
                 OtherRoutePatterns = {
@@ -357,7 +363,7 @@ namespace d360.web.Services.Favorites
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "asset/:uid/ownership",
+                RoutePattern = "asset/:uid/owners",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(() => PageNames.ResponsibilitiesTab),
             },

@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.graph.AssetBrowser_Impact-v5">
-    <comment>GOV-18453 Convert Object/ObjectID/ObjectType/ObjectTypeID columns in dbo.Issue table</comment>
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Impact-v6">
+    <comment>Pappas: GOV-19652 / TKlok: GOV-18453</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -134,14 +134,14 @@ begin
 						I.PredicateUid,
 						I.PredicateInverse,
 						I.PredicateType,
-						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(O.AssetTypeID as varchar(15)),
-						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(O.ID as varchar(20)),
-						@newSalt,
-						O.ID as SubjectID,
 						'T|' + cast(@salt as varchar(3)) + '|' + cast(S.AssetTypeID as varchar(15)),
 						'A|' + cast(@salt as varchar(3)) + '|' + cast(S.ID as varchar(20)),
 						@salt,
-						S.ID as ObjectID
+						S.ID as SubjectID,
+						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(O.AssetTypeID as varchar(15)),
+						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(O.ID as varchar(20)),
+						@newSalt,
+						O.ID as ObjectID
 				from	@a H
 						inner join Asset S on S.ID = H.ID and H.Salt = @salt
 						inner join PredicateIntersect I on I.Object = S.Object and I.ObjectID = S.ObjectID 

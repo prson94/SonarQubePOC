@@ -468,7 +468,8 @@ namespace d360.web.Controllers.V2
 			"Name",
 			"Description",
 			"Path",
-			"Tags"
+			"Tags",
+			"Semantictype"
 		};
 
 		//Icons set based on Category/Class directly
@@ -871,6 +872,15 @@ namespace d360.web.Controllers.V2
 				}
 
 				result.Scores = searchScores.Where(s => s.AssetUid == result.Uid).ToList();
+
+				//Semantic Type information is included in the index, so a rebuild isn't nessecary when changing the Semantic Type Flag
+				//So when the flag is not set, the information is removed from the results
+				if(!semanticTypesEnabled)
+				{
+					result.SemanticName = null;
+					result.SemanticQualifier = null;
+					result.SemanticUid = null;
+				}
 			}
 
 			if (semanticTypesEnabled)

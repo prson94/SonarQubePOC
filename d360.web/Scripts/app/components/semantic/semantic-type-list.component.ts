@@ -284,6 +284,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         this.secondarySidePanelOpen = false;
         this.selectedType = row;
 		if (this.selectedType) {
+			this.baseSemanticTypeUid = this.selectedType.uid;
 			this.buildSecondaryNavigation({ assetUid: this.selectedType.uid, objectId: 0, objectType: 'SemanticType', buildBreadcrumbOverride: this.displayBreadCrumbs.bind(this) });
         }
         this.selectedTypeChanged.emit(row);

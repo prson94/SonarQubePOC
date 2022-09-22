@@ -35,10 +35,6 @@ export class SiteMenuFavoriteItemComponent {
 
         switch (this.favorite.PageType) {
             case FavoritePageType.Artifact: {
-                console.error(
-                    `Expected AssetTypeClass to be non-null, ` +
-                    `but it was ${new String(this.favorite.AssetTypeClass)} ` +
-                    `for ${JSON.stringify(this.favorite)}`);
                 return 'question-circle';
             }
             default: {
@@ -46,12 +42,6 @@ export class SiteMenuFavoriteItemComponent {
                 if (icon != null) {
                     return icon;
                 }
-                
-                console.error(
-                    `Expected AssetTypeClass to be non-null, ` +
-                    `but it was ${new String(this.favorite.AssetTypeClass)} ` +
-                    `for ${JSON.stringify(this.favorite)}`);
-
                 return 'question-circle';
             }
         }

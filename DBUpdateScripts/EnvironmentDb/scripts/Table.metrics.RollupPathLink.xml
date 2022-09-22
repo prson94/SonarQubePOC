@@ -102,6 +102,20 @@ begin
 end
 		]]>
 	</rollback>
-  </changeSet> 
+  </changeSet>
+  
+  <changeSet author="Andrii Kunetskyi" id="Index.metrics.RollupPathLink-v4">
+	<preConditions onFail="MARK_RAN">
+        <primaryKeyExists primaryKeyName="PK_MetricRollupPathLink" />
+    </preConditions>
+    <dropPrimaryKey constraintName="PK_MetricRollupPathLink" schemaName="metrics" tableName="RollupPathLink" />
+  </changeSet>
+  
+  <changeSet author="Andrii Kunetskyi" id="Index.metrics.RollupPathLink-v5">
+	<createIndex clustered="false" unique="true" indexName="IX_MetricRollupPathLink" schemaName="metrics" tableName="RollupPathLink" >
+		<column name="RollupPathUid" />
+		<column name="StartPosition" />
+	</createIndex>
+  </changeSet>
 
 </databaseChangeLog>

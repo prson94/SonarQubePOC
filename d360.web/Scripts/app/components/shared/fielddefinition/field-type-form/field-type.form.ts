@@ -145,6 +145,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     numberOfAssetsForType: number = 0;
 	isLoadingDefaultValue: boolean = false;
+	isLoadingDefaultFieldTypeName: boolean = false;
 
     private disableFieldTypeSelection: boolean = false;
     public enableListSingleResponsibilityType: boolean = false;
@@ -572,37 +573,40 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (value == undefined) {
             console.log("[ERROR] - Intersect TYPE IS UNDEFINED", value);
             return Observable.create();
-        }
+		}
 
-        return this.fieldsService.getRelationObjectFields(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, value)
-            .pipe(map(
-                d => {
-                    this.fieldsFromRelation = d;
-                    if (fieldTypename != null) {
-                        this.model.FieldType.Type[this.currentType].FieldTypeName = fieldTypename;
-                    } else if (this.fieldsFromRelation.length > 0) {
-                        this.model.FieldType.Type[this.currentType].FieldTypeName = this.fieldsFromRelation[0].label;
-                    } else {
-                        this.model.FieldType.Type[this.currentType].FieldTypeName = null;
-                    }
+		this.isLoadingDefaultFieldTypeName = true;
 
-                    if (!this.model.FieldType.Type[this.currentType].IntersectTypeUid) {
-                        if (this.currentType == 'RefListRelationship') {
-                            if (this.lookups.Field_CardinalReferenceRelationships
-                                && this.lookups.Field_CardinalReferenceRelationships.length > 0) {
-                                this.model.FieldType.Type[this.currentType].IntersectTypeUid = this.lookups.Field_CardinalReferenceRelationships[0].value;
-                            }
-                        }
+		return this.fieldsService.getRelationObjectFields(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, value)
+			.pipe(map(
+				d => {
+					this.fieldsFromRelation = d;
+					if (fieldTypename != null) {
+						this.model.FieldType.Type[this.currentType].FieldTypeName = fieldTypename;
+					} else if (this.fieldsFromRelation.length > 0) {
+						this.model.FieldType.Type[this.currentType].FieldTypeName = this.fieldsFromRelation[0].label;
+					} else {
+						this.model.FieldType.Type[this.currentType].FieldTypeName = null;
+					}
 
-                        if (this.currentType == 'FieldFromRelationship') {
-                            if (this.lookups.Field_FieldFromRelRelationships
-                                && this.lookups.Field_FieldFromRelRelationships.length > 0) {
-                                this.model.FieldType.Type[this.currentType].IntersectTypeUid = this.lookups.Field_FieldFromRelRelationships[0].value;
-                            }
-                        }
-                    }
-                }
-            ));
+					if (!this.model.FieldType.Type[this.currentType].IntersectTypeUid) {
+						if (this.currentType == 'RefListRelationship') {
+							if (this.lookups.Field_CardinalReferenceRelationships
+								&& this.lookups.Field_CardinalReferenceRelationships.length > 0) {
+								this.model.FieldType.Type[this.currentType].IntersectTypeUid = this.lookups.Field_CardinalReferenceRelationships[0].value;
+							}
+						}
+
+						if (this.currentType == 'FieldFromRelationship') {
+							if (this.lookups.Field_FieldFromRelRelationships
+								&& this.lookups.Field_FieldFromRelRelationships.length > 0) {
+								this.model.FieldType.Type[this.currentType].IntersectTypeUid = this.lookups.Field_FieldFromRelRelationships[0].value;
+							}
+						}
+					}
+				}
+			),
+				finalize(() => this.isLoadingDefaultFieldTypeName = false));
     }
 
     private cardinalReferenceItemListFromRelationshipSelected(value: string) {

@@ -10,7 +10,8 @@ namespace d360.core.queue
         Basic = 0,
         WithFields = 1,
         WithTags = 2,
-        WithResponsibility = 4
+        WithResponsibility = 4,
+		WithSemantic = 8
     }
 
     public class IndexObjectModel : QueueObject
@@ -49,6 +50,8 @@ namespace d360.core.queue
 
         public string[] AssetPath { get; set; }
 
+		public IndexObjectSemanticModel Semantic { get; set; }
+
         public IndexMode IndexFlags { get; set; } = IndexMode.Basic;
 
         /// <summary>
@@ -80,7 +83,14 @@ namespace d360.core.queue
         }
     }
 
-    public enum ReindexBatchOperation
+	public class IndexObjectSemanticModel
+	{
+		public Guid Uid { get; set; }
+		public string Name { get; set; }
+		public string Qualifier { get; set; }
+	}
+
+	public enum ReindexBatchOperation
     {
         Update,
         Delete

@@ -280,9 +280,15 @@ namespace d360.extensions
         public bool HasProfiling { get; set; }
         
         public List<IndexAssetScore> Scores { get; set; }
-    }
 
-    public class IndexAssetScore
+		public string SemanticName { get; set; }
+
+		public string SemanticQualifier { get; set; }
+
+		public Guid? SemanticUid { get; set; }
+	}
+
+	public class IndexAssetScore
     {
         public Guid AssetUid { get; set; }
         

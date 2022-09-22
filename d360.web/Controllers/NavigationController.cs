@@ -1393,11 +1393,16 @@ namespace d360.web.Controllers
 				responseModel.DisplayValue = PageNames.SemanticTypePage;
 				responseModel.MainTabTitle = PageNames.SemanticTypePage;
 				responseModel.Items.HasAudit = true;
+				responseModel.AssetTypeClass = AssetTypeClass.SemanticType;
 
 				if (model.AssetUid.HasValue)
 				{
 					var semantic = Company.Semantics.FirstOrDefault(x => x.Uid == model.AssetUid);
 					responseModel.Uid = semantic.Uid;
+				}
+				else
+				{
+					responseModel.Uid = Company.Semantics.Where(x => x.ID == model.ObjectId).FirstOrDefault().Uid;
 				}
 			}
 
