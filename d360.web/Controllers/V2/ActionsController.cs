@@ -87,7 +87,7 @@ namespace d360.web.Controllers.V2
 			List<string> queries = new List<string>();
 			List<string> fieldJoins = new List<string>() {
 				"inner join [dbo].[IssueType] IT on IT.ID = I.IssueTypeID",
-				"left join AssetDetail A on A.Object = I.Object and A.ObjectID = I.ObjectID",
+				"left join AssetDetail A on A.ID = I.AssetID",
 				"left join [reporting].[Global_Resource] CR on CR.ResourceID = I.CreatedBy",
 				"left join [reporting].[Global_Resource] UR on UR.ResourceID = I.UpdatedBy"
 			};
