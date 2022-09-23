@@ -1571,7 +1571,7 @@ namespace d360.model
 						
 						if (actionField != null)
 						{
-							FieldType actionFieldType = FieldTypes.FirstOrDefault(x => x.Object == "IssueType" && x.ID == actionField.FieldTypeID);
+							FieldType actionFieldType = FieldTypes.FirstOrDefault(x => x.IntersectTypeID != null && x.ID == actionField.FieldTypeID);
 							
 							if (actionFieldType.Type == "Lookup" || actionFieldType.Type == "Link")
 							{
@@ -2764,7 +2764,7 @@ namespace d360.model
 
 					//get any field values for this issue
 					IOrderedQueryable<FieldType> fieldTypes = FieldTypes
-						.Where(x => x.Object == "IssueType" && x.ObjectID == issue.IssueTypeID)
+						.Where(x => x.IssueTypeID == issue.IssueTypeID)
 						.OrderBy(x => x.ColumnOrder)
 						.ThenBy(x => x.FriendlyName);
 

@@ -716,14 +716,13 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(insertStatus.Item1, insertStatus.Item2, insertStatus.Item3));
 				}
 
-				if (model.ObjectID > 0)
+				if (model.AssetTypeID > 0 || model.IssueTypeID > 0 || model.IntersectTypeID > 0)
 				{
 					if (model.Class != AssetTypeClass.Reference)
 					{
 						var nameFieldType = new FieldType
 						{
-							ObjectID = model.ObjectID,
-							Object = model.Object,
+							AssetTypeID = model.AssetTypeID,
 							IsListable = true,
 							IsRequired = true,
 							IsEditable = true,
@@ -752,8 +751,7 @@ namespace d360.web.Controllers.V2
 					{
 						Company.Add(new FieldType
 						{
-							ObjectID = model.ObjectID,
-							Object = model.Object,
+							AssetTypeID = model.AssetTypeID,
 							IsListable = true,
 							IsRequired = true,
 							IsEditable = true,
@@ -774,8 +772,7 @@ namespace d360.web.Controllers.V2
 
 						Company.Add(new FieldType
 						{
-							ObjectID = model.ObjectID,
-							Object = model.Object,
+							AssetTypeID = model.AssetTypeID,
 							IsListable = true,
 							IsRequired = true,
 							IsEditable = true,

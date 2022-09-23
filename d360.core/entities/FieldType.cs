@@ -17,6 +17,12 @@ namespace d360.core.entities
 		[DataMember]
 		public int? AssetTypeID { get; set; }
 
+		[DataMember]
+		public int? IntersectTypeID { get; set; }
+
+		[DataMember]
+		public int? IssueTypeID { get; set; }
+
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "Name_Name", Description = "Name_Description"), StringLength(250)]
 		public string Name { get; set; }
 
@@ -65,12 +71,6 @@ namespace d360.core.entities
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "Pattern_Name", Description = "Pattern_Description")]
 		[Column(TypeName = "varchar"), StringLength(1000)]
 		public string Pattern { get; set; }
-
-		[DataMember, Column(TypeName = "varchar"), StringLength(50)]
-		public string Object { get; set; }
-
-		[DataMember]
-		public int ObjectID { get; set; }
 
 		[DataMember]
 		public bool IsListable { get; set; }

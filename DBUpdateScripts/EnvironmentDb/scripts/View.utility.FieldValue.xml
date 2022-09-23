@@ -33,5 +33,19 @@
 		]]>
 	</rollback>
   </changeSet>
+<changeSet author="bquinlivan" id="View.utility.FieldValue-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			DROP VIEW IF EXISTS [utility].[FieldValue];
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

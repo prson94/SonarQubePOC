@@ -1632,4 +1632,32 @@ from	workflow.EventRegistration T
 	]]>
 	</sql>
   </changeSet>
+<changeSet author="bquinlivan" id="Data.Corrections.GOV-18452">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+			Update FT
+				Set FT.IssueTypeID = IT.id
+			from 
+				fieldtype FT
+				inner join 
+				IssueType IT on FT.[Object]='IssueType' and IT.ID=FT.[ObjectID]
+
+			Update FT
+			set FT.IntersectTypeID = IT.id
+			from 
+				fieldtype FT
+				inner join 
+				IntersectType IT on FT.[Object]='IntersectType' and IT.ID=FT.[ObjectID]
+
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+
+		]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>
