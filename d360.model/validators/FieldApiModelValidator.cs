@@ -184,7 +184,7 @@ namespace d360.model.validators
 
                 if (field.Type.IsPartOfKey() == true && assetTypeIdentifierInfoModel != null)
                 {
-                    if (assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString() || field.Name.ToLower() != "name")
+                    if (assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString())
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.AssetTypeNotHaveKeyField);
                     }
