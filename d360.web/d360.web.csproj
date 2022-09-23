@@ -2032,9 +2032,7 @@
     <Content Include="Views\Authentication\Reset.cshtml" />
     <Content Include="Views\Authentication\ResetMessage.cshtml" />
     <Content Include="Views\Shared\Anonymous.cshtml" />
-    <Content Include="Views\Authentication\Register.cshtml" />
     <Content Include="Views\Shared\GenericError.cshtml" />
-    <Content Include="Views\Shared\Terms.cshtml" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.eot" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.ttf" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.woff" />
