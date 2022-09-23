@@ -138,6 +138,7 @@ namespace d360.model.DataAccessLayer
 			//both relationship type name and asset name depends on which side of relationship are we on
 			//both fields are needed for filtering and ordering
 			bool isFilteredByAssetUID = false;
+			bool isFilteredByAssetTypeUID = false;
 
 			Guid objectUid;
 			Guid relationshipTypeUid;
@@ -254,7 +255,6 @@ namespace d360.model.DataAccessLayer
 				}
 				if (queryParamsList.Any(q => q.Key.ToLower() == "assetuid"))
 				{
-					isFilteredByAssetUID = true;
 					Guid assetUid;
 					var assetUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "assetuid").Value;
 					if (Guid.TryParse(assetUidString, out assetUid))
@@ -263,6 +263,8 @@ namespace d360.model.DataAccessLayer
 
 						if (asset != null)
 						{
+							isFilteredByAssetUID = true;
+
 							dbArgs.Add("@assetId", asset.ID);
 							filteredIntersectsTempTable = @"drop table if exists #filteredIntersects;
 							;with assetIntersects as (
@@ -274,6 +276,7 @@ namespace d360.model.DataAccessLayer
 						}
 						else
 						{
+							isFilteredByAssetTypeUID = true;
 							var type = companyContext.AssetTypes.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
 							dbArgs.Add("@assetTypeId", type.ID);
 							filteredIntersectsTempTable = @"drop table if exists #filteredIntersects;
@@ -434,7 +437,7 @@ namespace d360.model.DataAccessLayer
 						}
 					}
 
-					if (isFilteredByAssetUID)
+					if (isFilteredByAssetUID || isFilteredByAssetTypeUID)
 					{
 						simpleFilters.Add($"RelationshipSideData.RelationshipTypeName like @simpleFilter");
 						simpleFilters.Add($"RelationshipSideData.AssetPath like @simpleFilter");
@@ -529,6 +532,16 @@ namespace d360.model.DataAccessLayer
 				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
 				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData", null);
 			}
+			else if (isFilteredByAssetTypeUID)
+			{
+				//apply data to check which side on relationship are we
+				fieldJoins.Add(@"outer apply (select case when I.SubjectAssetTypeID = @assetTypeId and I.SubjectAssetID = 0 then 'Subject' else 'Object' end as Value)Side", null);
+				//depending on relationship side reslove relationship type name and asset name
+				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ')),'---')
+				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ')),'---') end as RelationshipTypeName,
+				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
+				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData", null);
+			}
 
 			string fieldColumnsSql = "";
 			if (fieldColumns.Any())
@@ -555,7 +568,7 @@ select	@pageSize as 'pageSize',
 		(
 		select	lower(I.Uid) as Uid,
 				lower(T.Uid) as RelationshipTypeUid,
-				{(isFilteredByAssetUID ? @"RelationshipSideData.RelationshipTypeName,
+				{(isFilteredByAssetUID || isFilteredByAssetTypeUID ? @"RelationshipSideData.RelationshipTypeName,
 				RelationshipSideData.AssetPath," : "")}
 				{stateSql}
 				{fieldColumnsSql}
