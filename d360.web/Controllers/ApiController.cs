@@ -2025,7 +2025,7 @@ namespace d360.web.Controllers
 						inner join Asset A on A.AssetTypeID = T.ID 
 						inner join AssetDisplayValue disp on disp.AssetID = A.ID 
 						where {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} 
-							ResourceID = @resourceID and AssetID = 0 and ApplyToType = 1 and RD.IsVisible = 1
+							ResourceID = @resourceID and RD.AssetID = 0 and RD.ApplyToType = 1 and RD.IsVisible = 1
 		
 						union all
 
