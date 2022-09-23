@@ -84,6 +84,8 @@ import { GalleryDropdownBadgeComponent } from './gallery.dropdown-badge.componen
 import { DropdownBadgeModule } from '../shared/controls/dropdown-badge/dropdown-badge.component';
 import { InputTextareaModule } from "primeng/inputtextarea";
 import { InputTextModule } from "primeng/inputtext";
+import { GalleryTableDataTransferComponent } from './table-data-transfer/table-data-transfer.component';
+import { TableDataTransferModule } from '../shared/table-data-transfer/table-data-transfer.module';
 
 @NgModule({
     imports: [
@@ -121,6 +123,7 @@ import { InputTextModule } from "primeng/inputtext";
         DropdownModule,
         RadioButtonModule,
         FieldConditionGridModule,
+        TableDataTransferModule,
         MultiInputFieldModule,
         ModalDrawerModule,
         SidePanelModule,
@@ -139,6 +142,7 @@ import { InputTextModule } from "primeng/inputtext";
 
         GalleryComponentPropertiesComponent,
 
+        GalleryTableDataTransferComponent,
         GallerySwitchComponent,
         GalleryButtonComponent,
         GalleryIconPickerComponent,

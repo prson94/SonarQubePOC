@@ -70,7 +70,7 @@
 										<div class="selected-count" *ngIf="_tempSelectedFolderItems && _tempSelectedFolderItems.length === 1" i18n>1 item selected</div>
 										<div class="selected-count" *ngIf="_tempSelectedFolderItems && _tempSelectedFolderItems.length > 1" i18n>{{_tempSelectedFolderItems.length}} items selected</div>
 									</div>
-									<div class="table-wrapper" style="max-height: calc(100vh - 420px; min-height: 300px);">
+									<div class="table-wrapper">
 										<p-table #dt3
 													[globalFilterFields]="['Title']"
 													[loading]="isAvailableFolderItemsTableLoading"
