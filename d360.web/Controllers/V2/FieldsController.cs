@@ -2200,8 +2200,7 @@ namespace d360.web.Controllers.V2
 					return Request.CreateResponse(HttpStatusCode.OK, data);
 				}
 
-				var fieldType = Company.FieldTypes.FirstOrDefault(ft => ((fieldObject == SystemObjects.IssueType.ToString() && ft.IssueTypeID == id) || (fieldObject == SystemObjects.IntersectType.ToString() && ft.IntersectTypeID == id) || (fieldObject != SystemObjects.IssueType.ToString() && fieldObject != SystemObjects.IntersectType.ToString() && ft.AssetTypeID == id)) && ft.Name == fieldName);
-				//var fieldType = Company.FieldTypes.FirstOrDefault(x => x.Object == fieldObject && x.ObjectID == fieldObjectID && x.Name == fieldName);
+				var fieldType = Company.FieldTypes.FirstOrDefault(ft => ((fieldObject == SystemObjects.IssueType.ToString() && ft.IssueTypeID == id) || (fieldObject == SystemObjects.IntersectType.ToString() && ft.IntersectTypeID == id) || (fieldObject != SystemObjects.IssueType.ToString() && fieldObject != SystemObjects.IntersectType.ToString() && ft.AssetTypeID == id)) && ft.Name == fieldName);				
 
 				//list items for parent field
 				if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")

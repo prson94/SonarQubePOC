@@ -2247,7 +2247,7 @@ from	IntersectType I
 			if (fields == null)
 			{
 				var parsedType = (SystemObjects)Enum.Parse(typeof(SystemObjects), type);
-				var fieldQry = Filter<FieldType>(i => ((parsedType == SystemObjects.IssueType && i.IssueTypeID == typeID) || (parsedType == SystemObjects.IntersectType && i.IntersectTypeID == typeID) || (parsedType != SystemObjects.IssueType && parsedType != SystemObjects.IntersectType && i.AssetTypeID == typeID)));// i.Object == sType && i.ObjectID == id)
+				var fieldQry = Filter<FieldType>(i => ((parsedType == SystemObjects.IssueType && i.IssueTypeID == typeID) || (parsedType == SystemObjects.IntersectType && i.IntersectTypeID == typeID) || (parsedType != SystemObjects.IssueType && parsedType != SystemObjects.IntersectType && i.AssetTypeID == typeID)));
 								
 				if (listableOnly)
 				{

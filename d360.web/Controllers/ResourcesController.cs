@@ -792,7 +792,7 @@ namespace d360.web.Controllers
 					int? issueTypeID = null;
 					int? intersectTypeID = null;
 					int? assetTypeID = null;
-					//could be trouble.
+					
 					if (det.Type == SystemObjects.IssueType.ToString())
 					{
 						issueTypeID = det.TypeID;
