@@ -5,7 +5,7 @@
 			<header *ngIf="!isEdit" i18n>Add Folder</header>
 			<header *ngIf="isEdit" i18n>Edit Folder</header>
 			<div class="sub-header" *ngIf="!isLoading">
-				<ng-container i18n>Site Navigation</ng-container> {{(navigationFolder?.title ? '> ' + navigationFolder?.title : '')}}
+				<ng-container i18n>Site Navigation</ng-container> {{(navigationFolder?.Title ? '> ' + navigationFolder?.Title : '')}}
 				<span *ngIf="requiredCount > 0"
 					  class="requiredCount req noselect"
 					  tabindex="1"

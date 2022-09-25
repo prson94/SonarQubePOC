@@ -5,7 +5,7 @@
                              mode="Keypress"
                              i18n-placeholder
                              placeholder="Search"
-                             [(ngModel)]="simpleTextFilter"
+                             [(ngModel)]="sourceTableSearchValue"
                              (onSearch)="dt3.filterGlobal($event, 'contains')"
                              name="availableFolderItemsSearchField"
                              style="width:100%; padding-bottom:8px;"></ig-search-field>
@@ -19,13 +19,11 @@
         <div class="table-wrapper">
             <p-table #dt3
                      [globalFilterFields]="['Title']"
-                     [loading]="isSourceTableLoading"
-                     [loadingIcon]="'fa fa-spinner fa-spin'"
                      [value]="itemsFromSource"
                      [(selection)]="selectedItemsFromSource"
                      selectionMode="multiple"
                      [metaKeySelection]="false"
-                     (onHeaderCheckboxToggle)="selectAllItemsFromSource(dt3)"
+                     [selectionPageOnly]="true"
                      [paginator]="true"
                      paginatorDropdownAppendTo="body"
                      [rows]="10"
@@ -38,7 +36,6 @@
                             <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                         </th>
                         <th i18n>{{sourceTableTitle}}</th>
-                        <th></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body"
@@ -67,7 +64,7 @@
                     class="ig-lookup-grid-button"
                     [disabled]="!selectedItemsFromSource || selectedItemsFromSource.length === 0"
                     icon="fa-arrow-right"
-                    (click)="addToSelectedFolderItems()"></button>
+                    (click)="moveFromSourceToTarget()"></button>
         </div>
         <div i18n-pTooltip
              pTooltip="Remove from selected folder items"
@@ -78,7 +75,7 @@
                     class="ig-lookup-grid-button"
                     [disabled]="!selectedItemsFromTarget || selectedItemsFromTarget.length === 0"
                     icon="fa-arrow-left"
-                    (click)="removeFromSelectedFolderItems()"></button>
+                    (click)="moveFromTargetToSource()"></button>
         </div>
         <div i18n-pTooltip
              pTooltip="Move to top"
@@ -127,7 +124,7 @@
                              mode="Keypress"
                              i18n-placeholder
                              placeholder="Search"
-                             [(ngModel)]="simpleTextFilterForExistingItems"
+                             [(ngModel)]="targetTableSearchValue"
                              (onSearch)="dt4.filterGlobal($event, 'contains')"
                              style="width:100%; padding-bottom:8px;"></ig-search-field>
             <div class="selected-counter"
@@ -143,8 +140,6 @@
                      selectionMode="multiple"
                      [(selection)]="selectedItemsFromTarget"
                      [metaKeySelection]="false"
-                     (onHeaderCheckboxToggle)="selectAllItemsFromTarget(dt4)"
-                     (onChange)="setRequiredCount()"
                      [rowsPerPageOptions]="defaultTableSettingsService.defaultPagingOptions"
                      [scrollable]="true"
                      scrollHeight="420px">
