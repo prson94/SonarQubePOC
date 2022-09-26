@@ -33,7 +33,7 @@ declare var CurrentResourceID;
              *ngIf="!isLoading">
             <div class="col s12">
                 <div class="tile tile-detail">
-                    <header i18n>Take Action on {{objectDetail.DisplayValue ? objectDetail.DisplayValue : objectDetail.Name}}</header>
+                    <header i18n>Take Action on {{objectDetail.Name}}</header>
                     <div class="row">
                         <div class="col s12"
                              *ngIf="selectedObjectId != null && selectedObjectType != null">
@@ -80,8 +80,6 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private issue: string;
     private selectedObjectType: string;
     private selectedObjectId: number;
-    private selectedAssetUid: string;
-    private selectedAssetTypeUid: string;
     private objectDetail: ObjectDetail;
     private terms: Tag[] = [];
     private term: Tag;
@@ -114,14 +112,12 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
     ngOnInit() {
         this.setBrowserTitle(this.titleService, $localize`Take Action`);
-        this.showHideFollow(false);
-        if (this.headerBreadcrumbService.currentObject && this.headerBreadcrumbService.currentObject.id)
-            this.objectID = this.headerBreadcrumbService.currentObject.id;
-
-        if (this.headerBreadcrumbService.currentObject && this.headerBreadcrumbService.currentObject.type)
-            this.objectType = this.headerBreadcrumbService.currentObject.type;
-
-        this.loadDetails(this.objectID, this.objectType);
+		this.showHideFollow(false);
+		
+		this.baseAssetTypeUid = this.headerBreadcrumbService.currentObject["AssetTypeUid"];
+		this.baseAssetUid = this.headerBreadcrumbService.currentObject["AssetUid"];
+	
+		this.loadDetails();
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
@@ -142,27 +138,19 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.headerActionsService.setCurrentHeaderActions(headerActions);
     }
 
-    private loadDetails(objectId, objectType) {
-        if (objectId == undefined || objectType == undefined) {
-            return;
-        }
-
+    private loadDetails() {
         this.isLoading = true;
         this.resourcesService.getResource(this.resourceId)
             .subscribe(res => {
-                this.resourceUid = res.items[0].uid;
-                this.objectDetailService.getObject(objectId, objectType).subscribe(
+				this.resourceUid = res.items[0].uid;
+
+				this.objectDetailService.getObjectDetailByObjectUid(this.baseAssetUid ?? this.baseAssetTypeUid).subscribe(
                     res => {
-                        this.objectDetail = res;
-                        this.selectedOption = 'current';
-                        this.selectedObjectId = this.objectID;
-                        this.selectedObjectType = this.objectType;
-                        if (this.selectedObjectType == StringConstants.ObjectArtifact || this.selectedObjectType == StringConstants.ObjectTaxonomy || this.selectedObjectType == StringConstants.ObjectRule || this.selectedObjectType == StringConstants.ObjectPolicy) {
-                            this.selectedAssetUid = res.UID ?? res['Uid'];
-                        }
-                        if (this.selectedObjectType == StringConstants.ObjectArtifactType || this.selectedObjectType == StringConstants.ObjectTaxonomyType || this.selectedObjectType == StringConstants.ObjectRuleType || this.selectedObjectType == StringConstants.ObjectPolicyType) {
-                            this.selectedAssetTypeUid = res.UID ?? res['Uid'];
-                        }
+						this.objectDetail = res;
+						this.selectedOption = 'current';
+
+						this.selectedObjectId = this.objectDetail["ID"];
+						this.selectedObjectType = this.objectDetail.AssetID ? this.objectDetail["Type"].replace("Type","") : this.objectDetail["Type"];
 
                         this.isLoading = false;
                         this.loadIssueTypes();
@@ -174,20 +162,21 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private loadIssueTypes() {
         this.isLoading = true;
         let params = { _assetUid: "", _assetTypeUid: "", _resourceUid: "", _limitToActiveWorkflows: "true" };
-        if (this.selectedAssetUid) {
-            params._assetUid = this.selectedAssetUid;
+        if (this.baseAssetUid) {
+            params._assetUid = this.baseAssetUid;
             params._resourceUid = this.resourceUid;
 
-        }
-        if (this.selectedAssetTypeUid) {
-            params._assetTypeUid = this.selectedAssetTypeUid;
+        } else if (this.baseAssetTypeUid) {
+            params._assetTypeUid = this.baseAssetTypeUid;
             params._resourceUid = this.resourceUid;
         }
 
         this.workflowService.getWorkflowIssueTypes(this.selectedObjectType, this.selectedObjectId, params)
             .subscribe(result => {
                 this.issueTypes = result;
-                if (this.issueTypes != null && this.issueTypes.length == 1) this.issueType = this.issueTypes[0];
+				if (this.issueTypes != null && this.issueTypes.length === 1) {
+					this.issueType = this.issueTypes[0];
+				}
                 this.isLoading = false;
             });
     }
@@ -198,10 +187,10 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         let action: ActionEditorModel = new ActionEditorModel();
         action.Fields = {};
 
-        if (this.selectedAssetTypeUid) {
-            action.AssetTypeUid = this.selectedAssetTypeUid;
+        if (this.baseAssetUid) {
+            action.AssetUid = this.baseAssetUid;
         } else {
-            action.AssetUid = this.selectedAssetUid;
+            action.AssetTypeUid = this.baseAssetTypeUid;
         }
 
         //takes the form and convert any array values to , separated string values
@@ -248,7 +237,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private selectItem() {
         this.selectedObjectType = this.term.Object;
         this.selectedObjectId = this.term.ObjectID;
-        this.selectedAssetUid = this.term.AssetUid;
+        this.baseAssetUid = this.term.AssetUid;
         this.loadIssueTypes();
     }
 

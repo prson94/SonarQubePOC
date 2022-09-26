@@ -2450,6 +2450,18 @@ namespace d360.web.Controllers
 			return Company.GetObjectDetail(type.ToString(), id);
 		}
 
+		[Route("objectDetails/{uid}")]
+		public ObjectDetail GetObjectDetail(Guid uid)
+		{
+			var data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			if(data == null)
+			{
+				data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			}
+
+			return Company.GetObjectDetail(data.Object, data.ObjectID);
+		}
+
 		[Route("{type}/{id:int}/fieldName/{fieldName}/{useFriendlyName}")]
 		public string GetObjectFieldColorAndValue(SystemObjects type, int id, string fieldName, bool useFriendlyName = true)
 		{
