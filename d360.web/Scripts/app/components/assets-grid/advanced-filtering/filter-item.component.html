@@ -41,7 +41,7 @@
 
     <div class="value-selection" [hidden]="!isSelectingValue">
         <div class="selectors" pFocusTrap>
-            <div class="operator-selector">
+            <div class="operator-selector" [hidden]="!showOperatorList">
                 <p-dropdown igDropdown
                             [options]="uiCurrentOperatorsList"
                             [(ngModel)]="currentOperator"
