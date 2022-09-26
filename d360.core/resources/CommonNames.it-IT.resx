@@ -119,7 +119,7 @@
     <value>Tipo di azione</value>
   </data>
   <data name="AssetTypeClass_Business" xml:space="preserve">
-    <value>Risorsa aziendale</value>
+    <value>Business Asset</value>
   </data>
   <data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
     <value>Risorsa diagramma</value>

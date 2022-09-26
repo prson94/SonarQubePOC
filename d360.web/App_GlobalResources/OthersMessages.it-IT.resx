@@ -224,7 +224,7 @@
     <value>La password non soddisfa i seguenti requisiti di complessità: {0}.</value>
   </data>
   <data name="OrganisationNotYetRegistered" xml:space="preserve">
-    <value>L'organizzazione non è ancora registrata nel glossario aziendale di mercato o le informazioni fornite non sono valide. Contattare l'indirizzo &lt;a href='mailto:datasupport@londonmarketgroup.co.uk'&gt;datasupport@londonmarketgroup.co.uk&lt;/a&gt; per ricevere assistenza.</value>
+    <value>L'organizzazione non è ancora registrata nel Business Glossary di mercato o le informazioni fornite non sono valide. Contattare l'indirizzo &lt;a href='mailto:datasupport@londonmarketgroup.co.uk'&gt;datasupport@londonmarketgroup.co.uk&lt;/a&gt; per ricevere assistenza.</value>
   </data>
   <data name="OwnershipConfirmationMail" xml:space="preserve">
     <value>A breve verrà inviata un'e-mail che permetterà di confermare la proprietà di questo indirizzo e-mail e continuare la registrazione.</value>

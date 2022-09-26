@@ -119,13 +119,13 @@
     <value>[Description] ne doit pas dépasser {maxDescriptionLength} caractères</value>
   </data>
   <data name="DuplicateName" xml:space="preserve">
-    <value>Une enquête portant le même nom existe déjà pour ce type d’actif.</value>
+    <value>Un sondage portant le même nom existe déjà pour ce type d’asset.</value>
   </data>
   <data name="DuplicateNameWhenUpdating" xml:space="preserve">
-    <value>Une autre enquête portant le même nom existe déjà pour ce type d’actif.</value>
+    <value>Un autre sondage portant le même nom existe déjà pour ce type d’asset.</value>
   </data>
   <data name="DuplicateQuestionNameWhenUpdating" xml:space="preserve">
-    <value>Une question portant le même nom existe déjà pour ce type d’enquête.</value>
+    <value>Une question portant le même nom existe déjà pour ce type de sondage.</value>
   </data>
   <data name="DuplicateQuestionOptionName" xml:space="preserve">
     <value>Veuillez saisir une valeur unique pour l’option #{index}</value>
@@ -134,7 +134,7 @@
     <value>Veuillez saisir l’identifiant unique de l’option #{index}</value>
   </data>
   <data name="InvalidAssetType" xml:space="preserve">
-    <value>Le type d’actif est non valide. Les enquêtes peuvent être créées uniquement pour Actifs métier, Actifs techniques, Modèles et Règles.</value>
+    <value>Le type d’asset est non valide. Les sondages peuvent être créées uniquement pour Assets métier, Assets techniques, Modèles et Règles.</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Valeur du paramètre [direction] non valide. Utilisez asc|desc.</value>
@@ -155,13 +155,13 @@
     <value>[Name] ne doit pas être vide.</value>
   </data>
   <data name="QuestionTypeNotFound" xml:space="preserve">
-    <value>La question de l’enquête avec l’UID spécifié n’existe pas.</value>
+    <value>La question de sondage avec l’UID spécifié n’existe pas.</value>
   </data>
   <data name="SubmittedQuestionCanChangeOnlyDescription" xml:space="preserve">
     <value>La réponse à la question a déjà été soumise par l’utilisateur et peut ne plus être mise à jour. Seule la description peut être mise à jour.</value>
   </data>
   <data name="SurveyTypeNotFound" xml:space="preserve">
-    <value>L’enquête avec l’UID spécifié n’existe pas.</value>
+    <value>Le sondage avec l’UID  spécifié n’existe pas.</value>
   </data>
   <data name="ValidForDaysIsTooBig" xml:space="preserve">
     <value>La valeur [ValidForDays] doit être inférieure ou égale à {maxValidForDays} jours.</value>

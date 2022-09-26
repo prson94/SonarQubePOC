@@ -131,34 +131,34 @@
     <value>L’action dont l’UID est {0} est introuvable.</value>
   </data>
   <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Allocations correctement ajoutées</value>
+    <value>Affectations correctement ajoutées</value>
   </data>
   <data name="AddSingleAllocationSuccessful" xml:space="preserve">
     <value>Allocation correctement ajoutée</value>
   </data>
   <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>Vous n’êtes pas autorisé à ajouter des actions pour cet actif.</value>
+    <value>Vous n’êtes pas autorisé à ajouter des actions pour cet asset.</value>
   </data>
   <data name="AssetNotFound" xml:space="preserve">
-    <value>L’actif dont l’UID est {0} est introuvable.</value>
+    <value>L’asset dont l’UID est {0} est introuvable.</value>
   </data>
   <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>Vous n’êtes pas autorisé à ajouter des actions pour ce type d’actif.</value>
+    <value>Vous n’êtes pas autorisé à ajouter des actions pour ce type d’asset.</value>
   </data>
   <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Le type d’actif dispose d’un valeur [Class] non valide.</value>
+    <value>Le type d’asset dispose d’un valeur [Class] non valide.</value>
   </data>
   <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Le type d’actif dont l’UID est {0} est introuvable.</value>
+    <value>Le type d’asset dont l’UID est {0} est introuvable.</value>
   </data>
   <data name="AssetTypeOrAssetRequired" xml:space="preserve">
     <value>La valeur [AssetTypeUid] ou [AssetUid] doit être fournie.</value>
   </data>
   <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} n’est pas un UID de type d’actif valide.</value>
+    <value>{0} n’est pas un UID de type d’asset valide.</value>
   </data>
   <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} n’est pas un UID d’actif valide.</value>
+    <value>{0} n’est pas un UID d’asset valide.</value>
   </data>
   <data name="CascadeDeleteActionType" xml:space="preserve">
     <value>Des actions sont associées au type d’action. Activez la requête de suppression [cascade].</value>
@@ -170,7 +170,7 @@
     <value>Allocation correctement supprimée.</value>
   </data>
   <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>Aucun UID de type d’actif n’a été fourni.</value>
+    <value>Aucun UID de type d’asset n’a été fourni.</value>
   </data>
   <data name="InvalidActionTypeUid" xml:space="preserve">
     <value>Une valeur [ActionTypeUid] valide est requise.</value>

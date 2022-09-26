@@ -134,16 +134,16 @@
     <value>Délai d'attente de l'API</value>
   </data>
   <data name="AssetDataProfileLifespan_Desc" xml:space="preserve">
-    <value>Nombre de jours pendant lesquels les données du profil de données d'actifs doivent être conservées.</value>
+    <value>Nombre de jours pendant lesquels les données du profil de données d'assets doivent être conservées.</value>
   </data>
   <data name="AssetDataProfileLifespan_Name" xml:space="preserve">
-    <value>Durée de vie du profil des données d'actifs</value>
+    <value>Durée de vie du profil des données d'assets</value>
   </data>
   <data name="AssetDefinitionColumnWidth_Desc" xml:space="preserve">
-    <value>Largeur des colonnes (en pixels) utilisées pour disposer les champs dans le panneau de définition des actifs.</value>
+    <value>Largeur des colonnes (en pixels) utilisées pour disposer les champs dans le panneau de définition des assets.</value>
   </data>
   <data name="AssetDefinitionColumnWidth_Name" xml:space="preserve">
-    <value>Largeur de la colonne de définition des actifs</value>
+    <value>Largeur de la colonne de définition des assets</value>
   </data>
   <data name="AzureADTenant_Desc" xml:space="preserve">
     <value>Le nom du locataire Azure Active Directory.</value>
@@ -440,16 +440,16 @@
     <value>Afficher la barre sociale/de score</value>
   </data>
   <data name="UseAsTransformationLimit_Desc" xml:space="preserve">
-    <value>Nombre maximum de types d'actifs qui peuvent être marqués comme un type d'actif de transformation.</value>
+    <value>Nombre maximum de types d'assets qui peuvent être marqués comme un type d'asset de transformation.</value>
   </data>
   <data name="UseAsTransformationLimit_Name" xml:space="preserve">
     <value>Utiliser comme limite de transformation</value>
   </data>
   <data name="WorkflowCatchAllGroup_Desc" xml:space="preserve">
-    <value>Ce paramètre contrôle le groupe d'utilisateurs qui doit recevoir des e-mails si les responsabilités d'un flux de travail finissent par empêcher l'utilisateur d'obtenir l'affectation de flux de travail. Si la valeur 0 ou non définie, tous les administrateurs d'une région recevront les affectations.</value>
+    <value>Ce paramètre contrôle le groupe d'utilisateurs qui doit recevoir des e-mails si les responsabilités d'un workflow finissent par empêcher l'utilisateur d'obtenir l'affectation de workflow. Si la valeur 0 ou non définie, tous les administrateurs d'une région recevront les affectations.</value>
   </data>
   <data name="WorkflowCatchAllGroup_Name" xml:space="preserve">
-    <value>Groupe d'utilisateurs par défaut du flux de travail</value>
+    <value>Groupe d'utilisateurs par défaut du workflow</value>
   </data>
   <data name="WorkflowDigestEmailDays_Desc" xml:space="preserve">
     <value>Ce paramètre contrôle les jours d'envoi des e-mails de résumé de workflow.</value>
@@ -458,13 +458,13 @@
     <value>Jours des e-mails de résumé de workflow</value>
   </data>
   <data name="WorkflowFromEmail_Desc" xml:space="preserve">
-    <value>Il s'agit de l'adresse e-mail attribuée comme adresse e-mail de départ aux e-mails provenant du flux de travail.</value>
+    <value>Il s'agit de l'adresse e-mail attribuée comme adresse e-mail de départ aux e-mails provenant du workflow.</value>
   </data>
   <data name="WorkflowFromEmail_Name" xml:space="preserve">
     <value>Adresse e-mail expéditrice du workflow</value>
   </data>
   <data name="WorkflowFromName_Desc" xml:space="preserve">
-    <value>Il s'agit du nom qui s'affiche lorsqu'un e-mail est envoyé à partir du flux de travail.</value>
+    <value>Il s'agit du nom qui s'affiche lorsqu'un e-mail est envoyé à partir du workflow.</value>
   </data>
   <data name="WorkflowFromName_Name" xml:space="preserve">
     <value>Nom de l'adresse e-mail expéditrice du workflow</value>

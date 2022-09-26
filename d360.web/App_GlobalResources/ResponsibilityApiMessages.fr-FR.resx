@@ -143,7 +143,7 @@
     <value>Le remplacement de la responsabilité existe déjà pour '{0}'.</value>
   </data>
   <data name="ReposibilityTypeNotValidForAsset" xml:space="preserve">
-    <value>Le type de responsabilité de l’actif actuel n’est pas valide.</value>
+    <value>Le type de responsabilité de l’asset actuel n’est pas valide.</value>
   </data>
   <data name="ResourceGroupUidNotExists" xml:space="preserve">
     <value>La ressource/le groupe dont l’UID est '{0}' n’existe pas.</value>

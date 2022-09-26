@@ -363,7 +363,7 @@
     <value>Administrateur ?</value>
   </data>
   <data name="AssetPath_Name" xml:space="preserve">
-    <value>Chemin d’accès de l’actif</value>
+    <value>Chemin d’accès de l’asset</value>
   </data>
   <data name="AssignedUserGroup_Name" xml:space="preserve">
     <value>Utilisateur/Groupe affecté</value>

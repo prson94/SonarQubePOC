@@ -125,13 +125,13 @@
     <value>L’association Asset/Tag a échoué. Le champ Tag ne peut pas être attribué à Asset.</value>
   </data>
   <data name="AssetTypeAddAssetPermissionsDenied" xml:space="preserve">
-    <value>Vous n’êtes pas autorisé à ajouter des actifs de ce type.</value>
+    <value>Vous n’êtes pas autorisé à ajouter des assets de ce type.</value>
   </data>
   <data name="AssetTypeCreatedMessage" xml:space="preserve">
-    <value>Le type d’actif est créé</value>
+    <value>Le type d’asset est créé</value>
   </data>
   <data name="AssetTypeInProcessNotDelete" xml:space="preserve">
-    <value>Suppression du type d’actif dont l’UID est {0} déjà en cours.</value>
+    <value>Suppression du type d’asset dont l’UID est {0} déjà en cours.</value>
   </data>
   <data name="AssetTypeUid" xml:space="preserve">
     <value>AssetTypeUid</value>
@@ -149,7 +149,7 @@
     <value>Le point de terminaison correct pour {0}s est {1}://{2}{3}</value>
   </data>
   <data name="EnvironmentLevelAssetCountNotAllowed" xml:space="preserve">
-    <value>Vous ne disposez pas de l’autorisation permettant de charger les comptes d’actifs au niveau de l’environnement.</value>
+    <value>Vous ne disposez pas de l’autorisation permettant de charger les comptes d’assets au niveau de l’environnement.</value>
   </data>
   <data name="ExecutionID" xml:space="preserve">
     <value>ExecutionID</value>
@@ -164,7 +164,7 @@
     <value>Le modèle d’exportation dont l’UID est '{0}' n’existe pas.</value>
   </data>
   <data name="FieldTypeAssetNotFound" xml:space="preserve">
-    <value>Type de champ '{0}' introuvable pour l’actif.</value>
+    <value>Type de champ '{0}' introuvable pour l’asset.</value>
   </data>
   <data name="FieldTypeNotSupport" xml:space="preserve">
     <value>Le type de champ '{0}' n’est pas pris en charge. Les types de champs autorisés sont ComplexRelationLookup, RefListRelationship et OwnershipLookup</value>
@@ -176,13 +176,13 @@
     <value>La liste de référence des rôles de gouvernance dont l’UID est '{0}' n’existe pas</value>
   </data>
   <data name="InvalidAsset" xml:space="preserve">
-    <value>Actif non valide</value>
+    <value>Asset non valide</value>
   </data>
   <data name="InvalidAssetTypeClass" xml:space="preserve">
-    <value>Classe de type d’actif '{0}' non valide</value>
+    <value>Classe de type d’asset '{0}' non valide</value>
   </data>
   <data name="InvalidExportTemplateCurrent" xml:space="preserve">
-    <value>Modèle d’exportation non valide pour le type d’actif actuel.</value>
+    <value>Modèle d’exportation non valide pour le type d’asset actuel.</value>
   </data>
   <data name="InvalidExportTemplatedUid" xml:space="preserve">
     <value>Valeur exportTemplateUID non valide.</value>
@@ -257,16 +257,16 @@
     <value>L’UID {0} est une liste de référence qui est configuré en tant que rôle de gouvernance et ne peut pas être supprimé.</value>
   </data>
   <data name="RemoveAssetTypeNotAllowed" xml:space="preserve">
-    <value>Vous n’êtes pas autorisé à supprimer des types d’actifs.</value>
+    <value>Vous n’êtes pas autorisé à supprimer des types d’assets.</value>
   </data>
   <data name="RequestCreatedMsg" xml:space="preserve">
     <value>Requête correctement créée</value>
   </data>
   <data name="RequestMaxAsset" xml:space="preserve">
-    <value>Vous pouvez fournir au maximum {0} actifs dans cette requête. Veuillez appeler l’API BATCH pour soumettre plus de {1} éléments.</value>
+    <value>Vous pouvez fournir au maximum {0} assets dans cette requête. Veuillez appeler l’API BATCH pour soumettre plus de {1} éléments.</value>
   </data>
   <data name="RestrictReadAssettype" xml:space="preserve">
-    <value>Vous ne disposez pas des autorisations permettant de lire le type d’actif spécifié.</value>
+    <value>Vous ne disposez pas des autorisations permettant de lire le type d’asset spécifié.</value>
   </data>
   <data name="TagUIDAssetUIDNotExists" xml:space="preserve">
     <value>L’association TagUID {0} et AssetUID {1} n’existe pas</value>

@@ -382,49 +382,49 @@
         </context-group>
       </trans-unit>
       <trans-unit id="day_of_week.3letter.Sunday" datatype="html">
-        <source>Sun</source><target>Dom</target>
+        <source>Sun</source><target>Do.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/app.component.ts</context>
           <context context-type="linenumber">214,216</context>
         </context-group>
       </trans-unit>
       <trans-unit id="day_of_week.3letter.Monday" datatype="html">
-        <source>Mon</source><target>Lun</target>
+        <source>Mon</source><target>Lu.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/app.component.ts</context>
           <context context-type="linenumber">214,216</context>
         </context-group>
       </trans-unit>
       <trans-unit id="day_of_week.3letter.Tuesday" datatype="html">
-        <source>Tue</source><target>Mar</target>
+        <source>Tue</source><target>Ma.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/app.component.ts</context>
           <context context-type="linenumber">214,216</context>
         </context-group>
       </trans-unit>
       <trans-unit id="day_of_week.3letter.Wednesday" datatype="html">
-        <source>Wed</source><target>Mié</target>
+        <source>Wed</source><target>Mi.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/app.component.ts</context>
           <context context-type="linenumber">214,216</context>
         </context-group>
       </trans-unit>
       <trans-unit id="day_of_week.3letter.Thursday" datatype="html">
-        <source>Thu</source><target>Jue</target>
+        <source>Thu</source><target>Ju.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/app.component.ts</context>
           <context context-type="linenumber">214,216</context>
         </context-group>
       </trans-unit>
       <trans-unit id="day_of_week.3letter.Friday" datatype="html">
-        <source>Fri</source><target>Vie</target>
+        <source>Fri</source><target>Vi.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/app.component.ts</context>
           <context context-type="linenumber">214,216</context>
         </context-group>
       </trans-unit>
       <trans-unit id="day_of_week.3letter.Saturday" datatype="html">
-        <source>Sat</source><target>Sáb</target>
+        <source>Sat</source><target>Sá.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/app.component.ts</context>
           <context context-type="linenumber">214,216</context>
@@ -466,7 +466,7 @@
         </context-group>
       </trans-unit>
       <trans-unit id="day_of_week.2letter.Friday" datatype="html">
-        <source>Fr</source><target>Fr</target>
+        <source>Fr</source><target>F.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/app.component.ts</context>
           <context context-type="linenumber">222,224</context>

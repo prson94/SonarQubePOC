@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AssetUidNotFound" xml:space="preserve">
-    <value>L’actif avec l’UID fourni n’existe pas.</value>
+    <value>L’asset avec l’UID fourni n’existe pas.</value>
   </data>
   <data name="BodyNotEmpty" xml:space="preserve">
     <value>Vous devez fournir une valeur pour la propriété [Body].</value>
@@ -125,7 +125,7 @@
     <value>commentaire</value>
   </data>
   <data name="CommentAddPermission" xml:space="preserve">
-    <value>Vous ne disposez pas des autorisations permettant d’ajouter un commentaire à cet actif.</value>
+    <value>Vous ne disposez pas des autorisations permettant d’ajouter un commentaire à cet asset.</value>
   </data>
   <data name="CommentNotRemoved" xml:space="preserve">
     <value>Le commentaire n’a pas correctement été supprimé.</value>
@@ -134,7 +134,7 @@
     <value>Le commentaire n’a pas correctement été mis à jour.</value>
   </data>
   <data name="CommentTagMaxLimit" xml:space="preserve">
-    <value>Vous ne pouvez pas fournir plus de 50 balises sur ce commentaire.</value>
+    <value>Vous ne pouvez pas fournir plus de 50 tags sur ce commentaire.</value>
   </data>
   <data name="CommentUpdatePermission" xml:space="preserve">
     <value>Vous n’êtes pas le créateur de ce commentaire et ne pouvez pas le mettre à jour.</value>
@@ -152,10 +152,10 @@
     <value>Commentaire parent introuvable</value>
   </data>
   <data name="RestrictedAssetUid" xml:space="preserve">
-    <value>Les commentaires ne peuvent pas être créés pour l’actif à l’UID fourni.</value>
+    <value>Les commentaires ne peuvent pas être créés pour l’asset à l’UID fourni.</value>
   </data>
   <data name="RestrictReadAssettype" xml:space="preserve">
-    <value>Vous ne disposez pas des autorisations permettant de lire le type d’actif spécifié.</value>
+    <value>Vous ne disposez pas des autorisations permettant de lire le type d’asset spécifié.</value>
   </data>
   <data name="UnableCreateComment" xml:space="preserve">
     <value>Le commentaire n’a pas correctement été créé.</value>
