@@ -28,12 +28,19 @@ export const ITEMS_FROM_TARGET: any[] = [
 ];
 
 
-export const SAMPLE_USAGE: string = `<d3s-table-data-transfer [itemsFromSource]="itemsFromSource"
-                                                              [itemsFromTarget]="itemsFromTarget"></d3s-table-data-transfer>`;
+export const SAMPLE_USAGE: string = `
+<d3s-table-data-transfer [itemsFromSource]="itemsFromSource"
+                         [itemsFromTarget]="itemsFromTarget"
+                         [sourceTableTitle]="'Source Table Title'"
+                         [targetTableTitle]="'Target Table Title'"></d3s-table-data-transfer>`;
 
 export const PROPERTIES: Property[] = [
-  { Name: "itemsFromSource", Type: "any[]", Description: "input data for Source table ", Default: "[]" },
-  { Name: "itemsFromTarget", Type: "any[]", Description: "input data for Target table ", Default: "[]" },
-  { Name: "titleSource", Type: "any[]", Description: "input data for Target table ", Default: "[]" },
-  { Name: "titleTarget", Type: "any[]", Description: "input data for Target table ", Default: "[]" },
+  { Name: "itemsFromSource", Type: "any[]", Description: "input data for Source table", Default: "[]" },
+  { Name: "itemsFromTarget", Type: "any[]", Description: "input data for Target table", Default: "[]" },
+  { Name: "sourceTableTitle", Type: "string", Description: "Source Table Title", Default: "Source Table Title" },
+  { Name: "targetTableTitle", Type: "string", Description: "Target Table Title", Default: "Target Table Title" },
+]
+
+export const EVENTS: {Name: string; Description: string}[] = [
+  { Name: "targetDataChangeEvent",  Description: "Fires when Target Table Data changes"},
 ]

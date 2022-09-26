@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { cloneDeep } from 'lodash';
 import { SiteNav } from '../../../models/site-menu.model';
 import { DefaultTableSettingsService } from '../../../services/settings/default-table-settings.service';
@@ -13,6 +13,7 @@ export class TableDataTransferComponent implements OnInit {
   @Input() targetTableTitle: string = 'Target Table Title';
   @Input() itemsFromSource: any[] = [];
   @Input() itemsFromTarget: any[] = [];
+  @Output() targetDataChangeEvent = new EventEmitter<any[]>();
 
   sourceTableSearchValue: string = '';
   targetTableSearchValue: string = '';
@@ -109,6 +110,7 @@ export class TableDataTransferComponent implements OnInit {
     this.itemsFromTarget = this.itemsFromTarget.sort((a, b) => a.Title.localeCompare(b.Title));
     this.selectedItemsFromSource = [];
     this.itemsFromTarget = [...this.itemsFromTarget];
+    this.targetDataChangeEvent.emit(this.itemsFromTarget);
     this.cdRef.markForCheck();
   }
 
@@ -127,6 +129,7 @@ export class TableDataTransferComponent implements OnInit {
     this.selectedItemsFromTarget = [];
     this.itemsFromTarget = [...this.itemsFromTarget];
     this.itemsFromSource = [...this.itemsFromSource];
+    this.targetDataChangeEvent.emit(this.itemsFromTarget);
     this.cdRef.markForCheck();
   }
 }

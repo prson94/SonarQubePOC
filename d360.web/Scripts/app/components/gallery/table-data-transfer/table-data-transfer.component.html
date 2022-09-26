@@ -5,13 +5,17 @@
 
 <div class="tile tile-detail">
     <header>Basic Usage</header>
-    <code>{{sampleUsage}}</code>
+    <pre>
+        <code>{{sampleUsage}}</code>
+    </pre>
 </div>
 
 <div class="tile tile-detail">
     <header>Example</header>
     <d3s-table-data-transfer [itemsFromSource]="itemsFromSource"
-                             [itemsFromTarget]="itemsFromTarget"></d3s-table-data-transfer>
+                             [itemsFromTarget]="itemsFromTarget"
+                             [sourceTableTitle]="'Source Table Title'"
+                             [targetTableTitle]="'Target Table Title'"></d3s-table-data-transfer>
 </div>
 
 <div class="tile tile-detail">
@@ -38,7 +42,7 @@
 
 <div class="tile tile-detail">
     <header>Events</header>
-    <p-table [value]="">
+    <p-table [value]="events">
         <ng-template pTemplate="header">
             <tr>
                 <th>Name</th>
