@@ -197,12 +197,12 @@ namespace d360.model.DataAccessLayer
 
 			//in case of Reference List items, check if there is parent to calculate if it is Hierarchical
 			//otherwise take a value from Hierarchical column in AssetType table
-			extraJoins += @" outer apply(
+			extraJoins += $@" outer apply(
 										select 
 										case when exists(select top 1 * from  
 												[IntersectType] IT
 												inner join [Predicate] P on P.ID = IT.PredicateID
-												where A.Class = 9 and P.Type in (3,4) and IT.ObjectAssetTypeID = A.ID)
+												where A.Class = {(int)AssetTypeClass.Reference} and P.Type in (3,4) and IT.ObjectAssetTypeID = A.ID)
 												then 1 
 										else A.Hierarchical
 										end as Hierarchical)HA ";
@@ -513,32 +513,32 @@ namespace d360.model.DataAccessLayer
 							select IT.ID,
 							IT.SubjectAssetTypeID AssetTypeID,
 							IT.SubjectClass Class,
-							case when IT.ObjectAssetTypeID = 0 and IT.Objectclass = 9 then 1 else 0 end isRefList,
+							case when IT.ObjectAssetTypeID = 0 and IT.Objectclass = {(int)AssetTypeClass.Reference} then 1 else 0 end isRefList,
 							'S' ObjType
 							from [Predicate] P
 							inner join [Intersecttype] IT on P.ID = IT.PredicateID
 							where P.[UID] = @predicateUid
 							and IT.SubjectAssetTypeID = @assetTypeID         
 							{(IsApplyObjectFilter && !ObjIsReferenceList ? " and IT.ObjectAssetTypeID = @ObjAssetTypeID" : "")}
-							{(IsApplyObjectFilter && ObjIsReferenceList ? " and IT.ObjectAssetTypeID = 0 and IT.Objectclass = 9 " : "")}
+							{(IsApplyObjectFilter && ObjIsReferenceList ? $@" and IT.ObjectAssetTypeID = 0 and IT.Objectclass = {(int)AssetTypeClass.Reference} " : "")}
 							{(IsApplySubjectFilter && !SubjIsReferenceList ? " and IT.SubjectAssetTypeID = @SubjAssetTypeID" : "")}
-							{(IsApplySubjectFilter && SubjIsReferenceList ? " and IT.SubjectAssetTypeID = 0 and IT.SubjAssetTypeID = 9 " : "")}
+							{(IsApplySubjectFilter && SubjIsReferenceList ? $@" and IT.SubjectAssetTypeID = 0 and IT.SubjAssetTypeID = {(int)AssetTypeClass.Reference} " : "")}
 
 
 							insert into #InclPredFilterIds
 							select IT.ID,
 							IT.ObjectAssetTypeID AssetTypeID,
 							IT.ObjectClass Class,
-							case when IT.SubjectAssetTypeID = 0 and IT.Subjectclass = 9 then 1 else 0 end isRefList,
+							case when IT.SubjectAssetTypeID = 0 and IT.Subjectclass = {(int)AssetTypeClass.Reference} then 1 else 0 end isRefList,
 							'O' ObjType
 							from [Predicate] P
 							inner join [Intersecttype] IT on P.ID = IT.PredicateID
 							where P.[UID] = @predicateUid
 							and IT.ObjectAssetTypeID = @assetTypeID         
 							{(IsApplyObjectFilter && !ObjIsReferenceList ? " and IT.ObjectAssetTypeID = @ObjAssetTypeID" : "")}
-							{(IsApplyObjectFilter && ObjIsReferenceList ? " and IT.ObjectAssetTypeID = 0 and IT.Objectclass = 9 " : "")}
+							{(IsApplyObjectFilter && ObjIsReferenceList ? $@" and IT.ObjectAssetTypeID = 0 and IT.Objectclass = {(int)AssetTypeClass.Reference} " : "")}
 							{(IsApplySubjectFilter && !SubjIsReferenceList ? " and IT.SubjectAssetTypeID = @SubjAssetTypeID" : "")}
-							{(IsApplySubjectFilter && SubjIsReferenceList ? " and IT.SubjectAssetTypeID = 0 and IT.SubjAssetTypeID = 9 " : "")}
+							{(IsApplySubjectFilter && SubjIsReferenceList ? $@" and IT.SubjectAssetTypeID = 0 and IT.SubjAssetTypeID = {(int)AssetTypeClass.Reference} " : "")}
 
 							create index idx_InclPredFilterIds on #InclPredFilterIds(AssetTypeID,ObjType,isRefList) include (ID)
 
@@ -573,7 +573,7 @@ namespace d360.model.DataAccessLayer
 							inner join [AssetType] B on B.ID = I.ObjectAssetTypeID and B.Class = ids.Class
 							where ids.[AssetTypeID] =  @assetTypeID and ids.[ObjType] = 'S' 
 							and ids.isRefList = 1 and {(IsListReferenceListType ? "1" : "0")} = 1
-							{(IsApplyObjectFilter && ObjIsReferenceList ? " and I.ObjectAssetID = 0 and  I.ObjectAssetTypeId = @ObjAssetTypeID and Ids.Objectclass = 9 " : "")}
+							{(IsApplyObjectFilter && ObjIsReferenceList ? $@" and I.ObjectAssetID = 0 and  I.ObjectAssetTypeId = @ObjAssetTypeID and Ids.Objectclass = {(int)AssetTypeClass.Reference} " : "")}
 							{(IsApplySubjectFilter ? " and I.SubjectAssetID = @SubjAssetID" : "")}
 
 							insert into #tempInclRela
@@ -604,7 +604,7 @@ namespace d360.model.DataAccessLayer
 							where ids.[AssetTypeID] =  @assetTypeID and ids.[ObjType] = 'O' 
 							and ids.isRefList = 1 and {(IsListReferenceListType ? "1" : "0")} = 1
 							{(IsApplyObjectFilter ? " and I.ObjectAssetID = @ObjAssetID" : "")}
-							{(IsApplySubjectFilter && SubjIsReferenceList ? " and I.SubjectAssetID = 0 and  I.SubjectAssetTypeId = @ObjAssetTypeID and Ids.Subjectclass = 9 " : "")}
+							{(IsApplySubjectFilter && SubjIsReferenceList ? $@" and I.SubjectAssetID = 0 and  I.SubjectAssetTypeId = @ObjAssetTypeID and Ids.Subjectclass = {(int)AssetTypeClass.Reference} " : "")}
 							OPTION(RECOMPILE);
 						
 							create index idx_tempInclRela on #tempInclRela(AssetID,isRefList) include (BAssetID,BAssetTypeID)";
@@ -2407,17 +2407,17 @@ namespace d360.model.DataAccessLayer
 		private bool GetIsListReferenceListType(int AssetTypeID,Guid PreditcateUid)
 		{
 
-			return CompanyContext.Query<bool>(@"select it.id
+			return CompanyContext.Query<bool>($@"select it.id
 												from [predicate] p
 												inner join [intersecttype] it on p.id = it.predicateid 
-												and it.objectassettypeid = 0 and it.objectclass = 9
+												and it.objectassettypeid = 0 and it.objectclass = {(int)AssetTypeClass.Reference}
 												where it.subjectassettypeid = @AssetTypeID
 												and p.uid = @PreditcateUid
 												union all
 												select it.id
 												from [predicate] p
 												inner join [intersecttype] it on p.id = it.predicateid 
-												and it.Subjectassettypeid = 0 and it.Subjectclass = 9
+												and it.Subjectassettypeid = 0 and it.Subjectclass = {(int)AssetTypeClass.Reference}
 												where it.Objectassettypeid = @AssetTypeID
 												and p.uid = @PreditcateUid
 												", new { AssetTypeID, PreditcateUid }, ApiTimeout).Any();
