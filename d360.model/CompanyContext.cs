@@ -2244,7 +2244,17 @@ from	IntersectType I
 
 			if (fields == null)
 			{
-				var fieldQry = Filter<FieldType>(i => i.Object == type && i.ObjectID == typeID);
+				string fieldTypeRelationType = type;
+				if(type == "Rule" && ruleMeansEvent)
+				{
+					type = "Event";
+				}
+				else
+				{
+					fieldTypeRelationType += "Type";
+				}
+
+				var fieldQry = Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID);
 				if (listableOnly)
 				{
 					fieldQry = fieldQry.Where(i => i.IsListable);
