@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { OutputEvents, Property } from '../interface/gallery.interface';
 import { EVENTS, ITEMS_FROM_SOURCE, ITEMS_FROM_TARGET, PROPERTIES, SAMPLE_USAGE } from './table-data-transfer.data';
 
 @Component({

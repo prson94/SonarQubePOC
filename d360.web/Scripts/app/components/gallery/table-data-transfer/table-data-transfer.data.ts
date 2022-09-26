@@ -1,3 +1,5 @@
+import { OutputEvents, Property } from "../interface/gallery.interface";
+
 export const ITEMS_FROM_SOURCE: any[] = [
   { Title: "Source 1", ObjectID: 1, Object: 'asset' },
   { Title: "Source 2", ObjectID: 2, Object: 'asset' },
@@ -41,6 +43,6 @@ export const PROPERTIES: Property[] = [
   { Name: "targetTableTitle", Type: "string", Description: "Target Table Title", Default: "Target Table Title" },
 ];
 
-export const EVENTS: {Name: string; Description: string}[] = [
+export const EVENTS: OutputEvents[] = [
   { Name: "targetDataChangeEvent",  Description: "Fires when Target Table Data changes"},
 ];

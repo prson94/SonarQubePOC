@@ -102,9 +102,9 @@ export class TableDataTransferComponent implements OnInit {
 
   moveFromSourceToTarget() {
     for (let j = 0; j < this.selectedItemsFromSource.length; j++) {
-      if (this.itemsFromTarget.indexOf(this.selectedItemsFromSource[j]) === -1) {
-        this.itemsFromTarget.push(this.selectedItemsFromSource[j]);
-        this.itemsFromSource = this.itemsFromSource.filter((x) => x != this.selectedItemsFromSource[j]);
+      if (this.itemsFromTarget.indexOf(this.selectedItemsFromSource[j]) === -1) { // eslint-disable-line
+        this.itemsFromTarget.push(this.selectedItemsFromSource[j]); // eslint-disable-line
+        this.itemsFromSource = this.itemsFromSource.filter((x) => x != this.selectedItemsFromSource[j]); // eslint-disable-line
       }
     }
     this.itemsFromTarget = this.itemsFromTarget.sort((a, b) => a.Title.localeCompare(b.Title));
@@ -116,8 +116,10 @@ export class TableDataTransferComponent implements OnInit {
 
   moveFromTargetToSource() {
     for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
-      let x: number = this.itemsFromSource.findIndex((itemFromSource) => itemFromSource.ObjectID === this.selectedItemsFromTarget[j].ObjectID && itemFromSource.Object === this.selectedItemsFromTarget[j].Object);
-      let y: number = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object);
+      let x: number = this.itemsFromSource.findIndex((itemFromSource) => { 
+        return itemFromSource.ObjectID === this.selectedItemsFromTarget[j].ObjectID && itemFromSource.Object === this.selectedItemsFromTarget[j].Object; // eslint-disable-line
+      });
+      let y: number = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
       if (y > -1) {
         let i = cloneDeep(this.itemsFromTarget.splice(y, 1)[0]);
         if (x === -1) {
