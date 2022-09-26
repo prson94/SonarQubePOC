@@ -155,7 +155,7 @@
     <value>Tipo di risorsa non trovato in base a [Class] fornito.</value>
   </data>
   <data name="ErrorNameTaken" xml:space="preserve">
-    <value>Il nome è già in uso. Provarne un altro.</value>
+    <value>Il nome è già in uso. Prova un altro nome per cortesia.</value>
   </data>
   <data name="NotFoundBasedOnUid" xml:space="preserve">
     <value>Tipo di risorsa non trovato in base a [Uid] fornito.</value>
@@ -167,7 +167,7 @@
     <value>La relazione o il tipo di relazione esiste: il tipo di risorsa o qualsiasi risorsa di questo tipo partecipa alla relazione.</value>
   </data>
   <data name="TransformationClassRestriction" xml:space="preserve">
-    <value>L'opzione [UseAsTransformation] può essere impostata solo su tipi di risorse che sono di classe Aziendale o Tecnica.</value>
+    <value>L'opzione [UseAsTransformation] può essere impostata solo su tipi di risorse che sono di classe Business o Tecnica.</value>
   </data>
   <data name="TransformationLimitExceeded" xml:space="preserve">
     <value>Il numero totale di tipi di risorse supera il limite di trasformazione.</value>
@@ -179,7 +179,7 @@
     <value>[IconStyle.BackColor] e [IconStyle.ForeColor] non possono avere lo stesso valore.</value>
   </data>
   <data name="AutoDisplayParentRestriction" xml:space="preserve">
-    <value>L'opzione [AutoDisplayParent] può essere impostata solo per i tipi di risorsa che sono di classe Aziendale o Tecnica e sono figli di un altro tipo di risorsa.</value>
+    <value>L'opzione [AutoDisplayParent] può essere impostata solo per i tipi di risorsa che sono di classe Business o Tecnica e sono figli di un altro tipo di risorsa.</value>
   </data>
   <data name="MissingFlowObjectType" xml:space="preserve">
     <value>[FlowObjectType] è un campo obbligatorio per il tipo di risorsa con la classe Diagramma.</value>
@@ -200,7 +200,7 @@
     <value>{0} fornito non valido</value>
   </data>
   <data name="CanEditParentClassRestriction" xml:space="preserve">
-    <value>L'opzione [CanEditParent] può essere impostata solo per i tipi di risorsa che sono di classe Aziendale o Tecnica e sono figli di un altro tipo di risorsa.</value>
+    <value>L'opzione [CanEditParent] può essere impostata solo per i tipi di risorsa che sono di classe Business o Tecnica e sono figli di un altro tipo di risorsa.</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Direzione dell'ordine non valida trasmessa nella richiesta.</value>

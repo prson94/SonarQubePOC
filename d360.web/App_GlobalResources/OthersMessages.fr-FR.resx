@@ -125,13 +125,13 @@
     <value>[allocationUid] {0} n’est pas un identifiant correctement formaté.</value>
   </data>
   <data name="AssetIdentifierDoesnotValidAsset" xml:space="preserve">
-    <value>L’identifiant d’actif avec la valeur {0} ne correspond pas à un actif valide.</value>
+    <value>L’identifiant d’asset avec la valeur {0} ne correspond pas à un asset valide.</value>
   </data>
   <data name="AssetuidDoesnotExists" xml:space="preserve">
-    <value>L’actif avec l’UID spécifié n’existe pas.</value>
+    <value>L’asset avec l’UID spécifié n’existe pas.</value>
   </data>
   <data name="AssetUidMustSpecified" xml:space="preserve">
-    <value>L’UID de l’actif doit être spécifié.</value>
+    <value>L’UID de l’asset doit être spécifié.</value>
   </data>
   <data name="AssetuidNotCorrectlyFormatted" xml:space="preserve">
     <value>[assetUid] {0} n’est pas un identifiant correctement formaté.</value>
@@ -203,7 +203,7 @@
     <value>Aucun domaine de messagerie n’a pu être résolu.</value>
   </data>
   <data name="NoPremissiontoviewScoreHistory" xml:space="preserve">
-    <value>Vous n’avez pas le droit d’afficher l’historique des scores pour cet actif.</value>
+    <value>Vous n’avez pas le droit d’afficher l’historique des scores pour cet asset.</value>
   </data>
   <data name="NoRegistrationFound" xml:space="preserve">
     <value>Aucun enregistrement trouvé.</value>
@@ -254,13 +254,13 @@
     <value>Lorsque vous utilisez l’option copier/remplacer avec le modèle [sourceAssetUid], celui-ci doit être vide.</value>
   </data>
   <data name="SourceTargetNotSame" xml:space="preserve">
-    <value>L’actif source et l’actif cible ne peuvent pas être identiques.</value>
+    <value>L’asset source et l’asset cible ne peuvent pas être identiques.</value>
   </data>
   <data name="SourceTargetTypeMustSame" xml:space="preserve">
-    <value>Les types d’actifs source et cible doivent être identiques.</value>
+    <value>Les types d’assets source et cible doivent être identiques.</value>
   </data>
   <data name="SourceUidNotExists" xml:space="preserve">
-    <value>[sourceAssetUid] n’est pas valide ou l’actif n’existe pas.</value>
+    <value>[sourceAssetUid] n’est pas valide ou l’asset n’existe pas.</value>
   </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>Non autorisé</value>

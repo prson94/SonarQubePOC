@@ -122,10 +122,10 @@
     <value>{0} n’autorise pas la sélection de plusieurs valeurs</value>
   </data>
   <data name="NotPermissionModifyRelationobjectAsset" xml:space="preserve">
-    <value>Vous ne disposez pas de l’autorisation permettant de modifier les relations de l’actif objet.</value>
+    <value>Vous ne disposez pas de l’autorisation permettant de modifier les relations de l’asset objet.</value>
   </data>
   <data name="NotPermissionModifyRelationSubjectAsset" xml:space="preserve">
-    <value>Vous ne disposez pas de l’autorisation permettant de modifier les relations de l’actif sujet.</value>
+    <value>Vous ne disposez pas de l’autorisation permettant de modifier les relations de l’asset sujet.</value>
   </data>
   <data name="OwnerValueMaxLength" xml:space="preserve">
     <value>Longueur maximale de la valeur du propriétaire dépassée : {0}. La longueur maximale du champ Owner est de 100 caractères.</value>

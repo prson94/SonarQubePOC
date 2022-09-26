@@ -176,10 +176,10 @@
     <value>URI de la version du service d’API</value>
   </data>
   <data name="AssetType" xml:space="preserve">
-    <value>Type d’actif</value>
+    <value>Type d’asset</value>
   </data>
   <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Aucun type d’actif trouvé pour GUID</value>
+    <value>Aucun type d’asset trouvé pour GUID</value>
   </data>
   <data name="AuthenticationFailed" xml:space="preserve">
     <value>Échec de l’authentification</value>
@@ -353,10 +353,10 @@
     <value>Mise à jour de l’espace de nommage réussie.</value>
   </data>
   <data name="NoAssetTypeFound" xml:space="preserve">
-    <value>Aucun type d’actif trouvé pour l’ID {0}</value>
+    <value>Aucun type d’asset trouvé pour l’ID {0}</value>
   </data>
   <data name="NoAssetTypeIDProvided" xml:space="preserve">
-    <value>Aucun ID de type d’actif fourni (paramètre d’ID).</value>
+    <value>Aucun ID de type d’asset fourni (paramètre d’ID).</value>
   </data>
   <data name="NoFavoriteAbove" xml:space="preserve">
     <value>Aucun favori au-dessus</value>
@@ -548,7 +548,7 @@
     <value>ERREUR : IMPOSSIBLE DE TROUVER TOUS LES PARAMÈTRES DE LA COMMUNAUTÉ POWER BI.</value>
   </data>
   <data name="UnsupportedHierarchyAssetTypeAddField" xml:space="preserve">
-    <value>Type d’actif de hiérarchie spécifié pour Hierarchy_AddFields non pris en charge.  Les types pris en charge sont taxonomytype et policytype.</value>
+    <value>Type d’asset de hiérarchie spécifié pour Hierarchy_AddFields non pris en charge.  Les types pris en charge sont taxonomytype et policytype.</value>
   </data>
   <data name="UnsupportedHierarchyTypeEditField" xml:space="preserve">
     <value>Type de hiérarchie spécifié pour Hierarchy_EditFields non pris en charge.  Les types pris en charge sont taxonomie et politique.</value>

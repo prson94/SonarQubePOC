@@ -119,10 +119,10 @@
     <value>Type d’action</value>
   </data>
   <data name="AssetTypeClass_Business" xml:space="preserve">
-    <value>Actif métier</value>
+    <value>Asset métier</value>
   </data>
   <data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
-    <value>Actif de schéma</value>
+    <value>Asset de schéma</value>
   </data>
   <data name="AssetTypeClass_GenericType" xml:space="preserve">
     <value>Type générique</value>
@@ -173,13 +173,13 @@
     <value>Schéma</value>
   </data>
   <data name="AssetTypeClass_Technical" xml:space="preserve">
-    <value>Actif technique</value>
+    <value>Asset technique</value>
   </data>
   <data name="AssetTypeClass_User" xml:space="preserve">
     <value>Utilisateur</value>
   </data>
   <data name="CommonName_AssetType" xml:space="preserve">
-    <value>Type d’actif</value>
+    <value>Type d’asset</value>
   </data>
   <data name="Instance" xml:space="preserve">
     <value>Instance</value>

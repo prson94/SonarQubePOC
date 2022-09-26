@@ -116,13 +116,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AssetsWithAssignedParents" xml:space="preserve">
-    <value>Les actifs existent déjà avec des parents affectés. Vous ne pouvez pas changer le parent de ce type d’actif.</value>
+    <value>Les assets existent déjà avec des parents affectés. Vous ne pouvez pas changer le parent de ce type d’asset.</value>
   </data>
   <data name="AssetTypeExistsTitle" xml:space="preserve">
-    <value>Le type d’actif existe déjà</value>
+    <value>Le type d’asset existe déjà</value>
   </data>
   <data name="AssetTypeWithUidExists" xml:space="preserve">
-    <value>Un type d’actif avec la valeur [Uid] spécifiée existe déjà.</value>
+    <value>Un type d’asset avec la valeur [Uid] spécifiée existe déjà.</value>
   </data>
   <data name="CheckRequest" xml:space="preserve">
     <value>Veuillez vérifier votre requête et réessayer.</value>
@@ -131,7 +131,7 @@
     <value>Il existe déjà un type d’organisation portant ce nom.</value>
   </data>
   <data name="ImproperPredicate" xml:space="preserve">
-    <value>Vous n’avez pas fourni de prédicat approprié basé sur la catégorie de type d’actif.</value>
+    <value>Vous n’avez pas fourni de prédicat approprié basé sur la catégorie de type d’asset.</value>
   </data>
   <data name="InvalidDisplayFormat" xml:space="preserve">
     <value>La valeur [DisplayFormat] fournie n’est pas valide.</value>
@@ -152,43 +152,43 @@
     <value>Valeur [IconStyle] fournie non valide.</value>
   </data>
   <data name="NotFoundBasedOnClass" xml:space="preserve">
-    <value>Type d’actif introuvable sur la base de la valeur [Class] fournie.</value>
+    <value>Type d’asset introuvable sur la base de la valeur [Class] fournie.</value>
   </data>
   <data name="ErrorNameTaken" xml:space="preserve">
     <value>Le nom est déjà pris. Veuillez essayer un autre nom.</value>
   </data>
   <data name="NotFoundBasedOnUid" xml:space="preserve">
-    <value>Type d’actif introuvable sur la base de la valeur [Uid] fournie.</value>
+    <value>Type d’asset introuvable sur la base de la valeur [Uid] fournie.</value>
   </data>
   <data name="NotFoundGeneric" xml:space="preserve">
-    <value>Type d’actif introuvable.</value>
+    <value>Type d’asset introuvable.</value>
   </data>
   <data name="RelationshipExistsForAssetType" xml:space="preserve">
-    <value>La relation OU le type de relation contient ce type d’actif ou les actifs de ce type participent à la relation.</value>
+    <value>La relation OU le type de relation contient ce type d’asset ou les assets de ce type participent à la relation.</value>
   </data>
   <data name="TransformationClassRestriction" xml:space="preserve">
-    <value>La fonction [UseAsTransformation] ne peut être définie que pour les types d’actif dont la classe est commerciale ou technique.</value>
+    <value>La fonction [UseAsTransformation] ne peut être définie que pour les types d’asset dont la classe est commerciale ou technique.</value>
   </data>
   <data name="TransformationLimitExceeded" xml:space="preserve">
-    <value>Le nombre total de types d’actifs dépasse la limite de transformation.</value>
+    <value>Le nombre total de types d’assets dépasse la limite de transformation.</value>
   </data>
   <data name="UnsupportedAssetClass" xml:space="preserve">
-    <value>Classe d’actifs non prise en charge.</value>
+    <value>Classe d’assets non prise en charge.</value>
   </data>
   <data name="MatchingIconStyle" xml:space="preserve">
     <value>Les valeurs [IconStyle.BackColor] et [IconStyle.ForeColor] ne peuvent pas être identique.</value>
   </data>
   <data name="AutoDisplayParentRestriction" xml:space="preserve">
-    <value>Le paramètre [AutoDisplayParent] ne peut être défini que pour les types d’actifs dont la classe est commerciale ou technique et qui sont l’enfant d’un autre type d’actif.</value>
+    <value>Le paramètre [AutoDisplayParent] ne peut être défini que pour les types d’assets dont la classe est commerciale ou technique et qui sont l’enfant d’un autre type d’asset.</value>
   </data>
   <data name="MissingFlowObjectType" xml:space="preserve">
-    <value>[FlowObjectType] est un champ obligatoire pour le type d’actif dont la classe est Schéma.</value>
+    <value>[FlowObjectType] est un champ obligatoire pour le type d’asset dont la classe est Schéma.</value>
   </data>
   <data name="UnsupportedFlowObjectType" xml:space="preserve">
     <value>[FlowObjectType] n’est pas pris en charge pour la classe {0}.</value>
   </data>
   <data name="GovernanceRoleNotSet" xml:space="preserve">
-    <value>Impossible d’ajouter le type d’actif de la classe Schéma. L’UID de référence du rôle de gouvernance n’est pas défini.</value>
+    <value>Impossible d’ajouter le type d’asset de la classe Schéma. L’UID de référence du rôle de gouvernance n’est pas défini.</value>
   </data>
   <data name="GroupEndPoint" xml:space="preserve">
     <value>/api/v2/membership/groups</value>
@@ -200,7 +200,7 @@
     <value>Valeur {0} fournie non valide</value>
   </data>
   <data name="CanEditParentClassRestriction" xml:space="preserve">
-    <value>Le paramètre [CanEditParent] ne peut être défini que pour les types d’actifs dont la classe est commerciale ou technique et qui sont l’enfant d’un autre type d’actif.</value>
+    <value>Le paramètre [CanEditParent] ne peut être défini que pour les types d’assets dont la classe est commerciale ou technique et qui sont l’enfant d’un autre type d’asset.</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Ordre non valide transmis dans la requête.</value>
@@ -218,7 +218,7 @@
     <value>Valeur [assetType] spécifiée non valide</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>UID d’actif non valide dans les paramètres !</value>
+    <value>UID d’asset non valide dans les paramètres !</value>
   </data>
   <data name="InvalidMaximumDepthTitle" xml:space="preserve">
     <value>Valeur [HierarchyMaximumDepth] non valide</value>
@@ -278,13 +278,13 @@
     <value>Impossible d’ajouter ou de mettre à jour {0}, car un élément existant a déjà été trouvé.</value>
   </data>
   <data name="MaxNumberAllowedAssetType" xml:space="preserve">
-    <value>Le nombre maximum de types d’actifs pour cette méthode est de 1.</value>
+    <value>Le nombre maximum de types d’assets pour cette méthode est de 1.</value>
   </data>
   <data name="NameConflicit" xml:space="preserve">
     <value>Impossible d’ajouter ou de mettre à jour {0}, car un élément portant le même nom existe déjà.</value>
   </data>
   <data name="ParentChildRelationExists" xml:space="preserve">
-    <value>Des relations parent/enfant existent pour les actifs de ce type. Vous ne pouvez pas modifier le type parent tant que ces relations ne sont pas supprimées.</value>
+    <value>Des relations parent/enfant existent pour les assets de ce type. Vous ne pouvez pas modifier le type parent tant que ces relations ne sont pas supprimées.</value>
   </data>
   <data name="TitleWrongOrganization" xml:space="preserve">
     <value>Organisation erronée</value>
@@ -293,7 +293,7 @@
     <value>Erreur au niveau de {0}</value>
   </data>
   <data name="_parentuidNotValidAsset" xml:space="preserve">
-    <value>[_parentUid] avec {0} comme valeur ne correspond pas à un actif valide !</value>
+    <value>[_parentUid] avec {0} comme valeur ne correspond pas à un asset valide !</value>
   </data>
   <data name="_parentUidNotValidUid" xml:space="preserve">
     <value>Le paramètre [_parentUid] doit être un GUID valide, être défini comme nul, ou être absent !</value>

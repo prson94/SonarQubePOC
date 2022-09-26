@@ -146,7 +146,7 @@
     <value>Valeur du paramètre surveyTypeUid non valide</value>
   </data>
   <data name="JobinActiveState" xml:space="preserve">
-    <value>Cette tâche est actuellement à l’état Actif et ne peut pas être reprogrammée avant d’être terminée.</value>
+    <value>Cette tâche est actuellement à l’état Asset et ne peut pas être reprogrammée avant d’être terminée.</value>
   </data>
   <data name="JobIsNotRunning" xml:space="preserve">
     <value>Cette tâche n’est pas en cours d’exécution et ne peut pas être marquée comme terminée.</value>

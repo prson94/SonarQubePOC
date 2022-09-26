@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AssetTypeNotSurvey" xml:space="preserve">
-    <value>Le type d’actif ne correspond à aucune enquête.</value>
+    <value>Le type d'actif ne correspond à aucun sondage.</value>
   </data>
   <data name="InvalidFormatSurveyTypeUid" xml:space="preserve">
     <value>Format non valide pour [surveyTypeUid]</value>
@@ -134,18 +134,18 @@
     <value>{0} résultats supprimés.</value>
   </data>
   <data name="SurveyInvalidForAssetType" xml:space="preserve">
-    <value>Enquête non valide pour ce type d’actif</value>
+    <value>Sondage non valide pour ce type d’actif</value>
   </data>
   <data name="SurveyQuestionTypeUidInvalid" xml:space="preserve">
-    <value>Le type de question de l’enquête pour l’UID {0} contient des réponses non valides : [{1}]</value>
+    <value>Le type de question de sondage pour l’UID {0} contient des réponses non valides : [{1}]</value>
   </data>
   <data name="SurveyQuestionTypeUidNotFound" xml:space="preserve">
-    <value>Type de question d’enquête de l’UID {0} introuvable</value>
+    <value>Type de question de sondage de l’UID {0} introuvable</value>
   </data>
   <data name="SurveyResourceAssetUidPopulated" xml:space="preserve">
     <value>La valeur [SurveyTypeUid], [ResourceUid] ou [AssetUid] doit être renseignée</value>
   </data>
   <data name="SurveyUidNotFound" xml:space="preserve">
-    <value>Le type d’enquête dont l’UID est {0} est introuvable.</value>
+    <value>Le type de sondage dont l’UID est {0} est introuvable.</value>
   </data>
 </root>

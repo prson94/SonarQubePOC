@@ -122,10 +122,10 @@
     <value>Risorse</value>
   </data>
   <data name="BusinessAssetsPage" xml:space="preserve">
-    <value>Risorse aziendali</value>
+    <value>Business Asset</value>
   </data>
   <data name="BusinessAssetsPageTabTitle" xml:space="preserve">
-    <value>Tipi di risorse aziendali</value>
+    <value>Tipi di Business Asset</value>
   </data>
   <data name="CartPage" xml:space="preserve">
     <value>Carrello</value>

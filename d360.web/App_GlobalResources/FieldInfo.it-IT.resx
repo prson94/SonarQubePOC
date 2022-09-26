@@ -158,7 +158,7 @@
     <value>Campi di sistema</value>
   </data>
   <data name="SystemNoCategory" xml:space="preserve">
-    <value>Nessuno</value>
+    <value>Nessuna</value>
   </data>
   <data name="UID_Description" xml:space="preserve">
     <value>L'UID è l'identificatore univoco di questo elemento in tutto Data360.</value>

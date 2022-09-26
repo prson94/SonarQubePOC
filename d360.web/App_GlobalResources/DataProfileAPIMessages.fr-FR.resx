@@ -119,26 +119,26 @@
     <value>Infos sur l’API</value>
   </data>
   <data name="AssetIdColumn" xml:space="preserve">
-    <value>ID de l’actif</value>
+    <value>ID de l’asset</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="AssetPathColumn" xml:space="preserve">
-    <value>Chemin d’accès de l’actif</value>
+    <value>Chemin d’accès de l’asset</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="AssetSheetName" xml:space="preserve">
-    <value>Actifs</value>
+    <value>Assets</value>
   </data>
   <data name="AssetTypePathColumn" xml:space="preserve">
-    <value>Chemin d’accès au type d’actif</value>
+    <value>Chemin d’accès au type d’asset</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="AssetTypeUidColumn" xml:space="preserve">
-    <value>UID du type d’actif</value>
+    <value>UID du type d’asset</value>
     <comment>Used for semantic type asset list export</comment>
   </data>
   <data name="AssetUidColumn" xml:space="preserve">
-    <value>UID de l’actif</value>
+    <value>UID de l’asset</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="AssetUidProfileSetDateRecordNotfound" xml:space="preserve">
@@ -212,7 +212,7 @@
     <value>Liste des champs {0} {1} filtrés _{2}_.xlsx</value>
   </data>
   <data name="MatchedAssetIdColumn" xml:space="preserve">
-    <value>ID d’actif du champ {0}</value>
+    <value>ID d’asset du champ {0}</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchedAssetNameColumn" xml:space="preserve">
@@ -220,19 +220,19 @@
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchedAssetPathColumn" xml:space="preserve">
-    <value>Chemin d’accès à l’actif du champ {0}</value>
+    <value>Chemin d’accès à l’asset du champ {0}</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchedAssetTagsColumn" xml:space="preserve">
-    <value>Balises du champ {0}</value>
+    <value>Tags du champ {0}</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchedAssetTypePathColumn" xml:space="preserve">
-    <value>Chemin d’accès au type d’actif du champ {0}</value>
+    <value>Chemin d’accès au type d’asset du champ {0}</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchedAssetUidColumn" xml:space="preserve">
-    <value>UID d’actif du champ {0}</value>
+    <value>UID d’asset du champ {0}</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchedAssetUrlColumn" xml:space="preserve">
@@ -280,7 +280,7 @@
     <value>L’enregistrement pour AssetUid {0} et ProfileSetDate {1} existe déjà</value>
   </data>
   <data name="ProfilingNotSupportAssetClass" xml:space="preserve">
-    <value>La classe d’actifs {0} ne prend pas en charge le profilage des données. Les données de profilage ne peuvent être associées qu’à des types d’actifs commerciaux ou techniques.</value>
+    <value>La classe d’assets {0} ne prend pas en charge le profilage des données. Les données de profilage ne peuvent être associées qu’à des types d’assets commerciaux ou techniques.</value>
   </data>
   <data name="QualifierColumn" xml:space="preserve">
     <value>Qualificatif</value>
@@ -330,7 +330,7 @@
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="SemanticTypeAssetExportFilename" xml:space="preserve">
-    <value>Liste d’actifs filtrée pour {0} {1}.xlsx</value>
+    <value>Liste d’assets filtrée pour {0} {1}.xlsx</value>
     <comment>Used for semantic type asset list export</comment>
   </data>
   <data name="Similar" xml:space="preserve">
@@ -349,7 +349,7 @@
     <comment>Tag field not found</comment>
   </data>
   <data name="TagsColumn" xml:space="preserve">
-    <value>Balises</value>
+    <value>Tags</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="ThresholdColumn" xml:space="preserve">
@@ -375,7 +375,7 @@
     <comment>User for Semantic Type Status export</comment>
   </data>
   <data name="AssetUrlColumn" xml:space="preserve">
-    <value>URL de l’actif</value>
+    <value>URL de l’asset</value>
     <comment>Used for Semantic Types Assets Export</comment>
   </data>
   <data name="EndpointNotAccessible" xml:space="preserve">
