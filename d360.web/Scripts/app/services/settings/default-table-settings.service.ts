@@ -4,8 +4,8 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class DefaultTableSettingsService {
-	defaultPagingOptions: number[] = [10, 25, 50, 100];
-	defaultInitialItemsPerPage = 10;
+  defaultPagingOptions: number[] = [10, 25, 50, 100];
+  defaultInitialItemsPerPage = 10;
 
   constructor() { }
 }

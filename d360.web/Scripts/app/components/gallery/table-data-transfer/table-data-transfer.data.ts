@@ -39,8 +39,8 @@ export const PROPERTIES: Property[] = [
   { Name: "itemsFromTarget", Type: "any[]", Description: "input data for Target table", Default: "[]" },
   { Name: "sourceTableTitle", Type: "string", Description: "Source Table Title", Default: "Source Table Title" },
   { Name: "targetTableTitle", Type: "string", Description: "Target Table Title", Default: "Target Table Title" },
-]
+];
 
 export const EVENTS: {Name: string; Description: string}[] = [
   { Name: "targetDataChangeEvent",  Description: "Fires when Target Table Data changes"},
-]
+];
