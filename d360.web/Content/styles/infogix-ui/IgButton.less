@@ -175,7 +175,7 @@
     }
   }
 
-  &.ig-button-dark {
+  &.ig-button-light {
     background: none;
     color: @ig-white;
 
@@ -186,9 +186,13 @@
     &:active:not(:disabled), &.ig-state-active {
       background: rgba(255, 255, 255, 0.36);
     }
+
+    &:focus:not(:disabled), &.ig-state-focus {
+      background: none;
+    }
   }
 
-  &.ig-button-light {
+  &.ig-button-dark {
     background: none;
     color: @ig-black;
 
@@ -198,6 +202,10 @@
 
     &:active:not(:disabled), &.ig-state-active {
       background: rgba(0, 0, 0, 0.18);
+    }
+
+    &:focus:not(:disabled), &.ig-state-focus {
+      background: none;
     }
   }
 
