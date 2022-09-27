@@ -257,7 +257,7 @@ namespace d360.web
 						{
 							System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
 
-							context.Response.Write("\"Not authorized\"");
+							context.Response.Write($"\"{ApiMessages.EndpointNotAuthorizedHeading}\"");
 							context.Response.StatusCode = 401;
 
 							return;
