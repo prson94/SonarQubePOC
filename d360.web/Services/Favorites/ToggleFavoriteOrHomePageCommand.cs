@@ -109,7 +109,7 @@ namespace d360.web.Services.Favorites
 
 				IsHomePage = isHomepage,
 				Type = routeMatch.Matcher.PageType.ToString(),
-				Name = routeMatch.Matcher.GetName(@object?.Name, routeMatch.RouteParams)
+				Name = routeMatch.Matcher.GetName(@object, routeMatch.RouteParams)
 			};
 
 			SplitObjectId(newFavorite, @object?.ObjectType.ToString());
