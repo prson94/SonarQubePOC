@@ -1916,7 +1916,18 @@ namespace d360.web.Controllers
 			return await Company.QueryAsync<FilterObjectItem>(sql, new { id, intersectTypeId });
 		}
 
-        [Route("relationships/field/{fieldTypeID:int}"), HttpGet]
+		/// <summary>
+		/// Gets a list of available relationships types based on the source type specified in parameters. 
+		/// Used in workflow config.
+		/// </summary>
+		[Route("{type}/{id:int}/relationshiptypes")]
+		public async Task<IEnumerable<AllowedIntersectionType>> GetRelationshipTypes(SystemObjects type, int id)
+		{
+			var SubjectUid = Company.AssetTypes.Where(at => at.Object == type.ToString() && at.ObjectID == id).Select(at => at.uid).FirstOrDefault();
+			return await Company.GetAllowedIntersectionTypes(SubjectUid);
+		}
+
+		[Route("relationships/field/{fieldTypeID:int}"), HttpGet]
         public HttpResponseMessage GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null)
         {
 			var asset = Company.GetAssetDetail(@object, objectID.GetValueOrDefault());
