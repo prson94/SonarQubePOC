@@ -117,6 +117,11 @@ namespace d360.model.helpers.filters
 		public void LoadFieldQuery(bool complexField)
 		{
 			var fieldSql = GetColumnValueSyntax(fieldType.ID);
+			if (fieldType.Type == "Path" && complexField)
+			{
+				var prefix = fieldType.Name.Split('_')[0];
+				fieldSql = $"{prefix}_{fieldSql}";
+			}
 			if (@operator == "ct" && complexField && fieldType.Type != "Text")
 			{
 				fieldSql = $"CONVERT(NVARCHAR(max),{fieldSql})";
@@ -131,6 +136,7 @@ namespace d360.model.helpers.filters
 			{
 				fieldSql = $"CONVERT(DECIMAL(7,2),REPLACE({fieldSql},'%',''))";
 			}
+
 
 			stringBuilder.Append(fieldSql);
 			stringBuilder.Append(FilterHelpers.GetSQLOperator(@operator));
