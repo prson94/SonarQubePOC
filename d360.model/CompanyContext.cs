@@ -507,7 +507,7 @@ namespace d360.model
 			string formattedIntersectJoin = string.Format(intersectJoin, "AD.ID");
 
 			selectedSql = @"
-						select	iif(i.SubjectAssetID = @assetId, i.ObjectAssetID, i.SubjectAssetID) as [Value],
+						select	A.ObjectId as [Value],
 								P.DisplayPath as [Text],
 								1 as Selected 
 						from	[Intersect] i
@@ -627,7 +627,7 @@ namespace d360.model
 					
 					sql = $@"
 							select	distinct 
-									A.ID as Value, 
+									A.ObjectId as Value, 
 									P.DisplayPath as Text, 
 									case when I.ID is not null then 1 else 0 end as Selected 
 							from	AssetWithType A 
