@@ -5,6 +5,7 @@ using System.Linq;
 using d360.core;
 using d360.core.entities.Membership;
 using d360.core.enums;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Services.Favorites
 {
@@ -16,7 +17,7 @@ namespace d360.web.Services.Favorites
 
         public SystemObjects? ObjectType { get; set; }
 
-        public Func<string, Dictionary<string, string>, string> GetName { get; set; }
+        public Func<FavoritesObjectDetailsResponse, Dictionary<string, string>, string> GetName { get; set; }
 
         public AssetTypeClass? ForcedAssetClass { get; set; }
 

@@ -283,7 +283,7 @@ namespace d360.web.Services.Favorites
             {
                 RoutePattern = "assets/:uid/diagrams",
                 PageType = FavoritePageType.Artifact,
-                GetName = (name, p) => name,
+                GetName = (detail, p) => detail?.Name,
                 ObjectType = SystemObjects.TaxonomyType
             },
             new FavoriteRouteMatcher
@@ -411,7 +411,7 @@ namespace d360.web.Services.Favorites
 			{
 				RoutePattern = "assets/:uid",
 				PageType = FavoritePageType.Artifact,
-				GetName = WithTabName(() => PageNames.ReferenceTypesTab),
+				GetName = FromClassName(),
 				ObjectType = SystemObjects.ReferenceItemType
 			},
             // resource list pages
@@ -514,12 +514,43 @@ namespace d360.web.Services.Favorites
             }
         };
 
-        private static Func<string, Dictionary<string, string>, string> WithTabName(Func<string> tabName)
+        private static Func<FavoritesObjectDetailsResponse, Dictionary<string, string>, string> WithTabName(Func<string> tabName)
         {
-            return (pageName, p) => pageName + " - " + tabName();
+            return (pageName, p) => pageName?.Name + " - " + tabName();
         }
+		private static Func<FavoritesObjectDetailsResponse, Dictionary<string, string>, string> FromClassName()
+		{
+			return (detail, p) =>
+			{
+				string tabName = "";
+				switch (detail.AssetTypeClass)
+				{
+					case AssetTypeClass.BusinessAsset:
+					case AssetTypeClass.TechnicalAsset:
+						tabName = PageNames.AssetsTab;
+						break;
+					case AssetTypeClass.Model:
+						tabName = PageNames.ModelsPage;
+						break;
+					case AssetTypeClass.Policy:
+						tabName = PageNames.PoliciesPage;
+						break;
+					case AssetTypeClass.Rule:
+						tabName = PageNames.RulesPage;
+						break;
+					case AssetTypeClass.ReferenceItemType:
+					case AssetTypeClass.Reference:
+						tabName = PageNames.ReferenceTypesTab;
+						break;
+					default:
+						tabName = detail.AssetTypeClass.ToString();
+						break;
+				}
+				return detail?.Name + " - " + tabName;
+			};
+		}
 
-        private static Func<string, Dictionary<string, string>, string> FixedName(Func<string> name)
+		private static Func<FavoritesObjectDetailsResponse, Dictionary<string, string>, string> FixedName(Func<string> name)
         {
             return (_, p) => name();
         }
