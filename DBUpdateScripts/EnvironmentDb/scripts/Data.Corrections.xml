@@ -1632,4 +1632,19 @@ from	workflow.EventRegistration T
 	]]>
 	</sql>
   </changeSet>
+      <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-17952-2">
+	<comment>GOV-17952 - remove organizations from Govern</comment>	
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		delete from Asset where object = 'Organization'
+
+		delete from AssetType where object = 'OrganizationType'
+		
+		delete from dbo.Setting where id = 19
+	]]>
+	</sql>
+  </changeSet>
 </databaseChangeLog>

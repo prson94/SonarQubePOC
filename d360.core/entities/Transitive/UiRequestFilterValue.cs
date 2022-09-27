@@ -24,8 +24,8 @@ namespace d360.core.entities
 
     public enum UiRequestOwnershipFilterType
     {
-        Group,
-        User
+        Group = 1,
+        User = 3
     }
 
     public class UiRequestOwnershipFilterItem
