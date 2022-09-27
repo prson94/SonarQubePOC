@@ -390,7 +390,9 @@ namespace d360.web.Controllers.V2
             FileDownload,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
             SwaggerResponse(HttpStatusCode.OK, "Exported connector labels to Excel.", typeof(List<ConnectorLabelApiModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Unauthorized, "The current user is not an administrator.", typeof(ErrorResponse)),
+			RequireAdminPermissions
         ]
         public async Task<IHttpActionResult> ExportToExcel()
         {
