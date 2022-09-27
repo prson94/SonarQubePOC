@@ -1365,7 +1365,7 @@ delete [Setting] where ID = 50
 	</sql>
   </changeSet>
   
-    <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-18538-2">
+    <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-18538-3">
 	<comment>GOV-18538 - Update Routes for new routing.</comment>	
 	<sql dbms="mssql"
             endDelimiter="GO"
@@ -1554,11 +1554,6 @@ set Route = CONCAT('assets/',cast(at.uid as nvarchar(max)))
 from SiteNav S
 inner join AssetType AT on AT.Object = S.Object AND AT.ObjectID = S.ObjectID
 where S.Route is not null
-
-delete f
-from Favorite f
-left join AssetType at on at.uid = f.Uid
-where at.uid is null and route like '%artifact/%' and [Type] = 'AssetType' and AssetTypeID is null
 	]]>
 	</sql>
   </changeSet>
