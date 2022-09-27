@@ -831,8 +831,8 @@ namespace d360.model.DataAccessLayer
 						{
 							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.FieldTypeNotFound);
 						}
-
-						if (targetAssetType.Object != fieldType.Object || targetAssetType.ObjectID != fieldType.ObjectID)
+						
+						if (targetAssetType.ID != fieldType.AssetTypeID)
 						{
 							return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, MetricsErrors.InvalidFieldTypeAsset);
 						}

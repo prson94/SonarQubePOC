@@ -67,7 +67,12 @@ namespace igx.jobs.bulkloadprocessor
 				if (execution != null && execution.Method == BulkMethodName)
 				{
 					var load = company.Loads.FirstOrDefault(l => l.PutExecutionID == info.ExecutionID || l.PostExecutionID == info.ExecutionID);
-					var tagField = company.FieldTypes.FirstOrDefault(f => f.Object == load.Object && f.ObjectID == load.ObjectID && f.Type == "Tag");
+
+					var intersectTypeId = load.IntersectTypeUid != null ? company.IntersectTypes.Where(i => i.uid == load.IntersectTypeUid).FirstOrDefault().ID : -1;
+
+					var assetTypeId = load.AssetTypeUid != null ? company.AssetTypes.Where(i => i.uid == load.AssetTypeUid).FirstOrDefault().ID : -1;
+
+					var tagField = company.FieldTypes.FirstOrDefault(f => ((assetTypeId >= 0 &&f.AssetTypeID == assetTypeId) || (assetTypeId < 0 && f.IntersectTypeID == intersectTypeId)) && f.Type == "Tag");
 
 					if (load != null && tagField != null)
 					{

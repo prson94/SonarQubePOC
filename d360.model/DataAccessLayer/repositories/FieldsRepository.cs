@@ -46,14 +46,16 @@ namespace d360.model.DataAccessLayer
 			int pageSize = 250;
 
 			var whereClause = "";
-			string orderByClause = " order by FT.Object, FT.ObjectID, FT.Name ";
+			string orderByClause = " order by FT.ID, FT.Name ";
 
 			#region Parameter Checking
 
 			var dbArgs = new DynamicParameters();
 			var parameters = queryParams.ToList();
 			string obj = null;
-			int? objID = null;
+			int? assetTypeID = null;
+			int? issueTypeID = null;
+			int? intersectTypeID = null;
 
 			WorkHttpStatus workHttpStatus = new WorkHttpStatus(HttpStatusCode.OK, "", "");
 			
@@ -69,7 +71,7 @@ namespace d360.model.DataAccessLayer
 					if (actionType != null)
 					{
 						obj = "IssueType";
-						objID = actionType.ID;
+						issueTypeID = actionType.ID;
 					}
 					else
 					{
@@ -96,7 +98,7 @@ namespace d360.model.DataAccessLayer
 						if (assetType != null)
 						{
 							obj = assetType.Object;
-							objID = assetType.ObjectID;
+							assetTypeID = assetType.ID;
 						}
 						else
 						{
@@ -131,7 +133,7 @@ namespace d360.model.DataAccessLayer
 						if (intersectType != null)
 						{
 							obj = "IntersectType";
-							objID = intersectType.ID;
+							intersectTypeID = intersectType.ID;
 						}
 						else
 						{
@@ -151,11 +153,22 @@ namespace d360.model.DataAccessLayer
 				return new Tuple<FieldTypesApiViewModel, WorkHttpStatus>(new FieldTypesApiViewModel(), workHttpStatus);
 			}
 
-			if (!string.IsNullOrEmpty(obj) && objID.HasValue)
+			if (assetTypeID.HasValue)
 			{
-				dbArgs.Add("@obj", obj);
-				dbArgs.Add("@objID", objID.Value);
-				whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"FT.[Object] = @obj and FT.[ObjectID] = @objID";
+				dbArgs.Add("@assetTypeID", assetTypeID.Value);
+				whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"FT.[AssetTypeID] = @assetTypeID";
+			}
+
+			if (issueTypeID.HasValue)
+			{				
+				dbArgs.Add("@issueTypeID", issueTypeID.Value);
+				whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"FT.[IssueTypeID] = @issueTypeID";
+			}
+
+			if (intersectTypeID.HasValue)
+			{
+				dbArgs.Add("@intersectTypeID", intersectTypeID.Value);
+				whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"FT.[IntersectTypeID] = @intersectTypeID";
 			}
 
 			if (parameters.Any(q => q.Key.ToLower() == "name"))
@@ -222,9 +235,9 @@ namespace d360.model.DataAccessLayer
 										FT.Name,
 										FT.FriendlyName,
 										FT.Category,
-										IIF(FT.Object = 'IssueType', O_I.Uid , null) as ActionTypeUid,
-										IIF(FT.Object <> 'IssueType' AND FT.Object <> 'IntersectType', O_A.Uid , null) as AssetTypeUid,
-										IIF(FT.Object = 'IntersectType', O_R.Uid , null) as RelationshipTypeUid,
+										IIF(FT.IssueTypeID is not null, O_I.Uid , null) as ActionTypeUid,
+										IIF(FT.AssetTypeID is not null, O_A.Uid , null) as AssetTypeUid,
+										IIF(FT.IntersectTypeID is not null, O_R.Uid , null) as RelationshipTypeUid,
 
 										case when FT.Type = 'Boolean' then FT.ColumnOrder else null end as 'Type.Boolean.ColumnOrder',
 										case when FT.Type = 'Boolean' then FT.ColumnWidth else null end as 'Type.Boolean.ColumnWidth',
@@ -609,8 +622,8 @@ namespace d360.model.DataAccessLayer
 
 								from	FieldType FT
 										left join AssetType O_A on O_A.ID = FT.AssetTypeID 
-										left join IssueType O_I on FT.Object = 'IssueType' and O_I.ID = FT.ObjectID 
-										left join IntersectType O_R on FT.Object = 'IntersectType' and O_R.ID = FT.ObjectID 
+										left join IssueType O_I on O_I.ID = FT.IssueTypeID
+										left join IntersectType O_R on O_R.ID = FT.IntersectTypeID
 				
 										left join FieldTypeLookup FTL on FTL.FieldTypeID = FT.ID
 										left join IntersectType IT on (FT.[Type] = 'FieldFromRelationship' or FT.[Type] = 'RefListRelationship' or FT.[Type] = 'Relationship') and FT.LookupObjectType = 'IntersectType' and IT.ID = FT.LookupObjectID
@@ -655,7 +668,7 @@ namespace d360.model.DataAccessLayer
 
 		public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
 		{
-			var currentFieldTypes = Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID, i => i.FieldTypeLookup).ToList();
+			var currentFieldTypes = Company.Filter<FieldType>(f => (f.AssetTypeID==typeIdentifierInfoModel.ID || f.IssueTypeID == typeIdentifierInfoModel.ID || f.IntersectTypeID == typeIdentifierInfoModel.ID), i => i.FieldTypeLookup).ToList();
 			var existingKeyFields = string.Join("|", currentFieldTypes.Where(f => f.IsPartOfKey).Select(f => f.ID).OrderBy(f => f));
 			var newFieldTypes = new List<FieldType>();
 			var fieldTypeNamesToDelete = new List<string>();
@@ -678,9 +691,9 @@ namespace d360.model.DataAccessLayer
 
 				var newFieldType = new FieldType
 				{
-					AssetTypeID = typeIdentifierInfoModel.ID,
-					Object = typeIdentifierInfoModel.Object,
-					ObjectID = typeIdentifierInfoModel.ObjectID,
+					AssetTypeID = typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() || typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() ? null : typeIdentifierInfoModel.ID,
+					IntersectTypeID = typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() ? typeIdentifierInfoModel.ID : null,
+					IssueTypeID = typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() ? typeIdentifierInfoModel.ID : null,
 					Category = f.Category,
 					Name = f.Name,
 					FriendlyName = f.FriendlyName,
@@ -1342,7 +1355,7 @@ namespace d360.model.DataAccessLayer
 
 					if (f.Type.JsonElement.JsonAttribute != null)
 					{
-						int FieldTypeID = Company.FieldTypes.FirstOrDefault(ft => ft.Object == newFieldType.Object && ft.ObjectID == newFieldType.ObjectID && ft.Name == f.Type.JsonElement.JsonAttribute.FieldName).ID;
+						int FieldTypeID = Company.FieldTypes.FirstOrDefault(ft => ft.AssetTypeID == newFieldType.AssetTypeID && ft.Name == f.Type.JsonElement.JsonAttribute.FieldName).ID;
 						var obj = new { FieldTypeID, f.Type.JsonElement.JsonAttribute.Path, f.Type.JsonElement.JsonAttribute.DataType };
 						newFieldType.Definition = JsonConvert.SerializeObject(obj);
 					}
@@ -1501,7 +1514,22 @@ namespace d360.model.DataAccessLayer
 						
 						if (!string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName))
 						{
-							filterFieldType = Company.Query<int>(@"select ID from FieldType where Object = @t and ObjectID = @tid and Name = @n", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
+							var filterFieldSQL = "select ID from FieldType where Name = @n";
+							switch (Enum.Parse(typeof(SystemObjects), typeIdentifierInfoModel.Object))
+							{
+								case SystemObjects.IntersectType:
+									filterFieldSQL = $@"{filterFieldSQL} and IntersectTypeID = @id";
+									break;
+								case SystemObjects.IssueType:
+									filterFieldSQL = $@"{filterFieldSQL} and IssueTypeID = @id";
+									break;
+								default:
+									filterFieldSQL = $@"{filterFieldSQL} and AssetTypeID = @id";
+									break;
+
+							}
+							
+							filterFieldType = Company.Query<int>(filterFieldSQL, new { id = typeIdentifierInfoModel.ID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
 							
 							if (filterFieldType <= 0)
 							{
@@ -1902,14 +1930,30 @@ namespace d360.model.DataAccessLayer
 			}
 			else  // Replace
 			{
-				Company.Query<int>("delete FieldType where Object = @t and ObjectID = @tid", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID }).FirstOrDefault();
+				var deleteSQL = "delete FieldType where ";
+
+				switch (Enum.Parse(typeof(SystemObjects), typeIdentifierInfoModel.Object))
+				{
+					case SystemObjects.IntersectType:
+						deleteSQL = $@"{deleteSQL} IntersectTypeID = @id";
+						break;
+					case SystemObjects.IssueType:
+						deleteSQL = $@"{deleteSQL} IssueTypeID = @id";
+						break;
+					default:
+						deleteSQL = $@"{deleteSQL} AssetTypeID = @id";
+						break;
+
+				}
+
+				Company.Query<int>(deleteSQL, new { t = typeIdentifierInfoModel.ID }).FirstOrDefault();
 				Company.FieldTypes.AddRange(newFieldTypes);
 			}
 
 			Company.SaveChanges();
 
 			var newKeyFields = string.Join("|",
-				Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID && f.IsPartOfKey).Select(f => f.ID).OrderBy(f => f)
+				Company.Filter<FieldType>(f => ((typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() && f.IssueTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object != SystemObjects.IntersectType.ToString() && typeIdentifierInfoModel.Object != SystemObjects.IssueType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID)) && f.IsPartOfKey).Select(f => f.ID).OrderBy(f => f)
 			);
 
 			if (!newKeyFields.Equals(existingKeyFields))
@@ -1946,7 +1990,7 @@ namespace d360.model.DataAccessLayer
 		public bool hasResponsibilityUsingField(TypeIdentifierInfoModel typeIdentifierInfoModel, List<FieldType> fieldTypes)
 		{
 			var anyResponsibilityUsingField = false;
-
+			
 			var rules = Company.ResponsibilityTypeRelationRules.Where(x => x.Object == typeIdentifierInfoModel.Object && x.ObjectID == typeIdentifierInfoModel.ObjectID);
 			foreach (var rule in rules)
 			{
@@ -2063,7 +2107,7 @@ namespace d360.model.DataAccessLayer
 
 		public List<FieldType> GetFieldTypes(TypeIdentifierInfoModel typeIdentifierInfoModel)
 		{
-			return Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID, i => i.FieldTypeLookup).ToList();
+			return Company.Filter<FieldType>(f => ((typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() && f.IssueTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object != SystemObjects.IntersectType.ToString() && typeIdentifierInfoModel.Object != SystemObjects.IssueType.ToString() && f.AssetTypeID == typeIdentifierInfoModel.ID)), i => i.FieldTypeLookup).ToList();
 		}
 
 		public IEnumerable<string> GetCustomFields(SystemObjects objectType, int objectId)
@@ -2468,7 +2512,7 @@ namespace d360.model.DataAccessLayer
 			{
 				scoringInfo = (await Company.QueryAsync($@"select ft.id AS FieldTypeId, ma.ScoreType, ma.LowerThreshold, ma.UpperThreshold from 
 							 FieldType ft 
-							inner join AssetType at on ft.object = at.object and ft.objectid = at.objectid
+							inner join AssetType at on ft.assetTypeID = at.ID
 							inner join metrics.Allocation ma on ma.AssetTypeUid = at.uid  and ma.ScoreType = ft.ScoreType
 						where ft.Type = 'Score' and ft.id in @scoreFields", new { scoreFields })).ToList();
 			}

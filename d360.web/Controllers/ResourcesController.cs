@@ -195,7 +195,9 @@ namespace d360.web.Controllers
 
 			if (fields == null)
 			{
-				fields = Company.Filter<FieldType>(i => i.Object == type.ToString() && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
+				var assetTypeId = Company.AssetTypes.Where(a => a.Object == type.ToString() && a.ObjectID == typeID).FirstOrDefault().ID;
+
+				fields = Company.Filter<FieldType>(i => i.AssetTypeID == assetTypeId && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
 			}
 
 			StringBuilder sb = new StringBuilder();
@@ -558,7 +560,7 @@ namespace d360.web.Controllers
 						//For Tooltip data for Issues, we want multivalue fields separated out in an array of each separate value
 						//for use on the workflow monitor page 
 						//We'll maintain the compound comma separated value in "Value" for compatability with other pages
-						var sql = @"select ft.objectId as IssueId,
+						var sql = @"select ft.IssueTypeID as IssueId,
 							   f.FormattedValue as [Value],
 							   ft.FriendlyName as Name,
 							   ft.[Type] as [Type],
@@ -568,9 +570,8 @@ namespace d360.web.Controllers
 							   ft.[DisplayDescription] as Description
 							from
 								fieldtype ft
-
-								inner
-							join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name != 'Description')";
+								inner join 
+								field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.IssueTypeID = @obj and ft.Name != 'Description')";
 						int issueId = 0;
 
 						List<dynamic> issueRes = Company.Query<dynamic>(sql, new { ty = objectType, obj = objectID }).ToList();
@@ -601,7 +602,7 @@ namespace d360.web.Controllers
 							}
 							res.Add(resItem);
 						});
-						var fieldTypes = Company.Filter<FieldType>(i => i.Object == "IssueType" && i.ObjectID == issueId && i.IsDisplayable && i.Name != "Description" && i.ShowIfEmpty).OrderBy(i => i.ColumnOrder).ToList();
+						var fieldTypes = Company.Filter<FieldType>(i => i.IssueTypeID == issueId && i.IsDisplayable && i.Name != "Description" && i.ShowIfEmpty).OrderBy(i => i.ColumnOrder).ToList();
 						var f = fieldTypes.Where(x => !res.Any(y => y.Name == x.FriendlyName)).ToList();
 						f.ForEach(x =>
 						{
@@ -788,7 +789,26 @@ namespace d360.web.Controllers
 						typeName = "Connector Label";
 					}
 
-					var tagFieldType = det == null ? null : Company.FieldTypes.Where(x => x.Object == det.Type && x.ObjectID == det.TypeID && x.Type == "Tag").Select(x => new { x.ID, x.ShowIfEmpty, x.FriendlyName }).FirstOrDefault();
+					int? issueTypeID = null;
+					int? intersectTypeID = null;
+					int? assetTypeID = null;
+					
+					if (det.Type == SystemObjects.IssueType.ToString())
+					{
+						issueTypeID = det.TypeID;
+					}
+
+					if (det.Type == SystemObjects.IntersectType.ToString())
+					{
+						intersectTypeID = det.TypeID;
+					}
+
+					if(det.Type != SystemObjects.IntersectType.ToString() && det.Type != SystemObjects.Issue.ToString())
+					{
+						assetTypeID = Company.AssetTypes.Where(a => a.Object == det.Type && a.ObjectID == det.TypeID).FirstOrDefault().ID;
+					}					
+
+					var tagFieldType = det == null ? null : Company.FieldTypes.Where(x => ((assetTypeID != null && x.AssetTypeID == assetTypeID) || (intersectTypeID != null && x.IntersectTypeID == intersectTypeID) || (issueTypeID != null && x.IssueTypeID == issueTypeID)) && x.Type == "Tag").Select(x => new { x.ID, x.ShowIfEmpty, x.FriendlyName }).FirstOrDefault();
 					
 					if (tagFieldType != null)
 					{

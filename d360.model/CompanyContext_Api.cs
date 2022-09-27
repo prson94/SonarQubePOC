@@ -393,7 +393,8 @@ namespace d360.model
 								select A.executionid,a.itemnumber,STRING_AGG(FT.NAME,',') WITHIN GROUP (ORDER BY ft.columnorder) stringfield,count(1) cnt
 								into #tempreqfield
 								from api.ExecutionAsset A
-								inner join dbo.FieldType FT on FT.object = A.objecttype and FT.ObjectID = A.objecttypeid and FT.IsRequired = 1 and FT.DefaultValue is null
+								inner join AssetType AST on AST.object = A.objecttype and AST.ObjectID = A.objecttypeid
+								inner join dbo.FieldType FT on FT.AssetTypeID = AST.ID and FT.IsRequired = 1 and FT.DefaultValue is null
 								left join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
 								left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
 								where A.executionid = @executionID 
@@ -539,11 +540,15 @@ namespace d360.model
         private void LogFieldLookupErrors(Guid executionID, string obj, int objID, string errorPrefix, bool lookupFieldsPassedByValue, int timeout = 3600)
         {
             string targetTable = "api.ExecutionRelationship";
+			bool isIntersect = true;
+			int assetTypeId = -1;
 
             if (obj != "IntersectType")
             {
                 targetTable = "api.ExecutionAsset";
-            }
+				assetTypeId = Connection.QueryFirst<int>("Select ID from AssetType where Object = @obj and ObjectID = @objID", new { obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID });
+				isIntersect = false;
+			}
 
             if (lookupFieldsPassedByValue)
             {
@@ -560,10 +565,19 @@ namespace d360.model
 														left join Asset A on A.AssetTypeID = AT.ID and A.ObjectID = try_cast(CONVERT(NVARCHAR(20), val.Value) as int)
 														left join AssetType RefType on RefType.Object = ft.LookupObjectType and RefType.Object = 'ReferenceItemType' and reftype.objectid =  try_cast(CONVERT(NVARCHAR(20), val.Value) as int)
 														left join AssetType ModelType on ModelType.Object = ft.LookupObjectType and ModelType.Object = 'TaxonomyType' and ModelType.objectid =  try_cast(CONVERT(NVARCHAR(20), val.Value) as int)
-														where FT.Object = @obj and FT.ObjectID = @objid and [Type] = 'Lookup' and F.FieldValue is not null and (A.Id is null and reftype.id is null and ModelType.id is null) and (try_cast(CONVERT(NVARCHAR(20), val.Value) as int) <> 0 or try_cast(CONVERT(NVARCHAR(20), val.Value) as int) IS NULL)
+														where 
+															{(isIntersect ? $"FT.IntersectTypeID = @objID" : "FT.AssetTypeID= @assetTypeId")}															
+															and 
+															[Type] = 'Lookup' 
+															and 
+															F.FieldValue is not null 
+															and 
+															(A.Id is null and reftype.id is null and ModelType.id is null) 
+															and 
+															(try_cast(CONVERT(NVARCHAR(20), val.Value) as int) <> 0 or try_cast(CONVERT(NVARCHAR(20), val.Value) as int) IS NULL)
 														) 
 														S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
-									", new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
+									", new { executionID, objID, assetTypeId }, commandTimeout: timeout);
             }
             else
             {
@@ -577,14 +591,13 @@ namespace d360.model
 																	A.ItemNumber,
 																	STRING_AGG(FT.Name+'='+F.FieldValue, ', ') as Names
 														from		{targetTable} A
-																	inner join FieldType FT on FT.Object = @obj
-																								and FT.ObjectID = @objID
+																	inner join FieldType FT on {(isIntersect ? $"FT.IntersectTypeID = @objID" : "FT.AssetTypeID= @assetTypeId")}
 																								and FT.[Type] = 'Lookup'
 																	inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
 														where       A.ExecutionID = @executionID
 														group by	A.ExecutionID, A.ItemNumber
 														) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
-									", new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
+									", new { executionID, objID, assetTypeId }, commandTimeout: timeout);
             }
         }
 
@@ -612,7 +625,7 @@ namespace d360.model
 						0 ISFound
 						into #tempdata
 						from  {targetTable} A               
-						inner join FieldType FT on FT.Object = @obj and FT.ObjectID = @objID and FT.[Type] = 'Relationship' and FT.LookupObjectType ='IntersectType'               
+						inner join FieldType FT on FT.IntersectTypeID = @objID and FT.[Type] = 'Relationship'              
 						inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null 
 									and (F.FieldValue != '' or FT.IsRequired = 1)               
 						cross apply string_split(F.FieldValue, ',') V                                           
@@ -1021,7 +1034,7 @@ namespace d360.model
                       $@"insert into FieldCounterValue (AssetId, AssetTypeId, FieldTypeId, [Value])
 						select distinct a.id as AssetId, ft.assettypeid, ft.id, ef.FieldValue 
 							from api.executiongroup ea
-						inner join FieldType ft on ft.Object = 'GroupType' and ft.ObjectID = 1 and ft.Type = @dataType
+						inner join FieldType ft on ft.assetTypeID = a.assetTypeID and ft.Type = @dataType
 						inner join api.execution ex on ex.executionid = @executionid
 						inner join [asset] a on a.Object = 'Group' and a.uid = ea.groupuid
 						inner join [group] g on g.id = a.objectid						
@@ -3901,8 +3914,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									inner join (Select I.ID from [intersecttype] I
 									inner join api.ExecutionDeletedRelationshipType ER on ER.UID = I.UID 
 									where ER.ExecutionID = @ExecutionID 
-									and ER.Success is null) S on FT.[Object] = 'IntersectType' 
-									and S.ID = FT.ObjectID ;
+									and ER.Success is null) S on S.ID = FT.IntersectTypeID ;
 
 							delete FT
 							from FieldType FT 
@@ -6556,20 +6568,63 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
         public List<FieldTypeCore> GetAssetTypeFieldTypesCore(string obj, int objectID)
         {
-            string fieldTypeSql = @"
+			var joinCondition = @"Inner Join 
+								  AssetType AST on FT.AssetTypeID = AST.ID";
+
+			var whereCondition = "where AST.[Object] = @Obj and AST.[ObjectID] = @ObjectID";
+
+			if (obj == SystemObjects.IssueType.ToString() || obj == SystemObjects.Issue.ToString())
+			{
+				if(obj == SystemObjects.Issue.ToString())
+				{
+					joinCondition = @"Inner Join 
+										  Issue I on I.IssueTypeID = FT.IssueTypeID";
+
+					whereCondition = "where I.ID = @ObjectID";
+				}
+
+				if (obj == SystemObjects.IssueType.ToString())
+				{
+					joinCondition = @"Inner Join 
+										  IssueType IT on IT.ID = FT.IssueTypeID";
+
+					whereCondition = "where IT.ID = @ObjectID";
+				}
+			}
+			else if (obj == SystemObjects.Intersect.ToString() || obj == SystemObjects.IntersectType.ToString())
+			{
+				if (obj == SystemObjects.Intersect.ToString())
+				{
+					joinCondition = @"Inner Join 
+										  Intersect I on I.IntersectTypeID = FT.IntersectTypeID";
+
+					whereCondition = "where I.ID = @ObjectID";
+				}
+
+				if (obj == SystemObjects.IntersectType.ToString())
+				{
+					joinCondition = @"Inner Join 
+										  IntersectType IT on IT.ID = FT.IntersectTypeID";
+
+					whereCondition = "where IT.ID = @ObjectID";
+				}
+			}			
+
+			string fieldTypeSql = @$"
 									SELECT [Type]
 										  ,[IsRequired]
 										  ,CASE WHEN ([DefaultValue] IS NULL or [DefaultValue] = '') THEN 0 ELSE 1 END as [HasDefaultValue]
-										  ,[Name]
+										  ,FT.[Name]
 										  ,[FriendlyName]
-										  ,[ID]
+										  ,FT.[ID]
 										  ,[AllowMultipleValues]
 										  ,[Pattern]
 										  ,[Length]
 										  ,[MinimumLength]
 										  ,[MaximumLength]
-									FROM [dbo].[FieldType]
-									   where [Object] = @Obj and [ObjectID] = @ObjectID";
+									FROM [dbo].[FieldType] FT
+										{joinCondition}
+										{whereCondition}";
 
             return Query<FieldTypeCore>(fieldTypeSql, new { @Obj = new DbString { Value = obj, IsFixedLength = true, Length = 50, IsAnsi = true }, objectID }).ToList();
         }
@@ -10264,10 +10319,10 @@ where   ER.ExecutionID = @ExecutionID
 				into #parsedData
 				from #tempData d
 					left join assettype at on d.assigneetypeuid = at.uid
-					left join FieldType ft on at.Object = ft.Object and at.ObjectID = ft.ObjectID and ft.Name = d.FieldApiName
+					left join FieldType ft on at.ID = ft.AssetTypeID and ft.Name = d.FieldApiName
 					left join IntersectType it on it.uid = d.RelIntersectTypeUid
 					left join assettype at2 on d.AssetTypeUid = at2.uid
-					left join FieldType ft2 on ft2.object = at2.object and ft2.objectid = at2.objectid and ft2.name = d.fieldapiname
+					left join FieldType ft2 on ft2.AssetTypeID = at2.ID and ft2.name = d.fieldapiname
 					left join asset a on a.uid = d.RelAssetUid								
 
 				update #parsedData

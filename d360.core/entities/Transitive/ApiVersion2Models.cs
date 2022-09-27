@@ -74,13 +74,13 @@ namespace d360.core.entities
         [DataMember]
         public string Notes { get; set; }
 
-        [JsonIgnore]
-        public int ObjectID { get; set; }
+		[JsonIgnore]
+		public int ObjectID { get; set; }
 
-        [JsonIgnore]
-        public string Object { get; set; }
+		[JsonIgnore]
+		public string Object { get; set; }
 
-        [DataMember]
+		[DataMember]
         public bool UseAsTransformation { get; set; }
 
         [DataMember]
@@ -91,7 +91,16 @@ namespace d360.core.entities
 
         [DataMember]
         public bool? CanEditParent { get; set; }
-    }
+
+		[JsonIgnore]
+		public int? AssetTypeID { get; set; }
+
+		[JsonIgnore]
+		public int? IntersectTypeID { get; set; }
+
+		[JsonIgnore]
+		public int? IssueTypeID { get; set; }
+	}
 
     public class AssetTypeSuccess
     {

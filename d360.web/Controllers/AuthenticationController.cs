@@ -482,8 +482,11 @@ namespace d360.web.Controllers
 
                     try
                     {
-                        var resourceTypeFields = Company.Filter<FieldType>(i => i.Object == "ResourceType").ToList();
-                        var resourceFields = Company.Filter<Field>(i => i.ObjectType == "Resource" && i.ObjectID == resource.ID).ToList();
+						var resourceAssetType = Company.Filter<AssetType>(a => a.Class == AssetTypeClass.User).Select(i => i.ID).ToList();
+                        
+						var resourceTypeFields = Company.Filter<FieldType>(i => i.AssetTypeID.HasValue && resourceAssetType.Contains(i.AssetTypeID.Value)).ToList();
+
+						var resourceFields = Company.Filter<Field>(i => i.ObjectType == "Resource" && i.ObjectID == resource.ID).ToList();
                         var shouldSaveFields = false;
 
                         foreach (var f in resourceTypeFields.Where(i => customClaims.Keys.Contains(i.Name.ToLower())))

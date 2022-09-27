@@ -2662,8 +2662,6 @@ where an.Uid = fam.uid)
 				i.ColumnOrder,
 				i.SortOrder,
 				i.SortByAscending,
-				ObjectType = i.Object,
-				i.ObjectID,
 				i.Type,
 				i.Name
 			}).ToList();
@@ -2751,6 +2749,7 @@ where an.Uid = fam.uid)
 
 					model.ObjectID = at.ObjectID;
 					model.Object = at.Object;
+					model.AssetTypeID = at.ID;
 
 					#endregion
 					break;
@@ -2824,6 +2823,7 @@ where an.Uid = fam.uid)
 					parentType = objectType;
 					model.ObjectID = at.ObjectID;
 					model.Object = objectType.ToString();
+					model.AssetTypeID = at.ID;
 					#endregion
 					break;
 				case AssetTypeClass.Reference:
@@ -2851,6 +2851,7 @@ where an.Uid = fam.uid)
 					parentType = SystemObjects.ReferenceItemType;
 					model.ObjectID = at.ObjectID;
 					model.Object = SystemObjects.ReferenceItemType.ToString();
+					model.AssetTypeID = at.ID;
 					#endregion
 					break;
 				case AssetTypeClass.Diagram:
@@ -2879,6 +2880,7 @@ where an.Uid = fam.uid)
 					parentType = SystemObjects.TaskType;
 					model.ObjectID = at.ObjectID;
 					model.Object = SystemObjects.TaskType.ToString();
+					model.AssetTypeID = at.ID;
 
 					#endregion
 					break;
@@ -2897,6 +2899,7 @@ where an.Uid = fam.uid)
 					PredicateID = predicate.ID
 				};
 				CompanyContext.Add(intersectType);
+				model.IntersectTypeID = at.ID;
 			}
 
 			return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
@@ -3670,7 +3673,7 @@ where an.Uid = fam.uid)
 				from Asset A
 				inner join AssetType AT on AT.ID = A.AssetTypeID and AT.UID = @typeUid
 				inner join AssetPath Node on Node.ID = a.ID 
-				left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
+				left join FieldType ft on AT.ID = ft.AssetTypeID and ft.FriendlyName like 'status'
 				left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
 				left join AssetDisplayValue ADV on ADV.AssetID = A.ID
 				outer apply(

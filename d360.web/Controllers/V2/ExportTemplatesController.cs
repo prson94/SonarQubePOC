@@ -648,7 +648,7 @@ namespace d360.web.Controllers.V2
 					DataType.OwnershipLookup.ToString()
 				};
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID)
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == assetType.ID)
 								.Where(x => !typesToAvoid.Contains(x.Type))
 								.OrderBy(x => x.ColumnOrder)
 								.ThenBy(i => i.FriendlyName).ToList();
