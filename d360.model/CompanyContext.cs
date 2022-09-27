@@ -262,13 +262,13 @@ namespace d360.model
 			switch (type)
 			{
 				case TypeIdentifierInfoModelType.ActionType:
-					result = await QueryAsync<TypeIdentifierInfoModel>("select null, Uid, 'IssueType' as Object, ID as ObjectID from IssueType where Uid = @uid", new { uid = guid }).ConfigureAwait(false);
+					result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IssueType' as Object, ID as ObjectID from IssueType where Uid = @uid", new { uid = guid }).ConfigureAwait(false);
 					break;
 				case TypeIdentifierInfoModelType.AssetType:
 					result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, Object, ObjectID from AssetType where Uid = @uid", new { uid = guid });
 					break;
 				case TypeIdentifierInfoModelType.RelationshipType:
-					result = await QueryAsync<TypeIdentifierInfoModel>("select null, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = guid }).ConfigureAwait(false);
+					result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = guid }).ConfigureAwait(false);
 					break;
 				default:
 					throw new ArgumentNullException(CompanyContextErrors.InvalidTypeIdentifierInfoModel);
@@ -429,8 +429,11 @@ namespace d360.model
 		public IQueryable<FieldType> GetFieldTypesByObject(SystemObjects type, int id)
 		{
 			string sType = type.ToString();
+
+			var assetTypeId = (type == SystemObjects.IntersectType || type == SystemObjects.IssueType) ? -1 : Filter<AssetType>(a => a.Object == type.ToString() && a.ObjectID == id).FirstOrDefault().ID;
+
 			return Filter<FieldType>(
-				i => i.Object == sType && i.ObjectID == id
+				i => ((type == SystemObjects.IssueType && i.IssueTypeID == id) || (type == SystemObjects.IntersectType && i.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && i.AssetTypeID == assetTypeId))
 				)
 				.OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName)
 				.AsQueryable();
@@ -502,7 +505,7 @@ namespace d360.model
 			string formattedIntersectJoin = string.Format(intersectJoin, "AD.ID");
 
 			selectedSql = @"
-						select	iif(i.SubjectAssetID = @assetId, i.ObjectAssetID, i.SubjectAssetID) as [Value],
+						select	A.ObjectId as [Value],
 								P.DisplayPath as [Text],
 								1 as Selected 
 						from	[Intersect] i
@@ -622,7 +625,7 @@ namespace d360.model
 					
 					sql = $@"
 							select	distinct 
-									A.ID as Value, 
+									A.ObjectId as Value, 
 									P.DisplayPath as Text, 
 									case when I.ID is not null then 1 else 0 end as Selected 
 							from	AssetWithType A 
@@ -1764,8 +1767,7 @@ from	IntersectType I
 
 					if (entry.State == EntityState.Added)
 					{
-
-						if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name))
+						if (Any<FieldType>(i => ((o.AssetTypeID != null && i.AssetTypeID == o.AssetTypeID) || (o.IntersectTypeID != null && i.IntersectTypeID == o.IntersectTypeID) || (o.IssueTypeID != null && i.IssueTypeID == o.IssueTypeID)) && i.Name == o.Name))
 						{
 							throw new ArgumentException(Messages.Error_NameTaken);
 						}
@@ -1784,8 +1786,8 @@ from	IntersectType I
 					}
 
 					if (entry.State == EntityState.Modified)
-					{
-						if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name && i.ID != o.ID))
+					{						
+						if (Any<FieldType>(i => ((o.AssetTypeID != null && i.AssetTypeID == o.AssetTypeID) || (o.IntersectTypeID != null && i.IntersectTypeID == o.IntersectTypeID) || (o.IssueTypeID != null && i.IssueTypeID == o.IssueTypeID)) && i.Name == o.Name && i.ID != o.ID))
 						{
 							throw new ArgumentException(Messages.Error_NameTaken);
 						}
@@ -2171,8 +2173,8 @@ from	IntersectType I
 						{
 							Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), field.ObjectType),
 							ObjectID = field.ObjectID,
-							ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fieldType.Object),
-							ObjectTypeID = fieldType.ObjectID
+							ObjectType = SystemObjects.FieldType,
+							ObjectTypeID = fieldType.ID
 						};
 						eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
 						fieldEvents.Add(eventInfo);
@@ -2235,7 +2237,19 @@ from	IntersectType I
 
 			if (fields == null)
 			{
-				var fieldQry = Filter<FieldType>(i => i.Object == type && i.ObjectID == typeID);
+				string fieldTypeRelationType = type;
+				if(type == "Rule" && ruleMeansEvent)
+				{
+					type = "Event";
+				}
+				else if(!fieldTypeRelationType.EndsWith("Type"))
+				{
+					fieldTypeRelationType += "Type";
+				}
+
+				var parsedType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fieldTypeRelationType);
+				var fieldQry = Filter<FieldType>(i => ((parsedType == SystemObjects.IssueType && i.IssueTypeID == typeID) || (parsedType == SystemObjects.IntersectType && i.IntersectTypeID == typeID) || (parsedType != SystemObjects.IssueType && parsedType != SystemObjects.IntersectType && i.AssetTypeID == typeID)));
+								
 				if (listableOnly)
 				{
 					fieldQry = fieldQry.Where(i => i.IsListable);

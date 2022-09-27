@@ -533,10 +533,9 @@ select	FT.ID as value,
 		assetType.uid as assigneeTypeUid
 from	FieldType FT
 join dbo.AssetType assetType
-	on assetType.Object = FT.Object
-	and assetType.ObjectID = FT.ObjectID
-where	FT.[Object] = @type
-		and FT.ObjectID = @id
+	on assetType.ID = FT.AssetTypeID
+where	assetType.[Object] = @type
+		and assetType.ObjectID = @id
 		and FT.Type not in ({ftTypeRemoveString})
 for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString(), id }).ToList();
 
@@ -785,7 +784,9 @@ order by	case
 
 				if (model.StructuredDefinition?.When != null)
 				{
-					var allowedFieldTypeIds = Company.FieldTypes.Where(x => x.Object == model.Object && x.ObjectID == model.ObjectID).Select(x => x.ID).ToList();
+					var assetTypeId = Company.AssetTypes.Where(a => a.Object == model.Object && a.ObjectID == model.ObjectID).FirstOrDefault().ID;
+
+					var allowedFieldTypeIds = Company.FieldTypes.Where(x => x.AssetTypeID == assetTypeId).Select(x => x.ID).ToList();
 
 					foreach (var action in model.StructuredDefinition.When)
 					{

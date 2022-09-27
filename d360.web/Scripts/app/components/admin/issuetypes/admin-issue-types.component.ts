@@ -166,19 +166,20 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     }
 
     selectedItemChange(callback: Function = null) {
-        if (this.selected) {
+		if (this.selected) {
+			this.baseAssetTypeUid = this.selected.Uid;
             if (!this.selected.ID) {
                 this.workflowService.getIssueByUID(this.selected.Uid)
                     .subscribe((result) => {
                         this.selected.ID = result.ID;
-                        this.isLoading = false;
-                        this.buildSecondaryNavigationForObject(result.ID, 'IssueType');
+						this.isLoading = false;
+						this.buildSecondaryNavigation({ assetTypeUid: this.baseAssetTypeUid, forceRefresh: true });
                         if (callback) {
                             callback();
                         }
                     });
             } else {
-                this.buildSecondaryNavigationForObject(this.selected.ID, 'IssueType');
+				this.buildSecondaryNavigation({ assetTypeUid: this.baseAssetTypeUid, forceRefresh: true });
                 if (callback) {
                     callback();
                 }

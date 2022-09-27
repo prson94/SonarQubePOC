@@ -132,7 +132,7 @@ namespace d360.model.DataAccessLayer
 				from workflow.type t
 				inner join workflow.eventregistration e on e.typeid = t.id
 				left join AssetType D on D.ID = E.AssetTypeID 
-				left join issuetype is_t on e.IssueTypeID is_t.id
+				left join issuetype is_t on e.IssueTypeID = is_t.id
 				left join IntersectTypeDetail IT on e.IntersectTypeID = IT.ID
 				left join workflow.version v on v.id = t.publishedversionid
 				left join AssetDetail DC on DC.[Object] = 'Resource' and DC.ObjectID = t.CreatedBy

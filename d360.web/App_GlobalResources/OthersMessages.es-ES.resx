@@ -209,7 +209,7 @@
     <value>No se ha encontrado ningún registro.</value>
   </data>
   <data name="NoRelationshipTypeFoundToLookup" xml:space="preserve">
-    <value>Campo de relación no válido encontrado; no se encontró ningún tipo de relación para buscar en la definición.</value>
+    <value>Campo de relación no válido encontrado; no se encontró ningún tipo de relación para buscar en la definición. </value>
   </data>
   <data name="NoResourceAccount" xml:space="preserve">
     <value>No se ha podido localizar ninguna cuenta de recursos para usted.</value>

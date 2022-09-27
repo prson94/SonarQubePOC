@@ -191,13 +191,13 @@
     <value>Expression de filtre non valide utilisée. Veuillez vérifier les valeurs de vos filtres et leurs types de données.</value>
   </data>
   <data name="AssetNotfound" xml:space="preserve">
-    <value>Actif introuvable</value>
+    <value>Asset introuvable</value>
   </data>
   <data name="AssetTypeNotFoundForAsset" xml:space="preserve">
-    <value>Le type de cet actif est introuvable</value>
+    <value>Le type de cet asset est introuvable</value>
   </data>
   <data name="AssetValidateWithAssetType" xml:space="preserve">
-    <value>L’UID de l’actif ne correspond pas au type Asset fourni.</value>
+    <value>L’UID de l’asset ne correspond pas au type Asset fourni.</value>
   </data>
   <data name="EmptyInvalidParameterSet" xml:space="preserve">
     <value>Vous avez transmis un ensemble de critères vide ou non valide.</value>
@@ -260,7 +260,7 @@
     <value>Accès refusé</value>
   </data>
   <data name="AssetNotFoundForAssetType" xml:space="preserve">
-    <value>Aucun actif trouvé pour le type d’actif {0}</value>
+    <value>Aucun asset trouvé pour le type d’asset {0}</value>
   </data>
   <data name="AssetTypeNotSupportExport" xml:space="preserve">
     <value>AssetType ne prend pas en charge le modèle d’exportation.</value>
@@ -281,7 +281,7 @@
     <value>Le statut du connecteur ayant [externalId] {0} est introuvable.</value>
   </data>
   <data name="CounterInitialValueHigherCurrentValue" xml:space="preserve">
-    <value>La valeur [CounterInitialIndex] doit être supérieure au nombre d’actifs ({0})</value>
+    <value>La valeur [CounterInitialIndex] doit être supérieure au nombre d’assets ({0})</value>
   </data>
   <data name="DataTypeValueNotMatched" xml:space="preserve">
     <value>La valeur fournie ne correspond pas au type de données attendu pour ce paramètre</value>
@@ -458,7 +458,7 @@
     <value>Le type de fichier Modèle doit être .xls ou .xlsx.</value>
   </data>
   <data name="TemplateNameDuplicate" xml:space="preserve">
-    <value>Le modèle nommé '{0}' existe déjà pour le type d’actif '{1}'.</value>
+    <value>Le modèle nommé '{0}' existe déjà pour le type d’asset '{1}'.</value>
   </data>
   <data name="TemplateNotFound" xml:space="preserve">
     <value>Le modèle est introuvable.</value>
@@ -542,7 +542,7 @@
     <value>Vous regardez {0} {1}.</value>
   </data>
   <data name="FieldNotAllowedForAssetType" xml:space="preserve">
-    <value>Vous n’êtes pas autorisé à récupérer les champs de ce type d’actif.</value>
+    <value>Vous n’êtes pas autorisé à récupérer les champs de ce type d’asset.</value>
   </data>
   <data name="UnknownErrorInvestigatingMessage" xml:space="preserve">
     <value>Une erreur inconnue s’est produite et a été consignée pour une enquête plus approfondie. Veuillez réessayer votre requête plus tard.</value>
@@ -605,7 +605,7 @@
     <value>Il manque à Govern des informations de configuration relatives au fournisseur d’identités OpenID, telles que ClientID et/ou Authority.</value>
   </data>
   <data name="LookupFieldTypeInUse" xml:space="preserve">
-    <value>Des actifs sont présents dans votre environnement avec des valeurs dans le champ '{0}'. Vous ne pouvez pas modifier la propriété [Type.Lookup.List] tant que les valeurs de ces champs n’ont pas été supprimées.</value>
+    <value>Des assets sont présents dans votre environnement avec des valeurs dans le champ '{0}'. Vous ne pouvez pas modifier la propriété [Type.Lookup.List] tant que les valeurs de ces champs n’ont pas été supprimées.</value>
   </data>
   <data name="InvalidIntersecttypeid" xml:space="preserve">
     <value>ID du type d’intersection non valide</value>
@@ -614,13 +614,13 @@
     <value>Modèle non valide</value>
   </data>
   <data name="TargetAssetType" xml:space="preserve">
-    <value>type d’actif cible</value>
+    <value>type d’asset cible</value>
   </data>
   <data name="AssetCorssRefAlreadyExists" xml:space="preserve">
-    <value>La référence croisée des actifs existe déjà.</value>
+    <value>La référence croisée des assets existe déjà.</value>
   </data>
   <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
-    <value>Le modèle de référence croisée des actifs ne contient pas de champs obligatoires.</value>
+    <value>Le modèle de référence croisée des assets ne contient pas de champs obligatoires.</value>
   </data>
   <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
     <value>Valeur [_includeChildAssets] fournie non valide</value>
@@ -740,7 +740,7 @@
     <value>L’itinéraire {Route} est inconnu ou obsolète</value>
   </data>
   <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
-    <value>Aucun type d’actif n’a été trouvé avec la valeur [assetTypeUid] fournie.</value>
+    <value>Aucun type d’asset n’a été trouvé avec la valeur [assetTypeUid] fournie.</value>
   </data>
   <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
     <value>Aucun type d’intersection n’a été trouvé avec la valeur intersectTypeUid fournie.</value>

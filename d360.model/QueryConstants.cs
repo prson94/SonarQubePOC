@@ -86,14 +86,14 @@ namespace d360.model
 
 		public static readonly string LookupAllocations = @"
 				SELECT	FT.Name as FieldTypeName,
-						FT.ObjectID,
+						D.ObjectID,
 						coalesce(D.[Name], ITN.[Name]) as ObjectName,
-						FT.[Object] as ObjectType,
+						D.[Object] as ObjectType,
 						null as ObjectTypeName,
 						AUrl.[Url] as ObjectUrl
 				FROM	FieldType FT
-						left join AssetType D on FT.[Object] <> 'IntersectType' and D.[Object] = FT.[Object] and D.ObjectID = FT.ObjectID
-						left join IntersectType T on FT.[Object] = 'IntersectType' and T.ID = FT.ObjectID
+						left join AssetType D on FT.IntersectTypeID is null and FT.IssueTypeID is null and D.ID = FT.AssetTypeID
+						left join IntersectType T on T.ID = FT.IntersectTypeID
 						outer apply [dbo].[GetAssetTypeUrlById](D.ID) AUrl
 						outer apply dbo.GetIntersectTypeNames(T.ID) ITN
 				WHERE	FT.LookupObjectType = @type

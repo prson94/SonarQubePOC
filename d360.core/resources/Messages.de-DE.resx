@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Error_NameTaken" xml:space="preserve">
-    <value>Der Name ist vergeben. Geben Sie einen anderen Namen an.</value>
+    <value>Der Name ist vergeben. Bitte anderen Namen eingeben.</value>
   </data>
   <data name="Error_NotRemoved_Tokenized" xml:space="preserve">
     <value>{0} konnte nicht entfernt werden.</value>

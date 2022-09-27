@@ -449,6 +449,8 @@ namespace d360.core.entities
         public string DisplayValue { get; set; }
         
         public string MainTabTitle { get; set; }
+
+		public string MainTabUrl { get; set; }
         
         public string TypeName { get; set; }
        

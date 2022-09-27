@@ -1064,7 +1064,7 @@ using       (
 					inner join Asset A on A.Object = 'Resource' and A.ObjectID = U.ResourceID
 					inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex > 4
 					inner join LoadItemColumn CI on CI.LoadID = I.LoadID and CI.RowIndex = I.RowIndex and CI.ColumnIndex = C.ColumnIndex
-					inner join FieldType FT on FT.Object = 'ResourceType' and FT.ObjectID = 1 and FT.Name = C.Name
+					inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.Name = C.Name
             ) S
 on          (
                 T.AssetID = S.AssetID and T.FieldTypeID = S.FieldTypeID

@@ -279,8 +279,8 @@ namespace d360.web.Controllers.V2
 					hasPermissions = true;
 				}
 				else
-				{
-					var typePermissions = Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ObjectID);
+				{										
+					var typePermissions = Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ID.Value);
 
 					if (typePermissions != null)
 					{
@@ -479,7 +479,7 @@ namespace d360.web.Controllers.V2
 			{
 				var typePermissions = typeIdentifierInfoModel == null 
 					? null 
-					: Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ObjectID);
+					: Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ID.Value);
 
 				if (typePermissions != null)
 				{
@@ -698,7 +698,7 @@ namespace d360.web.Controllers.V2
 				if (AssetTypeUid != null)
 				{
 					var assetType = Company.Filter<AssetType>(x => x.uid == AssetTypeUid).SingleOrDefault();
-					id = assetType.ObjectID;
+					id = assetType.ID;
 					Enum.TryParse(assetType.Object, out type);
 					@class = assetType.Class;
 				}
@@ -885,7 +885,8 @@ namespace d360.web.Controllers.V2
 				};
 
 				var Field_JsonDataTypes = jsonFieldType.Select(i => new { title = i.Key, value = i.Value });
-				var Field_JsonFields = Company.Filter<FieldType>(ft => ft.Object == sType && ft.ObjectID == id && ft.Type == "JSON")
+
+				var Field_JsonFields = Company.Filter<FieldType>(ft => ((type == SystemObjects.IssueType && ft.IssueTypeID == id) || (type == SystemObjects.IntersectType && ft.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && ft.AssetTypeID == id)) && ft.Type == "JSON")
 					.OrderBy(ft => ft.FriendlyName)
 					.Select(ft => new { ft.FriendlyName, ft.Name, ft.ID })
 					.ToList()
@@ -1322,7 +1323,7 @@ namespace d360.web.Controllers.V2
 				if (AssetTypeUid != null)
 				{
 					var assetType = Company.Filter<AssetType>(x => x.uid == AssetTypeUid).SingleOrDefault();
-					id = assetType.ObjectID;
+					id = assetType.ID;
 					Enum.TryParse(assetType.Object, out type);
 				}
 				else if (ActionTypeUid != null)
@@ -1352,7 +1353,6 @@ namespace d360.web.Controllers.V2
 
 				if (refitem != null && refitem.Object == SystemObjects.ReferenceItemType.ToString())
 				{
-					string objectType = type.ToString();
 
 					//return possible hierarchy parents for this object type
 					var parent = Company.GetParentType(refitem.ID);
@@ -1360,7 +1360,7 @@ namespace d360.web.Controllers.V2
 					if (parent != null)
 					{
 						//get possible parent reference list types defined for this object / object id they cant already be parents
-						list = Company.FieldTypes.Where(x => x.Object == objectType && x.ObjectID == id && x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == parent.ObjectID).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = i.Name }).ToList();
+						list = Company.FieldTypes.Where(x => ((type == SystemObjects.IssueType && x.IssueTypeID == id) || (type == SystemObjects.IntersectType && x.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && x.AssetTypeID == id)) && x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == parent.ObjectID).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = i.Name }).ToList();
 
 						if (list.Count > 0)
 						{
@@ -1518,16 +1518,15 @@ namespace d360.web.Controllers.V2
 					(SELECT 
 						ft.[ID] as FieldTypeID,
 						ft.Name as FieldTypeName,
-						ft.[FriendlyName], 
-						ft.[Object], 
-						ft.[ObjectID], 
+						ft.[FriendlyName],						
 						ft.AssetTypeID, 
 						ft.Type,
 						at.Class,
 						at.Name
 					FROM [dbo].[FieldType] ft
 					INNER JOIN [dbo].[AssetType] at ON ft.LookupObjectType +'Type' = at.Object AND ft.LookupObjectID = at.ObjectID
-					WHERE ft.[ObjectID] = @objectId AND ft.[Object] = @objectType  
+					INNER JOIN [dbo].[AssetType] ast ON FT.AssetTypeID = ast.ID
+					WHERE ast.[ObjectID] = @objectId AND ast.[Object] = @objectType  
 					) B ON A.ObjectAssetTypeID = B.AssetTypeID";
 
 				var parameters = new
@@ -1931,7 +1930,7 @@ namespace d360.web.Controllers.V2
 				if (assetType != null)
 				{
 					Enum.TryParse(assetType.Object, out type);
-					id = assetType.ObjectID;
+					id = assetType.ID;
 					name = assetType.Name;
 					fieldTypeID = Company.Filter<FieldType>(x => x.AssetTypeID == assetType.ID && x.Name == model.FieldTypename).SingleOrDefault().ID;
 				}
@@ -1940,14 +1939,14 @@ namespace d360.web.Controllers.V2
 					type = SystemObjects.IssueType;
 					id = actionType.ID;
 					name = actionType.Name;
-					fieldTypeID = Company.Filter<FieldType>(x => x.ObjectID == actionType.ID && x.Object == "IssueType" && x.Name == model.FieldTypename).SingleOrDefault().ID;
+					fieldTypeID = Company.Filter<FieldType>(x => x.IssueTypeID == actionType.ID && x.Name == model.FieldTypename).SingleOrDefault().ID;
 				}
 				else if (intersectType != null)
 				{
 					type = SystemObjects.IntersectType;
 					id = intersectType.ID;
 					name = "intersectType:" + model.TypeUid.ToString();
-					fieldTypeID = Company.Filter<FieldType>(x => x.ObjectID == intersectType.ID && x.Object == "IntersectType" && x.Name == model.FieldTypename).SingleOrDefault().ID;
+					fieldTypeID = Company.Filter<FieldType>(x => x.IntersectTypeID == intersectType.ID && x.Name == model.FieldTypename).SingleOrDefault().ID;
 				}
 				else
 				{
@@ -1957,8 +1956,7 @@ namespace d360.web.Controllers.V2
 				string message = "";
 				errorMessage = string.Format("{0} could not be found for {1}.", model.FieldTypename, name);
 
-				var sType = type.ToString();
-				List<FieldType> list = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+				List<FieldType> list = Company.Filter<FieldType>(ft => ((type == SystemObjects.IssueType && ft.IssueTypeID == id) || (type == SystemObjects.IntersectType && ft.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && ft.AssetTypeID == id))).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
 				if (list != null)
 				{
@@ -1977,7 +1975,7 @@ namespace d360.web.Controllers.V2
 						}
 
 						Company.Database.Connection.UpdateFieldMove(list, Company.CurrentResourceID);
-						list = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+						list = Company.Filter<FieldType>(ft => ((type == SystemObjects.IssueType && ft.IssueTypeID == id) || (type == SystemObjects.IntersectType && ft.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && ft.AssetTypeID == id))).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 					}
 
 					var fieldToMove = list.SingleOrDefault(i => i.ID == fieldTypeID);
@@ -2136,6 +2134,7 @@ namespace d360.web.Controllers.V2
 				int fieldTypeId = -1;
 				string fieldObject = "";
 				int fieldObjectID = 0;
+				int id = -1;
 
 				var atype = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
 
@@ -2144,11 +2143,13 @@ namespace d360.web.Controllers.V2
 					var itType = Company.IntersectTypes.FirstOrDefault(x => x.uid == assetTypeUid);
 					fieldObject = "IntersectType";
 					fieldObjectID = itType.ID;
+					id = itType.ID;
 				}
 				else
 				{
 					fieldObject = atype.Object;
 					fieldObjectID = atype.ObjectID;
+					id = atype.ID;
 				}
 
 				if (skip != null && take != null)
@@ -2197,7 +2198,7 @@ namespace d360.web.Controllers.V2
 					return Request.CreateResponse(HttpStatusCode.OK, data);
 				}
 
-				var fieldType = Company.FieldTypes.FirstOrDefault(x => x.Object == fieldObject && x.ObjectID == fieldObjectID && x.Name == fieldName);
+				var fieldType = Company.FieldTypes.FirstOrDefault(ft => ((fieldObject == SystemObjects.IssueType.ToString() && ft.IssueTypeID == id) || (fieldObject == SystemObjects.IntersectType.ToString() && ft.IntersectTypeID == id) || (fieldObject != SystemObjects.IssueType.ToString() && fieldObject != SystemObjects.IntersectType.ToString() && ft.AssetTypeID == id)) && ft.Name == fieldName);				
 
 				//list items for parent field
 				if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")

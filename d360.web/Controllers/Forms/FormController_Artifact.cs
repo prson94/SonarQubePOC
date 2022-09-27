@@ -252,8 +252,7 @@ namespace d360.web.Controllers
                             CanEditParent = assetType.CanEditParent
                         },
                         Tokens = Company.Filter<FieldType>(
-                            i => i.Object == assetType.Object
-                                && i.ObjectID == assetType.ObjectID
+                            i => i.AssetTypeID == assetType.ID
                                 && supportedDisplayFormats.Contains(i.Type))
                             .OrderBy(i => i.FriendlyName)
                             .Select(i => new PrimeSelectItem { label = i.FriendlyName, value = "{" + i.Name + "}" }).ToList()

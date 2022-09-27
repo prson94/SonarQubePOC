@@ -1515,7 +1515,8 @@ namespace d360.web.Controllers.Services
 
 		private List<FieldType> getFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
 		{
-			var fields = Company.FieldTypes.Where(f => f.Object == type && f.ObjectID == id).ToList();
+			var assetTypeId = Company.AssetTypes.Where(a => a.Object == type && a.ObjectID == id).FirstOrDefault().ID;
+			var fields = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeId).ToList();
 			List<string> excludedTypes = DataType.Text.GetNonWorkflowConditionFields();
 
 			if (!allowHtml)
@@ -1537,7 +1538,7 @@ namespace d360.web.Controllers.Services
 					string objectType = objectData[0];
 					int objectId = int.Parse(objectData[1]);
 					var assetFields = Company.FieldTypes
-						.Where(f => f.Object == objectType && f.ObjectID == objectId && !excludedTypes.Contains(f.Type))
+						.Where(f => f.IssueTypeID == objectId && !excludedTypes.Contains(f.Type))
 						.ToList();
 
 					fields = fields.Union(assetFields).ToList();
@@ -2303,7 +2304,7 @@ namespace d360.web.Controllers.Services
 		{
 			fieldTypes.ForEach(x =>
 			{
-				var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
+				var fieldType = x.IssueTypeID.HasValue ? "Action Field" : "Asset Field";
 				var f = "[" + fieldType + " :: " + x.Name + "]";
 				var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
 				msg = msg.Replace(f, t);
@@ -2316,7 +2317,7 @@ namespace d360.web.Controllers.Services
 		{
 			fieldTypes.ForEach(x =>
 			{
-				var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
+				var fieldType = x.IssueTypeID.HasValue ? "Action Field" : "Asset Field";
 				var f = "[" + fieldType + " :: " + x.Name + "]";
 				var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
 				msg = msg.Replace(t, f);
@@ -2384,19 +2385,27 @@ namespace d360.web.Controllers.Services
 									,assettype.[Object] as 'ObjectType'
 									,assettype.ObjectID as 'ObjectTypeID'	                                
 									,case 
-										when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
+										when wi.[object] = 'Intersect' then coalesce((SELECT COALESCE(SA.DisplayValue, '') + ' / ' + COALESCE(OA.DisplayValue, '')
+											FROM [Intersect] I
+											left join AssetDetail SA on SA.ID = I.SubjectAssetID
+											left join AssetDetail OA on OA.ID = I.ObjectAssetID
+											WHERE	I.ID = wi.objectid), '(unknown relationship)')
 										else coalesce(ADV.DisplayValue,'(unknown)')
 									end as 'ObjectName'
 									,wis.id as 'ItemStepID'
 									,wvs.name as 'StepName'
 									,wvs.steptype as 'StepType'
 									,wvs.activitytype as 'ActivityType'
-									,iss.[object] as 'IssueObject'
-									,iss.[objectid] as 'IssueObjectID'
+									,cod.[object] as 'IssueObject'
+									,cod.[objectid] as 'IssueObjectID'
 									,CODV.DisplayValue as 'IssueObjectName'  
 									,case 
 										when wi.[object] = 'Issue' then CODV.DisplayValue
-										when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
+										when wi.[object] = 'Intersect' then coalesce((SELECT COALESCE(SA.DisplayValue, '') + ' / ' + COALESCE(OA.DisplayValue, '')
+											FROM [Intersect] I
+											left join AssetDetail SA on SA.ID = I.SubjectAssetID
+											left join AssetDetail OA on OA.ID = I.ObjectAssetID
+											WHERE	I.ID = wi.objectid), '(unknown relationship)')
 										else coalesce(ADV.DisplayValue,'(unknown)')
 									end as Name,
 									wvs.Settings.query('settings/FormResponseType').value('.', 'varchar(50)') as 'responseType',
@@ -2657,9 +2666,10 @@ namespace d360.web.Controllers.Services
 			bool hasIssueObject = !string.IsNullOrEmpty(issueObject);
 
 			var sql = $@"select ft.ID as value, {(hasIssueObject ? " 'Action Field :: ' + " : "")} ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
-				 FieldType ft
+				 FieldType ft 
+				 inner join AssetType ast on FT.assetTypeID = ast.ID
 				 left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
-				 where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
+				 where ast.Object = @objectType and ast.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
 
 			if (hasIssueObject)
 			{
@@ -2667,7 +2677,7 @@ namespace d360.web.Controllers.Services
 				select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
 				 FieldType ft
 				 left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
-				 where ft.Object = @issueObject and ft.ObjectID = @issueObjectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
+				 where ft.IssueTypeID = @issueObjectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
 				order by 2";
 			}
 			else

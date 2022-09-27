@@ -119,10 +119,10 @@
     <value>AssetType '{1}' ne prend pas en charge les autorisations.</value>
   </data>
   <data name="InsufficientAssetPermissions1" xml:space="preserve">
-    <value>Vous ne disposez pas des autorisations de lecture au niveau de l’actif sous-jacent.</value>
+    <value>Vous ne disposez pas des autorisations de lecture au niveau de l’asset sous-jacent.</value>
   </data>
   <data name="Permissions_Not_Supported" xml:space="preserve">
-    <value>Les actifs de ce type ne prennent pas en charge les autorisations.</value>
+    <value>Les assets de ce type ne prennent pas en charge les autorisations.</value>
   </data>
   <data name="UID_not_Found" xml:space="preserve">
     <value>{0} introuvable sur la base de l’UID fourni.</value>

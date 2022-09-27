@@ -218,7 +218,12 @@ namespace d360.model
 												Lower(FT.[Type]) as type
 									from		LoadColumn LC
 										inner join Load L on (LC.LoadID = L.ID)
-										left join FieldType FT on (FT.[Object] = L.[Object] and FT.[ObjectID] = L.[ObjectID] and LC.Name = FT.Name)
+										left join 
+										AssetType ast on L.[Object] <> 'IntersectType' and ast.[Object] = L.[Object] and ast.[ObjectID] = L.[ObjectID] 
+										left Join 
+										FieldType FT1 on ast.ID = FT1.AssetTypeID and LC.Name = FT1.Name
+										left join 
+										FieldType FT2 on L.[Object] = 'IntersectType' and FT2.[ObjectID] = L.[ObjectID] and FT2.[Object] = L.[Object] and LC.Name = FT2.Name
 									where		LoadID = @id
 									order by	ColumnIndex", new { id });
 		}
@@ -643,7 +648,7 @@ namespace d360.model
 								inner join LoadColumn LC on LC.LoadID = L.ID
 								inner join LoadItemColumn I on I.LoadID = L.ID and I.ColumnIndex = LC.ColumnIndex
 								inner join #BulkExecutionAsset BA on BA.ItemNumber = I.RowIndex
-								left join FieldType FT on FT.[Name] = LC.[Name] and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
+								left join FieldType FT on FT.[Name] = LC.[Name] and FT.AssetTypeID = T.ID
 						where   L.ID = @ID;
 
 						--handle ref lists
@@ -672,7 +677,7 @@ namespace d360.model
 										where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
 												and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level])
 							) L on L.AssetTypeID = T.ID and L.[Level] <= @maxLevel
-									inner join FieldType FT on FT.Name = replace(F.FieldName,L.[Name] + ' ', '')  and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
+									inner join FieldType FT on FT.Name = replace(F.FieldName,L.[Name] + ' ', '')  and FT.AssetTypeID = T.ID
 							where   F.FieldName = (coalesce(L.Name,'') + ' ' + coalesce(FT.Name,'')) and F.FieldTypeID is null;
 
 							delete from #BulkExecutionField where FieldTypeID is null;
@@ -1019,7 +1024,7 @@ namespace d360.model
 			int endItemNumber = (currentLocation + loopSize) > loadItems.Count ? loadItems.Count : currentLocation + loopSize;
 			int rowIndexStartNumber = 2;
 
-			var tagField = FieldTypes.FirstOrDefault(f => f.Type == "Tag" && f.Object == assetType.Object && f.ObjectID == assetType.ObjectID);
+			var tagField = FieldTypes.FirstOrDefault(f => f.Type == "Tag" && f.AssetTypeID == assetType.ID);
 			bool hasTags = tagField != null;
 
 			for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
@@ -1041,7 +1046,7 @@ namespace d360.model
 						assetTypeLevel = assetTypeLevels[item.Level];
 
 						//ignore parent key fields, not needed for API
-						IQueryable<FieldType> keyFields = FieldTypes.Where(f => f.Object == assetType.Object && f.ObjectID == assetType.ObjectID && f.IsPartOfKey);
+						IQueryable<FieldType> keyFields = FieldTypes.Where(f => f.AssetTypeID == assetType.ID && f.IsPartOfKey);
 						foreach (FieldType k in keyFields)
 						{
 							fieldsToSkip.AddRange(assetTypeLevels.ToList().Where(l => l.Key != item.Level).Select(l => $"{l.Value} {k.Name}"));
@@ -1201,7 +1206,7 @@ namespace d360.model
 																			coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],'') as [Value] 
 																		from LoadColumn LC
 																		inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @rowIndex and IC.ColumnIndex = LC.ColumnIndex
-																		inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
+																		inner join FieldType FT on FT.AssetTypeID=@atID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
 																		where LC.LoadID = @id and LC.ColumnIndex in (
 																			select		LC.ColumnIndex 
 																			from		AssetType ATT
@@ -1232,7 +1237,7 @@ namespace d360.model
 			select STRING_AGG( ISNULL(coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],''), ' '), '>') as [Value]
 				from LoadColumn LC
 				inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @rowIndex and IC.ColumnIndex = LC.ColumnIndex
-				inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
+				inner join FieldType FT on FT.AssetTypeID = @atID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
 					where LC.LoadID = @id and LC.ColumnIndex in (
 						select		LC.ColumnIndex 
 						from		AssetType ATT

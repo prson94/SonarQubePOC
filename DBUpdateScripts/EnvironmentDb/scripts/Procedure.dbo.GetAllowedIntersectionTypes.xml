@@ -5,22 +5,22 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetAllowedIntersectionTypes-v8">
+  <changeSet author="TKlok" id="Procedure.dbo.GetAllowedIntersectionTypes-v9">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
 create or alter procedure [dbo].[GetAllowedIntersectionTypes]
-	@SourceType varchar(50),
-	@SourceTypeID int,
-	@IntersectID int = 0
+	@SourceTypeUid uniqueidentifier,
+	@PredicateUid uniqueidentifier = null
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	declare @assetTypeId int;
-	select @assetTypeId = ID from AssetType where Object = @SourceType and ObjectID = @SourceTypeID;
+	declare @SourceTypeID int;
+	select @assetTypeId = ID, @SourceTypeID = ObjectID from AssetType where Uid = @SourceTypeUid;
 
 	declare @tbl table (IntersectTypeID int, TargetType varchar(50), TargetTypeID int, TargetName nvarchar(500), ParentIntersectID int, PredicateName nvarchar(100), SourceName nvarchar(500), SourceTypeID int, SourceType varchar(50), Uid uniqueidentifier);
 	
@@ -87,45 +87,33 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
+	declare @assetTypeId int;
+	select @assetTypeId = ID from AssetType where Object = @SourceType and ObjectID = @SourceTypeID;
+
 	declare @tbl table (IntersectTypeID int, TargetType varchar(50), TargetTypeID int, TargetName nvarchar(500), ParentIntersectID int, PredicateName nvarchar(100), SourceName nvarchar(500), SourceTypeID int, SourceType varchar(50), Uid uniqueidentifier);
 	
 	insert into @tbl
 		(IntersectTypeID, TargetType, TargetTypeID, TargetName, ParentIntersectID, PredicateName, SourceName, SourceTypeID, SourceType, uid)
 		SELECT	RT.ID,
-				case 
-					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.Object 
-					else RT.Subject
-				end AS TargetType,
-				case 
-					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.ObjectID
-					else RT.SubjectID
-				end AS TargetTypeID,
-				case 
-					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.ObjectName
-					else RT.SubjectName
-				end AS TargetName,
+				iif(RT.SubjectAssetTypeID = @assetTypeId, O.Object, S.Object) as TargetType,
+				iif(RT.SubjectAssetTypeID = @assetTypeId, O.ObjectID, S.ObjectID) as TargetTypeID,
+				iif(RT.SubjectAssetTypeID = @assetTypeId, O.Name, S.Name) as TargetName,
 				NULL,
-				RT.PredicateName,
-				case 
-					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.SubjectName
-					else RT.ObjectName
-				end AS SourceName,
-				case 
-					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.SubjectID
-					else RT.ObjectID
-				end AS SourceTypeID,
-				case 
-					when RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID then RT.Subject
-					else RT.Object
-				end AS SourceType,
-					RT.uid
-		FROM	IntersectTypeDetail RT
-		WHERE	RT.PredicateType <> 15 
-					and RT.PredicateType <> 17 
-          and (
-							(RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID) OR 
-							(RT.Object = @SourceType and RT.ObjectID = @SourceTypeID)
-              )
+				P.Name as PredicateName,
+				iif(RT.SubjectAssetTypeID = @assetTypeId, S.Name, O.Name) as SourceName,
+				iif(RT.SubjectAssetTypeID = @assetTypeId, S.ObjectID, O.ObjectID) as SourceTypeID,
+				iif(RT.SubjectAssetTypeID = @assetTypeId, S.Object, O.Object) as SourceType,
+				RT.uid
+		FROM	IntersectType RT
+				inner join AssetType S on S.ID = RT.SubjectAssetTypeID
+				inner join AssetType O on O.ID = RT.ObjectAssetTypeID
+				inner join [Predicate] P on P.ID = RT.PredicateID
+		WHERE	P.[Type] <> 15 
+				and P.[Type] <> 17 
+				and (
+						(RT.SubjectAssetTypeID = @assetTypeId) OR 
+						(RT.ObjectAssetTypeID = @assetTypeId)
+					)
 	
 	select		distinct
 				IntersectTypeID, 

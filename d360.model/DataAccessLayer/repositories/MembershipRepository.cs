@@ -112,7 +112,9 @@ namespace d360.model.DataAccessLayer
 				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
 			}
 
-			var fieldTypes = CompanyContext.FieldTypes.Where(f => f.Object == "GroupType" && f.ObjectID == 1).ToList();
+			var groupIdList = CompanyContext.AssetTypes.Where(a => a.Class == AssetTypeClass.Group).Select(s=> s.ID);
+
+			var fieldTypes = CompanyContext.FieldTypes.Where(f => groupIdList.Contains(f.AssetTypeID.Value)).ToList();
 			getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, listColorsAsJSON: listColorsAsJSON);
 
 			if (queryParams != null)
@@ -682,6 +684,7 @@ namespace d360.model.DataAccessLayer
 						fieldRow["ItemNumber"] = user.ItemNumber;
 						fieldRow["FieldName"] = field;
 						fieldRow["FieldValue"] = user.Fields[field];
+						fieldRow["FieldTypeID"] = fieldType != null ? fieldType.ID : null;
 
 						fieldTable.Rows.Add(fieldRow);
 					}
@@ -767,13 +770,7 @@ namespace d360.model.DataAccessLayer
 						set     U.ResourceID = G.ResourceID
 						from    api.ExecutionUser U
 								inner join reporting.Global_Resource G on G.[uid] = U.[Uid] and G.[State] <> @deleted
-						where   U.ExecutionID = @executionID and U.Success is null and U.IsNew = 0;
-
-						update  U
-						set     U.FieldTypeID = F.ID
-						from    #UserFields U
-								inner join FieldType F on F.Name = U.FieldName and F.Object = 'ResourceType' and F.ObjectID = @ResourceTypeID
-						where   U.ExecutionID = @executionID;
+						where   U.ExecutionID = @executionID and U.Success is null and U.IsNew = 0;						
 						", new { executionID, deleted = (int)CompanyResourceState.Deleted, ResourceTypeID }, transaction: trans);
 
 					#endregion

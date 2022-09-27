@@ -33,9 +33,9 @@
     outline-offset: 0;
 
     &:not(.ig-button-group) {
-      -webkit-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-      -moz-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-      box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+      -webkit-box-shadow: 0 0 0 @ig-focus-button-width @ig-focus-color;
+      -moz-box-shadow: 0 0 0 @ig-focus-button-width @ig-focus-color;
+      box-shadow: 0 0 0 @ig-focus-button-width @ig-focus-color;
     }
 
     &.highlighted {
@@ -96,7 +96,7 @@
     border: 1px solid var(--primaryButtonBackColor);
 
     &:focus:not(:disabled), &.ig-state-focus {
-      border-color: @ig-focus-color;
+      border: none;
     }
 
     &:hover:not(:disabled), &.ig-state-hover {
@@ -116,6 +116,7 @@
     background: none;
     width: auto;
     height: auto;
+    padding: 4px;
     color: var(--primaryButtonBackColor);
 
     &:hover:not(:disabled), &.ig-state-hover {
@@ -123,8 +124,14 @@
       -webkit-text-fill-color: transparent;
       background: linear-gradient(@ig-dark-overlay-hover, @ig-dark-overlay-hover), var(--primaryButtonBackColor);
 
-      .ig-button-label {
-        text-decoration: underline;
+      .ig-button-label::after {
+        content: '';
+        width: calc(100% - 8px);
+        height: 1px;
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        background: linear-gradient(@ig-dark-overlay-hover, @ig-dark-overlay-hover), var(--primaryButtonBackColor);
       }
     }
 
@@ -133,8 +140,14 @@
       -webkit-text-fill-color: transparent;
       background: linear-gradient(@ig-dark-overlay-active, @ig-dark-overlay-active), var(--primaryButtonBackColor);
 
-      .ig-button-label {
-        text-decoration: underline;
+      .ig-button-label::after {
+        content: '';
+        width: calc(100% - 8px);
+        height: 1px;
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        background: linear-gradient(@ig-dark-overlay-active, @ig-dark-overlay-active), var(--primaryButtonBackColor);
       }
     }
 
@@ -171,11 +184,11 @@
     }
 
     &:disabled > * {
-      opacity: @ig-field-disabled-opacity;
+      color: @ig-grey-t2;
     }
   }
 
-  &.ig-button-dark {
+  &.ig-button-light {
     background: none;
     color: @ig-white;
 
@@ -186,9 +199,13 @@
     &:active:not(:disabled), &.ig-state-active {
       background: rgba(255, 255, 255, 0.36);
     }
+
+    &:focus:not(:disabled), &.ig-state-focus {
+      background: none;
+    }
   }
 
-  &.ig-button-light {
+  &.ig-button-dark {
     background: none;
     color: @ig-black;
 
@@ -198,6 +215,10 @@
 
     &:active:not(:disabled), &.ig-state-active {
       background: rgba(0, 0, 0, 0.18);
+    }
+
+    &:focus:not(:disabled), &.ig-state-focus {
+      background: none;
     }
   }
 
@@ -224,6 +245,10 @@
         background: none;
       }
 
+      &:focus:not(:disabled), &.ig-state-focus {
+        background: @ig-white;
+      }
+
       &:hover:not(:disabled), &.ig-state-hover {
         background: linear-gradient(@ig-toolbar-overlay-hover, @ig-toolbar-overlay-hover), var(--primaryButtonBackColor);
       }
@@ -240,6 +265,11 @@
       &:disabled:not(&.ig-state-loading),
       &.ig-state-loading {
         background: none;
+      }
+
+      &:disabled:not(&.ig-state-loading) {
+        color: @ig-white;
+        opacity: 0.4;
       }
 
       &:hover:not(:disabled), &.ig-state-hover {
@@ -275,7 +305,6 @@
 
   .ig-button-label {
     white-space: nowrap;
-    font-weight: 500;
   }
 
   &.ig-button-transparent {
@@ -318,17 +347,21 @@
     &:active:not(:disabled), &.ig-state-active {
       background: linear-gradient(@ig-toolbar-overlay-active, @ig-toolbar-overlay-active), var(--primaryButtonBackColor);
     }
+    
+    &.ig-state-loading {
+      background: @ig-grey-t5;
+    }
   }
 
 }
 
 .ig-button-spinner {
   position: absolute;
-  top: 6px;
+  top: 8px;
   left: 50%;
-  margin-left: -10px;
-  width: 20px;
-  height: 20px;
+  margin-left: -8px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   border: 2px solid @ig-black;
   border-color: @ig-black fade(@ig-white, 0.36) fade(@ig-white, 0.36) fade(@ig-white, 0.36);

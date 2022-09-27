@@ -1467,10 +1467,12 @@ namespace d360.web.Controllers
         #region Dynamic Query Processing
 
         internal List<FieldType> getFieldTypesByObjectType(string objectType, int objectTypeID, bool listableOnly)
-        {
+        {			
+			var assetTypeId = Company.AssetTypes.Where(x => x.Object == objectType && x.ObjectID == objectTypeID).FirstOrDefault().ID;
+			
             return listableOnly ?
-                Company.Filter<FieldType>(i => i.Object == objectType && i.ObjectID == objectTypeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList() :
-                Company.Filter<FieldType>(i => i.Object == objectType && i.ObjectID == objectTypeID).OrderBy(i => i.ColumnOrder).ToList();
+                Company.Filter<FieldType>(i => i.AssetTypeID == assetTypeId && i.IsListable).OrderBy(i => i.ColumnOrder).ToList() :
+                Company.Filter<FieldType>(i => i.AssetTypeID == assetTypeId).OrderBy(i => i.ColumnOrder).ToList();
         }
 
         #endregion

@@ -87,7 +87,7 @@ namespace d360.web.Controllers.V2
 			List<string> queries = new List<string>();
 			List<string> fieldJoins = new List<string>() {
 				"inner join [dbo].[IssueType] IT on IT.ID = I.IssueTypeID",
-				"left join AssetDetail A on A.Object = I.Object and A.ObjectID = I.ObjectID",
+				"left join AssetDetail A on A.ID = I.AssetID",
 				"left join [reporting].[Global_Resource] CR on CR.ResourceID = I.CreatedBy",
 				"left join [reporting].[Global_Resource] UR on UR.ResourceID = I.UpdatedBy"
 			};
@@ -203,7 +203,7 @@ namespace d360.web.Controllers.V2
 						queries.Add("IT.[Uid] = @actionTypeUid");
 						dbArgs.Add("actionTypeUid", actionTypeUid);
 
-						var fieldTypes = Company.Filter<FieldType>(f => f.Object == "IssueType" && f.ObjectID == issueType.ID).ToList();
+						var fieldTypes = Company.Filter<FieldType>(f => f.IssueTypeID == issueType.ID).ToList();
 						getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "'Issue'", "I.ID");
 
 						foreach (FieldType customField in fieldTypes)
@@ -311,7 +311,7 @@ namespace d360.web.Controllers.V2
 									inner join @uids U on U.Uid = A.Uid
 									inner join Issue I on I.Object = A.Object and I.ObjectID = A.ObjectID
 									left join IssueType IT on IT.ID = I.IssueTypeID
-									left join FieldType FT on FT.Object = 'IssueType' and FT.ObjectID = IT.ID and (FT.Name = 'Description' or FT.Name = 'ProblemDesc')
+									left join FieldType FT on FT.IssueTypeID = IT.ID and (FT.Name = 'Description' or FT.Name = 'ProblemDesc')
 									left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = 'Issue' and F.ObjectID = I.ID
 							where	I.CompletedOn is null
 									and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
@@ -610,8 +610,7 @@ namespace d360.web.Controllers.V2
 					var issueType = Company.IssueTypes.Where(i => i.Name.ToLower() == model.Name.ToLower()).FirstOrDefault();
 					Company.Add(new FieldType
 					{
-						ObjectID = issueType.ID,
-						Object = SystemObjects.IssueType.ToString(),
+						IssueTypeID = issueType.ID,
 						IsListable = true,
 						IsRequired = true,
 						IsEditable = true,

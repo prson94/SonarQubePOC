@@ -270,13 +270,15 @@ namespace d360.web.Controllers.V2
 
 				List<FieldType> fieldTypes;
 
+				List<int> assetTypeIds = Company.AssetTypes.Where(a => a.Class == AssetTypeClass.User).Select(i => i.ID).ToList();
+
 				if (iscommunityuserresposibility)
 				{
-					fieldTypes = Company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1 && f.IsListable == true).ToList();
+					fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID.HasValue && assetTypeIds.Contains(f.AssetTypeID.Value) && f.IsListable == true).ToList();
 				}
 				else
 				{
-					fieldTypes = Company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
+					fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID.HasValue && assetTypeIds.Contains(f.AssetTypeID.Value)).ToList();
 				}
 
 				getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
@@ -726,7 +728,9 @@ namespace d360.web.Controllers.V2
 				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
 			}
 
-			var fieldTypes = Company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
+			var resourceTypeIds = Company.AssetTypes.Where(a => a.Class == AssetTypeClass.User).Select(i => i.ID).ToList();
+
+			var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID.HasValue && resourceTypeIds.Contains(f.AssetTypeID.Value)).ToList();
 			getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
 			foreach (var col in fieldColumns)
@@ -1855,7 +1859,7 @@ namespace d360.web.Controllers.V2
 			bool includeChildren = false;
 			FollowDetail followDetail = null;
 
-			if (model.assetTypeUid == null && model.assetUid == null)
+			if ((model.assetTypeUid == null && model.assetUid == null) || (model.assetTypeUid != null && model.assetUid != null))
 			{
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.AssetTypeOrAssetRequired)).ConfigureAwait(false);
 			}

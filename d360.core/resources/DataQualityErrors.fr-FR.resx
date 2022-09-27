@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AssetNotFoundError" xml:space="preserve">
-    <value>L’actif dont l’UID est {0} est introuvable.</value>
+    <value>L’asset dont l’UID est {0} est introuvable.</value>
   </data>
   <data name="AssetNotValidError" xml:space="preserve">
     <value>{0} {1} n’est pas valide</value>

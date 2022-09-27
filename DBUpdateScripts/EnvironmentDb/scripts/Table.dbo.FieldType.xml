@@ -382,4 +382,29 @@ END;
 	  ]]>
     </rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Table.dbo.FieldType-v8">
+    <comment>GOV-18452</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		DROP INDEX [IX_FieldType_AssetTypeID] ON [dbo].[FieldType]	
+		
+		DROP VIEW IF EXISTS [utility].[FieldValue]
+		
+		alter table FieldType alter column AssetTypeID INT SPARSE
+		
+		CREATE NONCLUSTERED INDEX [IX_FieldType_AssetTypeID] ON [dbo].[FieldType] ( [AssetTypeID] ASC )		
+		
+		alter table FieldType add IntersectTypeID int SPARSE
+		alter table FieldType add IssueTypeID int SPARSE
+	  ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+		
+	  ]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

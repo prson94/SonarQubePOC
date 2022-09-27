@@ -134,7 +134,7 @@
     <value>Erreur de récupération des preuves de la qualité des données pour le résultat du score</value>
   </data>
   <data name="ErrorUnallocatedAssetType" xml:space="preserve">
-    <value>Erreur de récupération des types d’actifs non alloués</value>
+    <value>Erreur de récupération des types d’assets non alloués</value>
   </data>
   <data name="LowerThreshold" xml:space="preserve">
     <value>Un seuil inférieur doit être défini.</value>
@@ -146,7 +146,7 @@
     <value>Malheureusement, vous ne pouvez pas supprimer un score avec des mesures définies.</value>
   </data>
   <data name="RestrictReadAssetScoreITem" xml:space="preserve">
-    <value>Vous n’êtes pas autorisé à lire l’actif associé à cet élément de score.</value>
+    <value>Vous n’êtes pas autorisé à lire l’asset associé à cet élément de score.</value>
   </data>
   <data name="RestrictReadVersionHistory" xml:space="preserve">
     <value>Vous n’êtes pas autorisé à récupérer l’historique des versions de la mesure pour cette mesure.</value>
@@ -155,7 +155,7 @@
     <value>Vous n’êtes pas autorisé à recalculer les éléments de score associés à cette mesure.</value>
   </data>
   <data name="RestrictUpdateScoreField" xml:space="preserve">
-    <value>Malheureusement, vous ne pouvez mettre à jour ni le type d’actif, ni le type, ni l’indicateur calculé en externe des scores disposant de mesures actives définies.</value>
+    <value>Malheureusement, vous ne pouvez mettre à jour ni le type d’asset, ni le type, ni l’indicateur calculé en externe des scores disposant de mesures actives définies.</value>
   </data>
   <data name="ScoreDefinitionNotFound" xml:space="preserve">
     <value>La définition du score avec {0} est introuvable.</value>

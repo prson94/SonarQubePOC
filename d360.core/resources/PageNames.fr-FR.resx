@@ -119,19 +119,19 @@
     <value>Actions</value>
   </data>
   <data name="AssetsTab" xml:space="preserve">
-    <value>Actifs</value>
+    <value>Assets</value>
   </data>
   <data name="BusinessAssetsPage" xml:space="preserve">
-    <value>Actifs métiers</value>
+    <value>Assets métiers</value>
   </data>
   <data name="BusinessAssetsPageTabTitle" xml:space="preserve">
-    <value>Types d’actifs métiers</value>
+    <value>Types d’assets métiers</value>
   </data>
   <data name="CartPage" xml:space="preserve">
     <value>Panier</value>
   </data>
   <data name="ChangeLogTab" xml:space="preserve">
-    <value>Journal des modifications</value>
+    <value>Historique de màj</value>
   </data>
   <data name="ChildrenTab" xml:space="preserve">
     <value>Enfants</value>
@@ -152,10 +152,10 @@
     <value>Définition</value>
   </data>
   <data name="DiagramAssetsPage" xml:space="preserve">
-    <value>Actifs de schéma</value>
+    <value>Assets de schéma</value>
   </data>
   <data name="DiagramAssetsPageTabTitle" xml:space="preserve">
-    <value>Types d’actifs de schéma</value>
+    <value>Types d’assets de schéma</value>
   </data>
   <data name="FieldDefinitionsTab" xml:space="preserve">
     <value>Définitions des champs</value>
@@ -191,7 +191,7 @@
     <value>Politiques</value>
   </data>
   <data name="PoliciesPageTabTitle" xml:space="preserve">
-    <value>Types de politique</value>
+    <value>Types de Politiques</value>
   </data>
   <data name="PolicyTab" xml:space="preserve">
     <value>Politique</value>
@@ -245,30 +245,30 @@
     <value>Types sémantiques</value>
   </data>
   <data name="TaggedAssetsPage" xml:space="preserve">
-    <value>Actifs marqués</value>
+    <value>Assets marqués</value>
   </data>
   <data name="TagsPage" xml:space="preserve">
-    <value>Balises</value>
+    <value>Tags</value>
   </data>
   <data name="TechnicalAssetsPage" xml:space="preserve">
-    <value>Actifs techniques</value>
+    <value>Assets techniques</value>
   </data>
   <data name="TechnicalAssetsPageTabTitle" xml:space="preserve">
-    <value>Types d’actifs techniques</value>
+    <value>Types d’assets techniques</value>
   </data>
   <data name="UsersPage" xml:space="preserve">
     <value>Utilisateurs</value>
   </data>
   <data name="WorkflowActionsTab" xml:space="preserve">
-    <value>Actions de flux de travail</value>
+    <value>Actions de workflow</value>
   </data>
   <data name="WorkflowActionsTabTitle" xml:space="preserve">
     <value>Types d’action</value>
   </data>
   <data name="WorkflowPage" xml:space="preserve">
-    <value>Flux de travail</value>
+    <value>Workflow</value>
   </data>
   <data name="WorkflowTab" xml:space="preserve">
-    <value>Flux de travail</value>
+    <value>Workflow</value>
   </data>
 </root>

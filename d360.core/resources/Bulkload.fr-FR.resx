@@ -137,7 +137,7 @@
     <value>Promotion</value>
   </data>
   <data name="Promotion_ViaWorkflow" xml:space="preserve">
-    <value>Promotion (via le flux de travail Propose)</value>
+    <value>Promotion (via le workflow Propose)</value>
   </data>
   <data name="Relation" xml:space="preserve">
     <value>Relation</value>

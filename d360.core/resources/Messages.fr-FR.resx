@@ -146,12 +146,12 @@
     <value>Élément introuvable</value>
   </data>
   <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Type d’actif dont l’UID {0} est introuvable</value>
+    <value>Type d’asset dont l’UID {0} est introuvable</value>
   </data>
   <data name="AssetTypeInvalidClass" xml:space="preserve">
     <value>Valeur [Class] non valide. Les classes autorisées sont {0}</value>
   </data>
   <data name="AssetNotFound" xml:space="preserve">
-    <value>Actif dont l’UID est {0} est introuvable</value>
+    <value>Asset dont l’UID est {0} est introuvable</value>
   </data>
 </root>

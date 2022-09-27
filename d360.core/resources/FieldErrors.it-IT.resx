@@ -512,7 +512,7 @@
     <comment>Constant Parameter value</comment>
   </data>
   <data name="SpecificHaveTagFieldType" xml:space="preserve">
-    <value>[Type.Tag] è consentito solo in Risorse aziendali, Risorse tecniche, Policy, Modelli e Regole</value>
+    <value>[Type.Tag] è consentito solo in Business Asset, Risorse tecniche, Policy, Modelli e Regole</value>
   </data>
   <data name="TaskTypeGovernanceRoleCustomError" xml:space="preserve">
     <value>I tipi di attività non possono avere la proprietà del campo ''{0}" sul campo [GovernanceRole] impostata su {1}.</value>

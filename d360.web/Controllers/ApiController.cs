@@ -472,7 +472,25 @@ namespace d360.web.Controllers
 			if (details != null)
 			{
 				var fields = Company.GetFieldRelationsByObject(type, id).ToList();
-				var fieldTypes = Company.Filter<FieldType>(i => i.Object == details.Type && i.ObjectID == details.TypeID && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
+
+				var assettypeID = -1;
+				var issueTypeID = -1;
+				var intersectTypeID = -1;
+
+				if (type == SystemObjects.IssueType || type == SystemObjects.Issue)
+				{
+					issueTypeID = type == SystemObjects.IssueType ? id : Company.Issues.Where(i => i.ID == id).FirstOrDefault().IssueTypeID;
+				} 
+				else if (type == SystemObjects.Intersect || type == SystemObjects.IntersectType)
+				{
+					intersectTypeID = type == SystemObjects.IntersectType ? id : Company.Intersects.Where(i => i.ID == id).FirstOrDefault().IntersectTypeID;
+				} 
+				else
+				{
+					assettypeID = Company.Assets.Where(a => a.Object == type.ToString() && a.ObjectID == id).FirstOrDefault().AssetTypeID;
+				}
+
+				var fieldTypes = Company.Filter<FieldType>(i => ((type == SystemObjects.IssueType && i.IssueTypeID == issueTypeID) || (type == SystemObjects.IntersectType && i.IntersectTypeID == intersectTypeID) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && i.AssetTypeID == assettypeID)) && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
 
 				string lookupDataSelectSQL = @" from asset a
 					inner join fieldtype ft on ft.assettypeid = a.AssetTypeID 
@@ -483,7 +501,7 @@ namespace d360.web.Controllers
 				if (details.Type == SystemObjects.IntersectType.ToString())
 				{
 					lookupDataSelectSQL = @"  from [Intersect] I
-					inner join fieldtype ft on ft.Object = 'IntersectType' and ft.ObjectID = i.IntersectTypeID
+					inner join fieldtype ft on ft.intersectTypeID = i.IntersectTypeID
 					left join Field f on f.ObjectID = i.ID and f.FieldTypeID = ft.ID";
 					lookupDataWhereSQL = "where I.ID = @assetId ";
 				}
@@ -904,11 +922,13 @@ namespace d360.web.Controllers
 		[HttpGet, Route("{type}/{id:int}/grid/definition")]
 		public HttpResponseMessage GetGridDefinitionByType(SystemObjects type, int id)
 		{
-			var sType = type.ToString();
 			var skippedFieldTypes = DataType.Text.GetNonlistableFields();
 
+			var assetTypeId = (type == SystemObjects.IntersectType || type == SystemObjects.IssueType) ? -1 : Company.AssetTypes.Where(a => a.Object == type.ToString() && a.ObjectID == id).FirstOrDefault().ID;
+
+			var fieldTypes = Company.Filter<FieldType>(i => ((type == SystemObjects.IssueType && i.IssueTypeID == id) || (type == SystemObjects.IntersectType && i.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && i.AssetTypeID == assetTypeId)) && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
 			var totalItems = Company
-				.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id && !skippedFieldTypes.Contains(i.Type))
+				.Filter<FieldType>(i => ((type == SystemObjects.Issue && i.IssueTypeID == id) || (type == SystemObjects.Intersect && i.IntersectTypeID == id) || (type != SystemObjects.Issue && type != SystemObjects.Intersect && i.AssetTypeID == assetTypeId)) && !skippedFieldTypes.Contains(i.Type))
 				.ToList();
 
 			var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
@@ -926,7 +946,7 @@ namespace d360.web.Controllers
 				select FT.[Name], FT.ScoreType, A.LowerThreshold, A.UpperThreshold  from FieldType FT
 				inner join AssetType T on T.Id = FT.AssetTypeID
 				inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
-				where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).ToList();
+				where T.[Object] = @type and T.ObjectID = @id and FT.[Type] = 'Score'", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).ToList();
 
 			var hasProfiling = GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING) ? Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault() : false;
 
@@ -1192,8 +1212,9 @@ namespace d360.web.Controllers
 
 			if (type == SystemObjects.GroupType)
 			{
+				
 				totalItems = Company
-					.Filter<FieldType>(i => i.Object == SystemObjects.GroupType.ToString() && i.ObjectID == 1 && !skippedFieldTypes.Contains(i.Type))
+					.Filter<FieldType>(i => i.AssetTypeID == id && !skippedFieldTypes.Contains(i.Type))
 					.ToList();
 
 				items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
@@ -1783,13 +1804,19 @@ namespace d360.web.Controllers
 
 				var assetUid = Company.Assets.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
 
-				if (assetUid != null)
+				if (assetUid != null && assetUid != Guid.Empty)
 				{
 					relVal.uid = assetUid;
 					if (relVal.TooltipUrl.ToLower().IndexOf("referencelistid") > -1)
 					{
 						relVal.TooltipUrl += "," + assetUid.ToString();
 					}
+				}
+				else
+				{
+					var assetTypeUid = Company.AssetTypes.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
+					relVal.uid = assetTypeUid;
+					relVal.TooltipUrl = "assets/" + relVal.uid;
 				}
 
 				values.Add(relVal);
@@ -1916,7 +1943,18 @@ namespace d360.web.Controllers
 			return await Company.QueryAsync<FilterObjectItem>(sql, new { id, intersectTypeId });
 		}
 
-        [Route("relationships/field/{fieldTypeID:int}"), HttpGet]
+		/// <summary>
+		/// Gets a list of available relationships types based on the source type specified in parameters. 
+		/// Used in workflow config.
+		/// </summary>
+		[Route("{type}/{id:int}/relationshiptypes")]
+		public async Task<IEnumerable<AllowedIntersectionType>> GetRelationshipTypes(SystemObjects type, int id)
+		{
+			var SubjectUid = Company.AssetTypes.Where(at => at.Object == type.ToString() && at.ObjectID == id).Select(at => at.uid).FirstOrDefault();
+			return await Company.GetAllowedIntersectionTypes(SubjectUid);
+		}
+
+		[Route("relationships/field/{fieldTypeID:int}"), HttpGet]
         public HttpResponseMessage GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null)
         {
 			var asset = Company.GetAssetDetail(@object, objectID.GetValueOrDefault());
@@ -2024,7 +2062,7 @@ namespace d360.web.Controllers
 						inner join Asset A on A.AssetTypeID = T.ID 
 						inner join AssetDisplayValue disp on disp.AssetID = A.ID 
 						where {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} 
-							ResourceID = @resourceID and AssetID = 0 and ApplyToType = 1 and RD.IsVisible = 1
+							ResourceID = @resourceID and RD.AssetID = 0 and RD.ApplyToType = 1 and RD.IsVisible = 1
 		
 						union all
 
@@ -2446,6 +2484,18 @@ namespace d360.web.Controllers
 			return Company.GetObjectDetail(type.ToString(), id);
 		}
 
+		[Route("objectDetails/{uid}")]
+		public ObjectDetail GetObjectDetail(Guid uid)
+		{
+			var data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			if(data == null)
+			{
+				data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			}
+
+			return Company.GetObjectDetail(data.Object, data.ObjectID);
+		}
+
 		[Route("{type}/{id:int}/fieldName/{fieldName}/{useFriendlyName}")]
 		public string GetObjectFieldColorAndValue(SystemObjects type, int id, string fieldName, bool useFriendlyName = true)
 		{
@@ -2461,7 +2511,7 @@ namespace d360.web.Controllers
 					", new { type = type.ToString(), id }).SingleOrDefault();
 
 			//check if there is a matching field for this type
-			var fieldType = Company.FieldTypes.Where(x => x.Object == objectDetail.Type && x.ObjectID == objectDetail.TypeID && ((useFriendlyName && string.Compare(x.FriendlyName, fieldName, true) == 0) || (!useFriendlyName && string.Compare(x.Name, fieldName, false) == 0))).FirstOrDefault();
+			var fieldType = Company.FieldTypes.Where(x => x.AssetTypeID == objectDetail.AssetTypeID && ((useFriendlyName && string.Compare(x.FriendlyName, fieldName, true) == 0) || (!useFriendlyName && string.Compare(x.Name, fieldName, false) == 0))).FirstOrDefault();
 
 			if (fieldType == null || (!useFriendlyName && !fieldType.Name.Equals(fieldName)))
 			{
@@ -4800,8 +4850,7 @@ where v.id = {0}", id)).FirstOrDefault();
 			).ToList();
 
 			var fieldTypes = Company.Filter<FieldType>(i =>
-				i.Object == "IntersectType" &&
-				IDs.Contains(i.ObjectID) &&
+				IDs.Contains(i.IntersectTypeID.Value) &&
 				i.IsListable
 			).OrderBy(i => i.SortOrder).ToList();
 

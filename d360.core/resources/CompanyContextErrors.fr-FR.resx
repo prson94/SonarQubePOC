@@ -119,7 +119,7 @@
     <value>Non autorisé à ajouter un type de relation avec ce prédicat.</value>
   </data>
   <data name="AssetUidNotFound" xml:space="preserve">
-    <value>Actif introuvable sur la base de l’UID '{0}' fourni</value>
+    <value>Asset introuvable sur la base de l’UID '{0}' fourni</value>
   </data>
   <data name="IntersectType" xml:space="preserve">
     <value>Type d’intersection</value>
@@ -143,7 +143,7 @@
     <value>{0} existe déjà.</value>
   </data>
   <data name="ObjectNotPartAssetTable" xml:space="preserve">
-    <value>Objet ne faisant pas partie du tableau des actifs</value>
+    <value>Objet ne faisant pas partie du tableau des assets</value>
   </data>
   <data name="Relationship" xml:space="preserve">
     <value>Relation</value>
@@ -158,7 +158,7 @@
     <value>Sujet</value>
   </data>
   <data name="SubjectAssetTypeNotExists" xml:space="preserve">
-    <value>Le type d’actif sujet n’existe pas.</value>
+    <value>Le type d’asset sujet n’existe pas.</value>
   </data>
   <data name="SubjectObjectNotSameThisPredicate" xml:space="preserve">
     <value>Le sujet et l’objet peuvent être différents lors de l’utilisation de ce prédicat.</value>

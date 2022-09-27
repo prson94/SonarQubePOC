@@ -1185,7 +1185,10 @@ namespace d360.web.Controllers
 					responseModel.ObjectID = model.ObjectId ?? 0;
 					responseModel.DisplayValue = PageNames.WorkflowActionsTab;
 					responseModel.MainTabTitle = PageNames.WorkflowActionsTabTitle;
+					responseModel.MainTabUrl = "admin/issuetypes";
 					responseModel.Items.HasAudit = true;
+
+					responseModel.AssetTypeUid = Company.IssueTypes.Where(x => x.ID == model.ObjectId).Select(x=> x.uid).FirstOrDefault();
 				}
 				else if (model.ResponsibilityTypeUid.HasValue)
 				{
@@ -1337,6 +1340,24 @@ namespace d360.web.Controllers
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
 				}
+
+				if (typeClass == AssetTypeClass.Generic)
+				{
+					var issueTypeId = Company.IssueTypes.Where(x => x.uid == model.AssetTypeUid).Select(x => x.ID).FirstOrDefault();
+					if (issueTypeId > 0)
+					{
+						execProcedure = false;
+						responseModel.Object = responseModel.ObjectType = SystemObjects.IssueType.ToString();
+						responseModel.ObjectID = issueTypeId;
+						responseModel.DisplayValue = PageNames.WorkflowActionsTab;
+						responseModel.MainTabTitle = PageNames.WorkflowActionsTabTitle;
+						responseModel.Items.HasAudit = true;
+						responseModel.MainTabUrl = "admin/issuetypes";
+						responseModel.AssetTypeUid = model.AssetTypeUid;
+					}
+
+				}
+
 			}
 
 			if (model.AssetUid != null && model.ObjectType == SystemObjects.Tag.ToString())

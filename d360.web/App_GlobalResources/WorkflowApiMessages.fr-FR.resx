@@ -134,22 +134,22 @@
     <value>ID D’ÉLÉMENT DE FLUX DE TRAVAIL NON VALIDE, IMPOSSIBLE DE TROUVER WORKFLOWITEMSTEP AVEC L’ID SPÉCIFIÉ.</value>
   </data>
   <data name="InvalidTypeWorkflowVersionRequest" xml:space="preserve">
-    <value>Votre requête de récupération de cette version du flux de travail n’est pas valide. Un identifiant ActionTypeUid/AssetTypeUid/RelationshipTypeUid est peut-être mal formaté.</value>
+    <value>Votre requête de récupération de cette version du workflow n’est pas valide. Un identifiant ActionTypeUid/AssetTypeUid/RelationshipTypeUid est peut-être mal formaté.</value>
   </data>
   <data name="InvalidTypeWorkflowVersionRequestIncWF" xml:space="preserve">
-    <value>Votre requête de récupération de cette version du flux de travail n’est pas valide. Un identifiant ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid est peut-être mal formaté.</value>
+    <value>Votre requête de récupération de cette version du workflow n’est pas valide. Un identifiant ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid est peut-être mal formaté.</value>
   </data>
   <data name="InvalidUidWorkflowVersionRequest" xml:space="preserve">
-    <value>Votre requête de récupération de cette version du flux de travail n’est pas valide. Un identifiant ActionUid/AssetUid/RelationshipUid/WorkflowTypeUid/WorkflowVerionUid est peut-être mal formaté.</value>
+    <value>Votre requête de récupération de cette version du workflow n’est pas valide. Un identifiant ActionUid/AssetUid/RelationshipUid/WorkflowTypeUid/WorkflowVerionUid est peut-être mal formaté.</value>
   </data>
   <data name="InvalidWorkflowID" xml:space="preserve">
-    <value>L’ID de l’élément de flux de travail n’est pas valide.</value>
+    <value>L’ID de l’élément de workflow n’est pas valide.</value>
   </data>
   <data name="InvalidWorkflowRegistration" xml:space="preserve">
-    <value>L’enregistrement du flux de travail est manquant ou non valide</value>
+    <value>L’enregistrement du workflow est manquant ou non valide</value>
   </data>
   <data name="InvalidWorkflowStepID" xml:space="preserve">
-    <value>L’ID de l’étape de l’élément de flux de travail n’est pas valide.</value>
+    <value>L’ID de l’étape de l’élément de workflow n’est pas valide.</value>
   </data>
   <data name="ItemNotFound" xml:space="preserve">
     <value>Élément introuvable</value>
@@ -194,33 +194,33 @@
     <value>étape introuvable</value>
   </data>
   <data name="VersionStepIDNotFound" xml:space="preserve">
-    <value>Flux de travail avec l’ID d’étape de version spécifié introuvable</value>
+    <value>Workflow avec l’ID d’étape de version spécifié introuvable</value>
   </data>
   <data name="WofkFlowXMLNull" xml:space="preserve">
     <value>DÉFINITION DU FORMULAIRE DE FLUX DE TRAVAIL NON VALIDE, LE XML DU FORMULAIRE EST NUL.</value>
   </data>
   <data name="WorkflowIDAlreadyDeleted" xml:space="preserve">
-    <value>L’ID {0} du type de flux de travail est déjà supprimé</value>
+    <value>L’ID {0} du type de workflow est déjà supprimé</value>
   </data>
   <data name="WorkflowInstanceNotFound" xml:space="preserve">
-    <value>Impossible de trouver l’instance de flux de travail spécifiée.</value>
+    <value>Impossible de trouver l’instance de workflow spécifiée.</value>
   </data>
   <data name="WorkflowItemDeleted" xml:space="preserve">
-    <value>L’élément de flux de travail a été supprimé.</value>
+    <value>L’élément de workflow a été supprimé.</value>
   </data>
   <data name="WorkflowReassignSuccess" xml:space="preserve">
-    <value>Réaffectation des formulaires de flux de travail réussie</value>
+    <value>Réaffectation des formulaires de workflow réussie</value>
   </data>
   <data name="WorkflowtypeidNotFound" xml:space="preserve">
-    <value>ID du type de flux de travail {0} introuvable</value>
+    <value>ID du type de workflow {0} introuvable</value>
   </data>
   <data name="WorkflowtypeUIDNotFound" xml:space="preserve">
-    <value>UID du type de flux de travail {0} introuvable</value>
+    <value>UID du type de workflow {0} introuvable</value>
   </data>
   <data name="WorkflowUIDNotFound" xml:space="preserve">
-    <value>UID du flux de travail {0} introuvable.</value>
+    <value>UID du workflow {0} introuvable.</value>
   </data>
   <data name="WorkflowVersionUIDNotFound" xml:space="preserve">
-    <value>La version du flux de travail dont l’UID est {0} est introuvable.</value>
+    <value>La version du workflow dont l’UID est {0} est introuvable.</value>
   </data>
 </root>
