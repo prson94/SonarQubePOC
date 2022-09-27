@@ -520,7 +520,7 @@ namespace d360.web.Services.Favorites
         }
 		private static Func<FavoritesObjectDetailsResponse, Dictionary<string, string>, string> FromClassName()
 		{
-			return (detail, p) =>
+			return (detail, _) =>
 			{
 				string tabName = "";
 				switch (detail.AssetTypeClass)
