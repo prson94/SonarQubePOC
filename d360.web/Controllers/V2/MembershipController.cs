@@ -2003,7 +2003,7 @@ namespace d360.web.Controllers.V2
 			bool includeChildren = false;
 			FollowDetail followDetail = null;
 
-			if (model.assetTypeUid == null && model.assetUid == null)
+			if ((model.assetTypeUid == null && model.assetUid == null) || (model.assetTypeUid != null && model.assetUid != null))
 			{
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.AssetTypeOrAssetRequired)).ConfigureAwait(false);
 			}
