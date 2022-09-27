@@ -1946,7 +1946,7 @@ namespace d360.model.DataAccessLayer
 
 				}
 
-				Company.Query<int>(deleteSQL, new { t = typeIdentifierInfoModel.ID }).FirstOrDefault();
+				Company.Query<int>(deleteSQL, new { id = typeIdentifierInfoModel.ID }).FirstOrDefault();
 				Company.FieldTypes.AddRange(newFieldTypes);
 			}
 
