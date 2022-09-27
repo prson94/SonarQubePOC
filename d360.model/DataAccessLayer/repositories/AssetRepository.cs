@@ -437,6 +437,15 @@ namespace d360.model.DataAccessLayer
 				bool SubjIsReferenceList = false;
 				bool IsApplySubjectFilter = false;
 				bool IsListReferenceListType = false;
+				string RefListName = "Reference List";
+
+				string AssetQuery = $@"Select A.Id as AssetId,A.AssetTypeId, 0 IsReference
+									   From Asset A
+									   WHERE  [Uid]= @AssetUid
+									   union all
+									   Select 0 as AssetId,A.ID AssetTypeId, 1 IsReference
+									   From AssetType A
+									   WHERE  [Uid]= @AssetUid";
 
 				if (Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value, out predicateUID))
 				{
@@ -447,7 +456,7 @@ namespace d360.model.DataAccessLayer
 						var at = CompanyContext.Filter<AssetType>(i => i.Class == AssetTypeClass.Reference && i.ObjectID == 0).SingleOrDefault();
 						if (at != null)
 						{
-							dbArgs.Add("@RefListName", at.Name);
+							dbArgs.Add("@RefListName", RefListName);
 						}
 					}
 
@@ -458,22 +467,14 @@ namespace d360.model.DataAccessLayer
 						if (Guid.TryParse(relatedAssetUIDString, out ObjectAssetUID))
 						{
 							IsApplyObjectFilter = true;
-							var assetObj = GetAssetByUID(ObjectAssetUID);
+
+							var assetObj = CompanyContext.Query<dynamic>(AssetQuery, new { AssetUid = ObjectAssetUID }, ApiTimeout).FirstOrDefault();
 
 							if (assetObj != null)
 							{
-								ObjAssetID = assetObj.ID;
-								ObjAssetTypeID = assetObj.AssetType.ID;
-							}
-							else if (IsListReferenceListType)
-							{
-								var assetTypeObj = GetAssetTypeByUID(ObjectAssetUID);
-								if (assetTypeObj != null)
-								{
-									ObjAssetID = 0;
-									ObjAssetTypeID = assetTypeObj.ID;
-									ObjIsReferenceList = true;
-								}
+								ObjAssetID = assetObj?.AssetId;
+								ObjAssetTypeID = assetObj?.AssetTypeId;
+								ObjIsReferenceList = (assetObj?.IsReference == 1 ? true : false);
 							}
 						}
 					}
@@ -485,22 +486,13 @@ namespace d360.model.DataAccessLayer
 						relatedAssetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_subjectuid").Value;
 						if (Guid.TryParse(relatedAssetUIDString, out SubjectAssetUID))
 						{
-							var assetObj = GetAssetByUID(SubjectAssetUID);
+							var assetObj = CompanyContext.Query<dynamic>(AssetQuery, new { AssetUid = SubjectAssetUID }, ApiTimeout).FirstOrDefault();
 
 							if (assetObj != null)
 							{
-								SubjAssetID = assetObj.ID;
-								SubjAssetTypeID = assetObj.AssetType.ID;
-							}
-							else if (IsListReferenceListType)
-							{
-								var assetTypeObj = GetAssetTypeByUID(SubjectAssetUID);
-								if (assetTypeObj != null)
-								{
-									SubjAssetID = 0;
-									SubjAssetTypeID = assetTypeObj.ID;
-									SubjIsReferenceList = true;
-								}
+								SubjAssetID = assetObj?.AssetId;
+								SubjAssetTypeID = assetObj?.AssetTypeId;
+								SubjIsReferenceList = (assetObj?.IsReference == 1 ? true : false);
 							}
 						}
 					}
@@ -2422,6 +2414,14 @@ namespace d360.model.DataAccessLayer
 												and p.uid = @PreditcateUid
 												", new { AssetTypeID, PreditcateUid }, ApiTimeout).Any();
 		}
+
+		private IQueryable<dynamic> GetAssetInfoByUid(Guid AssetUid)
+		{
+			return CompanyContext.Query<dynamic>($@"Select A.Id as AssetId,A.AssetTypeId
+											From Asset A
+											WHERE  [Uid]= @AssetUid", new {AssetUid }, ApiTimeout).FirstOrDefault();
+		}
+
 
 		private List<Guid> GetAllFamilyForAssetUid(List<dynamic> uids)
 		{
