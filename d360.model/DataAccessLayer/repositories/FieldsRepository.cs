@@ -2129,14 +2129,14 @@ namespace d360.model.DataAccessLayer
 				};
 
 				fields.AddRange(Company.Query<FieldType>($@"
-					declare @object nvarchar(255)
-					declare @objectId int
+					declare @objectAssetId int
 					declare @referenceId int
 					declare @isSubject bit
 
-					select @object = Object, @objectId = ObjectId from asset where uid = @assetUid
+					select  @objectAssetId = Id  from asset where uid = @assetUid
 
-					select	@isSubject = iif(I.Object = 'ReferenceItemType' and I.ObjectID = 0, 1, 0) 
+
+					select	@isSubject = iif(I.ObjectClass = {(int)AssetTypeClass.Reference} and I.ObjectAssetTypeId = 0, 1, 0) 
 						from	IntersectType I 
 								inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
 		
@@ -2145,20 +2145,19 @@ namespace d360.model.DataAccessLayer
 							select	top 1
 									@referenceId = A.ID
 							from	[Intersect] I
-									inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.Subject = @object and I.Subjectid = @objectId
+									inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.SubjectAssetID = @objectAssetId
 						end
 						else
 						begin 
 							select	top 1
 									@referenceId = A.ID
 							from	[Intersect] I
-									inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
+									inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.ObjectAssetID = @objectAssetId
 						end
 
 				   select * from fieldtype
 						where assettypeid = @referenceid and IsListable = 1
 						order by ColumnOrder asc, FriendlyName asc;
-
 						", new { fieldTypeId = fieldType.ID, assetUid }).ToList());
 
 				return fields;
@@ -2703,27 +2702,33 @@ namespace d360.model.DataAccessLayer
 
 		private async Task<int?> GetAssetTypeIdForRefListField(DynamicParameters dbArgs)
 		{
-			return (await Company.QueryAsync<int?>($@"declare @isSubject bit,
-										@referenceItemTypeID int
-								select	@isSubject = iif(I.Object = 'ReferenceItemType' and I.ObjectID = 0, 1, 0) 
-								from	IntersectType I 
-										inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
+			return (await Company.QueryAsync<int?>($@"declare @objectAssetId int
+					declare @referenceId int
+					declare @isSubject bit
+
+					select  @objectAssetId = Id  from asset where uid = @assetUid
+
+
+					select	@isSubject = iif(I.ObjectClass = 9 and I.ObjectAssetTypeId = 0, 1, 0) 
+						from	IntersectType I 
+								inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
 		
-								if @isSubject = 1
-								begin
-									select	top 1
-											@referenceItemTypeID = A.ID
-									from	[Intersect] I
-											inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.Subject = @object and I.Subjectid = @objectId
-								end
-								else
-								begin 
-									select	top 1
-											@referenceItemTypeID = A.ID
-									from	[Intersect] I
-											inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
-								end
-								select @referenceItemTypeID", dbArgs)).FirstOrDefault();
+						if @isSubject = 1
+						begin
+							select	top 1
+									@referenceId = A.ID
+							from	[Intersect] I
+									inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.SubjectAssetID = @objectAssetId
+						end
+						else
+						begin 
+							select	top 1
+									@referenceId = A.ID
+							from	[Intersect] I
+									inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.ObjectAssetID = @objectAssetId
+						end
+
+						select @referenceId", dbArgs)).FirstOrDefault();
 		}
 
 
