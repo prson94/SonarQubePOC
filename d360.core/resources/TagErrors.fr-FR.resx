@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeleteCascadeTagRelateAsset" xml:space="preserve">
-    <value>Les balises dont l’UID est '{0}' ont des actifs associés. Définissez [cascade] sur 'true' pour supprimer cette balise !</value>
+    <value>Les tags dont l’UID est '{0}' ont des assets associés. Définissez [cascade] sur 'true' pour supprimer ce tag !</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Valeur non valide [{0}] transmise dans la requête.</value>
@@ -149,6 +149,6 @@
     <value>Valeur non valide [{0}] transmise dans la requête.</value>
   </data>
   <data name="TagUidNotExists" xml:space="preserve">
-    <value>La balise dont l’UID est '{0}' n’existe pas !</value>
+    <value>Le tag dont l’UID est '{0}' n’existe pas !</value>
   </data>
 </root>

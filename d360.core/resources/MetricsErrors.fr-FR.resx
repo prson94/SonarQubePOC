@@ -200,10 +200,10 @@
     <value>Les instructions pour le contrôle externe ne peuvent pas dépasser 500 caractères.</value>
   </data>
   <data name="InvalidFieldTypeAsset" xml:space="preserve">
-    <value>Type de champ non valide pour cet actif !</value>
+    <value>Type de champ non valide pour cet asset !</value>
   </data>
   <data name="InvalidFieldTypeGovernanceFieldCheck" xml:space="preserve">
-    <value>Le nom du type de champ ({0}) utilisé dans votre contrôle de champ de gouvernance n’existe pas dans ce type d’actif.</value>
+    <value>Le nom du type de champ ({0}) utilisé dans votre contrôle de champ de gouvernance n’existe pas dans ce type d’asset.</value>
   </data>
   <data name="InvalidOperatorGovernanceFieldCheck" xml:space="preserve">
     <value>Le nom du type de champ ({0}) utilisé dans votre contrôle de champ de gouvernance ne prend pas en charge l’opérateur sélectionné.</value>
@@ -251,7 +251,7 @@
     <value>Une ou plusieurs valeurs utilisées dans votre contrôle du champ de gouvernance ne sont pas prises en charge par le type de données ({0}) du champ référencé.</value>
   </data>
   <data name="OneMoreValueGovernanceRelationNotSupport" xml:space="preserve">
-    <value>Une ou plusieurs valeurs utilisées dans votre contrôle de la relation de gouvernance ne sont pas prises en charge. Toutes les valeurs doivent correspondre à des UID d’actifs existants.</value>
+    <value>Une ou plusieurs valeurs utilisées dans votre contrôle de la relation de gouvernance ne sont pas prises en charge. Toutes les valeurs doivent correspondre à des UID d’assets existants.</value>
   </data>
   <data name="OperatorAcceptExactValue" xml:space="preserve">
     <value>L’opérateur utilisé pour votre {0} ne prend pas en charge les valeurs {1}. Vous devez fournir exactement {2} valeur(s) pour cet opérateur.</value>
@@ -281,7 +281,7 @@
     <value>[ResultPathUid] ne peut pas être un identifiant vide.</value>
   </data>
   <data name="ResultPathUidNotValid" xml:space="preserve">
-    <value>[ResultPathUid] avec l’identifiant {0} spécifié n’existe pas ou ne correspond pas au type d’actif auquel vous attribuez un score.</value>
+    <value>[ResultPathUid] avec l’identifiant {0} spécifié n’existe pas ou ne correspond pas au type d’asset auquel vous attribuez un score.</value>
   </data>
   <data name="ScoreDefinitionNotThresholdBased" xml:space="preserve">
     <value>Le groupe de conditions en position {0} ne doit pas fournir de valeur pour la propriété [Threshold], puisque la mesure que vous ajoutez n’appartient pas à une mesure basée sur un seuil.</value>
@@ -302,7 +302,7 @@
     <value>Vous devez fournir des noms de champ valides (non vides) (nom API de la définition du champ) lorsque vous utilisez les filtres de résultat de règle.</value>
   </data>
   <data name="ValidAssetTypeUidWhenRuleResultFilterUse" xml:space="preserve">
-    <value>Vous devez fournir des identifiants de types d’actifs valides (non vides) lorsque vous utilisez les filtres de résultats de règles.</value>
+    <value>Vous devez fournir des identifiants de types d’assets valides (non vides) lorsque vous utilisez les filtres de résultats de règles.</value>
   </data>
   <data name="ValueNotSupportByDataType" xml:space="preserve">
     <value>Une ou plusieurs valeurs utilisées dans votre condition ne sont pas prises en charge par le type de données ({0}) du champ référencé.</value>

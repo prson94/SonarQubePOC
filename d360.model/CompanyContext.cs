@@ -2246,7 +2246,17 @@ from	IntersectType I
 
 			if (fields == null)
 			{
-				var parsedType = (SystemObjects)Enum.Parse(typeof(SystemObjects), type);
+				string fieldTypeRelationType = type;
+				if(type == "Rule" && ruleMeansEvent)
+				{
+					type = "Event";
+				}
+				else if(!fieldTypeRelationType.EndsWith("Type"))
+				{
+					fieldTypeRelationType += "Type";
+				}
+
+				var parsedType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fieldTypeRelationType);
 				var fieldQry = Filter<FieldType>(i => ((parsedType == SystemObjects.IssueType && i.IssueTypeID == typeID) || (parsedType == SystemObjects.IntersectType && i.IntersectTypeID == typeID) || (parsedType != SystemObjects.IssueType && parsedType != SystemObjects.IntersectType && i.AssetTypeID == typeID)));
 								
 				if (listableOnly)

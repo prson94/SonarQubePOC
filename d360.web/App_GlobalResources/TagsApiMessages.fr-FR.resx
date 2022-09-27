@@ -116,57 +116,57 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ErrorAssetTagDetail" xml:space="preserve">
-    <value>Erreur d’obtention des détails de balise d’actif</value>
+    <value>Erreur d’obtention des détails de tag d’asset</value>
   </data>
   <data name="ErrorCheckTagExists" xml:space="preserve">
-    <value>Erreur de vérification de l’existence d’une balise</value>
+    <value>Erreur de vérification de l’existence d’un tag</value>
   </data>
   <data name="ErrorConsolodateTags" xml:space="preserve">
-    <value>Erreur de consolidation des balises</value>
+    <value>Erreur de consolidation des tags</value>
   </data>
   <data name="ErrorCreateTag" xml:space="preserve">
-    <value>Erreur de création de balise</value>
+    <value>Erreur de création de tag</value>
   </data>
   <data name="ErrorDeleteTag" xml:space="preserve">
-    <value>Erreur de suppression de balise</value>
+    <value>Erreur de suppression de tag</value>
   </data>
   <data name="ErrorFetchTags" xml:space="preserve">
-    <value>Erreur de récupération de balises</value>
+    <value>Erreur de récupération de tags</value>
   </data>
   <data name="ErrorRemoveTag" xml:space="preserve">
-    <value>Erreur de suppression de balise</value>
+    <value>Erreur de suppression de tag</value>
   </data>
   <data name="ErrorTagFetch" xml:space="preserve">
-    <value>Erreur d’obtention des détails de balise</value>
+    <value>Erreur d’obtention des détails de tag</value>
   </data>
   <data name="ErrorTagPermissionDetail" xml:space="preserve">
-    <value>Erreur d’obtention des détails sur l’autorisation des balises d’actif</value>
+    <value>Erreur d’obtention des détails sur l’autorisation des tags d’asset</value>
   </data>
   <data name="ErrorTagToolTip" xml:space="preserve">
-    <value>Erreur d’obtention de l’infobulle de balise</value>
+    <value>Erreur d’obtention de l’infobulle de tag</value>
   </data>
   <data name="ErrorUpdateTag" xml:space="preserve">
-    <value>Erreur de mise à jour de la balise</value>
+    <value>Erreur de mise à jour du tag</value>
   </data>
   <data name="ParentNotIncludeInChild" xml:space="preserve">
-    <value>La balise parente ne doit pas être incluse dans les balises enfants !</value>
+    <value>Le tag parente ne doit pas être incluse dans les tags enfants !</value>
   </data>
   <data name="TagExists" xml:space="preserve">
-    <value>Balise non valide spécifiée (la même balise existe déjà).</value>
+    <value>Tag non valide spécifiée (le même tag existe déjà).</value>
   </data>
   <data name="TagNotFound" xml:space="preserve">
-    <value>Balise introuvable.</value>
+    <value>Tag introuvable.</value>
   </data>
   <data name="TagRemoved" xml:space="preserve">
-    <value>Balise supprimée.</value>
+    <value>Tag supprimée.</value>
   </data>
   <data name="TagRemoveMessage" xml:space="preserve">
-    <value>La balise a bien été supprimée.</value>
+    <value>Le tag a bien été supprimée.</value>
   </data>
   <data name="TagRemoveTitle" xml:space="preserve">
-    <value>Balises supprimées.</value>
+    <value>Tags supprimées.</value>
   </data>
   <data name="TagUidNotFound" xml:space="preserve">
-    <value>La balise dont l’UID est {0} est introuvable.</value>
+    <value>Le tag dont l’UID est {0} est introuvable.</value>
   </data>
 </root>

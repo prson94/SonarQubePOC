@@ -155,7 +155,7 @@
     <value>La valeur Then est requise.</value>
   </data>
   <data name="Responsibility_Then_InvalidFieldType" xml:space="preserve">
-    <value>La valeur When contient une valeur FieldTypeId non valide pour ce type d’actif.</value>
+    <value>La valeur When contient une valeur FieldTypeId non valide pour ce type d’asset.</value>
   </data>
   <data name="Responsibility_When_Filter_Required_Based_ApplyToType_Value" xml:space="preserve">
     <value>La valeur When est requise lorsque la valeur ApplyToType est définie sur false.</value>

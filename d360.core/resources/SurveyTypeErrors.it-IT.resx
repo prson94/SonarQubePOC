@@ -134,7 +134,7 @@
     <value>Inserire un identificatore di opzione univoco per #{index}</value>
   </data>
   <data name="InvalidAssetType" xml:space="preserve">
-    <value>Il tipo di risorsa non è valida. I sondaggi possono essere creati solo per Risorse aziendali, Risorse tecniche, Modelli e Regole</value>
+    <value>Il tipo di risorsa non è valida. I sondaggi possono essere creati solo per Business Asset, Risorse tecniche, Modelli e Regole</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Valore non valido per il parametro [direction]. Usare asc|desc.</value>

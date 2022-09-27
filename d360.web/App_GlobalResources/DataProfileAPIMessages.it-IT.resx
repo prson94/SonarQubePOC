@@ -280,7 +280,7 @@
     <value>Il record esiste già per AssetUid {0} e ProfileSetDate {1}</value>
   </data>
   <data name="ProfilingNotSupportAssetClass" xml:space="preserve">
-    <value>La classe di risorsa {0} non supporta la profilazione dei dati. I dati di profilazione possono essere associati solo a tipi di risorse aziendali o tecniche.</value>
+    <value>La classe di risorsa {0} non supporta la profilazione dei dati. I dati di profilazione possono essere associati solo a tipi di asset Business o Tecnici.</value>
   </data>
   <data name="QualifierColumn" xml:space="preserve">
     <value>Qualificatore</value>

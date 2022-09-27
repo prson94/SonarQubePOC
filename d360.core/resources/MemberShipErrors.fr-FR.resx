@@ -122,7 +122,7 @@
     <value>Votre mot de passe n’a pas été mis à jour, car le mot de passe actuel fourni ne correspond pas.</value>
   </data>
   <data name="FieldTypeKeyNotFound" xml:space="preserve">
-    <value>Le type de champ pour la clé [{0}] est introuvable pour cet actif</value>
+    <value>Le type de champ pour la clé [{0}] est introuvable pour cet asset</value>
   </data>
   <data name="FirstNameMissing" xml:space="preserve">
     <value>Vous devez fournir un [FirstName]</value>

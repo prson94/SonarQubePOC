@@ -1001,7 +1001,10 @@ export class BaseComponent {
 
 			let homeUrl: string = ``;
 
-			if (this.baseIntersectTypeUid) {
+			if (r?.MainTabUrl) {
+				homeUrl = r?.MainTabUrl;
+			}
+			else if (this.baseIntersectTypeUid) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS;
 			}
 			else if (data.isScoringDefinitionPage) {

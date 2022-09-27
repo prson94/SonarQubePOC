@@ -2385,19 +2385,27 @@ namespace d360.web.Controllers.Services
 									,assettype.[Object] as 'ObjectType'
 									,assettype.ObjectID as 'ObjectTypeID'	                                
 									,case 
-										when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
+										when wi.[object] = 'Intersect' then coalesce((SELECT COALESCE(SA.DisplayValue, '') + ' / ' + COALESCE(OA.DisplayValue, '')
+											FROM [Intersect] I
+											left join AssetDetail SA on SA.ID = I.SubjectAssetID
+											left join AssetDetail OA on OA.ID = I.ObjectAssetID
+											WHERE	I.ID = wi.objectid), '(unknown relationship)')
 										else coalesce(ADV.DisplayValue,'(unknown)')
 									end as 'ObjectName'
 									,wis.id as 'ItemStepID'
 									,wvs.name as 'StepName'
 									,wvs.steptype as 'StepType'
 									,wvs.activitytype as 'ActivityType'
-									,iss.[object] as 'IssueObject'
-									,iss.[objectid] as 'IssueObjectID'
+									,cod.[object] as 'IssueObject'
+									,cod.[objectid] as 'IssueObjectID'
 									,CODV.DisplayValue as 'IssueObjectName'  
 									,case 
 										when wi.[object] = 'Issue' then CODV.DisplayValue
-										when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
+										when wi.[object] = 'Intersect' then coalesce((SELECT COALESCE(SA.DisplayValue, '') + ' / ' + COALESCE(OA.DisplayValue, '')
+											FROM [Intersect] I
+											left join AssetDetail SA on SA.ID = I.SubjectAssetID
+											left join AssetDetail OA on OA.ID = I.ObjectAssetID
+											WHERE	I.ID = wi.objectid), '(unknown relationship)')
 										else coalesce(ADV.DisplayValue,'(unknown)')
 									end as Name,
 									wvs.Settings.query('settings/FormResponseType').value('.', 'varchar(50)') as 'responseType',
