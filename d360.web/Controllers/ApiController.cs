@@ -1804,13 +1804,19 @@ namespace d360.web.Controllers
 
 				var assetUid = Company.Assets.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
 
-				if (assetUid != null)
+				if (assetUid != null && assetUid != Guid.Empty)
 				{
 					relVal.uid = assetUid;
 					if (relVal.TooltipUrl.ToLower().IndexOf("referencelistid") > -1)
 					{
 						relVal.TooltipUrl += "," + assetUid.ToString();
 					}
+				}
+				else
+				{
+					var assetTypeUid = Company.AssetTypes.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
+					relVal.uid = assetTypeUid;
+					relVal.TooltipUrl = "assets/" + relVal.uid;
 				}
 
 				values.Add(relVal);
