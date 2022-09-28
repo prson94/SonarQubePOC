@@ -1660,4 +1660,21 @@ from	workflow.EventRegistration T
 		]]>
     </rollback>
   </changeSet>
+
+<changeSet author="Pappas" id="Data.Corrections.GOV-19761">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+update	I
+set		I.SubjectAssetID = A.ID
+from	[Intersect] I
+		inner join IntersectType T on T.ID = I.IntersectTypeID and I.SubjectAssetID = 0
+		inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] in (3,4)
+		inner join Asset A on A.Object = I.Subject and A.ObjectID = I.SubjectID
+		]]>
+    </sql>
+  </changeSet>
+
 </databaseChangeLog>
