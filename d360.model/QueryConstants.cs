@@ -69,16 +69,16 @@ namespace d360.model
 				from	AssetType
 				where	uid = @uid
 				union
-				select	A.ObjectID as ID, 
+				select	A.ID,
 						A.ID as AssetID,
-						coalesce(P.SubjectID, 0) as ParentID, 
+						coalesce(P.SubjectAssetID, 0) as ParentID, 
 						A.DisplayValue as Name,
 						A.ObjectID,
 						A.Object,	
 						A.uid
 				from	AssetDetail A
 						outer apply (
-									select	I.SubjectID
+									select	I.SubjectAssetID
 									from	[Intersect] I
 											inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.ObjectAssetID = A.ID
 											inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
