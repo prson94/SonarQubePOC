@@ -34,7 +34,7 @@ export class LinkClickInterceptor {
     sendEvent(origEvent: any, data: any, url: string, valueIndex = 0) {
         var adcEv = new AssetDetailClickEvent();
         adcEv.type = AssetDetailClickType.Undefined;
-        adcEv.url = url;
+		adcEv.url = url;
 
         adcEv.originalEvent = origEvent;
 
@@ -121,8 +121,8 @@ export class LinkClickInterceptor {
 
             if (data.DataType === "Relationship") {
                 var valRel = data.Values[valueIndex];
-                adcEv.event = origEvent;
-                adcEv.type = data.FieldName !== "ReferenceItem" ? AssetDetailClickType.Asset : AssetDetailClickType.ReferenceItem;
+				adcEv.event = origEvent;
+				adcEv.type = (valRel.TooltipType as string).toLowerCase().startsWith("reference") ? AssetDetailClickType.ReferenceItem : AssetDetailClickType.Asset;
                 adcEv.data = data;
 
                 adcEv.objectId = valRel.TooltipID;
