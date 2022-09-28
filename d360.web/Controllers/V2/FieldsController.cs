@@ -2932,6 +2932,12 @@ namespace d360.web.Controllers.V2
 						if (f.Type == DataType.Path.ToString())
 						{
 							c.Type.Path = new FieldTypeDataTypePathApiViewModel();
+
+							if (f.Definition != null)
+							{
+								c.Type.Path.Definition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(f.Definition);
+							}
+
 						}
 
 						if (f.Type == DataType.Color.ToString())

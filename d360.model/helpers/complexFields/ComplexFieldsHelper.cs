@@ -5,6 +5,8 @@ using System.Linq;
 using d360.core.entities;
 using d360.core.Models;
 
+using Newtonsoft.Json;
+
 using Dapper;
 
 namespace d360.model.helpers
@@ -224,6 +226,7 @@ namespace d360.model.helpers
 
 					string fieldSelector = $"H{f.RelationIndex + 1}_F{f.FieldTypeID}";
 					string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
+					FieldTypeDataTypePathApiViewModel_Definition pathDefinition = null;
 
 					switch (ft.Type.ToLowerInvariant())
 					{
@@ -250,6 +253,17 @@ namespace d360.model.helpers
 						case "jsonelement":
 							var pathElementSelector = $"JSON_VALUE(FT_JSON_{ft.ID}.Definition, '$.Path')";
 							selects.Add($"JSON_VALUE(F_{ft.ID}.FormattedValue,'$.'+{pathElementSelector}) as [{fieldAlias}]");
+							break;
+						case "path":
+							pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(ft.Definition);
+							if (pathDefinition.AssetTypeUid.HasValue)
+							{
+								selects.Add($"{fieldSelector}.FormattedValue as [{fieldAlias}]");
+							}
+							else
+							{
+								selects.Add($"H{f.RelationIndex + 1}_Node.DisplayPath as [{fieldAlias}]");
+							}
 							break;
 						default:
 							selects.Add($"{fieldSelector}.FormattedValue as [{fieldAlias}]");
@@ -279,6 +293,27 @@ namespace d360.model.helpers
 					{
 						joins.Add($"left join FieldType FT_JSON_{ft.ID} on FT_JSON_{ft.ID}.Id = {ft.ID}");
 						joins.Add($"left join Field F_{ft.ID} on F_{ft.ID}.FieldTypeId = try_parse(JSON_VALUE(FT_JSON_{ft.ID}.Definition, '$.FieldTypeID') as int) and F_{ft.ID}.AssetId = H{f.RelationIndex + 1}.Id");
+					}
+					else if (ft.Type == "Path")
+					{
+						joins.Add($"inner join AssetPath H{f.RelationIndex + 1}_Node on H{f.RelationIndex + 1}_Node.ID = h{f.RelationIndex + 1}.ID");
+						if (pathDefinition.AssetTypeUid.HasValue)
+						{
+							joins.Add($@"outer apply(SELECT TOP 1 string_agg(Val, ' / ') within group(order by P)
+								 FROM(
+								 SELECT *
+								   FROM(
+								   SELECT X.p.value('./@level', 'int') as L,
+										  X.p.value('./@position', 'int') as P,
+										  X.p.value('./@assetTypeId', 'int') as AssetTypeId,
+										  (select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
+
+									 FROM H{f.RelationIndex + 1}_Node.Segments.nodes('/path/segment') X(p)
+								   ) s
+								   JOIN AssetType at ON at.ID = s.AssetTypeId and at.uid = '{pathDefinition.AssetTypeUid}'
+								 ) segmentPath
+							  ) {fieldSelector} (FormattedValue)");
+						}
 					}
 					else
 					{
@@ -318,7 +353,7 @@ namespace d360.model.helpers
 			return $@"select distinct 
                                 {string.Join(",", selects)}
                                 from Asset H1
-                                {string.Join("\n", joins)}";
+                                {string.Join("\n", joins.Distinct())}";
 		}
 
 		public static (List<GridColumn>, List<GridField>) GetComplexRelationLookupFieldsAndColumns(List<FieldType> fields, FieldTypeComplexLookupDefinition definition)
