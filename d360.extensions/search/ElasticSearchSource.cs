@@ -1421,7 +1421,7 @@ namespace d360.extensions.search
 					}
 					else
 					{
-						flds.Add(D3S_FIELD_PREFIX + fieldFilter.Field);
+						flds.Add(DYNAMIC_FIELD_PREFIX + fieldFilter.Field);
 					}
 
 					if (fieldFilter.MatchWords)
