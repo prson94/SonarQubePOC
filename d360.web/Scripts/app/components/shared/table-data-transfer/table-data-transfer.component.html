@@ -1,0 +1,170 @@
+<div class="table-data-transfer-grid table-theme-1">
+    <div class="data-transfer-table">
+        <div class="table-controls">
+            <ig-search-field class="search tooltip-full-width"
+                             mode="Keypress"
+                             i18n-placeholder
+                             placeholder="Search"
+                             [(ngModel)]="sourceTableSearchValue"
+                             (onSearch)="dt3.filterGlobal($event, 'contains')"
+                             name="availableFolderItemsSearchField"
+                             style="width:100%; padding-bottom:8px;"></ig-search-field>
+            <div class="selected-counter"
+                 *ngIf="selectedItemsFromSource?.length === 1"
+                 i18n>1 item selected</div>
+            <div class="selected-counter"
+                 *ngIf="selectedItemsFromSource?.length > 1"
+                 i18n>{{selectedItemsFromSource.length}} items selected</div>
+        </div>
+        <div class="table-wrapper">
+            <p-table #dt3
+                     [globalFilterFields]="['Title']"
+                     [value]="itemsFromSource"
+                     [(selection)]="selectedItemsFromSource"
+                     selectionMode="multiple"
+                     [metaKeySelection]="false"
+                     [selectionPageOnly]="true"
+                     [paginator]="true"
+                     paginatorDropdownAppendTo="body"
+                     [rows]="10"
+                     [rowsPerPageOptions]="defaultTableSettingsService.defaultPagingOptions"
+                     [scrollable]="true"
+                     scrollHeight="420px">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="max-width: 28px;">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+                        <th i18n>{{sourceTableTitle}}</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body"
+                             let-item>
+                    <tr [pSelectableRow]="item">
+                        <td style="max-width: 28px; height: 32px">
+                            <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                        </td>
+                        <td>{{item.Title}}</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt3.first"
+                                          [rows]="dt3.rows"
+                                          [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+    <div class="data-transfer-controls">
+        <div i18n-pTooltip
+             pTooltip="Add to selected folder items"
+             tooltipPosition="top"
+             tooltipStyleClass="ig-tooltip">
+            <button igButton
+                    class="ig-lookup-grid-button"
+                    [disabled]="!selectedItemsFromSource || selectedItemsFromSource.length === 0"
+                    icon="fa-arrow-right"
+                    (click)="moveFromSourceToTarget()"></button>
+        </div>
+        <div i18n-pTooltip
+             pTooltip="Remove from selected folder items"
+             tooltipPosition="top"
+             tooltipStyleClass="ig-tooltip"
+             style="margin-bottom: 16px">
+            <button igButton
+                    class="ig-lookup-grid-button"
+                    [disabled]="!selectedItemsFromTarget || selectedItemsFromTarget.length === 0"
+                    icon="fa-arrow-left"
+                    (click)="moveFromTargetToSource()"></button>
+        </div>
+        <div i18n-pTooltip
+             pTooltip="Move to top"
+             tooltipPosition="top"
+             tooltipStyleClass="ig-tooltip">
+            <button igButton
+                    class="ig-lookup-grid-button data-transfer-move-top-btn"
+                    [disabled]="!isMoveUpPossible()"
+                    icon="fa-step-backward"
+                    (click)="moveToTop()"></button>
+        </div>
+        <div i18n-pTooltip
+             pTooltip="Move up"
+             tooltipPosition="top"
+             tooltipStyleClass="ig-tooltip">
+            <button igButton
+                    class="ig-lookup-grid-button"
+                    [disabled]="!isMoveUpPossible()"
+                    icon="fa-caret-up"
+                    (click)="moveUp()"></button>
+        </div>
+        <div i18n-pTooltip
+             pTooltip="Move down"
+             tooltipPosition="top"
+             tooltipStyleClass="ig-tooltip">
+            <button igButton
+                    class="ig-lookup-grid-button"
+                    [disabled]="!isMoveDownPossible()"
+                    icon="fa-caret-down"
+                    (click)="moveDown()"></button>
+        </div>
+        <div i18n-pTooltip
+             pTooltip="Move to bottom"
+             tooltipPosition="top"
+             tooltipStyleClass="ig-tooltip">
+            <button igButton
+                    class="ig-lookup-grid-button data-transfer-move-bottom-btn"
+                    [disabled]="!isMoveDownPossible()"
+                    icon="fa-step-backward"
+                    (click)="moveToBottom()"></button>
+        </div>
+    </div>
+    <div class="data-transfer-table">
+        <div class="table-controls">
+            <ig-search-field class="search tooltip-full-width"
+                             mode="Keypress"
+                             i18n-placeholder
+                             placeholder="Search"
+                             [(ngModel)]="targetTableSearchValue"
+                             (onSearch)="dt4.filterGlobal($event, 'contains')"
+                             style="width:100%; padding-bottom:8px;"></ig-search-field>
+            <div class="selected-counter"
+                 *ngIf="selectedItemsFromTarget && selectedItemsFromTarget.length > 0"
+                 i18n>{{selectedItemsFromTarget.length}} item{{selectedItemsFromTarget.length > 1 ? "s":""}} selected
+            </div>
+        </div>
+        <div class="table-wrapper"
+             style="max-height: calc(100vh - 420px); min-height:300px">
+            <p-table #dt4
+                     [value]="itemsFromTarget"
+                     [globalFilterFields]="['Title']"
+                     selectionMode="multiple"
+                     [(selection)]="selectedItemsFromTarget"
+                     [metaKeySelection]="false"
+                     [rowsPerPageOptions]="defaultTableSettingsService.defaultPagingOptions"
+                     [scrollable]="true"
+                     scrollHeight="420px">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="max-width: 28px;">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+                        <th i18n>{{targetTableTitle}}</th>
+                    </tr>
+                    <tr *ngIf="!itemsFromTarget || itemsFromTarget?.length == 0">
+                        <div i18n
+                             class="invalid-table">Please select at least one item</div>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body"
+                             let-item>
+                    <tr [pSelectableRow]="item">
+                        <td style="max-width: 28px; height: 32px">
+                            <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                        </td>
+                        <td>{{item.Title}}</td>
+                    <tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>

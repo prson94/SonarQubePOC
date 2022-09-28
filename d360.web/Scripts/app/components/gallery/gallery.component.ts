@@ -21,7 +21,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    activeControl: string = "color-selector";
+    activeControl: string = "table-data-transfer";
     controls = [
         { label: "Switch Input", key: "switch", type: "Form" },
         { label: "Button Directive", key: "button", type: "Form" },
@@ -48,6 +48,7 @@ export class GalleryComponent implements OnInit {
         { label: "Property Group", key: "propery-group", type: "Form" },
         { label: "Radio Button", key: "radio-button", type: "Form" },
         { label: "Field Condition Grid", key: "field-condition-grid", type: "Govern Components" },
+        { label: "Table Data Transfer", key: "table-data-transfer", type: "Govern Components" },
         { label: "Search Field", key: "search-field", type: "Govern Components"},
         { label: "Multi Input Field", key: "multi-input-field", type: "Govern Components"},
         { label: "Input Group", key: "input-group", type: "Form"},
