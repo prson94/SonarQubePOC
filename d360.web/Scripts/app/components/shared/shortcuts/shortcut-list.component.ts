@@ -42,19 +42,19 @@ export class ShortcutListComponent extends BaseComponent implements OnInit {
 
     edit(id: number) {
         this.formMode = FormMode.Editing;
-        this.selectedShortcut = this.shortcuts.find(s => s.ID == id);
+        this.selectedShortcut = this.shortcuts.find((s) => s.ID == id);
     }
 
     delete(id: number) {
         this.formMode = FormMode.Deleting;
-        this.selectedShortcut = this.shortcuts.find(s => s.ID == id);
+        this.selectedShortcut = this.shortcuts.find((s) => s.ID == id);
     }
 
     confirmDelete() {
         if (this.selectedShortcut == null)
             return;
         this.shortcutService.deleteShortcut(this.selectedShortcut.ID)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.showMessageForResult(this.messagesService, r);
                 this.cancel();
             });
@@ -68,7 +68,7 @@ export class ShortcutListComponent extends BaseComponent implements OnInit {
     moveUp(id: number) {
         this.isLoading = true;
         this.shortcutService.moveShortcutUp(id)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.shortcutService.getShortcuts()
                     .subscribe((r) => this.shortcuts = r);
             });
@@ -77,7 +77,7 @@ export class ShortcutListComponent extends BaseComponent implements OnInit {
     moveDown(id: number) {
         this.isLoading = true;
         this.shortcutService.moveShortcutDown(id)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.shortcutService.getShortcuts()
                     .subscribe((r) => this.shortcuts = r);
             });

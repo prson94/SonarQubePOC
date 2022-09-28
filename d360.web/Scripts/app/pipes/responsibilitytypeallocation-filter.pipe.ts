@@ -4,6 +4,6 @@ import { ResponsibilityTypeRelationAllocationOption } from '../models/responsibi
 @Pipe({ name: 'responsibilityallocationFilter' })
 export class ResponsibilityTypeRelationAllocationOptionFilterPipe implements PipeTransform {
     transform(items: ResponsibilityTypeRelationAllocationOption[]): any {
-        return items.filter(item => !item.IsUsed);
+        return items.filter((item) => !item.IsUsed);
     }
 }

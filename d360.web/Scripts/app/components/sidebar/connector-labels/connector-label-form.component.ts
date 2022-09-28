@@ -94,7 +94,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
             .subscribe((response) => {
                 this.suggestionResultsArray = response.map((s) => { return { name: s.Value, UseCount: s.UseCount, uid: s.uid }; });
                 this.suggestionResults = [];
-                this.suggestionResultsArray.forEach(x => this.suggestionResults.push(x.name));
+                this.suggestionResultsArray.forEach((x) => this.suggestionResults.push(x.name));
 
                 this.suggestionResultsArray.forEach((s) => {
                     if (s.name.toLowerCase() == this.connectorLabelForm.controls['value'].value.toLowerCase()) {
@@ -107,7 +107,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     }
 
     onAutocompleteSelect(event) {
-        var obj = this.suggestionResultsArray.filter(x => x.name.toLowerCase().trim() == event.toLowerCase().trim())[0];
+        var obj = this.suggestionResultsArray.filter((x) => x.name.toLowerCase().trim() == event.toLowerCase().trim())[0];
         this.autoCompleteSelected(obj);
     }
 

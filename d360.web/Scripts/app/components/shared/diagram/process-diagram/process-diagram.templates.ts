@@ -230,8 +230,8 @@ export class ProcessDiagramTemplates {
 
         var doesLinkExist: boolean = false;
         try {
-            var links = fromnode.diagram.links.filter(x => x.data);
-            doesLinkExist = links.any(x => (x.data.from == fromnode.data.key && x.data.to == tonode.data.key)
+            var links = fromnode.diagram.links.filter((x) => x.data);
+            doesLinkExist = links.any((x) => (x.data.from == fromnode.data.key && x.data.to == tonode.data.key)
                 || (x.data.from == tonode.data.key && x.data.to == fromnode.data.key));
 
             if (doesLinkExist && fromport != toport) {

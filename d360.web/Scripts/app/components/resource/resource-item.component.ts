@@ -86,11 +86,11 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         this.showResourcesLink = this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
         this.isLoading = true;
 
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
 			this.baseAssetUid = params['uid'];
 
             this.resourcesService.getResourceByUid(this.baseAssetUid)
-				.subscribe(r => {
+				.subscribe((r) => {
                     this.items = r.items;
                     if (this.items.length > 0) {
                         this.resource = this.items[0];
@@ -114,7 +114,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     }
 
                     this.socialService.getTheCounts(this.resourceId, this.days).subscribe(
-                        k => {
+                        (k) => {
                             for (let i = 0; i < k.length; i++) {
                                 this.totNumber += k[i].Total;
                             }
@@ -134,7 +134,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
     updateStatistics() {
         this.statisticsService.getObjectStatistics(this.resource.uid).subscribe(
-            s => {
+            (s) => {
                 this.statistics = s;
             }
         );
@@ -200,7 +200,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         this.isSavingProcess = true;
         this.resourcesService.saveResource(user, true, false)
             .subscribe(
-                result => {
+                (result) => {
                     this.isLoading = false;
                     this.isSavingProcess = false;
                     if (result.Message == "" && result.Success) {

@@ -71,7 +71,7 @@ export class WhereUsedComponent implements OnChanges, AfterViewChecked {
         this.isUsageLoading = true;
         this.hasUsage = false;
         this.connectorLabelService.getLabelUsage(this.uid)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.usage = res;
                 if (this.usage.length > 0) {
                     this.hasUsage = true;

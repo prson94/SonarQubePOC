@@ -33,7 +33,7 @@ export class AssetComponent extends BaseComponent implements OnInit, OnDestroy {
 	}
 
 	ngOnInit() {
-		this.sub = this.route.params.subscribe(params => {
+		this.sub = this.route.params.subscribe((params) => {
 			this.assetUid = params['assetUid'];
 			this.assetService.getAssetTypeClassForAsset(this.assetUid)
 				.subscribe((res) => {

@@ -81,7 +81,7 @@ export class HeaderActionsComponent {
             this.enabled = false;
         }
 
-        this.routerSub = this.router.events.subscribe(e => {
+        this.routerSub = this.router.events.subscribe((e) => {
             if (e instanceof NavigationEnd) {
                 let showFavorite = this.settingsService.getSettingById(CompanySettingEnum.ShowFavorites).BooleanSetting.Value;
                 let showFollow = this.settingsService.getSettingById(CompanySettingEnum.ShowImpactSidebar).BooleanSetting.Value;
@@ -170,14 +170,14 @@ export class HeaderActionsComponent {
 
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
             this.favoritesService.getHomePageAndFavorites().subscribe(
-                homefav => {
+                (homefav) => {
                     this.favItems = homefav.Favorites;
                     this.homePageItem = homefav.Homepage;
                 }
             );
         });
         
-        this.subObjectChange = this.secondaryNavService.currentObject$.subscribe(c => {
+        this.subObjectChange = this.secondaryNavService.currentObject$.subscribe((c) => {
             this.currentObject = null;
             this.currentObjectId = null;
             this.Uid = null;
@@ -192,7 +192,7 @@ export class HeaderActionsComponent {
                 this.Uid = c.Uid;
             }
             this.favoritesService.getHomePageAndFavorites().subscribe(
-                homefav => {
+                (homefav) => {
                     this.favItems = homefav.Favorites;
                     this.homePageItem = homefav.Homepage;
                 }

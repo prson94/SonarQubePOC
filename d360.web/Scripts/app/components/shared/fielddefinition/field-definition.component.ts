@@ -108,7 +108,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		this.isLoading = true;
 		this.hasKeyFields = false;
 		this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
-			data => {
+			(data) => {
 				this.fieldDefinitions = data;
 				this.fieldDisplayModel = [];
 				if (data) {
@@ -144,7 +144,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	private checkKeyFields() {
 		let foundKeyField = false;
 		if (this.fieldDisplayModel && this.fieldDisplayModel.length > 0) {
-			this.fieldDisplayModel.forEach(d => {
+			this.fieldDisplayModel.forEach((d) => {
 				if (!d.SortOrder)
 					d.SortOrder = 0;
 				if (d.IsPartOfKey) {
@@ -200,7 +200,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		}
 	}
 	edit(name: string): void {
-		this.selectedRow = this.fieldDisplayModel.find(f => f.Name == name);
+		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name == name);
 		this.isEditing = true;
 		this.isDeleting = false;
 		this.isAdding = false;
@@ -215,7 +215,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	delete(name: string): void {
-		this.selectedRow = this.fieldDisplayModel.find(f => f.Name == name);
+		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name == name);
 		this.isEditing = false;
 		this.isDeleting = true;
 		this.isAdding = false;
@@ -232,15 +232,15 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	deleteFieldType(name: string) {
 
 		this.fieldsService.deleteFieldType(this.selectedRow.Name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
-			res => {
+			(res) => {
 				if (res != null && res.Success === true) {
 					this.messagesService.showInfoMessage($localize`Success`, $localize`Field definition successfully removed.`);
-					let index = this.fieldDisplayModel.findIndex(f => f.Name == this.selectedRow.Name);
+					let index = this.fieldDisplayModel.findIndex((f) => f.Name == this.selectedRow.Name);
 
 					this.isDeleting = false;
 
 					if (this.fieldDefinitions != null && this.fieldDefinitions.length > 0) {
-						let ix = this.fieldDefinitions.findIndex(f => f.Name == this.selectedRow.Name);
+						let ix = this.fieldDefinitions.findIndex((f) => f.Name == this.selectedRow.Name);
 						if (ix > -1) {
 							this.fieldDefinitions.splice(ix, 1);
 							this.fieldDefinitions = this.fieldDefinitions.slice();
@@ -264,8 +264,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	moveUp(field) {
 
 		this.fieldsService.moveUp(this.currentUid, field.Name).subscribe(
-			r => {
-				let items = this.fieldDisplayModel.filter(x => x.Name == field.Name);
+			(r) => {
+				let items = this.fieldDisplayModel.filter((x) => x.Name == field.Name);
 				if (items.length == 1) {
 					let index = this.fieldDisplayModel.indexOf(items[0]);
 					if (index > 0 && index < this.fieldDisplayModel.length)
@@ -278,8 +278,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	moveDown(field) {
 
 		this.fieldsService.moveDown(this.currentUid, field.Name).subscribe(
-			r => {
-				let items = this.fieldDisplayModel.filter(x => x.Name == field.Name);
+			(r) => {
+				let items = this.fieldDisplayModel.filter((x) => x.Name == field.Name);
 				if (items.length == 1) {
 					let index = this.fieldDisplayModel.indexOf(items[0]);
 					if (index >= 0 && index < this.fieldDisplayModel.length - 1)

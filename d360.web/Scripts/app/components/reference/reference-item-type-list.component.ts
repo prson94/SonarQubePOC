@@ -113,7 +113,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                 this.referenceTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.referenceTypes.length > 0) {
                     if (this.initialSelectedListUid.length > 0) {
-                        let index = this.referenceTypes.findIndex(x => x.uid == this.initialSelectedListUid);
+                        let index = this.referenceTypes.findIndex((x) => x.uid == this.initialSelectedListUid);
                         this.initialSelectedListUid = '';
                         if (index >= 0 && index < this.referenceTypes.length) {
                             this.selected = this.referenceTypes[index];
@@ -138,7 +138,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
     private deleteReferenceItemType(id: number) {
         this.isLoading = true;
-        var uid = this.referenceTypes.filter(x => x.AssetTypeID == id)[0].uid;
+        var uid = this.referenceTypes.filter((x) => x.AssetTypeID == id)[0].uid;
         this
             .assetTypeService
             .deleteSingleAssetType(uid)
@@ -147,7 +147,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                     this.showMessageForResult(this.messagesService, result);
 
                     if (result.type != 'error') {
-                        let index = this.referenceTypes.findIndex(x => x.AssetTypeID == id);
+                        let index = this.referenceTypes.findIndex((x) => x.AssetTypeID == id);
                         if (index >= 0 && index < this.referenceTypes.length) {
                             this.referenceTypes.splice(index, 1);
                         }

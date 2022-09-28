@@ -48,10 +48,10 @@ export class SiteMenuFavoriteItemComponent {
     }
 
     homePageRoute$ = this.store.state$.pipe(
-        map(x => x.homepageAndFavorites?.Homepage?.Route)
+        map((x) => x.homepageAndFavorites?.Homepage?.Route)
     );
 
     searchText$ = this.store.state$.pipe(
-        map(x => x.searchText)
+        map((x) => x.searchText)
     );
 }

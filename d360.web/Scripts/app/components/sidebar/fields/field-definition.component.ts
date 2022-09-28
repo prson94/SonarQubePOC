@@ -50,7 +50,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
 	ngOnInit() {
 		this.isLoading = true;
 		this.sub = this.route.params.subscribe(
-			params => {
+			(params) => {
 				if (this.route.snapshot.data?.type === "relationship") {
 					this.relationshipTypeUid = this.baseIntersectTypeUid = params['assetTypeUid'];
 					this.buildSecondaryNavigation({ intersectTypeUid: this.relationshipTypeUid });

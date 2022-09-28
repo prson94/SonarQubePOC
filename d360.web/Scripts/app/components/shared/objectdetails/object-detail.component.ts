@@ -61,7 +61,7 @@ export class ObjectDetailComponent implements OnChanges {
                 : this.objectDetailService.getObjectDetail(this.objectID, this.objectType);
 
             request
-                .subscribe(data => {
+                .subscribe((data) => {
                     this.rows = data.rows;
                     this.categories = [];
                     for (var i = 0; i < this.rows.length; i++) {
@@ -73,9 +73,9 @@ export class ObjectDetailComponent implements OnChanges {
                     this.populateSystemProperties(this.rows);
 
                     //remove system property rows.
-                    this.rows = this.rows.filter(r => !r.Category || r.Category.toUpperCase() != this.systemProperties.toUpperCase());
+                    this.rows = this.rows.filter((r) => !r.Category || r.Category.toUpperCase() != this.systemProperties.toUpperCase());
 
-                    this.rows.forEach(r => {
+                    this.rows.forEach((r) => {
                         if (r.Category && r.Category.toUpperCase() !== this.noCategory.toUpperCase() && this.categories.find((c) => c.name === r.Category) == null) {
                             let category = new Category(r.Category);
                             category.active = true;
@@ -86,12 +86,12 @@ export class ObjectDetailComponent implements OnChanges {
                         this.populateRow(r);
                     });
 
-                    let displayRows = this.rows.filter(r => (r.Category == null || r.Category.toUpperCase() == this.noCategory.toUpperCase()) && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
-                    if (this.categories.findIndex(x => x.name.toUpperCase() == this.systemProperties.toUpperCase()) >= 0) {
-                        this.categories.push(this.categories.splice(this.categories.findIndex(x => x.name.toUpperCase() == this.systemProperties.toUpperCase()), 1)[0]);
+                    let displayRows = this.rows.filter((r) => (r.Category == null || r.Category.toUpperCase() == this.noCategory.toUpperCase()) && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
+                    if (this.categories.findIndex((x) => x.name.toUpperCase() == this.systemProperties.toUpperCase()) >= 0) {
+                        this.categories.push(this.categories.splice(this.categories.findIndex((x) => x.name.toUpperCase() == this.systemProperties.toUpperCase()), 1)[0]);
                     }
                     for (let i = 0; i < this.categories.length; i++) {
-                        let items = this.rows.filter(r => r.Category == this.categories[i].name);
+                        let items = this.rows.filter((r) => r.Category == this.categories[i].name);
                         this.categories[i].rows = [];
                         for (let j of items) {
                             if ((j.FirstColumnFields && j.FirstColumnFields.length > 0) || (j.SecondColumnFields && j.SecondColumnFields.length)) {
@@ -162,11 +162,11 @@ export class ObjectDetailComponent implements OnChanges {
     }
 
     private loadCategory() {
-        this.categories.forEach(c => {
+        this.categories.forEach((c) => {
             var rcount = c.rows.length;
-            c.rows.forEach(r => {
+            c.rows.forEach((r) => {
                 let fcount = r.FirstColumnFields.length;
-                r.FirstColumnFields.forEach(f => {
+                r.FirstColumnFields.forEach((f) => {
                     if (f.Type == DetailFieldType.LookupGrid || f.Type === DetailFieldType.LookupList) {
                         if (!f.Data || !f.Data.Values || f.Data.Values.length == 0) {
                             c.hasData = true;
@@ -194,7 +194,7 @@ export class ObjectDetailComponent implements OnChanges {
 
         // if there are no fields (non-system) without a category then expand the first category unless it's system properties
         if (this.categories && this.categories.length > 0
-            && this.rows.filter(x => !x.Category || x.Category.toUpperCase() != this.noCategory.toUpperCase()).length == 0
+            && this.rows.filter((x) => !x.Category || x.Category.toUpperCase() != this.noCategory.toUpperCase()).length == 0
             && this.categories[0].name.toUpperCase() != this.systemProperties.toUpperCase()) {
             this.categories[0].active = true;
         }
@@ -202,7 +202,7 @@ export class ObjectDetailComponent implements OnChanges {
     }
 
     private populateRow(row) {
-        row.FirstColumnFields.forEach(f => {
+        row.FirstColumnFields.forEach((f) => {
             this.setDetailFieldType(f);
 
             if ((f.FieldName || "").toUpperCase() == 'ASSETUID') {
@@ -210,14 +210,14 @@ export class ObjectDetailComponent implements OnChanges {
             }
 
         });
-        row.FirstColumnFields = row.FirstColumnFields.filter(f => f.Type != DetailFieldType.None);
+        row.FirstColumnFields = row.FirstColumnFields.filter((f) => f.Type != DetailFieldType.None);
 
-        row.SecondColumnFields.forEach(s => {
+        row.SecondColumnFields.forEach((s) => {
             this.setDetailFieldType(s);
 
             if (s.Type == DetailFieldType.LookupGrid || s.Type === DetailFieldType.LookupList) {
                 this.assetService.getAssetsComplexFieldValue(this.objectUID, s.FieldName)
-                    .subscribe(i => {
+                    .subscribe((i) => {
                         s.Data = i;
                         if ((!s.Data || !s.Data.Values || s.Data.Values.length == 0) && (!s.ShowIfEmpty)) {
                             s.Type = DetailFieldType.None;
@@ -235,11 +235,11 @@ export class ObjectDetailComponent implements OnChanges {
             }
         });
 
-        row.SecondColumnFields = row.SecondColumnFields.filter(f => f.Type != DetailFieldType.None);
+        row.SecondColumnFields = row.SecondColumnFields.filter((f) => f.Type != DetailFieldType.None);
     }
 
     private populateSystemProperties(rows: DetailRow[]) {
-        let systemPropertyItems = this.rows.filter(row => row.Category && row.Category.toUpperCase() == this.systemProperties.toUpperCase());
+        let systemPropertyItems = this.rows.filter((row) => row.Category && row.Category.toUpperCase() == this.systemProperties.toUpperCase());
 
         this.systemPropertiesCategory.rows = [];
         for (let j of systemPropertyItems) {
@@ -247,7 +247,7 @@ export class ObjectDetailComponent implements OnChanges {
                 this.systemPropertiesCategory.rows.push(j);
             }
         }
-        this.systemPropertiesCategory.rows.forEach(row => {
+        this.systemPropertiesCategory.rows.forEach((row) => {
             this.populateRow(row);
         });
 

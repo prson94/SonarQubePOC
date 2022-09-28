@@ -62,7 +62,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     ngOnInit() {
         this.headerBreadcrumbService.clearCurrentObjectInfo();
 
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.isLoading = true;
             this.workflowTypeId = +params['workflowTypeId'];
             this.resourceID = +params['resourceID'];
@@ -90,13 +90,13 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
         this.isLoading = true;
         this.workflowService.getAssignedWorkflowInstancesByTypeId(this.workflowTypeId, this.resourceID, this.version, this.stepId)
             .pipe(
-                map(res => {
+                map((res) => {
                     this.selection = [];
                     this.items = res.items;
                     this.workflow = res.workflow;
                     }),
                 map(() => this.workflowService.getAssignedWorkflowInstancesSummary(this.workflowTypeId, this.resourceID, this.version, this.stepId)
-                    .subscribe(res => {
+                    .subscribe((res) => {
                         this.isLoading = false;
                         this.assignmentSummary = res.item;
                     })))
@@ -109,7 +109,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             if (this.selection.length >= 2) {
 
                 this.bulkEditorModel = new BulkWorkflowFormModel();
-                this.bulkEditorModel.ItemStepIDs = this.selection.map(i => i.ItemStepID);
+                this.bulkEditorModel.ItemStepIDs = this.selection.map((i) => i.ItemStepID);
 
                 this.showBulkFormEditor = true;
             } else if (this.selection.length == 1) {
@@ -121,7 +121,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     private bulkReassign() {
         if (this.selection != null) {
             this.bulkReassignModel = new BulkWorkflowReassignModel();
-            this.bulkReassignModel.ItemStepIDs = this.selection.map(i => i.ItemStepID);
+            this.bulkReassignModel.ItemStepIDs = this.selection.map((i) => i.ItemStepID);
             this.bulkReassignModel.OriginalAssigneeResourceID = isNaN(this.resourceID) ? CurrentResourceID : this.resourceID;
             this.bulkReassignModel.StepName = this.assignmentSummary.StepName;
             this.bulkReassignModel.StepHasFormEmails = this.assignmentSummary.SendFormEmail;

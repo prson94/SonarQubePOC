@@ -56,7 +56,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
                 map(() => {
                     if (this.step != null)
                         this.workflowService.getWorkflowFieldTypes(this.step.ObjectTypeID, this.step.ObjectType, true)
-                            .subscribe(r => {
+                            .subscribe((r) => {
                                 this.fields = r;
                             });
                 })
@@ -76,7 +76,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
             this.isLoading = true;
             return this.workflowService.getWorkflowStepDetail(this.itemStepId)
                 .pipe(
-                    map(r => {
+                    map((r) => {
                         this.isLoading = false;
                         this.step = r;
                         this.reassignments = [];
@@ -92,8 +92,8 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
                     map(() => {
                         if (typeof this.step.Condition != 'undefined' && typeof this.step.Condition.length != 'undefined') {
 
-                            this.showAllAnyCondition = this.step.Condition.filter(x => x['@FieldTypeID']).length > 1;
-                            this.isSatisfyAll = this.step.Condition.every(x => x['@Connector'] == 'AND');
+                            this.showAllAnyCondition = this.step.Condition.filter((x) => x['@FieldTypeID']).length > 1;
+                            this.isSatisfyAll = this.step.Condition.every((x) => x['@Connector'] == 'AND');
                         }
                     })
                 );
@@ -104,7 +104,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
 
 
     private get bulkReassignments() {
-        return this.reassignments.filter(r => r.IsBulkReassignment);
+        return this.reassignments.filter((r) => r.IsBulkReassignment);
     }
 
     private get reassignment() {
@@ -113,7 +113,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
         else if (this.reassignments.length == 1 && !this.reassignments[0].IsBulkReassignment)
             return this.reassignments[0];
         else if (this.reassignments.length > 1)
-            return this.reassignments.find(r => !r.IsBulkReassignment);
+            return this.reassignments.find((r) => !r.IsBulkReassignment);
         else
             return null;
     }

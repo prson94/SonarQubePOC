@@ -39,7 +39,7 @@ export class ActivityTile extends BaseComponent implements OnInit {
             .artifactService
             .getActivityCount(this.daysToLookBack)
             .subscribe(
-                res => {
+                (res) => {
                     this.counts = res;
                     this.isLoading = false;
                     this.isLoaded = true;

@@ -38,7 +38,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
                 };
             });
             var availableTypes = this.searchObjectTypes.map((x) => x.value);
-            this.searchTypes = this.searchTypes.filter(st => availableTypes.indexOf(st) >= 0);
+            this.searchTypes = this.searchTypes.filter((st) => availableTypes.indexOf(st) >= 0);
 
             this.setEventTypeLabel();
         });

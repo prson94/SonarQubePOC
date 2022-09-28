@@ -252,18 +252,18 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             });
 
         this.buttonSubscription = this.secondaryNavService.rightSidebarButton$.subscribe(
-            button => {
+            (button) => {
                 this.buttons.push(button);
                 this.buttons = _.sortBy(this.buttons, 'text'); this.emitChanges();
             });
         this.buttonSubscriptionClear = this.secondaryNavService.rightSidebarButtonClear$.subscribe(
-            item => {
+            (item) => {
                 this.buttons.splice(0, this.buttons.length); this.emitChanges();
             });
 
 
         this.subscriptionClear = this.secondaryNavService.rightSidebarClear$.subscribe(
-            item => {
+            (item) => {
                 this.items.splice(0, this.items.length);
 
                 this.currentObject = null;
@@ -276,16 +276,16 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.emitChanges();
             });
         this.areaSub = this.secondaryNavService.currentArea$.subscribe(
-            area => {
+            (area) => {
                 this.area = area; this.emitChanges();
             }
         );
-        this.hideHeaderSub = this.secondaryNavService.hideHeader$.subscribe(result => {
+        this.hideHeaderSub = this.secondaryNavService.hideHeader$.subscribe((result) => {
             this.showHeader = result;
             this.emitChanges();
         });
 
-        this.objectSub = this.secondaryNavService.currentObject$.subscribe(res => {
+        this.objectSub = this.secondaryNavService.currentObject$.subscribe((res) => {
             this.currentObject = res;
             if (this.currentObject && !this.currentObject.isType) {
                 this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
@@ -301,7 +301,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         });
 
 
-        this.assetActionSub = this.secondaryNavService.assetAction$.subscribe(res => {
+        this.assetActionSub = this.secondaryNavService.assetAction$.subscribe((res) => {
             this.assetAction = res;
             if (this.assetAction && this.assetAction.type == "CONNECTORLABEL") {
                 this.showOnlyMainTab = true;
@@ -322,7 +322,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         });
 
         this.assetActionClearSub = this.secondaryNavService.assetActionClear$.subscribe(
-            item => {
+            (item) => {
                 //check if router is navigated to asset paga audit
                 if (!this.previousUrl || this.router.url.toLowerCase().indexOf(this.previousUrl.toLowerCase()) <= 0) {
                     this.assetAction = null;
@@ -331,18 +331,18 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             });
 
         this.homeUrlChangeSub = this.secondaryNavService.homeUrlChange$.subscribe(
-            item => {
+            (item) => {
                 this.homeUrl = item;
             }
         );
 
-        this.statsSub = this.secondaryNavService.refreshStats$.subscribe(res => {
+        this.statsSub = this.secondaryNavService.refreshStats$.subscribe((res) => {
             if (this.currentObject && !this.currentObject.isType) {
                 this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
             }
         });
 
-        this.updateSub = this.secondaryNavService.updateObject$.subscribe(res => {
+        this.updateSub = this.secondaryNavService.updateObject$.subscribe((res) => {
             if (res) {
                 if (res.key == 'firstTabTitle') {
                     this.items[0].title = res.value;
@@ -366,7 +366,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         }
 
         this.objectStatisticsService.getObjectColorAndValue(objectID, objectName, "status").subscribe(
-            result => {
+            (result) => {
                 this.status = result;
                 if (this.status != undefined && this.status != null && this.status.length > 0) {
                     var draftValues = this.settingsService.getSettingById(CompanySettingEnum.RequestCertificationDraft).StringSetting.Value;
@@ -384,7 +384,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     }
                     let isDraft = false;
                     let draftArray = draftValues.toUpperCase().split(',');
-                    draftArray.forEach(x => {
+                    draftArray.forEach((x) => {
                         if (statusHeading.toUpperCase().indexOf(x.toUpperCase()) != -1)
                             isDraft = true;
                     });
@@ -403,7 +403,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         );
 
         this.objectStatisticsService.getObjectColorAndValue(objectID, objectName, "dataClassification", false).subscribe(
-            result => {
+            (result) => {
                 this.dataClassification = result;
                 try {
                     let dataClassificationAttributes = JSON.parse(this.dataClassification);
@@ -422,13 +422,13 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
         if (this.currentObject.Uid && this.currentObject.Uid != '00000000-0000-0000-0000-000000000000') {
             this.objectStatisticsService.getSearchDetails(this.currentObject.Uid).subscribe(
-                result => {
+                (result) => {
                     this.searchDetails = result;
                     this.ref.markForCheck();
                 }
             );
             this.surveysService.getObjectSurvey(this.currentObject.Uid)
-                .subscribe(result => {
+                .subscribe((result) => {
                     this.survey = undefined;
                     if (result) {
                         this.survey = result;
@@ -441,13 +441,13 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
 
 		this.objectStatisticsService.getObjectStatistics(this.currentObject.Uid).subscribe(
-			result => {
+			(result) => {
                 this.statistics = result;
                 this.ref.markForCheck();
             }
         );
         this.workflowService.getIssues(objectID, objectName)
-            .subscribe(result => {
+            .subscribe((result) => {
                 let issues = result;
                 if (issues.length && issues.length > 0) {
                     this.actionsAssigned = true;
@@ -521,7 +521,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     AllClosed() {
-        let count = this.items.filter(x => x.active == true).length;
+        let count = this.items.filter((x) => x.active == true).length;
         if (count === 0)
             this.secondaryNavService.setLocalActiveItem(undefined);
         return count == 0;
@@ -568,9 +568,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         if (this.currentObject && this.currentObject.Uid)
             this.artifactService
                 .requestCertification(this.currentObject.Uid)
-                .subscribe(result => {
+                .subscribe((result) => {
                     window.setTimeout(
-                        x => {
+                        (x) => {
                             this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
                         }, 6000);
                 });
@@ -594,7 +594,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     OpenScoring(scoreType: string) {
         if (this.currentObject.Uid) {
-            let scoreItems = this.items.filter(x => x.title === 'Scoring');
+            let scoreItems = this.items.filter((x) => x.title === 'Scoring');
             if (scoreItems.length == 1) {
                 this.router.navigateByUrl(`/sidebar/score/${this.currentObject.Uid}/${scoreType}`);
             }

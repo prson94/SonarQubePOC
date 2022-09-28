@@ -54,7 +54,7 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
             .artifactService
             .getActivityDetails(this.objectId, this.daysToLookBack)
             .subscribe(
-                res => {
+                (res) => {
                     this.items = res;
                     this.isLoading = false;
                 }

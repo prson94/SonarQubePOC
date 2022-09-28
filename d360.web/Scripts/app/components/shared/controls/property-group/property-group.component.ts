@@ -45,7 +45,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit(): void {
         if (this.igformGroup) {
-            this.igformGroup.valueChanges.subscribe(x => {
+            this.igformGroup.valueChanges.subscribe((x) => {
                 this.delayedRefresh();
             });
         }
@@ -56,7 +56,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
         this.propertyGroups.register(this);
 
         if (this.igformGroup) {
-            this.igformGroup.valueChanges.subscribe(x => {
+            this.igformGroup.valueChanges.subscribe((x) => {
                 this.delayedRefresh();
             });
         }

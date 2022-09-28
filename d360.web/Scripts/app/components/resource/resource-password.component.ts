@@ -83,10 +83,10 @@ export class ResourcePasswordComponent extends BaseComponent {
     save() {
         const user = new ResourceApiModel;
 
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.resourceId = +params['resourceId']; // (+) converts string 'id' to a number
             this.resourcesService.getResource(this.resourceId)
-                .subscribe(r => {
+                .subscribe((r) => {
                     this.items = r.items;
                     if (this.items.length > 0) {
                         this.resource = this.items[0];
@@ -106,7 +106,7 @@ export class ResourcePasswordComponent extends BaseComponent {
                         this.isLoading = true;
                         this.resourcesService.saveResource(user, false, true)
                             .subscribe(
-                                result => {
+                                (result) => {
                                     this.isLoading = false;
                                     if (result.Message == "" && result.Success) {
                                         result.Message = $localize`Password successfully updated...`;

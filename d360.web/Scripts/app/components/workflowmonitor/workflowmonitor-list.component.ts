@@ -143,13 +143,13 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
 
         this.isLoading = true;
         this.subItems = this.wfMonitorService.getWorkFlowMonitorItems(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder, filter)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.items = result.Items;
                 this.totalRecords = +result.Total;
                 if (this.items != null && this.items.length > 0) {
                     let item: any;
                     if (this.stateService.workflowItemFilters.itemId != 0) {
-                        item = this.items.find(x => x.Id == this.stateService.workflowItemFilters.itemId);
+                        item = this.items.find((x) => x.Id == this.stateService.workflowItemFilters.itemId);
                     }
 
                     this.selection = item ? [item] : [this.items[0]];
@@ -174,7 +174,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
         this.isLoading = true;
         let itemIds = [];
         if (Array.isArray(this.selection)) {
-            itemIds = this.selection.map(i => i.Id);
+            itemIds = this.selection.map((i) => i.Id);
         } else if (this.selection != null) {
             itemIds.push(this.selection.Id);
         }

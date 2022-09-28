@@ -48,7 +48,7 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     ngOnInit() {
-        this.subBreadcrumb = this.breadcrumbService.breadcrumbs$.subscribe(b => {
+        this.subBreadcrumb = this.breadcrumbService.breadcrumbs$.subscribe((b) => {
             this.name = b.text;
         });
     }
@@ -84,7 +84,7 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
         f.Name = this.name;
         f.Route = this.currentUri;
         this.favoritesService.toggleHomePageV2(f).subscribe(
-            fav => {
+            (fav) => {
                 this.headerActionsService.emitFavoritesChange();
                 this.isLoading = false;
                 this.ref.markForCheck();

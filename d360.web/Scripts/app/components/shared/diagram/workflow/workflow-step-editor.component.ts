@@ -150,10 +150,10 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 });
             });
 
-        this.groupService.getGroups().subscribe(GroupList => {
-            this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name }; });
+        this.groupService.getGroups().subscribe((GroupList) => {
+            this.groups = GroupList.items.map((g) => { return { value: g.Uid, label: g.Name }; });
             if (this.step.settings.MessageToGroup != undefined) {
-                if (!this.groups.find(g => g.value == this.step.settings.MessageToGroup)) {
+                if (!this.groups.find((g) => g.value == this.step.settings.MessageToGroup)) {
                     this.groups.push(<SelectItem>{ value: this.step.settings.MessageToGroup, label: '<invalid group>' });
                 }
             }
@@ -174,7 +174,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             }
         } else if (this.step.activityType == WorkflowActivityType.Procedure) {
             this.workflowService.getWorkflowProcedures()
-                .subscribe(r => {
+                .subscribe((r) => {
                     this.procedures = r;
                 });
         } else if (this.step.activityType == WorkflowActivityType.FieldChange) {
@@ -304,8 +304,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
         let upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
-        fields.forEach(f => {
-            let k = upstreamSteps.filter(u => u == f['@stepId']);
+        fields.forEach((f) => {
+            let k = upstreamSteps.filter((u) => u == f['@stepId']);
             if (k != null && k.length > 0) {
                 f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
                 f['@FormLabel'] = 'Form :: ' + f['@label'];
@@ -326,8 +326,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         let upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
 
-        fields.forEach(f => {
-            let k = upstreamSteps.filter(u => u == f['@stepId']);
+        fields.forEach((f) => {
+            let k = upstreamSteps.filter((u) => u == f['@stepId']);
             if (k != null && k.length > 0) {
                 f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
                 f['@FormLabel'] = 'HTTP Request :: ' + f['@label'];
@@ -344,8 +344,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         let upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
 
-        fields.forEach(f => {
-            let k = upstreamSteps.filter(u => u == f.StepId);
+        fields.forEach((f) => {
+            let k = upstreamSteps.filter((u) => u == f.StepId);
             if (k != null && k.length > 0) {
                 f['@FormFieldId'] = f.Id + '|' + f.StepId;
                 f['@FormLabel'] = 'HTTP Response :: ' + f.Name;
@@ -360,15 +360,15 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         let steps = <any[]>this.diagram.model.nodeDataArray;
         let links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
 
-        let step = steps.find(s => s.key == key);
-        let toLinks = links.filter(l => l.to == key);
+        let step = steps.find((s) => s.key == key);
+        let toLinks = links.filter((l) => l.to == key);
 
         if (_.includes(upstreamSteps, key)) return;
         upstreamSteps.push(step.key);
 
         if (toLinks == null || toLinks.length < 1) return;
 
-        toLinks.forEach(l => this.traverseDiagram(l.from, upstreamSteps));
+        toLinks.forEach((l) => this.traverseDiagram(l.from, upstreamSteps));
 
     }
 

@@ -78,6 +78,6 @@ export class GalleryColorVariablesComponent implements OnInit, AfterViewInit {
     }
 
     private rgbToHex(rgb: string): string {
-        return '#' + rgb.match(/\d+/g).map(c => ((+c < 16) ? '0' : '') + (+c).toString(16)).join('');
+        return '#' + rgb.match(/\d+/g).map((c) => ((+c < 16) ? '0' : '') + (+c).toString(16)).join('');
     }
 }

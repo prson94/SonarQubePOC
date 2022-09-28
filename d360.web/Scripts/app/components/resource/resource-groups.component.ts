@@ -76,7 +76,7 @@ export class ResourceGroupsComponent extends BaseComponent implements OnInit{
     private load() {
         this.isLoading = true;
         this.resourcesService.getUserGroups(this.resourceUid)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.groups = res.items;
                 this.isLoading = false;
             });
@@ -87,7 +87,7 @@ export class ResourceGroupsComponent extends BaseComponent implements OnInit{
     }
 
     private doSelect(group) {
-        this.assetService.getAssetLegacyUri(group.Uid).subscribe(uri => {
+        this.assetService.getAssetLegacyUri(group.Uid).subscribe((uri) => {
                 this.router.navigateByUrl(uri);
             });
        

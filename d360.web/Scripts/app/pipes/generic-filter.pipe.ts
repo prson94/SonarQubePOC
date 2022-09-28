@@ -13,6 +13,6 @@ export class GenericFilter implements PipeTransform {
         if (!items || !callback) {
             return items;
         }
-        return items.filter(item => callback(item));
+        return items.filter((item) => callback(item));
     }
 }

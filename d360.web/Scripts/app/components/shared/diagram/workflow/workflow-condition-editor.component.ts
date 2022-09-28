@@ -82,7 +82,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
             this.fieldList = [];
 
-            this.fields.forEach(f => {
+            this.fields.forEach((f) => {
                 this.fieldList.push({
                     value: 'FieldType|' + f.ID.toString(),
                     label: f.FriendlyName + (f.Object == 'IssueType' ? ' (Action Field)' : '')
@@ -105,7 +105,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 map(() => {
                     this.fieldList = [];
 
-                    this.fields.forEach(f => {
+                    this.fields.forEach((f) => {
                         this.fieldList.push({
                             value: 'FieldType|' + f.ID.toString(),
                             label: f.FriendlyName + (f.Object == 'IssueType' ? ' (Action Field)' : '')
@@ -175,7 +175,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     loadContextualFields() {
         this.contextualFields = this.workflowFieldsService.getContextualFieldsForType();
         if (this.contextualFields.length > 0) {
-            this.contextualFields.forEach(f => {
+            this.contextualFields.forEach((f) => {
                 this.fieldList.push({
                     value: f.value,
                     label: f.label,
@@ -214,12 +214,12 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
             if (this.condition['@ValueType'] == 'L') {
                 this.workflowService.getLookupList(this.condition['@FieldTypeID'])
-                    .subscribe(r => {
+                    .subscribe((r) => {
                         this.lookups = r;
                     });
             }
         } else if (this.selectedField.split('|')[0] == 'FormInput') {
-            let input = this.formFields.find(f => f['@id'] == this.selectedField.split('|')[2] && f['@stepId'] == this.selectedField.split('|')[1]);
+            let input = this.formFields.find((f) => f['@id'] == this.selectedField.split('|')[2] && f['@stepId'] == this.selectedField.split('|')[1]);
 
             this.selectedType = input['@type'].toLowerCase();
 
@@ -230,14 +230,14 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                     //find the form step and figure out what the reference field is
                     let node = this.diagram.model.findNodeDataForKey(input['@stepId']);
                     if (node != null) {
-                        let formField = node.fields.form.field.find(i => i['@id'] == input['@id']);
+                        let formField = node.fields.form.field.find((i) => i['@id'] == input['@id']);
                         if (formField != null) {
                             let fieldId = +formField['@referenceFieldId'] || 0;
                             if (fieldId != null && fieldId > 0) {
                                 this.workflowService.getReferenceItemsForField(fieldId)
-                                    .subscribe(r => {
+                                    .subscribe((r) => {
                                         this.lookups = [];
-                                        r.forEach(i => {
+                                        r.forEach((i) => {
                                             this.lookups.push({
                                                 value: i.ID,
                                                 label: i.Code
@@ -265,7 +265,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
         } else if (this.selectedField.split('|')[0] == 'Contextual') {
             let fieldId = this.selectedField.split('|')[1];
-            let special = this.contextualFields.find(s => s.value == this.selectedField);
+            let special = this.contextualFields.find((s) => s.value == this.selectedField);
             this.selectedType = special.type.toLowerCase();
 
             delete this.condition['@FormInputID'];
@@ -290,7 +290,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
         }
         else if (this.selectedField.split('|')[0] == 'HTTPRequest') {
-            let field = this.httpFields.find(f => f['@stepId'] == this.selectedField.split('|')[1] && f['@id'] == this.selectedField.split('|')[2]);
+            let field = this.httpFields.find((f) => f['@stepId'] == this.selectedField.split('|')[1] && f['@id'] == this.selectedField.split('|')[2]);
 
             delete this.condition['@FormInputID'];
             delete this.condition['@VersionStepID'];
@@ -311,7 +311,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         }
         else if (this.selectedField.split('|')[0] == 'HTTPResponse') {
 
-            let field = this.outputFields.find(f => f.StepId == this.selectedField.split('|')[1] && f.Id == this.selectedField.split('|')[2]);
+            let field = this.outputFields.find((f) => f.StepId == this.selectedField.split('|')[1] && f.Id == this.selectedField.split('|')[2]);
             console.log(this.selectedField, this.outputFields, this.httpFields, field);
 
             delete this.condition['@FormInputID'];
@@ -417,8 +417,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         }
 
         this.operators = [];
-        ops.forEach(o => {
-            let ix = this.allowedOperators.findIndex(a => a.value == o);
+        ops.forEach((o) => {
+            let ix = this.allowedOperators.findIndex((a) => a.value == o);
             if (ix > -1) {
                 this.operators.push(this.allowedOperators[ix]);
             }
@@ -473,7 +473,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
     search(e: any) {
         this.workflowService.getIssueObjectSuggestions(e.query)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.suggestions = r;
             });
     }
@@ -482,7 +482,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         this.condition['@Value'] = e;
 
         if (this.selectedType == 'lookup' || this.selectedType == 'list') {
-            let lookup = this.lookups.find(l => l.value == e);
+            let lookup = this.lookups.find((l) => l.value == e);
 
             this.condition['@ValueLabel'] = lookup == null ? e : lookup.label;
         } else {

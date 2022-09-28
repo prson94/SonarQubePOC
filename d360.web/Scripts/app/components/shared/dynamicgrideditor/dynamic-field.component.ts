@@ -112,12 +112,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     searchTags(q: any) {
         this.autoCompleteSelected.emit(null);
         this.tagService.searchTags(q.query, this.objectID)
-            .subscribe(response => {
+            .subscribe((response) => {
                 this.suggestionResultsArray = response;
                 this.suggestionResults = [];
-                this.suggestionResultsArray.forEach(x => this.suggestionResults.push(x.name));
+                this.suggestionResultsArray.forEach((x) => this.suggestionResults.push(x.name));
 
-                this.suggestionResultsArray.forEach(s => {
+                this.suggestionResultsArray.forEach((s) => {
                     if (s.name.toLowerCase() == this.field.Value.toLowerCase()) {
                         this.autoCompleteSelected.emit(s);
                     }
@@ -131,9 +131,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         this.doesAssetExists = false;
 
         this.tagService.searchTags(this.field.Value, this.objectID, true)
-            .subscribe(response => {
+            .subscribe((response) => {
 
-                response.forEach(s => {
+                response.forEach((s) => {
                     if (s.name.toLowerCase() == this.field.Value.toLowerCase()) {
                         this.doesAssetExists = true;
                     }
@@ -145,7 +145,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getColorItemsAsSelectItem(items: any[]): SelectItem[] {
         if (items.length > 0) {
-            return items.filter(x => x.Text != this.chooseText).map((x) => {
+            return items.filter((x) => x.Text != this.chooseText).map((x) => {
                 try {
 
                     let colorobj = JSON.parse(x.Text);
@@ -160,7 +160,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getColorItemsAsEditorItem(items: any[]): EditorDropDownItem[] {
         if (items.length > 0) {
-            let its = items.filter(x => x.Text != this.chooseText).map((x) => {
+            let its = items.filter((x) => x.Text != this.chooseText).map((x) => {
                 try {
                     let colorobj = JSON.parse(x.Text);
                     if (colorobj)
@@ -175,7 +175,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getLabelByID(id) {
         if (id && this.field.Items && this.field.Items.length > 0) {
-            let filterItems = this.field.Items.filter(x => x.value == id);
+            let filterItems = this.field.Items.filter((x) => x.value == id);
             if (filterItems.length > 0) {
                 return filterItems[0].label;
             }
@@ -185,7 +185,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getColorByID(id) {
         if (id && this.field.Items && this.field.Items.length > 0) {
-            let filterItems = this.field.Items.filter(x => x.value == id);
+            let filterItems = this.field.Items.filter((x) => x.value == id);
             if (filterItems.length > 0) {
                 return filterItems[0].title;
             }
@@ -193,7 +193,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         return "";
     }
     selectTag(event) {
-        var obj = this.suggestionResultsArray.filter(x => x.name == event)[0];
+        var obj = this.suggestionResultsArray.filter((x) => x.name == event)[0];
         this.autoCompleteSelected.emit(obj);
     }
 
@@ -210,7 +210,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             let contents = quill.getContents();
 
             if (contents != null && contents.ops != null) {
-                let content = contents.ops.find(i => i.insert != null && i.insert != '\n');
+                let content = contents.ops.find((i) => i.insert != null && i.insert != '\n');
 
                 if (content != null) {
                     this.field.Value = quill.container.querySelector('.ql-editor').innerHTML;
@@ -225,24 +225,24 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     ngOnInit() {
         if (this.field.FieldType != 'Link') {
-            this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe(data => {
+            this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe((data) => {
                 this.onFieldChanges(data);
             });
         }
 
         if (this.editorChange != null) {
-            this.editorChangeSub = this.editorChange.subscribe(e => this.onEditorChange(e));
+            this.editorChangeSub = this.editorChange.subscribe((e) => this.onEditorChange(e));
         }
 
         this.cascadeSub = this.cascadeService.cascadeMessage$.subscribe(
-            casc => {
+            (casc) => {
                 if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId == this.field.FieldTypeID) {
                     if (casc.parentListItemId != null && casc.parentListItemId.length > 0) {
                         //load the values for the list that is a child                    
                         this.field.Items = [];
 
                         return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).subscribe(
-                            res => {
+                            (res) => {
                                 if (this.field.UseColorControl)
                                     this.field.Items = this.getColorItemsAsSelectItem(res);
                                 else
@@ -293,7 +293,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             });
 
         this.relationSub = this.fieldsService.getRelationshipFieldItems(this.relationSource$)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.relationItemsLoading = false;
                 if (res != undefined) {
                     this.field.Items = res.results["items"];
@@ -320,12 +320,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         this.typeAheadSub = (this.field.DelayedLoadType == 'Predicate') ?
             this.fieldsService.getTypeaheadFilteredByPredicateItems(this.typeAheadSource$, this.selectedObject, this.selectedObjectID)
-                .subscribe(res => {
+                .subscribe((res) => {
                     this.field.Items = <any[]>res;
                     this.ref.markForCheck();
                 })
             : this.fieldsService.getTypeaheadItems(this.typeAheadSource$, this.field.UseColorControl)
-                .subscribe(res => {
+                .subscribe((res) => {
                     if (this.field.UseColorControl)
                         this.field.Items = this.getColorItemsAsEditorItem(res);
                     else
@@ -335,7 +335,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         if (this.field.DelayedLoadType == 'Predicate') {
             this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).subscribe(
-                res => {
+                (res) => {
                     this.field.Items = res.items;
                     this.filterException = res.exceptionMessage;
                     this.ref.markForCheck();
@@ -370,7 +370,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         }
 
         if (this.field.FieldType == 'Color') {
-            this.assetService.getAllColors().subscribe(x => {
+            this.assetService.getAllColors().subscribe((x) => {
                 this.defaultColorOptions = x;
                 this.ref.markForCheck();
             });
@@ -389,8 +389,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
 
         if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
-            if (this.field.Value == null && this.field.Items.some(x => x.Selected == true)) {
-                this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value);
+            if (this.field.Value == null && this.field.Items.some((x) => x.Selected == true)) {
+                this.field.Value = this.field.Items.filter((x) => x.Selected == true).map((x) => x.Value);
             }
 
             if (this.field.FieldType == 'Lookup' && this.field.Value == null) {
@@ -408,7 +408,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         if (this.field.FieldType == 'Lookup' && this.field.UseTypeahead) {
             if (this.field.Items != null && this.field.Items.length > 0) {
-                let sel: EditorDropDownItem = this.field.Items.find(i => i.Selected == true);
+                let sel: EditorDropDownItem = this.field.Items.find((i) => i.Selected == true);
 
                 this.loadTypeAheadValue = true;
                 this.typeAheadValue = sel;
@@ -728,7 +728,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             }
 
             for (let i = 0; i < this.relationItems.length; i++) { //associate the selection with the item in the table
-                let x = this.field.Items.findIndex(f => f.Value == this.relationItems[i].Value);
+                let x = this.field.Items.findIndex((f) => f.Value == this.relationItems[i].Value);
 
                 if (x > -1) {
                     this.relationItems[i] = this.field.Items[x];
@@ -737,7 +737,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             }
 
             this.relationItems = this.relationItems.slice();
-            this.field.Value = this.relationItems.map(i => i.Value).join(',');
+            this.field.Value = this.relationItems.map((i) => i.Value).join(',');
         } else {
             this.field.Value = null;
         }
@@ -797,10 +797,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
                 let selectedItems = field.Value.split(',');
 
-                field.Items.forEach(i => {
-                    let selected = selectedItems.findIndex(s => s == i.Value) > -1;
+                field.Items.forEach((i) => {
+                    let selected = selectedItems.findIndex((s) => s == i.Value) > -1;
                     if (selected) {
-                        let ix = this.field.Items.findIndex(r => r.Value == i.Value);
+                        let ix = this.field.Items.findIndex((r) => r.Value == i.Value);
 
                         if (ix > -1) {
                             let item = this.field.Items.slice()[ix];
@@ -813,7 +813,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     } else {
                         if (this.excludedRelationitems[field.FieldName] == null)
                             return;
-                        let ix = this.excludedRelationitems[field.FieldName].findIndex(r => r.Value == i.Value);
+                        let ix = this.excludedRelationitems[field.FieldName].findIndex((r) => r.Value == i.Value);
                         if (ix > -1) {
                             let item = this.excludedRelationitems[field.FieldName].slice()[ix];
                             this.excludedRelationitems[field.FieldName].splice(ix, 1);
@@ -826,7 +826,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         }
     }
     isRequired() {
-        return (this.field.Validations && this.field.Validations.some(x => x.rule == 'required') == true) || this.field.Required;
+        return (this.field.Validations && this.field.Validations.some((x) => x.rule == 'required') == true) || this.field.Required;
     }
 
     getName(item: string) {

@@ -120,7 +120,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
                     this.isLoading = false;
                 }
             },
-                err => {
+                (err) => {
                     this.isLoading = false;
                 }
             );

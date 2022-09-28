@@ -41,7 +41,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
 	}
 
 	ngOnInit() {
-		this.sub = this.route.params.subscribe(params => {
+		this.sub = this.route.params.subscribe((params) => {
 			this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, $localize`Workflow`);
 
 			let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
@@ -49,7 +49,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
 			this.baseAssetTypeUid = params["assetTypeUid"];
 
 			this.assetService.GetObjectUIDetailsForUid(this.baseAssetUid ?? this.baseAssetTypeUid)
-				.subscribe(res => {
+				.subscribe((res) => {
 					this.objectID = +res.ObjectID;
 					this.objectType = res.Object;
 					this.showMonitor = true;

@@ -138,7 +138,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     get globalFilterFields(): string[] {
-        return this.columns.map(c => c.datafield);
+        return this.columns.map((c) => c.datafield);
     }
 
     get assetEditorTitle(): string {
@@ -169,11 +169,11 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         });
 
         const subscription = this.simpleSearch.pipe(
-            map(event => event.target.value),
+            map((event) => event.target.value),
             debounceTime(1000),
             distinctUntilChanged(),
             mergeMap(
-                search => observableOf(search).pipe(delay(500))
+                (search) => observableOf(search).pipe(delay(500))
             )
         ).subscribe((data) => {
 			this.doSimpleSearch(me.dt, me.isLoading);
@@ -312,10 +312,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(this.gridObject.ID, this.gridObject.ObjectType).subscribe(
-            result => {
+            (result) => {
                 let statusField;
 
-                this.columns = result.Columns.filter(x => x.datafield != 'Name');
+                this.columns = result.Columns.filter((x) => x.datafield != 'Name');
                 this.filtercolumns = result.FilterColumns;
                 this.fields = result.Fields;
                 this.topLevelFilters = result.TopLevelFilterColumns;
@@ -325,7 +325,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     this.hasProfilingChange.emit(this.hasProfiling);
                 }
 
-                statusField = this.fields.find(x => x.apiName != null && x.apiName.toLowerCase() == "status");
+                statusField = this.fields.find((x) => x.apiName != null && x.apiName.toLowerCase() == "status");
 
                 if (statusField != null) {
                     this.showCertificationStatus = true;
@@ -355,7 +355,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     getFieldAPINameByOldName(oldname: string) {
-        return this.fields.find(x => x.name == oldname).apiName;
+        return this.fields.find((x) => x.name == oldname).apiName;
     }
 
 	_oldParamsJSON: string = '';
@@ -399,7 +399,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
         if (this.stateService.artifactTypeFilters.filters && this.stateService.artifactTypeFilters.filters.length > 0) {
             let expressions: string[] = [];
-            this.stateService.artifactTypeFilters.filters.forEach(f => {
+            this.stateService.artifactTypeFilters.filters.forEach((f) => {
                 expressions.push(f.getAsV2ApiFilter(this.filtercolumns));
             });
             params._filter = expressions.join(' and ');
@@ -410,7 +410,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
         if (this.stateService.artifactTypeFilters.relationships && this.stateService.artifactTypeFilters.relationships.length > 0) {
             let expressions: string[] = [];
-            this.stateService.artifactTypeFilters.relationships.forEach(f => {
+            this.stateService.artifactTypeFilters.relationships.forEach((f) => {
                 expressions.push(f.getAsV2ApiFilter());
             });
             if (expressions.length > 0) {
@@ -466,7 +466,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		const params = this.getParams();
 		this.assetSearchSub = this.assetService.getAssets(this.gridObject.AssetTypeUID, params, true)
             .pipe(debounceTime(200))
-			.subscribe(res => {
+			.subscribe((res) => {
 				this._oldParamsJSON = params.countUpdateFilters();
 
                 this.items = res.items;
@@ -512,7 +512,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     }
                 }
 
-                this.statusHasColor = this.items.filter(x => {
+                this.statusHasColor = this.items.filter((x) => {
                     let foundColorToken = false;
                     for (var prop in x) {
                         if (Object.prototype.hasOwnProperty.call(x, prop) && prop.toLowerCase() == "status") {
@@ -537,7 +537,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 this.isLoadingChange.emit(false);
                 this.changeDetectorRef.markForCheck();
             },
-                err => {
+                (err) => {
                     this.isLoading = false;
                     this.isLoadingChange.emit(false);
                     this.items = [];
@@ -657,7 +657,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     selectArtifact($event, artifact) {
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
-            .subscribe(res => {
+            .subscribe((res) => {
                 if (this.gridObject.ObjectType == StringConstants.ObjectArtifactType) {
 					this.itemUrl = SiteUrlHelpers.getAssetUrl(artifact.AssetUid);
                 }
@@ -727,7 +727,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         rightMenu.style.left = (event.offsetX) + 'px'; //correct
 
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
-            .subscribe(res => {
+            .subscribe((res) => {
 				if (this.gridObject.ObjectType == StringConstants.ObjectArtifactType) {
 					this.itemUrl = SiteUrlHelpers.getAssetUrl(artifact.AssetUid);
 				}

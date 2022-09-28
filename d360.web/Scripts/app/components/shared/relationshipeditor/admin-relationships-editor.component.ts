@@ -115,7 +115,7 @@ export class AdminRelationshipsEditor {
 
     private predicateChanged(value) {
         if (!value) return;
-        let predicate = this.predicates.find(p => p.value == value);
+        let predicate = this.predicates.find((p) => p.value == value);
         this.selectedPredicate = predicate;
         this.loadCardinalityOptions();
 
