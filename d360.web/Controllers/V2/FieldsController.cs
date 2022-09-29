@@ -2207,7 +2207,7 @@ namespace d360.web.Controllers.V2
 				{
 					string sql = "";
 
-					if (!atype.Hierarchical)
+					if (atype.Class != AssetTypeClass.Model && atype.Class != AssetTypeClass.Policy)
 					{
 						if (!string.IsNullOrEmpty(filter))
 						{
@@ -2286,7 +2286,7 @@ namespace d360.web.Controllers.V2
 					var resultsAssets = await Company.Connection.QueryMultipleAsync(cmd);
 					var items = resultsAssets.Read<DDLSelectItem>().ToList();
 
-					if (atype.Hierarchical && (skip == null || skip == 0))
+					if ((atype.Class == AssetTypeClass.Model || atype.Class == AssetTypeClass.Policy) && (skip == null || skip == 0))
 					{
 						items = items.Prepend(new DDLSelectItem { text = "- Root -", value = Guid.Empty.ToString() }).ToList();
 					}
