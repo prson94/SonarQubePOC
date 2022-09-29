@@ -64,7 +64,7 @@ export class ResourceFollowingGridTile implements OnInit, OnChanges {
     load() {
         this.isLoading = true;
         this.resourcesService.getFollowingByResourceByType(this.resourceId, this.objectType, this.objectId)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.items = r;
                 FormHelper.convertToNgUrl(this.items, 'Url');
                 //console.log(r);

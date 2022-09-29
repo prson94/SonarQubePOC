@@ -51,7 +51,7 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
     ngOnInit() {
         this.valueChanged
             .pipe(debounceTime(this.debounce), distinctUntilChanged())
-            .subscribe(obj => {
+            .subscribe((obj) => {
                 this.performsearch();
             });
     }

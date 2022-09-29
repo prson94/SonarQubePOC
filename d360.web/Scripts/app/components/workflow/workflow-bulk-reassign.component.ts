@@ -48,7 +48,7 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
         this.field.MultiSelect = false;
 
         this.resourcesService.getResource(this.model.OriginalAssigneeResourceID)
-            .subscribe(response => {
+            .subscribe((response) => {
                 this.items = response.items;
                 if (this.items.length > 0) {
                     this.resource = this.items[0];
@@ -76,7 +76,7 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
     save() {
         this.isLoading = true;
         this.workflowService.postWorkflowBulkReassign(this.model)
-            .subscribe(response => {
+            .subscribe((response) => {
                 this.isLoading = false;
                 if (response.type != null && response.type == 'success') {
                     this.showMessageForResult(this.messagesService, response);

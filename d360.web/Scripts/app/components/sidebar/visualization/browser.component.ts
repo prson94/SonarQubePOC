@@ -31,7 +31,7 @@ export class BrowserComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.uid = params['assetUid'];
 			this.buildSecondaryNavigationByAssetUid(this.uid);
         });

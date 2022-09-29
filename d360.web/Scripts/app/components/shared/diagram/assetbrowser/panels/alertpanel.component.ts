@@ -54,10 +54,10 @@ export class AssetBrowserAlertPanelComponent implements OnInit, AfterViewInit, O
 
             let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
 
-            this.assets.forEach(a => {
+            this.assets.forEach((a) => {
                 model.assets.push({ uid: a });
             });
-            this.browserService.getAlertsByAsset(model).subscribe(alerts => {
+            this.browserService.getAlertsByAsset(model).subscribe((alerts) => {
                 if (alerts) {
                     this.alerts = alerts;
                 }

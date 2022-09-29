@@ -187,7 +187,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.tagUid = params['tagUid'];
 
             this.secondaryNavService.clearCurrentObject();
@@ -196,7 +196,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             this.isLoading = true;
 
             this.loadPermissions(this.permissionsService, "Tag", this.tagUid)
-                .then(p => {
+                .then((p) => {
                     if (this.hasModifyAssetPermissions() && this.hasDeleteAssetPermissions()) {
                         this.isAdmin = true;
                     }
@@ -221,7 +221,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     load() {
         this.isLoading = true;
         this.tagsService.getTagByUid(this.tagUid.toLocaleString())
-            .subscribe(result => {
+            .subscribe((result) => {
                 if (result) {
                     this.tag = result;
                     this.setObjectInfo('Tag', this.tagUid);
@@ -263,8 +263,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         if (this.tagUsage.length > 0) {
                             this.selection = this.tagUsage[0];
                         }
-                        this.tagUsage.forEach(tu => {
-                            tu.TagsAsString = tu.Tags.map(x => x.Value).join('|');
+                        this.tagUsage.forEach((tu) => {
+                            tu.TagsAsString = tu.Tags.map((x) => x.Value).join('|');
                         });
                         this.readOnlyFullListOfTagUsage = [...this.tagUsage];
                         this.isLoading = false;
@@ -292,7 +292,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                 }
 
             },
-                err => {
+                (err) => {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
                 });
 
@@ -412,11 +412,11 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         let tagForDelete: TagType[] = [];
         tagForDelete.push(this.tag);
         this.tagsService.deleteTags(tagForDelete).
-            subscribe(result => {
+            subscribe((result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.onActionBackClick();
 
-            }, err => this.showMessageForResult(this.messagesService, err));
+            }, (err) => this.showMessageForResult(this.messagesService, err));
     }
 
     getSidePanelWidth(): number {
@@ -445,7 +445,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         }
 
         this.tagsService.saveTag(event.item)
-            .subscribe(result => {
+            .subscribe((result) => {
                 let msg: string = '';
                 if (event.item.uid == undefined) {
                     msg = $localize`${result.Value} succesfully created`;
@@ -458,8 +458,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                 this.secondaryNavService.setCurrentArea(this.tag.Value, 'fa-tag', $localize`Tagged Assets`);
                 this.setBrowserTitle(this.titleService, this.tag.Value);
 
-                this.tagUsage.forEach(detail => {
-                    detail.Tags.forEach(t => {
+                this.tagUsage.forEach((detail) => {
+                    detail.Tags.forEach((t) => {
                         if (Number(t["uid"]) === Number(this.tagUid)) {
                             t.Value = event.item.Value;
                         }
@@ -474,7 +474,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
     consolidateTags(parentUid: string, childrenUids: string[]) {
         this.tagsService.consolidateTags(parentUid, childrenUids)
-            .subscribe(result => {
+            .subscribe((result) => {
 
                 if (result) {
                     this.messagesService.showInfoMessage($localize`Success`, $localize`Tag consolidation succesfull`);
@@ -482,7 +482,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                     this.openTagPageByID(parentUid);
 
                 }
-            }, err => {
+            }, (err) => {
                 this.showMessageForResult(this.messagesService, err);
 
             });

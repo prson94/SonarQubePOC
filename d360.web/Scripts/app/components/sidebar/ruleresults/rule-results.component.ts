@@ -43,7 +43,7 @@ export class RuleResultsComponent extends BaseComponent implements OnInit, OnDes
         this.isLoading = true;
         this.showBoard = false;
 
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.Uid = params['assetUid'];
 
             this.isLoading = false;

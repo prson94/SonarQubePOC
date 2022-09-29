@@ -93,6 +93,6 @@ export class PortalService {
     }
 
     getPortalContent$(name: string | undefined) {
-        return this.registeredContent$.pipe(map(x => x.get(name)));
+        return this.registeredContent$.pipe(map((x) => x.get(name)));
     }
 }

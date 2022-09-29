@@ -116,7 +116,7 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
         this.isLoading = true;
 
 		this.workflowService.getIssuesByAssetUid(this.uid)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.issues = result;
                 if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
                 this.isLoading = false;

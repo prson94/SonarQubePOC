@@ -3,9 +3,9 @@
 export class AdvancedFiltersHelper {
 
     static parseFiltersFromTableFilters(data, fields: GridField[]): string {
-        var props = Object.keys(data).filter(x => x != 'global');
+        var props = Object.keys(data).filter((x) => x != 'global');
         var ret: string = '';
-        props.forEach(prop => {
+        props.forEach((prop) => {
             if (prop != 'global') {
                 let fieldName = prop;
                 var value = this.escapeString(data[prop].value);

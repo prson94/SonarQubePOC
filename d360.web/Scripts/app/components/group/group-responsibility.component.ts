@@ -68,7 +68,7 @@ export class GroupResponsibilityComponent extends BaseComponent implements OnCha
         this.isLoading = true;
 
         this.groupService.getResponsibilityBreakdownByGroup(this.group.ID).subscribe(
-            r => {
+            (r) => {
                 this.items = r;
 
                 if (this.items && this.items.length > 0) {

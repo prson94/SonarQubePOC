@@ -47,9 +47,9 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
     search(event) {
         var q = this.linkLabel ? this.linkLabel : '';
         this.connectorLabelService.getAvailableLabels(q)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.labels = [];
-                res.forEach(x => {
+                res.forEach((x) => {
                     this.labels.push(x.Value);
                 });
                 this.cdRef.detectChanges();
@@ -93,7 +93,7 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
             this.createLabelSub.unsubscribe();
         var currentLinkData = this.linkData;
         this.createLabelSub = this.connectorLabelService.createOrGetLabel(this.linkLabel)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.linkLabel = res.Value;
                 this.linkDataChange.emit({ label: { uid: res.uid, Value: res.Value }, data: currentLinkData });
             });

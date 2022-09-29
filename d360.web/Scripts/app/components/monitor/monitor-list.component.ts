@@ -135,13 +135,13 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
 
         this.isLoading = true;
         let typeList = "";
-        this.workflowTypes.forEach(s => typeList += s.toString() + ',');
+        this.workflowTypes.forEach((s) => typeList += s.toString() + ',');
         this.workflowService.getWorkflowsByTypeList(typeList, this.useFilteredObject ? this.objectType : null, this.useFilteredObject ? this.objectId : null)
             .pipe(
-                 map(r => {
+                 map((r) => {
                     this.workflowItems = r;
                     //console.log(this.useFilteredObject, this.objectType, this.objectId, this.workflowItems);
-                    r.forEach(i => {
+                    r.forEach((i) => {
                         if (i.ResponsibleUser != null && i.ResponsibleUser.constructor === Array) {
                             i.ResponsibleUser = i.ResponsibleUser[0];
                         }
@@ -151,7 +151,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
                     if (this.objectType != null && this.objectId != null) {
                         //artifact type
                         if (this.objectType.toLowerCase().endsWith('type')) {
-                            this.workflowItems = this.workflowItems.filter(i => i.Object == this.objectType && i.ObjectID == this.objectId);
+                            this.workflowItems = this.workflowItems.filter((i) => i.Object == this.objectType && i.ObjectID == this.objectId);
                         } else if (this.useFilteredObject) {
                             //filtering is done on the server for specific objects. If the list comes back null, the specific object is not present
                             this.workflowItems = this.workflowItems.filter((i) => i.ObjectNames != null);
@@ -161,7 +161,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
                 map(() => {
                     let filteredTypeList = [];
                     if (this.workflowItems != null) {
-                        this.workflowItems.forEach(w => filteredTypeList.push(w.TypeID));
+                        this.workflowItems.forEach((w) => filteredTypeList.push(w.TypeID));
                         this.filteredTypes.emit(filteredTypeList);
                     }
 

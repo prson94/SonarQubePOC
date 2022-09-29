@@ -90,7 +90,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.canViewUsers = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
 
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.workflowId = +params['workflowId'];
             this.workflowItemStepId = +params['stepId'];
             this.workflowItemId = +params['itemId'];
@@ -144,7 +144,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         this.isLoading = true;
         this.workflowService.getWorkflowForm(this.workflowId, this.workflowItemStepId)
             .pipe(
-                map(res => {
+                map((res) => {
                     this.title = res.Title;
                     this.description = res.Description;
                     this.fields = res.Fields;
@@ -177,7 +177,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                     window.setTimeout(() => {
                         this.fieldsComponent.setValidators();
                     }, 500);
-                })).subscribe(() => { }, error => {
+                })).subscribe(() => { }, (error) => {
                     this.isLoading = false;
                     this.isCompleted = false;
                     this.isItemDeleted = true;
@@ -199,14 +199,14 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         this.isLoading = true;
         if (this.reassignType == 'object') {
             this.workflowService.reassignObject(this.workflowItemId, this.workflowId, this.selectedReassignmentAsset.ObjectID, this.selectedReassignmentAsset.Object, this.workflowItemStepId)
-                .subscribe(result => {
+                .subscribe((result) => {
                     this.showMessageForResult(this.messagesService, result, $localize`Successfully Assigned`);
                     this.isLoading = false;
                     this.isCompleted = true;
                 });
         }
         else if (this.reassignType == 'resource') {
-            this.workflowService.reassignUser(this.workflowItemStepId, this.selectedReassignResource, this.clearAssignments).subscribe(result => {
+            this.workflowService.reassignUser(this.workflowItemStepId, this.selectedReassignResource, this.clearAssignments).subscribe((result) => {
                 this.showMessageForResult(this.messagesService, result, $localize`Successfully Assigned`);
                 this.isLoading = false;
                 this.isCompleted = true;
@@ -226,7 +226,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private loadResources() {
-        this.resourcesService.getResources(false).subscribe(result => {
+        this.resourcesService.getResources(false).subscribe((result) => {
             this.resources = result;
         });
     }

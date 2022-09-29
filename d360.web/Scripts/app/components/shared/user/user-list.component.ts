@@ -70,7 +70,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     private destroy = new Subject<void>();
 
     get globalFilterFields(): string[] {
-        let f = this.columns.map(c => c.datafield);
+        let f = this.columns.map((c) => c.datafield);
         return f;
     }
 
@@ -153,7 +153,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
         this.getFieldsDefinition();
 
-        this.settingsService.getAuthenticationModel().subscribe(res => {
+        this.settingsService.getAuthenticationModel().subscribe((res) => {
             if (res.model == 'forms') {
                 this.allowPasswordReset = true;
             }
@@ -238,7 +238,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
 
         this.usersSub = this.resourcesService.getResourceLazy(this.getParams()).pipe(
             debounceTime(3000))
-            .subscribe(result => {
+            .subscribe((result) => {
                 if (result) {
                     this.items = result.items;
                     this.totalRecords = result.total;
@@ -303,7 +303,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     getApiName(fieldName: string): string {
-        return this.fields.find(x => x.name == fieldName).apiName;
+        return this.fields.find((x) => x.name == fieldName).apiName;
     }
 
     public lazyLoadUsers(event: LazyLoadEvent) {
@@ -363,7 +363,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.isLoading = true;
         this.resourcesService.saveResource(user, true, false)
             .subscribe(
-                result => {
+                (result) => {
                     if (result.Success) {
                         result.Message = null;
                         this.showEditor = false;
@@ -382,11 +382,11 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     deleteUser(id: number) {
         this.resourcesService.deleteResource(this.selected.uid)
             .subscribe(
-                result => {
+                (result) => {
                     this.showMessageForResult(this.messagesService, result, 'User successfully deleted');
                     this.showDelete = false;
                     if (result.type !== 'error') {
-                        this.items = this.items.filter(x => x.ID !== id);
+                        this.items = this.items.filter((x) => x.ID !== id);
                     }
                     this.changeDetectorRef.markForCheck();
                 }
@@ -397,7 +397,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         if (!this.selected.ResourceID) {
             this.messagesService.showError("No User Selected", "Select a user to reset there password");
         }
-        this.resourcesService.resetResourcesPassword(this.selected.ResourceID).subscribe(result => {
+        this.resourcesService.resetResourcesPassword(this.selected.ResourceID).subscribe((result) => {
             this.showMessageForResult(this.messagesService, result);
             this.showResetPwd = false;
         });

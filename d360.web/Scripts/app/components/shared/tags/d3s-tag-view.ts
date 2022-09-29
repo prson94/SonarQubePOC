@@ -85,12 +85,12 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         this.theDeleteCallback = this.deleteTags.bind(this);
         this.assignTagsFromData();
         this.genericMessageServiceSub = this.genericMessageService.getMessage().subscribe(
-            message => {
+            (message) => {
                 if (message) {
                     if (message.messageType === GenericMessageType.AddTag) {
                         if ((message.assetUIDList && message.assetUIDList.indexOf(this.assetUID) > -1) || message.uid === this.assetUID) {
                             let tagExists = false;
-                            this.tags.forEach(x => {
+                            this.tags.forEach((x) => {
                                 if (x.Value == message.data) {
                                     tagExists = true;
                                 }
@@ -117,12 +117,12 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         if (this.data) {
 
             if (typeof this.data == 'string') {
-                this.data.split('|').forEach(t => {
+                this.data.split('|').forEach((t) => {
                     this.tags = this.tags.concat([{ Value: t, uid: null }]);
                 });
             } else if (typeof this.data == 'object') {
-                if (Array.isArray(this.data) && this.data.every(item => typeof item === "string")) {
-                    this.data.forEach(t => {
+                if (Array.isArray(this.data) && this.data.every((item) => typeof item === "string")) {
+                    this.data.forEach((t) => {
                         this.tags.push({ Value: t, uid: null });
                     });
                 } else {
@@ -186,7 +186,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         clearTimeout(this.timeouthandle);
         this.timeouthandle = window.setTimeout(() => {
             this.tagService.searchTagsTypeAhead(searchValue, 10)
-                .subscribe(res => {
+                .subscribe((res) => {
                     if (res && res.length > 0) {
                         this.searchResults = res.sort((a, b) => a.name.localeCompare(b.name));
                         this.tagsLoading = false;
@@ -198,21 +198,21 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                         this.ref.markForCheck();
                     }
 
-                    this.searchResults.forEach(x => x.Value = x.name);
+                    this.searchResults.forEach((x) => x.Value = x.name);
 
-                }, err => this.error = err);
+                }, (err) => this.error = err);
         }, 400);
     }
 
     getTags() {
         this.isLoading = true;
-        this.tagService.getTagsList().subscribe(res => {
+        this.tagService.getTagsList().subscribe((res) => {
             if (res && res.length > 0) {
                 this.tags = res.sort((a, b) => a.Value.localeCompare(b.Value));
                 if (this.tags.length > 0) this.selected.push(this.tags[0]);
             }
             this.isLoading = false;
-        }, err => this.error = err);
+        }, (err) => this.error = err);
     }
 
     openDeleteModal(tag: any) {
@@ -253,7 +253,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             tag.TagName = event.Value;
             tags = tags.concat([tag]);
         }
-        this.tags.forEach(x => {
+        this.tags.forEach((x) => {
             if (x.Value == event.Value) {
                 this.existingTag = true;
                 this.showEditor = false;
@@ -286,7 +286,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 .subscribe((result) => {
                     if (result == 200) {
                         this.tagService.createAssetTag(tags)
-                            .subscribe(result => {
+                            .subscribe((result) => {
                                 let msg: string = '';
                                 if (result != null) {
                                     msg = $localize`${event.Value} successfully added to ` + (tags.length === 1 ? $localize`Asset` : $localize`Assets`);
@@ -314,14 +314,14 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                     (error) => {
                         if (error.status == 404) {
                             this.tagService.saveTag(event)
-                                .subscribe(result => {
+                                .subscribe((result) => {
                                     let msg: string = '';
                                     if (event.uid == undefined) {
                                         msg = $localize`${event.Value} successfully created`;
                                     }
                                     this.showMessageForResult(this.messagesService, result, msg);
                                     this.tagService.createAssetTag(tags)
-                                        .subscribe(result => {
+                                        .subscribe((result) => {
                                             let msg: string = '';
                                             if (event.uid == undefined) {
                                                 msg = $localize`${event.Value} successfully added to ` + (tags.length === 1 ? $localize`Asset` : $localize`Assets`);
@@ -383,7 +383,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         this.tagID = selectedTag.uid;
 
         this.tagService.deleteAssetTag(tags).
-            subscribe(result => {
+            subscribe((result) => {
                 let msg: string = '';
                 msg = $localize`Tag successfully removed`;
                 this.showMessageForResult(this.messagesService, result, msg);
@@ -400,7 +400,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 this.tagsChanged.emit();
                 this.deletingTag = false;
                 this.ref.markForCheck();
-            }, err => {
+            }, (err) => {
                 this.showMessageForResult(this.messagesService, err);
                 this.deletingTag = false;
             });
@@ -426,7 +426,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                     if (typeof NodeList.prototype.forEach === "function") return false;
                     tagElements.forEach = Array.prototype.forEach;
                 })();
-                this.tags.forEach(tag => {
+                this.tags.forEach((tag) => {
                     if (this.assetUIDList) {
                         this.assetUIDList.forEach((uid) => { this.checkIfTagOwner(tagElements, tag, uid); });
                     } else {
@@ -440,25 +440,25 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     checkIfTagOwner(tagElements, tag, assetUid) {
         if (tag.TooltipID) {
             this.tagService.getAssetTagDetails(tag.TooltipID, assetUid).
-                subscribe(result => {
+                subscribe((result) => {
                     this.showDeleteOnOwnedTags(tagElements, tag, result);
-                }, err => this.showMessageForResult(this.messagesService, err));
+                }, (err) => this.showMessageForResult(this.messagesService, err));
         } else {
             this.tagService.getAssetTagOwnerByName(tag.Value, assetUid).
-                subscribe(result => {
+                subscribe((result) => {
                     this.showDeleteOnOwnedTags(tagElements, tag, result);
-                }, err => this.showMessageForResult(this.messagesService, err));
+                }, (err) => this.showMessageForResult(this.messagesService, err));
         }
     }
 
     showDeleteOnOwnedTags(tagElements, tag, createdBy) {
         tagElements.filter = Array.prototype.filter;
-        var showDelete = tagElements.filter(te => te.children[0].innerText.trim() == tag.Value.trim());
+        var showDelete = tagElements.filter((te) => te.children[0].innerText.trim() == tag.Value.trim());
         if (showDelete.length == 1) {
             if (createdBy == CurrentResourceID)
                 this.showDeleteOption = true;
             if (createdBy != CurrentResourceID) {
-                tagElements.forEach(e => {
+                tagElements.forEach((e) => {
                     if (e.children[0].innerText.trim() == tag.Value.trim()) {
                         e.children[1].parentElement.removeChild(e.children[1]);
                     }
@@ -497,7 +497,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     private getParentForResizing(element: HTMLElement, tags: string): HTMLElement {
         var searchFor = tags.split(',');
         var el = null;
-        searchFor.forEach(tagName => {
+        searchFor.forEach((tagName) => {
             if (element.parentElement.tagName == tagName) {
                 el = element.parentElement;
             }
@@ -534,7 +534,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         if (!input) {
             return item;
         }
-        return item.replace(new RegExp(input, "gi"), match => {
+        return item.replace(new RegExp(input, "gi"), (match) => {
             return '<span style="background: #F5FF57;">' + match + '</span>';
         });
     }
@@ -543,14 +543,14 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         this.isTooltipLoaded = false;
         this.tooltipValue = `<i class="fa fa-spinner fa-spin fa-2x"></i>`;
         this.tagService.getTagTooltip(tag.uid, this.assetUID, tag.Value)
-            .subscribe(t => {
+            .subscribe((t) => {
                 if (t.length > 0) {
                     this.tagTooltip = t[0];
                 } else {
                     this.tagTooltip = new TagType();
                 }
 
-                this.tags.forEach(x => {
+                this.tags.forEach((x) => {
                     if (x.Value == tag.Value) {
                         if (!x.uid) {
                             x.uid = t[0].TagUid;

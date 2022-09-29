@@ -57,7 +57,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     ngOnInit() {
-		this.subBreadcrumb = this.breadcrumbService.breadcrumbs$.subscribe(b => {
+		this.subBreadcrumb = this.breadcrumbService.breadcrumbs$.subscribe((b) => {
 			this.favoriteToSend = new FavoriteApiModel();
 			this.favoriteToSend.Name = b.text;
 			this.favoriteToSend.Id = b.objectId;
@@ -67,7 +67,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
 
     ngOnChanges(changes: SimpleChanges) {
         if ('favItems' in changes) {
-            this.favoriteRoutesSet = new Set(this.favItems.map(f => f.Route));
+            this.favoriteRoutesSet = new Set(this.favItems.map((f) => f.Route));
         }
 
         this.ref.markForCheck();
@@ -105,7 +105,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
 		this.favoriteToSend.Route = this.currentUri;
 		
 		this.favoritesService.toggleFavoriteV2(this.favoriteToSend).subscribe(
-            fav => {
+            (fav) => {
                 this.headerActionsService.emitFavoritesChange();
                 this.isLoading = false;
                 this.ref.markForCheck();

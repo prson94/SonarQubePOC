@@ -99,11 +99,11 @@ export class SearchStateService extends BaseObservableService {
             Size: this._query.Size,
             SearchConnector: this._query.SearchConnector,
             SearchTypes: this._searchTypes,
-            CheckTreeKeys: (this._initial || this.selectedFilters == undefined) ? this._checkTreeKeys : this.selectedFilters.map(f => new SearchCheckTreeVal(f.key, f.type)),
+            CheckTreeKeys: (this._initial || this.selectedFilters == undefined) ? this._checkTreeKeys : this.selectedFilters.map((f) => new SearchCheckTreeVal(f.key, f.type)),
             AdvancedFilters: this.advancedFilters,
             Querytime: new Date()
         });
-        this._checkTreeKeys = (state.CheckTreeKeys == null) ? state.SearchTypes.map(k => new SearchCheckTreeVal(k, "category")) : state.CheckTreeKeys;
+        this._checkTreeKeys = (state.CheckTreeKeys == null) ? state.SearchTypes.map((k) => new SearchCheckTreeVal(k, "category")) : state.CheckTreeKeys;
         SearchSession.putState(state);
     }
 
@@ -191,7 +191,7 @@ export class SearchStateService extends BaseObservableService {
 
         if (this._initial) {
             if (this._checkTreeKeys === null) {
-                this._checkTreeKeys = this._searchTypes.map(k => new SearchCheckTreeVal(k, "category"));
+                this._checkTreeKeys = this._searchTypes.map((k) => new SearchCheckTreeVal(k, "category"));
             }
             this._initial = false;
             types = this._checkTreeKeys
@@ -278,7 +278,7 @@ export class SearchStateService extends BaseObservableService {
         this.AggSub$ = this.AggQuery$.pipe(
             debounceTime(this.debounceValue),
             distinctUntilChanged(this.compareQueries),
-            tap(val => { this._treeLoading.next(true); }),
+            tap((val) => { this._treeLoading.next(true); }),
             switchMap((aggQuery) => this.searchService.getSearchResultsByQuery(aggQuery).pipe(
                 catchError((err) => {
                     if (err === "ConnectionError") {
@@ -329,7 +329,7 @@ export class SearchStateService extends BaseObservableService {
         this.MainSub$ = this.MainQuery$.pipe(
             debounceTime(this.debounceValue),
             distinctUntilChanged(this.compareQueries),
-            tap(val => { this._loading.next(true); }),
+            tap((val) => { this._loading.next(true); }),
             switchMap((mainQuery) => this.searchService.getSearchResultsByQuery(mainQuery).pipe(
                 catchError((err) => {
                     if (err === "ConnectionError") {
@@ -371,7 +371,7 @@ export class SearchStateService extends BaseObservableService {
      * @param category
      */
     private getDisplayLookup(category: string) {
-        let type = this.searchTypes.find(t => t.value == category);
+        let type = this.searchTypes.find((t) => t.value == category);
         return (type == undefined) ? category : type.title;
     }
 

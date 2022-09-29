@@ -42,7 +42,7 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
         this.isLoading = true;
         this.showBoard = false;
 
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.assetUid = params["assetUid"];
             this.isLoading = false;
             this.showBoard = true;

@@ -24,7 +24,7 @@ export class D3SSortIcon implements OnInit, OnDestroy {
     @Output() changeCallback = new EventEmitter();
 
     constructor(public dt: Table) {
-        this.subscription = this.dt.tableService.sortSource$.subscribe(sortMeta => {
+        this.subscription = this.dt.tableService.sortSource$.subscribe((sortMeta) => {
             this.updateSortState();
         });
     }

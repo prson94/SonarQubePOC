@@ -56,7 +56,7 @@ export class AssetGridCustomExportComponent extends BaseComponent implements OnI
 
     private load() {
         this.isLoading = true;
-        this.exportTempalteService.getExportTemplatesForAssetType(this.gridObject.AssetTypeUID).subscribe(res => {
+        this.exportTempalteService.getExportTemplatesForAssetType(this.gridObject.AssetTypeUID).subscribe((res) => {
             this.isLoading = false;
             this.exportOptions = res;
             this.changeDetectorRef.markForCheck();

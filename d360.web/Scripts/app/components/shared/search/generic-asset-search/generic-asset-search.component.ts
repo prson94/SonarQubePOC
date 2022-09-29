@@ -142,7 +142,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     private resolveAssetTimeout = null;
     private resolveAssetSegments() {
         var itemsToResolve = [];
-        this.selected.forEach(item => {
+        this.selected.forEach((item) => {
             if (!item.Segments) itemsToResolve.push({ uid: item.Uid, typeUid: item.AssetTypeUid });
         });
         let groups = itemsToResolve.reduce((r, a) => {
@@ -151,13 +151,13 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         }, {});
 
         Object.keys(groups).forEach((key) => {
-            var assets = groups[key].map(x => x.uid);
+            var assets = groups[key].map((x) => x.uid);
             var params = { _assetUid: assets.join(','), includeSegments: true };
-            this.assetService.getAssets(key, params).subscribe(res => {
+            this.assetService.getAssets(key, params).subscribe((res) => {
                 var items = res.items;
                 if (items) {
-                    items.forEach(asset => {
-                        var update = this.selected.find(x => x.Uid == asset.AssetUid && x.AssetTypeUid == asset.AssetTypeUid);
+                    items.forEach((asset) => {
+                        var update = this.selected.find((x) => x.Uid == asset.AssetUid && x.AssetTypeUid == asset.AssetTypeUid);
                         update.Segments = asset.Segments;
                         if (!asset.Segments) {
                             update.Segments = [];
@@ -173,13 +173,13 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     private prePopulate() {
         if (this.prepopulatedResults && this.prepopulatedResults.length > 0) {
             this.searchresults = [];
-            this.prepopulatedResults.forEach(pr => {
+            this.prepopulatedResults.forEach((pr) => {
                 this.searchresults.push({ AssetTypeName: pr.AssetTypeName, AssetTypeIcon: pr.AssetTypeIcon, AssetTypeUid: pr.AssetTypeUid, Uid: pr.Uid, Segments: pr.Segments, IsSelected: false });
                 this.ref.markForCheck();
             });
 
             var itemsToResolve = [];
-            this.searchresults.forEach(item => {
+            this.searchresults.forEach((item) => {
                 if (!item.Segments) itemsToResolve.push({ uid: item.Uid, typeUid: item.AssetTypeUid });
             });
             let groups = itemsToResolve.reduce((r, a) => {
@@ -188,13 +188,13 @@ export class AssetSearchComponent implements OnInit, OnChanges {
             }, {});
 
             Object.keys(groups).forEach((key) => {
-                var assets = groups[key].map(x => x.uid);
+                var assets = groups[key].map((x) => x.uid);
                 var params = { _assetUid: assets.join(','), includeSegments: true };
-                this.assetService.getAssets(key, params).subscribe(res => {
+                this.assetService.getAssets(key, params).subscribe((res) => {
                     var items = res.items;
                     if (items) {
-                        items.forEach(asset => {
-                            var update = this.searchresults.find(x => x.Uid == asset.AssetUid && x.AssetTypeUid == asset.AssetTypeUid);
+                        items.forEach((asset) => {
+                            var update = this.searchresults.find((x) => x.Uid == asset.AssetUid && x.AssetTypeUid == asset.AssetTypeUid);
                             if (update) {
                                 update.Segments = [];
                                 update.Segments = asset.Segments;
@@ -230,7 +230,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
     private isValidPhrase(phrase: string): boolean {
         if (!phrase || phrase.length == 0) return false;
-        return phrase.split('').some(character => '0123456789abcdefghijklmnopqrstuvwxyzABCEDEFGHIJKLMNOPQRSTUVWXYZ'.includes(character));
+        return phrase.split('').some((character) => '0123456789abcdefghijklmnopqrstuvwxyzABCEDEFGHIJKLMNOPQRSTUVWXYZ'.includes(character));
     }
 
 
@@ -258,11 +258,11 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
         this.isLoading = true;
         this.assetService.searchAssetPath(this.searchOption)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.searchresults = JSON.parse(JSON.stringify(result.items));
 
-                this.selected.forEach(s => {
-                    let ix = this.searchresults.findIndex(x => x.Uid == s.Uid);
+                this.selected.forEach((s) => {
+                    let ix = this.searchresults.findIndex((x) => x.Uid == s.Uid);
 
                     if (ix > -1) {
                         this.searchresults.splice(ix, 1);
@@ -273,8 +273,8 @@ export class AssetSearchComponent implements OnInit, OnChanges {
                 this.searchResultsCount = result.total;
                 this.numberOfPages = Math.ceil(result.total / result.pageSize);
 
-                this.searchresults.forEach(sr => {
-                    if (this.selected.some(x => x.Uid == sr.Uid)) {
+                this.searchresults.forEach((sr) => {
+                    if (this.selected.some((x) => x.Uid == sr.Uid)) {
                         sr.IsSelected = true;
                     }
                     else {
@@ -303,7 +303,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         }
         var item = this.searchresults[idx];
 
-        if (this.selected.some(x => x.Uid == item.Uid)) {
+        if (this.selected.some((x) => x.Uid == item.Uid)) {
 
             if (this.multiSelectStyle == CommonComponentSelectStyle.CheckBox) {
                 this.unselectByUID(item.Uid);
@@ -342,7 +342,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     }
 
     private unselectByUID(uid: string) {
-        this.unselect(this.selected.findIndex(x => x.Uid == uid));
+        this.unselect(this.selected.findIndex((x) => x.Uid == uid));
     }
 
     toggleFullPaths() {

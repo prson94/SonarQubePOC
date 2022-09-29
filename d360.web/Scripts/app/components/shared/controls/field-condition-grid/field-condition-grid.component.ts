@@ -53,7 +53,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
             this.visible = true;
         }
         else {
-            this.conditions.forEach(cond => {
+            this.conditions.forEach((cond) => {
                 if (!cond.hash) {
                     cond.hash = this.randstr('id');
                 }
@@ -64,11 +64,11 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         }
         this.tryAddNewCondition();
 
-        this.formGroup.valueChanges.subscribe(obs => {
+        this.formGroup.valueChanges.subscribe((obs) => {
             setTimeout(() => {
                 if (!this.conditions) return;
-                this.conditions.forEach(cond => {
-                    if (this.disabledValuesOperators.some(x => (x === +cond.operator || Operator[x] == <any>cond.operator))) {
+                this.conditions.forEach((cond) => {
+                    if (this.disabledValuesOperators.some((x) => (x === +cond.operator || Operator[x] == <any>cond.operator))) {
                         cond.disabled = true;
                     }
                     else
@@ -96,7 +96,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         if (changes && changes.fields && changes.fields.currentValue != changes.fields.previousValue) {
             this.fieldsSelect = [];
 
-            this.fields.forEach(f => {
+            this.fields.forEach((f) => {
                 this.fieldsSelect.push({
                     value: `${f.AssetTypeUid}.${f.Name}`,
                     label: f.FriendlyName
@@ -116,7 +116,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         while (this.conditions.length > 0)
             tempArr.push(this.conditions.pop());
 
-        var arr = tempArr.filter(x => x.field != item.field);
+        var arr = tempArr.filter((x) => x.field != item.field);
         while (arr.length > 0) {
             this.conditions.push(arr.pop());
         }
@@ -168,7 +168,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
                         control.indexOf(this.conditionPrefix + 'value_2_') !== -1) {
 
                         let shouldDelete = true;
-                        this.conditions.forEach(x => {
+                        this.conditions.forEach((x) => {
                             if (control.indexOf(x.hash) !== -1) {
                                 shouldDelete = false;
                             }
@@ -186,7 +186,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
     resetFormControls() {
         if (this.conditions) {
-            Object.keys(this.formGroup.controls).forEach(control => {
+            Object.keys(this.formGroup.controls).forEach((control) => {
                 if (control.startsWith(this.conditionPrefix)) {
                     if (control.indexOf(this.conditionPrefix + 'option_') !== -1
                         || control.indexOf(this.conditionPrefix + 'condition_') !== -1
@@ -235,7 +235,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
     }
 
     onConditionChange(event, condition: FieldCondition) {
-        if (this.disabledValuesOperators.some(x => (this.Operators[x] === event.value || this.Operators[x] === event.value))) {
+        if (this.disabledValuesOperators.some((x) => (this.Operators[x] === event.value || this.Operators[x] === event.value))) {
             condition.disabled = true;
         }
         else {
@@ -283,7 +283,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
     getFieldType(item: FieldCondition) {
         if (this.fields) {
             let fieldDataArray = item.field.split('.');
-            return this.fields.filter(x => x.AssetTypeUid === fieldDataArray[0] && x.Name === fieldDataArray[1])[0];
+            return this.fields.filter((x) => x.AssetTypeUid === fieldDataArray[0] && x.Name === fieldDataArray[1])[0];
         }
 
         return null;
@@ -291,10 +291,10 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
     getAvailableFields(item: FieldCondition) {
 
-        var allowedFields = this.fieldsSelect.filter(x => !this.conditions.some(c => c.field === x.value));
+        var allowedFields = this.fieldsSelect.filter((x) => !this.conditions.some((c) => c.field === x.value));
         if (item && item.field) {
             let fieldDataArray = item.field.split('.');
-            var field = this.fields.filter(x => x.AssetTypeUid == fieldDataArray[0] && x.Name == fieldDataArray[1])[0];
+            var field = this.fields.filter((x) => x.AssetTypeUid == fieldDataArray[0] && x.Name == fieldDataArray[1])[0];
             if (field) {
                 allowedFields.push({ value: `${field.AssetTypeUid}.${field.Name}`, label: field.FriendlyName });
                 allowedFields = allowedFields.sort((a, b) => a.label > b.label ? 1 : -1);

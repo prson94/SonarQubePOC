@@ -127,7 +127,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 
 	createBreadcrumbHierarchy(artifact: ArtifactType) {
 		if (artifact.ParentID) {
-			var detailsSub = this.artifactTypeService.getArtifactTypeDetails(artifact.ParentUid).subscribe(parent => {
+			var detailsSub = this.artifactTypeService.getArtifactTypeDetails(artifact.ParentUid).subscribe((parent) => {
 				this.artifactTypeHierarchy.unshift(parent);
 				if (parent.ParentID)
 					this.createBreadcrumbHierarchy(parent);
@@ -145,10 +145,10 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		this.currentAreaNameSubscription =
 			this.headerBreadcrumbService
 				.getAreaName('ArtifactType', this.artifactTypeHierarchy[0].ID)
-				.subscribe(result => {
+				.subscribe((result) => {
 					this.currentAreaName = result;
 					this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
-					this.artifactTypeHierarchy.forEach(x => {
+					this.artifactTypeHierarchy.forEach((x) => {
 						this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
 							x.Name,
 							SiteUrlHelpers.getAssetTypeUrl(x.AssetTypeUID),
@@ -162,7 +162,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 
 					});
 
-					var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe(res => {
+					var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe((res) => {
 						this.baseAssetTypeUid = this.artifactType.AssetTypeUID;
 						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.artifactType.HasDashboards });
 						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));

@@ -228,11 +228,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.diagram.nodeTemplateMap.add('finish', this.createTerminalNode(false));
         this.diagram.linkTemplateMap.add('', this.createDefaultLink());
 
-        this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
-        this.diagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
+        this.diagram.addDiagramListener('ChangedSelection', (e) => this.ChangedSelection(e));
+        this.diagram.addDiagramListener('LinkDrawn', (e) => this.LinkDrawn(e));
         this.diagram.addDiagramListener('PartCreated', () => this.checkHasMultipleInputs());
-        this.diagram.addDiagramListener('ExternalObjectsDropped', e => this.ExternalObjectsDropped(e));
-        this.diagram.addDiagramListener('ClipboardPasted', e => this.ClipboardPasted(e));
+        this.diagram.addDiagramListener('ExternalObjectsDropped', (e) => this.ExternalObjectsDropped(e));
+        this.diagram.addDiagramListener('ClipboardPasted', (e) => this.ClipboardPasted(e));
 
         this.diagram.grid.visible = false;
         this.diagram.grid.gridCellSize = new go.Size(24, 24);
@@ -266,7 +266,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.workflowFieldsService.clearUsedFields();
 
         this.formFields = [];
-        this.diagram.model.nodeDataArray.forEach(n => {
+        this.diagram.model.nodeDataArray.forEach((n) => {
 
             if (+(<NodeModel>n).activityType == WorkflowActivityType.Form
                 && (<NodeModel>n).fields != null
@@ -274,7 +274,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 && (<NodeModel>n).fields.form.field != null
                 && (<NodeModel>n).fields.form.field.length != null) {
 
-                (<NodeModel>n).fields.form.field.forEach(f => {
+                (<NodeModel>n).fields.form.field.forEach((f) => {
                     let ff = {};
                     ff['@id'] = f['@id'];
                     ff['@label'] = f['@label'];
@@ -296,10 +296,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.workflowFieldsService.clearFormFields();
         this.workflowFieldsService.setFormFields(this.formFields);
 
-        (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach(l => {
+        (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach((l) => {
             if ((<LinkModel>l).condition != null && (<LinkModel>l).condition.length > 0) {
-                (<LinkModel>l).condition.forEach(c => {
-                    let i = this.formFields.findIndex(f => f['@id'] == c['@FormInputID'] && f['@VersionStepID'] == c['@VersionStepID']);
+                (<LinkModel>l).condition.forEach((c) => {
+                    let i = this.formFields.findIndex((f) => f['@id'] == c['@FormInputID'] && f['@VersionStepID'] == c['@VersionStepID']);
 
                     if (i > -1) {
                         c['@FieldName'] = this.formFields[i]['@FieldName'];
@@ -312,7 +312,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         });
 
         if (this.fieldsSub == null)
-            this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
+            this.fieldsSub = this.workflowFieldsService.formFields$.subscribe((s) => {
                 this.formFields = s;
             });
     }
@@ -346,7 +346,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.isLoadingCounter++;
             return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true, this.model.Event.IssueObject)
                 .pipe(
-                    map(r => this.fieldTypes = r),
+                    map((r) => this.fieldTypes = r),
                     map(() => this.parseData(this.model)),
                     map(() => { this.isLoadingCounter--; }),
                     map(() => { this.resetContentPosition(); })
@@ -362,13 +362,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         return this.workflowService.getWorkflowDiagram(this.id,this.uid, this.version, this.filteredObject, this.filteredObjectId)
             .pipe(
-                map(r => {
+                map((r) => {
                     this.model = r;
                     if (this.model.Nodes != null)
-                    this.model.Nodes.forEach(n => n.ActivityTypeInfo = this.activityTypes.find(a => a.ID == n.ActivityType));
+                    this.model.Nodes.forEach((n) => n.ActivityTypeInfo = this.activityTypes.find((a) => a.ID == n.ActivityType));
                     }),
                 map(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true, this.model.Event.IssueObject)
-                    .subscribe(r => this.fieldTypes = r)),
+                    .subscribe((r) => this.fieldTypes = r)),
                 map(() => this.parseData(this.model)),
                 map(() => this.setIssueObject()),
                 map(() => {
@@ -388,8 +388,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
 
         if (this.conditions.length > 0) {
-            let objectIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObject');
-            let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
+            let objectIndex = this.conditions.findIndex((c) => c['@ContextualFieldID'] == 'IssueObject');
+            let objectIdIndex = this.conditions.findIndex((c) => c['@ContextualFieldID'] == 'IssueObjectID');
             if (objectIndex > -1 && objectIdIndex > -1) {
                 this.model.Event.IssueObject = this.conditions[objectIndex]['@Value'] + '|' + this.conditions[objectIdIndex]['@Value'];
             }
@@ -407,16 +407,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         var linkList = [];
 
         if (data.Nodes)
-            data.Nodes.forEach(n => {
+            data.Nodes.forEach((n) => {
                 nodeList.push(<NodeModel>this.convertToDiagramModel(n, DiagramObjectType.Node));
             });
 
         if (data.Links)
-            data.Links.forEach(l => {
+            data.Links.forEach((l) => {
                 linkList.push(<LinkModel>this.convertToDiagramModel(l, DiagramObjectType.Link));
             });
 
-        nodeList.forEach(n => {
+        nodeList.forEach((n) => {
             if (n.activityType == WorkflowActivityType.FieldChange) {
                 if (n.settings != null && n.settings.FieldUpdate != null && n.settings.FieldUpdate.Field != null) {
 
@@ -424,12 +424,12 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     let fields = n.settings.FieldUpdate.Field;
 
                     if (fields.length != null && fields.length > 0) {
-                        fields.forEach(field => {
+                        fields.forEach((field) => {
                             if (field['@UseFormValue'] != null && field['@UseFormValue'].toString() == 'true') {
                                 if (field['@FormStepId'] != null && field['@FormFieldId'] != null) {
-                                    let formNode = nodeList.find(n => n.key == field['@FormStepId'].toString());
+                                    let formNode = nodeList.find((n) => n.key == field['@FormStepId'].toString());
                                     if (formNode != null && formNode.fields != null && formNode.fields.form != null && formNode.fields.form.field != null) {
-                                        let formField = formNode.fields.form.field.find(f => f['@id'] == field['@FormFieldId']);
+                                        let formField = formNode.fields.form.field.find((f) => f['@id'] == field['@FormFieldId']);
                                         if (formField != null) {
                                             field['@FormLabel'] = 'Form :: ' + formField['@label'];
                                         }
@@ -439,9 +439,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
                             if (field['@UseOutputValue'] != null && field['@UseOutputValue'].toString() == 'true') {
                                 if (field['@FormStepId'] != null && field['@FormFieldId'] != null) {
-                                    let outputNode = nodeList.find(n => n.key == field['@FormStepId'].toString());
+                                    let outputNode = nodeList.find((n) => n.key == field['@FormStepId'].toString());
                                     if (outputNode != null && outputNode.settings != null && outputNode.settings.HTTPResponse != null && outputNode.settings.HTTPResponse.Outputs != null) {
-                                        let outputField = outputNode.settings.HTTPResponse.Outputs.find(f => f.Id == field['@FormFieldId']);
+                                        let outputField = outputNode.settings.HTTPResponse.Outputs.find((f) => f.Id == field['@FormFieldId']);
                                         if (outputField != null) {
                                             field['@FormLabel'] = 'HTTP Response :: ' + outputField.Name;
                                         }
@@ -459,9 +459,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             this.diagram.model.addNodeData(n);
         });
-        linkList.forEach(l => dm.addLinkData(l));
+        linkList.forEach((l) => dm.addLinkData(l));
 
-        dm.linkDataArray.forEach(l => {
+        dm.linkDataArray.forEach((l) => {
             (<LinkModel>l).formInputs = this.getAvailableFormInputs(<LinkModel>l);
             (<LinkModel>l).httpInputs = this.getAvailableHttpInputs(<LinkModel>l);
             (<LinkModel>l).httpResponseInputs = this.getAvailableHttpOutputs(<LinkModel>l);
@@ -482,7 +482,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let links = []; //(<go.GraphLinksModel>this.myDiagram.model).linkDataArray;
         let nodes = []; //this.myDiagram.model.nodeDataArray;
         var types = this.fieldTypes;
-        this.diagram.model.nodeDataArray.forEach(n => {
+        this.diagram.model.nodeDataArray.forEach((n) => {
             if ((<NodeModel>n).activityName === "FieldChange") {
                 ((<NodeModel>n).settings.FieldUpdate.Field).forEach(function (fieldNode) {
                     var fieldData = fieldNode["@FieldName"].split("::", 2);
@@ -490,7 +490,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         var fieldId = +fieldNode["@FieldId"];
                         var object = fieldData[0];
                         var objectName = fieldData[1];
-                        var f = types.filter(x => x.ID == fieldId && x.Object == object && x.Name == objectName)[0];
+                        var f = types.filter((x) => x.ID == fieldId && x.Object == object && x.Name == objectName)[0];
                         if (f != undefined)
                             fieldNode["@ObjectType"] = object;
                     }
@@ -500,7 +500,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             nodes.push(this.convertToWorkflowModel(<NodeModel>n));
         });
 
-        (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach(l => {
+        (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach((l) => {
             links.push(this.convertToWorkflowModel(<LinkModel>l));
         });
 
@@ -515,7 +515,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.isLoadingCounter++;
 
         this.workflowService.saveWorkflowDiagramModel(m)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.onCloseClick.emit();
             });
     }
@@ -549,7 +549,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             || this.model.Event.ChangeType == WorkflowChangeType.RequestCertification
             || this.model.Event.ChangeType == WorkflowChangeType.Schedule) {
             this.workflowService.getScoreTypes(id, type)
-                .subscribe(res => {
+                .subscribe((res) => {
                     this.workflowFieldsService.setAvailableScoreTypes(res);
                 });
         }
@@ -579,13 +579,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         //starting with the toNode, is there a way to traverse back to the fromNode?
         //if so we have a cycle and need to abort
-        let links = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<any>l).from == toNode.data.key);
+        let links = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter((l) => (<any>l).from == toNode.data.key);
         let visitedNodeKeys = [];
         let panic = 0;
         let hasCycle = false;
         while (links != null && links.length > 0) {
             let nodes = [];
-            links.forEach(l => {
+            links.forEach((l) => {
                 let node = this.diagram.model.findNodeDataForKey((<any>l).to);
                 //a form step is part of this cycle, so it's valid
                 if (node.activityType == WorkflowActivityType.Form) {
@@ -607,8 +607,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 return false;
 
             links = [];
-            nodes.forEach(n => {
-                let newLinks = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<any>l).from == n.key);
+            nodes.forEach((n) => {
+                let newLinks = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter((l) => (<any>l).from == n.key);
                 links = links.concat(newLinks);
             });
         }
@@ -623,7 +623,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let obj = this.model.Event.Object;
         this.objectDetailService.getObject(this.model.Event.ObjectID, obj)
             .subscribe(
-            r => {
+            (r) => {
                 if (r != null) {
                     this.objectTypeName = r.TypeName + ' :: ' + r.Name;
                 } else {
@@ -638,25 +638,25 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let forms = [];
         let visited = [];
 
-        let nodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == link.from);
-        visited = visited.concat(nodes.map(n => {
+        let nodes = this.diagram.model.nodeDataArray.filter((n) => (<any>n).key == link.from);
+        visited = visited.concat(nodes.map((n) => {
             return (<any>n).key;
         }));
 
         while (nodes.length > 0) {
             links = [];
-            nodes.forEach(n => {
+            nodes.forEach((n) => {
                 if ((<NodeModel>n).activityType == WorkflowActivityType.Form) {
                     forms.push((<NodeModel>n).key);
                 }
 
-                links = links.concat((<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key));
+                links = links.concat((<go.GraphLinksModel>this.diagram.model).linkDataArray.filter((l) => (<LinkModel>l).to == (<NodeModel>n).key));
             });
             nodes = [];
-            links.forEach(l => {
-                let newNodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from && visited.findIndex(v => v == (<any>n).key) == -1);
+            links.forEach((l) => {
+                let newNodes = this.diagram.model.nodeDataArray.filter((n) => (<any>n).key == (<any>l).from && visited.findIndex((v) => v == (<any>n).key) == -1);
                 nodes = nodes.concat(newNodes);
-                visited = visited.concat(newNodes.map(n => {
+                visited = visited.concat(newNodes.map((n) => {
                     return (<any>n).key;
                 }));
             });
@@ -670,25 +670,25 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let requests = [];
         let visited = [];
 
-        let nodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == link.from);
-        visited = visited.concat(nodes.map(n => {
+        let nodes = this.diagram.model.nodeDataArray.filter((n) => (<any>n).key == link.from);
+        visited = visited.concat(nodes.map((n) => {
             return (<any>n).key;
         }));
 
         while (nodes.length > 0) {
             links = [];
-            nodes.forEach(n => {
+            nodes.forEach((n) => {
                 if ((<NodeModel>n).activityType == WorkflowActivityType.HTTPRequest) {
                     requests.push((<NodeModel>n).key);
                 }
 
-                links = links.concat((<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key));
+                links = links.concat((<go.GraphLinksModel>this.diagram.model).linkDataArray.filter((l) => (<LinkModel>l).to == (<NodeModel>n).key));
             });
             nodes = [];
-            links.forEach(l => {
-                let newNodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from && visited.findIndex(v => v == (<any>n).key) == -1);
+            links.forEach((l) => {
+                let newNodes = this.diagram.model.nodeDataArray.filter((n) => (<any>n).key == (<any>l).from && visited.findIndex((v) => v == (<any>n).key) == -1);
                 nodes = nodes.concat(newNodes);
-                visited = visited.concat(newNodes.map(n => {
+                visited = visited.concat(newNodes.map((n) => {
                     return (<any>n).key;
                 }));
             });
@@ -701,25 +701,25 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let requests = [];
         let visited = [];
 
-        let nodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == link.from);
-        visited = visited.concat(nodes.map(n => {
+        let nodes = this.diagram.model.nodeDataArray.filter((n) => (<any>n).key == link.from);
+        visited = visited.concat(nodes.map((n) => {
             return (<any>n).key;
         }));
 
         while (nodes.length > 0) {
             links = [];
-            nodes.forEach(n => {
+            nodes.forEach((n) => {
                 if ((<NodeModel>n).activityType == WorkflowActivityType.HTTPResponse) {
                     requests.push((<NodeModel>n).key);
                 }
 
-                links = links.concat((<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key));
+                links = links.concat((<go.GraphLinksModel>this.diagram.model).linkDataArray.filter((l) => (<LinkModel>l).to == (<NodeModel>n).key));
             });
             nodes = [];
-            links.forEach(l => {
-                let newNodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from && visited.findIndex(v => v == (<any>n).key) == -1);
+            links.forEach((l) => {
+                let newNodes = this.diagram.model.nodeDataArray.filter((n) => (<any>n).key == (<any>l).from && visited.findIndex((v) => v == (<any>n).key) == -1);
                 nodes = nodes.concat(newNodes);
-                visited = visited.concat(newNodes.map(n => {
+                visited = visited.concat(newNodes.map((n) => {
                     return (<any>n).key;
                 }));
             });
@@ -732,17 +732,17 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         return this.workflowService.getActivityTypes()
             .pipe(
                 tap(() => { this.isLoadingCounter--; }),
-                map(r => {
-                    let excluded = r.findIndex(a => a.ID == WorkflowActivityType.None);
+                map((r) => {
+                    let excluded = r.findIndex((a) => a.ID == WorkflowActivityType.None);
 
                     if (excluded >= 0)
                     r.splice(excluded, 1);
 
-                    excluded = r.findIndex(a => a.ID == WorkflowActivityType.StatusChange); //deprecated
+                    excluded = r.findIndex((a) => a.ID == WorkflowActivityType.StatusChange); //deprecated
                     if (excluded >= 0)
                     r.splice(excluded, 1);
 
-                    excluded = r.findIndex(a => a.ID == WorkflowActivityType.Procedure && a.IsShow == false); 
+                    excluded = r.findIndex((a) => a.ID == WorkflowActivityType.Procedure && a.IsShow == false); 
                     if (excluded >= 0)
                     {
                         r.splice(excluded, 1);
@@ -750,7 +750,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     }
                         
 
-                    excluded = r.findIndex(a => a.ID == WorkflowActivityType.StateChange);
+                    excluded = r.findIndex((a) => a.ID == WorkflowActivityType.StateChange);
                     if (excluded >= 0)
                         r.splice(excluded, 1);
 
@@ -764,7 +764,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (p == null) {
             this.overlayHeader = this.tab;
         } else {
-            let a = this.activityTypes.find(a => a.ID == p.activityType);
+            let a = this.activityTypes.find((a) => a.ID == p.activityType);
             let name = this.getNodeDisplayName(p);
             this.overlayHeader = (a == null) ? name : a.Description + ((name == null || name.toLowerCase() == a.Description.toLowerCase()) ? '' : ' - ' + name);
         }
@@ -787,9 +787,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             if (m.ConditionObject == null && m.Condition != null && m.Condition.toString() === m.Condition && m.Condition.startsWith('{')) {
                 let conditions = JSON.parse(m.Condition).Conditions.Condition;
                 n.condition = [];
-                conditions.forEach(c => n.condition.push(c));
+                conditions.forEach((c) => n.condition.push(c));
 
-                n.condition.forEach(c => {
+                n.condition.forEach((c) => {
                     this.setConditionLabel(c);
                 });
 
@@ -802,7 +802,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     n.condition.push(m.ConditionObject.Condition);
                 }
 
-                n.condition.forEach(c => {
+                n.condition.forEach((c) => {
                     this.setConditionLabel(c);
                 });
 
@@ -869,7 +869,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             if (m.ActivityTypeInfo != null)
                 activityType = m.ActivityTypeInfo;
             else
-                activityType = this.activityTypes.find(a => a.ID == n.activityType);
+                activityType = this.activityTypes.find((a) => a.ID == n.activityType);
 
             if (activityType != null) {
                 n.fore = activityType.ForeColor;
@@ -906,9 +906,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
 
                 //populate field names
-                n.settings.FieldUpdate.Field.forEach(f => {
+                n.settings.FieldUpdate.Field.forEach((f) => {
                     let id = f['@FieldId'];
-                    let field = this.fieldTypes.find(t => t.ID.toString() == id);
+                    let field = this.fieldTypes.find((t) => t.ID.toString() == id);
                     if (field) f['@FieldName'] = field.FriendlyName;
                 });
             }
@@ -931,7 +931,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         n.settings.HTTPResponse.Outputs = [n.settings.HTTPResponse.Outputs as any];
                     }
 
-                    n.settings.HTTPResponse.Outputs.forEach(o => {
+                    n.settings.HTTPResponse.Outputs.forEach((o) => {
                         this.workflowFieldsService.pushOutputField(o);
                     });
                 }
@@ -975,7 +975,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             //clone conditions so we can remove field name and _$visited
             let cond = _.cloneDeep(m.condition);
-            cond.forEach(c => {
+            cond.forEach((c) => {
                 delete c['@FieldName'];
                 delete c['_$visited'];
                 delete c['@ValueLabel'];
@@ -999,7 +999,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (settings.FieldUpdate != null && settings.FieldUpdate.Field != null && settings.FieldUpdate.Field.length != null) {
                     let fields = settings.FieldUpdate.Field;
 
-                    fields.forEach(f => {
+                    fields.forEach((f) => {
                         delete f['@FieldName'];
                         delete f['@FormLabel'];
                         delete f['_$visited'];
@@ -1009,7 +1009,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             if (m.activityType == WorkflowActivityType.HTTPResponse) {
                 if (settings.HTTPResponse != null && settings.HTTPResponse.Outputs != null) {
-                    settings.HTTPResponse.Outputs.forEach(o => {
+                    settings.HTTPResponse.Outputs.forEach((o) => {
                         delete o['@FormFieldId'];
                         delete o['@FormLabel'];
                     });
@@ -1030,7 +1030,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             //remove primeng _$visited property
             if (m.fields != null && m.fields.form != null && m.fields.form.field != null && m.fields.form.field.length != null) {
-                m.fields.form.field.forEach(f => {
+                m.fields.form.field.forEach((f) => {
                     delete f['_$visited'];
                 });
             }
@@ -1059,7 +1059,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     }
 
     private setConditionLabel(condition: any) {
-        let i = this.fieldTypes.findIndex(f => f.ID == condition['@FieldTypeID']);
+        let i = this.fieldTypes.findIndex((f) => f.ID == condition['@FieldTypeID']);
         if (i >= 0) {
             condition['@FieldName'] = this.fieldTypes[i].FriendlyName + (this.fieldTypes[i].Object == 'IssueType' ? ' (Action Field)' : '');
             return;
@@ -1074,10 +1074,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     condition['@FieldName'] = 'HTTP Request :: Response Body';
                     break;
                 default:
-                    let step = this.model.Nodes.find(n => n.Key == condition['@VersionStepID']);
+                    let step = this.model.Nodes.find((n) => n.Key == condition['@VersionStepID']);
                     if (step != null) {
                         if (step.SettingsObject != null && step.SettingsObject.settings != null && step.SettingsObject.settings.HTTPResponse != null) {
-                            let output = step.SettingsObject.settings.HTTPResponse.Outputs.find(o => o.Id == condition['@FormInputID']);
+                            let output = step.SettingsObject.settings.HTTPResponse.Outputs.find((o) => o.Id == condition['@FormInputID']);
                             condition['@FieldName'] = 'HTTP Response :: ' + output.Name;
                         }
                     }
@@ -1101,8 +1101,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     }
 
     private checkHasMultipleInputs() {
-        this.diagram.model.nodeDataArray.forEach(n => {
-            let count = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<any>l).to == (<any>n).key).length;
+        this.diagram.model.nodeDataArray.forEach((n) => {
+            let count = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter((l) => (<any>l).to == (<any>n).key).length;
             (<any>n).hasMultipleInputs = (count > 1);
             (<any>n).valid = this.validateNode(<NodeModel>n);
         });
@@ -1187,8 +1187,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 let hasInvalidField = false;
                 n.errors = [];
 
-                fields.forEach(f => {
-                    let refField = this.fieldTypes.find(x => x.ID == +f["@FieldId"]);
+                fields.forEach((f) => {
+                    let refField = this.fieldTypes.find((x) => x.ID == +f["@FieldId"]);
                     if (!refField) {
                         hasInvalidField = true;
                         n.errors.push('Invalid field type');
@@ -1196,10 +1196,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (f["@IsActionForm"] && f["@IsActionForm"] == 'true' && f["@FormFieldId"]) {
                         var fieldData = f["@FormFieldId"].split('|');
                         if (fieldData[0] == 'IssueType') {
-                            refField = this.fieldTypes.find(x => x.Object == 'IssueType' && x.ID == +fieldData[1]);
+                            refField = this.fieldTypes.find((x) => x.Object == 'IssueType' && x.ID == +fieldData[1]);
                         }
                         else {
-                            refField = this.fieldTypes.find(x => x.Object != 'IssueType' && x.ID == +fieldData[1]);
+                            refField = this.fieldTypes.find((x) => x.Object != 'IssueType' && x.ID == +fieldData[1]);
                         }
 
                         if (!refField) {
@@ -1283,7 +1283,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (n.settings.ResponsibilityTypeID.length < 1)
                         return false;
 
-                    let x = n.settings.ResponsibilityTypeID.findIndex(r => r == null || r == '' || r < 0);
+                    let x = n.settings.ResponsibilityTypeID.findIndex((r) => r == null || r == '' || r < 0);
                     if (x > -1)
                         return false;
                 }
@@ -1332,7 +1332,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         var results = desc.match(/(\[)(.*?)(?=\])/g);
         if (results && results.length) {
-            results.forEach(x => {
+            results.forEach((x) => {
                 var fieldData = x.split('::');
 
                 if (fieldData.length == 2) {
@@ -1340,12 +1340,12 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     var fieldName = fieldData[1].trim();
                     let f: any = null;
                     if (fieldType == 'Action Field') {
-                        f = this.fieldTypes.find(x => x.Object == 'IssueType' && x.Name == fieldName);
+                        f = this.fieldTypes.find((x) => x.Object == 'IssueType' && x.Name == fieldName);
                     }
                     else if (fieldType == 'Asset Field') {
-                        f = this.fieldTypes.find(x => x.Object != 'IssueType' && x.Name == fieldName);
+                        f = this.fieldTypes.find((x) => x.Object != 'IssueType' && x.Name == fieldName);
                     } else if (fieldType == 'HTTPREQUEST') {
-                        f = this.workflowFieldsService.getHttpFields().find(x => x['@stepId'] == fieldData[1].trim());
+                        f = this.workflowFieldsService.getHttpFields().find((x) => x['@stepId'] == fieldData[1].trim());
                     }
                     if (!f) {
                         errors.push('Invalid field type');
@@ -1393,7 +1393,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let finishKey = "";
         let startToFinish = false;
 
-        model.nodeDataArray.forEach(n => {
+        model.nodeDataArray.forEach((n) => {
             let node = <NodeModel>n;
 
             if (node.valid == false) {
@@ -1408,8 +1408,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 finishKey = node.key;
             }
 
-            let from = model.linkDataArray.find(l => (<any>l).from == node.key);
-            let to = model.linkDataArray.find(l => (<any>l).to == node.key);
+            let from = model.linkDataArray.find((l) => (<any>l).from == node.key);
+            let to = model.linkDataArray.find((l) => (<any>l).to == node.key);
 
             //special case, steps from timer transitions don't require an output
             if (to != null && (+node.stepType == StepType.Task && (<LinkModel>to).transitionType == TransitionType.Timer))
@@ -1434,12 +1434,12 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 disconnectedNodeCount++;
 
             if (node.errors) {
-                node.errors.forEach(x => { if (x == 'Invalid field type') invalidFieldReferences++; });
+                node.errors.forEach((x) => { if (x == 'Invalid field type') invalidFieldReferences++; });
             }
             
         });
 
-        model.linkDataArray.forEach(l => {
+        model.linkDataArray.forEach((l) => {
             let link = <LinkModel>l;
 
             if (link.valid == false)
@@ -1500,11 +1500,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.model.Links = [];
         this.model.Event.ConditionObject = null;
 
-        this.diagram.model.nodeDataArray.forEach(n => {
+        this.diagram.model.nodeDataArray.forEach((n) => {
             this.model.Nodes.push(<WorkflowDiagramNode>this.convertToWorkflowModel(<NodeModel>n));
         });
 
-        (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach(l => {
+        (<go.GraphLinksModel>this.diagram.model).linkDataArray.forEach((l) => {
             this.model.Links.push(<WorkflowDiagramLink>this.convertToWorkflowModel(<LinkModel>l));
         });
 
@@ -1605,7 +1605,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private changeTransition(e: LinkModel) {
         this.diagram.startTransaction('changeTransition');
 
-        let i = (<go.GraphLinksModel>this.diagram.model).linkDataArray.findIndex(l => (<any>l).from == e.from && (<any>l).to == e.to);
+        let i = (<go.GraphLinksModel>this.diagram.model).linkDataArray.findIndex((l) => (<any>l).from == e.from && (<any>l).to == e.to);
         let l = null;
         if (i >= 0)
             l = (<go.GraphLinksModel>this.diagram.model).linkDataArray[i];
@@ -1696,7 +1696,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     private LinkDrawn(e: any) {
         let link = e.subject;
-        let l = (<go.GraphLinksModel>this.diagram.model).linkDataArray.findIndex(l => (<any>l).from == link.from && (<any>l).to == link.to);
+        let l = (<go.GraphLinksModel>this.diagram.model).linkDataArray.findIndex((l) => (<any>l).from == link.from && (<any>l).to == link.to);
         this.checkHasMultipleInputs();
 
         if (l > -1) {
@@ -1716,7 +1716,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let nodes: NodeModel[] = [];
         let coll: go.Part[] = [];
 
-        this.diagram.selection.each(x => {
+        this.diagram.selection.each((x) => {
             if (x.data.diagramObjectType == DiagramObjectType.Node) {
                 nodes.push(x.data);
             } else if (x.data.diagramObjectType == DiagramObjectType.Link) {
@@ -1725,50 +1725,50 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         });
 
         //get links attached to node if they weren't selected. They will be deleted automagically
-        nodes.forEach(n => {
-            let to = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<any>l).to == n.key);
-            let from = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<any>l).from == n.key);
+        nodes.forEach((n) => {
+            let to = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter((l) => (<any>l).to == n.key);
+            let from = (<go.GraphLinksModel>this.diagram.model).linkDataArray.filter((l) => (<any>l).from == n.key);
 
-            to.forEach(t => {
-                if (links.findIndex(l => l.key == (<any>t).key) < 0)
+            to.forEach((t) => {
+                if (links.findIndex((l) => l.key == (<any>t).key) < 0)
                     links.push(<LinkModel>t);
             });
 
-            from.forEach(f => {
-                if (links.findIndex(l => l.key == (<any>f).key) < 0)
+            from.forEach((f) => {
+                if (links.findIndex((l) => l.key == (<any>f).key) < 0)
                     links.push(<LinkModel>f);
             });
         });
 
 
-        links.forEach(l => {
+        links.forEach((l) => {
             //remove used fields from global list
-            let fields = this.workflowFieldsService.getUsedFields().filter(u => u.transitionId == l.key);
-            fields.forEach(f => this.workflowFieldsService.deleteUsedField(f.fieldId, f.stepId, f.transitionId));
+            let fields = this.workflowFieldsService.getUsedFields().filter((u) => u.transitionId == l.key);
+            fields.forEach((f) => this.workflowFieldsService.deleteUsedField(f.fieldId, f.stepId, f.transitionId));
             coll.push(this.diagram.findPartForData(l));
         });
 
-        nodes.forEach(n => {
+        nodes.forEach((n) => {
             if (n.activityType == WorkflowActivityType.HTTPRequest) {
                 this.workflowFieldsService.deleteHttpRequestField(n.key);
             }
             if (n.activityType == WorkflowActivityType.Form) {
                 let canDelete = true;
                 if (n.fields.form != null && n.fields.form.field != null) {
-                    n.fields.form.field.forEach(f => {
-                        if (this.workflowFieldsService.getUsedFields().findIndex(u => u.stepId == n.key) > -1) {
+                    n.fields.form.field.forEach((f) => {
+                        if (this.workflowFieldsService.getUsedFields().findIndex((u) => u.stepId == n.key) > -1) {
                             canDelete = false;
 
                             //need to remove pending delete on link
-                            let parts = coll.filter(c => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == n.key);
-                            parts.forEach(p => {
-                                let i = coll.findIndex(c => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == p.data.from);
+                            let parts = coll.filter((c) => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == n.key);
+                            parts.forEach((p) => {
+                                let i = coll.findIndex((c) => c.data.diagramObjectType == DiagramObjectType.Link && c.data.from == p.data.from);
                                 let l = this.diagram.findPartForData(p);
                                 if (i > -1) {
                                     coll = coll.splice(i, 1);
                                 }
                                 if (l != null && l.data.condition != null)
-                                    l.data.condition.forEach(c => {
+                                    l.data.condition.forEach((c) => {
                                         this.workflowFieldsService.pushUsedField(c['@FormInputID'], c['@VersionStepID'], l.data.key, l.data.name);
                                     });
                             });
@@ -1776,7 +1776,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     });
                     if (canDelete) {
                         //remove form fields from global list
-                        n.fields.form.field.forEach(f => this.workflowFieldsService.deleteFormField(f));
+                        n.fields.form.field.forEach((f) => this.workflowFieldsService.deleteFormField(f));
                         coll.push(this.diagram.findPartForData(n));
                     }
                 } else {
@@ -1796,7 +1796,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     }
 
     private ExternalObjectsDropped(e: any) {
-        this.diagram.model.nodeDataArray.forEach(n => {
+        this.diagram.model.nodeDataArray.forEach((n) => {
 
             //gojs doesn't like giving each node its own settings/fields object for some reason
             //set it here if it's empty
@@ -1876,7 +1876,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         paletteModel.push(terminate);
 
-        this.activityTypes.forEach(a => {
+        this.activityTypes.forEach((a) => {
 
             let m = new NodeModel();
 
@@ -1945,7 +1945,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let nodeFontSize = 10;
 
         return this.g(go.Node, "Spot",
-            new go.Binding("location", "pos", s => go.Point.parse(s)).makeTwoWay(go.Point.stringify),
+            new go.Binding("location", "pos", (s) => go.Point.parse(s)).makeTwoWay(go.Point.stringify),
             {
                 locationSpot: go.Spot.Center,
                 mouseEnter: (e, obj) => {
@@ -1967,7 +1967,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     name: "NodeShape",
                 },
                     new go.Binding("fill", "back").makeTwoWay(),
-                    new go.Binding("stroke", "valid", v => {
+                    new go.Binding("stroke", "valid", (v) => {
                         return (v || this.isReadOnly) ? nodeBorderColor : '#f00';
                     })
                 ),
@@ -1992,7 +1992,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
                         font: "bold " + nodeFontSize + "pt sans-serif",
                     },
-                        new go.Binding("text", "", d => this.getNodeDisplayName(d)),
+                        new go.Binding("text", "", (d) => this.getNodeDisplayName(d)),
                         new go.Binding("stroke", "fore").makeTwoWay()
                     )
                 ),
@@ -2013,7 +2013,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let backColor = isStart ? '#216b23' : '#6b2121';
 
         return this.g(go.Node, "Auto",
-            new go.Binding("location", "pos", s => go.Point.parse(s)).makeTwoWay(v => go.Point.stringify(v)),
+            new go.Binding("location", "pos", (s) => go.Point.parse(s)).makeTwoWay((v) => go.Point.stringify(v)),
             {
                 locationSpot: go.Spot.Center,
                 mouseEnter: (e, obj) => {
@@ -2071,14 +2071,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.g(go.Shape, {
                 stroke: "gray", strokeWidth: 2
             },
-                new go.Binding("stroke", "valid", v => {
+                new go.Binding("stroke", "valid", (v) => {
                     return (v || this.isReadOnly) ? "gray" : "red";
                 })),
             this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" },
-                new go.Binding("fill", "valid", v => {
+                new go.Binding("fill", "valid", (v) => {
                     return (v || this.isReadOnly) ? "gray" : "red";
                 }),
-                new go.Binding("stroke", "valid", v => {
+                new go.Binding("stroke", "valid", (v) => {
                     return (v || this.isReadOnly) ? "gray" : "red";
                 })
             ), // the arrowhead
@@ -2092,10 +2092,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     //strokeDashArray: [2, 2]
                 },
                     //only visible if there's a label
-                    new go.Binding("stroke", "valid", v => {
+                    new go.Binding("stroke", "valid", (v) => {
                         return (v || this.isReadOnly) ? "gray" : "red";
                     }),
-                    new go.Binding("fill", "valid", v => {
+                    new go.Binding("fill", "valid", (v) => {
                         return (v || this.isReadOnly) ? "gray" : "red";
                     }),
                     new go.Binding("visible", "icon", function (a) {
@@ -2237,7 +2237,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     //#endregion
 
     private clearExecuted() {
-        this.workflowService.clearLastExecutionDate(this.id, this.uid).subscribe(r => {
+        this.workflowService.clearLastExecutionDate(this.id, this.uid).subscribe((r) => {
             //Only clear if we get a positive response
             if (r != undefined)
                 this.model.Event.LastExecuted = null;

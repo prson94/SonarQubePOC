@@ -239,13 +239,13 @@ export module SettingsHelper {
     }
 
     export function searchTypeListToString(list: SearchType[]): string {
-        return list.filter(l => l.selected).map(l => l.value).join(',');
+        return list.filter((l) => l.selected).map((l) => l.value).join(',');
     }
 
     export function searchTypeStringToList(searchTypes: string, list: SearchType[] = undefined): SearchType[] {
         let t = (list === undefined) ? getSearchTypesList() : list;
-        searchTypes.split(',').forEach(i => {
-            let k = t.find(j => j.value == i);
+        searchTypes.split(',').forEach((i) => {
+            let k = t.find((j) => j.value == i);
             if (k)
                 k.selected = true;
         });

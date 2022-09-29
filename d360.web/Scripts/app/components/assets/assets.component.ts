@@ -19,7 +19,7 @@ export class AssetsComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             let assetTypeUid = params['assetTypeUid'];
 
             this.assetTypeService.getAssetTypeLegacyUri(assetTypeUid).subscribe((uri) => {

@@ -69,7 +69,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.labelUid = params['labelUid'];
 
             this.secondaryNavService.clearCurrentObject();
@@ -78,7 +78,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
             this.isLoading = true;
 
             this.loadPermissions(this.permissionsService, "ConnectorLabel", this.labelUid)
-                .then(p => {
+                .then((p) => {
                     if (this.hasModifyAssetPermissions() && this.hasDeleteAssetPermissions()) {
                         this.isAdmin = true;
                     }
@@ -101,7 +101,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
     private load() {
         this.isLoading = true;
         this.connectorLabelService.getLabelByUid(this.labelUid.toString())
-            .subscribe(result => {
+            .subscribe((result) => {
                 if (result) {
                     this.label = result;
                     this.setObjectInfo('ConnectorLabel', this.labelUid);
@@ -137,7 +137,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
                     this.secondaryNavService.showHeader(true);
 
                     this.connectorLabelService.getLabelUsage(this.label.uid)
-                        .subscribe(data => {
+                        .subscribe((data) => {
                             this.usage = data;
                             this.isLoading = false;
                         });
@@ -163,7 +163,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
                 }
 
             },
-                err => {
+                (err) => {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
                 });
 
@@ -222,7 +222,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
         }
 
         this.connectorLabelService.saveLabel(event.item)
-            .subscribe(result => {
+            .subscribe((result) => {
                 let msg: string = '';
                 if (event.item.uid == undefined) {
                     msg = $localize`Connector label succesfully created`;
@@ -242,7 +242,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 
     consolidateLabels(parentUid: string, childrenUids: string[]) {
         this.connectorLabelService.consolidateConnectorLabels(parentUid, childrenUids)
-            .subscribe(result => {
+            .subscribe((result) => {
 
                 if (result) {
                     this.messagesService.showInfoMessage($localize`Success`, $localize`Connector label consolidation succesfull`);
@@ -251,7 +251,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
                 this.isSaving = false;
                 this.openConnectorLabelPageByUID(parentUid);
 
-            }, err => {
+            }, (err) => {
                 this.showMessageForResult(this.messagesService, err);
                 this.isEditorVisible = false;
                 this.isSaving = false;
@@ -261,11 +261,11 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 
     deleteLabel() {
         this.connectorLabelService.deleteLabels([this.label]).
-            subscribe(result => {
+            subscribe((result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.isDeleteVisible = false;
                 this.onActionBackClick();
-            }, err => this.showMessageForResult(this.messagesService, err));
+            }, (err) => this.showMessageForResult(this.messagesService, err));
     }
     private exportUsage() {
         this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Where Used report for Connector Label "${this.label.Value}"`);

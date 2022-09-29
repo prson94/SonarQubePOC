@@ -50,14 +50,14 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
         this.sub = this
             .route
             .params
-            .subscribe(params => {
+            .subscribe((params) => {
                 this.buildSecondaryNavigationForObject(0, 'TaskType');
             });
         this.refListSub = this.assetsService.getAssetTypesByClass(AssetTypeClass.Reference)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.refListDDL = [];
                 this.refListDDL.push({ value: '', label: $localize`Select Reference List...` });
-                res.forEach(x => {
+                res.forEach((x) => {
                     this.refListDDL.push({ value: x.uid, label: x.Name });
                 });
 

@@ -150,7 +150,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
         let q: string = event.query ? event.query : event;
         this.searchingTypeahed = true;
         if (this.breadcrumb.hasPreLoadedTypeAhead()) {
-            this.results = this.breadcrumb.preLoadedTypeAhead.filter(x => x.Name.toLowerCase().indexOf(q.toLowerCase()) !== -1);
+            this.results = this.breadcrumb.preLoadedTypeAhead.filter((x) => x.Name.toLowerCase().indexOf(q.toLowerCase()) !== -1);
             this.searchingTypeahed = false;
             this.ref.markForCheck();
             return;
@@ -160,7 +160,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
             if (this.breadcrumb.hasParent) {
                 this.typeaheadSearchService.getObjectTypeItemsFromParent(10, q, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(
                     debounceTime(400))
-                    .subscribe(data => {
+                    .subscribe((data) => {
                         this.results = data;
                         this.searchingTypeahed = false;
                         this.ref.markForCheck();
@@ -168,7 +168,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
             } else {
                 this.typeaheadSearchService.getObjectTypeItems(10, q, this.breadcrumb.objectType).pipe(
                     debounceTime(400))
-                    .subscribe(data => {
+                    .subscribe((data) => {
                         this.results = data;
                         this.searchingTypeahed = false;
                         this.ref.markForCheck();
@@ -178,7 +178,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
         else {
             this.searchSub = this.typeaheadSearchService.getObjectItems(10, q, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(
                 debounceTime(400))
-                .subscribe(data => {
+                .subscribe((data) => {
                     this.results = data;
                     this.searchingTypeahed = false;
                     this.ref.markForCheck();

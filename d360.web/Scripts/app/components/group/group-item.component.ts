@@ -53,14 +53,14 @@ export class GroupItemComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.groupId = +params['groupId']; // (+) converts string 'id' to a number
             this.headerBreadcrumbService.setCurrentObjectInfo('Group', this.groupId);
             this.logAction('open', 'Group', this.groupId);
             this.isLoading = true;
 
             this.groupService.getGroup(this.groupId, "").subscribe(
-                group => {
+                (group) => {
                     this.model = group;
                     this.headerBreadcrumbService.clearBreadcrumbs();
 

@@ -67,7 +67,7 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
         this.selection = null;
         if (this.itemId != null && this.itemId != 0) {
             this.workflowService.getWorkflowItemSteps(this.itemId)
-                .subscribe(r => {
+                .subscribe((r) => {
                     this.itemSteps = r;
                     if (this.itemSteps != null) {
                         this.selection = this.itemSteps[0];
