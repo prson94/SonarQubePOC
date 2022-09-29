@@ -98,7 +98,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         }
         
         this.responsibilityService.getResponsibilityDetail(this.assetUid)
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.responsibilities = data.filter((x) => x.IsVisible);
                 this.selectedRow = this.responsibilities[0];
                 this.isLoading = false;
@@ -148,13 +148,13 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         console.log(event);
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
-        this.responsibilities = _.orderBy(this.responsibilities, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? "desc" : "asc"]);
+        this.responsibilities = _.orderBy(this.responsibilities, [(item) => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? "desc" : "asc"]);
     }
 
     private deleteResponsibility() {
 
         this.responsibilityService.deleteResponsibility(this.assetUid, this.selectedRow.ResponsibilityUid, this.selectedRow.GroupResourceUid ?? this.selectedRow.ResourceUid).
-            subscribe(result => {
+            subscribe((result) => {
                 this.isDeleting = false;  
                 if (result) {
                     this.showMessageForResult(this.messagesService, result);                  

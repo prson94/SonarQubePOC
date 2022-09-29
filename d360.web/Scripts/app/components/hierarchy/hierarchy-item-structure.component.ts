@@ -481,7 +481,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			if (this.hierarchy) {
 				this.hierarchy.forEach((i) => {
 					this.scoreAllocations.forEach((s) => {
-						var field = this.fields.find(f => f.apiName == s.Name);
+						var field = this.fields.find((f) => f.apiName == s.Name);
 						if (field) {
 							i[field.apiName + '_threshold'] = this.getThreshold(i[field.apiName], s.LowerThreshold, s.UpperThreshold);
 						}
@@ -636,7 +636,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		}
 
 		if (!this.selected) {
-			let thisLevel = this.levels.filter(x => x.Level == this.selectedLevel + 1);
+			let thisLevel = this.levels.filter((x) => x.Level == this.selectedLevel + 1);
 
 			if (thisLevel && thisLevel.length > 0)
 				return thisLevel[0].Name;
@@ -644,7 +644,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				return $localize`(Level ${this.selectedLevel + 1}) Item`;
 		}
 
-		let thisLevel = this.levels.filter(x => x.Level == this.selected.data.Level);
+		let thisLevel = this.levels.filter((x) => x.Level == this.selected.data.Level);
 
 		if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
 		return $localize`(Level ${this.selected.data.Level}) Item`;

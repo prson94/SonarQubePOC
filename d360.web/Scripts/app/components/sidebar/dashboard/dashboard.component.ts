@@ -47,7 +47,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 
 	ngOnInit() {
 		this.showSingle = false;
-		this.sub = this.route.params.subscribe(params => {
+		this.sub = this.route.params.subscribe((params) => {
 			this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, $localize`Dashboards`);
 
 			this.dashboardName = params['name'];
@@ -76,7 +76,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 
 		this.headerBreadcrumbService.clearBreadcrumbs();
 
-		this.headerBreadcrumbService.getFolderTitle('#Dashboards').then(res => {
+		this.headerBreadcrumbService.getFolderTitle('#Dashboards').then((res) => {
 			this.folderTitle = res;
 			let areaBreadcrumb = new Breadcrumb(
 				this.folderTitle ? this.folderTitle : 'Dashboards',
@@ -94,7 +94,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 				this.headerBreadcrumbService.showBreadcrumb(dashboardCrumb);
 			}
 			if (clearInfo) {
-				this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
+				this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
 					this.clearSidebar();
 					this.secondaryNavService.setCurrentArea(res, icon, $localize`Dashboards`);
 					this.secondaryNavService.clearCurrentObject();
@@ -118,7 +118,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 		this.isLoading = true;
 		if (this.reportID) {
 			this.dashboardService.getDashboardById(this.reportID).subscribe(
-				result => {
+				(result) => {
 					if (result) {
 						this.selected = result[0];
 						this.showSingle = true;

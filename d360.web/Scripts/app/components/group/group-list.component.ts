@@ -124,7 +124,7 @@ export class GroupListComponent extends BaseComponent implements OnInit {
     private load() {
         this.isLoading = true;
         this.groupService.getGroupList().subscribe(
-            res => {
+            (res) => {
                 this.groups = res;
 
                 this.isLoading = false;

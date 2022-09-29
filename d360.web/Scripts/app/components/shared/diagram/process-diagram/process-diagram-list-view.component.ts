@@ -50,9 +50,9 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
         if (this.nodeSelection) {
             var arr = this.nodeSelection.toArray();
             this.selected = [];
-            arr.forEach(x => {
+            arr.forEach((x) => {
                 if (x.data && x.data.key) {
-                    this.selected.push(this.nodeArray.find(node => node.key == x.data.key));
+                    this.selected.push(this.nodeArray.find((node) => node.key == x.data.key));
                 }
             });
         }
@@ -79,7 +79,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
     toggleAll($event) {
         if ($event.checked) {
             var selectedParts: go.Part[] = [];
-            this.getTableCurrentData().forEach(data => {
+            this.getTableCurrentData().forEach((data) => {
                 selectedParts.push(this.getPartByKey(data.key));
             });
             this.diagram.selectCollection(selectedParts);
@@ -125,7 +125,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
             isCheckboxClicked = target.tagName == 'P-TABLECHECKBOX';
 
             if (!isCheckboxClicked) {
-                target.childNodes.forEach(cn => {
+                target.childNodes.forEach((cn) => {
                     if (cn.nodeName === 'P-TABLECHECKBOX') {
                         isCheckboxClicked = true;
                     }
@@ -141,7 +141,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
                     this.selected.push(item);
 
                 if (index !== -1)
-                    this.selected = this.selected.filter(x => x.key != item.key);
+                    this.selected = this.selected.filter((x) => x.key != item.key);
             }
             else if (event.shiftKey) {
                 var arr = this.tableEl.value as Array<go.ObjectData>;
@@ -169,7 +169,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
                     this.selected.push(item);
 
                 if (isCheckboxClicked && index !== -1) {
-                    this.selected = this.selected.filter(x => x.key != item.key);
+                    this.selected = this.selected.filter((x) => x.key != item.key);
                 }
 
             }
@@ -186,7 +186,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
 
         var selectedParts: go.Part[] = [];
 
-        this.selected.forEach(d => {
+        this.selected.forEach((d) => {
             selectedParts.push(this.getPartByKey(d.key));
         });
         this.diagram.selectCollection(selectedParts);

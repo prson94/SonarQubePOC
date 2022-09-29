@@ -52,7 +52,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
         this.isLoading = true;
         this.submitting = false;
         this.surveyDetails = null;
-        this.surveysService.getSurveyTypeDetails(this.surveyType.SurveyTypeUid).subscribe(res => {
+        this.surveysService.getSurveyTypeDetails(this.surveyType.SurveyTypeUid).subscribe((res) => {
             this.surveyDetails = res;
             this.currentQuestion = this.surveyDetails.Questions[0];
             this.isLoading = false;
@@ -73,7 +73,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
         this.submitting = true;
         this.currentQuestion = null;
 
-        this.surveysService.saveSurveyResponse(this.surveyDetails.Uid, this.getSurveyResponseObject()).subscribe(res => {
+        this.surveysService.saveSurveyResponse(this.surveyDetails.Uid, this.getSurveyResponseObject()).subscribe((res) => {
             this.submitting = false;
             this.surveyComplete.emit(res);
         });
@@ -112,7 +112,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
     private getSurveyResponseObject(): SurveyResultsApiModel {
         let surveyResponse = new SurveyResultsApiModel();
         surveyResponse.AssetUid = this.assetUid;
-        this.surveyDetails.Questions.forEach(x => {
+        this.surveyDetails.Questions.forEach((x) => {
             let q = new SurveyQuestionResponseApiModel();
             q.Comments = x.Comments;
             q.Responses = Array.isArray(x.Value) ? x.Value : [x.Value];

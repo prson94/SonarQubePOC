@@ -39,7 +39,7 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
     ngOnInit() {
         let showApiKey = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
 
-        this.isAdminSub = this.authenticationService.isAdmin$.subscribe(x => {
+        this.isAdminSub = this.authenticationService.isAdmin$.subscribe((x) => {
             let isAdmin: boolean = x;
             this.showAllUsersAPIKey = isAdmin || showApiKey;
         });

@@ -60,19 +60,19 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
     }
 
     public increaseLoadingCounterAction() {
-        this.mutate(state => {
+        this.mutate((state) => {
             state.loadingCounter = state.loadingCounter + 1;
         });
     }
 
     public decreaseLoadingCounterAction() {
-        this.mutate(state => {
+        this.mutate((state) => {
             state.loadingCounter = state.loadingCounter - 1;
         });
     }
 
     public toggleManageFavoritesOnAction() {
-        this.mutate(state => {
+        this.mutate((state) => {
             state.isManageFavoritesModeEnabled = !state.isManageFavoritesModeEnabled;
             state.removeFavoriteIds = new Set();
             state.searchText = '';
@@ -80,7 +80,7 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
     }
 
     public toggleManageFavoritesOffAction() {
-        this.mutate(state => {
+        this.mutate((state) => {
             state.isManageFavoritesModeEnabled = false;
             state.removeFavoriteIds = new Set();
             state.searchText = '';
@@ -88,7 +88,7 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
     }
 
     public setFavoriteRemovalAction(payload: { favoriteId: number, removeOn: boolean }) {
-        this.mutate(state => {
+        this.mutate((state) => {
             if (payload.removeOn) {
                 state.removeFavoriteIds.add(payload.favoriteId);
             } else {
@@ -104,14 +104,14 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
     }
 
     public setFavoritesAction(payload: { homefav: HomepageAndFavoritesModel }) {
-        this.mutate(state => {
+        this.mutate((state) => {
             state.homepageAndFavorites = payload.homefav;
             state.removeFavoriteIds = new Set();
         });
     }
 
     public setSearchTextAction({ searchText }: { searchText: string }) {
-        this.mutate(state => {
+        this.mutate((state) => {
             state.searchText = searchText;
         });
     }
@@ -122,7 +122,7 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
 
         this.increaseLoadingCounterAction();
         this.favoritesService.deleteCurrentUsersFavoritesV2(favoriteIds).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.headerActionsService.emitFavoritesChange();
                 this.toggleManageFavoritesOffAction();
@@ -131,7 +131,7 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
                     this.siteMenuComponent.changeActiveMenu(null);
                 }
             },
-            error => {
+            (error) => {
                 this.decreaseLoadingCounterAction();
             }
         );
@@ -144,11 +144,11 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
 
         this.increaseLoadingCounterAction();
         this.favoritesService.getHomePageAndFavorites().subscribe(
-            homefav => {
+            (homefav) => {
                 this.setFavoritesAction({ homefav });
                 this.decreaseLoadingCounterAction();
             },
-            error => {
+            (error) => {
                 this.decreaseLoadingCounterAction();
             }
         );

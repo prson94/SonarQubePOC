@@ -69,8 +69,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
             .pipe(
-                map(r => {
-                    this.fields = r.filter(x => x.Type != "JsonElement");//Exclude Json Element Fields
+                map((r) => {
+                    this.fields = r.filter((x) => x.Type != "JsonElement");//Exclude Json Element Fields
                 }),
                 map(() => {
                     if (_.isEmpty(this.fieldUpdate.Field)) {
@@ -81,7 +81,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                         this.fieldUpdate.Field.push(f);
                     }
 
-                    this.fieldUpdate.Field.forEach(f => {
+                    this.fieldUpdate.Field.forEach((f) => {
                         this.initField(f);
                         let fieldIndex = this.fields.findIndex((i) => i.ID.toString() == f['@FieldId'].toString());
 
@@ -172,7 +172,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             this.selectedFormFieldId = null;
         }
 
-        let f = this.fields.find(f => f.ID == +e);
+        let f = this.fields.find((f) => f.ID == +e);
         if (f) this.field = f;
 
         if (this.field) {
@@ -180,9 +180,9 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
             if (this.field.Type == 'Lookup') {
                 this.workflowService.getLookupList(this.field.ID)
-                    .subscribe(r => {
+                    .subscribe((r) => {
                         this.lookups = r;
-                        this.lookups = this.lookups.filter(l => l.value != '');
+                        this.lookups = this.lookups.filter((l) => l.value != '');
                     });
             }
             this.allowMultiple = this.field.AllowMultipleValues;
@@ -218,7 +218,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
     changeFormValue(e: any) {
         this.selectedFormFieldId = e;
-        let field = this.formFields.find(f => f['@FormFieldId'] == e);
+        let field = this.formFields.find((f) => f['@FormFieldId'] == e);
         if (field == null) {
             this.selectedField['@FormFieldId'] = null;
             return;
@@ -240,7 +240,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.selectedFormFieldId = e;
         let stepId = this.selectedFormFieldId.split("|")[1];
         let fieldId = this.selectedFormFieldId.split("|")[0];
-        let field = this.outputFields.find(f => f.Id == fieldId && f.StepId == stepId);
+        let field = this.outputFields.find((f) => f.Id == fieldId && f.StepId == stepId);
 
         if (field == null) {
             this.selectedField['@FormFieldId'] = null;
@@ -269,9 +269,9 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
     save() {
         let field = _.cloneDeep(this.selectedField);
-        let fieldTypeIndex = this.fields.findIndex(f => f.ID.toString() == field['@FieldId'].toString());
+        let fieldTypeIndex = this.fields.findIndex((f) => f.ID.toString() == field['@FieldId'].toString());
 
-        var selectedField = this.fields.filter(f => f.ID.toString() == field['@FieldId'].toString())[0];
+        var selectedField = this.fields.filter((f) => f.ID.toString() == field['@FieldId'].toString())[0];
         field["@ObjectType"] = this.formatObjectTypeName(selectedField.Object);
         if (this.field.Type.toLowerCase() == 'lookup') {
             //join multiselect value into a comma delimited string
@@ -281,8 +281,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 if (field['@Value'] != null && field['@Value']._$visited != null)
                     delete field['@Value']._$visited;
                 if (field['@Value'] != null && Array.isArray(field['@Value'])) {
-                    field['@Value'].forEach(v => {
-                        let label = this.lookups.find(l => l.value == v);
+                    field['@Value'].forEach((v) => {
+                        let label = this.lookups.find((l) => l.value == v);
                         if (label != null)
                             valueLabels.push(label.label);
                     });
@@ -291,7 +291,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 }
 
             } else {
-                let valueLabel = this.lookups.find(l => l.value == field['@Value']);
+                let valueLabel = this.lookups.find((l) => l.value == field['@Value']);
                 field['@ValueLabel'] = valueLabel == null ? field['@Value'] : valueLabel.label;
             }
 
@@ -366,13 +366,13 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.selectedFormFieldId = null;
 
         //free up the field so it can be selected and changed
-        let usedFieldIndex = this.usedFields.findIndex(f => f.ID.toString() == this.selectedField['@FieldId'].toString());
+        let usedFieldIndex = this.usedFields.findIndex((f) => f.ID.toString() == this.selectedField['@FieldId'].toString());
         if (usedFieldIndex > -1) {
             this.fields.push(this.usedFields[usedFieldIndex]);
             this.usedFields.splice(usedFieldIndex, 1);
         }
 
-        let field = this.fields.find(f => f.ID.toString() == this.selectedField['@FieldId']);
+        let field = this.fields.find((f) => f.ID.toString() == this.selectedField['@FieldId']);
         if (field != null) {
             //for multiselect we need to split the value back into an array
             if (field.Type.toLowerCase() == 'lookup' && field.AllowMultipleValues == true) {
@@ -400,7 +400,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
         if (this.selectedFieldIndex > -1) {
             let field = this.fieldUpdate.Field[this.selectedFieldIndex];
-            let usedFieldIndex = this.usedFields.findIndex(f => f.ID.toString() == field['@FieldId'].toString());
+            let usedFieldIndex = this.usedFields.findIndex((f) => f.ID.toString() == field['@FieldId'].toString());
 
             if (usedFieldIndex > -1) {
                 this.fields.push(this.usedFields[usedFieldIndex]);
@@ -419,7 +419,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
         let field = _.cloneDeep(this.selectedField);
         if (field && field['@FieldId']) {
-            let fieldTypeIndex = this.fields.findIndex(f => f.ID.toString() == field['@FieldId'].toString());
+            let fieldTypeIndex = this.fields.findIndex((f) => f.ID.toString() == field['@FieldId'].toString());
             if (fieldTypeIndex > -1) {
                 this.usedFields.push(this.fields[fieldTypeIndex]);
                 this.fields.splice(fieldTypeIndex, 1);
@@ -540,7 +540,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
     isHtml(i: any): boolean {
         if (i == null) return false;
-        let f = this.usedFields.find(f => f.ID == +i['@FieldId']);
+        let f = this.usedFields.find((f) => f.ID == +i['@FieldId']);
         if (f == null) return false;
         return f.Type == 'Html';
     }
@@ -576,70 +576,70 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     get availableActionFields(): any[] {
-        let field = this.fields.find(f => f.ID.toString() == this.selectedField['@FieldId']);
+        let field = this.fields.find((f) => f.ID.toString() == this.selectedField['@FieldId']);
         if (field == null)
             return null;
 
         let fieldType = field.Type;
 
 
-        var formFieldsWithAction = this.formFields.filter(f => f["@isActionType"] == true);
+        var formFieldsWithAction = this.formFields.filter((f) => f["@isActionType"] == true);
         switch (fieldType) {
             case 'Lookup':
                 var lookupField = field.LookupObjectType + '|' + field.LookupObjectID;
-                return formFieldsWithAction.filter(f => f['@type'] == 'list' && f['@LookupFieldID'] == lookupField);
+                return formFieldsWithAction.filter((f) => f['@type'] == 'list' && f['@LookupFieldID'] == lookupField);
             case 'Number':
             case 'Decimal':
-                return formFieldsWithAction.filter(f => f['@type'] == 'integer');
+                return formFieldsWithAction.filter((f) => f['@type'] == 'integer');
             case 'Boolean':
-                return formFieldsWithAction.filter(f => f['@type'] == 'boolean');
+                return formFieldsWithAction.filter((f) => f['@type'] == 'boolean');
             case 'Date':
             case 'DateTime':
-                return formFieldsWithAction.filter(f => f['@type'] == 'date');
+                return formFieldsWithAction.filter((f) => f['@type'] == 'date');
             case 'Link':
-                return formFieldsWithAction.filter(f => f['@type'] == 'link');
+                return formFieldsWithAction.filter((f) => f['@type'] == 'link');
             case 'Html':
-                return formFieldsWithAction.filter(f => f['@type'] == 'text' || f['@type'] == 'html');
+                return formFieldsWithAction.filter((f) => f['@type'] == 'text' || f['@type'] == 'html');
             case 'Text':
             default:
-                return formFieldsWithAction.filter(f => f['@type'] == 'text');
+                return formFieldsWithAction.filter((f) => f['@type'] == 'text');
         }
     }
 
     get availableFormFields(): any[] {
-        let field = this.fields.find(f => f.ID.toString() == this.selectedField['@FieldId']);
+        let field = this.fields.find((f) => f.ID.toString() == this.selectedField['@FieldId']);
         if (field == null)
             return null;
 
         let fieldType = field.Type;
 
-        var formFieldsWithoutAction = this.formFields.filter(f => f["@isActionType"] != true);
+        var formFieldsWithoutAction = this.formFields.filter((f) => f["@isActionType"] != true);
 
         switch (fieldType) {
             case 'Lookup':
-                return formFieldsWithoutAction.filter(f => f['@type'] == 'list' && f['@referenceFieldId'] == field.ID.toString());
+                return formFieldsWithoutAction.filter((f) => f['@type'] == 'list' && f['@referenceFieldId'] == field.ID.toString());
             case 'Number':
             case 'Decimal':
-                return formFieldsWithoutAction.filter(f => f['@type'] == 'integer');
+                return formFieldsWithoutAction.filter((f) => f['@type'] == 'integer');
             case 'Boolean':
-                return formFieldsWithoutAction.filter(f => f['@type'] == 'boolean');
+                return formFieldsWithoutAction.filter((f) => f['@type'] == 'boolean');
             case 'Date':
             case 'DateTime':
-                return formFieldsWithoutAction.filter(f => f['@type'] == 'date');
+                return formFieldsWithoutAction.filter((f) => f['@type'] == 'date');
             case 'Text':
-                return formFieldsWithoutAction.filter(f => f['@type'] == 'text');
+                return formFieldsWithoutAction.filter((f) => f['@type'] == 'text');
             case 'Html':
-                return formFieldsWithoutAction.filter(f => f['@type'] == 'html' || f['@type'] == 'text');
+                return formFieldsWithoutAction.filter((f) => f['@type'] == 'html' || f['@type'] == 'text');
             case 'Link':
-                return formFieldsWithoutAction.filter(f => f['@type'] == 'link');
+                return formFieldsWithoutAction.filter((f) => f['@type'] == 'link');
             default:
-                return formFieldsWithoutAction.filter(f => f['@type'] == 'text');
+                return formFieldsWithoutAction.filter((f) => f['@type'] == 'text');
         }
 
     }
 
     get availableOutputFields(): any[] {
-        let field = this.fields.find(f => f.ID.toString() == this.selectedField['@FieldId']);
+        let field = this.fields.find((f) => f.ID.toString() == this.selectedField['@FieldId']);
         if (field == null)
             return null;
 
@@ -647,7 +647,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         switch (fieldType) {
             case 'Html':
             case 'Text':
-                return this.outputFields.filter(f => f.Type == "text").map(f => { return { key: f.Id + '|' + f.StepId, '@FormFieldId': f.Id, '@FormStepId': f.StepId, '@FormLabel': f['@FormLabel'] }; });
+                return this.outputFields.filter((f) => f.Type == "text").map((f) => { return { key: f.Id + '|' + f.StepId, '@FormFieldId': f.Id, '@FormStepId': f.StepId, '@FormLabel': f['@FormLabel'] }; });
         }
         return null;
     }

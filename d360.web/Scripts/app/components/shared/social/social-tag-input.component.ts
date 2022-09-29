@@ -47,7 +47,7 @@ export class SocialTagInputComponent extends BaseComponent  implements OnDestroy
     search(event) {
         this.searchSub = this.tagService.getTags(event.query).pipe(
             debounceTime(400))
-            .subscribe(data => {
+            .subscribe((data) => {
             this.tags = data;
         }); 
     }

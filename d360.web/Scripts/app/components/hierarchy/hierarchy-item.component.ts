@@ -101,7 +101,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 		this.currentAreaNameSub =
 			this.headerBreadcrumbService
 				.getAreaNameByUid(this.assetUid)
-				.subscribe(result => {
+				.subscribe((result) => {
 					this.currentAreaName = result;
 					if (this.assetType) {
 						this.buildBreadcrumb();
@@ -161,14 +161,14 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 		switch (this.assetTypeClass) {
 			case AssetTypeClass.Model:
 				this.modelsService.getModel(this.baseAssetTypeUid)
-					.subscribe(result => {
+					.subscribe((result) => {
 						this.assetType = result;
 						this.loadHierarchy();
 					});
 				break;
 			case AssetTypeClass.Policy:
 				this.policiesService.getPolicyType(this.baseAssetTypeUid)
-					.subscribe(result => {
+					.subscribe((result) => {
 						this.assetType = result;
 						this.loadHierarchy();
 					});
@@ -186,7 +186,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 
 	private loadHierarchy(): void {
 		this.assetService.getAssetHierarchy(this.baseAssetUid)
-			.subscribe(result => {
+			.subscribe((result) => {
 				this.preloadedTreeData = result;
 				this.baseTreeNodeArray = this.buildTreeNodeArrayBase(this.preloadedTreeData, null, true);
 				this.buildBreadcrumb();

@@ -47,7 +47,7 @@ export class GalleryColorPickerComponent implements OnInit {
     constructor(private assetService: AssetService) {}
 
     ngOnInit(): void {
-        this.assetService.getAllColors().subscribe(x => { this.defaultColors = x; });
+        this.assetService.getAllColors().subscribe((x) => { this.defaultColors = x; });
 
         this.properties = new Array();
         this.properties.push({ Name: "colors", Type: "array", Description: "An array of select list items that have label, title and value properties. title is used for the color value, label for display and value for the desired value from the select list.", Default: "" });

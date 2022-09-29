@@ -70,8 +70,8 @@ export class BoardTile extends BaseComponent implements OnInit {
         this.isLoading = true;
 
         this.socialService.getMyCounts(this.daysToLookBack).subscribe(
-            res => {
-                this.counts = res.filter(item => item.Total > 0);
+            (res) => {
+                this.counts = res.filter((item) => item.Total > 0);
                 this.isLoading = false;
             });
     }

@@ -70,7 +70,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
         let type = (this.objectType.toLowerCase() == 'artifact') ? "1" : this.objectType;
 
         this.objectDetailService.getObject(this.objectID, type).subscribe(
-            r => {
+            (r) => {
                 this.object = r;
 
                 this.isLoading = false;

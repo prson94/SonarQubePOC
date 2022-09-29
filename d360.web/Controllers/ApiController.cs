@@ -1802,21 +1802,21 @@ namespace d360.web.Controllers
 
 				var relVal = new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url };
 
-				var assetUid = Company.Assets.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
-
-				if (assetUid != null && assetUid != Guid.Empty)
+				var data = Company.Query<dynamic>("select a.uid, at.uid as assetTypeUid from asset a inner join assettype at on at.id = a.assettypeid where a.object = @obj and a.objectid = @objid", new { obj, objID }).FirstOrDefault();
+				if (data != null && data.uid != null && data.uid != Guid.Empty)
 				{
-					relVal.uid = assetUid;
-					if (relVal.TooltipUrl.ToLower().IndexOf("referencelistid") > -1)
+					relVal.uid = data.uid;
+					relVal.assetTypeUid = data.assetTypeUid;
+					if (relVal.TooltipType.ToLower().IndexOf("referenceitem") > -1)
 					{
-						relVal.TooltipUrl += "," + assetUid.ToString();
+						relVal.TooltipUrl += "," + relVal.uid.ToString();
 					}
 				}
 				else
 				{
 					var assetTypeUid = Company.AssetTypes.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
-					relVal.uid = assetTypeUid;
-					relVal.TooltipUrl = "assets/" + relVal.uid;
+					relVal.assetTypeUid = assetTypeUid;
+					relVal.TooltipUrl = "assets/" + relVal.assetTypeUid;
 				}
 
 				values.Add(relVal);
@@ -3682,40 +3682,33 @@ namespace d360.web.Controllers
 				case SystemObjects.Policy:
 					#region Fields
 					var policy = Company.Query<dynamic>(@"
-															select	A.ID as AssetId,
-																	A.UID as UID,
-																	A.ObjectID ,
-																	T.ID as AssetTypeId,
-																	P.DisplayPath as TextPath,
-																	L.Level
-															from	Asset A
-																	inner join AssetType T on T.ID = A.AssetTypeID
-																	inner join AssetPath P on P.ID = A.ID
-																	cross apply dbo.GetAssetLevelById(A.ID) L
-															where	A.Object = 'Policy' and A.ObjectID = @id
-															", new { id }).SingleOrDefault();
+select	A.ID as AssetId,
+		A.UID as UID,
+		A.ObjectID ,
+		T.ID as AssetTypeId,
+		P.DisplayPath as TextPath,
+		P.Segments.value('(/path/segment/@level)[last()]', 'int') as [Level],
+		coalesce(L.Name, 'Level ' + P.Segments.value('(/path/segment/@level)[last()]', 'varchar')) as LevelName
+from	Asset A
+		inner join AssetType T on T.ID = A.AssetTypeID
+		inner join AssetPath P on P.ID = A.ID
+		left join AssetTypeLevel L on L.AssetTypeID = A.AssetTypeID and L.[Level] = P.Segments.value('(/path/segment/@level)[last()]', 'int')
+where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 					if (policy != null)
-					{
-						var policyAssetTypeID = (int)policy.AssetTypeId;
-						var policyLevel = (int)policy.Level;
-						var policyLevelInfo = Company.Filter<AssetTypeLevel>(i => i.AssetTypeID == policyAssetTypeID && i.Level == policyLevel).SingleOrDefault();
-
-						if (policyLevelInfo != null)
+					{ 
+						model.rows.Add(new DetailReadOnlyRowModel
 						{
-							model.rows.Add(new DetailReadOnlyRowModel
+							columns = 2,
+							FirstColumnFields = new List<ReadOnlyField>
 							{
-								columns = 2,
-								FirstColumnFields = new List<ReadOnlyField>
-								{
-									new ReadOnlyField { Name = "Level Name", Value = policyLevelInfo.Name }
-								},
-								SecondColumnFields = new List<ReadOnlyField>
-								{
-									new ReadOnlyField { Name = "Level Number", Value = policyLevel.ToString() }
-								},
-								Category = FieldInfo.SystemNoCategory
-							});
-						}
+								new ReadOnlyField { Name = "Level Name", Value = policy.LevelName }
+							},
+							SecondColumnFields = new List<ReadOnlyField>
+							{
+								new ReadOnlyField { Name = "Level Number", Value = policy.Level.ToString() }
+							},
+							Category = FieldInfo.SystemNoCategory
+						});
 
 						model.rows.Add(new DetailReadOnlyRowModel
 						{
@@ -4376,11 +4369,12 @@ select	A.ID as AssetID,
 		T.ID as TypeID,
 		T.uid as AssetTypeUid,
 		P.DisplayPath as TextPath,
-		L.Level
+		P.Segments.value('(/path/segment/@level)[last()]', 'int') as [Level],
+		coalesce(L.Name, 'Level ' + P.Segments.value('(/path/segment/@level)[last()]', 'varchar')) as LevelName
 from	Asset A
 		inner join AssetType T on T.ID = A.AssetTypeID
 		inner join AssetPath P on P.ID = A.ID
-		cross apply dbo.GetAssetLevelById(A.ID) L
+		left join AssetTypeLevel L on L.AssetTypeID = A.AssetTypeID and L.[Level] = P.Segments.value('(/path/segment/@level)[last()]', 'int')
 where	A.Object = 'Taxonomy' and A.ObjectID = @id
 ", new { id }).SingleOrDefault();
 
@@ -4397,26 +4391,19 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 							Category = FieldInfo.SystemNoCategory
 						});
 
-						var assetTypeID = (int)taxonomy.TypeID;
-						var taxonomyLevel = (int)taxonomy.Level;
-						var levelInfo = Company.Filter<AssetTypeLevel>(i => i.AssetTypeID == assetTypeID && i.Level == taxonomyLevel).SingleOrDefault();
-
-						if (levelInfo != null)
+						model.rows.Add(new DetailReadOnlyRowModel
 						{
-							model.rows.Add(new DetailReadOnlyRowModel
+							columns = 2,
+							FirstColumnFields = new List<ReadOnlyField>
 							{
-								columns = 2,
-								FirstColumnFields = new List<ReadOnlyField>
-								{
-									new ReadOnlyField { Name = "Level Name", Value = levelInfo.Name }
-								},
-								SecondColumnFields = new List<ReadOnlyField>
-								{
-									new ReadOnlyField { Name = "Level Number", Value = taxonomy.Level.ToString() }
-								},
-								Category = FieldInfo.SystemNoCategory
-							});
-						}
+								new ReadOnlyField { Name = "Level Name", Value = taxonomy.LevelName }
+							},
+							SecondColumnFields = new List<ReadOnlyField>
+							{
+								new ReadOnlyField { Name = "Level Number", Value = taxonomy.Level.ToString() }
+							},
+							Category = FieldInfo.SystemNoCategory
+						});
 
 						var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
 

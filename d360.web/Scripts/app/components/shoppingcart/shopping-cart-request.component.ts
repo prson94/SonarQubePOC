@@ -37,7 +37,7 @@ export class ShoppingCartRequestComponent extends BaseComponent implements OnIni
 
     ngOnInit() {
 
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.cartId = +params['cartId'];
 
             this.headerBreadcrumbService.clearBreadcrumbs();
@@ -59,7 +59,7 @@ export class ShoppingCartRequestComponent extends BaseComponent implements OnIni
     load() {
         this.isLoading = true;
         this.shoppingCartService.getShoppingCartItems(this.cartId)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.cart = r.Cart;
                 this.items = r.Items;
                 this.isLoading = false;

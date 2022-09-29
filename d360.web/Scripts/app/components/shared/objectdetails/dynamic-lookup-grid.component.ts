@@ -32,7 +32,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
     private currentFilters: any;
 
     get globalFilterFields(): string[] {
-        return this.visibleColumns.map(c => c.datafield);
+        return this.visibleColumns.map((c) => c.datafield);
     }
 
     constructor(
@@ -55,18 +55,18 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
             return;
         }
 
-        this.isComplex = (this.data.Fields.find(f => f.name == 'Url') == null);
+        this.isComplex = (this.data.Fields.find((f) => f.name == 'Url') == null);
 
         //do this on init to avoid binding to function call
-        this.data.Columns.forEach(c => {
+        this.data.Columns.forEach((c) => {
             c.type = this.columnDataType(c);
             if (c.type == 'number') {
-                this.data.Values.forEach(v => {
+                this.data.Values.forEach((v) => {
                     v[c.datafield] = this.formatAsNumber(v[c.datafield]);
                 });
             }
             if (c.type == 'string' || c.type == 'preview' || c.type == 'lookup' || c.type == 'html') {
-                this.data.Values.forEach(v => {
+                this.data.Values.forEach((v) => {
                     if (v[c.datafield] === null) {
                         v[c.datafield] = ''; //prevent IE from displaying 'null'
                     }
@@ -74,14 +74,14 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
             }
         });
 
-        this.data.Columns.filter(c => c.type == 'hidden').forEach(c => {
-            let i = this.data.Columns.find(i => i.datafield == c.text);
+        this.data.Columns.filter((c) => c.type == 'hidden').forEach((c) => {
+            let i = this.data.Columns.find((i) => i.datafield == c.text);
             if (i) {
                 i.type = 'preview';
             }
         });
 
-        this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden');
+        this.visibleColumns = this.data.Columns.filter((c) => c.type != 'hidden');
 
         this.isColumnsLoaded = true;
 
@@ -92,7 +92,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
     }
 
     private columnDataType(column: GridFilterColumn): string {
-        var fields = this.data.Fields.filter(x => x.name == column.datafield);
+        var fields = this.data.Fields.filter((x) => x.name == column.datafield);
 
         if (column.type == 'preview')
             return 'preview';
@@ -147,10 +147,10 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
                 params['simpleFilter'] = event.filters.global.value;
             }
 
-            var keys = Object.keys(event.filters).filter(x => x != 'global');
+            var keys = Object.keys(event.filters).filter((x) => x != 'global');
             var advFilters: string[] = [];
 
-            keys.forEach(key => {
+            keys.forEach((key) => {
                 var q = key + ' ct ' + `'${encodeURIComponent(event.filters[key].value)}'`;
                 advFilters.push(q);
             });
@@ -169,7 +169,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
         this.currentFilters = params;
 
         this.loadSubscription = this.assetService.getAssetsComplexFieldValue(this.assetUid, this.field.FieldName, params)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.data = result;
                 this.loadInitialInfo();
                 this.isLoading = false;
@@ -189,7 +189,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
         var className = "";
         if (this.data?.ScoringInfo) {
             className = "score-poor";
-            var allocInfo = this.data?.ScoringInfo?.filter(x => x["FieldTypeId"] == fieldTypeID);
+            var allocInfo = this.data?.ScoringInfo?.filter((x) => x["FieldTypeId"] == fieldTypeID);
             if (allocInfo.length > 0) {
                 var alloc = allocInfo[0];
                 if (cleanValue > parseFloat(alloc.LowerThreshold)) {

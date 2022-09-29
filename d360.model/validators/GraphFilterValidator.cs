@@ -61,7 +61,7 @@ namespace d360.model.validators
 			foreach (var assetType in settings.AssetTypes)
 			{
 				var assetTypeInDb = AssetRepository.GetAssetTypeByUID(assetType.Uid ?? Guid.Empty);
-				var isDeleted = assetTypeInDb.State == core.enums.State.Deleted || assetTypeInDb.State == core.enums.State.PendingDelete;
+				var isDeleted = assetTypeInDb?.State == core.enums.State.Deleted || assetTypeInDb?.State == core.enums.State.PendingDelete;
 				if (assetTypeInDb == null || isDeleted)
 				{
 					return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, GraphFilterErrors.InvalidAssetType);

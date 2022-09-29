@@ -69,7 +69,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     createSubscription() {
         if (this.searchSub) this.searchSub.unsubscribe();
         this.searchSub = this.typeaheadSearchService.getResults(this.typeAheadQuery$, 20, this.options)
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.results = data;
                 if (this.results.length > 0) {
                     this.results.push(this.endSearchAllOption);

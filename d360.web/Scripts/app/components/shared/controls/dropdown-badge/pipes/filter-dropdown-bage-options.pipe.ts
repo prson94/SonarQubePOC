@@ -9,6 +9,6 @@ import { DropdownBadgeOption } from '../types/dropdown-bage-option.type';
 @Pipe({name: 'filterDropdownBadgeOptions'})
 export class FilterDropdownBadgeOptionsPipe<T> implements PipeTransform {
   transform(value: DropdownBadgeOption<T>[], selected: DropdownBadgeOption<T>): DropdownBadgeOption<T>[] {
-    return value.filter(option => option !== selected);
+    return value.filter((option) => option !== selected);
   }
 }

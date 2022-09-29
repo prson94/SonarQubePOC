@@ -82,7 +82,7 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.routerSub = this.router.events.subscribe(e => {
+        this.routerSub = this.router.events.subscribe((e) => {
             if (e instanceof NavigationEnd) {
                 this.uri = _.trimStart(e.urlAfterRedirects, '/');
 
@@ -102,14 +102,14 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
 
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
             this.favoritesService.getHomePageAndFavorites().subscribe(
-                homefav => {
+                (homefav) => {
                     this.favItems = homefav.Favorites;
                     this.homePageItem = homefav.Homepage;
                 }
             );
         });
 
-        this.subObjectChange = this.secondaryNavService.currentObject$.subscribe(c => {
+        this.subObjectChange = this.secondaryNavService.currentObject$.subscribe((c) => {
             if (c) {
                 if (c.isType) {
                     this.currentObject = c.objectType;
@@ -121,7 +121,7 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
                 this.Uid = c.Uid;
             }
             this.favoritesService.getHomePageAndFavorites().subscribe(
-                homefav => {
+                (homefav) => {
                     this.favItems = homefav.Favorites;
                     this.homePageItem = homefav.Homepage;
                 }
@@ -130,7 +130,7 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
 
         this.showShoppingCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
 
-        this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe(x => {
+        this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe((x) => {
             this.headerActionsService.showFollow = x.showFollow;
         });
 

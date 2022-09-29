@@ -106,12 +106,12 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         var type = this.result.ID.toString().split('|')[0];
         var id = this.result.ID.toString().split('|')[1];
         this.shoppingCartService.addShoppingCartItem(this.type, +id, 1)
-            .subscribe(r => this.showMessageForResult(this.messagesService, r));
+            .subscribe((r) => this.showMessageForResult(this.messagesService, r));
     }
 
     formatPathAsString(): string {
         if (this.result.Group && this.result.AssetPath) {
-            return this.result.Group + ' > ' + this.result.AssetPath.map(p => p.Key.join(' / ') + ' (' + p.AssetType + ')').join(' > ');
+            return this.result.Group + ' > ' + this.result.AssetPath.map((p) => p.Key.join(' / ') + ' (' + p.AssetType + ')').join(' > ');
         }
         return '';
     }

@@ -46,7 +46,7 @@ export class ReuseInterceptor implements HttpInterceptor {
                 }
             }),
             cancellableShareReplayLast(),
-            map(x => cloneDeep(x))
+            map((x) => cloneDeep(x))
         );
 
         this.cache.set(cacheKey, {
@@ -61,7 +61,7 @@ export class ReuseInterceptor implements HttpInterceptor {
         const safeUrls = new Set([
             'api/v2/errors/log/clienterror',
             'webanalytics/logactivity'
-        ].map(k => k.toLowerCase()));
+        ].map((k) => k.toLowerCase()));
 
         if (safeUrls.has(req.url.toLowerCase())) {
             return false;

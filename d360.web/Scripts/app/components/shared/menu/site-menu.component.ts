@@ -99,7 +99,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private rebuildCounts() {
         this.siteMenuService.getCounts().subscribe((res) => {
             this.countData = res;
-            this.siteMenu.forEach(menu => {
+            this.siteMenu.forEach((menu) => {
                 this.loadCounts(menu, res);
             });
         });
@@ -183,13 +183,13 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         let navigationState: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu")) ? JSON.parse(localStorage.getItem("NavigationMenu")) : [];
 
         this.siteMenuService.getMenu().subscribe(
-            result => {
+            (result) => {
 
                 // used to enable guard that allows access to administrative routes                                
                 this.authenticationService.isAdmin = result.IsAdmin;
                 this.isAdmin = result.IsAdmin;
 
-                result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
+                result.MenuItems = result.MenuItems.filter((x) => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
                 if (!this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
                     result.MenuItems = result.MenuItems.filter((x) => (x.MenuID !== '#SemanticTypes'));
                 }
@@ -257,13 +257,13 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
                     //add logic around the admin menus starting as expanded
                     //only add if it doesn't already exist.
-                    if (!navigationState.some(x => x.SiteMenuID == this.adminMenu.MenuID)) {
+                    if (!navigationState.some((x) => x.SiteMenuID == this.adminMenu.MenuID)) {
                         navigationState.push(
                             {
                                 SiteMenuID: this.adminMenu.MenuID,
                                 DisplayElements: [
-                                    { ParentUrl: null, Url: this.adminMenu.NavigationItems.find(item => item.Name == "Integration").Name },
-                                    { ParentUrl: null, Url: this.adminMenu.NavigationItems.find(item => item.Name == "Security").Name }
+                                    { ParentUrl: null, Url: this.adminMenu.NavigationItems.find((item) => item.Name == "Integration").Name },
+                                    { ParentUrl: null, Url: this.adminMenu.NavigationItems.find((item) => item.Name == "Security").Name }
                                 ]
                             });
                     }
@@ -275,7 +275,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
             }).add(() => {
                 //set the nav state for each of the siteMenu elements
                 this.siteMenuService.getCounts().subscribe((res) => {
-                    this.siteMenu.forEach(menu => {
+                    this.siteMenu.forEach((menu) => {
                         this.setNavState(navigationState, menu.NavigationItems, menu.MenuID, menu.ngUrl);
                         this.loadCounts(menu, res);
                     });
@@ -407,9 +407,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     private setNavState(currentNavState: NavigationState[], menuItems: SiteMenuItem[], siteMenuID: string, parentUrl: string) {
-        menuItems.forEach(menuItem => {
+        menuItems.forEach((menuItem) => {
             if (!menuItem.ShowChildren) {
-                menuItem.ShowChildren = currentNavState.some(y => y.SiteMenuID == siteMenuID && y.DisplayElements.findIndex(element => (element.Url == menuItem.Url) || (!element.ParentUrl && element.Url == menuItem.Name)) >= 0);
+                menuItem.ShowChildren = currentNavState.some((y) => y.SiteMenuID == siteMenuID && y.DisplayElements.findIndex((element) => (element.Url == menuItem.Url) || (!element.ParentUrl && element.Url == menuItem.Name)) >= 0);
 
                 if (menuItem.Items && menuItem.Items.length > 0) {
                     this.setNavState(currentNavState, menuItem.Items, siteMenuID, menuItem.Url);

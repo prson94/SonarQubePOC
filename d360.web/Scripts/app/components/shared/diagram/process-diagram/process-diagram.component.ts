@@ -179,9 +179,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.processService.getAvailableNodes(this.assetUid)
             .subscribe((res) => {
                 this.assetTypeNodes = res;
-                this.events = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Event);
-                this.activities = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Activity);
-                this.gateways = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Gateway);
+                this.events = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Event);
+                this.activities = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Activity);
+                this.gateways = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Gateway);
 
                 var nodeHeight = 130;
                 var numberOfEventRows = this.events.length % 2 == 0 ? this.events.length / 2 : (this.events.length + 1) / 2;
@@ -262,7 +262,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
 
         if (this.selectedNodeData && this.selectedNodeData.key.indexOf('new_instance_') > -1) {
-            var newUid = this.newInstancesMap.find(x => x.oldKey == this.selectedNodeData.key).newKey;
+            var newUid = this.newInstancesMap.find((x) => x.oldKey == this.selectedNodeData.key).newKey;
             this.newInstancesMap = [];
             var part = this.myDiagram.findPartForKey(newUid);
             if (part) {
@@ -370,7 +370,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.myDiagram)
             return 0;
 
-        return this.myDiagram.selection.filter(x => x.category == 'activity' || x.category == 'event' || x.category == 'gateway').count;
+        return this.myDiagram.selection.filter((x) => x.category == 'activity' || x.category == 'event' || x.category == 'gateway').count;
     }
 
     get deleteModelTitle(): string {
@@ -401,7 +401,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     deleteSelectedNode() {
         if (this.isEditMode) {
             this.myDiagram.selection;
-            this.myDiagram.selection.each(x => {
+            this.myDiagram.selection.each((x) => {
                 this.myDiagram.remove(x);
             });
         }
@@ -499,7 +499,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.addDiagramListener("ExternalObjectsDropped", function (e) {
             // stop any ongoing text editing
-            e.diagram.selection.each(data => {
+            e.diagram.selection.each((data) => {
                 try {
                     var nodeData = data.data;
                     var newGuid = self.newGuid();
@@ -598,7 +598,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             return '';
         var m = JSON.parse(model.toJson().replace(`\"isReadOnly\": true,`, ''));
         if (m && m.nodeDataArray) {
-            m.nodeDataArray.forEach(d => {
+            m.nodeDataArray.forEach((d) => {
                 delete d['relCount'];
             });
         }
@@ -615,11 +615,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             maxSize: new go.Size(Infinity, Infinity)
         }).toString();
         this.processService.putProcessDiagram(this.assetUid, JSON.parse(this.myDiagram.model.toJson()))
-            .subscribe(res => {
+            .subscribe((res) => {
                 if (res.hasError) {
                     this.isSaving = false;
                     this.validationErrors = res;
-                    this.areNamesUnique = this.validationErrors.errors.some(x => x.ErrorType == 'CustomUniqueName');
+                    this.areNamesUnique = this.validationErrors.errors.some((x) => x.ErrorType == 'CustomUniqueName');
 
                     this.updateValidationData();
                     this.isErrorModalOpened = true;
@@ -633,7 +633,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.cdRef.markForCheck();
                 }
             },
-                err => {
+                (err) => {
                     console.log(err);
 
                 });
@@ -651,7 +651,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
         this.isSaveDisabled = true;
         this.processService.getProcessDiagram(this.assetUid)
-            .subscribe(response => {
+            .subscribe((response) => {
 
                 var res = response.model;
                 this.assetDetail = response.assetDetail;
@@ -661,7 +661,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 }
 
                 if (res && res.nodeDataArray && res.nodeDataArray.length > 0) {
-                    res.nodeDataArray.forEach(x => {
+                    res.nodeDataArray.forEach((x) => {
                         x.icon = FontAwesomeHelper.GetHtmlCode(x.icon);
                         x.refItemColor = this.getNodeColor(x);
                         x.governanceDisplayValue = this.getNodeRoleName(x);
@@ -686,11 +686,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
                 if (selectedItem) {
                     var name = selectedItem['Name'];
-                    var selectedNode = this.myDiagram.nodes.filter(x => x.data['Name'] === name).first();
+                    var selectedNode = this.myDiagram.nodes.filter((x) => x.data['Name'] === name).first();
 
                     if (!selectedNode) {
                         var key = selectedItem['key'];
-                        selectedNode = this.myDiagram.nodes.filter(x => x.data['key'] === key).first();
+                        selectedNode = this.myDiagram.nodes.filter((x) => x.data['key'] === key).first();
                     }
                     if (selectedNode) {
                         this.selectedNodeData = selectedNode.data;
@@ -776,7 +776,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
         if (this.myDiagram && this.myDiagram.nodes) {
             this.nodeNames = [];
-            this.myDiagram.nodes.each(node => {
+            this.myDiagram.nodes.each((node) => {
                 if (node && node.data && node.data['Name'])
                     this.nodeNames.push(node.data['Name']);
             });
@@ -798,7 +798,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private getNodeColor(data: any) {
         try {
-            var item = this.colors.find(x => +x.ObjectID == +data.GovernanceRole);
+            var item = this.colors.find((x) => +x.ObjectID == +data.GovernanceRole);
             if (item && item.Value)
                 return item.Value;
         }
@@ -810,7 +810,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private getNodeRoleName(data: any) {
         try {
-            var item = this.colors.find(x => +x.ObjectID == +data.GovernanceRole);
+            var item = this.colors.find((x) => +x.ObjectID == +data.GovernanceRole);
             if (item)
                 return item.DisplayValue;
         }
@@ -837,8 +837,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
             try {
                 this.myDiagram.model.commit(function (m) {
-                    m.nodeDataArray.forEach(data => {
-                        if (errors.map(x => x.AssetUid).some(x => x == data.key)) {
+                    m.nodeDataArray.forEach((data) => {
+                        if (errors.map((x) => x.AssetUid).some((x) => x == data.key)) {
                             m.set(data, 'hasError', true);
                             if (!selectedKey) {
                                 selectedKey = data.key;
@@ -910,7 +910,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         var eventArr = [];
         // now add the initial contents of the Palette
-        this.events.forEach(ev => {
+        this.events.forEach((ev) => {
             eventArr.push({
                 category: 'event',
                 refItemColor: this.defaultStrokeColor,
@@ -956,7 +956,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         var activitiesArr = [];
         // now add the initial contents of the Palette
-        this.activities.forEach(ev => {
+        this.activities.forEach((ev) => {
             activitiesArr.push({
                 category: 'activity',
                 refItemColor: this.defaultStrokeColor,
@@ -1002,7 +1002,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         var gatewaysArr = [];
         // now add the initial contents of the Palette
-        this.gateways.forEach(ev => {
+        this.gateways.forEach((ev) => {
             gatewaysArr.push({
                 category: 'gateway',
                 refItemColor: this.defaultStrokeColor,
@@ -1036,7 +1036,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.isExporting = true;
         this.cdRef.detectChanges();
         this.processService.downloadProcessExcel(this.assetUid, this.processDiagramBase64)
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.isExporting = false;
                 this.processService.downloadFile(data, fileName);
                 this.cdRef.detectChanges();
@@ -1117,12 +1117,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     closeRelationshipModel() {
         this.processService.getProcessDiagramBadges(this.assetUid)
-            .subscribe(badges => {
+            .subscribe((badges) => {
                 this.isRelatedAssetsVisible = false;
 
                 try {
                     this.myDiagram.model.commit(function (m) {
-                        badges.forEach(asset => {
+                        badges.forEach((asset) => {
                             var data = m.findNodeDataForKey(asset.AssetUid);
                             if (data)
                                 m.set(data, 'relCount', asset.RelationshipCount.toString());
@@ -1158,7 +1158,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private loadAssetsForImport() {
         if (!this.areImportAssetsLoaded) {
-            this.processService.getImportOptions(this.assetUid).subscribe(res => {
+            this.processService.getImportOptions(this.assetUid).subscribe((res) => {
                 this.importAssets = res;
                 this.areImportAssetsLoaded = true;
                 if (this.importAssets && this.importAssets.length > 0) {
@@ -1187,7 +1187,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.isSaving = true;
 
         this.processService.replaceProcessDiagram(this.assetUid, this.selectedImportFromAsset['uid'])
-            .subscribe(res => {
+            .subscribe((res) => {
                 if (res.hasError) {
                     this.isImporting = false;
                     this.isSaving = false;
@@ -1207,7 +1207,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.hasPassedRelationshipCheck = false;
         this.loadingRelationships = true;
         this.processService.getIgnoredRelationshipsForCopy(assetUid)
-            .subscribe(res => {
+            .subscribe((res) => {
                 if (res && res.length == 0) {
                     this.hasPassedRelationshipCheck = true;
                 }

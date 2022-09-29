@@ -93,7 +93,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
     getLabels() {
         this.isLoading = true;
-        this.connectorLabelService.getLabelList().subscribe(res => {
+        this.connectorLabelService.getLabelList().subscribe((res) => {
             this.labels = [];
             if (res && res.length > 0) {
                 this.labels = res.sort((a, b) => a.Value.localeCompare(b.Value));
@@ -128,7 +128,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         }
         this.isSaving = true;
         var children = [];
-        this.selected.forEach(label => {
+        this.selected.forEach((label) => {
             if (label.uid != this.consolidateValue) {
                 children.push(label.uid);
             }
@@ -164,7 +164,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
     consolidateLabels(parentUid: string, childrenUids: string[]) {
         this.connectorLabelService.consolidateConnectorLabels(parentUid, childrenUids)
-            .subscribe(result => {
+            .subscribe((result) => {
 
                 if (result) {
 
@@ -178,7 +178,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 this.showConsolidationPopup = false;
                 this.showEditor = false;
                 this.isSaving = false;
-            }, err => {
+            }, (err) => {
                 this.showMessageForResult(this.messagesService, err);
                 this.showConsolidate = false;
                 this.showEditor = false;
@@ -188,7 +188,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
     deleteLabel() {
         this.connectorLabelService.deleteLabels(this.selected).
-            subscribe(result => {
+            subscribe((result) => {
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
@@ -197,7 +197,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 this.getLabels();
                 this.showDelete = false;
                 this.cdRef.markForCheck();
-            }, err => this.showMessageForResult(this.messagesService, err));
+            }, (err) => this.showMessageForResult(this.messagesService, err));
     }
 
     private lastLoadedUid: string = '';
@@ -252,7 +252,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     exportUsage() {
-        this.selected.forEach(item => {
+        this.selected.forEach((item) => {
             this.connectorLabelService.exportLabelUsage(item.uid, $localize`Where Used report for Connector Label "${item.Value}"`);
         });
     }
@@ -268,8 +268,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
         if (event && element) {
             if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
-                if (this.selected.filter(x => x.uid == item.uid).length > 0) {
-                    this.selected = this.selected.filter(x => x.uid != item.uid);
+                if (this.selected.filter((x) => x.uid == item.uid).length > 0) {
+                    this.selected = this.selected.filter((x) => x.uid != item.uid);
                     this.triggerRerenderOfSelection();
                 }
                 else {
@@ -314,8 +314,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
             this.selected.push(item);
             this.lastSelectedElement = item;
         } else {
-            if (this.selected.filter(x => x.uid == item.uid).length > 0) {
-                this.selected = this.selected.filter(x => x.uid != item.uid);
+            if (this.selected.filter((x) => x.uid == item.uid).length > 0) {
+                this.selected = this.selected.filter((x) => x.uid != item.uid);
                 this.triggerRerenderOfSelection();
             }
             else {

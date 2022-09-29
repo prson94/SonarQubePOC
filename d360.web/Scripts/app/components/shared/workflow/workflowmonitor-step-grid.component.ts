@@ -107,8 +107,8 @@ export class WorkflowMonitorStepGridComponent extends BaseComponent implements O
 
     load() {
         if (this.itemSteps != null) {
-            this.showAssigneeColumn = (this.itemSteps.find(i => i.ActivityType == WorkflowActivityType.Form) != null);
-            let index = this.itemSteps.findIndex(x => x.StepID == this.stateService.workflowItemFilters.stepId && x.ItemID == this.stateService.workflowItemFilters.itemId);
+            this.showAssigneeColumn = (this.itemSteps.find((i) => i.ActivityType == WorkflowActivityType.Form) != null);
+            let index = this.itemSteps.findIndex((x) => x.StepID == this.stateService.workflowItemFilters.stepId && x.ItemID == this.stateService.workflowItemFilters.itemId);
             index = (index == -1) ? 0 : index;
             this.selection = this.itemSteps[index];
             this.selectionChange.emit(this.selection);

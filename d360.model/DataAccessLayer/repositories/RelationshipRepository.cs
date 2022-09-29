@@ -182,7 +182,7 @@ namespace d360.model.DataAccessLayer
 					{
 						dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
 						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";
-						fieldTypes = companyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }, ApiTimeout).ToList();
+						fieldTypes = companyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on I.ID = F.IntersectTypeID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }, ApiTimeout).ToList();
 					}
 				}
 				if (queryParamsList.Any(k => k.Key.ToLower() == "_listcolorsasjson"))
@@ -527,8 +527,8 @@ namespace d360.model.DataAccessLayer
 				//apply data to check which side on relationship are we
 				fieldJoins.Add(@"outer apply (select case when I.SubjectAssetID = @assetId then 'Subject' else 'Object' end as Value)Side", null);
 				//depending on relationship side reslove relationship type name and asset name
-				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ')),'---')
-				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ')),'---') end as RelationshipTypeName,
+				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(coalesce(O.AssetTypeID,OT1.ID, OT2.ID), ' > ')),'---')
+				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(coalesce(S.AssetTypeID,ST1.ID,ST2.ID), ' > ')),'---') end as RelationshipTypeName,
 				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
 				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData", null);
 			}
@@ -537,8 +537,8 @@ namespace d360.model.DataAccessLayer
 				//apply data to check which side on relationship are we
 				fieldJoins.Add(@"outer apply (select case when I.SubjectAssetTypeID = @assetTypeId and I.SubjectAssetID = 0 then 'Subject' else 'Object' end as Value)Side", null);
 				//depending on relationship side reslove relationship type name and asset name
-				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ')),'---')
-				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ')),'---') end as RelationshipTypeName,
+				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(coalesce(O.AssetTypeID,OT1.ID, OT2.ID), ' > ')),'---')
+				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(coalesce(S.AssetTypeID,ST1.ID,ST2.ID), ' > ')),'---') end as RelationshipTypeName,
 				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
 				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData", null);
 			}
@@ -628,7 +628,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
 			fieldTypes = companyContext.Query<FieldType>(
 				$@"select F.* from FieldType F 
-					inner join IntersectType IT on F.Object = 'IntersectType' and IT.ID = F.ObjectID 
+					inner join IntersectType IT on and IT.ID = F.IntersectTypeID
 					inner join [intersect] I on I.IntersectTypeID = IT.ID
 					WHERE I.uid = @uid"
 				, new { uid }, ApiTimeout).ToList();
@@ -759,7 +759,7 @@ select	I.Id,
 		coalesce(I.ObjectClass,0) as 'Object.Class',
 		I.ObjectCardinality as 'Object.Cardinality'
 		{(includeHasFieldTypes ? @",case 
-								when exists (select top 1 1 from FieldType where [Object] = 'IntersectType' and [ObjectId] = I.ID)
+								when exists (select top 1 1 from FieldType where IntersectTypeID = I.ID)
 									then 1
 									else 0
 								end as 'HasFieldTypes'" : "")}
@@ -859,8 +859,7 @@ from	IntersectType I
 			var sql = @"WITH CTE (ObjectID, " + customColumnName +
 				") AS ( SELECT ObjectId, " + customColumnName +
 				" FROM ( select f2.ObjectID, f.FriendlyName,FormattedValue from fieldtype f  " +
-				"inner join field f2 on f2.fieldtypeid = f.id where f.[object] = 'IntersectType'" +
-				" and f.objectid = @id  ) as PivotData " +
+				"inner join field f2 on f2.fieldtypeid = f.id where f.IntersectTypeID = @id  ) as PivotData " +
 				"PIVOT (max(FormattedValue) FOR FriendlyName IN (" + customColumnName + ") ) AS PivotResult) " +
 				"select i.ID, i.[Subject],i.SubjectID, i.SubjectName, i.SubjectTypeName, i.[Object], " +
 				"i.ObjectID, i.ObjectName, i.ObjectTypeName, i.PredicateName , i.SubjectUid, i.ObjectUid, " + CteColumnName +
@@ -1221,7 +1220,7 @@ where	Id = @Id
 			return companyContext.Query<dynamic>(
 				@"select distinct  f.Name   as Name,f.FriendlyName as FriendlyName, f.ColumnOrder from fieldtype f  
 				inner join IntersectType i on i.uid = @uid
-				 where f.[object] = 'IntersectType' and f.objectid = i.ID and IsListable = 1
+				 where f.IntersectTypeID = i.ID and IsListable = 1
 				 order by f.ColumnOrder", new { uid = intersectUid }, apiTimeout);
 		}
 

@@ -1365,13 +1365,156 @@ delete [Setting] where ID = 50
 	</sql>
   </changeSet>
   
-    <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-18538-2">
-	<comment>GOV-18538 - Update Routes for new routing.</comment>	
+    <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-18538-4">
+	<comment>GOV-18538 - Update missing asset/asset type ids + Update Routes for new routing.</comment>	
 	<sql dbms="mssql"
             endDelimiter="GO"
             splitStatements="true"
             stripComments="false">
 	<![CDATA[
+			update F
+		set f.AssetTypeID = at.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'reference;referenceListId=', '') as uniqueidentifier))Data(uid)
+		inner join AssetType At on At.uid = Data.uid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like '%reference;referenceListId=%'
+
+
+		update F
+		set f.AssetID = a.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'resource/', '') as int))Data(objectId)
+		inner join asset a on a.ObjectID = data.objectId and a.Object ='Resource'
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'resource%'
+
+		update F
+		set f.AssetID = a.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'sidebar/comments/', '') as uniqueidentifier))Data(uid)
+		inner join asset a on a.uid = data.uid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'sidebar/comments/%'
+
+
+		update F
+		set f.AssetTypeID = at.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'sidebar/visualization/diagram/', '') as int))Data(objectId)
+		inner join AssetType at on at.ObjectID = data.objectId and at.Object = 'TaxonomyType'
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'sidebar/visualization/diagram/%'
+
+
+		update F
+		set f.AssetID = a.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'sidebar/actions/Artifact/', '') as int))Data(objectId)
+		inner join Asset A on A.ObjectID = Data.objectid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'sidebar/actions/Artifact/%'
+
+		update F
+		set f.AssetTypeID = at.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'artifact/', '') as int))Data(objectId)
+		inner join AssetType AT on AT.ObjectID = Data.objectid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'artifact/%'
+
+		update F
+		set f.AssetID = a.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'sidebar/visualization/browser/', '') as uniqueidentifier))Data(uid)
+		inner join Asset a on a.uid = data.uid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'sidebar/visualization/browser/%'
+
+		update F
+		set f.AssetID = a.ID
+		from dbo.Favorite f
+		cross apply(
+		SELECT try_cast(REVERSE(LEFT(REVERSE(f.Route), CHARINDEX('/', REVERSE(f.Route)) - 1)) as int))Data(objectid)
+		inner join Asset a on a.ObjectID = data.objectid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'sidebar/workflowmonitor/%' and route not like '%Type%'
+
+		update F
+		set f.AssetTypeID = at.ID
+		from dbo.Favorite f
+		cross apply(
+		SELECT try_cast(REPLACE(REVERSE(LEFT(REVERSE(f.Route), CHARINDEX('/', REVERSE(f.Route)) - 1)),';isAdminPage=false','') as int))Data(objectid)
+		inner join AssetType at on at.ObjectID = data.objectid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'sidebar/workflowmonitor/%' and route like '%Type%'
+
+		update F
+		set f.AssetID = a.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'sidebar/relationships/Artifact/', '') as int))Data(objectid)
+		inner join Asset a on a.ObjectID = data.objectid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'sidebar/relationships/Artifact/%'
+
+		update F
+		set f.AssetID = a.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'sidebar/relationships/Policy/', '') as int))Data(objectid)
+		inner join Asset a on a.ObjectID = data.objectid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'sidebar/relationships/Policy/%'
+
+		update F
+		set f.AssetID = a.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'sidebar/relationships/Taxonomy/', '') as int))Data(objectid)
+		inner join Asset a on a.ObjectID = data.objectid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'sidebar/relationships/Taxonomy/%'
+
+
+		update F
+		set f.AssetID = a.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'sidebar/audit/', '') as uniqueidentifier))Data(uid)
+		inner join Asset a on a.uid = data.uid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'sidebar/audit/%'
+
+		update F
+		set f.AssetID = a.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'sidebar/ownership/', '') as int))Data(objectid)
+		inner join Asset a on a.ObjectID = data.objectid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'sidebar/ownership/%'
+
+		update F
+		set f.AssetID = a.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'sidebar/comments/', '') as uniqueidentifier))Data(uid)
+		inner join Asset a on a.uid = data.uid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'sidebar/comments/%'
+
+		update F
+		set f.AssetTypeID = at.ID
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(REPLACE(f.Route, 'model/', ''),'/structure','') as int))Data(objectid)
+		inner join AssetType AT on AT.ObjectID = DATA.objectid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'model/%' and route like '%/structure'
+
+		update F
+		SET F.Route = concat('dashboard/',cast(r.uid as nvarchar(max)),'/preview')
+		from dbo.Favorite f
+		cross apply(select try_cast(REPLACE(f.Route, 'dashboard/', '') as int))Data(reportid)
+		inner join dbo.Report r on r.ID = data.reportid
+		where f.AssetID is null and f.AssetTypeID is null and f.SemanticID is null
+		and route like 'dashboard/%'
+	
+	
 		update dbo.Favorite 
 		set Route = 'assets/class/Reference' 
 		where Route = 'reference' and Type = 'ResourceListPage'
@@ -1554,11 +1697,6 @@ set Route = CONCAT('assets/',cast(at.uid as nvarchar(max)))
 from SiteNav S
 inner join AssetType AT on AT.Object = S.Object AND AT.ObjectID = S.ObjectID
 where S.Route is not null
-
-delete f
-from Favorite f
-left join AssetType at on at.uid = f.Uid
-where at.uid is null and route like '%artifact/%' and [Type] = 'AssetType' and AssetTypeID is null
 	]]>
 	</sql>
   </changeSet>
@@ -1665,6 +1803,23 @@ from	workflow.EventRegistration T
 		]]>
     </rollback>
   </changeSet>
+
+<changeSet author="Pappas" id="Data.Corrections.GOV-19761">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+update	I
+set		I.SubjectAssetID = A.ID
+from	[Intersect] I
+		inner join IntersectType T on T.ID = I.IntersectTypeID and I.SubjectAssetID = 0
+		inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] in (3,4)
+		inner join Asset A on A.Object = I.Subject and A.ObjectID = I.SubjectID
+		]]>
+    </sql>
+  </changeSet>
+
       <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-17952-2">
 	<comment>GOV-17952 - remove organizations from Govern</comment>	
 	<sql dbms="mssql"

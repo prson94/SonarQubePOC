@@ -75,7 +75,7 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
         this.isSubmitting = true;
         this.workflowService.submitBulkWorkflowForm(this.model)
             .pipe(
-                map(r => {
+                map((r) => {
                 this.isCompleted = true;
                 if (r && r.omittedCount)
                     this.omittedCount = r.omittedCount;

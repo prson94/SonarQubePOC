@@ -1514,7 +1514,7 @@ namespace d360.model.DataAccessLayer
 
 			string GetBaseQuery(bool excludeFilterQueries = false)
 			{
-				bool needsNodeData = OrderMainQuery.ToLower().Contains("node.") || whereSql.ToLower().Contains("node.");
+				bool needsNodeData = OrderMainQuery.ToLower().Contains("node.") || whereSql.ToLower().Contains("node.") || includedJoins.SQLJoinStatement.ToLower().Contains("node.");
 
 				return $@"
 				select  A.ID

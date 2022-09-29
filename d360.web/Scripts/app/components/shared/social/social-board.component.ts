@@ -79,7 +79,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         this.isLoading = true;
         if (this.assetUid) {
             this.socialService.getComments(this.assetUid, this.daysToLookBack, this.pageNumber, this.rowCount, this.limitToType)
-                .subscribe(res => {
+                .subscribe((res) => {
                     this.isLoading = false;
                     this.comments = this.comments.concat(res.comments);
                     this.hasMore = (res.count > this.comments.length);
@@ -89,7 +89,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         }
         else {
             this.socialService.getCommentForFollowers(this.followerUid, this.daysToLookBack, this.pageNumber, this.rowCount, this.limitToType)
-                .subscribe(res => {
+                .subscribe((res) => {
                     this.isLoading = false;
                     this.comments = this.comments.concat(res.comments);
                     this.hasMore = (res.comments.length && res.comments.length > 0);
@@ -112,7 +112,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         this.isLoading = true;
 
         this.socialService.deleteComment(comment.Uid).
-            subscribe(res => {
+            subscribe((res) => {
                 if (res) {
                     comment.IsDeleted = true;
                     let index = this.comments.findIndex((x) => x.ID == comment.ID);

@@ -22,7 +22,7 @@ export class DiagramComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
 			this.baseAssetTypeUid = params['assetTypeUid']; // (+) converts string 'id' to a number       
         });
     }

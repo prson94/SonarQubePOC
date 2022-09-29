@@ -66,7 +66,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
             this.headerBreadcrumbService.clearCurrentObjectInfo();
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
 
-            this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
+            this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
                 this.clearSidebar();
                 this.secondaryNavService.setCurrentArea(res, icon, $localize`Community`);
                 this.secondaryNavService.clearCurrentObject();
@@ -81,7 +81,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
     private load() {
         this.isLoading = true;
         this.responsibilityTypeService.getResponsibilityTypeBreakdown().
-            subscribe(result => {
+            subscribe((result) => {
                 let options: any = {
                     chart: {
                         plotBackgroundColor: null,
@@ -122,7 +122,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                     series: [{
                         name: 'Responsibilities',
                         colorByPoint: true,
-                        data: result.map(x => ({
+                        data: result.map((x) => ({
                             name: x.ResponsibilityType,
                             y: x.Count,
                             id: x.ResponsibilityTypeID,

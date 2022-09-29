@@ -46,7 +46,7 @@ namespace d360.web.Services
                                           .Select(p => p.Name)
                                           .ToList(),
                                       AssetTypeClass = routeMatch.Matcher.ForcedAssetClass ?? favoriteDetails?.AssetTypeClass,
-                                      Name = routeMatch.Matcher.GetName(favoriteDetails?.Name, routeMatch.RouteParams)
+                                      Name = routeMatch.Matcher.GetName(favoriteDetails, routeMatch.RouteParams)
                                   };
 
             return mappedFavorites.ToList();

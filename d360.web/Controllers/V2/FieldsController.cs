@@ -2205,7 +2205,7 @@ namespace d360.web.Controllers.V2
 				{
 					string sql = "";
 
-					if (!atype.Hierarchical)
+					if (atype.Class != AssetTypeClass.Model && atype.Class != AssetTypeClass.Policy)
 					{
 						if (!string.IsNullOrEmpty(filter))
 						{
@@ -2284,7 +2284,7 @@ namespace d360.web.Controllers.V2
 					var resultsAssets = await Company.Connection.QueryMultipleAsync(cmd);
 					var items = resultsAssets.Read<DDLSelectItem>().ToList();
 
-					if (atype.Hierarchical && (skip == null || skip == 0))
+					if ((atype.Class == AssetTypeClass.Model || atype.Class == AssetTypeClass.Policy) && (skip == null || skip == 0))
 					{
 						items = items.Prepend(new DDLSelectItem { text = "- Root -", value = Guid.Empty.ToString() }).ToList();
 					}
@@ -2929,6 +2929,12 @@ namespace d360.web.Controllers.V2
 						if (f.Type == DataType.Path.ToString())
 						{
 							c.Type.Path = new FieldTypeDataTypePathApiViewModel();
+
+							if (f.Definition != null)
+							{
+								c.Type.Path.Definition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(f.Definition);
+							}
+
 						}
 
 						if (f.Type == DataType.Color.ToString())

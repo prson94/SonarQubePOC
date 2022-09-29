@@ -121,7 +121,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 				})
 			)
 			.subscribe(
-				artifact => {
+				(artifact) => {
 					this.artifact = artifact;
 					this.synonymPermission = artifact.SynonymPermission;
 
@@ -151,7 +151,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 							});
 					}
 				},
-				err => {
+				(err) => {
 					this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
 				}
 			)

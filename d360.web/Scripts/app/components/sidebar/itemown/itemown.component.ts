@@ -37,7 +37,7 @@ export class ItemOwnComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.resourceId = +params['resourceID']; // (+) converts string 'id' to a number
             this.buildSecondaryNavigationForObject(this.resourceId, 'Resource');
         });

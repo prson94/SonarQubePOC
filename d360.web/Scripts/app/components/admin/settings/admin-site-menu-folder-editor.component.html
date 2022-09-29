@@ -5,7 +5,7 @@
 			<header *ngIf="!isEdit" i18n>Add Folder</header>
 			<header *ngIf="isEdit" i18n>Edit Folder</header>
 			<div class="sub-header" *ngIf="!isLoading">
-				<ng-container i18n>Site Navigation</ng-container> {{(navigationFolder?.title ? '> ' + navigationFolder?.title : '')}}
+				<ng-container i18n>Site Navigation</ng-container> {{(navigationFolder?.Title ? '> ' + navigationFolder?.Title : '')}}
 				<span *ngIf="requiredCount > 0"
 					  class="requiredCount req noselect"
 					  tabindex="1"
@@ -70,7 +70,7 @@
 										<div class="selected-count" *ngIf="_tempSelectedFolderItems && _tempSelectedFolderItems.length === 1" i18n>1 item selected</div>
 										<div class="selected-count" *ngIf="_tempSelectedFolderItems && _tempSelectedFolderItems.length > 1" i18n>{{_tempSelectedFolderItems.length}} items selected</div>
 									</div>
-									<div class="table-wrapper" style="max-height: calc(100vh - 420px; min-height: 300px);">
+									<div class="table-wrapper">
 										<p-table #dt3
 													[globalFilterFields]="['Title']"
 													[loading]="isAvailableFolderItemsTableLoading"

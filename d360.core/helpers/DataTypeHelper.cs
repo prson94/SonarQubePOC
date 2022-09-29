@@ -75,7 +75,6 @@ namespace d360.core.helpers
                 DataType.File.ToString(),
                 DataType.JSON.ToString(),
                 DataType.OwnershipLookup.ToString(),
-                DataType.Path.ToString(),
                 DataType.Relationship.ToString(),
                 DataType.RefListRelationship.ToString(),
                 DataType.Tag.ToString(),
