@@ -215,7 +215,7 @@ namespace d360.model
 			return Query<dynamic>(@"
 									select		'Column' + cast(LC.ColumnIndex as varchar) as datafield,
 												LC.Name as text,
-												Lower(FT.[Type]) as type
+												Lower(FT2.[Type]) as type
 									from		LoadColumn LC
 										inner join Load L on (LC.LoadID = L.ID)
 										left join 
@@ -223,7 +223,7 @@ namespace d360.model
 										left Join 
 										FieldType FT1 on ast.ID = FT1.AssetTypeID and LC.Name = FT1.Name
 										left join 
-										FieldType FT2 on L.[Object] = 'IntersectType' and FT2.[ObjectID] = L.[ObjectID] and FT2.[Object] = L.[Object] and LC.Name = FT2.Name
+										FieldType FT2 on L.[Object] = 'IntersectType' and FT2.[IntersectTypeID] = L.[ObjectID] and LC.Name = FT2.Name
 									where		LoadID = @id
 									order by	ColumnIndex", new { id });
 		}
