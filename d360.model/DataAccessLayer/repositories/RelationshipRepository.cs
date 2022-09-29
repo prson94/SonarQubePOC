@@ -527,8 +527,8 @@ namespace d360.model.DataAccessLayer
 				//apply data to check which side on relationship are we
 				fieldJoins.Add(@"outer apply (select case when I.SubjectAssetID = @assetId then 'Subject' else 'Object' end as Value)Side", null);
 				//depending on relationship side reslove relationship type name and asset name
-				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ')),'---')
-				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ')),'---') end as RelationshipTypeName,
+				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(coalesce(O.AssetTypeID,OT1.ID, OT2.ID), ' > ')),'---')
+				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(coalesce(S.AssetTypeID,ST1.ID,ST2.ID), ' > ')),'---') end as RelationshipTypeName,
 				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
 				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData", null);
 			}
@@ -537,8 +537,8 @@ namespace d360.model.DataAccessLayer
 				//apply data to check which side on relationship are we
 				fieldJoins.Add(@"outer apply (select case when I.SubjectAssetTypeID = @assetTypeId and I.SubjectAssetID = 0 then 'Subject' else 'Object' end as Value)Side", null);
 				//depending on relationship side reslove relationship type name and asset name
-				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ')),'---')
-				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ')),'---') end as RelationshipTypeName,
+				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(coalesce(O.AssetTypeID,OT1.ID, OT2.ID), ' > ')),'---')
+				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(coalesce(S.AssetTypeID,ST1.ID,ST2.ID), ' > ')),'---') end as RelationshipTypeName,
 				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
 				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData", null);
 			}
