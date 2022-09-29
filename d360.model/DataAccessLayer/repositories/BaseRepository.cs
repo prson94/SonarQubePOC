@@ -210,6 +210,14 @@ namespace d360.model.DataAccessLayer.repositories
 					 {
 						 fieldColumns.Add($"('{f.CounterPrefix}' + CAST({tableAlias}.{valueColumn} as nvarchar(max))) as [{columnName}]", f.ID.ToString());
 					 }
+					 else if (f.Type == "Html")
+					 {
+						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"CAST({tableAlias}.{valueColumn} as XML).value('.', 'nvarchar(max)')");
+					 }
+					 else if (f.Type == "Link")
+					 {
+						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"SUBSTRING({tableAlias}.{valueColumn}, 0, CHARINDEX('|', {tableAlias}.{valueColumn})) as [{columnName}]");
+					 }
 					 else
 					 {
 						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString());
@@ -299,9 +307,13 @@ namespace d360.model.DataAccessLayer.repositories
 						 {
 							 fieldColumns.Add($"('{f.CounterPrefix}' + CAST({tableAlias}.{valueColumn} as nvarchar(max))) as [{columnName}]", f.ID.ToString());
 						 }
+						 else if (f.Type == "Html")
+						 {
+							 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"CAST({tableAlias}.{valueColumn} as XML).value('.', 'nvarchar(max)')");
+						 }
 						 else if (f.Type == "Link")
 						 {
-							 fieldColumns.Add($"NULLIF(NULLIF({tableAlias}.{valueColumn},'|'), '') as [{columnName}]", f.ID.ToString());
+							 fieldColumns.Add($"NULLIF(NULLIF({tableAlias}.{valueColumn},'|'), '') as [{columnName}]", f.ID.ToString(), $"SUBSTRING({tableAlias}.{valueColumn}, 0, CHARINDEX('|', {tableAlias}.{valueColumn})) as [{columnName}]");
 						 }
 						 else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
 						 {
