@@ -284,7 +284,6 @@
 	<include file="scripts/Function.dbo.GetAssetBreadcrumbs.xml"/>
 	<include file="scripts/Function.dbo.GetAssetColorJsonByColor.xml"/>	
 	<include file="scripts/Function.dbo.GetAssetTypeBreadcrumbs.xml"/>
-	<include file="scripts/Function.dbo.GetContractValidations.xml"/>
 	<include file="scripts/Function.dbo.GetEmailStepRecipients.xml"/>
 	<include file="scripts/Function.dbo.GetParentObjectId.xml"/>
 	<include file="scripts/Function.dbo.GetRelationshipDisplayValue.xml"/>
