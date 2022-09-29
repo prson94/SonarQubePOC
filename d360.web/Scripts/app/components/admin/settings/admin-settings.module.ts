@@ -2,8 +2,6 @@
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 
-
-
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
@@ -42,12 +40,11 @@ import { AdminSiteMenuAssetTypeEditorComponent } from './admin-site-menu-asset-t
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 import { AdminSearchModule } from "../search/admin-search.module";
+import { TableDataTransferModule } from '../../shared/table-data-transfer/table-data-transfer.module';
 
 @NgModule({
     imports: [CommonModule,
         FormsModule,
-
-
         AdminSettingsRoutingModule,
 
         //prime
@@ -83,7 +80,8 @@ import { AdminSearchModule } from "../search/admin-search.module";
 		SearchFieldModule,
 		PropertyGroupModule,
 		AssetPreviewModule,
-		AdminSearchModule
+		AdminSearchModule,
+        TableDataTransferModule,
     ],
     declarations: [
         AdminSettingsComponent,

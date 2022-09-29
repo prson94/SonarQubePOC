@@ -1,41 +1,28 @@
-﻿import * as _ from 'lodash';
-import {
+﻿import {
 	ChangeDetectionStrategy,
 	ChangeDetectorRef,
-	Component,
-	EventEmitter,
+	Component, ElementRef, EventEmitter,
 	Input,
 	OnChanges,
 	OnInit,
-	Output,
-	ElementRef,
-	ViewEncapsulation,
-	ViewChildren,
-	QueryList,
-	HostListener,
-	AfterViewChecked,
-	SimpleChanges,
-	ViewChild
+	Output, QueryList, SimpleChanges, ViewChildren, ViewEncapsulation
 } from '@angular/core';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { CompanySettings, CompanyImage, } from '../../../models/settings.model';
-import { SemanticMatchType, SemanticSource, SemanticType } from '../../../models/semantic-type.model';
+import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import * as _ from 'lodash';
+import { Table } from 'primeng/table';
+import { forkJoin, Subject } from 'rxjs';
+import { startWith, takeUntil, tap } from 'rxjs/operators';
+import { FormHelper, FormMode } from '../../../models/form.model';
+import { CompanyImage } from '../../../models/settings.model';
+import { SiteNav } from '../../../models/site-menu.model';
 import { DataProfileService } from '../../../services/dataprofile.service';
-import { FormHelper } from '../../../models/form.model';
-import { FormMode } from '../../../models/form.model';
+import { LocaleService } from '../../../services/locale.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { BaseComponent } from '../../shared/base.component';
-import { LocaleService } from '../../../services/locale.service';
-import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
-import { AppSettingsEnum } from '../../../models/settings.model';
-import { SiteNav } from '../../../models/site-menu.model';
-import { StateService } from '../../../services/state.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
-import { Table } from 'primeng/table';
-import { forkJoin } from 'rxjs';
-import { Subject } from 'rxjs';
-import { takeUntil, tap, startWith } from 'rxjs/operators';
+import { StateService } from '../../../services/state.service';
+import { BaseComponent } from '../../shared/base.component';
+import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
 
 @Component({
 	selector: 'd3s-admin-site-menu-folder-editor',
@@ -52,7 +39,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	@Output() closeClick = new EventEmitter();
 	@Output() saveClick = new EventEmitter();
 
-	availableItems: SiteNav[] = [];
+	itemsFromSource: SiteNav[] = [];
 	isBuiltIn: boolean = false;
 	statuses: any[];
 	baseTypes: any;
@@ -65,8 +52,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	iconType = 'icon';
 	isInError: boolean = false;
 	itemsFromTarget: SiteNav[] = [];
-	_tempSelectedFolderItems: any[] = [];
-	selectedItemsFromTarget: SiteNav[] = [];
 	folderModel: SiteNav;
 	folderNameIsFocused: boolean = false;
 	selection: SiteNav = null;
@@ -119,17 +104,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}, 200);
 
 	$destroy = new Subject();
-
-	get isFirstItemFromTargetSelected(): boolean {
-		return this.selectedItemsFromTarget.findIndex((selectedItem) => selectedItem.ObjectID === this.itemsFromTarget[0].ObjectID && selectedItem.Object === this.itemsFromTarget[0].Object) > -1;
-	}
-
-	get isLastItemFromTargetSelected(): boolean {
-		const lastIndex: number = this.itemsFromTarget.length - 1;
-		return this.selectedItemsFromTarget.findIndex((selectedItem): boolean => {
-			return selectedItem.ObjectID === this.itemsFromTarget[lastIndex].ObjectID && selectedItem.Object === this.itemsFromTarget[lastIndex].Object; // eslint-disable-line
-		}) > -1;
-	}
 
 	constructor(
 		private cdRef: ChangeDetectorRef,
@@ -208,9 +182,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			this.folderModel.Icon = this.categories[0].items[0];
 		}
 
-		forkJoin(this.siteMenuService.getSiteNavPermissions(this.navigationFolder.ID),
+		forkJoin([
+			this.siteMenuService.getSiteNavPermissions(this.navigationFolder.ID),
 			this.siteMenuService.getSiteNavFolderItems(this.navigationFolder.ID)
-		)
+		])
 			.subscribe((results) => {
 				let permissions = results[0];
 				let folders = results[1];
@@ -228,10 +203,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				this.addPermissionAssets();
 
 				//preselect folder items
-				this.selectedItemsFromTarget = [];
-				folders.forEach((folder) => {
-					this.itemsFromTarget.push(folder);
-				});
+				this.itemsFromTarget = [...folders];
 
 				this.isAvailableFolderItemsTableLoading = false;
 				this.isPermissionAssetTableLoading = false;
@@ -365,15 +337,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		return "Close";
 	}
 
-	getBaseTypeOptions() {
-	}
-
 	clearInvalidFields() {
 		let allowedFields = ["name", "qualifier", "description", "threshold", "priority", "status", "matchType", "baseType", "source"];
-	}
-
-	validateMinMax() {
-		return true;
 	}
 
 	changeIconType(e: any) {
@@ -472,12 +437,12 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.isAvailableFolderItemsTableLoading = true;
 		this.isPermissionAssetTableLoading = true;
 
-		forkJoin(
+		forkJoin([
 			this.siteMenuService.getSiteNavPermissionsAssets(),
 			this.siteMenuService.getAvailableItems()
-		).subscribe((result) => {
+		]).subscribe((result) => {
 			let perm = result[0];
-			this.availableItems = result[1];
+			this.itemsFromSource = result[1];
 			this.permissionAssetsTotalCount = perm["total"];
 			this.permissionAssets = perm["results"];
 			this.isPermissionAssetTableLoading = false;
@@ -496,16 +461,16 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	addNewFolder(item: SiteNav) {
-		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
-		let i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
+		let x = this.itemsFromSource.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
+		let i = _.cloneDeep(this.itemsFromSource.splice(x, 1)[0]);
 		this.itemsFromTarget.push(i);
 		this.setRequiredCount();
 	}
 
 	deleteNewFolder(item: SiteNav) {
-		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
+		let x = this.itemsFromSource.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
 		let i = _.cloneDeep(this.itemsFromTarget.splice(x, 1)[0]);
-		this.availableItems.push(i);
+		this.itemsFromSource.push(i);
 		this.setRequiredCount();
 	}
 
@@ -515,102 +480,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		el.click();
 	}
 
-	addToSelectedFolderItems() {
-		if (this._tempSelectedFolderItems.length > 0) {
-			for (let j = 0; j < this._tempSelectedFolderItems.length; j++) {
-				if (this.itemsFromTarget.indexOf(this._tempSelectedFolderItems[j]) === -1) { // eslint-disable-line
-					this.itemsFromTarget.push(this._tempSelectedFolderItems[j]); // eslint-disable-line
-					this.availableItems = this.availableItems.filter((x) => x != this._tempSelectedFolderItems[j]);
-				}
-			}
-			this.itemsFromTarget = this.itemsFromTarget.sort((a, b) => a.Title.localeCompare(b.Title));
-			this._tempSelectedFolderItems = [];
-			this.setRequiredCount();
-		}
-		this.itemsFromTarget = [...this.itemsFromTarget];
-		this.cdRef.markForCheck();
-	}
-
-	removeFromSelectedFolderItems() {
-		if (this.selectedItemsFromTarget.length > 0) {
-			for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
-				let x = this.availableItems.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
-				let y = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
-				if (y > -1) {
-					let i = _.cloneDeep(this.itemsFromTarget.splice(y, 1)[0]);
-					if (x === -1) {
-						this.availableItems.push(i);
-					}
-				}
-			}
-			this.availableItems = this.availableItems.sort((a, b) => a.Title.localeCompare(b.Title));
-			this.selectedItemsFromTarget = [];
-			this.setRequiredCount();
-		}
-		this.itemsFromTarget = [...this.itemsFromTarget];
-		this.availableItems = [...this.availableItems];
-		this.cdRef.markForCheck();
-	}
-
-	moveToTop() {
-		if (this.selectedItemsFromTarget.length > 0) {
-			for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
-				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
-				this.itemsFromTarget.splice(j, 0, this.itemsFromTarget.splice(x, 1)[0]);
-			}
-		}
-		this.itemsFromTarget = [...this.itemsFromTarget];
-	}
-
-	isMoveUpPossible(): boolean {
-		return this.selectedItemsFromTarget?.length && !this.isFirstItemFromTargetSelected;
-	}
-
 	setIndexes(arrayOfObjects: object[]): void {
 		arrayOfObjects.forEach((object, i) => {
 			object['index'] = i;
 		});
-	}
-
-	sortSelectedItemsFromTargetByIndexes(array: SiteNav[]): void {
-		array.sort((a, b) => a.index - b.index);
-	}
-
-	reverseSortSelectedItemsFromTargetByIndexes(array: SiteNav[]): void {
-		array.sort((a, b) => b.index - a.index);
-	}
-
-	moveUp() {
-		this.setIndexes(this.itemsFromTarget);
-		this.sortSelectedItemsFromTargetByIndexes(this.selectedItemsFromTarget);
-		this.selectedItemsFromTarget.forEach((selectedItemFromTarget: SiteNav) => {
-			this.itemsFromTarget.splice(selectedItemFromTarget.index - 1, 0, this.itemsFromTarget.splice(selectedItemFromTarget.index, 1)[0]);
-		});
-		this.itemsFromTarget = [...this.itemsFromTarget];
-	}
-
-	isMoveDownPossible(): boolean {
-		return this.selectedItemsFromTarget?.length && !this.isLastItemFromTargetSelected;
-	}
-
-	moveDown() {
-		this.setIndexes(this.itemsFromTarget);
-		this.reverseSortSelectedItemsFromTargetByIndexes(this.selectedItemsFromTarget);
-		this.selectedItemsFromTarget.forEach((selectedItemFromTarget: SiteNav) => {
-			this.itemsFromTarget.splice(selectedItemFromTarget.index + 1, 0, this.itemsFromTarget.splice(selectedItemFromTarget.index, 1)[0]);
-		});
-		this.itemsFromTarget = [...this.itemsFromTarget];
-	}
-
-	moveToBottom() {
-		if (this.selectedItemsFromTarget.length > 0) {
-			for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
-				let x = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
-				let newPosition = this.itemsFromTarget.length - j;
-				this.itemsFromTarget.splice(newPosition - 1, 0, this.itemsFromTarget.splice(x, 1)[0]);
-			}
-		}
-		this.itemsFromTarget = [...this.itemsFromTarget];
 	}
 
 	setRequiredCount() {
@@ -680,21 +553,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this._selectedPermissionAsset = [];
 		this.permissionAssets = [...this.permissionAssets];
 		this.cdRef.markForCheck();
-	}
-
-	selectAllAvailableFolderItems($event, table: Table) {
-		this._tempSelectedFolderItems = [];
-		for (let i = table.first; i < table.first + table.rows; i++) {
-			this._tempSelectedFolderItems.push(this.availableItems.find((item) => item.ID === table.selection[i]?.ID)); // eslint-disable-line
-		}
-	}
-
-	selectAllSelectedFolderItems($event, table: Table) {
-		this.selectedItemsFromTarget = [];
-		for (let i = 0; i < table.selection.length; i++) {
-			let x: number = this.itemsFromTarget.findIndex((item) => item.ObjectID === table.selection[i].ObjectID && item.Object === table.selection[i].Object); // eslint-disable-line
-			this.selectedItemsFromTarget.push(_.cloneDeep(this.itemsFromTarget[x])); // eslint-disable-line
-		}
 	}
 
 	headerSelectAll($event, table: Table) {
