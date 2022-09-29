@@ -30,7 +30,6 @@ namespace d360.web
             if (!System.Web.HttpContext.Current.IsDebuggingEnabled)
             {
                 GlobalFilters.Filters.Add(new RequireHttpsAttribute());
-                GlobalFilters.Filters.Add(new ValidateContractsAttribute());
             }
 
             ViewEngines.Engines.Clear();
@@ -89,7 +88,6 @@ namespace d360.web
             app.Use<ClaimMappingsMiddleware>();
             app.Use<UserIDCheckMiddleware>();
             app.Use<IpRestrictionMiddleware>();
-            app.Use<ContractValidationMiddleware>();
             app.Use<CachingHeaderMiddleware>();
             app.Use<CorsMiddleware>();
             app.Use<ContentSecurityPolicyMiddleware>();

@@ -79,15 +79,6 @@ namespace d360.core.enums
 
         [
             DefaultValue(false),
-            Description("EnableOrganizations_Desc", typeof(Settings)),
-            Locked(false),
-            Name("EnableOrganizations_Name", typeof(Settings)),
-            Type(SettingType.Boolean)
-        ]
-        EnableOrganizations = 19,
-
-        [
-            DefaultValue(false),
             Description("EnableShoppingCart_Desc", typeof(Settings)),
             Locked(false),
             Name("EnableShoppingCart_Name", typeof(Settings)),

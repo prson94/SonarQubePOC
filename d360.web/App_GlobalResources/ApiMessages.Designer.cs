@@ -1186,24 +1186,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid [organizationTypeUid] provided.
-        /// </summary>
-        public static string InvalidOrgTypeUid {
-            get {
-                return ResourceManager.GetString("InvalidOrgTypeUid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid Organization Uid provided.
-        /// </summary>
-        public static string InvalidOrgUid {
-            get {
-                return ResourceManager.GetString("InvalidOrgUid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid Parameter.
         /// </summary>
         public static string InvalidParameter {

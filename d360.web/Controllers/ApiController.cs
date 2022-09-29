@@ -2053,7 +2053,6 @@ namespace d360.web.Controllers
 							RD.ResponsibilityTypeName,
 							case RD.SecurityAsset
 								when 'G' then 'Via Group'
-								when 'O' then 'Via Organization'
 								else ''
 							end as Via,
 							RD.Context 
@@ -2081,7 +2080,6 @@ namespace d360.web.Controllers
 								RD.ResponsibilityTypeName,
 								case RD.SecurityAsset
 									when 'G' then 'Via Group'
-									when 'O' then 'Via Organization'
 									else ''
 								end as Via,
 								RD.Context
@@ -2112,7 +2110,6 @@ namespace d360.web.Controllers
 							RD.ResponsibilityTypeName,
 							case RD.SecurityAsset
 								when 'G' then 'Via Group'
-								when 'O' then 'Via Organization'
 								else ''
 							end as Via,
 							RD.Context 
@@ -2139,7 +2136,6 @@ namespace d360.web.Controllers
 								RD.ResponsibilityTypeName,
 								case RD.SecurityAsset
 									when 'G' then 'Via Group'
-									when 'O' then 'Via Organization'
 									else ''
 								end as Via,
 								RD.Context

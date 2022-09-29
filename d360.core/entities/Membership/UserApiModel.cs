@@ -169,42 +169,6 @@ namespace d360.core.entities.Membership
         public Guid Uid { get; set; }
     }
 
-    public class OrganizationModel
-    {
-        public Guid uid { get; set; }
-
-        public string Name { get; set; }
-
-        public Guid? AcceptedBy { get; set; }
-
-        public string AcceptedByUserName { get; set; }
-
-        public DateTime? AcceptedOn { get; set; }
-
-        public string AdministratorEmail { get; set; }
-    }
-
-    public class OrganizationDetailModel
-    {
-        public Guid uid { get; set; }
-
-        public string Name { get; set; }
-
-        public Guid? AcceptedBy { get; set; }
-
-        public string AcceptedByUserName { get; set; }
-
-        public DateTime? AcceptedOn { get; set; }
-
-        public string AdministratorEmail { get; set; }
-
-        public List<string> Domains { get; set; }
-
-        public List<string> Users { get; set; }
-
-        public List<string> Invitations { get; set; }
-    }
-
     public class ApiKeyDetailModel
     {
         public string apiKey { get; set; }

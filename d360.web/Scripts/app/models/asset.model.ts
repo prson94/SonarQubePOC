@@ -51,7 +51,6 @@ export enum AssetTypeClass {
     Rule = 7,
     TechnicalAsset = 8,
     Reference = 9,
-    Organization = 10,
     User = 11,
     Group = 12,
     ReferenceItemType = 14,

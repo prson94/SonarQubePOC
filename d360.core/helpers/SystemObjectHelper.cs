@@ -11,8 +11,6 @@ namespace d360.core.helpers
                 case AssetTypeClass.BusinessAsset:
                 case AssetTypeClass.TechnicalAsset:
                     return SystemObjects.ArtifactType;
-                case AssetTypeClass.Organization:
-                    return SystemObjects.OrganizationType;
                 case AssetTypeClass.Policy:
                     return SystemObjects.PolicyType;
                 case AssetTypeClass.Reference:

@@ -22,12 +22,6 @@ namespace igx.UnitTests.CoreTests
         }
 
         [Fact]
-        public void SystemObjectHelperOrganization()
-        {
-            Assert.True(SystemObjectHelper.GetSystemObjects(d360.core.enums.AssetTypeClass.Organization) == SystemObjects.OrganizationType, "Expected Organization type to return OrganizationType system object");
-        }
-
-        [Fact]
         public void SystemObjectHelperPolicy()
         {
             Assert.True(SystemObjectHelper.GetSystemObjects(d360.core.enums.AssetTypeClass.Policy) == SystemObjects.PolicyType, "Expected Policy type to return Policytype system object");

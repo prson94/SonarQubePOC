@@ -850,7 +850,6 @@ namespace d360.web.Controllers.V2
 				}
 
 				var disallowedPathClasses = new List<AssetTypeClass> {
-					AssetTypeClass.Organization,
 					AssetTypeClass.User,
 				};
 
@@ -860,7 +859,6 @@ namespace d360.web.Controllers.V2
 				}
 
 				var disallowedScoreClasses = new List<AssetTypeClass> {
-					AssetTypeClass.Organization,
 					AssetTypeClass.User,
 					AssetTypeClass.ReferenceItemType,
 					AssetTypeClass.Diagram
@@ -2705,7 +2703,6 @@ namespace d360.web.Controllers.V2
 													'[' + ResponsibilityTypeName + '] - ' + SecurityAssetName as 'Name', 
 													case 
 														when SecurityAsset = 'R' then 'Resource'
-														when SecurityAsset = 'O' then 'Organization'
 														when SecurityAsset = 'G' then 'Group'
 														else[Type]
 															end as [Type],

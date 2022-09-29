@@ -999,7 +999,6 @@ from	Asset A
 						Dictionary<string, string> objectIds = new Dictionary<string, string>()
 						{
 							{ "Resource", "RO" },
-							{ "Organization", "O" },
 							{ "Group", "OG" },
 							{ "DefaultValue", "OG"}
 						};
@@ -1009,12 +1008,6 @@ from	Asset A
 						uniqueIdField = "ID";
 
 						rulegroupSql.Append($@"select distinct {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}");
-
-						if (rulegroupKey == "OrganizationType")
-						{
-							obj = "Organization";
-							rulegroupSql.Append($"'O' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, Z.uid " : "")} from Organization O {(includeUid ? " inner join Asset Z on Z.ObjectID=O.ID and Z.Object='Organization' " : "")}  ");
-						}
 
 						if (rulegroupKey == "GroupType")
 						{

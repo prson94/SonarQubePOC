@@ -58,22 +58,6 @@ namespace d360.web.Controllers
 				.ToList()
 			);
 
-			var organisationSQL = $@"SELECT O.ID, O.Name, secasset.Uid FROM Organization O INNER JOIN [Asset] secasset ON secasset.[Object] = 'Organization' AND secasset.ObjectID = O.id";
-
-			list.AddRange(
-				Company.Query<dynamic>(organisationSQL)
-				.Select(i => new { i.ID, i.Name, i.Uid })
-				.ToList()
-				.Select(i => new SelectListItem
-				{
-					Text = $"Organization: {i.Name}",
-					Value = $"O|{i.ID}|{i.Uid}",
-					Selected = ($"O|{i.ID}" == selectedID)
-				})
-				.OrderBy(i => i.Text)
-				.ToList()
-			);
-
 			return list;
 		}
 
@@ -215,10 +199,6 @@ namespace d360.web.Controllers
 				{
 					case "Group":
 						resourceType = "G";
-						break;
-					case "Organisation":
-					case "Organization":
-						resourceType = "O";
 						break;
 					default:
 						break;
@@ -558,35 +538,6 @@ where	assetType.[Object] = @type
 		and assetType.ObjectID = @id
 		and FT.Type not in ({ftTypeRemoveString})
 for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString(), id }).ToList();
-
-			if (type == SystemObjects.OrganizationType)
-			{
-				fieldTypes = Company.Query<string>($@"
-select	FT.ID as value,
-		T.[Name] + ' :: ' + FriendlyName as label,
-        FT.Name as fieldTypeName,
-		FT.Type as [type],
-		case FT.Type
-			when 'Lookup' then cast(1 as bit)
-			else cast(0 as bit) 
-		end as isLookup,
-		(
-		select	cast(value as varchar) as [value],
-				Text as label 
-		from	FieldLookupValue
-		where	FieldTypeID = FT.ID
-		for json auto
-		) as [values],
-		assetType.uid as assigneeTypeUid
-from	FieldType FT
-inner join dbo.AssetType assetType 
-	on assetType.ID = FT.AssetTypeID
-inner join OrganizationType T on T.ID = assetType.ObjectID and [Object]='OrganizationType' and T.[State] = 1
-where	assetType.[Object] = @type
-		and Type not in ({ftTypeRemoveString})
-order by T.[Name] + ' :: ' + FriendlyName
-for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString() }).ToList();
-			}
 
 			var groupFieldTypes = new List<string>();
             if (type == SystemObjects.GroupType)

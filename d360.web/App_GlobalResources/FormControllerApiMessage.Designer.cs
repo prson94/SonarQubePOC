@@ -313,24 +313,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This domain is already part of this organization.
-        /// </summary>
-        public static string DomainPartOfOrganization {
-            get {
-                return ResourceManager.GetString("DomainPartOfOrganization", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This email has already been invited to this organization.
-        /// </summary>
-        public static string EmailAlreadyInviteThisOrganization {
-            get {
-                return ResourceManager.GetString("EmailAlreadyInviteThisOrganization", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The email you entered is not valid.
         /// </summary>
         public static string emailNotValid {
@@ -916,15 +898,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not delete Organization Type.
-        /// </summary>
-        public static string NotDeleteOrganizationType {
-            get {
-                return ResourceManager.GetString("NotDeleteOrganizationType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Cannot find the specified service to edit.
         /// </summary>
         public static string NotFoundServiceEdit {
@@ -939,42 +912,6 @@ namespace Resources {
         public static string NotFoundShoppingCart {
             get {
                 return ResourceManager.GetString("NotFoundShoppingCart", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Organization.
-        /// </summary>
-        public static string Organization {
-            get {
-                return ResourceManager.GetString("Organization", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Organization domain.
-        /// </summary>
-        public static string OrganizationDomain {
-            get {
-                return ResourceManager.GetString("OrganizationDomain", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Organization invitation.
-        /// </summary>
-        public static string OrganizationInvitation {
-            get {
-                return ResourceManager.GetString("OrganizationInvitation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to OrganizationType.
-        /// </summary>
-        public static string organizationType {
-            get {
-                return ResourceManager.GetString("organizationType", resourceCulture);
             }
         }
         
@@ -1389,15 +1326,6 @@ namespace Resources {
         public static string UriCreated {
             get {
                 return ResourceManager.GetString("UriCreated", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A user with this email address is already registered to this organization.
-        /// </summary>
-        public static string UserAlreadyRegisteredThisOrganization {
-            get {
-                return ResourceManager.GetString("UserAlreadyRegisteredThisOrganization", resourceCulture);
             }
         }
         

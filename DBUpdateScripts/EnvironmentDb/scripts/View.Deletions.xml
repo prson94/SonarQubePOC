@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="View.Deletions.v3">
-  <comment>GOV-18454</comment>
+  <changeSet author="TDuric" id="View.Deletions.v4">
+  <comment>GOV-17952</comment>
   <comment></comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -34,6 +34,12 @@ GO
 drop view if exists [graph].[AssetNodeKeyPath]
 GO
 drop view if exists [cache].[ObjectDetails]
+GO
+drop view if exists dbo.OrganizationDetail
+GO
+drop view if exists dbo.OrganizationInvitationDetail
+GO
+drop view if exists dbo.OrganizationResourceDetail
 		]]>
     </sql>
 	<rollback></rollback>

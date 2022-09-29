@@ -1036,7 +1036,6 @@ namespace d360.web.Controllers.V2
 			{
 				ResourceID = Company.CurrentResourceID,
 				ResourceGroupIDs = Company.ResourceGroups.Where(i => i.ResourceID == Company.CurrentResourceID).Select(i => i.GroupID).ToList(),
-				ResourceOrgIDs = Company.OrganizationResources.Where(r => r.ResourceID == Company.CurrentResourceID && (r.Accepted ?? false)).Select(r => r.OrganizationID).ToList()
 			};
 
 			if (Company.CurrentResourceIsAdmin)

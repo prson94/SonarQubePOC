@@ -89,14 +89,12 @@ namespace d360.model.DataAccessLayer
 					  IsVisible,	  
 					  CASE R.SecurityAsset
 						WHEN 'R' THEN 'User'
-						WHEN 'O' THEN 'Organization'
 						WHEN 'G' THEN 'Group'
 						ELSE ''
 						END as ResourceType
 					  from [dbo].[ResponsibilityDetail] R
 					  inner join [dbo].[ResponsibilityType] RT on RT.ID = R.[ResponsibilityTypeID]
 					  left outer join [dbo].[Group] G on G.ID = R.SecurityAssetID and R.SecurityAsset = 'G'
-					  left outer join [dbo].[Organization] O on O.ID = R.SecurityAssetID and R.SecurityAsset = 'O'
 				where R.AssetID = @id or (R.AssetID = 0 and R.AssetTypeId = @typeId)";
 
 			return await Company.Database.Connection.QueryAsync<OwnershipApiModel>(sql, new { id = asset.ID, typeId = asset.AssetTypeID });
@@ -136,14 +134,6 @@ namespace d360.model.DataAccessLayer
 										[dbo].[ResponsibilityTypeRelationRule] rtr
 										inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on (rsa.RuleID = rtr.id)
 										inner join [dbo].ResourceGroup gr on (gr.groupid = rsa.securityassetid and rsa.securityasset = 'G')
-									where rtr.[uid] = @uid
-									union all
-									select 
-										count(1) as cnt
-									from
-										[dbo].[ResponsibilityTypeRelationRule] rtr
-										inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on (rsa.RuleID = rtr.id)		
-										inner join [dbo].OrganizationResource og on (og.OrganizationID = rsa.SecurityAssetID and rsa.SecurityAsset = 'O')
 									where rtr.[uid] = @uid
 									) a
 							", new { uid = responsibilityTypeRuleUid.ToString() }, commandTimeout: ApiTimeout),
@@ -451,9 +441,6 @@ namespace d360.model.DataAccessLayer
 					{
 						case "GROUP":
 							securityAsset = "G";
-							break;
-						case "ORGANIZATION":
-							securityAsset = "O";
 							break;
 						default:
 							securityAsset = "R";
@@ -837,7 +824,6 @@ namespace d360.model.DataAccessLayer
 					A.ObjectId as SecurityAssetId, 
 					case A.Object 
 						when 'Group' then 'G'
-						when 'Organization' then 'O'
 						when 'Resource' then 'R'
 						else NULL
 					end as SecurityAsset,
@@ -851,7 +837,6 @@ namespace d360.model.DataAccessLayer
 					inner join ResponsibilityType RT on rt.uid = @responsibilityUid
 					inner join Asset MainAsset on MainAsset.uid = @assetUid
 					left join ResponsibilityTypeRelationOverrideItem RTOG ON RTOG.ResponsibilityTypeId = RT.Id and RTOG.AssetId = mainasset.id and RTOG.securityassetid = a.objectid and A.object = 'Group' and RTOG.SecurityAsset ='G'
-					left join ResponsibilityTypeRelationOverrideItem RTOO ON RTOO.ResponsibilityTypeId = RT.Id and RTOO.AssetId = mainasset.id and RTOO.securityassetid = a.objectid and A.object = 'Organization' and RTOO.SecurityAsset ='O'
 					left join ResponsibilityTypeRelationOverrideItem RTOR ON RTOR.ResponsibilityTypeId = RT.Id and RTOR.AssetId = mainasset.id and RTOR.securityassetid = a.objectid and A.object = 'Resource' and RTOR.SecurityAsset ='R'
 					where A.uid in @resourceUids", new { resourceUids, assetUid, responsibilityUid }, ApiTimeout).ToList();
 		}
@@ -1480,57 +1465,6 @@ namespace d360.model.DataAccessLayer
 			                  AND RES.[State] = 1
 			";
 
-			var organizationResponsibilityTypesSql = @"
-			SELECT rt.*
-			  FROM [responsibilitytyperelationrule] r
-			       INNER JOIN ResponsibilityType rt
-			               ON ( rt.ID = r.ResponsibilityTypeID
-			                    AND r.ApplyToType = 1 )
-			       INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource
-			               ON ( r.ID = rresource.RuleID )
-			       INNER JOIN AssetType att
-			               ON ( att.[Object] = r.[Object]
-			                    AND att.ObjectID = r.ObjectID )
-			       INNER JOIN Asset a
-			               ON ( a.AssetTypeID = att.id )
-			       INNER JOIN [Organization] D
-			               ON rresource.SecurityAsset = 'O'
-			                  AND D.ID = rresource.SecurityAssetID
-			       INNER JOIN OrganizationResource RD
-			               ON RD.OrganizationID = D.ID
-			       INNER JOIN reporting.Global_Resource RES
-			               ON RES.ResourceID = RD.ResourceID
-			 WHERE RES.State = 1
-			   AND r.IsVisible = 1
-			";
-
-			var organizationInRelationResponsibilityTypesSql = @"
-			SELECT rt.*
-			  FROM responsibilitytyperelationrule r
-			       INNER JOIN ResponsibilityTypeRelation rrel
-			               ON ( r.ResponsibilityTypeID = rrel.ResponsibilityTypeID
-			                    AND r.[Object] = rrel.[ObjectType]
-			                    AND r.ObjectID = rrel.ObjectID )
-			       INNER JOIN [ResponsibilityRuleResultAsset] rasset
-			               ON ( r.ID = rasset.RuleID )
-			       INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource
-			               ON ( r.ID = rresource.RuleID )
-			       INNER JOIN ResponsibilityType RT
-			               ON RT.ID = r.ResponsibilityTypeID
-			       INNER JOIN Asset A
-			               ON (( A.ID = rasset.AssetID ))
-			       INNER JOIN [Organization] D
-			               ON rresource.SecurityAsset = 'O'
-			                  AND D.ID = rresource.SecurityAssetID
-			       INNER JOIN OrganizationResource RD
-			               ON RD.OrganizationID = D.ID
-			       INNER JOIN reporting.Global_Resource RES
-			               ON RES.ResourceID = RD.ResourceID
-			 WHERE RES.State = 1
-			   AND r.IsVisible = 1
-			   AND r.ApplyToType = 0
-			";
-
 			#endregion inner queries
 
 			var sql = $@"
@@ -1550,10 +1484,6 @@ namespace d360.model.DataAccessLayer
 					{CountSql(groupInRelationResponsibilityTypesSql)}
 			        UNION ALL
 					{CountSql(groupOverrideInRelationResponsibilityTypesSql)}
-			        UNION ALL
-					{CountSql(organizationResponsibilityTypesSql)}
-			        UNION ALL
-					{CountSql(organizationInRelationResponsibilityTypesSql)}
 			 ) X
 			 GROUP BY ResponsibilityTypeID
 			          ,ResponsibilityTypeUID
