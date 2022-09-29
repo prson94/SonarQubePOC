@@ -86,7 +86,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.isLoading = true;
 
         this.responsibilityService.getResponsibilityItemEditor(null, this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, this.itemToSave.ResourceUid)
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.model = data;
                 this.onLoadComplete.emit({ item: this.item });
                 this.isLoading = false;
@@ -96,8 +96,6 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     private setResouceAssigned() {
         switch (this.item.ResourceType) {
             case "Group":
-            case "Organization":
-            case "Organisation":
                 this.resouceAssigned = `${this.item.ResourceType}: ${this.item.Group}`;
                 break;
             case "User":
@@ -125,10 +123,6 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
             case "R":
                 atype = "R";
                 break;
-            case "Organization":
-            case "O":
-                atype = "O";
-                break;
             default:
                 atype = null;
                 break;
@@ -150,14 +144,9 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                 case "G":
                     selectedResourceType = "G";
                     break;
-                case "Organization":
-                case "Organisation":
-                case "O":
-                    selectedResourceType = "O";
-                    break;
             }
 
-            selectedResourceUid = this.model.resources.find(x => x.Value.split('|')[0] == selectedResourceType && x.Value.split('|')[1] == selectedResourceID).Value.split('|')[2];
+            selectedResourceUid = this.model.resources.find((x) => x.Value.split('|')[0] == selectedResourceType && x.Value.split('|')[1] == selectedResourceID).Value.split('|')[2];
             this.itemToSave.ResourceUid = selectedResourceUid;
             this.itemToSave.Description = this.model.responsibility.Context;
         }
@@ -170,7 +159,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.isLoading = true;
 
         this.responsibilityService.getResponsibilityDetail(this.itemToSave.AssetUid)
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.checkD = data;
 
                 //Delete existing record before creating new only when description changed
@@ -217,7 +206,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         responsibilityOverridePostModel.Description = this.itemToSave.Description;
 
         this.responsibilityService.postResponsibility(this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, responsibilityOverridePostModel)
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.isLoading = false;
                 data.message = this.item.ResponsibilityUid ? $localize`Responsibility successfully updated` : $localize`Responsibility successfully created`;
                 this.showMessageForResult(this.messagesService, data);

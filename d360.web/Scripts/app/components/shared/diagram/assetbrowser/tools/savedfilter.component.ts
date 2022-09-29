@@ -72,7 +72,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["diagramType"]) {
             this.selectedFilter = null;
-            this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
+            this.savedFilters = this.allFilters.filter((f) => { return f.diagramType == this.diagramType; });
         }
     }
 
@@ -123,7 +123,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
             .map((a) => a.AssetTypeId);
 
 		const selectedPredicates = this.options.PredicateOptions
-            .filter(p => this.selectedFilter.predicates.findIndex((f) => f.uid == p.Uid) > -1)
+            .filter((p) => this.selectedFilter.predicates.findIndex((f) => f.uid == p.Uid) > -1)
             .map((p) => p.Id);
 
 		const selectedResponsibilityTypes = this.options.ResponsibilityTypeOptions
@@ -171,7 +171,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                 this.saveFilterModalVisible = false;
                 this.saveFilterModalWorking = false;
                 this.allFilters.push(filter);
-                this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
+                this.savedFilters = this.allFilters.filter((f) => { return f.diagramType == this.diagramType; });
                 this.selectedFilter = filter;
 				this.dropdown.value = filter;
                 this.menuitems.forEach((x) => {
@@ -198,7 +198,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                         this.savedFilters = filters.filter(() => true);
                         this.selectedFilter = undefined;
 						this.dropdown.value = null;
-                        this.menuitems.forEach(x => {
+                        this.menuitems.forEach((x) => {
                             if (x.title == this.removeTitle || x.title == this.saveTitle) {
                                 x.disabled = !this.hasSelectedUserFilter();
                                 this.cdRef.markForCheck();
@@ -223,8 +223,8 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                 .getUserFilters()
                 .subscribe((filters) => {
                     this.allFilters = filters;
-                    this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
-                    this.selectedFilter = this.savedFilters.find(f => f.isDefault == true);
+                    this.savedFilters = this.allFilters.filter((f) => { return f.diagramType == this.diagramType; });
+                    this.selectedFilter = this.savedFilters.find((f) => f.isDefault == true);
 					this.dropdown.value = this.selectedFilter;
                 });
         }
@@ -241,13 +241,13 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
 
         this.createUserFilter = JSON.parse(JSON.stringify(this.selectedFilter));
         this.createUserFilter.assetTypes = this.options.AssetTypeOptions
-            .filter(a => this.filterModel.SelectedAssetTypes.indexOf(a.AssetTypeId) > -1)
+            .filter((a) => this.filterModel.SelectedAssetTypes.indexOf(a.AssetTypeId) > -1)
             .map((a) => { return { uid: a.Uid, class: a.Class }; });
         this.createUserFilter.responsibilityTypes = this.options.ResponsibilityTypeOptions
-            .filter(r => this.filterModel.SelectedResponsibilityTypes.indexOf(r.Id) > -1)
+            .filter((r) => this.filterModel.SelectedResponsibilityTypes.indexOf(r.Id) > -1)
             .map((r) => { return { uid: r.Uid, type: r.Name }; });
         this.createUserFilter.predicates = this.options.PredicateOptions
-            .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
+            .filter((p) => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
             .map((p) => { return { uid: p.Uid, type: p.Name }; });
 
 		this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;

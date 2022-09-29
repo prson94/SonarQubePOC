@@ -36,7 +36,7 @@ export class SimilarItemsComponent implements OnChanges, OnInit, OnDestroy {
 
     ngOnInit() {
         this.searchSub = this.uriBasedService.search(this.uri, this.queryStream$)
-            .subscribe(res => {
+            .subscribe((res) => {
                 if (this.query == '')
                     this.items = [];
                 else

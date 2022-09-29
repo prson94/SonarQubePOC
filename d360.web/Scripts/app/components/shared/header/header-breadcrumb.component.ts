@@ -49,7 +49,7 @@ export class HeaderBreadcrumbComponent {
     ) {
         this.breadcrumbs = [];
         this.subscriptionAdd = headerBreadcrumbService.breadcrumbs$.subscribe(
-            breadcrumb => {
+            (breadcrumb) => {
                 if (!_.isEqual(_.omit(this.breadcrumbs[this.breadcrumbs.length - 1], ['active']), _.omit(breadcrumb, ['active']))) {
 
                     if (this.breadcrumbs.length != 0) {
@@ -63,20 +63,20 @@ export class HeaderBreadcrumbComponent {
                 }
             });
         this.subscriptionClear = headerBreadcrumbService.breadcrumbClear$.subscribe(
-            breadcrumb => {
+            (breadcrumb) => {
                 this.breadcrumbs.splice(0, this.breadcrumbs.length);
                 this.ref.markForCheck();
             });
         this.subscriptionPop = headerBreadcrumbService.breadcrumbPopLastSource$.subscribe(
-            breadcrumb => {
+            (breadcrumb) => {
                 this.breadcrumbs.pop();
                 this.ref.markForCheck();
             });
-        this.subscriptionBuildFromStorage = headerBreadcrumbService.buildFromStorage$.subscribe(res => {
+        this.subscriptionBuildFromStorage = headerBreadcrumbService.buildFromStorage$.subscribe((res) => {
             this.breadcrumbs = res;
         });
 
-        this.subscriptionChangeState = headerBreadcrumbService.currentObjectStateSource$.subscribe(res => {
+        this.subscriptionChangeState = headerBreadcrumbService.currentObjectStateSource$.subscribe((res) => {
             this.objectState = res;
             this.ref.markForCheck();
         });
@@ -133,7 +133,7 @@ export class HeaderBreadcrumbComponent {
     }
     resizeControlsToFit(windowWidth) {
 
-        this.breadcrumbs.forEach(x => { x.show = false; });
+        this.breadcrumbs.forEach((x) => { x.show = false; });
 
         let element = this.breadcrumbUIElement.nativeElement;
         var controlsWidth = this.controlWidth ? this.controlWidth : 0; // only visible medium and up
@@ -153,7 +153,7 @@ export class HeaderBreadcrumbComponent {
         }
         else {
             this.showLastOnly = false;
-            this.breadcrumbs.forEach(x => { x.show = true; });
+            this.breadcrumbs.forEach((x) => { x.show = true; });
         }
 
         this.ref.markForCheck();
@@ -202,7 +202,7 @@ export class HeaderBreadcrumbComponent {
 
         if (this.breadcrumbs.length == this.showThisManyCrumbs) {
             this.showLastOnly = false;
-            this.breadcrumbs.forEach(x => { x.show = true; });
+            this.breadcrumbs.forEach((x) => { x.show = true; });
             return;
         }
         let maxIndex = this.breadcrumbs.length - 1;

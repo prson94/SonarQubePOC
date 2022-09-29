@@ -489,12 +489,6 @@
   <data name="InvalidApiKeyOrApiSecret" xml:space="preserve">
     <value>Invalid [apiKey] or [apiSecret] for current user</value>
   </data>
-  <data name="InvalidOrgTypeUid" xml:space="preserve">
-    <value>Invalid [organizationTypeUid] provided</value>
-  </data>
-  <data name="InvalidOrgUid" xml:space="preserve">
-    <value>Invalid Organization Uid provided</value>
-  </data>
   <data name="InvalidUser" xml:space="preserve">
     <value>Invalid user information</value>
   </data>

@@ -111,7 +111,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
         this.isLoading = true;
 
         this.gridDefinitionService.getGridDefinition(this.assetTypeUid, 'ReferenceItemType').subscribe(
-            result => {
+            (result) => {
                 this.columns = result.Columns;
                 this.fields = result.Fields;
                 this.loadItems();
@@ -132,7 +132,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
         }
 
         this.isLoading = true;
-        this.getAssetSub = this.assetService.getAssets(this.assetTypeUid, this.loadParams).subscribe(result => {
+        this.getAssetSub = this.assetService.getAssets(this.assetTypeUid, this.loadParams).subscribe((result) => {
 			this.items = result.items;
 
 			this.items.forEach((asset) => {
@@ -172,7 +172,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
             this.isLoading = false;
             this.cdRef.detectChanges();
         },
-            err => {
+            (err) => {
                 this.items = [];
                 this.totalRecords = 0;
                 this.isLoading = false;
@@ -184,7 +184,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     private loadAssets(event) {
         if (event) {
             let sort = event.sortField;
-            var field = this.fields.filter(x => x.name.toLowerCase() == event.sortField.toLowerCase())[0];
+            var field = this.fields.filter((x) => x.name.toLowerCase() == event.sortField.toLowerCase())[0];
             if (field)
                 sort = field.apiName;
 
@@ -223,7 +223,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     }
 
     public onDeleted() {
-        this.items = this.items.filter(x => x.AssetUid != this.selected.AssetUid);
+        this.items = this.items.filter((x) => x.AssetUid != this.selected.AssetUid);
         this.selected = null;
         this.showDelete = false;
     }

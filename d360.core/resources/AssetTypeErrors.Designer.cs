@@ -187,15 +187,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There is already an organization type with that name..
-        /// </summary>
-        public static string ExistingOrganizationType {
-            get {
-                return ResourceManager.GetString("ExistingOrganizationType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to {0} should not be empty..
         /// </summary>
         public static string FieldIsEmpty {
@@ -354,15 +345,6 @@ namespace d360.core.resources {
         public static string InvalidOrderPassed {
             get {
                 return ResourceManager.GetString("InvalidOrderPassed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid Organization provided..
-        /// </summary>
-        public static string InvalidOrganization {
-            get {
-                return ResourceManager.GetString("InvalidOrganization", resourceCulture);
             }
         }
         
@@ -705,15 +687,6 @@ namespace d360.core.resources {
         public static string Success {
             get {
                 return ResourceManager.GetString("Success", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Wrong Organization.
-        /// </summary>
-        public static string TitleWrongOrganization {
-            get {
-                return ResourceManager.GetString("TitleWrongOrganization", resourceCulture);
             }
         }
         

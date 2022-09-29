@@ -63,7 +63,7 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     ngOnInit() {
-		this.sub = this.route.params.subscribe(params => {
+		this.sub = this.route.params.subscribe((params) => {
 			this.baseAssetUid = params['uid'];
 
             this.load();
@@ -83,7 +83,7 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
         this.isLoading = true;
 
 		this.objectStatisticsService.getObjectStatistics(this.baseAssetUid).subscribe(
-            res => {
+            (res) => {
                 this.children = res.Items;
                 this.selected = this.children.length > 0 ? this.children[0] : null;
 
@@ -93,8 +93,8 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
 		this.objectDetailService.getObjectDetailByObjectUid(this.baseAssetUid).subscribe(
 			(res) => {
                 this.displayName = res.DisplayValue;
-                this.objectName = res.DisplayValue;
-				this.parentUid = res['AssetUid']; 
+				this.objectName = res.DisplayValue;
+				this.parentUid = res['UID']; 
             }
         );
 

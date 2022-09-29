@@ -101,8 +101,6 @@ namespace d360.model
 
 		public DbSet<CommentVote> CommentVotes { get; set; }
 
-		public DbSet<ContractAcceptance> ContractAcceptance { get; set; }
-
 		public DbSet<Favorite> Favorites { get; set; }
 
 		public DbSet<Field> Fields { get; set; }
@@ -1195,21 +1193,14 @@ from	IntersectType I
 
 		public List<IntersectTypeOption> GetIntersectTypeOptions(Guid? subjectUid = null, Guid? objectUid = null, Guid? predicateUid = null, List<AssetTypeClass> limitToClasses = null)
 		{
-			string noClassLimitSql = "";
 			string classLimitSql = "";
-
-			List<string> excludedClasses = new List<string>
-			{
-				SystemObjects.OrganizationType.ToString(),
-			};
 
 			if (limitToClasses != null && limitToClasses.Count > 0)
 			{
-				classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
+				classLimitSql = " T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
 			}
 
 			Predicate predicate = Predicates.FirstOrDefault(x => x.UID == predicateUid);
-			string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
 			string whereStatement = "";
 
 			if (predicate != null && predicate.Type == PredicateType.DiagramReference)
@@ -1243,8 +1234,8 @@ from	IntersectType I
 											end + coalesce(P.[Path], T.Name) as Name
 									from	AssetType T
 											cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
-									where	T.Object not in ({excludeClassInStatement}){classLimitSql}
-									{noClassLimitSql}{whereStatement}
+									where	{classLimitSql}
+									{whereStatement}
 									) I";
 
 			if (subjectUid.HasValue)

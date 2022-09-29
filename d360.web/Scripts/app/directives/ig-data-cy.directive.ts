@@ -82,7 +82,7 @@ export class DataCyDirective implements AfterViewInit, OnDestroy {
     }
 
     private setDataCyAttrToMutatedPaginatorPages(paginator: Element): void {
-        this.paginatorMutationObserver = new MutationObserver(mutations => {
+        this.paginatorMutationObserver = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 const addedNode = mutation.addedNodes[0] as HTMLElement;
                 if (addedNode && addedNode.nodeType === 1) {

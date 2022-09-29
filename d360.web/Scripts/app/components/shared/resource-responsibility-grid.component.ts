@@ -105,7 +105,7 @@ export class ResourceResponsibilityGridComponent extends BaseComponent implement
     load() {
         this.isLoading = true;
         this.resourcesService.getResponsibilitiesByResourceByType(this.type, this.Id, this.objectType, this.objectId, this.responsibilityTypeId)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.items = r;
                 //FormHelper.convertToNgUrl(this.items, 'ObjectUrl');
                 this.isLoading = false;

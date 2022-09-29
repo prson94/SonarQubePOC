@@ -56,7 +56,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 		switch (this.assetTypeClass) {
 			case AssetTypeClass.BusinessAsset:
 
-				this.headerBreadcrumbService.getFolderTitle('#Business').then(res => {
+				this.headerBreadcrumbService.getFolderTitle('#Business').then((res) => {
 					this.folderTitle = res;
 					this.setBrowserTitle(this.titleService, res);
 					this.area = res;
@@ -65,7 +65,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 				break;
 			case AssetTypeClass.TechnicalAsset:
 
-				this.headerBreadcrumbService.getFolderTitle('#Technical').then(res => {
+				this.headerBreadcrumbService.getFolderTitle('#Technical').then((res) => {
 					this.folderTitle = res;
 					this.setBrowserTitle(this.titleService, res);
 					this.area = res;
@@ -96,7 +96,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 		this
 			.assetService
 			.getAssetCountsByAssetType(this.assetTypeClass)
-			.subscribe(data => {
+			.subscribe((data) => {
 				let dataNodes: TreeNode[] = [];
 
 				for (let i = 0; i < data.length; i++) {
@@ -116,7 +116,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 				this.headerBreadcrumbService.clearBreadcrumbs();
 				this.headerBreadcrumbService.clearCurrentObjectInfo();
 				this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.folderTitle ? this.folderTitle : this.area));
-				this.headerBreadcrumbService.getFolderIcon(this.folderTitle ? this.folderTitle : this.area).subscribe(res => {
+				this.headerBreadcrumbService.getFolderIcon(this.folderTitle ? this.folderTitle : this.area).subscribe((res) => {
 					this.secondaryNavService.clearCurrentObject();
 					this.secondaryNavService.clearItems();
 					this.secondaryNavService.setCurrentArea(this.folderTitle ? this.folderTitle : this.area, res, null);

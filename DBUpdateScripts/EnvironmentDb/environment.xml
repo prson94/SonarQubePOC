@@ -99,15 +99,7 @@
 	<include file="scripts/Table.dbo.LoadItemColumn.xml"/>
 	<include file="scripts/Table.dbo.Nym.xml"/>
 	<include file="scripts/Table.dbo.NymRelation.xml"/>
-	<include file="scripts/Table.dbo.OrganizationType.xml"/>
-	<include file="scripts/Table.dbo.Organization.xml"/>
-	<include file="scripts/Table.dbo.OrganizationDomain.xml"/>
-	<include file="scripts/Table.dbo.OrganizationInvitation.xml"/>
-	<include file="scripts/Table.dbo.OrganizationRegistration.xml"/>
-	<include file="scripts/Table.dbo.OrganizationResource.xml"/>
 	<include file="scripts/Table.dbo.Color.xml"/>
-	<include file="scripts/Table.dbo.Contract.xml"/>
-	<include file="scripts/Table.dbo.ContractAcceptance.xml"/>
 	<include file="scripts/Table.dbo.Report.xml"/>
 	<include file="scripts/Table.dbo.ReportResponsibility.xml"/>
 	<include file="scripts/Table.dbo.ResourceGroup.xml"/>
@@ -209,8 +201,6 @@
 	<include file="scripts/Table.dbo.ConnectorLabel.xml"/>
 	<include file="scripts/Table.api.ExecutionExternal.xml"/>
 
-	<include file="scripts/Table.Deletions.xml"/>	  
-
 	<!-- Views (object-based naming) -->
 	<include file="scripts/Function.dbo.GetAssetDisplayValueById.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetUrlById.xml"/>					<!--Function used for computed column-->
@@ -237,9 +227,6 @@
 	<include file="scripts/Function.dbo.GetAssetTypeChildrenByID.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetTypeTextPathById.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/View.dbo.IntersectTypeDetail.xml"/>
-    <include file="scripts/View.dbo.OrganizationDetail.xml"/>
-	<include file="scripts/View.dbo.OrganizationInvitationDetail.xml"/>
-	<include file="scripts/View.dbo.OrganizationResourceDetail.xml"/>
 	<include file="scripts/View.dbo.Relationship.xml"/>
 	<include file="scripts/View.dbo.ResponsibilityDetail.xml"/>
 	<include file="scripts/View.dbo.SiteNavAvailable.xml"/>
@@ -297,7 +284,6 @@
 	<include file="scripts/Function.dbo.GetAssetBreadcrumbs.xml"/>
 	<include file="scripts/Function.dbo.GetAssetColorJsonByColor.xml"/>	
 	<include file="scripts/Function.dbo.GetAssetTypeBreadcrumbs.xml"/>
-	<include file="scripts/Function.dbo.GetContractValidations.xml"/>
 	<include file="scripts/Function.dbo.GetEmailStepRecipients.xml"/>
 	<include file="scripts/Function.dbo.GetParentObjectId.xml"/>
 	<include file="scripts/Function.dbo.GetRelationshipDisplayValue.xml"/>
@@ -373,7 +359,8 @@
 
     <include file="scripts/Function.Deletions.xml"/>
 	<include file="scripts/Procedure.Deletions.xml"/>
-
+	<include file="scripts/Table.Deletions.xml"/>	  
+	
 	<!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
 	<include file="scripts/Data.Corrections.xml"/>

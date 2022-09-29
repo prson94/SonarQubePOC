@@ -53,7 +53,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
 
         this.setBrowserTitle(this.titleService, $localize`Workflow Item Status`);
 
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.workflowInstance = params['workflowInstance'];
             if (this.isUid(this.workflowInstance)) {
                 this.workflowUid = this.workflowInstance;
@@ -63,7 +63,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
 
             if (!this.workflowId) {
                 this.workflowService.getWorkflowId(this.workflowUid)
-                    .subscribe(res => {
+                    .subscribe((res) => {
                         this.workflowId = res;
                         this.load();
                     });
@@ -77,13 +77,13 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
     private load() {
         this.isLoading = true;
         this.workflowService.getWorkflowDetailsV2(this.workflowId)
-            .subscribe(res => {
+            .subscribe((res) => {
                 for (let item of res.ItemSteps) {
                     if (!res.Steps) {
                         item.StepName = "";
                         continue;
                     }
-                    var step = res.Steps.filter(x => x.ID == item.StepID);
+                    var step = res.Steps.filter((x) => x.ID == item.StepID);
 
                     if (!step || step.length == 0) {
                         item.StepName = "(unresolved)";
@@ -129,7 +129,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
 
     private getStepName(itemStep: any): string {
         if (!this.details || !this.details.Steps) return "";
-        var step = this.details.Steps.filter(x => x.ID == itemStep.StepID);
+        var step = this.details.Steps.filter((x) => x.ID == itemStep.StepID);
 
         if (!step || step.length == 0) return "";
         return step[0].Name;

@@ -150,7 +150,6 @@ namespace d360.model.validators
                     if (assetTypeIdentifierInfoModel != null)
                     {
                         List<string> restrictedTypes = new List<string> {
-                            SystemObjects.OrganizationType.ToString(),
                             SystemObjects.ResourceType.ToString()
                         };
                         
@@ -185,7 +184,7 @@ namespace d360.model.validators
 
                 if (field.Type.IsPartOfKey() == true && assetTypeIdentifierInfoModel != null)
                 {
-                    if (assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString() || (assetTypeIdentifierInfoModel.Object == SystemObjects.OrganizationType.ToString() && field.Name.ToLower() != "name"))
+                    if (assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString())
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.AssetTypeNotHaveKeyField);
                     }
@@ -233,7 +232,6 @@ namespace d360.model.validators
                     if (assetTypeIdentifierInfoModel != null)
                     {
                         List<string> restrictedTypes = new List<string> {
-                            SystemObjects.OrganizationType.ToString(),
                             SystemObjects.ReferenceItemType.ToString(),
                             SystemObjects.ResourceType.ToString()
                         };

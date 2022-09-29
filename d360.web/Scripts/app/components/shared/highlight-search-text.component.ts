@@ -15,7 +15,7 @@ export class HighlightSearchTextComponent {
             return this.text;
         }
 
-        return this.text.replace(new RegExp(this.highlight, "gi"), match => {
+        return this.text.replace(new RegExp(this.highlight, "gi"), (match) => {
             return '<span style="background: #f5eeff;">' + match + '</span>';
         });
     }

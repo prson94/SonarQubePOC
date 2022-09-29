@@ -954,7 +954,6 @@ namespace d360.web.Controllers.V2
 					AssetTypeClass.Diagram,
 					AssetTypeClass.Group,
 					AssetTypeClass.Model,
-					AssetTypeClass.Organization,
 					AssetTypeClass.Policy,
 					AssetTypeClass.Reference,
 					AssetTypeClass.Rule,

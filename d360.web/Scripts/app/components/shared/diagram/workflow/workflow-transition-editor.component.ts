@@ -56,7 +56,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     ngOnInit() {
         this.originalTransition = _.cloneDeep(this.transition);
         this.workflowService.getTransitionTypes()
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.transitionTypes = r;
             });
 
@@ -112,7 +112,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     }
 
     remove(e: any) {
-        let i = this.transition.condition.findIndex(c => c == e);
+        let i = this.transition.condition.findIndex((c) => c == e);
 
         if (e["@FormInputID"] != null) {
             this.workflowFieldsService.deleteUsedField(this.transition.condition[i]["@FormInputID"], this.transition.condition[i]["@VersionStepID"], this.transition.key);

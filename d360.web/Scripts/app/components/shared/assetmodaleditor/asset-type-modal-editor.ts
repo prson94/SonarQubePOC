@@ -52,9 +52,9 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
         this.load();
     }
     private load(): void{
-        this.asSub = this.assetTypeService.getAssetTypesDetails().subscribe(types => {
+        this.asSub = this.assetTypeService.getAssetTypesDetails().subscribe((types) => {
             if (types.length > 0) {
-                this.options = types.filter(x => x.UseAsTransformation === true);
+                this.options = types.filter((x) => x.UseAsTransformation === true);
             }
         });
     }

@@ -114,8 +114,6 @@ namespace d360.web.Models
 
         public bool EnableShoppingCart { get; set; }
 
-        public bool EnableOrganizations { get; set; }
-
         public string DefaultRoute { get; set; }
 
         public bool EnableSagacity { get; set; }
@@ -530,94 +528,6 @@ namespace d360.web.Models
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
-    }
-
-    public class RegisterModel
-    {
-        public RegisterStep Step { get; set; }
-
-        [Required, RegularExpression(@"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"), Display(Name = "Email address")]
-        public string Email { get; set; }
-
-        [Display(Name = "First name")]
-        public string FirstName { get; set; }
-
-        [Display(Name = "Last name")]
-        public string LastName { get; set; }
-
-        [Display(Name = "Password")]
-        public string Password { get; set; }
-
-        [Display(Name = "Confirm password")]
-        public string ConfirmPassword { get; set; }
-
-        public bool? Accept { get; set; }
-
-        public Guid? RegistrationID { get; set; }
-
-        public string Message { get; set; }
-
-        public List<ContractRegisterModel> Contracts { get; set; }
-
-        public bool IsUsingActiveDirectory { get; set; }
-
-        [Display(Name = "Job Title")]
-        public string Title { get; set; }
-    }
-
-    public class TermsModel
-    {
-        public TermsModel() { }
-
-        public TermsModel(Contract contract)
-        {
-            Contract = contract;
-            Acceptance = new ContractAcceptance
-            {
-                ContractID = contract.ID
-            };
-        }
-
-        public TermsModel(Contract contract, string redirectUri, bool isLastContract) : this(contract)
-        {
-            RedirectUri = redirectUri;
-            IsLastContract = isLastContract;
-        }
-        public Contract Contract { get; set; }
-
-        public ContractAcceptance Acceptance { get; set; }
-
-        public string RedirectUri { get; set; } = null;
-
-        public bool IsLastContract { get; set; } = false;
-
-        public bool IsLastOrgContract { get; set; } = false;
-
-        public List<int> OrgsWithContracts { get; set; } = new List<int>();
-    }
-
-    public class ContractRegisterModel
-    {
-        public ContractRegisterModel() { }
-
-        public ContractRegisterModel(Contract contract)
-        {
-            Contract = contract;
-            ContractAcceptance = new ContractAcceptance
-            {
-                ContractID = contract.ID,
-                Accepted = false
-            };
-            Accept = false;
-        }
-
-        public Contract Contract { get; set; }
-
-        public ContractAcceptance ContractAcceptance { get; set; }
-
-        public bool Accept { get; set; } = false;
-
-        public bool IsAccepted => ContractAcceptance?.Accepted ?? false;
     }
 
     #region Asset Browser

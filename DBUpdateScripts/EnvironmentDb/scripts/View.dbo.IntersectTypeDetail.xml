@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.dbo.IntersectTypeDetail-v5.2">
-	<comment>GOV-18449</comment>
+  <changeSet author="TDuric" id="View.dbo.IntersectTypeDetail-v6">
+	<comment>GOV-19744</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -26,7 +26,10 @@ as
 				COALESCE (SIcon.IconBackColor, '#000') AS SubjectIconBackColor, 
 				COALESCE (SIcon.IconForeColor, '#fff') AS SubjectIconForeColor, 
 				COALESCE (SIcon.IconText, SUBSTRING(COALESCE (SATT.Name, 'Re'), 1, 2)) AS SubjectIconText,
-				SP.Path as SubjectAssetTypePath,
+				case when IT.SubjectClass = 9 and SubjectAssetTypeID = 0
+				then 'Reference List' 
+				else SP.Path
+				end as SubjectAssetTypePath,
 				coalesce(IT.ObjectClass, 0) as ObjectClass,
 				IT.ObjectAssetTypeID,
 				OATT.Uid as ObjectUid,
@@ -35,7 +38,10 @@ as
 				COALESCE (OIcon.IconBackColor, '#000') AS ObjectIconBackColor, 
 				COALESCE (OIcon.IconForeColor, '#fff') AS ObjectIconForeColor, 
 				COALESCE (OIcon.IconText, SUBSTRING(COALESCE (OATT.Name, 'Re'), 1, 2)) AS ObjectIconText, 
-				OP.Path as ObjectAssetTypePath,
+				case when IT.ObjectClass = 9 and ObjectAssetTypeID = 0
+				then 'Reference List' 
+				else OP.Path 
+				end as ObjectAssetTypePath,
 				IT.PredicateID, 
 				P.Uid as PredicateUid,
 				P.Name AS PredicateName, 

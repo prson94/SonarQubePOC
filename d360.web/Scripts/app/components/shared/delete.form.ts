@@ -79,7 +79,7 @@ export class DeleteForm implements OnChanges {
                 }
                 else {
                     if (this.useUid) {
-                        this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe(res => {
+                        this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe((res) => {
                             this.callback(res.Id);
                         });
                     } else {
@@ -93,9 +93,9 @@ export class DeleteForm implements OnChanges {
                 break;
             case 'post':
                 this.http.post(this.uri, JSON.stringify(this.model), { headers: headers }).pipe(
-                    map(data => data))
+                    map((data) => data))
                     .subscribe(
-                        data => {
+                        (data) => {
                             var r = new JsonResult(data);
                             if (r.isError) {
                                 this.message.Error(r.message);
@@ -113,9 +113,9 @@ export class DeleteForm implements OnChanges {
                 break;
             case 'put':
                 this.http.put(this.uri, JSON.stringify(this.model), { headers: headers }).pipe(
-                    map(data => data))
+                    map((data) => data))
                     .subscribe(
-                        data => {
+                        (data) => {
                             var r = new JsonResult(data);
                             if (r.isError) {
                                 this.message.Error(r.message);
@@ -135,9 +135,9 @@ export class DeleteForm implements OnChanges {
                 if (this.model)
                     console.warn('Model passed to generic delete will be ignored when method=\'DELETE\'.');
                 this.http.delete(this.uri).pipe(
-                    map(data => data))
+                    map((data) => data))
                     .subscribe(
-                        data => {
+                        (data) => {
                             var r = new JsonResult(data);
                             if (r.isError) {
                                 this.message.Error(r.message);

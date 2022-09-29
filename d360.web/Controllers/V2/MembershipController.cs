@@ -107,7 +107,6 @@ namespace d360.web.Controllers.V2
 		/// <param name="_direction">The direction in which to return results by asc/desc. </param>
 		/// <param name="_filter">The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
 		/// <param name="_simpleFilter">The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
-		/// <param name="_includeOrganization">Include the users organization uid if they are part of an organization.</param>
 		[
 			HttpGet,
 			MapToApiVersion("2.0"),
@@ -117,7 +116,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 		]
-		public async Task<IHttpActionResult> GetUsers(CancellationToken Cancellationtoken, Guid? Uid = null, int? ResourceID = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "", bool _includeOrganization = false)
+		public async Task<IHttpActionResult> GetUsers(CancellationToken Cancellationtoken, Guid? Uid = null, int? ResourceID = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "")
 		{
 			try
 			{
@@ -177,11 +176,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				var joinBulder = new StringBuilder();
-				joinBulder.Append($@" outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A 
-										{(_includeOrganization ?
-													@" left join dbo.OrganizationResource org on org.ResourceID = GR.ResourceID 
-													left join dbo.asset ao on ao.Object like 'Organization' and ao.ObjectID = org.OrganizationID "
-									: "")}");
+				joinBulder.Append($@" outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A");
 
 				var whereBuilder = new StringBuilder();
 				var selectBuilder = new StringBuilder();
@@ -230,7 +225,6 @@ namespace d360.web.Controllers.V2
 				{
 					selectBuilder.Append($@"select
 					gr.uid,
-					{(_includeOrganization ? " ao.Uid as OrganizationUid, " : "")} 
 					gr.ResourceID, 
 					gr.FirstName, 
 					gr.LastName,
@@ -1681,148 +1675,6 @@ namespace d360.web.Controllers.V2
 			Company.CreateOrUpdateTypeDisplayValuesAsync(1, SystemObjects.GroupType.ToString());
 
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
-		}
-
-		/// <summary>
-		/// Retrive a summary of organizations for a given organization type
-		/// </summary>
-		/// <remarks>
-		/// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
-		/// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
-		///     
-		///     Example :
-		///     
-		///     - **Comparison Operators**
-		///         - Equals operator - {fieldname} eq 'Data'
-		///         - Not equals operator - {fieldname} ne 'Data'
-		///         - Contains operator - {fieldname} ct 'Data'  
-		///         - Greater than operator - {fieldname} gt 99
-		///         - Greater than or equal operator - {fieldname} ge 99
-		///         - Less than operator - {fieldname} lt 99
-		///         - Less than or equal operator - {fieldname} le 99
-		///         - Not populated operator - {fieldname} eq null
-		///         - populated operator - {fieldname} ne null
-		///     
-		///     - **Logical Operators**
-		///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
-		///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
-		/// </remarks>
-		///
-		/// <param name="organizationTypeUid">The uid of the organization type</param>
-		[
-			 HttpGet,
-			 MapToApiVersion("2.0"),
-			 Route("organizations/{organizationTypeUid:Guid}"),
-			 SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			 SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-			 SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
-			 SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
-			 SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-			 SwaggerParameter("_filter", "The filter expression used to filter organisations by name and accepted users email. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
-			 SwaggerResponse(HttpStatusCode.OK, "Gets a list of Organizations.", typeof(List<OrganizationModel>)),
-			 SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Parameters provided"),
-			 SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied: User is not an administrator"),
-			 SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-		 ]
-		public async Task<IHttpActionResult> GetOrganizationsByType(Guid organizationTypeUid)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-			}
-
-			if (!Company.Any<AssetType>(x => x.uid == organizationTypeUid && x.Object == core.SystemObjects.OrganizationType.ToString()))
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidOrgTypeUid)).ConfigureAwait(false);
-			}
-
-			var queryParams = Request.GetQueryNameValuePairs();
-			string isValid = isPageSizeAndNumValid(queryParams);
-
-			if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_order"))
-			{
-				var allowedValues = new[] { "name", "acceptedbyusername", "acceptedon", "administratoremail" };
-				var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.ToLower();
-				
-				if (!allowedValues.Contains(order))
-				{
-					isValid = string.Format(AssetsApiMessages.InvalidOrder, order);
-				}
-			}
-
-			if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_direction"))
-			{
-				var allowedValues = new[] { "asc", "desc" };
-				var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction");
-
-				if (!allowedValues.Contains(directionFilter.Value.Trim().ToLower()))
-				{
-					isValid = "Invalid _direction provided";
-				}
-			}
-
-			if (!string.IsNullOrEmpty(isValid))
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
-			}
-			try
-			{
-				List<OrganizationModel> organizations = await membershipRepository.GetOrganizationsByType(organizationTypeUid, queryParams);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, organizations))).ConfigureAwait(false);
-			}
-			catch (FilterExpressionParserException ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorFilterExpressionParse, errorMessage)).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
-		}
-
-		/// <summary>
-		/// Gets details about a single organization.
-		/// </summary>
-		/// <param name="organizationUid">Uid of the organization</param>
-		[
-			 HttpGet,
-			 MapToApiVersion("2.0"),
-			 Route("organization/{organizationUid:Guid}"),
-			 SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			 SwaggerResponse(HttpStatusCode.OK, "Gets details about a single organization.", typeof(List<OrganizationDetailModel>)),
-			 SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Organization Uid"),
-			 SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied: User is not an administrator"),
-			 SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-		]
-		public async Task<IHttpActionResult> GetOrganizationsDetails(Guid organizationUid)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-			}
-
-			try
-			{
-				OrganizationDetailModel organizationDetails = await membershipRepository.GetOrganizationsDetails(organizationUid);
-				
-				if (organizationDetails == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidOrgUid)).ConfigureAwait(false);
-				}
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, organizationDetails))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
 		}
 
 		private byte[] GetUsersExcelFromResults(IEnumerable<dynamic> results, List<FieldType> fieldTypes, bool iscommunityuserresposibility)

@@ -1,5 +1,6 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Route } from '@angular/router';
+import { split } from 'core-js/fn/symbol';
 import { AssetTypeClass } from '../../models/asset.model';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { AssetService } from '../../services/asset.service';
@@ -35,12 +36,13 @@ export class AssetsBaseComponent extends BaseComponent implements OnInit, OnDest
     }
 
     ngOnInit() {
-		this.route.params.subscribe(params => {
-			this.assetTypeService.GetAssetTypeByUid(params['assetTypeUid'])
+		this.route.params.subscribe((params) => {
+			var uidToLoad = (params['assetTypeUid'] as string).split(",")[0];
+			this.assetTypeService.GetAssetTypeByUid(uidToLoad)
 				.subscribe((res) => {
 					let cs = res.Class.ID;
 
-					this.assetTypeUid = res.uid;
+					this.assetTypeUid = params['assetTypeUid'];
 					this.assetTypeClass = cs;
 
 					this.showArtifactList = cs === AssetTypeClass.BusinessAsset || cs === AssetTypeClass.TechnicalAsset;

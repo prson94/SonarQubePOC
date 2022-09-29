@@ -114,7 +114,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
         this.isLoading = true;
 
         if (this.intersectType == null)
-            promises.push(this.workflowService.getIntersectType(this.objectId).subscribe(r => {
+            promises.push(this.workflowService.getIntersectType(this.objectId).subscribe((r) => {
                 if (r == null || r.length < 1) {
                     this.intersectType = null;
                 } else {
@@ -150,16 +150,16 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
         if (this.responsibleObject == null || this.responsibleObjectId == null || this.responsibleObjectId < 0 || this.objectType == 'IssueType') {
             this.responsibilities = [];
             return this.responsibilityService.getResponsibilityTypes()
-                .subscribe(r => {
+                .subscribe((r) => {
                     this.responsibilities = r;
-                    this.responsibilities.forEach(r => {
+                    this.responsibilities.forEach((r) => {
                         r.ResponsibilityTypeID = r.ID;
                     });
                 });
         }
 
         return this.responsibilityService.getResponsibilityTypesByObject(this.responsibleObject, this.responsibleObjectId)
-            .subscribe(r => this.responsibilities = r);
+            .subscribe((r) => this.responsibilities = r);
     }
 
     changeResponsibility(e: any, i: number) {

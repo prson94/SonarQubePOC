@@ -100,7 +100,7 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
 			this.uid = params['assetUid'];
 			this.load();
 			this.buildSecondaryNavigationByAssetUid(this.uid);
@@ -119,7 +119,7 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
             .subscribe((res) => {
                 this.objectName = res.Name ? res.Name : res.DisplayValue;
 				this.followerService.getFollowers(this.uid, res.AssetTypeUid).subscribe(
-					r => {
+					(r) => {
 						this.items = r;
 
 						this.isLoading = false;

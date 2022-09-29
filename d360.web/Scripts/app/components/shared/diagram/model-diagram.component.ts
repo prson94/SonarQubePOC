@@ -81,7 +81,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         this.diagram.nodeTemplate = this.createNodeTemplate();
         this.diagram.linkTemplate = this.createLinkTemplate();
 
-        this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+        this.diagram.addDiagramListener('ChangedSelection', (e) => this.ChangedSelection(e));
         this.diagram.addDiagramListener('ViewportBoundsChanged', () => this.ViewportBoundsChanged());
 
         this.populateDiagram();
@@ -97,7 +97,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 				var result = res[0];
 
 				this.assetType = result;
-				let root = data.find(x => x.parent === null);
+				let root = data.find((x) => x.parent === null);
 				if (root) {
 					delete root.parent;
 				}
@@ -259,7 +259,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         this.setCommonSecondaryNavTabs({ hasAudit: true });
 		this.breadcrumbsService
 			.getAreaNameByUid(this.assetTypeUid)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.currentAreaName = result;
                 this.breadcrumbsService.getFolderTitle(this.navFolderName).then((res) => {
 					this.breadcrumbsService.clearBreadcrumbs();
@@ -267,7 +267,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 					this.breadcrumbsService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
 
 					this.breadcrumbsService.getAssetFolderIcon(this.objectType, this.assetType.ID, this.currentAreaName ? this.currentAreaName : res)
-                        .subscribe(icon => {
+                        .subscribe((icon) => {
                             this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, $localize`Model`);
                             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
 							this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });

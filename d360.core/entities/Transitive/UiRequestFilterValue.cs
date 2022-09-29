@@ -24,9 +24,8 @@ namespace d360.core.entities
 
     public enum UiRequestOwnershipFilterType
     {
-        Group,
-        Organization,
-        User
+        Group = 1,
+        User = 3
     }
 
     public class UiRequestOwnershipFilterItem
@@ -46,9 +45,6 @@ namespace d360.core.entities
             {
                 case UiRequestOwnershipFilterType.Group:
                     securityAsset = "G";
-                    break;
-                case UiRequestOwnershipFilterType.Organization:
-                    securityAsset = "O";
                     break;
                 case UiRequestOwnershipFilterType.User:
                     securityAsset = "R";

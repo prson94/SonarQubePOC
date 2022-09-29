@@ -72,11 +72,11 @@ export class AppComponent implements AfterContentInit, OnDestroy {
         this.enableDataDog();
 
         this.errorSub = messagesService.errorMessage$.subscribe(
-            errorMsg => {
+            (errorMsg) => {
                 this.toastService.add({ severity: 'error', summary: errorMsg.summary, detail: errorMsg.detail });
             });
         this.msgSub = messagesService.infoMessage$.subscribe(
-            infoMsg => {
+            (infoMsg) => {
                 this.toastService.add({ severity: 'info', summary: infoMsg.summary, detail: infoMsg.detail });
             });
         this.aiService.setUserId(String(CurrentResourceID));

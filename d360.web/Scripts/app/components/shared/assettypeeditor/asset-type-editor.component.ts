@@ -77,8 +77,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             case AssetTypeClass.Model:
                 this.showAssetDepthSettings = true;
                 break;
-            case AssetTypeClass.Organization:
-                break;
             case AssetTypeClass.Policy:
                 this.showAssetDepthSettings = true;
                 break;
@@ -92,7 +90,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         }
 
         if (this.useUid && this.assetTypeUid) {
-            this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe(res => {
+            this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe((res) => {
                 this.id = res.Id;
                 this.loadEditor();
             });
@@ -105,7 +103,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         this
             .assetTypeService
             .getAssetTypeEditor(this.assetTypeClass, this.id, this.parentID)
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.model = data;
                 if (this.model.AssetType.Hierarchy.MaximumDepth == 0) {
                     this.model.AssetType.Hierarchy.MaximumDepth = 1;
@@ -158,7 +156,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             this
                 .assetTypeService
                 .putAssetType(this.model.AssetType)
-                .subscribe(data => {
+                .subscribe((data) => {
                     if (data != null && data.Success === true) {
                         this.showMessageForApiResponse(this.messagesService, data);
                         this.isSaving = false;
@@ -175,7 +173,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
             this.assetTypeService
                 .postAssetType(this.model.AssetType)
-                .subscribe(data => {
+                .subscribe((data) => {
                     if (data != null && data.Success === true) {
                         this.showMessageForApiResponse(this.messagesService, data);
                         this.isSaving = false;
@@ -191,7 +189,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     ShowAutoDisplayOption() {
         if (this.showParentPredicates && this.model.AssetType.Hierarchy.PredicateUid) {
-            let selectedPredicate = this.model.Predicates.filter(x => x.value.toLowerCase() == this.model.AssetType.Hierarchy.PredicateUid.toLowerCase());
+            let selectedPredicate = this.model.Predicates.filter((x) => x.value.toLowerCase() == this.model.AssetType.Hierarchy.PredicateUid.toLowerCase());
             if (selectedPredicate.length > 0) {
                 return true;
             }

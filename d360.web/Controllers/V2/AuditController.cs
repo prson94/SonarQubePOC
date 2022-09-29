@@ -830,11 +830,11 @@ namespace d360.web.Controllers.V2
 				case 
 					when ga.ActionObjectTypeName = 'Intersect Type' 
 						then 'Relationship Type' 
-					else coalesce(T.Name,ga.ActionObjectTypeName) 
+					else coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, '---') 
 				end as actionObjectTypeName,
 				coalesce(iname.Name,ga.actionObjectName) as actionObjectName,
 				case when O.ID > 0
-					then T.Name + ' ' + R.Action
+					then coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, '---')  + ' ' + R.Action
 					else ga.ActionDescription
 				end as actionDescription
 				from reporting.global_audit r
@@ -850,7 +850,7 @@ namespace d360.web.Controllers.V2
 				union
 				select uid, name as DisplayName, 'IssueType' as Object, id as ObjectID, null as AssetTypeClass from dbo.IssueType where uid = @uid
 				union
-				select uid, SubjectName + ' ' + PredicateName + ' ' + ObjectName as DisplayValue, 'IntersectType' as Object, id as ObjectID, null as AssetTypeClass from IntersectTypeDetail where uid = @uid
+				select uid, SubjectName + ' [' + PredicateName + '] ' + ObjectName as DisplayValue, 'IntersectType' as Object, id as ObjectID, null as AssetTypeClass from IntersectTypeDetail where uid = @uid
 				union
 				select uid, name as DisplayName, 'ResponsibilityType' as Object, id as ObjectID, null as AssetTypeClass from dbo.ResponsibilityType where uid = @uid
 				union

@@ -79,15 +79,15 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
     ];
 
     ngOnInit() {
-        this.satisfyAll = this.conditions.every(c => c["@Connector"] == "AND");
+        this.satisfyAll = this.conditions.every((c) => c["@Connector"] == "AND");
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.filteredConditions = this.conditions.filter(c => c['@ContextualFieldID'] == null || this.excludedContextualFields.indexOf(c['@ContextualFieldID']) == -1);
+        this.filteredConditions = this.conditions.filter((c) => c['@ContextualFieldID'] == null || this.excludedContextualFields.indexOf(c['@ContextualFieldID']) == -1);
     }
 
     isAllAnyVisible() {
-        return !this.hideAllAnyOption && this.conditions.filter(x => x["@FieldTypeID"]).length > 1;
+        return !this.hideAllAnyOption && this.conditions.filter((x) => x["@FieldTypeID"]).length > 1;
     }
 
     constructor(protected settingsService: CompanySettingsService) {

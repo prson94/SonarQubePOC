@@ -201,12 +201,6 @@
   <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
-  <data name="DomainPartOfOrganization" xml:space="preserve">
-    <value>This domain is already part of this organization</value>
-  </data>
-  <data name="EmailAlreadyInviteThisOrganization" xml:space="preserve">
-    <value>This email has already been invited to this organization</value>
-  </data>
   <data name="emailNotValid" xml:space="preserve">
     <value>The email you entered is not valid</value>
   </data>
@@ -402,26 +396,11 @@
   <data name="NotAllowedUpdateRelationship" xml:space="preserve">
     <value>You are not allowed to update this relationship type as there are existing field types that depend on it.</value>
   </data>
-  <data name="NotDeleteOrganizationType" xml:space="preserve">
-    <value>Could not delete Organization Type</value>
-  </data>
   <data name="NotFoundServiceEdit" xml:space="preserve">
     <value>Cannot find the specified service to edit</value>
   </data>
   <data name="NotFoundShoppingCart" xml:space="preserve">
     <value>Could not find the shopping cart specified.</value>
-  </data>
-  <data name="Organization" xml:space="preserve">
-    <value>Organization</value>
-  </data>
-  <data name="OrganizationDomain" xml:space="preserve">
-    <value>Organization domain</value>
-  </data>
-  <data name="OrganizationInvitation" xml:space="preserve">
-    <value>Organization invitation</value>
-  </data>
-  <data name="organizationType" xml:space="preserve">
-    <value>OrganizationType</value>
   </data>
   <data name="PleaseSpecifyUserNamePassword" xml:space="preserve">
     <value>Please specify a valid username and password.</value>
@@ -560,9 +539,6 @@
   </data>
   <data name="UriCreated" xml:space="preserve">
     <value>Uri successfully created.</value>
-  </data>
-  <data name="UserAlreadyRegisteredThisOrganization" xml:space="preserve">
-    <value>A user with this email address is already registered to this organization</value>
   </data>
   <data name="UserDoesnotAdmin" xml:space="preserve">
     <value>User does not have admin privileges.</value>

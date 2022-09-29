@@ -72,14 +72,14 @@ export class ResourceFollowingTile extends BaseComponent implements OnChanges {
         this.isMe = (this.resourceId == CurrentResourceID);
 
         this.resourcesService.getFollowingBreakdownByResource(this.resourceId)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.items = r;
                 if (this.items && this.items.length > 0)
                     this.select(this.items[0]);
 
                 if (this.resource == null)
                     this.resourcesService.getResource(this.resourceId)
-                        .subscribe(res => {
+                        .subscribe((res) => {
                             this.itemsres = res.items;
                             if (this.itemsres.length > 0) {
                                 this.resource = this.itemsres[0];

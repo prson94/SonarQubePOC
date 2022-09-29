@@ -37,7 +37,6 @@ export class StringConstants {
     static Section_Bulk = $localize`Bulk Loader`;
     static Section_Artifacts = $localize`Artifacts`;
     static Section_Models = $localize`Models`;
-    static Section_Organizations = $localize`Organizations`;
     static Section_Policies = $localize`Policies`;
     static Section_Predicates = $localize`Predicates`;
     static Section_Relationships = $localize`Relationships`;

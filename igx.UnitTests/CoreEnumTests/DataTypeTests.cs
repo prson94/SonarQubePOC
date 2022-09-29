@@ -195,24 +195,5 @@ namespace igx.UnitTests.CoreEnumTests
 
             this.ValidateDataTypes(dataTypes);
         }
-
-        [Fact]
-        public void DataTypePropExcludedOrganizationType()
-        {
-            var dataTypes = DataType.Text.GetDataTypeInfoList(SystemObjects.OrganizationType);
-
-            Assert.DoesNotContain(dataTypes, x => x.ID == DataType.OwnershipLookup);
-            Assert.DoesNotContain(dataTypes, x => x.ID == DataType.FieldFromRelationship);
-            Assert.DoesNotContain(dataTypes, x => x.ID == DataType.RefListRelationship);
-            Assert.DoesNotContain(dataTypes, x => x.ID == DataType.ComplexRelationLookup);
-            Assert.DoesNotContain(dataTypes, x => x.ID == DataType.Relationship);
-            Assert.DoesNotContain(dataTypes, x => x.ID == DataType.JSON);
-            Assert.DoesNotContain(dataTypes, x => x.ID == DataType.JsonElement);
-            Assert.DoesNotContain(dataTypes, x => x.ID == DataType.Path);
-            Assert.DoesNotContain(dataTypes, x => x.ID == DataType.Tag);
-            Assert.DoesNotContain(dataTypes, x => x.ID == DataType.Score);
-            Assert.DoesNotContain(dataTypes, x => x.ID == DataType.Counter);
-
-        }
     }
 }

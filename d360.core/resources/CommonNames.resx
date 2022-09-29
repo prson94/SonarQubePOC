@@ -141,9 +141,6 @@
   <data name="AssetTypeClass_ModelType" xml:space="preserve">
     <value>Model Type</value>
   </data>
-  <data name="AssetTypeClass_Organization" xml:space="preserve">
-    <value>Organization</value>
-  </data>
   <data name="AssetTypeClass_Policy" xml:space="preserve">
     <value>Policy</value>
   </data>

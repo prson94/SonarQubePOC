@@ -16,7 +16,7 @@
     </sql>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.Deletions-v2">
+  <changeSet author="tduric" id="Table.Deletions-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -107,6 +107,24 @@ GO
 drop table if exists [graph].[AssetEdge]
 GO
 drop table if exists [graph].[AssetNode]
+GO
+drop table if exists dbo.ContractAcceptance
+GO
+drop table if exists dbo.Contract
+GO
+drop table if exists dbo.OrganizationDomain
+GO
+drop table if exists dbo.OrganizationInvitation
+GO
+drop table if exists dbo.OrganizationRegistration
+GO
+drop table if exists dbo.OrganizationResource
+GO
+drop table if exists dbo.Organization
+GO
+drop table if exists dbo.OrganizationType
+GO
+
 ]]>
     </sql>
 		<![CDATA[

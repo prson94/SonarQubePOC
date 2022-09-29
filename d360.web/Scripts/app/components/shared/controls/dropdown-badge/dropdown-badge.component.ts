@@ -53,7 +53,7 @@ export class DropdownBadgeComponent<T = any> implements ControlValueAccessor {
   }
 
   writeValue(value: T): void {
-    this.selected = this.options.find(option => option.value === value);
+    this.selected = this.options.find((option) => option.value === value);
     this.onModelChange(value);
     this.cdr.markForCheck();
   }

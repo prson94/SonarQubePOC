@@ -67,7 +67,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     private filterResults() {
         if (this.filterToName && this.filterToName.length > 0) {
             var search = this.filterToName.toLowerCase();
-            this.relationships = this.relationships.filter(item =>
+            this.relationships = this.relationships.filter((item) =>
                 item.Predicate && item.Predicate.Name && item.Predicate.Name.toLowerCase().includes(search) ||
                 item.Predicate && item.Predicate.Inverse && item.Predicate.Inverse.toLowerCase().includes(search) ||
                 item.Object && item.Object.Class && item.Object.Class.toLowerCase().includes(search) ||
@@ -91,7 +91,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         this.isLoading = true;
         if (this.objectID && this.objectType) {
             this.relationshipsService.getRelationshipTypesById(this.objectID, this.objectType)
-                .subscribe(result => {
+                .subscribe((result) => {
                     this.relationships = result ?? [];
                     this.isLoading = false;
                     if (this.relationships && !this.showEditor) {
@@ -104,7 +104,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                 });
         } else {
             this.relationshipsService.getRelationshipTypes()
-                .subscribe(result => {
+                .subscribe((result) => {
                     this.relationships = result ?? [];
                     this.filterResults();
                     this.isLoading = false;
@@ -123,7 +123,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         if (sessionStorage.getItem(this.gridStorageKey)) {
             let gridData = JSON.parse(sessionStorage.getItem(this.gridStorageKey));
 
-            if (gridData.filters && Object.keys(gridData.filters).filter(x => x != "global").length > 0)
+            if (gridData.filters && Object.keys(gridData.filters).filter((x) => x != "global").length > 0)
                 this.showSimpleFilter = false;
 
             this.cdRef.detectChanges();
@@ -140,7 +140,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     deleteRelationship(uid: string) {
         this.relationshipsService.deleteRelationshipType(uid)
-            .subscribe(result => {
+            .subscribe((result) => {
                 result = result[0];
                 this.showMessageForApiResult(this.messagesService, result);
                 this.showDelete = false;

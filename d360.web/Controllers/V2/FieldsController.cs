@@ -850,7 +850,6 @@ namespace d360.web.Controllers.V2
 				}
 
 				var disallowedPathClasses = new List<AssetTypeClass> {
-					AssetTypeClass.Organization,
 					AssetTypeClass.User,
 				};
 
@@ -860,7 +859,6 @@ namespace d360.web.Controllers.V2
 				}
 
 				var disallowedScoreClasses = new List<AssetTypeClass> {
-					AssetTypeClass.Organization,
 					AssetTypeClass.User,
 					AssetTypeClass.ReferenceItemType,
 					AssetTypeClass.Diagram
@@ -2207,7 +2205,7 @@ namespace d360.web.Controllers.V2
 				{
 					string sql = "";
 
-					if (!atype.Hierarchical)
+					if (atype.Class != AssetTypeClass.Model && atype.Class != AssetTypeClass.Policy)
 					{
 						if (!string.IsNullOrEmpty(filter))
 						{
@@ -2286,7 +2284,7 @@ namespace d360.web.Controllers.V2
 					var resultsAssets = await Company.Connection.QueryMultipleAsync(cmd);
 					var items = resultsAssets.Read<DDLSelectItem>().ToList();
 
-					if (atype.Hierarchical && (skip == null || skip == 0))
+					if ((atype.Class == AssetTypeClass.Model || atype.Class == AssetTypeClass.Policy) && (skip == null || skip == 0))
 					{
 						items = items.Prepend(new DDLSelectItem { text = "- Root -", value = Guid.Empty.ToString() }).ToList();
 					}
@@ -2705,7 +2703,6 @@ namespace d360.web.Controllers.V2
 													'[' + ResponsibilityTypeName + '] - ' + SecurityAssetName as 'Name', 
 													case 
 														when SecurityAsset = 'R' then 'Resource'
-														when SecurityAsset = 'O' then 'Organization'
 														when SecurityAsset = 'G' then 'Group'
 														else[Type]
 															end as [Type],

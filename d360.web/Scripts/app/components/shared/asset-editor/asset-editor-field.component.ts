@@ -705,7 +705,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
         }
 
-        return this.field.Validations && this.field.Validations.some(x => x.rule === 'required') == true;
+        return this.field.Validations && this.field.Validations.some((x) => x.rule === 'required') == true;
     }
 
     getPlaceholder() {

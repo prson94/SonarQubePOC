@@ -54,10 +54,10 @@ export class MonitorFilterComponent extends BaseComponent implements OnInit {
     private load() {
         this.isLoading = true;
         this.workflowService.getTypes()
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.items = r;
 
-                this.items.forEach(i => {
+                this.items.forEach((i) => {
                     i.label = i.State == State.InActive ? i.Name + " ( " + $localize`Inactive` + " )" : i.Name;
                     i.value = i.ID.toString();
                 });
@@ -65,7 +65,7 @@ export class MonitorFilterComponent extends BaseComponent implements OnInit {
 
                 if (this.selectAll) {
                     this.selection = [];
-                    this.items.forEach(i => this.selection.push(i.value));
+                    this.items.forEach((i) => this.selection.push(i.value));
                 }
 
                 this.selectionChange.emit(this.selection);

@@ -10391,8 +10391,8 @@ where   ER.ExecutionID = @ExecutionID
 				where CheckType = 'R' and isnull(targetobjectid,0) = 0
 
 				update #parsedData
-				set ErrorMessage =  'Invalid Assignee Type. Allowed Types are ''Resource'', ''Group'' and ''Organization'''
-				where object is not null and object not in('ResourceType','OrganizationType','GroupType')
+				set ErrorMessage =  'Invalid Assignee Type. Allowed Types are ''Resource'' or ''Group'''
+				where object is not null and object not in('ResourceType','GroupType')
 
 				update #parsedData
 				set ErrorMessage = 'Invalid Asset UID for Intersect Type.'
@@ -10409,10 +10409,10 @@ where   ER.ExecutionID = @ExecutionID
 				where pd.AssigneeTypeUid is not null and at.id is null
 
 				update #parsedData
-				set ErrorMessage = 'Invalid AssigneeType. Allowed types are ResourceType, GroupType and OrganizationType.'
+				set ErrorMessage = 'Invalid AssigneeType. Allowed types are ResourceType or GroupType.'
 				from #parsedData pd
 				inner join AssetType at on at.uid = pd.assigneetypeuid
-				where pd.AssigneeTypeUid is not null and at.Object not in ('ResourceType', 'GroupType','OrganizationType')
+				where pd.AssigneeTypeUid is not null and at.Object not in ('ResourceType', 'GroupType')
 
 				update #parsedData
 				set ErrorMessage = 'Invalid Assignee for Assignee Type.'
@@ -12391,7 +12391,7 @@ EG.GroupUid
 						from
 							api.ExecutionResponsibilityTypeRelationOverrideItem ERTROI
 							left Join
-							Asset SA on SA.Uid = ERTROI.SecurityAssetUid and SA.Object in ('Resource', 'Group', 'Organization')
+							Asset SA on SA.Uid = ERTROI.SecurityAssetUid and SA.Object in ('Resource', 'Group')
 						where	ExecutionID = @ExecutionID and SA.Uid is null;
 						
 						update	ERTROI
@@ -12415,7 +12415,7 @@ EG.GroupUid
 							inner join 
 							ResponsibilityType RT on RT.Uid = ERTROI.ResponsibilityTypeUid
 							inner join
-							Asset SA on SA.Uid = ERTROI.SecurityAssetUid and SA.Object in ('Resource', 'Group', 'Organization')
+							Asset SA on SA.Uid = ERTROI.SecurityAssetUid and SA.Object in ('Resource', 'Group')
 							inner join
 							ResponsibilityTypeRelationOverrideItem RTROI on RTROI.ResponsibilityTypeId = RT.ID and RTROI.AssetId = A.Id and RTROI.SecurityAssetId = SA.ObjectId
 						where ExecutionID = @ExecutionID;",
@@ -12471,7 +12471,6 @@ EG.GroupUid
 													CASE SA.Object
 														WHEN 'Resource' THEN 'R'
 														WHEN 'Group' THEN 'G'
-														WHEN 'Organization' THEN 'O'
 														END as SecurityAsset,                                            
 													SA.ObjectID as SecurityAssetId, E.*
 												FROM  
@@ -12481,7 +12480,7 @@ EG.GroupUid
 												inner join 
 													ResponsibilityType RT on RT.Uid = E.ResponsibilityTypeUid
 												inner join
-													Asset SA on SA.Uid = E.SecurityAssetUid and SA.Object in ('Resource', 'Group', 'Organization')
+													Asset SA on SA.Uid = E.SecurityAssetUid and SA.Object in ('Resource', 'Group')
 												WHERE {querySuffix}
 												) ERTROI
 										ON (ERTROI.AssetId = RTROI.AssetID AND ERTROI.ResponsibilityTypeId = RTROI.ResponsibilityTypeId and ERTROI.AssetId = RTROI.AssetID)                                        

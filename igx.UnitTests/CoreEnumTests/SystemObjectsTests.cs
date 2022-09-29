@@ -24,7 +24,6 @@ namespace igx.UnitTests.CoreEnumTests
             Assert.True(SystemObjects.AttributeTypeCategory.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter));
             Assert.True(SystemObjects.Claim.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter));
             Assert.True(SystemObjects.ConnectorLabel.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.ComplexRelationLookup | DataType.RefListRelationship | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship | DataType.Counter));
-            Assert.True(SystemObjects.Contract.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter));
             Assert.True(SystemObjects.EmailTemplate.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Tag | DataType.Counter));
             Assert.True(SystemObjects.ExportTemplate.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter));
             Assert.True(SystemObjects.Field.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter));
@@ -42,11 +41,6 @@ namespace igx.UnitTests.CoreEnumTests
             Assert.True(SystemObjects.Map.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter));
             Assert.True(SystemObjects.MapType.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter));
             Assert.True(SystemObjects.Monitor.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Counter));
-            Assert.True(SystemObjects.Organization.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter));
-            Assert.True(SystemObjects.OrganizationDomain.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter));
-            Assert.True(SystemObjects.OrganizationInvitation.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter));
-            Assert.True(SystemObjects.OrganizationType.ExcludeDataType() == (DataType.FieldFromRelationship |
-            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter));
             Assert.True(SystemObjects.Policy.ExcludeDataType() == (DataType.JSON | DataType.JsonElement));
             Assert.True(SystemObjects.PolicyType.ExcludeDataType() == DataType.None);
             Assert.True(SystemObjects.Predicate.ExcludeDataType() == (DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score | DataType.Counter));
