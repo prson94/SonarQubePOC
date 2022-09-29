@@ -1405,14 +1405,23 @@ namespace d360.extensions.search
 				else
 				{
 					var flds = new List<Nest.Field>();
+					string term = fieldFilter.Values.First();
 					IEnumerable<QueryContainer> subqueries;
 
 					if (fieldFilter.Field == "Semantictype")
 					{
 						flds.Add(D3S_FIELD_PREFIX + "SemanticName");
 						flds.Add(D3S_FIELD_PREFIX + "SemanticQualifier");
+						if (!term.StartsWith("*"))
+						{
+							term = $"*{term}";
+						}
+						if (!term.EndsWith("*"))
+						{
+							term = $"{term}*";
+						}
 
-						if(IsPhraseGuid(values.First()) > 0)
+						if (IsPhraseGuid(values.First()) > 0)
 						{
 							flds.Add(D3S_FIELD_PREFIX + "SemanticUid");
 						}
@@ -1428,28 +1437,27 @@ namespace d360.extensions.search
 							QueryContainer q = new MatchPhraseQuery
 							{
 								Field = f,
-								Query = values.First()
+								Query = term
 							};
 							return q;
 						});
 					}
 					else
 					{
-						string p = fieldFilter.Values.First();
-						if (p.Contains("*"))
+						if (term.Contains("*"))
 						{
-							if (p.EndsWith("*")) //If we have trailing *, remove before escaping
+							if (term.EndsWith("*")) //If we have trailing *, remove before escaping
 							{
-								p = p.Remove(p.Length - 1);
+								term = term.Remove(term.Length - 1);
 							}
-							p = EscapeSpecialCharacters(p) + "*";
+							term = EscapeSpecialCharacters(term) + "*";
 
 							subqueries = flds.Select(f =>
 							{
 								QueryContainer q = new QueryStringQuery
 								{
 									Fields = f,
-									Query = p,
+									Query = term,
 									AnalyzeWildcard = true
 								};
 								return q;
