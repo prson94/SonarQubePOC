@@ -341,36 +341,6 @@ and DefaultValue is not null and DefaultFormattedValue is null
 	</rollback>
   </changeSet>
   
-  <changeSet author="TKlok" id="Data.Corrections.GOV-10856">
-    <sql dbms="mssql"
-			splitStatements="false"
-            stripComments="false">
-		<![CDATA[
-DECLARE @ObjectID INT;
-DECLARE @ResourceID INT;
-
-DECLARE cursorDelete CURSOR
-LOCAL STATIC
-FOR
-SELECT ot.ID AS ObjectID, ISNULL(ot.UpdatedBy, 0) as RecsourceID
-FROM [dbo].[OrganizationType] ot
-INNER JOIN [dbo].[AssetType] at ON at.[Object] = 'OrganizationType' AND at.ObjectID = ot.ID
-WHERE ot.[State] = 3;
-
-OPEN cursorDelete;
-
-FETCH NEXT FROM cursorDelete INTO @ObjectID, @ResourceID;
-WHILE @@FETCH_STATUS = 0
-BEGIN
-	EXEC [dbo].[DeleteObject] 'OrganizationType', @ObjectID, @ResourceID;
-    FETCH NEXT FROM cursorDelete INTO @ObjectID, @ResourceID;
-END;
-CLOSE cursorDelete; 
-DEALLOCATE cursorDelete;
-		]]>
-    </sql>
-	</changeSet>
-
   <changeSet author="TKlok" id="Data.Corrections.GOV-11037">
     <sql dbms="mssql"
 			splitStatements="false"
