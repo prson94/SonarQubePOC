@@ -190,7 +190,6 @@ namespace d360.extensions.search
         {
             { "R", "NoReadResourceID" },
             { "G", "NoReadGroupID" },
-            { "O", "NoReadOrgID" },
         };
 
         private string CreateDocument(IndexObjectModel item, bool forUpdate = false)
@@ -472,7 +471,6 @@ namespace d360.extensions.search
                                         .Keyword(s => s.Name("Url").Index(false))
                                         .Keyword(s => s.Name("NoReadResourceID"))
                                         .Keyword(s => s.Name("NoReadGroupID"))
-                                        .Keyword(s => s.Name("NoReadOrgID"))
                                         .Boolean(b => b.Name("Data3SixtyUser"))
                                         .Text(s => s.Name("Path"))
 										.Text(s => s.Name("SemanticName"))
@@ -1789,11 +1787,6 @@ namespace d360.extensions.search
                     Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadGroupID"),
                     Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
                 },
-                new TermsQuery
-                {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadOrgID"),
-                    Terms = queryLimit.ResourceOrgIDs.Select(i => i.ToString())
-                }
             };
 
             //User access limitations
