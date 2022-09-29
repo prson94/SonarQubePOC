@@ -1802,21 +1802,21 @@ namespace d360.web.Controllers
 
 				var relVal = new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url };
 
-				var assetUid = Company.Assets.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
-
-				if (assetUid != null && assetUid != Guid.Empty)
+				var data = Company.Query<dynamic>("select a.uid, at.uid as assetTypeUid from asset a inner join assettype at on at.id = a.assettypeid where a.object = @obj and a.objectid = @objid", new { obj, objID }).FirstOrDefault();
+				if (data != null && data.uid != null && data.uid != Guid.Empty)
 				{
-					relVal.uid = assetUid;
-					if (relVal.TooltipUrl.ToLower().IndexOf("referencelistid") > -1)
+					relVal.uid = data.uid;
+					relVal.assetTypeUid = data.assetTypeUid;
+					if (relVal.TooltipType.ToLower().IndexOf("referenceitem") > -1)
 					{
-						relVal.TooltipUrl += "," + assetUid.ToString();
+						relVal.TooltipUrl += "," + relVal.uid.ToString();
 					}
 				}
 				else
 				{
 					var assetTypeUid = Company.AssetTypes.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
-					relVal.uid = assetTypeUid;
-					relVal.TooltipUrl = "assets/" + relVal.uid;
+					relVal.assetTypeUid = assetTypeUid;
+					relVal.TooltipUrl = "assets/" + relVal.assetTypeUid;
 				}
 
 				values.Add(relVal);
