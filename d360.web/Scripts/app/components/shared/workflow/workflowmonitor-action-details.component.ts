@@ -67,7 +67,7 @@ export class WorkflowMonitorActionDetailsComponent implements OnInit, OnChanges 
         this.isLoading = true;
         this.ref.markForCheck();
         this.tooltipService.getTooltipInfo('Issue', this.id)
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.data = data;
                 this.isLoading = false;
                 this.ref.markForCheck();

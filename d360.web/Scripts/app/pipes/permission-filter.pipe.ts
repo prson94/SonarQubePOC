@@ -6,6 +6,6 @@ export class PermissionFilterPipe implements PipeTransform {
     transform(items: ResponsibilityTypeRelationPermission[], category: string): any {
         if (!category || category.length == 0) return items;
         let search = category.toUpperCase();
-        return items.filter(item => item.Category === category);
+        return items.filter((item) => item.Category === category);
     }
 }

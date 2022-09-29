@@ -242,7 +242,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                     animationLimit: 0,
                     point: {
                         events: {
-                            click: e => {
+                            click: (e) => {
                                 this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
                                 this.selectPointOnGraph();
                                 this.datePointChanged.emit(this.scoreDate);
@@ -258,7 +258,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 footerFormat: '',
                 formatter: function () {
                     var tooltipString = '';
-                    var startIdx = historicalTempData.findIndex(x => x.x == this.points[0].x);
+                    var startIdx = historicalTempData.findIndex((x) => x.x == this.points[0].x);
                     this.points.forEach((point) => {
                         tooltipString += `<div><span>${point.series.userOptions.name}<span style="padding-left: 4px;">${point.y}%</span></span></div>`;
                     });
@@ -503,7 +503,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     private getMeasurePoint(item: ScorePoint): ScorePoint {
         var point = null;
         if (this.measurePoints)
-            point = this.measurePoints.filter(x => x.EffectiveDate == item.EffectiveDate)[0];
+            point = this.measurePoints.filter((x) => x.EffectiveDate == item.EffectiveDate)[0];
 
         if (point == null || point == undefined) {
             return null;

@@ -36,7 +36,7 @@ export class ActionsComponent extends BaseComponent implements OnInit, OnDestroy
     ngOnInit() {
         this.isLoading = true;
         
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
 
 			this.baseAssetUid = params['assetUid'];
             this.isLoading = false;

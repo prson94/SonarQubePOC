@@ -52,7 +52,7 @@ export class PortalRendererComponent {
     }
 
     private nameInput$ = new BehaviorSubject(undefined);
-    template$ = this.nameInput$.pipe(switchMap(name => this.portalService.getPortalContent$(name)));
+    template$ = this.nameInput$.pipe(switchMap((name) => this.portalService.getPortalContent$(name)));
 
     ngOnChanges(changes: SimpleChanges) {
         if ('name' in changes) {

@@ -36,7 +36,7 @@ export class AssetsBaseComponent extends BaseComponent implements OnInit, OnDest
     }
 
     ngOnInit() {
-		this.route.params.subscribe(params => {
+		this.route.params.subscribe((params) => {
 			var uidToLoad = (params['assetTypeUid'] as string).split(",")[0];
 			this.assetTypeService.GetAssetTypeByUid(uidToLoad)
 				.subscribe((res) => {

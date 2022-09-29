@@ -685,7 +685,7 @@ export class BaseComponent {
 	//generic method used for objectName = Policy/Model
 	private checkParentBase(item: any, arr: any[], typeId: number, objectName: string) {
 		if (item.ParentID > 0 && arr) {
-			let parentAr = arr.filter(x => x.ID == item.ParentID);
+			let parentAr = arr.filter((x) => x.ID == item.ParentID);
 			let parent: any;
 			if (parentAr.length > 0) {
 				parent = parentAr[0];
@@ -700,7 +700,7 @@ export class BaseComponent {
 				this.checkParentBase(parent, arr, typeId, objectName);
 			}
 		} else {
-			this.baseCrumbs.forEach(x => this.breadcrumbsService.showBreadcrumb(x));
+			this.baseCrumbs.forEach((x) => this.breadcrumbsService.showBreadcrumb(x));
 		}
 	}
 
@@ -710,7 +710,7 @@ export class BaseComponent {
 		includeChildren?: boolean
 	): TreeNode[] {
 		// find the root items then
-		let rootNodes = inputArr.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
+		let rootNodes = inputArr.filter((x) => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
 
 		if (rootNodes.length == 0) {
 			return null;
@@ -795,8 +795,8 @@ export class BaseComponent {
 	}
 
 	showMessageForApiResults(messagesService: MessagesObservableService, results: ApiResult[], defaultMessage: string, disableCountShow: boolean = false) {
-		var succeeded = results.filter(x => x.Success == true);
-		var failed = results.filter(x => x.Success != true);
+		var succeeded = results.filter((x) => x.Success == true);
+		var failed = results.filter((x) => x.Success != true);
 
 		if (succeeded.length > 0) {
 			let message = disableCountShow ? defaultMessage : succeeded.length + defaultMessage;
@@ -821,7 +821,7 @@ export class BaseComponent {
 	expandTreeNode(node: TreeNode) {
 		node.expanded = true;
 		if (node.children) {
-			node.children.forEach(n => this.expandTreeNode(n));
+			node.children.forEach((n) => this.expandTreeNode(n));
 		}
 	}
 
@@ -1201,7 +1201,7 @@ export class BaseComponent {
 				cmp.active = true;
 			}
 
-			if (cmp && cmp.subTabsUrl.some(x => x == currentComponentUrl || currentComponentUrl.indexOf(x) == 0)) {
+			if (cmp && cmp.subTabsUrl.some((x) => x == currentComponentUrl || currentComponentUrl.indexOf(x) == 0)) {
 				cmp.active = true;
 			}
 		});
@@ -1306,7 +1306,7 @@ export class BaseComponent {
 
 	//used for policy/model
 	private setTreeBreadcrumbs(data, objectName: string) {
-		var selected = this.preloadedTreeData.find(x => x.ID == data.AssetId);
+		var selected = this.preloadedTreeData.find((x) => x.ID == data.AssetId);
 		var objectTypeName = objectName + "Type";
 		this.breadcrumbsService.clearBreadcrumbs();
 

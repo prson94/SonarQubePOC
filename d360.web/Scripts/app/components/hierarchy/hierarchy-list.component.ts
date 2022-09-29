@@ -104,7 +104,7 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
     load() {
         this.isLoading = true;
         this.assetTypeService.getAssetTypesByClass(this.assetTypeClass).subscribe(
-            result => {
+            (result) => {
                 this.isLoading = false;
 
                 this.types = result;
@@ -114,12 +114,12 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
                     this.selected = this.types[0];
                 }
 
-                this.headerBreadcrumbService.getFolderTitle(this.navFolderName).then(res => {
+                this.headerBreadcrumbService.getFolderTitle(this.navFolderName).then((res) => {
                     this.headerBreadcrumbService.clearCurrentObjectInfo();
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, undefined));
 
-                    this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
+                    this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
                         this.secondaryNavService.setCurrentArea(res, icon, this.objectName);
                     });
 

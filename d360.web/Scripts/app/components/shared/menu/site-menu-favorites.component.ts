@@ -42,9 +42,9 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
     // But our site-menu-category.component depends on it's existence
     // TODO: once upon a time, cleanup this
     menu$ = this.store.state$.pipe(
-        map(x => x.homepageAndFavorites),
+        map((x) => x.homepageAndFavorites),
         distinctUntilChanged(isEqual),
-        map(homefav => {
+        map((homefav) => {
             if (homefav == null) {
                 return null;
             }
@@ -74,7 +74,7 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
             this.store.tryLoadFavoritesSaga();
         }));
 
-        this.subs.push(this.menu$.subscribe(menu => {
+        this.subs.push(this.menu$.subscribe((menu) => {
             const wasActive = this.menu?.isActiveItem;
             this.menu = menu;
             if (wasActive) {
@@ -96,7 +96,7 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
     }
 
     ngOnDestroy() {
-        this.subs.forEach(sub => sub.unsubscribe());
+        this.subs.forEach((sub) => sub.unsubscribe());
     }
 
     handleActiveItem(event) {

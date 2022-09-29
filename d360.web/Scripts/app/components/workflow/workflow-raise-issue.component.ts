@@ -141,11 +141,11 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private loadDetails() {
         this.isLoading = true;
         this.resourcesService.getResource(this.resourceId)
-            .subscribe(res => {
+            .subscribe((res) => {
 				this.resourceUid = res.items[0].uid;
 
 				this.objectDetailService.getObjectDetailByObjectUid(this.baseAssetUid ?? this.baseAssetTypeUid).subscribe(
-                    res => {
+                    (res) => {
 						this.objectDetail = res;
 						this.selectedOption = 'current';
 
@@ -172,7 +172,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         }
 
         this.workflowService.getWorkflowIssueTypes(this.selectedObjectType, this.selectedObjectId, params)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.issueTypes = result;
 				if (this.issueTypes != null && this.issueTypes.length === 1) {
 					this.issueType = this.issueTypes[0];
@@ -215,7 +215,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         }
 
         this.workflowService.raiseIssues(this.issueType.Uid, action)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.showMessageForApiResponse(this.messagesService, res);
                 this.isLoading = false;
                 this.location.back();
@@ -229,7 +229,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private search(event) {
         this.searchSub = this.tagService.getTags(event.query, 'Resource').pipe(
             debounceTime(400))
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.terms = data;
             });
     }

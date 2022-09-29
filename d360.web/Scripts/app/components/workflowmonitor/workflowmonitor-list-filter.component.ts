@@ -94,26 +94,26 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
         this.isLoading = true;
         this.workflowService.getTypes()
             .pipe(
-                map(r => {
+                map((r) => {
                     this.items = r;
 
-                    this.items.forEach(i => {
+                    this.items.forEach((i) => {
                         i.label = i.State == State.InActive ? i.Name + " ( " + $localize`Inactive` + " )" : i.Name;
                         i.value = i.ID.toString();
                     });
 
                     this.selection = [];
                     if (this.usePredefinedFilters) {
-                        this.items.forEach(i => this.selection.push(i.value));
+                        this.items.forEach((i) => this.selection.push(i.value));
                         this.change(this.selection);
                     }
                     else if (this.workflowTypeFilters && !StringHelpers.isNullOrEmpty(this.workflowTypeFilters.value)) {
-                        this.workflowTypeFilters.value.split(",").forEach(i => {
+                        this.workflowTypeFilters.value.split(",").forEach((i) => {
                             if (!(StringHelpers.isNullOrEmpty(i)))
                                 this.selection.push(i);
                         });
                     } else if (this.selectAll) {
-                        this.items.forEach(i => this.selection.push(i.value));
+                        this.items.forEach((i) => this.selection.push(i.value));
                         this.change(this.selection);
                     }
 
@@ -121,7 +121,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
                     this.isLoading = false;
                 }),
                 map(() => this.wfMonitorService.getWorkFlowMonitorFilterColumnDefinition()
-                    .subscribe(x => {
+                    .subscribe((x) => {
                         this.filtercolumns = x;
                         this.isLoading = false;
                         this.ref.markForCheck();
@@ -145,7 +145,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
         data.fieldtype = GridFilterFieldType.Normal;
 
         let typeList = "";
-        e.forEach(s => typeList += s.toString() + ',');
+        e.forEach((s) => typeList += s.toString() + ',');
         data.value = typeList;
         this.workflowTypeFilters = typeList != "" ? data : null;
         this.workflowTypeFiltersChange.emit(this.workflowTypeFilters);

@@ -114,7 +114,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
 
             if (this.inEditModel) {
                 this.responsibilityTypeService.putResponsibilityTypeAllocations(this.relation.ResponsibilityTypeUid, [allocation])
-                    .subscribe(r => {
+                    .subscribe((r) => {
                         this.isLoading = false;
                         this.showMessageForResult(this.messagesService, r);
                         if (r.type != 'error') {
@@ -123,7 +123,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
                     });
             } else {
                 this.responsibilityTypeService.postResponsibilityTypeAllocations(this.relation.ResponsibilityTypeUid, [allocation])
-                    .subscribe(r => {
+                    .subscribe((r) => {
                         this.showMessageForResult(this.messagesService, r);
                         this.isLoading = false;
                         if (r.type != 'error') {

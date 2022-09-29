@@ -37,7 +37,7 @@ export class ItemFollowComponent extends BaseComponent implements OnInit, OnDest
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.resourceId = +params['resourceID']; // (+) converts string 'id' to a number
             this.buildSecondaryNavigationForObject(this.resourceId, 'Resource');
         });

@@ -30,19 +30,19 @@ export class SiteMenuShowFavoritesPanelComponent {
     }
 
     isLoading$ = this.store.state$.pipe(
-        map(state => state.loadingCounter > 0)
+        map((state) => state.loadingCounter > 0)
     );
 
     favorites$ = this.store.state$.pipe(
-        map(state => state.homepageAndFavorites?.Favorites ?? [])
+        map((state) => state.homepageAndFavorites?.Favorites ?? [])
     );
 
     searchText$ = this.store.state$.pipe(
-        map(state => state.searchText)
+        map((state) => state.searchText)
     );
 
     filterBySearch = (favorites: FavoriteViewModel[], searchText: string): FavoriteViewModel[] => {
-        return favorites.filter(f => includes(f.Name, searchText));
+        return favorites.filter((f) => includes(f.Name, searchText));
 
         function includes(where: string, what: string) {
             return (where ?? '').toLowerCase().includes((what ?? '').toLowerCase());

@@ -58,7 +58,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
 
-        this.sub = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
+        this.sub = this.breadcrumbService.currentObjectInfo$.subscribe((c) => {
 			this.assetTypeUId = c.AssetTypeUid;
 			this.assetUId = c.AssetUid;
             this.checkActive();
@@ -90,7 +90,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 		}
 
 		this.followerService.getFollowInfo(this.assetUId, this.assetTypeUId).subscribe(
-            f => {
+            (f) => {
                 this.isFollowing = f.isFollowing;
                 this.isFollowingParent = f.isFollowingParent;
 
@@ -114,7 +114,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 		}
 
 		this.followerService.updateFollowStatus(this.assetUId, this.assetTypeUId, includeChildren).subscribe(
-            f => {
+            (f) => {
                 if (f.type == 'notification') {
                     this.active = !this.active;
                     let crumbs = this.breadcrumbService.getBreadcrumbsFromStorage();

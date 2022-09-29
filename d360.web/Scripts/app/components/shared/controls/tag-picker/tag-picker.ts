@@ -88,7 +88,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
             if (this.value)
                 newValue = this.value;
 
-            if (this.value && this.value.some(x => x.title.trim().toLowerCase() == val.title.trim().toLowerCase()))
+            if (this.value && this.value.some((x) => x.title.trim().toLowerCase() == val.title.trim().toLowerCase()))
                 return;
 
             newValue.push(val);
@@ -121,7 +121,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     }
 
     removeItem(tag: SelectItem) {
-        var newValue = this.value.filter(x => x.title != tag.title);
+        var newValue = this.value.filter((x) => x.title != tag.title);
         this.tryChangeValue(newValue);
         this.onUnselect.emit(tag);
     }
@@ -135,7 +135,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
         if (!input) {
             return item;
         }
-        return item.replace(new RegExp(input, "gi"), match => {
+        return item.replace(new RegExp(input, "gi"), (match) => {
             return '<span style="background: #F5FF57;">' + match + '</span>';
         });
     }
@@ -158,7 +158,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     isTagValid(item: SelectItem) {
         var isAssigned = false;
         if (this.value) {
-            this.value.forEach(x => {
+            this.value.forEach((x) => {
                 if (x.title.trim().toLowerCase() == item.title.trim().toLowerCase()) {
                     this.messagesService.showError('Error', 'Tag already assigned');
                     isAssigned = true;
@@ -189,11 +189,11 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
         this.searchSub =
             this.tagService.searchTagsTypeAhead(searchValue, 10)
-                .subscribe(res => {
+                .subscribe((res) => {
                     if (res && res.length > 0) {
                         var sorted = res.sort((a, b) => a.name.localeCompare(b.name));
                         this.searchResults = [];
-                        sorted.forEach(tag => {
+                        sorted.forEach((tag) => {
                             this.searchResults.push({ value: tag.code, title: tag.name });
                         });
                     }
@@ -203,7 +203,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                     this.changeDetectorRef.markForCheck();
 
 
-                }, err => { console.log(err); });
+                }, (err) => { console.log(err); });
 
     }
 
@@ -226,7 +226,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                 (error) => {
                     if (error.status == 404) {
                         this.tagService.saveTag(tagType)
-                            .subscribe(result => {
+                            .subscribe((result) => {
                                 let msg: string = '';
                                 if (result.Value != undefined) {
                                     result.message = `${result.Value} succesfully created`;
@@ -256,7 +256,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
         this.isTooltipLoaded = false;
         this.tagService.getTagTooltip(tag.value, '', tag.title)
-            .subscribe(t => {
+            .subscribe((t) => {
                 this.tagTooltip = t[0];
                 this.isTooltipLoaded = true;
 
@@ -298,7 +298,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
         }
 
         this.tagService.getTagPermissions(this.assetUid)
-            .subscribe(permissions => {
+            .subscribe((permissions) => {
                 this.arePermissionsLoaded = true;
                 this.tagPermissions = permissions;
                 this.changeDetectorRef.markForCheck();
@@ -307,7 +307,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     canDeleteTag(tagValue: string) {
         if (!this.arePermissionsLoaded) return false;
-        return this.tagPermissions.some(x => x.Value == tagValue && x.CanDelete == true);
+        return this.tagPermissions.some((x) => x.Value == tagValue && x.CanDelete == true);
     }
 
     get getStyleClasses(): string {

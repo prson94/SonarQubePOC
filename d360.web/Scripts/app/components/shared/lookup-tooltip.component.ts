@@ -44,7 +44,7 @@ export class LookupTooltipComponent implements OnDestroy  {
         protected tooltipSingletonService: TooltipSingletonService,
         private ref: ChangeDetectorRef) {
         this.toolTipSub = this.tooltipSingletonService.tooltipMessage$.subscribe(
-            info => {                                
+            (info) => {                                
                 if (info.objectId == this.objectId && info.objectType == this.objectType) return;
                 this.hide();
             });
@@ -64,7 +64,7 @@ export class LookupTooltipComponent implements OnDestroy  {
         if (!this.data) {
             //get object properties for the tooltip
             this.toolTipService.getLookupTooltipInfo(this.objectType, this.objectId)
-                .subscribe(res => {
+                .subscribe((res) => {
                 this.data = res;
                 this.showPanel(tip, item);
                 this.ref.markForCheck();

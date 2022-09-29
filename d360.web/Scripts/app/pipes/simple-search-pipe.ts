@@ -23,6 +23,6 @@ export class SimpleSearch implements PipeTransform {
                 return (tempItems = items.Items.filter(loop)).length;
             }
         };
-        return items.filter(x => loop(x));
+        return items.filter((x) => loop(x));
     }
 }

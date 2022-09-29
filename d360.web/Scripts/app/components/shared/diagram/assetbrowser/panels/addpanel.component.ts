@@ -77,11 +77,11 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
     ngOnInit() {
         this.loadSettings(false);
         if (this.assetBrowserData && this.assetBrowserData.nodes) {
-            this.assetBrowserData.nodes.forEach(a => {
+            this.assetBrowserData.nodes.forEach((a) => {
                     this.populateAssets(a);
             });
 
-            let sourceItems = this.browserAssets.filter(x => x["isSubjectInTransformation"] == true);
+            let sourceItems = this.browserAssets.filter((x) => x["isSubjectInTransformation"] == true);
 
             if (this.browserAssets.length > 10)
                 this.sourcePrePop = sourceItems.slice(0, 10);
@@ -94,7 +94,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         this.checkSelectionValues();
         this.validateRelationships();
         if (changes.assetBrowserData.currentValue != changes.assetBrowserData.previousValue && this.assetBrowserData) {
-            this.assetBrowserData.nodes.forEach(a => {
+            this.assetBrowserData.nodes.forEach((a) => {
                 this.populateAssets(a);
             });
         }
@@ -107,7 +107,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
             item.AssetTypeIcon = node.icon; 
             item.AssetTypeName = node.class.toString();
             item.Uid = node.assetUid;
-            if (node.useAsTransformation == false && !this.browserAssets.find(x => x.Uid == item.Uid && x.AssetTypeUid == item.AssetTypeUid)) {
+            if (node.useAsTransformation == false && !this.browserAssets.find((x) => x.Uid == item.Uid && x.AssetTypeUid == item.AssetTypeUid)) {
                 item["isSubjectInTransformation"] = node.isSubjectInTransformation;
                 this.browserAssets.push(item);
             }
@@ -118,9 +118,9 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         if (this.transformationAsset.length > 0) {
             this.isTargetDisabled = false;
             this.relationshipService.getRelationshipsByAssetTypeUid(this.transformationAsset[0].AssetTypeUid)
-                .subscribe(res => {
+                .subscribe((res) => {
                     this.targetAllowedPredicates = [];
-                    res.forEach(rel => {
+                    res.forEach((rel) => {
                         if (rel.Predicate.Type == PredicateType.Transformation.toString()) {
                             this.targetAllowedPredicates.push(rel.Predicate);
                         }
@@ -148,12 +148,12 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
             let doesSourceContains = false;
             let doesTargetContains = false;
 
-            this.browserAssets.forEach(asset => {
-                this.sourceAssets.forEach(sa => {
+            this.browserAssets.forEach((asset) => {
+                this.sourceAssets.forEach((sa) => {
                     if (sa.Uid == asset.Uid)
                         doesSourceContains = true;
                 });
-                this.targetAssets.forEach(sa => {
+                this.targetAssets.forEach((sa) => {
                     if (sa.Uid == asset.Uid)
                         doesTargetContains = true;
                 });
@@ -175,7 +175,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
 
         if (tempSource) {
             if (switchTargetToSource == true && tempSource.length > 0) { 
-                tempSource.forEach(x => x.Predicate = null);
+                tempSource.forEach((x) => x.Predicate = null);
                 this.sourceAssets = tempSource;
             }
 
@@ -202,7 +202,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
             this.targetFilters.push(targetFilters);
         }
         else {
-            this.targetAllowedPredicates.forEach(tp => {
+            this.targetAllowedPredicates.forEach((tp) => {
                 let targetFilters = new CommonComponentAssetTypeFilter();
                 targetFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
                 targetFilters.UseAsTransformation = false;
@@ -225,7 +225,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
             this.sourceFilters.push(sourceFilters);
         }
         else {
-            this.sourceAssets.forEach(asset => {
+            this.sourceAssets.forEach((asset) => {
                 let sourceFilters = new CommonComponentAssetTypeFilter();
                 sourceFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
                 sourceFilters.UseAsTransformation = false;
@@ -249,7 +249,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
             this.transformationFilters.push(transformationFilters);
         }
         else {
-            this.sourceAssets.forEach(asset => {
+            this.sourceAssets.forEach((asset) => {
                 let transformationFilters = new CommonComponentAssetTypeFilter();
                 transformationFilters.UseAsTransformation = true;
                 transformationFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
@@ -360,13 +360,13 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         this.missingPredicateSource = false;
         this.missingPredicateTarget = false;
 
-        this.sourceAssets.forEach(x => {
+        this.sourceAssets.forEach((x) => {
             x.Warnings = [];
             if (!x.Predicate) {
                 this.missingPredicateSource = true;
             }
         });
-        this.targetAssets.forEach(x => {
+        this.targetAssets.forEach((x) => {
             x.Warnings = [];
 
             if (!x.Predicate) {
@@ -392,37 +392,37 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         let relationships = this.buildRelationshipsFromSelection();
 
         let resolveRelationshipTasks = [];
-        relationships.forEach(r => {
+        relationships.forEach((r) => {
             resolveRelationshipTasks.push(this.relationshipService.getRelationshipsByAssetTypeUid(r.SubjectAssetTypeUid));
         });
 
         let resolveRelationshipsObservable = forkJoin(resolveRelationshipTasks);
-        resolveRelationshipsObservable.subscribe(results => {
+        resolveRelationshipsObservable.subscribe((results) => {
             let eligibleRelationships = [];
-            results.forEach(res => {
-                (<any[]>res).forEach(r => {
+            results.forEach((res) => {
+                (<any[]>res).forEach((r) => {
                     if (r.Predicate.Type == 'Transformation') {
                         eligibleRelationships.push(r);
                     }
                 });
             });
 
-            relationships.forEach(rel => {
-                let intersectType = eligibleRelationships.find(x => x.Predicate.Uid == rel.PredicateUid && x.Object.Uid == rel.ObjectAssetTypeUid && x.Subject.Uid == rel.SubjectAssetTypeUid);
+            relationships.forEach((rel) => {
+                let intersectType = eligibleRelationships.find((x) => x.Predicate.Uid == rel.PredicateUid && x.Object.Uid == rel.ObjectAssetTypeUid && x.Subject.Uid == rel.SubjectAssetTypeUid);
                 rel.IntersectTypeUid = intersectType ? intersectType.Uid : null;
             });
 
 
-            let invalidRelationships = relationships.filter(x => x.IntersectTypeUid == null);
-            invalidRelationships.forEach(inv => {
-                inv.Intersects.forEach(rel => {
-                    this.sourceAssets.forEach(sa => {
+            let invalidRelationships = relationships.filter((x) => x.IntersectTypeUid == null);
+            invalidRelationships.forEach((inv) => {
+                inv.Intersects.forEach((rel) => {
+                    this.sourceAssets.forEach((sa) => {
                         if (sa.Predicate && inv.PredicateUid == sa.Predicate.Uid.toString() && sa.Uid == rel.SubjectAssetUid) {
                             sa.Warnings = [];
                             sa.Warnings.push($localize`Cannot create relationship of this type!`);
                         }
                     });
-                    this.targetAssets.forEach(ta => {
+                    this.targetAssets.forEach((ta) => {
 
                         if (ta.Predicate && inv.PredicateUid == ta.Predicate.Uid.toString() && ta.Uid == rel.ObjectAssetUid) {
                             ta.Warnings = [];
@@ -443,32 +443,32 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         let relationships = this.buildRelationshipsFromSelection();
 
         let resolveRelationshipTasks = [];
-        relationships.forEach(r => {
+        relationships.forEach((r) => {
             resolveRelationshipTasks.push(this.relationshipService.getRelationshipsByAssetTypeUid(r.SubjectAssetTypeUid));
         });
 
         let resolveRelationshipsObservable = forkJoin(resolveRelationshipTasks);
-        resolveRelationshipsObservable.subscribe(results => {
+        resolveRelationshipsObservable.subscribe((results) => {
             let eligibleRelationships = [];
-            results.forEach(res => {
-                (<any[]>res).forEach(r => {
+            results.forEach((res) => {
+                (<any[]>res).forEach((r) => {
                     if (r.Predicate.Type == 'Transformation') {
                         eligibleRelationships.push(r);
                     }
                 });
             });
 
-            relationships.forEach(rel => {
-                let intersectType = eligibleRelationships.find(x => x.Predicate.Uid == rel.PredicateUid && x.Object.Uid == rel.ObjectAssetTypeUid && x.Subject.Uid == rel.SubjectAssetTypeUid);
+            relationships.forEach((rel) => {
+                let intersectType = eligibleRelationships.find((x) => x.Predicate.Uid == rel.PredicateUid && x.Object.Uid == rel.ObjectAssetTypeUid && x.Subject.Uid == rel.SubjectAssetTypeUid);
                 rel.IntersectTypeUid = intersectType ? intersectType.Uid : null;
             });
 
-            if (!relationships.some(x => x.IntersectTypeUid == null)) {
+            if (!relationships.some((x) => x.IntersectTypeUid == null)) {
                 this.postRelationships(relationships);
             }
             else {
                 this.afterSaveEvent(false);
-                relationships.filter(x => x.IntersectTypeUid == null).forEach(fail => {
+                relationships.filter((x) => x.IntersectTypeUid == null).forEach((fail) => {
                     let errorMsg = $localize`This lineage relationship cannot be created, as there is no relationship type defined between 2 asset types:`;
 
                     let subjectTitle = 'Source Asset:';
@@ -489,8 +489,8 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
 
         let source_tasks = [];
         let target_tasks = [];
-        relationships.forEach(r => {
-            if (r.Intersects.some(x => x.type == 'S->T')) {
+        relationships.forEach((r) => {
+            if (r.Intersects.some((x) => x.type == 'S->T')) {
                 source_tasks.push(this.relationshipService.saveRelationshipsForked(r.IntersectTypeUid, r.Intersects));
             }
             else {
@@ -502,11 +502,11 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         //Split relationships, and save target after source, so we can properly check for circular relationships
         let sourceObs = forkJoin(source_tasks);
         let targetObs = forkJoin(target_tasks);
-        sourceObs.subscribe(results => {
+        sourceObs.subscribe((results) => {
             this.relationshipsError = [];
             let isSuccess = this.processResults(results);
             if (isSuccess) {
-                targetObs.subscribe(res => {
+                targetObs.subscribe((res) => {
                     let isSuccess = this.processResults(res);
                     this.afterSaveEvent(isSuccess);
                 });
@@ -519,7 +519,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
 
     private processResults(results: any[]): boolean {
         let rollback: boolean = false;
-        results.forEach(res => {
+        results.forEach((res) => {
             let data = res.obj;
             let result: any[] = res.response;
             result.forEach((r, idx) => {
@@ -545,11 +545,11 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         //If error occured, delete only newly created relationships
         if (rollback) {
             let deleteTasks = [];
-            results.forEach(res => {
+            results.forEach((res) => {
                 let ituid = res.obj.intersectTypeUid;
                 let rels: any[] = [];
                 let arr = <any[]>res.response;
-                arr.forEach(rel => {
+                arr.forEach((rel) => {
                     if (rel.IsNew == true) {
                         rels.push({ uid: rel.uid });
                     }
@@ -558,7 +558,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
             });
 
             let insertObs = forkJoin(deleteTasks);
-            insertObs.subscribe(results => {
+            insertObs.subscribe((results) => {
                 console.log(results);
             });
             this.ref.markForCheck();
@@ -576,7 +576,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
             let transformation = this.transformationAsset[0];
 
             if (this.transformationAsset.length != 0) {
-                this.sourceAssets.forEach(a => {
+                this.sourceAssets.forEach((a) => {
                     let rel1: any = {};
                     rel1.Intersects = [];
                     rel1.SubjectAssetTypeUid = a.AssetTypeUid;
@@ -589,7 +589,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
                 });
             }
 
-            this.targetAssets.forEach(a => {
+            this.targetAssets.forEach((a) => {
                 let rel2: any = {};
                 rel2.Intersects = [];
                 rel2.ObjectAssetTypeUid = a.AssetTypeUid;
@@ -607,12 +607,12 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
 
     private getAssetFromSelection(assetUid) {
         let result: CommonComponentAssetResult;
-        result = this.sourceAssets.find(x => x.Uid == assetUid);
+        result = this.sourceAssets.find((x) => x.Uid == assetUid);
         if (result === undefined)
-            result = this.transformationAsset.find(x => x.Uid == assetUid);
+            result = this.transformationAsset.find((x) => x.Uid == assetUid);
 
         if (result === undefined)
-            result = this.targetAssets.find(x => x.Uid == assetUid);
+            result = this.targetAssets.find((x) => x.Uid == assetUid);
 
         return result;
     }

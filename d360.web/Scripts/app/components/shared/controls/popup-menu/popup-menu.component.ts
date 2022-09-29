@@ -110,7 +110,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     }
 
     assignUniqueIDs(items: PopupMenuItem[], nextId: number, parent: PopupMenuItem) {
-        items.forEach(i => {
+        items.forEach((i) => {
             i.parent = parent;
             i.itemID = nextId;
             if (i.isLabel == true) {
@@ -125,7 +125,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             //If there are keys, but Mac keys are not set, populate mac keys array and replace CTRL->Command key
             if ((i.keys && i.keys.length > 0) && (!i.keysMac || i.keysMac.length == 0)) {
                 i.keysMac = [];
-                i.keys.forEach(x => {
+                i.keys.forEach((x) => {
                     if (x === 17) {
                         i.keysMac.push(91);
                     } else {
@@ -142,7 +142,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     }
 
     updatePropToAll(items: PopupMenuItem[], prop: string, value: any) {
-        items.forEach(x => {
+        items.forEach((x) => {
             x[prop] = value;
             if (x.items) {
                 this.updatePropToAll(x.items, prop, value);
@@ -195,7 +195,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             if (isNavigationKey) {
                 let el: PopupMenuItem = null;
                 if ([39, 37, 40, 38].indexOf(event.keyCode) != -1) {
-                    var activeItemIndex = this.navigationArr.indexOf(this.navigationArr.filter(x => x.hasHoverState)[0]);
+                    var activeItemIndex = this.navigationArr.indexOf(this.navigationArr.filter((x) => x.hasHoverState)[0]);
                     el = this.getLastHoveredElement(this.items);
                     if (el == undefined) {
                         this.items[0].hasHoverState = true;
@@ -212,7 +212,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                     if (el && el.items) {
                         this.navigationArr = el.items;
                         el.isSubMenuOpened = true;
-                        var firstActiveElement = this.navigationArr.filter(x => x.disabled != true)[0];
+                        var firstActiveElement = this.navigationArr.filter((x) => x.disabled != true)[0];
                         this.moveThroughElements(this.navigationArr.indexOf(firstActiveElement) - 1, true, this.navigationArr);
                     }
                 }
@@ -260,10 +260,10 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             }
 
             //Trigger shortcuts
-            this.navigationArr.forEach(item => {
+            this.navigationArr.forEach((item) => {
                 if (item.keys && item.keys.length > 0) {
                     var doesMatch = true;
-                    item.keys.forEach(key => {
+                    item.keys.forEach((key) => {
                         if (!this.pressedKeys[key.toString()]) {
                             doesMatch = false;
                         }
@@ -275,7 +275,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
                 if (item.keysMac && item.keysMac.length > 0) {
                     var doesMatch = true;
-                    item.keysMac.forEach(key => {
+                    item.keysMac.forEach((key) => {
                         if (!this.pressedKeys[key.toString()]) {
                             doesMatch = false;
                         }
@@ -380,7 +380,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         if (item && item.items) {
             this.navigationArr = item.items;
             item.isSubMenuOpened = true;
-            var firstActiveElement = this.navigationArr.filter(x => x.disabled != true)[0];
+            var firstActiveElement = this.navigationArr.filter((x) => x.disabled != true)[0];
             this.moveThroughElements(this.navigationArr.indexOf(firstActiveElement) - 1, true, this.navigationArr);
             return;
         }
@@ -424,7 +424,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                 this.updatePropToAll(this.items, 'isSubMenuOpened', false);
             }
             else {
-                item.parent.items.forEach(x => x.isSubMenuOpened = false);
+                item.parent.items.forEach((x) => x.isSubMenuOpened = false);
             }
             item.isSubMenuOpened = true;
             this.setHoverStateToElement(item);
@@ -469,28 +469,28 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     }
 
     hasIcons(items: PopupMenuItem[]) {
-        return items.some(x => x.icon && x.icon != '');
+        return items.some((x) => x.icon && x.icon != '');
     }
     hasCheckboxes(items: PopupMenuItem[]) {
-        return items.some(x => x.hasCheckbox == true);
+        return items.some((x) => x.hasCheckbox == true);
     }
     hasSelectedboxes(items: PopupMenuItem[]) {
-        return items.some(x => x.hasSelectedBox == true);
+        return items.some((x) => x.hasSelectedBox == true);
     }
     hasShortcuts(items: PopupMenuItem[]) {
-        return items.some(x => x.keys && x.keys.length > 0);
+        return items.some((x) => x.keys && x.keys.length > 0);
     }
 
     getShortcutString(item: PopupMenuItem): string {
         if (item.keys) {
             var arr: string[] = [];
             if (this.isMac) {
-                item.keysMac.forEach(k => {
+                item.keysMac.forEach((k) => {
                     arr.push(KeyMapHelpers.getCharForKeyCode(k, this.isMac));
                 });
             }
             else {
-                item.keys.forEach(k => {
+                item.keys.forEach((k) => {
                     arr.push(KeyMapHelpers.getCharForKeyCode(k, this.isMac));
                 });
             }
@@ -544,7 +544,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     }
 
     getFocusedElement(items: PopupMenuItem[]): PopupMenuItem {
-        items.forEach(item => {
+        items.forEach((item) => {
             if (item.isFocused == true) {
                 return item;
             }
@@ -558,7 +558,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
     getLastHoveredElement(items: PopupMenuItem[]): PopupMenuItem {
         var el: PopupMenuItem;
-        items.forEach(item => {
+        items.forEach((item) => {
             if (item.hasHoverState == true) {
                 el = item;
             }

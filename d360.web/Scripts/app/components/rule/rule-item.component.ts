@@ -100,17 +100,17 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 
 	load() {
 		this.ruleSub = this.rulesService.getRule(this.assetUid)
-			.subscribe(result => {
+			.subscribe((result) => {
 				this.rule = result;
 
 				this.setBrowserTitle(this.titleService, this.rule.Name);
 				this.messages = []; //clear any messages for this rule
 				console.log(this.rule);
-				this.rulesService.getRuleType(this.rule.AssetTypeUid).subscribe(r => { this.ruleType = r; });
+				this.rulesService.getRuleType(this.rule.AssetTypeUid).subscribe((r) => { this.ruleType = r; });
 				this.headerBreadcrumbService.setCurrentObjectInfo('Rule', this.rule.ID, null, this.rule.UID);
 				this.setObjectInfo('Rule', this.rule.ID, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
 				
-				this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, this.rule.ID).then(p => {
+				this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, this.rule.ID).then((p) => {
 					this.buildSecondaryNavigation({ assetUid: this.rule.UID, DisplayValue: this.rule.Name });
 				});
 				this.isLoading = false;

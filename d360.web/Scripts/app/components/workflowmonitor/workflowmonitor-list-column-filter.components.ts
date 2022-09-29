@@ -91,13 +91,13 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
                 });
             }
             if (this.filters.length > 0) {
-                this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Field);
+                this.internalFilters = this.internalFilters.filter((x) => x.Type != FilterFieldType.Field);
 
                 for (let filter of this.filters) {
                     this.internalFilters.push({
                         Type: FilterFieldType.Field,
                         Data: filter,
-                        Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Field && x.Data.datafield == filter.field)[0],
+                        Field: this.availableFilters.filter((x) => x.Type == FilterFieldType.Field && x.Data.datafield == filter.field)[0],
                     });
                 }
             }

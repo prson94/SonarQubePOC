@@ -70,7 +70,7 @@ export class GalleryPropertyGroupComponent implements OnInit {
         this.testForm.get("myFormName").markAsDirty();
         this.testForm.updateValueAndValidity();
 
-        this.assetService.getAllColors().subscribe(x => { this.defaultColors = x; });
+        this.assetService.getAllColors().subscribe((x) => { this.defaultColors = x; });
         this.properties = new Array();
         this.properties.push({ Name: "igformGroup", Type: "FormGroup", Description: "The angular FormGroup object that contains the inputs.", Default: "" });
         this.properties.push({ Name: "title", Type: "string", Description: "The text to display at the top of the form group.", Default: "" });
@@ -84,7 +84,7 @@ export class GalleryPropertyGroupComponent implements OnInit {
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null)
                 return {};
-            if (control.value == null || wordsIDontLikeArr.map(x => { return x.toLowerCase(); }).indexOf(control.value.toLowerCase()) != -1)
+            if (control.value == null || wordsIDontLikeArr.map((x) => { return x.toLowerCase(); }).indexOf(control.value.toLowerCase()) != -1)
                 return {
                     notNiceWord: { value: control.value }
                 };

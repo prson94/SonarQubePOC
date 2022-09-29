@@ -29,7 +29,7 @@ export class GridRelationshipFilterExpression {
         let condition: string = this.includeType == 'Any' ? ' or ' : ' and ';
         let relUid: string = this.relationshipType.Uid;
         if (this.objectIds) {
-            this.objectIds.forEach(opt => {
+            this.objectIds.forEach((opt) => {
 
                 filters.push(`${relUid} eq ${opt}`);
             });
@@ -64,7 +64,7 @@ export class GridFilterExpression {
     fieldtype: GridFilterFieldType;
 
     public getAsV2ApiFilter(fieldColumns: GridFilterColumn[]): string {
-        var f = fieldColumns.find(x => x.datafield.toLowerCase() == this.field.toLowerCase());
+        var f = fieldColumns.find((x) => x.datafield.toLowerCase() == this.field.toLowerCase());
         var cond = this.convertCondition(this.condition);
         let multiValueDelimiter = '!~!';
 
@@ -75,7 +75,7 @@ export class GridFilterExpression {
         }
         let forceEqualFields: string[] = ['Boolean', 'Lookup', 'Decimal', 'Number'];
 
-        if (forceEqualFields.some(x => x == f.fieldType)) {
+        if (forceEqualFields.some((x) => x == f.fieldType)) {
             cond = 'eq';
         }
 
@@ -83,7 +83,7 @@ export class GridFilterExpression {
             var values = this.value.split(multiValueDelimiter);
             let expressions: string[] = [];
 
-            values.forEach(value => {
+            values.forEach((value) => {
                 var val = this.wrapValue(f.fieldType, value);
                 expressions.push(`${f.apiName} ${cond} ${val}`);
             });

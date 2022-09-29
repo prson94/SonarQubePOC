@@ -566,7 +566,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     }
                 }
                 else if (field.FieldType === "Lookup" && !field.Value && this.selection) {
-                    let selected = field.Items.filter(x => x.Selected);
+                    let selected = field.Items.filter((x) => x.Selected);
                     field.Value = [];
 
                     for (let item of selected) {
@@ -839,13 +839,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
                 if (res.Success) {
                     let msg = asset.Uid ? $localize`Successfully updated` : $localize`Successfully added`;
-					const keyFields = this.fields.filter(field => field.IsPartOfKey).map(field => field.FieldName);
+					const keyFields = this.fields.filter((field) => field.IsPartOfKey).map((field) => field.FieldName);
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     if (res.uid) {
                         event.assetUid = res.uid;
                         event.assetTypeUid = this.objectTypeUid;
 						event.keyFieldChanged = this.getChangedKeys(asset.Fields, this.initialFormValue).some(
-							changedField => keyFields.includes(changedField)
+							(changedField) => keyFields.includes(changedField)
 						);
                     }
                     this.savingInProgress = false;
@@ -909,13 +909,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
             if (res.Success) {
                 let msg = group.Uid ? $localize`Successfully updated` : $localize`Successfully added`;
-				const keyFields = this.fields.filter(field => field.IsPartOfKey).map(field => field.FieldName);
+				const keyFields = this.fields.filter((field) => field.IsPartOfKey).map((field) => field.FieldName);
                 this.showMessageForApiResult(this.messagesService, res, msg);
                 if (res.uid) {
                     event.assetUid = res.uid;
                     event.assetTypeUid = this.objectTypeUid;
 					event.keyFieldChanged = this.getChangedKeys(group.Fields, this.initialFormValue).some(
-						changedField => keyFields.includes(changedField)
+						(changedField) => keyFields.includes(changedField)
 					);
                 }
                 this.savingInProgress = false;
@@ -1005,10 +1005,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 return x.Value === field.Value;
             })[0];
             if (item && item.Text.startsWith("Rule")) {
-                this.fields.find(x => x.FieldName === "IncludeParent").FieldType = "no-display";
+                this.fields.find((x) => x.FieldName === "IncludeParent").FieldType = "no-display";
                 this.ref.detectChanges();
             } else {
-                this.fields.find(x => x.FieldName === "IncludeParent").FieldType = "Boolean";
+                this.fields.find((x) => x.FieldName === "IncludeParent").FieldType = "Boolean";
                 this.ref.detectChanges();
             }
         }

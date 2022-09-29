@@ -36,7 +36,7 @@ export class WorkflowFormHistoryComponent extends BaseComponent implements OnIni
         this.isLoading = true;
         this.resourcesService.getResources()
             .pipe(
-                map(r => {
+                map((r) => {
                 this.resources = r; }),
             map(() => {
                 //normalize input
@@ -47,9 +47,9 @@ export class WorkflowFormHistoryComponent extends BaseComponent implements OnIni
                         this.fields.form.push(f);
                     }
 
-                    this.fields.form.forEach(f => {
+                    this.fields.form.forEach((f) => {
                         if (f['@ResourceID'] != null) {
-                            let r = this.resources.find(r => r.ID == +f['@ResourceID']);
+                            let r = this.resources.find((r) => r.ID == +f['@ResourceID']);
                             f.ResourceName = r ? r.FirstName + ' ' + r.LastName : '[unknown]';
                         }
 

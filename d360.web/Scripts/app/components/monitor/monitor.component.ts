@@ -148,7 +148,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
 
         this.querySub = this.route.queryParams.subscribe((params) => {
             if (params['tab'] != null) {
-                let i = this.tabs.findIndex(t => t.key == params['tab'].toLowerCase());
+                let i = this.tabs.findIndex((t) => t.key == params['tab'].toLowerCase());
                 if (i > -1) {
                     this.activeIndex = i;
                     this.activeTab = this.tabs[i];
@@ -266,7 +266,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     tabIsLoaded(key: string) {
-        return this.tabs.find(t => t.key == key).loaded || false;
+        return this.tabs.find((t) => t.key == key).loaded || false;
     }
 
     tabIsActive(key: string) {

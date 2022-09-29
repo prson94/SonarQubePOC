@@ -59,10 +59,10 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     ngOnInit() {
         this.isLoading = true;
         this.responsibilityService.getResponsibilityTypes()
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.responsibilities = r;
                 this.workflowService.getWorkflowFieldTypes(this.objectId, this.object, true, this.issueObject)
-                    .subscribe(f => {
+                    .subscribe((f) => {
                         this.fields = f;
                         this.load();
                     });
@@ -87,10 +87,10 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
                         }
                     }
                 } else if (this.step.settings['MessageRecipientType'] == 'Group') {
-                    this.groupService.getGroups().subscribe(GroupList => {
-                        this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name }; });
+                    this.groupService.getGroups().subscribe((GroupList) => {
+                        this.groups = GroupList.items.map((g) => { return { value: g.Uid, label: g.Name }; });
                         if (this.step.settings.MessageToGroup != undefined) {
-                            if (!this.groups.find(g => g.value == this.step.settings.MessageToGroup)) {
+                            if (!this.groups.find((g) => g.value == this.step.settings.MessageToGroup)) {
                                 this.groups.push(<SelectItem>{ value: this.step.settings.MessageToGroup, label: '<invalid group>' });
                             }
                         }
@@ -110,7 +110,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         if (typeof item['@ObjectType'] == 'undefined' || item['@ObjectType'] == 'Issue')
             return "Action Field::" + item['@FieldName'];
         else {
-            let f = this.fields.find(f => f.ID == +item['@FieldId']);
+            let f = this.fields.find((f) => f.ID == +item['@FieldId']);
             if (f == undefined)
                 return "";
             return $localize`Asset Field` + "::" + f.FriendlyName;
@@ -122,7 +122,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         if (id == null || +id < 0)
             return "";
 
-        let r = this.responsibilities.find(r => r.ID == +id);
+        let r = this.responsibilities.find((r) => r.ID == +id);
 
         if (r != null)
             return r.Name;
@@ -130,17 +130,17 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     }
 
     getGroupName(): string {
-        return (this.step.settings.MessageToGroup == null) ? '<none>' : this.groups.find(g => g.value == this.step.settings.MessageToGroup).label;
+        return (this.step.settings.MessageToGroup == null) ? '<none>' : this.groups.find((g) => g.value == this.step.settings.MessageToGroup).label;
     }
 
     getLookups() {
         this.workflowService.getAllowIntersectTypes(this.object, this.objectId)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.intersectTypes = r;
             });
 
         this.workflowService.getWorkflowVersionStepFormLookups(this.object, this.objectId)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.lookups = r;
             });
     }
@@ -148,7 +148,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     isHtml(i: any): boolean {
         //console.log('isHtml', i, this.fields);
         if (i == null) return false;
-        let f = this.fields.find(f => f.ID == +i['@FieldId']);
+        let f = this.fields.find((f) => f.ID == +i['@FieldId']);
         if (f == null) return false;
         return f.Type == 'Html';
     }
@@ -178,12 +178,12 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
             case 'list':
                 if (this.lookups == null)
                     return 'List';
-                let list = this.lookups.find(l => l.value.toString() == i['@referenceFieldId']);
+                let list = this.lookups.find((l) => l.value.toString() == i['@referenceFieldId']);
                 return 'List' + (list == null ? '' : ' :: ' + list.label);
             case 'relationshipType':
                 if (this.intersectTypes == null)
                     return 'Relationship';
-                let rel = this.intersectTypes.find(l => l.IntersectTypeID.toString() == i['@intersectTypeId']);
+                let rel = this.intersectTypes.find((l) => l.IntersectTypeID.toString() == i['@intersectTypeId']);
                 return 'Relationship' + (rel == null ? '' : (' :: ' + ((rel.PredicateName != null && rel.PredicateName.length > 0) ? `[${rel.PredicateName}] ` : ' ') + rel.TargetName));
             default:
                 return (i['@type'].charAt(0).toUpperCase() + i['@type'].substr(1));

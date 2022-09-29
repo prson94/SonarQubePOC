@@ -54,7 +54,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
 	loadSub: Subscription;
 
     get globalFilterFields(): string[] {
-        return this.columns.map(c => c.datafield);
+        return this.columns.map((c) => c.datafield);
     }
 
     constructor(
@@ -171,7 +171,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         this.isLoading = true;
         this.gridDefinitionService.getGridDefinition(this.selected.TypeID, "ArtifactType").subscribe(
 			(result) => {
-                this.columns = result.Columns.filter(x => x.datafield != 'Name');
+                this.columns = result.Columns.filter((x) => x.datafield != 'Name');
                 /* remove name we want it to be a cool link with tooltip we know its there! */
                 this.fields = result.Fields;
                 this.scoreAllocations = result.ScoreAllocations;
@@ -183,7 +183,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     getFieldApiName(field: string) {
-        return this.fields.find(x => x.name == field).apiName;
+        return this.fields.find((x) => x.name == field).apiName;
     }
 
     private checkSimpleSearchEnter(event, dt: Table) {

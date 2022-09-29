@@ -105,7 +105,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.colSize = 12.0 / (this.numTiles == 0 ? 1 : this.numTiles);
 
         this.dashboardService.getHomePageDashboards().subscribe(
-            r => {
+            (r) => {
                 if (r && r.length > 0) {
                     this.dashboard = r[0];
                 }

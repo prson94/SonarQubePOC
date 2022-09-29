@@ -119,7 +119,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         this.pointBreakdown.forEach((x) => {
             x._isSelected = false;
             if (x.Measures) {
-                x.Measures.forEach(m => m._isSelected = false);
+                x.Measures.forEach((m) => m._isSelected = false);
             }
         });
         item._isSelected = true;
@@ -131,10 +131,10 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private setCurrentDefinition() {
         if (!this.selectedPoint || !this.allocationData) return;
 
-        this.allocationData.forEach(alloc => {
+        this.allocationData.forEach((alloc) => {
             if (alloc['metricDefinition']) {
                 var arr = alloc['metricDefinition'] as any[];
-                arr.forEach(metric => {
+                arr.forEach((metric) => {
                     if (metric['Uid'] == this.selectedPoint.Uid) {
                         this.selectedMetric = null;
                         var effDate = new Date(metric.EffectiveDate);
@@ -145,8 +145,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         }
                         else {
                             var isMetricSet: boolean = false;
-                            this.metricService.getMetricsVersionHistory(metric['Uid']).subscribe(res => {
-                                res.forEach(item => {
+                            this.metricService.getMetricsVersionHistory(metric['Uid']).subscribe((res) => {
+                                res.forEach((item) => {
                                     if (!isMetricSet) {
                                         var date = new Date(item.EffectiveDate);
                                         if (selectedDate > date) {
@@ -174,7 +174,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private loadInitialDataForAsset() {
         if (this.uid) {
 
-            this.assetService.getUIDetailsForAssetUID(this.uid).subscribe(res => {
+            this.assetService.getUIDetailsForAssetUID(this.uid).subscribe((res) => {
                 this.assetTypeUid = res.AssetTypeUid;
                 this.assetName = res.DisplayValue;
                 this.assetTypeName = res.TypeName;
@@ -183,11 +183,11 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 });
             });
 
-            this.metricService.getActiveAllocationsByAssetUid(this.uid).subscribe(x => {
-                this.scoreTypes = x.map(x => <any>ScoreType[x.scoreType]);
+            this.metricService.getActiveAllocationsByAssetUid(this.uid).subscribe((x) => {
+                this.scoreTypes = x.map((x) => <any>ScoreType[x.scoreType]);
                 this.allocationData = x;
                 if (x.length > 0) {
-                    let selectedScoreTypeIndex = this.scoreTypes.findIndex(a => { return a == this.selectedScoreType; });
+                    let selectedScoreTypeIndex = this.scoreTypes.findIndex((a) => { return a == this.selectedScoreType; });
                     if (selectedScoreTypeIndex > -1) {
                         this.scoreType = <any>ScoreType[this.scoreTypes[selectedScoreTypeIndex]];
                     }
@@ -196,9 +196,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         this.selectedScoreType = this.scoreTypes[0];
                     }
                 }
-                this.allocationData.forEach(alloc => {
+                this.allocationData.forEach((alloc) => {
                     this.metricService.getMetricsByAllocation(alloc.uid, true)
-                        .subscribe(res => {
+                        .subscribe((res) => {
                             alloc['metricDefinition'] = res;
                             this.setCurrentDefinition();
                         });
@@ -223,7 +223,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 this.activeTab = 'History';
 
                 this.scoreDate = new Date().toDateString();
-                this.loadSeriesData().subscribe(b => {
+                this.loadSeriesData().subscribe((b) => {
                     this.loadPoints(true);
                     this.isDQAndNoItems();
                 });
@@ -235,7 +235,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 this.activeTab = 'History';
 
                 this.scoreDate = new Date().toDateString();
-                this.loadSeriesData().subscribe(b => {
+                this.loadSeriesData().subscribe((b) => {
                     this.loadPoints(true);
                     this.isDQAndNoItems();
                 });
@@ -251,7 +251,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
         if (this.uid) {
             this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
-                .subscribe(res => {
+                .subscribe((res) => {
                     this.scoresPoints = null;
                     this.scoresPoints = res.sort(function (a, b) {
                         if (a.EffectiveDate > b.EffectiveDate) return -1;
@@ -278,7 +278,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         //Set data for UI
                         this.scoresPointsDDL = [];
                         if (this.scoresPoints.length > 0) {
-                            this.scoresPoints.forEach(p => {
+                            this.scoresPoints.forEach((p) => {
                                 this.scoresPointsDDL.push({ value: p, label: 'Default' });
                             });
 
@@ -291,7 +291,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
                         if (this.allocationData) {
                             let stype = ScoreType[this.selectedScoreType];
-                            let selected = this.allocationData.filter(x => x.scoreType.toString() == stype.toString());
+                            let selected = this.allocationData.filter((x) => x.scoreType.toString() == stype.toString());
                             if (selected.length > 0) {
                                 this.isExternallyCalculated = selected[0]['isExternallyCalculated'];
                                 this.lowerThreshold = +selected[0]['lowerThreshold'] / 100;
@@ -339,11 +339,11 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 this.scoreDate += 'T00:00:00.000Z';
             }
 
-            let selectedAllocation = this.allocationData.find(o => { return <any>ScoreType[o.scoreType] == this.selectedScoreType; });
+            let selectedAllocation = this.allocationData.find((o) => { return <any>ScoreType[o.scoreType] == this.selectedScoreType; });
             this.allocationUid = selectedAllocation.uid;
 
             this.scoreService.getScoreHistoryByAllocationAndAssetAndEffectiveDate(this.allocationUid, this.uid, this.scoreDate)
-                .subscribe(res => {
+                .subscribe((res) => {
                     this.totalScore = (res ? res.Score : 0);
 
                     if (this.totalScore >= 100) {
@@ -353,7 +353,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 });
 
             this.scoreService.getPointBreakdown(this.uid, this.selectedScoreType, this.scoreDate)
-                .subscribe(res => {
+                .subscribe((res) => {
 
                     this.pointBreakdown = res;
                     this.isDQAndNoItems();
@@ -365,7 +365,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     // Get sum of root measures.
                     let rootRawWeightSum: number = this.calculateRawWeightSumAtThisLevel(this.pointBreakdown);
 
-                    this.pointBreakdown.forEach(pb => {
+                    this.pointBreakdown.forEach((pb) => {
                         pb._groupDisplayMaxWeight = null;
                         pb._badgeStyle = this.calculateBadgeStyle(selectedAllocation, pb.DisplayWeight / pb.DisplayMaxWeight);
                         pb._rawWeightSum = rootRawWeightSum;
@@ -373,7 +373,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         if (pb.Measures) {
                             // Calculate the raw weight sum under this specific group.
                             let childrenRawWeightSum = this.calculateRawWeightSumAtThisLevel(pb.Measures);
-                            pb.Measures.forEach(m => {
+                            pb.Measures.forEach((m) => {
                                 m._rawWeightSum = childrenRawWeightSum;// pb.DisplayWeight;
                                 m._groupDisplayWeight = pb.DisplayWeight;
                                 m._groupDisplayMaxWeight = pb.DisplayMaxWeight;
@@ -384,12 +384,12 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
                     var preselected: PointBreakdown;
                     if (this.selectedMeasureUid && this.pointBreakdown) {
-                        this.pointBreakdown.forEach(pb => {
+                        this.pointBreakdown.forEach((pb) => {
                             if (pb.Uid == this.selectedMeasureUid)
                                 preselected = pb;
 
                             if (pb.Measures) {
-                                pb.Measures.forEach(m => {
+                                pb.Measures.forEach((m) => {
                                     if (m.Uid == this.selectedMeasureUid) {
                                         preselected = m;
                                     }
@@ -415,7 +415,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     calculateRawWeightSumAtThisLevel(points: PointBreakdown[]) {
         let sum: number = 0;
 
-        points.forEach(pb => {
+        points.forEach((pb) => {
             let match = pb.Conditions?.find((c) => c.Uid === pb.ConditionUid);
             let weight = 0;
             if (match) {
@@ -484,7 +484,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private getMeasurePoint(effectiveDate: any): ScorePoint {
         var point = null;
         if (this.measurePoints)
-            point = this.measurePoints.filter(x => x.EffectiveDate == effectiveDate)[0];
+            point = this.measurePoints.filter((x) => x.EffectiveDate == effectiveDate)[0];
 
         if (point == null || point == undefined) {
             return null;
@@ -494,7 +494,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     private isDQAndNoItems() {
         if (this.pointBreakdown) {
-            this.showEmptyMessage = this.pointBreakdown.filter(x => { return x.ScoreType == ScoreType.DataQuality; }).length == 0
+            this.showEmptyMessage = this.pointBreakdown.filter((x) => { return x.ScoreType == ScoreType.DataQuality; }).length == 0
                 && this.selectedScoreType == ScoreType.DataQuality;
         }
     }
@@ -507,10 +507,10 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     }
 
     private setCollapsed(val: boolean) {
-        this.pointBreakdown.forEach(p => {
+        this.pointBreakdown.forEach((p) => {
             p._isCollapsed = !val;
             if (p.Measures) {
-                p.Measures.forEach(m => {
+                p.Measures.forEach((m) => {
                     m._isCollapsed = !val;
                 });
             }
@@ -543,7 +543,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     dateChanged($event) {
         this.scoreDate = $event;
-        this.scoresPointsDDL.forEach(point => {
+        this.scoresPointsDDL.forEach((point) => {
             if (point.value['EffectiveDate'].indexOf(this.scoreDate) == 0) {
                 this.scoresPointSelected = point.value;
             }
@@ -580,7 +580,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     saveState() {
         if (this.pointBreakdown) {
             var data = {};
-            data['expanded'] = this.pointBreakdown.filter(x => x._isCollapsed == true).map(x => x.Uid);
+            data['expanded'] = this.pointBreakdown.filter((x) => x._isCollapsed == true).map((x) => x.Uid);
             localStorage.setItem(this.getStorageKey(), JSON.stringify(data));
         }
     }
@@ -591,8 +591,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
             if (data) {
                 if (data['expanded']) {
                     var expanded = data['expanded'] as [];
-                    expanded.forEach(ex => {
-                        this.pointBreakdown.forEach(pb => {
+                    expanded.forEach((ex) => {
+                        this.pointBreakdown.forEach((pb) => {
                             if (pb.Uid == ex)
                                 pb._isCollapsed = true;
                         });

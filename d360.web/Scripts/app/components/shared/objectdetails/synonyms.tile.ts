@@ -78,7 +78,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         this.isLoading = true;
 
         this.objectDetailService.getObjectSynonyms(this.objectID, this.objectType, this.predicateId).subscribe(
-            d => {
+            (d) => {
                 this.items = d;
                 this.itemCount = this.items.length;
 
@@ -95,12 +95,12 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         // custom synonyms are not objects dont have intersects and have to be deleted old way for now
         if (item.IntersectUid != null) {
             this.relationshipsService.deleteSingleRelationshipV2(item.IntersectTypeUid, item.IntersectUid).subscribe(
-                res => {
+                (res) => {
                     this.isLoading = false;
 
                     this.showMessageForApiResults(this.messagesService, res, `${this.predicateName} successfully deleted.`);
 
-                    this.items = this.items.filter(x => x.IntersectID != item.IntersectID);
+                    this.items = this.items.filter((x) => x.IntersectID != item.IntersectID);
                     this.itemCount = this.items.length;
                     this.formMode = FormMode.Default;
                 }
@@ -108,12 +108,12 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         }
         else {
             this.objectDetailService.deleteCustomSynonym(item).subscribe(
-                res => {
+                (res) => {
                     this.isLoading = false;
 
                     this.showMessageForResult(this.messagesService, res);
 
-                    this.items = this.items.filter(x => x.CustomID != item.CustomID);
+                    this.items = this.items.filter((x) => x.CustomID != item.CustomID);
                     this.itemCount = this.items.length;
                     this.formMode = FormMode.Default;
                 }
@@ -127,7 +127,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         //if we havent loaded synonym types already do so now
         if (this.synonymTypes.length == 0) {
             this.objectDetailService.getSynonymTypes(this.objectID, this.objectType, this.predicateId).subscribe(
-                d => {
+                (d) => {
                     this.synonymTypes = d;
                     this.formMode = FormMode.Adding;
                 }
@@ -145,7 +145,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         this.isLoading = true;
 
         if (this.selectedSynonym && this.selectedSynonym.uid) {
-            let type = this.synonymTypes.find(t => t.Value == this.selectedType);
+            let type = this.synonymTypes.find((t) => t.Value == this.selectedType);
             let relationships: Array<RelationshipV2> = [];
             let relationship = new RelationshipV2();
 
@@ -161,7 +161,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
             relationships.push(relationship);
 
             this.relationshipsService.saveRelationships(type.uid, relationships).subscribe(
-                res => {
+                (res) => {
                     this.showMessageForApiResults(this.messagesService, res, $localize`${this.predicateName} successfully saved.`, true);
                     this.formMode = FormMode.Default;
                     this.load();
@@ -170,7 +170,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
 
         } else if (this.customSynonymName) {
             this.objectDetailService.postCustomSynonym(this.customSynonymName, this.predicateId, this.objectType, this.objectID).subscribe(
-                d => {
+                (d) => {
                     this.showMessageForResult(this.messagesService, d);
                     this.customSynonymName = '';
                     this.formMode = FormMode.Default;
@@ -202,7 +202,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     protected search(e: any) {
         this.isLoadingItems = true;
 
-        let type = this.synonymTypes.find(t => t.Value == this.selectedType);
+        let type = this.synonymTypes.find((t) => t.Value == this.selectedType);
 
         if (!type) {
             this.isLoadingItems = false;
@@ -210,7 +210,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         }
 
         this.objectDetailService.getSynonymOptions(this.predicateId, type.Object, type.ObjectID, this.objectType, this.objectID, (e.query || '')).subscribe(
-            r => {
+            (r) => {
                 this.synonymItems = r;
 
                 this.isLoadingItems = false;

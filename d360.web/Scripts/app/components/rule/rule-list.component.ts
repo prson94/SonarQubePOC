@@ -100,7 +100,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
 		this.isLoading = true;
 		this.rulesService.getRuleType(this.assetTypeUid)
-			.subscribe(result => {
+			.subscribe((result) => {
 				this.isLoading = false;
 				this.ruleType = result;
 				this.gridObject = RuleType.AsGridObject(this.ruleType);

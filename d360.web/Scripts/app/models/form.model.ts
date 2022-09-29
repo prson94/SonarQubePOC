@@ -23,13 +23,13 @@ export class SelectItem {
 export module FormHelper {
 
     export function mapSelectItems(s: SelectItem[]) {
-        s.forEach(s => { s.value = s.Value; s.label = s.Text; });
+        s.forEach((s) => { s.value = s.Value; s.label = s.Text; });
     }
 
     export function getSelectList(items: any[], label: string = 'label', value: string = 'value'): SelectItem[] {
         let list = new Array<SelectItem>();
 
-        items.forEach(i => {
+        items.forEach((i) => {
             let l = new SelectItem();
             l.label = i[label];
             l.Text = i[label];
@@ -60,11 +60,11 @@ export module FormHelper {
     export function formTree(data: any[], idField:string = 'ID', parentField:string = 'ParentID', expandAll: boolean = true): TreeNode[] {
         var tree = new Array<TreeNode>();
         if (data && data.filter) {
-            data.filter(d => d[parentField] == null).forEach(d => {
+            data.filter((d) => d[parentField] == null).forEach((d) => {
                 tree.push({ data: d, children: [], expanded: expandAll });
             });
 
-            tree.forEach(t => {
+            tree.forEach((t) => {
                 FormHelper.formTreeR(t, data, idField, parentField, expandAll);
             });
         }
@@ -74,7 +74,7 @@ export module FormHelper {
     }
 
     export function formTreeR(node: TreeNode, data: any[], idField: string, parentField: string, expandAll: boolean = true) {
-        data.filter(d => d[parentField] == node.data[idField]).forEach(d => {
+        data.filter((d) => d[parentField] == node.data[idField]).forEach((d) => {
             let child: TreeNode = { data: d, children: [], expanded: expandAll };
             node.children.push(child);
             FormHelper.formTreeR(child, data, idField, parentField, expandAll);
@@ -87,7 +87,7 @@ export module FormHelper {
             flattened.push(data[i]);
             if (data[i][subDataField] && data[i][subDataField].length > 0) {
                 let sub = flattenTree(data[i][subDataField], subDataField, idField, parentField);
-                sub.forEach(s => {
+                sub.forEach((s) => {
                     if (idField && parentField)
                         s[parentField] = data[i][idField];
                     flattened.push(s);

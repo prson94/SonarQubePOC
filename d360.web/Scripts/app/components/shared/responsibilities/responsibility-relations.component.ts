@@ -77,7 +77,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
         this.isLoading = true;
 
-        this.responsibilityTypeService.getRelationFormData().subscribe(formData => {
+        this.responsibilityTypeService.getRelationFormData().subscribe((formData) => {
             this.commonFormData = formData;
 
             if (this.queryType === 'A') {
@@ -87,7 +87,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
                         this.selectedRow = null;
 
                         //#region Remove the already-populated relations from the list of options.
-                        this.rows.forEach(e => {
+                        this.rows.forEach((e) => {
                             let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === e.AssetTypeUid);
                             if (ix) {
                                 ix.IsUsed = true;
@@ -105,7 +105,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
                         this.selectedRow = null;
 
                         //#region Remove the already-populated relations from the list of options.
-                        this.rows.forEach(e => {
+                        this.rows.forEach((e) => {
                             let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === e.AssetTypeUid);
                             if (ix) {
                                 ix.IsUsed = true;

@@ -206,19 +206,19 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         if (this.useTypeUidForDefinition) {
             this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid, this.objectType, this.targetUid)
-                .subscribe(result => {
+                .subscribe((result) => {
                     this.handleEditor(result);
                 });
         }
         else if (this.useNonLegacyData) {
             this.editorDefinitionService.getEditorDefinitionNonLegacy(this.objectTypeUid, this.assetUid)
-                .subscribe(result => {
+                .subscribe((result) => {
                     this.handleEditor(result);
                 });
         }
         else if (this.useObjectUidForDefinition) {
             this.editorDefinitionService.getEditorDefinitionObjectUid(this.objectType, this.objectUid)
-                .subscribe(result => {
+                .subscribe((result) => {
                     this.handleEditor(result);
                 });
         }
@@ -233,7 +233,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 this.createParams,
                 this.editParams,
                 this.action
-            ).subscribe(result => {
+            ).subscribe((result) => {
                 this.handleEditor(result);
             });
         }
@@ -242,7 +242,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     handleEditor(result: EditorField[]) {
 
         if (this.dataModel && !this.assetUid) {
-            result.forEach(res => {
+            result.forEach((res) => {
                 if (res.Name == 'Name') {
                     res.Value = this.dataModel['Name'];
                 }
@@ -261,10 +261,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
             this.categories = [];
 
-            result = _.orderBy(result, [field => field.Row ? field.Row : 0], ['asc']);
+            result = _.orderBy(result, [(field) => field.Row ? field.Row : 0], ['asc']);
             this.fields = result;
 
-            this.fields.forEach(f => {
+            this.fields.forEach((f) => {
 
                 if (f.Category == null) {
                     currentCategory = "";
@@ -274,7 +274,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
 
 
-                if (this.categories.findIndex(dc => dc.name == currentCategory) == -1) {
+                if (this.categories.findIndex((dc) => dc.name == currentCategory) == -1) {
                     let category = new EditorCategory();
                     category.name = currentCategory;
                     category.rows = [];
@@ -298,9 +298,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     }
                 }
 
-                let curCategory = this.categories.find(dc => dc.name == currentCategory);
+                let curCategory = this.categories.find((dc) => dc.name == currentCategory);
 
-                let r = curCategory.rows.find(r => r.Row == (f.Row || 0));
+                let r = curCategory.rows.find((r) => r.Row == (f.Row || 0));
                 if (r) {
                     r.Fields.push(f);
                 } else {
@@ -329,8 +329,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             });
 
 
-            this.fore = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
-            this.back = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');
+            this.fore = this.fields.find((f) => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
+            this.back = this.fields.find((f) => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');
 
             if (this.fore != null && this.back != null) {
                 this.hasIconFields = true;
@@ -338,7 +338,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
             this.form = this.toFormGroup(this.fields);
             if (this.useModelBinding) {
-                this.form.valueChanges.subscribe(x => {
+                this.form.valueChanges.subscribe((x) => {
                     this.onSubmit();
                 });
             }
@@ -354,7 +354,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     toFormGroup(editorField: EditorField[]) {
         let group: any = {};
 
-        editorField.forEach(field => {
+        editorField.forEach((field) => {
             //if its a link we need to add two fields a link and name            
             if (field.FieldType == "Link") {
                 let parts = (field.Value ? field.Value.split("|") : []);
@@ -390,7 +390,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                         field.Value = JSON.parse(field.Value);
                     }
                 } else if (field.FieldType == "Lookup" && !field.Value && this.selection) {
-                    let selected = field.Items.filter(x => x.Selected);
+                    let selected = field.Items.filter((x) => x.Selected);
 
                     field.Value = [];
 
@@ -529,7 +529,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         //adjust any dates to utc
         for (var p in this.form.value) {
             if (this.form.value.hasOwnProperty(p)) {
-                let field = this.fields.find(f => f.FieldName == p);
+                let field = this.fields.find((f) => f.FieldName == p);
 
                 if (this.form.value[p] instanceof Date) {
                     if (field != null && field.FieldType == 'Date' && this.isV2API) {
@@ -558,7 +558,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 if (Array.isArray(this.form.value[p])) {
                     values[p] = this.form.value[p].join();
                 } else {
-                    if (this.form.value[p] === undefined && this.fields.filter(x => x.FieldName == p && x.FieldType == 'Boolean').length > 0)
+                    if (this.form.value[p] === undefined && this.fields.filter((x) => x.FieldName == p && x.FieldType == 'Boolean').length > 0)
                         values[p] = null;
                     else
                         values[p] = this.form.value[p];
@@ -569,7 +569,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         // if this is the v2 api we need to combine any link field types into the format stored in the db
         // tallyfy|https://tallyfy.com/what-is-compliance-management/
         if (this.isV2API || this.useV2ApiLink) {
-            let links = this.fields.filter(x => x.FieldType == 'Link');
+            let links = this.fields.filter((x) => x.FieldType == 'Link');
             //need to get the link and url for each            
             for (let link of links) {
                 let url = values[link.FieldName + '_Url'];
@@ -583,7 +583,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
 
         //Replace empty string value with null to properly delete field from database and avoid validation parsing errors
-        Object.keys(values).forEach(key => {
+        Object.keys(values).forEach((key) => {
             if (values[key] === '')
                 values[key] = null;
         });
@@ -598,7 +598,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             this.isLoading = true;
 
             this.uriBasedService.saveItem(this.createUri, this.editUri, values)
-                .subscribe(result => {
+                .subscribe((result) => {
                     this.showMessageForResult(this.messagesService, result);
                     this.isLoading = false;
                     this.saveClick.emit({ item: result, action: action, values: values });
@@ -655,7 +655,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             }
         }
         this.assetService.saveAsset(this.objectTypeUid, asset)
-            .subscribe(res => {
+            .subscribe((res) => {
                 event.Success = res.Success;
 
                 if (res.Success) {
@@ -692,12 +692,12 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
 
         if (this.objectType == "ExportTemplate" && field.Name == "Asset Type") {
-            var item = field.Items.filter(x => {
+            var item = field.Items.filter((x) => {
                 return x.Value == field.Value;
             })[0];
             if (item && item.Text.startsWith("Rule")) {
-                this.fields.find(x => x.FieldName == "IncludeParent").FieldType = "no-display";
-                this.fields.find(x => x.FieldName == "IncludeParent").Value = false;
+                this.fields.find((x) => x.FieldName == "IncludeParent").FieldType = "no-display";
+                this.fields.find((x) => x.FieldName == "IncludeParent").Value = false;
                 for (var p in this.form.value) {
                     if (this.form.value.hasOwnProperty(p)) {
                         if (p == "IncludeParent") {
@@ -707,7 +707,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
                 this.ref.detectChanges();
             } else {
-                this.fields.find(x => x.FieldName == "IncludeParent").FieldType = "Boolean";
+                this.fields.find((x) => x.FieldName == "IncludeParent").FieldType = "Boolean";
                 this.ref.markForCheck();
             }
         }
@@ -719,7 +719,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             value = event.value.join();
         }
 
-        this.fields.forEach(editorField => {
+        this.fields.forEach((editorField) => {
             if (editorField.ParentFieldTypeID == field.FieldTypeID) {
                 this.cascadeService.cascadeEvent(editorField.FieldTypeID, value);
             }

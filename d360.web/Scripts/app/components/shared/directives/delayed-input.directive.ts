@@ -28,7 +28,7 @@ export class DelayedInputDirective implements OnInit, OnDestroy {
                 ), 
                 takeUntil(this.destroy$),
             )
-            .subscribe(e => this.delayedInput.emit(e));
+            .subscribe((e) => this.delayedInput.emit(e));
     }
 
     ngOnDestroy() {

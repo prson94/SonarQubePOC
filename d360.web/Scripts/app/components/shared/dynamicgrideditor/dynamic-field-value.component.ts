@@ -43,7 +43,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
         let colKey: string = null;
         if (this.useApiName && this.item && this.column && this.column.datafield) {
-            var field = this.fields.filter(x => x.name.toLowerCase() == this.column.datafield.toLowerCase())[0];
+            var field = this.fields.filter((x) => x.name.toLowerCase() == this.column.datafield.toLowerCase())[0];
             if (field && field.apiName) {
                 colKey = field.apiName;
             }
@@ -115,7 +115,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
 
     private columnDataType(column: GridColumn): string {
-        var fields = this.fields.filter(x => x.name == column.datafield);
+        var fields = this.fields.filter((x) => x.name == column.datafield);
 
         if (column.type == 'preview')
             return 'preview';

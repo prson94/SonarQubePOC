@@ -62,20 +62,20 @@ export class GalleryFieldConditionGridComponent implements OnInit {
 
     loadData() {
 
-        this.settingsService.getOperators().subscribe(operators => {
+        this.settingsService.getOperators().subscribe((operators) => {
             this.operators = operators;
-            this.fieldsService.getFieldsV2(this.assetTypeUid, null, null).subscribe(res => {
+            this.fieldsService.getFieldsV2(this.assetTypeUid, null, null).subscribe((res) => {
                 var tempFields = [];
-                res.forEach(f => {
+                res.forEach((f) => {
                     if (FieldTypeHelper.isFieldForOperator(f.Type)) {
                         tempFields.push(f as FieldTypeAPIModelFieldCondition);
                     }
                 });
 
-                tempFields.forEach(f => {
+                tempFields.forEach((f) => {
                     f.Operators = [];
-                    this.operators.forEach(op => {
-                        if (op.AllowedDataTypes.some(x => x.Name === FieldTypeHelper.getFieldType(f.Type))) {
+                    this.operators.forEach((op) => {
+                        if (op.AllowedDataTypes.some((x) => x.Name === FieldTypeHelper.getFieldType(f.Type))) {
                             f.Operators.push({ label: op.Name, value: op.ID });
                         }
 
