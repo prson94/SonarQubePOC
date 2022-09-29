@@ -560,17 +560,17 @@ where   AssetTypeID in (
                                                                 parameters = new { gDefinition.Relation.IntersectTypeUid, assetUid };
                                                                 bitSql = "iif(sum(bit1) = 0, 1, 0)";
                                                                 operatorSql =
-                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @assetUid  " +
+																	"select	iif(count(1) > 0, 1, 0) bit1 from PredicateIntersect I inner join Asset S on I.IntersectTypeUid = @IntersectTypeUid and S.ID = I.SubjectAssetID and S.Uid = @assetUid " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @assetUid and PredicateType not in (3,4) ";
+																	"select iif(count(1) > 0, 1, 0) bit1 from PredicateIntersect I inner join Asset O on I.IntersectTypeUid = @IntersectTypeUid and O.ID = I.ObjectAssetID and O.Uid = @assetUid ";
                                                                 break;
                                                             default: // case Operator.Populated:
                                                                 parameters = new { gDefinition.Relation.IntersectTypeUid, assetUid };
                                                                 bitSql = "iif(sum(bit1) > 0, 1, 0)";
-                                                                operatorSql =
-                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @assetUid  " +
+                                                                operatorSql = 
+																	"select	iif(count(1) > 0, 1, 0) bit1 from PredicateIntersect I inner join Asset S on I.IntersectTypeUid = @IntersectTypeUid and S.ID = I.SubjectAssetID and S.Uid = @assetUid " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @assetUid and PredicateType not in (3,4) ";
+																	"select iif(count(1) > 0, 1, 0) bit1 from PredicateIntersect I inner join Asset O on I.IntersectTypeUid = @IntersectTypeUid and O.ID = I.ObjectAssetID and O.Uid = @assetUid ";
                                                                 break;
                                                         }
                                                         var relationSql = $"select cast({bitSql} as bit) from ({operatorSql}) a";
