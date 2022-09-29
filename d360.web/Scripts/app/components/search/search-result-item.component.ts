@@ -130,7 +130,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     getFieldDisplayValue(field: SearchResultFieldDisplay, forTitle: boolean = false): string {
         let val: string = (field.Empty) ? '---' : field.Value;
         if (val === null || val === undefined)
-            return '';
+            {return '';}
 
         if (!field.Empty) {
             switch (field.Type.toLowerCase()) {
@@ -143,9 +143,9 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
                 case 'boolean':
                     if (!forTitle) {
                         if (field.Value == 'True')
-                            val = '<i class="fa fa-check enabled"></i>';
+                            {val = '<i class="fa fa-check enabled"></i>';}
                         else
-                            val = '<i class="fa fa-times disabled"></i>';
+                            {val = '<i class="fa fa-times disabled"></i>';}
                     }
                     break;
                 case 'decimal':
@@ -163,9 +163,9 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             }
         }
         if (field.Suffix)
-            val += ' ' + field.Suffix;
+            {val += ' ' + field.Suffix;}
         if (field.Prefix)
-            val = field.Prefix + ' ' + val;
+            {val = field.Prefix + ' ' + val;}
         return val;
     }
 

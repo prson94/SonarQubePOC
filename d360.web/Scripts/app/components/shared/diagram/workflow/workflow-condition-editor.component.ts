@@ -62,7 +62,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     ngOnInit() {
         this.setOperators();
         this.load();
-        if (this.condition == null) this.condition = {};
+        if (this.condition == null) {this.condition = {};}
 
     }
 
@@ -451,15 +451,15 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
     valid() {
         if (this.condition['@Operator'] == null)
-            return false;
+            {return false;}
         if ((this.condition['@FieldTypeID'] == null || this.condition['@FieldTypeID'] == '') &&
             (this.condition['@ContextualFieldID'] == null || this.condition['@ContextualFieldID'] == '') &&
             this.condition['@FormInputID'] == null)
-            return false;
+            {return false;}
         if (this.condition['@Value'] == null && ['C', 'P', 'NP'].indexOf(this.condition['@Operator']) == -1)
-            return false;
-        if (this.condition['@Operator'] == '') return false;
-        if (this.condition['@Value'] === '') return false;
+            {return false;}
+        if (this.condition['@Operator'] == '') {return false;}
+        if (this.condition['@Value'] === '') {return false;}
 
         return true;
     }

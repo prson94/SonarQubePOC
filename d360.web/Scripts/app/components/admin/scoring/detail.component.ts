@@ -273,7 +273,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
             if (this.conditions && this.conditions.length > 0) {
               return true;
             } else
-                return false;
+                {return false;}
         } else {
             this.conditions = [];
             return false;
@@ -300,24 +300,24 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
 
     close() {
         if (this.metricList)
-            this.metricList.close();
+            {this.metricList.close();}
     }
 
     getAsPrecentage(val: number) {
         if (val == 0)
-            return '0%';
+            {return '0%';}
         if (!val)
-            return;
+            {return;}
         if (val == 1)
-            return '100%';
+            {return '100%';}
         let s = val + '0000';
         s = s.replace('0.', '');
         if (s.length > 6)
-            s = (s.substr(0, 2)) + '.' + s[2] + "%";
+            {s = (s.substr(0, 2)) + '.' + s[2] + "%";}
         else
-            s = (s.substr(0, 2)) + "%";
+            {s = (s.substr(0, 2)) + "%";}
         if (s.startsWith('0'))
-            s = s.substr(1, s.length);
+            {s = s.substr(1, s.length);}
         return s;
     }
 
@@ -326,14 +326,14 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
             this.selectedMetric = { ...event };
 
             if (this.hasConditions(this.selectedMetric))
-                this.showConditions = true;
+                {this.showConditions = true;}
             else
-                this.showConditions = false;
+                {this.showConditions = false;}
 
             if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup)
-                this.showPassTest = true;
+                {this.showPassTest = true;}
             else
-                this.showPassTest = false;
+                {this.showPassTest = false;}
         }
         else {
             this.selectedMetric = null;

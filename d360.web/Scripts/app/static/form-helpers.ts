@@ -22,7 +22,7 @@ export class FormHelpers {
 
     static integerValidator(f: AbstractControl) {
         if (f.value == null || f.value == '')
-            return null;
+            {return null;}
         let valid = !isNaN(+f.value) && String(f.value) == Number(+f.value).toString() && +f.value % 1 == 0;
         if (valid) {
             return null;
@@ -37,17 +37,17 @@ export class FormHelpers {
     //clamp a numeric value between min and max inclusive, to precision decimal places
     static clamp(val: any, min: number, max: number, precision: number): any {
         if (val == null)
-            return null;
+            {return null;}
 
         if (val.toString() == '.')
-            return "0.";
+            {return "0.";}
         if (isNaN(+val))
-            return null;
+            {return null;}
 
         let newVal = val;
 
-        if (val < min) newVal = min;
-        if (val > max) newVal = max;
+        if (val < min) {newVal = min;}
+        if (val > max) {newVal = max;}
 
         if (precision > 0 && newVal != null && newVal != 0) {
             let mod = Math.pow(10, precision);

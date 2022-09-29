@@ -131,19 +131,19 @@ export class ResourcePasswordComponent extends BaseComponent {
 
     validate() {
         if (!this.passwordRegex.test(this.newPassword))
-            this.newPasswordValid = false;
+            {this.newPasswordValid = false;}
         else
-            this.newPasswordValid = true;
+            {this.newPasswordValid = true;}
 
         if (this.newPassword != null && this.newPassword.length > 0 && this.newPassword2 != this.newPassword && this.newPasswordValid)
-            this.newPassword2Match = false;
+            {this.newPassword2Match = false;}
         else
-            this.newPassword2Match = true;
+            {this.newPassword2Match = true;}
 
         if (this.newPassword != null && this.newPassword.length > 0 && this.currentPassword == this.newPassword && this.newPasswordValid)
-            this.SamePasswordMatch = true;
+            {this.SamePasswordMatch = true;}
         else
-            this.SamePasswordMatch = false;
+            {this.SamePasswordMatch = false;}
     }
 }
 

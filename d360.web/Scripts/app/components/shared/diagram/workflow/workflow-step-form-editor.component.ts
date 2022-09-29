@@ -370,7 +370,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             delete this.newField["@oldId"];
         }
         else
-            this.newField["@id"] = this.newField["@type"].toString().toLowerCase() + count.toString();
+            {this.newField["@id"] = this.newField["@type"].toString().toLowerCase() + count.toString();}
 
         if (existing != null) {
             this.workflowFieldsService.deleteFormField({"@stepId":this.step.key,"@id":existing["@id"]});

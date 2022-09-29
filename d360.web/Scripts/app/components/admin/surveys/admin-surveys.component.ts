@@ -154,7 +154,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
             .subscribe((res) => {
                 this.totalRecords = res.total;
                 this.surveys = res.items.sort((a, b) => a.Name.localeCompare(b.Name));
-                if (this.surveys.length > 0) this.selected = this.surveys[0];
+                if (this.surveys.length > 0) {this.selected = this.surveys[0];}
                 this.isLoading = false;
             }, (err) => { this.error = err; });
     }
@@ -242,7 +242,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
     closeEditor() {
         this.showEditor = false;
         if (this.selected == null && this.surveys.length > 0)
-            this.selected = this.surveys[0];
+            {this.selected = this.surveys[0];}
     }
 
     add() {

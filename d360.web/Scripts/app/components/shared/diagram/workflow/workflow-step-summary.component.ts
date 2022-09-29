@@ -106,13 +106,13 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     }
 
     renderFieldChangeTableName(item: any): string {
-        if (this.issueObject == "") return item['@FieldName'];
+        if (this.issueObject == "") {return item['@FieldName'];}
         if (typeof item['@ObjectType'] == 'undefined' || item['@ObjectType'] == 'Issue')
-            return "Action Field::" + item['@FieldName'];
+            {return "Action Field::" + item['@FieldName'];}
         else {
             let f = this.fields.find((f) => f.ID == +item['@FieldId']);
             if (f == undefined)
-                return "";
+                {return "";}
             return $localize`Asset Field` + "::" + f.FriendlyName;
         }
     }
@@ -120,12 +120,12 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     getResponsibilityName(i: number): string {
         let id = this.step.settings.ResponsibilityTypeID[i];
         if (id == null || +id < 0)
-            return "";
+            {return "";}
 
         let r = this.responsibilities.find((r) => r.ID == +id);
 
         if (r != null)
-            return r.Name;
+            {return r.Name;}
         return "";
     }
 
@@ -147,9 +147,9 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
 
     isHtml(i: any): boolean {
         //console.log('isHtml', i, this.fields);
-        if (i == null) return false;
+        if (i == null) {return false;}
         let f = this.fields.find((f) => f.ID == +i['@FieldId']);
-        if (f == null) return false;
+        if (f == null) {return false;}
         return f.Type == 'Html';
     }
 
@@ -158,13 +158,13 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         let val = "";
         if (i != null) {
             if (i['@ValueLabel'] != null)
-                val = i['@ValueLabel'];
+                {val = i['@ValueLabel'];}
             else
-                val = i['@Value'];
+                {val = i['@Value'];}
         }
 
         if (val == undefined || val == null)
-            return '';
+            {return '';}
 
         if (val.length > 50) {
             val = val.substr(0, 47) + '...';
@@ -177,12 +177,12 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         switch (i['@type']) {
             case 'list':
                 if (this.lookups == null)
-                    return 'List';
+                    {return 'List';}
                 let list = this.lookups.find((l) => l.value.toString() == i['@referenceFieldId']);
                 return 'List' + (list == null ? '' : ' :: ' + list.label);
             case 'relationshipType':
                 if (this.intersectTypes == null)
-                    return 'Relationship';
+                    {return 'Relationship';}
                 let rel = this.intersectTypes.find((l) => l.IntersectTypeID.toString() == i['@intersectTypeId']);
                 return 'Relationship' + (rel == null ? '' : (' :: ' + ((rel.PredicateName != null && rel.PredicateName.length > 0) ? `[${rel.PredicateName}] ` : ' ') + rel.TargetName));
             default:

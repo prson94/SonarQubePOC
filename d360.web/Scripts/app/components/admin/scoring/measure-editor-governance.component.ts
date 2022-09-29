@@ -85,7 +85,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             requiredLoad = true;
         }
         if (requiredLoad)
-            this.delayedReload();
+            {this.delayedReload();}
 
         this.cdRef.markForCheck();
     }
@@ -373,7 +373,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
                     let val2 = null;
                     if (condition.operator == Operator.Between || <any>condition.operator == "Between")
-                        val2 = condition.value2;
+                        {val2 = condition.value2;}
 
                     if (!this.doesSelectedOperatorAllowValues(<any>condition.operator)) {
                         condition.value = null;
@@ -401,7 +401,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
     checkModelChanged() {
         if (!this.model)
-            return false;
+            {return false;}
 
         if (
             this.model

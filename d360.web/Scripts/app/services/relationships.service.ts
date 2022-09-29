@@ -271,7 +271,7 @@ export class RelationshipsService extends BaseObservableService {
 
         var cachedItem = this.tagTooltipsCache.find((x) => x.assetTypeUid == assetTypeUid);
         if (cachedItem)
-            return cachedItem.obs;
+            {return cachedItem.obs;}
 
         let url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active&includeHasFieldTypes=true`;
 

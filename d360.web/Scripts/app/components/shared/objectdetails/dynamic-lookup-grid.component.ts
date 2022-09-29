@@ -95,11 +95,11 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
         var fields = this.data.Fields.filter((x) => x.name == column.datafield);
 
         if (column.type == 'preview')
-            return 'preview';
+            {return 'preview';}
         if ((column.datafield == 'Name' || column.datafield == 'TextPath') && !this.isComplex)
-            return 'tooltip';
+            {return 'tooltip';}
         if (fields.length > 0)
-            return fields[0].type;
+            {return fields[0].type;}
         return 'string';
     }
 
@@ -182,7 +182,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
 
     getScoreFieldHTML(data: any, colName: string): string {
         var value = data[colName] as string;
-        if (!value) return '';
+        if (!value) {return '';}
 
         let cleanValue: number = parseFloat(value.replace("%", ""));
         let fieldTypeID: number = parseInt(colName.split("_")[1]);

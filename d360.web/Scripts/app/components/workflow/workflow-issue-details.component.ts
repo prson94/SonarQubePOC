@@ -118,15 +118,15 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
 		this.workflowService.getIssuesByAssetUid(this.uid)
             .subscribe((result) => {
                 this.issues = result;
-                if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
+                if (this.issues.length && this.issues.length > 0) {this.selected = this.issues[0];}
                 this.isLoading = false;
             });
     }
 
     private openIssue(issue) {
         if (issue.WorkflowItemID > 0)
-            this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_V2_VIEW_STATUS}/${issue.WorkflowItemID}`);
+            {this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_V2_VIEW_STATUS}/${issue.WorkflowItemID}`);}
         else
-            this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM}/3/${issue.WorkflowID}`);
+            {this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM}/3/${issue.WorkflowID}`);}
     }
 }

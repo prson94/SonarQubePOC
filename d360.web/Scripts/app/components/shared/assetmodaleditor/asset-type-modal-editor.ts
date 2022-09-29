@@ -77,7 +77,7 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
         this.isValid = false;
         if (this.dynamicEditor && this.dynamicEditor.form) {
             if (this.dynamicEditor.form.valid)
-                this.isValid = true;
+                {this.isValid = true;}
             this.ref.markForCheck();
         }
     }

@@ -96,7 +96,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             this.workflowItemId = +params['itemId'];
             this.resourceId = +params['resourceId'];
 
-            if (!window.history || window.history.length <= 2) this.hasCloseButton = false;
+            if (!window.history || window.history.length <= 2) {this.hasCloseButton = false;}
             this.load();
         });
 

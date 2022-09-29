@@ -86,25 +86,25 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
 
     getAsPrecentage(val: number) {
         if (val == 0)
-            return '0%';
+            {return '0%';}
         if (!val)
-            return;
+            {return;}
         if (val == 1)
-            return '100%';
+            {return '100%';}
         let s = val + '0000';
         s = s.replace('0.', '');
         if (s.length > 6)
-            s = (s.substr(0, 2)) + '.' + s[2] + "%";
+            {s = (s.substr(0, 2)) + '.' + s[2] + "%";}
         else
-            s = (s.substr(0, 2)) + "%";
+            {s = (s.substr(0, 2)) + "%";}
         if (s.startsWith('0'))
-            s = s.substr(1, s.length);
+            {s = s.substr(1, s.length);}
         return s;
     }
 
     public selectNode(e: any) {
         if (e == null)
-            return;
+            {return;}
         this.selectedNode = e;
         this.selection = e === null ? null : e.data;
 

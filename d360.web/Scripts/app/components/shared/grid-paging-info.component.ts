@@ -31,7 +31,7 @@ export class GridPagingInfoComponent extends BaseComponent {
     }
 
     get endValue() {       
-        if (this.totalRecords === null) return "";
+        if (this.totalRecords === null) {return "";}
 
         if ((this.first + Number(this.rows)) > this.totalRecords) {
             return this.totalRecords.toLocaleString();

@@ -108,9 +108,9 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
 
             if (selected) {
                 if (this.propagateSelectionDown)
-                    this.propagateDown(node, false);
+                    {this.propagateDown(node, false);}
                 else
-                    this.selection = this.selection.filter((val, i) => i != index);
+                    {this.selection = this.selection.filter((val, i) => i !== index);}
 
                 if (this.propagateSelectionUp && node.parent) {
                     this.propagateUp(node.parent, false);
@@ -121,9 +121,9 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
             }
             else {
                 if (this.propagateSelectionDown)
-                    this.propagateDown(node, true);
+                    {this.propagateDown(node, true);}
                 else
-                    this.selection = [...this.selection || [], node];
+                    {this.selection = [...this.selection || [], node];}
 
                 if (this.propagateSelectionUp && node.parent) {
                     this.propagateUp(node.parent, true);
@@ -180,7 +180,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
                 let matchedNode = this.getNodeWithKey(key, node.children);
                 if (matchedNode) {
                     if (matchedNode.parent == undefined)
-                        matchedNode.parent = node;
+                        {matchedNode.parent = node;}
                     return matchedNode;
                 }
             }
@@ -213,9 +213,9 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
                 }
 
                 if (childPartialSelected || selectedCount > 0 && selectedCount != node.children.length)
-                    node.partialSelected = true;
+                    {node.partialSelected = true;}
                 else
-                    node.partialSelected = false;
+                    {node.partialSelected = false;}
             }
 
             this.syncNodeOption(node, this.filteredNodes, 'partialSelected');
@@ -262,9 +262,9 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
 
     getTemplateForNode(node: CheckTreeNode): TemplateRef<any> {
         if (this.templateMap)
-            return node.type ? this.templateMap[node.type] : this.templateMap['default'];
+            {return node.type ? this.templateMap[node.type] : this.templateMap['default'];}
         else
-            return null;
+            {return null;}
     }
 
     onFilter(event) {

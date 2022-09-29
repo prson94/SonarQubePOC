@@ -66,13 +66,13 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
         this.formGroup.valueChanges.subscribe((obs) => {
             setTimeout(() => {
-                if (!this.conditions) return;
+                if (!this.conditions) {return;}
                 this.conditions.forEach((cond) => {
                     if (this.disabledValuesOperators.some((x) => (x === +cond.operator || Operator[x] == <any>cond.operator))) {
                         cond.disabled = true;
                     }
                     else
-                        cond.disabled = false;
+                        {cond.disabled = false;}
 
                     let formControl1 = this.formGroup.get(this.conditionPrefix + 'value_1_' + cond.hash);
                     if (formControl1) {
@@ -114,7 +114,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
     deleteCondition(item: FieldCondition) {
         let tempArr: FieldCondition[] = [];
         while (this.conditions.length > 0)
-            tempArr.push(this.conditions.pop());
+            {tempArr.push(this.conditions.pop());}
 
         var arr = tempArr.filter((x) => x.field != item.field);
         while (arr.length > 0) {
@@ -260,7 +260,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
     getTypeForCondition(item: FieldCondition) {
         var ft = this.getFieldType(item);
-        if (!ft) return '';
+        if (!ft) {return '';}
         return Object.keys(ft.Type)[0];
     }
 
@@ -276,7 +276,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
     }
 
     getValues(item: FieldCondition) {
-        if (item.disabled || !this.getFieldType(item)) return [];
+        if (item.disabled || !this.getFieldType(item)) {return [];}
         return this.getFieldType(item).Values;
     }
 

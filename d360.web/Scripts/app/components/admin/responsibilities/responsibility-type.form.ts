@@ -42,7 +42,7 @@ export class ResponsibilityTypeForm implements OnInit {
                     reloadRequired = true;
                 }
                 if (reloadRequired)
-                    this.load();
+                    {this.load();}
             }
         }
     }
@@ -87,22 +87,22 @@ export class ResponsibilityTypeForm implements OnInit {
     private getTypeRelations() {
         this.item.ResponsibilityTypeRelations = [];
         if (this.selectedAllocations)
-            this.selectedAllocations.forEach((s) => {
+            {this.selectedAllocations.forEach((s) => {
                 let r = new ResponsibilityTypeRelation();
                 r.ObjectID = parseInt(s.split('|')[1]);
                 r.ObjectType = s.split('|')[0];
                 r.ResponsibilityTypeID = this.item.ID;
                 this.item.ResponsibilityTypeRelations.push(r);
-            });
+            });}
     }
 
     private getSelectedAllocations() {
         this.selectedAllocations = [];
         if (this.item.ResponsibilityTypeRelations)
-            this.item.ResponsibilityTypeRelations.forEach((r) => {
+            {this.item.ResponsibilityTypeRelations.forEach((r) => {
                 let s = r.ObjectID.toString();
                 this.selectedAllocations.push(r.ObjectType + '|' + r.ObjectID.toString());
-            });
+            });}
     }
 
     private isValid() {

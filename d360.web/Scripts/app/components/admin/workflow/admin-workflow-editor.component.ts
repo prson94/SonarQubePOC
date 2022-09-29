@@ -125,21 +125,21 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 .pipe(
                     map((r) => {
                         if ((this.id > 0 || (this.uid && this.uid != "00000000-0000-0000-0000-000000000000")) && this.model == null && r != null)
-                            this.model = r;
+                            {this.model = r;}
 
                         //create initial model and settings if needed
                         if (this.model == null)
-                            this.model = new WorkflowDiagramModel();
+                            {this.model = new WorkflowDiagramModel();}
                         if (this.model.Event.SettingsObject == null)
-                            this.model.Event.SettingsObject = {};
+                            {this.model.Event.SettingsObject = {};}
                         if (this.model.Event.SettingsObject.Settings == null)
-                            this.model.Event.SettingsObject.Settings = {};
+                            {this.model.Event.SettingsObject.Settings = {};}
 
                         if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null
                             && this.model.Event.SettingsObject.Settings.Visible != null) {
                             if (this.model.Event.SettingsObject.Settings.SendAggregateEmail != null)
                                 //convert to bool
-                                this.model.Event.SettingsObject.Settings.SendAggregateEmail = this.model.Event.SettingsObject.Settings.SendAggregateEmail.toString().toLowerCase() == "true" ? true : false;
+                                {this.model.Event.SettingsObject.Settings.SendAggregateEmail = this.model.Event.SettingsObject.Settings.SendAggregateEmail.toString().toLowerCase() == "true" ? true : false;}
                         }
                         if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null
                             && this.model.Event.SettingsObject.Settings.ScheduleType == null) {
@@ -161,9 +161,9 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         else if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Condition != null) {
                             this.conditions = [];
                             if (this.model.Event.ConditionObject.Condition.length == null)
-                                this.conditions.push(this.model.Event.ConditionObject.Condition);
+                                {this.conditions.push(this.model.Event.ConditionObject.Condition);}
                             else
-                                this.conditions = this.model.Event.ConditionObject.Condition;
+                                {this.conditions = this.model.Event.ConditionObject.Condition;}
                         }
                     }))))
             .pipe(concatMap(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
@@ -218,7 +218,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         r.forEach((t) => {
                             let c = this.conditions.filter((c) => c['@FieldTypeID'] == t.ID);
                             if (c != null)
-                                c.forEach((f) => f['@FieldName'] = t.FriendlyName + (t.Object == 'IssueType' ? ' (Action Field)' : ''));
+                                {c.forEach((f) => f['@FieldName'] = t.FriendlyName + (t.Object == 'IssueType' ? ' (Action Field)' : ''));}
                         });
                     }))))
             .pipe(concatMap(() => of(
@@ -228,7 +228,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         .getContextualFieldsForType()
                         .find((x) => x.value == 'Contextual|' + c['@ContextualFieldID']);
                     if (cx != null)
-                        c['@FieldName'] = cx.label;
+                        {c['@FieldName'] = cx.label;}
                 })
             )))
             .pipe(concatMap(() => of(() => {
@@ -352,12 +352,12 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
     checkScheduleInterval() {
         if (+this.model.Event.SettingsObject.Settings.ScheduleInterval > this.runFrequencyMax())
-            this.model.Event.SettingsObject.Settings.ScheduleInterval = this.runFrequencyMax();
+            {this.model.Event.SettingsObject.Settings.ScheduleInterval = this.runFrequencyMax();}
     }
 
     showCondition() {
         if (this.showAddCondition)
-            return;
+            {return;}
         this.showAddCondition = true;
     }
 
@@ -382,7 +382,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             this.model.Type.State = State.Active;
         } else {
             this.model.Type.State = State.InActive;
-            if (this.model.Type.ID && this.model.Type.ID != 0) this.hasPendingWorkflowItems();
+            if (this.model.Type.ID && this.model.Type.ID != 0) {this.hasPendingWorkflowItems();}
         }
     }
 
@@ -476,11 +476,11 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     validate() {
         this.errorMessage = "";
 
-        if (this.model == null) return;
+        if (this.model == null) {return;}
         let hasConditionsError = false;
         this.conditions.forEach((c) => {
             if (c['@ContextualFieldID'] != null && this.excludedContextualFields.indexOf(c['@ContextualFieldID']) != -1)
-                return;
+                {return;}
 
             if (c['@FieldName'] == null && c['@ContextualFieldID'] == null) {
                 this.errorMessage = $localize`One or more conditions is not valid.`;
@@ -601,7 +601,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
     appendField(e: string) {
         if (this.ed != null && this.ed.quill != null)
-            this.quill = this.ed.quill;
+            {this.quill = this.ed.quill;}
 
         if (this.quill != null) {
             let pos = this.quill.getSelection(true);

@@ -150,7 +150,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
                     let colorobj = JSON.parse(x.Text);
                     if (colorobj)
-                        return { label: colorobj.name, value: x.Value, title: colorobj.color };
+                        {return { label: colorobj.name, value: x.Value, title: colorobj.color };}
                 } catch (ex) {
                     return { label: x.Text, value: x.Value, title: 'transparent' };
                 }
@@ -164,7 +164,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 try {
                     let colorobj = JSON.parse(x.Text);
                     if (colorobj)
-                        return { Text: colorobj.name, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group: x.Group, Color: colorobj.color };
+                        {return { Text: colorobj.name, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group: x.Group, Color: colorobj.color };}
                 } catch (ex) {
                     return { Text: x.Text, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group: x.Group, Color: 'transparent' };
                 }
@@ -244,9 +244,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                         return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).subscribe(
                             (res) => {
                                 if (this.field.UseColorControl)
-                                    this.field.Items = this.getColorItemsAsSelectItem(res);
+                                    {this.field.Items = this.getColorItemsAsSelectItem(res);}
                                 else
-                                    this.field.Items = res;
+                                    {this.field.Items = res;}
 
                                 if (((this.field.Items == null || this.field.Items.length == 0) && this.field.Value != null) || this.hasCascadeLoaded) {
                                     this.field.Value = null;
@@ -327,9 +327,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             : this.fieldsService.getTypeaheadItems(this.typeAheadSource$, this.field.UseColorControl)
                 .subscribe((res) => {
                     if (this.field.UseColorControl)
-                        this.field.Items = this.getColorItemsAsEditorItem(res);
+                        {this.field.Items = this.getColorItemsAsEditorItem(res);}
                     else
-                        this.field.Items = <EditorDropDownItem[]>res;
+                        {this.field.Items = <EditorDropDownItem[]>res;}
                     this.ref.markForCheck();
                 });
 
@@ -439,7 +439,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             if (this.field.UseTypeahead) {
                 let el: any = document.getElementById(this.field.FieldName + '_input_' + this.component_uid);
                 if (el != null && this.typeAheadValue != null)
-                    el.value = this.typeAheadValue.Text;
+                    {el.value = this.typeAheadValue.Text;}
             }
         }
     }
@@ -463,9 +463,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.field.FieldType == 'Lookup') {
             if (this.field.UseTypeahead) {
                 if (this.typeAheadValue != null)
-                    this.field.Value = this.typeAheadValue.Value;
+                    {this.field.Value = this.typeAheadValue.Value;}
                 else
-                    this.field.Value = null;
+                    {this.field.Value = null;}
             } else {
                 this.field.Value = data;
             }
@@ -538,7 +538,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 }
                 else if (elem.name == "ValidForDays") {
                     if (+elem.value < 1 || +elem.value > 365)
-                        this.form.controls[this.field.FieldName].setErrors({ validDay: true });
+                        {this.form.controls[this.field.FieldName].setErrors({ validDay: true });}
                 }
             } else if (this.field.FieldType == 'Decimal') {
                 if (elem.value.split('.').length > 2
@@ -685,7 +685,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     multiselectLabel(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0 && (this.field.Items == null || this.field.Items.length == 0))
-            return $localize`Select a ${this.field.ParentFieldTypeName}`;
+            {return $localize`Select a ${this.field.ParentFieldTypeName}`;}
         return $localize`Choose`;
     }
 
@@ -775,7 +775,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     private onEditorChange(event: any) {
         if (event == null || event.field == null)
-            return;
+            {return;}
 
         let field = event.field;
 
@@ -788,12 +788,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private filterSemanticRelationItems(field: any) {
 
         if (field.FieldName == this.field.FieldName)
-            return;
+            {return;}
 
         if (this.field.FieldType == 'Relationship' && this.field.IsSemantic === true) {
             if (field.FieldType == 'Relationship' && field.IsSemantic === true) {
                 if (field.Items == null)
-                    return;
+                    {return;}
 
                 let selectedItems = field.Value.split(',');
 
@@ -806,13 +806,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                             let item = this.field.Items.slice()[ix];
                             this.field.Items.splice(ix, 1);
                             if (this.excludedRelationitems[field.FieldName] == null)
-                                this.excludedRelationitems[field.FieldName] = [];
+                                {this.excludedRelationitems[field.FieldName] = [];}
                             this.excludedRelationitems[field.FieldName].push(item);
                         }
 
                     } else {
                         if (this.excludedRelationitems[field.FieldName] == null)
-                            return;
+                            {return;}
                         let ix = this.excludedRelationitems[field.FieldName].findIndex((r) => r.Value == i.Value);
                         if (ix > -1) {
                             let item = this.excludedRelationitems[field.FieldName].slice()[ix];

@@ -40,7 +40,7 @@ export class AdminBaseComponent extends BaseComponent {
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area));
         if (this.adminHeading)
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.adminHeading));     
+            {this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.adminHeading));}     
         
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink, null, null, null, null, null, showAreaAsType));
         this.setBrowserTitle(this.titleService, this.areaName);

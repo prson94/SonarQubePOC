@@ -110,7 +110,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
                     else if (this.workflowTypeFilters && !StringHelpers.isNullOrEmpty(this.workflowTypeFilters.value)) {
                         this.workflowTypeFilters.value.split(",").forEach((i) => {
                             if (!(StringHelpers.isNullOrEmpty(i)))
-                                this.selection.push(i);
+                                {this.selection.push(i);}
                         });
                     } else if (this.selectAll) {
                         this.items.forEach((i) => this.selection.push(i.value));
@@ -138,7 +138,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
 
     change(e: any) {
         if (this.usePredefinedFilters)
-            return;
+            {return;}
         let data = new GridFilterExpression();
         data.field = "WorkflowId";
         data.condition = "IN";

@@ -31,7 +31,7 @@ export class AdminTagsConsolidateComponent implements OnChanges {
         let childrenUids: string[] = [];
         this.tags.forEach((t) => {
             if (t.uid != parentUid)
-                childrenUids.push(t.uid);
+                {childrenUids.push(t.uid);}
         });
         this.callback(parentUid, childrenUids);
     }

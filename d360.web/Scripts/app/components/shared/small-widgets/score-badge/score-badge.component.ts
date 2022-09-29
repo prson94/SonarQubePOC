@@ -63,18 +63,18 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
     getCurrentScoreThreshold() {
         var score = this.score.Value * 100;
         if (score <= this.lowerThreshold)
-            return `0% - ${this.lowerThreshold}%`;
+            {return `0% - ${this.lowerThreshold}%`;}
         if (score <= this.upperThreshold)
-            return `${this.lowerThreshold}.% - ${this.upperThreshold}%`;
+            {return `${this.lowerThreshold}.% - ${this.upperThreshold}%`;}
         return `${this.upperThreshold}.% - 100%`;
     }
 
 
     getScoreVariantColor(): string {
         if (this.score.Value <= this.lowerThreshold / 100)
-            return 'negative';
+            {return 'negative';}
         if (this.score.Value <= this.upperThreshold / 100)
-            return 'warning';
+            {return 'warning';}
         return 'positive';
     }
 
@@ -96,23 +96,23 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
 
         var years = diff.getUTCFullYear() - 1970;
 
-        if (years > 0) return this.getType() + $localize` last calculated ${years} years ago.`;
+        if (years > 0) {return this.getType() + $localize` last calculated ${years} years ago.`;}
 
         var months = diff.getUTCMonth();
 
-        if (months > 0) return this.getType() + $localize` last calculated ${months} months ago.`;
+        if (months > 0) {return this.getType() + $localize` last calculated ${months} months ago.`;}
 
         var days = diff.getUTCDate() - 1;
 
-        if (days > 0) return this.getType() + $localize` last calculated ${days} days ago.`;
+        if (days > 0) {return this.getType() + $localize` last calculated ${days} days ago.`;}
 
         var hours = diff.getUTCHours();
 
-        if (hours > 0) return this.getType() + $localize` last calculated ${hours} hours ago.`;
+        if (hours > 0) {return this.getType() + $localize` last calculated ${hours} hours ago.`;}
 
         var minutes = diff.getUTCMinutes();
 
-        if (minutes > 0) return this.getType() + $localize` last calculated ${minutes} minutes ago.`;
+        if (minutes > 0) {return this.getType() + $localize` last calculated ${minutes} minutes ago.`;}
 
         return this.getType() + $localize` last calculated a few seconds ago.`;
     }
@@ -120,9 +120,9 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
     get lastRunDate(): string {
         if (this.score != null) {
             if (this.score.RunDate)
-                return this.score.RunDate;
+                {return this.score.RunDate;}
             if (this.score.EffectiveDate)
-                return this.score.EffectiveDate;
+                {return this.score.EffectiveDate;}
         }
         return null;
     }

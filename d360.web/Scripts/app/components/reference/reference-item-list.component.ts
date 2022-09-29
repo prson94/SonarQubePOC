@@ -106,7 +106,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
 
     private load() {
         if (!this.assetTypeUid)
-            return;
+            {return;}
 
         this.isLoading = true;
 
@@ -186,10 +186,10 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
             let sort = event.sortField;
             var field = this.fields.filter((x) => x.name.toLowerCase() == event.sortField.toLowerCase())[0];
             if (field)
-                sort = field.apiName;
+                {sort = field.apiName;}
 
             if (event.sortField == 'Color')
-                sort = 'Color';
+                {sort = 'Color';}
 
             if (event.globalFilter && event.globalFilter.length > 0) {
                 this.loadParams['_simpleFilter'] = event.globalFilter;

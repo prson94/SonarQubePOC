@@ -182,7 +182,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
     save() {
         var item = new ScoreTypeAllocation();
         if (this.selection.uid)
-            item.uid = this.selection.uid;
+            {item.uid = this.selection.uid;}
 
         item.assetTypeUid = this.selection.assetTypeUid;
         item.scoreType = this.selection.scoreType;
@@ -195,7 +195,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
                 let openItem = false;
                 this.savingInProgress = false;
                 if (!res || (res.type && res.type == "error"))
-                    return;
+                    {return;}
 
                 let msg: string = '';
                 if (this.selection.uid == undefined) {
@@ -213,7 +213,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
     handleChange(e) {
         this.selection.lowerThreshold = e.values[0];
         if (this.selection.lowerThreshold == 100)
-            this.selection.lowerThreshold = 99;
+            {this.selection.lowerThreshold = 99;}
         this.selection.upperThreshold = e.values[1];
 
         this.hasModelChanged();
@@ -224,7 +224,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
     onLowerThresholdChange($event, el: HTMLInputElement) {
 
         if (this.thresholdCheckLower)
-            window.clearTimeout(this.thresholdCheckLower);
+            {window.clearTimeout(this.thresholdCheckLower);}
 
         this.thresholdCheckLower = window.setTimeout(() => {
             var tempVal = +el.value;
@@ -251,7 +251,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 
 
         if (this.thresholdCheckUpper)
-            window.clearTimeout(this.thresholdCheckUpper);
+            {window.clearTimeout(this.thresholdCheckUpper);}
 
         this.thresholdCheckUpper = window.setTimeout(() => {
             var tempVal = +el.value;

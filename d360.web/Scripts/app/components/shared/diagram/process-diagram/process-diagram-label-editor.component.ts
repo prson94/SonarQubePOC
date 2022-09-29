@@ -36,7 +36,7 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
     ngOnChanges(changes: SimpleChanges) {
         if (changes.linkData && changes.linkData.currentValue != changes.linkData.previousValue) {
             if (this.linkData)
-                this.load();
+                {this.load();}
         }
     }
 
@@ -64,7 +64,7 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
 
     onBlur($event) {
         if ($event && $event.relatedTarget && $event.relatedTarget.className.indexOf('clear-label'))
-            return;
+            {return;}
         this.updateConnectorLabelToLink();
     }
     onKeyUp($event: KeyboardEvent) {
@@ -75,11 +75,11 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
             }, 50);
         }
         if (this.linkLabel == '')
-            this.clearLabel();
+            {this.clearLabel();}
     }
     clearLabel() {
         if (this.createLabelSub)
-            this.createLabelSub.unsubscribe();
+            {this.createLabelSub.unsubscribe();}
 
         this.linkLabel = '';
         this.linkDataChange.emit({ label: { uid: null, Value: null }, data: this.linkData });
@@ -87,10 +87,10 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
 
     updateConnectorLabelToLink() {
         if (!this.linkLabel || this.linkLabel.length > 40)
-            return;
+            {return;}
 
         if (this.createLabelSub)
-            this.createLabelSub.unsubscribe();
+            {this.createLabelSub.unsubscribe();}
         var currentLinkData = this.linkData;
         this.createLabelSub = this.connectorLabelService.createOrGetLabel(this.linkLabel)
             .subscribe((res) => {

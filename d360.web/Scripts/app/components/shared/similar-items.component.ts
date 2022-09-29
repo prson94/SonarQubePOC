@@ -38,9 +38,9 @@ export class SimilarItemsComponent implements OnChanges, OnInit, OnDestroy {
         this.searchSub = this.uriBasedService.search(this.uri, this.queryStream$)
             .subscribe((res) => {
                 if (this.query == '')
-                    this.items = [];
+                    {this.items = [];}
                 else
-                    this.items = res;
+                    {this.items = res;}
                 this.ref.markForCheck();
             });
     }

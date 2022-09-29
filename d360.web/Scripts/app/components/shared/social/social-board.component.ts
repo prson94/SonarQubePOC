@@ -107,7 +107,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     deleteComment(event) {
         let comment = event.comment as CommentDetail;
 
-        if (!comment) return;
+        if (!comment) {return;}
 
         this.isLoading = true;
 

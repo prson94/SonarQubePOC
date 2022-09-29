@@ -52,7 +52,7 @@ export class GalleryButtonComponent implements OnInit {
     toggleLoading() {
         //Removing loading state enables the button, so we'll update the disabledState flag to match
         if (this.loadingState && this.disabledState)
-            this.disabledState = false;
+            {this.disabledState = false;}
 
         this.loadingState = !this.loadingState;
     }

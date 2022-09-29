@@ -157,7 +157,7 @@ export class AssetService extends BaseObservableService {
         if (params) {
             qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
-                qString = '?' + qString;
+                {qString = '?' + qString;}
         }
         return this.
             http
@@ -187,7 +187,7 @@ export class AssetService extends BaseObservableService {
         if (params) {
             var qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
-                url = url + '&' + qString;
+                {url = url + '&' + qString;}
         }
 
         //to be removed with new filtering UI component
@@ -225,7 +225,7 @@ export class AssetService extends BaseObservableService {
         if (copyParams) {
             qString = Object.keys(copyParams).map((key) => key + '=' + copyParams[key]).join('&');
             if (qString)
-                qString = '?' + qString;
+                {qString = '?' + qString;}
         }
         this.
             http
@@ -280,7 +280,7 @@ export class AssetService extends BaseObservableService {
         if (params) {
             qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
-                qString = '?' + qString;
+                {qString = '?' + qString;}
         }
         return this.http.get(`api/v2/assets/lookupvalues/${assetTypeUID}` + qString)
             .pipe(
@@ -310,7 +310,7 @@ export class AssetService extends BaseObservableService {
         if (params) {
             qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
-                qString = '?' + qString;
+                {qString = '?' + qString;}
         }
         return this.
             http

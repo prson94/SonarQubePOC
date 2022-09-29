@@ -172,7 +172,7 @@ export class HeaderBreadcrumbComponent {
 
             html = '<a class="breadcrumb"><span class="breadcrumb-text">' + this.breadcrumbs[i].text + ' </span>';
             if (this.breadcrumbs[i].parentTypeName !== undefined)
-                html += '<span class="parent">' + this.breadcrumbs[i].parentTypeName ? this.breadcrumbs[i].parentTypeName : '' + '</span>';
+                {html += '<span class="parent">' + this.breadcrumbs[i].parentTypeName ? this.breadcrumbs[i].parentTypeName : '' + '</span>';}
             html += '</a>';
 
             this.breadcrumbUIElement.nativeElement.insertAdjacentHTML('beforeend', html);
@@ -183,22 +183,22 @@ export class HeaderBreadcrumbComponent {
 
             var last = (this.breadcrumbs.length - 1) == i;
             if (!last)
-                max += 25; // for the icon separator
+                {max += 25;} // for the icon separator
 
             if (max < maxSpaceForCrumbs)
-                maxNumberOfCrumbsInSpace++;
+                {maxNumberOfCrumbsInSpace++;}
 
             this.breadcrumbUIElement.nativeElement.removeChild(tempCrumb);
         }
         this.showThisManyCrumbs = maxNumberOfCrumbsInSpace;
         if (this.showLastOnly)
-            max += 40;
+            {max += 40;}
         return max + 20;//for the left margin on the breadcrumb
     }
 
     showCrumb() {
         if (this.showThisManyCrumbs == 0)
-            return;
+            {return;}
 
         if (this.breadcrumbs.length == this.showThisManyCrumbs) {
             this.showLastOnly = false;
@@ -208,8 +208,8 @@ export class HeaderBreadcrumbComponent {
         let maxIndex = this.breadcrumbs.length - 1;
         let minIndex = this.breadcrumbs.length - this.showThisManyCrumbs;
         for (var i = 0; i < this.breadcrumbs.length; i++) {
-            if (i >= minIndex && i <= maxIndex) this.breadcrumbs[i].show = true;
-            else this.breadcrumbs[i].show = false;
+            if (i >= minIndex && i <= maxIndex) {this.breadcrumbs[i].show = true;}
+            else {this.breadcrumbs[i].show = false;}
 
         }
 

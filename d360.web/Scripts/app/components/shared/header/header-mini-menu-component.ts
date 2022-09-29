@@ -175,7 +175,7 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
     }
 
     hide(item) {
-        if (this.hideHandle > 0) return; //pending hide ignore new request
+        if (this.hideHandle > 0) {return;} //pending hide ignore new request
         //queue up a request to hide the window.
         this.hideHandle = window.setTimeout(() => {
             this.active = false;

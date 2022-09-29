@@ -16,7 +16,7 @@ export class CopyClipboardDirective {
     public onClick(event: MouseEvent): void {
         event.preventDefault();
         if (!this.payload)
-            return;
+            {return;}
 
         let listener = (e: ClipboardEvent) => {
             let clipboard = e.clipboardData || window["clipboardData"];

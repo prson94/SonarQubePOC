@@ -161,11 +161,11 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
         this.exportTemplateService.getExportTemplates().subscribe((result) => {
             this.exportTemplates = result;
             if (this.selected == null && this.exportTemplates != null && this.exportTemplates.length > 0)
-                this.selected = this.exportTemplates[0];
+                {this.selected = this.exportTemplates[0];}
             else if (this.selected != null && this.exportTemplates != null && this.exportTemplates.length > 0) {
                 let item = this.exportTemplates.filter((x) => x.Uid == this.selected.Uid);
                 if (item != null && item.length != 0)
-                    this.selected = item[0];
+                    {this.selected = item[0];}
             }
 
             this.getSelectedTemplateID();
@@ -213,7 +213,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
 
     public selectNode(e: any, showEditor: boolean = false) {        
         if (e == null)
-            return;
+            {return;}
         if (!this.selected.ID) {
             this.getSelectedTemplateID(showEditor);
         } else {

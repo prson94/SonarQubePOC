@@ -130,14 +130,14 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 			var detailsSub = this.artifactTypeService.getArtifactTypeDetails(artifact.ParentUid).subscribe((parent) => {
 				this.artifactTypeHierarchy.unshift(parent);
 				if (parent.ParentID)
-					this.createBreadcrumbHierarchy(parent);
+					{this.createBreadcrumbHierarchy(parent);}
 				else
-					this.displayBreadcrumb();
+					{this.displayBreadcrumb();}
 			});
 
 			this.navigationItemsSubs.push(detailsSub);
 		} else
-			this.displayBreadcrumb();
+			{this.displayBreadcrumb();}
 	}
 
 	displayBreadcrumb() {

@@ -21,7 +21,7 @@ export class ApplicationInsightsService {
 
     setUserId(userId: string) {
         try {
-            if (aisdk) aisdk.setAuthenticatedUserContext(userId);
+            if (aisdk) {aisdk.setAuthenticatedUserContext(userId);}
         }
         catch (e) {
             console.warn("Exception setting authenticated user with Application Insights.",e);
@@ -30,7 +30,7 @@ export class ApplicationInsightsService {
 
     clearUserId() {
         try {
-            if (aisdk) aisdk.clearAuthenticatedUserContext();
+            if (aisdk) {aisdk.clearAuthenticatedUserContext();}
         }
         catch (e) {
             console.warn("Exception clearing authenticated user with Application Insights.", e);
@@ -38,7 +38,7 @@ export class ApplicationInsightsService {
     }
 
     logPageView(name?: string, uri?: string) {
-        if (aisdk) aisdk.trackPageView({ name: name, uri: uri });
+        if (aisdk) {aisdk.trackPageView({ name: name, uri: uri });}
     }
 
     private getActivatedComponent(snapshot: ActivatedRouteSnapshot): any {

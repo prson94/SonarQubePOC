@@ -17,7 +17,7 @@ export class SafeHtmlPipe implements PipeTransform {
 	private itempropReplace = `$1 style="$2`;
 
 	transform(value: string): any {
-		if (!value) return "";
+		if (!value) {return "";}
 
 		var sanitizedValue = this.sanitized.sanitize(SecurityContext.HTML, value.replace(this.stylePattern, this.styleReplace));
 		return this.sanitized.bypassSecurityTrustHtml(sanitizedValue.replace(this.itempropPattern, this.itempropReplace));

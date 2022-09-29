@@ -54,7 +54,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
 					this.objectType = res.Object;
 					this.showMonitor = true;
 					if (reloadNav)
-						this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+						{this.buildSecondaryNavigationForObject(this.objectID, this.objectType);}
 				});
 
 		});

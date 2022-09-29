@@ -121,11 +121,11 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
         }
 
         if (this.stateService.workflowItemFilters.columFilters && this.stateService.workflowItemFilters.columFilters.length > 0)
-            filter = _.clone(this.stateService.workflowItemFilters.columFilters);
+            {filter = _.clone(this.stateService.workflowItemFilters.columFilters);}
 
         if (this.stateService.workflowItemFilters.workflowTypeFilters &&
             !StringHelpers.isNullOrEmpty(this.stateService.workflowItemFilters.workflowTypeFilters.value))
-            filter.push(this.stateService.workflowItemFilters.workflowTypeFilters);
+            {filter.push(this.stateService.workflowItemFilters.workflowTypeFilters);}
 
         return filter;
 

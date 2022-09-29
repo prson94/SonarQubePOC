@@ -10,7 +10,7 @@ export class CookieService {
     set(key: string, value: string, expires: Date): void;
     set(key: string, value: string, expires?: Date): void {
         let cookieValue = `${key}=${value}`;
-        if (expires) cookieValue += `;expires='${expires.toUTCString()}'`;
+        if (expires) {cookieValue += `;expires='${expires.toUTCString()}'`;}
         document.cookie = cookieValue;
     }
 

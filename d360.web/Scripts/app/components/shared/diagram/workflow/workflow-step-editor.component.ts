@@ -103,45 +103,45 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             .subscribe((r) => {
                 r.forEach((e) => {
                     if (e.ID < 1)
-                        return;
+                        {return;}
                     else if (e.ID == EmailTaskRecipientType.Followers) {
                         if (this.objectType == 'IntersectType')
-                            return false;
+                            {return false;}
 
                         if (!(this.ChangeType == WorkflowChangeType.Add ||
                             this.ChangeType == WorkflowChangeType.Update ||
                             this.ChangeType == WorkflowChangeType.Schedule ||
                             this.ChangeType == WorkflowChangeType.RequestCertification))
-                            return;
+                            {return;}
 
                         if ((this.ChangeType == WorkflowChangeType.Update) &&
                             !(this.objectType == 'ArtifactType' || this.objectType == 'PolicyType' || this.objectType == 'RuleType' || this.objectType == 'TaxonomyType'))
-                            return;
+                            {return;}
 
                         if ((this.ChangeType == WorkflowChangeType.Add) && !(this.objectType == 'IssueType'))
-                            return;
+                            {return;}
 
                         if ((this.ChangeType == WorkflowChangeType.Add) && (this.objectType == 'IssueType')) {
                             if (this.issueObject != null && this.issueObject != '') {
                                 let objArr = this.issueObject.split("|", 1);
                                 let Issobj = "";
                                 if (objArr.length <= 0)
-                                    Issobj = " ";
+                                    {Issobj = " ";}
                                 else
-                                    Issobj = objArr[0];
+                                    {Issobj = objArr[0];}
 
                                 if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
-                                    return;
+                                    {return;}
                             }
                         }
                     }
                     else if (e.ID == EmailTaskRecipientType.Initiator) {
                         if (this.ChangeType == WorkflowChangeType.ScoreUpdate)
-                            return;
+                            {return;}
                     }
 
                     if (e.ID == EmailTaskRecipientType.Initiator && this.ChangeType == WorkflowChangeType.Schedule)
-                        return;
+                        {return;}
 
                     this.destination.push({
                         value: EmailTaskRecipientType[e.ID],
@@ -162,7 +162,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     ngOnChanges() {
         if (this.step.settings == null)
-            this.step.settings = new NodeSettings();
+            {this.step.settings = new NodeSettings();}
         this.originalStep = _.cloneDeep(this.step);
 
 
@@ -220,9 +220,9 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         }
         else if (this.step.activityType == WorkflowActivityType.RelationshipUpdate) {
             if (this.step.settings.RelationshipUpdate == null)
-                this.step.settings.RelationshipUpdate = new RelationshipUpdateSettings();
+                {this.step.settings.RelationshipUpdate = new RelationshipUpdateSettings();}
             if (this.step.settings.RelationshipUpdate.Relationship == null)
-                this.step.settings.RelationshipUpdate.Relationship = {};
+                {this.step.settings.RelationshipUpdate.Relationship = {};}
 
             this.filterFormFields();
 
@@ -242,19 +242,19 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         }
 
         if (this.ed != null && this.ed.quill != null)
-            this.quill = this.ed.quill;
+            {this.quill = this.ed.quill;}
         else
-            this.quill = null;
+            {this.quill = null;}
 
         if (this.step.settings.WaitForAllTransitions == null)
-            this.step.settings.WaitForAllTransitions = false;
+            {this.step.settings.WaitForAllTransitions = false;}
         else
-            this.step.settings.WaitForAllTransitions = this.step.settings.WaitForAllTransitions.toString().toLowerCase() === 'true' ? true : false;
+            {this.step.settings.WaitForAllTransitions = this.step.settings.WaitForAllTransitions.toString().toLowerCase() === 'true' ? true : false;}
     }
 
     ngAfterViewChecked() {
         if (this.ed != null && this.ed.quill != null)
-            this.quill = this.ed.quill;
+            {this.quill = this.ed.quill;}
     }
 
     ngOnDestroy() {
@@ -274,7 +274,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     appendField(e: string) {
         if (this.ed != null && this.ed.quill != null)
-            this.quill = this.ed.quill;
+            {this.quill = this.ed.quill;}
 
         if (this.quill != null) {
             let pos = this.quill.getSelection(true);
@@ -298,7 +298,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         this.formFields = [];
 
         this.formRelationshipFields = [];
-        if (this.diagram == null) return;
+        if (this.diagram == null) {return;}
 
         let fields = this.workflowFieldsService.getFields();
 
@@ -363,10 +363,10 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         let step = steps.find((s) => s.key == key);
         let toLinks = links.filter((l) => l.to == key);
 
-        if (_.includes(upstreamSteps, key)) return;
+        if (_.includes(upstreamSteps, key)) {return;}
         upstreamSteps.push(step.key);
 
-        if (toLinks == null || toLinks.length < 1) return;
+        if (toLinks == null || toLinks.length < 1) {return;}
 
         toLinks.forEach((l) => this.traverseDiagram(l.from, upstreamSteps));
 

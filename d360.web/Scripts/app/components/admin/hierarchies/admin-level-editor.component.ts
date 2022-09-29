@@ -35,7 +35,7 @@ export class AdminLevelEditorComponent extends BaseComponent {
 
     ngOnInit() {
         if (this.level != undefined)
-            this.editedLevel = _.cloneDeep(this.level);
+            {this.editedLevel = _.cloneDeep(this.level);}
         else {
             this.editedLevel = new HierarchyTypeLevel();
             this.action = $localize`New`;

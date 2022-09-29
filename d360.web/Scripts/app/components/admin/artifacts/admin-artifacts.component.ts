@@ -169,7 +169,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
 
     add(uid: string) {
         if (uid)
-            this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+            {this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);}
         this.loadDataAndExecuteAction(() => {
             if (!uid) {
                 this.editorModel = { data: { ID: 0 } };

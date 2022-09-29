@@ -61,7 +61,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             var el = this.getLastHoveredElement(this.navigationArr);
             var currentIndex = this.navigationArr.indexOf(el);
             if (currentIndex == -1)
-                currentIndex = 0;
+                {currentIndex = 0;}
 
             var foundIdx = -1;
             for (let idx = currentIndex; idx < this.navigationArr.length; idx++) {
@@ -316,7 +316,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             else if (!isOverflowRight && !isOverflowBottom) {
                 this.currentLocation = PopupMenuLocation.BottomLeft;
                 if (this.location)
-                    this.currentLocation = this.location;
+                    {this.currentLocation = this.location;}
                 this.openToBottomSide = true;
             }
 
@@ -368,14 +368,14 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
     select(item: PopupMenuItem, $event) {
         if (item.disabled)
-            return;
+            {return;}
 
         if (item.callback) {
             item.callback();
         }
 
         if ($event.stopPropagation)
-            $event.stopPropagation();
+            {$event.stopPropagation();}
 
         if (item && item.items) {
             this.navigationArr = item.items;
@@ -435,7 +435,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
         let nextIdx: number = 0;
         if (forward)
-            nextIdx = idx + 1;
+            {nextIdx = idx + 1;}
         else {
             nextIdx = idx - 1;
         }
@@ -501,8 +501,8 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
     getItemClass(item: PopupMenuItem): string {
         let cs: string = '';
-        if (item.isSeparator) return 'separator';
-        else cs = 'menu-sub-item';
+        if (item.isSeparator) {return 'separator';}
+        else {cs = 'menu-sub-item';}
 
         if (item.isActive) {
             cs += ' active';

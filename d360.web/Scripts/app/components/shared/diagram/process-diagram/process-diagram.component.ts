@@ -201,14 +201,14 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @ViewChild('editors', { static: false }) editorRef;
     @HostListener('window:resize', ['$event'])
     public onResize(event) {
-        if (!this.diagramRef) return;
+        if (!this.diagramRef) {return;}
         let height = window.innerHeight;
         if (this.isEditMode)
-            this.diagramRef.nativeElement.style.height = (height - 115) + 'px';
+            {this.diagramRef.nativeElement.style.height = (height - 115) + 'px';}
         else if (this.isFullScreen)
-            this.diagramRef.nativeElement.style.height = (height - 40) + 'px';
+            {this.diagramRef.nativeElement.style.height = (height - 40) + 'px';}
         else
-            this.diagramRef.nativeElement.style.height = (height - 240) + 'px';
+            {this.diagramRef.nativeElement.style.height = (height - 240) + 'px';}
 
         if (this.editorRef) {
             this.editorRef.nativeElement.style.height = this.diagramRef.nativeElement.style.height;
@@ -216,7 +216,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.myDiagram) {
             setTimeout(() => {
                 if (this.myDiagram)
-                    this.myDiagram.redraw();
+                    {this.myDiagram.redraw();}
             }, 100);
         }
         this.cdRef.detectChanges();
@@ -258,7 +258,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.selectedLinkData = null;
             }
             if (this.isDiagramLoaded && this.isEditMode)
-                this.saveState.emit(this.isCurrentStateSaved());
+                {this.saveState.emit(this.isCurrentStateSaved());}
         }
 
         if (this.selectedNodeData && this.selectedNodeData.key.indexOf('new_instance_') > -1) {
@@ -276,9 +276,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     ngOnDestroy() {
         if (this.cdRef)
-            this.cdRef.detach();
+            {this.cdRef.detach();}
         if (this.myDiagram)
-            this.myDiagram = null;
+            {this.myDiagram = null;}
     }
 
     public changeInfoPanelMode() {
@@ -291,7 +291,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private applyEditMode(state: boolean) {
-        if (!this.myDiagram) return;
+        if (!this.myDiagram) {return;}
         this.myDiagram.nodes.each(function (n) {
             if (n instanceof go.Node) {
                 n.movable = state;
@@ -349,26 +349,26 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.myDiagram && this.myDiagram.selection.count > 0) {
             return true;
         }
-        else return false;
+        else {return false;}
     }
 
     private isRelatedAssetsEnabled() {
         if (!this.selectedNodeData)
-            return false;
+            {return false;}
 
         return true;
     }
 
     private isExportEnabled() {
         if (!this.myDiagram)
-            return false;
+            {return false;}
 
         return this.myDiagram.nodes.count > 0;
     }
 
     getSelectedNodeCount() {
         if (!this.myDiagram)
-            return 0;
+            {return 0;}
 
         return this.myDiagram.selection.filter((x) => x.category == 'activity' || x.category == 'event' || x.category == 'gateway').count;
     }
@@ -416,10 +416,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     "undoManager.isEnabled": true,
                     "textEditingTool.doActivate": function () {
                         go.TextEditingTool.prototype.doActivate.call(this);
-                        if (this.textBlock) this.textBlock.opacity = 0.0;
+                        if (this.textBlock) {this.textBlock.opacity = 0.0;}
                     },
                     "textEditingTool.doDeactivate": function () {
-                        if (this.textBlock) this.textBlock.opacity = 1.0;
+                        if (this.textBlock) {this.textBlock.opacity = 1.0;}
                         go.TextEditingTool.prototype.doDeactivate.call(this);
                     },
                     allowClipboard: false,
@@ -589,13 +589,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private isCurrentStateSaved() {
         if (!this.savedState)
-            return false;
+            {return false;}
         return this.getSignature(this.myDiagram.model) == this.getSignature(this.savedState);
     }
 
     private getSignature(model: go.Model) {
         if (!model)
-            return '';
+            {return '';}
         var m = JSON.parse(model.toJson().replace(`\"isReadOnly\": true,`, ''));
         if (m && m.nodeDataArray) {
             m.nodeDataArray.forEach((d) => {
@@ -778,13 +778,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.nodeNames = [];
             this.myDiagram.nodes.each((node) => {
                 if (node && node.data && node.data['Name'])
-                    this.nodeNames.push(node.data['Name']);
+                    {this.nodeNames.push(node.data['Name']);}
             });
         }
     }
 
     private isObjectEmpty(obj: any): boolean {
-        if (obj == null || obj == undefined || obj.toString() == '') return true;
+        if (obj == null || obj == undefined || obj.toString() == '') {return true;}
         return false;
     }
 
@@ -800,7 +800,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         try {
             var item = this.colors.find((x) => +x.ObjectID == +data.GovernanceRole);
             if (item && item.Value)
-                return item.Value;
+                {return item.Value;}
         }
         catch {
             return this.defaultStrokeColor;
@@ -812,7 +812,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         try {
             var item = this.colors.find((x) => +x.ObjectID == +data.GovernanceRole);
             if (item)
-                return item.DisplayValue;
+                {return item.DisplayValue;}
         }
         catch {
             return '';
@@ -866,7 +866,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         setTimeout(() => {
             var el = (document.querySelectorAll('.asset-editor .display .field-wrapper.invalid input')[0] as HTMLElement);
             if (el)
-                el.focus();
+                {el.focus();}
         }, 200);
     }
 
@@ -1125,7 +1125,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                         badges.forEach((asset) => {
                             var data = m.findNodeDataForKey(asset.AssetUid);
                             if (data)
-                                m.set(data, 'relCount', asset.RelationshipCount.toString());
+                                {m.set(data, 'relCount', asset.RelationshipCount.toString());}
                         });
                     }, 'update_model_badge_data');
                 } catch (e) {

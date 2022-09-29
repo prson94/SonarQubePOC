@@ -87,7 +87,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
     onFilterChange(event) {
         if (event != 'globalSearch')
-            this.filters.globalSearch = '';
+            {this.filters.globalSearch = '';}
 
         this.filters[event.prop] = event.value;
     }
@@ -243,7 +243,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         var index: number = -1;
         for (var label of this.labels) {
             index++;
-            if (label.uid == uid) return index;
+            if (label.uid == uid) {return index;}
         }
     }
 
@@ -323,10 +323,10 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 this.triggerRerenderOfSelection();
             }
             if (this.tableEl1)
-                this.tableEl1.totalRecords = this.selected.length;
+                {this.tableEl1.totalRecords = this.selected.length;}
 
             if (this.tableEl2)
-                this.tableEl2.totalRecords = this.selected.length;
+                {this.tableEl2.totalRecords = this.selected.length;}
             this.lastSelectedElement = item;
         }
         this.selectedCount = this.selected.length;
