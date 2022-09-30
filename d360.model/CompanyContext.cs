@@ -1193,8 +1193,6 @@ from	IntersectType I
 
 		public List<IntersectTypeOption> GetIntersectTypeOptions(Guid? subjectUid = null, Guid? objectUid = null, Guid? predicateUid = null, List<AssetTypeClass> limitToClasses = null)
 		{
-			string classLimitSql = "";
-
 			List<string> whereStatements = new List<string>();
 
 			if (limitToClasses != null && limitToClasses.Count > 0)
