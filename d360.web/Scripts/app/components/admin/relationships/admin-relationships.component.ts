@@ -34,11 +34,10 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
 	selectedItemChange(event) {
 		this.selected = event;
 		this.baseIntersectTypeUid = this.selected.Uid;
-		this.buildSecondaryNavigation({ intersectTypeUid: this.selected.Uid});
-
-		if (this.auditSidebar) {
-			this.auditSidebar.url = `/sidebar/audit/${this.selected.Uid}`;
-		}
+		this.buildSecondaryNavigation({
+			intersectTypeUid: this.baseIntersectTypeUid,
+			forceRefresh: true
+		});
 	}
 
 	ngOnDestroy() {

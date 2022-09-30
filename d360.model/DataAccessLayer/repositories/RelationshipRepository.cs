@@ -722,6 +722,16 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 						dbArgs.Add("@assettypeuid", assetTypeUid);
 						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid)";
 					}
+				}				
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "relationshiptypeuid"))
+				{
+					Guid relationshipTypeUid;
+					var assetTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "relationshiptypeuid").Value;
+					if (Guid.TryParse(assetTypeUidString, out relationshipTypeUid))
+					{
+						dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
+						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (I.Uid = @relationshiptypeuid)";
+					}
 				}
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "state"))
 				{
