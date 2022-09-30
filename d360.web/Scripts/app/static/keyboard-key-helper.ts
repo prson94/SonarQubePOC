@@ -2,10 +2,10 @@
 
     static getCharForKeyCode(code: number, isMac: boolean): string {
         if (isMac) {
-            if (code === 91) return '⌘';
-            if (code === 16) return '⇧';
-            if (code === 17) return '^';
-            if (code === 46) return '⌫';
+            if (code === 91) {return '⌘';}
+            if (code === 16) {return '⇧';}
+            if (code === 17) {return '^';}
+            if (code === 46) {return '⌫';}
         }
 
         return this.toTitleCase(this.keyboardMap[code]);

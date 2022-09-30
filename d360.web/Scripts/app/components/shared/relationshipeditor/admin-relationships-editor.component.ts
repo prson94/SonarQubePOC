@@ -105,7 +105,7 @@ export class AdminRelationshipsEditor {
     }
 
     private subjectChanged(value) {
-        if (!value) return;
+        if (!value) {return;}
 
         this.relationshipType.Object.Uid = null;
         this.relationshipType.Predicate.Uid = null;
@@ -114,7 +114,7 @@ export class AdminRelationshipsEditor {
     }
 
     private predicateChanged(value) {
-        if (!value) return;
+        if (!value) {return;}
         let predicate = this.predicates.find((p) => p.value == value);
         this.selectedPredicate = predicate;
         this.loadCardinalityOptions();

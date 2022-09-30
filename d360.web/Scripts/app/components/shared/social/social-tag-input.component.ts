@@ -41,7 +41,7 @@ export class SocialTagInputComponent extends BaseComponent  implements OnDestroy
     }
 
     ngOnDestroy(): void {
-        if (this.searchSub) this.searchSub.unsubscribe();
+        if (this.searchSub) {this.searchSub.unsubscribe();}
     }
 
     search(event) {

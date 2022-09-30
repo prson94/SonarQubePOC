@@ -90,7 +90,7 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
         let valid = true;
 
         if (this.field.Value == null || this.field.Value.length < 1)
-            valid = false;
+            {valid = false;}
 
         return valid;
     }

@@ -78,7 +78,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
 
     ngOnInit() {
         if (!this.filters || this.filters.length == 0)
-            this.addFilter();
+            {this.addFilter();}
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -124,28 +124,28 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     private onDateBlur(filter) {
         let d = new Date(Date.parse(filter.Data.value));
         if (d.toString() != "Invalid Date")
-            filter.Data.value = this.getUTCFormattedDateForSearch(d, true, false);
+            {filter.Data.value = this.getUTCFormattedDateForSearch(d, true, false);}
         else
-            filter.Data.value = null;
+            {filter.Data.value = null;}
     }
 
     private prepareDateValueForCalendar(filter): string {
         let d = new Date(Date.parse(filter.Data.value));
         if (d.toString() != "Invalid Date")
-            return this.getUTCFormattedDateForSearch(d, true, true);
+            {return this.getUTCFormattedDateForSearch(d, true, true);}
         else
-            return null;
+            {return null;}
     }
 
     private getUTCFormattedDateForSearch(date: Date, isReverse: boolean, isForUI: boolean): string {
         let utcDate: Date = null;
         if (isReverse)
-            utcDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+            {utcDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);}
         else
-            utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+            {utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);}
 
         if (isForUI)
-            return utcDate.toLocaleDateString();
+            {return utcDate.toLocaleDateString();}
 
         return `${utcDate.getMonth() + 1}/${utcDate.getDate()}/${utcDate.getFullYear()} ${utcDate.toTimeString().split(' ')[0]}`;
     }
@@ -164,15 +164,15 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
             filter.Type = FilterFieldType.Field;
 
             if (target.Data.columntype == "dropdownlist" || target.Data.columntype == "numberinput")
-                filter.Data.condition = "EQUAL";
+                {filter.Data.condition = "EQUAL";}
             else
-                filter.Data.condition = "CONTAINS";
+                {filter.Data.condition = "CONTAINS";}
 
             //determine the field type
             if (target.Data.hiddenfield)
-                filter.Data.fieldtype = GridFilterFieldType.Hidden;
+                {filter.Data.fieldtype = GridFilterFieldType.Hidden;}
             else
-                filter.Data.fieldtype = GridFilterFieldType.Normal;
+                {filter.Data.fieldtype = GridFilterFieldType.Normal;}
         }
     }
 

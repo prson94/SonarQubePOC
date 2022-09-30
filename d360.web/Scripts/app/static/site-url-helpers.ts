@@ -216,11 +216,11 @@ export class SiteUrlHelpers {
     // of objects making it not posible to get the object url by building it
     static convertClassicUrl(url): string {
         if (url.startsWith('#/artifacts'))
-            return url.replace('#/artifacts', SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT);
+            {return url.replace('#/artifacts', SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT);}
         else if (url.startsWith('#/resources'))
-            return url.replace('#/resources', SiteUrlHelpers.SITE_URL_RESOURCE_ROOT);
+            {return url.replace('#/resources', SiteUrlHelpers.SITE_URL_RESOURCE_ROOT);}
         else if (url.startsWith('#/groups'))
-            return url.replace('#/groups', SiteUrlHelpers.SITE_URL_GROUP_ROOT);
+            {return url.replace('#/groups', SiteUrlHelpers.SITE_URL_GROUP_ROOT);}
         else if (url.startsWith('#/catalogs')) {
             var parts = url.split('/');
             if (parts.length == 4) {
@@ -237,7 +237,7 @@ export class SiteUrlHelpers {
         }
         else {
             if (url.startsWith('#'))
-                console.log('[ERROR] - CANNOT CONVERT CLASSIC URL TO NEW URL', url);
+                {console.log('[ERROR] - CANNOT CONVERT CLASSIC URL TO NEW URL', url);}
 
             return url;
         }

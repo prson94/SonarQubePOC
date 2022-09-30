@@ -36,7 +36,7 @@ export class PaginatorComponent implements OnChanges, OnInit {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if ((changes['page'] != undefined && !changes['page'].firstChange) || (changes['totalRecords'] != undefined && !changes['totalRecords'].firstChange))
-            this.CheckVisableNumbers();
+            {this.CheckVisableNumbers();}
     }
 
     ngOnInit(): void {
@@ -84,31 +84,31 @@ export class PaginatorComponent implements OnChanges, OnInit {
 
     changePageToFirst(event: any): void {
         if (this.isFirstPage())
-            return;
+            {return;}
         this.page = 0;
         this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
     }
 
     changePageToPrev(event: any): void {
         if (this.isFirstPage())
-            return;
-        else this.page--;
+            {return;}
+        else {this.page--;}
 
         this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
     }
 
     changePageToNext(event: any): void {
         if (this.isLastPage())
-            return;
+            {return;}
         else
-            this.page++;
+            {this.page++;}
         this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
     }
     changePageToLast(event: any): void {
         if (this.isLastPage())
-            return;
+            {return;}
         else
-            this.page = this.getPageCount() - 1;
+            {this.page = this.getPageCount() - 1;}
         this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
     }
     onPageLinkClick(page: number): void {

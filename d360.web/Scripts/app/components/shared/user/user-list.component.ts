@@ -234,7 +234,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     getData() {
         this.isLoading = true;
         if (this.usersSub)
-            this.usersSub.unsubscribe();
+            {this.usersSub.unsubscribe();}
 
         this.usersSub = this.resourcesService.getResourceLazy(this.getParams()).pipe(
             debounceTime(3000))

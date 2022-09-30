@@ -168,7 +168,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
 
             let fieldPrefix = "Object";
             if (this.objectType.indexOf('Type') > -1)
-                fieldPrefix += "Type";
+                {fieldPrefix += "Type";}
 
             let assetFilter = new GridFilterExpression();
             assetFilter.field = fieldPrefix;

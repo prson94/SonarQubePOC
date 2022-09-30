@@ -140,7 +140,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
     onFilterChange(event) {
         if (event != 'globalSearch')
-            this.filters.globalSearch = '';
+            {this.filters.globalSearch = '';}
 
         this.filters[event.prop] = event.value;
     }
@@ -344,9 +344,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
                     result.forEach((t) => {
                         if (t.UseCount != 0)
-                            this.tags[this.findTagIndex(t.uid)].UseCount = t.UseCount;
+                            {this.tags[this.findTagIndex(t.uid)].UseCount = t.UseCount;}
                         else if (t.uid != parentUid)
-                            this.tags = this.tags.filter((x) => x.uid != t.uid);
+                            {this.tags = this.tags.filter((x) => x.uid != t.uid);}
                     });
                 }
                 this.selected = [];
@@ -365,7 +365,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         var index: number = -1;
         for (var tag of this.tags) {
             index++;
-            if (tag.uid == uid) return index;
+            if (tag.uid == uid) {return index;}
         }
     }
 

@@ -69,7 +69,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         }
 
         if ((this.fieldType == 'date' || this.fieldType == 'datetime') && isNaN(Date.parse(this.fieldValue)))
-            this.fieldValue = null;
+            {this.fieldValue = null;}
 
         if (this.useApiName && this.column['fieldType'] == 'Link' && this.fieldValue) {
             var delimiterIdx = (this.fieldValue as string).indexOf('|');
@@ -77,9 +77,9 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
                 var name = (this.fieldValue as string).substring(0, delimiterIdx);
                 var href = (this.fieldValue as string).substring(delimiterIdx + 1);
                 if (!name)
-                    this.fieldValue = `<a href="${href}" target="_blank">${href}</a>`;
+                    {this.fieldValue = `<a href="${href}" target="_blank">${href}</a>`;}
                 else
-                    this.fieldValue = `<a href="${href}" target="_blank">${name}</a>`;                
+                    {this.fieldValue = `<a href="${href}" target="_blank">${name}</a>`;}                
             }
         }
 
@@ -118,17 +118,17 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         var fields = this.fields.filter((x) => x.name == column.datafield);
 
         if (column.type == 'preview')
-            return 'preview';
+            {return 'preview';}
         if ((column.datafield == 'Name' || column.datafield == 'TextPath') && !this.isComplex) {
             if (column['objectfield'] != null && column['objectidfield'] != null)
-                return 'preview';
+                {return 'preview';}
             else
-                return 'string';
+                {return 'string';}
         }
 
 
         if (fields.length > 0)
-            return fields[0].type;
+            {return fields[0].type;}
         return 'string';
     }
 

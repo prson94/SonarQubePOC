@@ -89,7 +89,7 @@ export module FormHelper {
                 let sub = flattenTree(data[i][subDataField], subDataField, idField, parentField);
                 sub.forEach((s) => {
                     if (idField && parentField)
-                        s[parentField] = data[i][idField];
+                        {s[parentField] = data[i][idField];}
                     flattened.push(s);
                 });
             }
@@ -106,7 +106,7 @@ export module FormHelper {
             m.url = data[i].Uri;
 
             if (data[i].Items.length > 0)
-                m.items = convertToolBarToMenuItem(data[i].Items);
+                {m.items = convertToolBarToMenuItem(data[i].Items);}
 
             items.push(m);
         }

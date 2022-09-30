@@ -69,7 +69,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
     }
 
     private onSubmit() {
-        if (!this.isValid()) return;
+        if (!this.isValid()) {return;}
         this.submitting = true;
         this.currentQuestion = null;
 
@@ -90,7 +90,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
 
     private nextQuestion(currentIndex: number) {
 
-        if (!this.isValid()) return;
+        if (!this.isValid()) {return;}
 
         if (currentIndex < 0 || currentIndex + 1 >= this.surveyDetails.Questions.length) {
             console.log("ERROR - CANNOT MOVE TO NEXT QUESTION INVALID ARRAY ARGUMENTS.");

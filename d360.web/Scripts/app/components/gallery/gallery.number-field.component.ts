@@ -68,11 +68,11 @@ export class GalleryNumberFieldComponent implements OnInit {
     numbersIdontLike(numberIDontLike: number[]): ValidatorFn {
         return (control: AbstractControl): { [key: string]: any } | null => {
             if (control.value == null)
-                return {};
+                {return {};}
             if (control.value == null || numberIDontLike.indexOf(parseFloat(control.value)) != -1)
-                return {
+                {return {
                     notNiceNumber: { value: control.value }
-                };
+                };}
             return null;
         };
     }

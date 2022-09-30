@@ -876,19 +876,19 @@ export class BaseComponent {
 		}
 
 		if (loadData.ObjectType == currentData.Object && loadData.ObjectId == currentData.ObjectId)
-			return true;
+			{return true;}
 
 		if (checkdisplayvalue) {
 			if (loadData.AssetUid == currentData.Uid && currentData.DisplayValue == loadData.DisplayValue)
-				return true;
+				{return true;}
 		}
 		else {
 			if (loadData.AssetUid == currentData.Uid)
-				return true;
+				{return true;}
 		}
 
 		if (loadData.AssetId == currentData.AssetId)
-			return true;
+			{return true;}
 
 		return false;
 	}
@@ -936,13 +936,13 @@ export class BaseComponent {
 		}
 
 		if (requestModel.objectType)
-			data.ObjectType = requestModel.objectType;
+			{data.ObjectType = requestModel.objectType;}
 
 		if (requestModel.assetId)
-			data.AssetId = requestModel.assetId;
+			{data.AssetId = requestModel.assetId;}
 
 		if (requestModel.assetTypeUid)
-			data.AssetTypeUid = requestModel.assetTypeUid;
+			{data.AssetTypeUid = requestModel.assetTypeUid;}
 
 		if (!this.preloadedTreeData || this.preloadedTreeData.length == 0) {
 			//This will have effect only on pages that need populate tree to create breadcrumbs (model, policy)
@@ -1076,7 +1076,7 @@ export class BaseComponent {
 
 			var areaIcon = area === $localize`Configuration` ? 'fa-sliders' : "fa-cog";
 			if (r.Object == 'Tag')
-				areaIcon = 'fa-tag';
+				{areaIcon = 'fa-tag';}
 			this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
 
 			this.setCommonSecondaryNavTabs({
@@ -1133,14 +1133,14 @@ export class BaseComponent {
 
 	private IsType(objectName: string): boolean {
 		if (objectName == 'Tag')
-			return true;
+			{return true;}
 
 		if (objectName == 'MetricAllocation' || objectName == 'Predicate') {
 			return true;
 		}
 
 		if (objectName.length <= 4)
-			return false;
+			{return false;}
 		if (objectName.substr(objectName.length - 4).toLowerCase() == "type") {
 			return true;
 		}
@@ -1157,7 +1157,7 @@ export class BaseComponent {
 		this.breadcrumbsService.clearBreadcrumbs();
 		this.breadcrumbsService.showBreadcrumb(new Breadcrumb(area));
 		if (adminHeading)
-			this.breadcrumbsService.showBreadcrumb(new Breadcrumb(adminHeading));
+			{this.breadcrumbsService.showBreadcrumb(new Breadcrumb(adminHeading));}
 
 		this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue, url));
 		this.setBrowserTitle(this.breadcrumbsService.getTitleService(), data.DisplayValue);
@@ -1423,14 +1423,14 @@ export class BaseComponent {
 
 	public getAsRawPrecentage(val: number, decimals: number): string {
 		if (val == undefined || val == null)
-			return 'undefined';
+			{return 'undefined';}
 
 		if (val == 0)
-			return '0%';
+			{return '0%';}
 		if (!val)
-			return;
+			{return;}
 		if (val >= 1)
-			return '100%';
+			{return '100%';}
 
 		let s = (val * 100).toFixed(decimals).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
 
@@ -1439,14 +1439,14 @@ export class BaseComponent {
 
 	public getAsPrecentage(val: number): string {
 		if (val == undefined || val == null)
-			return 'undefined';
+			{return 'undefined';}
 
 		if (val == 0)
-			return '0%';
+			{return '0%';}
 		if (!val)
-			return;
+			{return;}
 		if (val >= 1)
-			return '100%';
+			{return '100%';}
 
 		if (val > 1) {
 			var integerPart = Math.floor(val);

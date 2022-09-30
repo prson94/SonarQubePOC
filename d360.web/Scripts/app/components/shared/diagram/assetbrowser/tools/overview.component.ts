@@ -30,7 +30,7 @@ export class AssetBrowserOverviewComponent implements OnInit {
         this.overviewElementId = 'overlay' + Math.floor(Math.random() * 1000);
         this.createOverview();
 
-        if (this.diagram && this.overview) this.overview.observed = this.diagram;
+        if (this.diagram && this.overview) {this.overview.observed = this.diagram;}
     }
 
     private createOverviewContainer(): void {
@@ -51,7 +51,7 @@ export class AssetBrowserOverviewComponent implements OnInit {
             this.overview = new go.Overview(this.overviewElementId);
             const highlightBox = this.overview.box.elt(0) as (go.Shape);
 
-            if (highlightBox) highlightBox.stroke = '#202020'; //color of the square in the overview panel
+            if (highlightBox) {highlightBox.stroke = '#202020';} //color of the square in the overview panel
         }
     }
 

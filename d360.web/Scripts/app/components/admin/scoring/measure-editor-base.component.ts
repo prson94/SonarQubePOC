@@ -161,7 +161,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         this.removeConditionGroupFormControls(pos);
 
         if (this.conditionGroups.length == 0)
-            this.addNewGroup();
+            {this.addNewGroup();}
         this.orderConditionGroups();
     }
 
@@ -389,7 +389,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     setFormPropertiesBasedOnMode() {
         if (!this.model)
-            this.model = new MetricAssetViewModel();
+            {this.model = new MetricAssetViewModel();}
         this.child = "";
         this.model.ParentUid = null;
         this.currentEffectiveDate = null;
@@ -578,11 +578,11 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null)
-                return {};
+                {return {};}
             if ((control.value as string).trim() == '' && (control.value as string) != '')
-                return {
+                {return {
                     empty: { value: control.value }
-                };
+                };}
             return null;
         };
     }
@@ -601,15 +601,15 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null || control.value == undefined)
-                return {};
+                {return {};}
             if (this.isThresholdGreaterThanDecimalLimit(control.value))
-                return {
+                {return {
                     decimalLimit: { value: control.value }
-                };
+                };}
             if ((control.value as number) < 1 || (control.value as number) > 100)
-                return {
+                {return {
                     outOfRange: { value: control.value }
-                };
+                };}
             return null;
         };
     }
@@ -618,15 +618,15 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null || control.value == undefined || control.value == "")
-                return {};
+                {return {};}
             if (this.isThresholdGreaterThanDecimalLimit(control.value))
-                return {
+                {return {
                     decimalLimit: { value: control.value }
-                };
+                };}
             if ((control.value as number) < 1 || (control.value as number) > 100)
-                return {
+                {return {
                     outOfRange: { value: control.value }
-                };
+                };}
             return null;
         };
     }
@@ -635,11 +635,11 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null || control.value == undefined)
-                return {};
+                {return {};}
             if ((control.value as number) < 1 || (control.value as number) > 100)
-                return {
+                {return {
                     outOfRange: { value: control.value }
-                };
+                };}
             return null;
         };
     }
@@ -648,11 +648,11 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null || control.value == undefined || control.value == "")
-                return {};
+                {return {};}
             if ((control.value as number) < 1 || (control.value as number) > 100)
-                return {
+                {return {
                     outOfRange: { value: control.value }
-                };
+                };}
             return null;
         };
     }

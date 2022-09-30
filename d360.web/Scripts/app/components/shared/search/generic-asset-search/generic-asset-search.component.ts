@@ -90,17 +90,17 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         if (event.key === "ArrowDown" || event.key === "Down") {
             this.currentSearchNavigationIndex++;
             if (this.currentSearchNavigationIndex > this.pageSize - 1)
-                this.currentSearchNavigationIndex = this.pageSize - 1;
+                {this.currentSearchNavigationIndex = this.pageSize - 1;}
         }
         if (event.key === "ArrowUp" || event.key === "Up") {
             this.currentSearchNavigationIndex--;
             if (this.currentSearchNavigationIndex < 0)
-                this.currentSearchNavigationIndex = 0;
+                {this.currentSearchNavigationIndex = 0;}
         }
 
         if (event.key === "Enter") {
             if (this.isSearchWindowOpened)
-                this.onSelect(this.currentSearchNavigationIndex, null);
+                {this.onSelect(this.currentSearchNavigationIndex, null);}
         }
     }
 
@@ -143,7 +143,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     private resolveAssetSegments() {
         var itemsToResolve = [];
         this.selected.forEach((item) => {
-            if (!item.Segments) itemsToResolve.push({ uid: item.Uid, typeUid: item.AssetTypeUid });
+            if (!item.Segments) {itemsToResolve.push({ uid: item.Uid, typeUid: item.AssetTypeUid });}
         });
         let groups = itemsToResolve.reduce((r, a) => {
             r[a.typeUid] = [...r[a.typeUid] || [], a];
@@ -180,7 +180,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
             var itemsToResolve = [];
             this.searchresults.forEach((item) => {
-                if (!item.Segments) itemsToResolve.push({ uid: item.Uid, typeUid: item.AssetTypeUid });
+                if (!item.Segments) {itemsToResolve.push({ uid: item.Uid, typeUid: item.AssetTypeUid });}
             });
             let groups = itemsToResolve.reduce((r, a) => {
                 r[a.typeUid] = [...r[a.typeUid] || [], a];
@@ -217,7 +217,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         this.isSearchPhraseValid = true;
         this.currentSearchNavigationIndex = 0;
         if (this.clearResultsAfterSelection)
-            this.searchresults = [];
+            {this.searchresults = [];}
 
         this.ref.markForCheck();
     }
@@ -229,7 +229,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
 
     private isValidPhrase(phrase: string): boolean {
-        if (!phrase || phrase.length == 0) return false;
+        if (!phrase || phrase.length == 0) {return false;}
         return phrase.split('').some((character) => '0123456789abcdefghijklmnopqrstuvwxyzABCEDEFGHIJKLMNOPQRSTUVWXYZ'.includes(character));
     }
 
@@ -238,11 +238,11 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         if ($event) {
             if ($event.key === 'Escape' || $event.key === 'Esc') {
                 if (this.isSearchWindowOpened)
-                    this.closeSearch();
+                    {this.closeSearch();}
             }
 
             if (this.searchOption.SearchPhrase == $event.target.value)
-                return;
+                {return;}
 
             this.searchOption.SearchPhrase = $event.target.value;
         }
@@ -250,7 +250,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         this.isSearchPhraseValid = this.isValidPhrase(this.searchOption.SearchPhrase);
 
         if (!this.isSearchPhraseValid)
-            return;
+            {return;}
 
         this.searchOption.PageSize = this.pageSize;
         this.searchOption.PageNum = this.pageNum;
@@ -318,10 +318,10 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         selectedItem.Segments = item.Segments;
 
         if (!this.multiSelectStyle || this.multiSelectStyle == CommonComponentSelectStyle.Button)
-            this.closeSearch();
+            {this.closeSearch();}
 
         if (this.multiSelect)
-            this.selected.push(selectedItem);
+            {this.selected.push(selectedItem);}
         else {
             while (this.selected.length) {
                 this.selected.pop();

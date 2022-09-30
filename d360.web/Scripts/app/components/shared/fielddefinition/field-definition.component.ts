@@ -146,7 +146,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		if (this.fieldDisplayModel && this.fieldDisplayModel.length > 0) {
 			this.fieldDisplayModel.forEach((d) => {
 				if (!d.SortOrder)
-					d.SortOrder = 0;
+					{d.SortOrder = 0;}
 				if (d.IsPartOfKey) {
 					foundKeyField = true;
 				}
@@ -269,7 +269,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				if (items.length == 1) {
 					let index = this.fieldDisplayModel.indexOf(items[0]);
 					if (index > 0 && index < this.fieldDisplayModel.length)
-						[this.fieldDisplayModel[index], this.fieldDisplayModel[index - 1]] = [this.fieldDisplayModel[index - 1], this.fieldDisplayModel[index]];
+						{[this.fieldDisplayModel[index], this.fieldDisplayModel[index - 1]] = [this.fieldDisplayModel[index - 1], this.fieldDisplayModel[index]];}
 				}
 			}
 		);
@@ -283,7 +283,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				if (items.length == 1) {
 					let index = this.fieldDisplayModel.indexOf(items[0]);
 					if (index >= 0 && index < this.fieldDisplayModel.length - 1)
-						[this.fieldDisplayModel[index], this.fieldDisplayModel[index + 1]] = [this.fieldDisplayModel[index + 1], this.fieldDisplayModel[index]];
+						{[this.fieldDisplayModel[index], this.fieldDisplayModel[index + 1]] = [this.fieldDisplayModel[index + 1], this.fieldDisplayModel[index]];}
 				}
 			}
 		);
@@ -297,7 +297,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	showDeleteButtonByFieldType(fdm: FieldDisplayModel) {
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			if (fdm.Name == 'Name' || fdm.Name == 'StepNo' || fdm.Name == 'GovernanceRole')
-				return false;
+				{return false;}
 		}
 		return true;
 	}

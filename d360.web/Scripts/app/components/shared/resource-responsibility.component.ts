@@ -54,7 +54,7 @@ export class ResourceResponsibilityComponent implements OnChanges {
     constructor(private resourcesService: ResourcesService) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['resourceId'] && this.resourceId > 0) this.resource = null;
+        if (changes['resourceId'] && this.resourceId > 0) {this.resource = null;}
         this.load();
     }
 
@@ -70,7 +70,7 @@ export class ResourceResponsibilityComponent implements OnChanges {
         this.isLoading = true;
 
         if (this.resource != null)
-            this.resourceId = this.resource.ResourceID;
+            {this.resourceId = this.resource.ResourceID;}
 
         this.isMe = (this.resourceId == CurrentResourceID);
 
@@ -78,19 +78,19 @@ export class ResourceResponsibilityComponent implements OnChanges {
             .subscribe((r) => {
                 this.items = r;
                 if (this.items && this.items.length > 0)
-                    this.select(this.items[0]);
+                    {this.select(this.items[0]);}
 
                 if (this.resource == null)
-                    this.resourcesService.getResource(this.resourceId)
+                    {this.resourcesService.getResource(this.resourceId)
                         .subscribe((res) => {
                             this.itemsres = res.items;
                             if (this.itemsres.length > 0) {
                                 this.resource = this.itemsres[0];
                             }
                             this.isLoading = false;
-                        });
+                        });}
                 else
-                    this.isLoading = false;
+                    {this.isLoading = false;}
             });
     }
 

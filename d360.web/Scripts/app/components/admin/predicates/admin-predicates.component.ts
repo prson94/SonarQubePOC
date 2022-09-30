@@ -158,7 +158,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     closeEditor() {
         this.showEditor = false;
         if (this.selected == null && this.predicates.length > 0)
-            this.selected = this.predicates[0];
+            {this.selected = this.predicates[0];}
     }
 
     savePredicate(event) {
@@ -186,7 +186,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     }
 
     private showPredicateEditor() {
-        if (this.selected.IsSystem) return; //dont allow edit of system predicates
+        if (this.selected.IsSystem) {return;} //dont allow edit of system predicates
         this.showEditor = true;
     }
 }

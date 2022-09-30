@@ -69,7 +69,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['selected'] && this.selected.TypeID > 0) {
-            if (this.artifacts) this.artifacts = undefined;
+            if (this.artifacts) {this.artifacts = undefined;}
 			this.useGraph = this.selected.Count > 1000;
             this.getFieldsDefinition();
         }

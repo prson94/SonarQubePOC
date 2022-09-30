@@ -205,7 +205,7 @@ export class BrowserService extends BaseObservableService {
     public getInitialLineage(ancestry: FilterAncestryMode, uid: string, numberOfHops: number, includeNonLeaf: boolean, descendancy: FilterDescendancyMode): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/lineage/initial`;
         if (numberOfHops <= 0 || numberOfHops > 5)
-            numberOfHops = 3;
+            {numberOfHops = 3;}
 
         return this.http.post(url, {
             ancestry: +ancestry,
@@ -225,7 +225,7 @@ export class BrowserService extends BaseObservableService {
     public getInitialImpact(uid: string, numberOfHops: number): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/impact/initial`;
         if (numberOfHops <= 0 || numberOfHops > 5)
-            numberOfHops = 3;
+            {numberOfHops = 3;}
 
         return this.http.post(url, {
             uid: uid,
@@ -342,15 +342,15 @@ export class BrowserService extends BaseObservableService {
         const url = `api/v2/browser/filters`;
 
         if (model.uid != undefined)
-            return this.http.put(url + '/' + model.uid, model).pipe(
+            {return this.http.put(url + '/' + model.uid, model).pipe(
                 map((response: StoredAssetBrowserFilterModel) => response),
                 catchError((err) => this.handleError(err))
-            );
+            );}
         else
-            return this.http.post(url, model).pipe(
+            {return this.http.post(url, model).pipe(
                 map((response: StoredAssetBrowserFilterModel) => response),
                 catchError((err) => this.handleError(err))
-            );
+            );}
     }
 
     public deleteUserFilter(model: StoredAssetBrowserFilterModel): Observable<boolean> {
@@ -377,7 +377,7 @@ export class BrowserService extends BaseObservableService {
 
         if (icon == null || icon.length == 0) {
             if (assetClass == null)
-                return null;
+                {return null;}
             id = this.iconService.getIconIdByClass(assetClass);
         }
 

@@ -62,7 +62,7 @@ export class WorkflowMonitorActionDetailsComponent implements OnInit, OnChanges 
 
     load() {
         if (this.id == null || this.id < 1)
-            return;
+            {return;}
 
         this.isLoading = true;
         this.ref.markForCheck();

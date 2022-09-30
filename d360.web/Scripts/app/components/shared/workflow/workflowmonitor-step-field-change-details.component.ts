@@ -72,7 +72,7 @@ export class WorkflowMonitorStepFieldChangeDetailsComponent extends BaseComponen
 
     getHtmlFieldValue(item: any) {
         if (typeof item.Value == 'undefined')
-            return '';
+            {return '';}
         return item.Value;
     }
 
@@ -94,7 +94,7 @@ export class WorkflowMonitorStepFieldChangeDetailsComponent extends BaseComponen
 
     getFieldName(item: WorkflowStepFieldChangeDetail): string {
         if (item.ObjectType != '' && item.ObjectType != 'Issue')
-            return $localize`Asset Field` + '::' + item.FieldName;
+            {return $localize`Asset Field` + '::' + item.FieldName;}
         return $localize`Action Field` + '::' + item.FieldName;
     }
 

@@ -64,7 +64,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
         this.connectorLabelForm.reset();
         this.selectedValue = null;
         if (this.label)
-            this.connectorLabelForm.setValue({ value: this.label.Value });
+            {this.connectorLabelForm.setValue({ value: this.label.Value });}
     }
 
     onSubmit() {
@@ -86,7 +86,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     OnBlurTrim() {
         let value: string = this.connectorLabelForm.controls['value'].value;
         if (value)
-            this.connectorLabelForm.controls['value'].setValue(value.trim());
+            {this.connectorLabelForm.controls['value'].setValue(value.trim());}
     }
     onAutocomplete(q: any) {
         this.autoCompleteSelected(null);

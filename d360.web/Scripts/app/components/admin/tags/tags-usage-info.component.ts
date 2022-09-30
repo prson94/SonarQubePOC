@@ -36,10 +36,10 @@ export class TagUsageInfoBox {
 
     showContent(isFromTooltip = false) {
         if (this.uid != this.loadedUid)
-            this.load();
+            {this.load();}
 
         if (isFromTooltip)
-            this.isMouseOnTooltip = true;
+            {this.isMouseOnTooltip = true;}
 
         this.isTooltipVisibe = true;
 
@@ -48,10 +48,10 @@ export class TagUsageInfoBox {
 
     hideContent(isFromTooltip = false) {
         if (isFromTooltip)
-            this.isMouseOnTooltip = false;
+            {this.isMouseOnTooltip = false;}
 
         if (!this.isMouseOnTooltip)
-            this.isTooltipVisibe = false;
+            {this.isTooltipVisibe = false;}
     }
 
     getTop() {

@@ -116,7 +116,7 @@ export class WorkflowService extends BaseObservableService {
         if (params) {
             qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
-                qString = '?' + qString;
+                {qString = '?' + qString;}
         }
 
         return this.http.get(`/api/v2/actions/types${qString}`)
@@ -181,7 +181,7 @@ export class WorkflowService extends BaseObservableService {
         let uri = `services/workflow/diagram/${id}/${uid}${version != null ? '?version=' + version : ''}`;
 
         if (filteredObject != null && filteredObjectId != null)
-            uri += `${version == null ? '?' : '&'}filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
+            {uri += `${version == null ? '?' : '&'}filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;}
 
         return this.http.get(uri)
             .pipe(
@@ -234,7 +234,7 @@ export class WorkflowService extends BaseObservableService {
         let url = `services/workflow/ReassignWorkflowObject/${itemId}/${workflowId}/${objectId}/${objectType}/${stepId}`;
 
         if (!isNaN(resourceId))
-            url += `?resourceId=${resourceId}`;
+            {url += `?resourceId=${resourceId}`;}
 
         return this.http
             .post(url, null)
@@ -328,7 +328,7 @@ export class WorkflowService extends BaseObservableService {
 
     getWorkflowObjectTypes(changeType: WorkflowChangeType): Observable<WorkflowObjectType[]> {
         if (changeType == null || <any>changeType == '')
-            return of([]);
+            {return of([]);}
 
         return this.http.get(`services/workflow/objecttypes?changeType=${changeType}`)
             .pipe(
@@ -340,7 +340,7 @@ export class WorkflowService extends BaseObservableService {
 
     getWorkflowFieldTypes(id: number, type: string, allowHtml: boolean = false, additionalFields: string = ""): Observable<FieldType[]> {
           if (id == null || type == null)
-            return of([]);
+            {return of([]);}
         return this.http.get(`services/workflow/fieldtypes/${type}/${id}?allowHtml=${allowHtml}&additionalFields=${additionalFields}`)
             .pipe(
                 map((response) => <FieldType[]>response),
@@ -400,7 +400,7 @@ export class WorkflowService extends BaseObservableService {
 
     getWorkflowTypeModel(id: number,uid:string): Observable<WorkflowDiagramModel> {
         if ((id == null || id < 1) && (uid==null  || uid == "00000000-0000-0000-0000-000000000000")) 
-            return of(null);
+            {return of(null);}
         return this.http.get(`services/workflow/type/${id}/${uid}`)
             .pipe(
             map((response) => <WorkflowDiagramModel>response),

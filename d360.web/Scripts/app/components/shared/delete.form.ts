@@ -59,12 +59,12 @@ export class DeleteForm implements OnChanges {
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.items && changes.items.previousValue != changes.items.currentValue) 
-            this.deletingInProgress = false;        
+            {this.deletingInProgress = false;}        
     }
 
     public delete(): void {
         if (this.isLoading)
-            return;
+            {return;}
 
         this.deletingInProgress = true;
 
@@ -133,7 +133,7 @@ export class DeleteForm implements OnChanges {
                 break;
             case 'delete':
                 if (this.model)
-                    console.warn('Model passed to generic delete will be ignored when method=\'DELETE\'.');
+                    {console.warn('Model passed to generic delete will be ignored when method=\'DELETE\'.');}
                 this.http.delete(this.uri).pipe(
                     map((data) => data))
                     .subscribe(

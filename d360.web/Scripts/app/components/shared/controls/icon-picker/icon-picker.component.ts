@@ -49,7 +49,7 @@ export class IconPickerComponent implements ControlValueAccessor {
         this.iconService.getIconProperties().subscribe((result) => {
             this.iconService.getIconImages().subscribe((images) => {
                 if (this.showGovIcons)
-                    result = [...result, ...images];
+                    {result = [...result, ...images];}
 
                 result.forEach((i) => {
                     let index = this.categories.findIndex((x) => x.label == i.categories[0]);

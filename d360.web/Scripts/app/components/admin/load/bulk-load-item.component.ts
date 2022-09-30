@@ -66,14 +66,14 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
 
     exportErrors(): void {
         if (this.id == null)
-            return;
+            {return;}
 
         this.loadService.getLoadErrorsXls(this.id);
     }
 
     exportOriginal(): void {
         if (this.id == null)
-            return;
+            {return;}
 
         this.loadService.getLoadOriginalXls(this.id);
     }
@@ -93,7 +93,7 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
 
     getData(): void {
         if (this.id == null)
-            return;
+            {return;}
     
         if (this.itemsSearchSub) {
             this.itemsSearchSub.unsubscribe();

@@ -135,7 +135,7 @@ export class SecondaryNavService {
     // Service message commands
     showItem(rightSidebarItem: SecondaryNavItem) {
         if (rightSidebarItem && rightSidebarItem.url)
-            this.crossNavURIS.push(rightSidebarItem.url);
+            {this.crossNavURIS.push(rightSidebarItem.url);}
         this.rightSidebarSource.next(rightSidebarItem);
     }
 
@@ -153,7 +153,7 @@ export class SecondaryNavService {
     }
     showHeader(val: boolean) {
         if (!val)
-            this.currentObjectSource.next(null);
+            {this.currentObjectSource.next(null);}
         this.hideHeaderSource.next(val);
     }
 

@@ -120,11 +120,11 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
         this.model.SelectionType = this.exportViewType.toString() != ExportViewType[ExportViewType.Pivot] ? "Header" : this.model.Column == -1 ? "Row" : "Column";
 
         if (this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot])
-            this.selections = [
+            {this.selections = [
                 { label: $localize`Column`, value: "Column" },
-                { label: $localize`Row`, value: "Row" }];
+                { label: $localize`Row`, value: "Row" }];}
         else
-            this.selections = [{ label: $localize`Header`, value: "Header" }];
+            {this.selections = [{ label: $localize`Header`, value: "Header" }];}
 
     }
     selectionChange() {

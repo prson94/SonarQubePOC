@@ -61,13 +61,13 @@ export class GalleryColorVariablesComponent implements OnInit, AfterViewInit {
 
     getClassName(base: string, tint: string): string {
         if (tint == 'Base')
-            return 'ig-'+base;
+            {return 'ig-'+base;}
         return 'ig-'+base + '-' + tint;
     }
 
     getHex(base: string, tint: string): string {
         if (this.hexcolors.has(this.getClassName(base, tint)))
-            return this.hexcolors.get(this.getClassName(base, tint));
+            {return this.hexcolors.get(this.getClassName(base, tint));}
         return '';
     }
 

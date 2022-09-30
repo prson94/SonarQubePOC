@@ -19,7 +19,7 @@ export class LinksKeyboardNavigationComponent {
 
             let allAItems = elem.getElementsByTagName("a");
             if (!allAItems.length)
-                return;
+                {return;}
 
             if (event.keyCode == enterKeyCode) {
                 const item = allAItems[this.currentButtonIndex];
@@ -34,7 +34,7 @@ export class LinksKeyboardNavigationComponent {
             }
 
             if (allAItems.length - 1 < this.currentButtonIndex || this.currentButtonIndex < 0)
-                this.currentButtonIndex = 0;
+                {this.currentButtonIndex = 0;}
 
             this.resetColor(allAItems);
             let arr = allAItems[this.currentButtonIndex].className.split(" ");

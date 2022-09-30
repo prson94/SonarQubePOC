@@ -98,20 +98,20 @@ export class LoadForm implements OnInit, OnChanges {
     private isRequiredColumn(col: string) {
         let type = this.selectedType.split('|')[0];
 
-        if (type == null) return true;
+        if (type == null) {return true;}
         type = type.toLowerCase();
         col = col.toLowerCase();
 
         if (this.selectedAction == 'P' && type == 'artifacttype') {
-            if (_.includes(['name', 'subject area'], col) || col.startsWith('parent ')) return true;
+            if (_.includes(['name', 'subject area'], col) || col.startsWith('parent ')) {return true;}
             return false;
         }
         if (this.selectedAction == 'P' && type == 'domain') {
-            if (_.includes(['name', 'code'], col)) return true;
+            if (_.includes(['name', 'code'], col)) {return true;}
             return false;
         }
         if (this.selectedAction == 'P' && type == 'domaintype') {
-            if (_.includes(['name', 'domain group'], col)) return true;
+            if (_.includes(['name', 'domain group'], col)) {return true;}
             return false;
         }
         return true;

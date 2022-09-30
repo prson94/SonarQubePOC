@@ -59,7 +59,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
                 this.workflowUid = this.workflowInstance;
             }
             else
-                this.workflowId = +this.workflowInstance;
+                {this.workflowId = +this.workflowInstance;}
 
             if (!this.workflowId) {
                 this.workflowService.getWorkflowId(this.workflowUid)
@@ -96,7 +96,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
 
                 this.details = res;
                 if (res && res.Workflow && res.Workflow.ID)
-                    this.workflowTypeId = res.Workflow.ID;
+                    {this.workflowTypeId = res.Workflow.ID;}
                 this.isLoading = false;
                 if (res.ActionAsset && res.ActionAsset.Object) {
                     this.buildSecondaryNavigationForObject(res.ActionAsset.ObjectID, res.ActionAsset.Object);
@@ -128,10 +128,10 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
     }
 
     private getStepName(itemStep: any): string {
-        if (!this.details || !this.details.Steps) return "";
+        if (!this.details || !this.details.Steps) {return "";}
         var step = this.details.Steps.filter((x) => x.ID == itemStep.StepID);
 
-        if (!step || step.length == 0) return "";
+        if (!step || step.length == 0) {return "";}
         return step[0].Name;
     }
 

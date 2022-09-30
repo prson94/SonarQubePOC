@@ -79,7 +79,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.breadcrumb)
-            this.treeItems = this.breadcrumb.treeItems;
+            {this.treeItems = this.breadcrumb.treeItems;}
     }
 
     ngOnInit() {
@@ -87,7 +87,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
 
     ngOnDestroy() {
-        if (this.searchSub)  this.searchSub.unsubscribe();
+        if (this.searchSub)  {this.searchSub.unsubscribe();}
     }
 
     private setMaxHeight() {
@@ -197,7 +197,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     setTreeNodeStyles(node) {
         console.log(node);
-        if (!node.data) return null;
+        if (!node.data) {return null;}
 
         let styles = {            
             'font-weight': node.data.hasRelations ? 'bold' : 'normal',            
@@ -207,7 +207,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     setLastBreadcrumbWidth() {
         if (!this.isLastItem || !this.maxLastCrumbWidth)
-            return;
+            {return;}
         //take 80 for the collapsed menu button
         return this.maxLastCrumbWidth - 80;
 
@@ -219,12 +219,12 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     navigateToLink(url: string, res?: any) {
         if (url && url.length > 0) 
-            this.router.navigateByUrl(url);
+            {this.router.navigateByUrl(url);}
     }
 
     hasLink(url: string) {
-        if (url && url.length > 0 && !this.isLastItem) return true;
-        else false;
+        if (url && url.length > 0 && !this.isLastItem) {return true;}
+        else {false;}
     }
 
     hasClass(element, className) {

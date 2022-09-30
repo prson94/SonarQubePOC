@@ -129,7 +129,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     }
 
     private setCurrentDefinition() {
-        if (!this.selectedPoint || !this.allocationData) return;
+        if (!this.selectedPoint || !this.allocationData) {return;}
 
         this.allocationData.forEach((alloc) => {
             if (alloc['metricDefinition']) {
@@ -254,8 +254,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 .subscribe((res) => {
                     this.scoresPoints = null;
                     this.scoresPoints = res.sort(function (a, b) {
-                        if (a.EffectiveDate > b.EffectiveDate) return -1;
-                        if (a.EffectiveDate < b.EffectiveDate) return 1;
+                        if (a.EffectiveDate > b.EffectiveDate) {return -1;}
+                        if (a.EffectiveDate < b.EffectiveDate) {return 1;}
                     });
 
                     if (this.scoresPoints && this.scoresPoints.length > 0) {
@@ -263,13 +263,13 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
                         for (var i = 0; i < this.scoresPoints.length - 1; i++) {
                             if (this.scoresPoints[i].Score > this.scoresPoints[i + 1].Score)
-                                this.scoresPoints[i].ScoreProgression = 1;
+                                {this.scoresPoints[i].ScoreProgression = 1;}
 
                             if (this.scoresPoints[i].Score < this.scoresPoints[i + 1].Score)
-                                this.scoresPoints[i].ScoreProgression = -1;
+                                {this.scoresPoints[i].ScoreProgression = -1;}
 
                             if (this.scoresPoints[i].Score == this.scoresPoints[i + 1].Score)
-                                this.scoresPoints[i].ScoreProgression = 0;
+                                {this.scoresPoints[i].ScoreProgression = 0;}
 
                         }
 
@@ -386,7 +386,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     if (this.selectedMeasureUid && this.pointBreakdown) {
                         this.pointBreakdown.forEach((pb) => {
                             if (pb.Uid == this.selectedMeasureUid)
-                                preselected = pb;
+                                {preselected = pb;}
 
                             if (pb.Measures) {
                                 pb.Measures.forEach((m) => {
@@ -484,12 +484,12 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private getMeasurePoint(effectiveDate: any): ScorePoint {
         var point = null;
         if (this.measurePoints)
-            point = this.measurePoints.filter((x) => x.EffectiveDate == effectiveDate)[0];
+            {point = this.measurePoints.filter((x) => x.EffectiveDate == effectiveDate)[0];}
 
         if (point == null || point == undefined) {
             return null;
         }
-        else return point;
+        else {return point;}
     }
 
     private isDQAndNoItems() {
@@ -526,9 +526,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     getAsPrecentage(val: number, isDecimal: boolean = true) {
         if (val == 0)
-            return '0%';
+            {return '0%';}
         if (!val)
-            return;
+            {return;}
 
         let s: string = "";
 
@@ -557,7 +557,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         this.panelHeight = window.innerHeight - 180;
         this.scorePointsMaxHeight = this.panelHeight - 100 - 18;
         if (this.scorePointsMaxHeight < 100)
-            this.scorePointsMaxHeight = 100;
+            {this.scorePointsMaxHeight = 100;}
 
         this.sidePanelHeight = this.panelHeight - 70;
         this.setDropdownHeader();
@@ -594,7 +594,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     expanded.forEach((ex) => {
                         this.pointBreakdown.forEach((pb) => {
                             if (pb.Uid == ex)
-                                pb._isCollapsed = true;
+                                {pb._isCollapsed = true;}
                         });
                     });
                 }
@@ -620,14 +620,14 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     getTooltipForScoreBadge(item: PointBreakdown) {
         if (item.IsGroup)
-            return $localize`Measure Score = sum of sub-measures ${this.getAsPrecentage(item.DisplayWeight)}`;
+            {return $localize`Measure Score = sum of sub-measures ${this.getAsPrecentage(item.DisplayWeight)}`;}
 
         return $localize`Measure Score = ${this.getAsPrecentage(item.DisplayWeight)}`;
     }
 
     getTooltipForWeightBadge(item: PointBreakdown) {
         if (item.IsGroup)
-            return $localize`Maximum possible score = adjusted measure weight = ${this.getAsPrecentage(item.DisplayMaxWeight)}`;
+            {return $localize`Maximum possible score = adjusted measure weight = ${this.getAsPrecentage(item.DisplayMaxWeight)}`;}
 
         return $localize`Maximum possible score for measure = measure weight = ${this.getAsPrecentage(item.DisplayMaxWeight)}`;
     }

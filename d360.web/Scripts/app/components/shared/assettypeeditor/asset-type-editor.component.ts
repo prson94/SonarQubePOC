@@ -198,21 +198,21 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     }
     private selectToken(e: any) {
         if (e == null)
-            return;
+            {return;}
 
         let value = e.value;
 
         if (e.value == null || e.value == '' || e.value == 'null')
-            return;
+            {return;}
 
         if (this.model.AssetType.DisplayFormat == null)
-            this.model.AssetType.DisplayFormat = '';
+            {this.model.AssetType.DisplayFormat = '';}
         this.model.AssetType.DisplayFormat += e.value;
     }
 
     get FirstColumnStyle(): string {
         if (this.showAssetArtifactSettings || this.showAssetDepthSettings || this.showAssetStyles)
-            return "col l8 m12 s12";
+            {return "col l8 m12 s12";}
         return "col s12";
     }
 

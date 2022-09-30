@@ -49,12 +49,12 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
     }
     ngOnInit() {
         if (!this.predefinedFilters || this.predefinedFilters.length < 1)
-            this.clearSidebar();        
+            {this.clearSidebar();}        
     }
 
     ngOnDestroy() {
         if (!this.predefinedFilters || this.predefinedFilters.length < 1)
-            this.clearSidebar();     
+            {this.clearSidebar();}     
     }    
 
     listChange($event) {

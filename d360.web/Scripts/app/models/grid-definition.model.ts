@@ -35,7 +35,7 @@ export class GridRelationshipFilterExpression {
             });
         }
         if (filters.length > 0)
-            return `(${filters.join(condition)})`;
+            {return `(${filters.join(condition)})`;}
 
         return '';
     }

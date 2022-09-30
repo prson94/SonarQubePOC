@@ -124,7 +124,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
             let gridData = JSON.parse(sessionStorage.getItem(this.gridStorageKey));
 
             if (gridData.filters && Object.keys(gridData.filters).filter((x) => x != "global").length > 0)
-                this.showSimpleFilter = false;
+                {this.showSimpleFilter = false;}
 
             this.cdRef.detectChanges();
         }
@@ -134,7 +134,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         var index: number = -1;
         for (var relationship of this.relationships) {
             index++;
-            if (relationship.Uid == uid) return index;
+            if (relationship.Uid == uid) {return index;}
         }
     }
 
@@ -178,7 +178,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     }
 
     displayTypeName(type: string) {
-        if (!type) return "";
+        if (!type) {return "";}
         return type.replace("Type", "");
     }
 

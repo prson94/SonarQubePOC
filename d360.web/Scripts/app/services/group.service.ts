@@ -54,7 +54,7 @@ export class GroupService extends BaseObservableService implements IGroupService
 		if (params) {
 			qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
 			if (qString)
-				qString = '&' + qString;
+				{qString = '&' + qString;}
 		}
 
 		return this.http.get(url + qString)

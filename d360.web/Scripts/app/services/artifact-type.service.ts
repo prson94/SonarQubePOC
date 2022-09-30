@@ -55,11 +55,11 @@ export class ArtifactTypeService extends BaseObservableService {
         for (var i = 0; i < tree.length; i++) {
             var n;
             if (tree[i].data.uid == uid)
-                return tree[i];
+                {return tree[i];}
             if (tree[i].children && tree[i].children.length > 0) {
                 n = this.findArtifactTypeByUid(tree[i].children, uid);
             }
-            if (n) return n;
+            if (n) {return n;}
         }
         return null;
     }
@@ -70,11 +70,11 @@ export class ArtifactTypeService extends BaseObservableService {
         for (var i = 0; i < tree.length; i++) {
             var n;
             if (tree[i].data.ID == id)
-                return tree[i];
+                {return tree[i];}
             if (tree[i].children && tree[i].children.length > 0) {
                 n = this.findArtifactTypeById(tree[i].children, id);
             }
-            if (n) return n;
+            if (n) {return n;}
         }
         return null;
     }

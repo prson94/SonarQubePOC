@@ -42,7 +42,7 @@ export class ResponsibilityService extends BaseObservableService implements IRes
                     FormHelper.mapSelectItems(model.responsibilityTypes);
 
                     if (model.responsibility.SecurityAsset)                        
-                        model.selectedResource = model.responsibility.SecurityAsset + '|' + model.responsibility.SecurityAssetID;                    
+                        {model.selectedResource = model.responsibility.SecurityAsset + '|' + model.responsibility.SecurityAssetID;}                    
 
                     if (model.responsibility.ResponsibilityTypeID) {
                         model.selectedResponsibilityType = model.responsibilityTypes.find((x) => x.Selected === true).Value;                       

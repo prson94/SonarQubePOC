@@ -129,7 +129,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
     ngOnDestroy(): void {
         this.showHideFollow(true);
-        if (this.searchSub) this.searchSub.unsubscribe();
+        if (this.searchSub) {this.searchSub.unsubscribe();}
     }
 
     private showHideFollow(show: boolean) {

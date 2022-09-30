@@ -304,10 +304,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         this.helper_UpdateDiagramType(this.diagramTypes.initial);
                     }
 
-                    if (this.diagram) this.diagram.div = null;
+                    if (this.diagram) {this.diagram.div = null;}
 
                     if (this.displayConfiguration.DiagramType != DiagramType.Process)
-                        this.helper_InitializeDiagram();
+                        {this.helper_InitializeDiagram();}
 
                 });
             }
@@ -316,7 +316,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     public ngAfterViewInit() {
         if (this.displayConfiguration.DiagramType == DiagramType.Process)
-            return;
+            {return;}
 
         this.helper_ResizeDiagram();
         this.cdRef.markForCheck();
@@ -324,13 +324,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     public ngAfterViewChecked() {
         if (this.displayConfiguration.DiagramType == DiagramType.Process)
-            return;
+            {return;}
 
         const panelHeaderElement: HTMLElement = this.myElement.nativeElement.querySelectorAll('.asset-browser-window-header')[0];
         const panelElements: HTMLElement[] = this.myElement.nativeElement.querySelectorAll('.asset-browser-window');
 
         (function () {
-            if (typeof NodeList.prototype.forEach === "function") return false;
+            if (typeof NodeList.prototype.forEach === "function") {return false;}
             panelElements.forEach = Array.prototype.forEach;
         })();
         const diagramSize = +this.diagramRef.nativeElement.style.height.replace('px', '');
@@ -364,9 +364,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     public ngOnDestroy() {
         if (this.diagram)
-            this.diagram.div = null;    // Garbage collection.
+            {this.diagram.div = null;}    // Garbage collection.
         if (this.cdRef)
-            this.cdRef.detach();
+            {this.cdRef.detach();}
     }
 
     public canEditProcessDiagram() {
@@ -409,7 +409,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private loadFilter() {
         const m: AssetBrowserFilterModel = this.loadState(this.displayConfigurationKey);
         if (m === null)
-            this.displayConfiguration = new AssetBrowserFilterModel();
+            {this.displayConfiguration = new AssetBrowserFilterModel();}
 		else {
 			console.log("loading filter");
             // Override the selected diagram type in the session, as you are going to a specific diagram via the path. 
@@ -428,7 +428,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
         if (this.diagramTypeSpecifiedInPath == DiagramType.Process)
-            return;
+            {return;}
 
         this.helper_ResizeDiagram();
     }
@@ -561,7 +561,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.helper_HighlightPath(null, lastHighlightedPart);
 
                     if (currentAnimation)
-                        currentAnimation.stop();
+                        {currentAnimation.stop();}
                 }
                 else {
                     relation.disabled = true;
@@ -615,7 +615,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             this.helper_HighlightPath(null, lastHighlightedPart);
 
                             if (currentAnimation)
-                                currentAnimation.stop();
+                                {currentAnimation.stop();}
                         });
                 }
             }
@@ -647,7 +647,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.model.setDataProperty(owner, 'showLoading', false);
 
                 if (currentAnimation)
-                    currentAnimation.stop();
+                    {currentAnimation.stop();}
 
                 this.helper_UpdateDiagramLayout();
                 this.helper_HighlightPath(null, lastHighlightedPart);
@@ -699,7 +699,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         this.helper_HighlightPath(null, lastHighlightedPart);
 
                         if (currentAnimation)
-                            currentAnimation.stop();
+                            {currentAnimation.stop();}
                     });
             }
         }
@@ -1085,16 +1085,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let unlockedKeys: string[] = [];
 
         if (this.diagram == null)
-            return;
+            {return;}
 
         this.diagram.links.each(function (l) {
             if (l.fromNode && l.fromNode.data) {
                 if (!unlockedKeys.some((x) => x == l.fromNode.data.key))
-                    unlockedKeys.push(l.fromNode.data.key);
+                    {unlockedKeys.push(l.fromNode.data.key);}
             }
             if (l.toNode && l.toNode.data) {
                 if (!unlockedKeys.some((x) => x == l.toNode.data.key))
-                    unlockedKeys.push(l.toNode.data.key);
+                    {unlockedKeys.push(l.toNode.data.key);}
             }
         });
 
@@ -1296,13 +1296,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_HighlightPath(e: go.InputEvent, obj: go.Part) {
         try {
             if (obj == null)
-                return;
+                {return;}
 
             if (obj.diagram == null)
-                return;
+                {return;}
 
             if (obj.diagram.nodes == null)
-                return;
+                {return;}
 
             if (e == null) {
                 this.helper_ShowDetail(obj.data['assetUid']);
@@ -1617,13 +1617,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     */
     private helper_ResizeDiagram() {
         if (this.displayConfiguration.DiagramType == 3)
-            return;
+            {return;}
 
         let height = window.innerHeight;
         if (this.isFullScreen)
-            this.diagramRef.nativeElement.style.height = (height - 55) + 'px';
+            {this.diagramRef.nativeElement.style.height = (height - 55) + 'px';}
         else
-            this.diagramRef.nativeElement.style.height = (height - 240) + 'px';
+            {this.diagramRef.nativeElement.style.height = (height - 240) + 'px';}
         setTimeout(() => {
             if (this.diagram) {
                 this.diagram.redraw();
@@ -1818,7 +1818,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
         this.panel_TabIndex = 0;
         if (!this.panel_InformationHasReadAccess)
-            return;
+            {return;}
 
         this.panel_Loading = true;
 
@@ -1870,7 +1870,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
      */
     private helper_SortParts(a: go.Part, b: go.Part): number {
         if (a == null || b == null || a.data == null || b.data == null)
-            return 0;
+            {return 0;}
 
         let al = a.data.text ? a.data.text.toLowerCase() : '';
         let bl = b.data.text ? b.data.text.toLowerCase() : '';
@@ -2379,7 +2379,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let p1 = 5;
             if (shape !== null) {
                 var param1 = shape.parameter1;
-                if (!isNaN(param1) && param1 >= 0) p1 = param1;
+                if (!isNaN(param1) && param1 >= 0) {p1 = param1;}
             }
             p1 = Math.min(p1, w / 2);
             p1 = Math.min(p1, h / 2);
@@ -2401,7 +2401,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let p1 = 5;
             if (shape !== null) {
                 var param1 = shape.parameter1;
-                if (!isNaN(param1) && param1 >= 0) p1 = param1;
+                if (!isNaN(param1) && param1 >= 0) {p1 = param1;}
             }
             p1 = Math.min(p1, w / 2);
             p1 = Math.min(p1, h / 2);
@@ -2434,7 +2434,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         let assetUidRedirect: string = '';
                         assetUidRedirect = obj.part.data.assetUid;
                         if (assetUidRedirect == this.assetUid)
-                            return;
+                            {return;}
 
                         if (obj.part.data.class && obj.part.data.class.toString() == 'DiagramAsset') {
 
@@ -2465,7 +2465,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         let assetUidRedirect: string = '';
                         assetUidRedirect = obj.part.data.assetUid;
                         if (assetUidRedirect == this.assetUid)
-                            return;
+                            {return;}
 
                         if (obj.part.data.class && obj.part.data.class.toString() == 'DiagramAsset') {
 
@@ -3445,7 +3445,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private getPartChildrenCount(obj: go.GraphObject) {
 
         if (!obj || !obj.part || !obj.part.data)
-            return 0;
+            {return 0;}
 
         var value = +obj.part.data.childCount;
 
@@ -3481,8 +3481,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     processDiagramSavedState($event) {
         if (this.displayConfiguration.DiagramType == DiagramType.Process)
-            this.saveStateChanged.emit($event);
-        else this.saveStateChanged.emit(null);
+            {this.saveStateChanged.emit($event);}
+        else {this.saveStateChanged.emit(null);}
     }
 
     openProcessDiagramInfo() {
@@ -3759,7 +3759,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             self.isRelationshipBadgeTooltipVisible = isHover;
             let hierarchyKey: string = goObj.part.data["hierarchyKey"];
             var refHtmlElement = self.relationshipBadgesTooltipRef.nativeElement as HTMLElement;
-            if (!refHtmlElement) return;
+            if (!refHtmlElement) {return;}
             if (isHover) {
                 self.relationshipBadgeHtml = self.getRelBadgeTooltip(data, hierarchyKey);
 
@@ -3878,12 +3878,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 },
                 new go.Binding("text", "", function (obj: go.Part) {
                     if (obj.data['showLoading'] == true)
-                        return FontAwesomeHelper.GetHtmlCode("fa-spinner");
+                        {return FontAwesomeHelper.GetHtmlCode("fa-spinner");}
 
                     if (obj.data['expanded'] == true)
-                        return FontAwesomeHelper.GetHtmlCode("fa-minus-square");
+                        {return FontAwesomeHelper.GetHtmlCode("fa-minus-square");}
                     else
-                        return FontAwesomeHelper.GetHtmlCode("fa-plus-square");
+                        {return FontAwesomeHelper.GetHtmlCode("fa-plus-square");}
 
                 }).ofObject()
             )
@@ -3943,9 +3943,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             },
                             new go.Binding("text", "", function (obj: go.Part) {
                                 if (obj.data['relExpanded' + propertyName] == true)
-                                    return FontAwesomeHelper.GetHtmlCode("fa-minus-square");
+                                    {return FontAwesomeHelper.GetHtmlCode("fa-minus-square");}
                                 else
-                                    return FontAwesomeHelper.GetHtmlCode("fa-plus-square");
+                                    {return FontAwesomeHelper.GetHtmlCode("fa-plus-square");}
 
                             }).ofObject()
                         )
@@ -4037,7 +4037,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private calculateBadgeTextWidth(width: number): number {
         var ret = width - 66;
         if (ret > 300)
-            ret = 300;
+            {ret = 300;}
         return ret;
     }
     private calculateBadgeTextWidthForGroupNode(width: number): number {
@@ -4098,7 +4098,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
 
             if (maxWidth > 260)
-                maxWidth = 260;
+                {maxWidth = 260;}
 
             if (object != part) {
                 var depth = object.findSubGraphLevel();

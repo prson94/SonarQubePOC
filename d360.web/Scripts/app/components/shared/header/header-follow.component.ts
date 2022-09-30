@@ -154,15 +154,15 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 
     updateTooltip() {
         if (this.isFollowing || this.isFollowingParent)
-            this.active = true;
+            {this.active = true;}
         if (!this.isFollowingParent && this.isFollowing)
-            this.tooltipString = $localize`Stop following`;
+            {this.tooltipString = $localize`Stop following`;}
         else if (!this.isFollowingParent && !this.isFollowing)
-            this.tooltipString = $localize`Follow this item`;
+            {this.tooltipString = $localize`Follow this item`;}
 		else if (this.isFollowingParent && this.assetTypeUId !== this.emptyguid)
-            this.tooltipString = $localize`Stop following`;
+            {this.tooltipString = $localize`Stop following`;}
 		else if (this.isFollowingParent && this.assetTypeUId === this.emptyguid)
-            this.tooltipString = $localize`Following parent item`;
+            {this.tooltipString = $localize`Following parent item`;}
         this.ref.markForCheck();
     }
 }

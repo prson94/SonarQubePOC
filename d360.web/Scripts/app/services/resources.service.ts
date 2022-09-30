@@ -128,7 +128,7 @@ export class ResourcesService extends BaseObservableService {
         if (params) {
             qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
-                qString = '?' + qString;
+                {qString = '?' + qString;}
         }
 
         return this.http.get('/api/v2/membership/users' + qString).pipe(
@@ -151,7 +151,7 @@ export class ResourcesService extends BaseObservableService {
         if (params) {
             qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
-                qString = '?' + qString;
+                {qString = '?' + qString;}
         }
 
         return this.http.get('/api/v2/membership/users' + qString,
@@ -190,7 +190,7 @@ export class ResourcesService extends BaseObservableService {
     getResponsibilitiesByResourceByType(type: string, id: number, targetType: string, targetId: number, responsibilityTypeId: number = null): Observable<ResponsibilityDetailForResource[]> {
         let uri = `api/${type}/${id}/ownership/${targetType}/${targetId}`;
         if (responsibilityTypeId != null && responsibilityTypeId > 0)
-            uri += `?responsibilityTypeId=${responsibilityTypeId}`;
+            {uri += `?responsibilityTypeId=${responsibilityTypeId}`;}
         return this.http.get(uri)
             .pipe(
                 map((response) => <ResponsibilityDetailForResource[]>response),

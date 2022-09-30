@@ -3,13 +3,13 @@ import { AssetTypeClass } from "./asset.model";
 
 export class SecondaryNavItem {
     constructor(title?: string, tag?: any, icons?: string[], url?: string, count?: number, priority?: number) {
-        if (title) this.title = title;
-        if (tag) this.tag = tag;
+        if (title) {this.title = title;}
+        if (tag) {this.tag = tag;}
         this.active = false;
         this.icons = icons ? icons : ["fa-share-alt"];
-        if (url != undefined) this.url = url;
-        if (count != undefined) this.count = count;
-        if (priority != undefined) this.orderPriority = priority;
+        if (url != undefined) {this.url = url;}
+        if (count != undefined) {this.count = count;}
+        if (priority != undefined) {this.orderPriority = priority;}
     }
     title: string;
     tag: any;

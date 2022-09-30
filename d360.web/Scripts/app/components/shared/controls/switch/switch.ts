@@ -79,7 +79,7 @@ export class Switch implements ControlValueAccessor, OnInit {
     }
 
     writeValue(obj: boolean): void {
-        if (this._el) this._el.nativeElement.focus();
+        if (this._el) {this._el.nativeElement.focus();}
 
         if (!this.optional && (obj === this.value)) {     // not optional and current value = previous   
             return;
@@ -109,7 +109,7 @@ export class Switch implements ControlValueAccessor, OnInit {
         this.disabled = isDisabled;
     }
     public focus(evt) {
-        if (this._el) this._el.nativeElement.focus();
+        if (this._el) {this._el.nativeElement.focus();}
     }
 }
 

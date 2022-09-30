@@ -405,12 +405,12 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.routeValidationMessage = "";
 
         if (this.companySettings.DefaultRoute === '' || this.companySettings.DefaultRoute === '/')
-            return;
+            {return;}
 
         let r = new RegExp('^(?:[a-z]+:)?//', 'i');
 
         if (r.test(this.companySettings.DefaultRoute))
-            this.routeValidationMessage = $localize`The value entered must be a relative url (ex: /artifact/1)`;
+            {this.routeValidationMessage = $localize`The value entered must be a relative url (ex: /artifact/1)`;}
     }
 
     rebuild(model: CompanyRebuildJobStatusApiModel) {

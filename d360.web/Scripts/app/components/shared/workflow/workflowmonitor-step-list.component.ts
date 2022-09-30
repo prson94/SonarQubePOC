@@ -90,6 +90,6 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
 
     private export() {
         if (this.itemId != null && this.itemId > 0)
-            this.workflowService.exportItemSteps(this.itemId);
+            {this.workflowService.exportItemSteps(this.itemId);}
     }
 }

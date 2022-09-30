@@ -187,10 +187,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         if (this.selection) {
             if (this.objectType == 'IntersectType' || this.objectType == 'Predicate' || this.objectType == 'IssueType')
-                id = this.selection.Uid;
+                {id = this.selection.Uid;}
 
             if (this.selection.uid)
-                id = this.selection.uid;
+                {id = this.selection.uid;}
 
             //For ones recieved from GET V2 Asset API
             if (this.isV2API && this.selection.AssetUid) {
@@ -538,7 +538,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     }
                     else if (field != null && field.FieldType == 'DateTime' && this.isV2API) {
                         if (this.form.value[p] != 'Invalid Date')
-                            this.form.value[p] = new Date(this.form.value[p]).toISOString();
+                            {this.form.value[p] = new Date(this.form.value[p]).toISOString();}
                     }
                     else {
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
@@ -559,9 +559,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     values[p] = this.form.value[p].join();
                 } else {
                     if (this.form.value[p] === undefined && this.fields.filter((x) => x.FieldName == p && x.FieldType == 'Boolean').length > 0)
-                        values[p] = null;
+                        {values[p] = null;}
                     else
-                        values[p] = this.form.value[p];
+                        {values[p] = this.form.value[p];}
                 }
             }
         }
@@ -585,7 +585,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         //Replace empty string value with null to properly delete field from database and avoid validation parsing errors
         Object.keys(values).forEach((key) => {
             if (values[key] === '')
-                values[key] = null;
+                {values[key] = null;}
         });
 
         //when using model binding onSubmit() is called on every change, but just emit form values, do not call save api (used on Process Designer)

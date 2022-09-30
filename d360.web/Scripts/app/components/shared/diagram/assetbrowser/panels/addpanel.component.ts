@@ -84,8 +84,8 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
             let sourceItems = this.browserAssets.filter((x) => x["isSubjectInTransformation"] == true);
 
             if (this.browserAssets.length > 10)
-                this.sourcePrePop = sourceItems.slice(0, 10);
-            else this.sourcePrePop = sourceItems;
+                {this.sourcePrePop = sourceItems.slice(0, 10);}
+            else {this.sourcePrePop = sourceItems;}
         }
         this.ref.markForCheck();
     }
@@ -151,11 +151,11 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
             this.browserAssets.forEach((asset) => {
                 this.sourceAssets.forEach((sa) => {
                     if (sa.Uid == asset.Uid)
-                        doesSourceContains = true;
+                        {doesSourceContains = true;}
                 });
                 this.targetAssets.forEach((sa) => {
                     if (sa.Uid == asset.Uid)
-                        doesTargetContains = true;
+                        {doesTargetContains = true;}
                 });
             });
 
@@ -231,7 +231,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
                 sourceFilters.UseAsTransformation = false;
                 sourceFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Subject;
                 if (asset.Predicate)
-                    sourceFilters.AsSideOfRelationship.PredicateUid = asset.Predicate.Uid.toString();
+                    {sourceFilters.AsSideOfRelationship.PredicateUid = asset.Predicate.Uid.toString();}
                 sourceFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
                 this.sourceFilters.push(sourceFilters);
             });
@@ -255,7 +255,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
                 transformationFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
                 transformationFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
                 if (asset.Predicate)
-                    transformationFilters.AsSideOfRelationship.PredicateUid = asset.Predicate.Uid.toString();
+                    {transformationFilters.AsSideOfRelationship.PredicateUid = asset.Predicate.Uid.toString();}
                 transformationFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object;
                 this.transformationFilters.push(transformationFilters);
             });
@@ -277,12 +277,12 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         if (this.sourceAssets.length > 0) {
             this.sourceBtnText = $localize`Add another source asset`;
         }
-        else this.sourceBtnText = $localize`Add source asset`;
+        else {this.sourceBtnText = $localize`Add source asset`;}
 
         if (this.targetAssets.length > 0) {
             this.targetBtnText = $localize`Add another target asset`;
         }
-        else this.targetBtnText = $localize`Add target asset`;
+        else {this.targetBtnText = $localize`Add target asset`;}
 
         this.checkSelectionValues();
         this.buildTransformationFilters();
@@ -313,10 +313,10 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
     get IsValid(): boolean {
 
         if (!this.areRelationshipsValid)
-            return false;
+            {return false;}
 
         if (this.isSaving || this.isSavingAndContinue)
-            return false;
+            {return false;}
 
         if (this.editorType == RelationshipEditorType.Lineage && this.sourceAssets.length > 0 && this.transformationAsset.length > 0 && this.targetAssets.length > 0) {
             return true;
@@ -582,8 +582,8 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
                     rel1.SubjectAssetTypeUid = a.AssetTypeUid;
                     rel1.ObjectAssetTypeUid = transformation.AssetTypeUid;
                     if (a.Predicate)
-                        rel1.PredicateUid = a.Predicate.Uid;
-                    else rel1.PredicateUid = '';
+                        {rel1.PredicateUid = a.Predicate.Uid;}
+                    else {rel1.PredicateUid = '';}
                     rel1.Intersects.push({ SubjectAssetUid: a.Uid, ObjectAssetUid: transformation.Uid, type: 'S->T' });
                     relationships.push(rel1);
                 });
@@ -594,8 +594,8 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
                 rel2.Intersects = [];
                 rel2.ObjectAssetTypeUid = a.AssetTypeUid;
                 if (a.Predicate)
-                    rel2.PredicateUid = a.Predicate.Uid;
-                else rel2.PredicateUid = '';
+                    {rel2.PredicateUid = a.Predicate.Uid;}
+                else {rel2.PredicateUid = '';}
                 rel2.SubjectAssetTypeUid = transformation.AssetTypeUid;
                 rel2.Intersects.push({ ObjectAssetUid: a.Uid, SubjectAssetUid: transformation.Uid, type: 'T->S' });
                 relationships.push(rel2);
@@ -609,10 +609,10 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         let result: CommonComponentAssetResult;
         result = this.sourceAssets.find((x) => x.Uid == assetUid);
         if (result === undefined)
-            result = this.transformationAsset.find((x) => x.Uid == assetUid);
+            {result = this.transformationAsset.find((x) => x.Uid == assetUid);}
 
         if (result === undefined)
-            result = this.targetAssets.find((x) => x.Uid == assetUid);
+            {result = this.targetAssets.find((x) => x.Uid == assetUid);}
 
         return result;
     }

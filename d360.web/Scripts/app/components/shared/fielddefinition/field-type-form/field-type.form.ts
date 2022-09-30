@@ -233,9 +233,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.lookups = responseGetLookups;
         this.lookups.Lookups = this.lookups.Lookups.map((x) => {
             if (x.value.length && x.value.length == 36)
-                return { value: x.value.toLowerCase(), label: x.label };
+                {return { value: x.value.toLowerCase(), label: x.label };}
             else
-                return { value: x.value, label: x.label };
+                {return { value: x.value, label: x.label };}
         });
         this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
         this.lookups.Field_JsonDataTypes.unshift({ label: this.chooseLabel, value: null });
@@ -393,7 +393,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (!isFromLoad)
-            this.model.FieldType.Type = new FieldType(value);
+            {this.model.FieldType.Type = new FieldType(value);}
 
         switch (value.toLowerCase()) {
             case 'lookup':
@@ -471,7 +471,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case 'tag':
                 if (!isFromLoad)
-                    this.showIsEditable = false;
+                    {this.showIsEditable = false;}
                 this.showDescription = false;
                 this.enableAllowMultipleValues = false;
                 this.hasDisplayInColumn = false;
@@ -564,7 +564,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             .pipe(map((res) => {
                 this.isListableRelationship = res;
                 if (!this.isListableRelationship)
-                    this.model.FieldType.Type[this.currentType].IsListable = this.isListableRelationship;
+                    {this.model.FieldType.Type[this.currentType].IsListable = this.isListableRelationship;}
             }));
     }
 
@@ -674,7 +674,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     (d) => {
                         if (d.fieldtypeOptions.length > 0)
                             //only include predicates with possible field options
-                            this.listFilterPredicates.push({ value: d.value, label: d.label });
+                            {this.listFilterPredicates.push({ value: d.value, label: d.label });}
                     }
                 );
 
@@ -734,7 +734,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 if (this.model.FieldType.Type[this.currentType].DefaultValue) {
                     var item = this.lookupDefaultValueOptions.filter((x) => {
                         if (!x.value)
-                            return false;
+                            {return false;}
                         return x.value.toString().toLowerCase() == this.model.FieldType.Type[this.currentType].DefaultValue.toString().toLowerCase();
                     })[0];
 					if (item) {
@@ -804,7 +804,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (this.currentType == 'Link') {
             {
                 if (!this.defaultLinkName && !this.defaultLinkAdress)
-                    this.model.FieldType.Type[this.currentType].DefaultValue = null;
+                    {this.model.FieldType.Type[this.currentType].DefaultValue = null;}
                 else {
                     this.model.FieldType.Type[this.currentType].DefaultValue.Text = this.defaultLinkName;
                     this.model.FieldType.Type[this.currentType].DefaultValue.Url = this.defaultLinkAdress;
@@ -823,13 +823,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         //fix the object names so the API can serialise them
         if (this.currentType == 'FieldFromRelationship')
-            this.model.FieldType.Type.ComputedRelationshipField = this.model.FieldType.Type.FieldFromRelationship;
+            {this.model.FieldType.Type.ComputedRelationshipField = this.model.FieldType.Type.FieldFromRelationship;}
         if (this.currentType == "OwnershipLookup")
-            this.model.FieldType.Type.ComputedOwnershipLookup = this.model.FieldType.Type.OwnershipLookup;
+            {this.model.FieldType.Type.ComputedOwnershipLookup = this.model.FieldType.Type.OwnershipLookup;}
         if (this.currentType == "RefListRelationship")
-            this.model.FieldType.Type.ComputedRelationshipReferenceList = this.model.FieldType.Type.RefListRelationship;
+            {this.model.FieldType.Type.ComputedRelationshipReferenceList = this.model.FieldType.Type.RefListRelationship;}
         if (this.currentType == "JSON")
-            this.model.FieldType.Type.Json = this.model.FieldType.Type.JSON;
+            {this.model.FieldType.Type.Json = this.model.FieldType.Type.JSON;}
         if (this.currentType == "ComplexRelationLookup") {
             //need to convert the Fields and Relationships to the API expected format
             this.ConvertDisplayFieldsToAPIDefinition();
@@ -841,7 +841,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             if (!this.isUid(this.model.FieldType.Type.Lookup.List.Uid)) {
                 this.model.FieldType.Type.Lookup.List.Uid = null;
                 if (this.model.FieldType.Type.Lookup.List.Class == 'TaxonomyType')
-                    this.model.FieldType.Type.Lookup.List.Class = 'Model';
+                    {this.model.FieldType.Type.Lookup.List.Class = 'Model';}
             }
             this.model.FieldType.Type.Lookup.List.AllowMultipleValues = this.model.FieldType.Type.Lookup.AllowMultipleValues;
         }
@@ -895,7 +895,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             if (!this.model.FieldType.Type[this.currentType].JsonAttribute.FieldName
                 || !this.model.FieldType.Type[this.currentType].JsonAttribute.Path ||
                 !this.model.FieldType.Type[this.currentType].JsonAttribute.DataType)
-                valid = false;
+                {valid = false;}
         }
 
         if (this.currentType === "OwnershipLookup") {
@@ -941,11 +941,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
     private GetCurrentUid() {
         if (this.assetTypeUid != null)
-            return this.assetTypeUid;
+            {return this.assetTypeUid;}
         else if (this.actionTypeUid != null)
-            return this.actionTypeUid;
+            {return this.actionTypeUid;}
         else if (this.relationshipTypeUid != null)
-            return this.relationshipTypeUid;
+            {return this.relationshipTypeUid;}
     }
     private changeRel(index: number): Observable<any> {
         let item = this.model.RelationItems[index];
@@ -1100,7 +1100,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             return x.Name.toLowerCase().trim() == this.model.FieldType.Name.toLowerCase().trim();
                         }).length > 0;
                     } else
-                        return false;
+                        {return false;}
                 } else {
                     return false;
                 }
@@ -1233,7 +1233,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'MaximumLength') {
                 this.setValidation('number_minmax', $localize`Please enter a minimum value which is lower than the maximum value.`, (() => {
                     if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumValue) && FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumValue))
-                        return (this.model.FieldType.Type[this.currentType].Validation.MinimumValue > this.model.FieldType.Type[this.currentType].Validation.MaximumValue);
+                        {return (this.model.FieldType.Type[this.currentType].Validation.MinimumValue > this.model.FieldType.Type[this.currentType].Validation.MaximumValue);}
                     return false;
                 })());
             }
@@ -1333,7 +1333,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private updateApiName(event) {
         if (this.actionName == $localize`Edit`)
-            return;
+            {return;}
         let nameValue: string = event.target.value.replace(/[^a-zA-Z0-9_]/g, '');
         this.model.FieldType.Name = nameValue.substring(0, 128);
         this.validate('NameTaken');
@@ -1408,7 +1408,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private isSettingDisabled(val: string) {
 
         if (this.objectType == 'TaskType') {
-            if (this.name == 'Name') return true;
+            if (this.name == 'Name') {return true;}
             if ((this.name == 'StepNo' || this.name == 'GovernanceRole') && (val != 'IsEditable' && val != 'IsRequired' && val != 'SearchAddToResult')) {
                 return true;
             }
@@ -1418,7 +1418,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             staticFields.push('StepNo');
 
             if (!staticFields.some((x) => x == this.name)) {
-                if (val == 'IsListable' || val == 'IsPartOfKey' || val == 'IsPrimaryFilter') return true;
+                if (val == 'IsListable' || val == 'IsPartOfKey' || val == 'IsPrimaryFilter') {return true;}
             }
         }
 
@@ -1466,7 +1466,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     //need this to keep the UI behavior of grouping the fields with their relationships
     ConvertDisplayFieldsToAPIDefinition() {
         if (!this.model.RelationItems || this.model.RelationItems.length < 1)
-            return;
+            {return;}
         var definitionArray: Relation[] = [];
         var fieldsArray: DefinitionField[] = [];
         this.model.RelationItems.forEach((x, i) => {
@@ -1499,15 +1499,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     checkCurrentTypeName(name: string): string {
         if (this.currentType == 'ComputedRelationshipField')
-            return "FieldFromRelationship";
+            {return "FieldFromRelationship";}
         if (this.currentType == "ComputedOwnershipLookup")
-            return "OwnershipLookup";
+            {return "OwnershipLookup";}
         if (this.currentType == "ComputedRelationshipReferenceList")
-            return "RefListRelationship";
+            {return "RefListRelationship";}
         if (this.currentType == "ComputedRelationshipLookup")
-            return "ComplexRelationLookup";
+            {return "ComplexRelationLookup";}
         if (this.currentType == "Json")
-            return "JSON";
+            {return "JSON";}
         return name;
     }
 

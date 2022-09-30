@@ -105,7 +105,7 @@ export class ProcessDiagramTemplates {
                 new go.Binding("text", "icon").makeTwoWay(),
                 new go.Binding("visible", "icon", function (icon) {
                     if (!icon)
-                        return false;
+                        {return false;}
                     return true;
                 }),
                 new go.Binding("stroke", "", function (data) {
@@ -130,7 +130,7 @@ export class ProcessDiagramTemplates {
                 }),
                 new go.Binding("margin", "icon", function (icon) {
                     if (!icon)
-                        return new go.Margin(12, 0, 0, 8);
+                        {return new go.Margin(12, 0, 0, 8);}
                     return new go.Margin(12, 0, 0, 34);
                 }),
                 new go.Binding("stroke", "", function (data) {
@@ -140,7 +140,7 @@ export class ProcessDiagramTemplates {
                     return "white";
                 }),
                 new go.Binding("maxSize", "relCount", function (v) {
-                    if (v > 0) return new go.Size(136, NaN);
+                    if (v > 0) {return new go.Size(136, NaN);}
                     return new go.Size(200, NaN);
                 })
             ),
@@ -197,7 +197,7 @@ export class ProcessDiagramTemplates {
                     return new go.Size(defaultWidth, 22);
                 }),
                 new go.Binding("visible", "relCount", function (v) {
-                    if (v > 0) return true;
+                    if (v > 0) {return true;}
                     return false;
                 })
             ),
@@ -209,7 +209,7 @@ export class ProcessDiagramTemplates {
                 },
                 new go.Binding("text", "relCount").makeTwoWay(),
                 new go.Binding("visible", "relCount", function (v) {
-                    if (v > 0) return true;
+                    if (v > 0) {return true;}
                     return false;
                 })
             )
@@ -589,7 +589,7 @@ export class ProcessDiagramTemplates {
             var dir = link.data.fromPort + link.data.toPort;
 
             if (directLinks.indexOf(dir) != -1)
-                return true;
+                {return true;}
 
             return false;
         }
@@ -708,7 +708,7 @@ export class ProcessDiagramTemplates {
                         if (node.data.label) {
                             var label = node.data.label as string;
                             if (label.length > 20)
-                                return label.substr(0, 20) + '...';
+                                {return label.substr(0, 20) + '...';}
 
                             return label;
                         }
@@ -982,7 +982,7 @@ export class ProcessDiagramTemplates {
         toolTipDIV.style.top = (partPos.y + diaPos.y) + "px";
         document.getElementById('toolTipParagraph').innerHTML = obj['data'].PopupDescription;
         if (obj['data'].PopupDescription)
-            toolTipDIV.style.display = "block";
+            {toolTipDIV.style.display = "block";}
     }
 
     private static hideToolTip() {

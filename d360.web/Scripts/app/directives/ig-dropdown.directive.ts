@@ -72,7 +72,7 @@ export class DropdownDirective implements AfterContentInit {
                     var input = this.dropdownRef.overlay.getElementsByTagName("input")[0];
 
                     if (input)
-                        input.className = "ig-input";
+                        {input.className = "ig-input";}
                 }
 
             }

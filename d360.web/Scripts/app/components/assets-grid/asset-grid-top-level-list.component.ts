@@ -101,7 +101,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 
 				for (let i = 0; i < data.length; i++) {
 					if (data[i].description != null)
-						data[i].description = this.htmlDecode(data[i].description);
+						{data[i].description = this.htmlDecode(data[i].description);}
 					else {
 						data[i].description = '';
 					}

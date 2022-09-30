@@ -48,22 +48,22 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
 
     getSubIndent() {
         if (this.level > 0 && this.item.Items == null)
-            return ((this.level + 1) * 20) + 'px';
+            {return ((this.level + 1) * 20) + 'px';}
         if (this.level > 0 && this.item.Items != null)
-            return '0px';
+            {return '0px';}
         else
-            return null;
+            {return null;}
     }
 
     getMainIndent() {
         if (this.item.Items && this.level == 0)
-            return '0px';
+            {return '0px';}
         else if (this.level > 0 && this.item.Items == null)
-            return ((this.level + 1) * 20) + 'px';
+            {return ((this.level + 1) * 20) + 'px';}
         else if (this.level > 0 && this.item.Items != null)
-            return ((this.level) * 20) + 'px';
+            {return ((this.level) * 20) + 'px';}
         else
-            return '20px';
+            {return '20px';}
 
     }
 
@@ -82,7 +82,7 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
 
     itemClick() {
         if (this.item.Url == null)
-            return;
+            {return;}
 
         if (this.item.IsLink) {
             window.location.href = this.item.Url;

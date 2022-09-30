@@ -190,7 +190,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         }
 
         if (this.sortOrder != SortOrder.None)
-            params._direction = this.sortOrder == SortOrder.Ascending ? "asc" : "desc";
+            {params._direction = this.sortOrder == SortOrder.Ascending ? "asc" : "desc";}
         else {
             delete params['_direction'];
         }

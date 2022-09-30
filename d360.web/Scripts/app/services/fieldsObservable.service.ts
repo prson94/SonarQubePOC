@@ -39,11 +39,11 @@ export class FieldsObservableService extends BaseObservableService implements IF
     getFieldsV2(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string, fieldName: string = ""): Observable<FieldTypeAPIModelField[]> {
         let url = "";
         if (assetTypeUid)
-            url = `AssetTypeUid=${assetTypeUid}`;
+            {url = `AssetTypeUid=${assetTypeUid}`;}
         if (actionTypeUid)
-            url = `ActionTypeUid=${actionTypeUid}`;
+            {url = `ActionTypeUid=${actionTypeUid}`;}
         if (relationshipTypeUid)
-            url = `RelationshipTypeUid=${relationshipTypeUid}`;
+            {url = `RelationshipTypeUid=${relationshipTypeUid}`;}
 
         if (fieldName) {
             url += `&Name=${fieldName}`;
@@ -85,11 +85,11 @@ export class FieldsObservableService extends BaseObservableService implements IF
     getFieldTypeEditor(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeAPIModelField> {
         let url = "";
         if (assetTypeUid)
-            url = `AssetTypeUid=${assetTypeUid}`;
+            {url = `AssetTypeUid=${assetTypeUid}`;}
         if (actionTypeUid)
-            url = `ActionTypeUid=${actionTypeUid}`;
+            {url = `ActionTypeUid=${actionTypeUid}`;}
         if (relationshipTypeUid)
-            url = `RelationshipTypeUid=${relationshipTypeUid}`;
+            {url = `RelationshipTypeUid=${relationshipTypeUid}`;}
 
         return this
             .http
@@ -103,11 +103,11 @@ export class FieldsObservableService extends BaseObservableService implements IF
     getRelationObjectFields(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string, intersectTypeUid: string): Observable<SelectItem[]> {
         let url = "";
         if (assetTypeUid)
-            url = `intersectTypeUid=${intersectTypeUid}&AssetTypeUid=${assetTypeUid}`;
+            {url = `intersectTypeUid=${intersectTypeUid}&AssetTypeUid=${assetTypeUid}`;}
         if (actionTypeUid)
-            url = `intersectTypeUid=${intersectTypeUid}&ActionTypeUid=${actionTypeUid}`;
+            {url = `intersectTypeUid=${intersectTypeUid}&ActionTypeUid=${actionTypeUid}`;}
         if (relationshipTypeUid)
-            url = `intersectTypeUid=${intersectTypeUid}&RelationshipTypeUid=${relationshipTypeUid}`;
+            {url = `intersectTypeUid=${intersectTypeUid}&RelationshipTypeUid=${relationshipTypeUid}`;}
 
         return this
             .http
@@ -133,11 +133,11 @@ export class FieldsObservableService extends BaseObservableService implements IF
     getReferenceTypeHierarchyFields(uid: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<SelectItem[]> {
         let url = "";
         if (assetTypeUid)
-            url = `uid=${uid}&AssetTypeUid=${assetTypeUid}`;
+            {url = `uid=${uid}&AssetTypeUid=${assetTypeUid}`;}
         if (actionTypeUid)
-            url = `uid=${uid}&ActionTypeUid=${actionTypeUid}`;
+            {url = `uid=${uid}&ActionTypeUid=${actionTypeUid}`;}
         if (relationshipTypeUid)
-            url = `uid=${uid}&RelationshipTypeUid=${relationshipTypeUid}`;
+            {url = `uid=${uid}&RelationshipTypeUid=${relationshipTypeUid}`;}
 
         return this
             .http
@@ -151,11 +151,11 @@ export class FieldsObservableService extends BaseObservableService implements IF
     getListFilterOptions(uid: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<any> {
         let url = "";
         if (assetTypeUid)
-            url = `uid=${uid}&AssetTypeUid=${assetTypeUid}`;
+            {url = `uid=${uid}&AssetTypeUid=${assetTypeUid}`;}
         if (actionTypeUid)
-            url = `uid=${uid}&ActionTypeUid=${actionTypeUid}`;
+            {url = `uid=${uid}&ActionTypeUid=${actionTypeUid}`;}
         if (relationshipTypeUid)
-            url = `uid=${uid}&RelationshipTypeUid=${relationshipTypeUid}`;
+            {url = `uid=${uid}&RelationshipTypeUid=${relationshipTypeUid}`;}
 
         return this
             .http
@@ -192,11 +192,11 @@ export class FieldsObservableService extends BaseObservableService implements IF
     getLookups(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<Lookups> {
         let url = "";
         if (assetTypeUid)
-            url = `AssetTypeUid=${assetTypeUid}`;
+            {url = `AssetTypeUid=${assetTypeUid}`;}
         if (actionTypeUid)
-            url = `ActionTypeUid=${actionTypeUid}`;
+            {url = `ActionTypeUid=${actionTypeUid}`;}
         if (relationshipTypeUid)
-            url = `RelationshipTypeUid=${relationshipTypeUid}`;
+            {url = `RelationshipTypeUid=${relationshipTypeUid}`;}
 
         return this
             .http
@@ -236,11 +236,11 @@ export class FieldsObservableService extends BaseObservableService implements IF
     getFormData(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeEditorModel> {
         let url = "";
         if (assetTypeUid)
-            url = `AssetTypeUid=${assetTypeUid}`;
+            {url = `AssetTypeUid=${assetTypeUid}`;}
         if (actionTypeUid)
-            url = `ActionTypeUid=${actionTypeUid}`;
+            {url = `ActionTypeUid=${actionTypeUid}`;}
         if (relationshipTypeUid)
-            url = `RelationshipTypeUid=${relationshipTypeUid}`;
+            {url = `RelationshipTypeUid=${relationshipTypeUid}`;}
         return this
             .http
             .get<FieldTypeEditorModel>(`api/v2/fields/GetFieldTypeFormData?name=${name}&${url}`)
@@ -452,7 +452,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             switchMap((e) => {
                 let uri = `form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${e.fieldTypeID}&objectType=${objectType}&ObjectID=${id}&query=${e.event.query}`;
                 if (e.value != null)
-                    uri += `&value=${e.value}`;
+                    {uri += `&value=${e.value}`;}
                 return this.http.get(uri).pipe(map((res) => <any[]>res["items"]));
             }));
     }
@@ -460,11 +460,11 @@ export class FieldsObservableService extends BaseObservableService implements IF
     getTypeaheadJsonPropertyOptionsForJsonField(fieldName: string, phrase: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<string[]> {
         let url = "";
         if (assetTypeUid)
-            url = `assetTypeUid=${assetTypeUid}`;
+            {url = `assetTypeUid=${assetTypeUid}`;}
         if (actionTypeUid)
-            url = `actionTypeUid=${actionTypeUid}`;
+            {url = `actionTypeUid=${actionTypeUid}`;}
         if (relationshipTypeUid)
-            url = `relationshipTypeUid=${relationshipTypeUid}`;
+            {url = `relationshipTypeUid=${relationshipTypeUid}`;}
         return this.http.get(`form/FieldType_TypeaheadJsonPropertyOptionsForJsonField?fieldName=${fieldName}&phrase=${encodeURIComponent(phrase)}&${url}`)
             .pipe(
                 map((response) => <string[]>response),
@@ -495,7 +495,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
         if (params) {
             qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
-                qString = '?' + qString;
+                {qString = '?' + qString;}
         }
 
         let url = `api/v2/fields/${assetTypeUid}/lookupvalues/${fieldName}` + qString;
@@ -514,7 +514,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
         if (params) {
             qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
-                qString = '?' + qString;
+                {qString = '?' + qString;}
         }
 
         let url = `api/v2/fields/${assetUid}/complexLookupvalues/${fieldName}/filter/${filterName}` + qString;

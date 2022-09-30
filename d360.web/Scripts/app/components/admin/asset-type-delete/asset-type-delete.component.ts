@@ -84,9 +84,9 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
 
         if (this.callback) {
             if (this.artifactTypeUid)
-                this.callback(this.artifactTypeUid);
+                {this.callback(this.artifactTypeUid);}
             else
-                this.callback(this.artifactTypeId);
+                {this.callback(this.artifactTypeId);}
 
         }
 

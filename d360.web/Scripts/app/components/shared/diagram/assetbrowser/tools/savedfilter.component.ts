@@ -114,7 +114,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         });
 
         if (!this.hasSelectedUserFilter())
-            return;
+            {return;}
 
         let model: AssetBrowserFilterModel = this.filterModel;
 
@@ -237,7 +237,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
 
     private update() {
         if (!this.hasSelectedUserFilter())
-            return;
+            {return;}
 
         this.createUserFilter = JSON.parse(JSON.stringify(this.selectedFilter));
         this.createUserFilter.assetTypes = this.options.AssetTypeOptions

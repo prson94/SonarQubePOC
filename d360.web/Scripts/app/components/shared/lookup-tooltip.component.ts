@@ -45,7 +45,7 @@ export class LookupTooltipComponent implements OnDestroy  {
         private ref: ChangeDetectorRef) {
         this.toolTipSub = this.tooltipSingletonService.tooltipMessage$.subscribe(
             (info) => {                                
-                if (info.objectId == this.objectId && info.objectType == this.objectType) return;
+                if (info.objectId == this.objectId && info.objectType == this.objectType) {return;}
                 this.hide();
             });
     }
@@ -113,7 +113,7 @@ export class LookupTooltipComponent implements OnDestroy  {
     }
 
     show(item, tip) {
-        if (this.showHandle > 0) return; //pending show ignore new request
+        if (this.showHandle > 0) {return;} //pending show ignore new request
         // check for any pending hides and cancel them
         if (this.hideHandle > 0) {
             window.clearTimeout(this.hideHandle);
@@ -129,7 +129,7 @@ export class LookupTooltipComponent implements OnDestroy  {
     }
 
     hide() {
-        if (this.hideHandle > 0) return; //pending hide ignore new request
+        if (this.hideHandle > 0) {return;} //pending hide ignore new request
         //queue up a request to hide the window.
         // check for any pending hides and cancel them
         if (this.showHandle > 0) {

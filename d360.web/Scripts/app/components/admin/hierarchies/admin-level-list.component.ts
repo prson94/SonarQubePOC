@@ -34,7 +34,7 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.objectId > 0) this.getLevels();
+        if (this.objectId > 0) {this.getLevels();}
     }
 
     getLevels() {
