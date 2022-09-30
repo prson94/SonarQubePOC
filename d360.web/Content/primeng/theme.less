@@ -846,31 +846,31 @@ th.p-state-default {
 
 /* Corner radius */
 .p-corner-all, .p-corner-top, .p-corner-left, .p-corner-tl {
-  -moz-border-radius-topleft: 0px;
-  -webkit-border-top-left-radius: 0px;
-  -khtml-border-top-left-radius: 0px;
-  border-top-left-radius: 0px;
+  -moz-border-radius-topleft: 0;
+  -webkit-border-top-left-radius: 0;
+  -khtml-border-top-left-radius: 0;
+  border-top-left-radius: 0;
 }
 
 .p-corner-all, .p-corner-top, .p-corner-right, .p-corner-tr {
-  -moz-border-radius-topright: 0px;
-  -webkit-border-top-right-radius: 0px;
-  -khtml-border-top-right-radius: 0px;
-  border-top-right-radius: 0px;
+  -moz-border-radius-topright: 0;
+  -webkit-border-top-right-radius: 0;
+  -khtml-border-top-right-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .p-corner-all, .p-corner-bottom, .p-corner-left, .p-corner-bl {
-  -moz-border-radius-bottomleft: 0px;
-  -webkit-border-bottom-left-radius: 0px;
-  -khtml-border-bottom-left-radius: 0px;
-  border-bottom-left-radius: 0px;
+  -moz-border-radius-bottomleft: 0;
+  -webkit-border-bottom-left-radius: 0;
+  -khtml-border-bottom-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 .p-corner-all, .p-corner-bottom, .p-corner-right, .p-corner-br {
-  -moz-border-radius-bottomright: 0px;
-  -webkit-border-bottom-right-radius: 0px;
-  -khtml-border-bottom-right-radius: 0px;
-  border-bottom-right-radius: 0px;
+  -moz-border-radius-bottomright: 0;
+  -webkit-border-bottom-right-radius: 0;
+  -khtml-border-bottom-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 /* Overlays */
@@ -1014,11 +1014,11 @@ th.p-state-default {
 
 .ui-accordion .ui-accordion-header.p-state-active {
   background: @ig-white;
-  border-left: 0px none;
-  border-right: 0px none;
-  -webkit-border-radius: 0px;
-  -moz-border-radius: 0px;
-  border-radius: 0px;
+  border-left: 0 none;
+  border-right: 0 none;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
   border-bottom: 2px solid @ig-grey-t2;
 }
 
@@ -1043,7 +1043,7 @@ th.p-state-default {
 
 /* Tabview */
 .p-tabview {
-  border: 0px none;
+  border: 0 none;
   background: @ig-white;
   padding: 0;
 }
@@ -1260,7 +1260,7 @@ th.p-state-default {
 }
 
 .p-datepicker {
-  padding: 0px !important;
+  padding: 0 !important;
 }
 
 .p-datepicker .p-datepicker-header {
@@ -1492,13 +1492,13 @@ td.p-datepicker-unselectable {
 .p-datepicker-row-break {
   clear: both;
   width: 100%;
-  font-size: 0em;
+  font-size: 0;
 }
 
 #p-datepicker-div {
-  -moz-box-shadow: 0px 2px 5px rgba(0,0,0,0.8);
-  -webkit-box-shadow: 0px 2px 5px rgba(0,0,0,0.8);
-  box-shadow: 0px 2px 5px rgba(0,0,0,0.8);
+  -moz-box-shadow: 0 2px 5px rgba(0,0,0,0.8);
+  -webkit-box-shadow: 0 2px 5px rgba(0,0,0,0.8);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.8);
 }
 
 .p-progressbar .p-progressbar-value {
@@ -1678,14 +1678,14 @@ p-datatable .p-datatable .p-datatable-thead > tr > th {
 
 
 .p-panel.p-component .p-panel-titlebar.p-corner-all {
-  -moz-border-radius-bottom-left: 0px;
-  -webkit-border-bottom-left-radius: 0px;
-  -khtml-border-bottom-left-radius: 0px;
-  border-bottom-left-radius: 0px;
-  -moz-border-radius-bottom-right: 0px;
-  -webkit-border-bottom-right-radius: 0px;
-  -khtml-border-bottom-right-radius: 0px;
-  border-bottom-right-radius: 0px;
+  -moz-border-radius-bottom-left: 0;
+  -webkit-border-bottom-left-radius: 0;
+  -khtml-border-bottom-left-radius: 0;
+  border-bottom-left-radius: 0;
+  -moz-border-radius-bottom-right: 0;
+  -webkit-border-bottom-right-radius: 0;
+  -khtml-border-bottom-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .p-panel.p-component .p-panel-titlebar {
@@ -1720,7 +1720,7 @@ p-datatable .p-datatable .p-datatable-thead > tr > th {
 .p-treetable th.p-state-default {
   background-color: @ig-grey-t2;
   color: @ig-white;
-  border-radius: 0px;
+  border-radius: 0;
   border: none;
   font-weight: bold;
 }
@@ -1848,7 +1848,7 @@ p-datatable .p-datatable .p-datatable-thead > tr > th {
 
 .p-treetable-unfrozen-view {
   position: absolute;
-  top: 0px;
+  top: 0;
 }
 
 /* Resizable */
@@ -1879,7 +1879,7 @@ p-datatable .p-datatable .p-datatable-thead > tr > th {
   margin: 0;
   width: .5em;
   height: 100%;
-  padding: 0px;
+  padding: 0;
   cursor: col-resize;
   border: 1px solid transparent;
 }
@@ -2257,12 +2257,12 @@ p-togglebutton.ng-dirty.ng-invalid .p-button {
 
 p-editor P {
   display: block;
-  margin: 0px;
+  margin: 0;
 }
 
 p-editor ul {
   list-style-type: disc;
-  margin: 0px;
+  margin: 0;
   padding: 5px 5%;
 }
 
@@ -2271,7 +2271,7 @@ p-editor ul li {
 }
 
 p-editor ol {
-  margin: 0px;
+  margin: 0;
 }
 
 .p-datatable tr.p-highlight {
@@ -2539,7 +2539,6 @@ p-table .p-column-filter {
   }
 }
 
- 
 .p-button, button.p-button.p-component, .p-button.p-component {
   border-radius: 4px;
 }
@@ -2654,7 +2653,7 @@ p-calendar .p-datepicker {
 }
 
 .p-overlaypanel {
-  margin-top: 0px;
+  margin-top: 0;
 }
 
 .asset-browser-window-tabs .p-tabview-panels {
@@ -2746,9 +2745,9 @@ p-radiobutton .p-radiobutton-label.p-label-disabled {
   line-height: 16px;
   display: inline-flex;
   margin-right: 30px;
-  margin-left: 0px;
-  margin-bottom: 0px;
-  margin-top: 0px;
+  margin-left: 0;
+  margin-bottom: 0;
+  margin-top: 0;
 }
 
 .modal-overlay .modal-dialog .modal-content {
@@ -2788,7 +2787,6 @@ p-radiobutton .p-radiobutton-label.p-label-disabled {
   background-color: @ig-grey-t5;
 }
 
- 
 .p-tabview .p-tabview-nav > li.p-highlight {
   border-bottom: 4px solid @ig-black;
   cursor: default;
