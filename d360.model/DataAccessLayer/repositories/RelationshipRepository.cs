@@ -726,8 +726,8 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "relationshiptypeuid"))
 				{
 					Guid relationshipTypeUid;
-					var assetTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "relationshiptypeuid").Value;
-					if (Guid.TryParse(assetTypeUidString, out relationshipTypeUid))
+					var relationshipTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "relationshiptypeuid").Value;
+					if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
 					{
 						dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
 						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (I.Uid = @relationshiptypeuid)";
