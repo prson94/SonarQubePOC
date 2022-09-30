@@ -1515,8 +1515,8 @@ namespace d360.web.Controllers.Services
 
 		private List<FieldType> getFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
 		{
-			var assetTypeId = Company.AssetTypes.Where(a => a.Object == type && a.ObjectID == id).FirstOrDefault().ID;
-			var fields = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeId).ToList();
+			var assetTypeId = Company.AssetTypes.Where(a => a.Object == type && a.ObjectID == id).FirstOrDefault()?.ID;
+			var fields =  Company.FieldTypes.Where(f => (type == "IssueType") ? f.IssueTypeID == id : f.AssetTypeID == assetTypeId).ToList();
 			List<string> excludedTypes = DataType.Text.GetNonWorkflowConditionFields();
 
 			if (!allowHtml)
