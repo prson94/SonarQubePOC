@@ -1015,7 +1015,7 @@ namespace d360.model.DataAccessLayer
 							fieldInfo = Company.Query<FieldInfo>(@"
 							select coalesce(F.ID, 0) as FieldTypeID, 0 as Class, F.Type as FieldType
 							from   IntersectType IT 
-								   left join FieldType F on F.Object = 'IntersectType' and F.ObjectID = IT.Id and F.Name = @fieldName 
+								   left join FieldType F on F.IntersecttypeID = IT.Id and F.Name = @fieldName 
 							where  IT.uid = @intersectTypeUid",
 							new { fieldName, intersectTypeUid }).SingleOrDefault();
 						}
