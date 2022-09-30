@@ -1193,23 +1193,23 @@ from	IntersectType I
 
 		public List<IntersectTypeOption> GetIntersectTypeOptions(Guid? subjectUid = null, Guid? objectUid = null, Guid? predicateUid = null, List<AssetTypeClass> limitToClasses = null)
 		{
-			string classLimitSql = "";
+			List<string> whereStatements = new List<string>();
 
 			if (limitToClasses != null && limitToClasses.Count > 0)
 			{
-				classLimitSql = " T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
+				whereStatements.Add("T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")");
 			}
 
 			Predicate predicate = Predicates.FirstOrDefault(x => x.UID == predicateUid);
-			string whereStatement = "";
 
 			if (predicate != null && predicate.Type == PredicateType.DiagramReference)
 			{
-				whereStatement = $@" and exists(select top 1 it.id from intersecttype it
+				whereStatements.Add($@"exists(select top 1 it.id from intersecttype it
 				 inner join Predicate p on it.PredicateID = p.ID and p.Type = {(int)PredicateType.Diagram}
-				 where it.SubjectAssetTypeID = T.ID
-				)";
+				 where it.SubjectAssetTypeID = T.ID)");
 			}
+
+			string whereStatement = whereStatements.Count == 0 ? "" : "where " + string.Join(" and ", whereStatements);
 
 			var sql = $@"
 						SELECT		I.ID,
@@ -1234,7 +1234,6 @@ from	IntersectType I
 											end + coalesce(P.[Path], T.Name) as Name
 									from	AssetType T
 											cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
-									where	{classLimitSql}
 									{whereStatement}
 									) I";
 
