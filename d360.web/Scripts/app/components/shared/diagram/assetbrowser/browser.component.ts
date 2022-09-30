@@ -1272,25 +1272,25 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         allRelations.forEach((l) => {
             // Loop through the links to find ones where this node is subject, then traverse each one and do the same thing, recursively.
       
-                if (l.from == key) {
-					let oNode = this.diagram.findNodeForKey(l.to);
-					visitedRelationships.push(l.rel);
-                    if (oNode) {
-						oNode.isHighlighted = true;
-						nodesToHiglightParams.push({ node: l.to })
-                    }
-                }
+            if (l.from == key) {
+				let oNode = this.diagram.findNodeForKey(l.to);
+				visitedRelationships.push(l.rel);
+				if (oNode) {
+					oNode.isHighlighted = true;
+					nodesToHiglightParams.push({ node: l.to })
+				}
+			}
 
 
             // Loop through the links to find ones where this node is object, then traverse each one and do the same thing, recursively.
-                if (l.to == key) {
-					visitedRelationships.push(l.rel);
-                    let sNode = this.diagram.findNodeForKey(l.from);
-                    if (sNode) {
-						sNode.isHighlighted = true;
-						nodesToHiglightParams.push({ node: l.from })
-                    }
-                }
+            if (l.to == key) {
+				visitedRelationships.push(l.rel);
+                let sNode = this.diagram.findNodeForKey(l.from);
+				if (sNode) {
+					sNode.isHighlighted = true;
+					nodesToHiglightParams.push({ node: l.from })
+				}
+            }
 		});
 
 		allRelations = allRelations.filter((r) => visitedRelationships.indexOf(r.rel) === -1);
