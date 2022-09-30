@@ -85,6 +85,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
     showEditor: boolean = false;
     isAddVisible: boolean = false;
+    isReferenceType: boolean = false;
     showDelete: boolean = false;
     deleteInProgress: boolean = false;
     isExportInProgress: boolean = false;
@@ -214,7 +215,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         for (let p in changes) {
             if (p === 'assetUid' && this.assetUid) {
                 this.advFilterIdentifier = "Relationships_" + this.assetUid;
-                this.initialLoad();
+                window.setTimeout(() => {
+                    this.initialLoad();
+                }, 200);
             }
         }
 
@@ -236,22 +239,24 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             this.loadTypesSub.unsubscribe();
         }
 
+        this.areTypesLoaded = false;
+
         this.assetService.getUIDetailsForAssetUID(this.assetUid)
             .subscribe((ad) => {
-				this.assetDetail = ad;
-				if (!this.assetTypeUid) {
-					this.assetTypeUid = this.assetDetail["AssetTypeUid"];
-				}
+                this.assetDetail = ad;
+                if (ad.Object === 'ReferenceItemType') {
+                    this.assetTypeUid = this.assetUid;
+                    this.isReferenceType = true;
+                }
+                else if (!this.assetTypeUid) {
+                    this.assetTypeUid = this.assetDetail["AssetTypeUid"];
+                }
                 var permissionObs: Observable<Permissions> = this.permissionService.getAssetPermissions(this.assetUid);
 
                 if (ad.Object === 'Resource' || ad.Object === 'ReferenceItemType') {
                     var p = new Permissions();
                     p.AddRelationships = p.EditRelationships = p.DeleteRelationships = p.ReadRelationships = true;
                     permissionObs = of(p);
-                }
-
-                if (ad.Object === 'ReferenceItemType') {
-                    this.assetTypeUid = '0000000a-0000-0000-0000-000000000009';
                 }
 
                 this.loadTypesSub = forkJoin(
