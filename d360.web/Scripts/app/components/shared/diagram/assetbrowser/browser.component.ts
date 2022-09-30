@@ -1238,7 +1238,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.commitTransaction('HideDeselectedResponsibilityTypes');
     }
 
-    private helper_HighlightNodeImpacts(key: string, direction: AssetBrowserApiHopDirection, allRelations: AssetBrowserGenericRelationModel[], visitedNodes: Set<string>) {
+    private helper_HighlightNodeImpacts(key: string, allRelations: AssetBrowserGenericRelationModel[], visitedNodes: Set<string>) {
         // cycle detection. Set
         if (visitedNodes == null) {
             visitedNodes = new Set<string>();
@@ -1252,45 +1252,51 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         visitedNodes.add(key);
 
-        let fwd: boolean = ((direction == AssetBrowserApiHopDirection.Both) || (direction == AssetBrowserApiHopDirection.Forward));
-        let bwd: boolean = ((direction == AssetBrowserApiHopDirection.Both) || (direction == AssetBrowserApiHopDirection.Backward));
-
         if (allRelations === undefined) {
             allRelations = [];
 
             this.diagramData.links.forEach((l) => {
                 if (l.links) {
-                    l.links.forEach((cl) => {
-                        allRelations.push({ from: cl.from, to: cl.to });
+					l.links.forEach((cl) => {
+						var relIdFrom = cl.from.split('|')[1];
+						var relIdTo = cl.to.split('|')[1];
+						var relId = relIdFrom + '_' + relIdTo;
+						allRelations.push({ from: cl.from, to: cl.to, rel: relId });
                     });
                 }
             });
-        }
+		}
 
+		let nodesToHiglightParams = [];
+		let visitedRelationships = [];
         allRelations.forEach((l) => {
-
             // Loop through the links to find ones where this node is subject, then traverse each one and do the same thing, recursively.
-            if (fwd) {
-                if (l.from == key) {
-                    let oNode = this.diagram.findNodeForKey(l.to);
-                    if (oNode) {
-                        oNode.isHighlighted = true;
-                        this.helper_HighlightNodeImpacts(l.to, AssetBrowserApiHopDirection.Forward, allRelations, visitedNodes);
-                    }
-                }
-            }
+      
+            if (l.from == key) {
+				let oNode = this.diagram.findNodeForKey(l.to);
+				visitedRelationships.push(l.rel);
+				if (oNode) {
+					oNode.isHighlighted = true;
+					nodesToHiglightParams.push({ node: l.to })
+				}
+			}
+
 
             // Loop through the links to find ones where this node is object, then traverse each one and do the same thing, recursively.
-            if (bwd) {
-                if (l.to == key) {
-                    let sNode = this.diagram.findNodeForKey(l.from);
-                    if (sNode) {
-                        sNode.isHighlighted = true;
-                        this.helper_HighlightNodeImpacts(l.from, AssetBrowserApiHopDirection.Backward, allRelations, visitedNodes);
-                    }
-                }
+            if (l.to == key) {
+				visitedRelationships.push(l.rel);
+                let sNode = this.diagram.findNodeForKey(l.from);
+				if (sNode) {
+					sNode.isHighlighted = true;
+					nodesToHiglightParams.push({ node: l.from })
+				}
             }
-        });
+		});
+
+		allRelations = allRelations.filter((r) => visitedRelationships.indexOf(r.rel) === -1);
+
+		nodesToHiglightParams.forEach((n) => this.helper_HighlightNodeImpacts(n.node, allRelations, visitedNodes));
+
     }
 
     private helper_HighlightPath(e: go.InputEvent, obj: go.Part) {
@@ -1319,7 +1325,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 obj.isHighlighted = true;
 
                 // Recurse through and highlight based on the atomic (non-grouped) links.
-                this.helper_HighlightNodeImpacts(obj.key.toString(), AssetBrowserApiHopDirection.Both, undefined, null);
+                this.helper_HighlightNodeImpacts(obj.key.toString(), undefined, null);
             }
             else {
                 // You are clicking on a link instead.                
