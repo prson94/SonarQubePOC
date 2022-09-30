@@ -1033,7 +1033,20 @@ export class BaseComponent {
 				homeUrl = SiteUrlHelpers.getAssetUrl(this.uid);
 			}
 			else if (this.baseAssetTypeUid) {
-				homeUrl = SiteUrlHelpers.getAssetTypeUrl(this.uid);
+				if (r?.AssetTypeClass === AssetTypeClass.Reference) {
+					if (this.uid) {
+						homeUrl = SiteUrlHelpers.getAssetTypeUrl(this.uid);
+					}
+					else if (r?.uid) {
+						homeUrl = SiteUrlHelpers.getAssetTypeUrl(r.uid);
+					}
+					else {
+						homeUrl = SiteUrlHelpers.getAssetTypeUrl(this.baseAssetTypeUid);
+					}
+				}
+				else {
+					homeUrl = SiteUrlHelpers.getAssetTypeUrl(this.uid);
+				}
 			}
 			else {
 				homeUrl = SiteUrlHelpers.getUrl(r.Object, r.ObjectID, r.ObjectTypeId, areaName, this.uid);

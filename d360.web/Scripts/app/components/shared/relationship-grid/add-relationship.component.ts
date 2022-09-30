@@ -32,6 +32,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     @Input() assetTypeUid: string = "";
     @Input() isVisible: boolean = false;
     @Input() isFromModal: boolean = false;
+    @Input() isReference: boolean = false;
 
     @Output() onClose = new EventEmitter();
     @Output() onAddComplete = new EventEmitter();
@@ -169,7 +170,8 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                         count = rc[0].Count;
                     }
 
-                    if (type.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase()) {
+                    if ((type.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase())
+                        || (this.isReference && type.Subject.Name.toLowerCase() === "reference list" && type.Subject.Class.toLowerCase() === "reference")) {
                         name = type.Predicate.Name + " " + type.Object.Name;
                         targetCardinality = type.Subject.Cardinality;
                         thisCardinality = type.Object.Cardinality;
@@ -177,7 +179,8 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                         this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass, perspective: "Subject" });
                     }
 
-                    if (type.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase()) {
+                    if ((type.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase())
+                       || (this.isReference && type.Object.Name.toLowerCase() === "reference list" && type.Object.Class.toLowerCase() === "reference")) {
                         name = type.Predicate.Inverse + " " + type.Subject.Name;
                         targetCardinality = type.Object.Cardinality;
                         thisCardinality = type.Subject.Cardinality;
