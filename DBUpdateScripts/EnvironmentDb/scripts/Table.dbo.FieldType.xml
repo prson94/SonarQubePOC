@@ -382,23 +382,43 @@ END;
 	  ]]>
     </rollback>
   </changeSet>
-  <changeSet author="bquinlivan" id="Table.dbo.FieldType-v8">
+  <changeSet author="bquinlivan" id="Table.dbo.FieldType-v8.1">
     <comment>GOV-18452</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
       <![CDATA[
-		DROP INDEX [IX_FieldType_AssetTypeID] ON [dbo].[FieldType]	
+		IF EXISTS (select * from sys.indexes where name = 'IX_FieldType_AssetTypeID')
+		BEGIN
+			DROP INDEX [IX_FieldType_AssetTypeID] ON [dbo].[FieldType]
+		END
 		
 		DROP VIEW IF EXISTS [utility].[FieldValue]
 		
+		IF EXISTS (select * from sys.indexes where name = 'IX_FieldType_AssetTypeID-Name')
+		BEGIN
+			DROP INDEX [IX_FieldType_AssetTypeID-Name] ON [dbo].[FieldType]
+		END
+
 		alter table FieldType alter column AssetTypeID INT SPARSE
-		
-		CREATE NONCLUSTERED INDEX [IX_FieldType_AssetTypeID] ON [dbo].[FieldType] ( [AssetTypeID] ASC )		
-		
 		alter table FieldType add IntersectTypeID int SPARSE
 		alter table FieldType add IssueTypeID int SPARSE
+		
+		IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_AssetTypeID')
+		BEGIN
+			CREATE NONCLUSTERED INDEX [IX_FieldType_AssetTypeID] ON [dbo].[FieldType] ( [AssetTypeID] ASC )
+		END
+		
+		IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_IntersectTypeID')
+		BEGIN
+			CREATE NONCLUSTERED INDEX [IX_FieldType_IntersectTypeID] ON [dbo].[FieldType] ( [IntersectTypeID] ASC )
+		END
+		
+		IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_IssueTypeID')
+		BEGIN
+			CREATE NONCLUSTERED INDEX [IX_FieldType_IssueTypeID] ON [dbo].[FieldType] ( [IssueTypeID] ASC )
+		END
 	  ]]>
     </sql>
     <rollback>
