@@ -52,7 +52,8 @@ export class AssetBrowserApiHopAssetRequestModel {
 
 export class AssetBrowserGenericRelationModel {
     from: string;
-    to: string;
+	to: string;
+	rel: string;
 }
 
 export enum DiagramType {
