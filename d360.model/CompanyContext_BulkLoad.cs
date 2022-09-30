@@ -215,7 +215,7 @@ namespace d360.model
 			return Query<dynamic>(@"
 									select		'Column' + cast(LC.ColumnIndex as varchar) as datafield,
 												LC.Name as text,
-												Lower(FT2.[Type]) as type
+												Lower(coalesce(FT1.[Type],FT2.[Type])) as type
 									from		LoadColumn LC
 										inner join Load L on (LC.LoadID = L.ID)
 										left join 
