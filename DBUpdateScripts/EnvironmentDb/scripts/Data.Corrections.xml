@@ -1790,7 +1790,7 @@ from	[Intersect] I
     </sql>
   </changeSet>
 
-      <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-17952-2">
+      <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-17952-3">
 	<comment>GOV-17952 - remove organizations from Govern</comment>	
 	<sql dbms="mssql"
             endDelimiter="GO"
@@ -1798,6 +1798,11 @@ from	[Intersect] I
             stripComments="false">
 	<![CDATA[
 		delete from Asset where object = 'Organization'
+		
+		delete ATS
+		from AssetTypeStyle ATS
+		inner join AssetType AT on AT.ID = ATS.ID
+		where AT.Object = 'OrganizationType'
 
 		delete from AssetType where object = 'OrganizationType'
 		
