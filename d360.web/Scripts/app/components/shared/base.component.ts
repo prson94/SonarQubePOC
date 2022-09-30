@@ -1034,10 +1034,10 @@ export class BaseComponent {
 			}
 			else if (this.baseAssetTypeUid) {
 				if (r?.AssetTypeClass === AssetTypeClass.Reference) {
-					if (this.uid && this.uid !== null && this.uid !== "null") {
+					if (this.uid) {
 						homeUrl = SiteUrlHelpers.getAssetTypeUrl(this.uid);
 					}
-					else if (r.uid && r.uid !== null && r.uid !== "null") {
+					else if (r?.uid) {
 						homeUrl = SiteUrlHelpers.getAssetTypeUrl(r.uid);
 					}
 					else {
