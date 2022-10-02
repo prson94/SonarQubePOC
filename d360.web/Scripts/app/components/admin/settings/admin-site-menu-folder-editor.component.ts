@@ -39,7 +39,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	@Output() closeClick = new EventEmitter();
 	@Output() saveClick = new EventEmitter();
 
-	itemsFromSource: SiteNav[] = [];
+	foldersFromSource: SiteNav[] = [];
 	isBuiltIn: boolean = false;
 	statuses: any[];
 	baseTypes: any;
@@ -51,7 +51,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	hasHeader: boolean = false;
 	iconType = 'icon';
 	isInError: boolean = false;
-	itemsFromTarget: SiteNav[] = [];
+	foldersFromTarget: SiteNav[] = [];
 	folderModel: SiteNav;
 	folderNameIsFocused: boolean = false;
 	selection: SiteNav = null;
@@ -73,12 +73,12 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	simpleTextFilterForExistingItems: string = '';
 
 	//this contains user or groups selected (2nd table in permission property group)
-	selectedPermissionAssets: any[] = [];
+	permissionsFromTarget: any[] = [];
 
-	permissionAssets: any[] = [];
+	permissionsFromSource: any[] = [];
 	permissionAssetsTotalCount: number;
-	_tempSelectedPermissionAssets: any[] = [];
-	_selectedPermissionAsset: any[] = [];
+	selectedPermissionsFromSource: any[] = [];
+	selectedPermissionsFromTarget: any[] = [];
 	isAvailableFolderItemsTableLoading: boolean = false;
 	isPermissionAssetTableLoading: boolean = false;
 	higlightedItem: any;
@@ -195,15 +195,15 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				permissions.forEach((item) => {
 					selectedPermissions[item.Object + "|" + item.ObjectID] = 1;
 				});
-				this.permissionAssets.forEach((res) => {
+				this.permissionsFromSource.forEach((res) => {
 					if (selectedPermissions[res["Value"]]) {
-						this._tempSelectedPermissionAssets.push(res);
+						this.selectedPermissionsFromSource.push(res);
 					}
 				});
 				this.addPermissionAssets();
 
 				//preselect folder items
-				this.itemsFromTarget = [...folders];
+				this.foldersFromTarget = [...folders];
 
 				this.isAvailableFolderItemsTableLoading = false;
 				this.isPermissionAssetTableLoading = false;
@@ -237,10 +237,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			}
 		}
 
-		folder.Items = this.itemsFromTarget;
+		folder.Items = this.foldersFromTarget;
 		folder.Permissions = [];
 
-		this.selectedPermissionAssets.forEach((p) => {
+		this.permissionsFromTarget.forEach((p) => {
 			var legacyData = (p["Value"] as string).split('|');
 			folder.Permissions.push({ Name: p.Text, Object: legacyData[0], ObjectID: +legacyData[1], SiteNavID: 0 });
 		});
@@ -269,7 +269,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			case FormMode.Adding:
 				var model = {
 					folder: this.getModel(),
-					items: this.itemsFromTarget,
+					items: this.foldersFromTarget,
 				};
 
 				this.siteMenuService.addFolder(model)
@@ -442,9 +442,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			this.siteMenuService.getAvailableItems()
 		]).subscribe((result) => {
 			let perm = result[0];
-			this.itemsFromSource = result[1];
+			this.foldersFromSource = result[1];
 			this.permissionAssetsTotalCount = perm["total"];
-			this.permissionAssets = perm["results"];
+			this.permissionsFromSource = perm["results"];
 			this.isPermissionAssetTableLoading = false;
 			this.isAvailableFolderItemsTableLoading = false;
 			if (this.navigationFolder) {
@@ -461,16 +461,16 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	addNewFolder(item: SiteNav) {
-		let x = this.itemsFromSource.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
-		let i = _.cloneDeep(this.itemsFromSource.splice(x, 1)[0]);
-		this.itemsFromTarget.push(i);
+		let x = this.foldersFromSource.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
+		let i = _.cloneDeep(this.foldersFromSource.splice(x, 1)[0]);
+		this.foldersFromTarget.push(i);
 		this.setRequiredCount();
 	}
 
 	deleteNewFolder(item: SiteNav) {
-		let x = this.itemsFromSource.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
-		let i = _.cloneDeep(this.itemsFromTarget.splice(x, 1)[0]);
-		this.itemsFromSource.push(i);
+		let x = this.foldersFromSource.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
+		let i = _.cloneDeep(this.foldersFromTarget.splice(x, 1)[0]);
+		this.foldersFromSource.push(i);
 		this.setRequiredCount();
 	}
 
@@ -491,7 +491,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (this.folderModel.Title?.length > 0) {
 			this.requiredCount--;
 		}
-		if (this.itemsFromTarget?.length > 0 || !this.hasFolderItems) {
+		if (this.foldersFromTarget?.length > 0 || !this.hasFolderItems) {
 			this.requiredCount--;
 		}
 	}
@@ -501,7 +501,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if ($event.data?.length > 0) {
 			this.requiredCount--;
 		}
-		if (this.itemsFromTarget?.length > 0 || !this.hasFolderItems) {
+		if (this.foldersFromTarget?.length > 0 || !this.hasFolderItems) {
 			this.requiredCount--;
 		}
 		this.cdRef.markForCheck();
@@ -515,51 +515,54 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (!this.folderForm.get('title')?.errors?.empty && !this.folderNameIsFocused) {
 			this.elRef.nativeElement.querySelectorAll("[name = folderNameInput]")[0].focus();
 			this.folderNameIsFocused = true;
-		} else if (!this.itemsFromTarget || this.itemsFromTarget?.length === 0) {
+		} else if (!this.foldersFromTarget || this.foldersFromTarget?.length === 0) {
 			this.elRef.nativeElement.querySelector("[name = availableFolderItemsSearchField]").querySelectorAll(".ig-input")[0].focus();
 			this.folderNameIsFocused = false;
 		}
 	}
 
 	addPermissionAssets() {
-		if (!this.selectedPermissionAssets) {
-			this.selectedPermissionAssets = [];
-		}
-		this._tempSelectedPermissionAssets.forEach((pa) => {
-			if (this.selectedPermissionAssets.indexOf(pa) === -1) {
-				this.selectedPermissionAssets.push(pa);
-				this.permissionAssets = this.permissionAssets.filter((x) => x !== pa);
+		this.selectedPermissionsFromSource.forEach((pa) => {
+			if (this.permissionsFromTarget.indexOf(pa) === -1) {
+				this.permissionsFromTarget.push(pa);
+				this.permissionsFromSource = this.permissionsFromSource.filter((x) => x !== pa);
 				if (pa.uid === this.previewAssetUid) {
 					this.previewAssetUid = '';
 				}
 			}
 		});
-		this.permissionAssetsTotalCount = this.permissionAssets.length;
-		this._tempSelectedPermissionAssets = [];
-		this.selectedPermissionAssets = [...this.selectedPermissionAssets];
-
-		this.cdRef.markForCheck();
 	}
 
 	removePermissionAssets() {
-		this._selectedPermissionAsset.forEach((pa) => {
-			if (this.permissionAssets.indexOf(pa) === -1) {
-				this.permissionAssets.push(pa);
-				this.selectedPermissionAssets = this.selectedPermissionAssets.filter((x) => x !== pa);
+		this.selectedPermissionsFromTarget.forEach((pa) => {
+			if (this.permissionsFromSource.indexOf(pa) === -1) {
+				this.permissionsFromSource.push(pa);
+				this.permissionsFromTarget = this.permissionsFromTarget.filter((x) => x !== pa);
 			}
 		});
-		this.permissionAssets = this.permissionAssets.sort((a, b) => a.Text.localeCompare(b.Text));
-		this.permissionAssetsTotalCount = this.permissionAssets.length;
-		this._selectedPermissionAsset = [];
-		this.permissionAssets = [...this.permissionAssets];
-		this.cdRef.markForCheck();
+		this.permissionsFromSource = this.permissionsFromSource.sort((a, b) => a.Text.localeCompare(b.Text));
 	}
 
 	headerSelectAll($event, table: Table) {
-		this._tempSelectedPermissionAssets = [];
+		this.selectedPermissionsFromSource = [];
 		for (let i = table.first; i < table.first + table.rows; i++) {
-			this._tempSelectedPermissionAssets.push(this.permissionAssets.find((item) => item.uid == table.selection[i].uid));
+			this.selectedPermissionsFromSource.push(this.permissionsFromSource.find((item) => item.uid == table.selection[i].uid));
 		}
+	}
+
+	showInfo(item) {
+		if(_.isEmpty(item)) {
+			this.clearInfoPanel();
+			return;
+		}
+		this.higlightedItem = item;
+		this.previewAssetUid = item.uid;
+		this.previewAssetType = item.Type
+
+	}
+
+	clearInfoPanel() {
+		this.previewAssetUid = '';
 	}
 
 	private _initialVersion: string = '';
@@ -571,6 +574,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	get isSaveDisabled(): boolean {
-		return (this.isEdit && !this.hasChanges) || this.savingInProgress || this.folderModel === null || this.folderModel.Title === null || this.folderModel.Title === '' || ((this.itemsFromTarget === null || this.itemsFromTarget.length < 1) && this.hasFolderItems);
+		return (this.isEdit && !this.hasChanges) || this.savingInProgress || this.folderModel === null || this.folderModel.Title === null || this.folderModel.Title === '' || ((this.foldersFromTarget === null || this.foldersFromTarget.length < 1) && this.hasFolderItems);
 	}
 }

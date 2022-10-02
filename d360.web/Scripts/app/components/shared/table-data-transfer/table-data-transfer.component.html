@@ -6,7 +6,7 @@
                              i18n-placeholder
                              placeholder="Search"
                              [(ngModel)]="sourceTableSearchValue"
-                             (onSearch)="dt3.filterGlobal($event, 'contains')"
+                             (onSearch)="sourceDataTable.filterGlobal($event, 'contains')"
                              name="availableFolderItemsSearchField"
                              style="width:100%; padding-bottom:8px;"></ig-search-field>
             <div class="selected-counter"
@@ -17,8 +17,8 @@
                  i18n>{{selectedItemsFromSource.length}} items selected</div>
         </div>
         <div class="table-wrapper">
-            <p-table #dt3
-                     [globalFilterFields]="['Title']"
+            <p-table #sourceDataTable
+                     [globalFilterFields]="[itemsTitleProperty]"
                      [value]="itemsFromSource"
                      [(selection)]="selectedItemsFromSource"
                      selectionMode="multiple"
@@ -41,16 +41,27 @@
                 <ng-template pTemplate="body"
                              let-item>
                     <tr [pSelectableRow]="item">
-                        <td style="max-width: 28px; height: 32px">
+                        <td class="checkbox-column">
                             <p-tableCheckbox [value]="item"></p-tableCheckbox>
                         </td>
-                        <td>{{item.Title}}</td>
+                        <td>{{item[itemsTitleProperty]}}</td>
+                        <td class="information-button-column" *ngIf="infoButton">
+                            <button igButton
+                                    class="info-button"
+                                    [ngClass]="{'highlighted': viewingItem === item}"
+                                    icon="fa-info-circle"
+                                    i18n-pTooltip
+                                    pTooltip="View Information"
+                                    tooltipPosition="top"
+                                    tooltipStyleClass="ig-tooltip"
+                                    (click)="showInfo(item)"></button>
+                        </td>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="summary">
-                    <d3s-grid-paging-info [first]="dt3.first"
-                                          [rows]="dt3.rows"
-                                          [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
+                    <d3s-grid-paging-info [first]="sourceDataTable.first"
+                                          [rows]="sourceDataTable.rows"
+                                          [totalRecords]="sourceDataTable.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-table>
         </div>
@@ -77,46 +88,48 @@
                     icon="fa-arrow-left"
                     (click)="moveFromTargetToSource()"></button>
         </div>
-        <div i18n-pTooltip
-             pTooltip="Move to top"
-             tooltipPosition="top"
-             tooltipStyleClass="ig-tooltip">
-            <button igButton
-                    class="ig-lookup-grid-button data-transfer-move-top-btn"
-                    [disabled]="!isMoveUpPossible()"
-                    icon="fa-step-backward"
-                    (click)="moveToTop()"></button>
-        </div>
-        <div i18n-pTooltip
-             pTooltip="Move up"
-             tooltipPosition="top"
-             tooltipStyleClass="ig-tooltip">
-            <button igButton
-                    class="ig-lookup-grid-button"
-                    [disabled]="!isMoveUpPossible()"
-                    icon="fa-caret-up"
-                    (click)="moveUp()"></button>
-        </div>
-        <div i18n-pTooltip
-             pTooltip="Move down"
-             tooltipPosition="top"
-             tooltipStyleClass="ig-tooltip">
-            <button igButton
-                    class="ig-lookup-grid-button"
-                    [disabled]="!isMoveDownPossible()"
-                    icon="fa-caret-down"
-                    (click)="moveDown()"></button>
-        </div>
-        <div i18n-pTooltip
-             pTooltip="Move to bottom"
-             tooltipPosition="top"
-             tooltipStyleClass="ig-tooltip">
-            <button igButton
-                    class="ig-lookup-grid-button data-transfer-move-bottom-btn"
-                    [disabled]="!isMoveDownPossible()"
-                    icon="fa-step-backward"
-                    (click)="moveToBottom()"></button>
-        </div>
+        <ng-container *ngIf="isSortButtons">
+            <div i18n-pTooltip
+                 pTooltip="Move to top"
+                 tooltipPosition="top"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        class="ig-lookup-grid-button data-transfer-move-top-btn"
+                        [disabled]="!isMoveUpPossible()"
+                        icon="fa-step-backward"
+                        (click)="moveToTop()"></button>
+            </div>
+            <div i18n-pTooltip
+                 pTooltip="Move up"
+                 tooltipPosition="top"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        class="ig-lookup-grid-button"
+                        [disabled]="!isMoveUpPossible()"
+                        icon="fa-caret-up"
+                        (click)="moveUp()"></button>
+            </div>
+            <div i18n-pTooltip
+                 pTooltip="Move down"
+                 tooltipPosition="top"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        class="ig-lookup-grid-button"
+                        [disabled]="!isMoveDownPossible()"
+                        icon="fa-caret-down"
+                        (click)="moveDown()"></button>
+            </div>
+            <div i18n-pTooltip
+                 pTooltip="Move to bottom"
+                 tooltipPosition="top"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        class="ig-lookup-grid-button data-transfer-move-bottom-btn"
+                        [disabled]="!isMoveDownPossible()"
+                        icon="fa-step-backward"
+                        (click)="moveToBottom()"></button>
+            </div>
+        </ng-container>
     </div>
     <div class="data-transfer-table">
         <div class="table-controls">
@@ -125,7 +138,7 @@
                              i18n-placeholder
                              placeholder="Search"
                              [(ngModel)]="targetTableSearchValue"
-                             (onSearch)="dt4.filterGlobal($event, 'contains')"
+                             (onSearch)="targetDataTable.filterGlobal($event, 'contains')"
                              style="width:100%; padding-bottom:8px;"></ig-search-field>
             <div class="selected-counter"
                  *ngIf="selectedItemsFromTarget && selectedItemsFromTarget.length > 0"
@@ -134,9 +147,9 @@
         </div>
         <div class="table-wrapper"
              style="max-height: calc(100vh - 420px); min-height:300px">
-            <p-table #dt4
+            <p-table #targetDataTable
                      [value]="itemsFromTarget"
-                     [globalFilterFields]="['Title']"
+                     [globalFilterFields]="[itemsTitleProperty]"
                      selectionMode="multiple"
                      [(selection)]="selectedItemsFromTarget"
                      [metaKeySelection]="false"
@@ -150,18 +163,21 @@
                         </th>
                         <th i18n>{{targetTableTitle}}</th>
                     </tr>
-                    <tr *ngIf="!itemsFromTarget || itemsFromTarget?.length == 0">
+                    <tr *ngIf="isRequired && itemsFromTarget?.length == 0">
                         <div i18n
-                             class="invalid-table">Please select at least one item</div>
+                             class="empty-message highlighted">{{emptyTargetTableMessage}}</div>
+                    </tr>
+                    <tr *ngIf="!isRequired && itemsFromTarget?.length == 0">
+                        <div i18n class="empty-message">{{emptyTargetTableMessage}}</div>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body"
                              let-item>
                     <tr [pSelectableRow]="item">
-                        <td style="max-width: 28px; height: 32px">
+                        <td class="checkbox-column">
                             <p-tableCheckbox [value]="item"></p-tableCheckbox>
                         </td>
-                        <td>{{item.Title}}</td>
+                        <td>{{item[itemsTitleProperty]}}</td>
                     <tr>
                 </ng-template>
             </p-table>

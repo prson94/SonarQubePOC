@@ -9,12 +9,20 @@ import { DefaultTableSettingsService } from '../../../services/settings/default-
   styleUrls: ['./table-data-transfer.component.less']
 })
 export class TableDataTransferComponent implements OnInit {
+  @Input() isRequired: boolean = true;
+  @Input() emptyTargetTableMessage: string = 'Please select at least one item';
+  @Input() infoButton: boolean = false;
+  @Input() isSortButtons: boolean = false;
+  @Input() itemsTitleProperty: string = 'Title';
   @Input() sourceTableTitle: string = 'Source Table Title';
   @Input() targetTableTitle: string = 'Target Table Title';
   @Input() itemsFromSource: any[] = [];
   @Input() itemsFromTarget: any[] = [];
-  @Output() targetDataChangeEvent = new EventEmitter<any[]>();
+  @Output() itemsFromSourceChange = new EventEmitter<any[]>();
+  @Output() itemsFromTargetChange = new EventEmitter<any[]>();
+  @Output() showInfoEvent = new EventEmitter<object>();
 
+  viewingItem: object;
   sourceTableSearchValue: string = '';
   targetTableSearchValue: string = '';
   selectedItemsFromSource: any[] = [];
@@ -101,37 +109,45 @@ export class TableDataTransferComponent implements OnInit {
   }
 
   moveFromSourceToTarget() {
-    for (let j = 0; j < this.selectedItemsFromSource.length; j++) {
-      if (this.itemsFromTarget.indexOf(this.selectedItemsFromSource[j]) === -1) { // eslint-disable-line
-        this.itemsFromTarget.push(this.selectedItemsFromSource[j]); // eslint-disable-line
-        this.itemsFromSource = this.itemsFromSource.filter((x) => x != this.selectedItemsFromSource[j]); // eslint-disable-line
-      }
-    }
-    this.itemsFromTarget = this.itemsFromTarget.sort((a, b) => a.Title.localeCompare(b.Title));
+    this.selectedItemsFromSource.forEach((selectedItemFromSource) => {
+      this.itemsFromTarget.push(selectedItemFromSource)
+      this.itemsFromSource = this.itemsFromSource.filter((itemFromSource) => itemFromSource !== selectedItemFromSource);
+    });
+
+    this.clearInfoPanel();
+
     this.selectedItemsFromSource = [];
     this.itemsFromTarget = [...this.itemsFromTarget];
-    this.targetDataChangeEvent.emit(this.itemsFromTarget);
+    this.itemsFromSource = [...this.itemsFromSource];
+    this.itemsFromTargetChange.emit(this.itemsFromTarget);
     this.cdRef.markForCheck();
   }
 
   moveFromTargetToSource() {
-    for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
-      let x: number = this.itemsFromSource.findIndex((itemFromSource) => { 
-        return itemFromSource.ObjectID === this.selectedItemsFromTarget[j].ObjectID && itemFromSource.Object === this.selectedItemsFromTarget[j].Object; // eslint-disable-line
-      });
-      let y: number = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
-      if (y > -1) {
-        let i = cloneDeep(this.itemsFromTarget.splice(y, 1)[0]);
-        if (x === -1) {
-          this.itemsFromSource.push(i);
-        }
-      }
-    }
-    this.itemsFromSource = this.itemsFromSource.sort((a, b) => a.Title.localeCompare(b.Title));
+    this.selectedItemsFromTarget.forEach((selectedItemFromTarget) => {
+      this.itemsFromSource.push(selectedItemFromTarget)
+      this.itemsFromTarget = this.itemsFromTarget.filter((itemFromTarget) => itemFromTarget !== selectedItemFromTarget);
+    });
+
+    this.itemsFromSource.sort((a, b) => a?.Title?.localeCompare(b?.Title));
     this.selectedItemsFromTarget = [];
     this.itemsFromTarget = [...this.itemsFromTarget];
     this.itemsFromSource = [...this.itemsFromSource];
-    this.targetDataChangeEvent.emit(this.itemsFromTarget);
+    this.itemsFromTargetChange.emit(this.itemsFromTarget);
     this.cdRef.markForCheck();
+  }
+
+  showInfo(item: object) {
+    this.viewingItem = item;
+    this.showInfoEvent.emit(item);
+  }
+
+  clearInfoPanel() {
+    if (this.viewingItem) {
+      let found = this.selectedItemsFromSource.find((selectedItemFromSource) => selectedItemFromSource == this.viewingItem)
+      if (found) {
+        this.showInfo({});
+      }
+    }
   }
 }
