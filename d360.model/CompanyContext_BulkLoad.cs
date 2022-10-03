@@ -1073,10 +1073,43 @@ namespace d360.model
 							string parentKeyHash = await GetModelKeyHashForLevel(item, assetType, item.Level - 1).ConfigureAwait(false);
 							string itemPath = await GetModelPathForLevel(item, assetType, item.Level).ConfigureAwait(false);
 
-							Guid? parentUid = (await QueryAsync<Guid?>(@"select [uid] from Asset A inner join AssetPath P on P.ID = A.ID
+							Guid? parentUid = (await QueryAsync<Guid?>(@"
+select [uid] from Asset A 
+cross apply (
+  select		
+			  InnerA.AssetTypeID,
+			  InnerA.ID,
+			  CONVERT(
+			  varchar(32),
+			  SUBSTRING(HASHBYTES('SHA1', STRING_AGG(InnerA.FieldTypeID + InnerA.[Value], char(59))), 3, 32),
+			  2) as KeyHash
+		  from (
+				select	B.ID, 
+						B.AssetTypeID, 
+						COALESCE(F.[Value], F.[FormattedValue]) as Value, 
+						cast(FieldTypeID as nvarchar) + ':' as FieldTypeID
+				from	Asset B
+						inner join Field F on F.ObjectType = B.[Object] and F.ObjectID = B.ObjectID 
+						inner join FieldType FT on FT.ID = F.FieldTypeID and FT.AssetTypeID = B.AssetTypeID and FT.IsPartOfKey = 1
+				where	B.ID = A.ID
+				
+				union all
+				
+				select	C.ID, 
+						C.AssetTypeID, 
+						C.Code as [Value], 
+						'' as FieldTypeID
+				from	Asset C
+				where	C.[Object] = 'ReferenceItem' 
+						and C.ID = A.ID
+		  ) InnerA
+		  group by InnerA.AssetTypeID, InnerA.ID
+) S
+inner join AssetPath P on P.ID = A.ID
 								and A.AssetTypeID = @assetTypeId 
 								and P.DisplayPath like @textPath
-								and S.KeyPathHash = @parentKeyHash", new { parentKeyHash, assetTypeId = assetType.ID, textPath = itemPath })).FirstOrDefault();
+								and S.KeyHash = @parentKeyHash
+", new { parentKeyHash, assetTypeId = assetType.ID, textPath = itemPath })).FirstOrDefault();
 
 							if (parentUid.HasValue)
 							{
