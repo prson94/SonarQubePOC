@@ -628,7 +628,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
 			fieldTypes = companyContext.Query<FieldType>(
 				$@"select F.* from FieldType F 
-					inner join IntersectType IT on and IT.ID = F.IntersectTypeID
+					inner join IntersectType IT on IT.ID = F.IntersectTypeID
 					inner join [intersect] I on I.IntersectTypeID = IT.ID
 					WHERE I.uid = @uid"
 				, new { uid }, ApiTimeout).ToList();
