@@ -865,9 +865,18 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 				this.oldSearchPhrase = params.filter ?? "";
 
 				let loadedData = [];
+				
+				const domParser = new DOMParser();
 
 				res.forEach((str) => {
-					let label: string = (str.label as string).split(">").join(" <i class='slim-fa fa fa-chevron-right'></i> ");
+					let label: string = str.label;
+					const parsed = domParser.parseFromString(str.label, 'text/html');
+					if (parsed.getElementsByTagName('p').length > 0) {
+						label = str.label.slice(0, str.label.indexOf('>')) + '</br>' + Array.from(
+							Array.from(parsed.getElementsByTagName('p'))[0].children
+						).map((child) => (child as HTMLElement).innerText.trim()).join('>');
+					}
+					label = label.replace(/<.*?>/g, '>').split('>').join(' <i class="slim-fa fa fa-chevron-right"></i> ');
 					loadedData.push({ title: label, value: str.value });
 				});
 
