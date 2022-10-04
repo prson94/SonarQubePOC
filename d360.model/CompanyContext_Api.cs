@@ -3077,6 +3077,16 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 			#region Asset table
 
+			// Log the parent removals into Dependent Change table.
+			Connection.Execute(@"
+				insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
+					select  S.ExecutionID, S.ItemNumber, 1, 2, '{""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
+					from    api.ExecutionDeletedAsset S
+							inner join [Intersect] I on I.ObjectAssetId = S.AssetId
+							inner join Asset P on P.Id = I.SubjectAssetId
+					where   " + querySuffix, 
+					new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
 			Connection.Execute(
                 $@"
 				declare @totalcount bigint = 0,

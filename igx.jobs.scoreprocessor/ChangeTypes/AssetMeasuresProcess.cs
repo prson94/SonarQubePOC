@@ -473,9 +473,9 @@ where   AssetTypeID in (
                                                         assetVersionCheckObjectTypeAction(resultsLock, gDefinition, r.Measure.MetricAssetVersionUid, null);
 
                                                         var predicateExistenceSql = "select cast(iif(sum(bit1) > 0, 1, 0) as bit) from (" +
-                                                            "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where PredicateUid = @PredicateUid and SubjectUid = @assetUid  " +
-                                                            "union all " +
-                                                            "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where PredicateUid = @PredicateUid and ObjectUid = @assetUid and PredicateType not in (3,4) " +
+																	"select	iif(count(1) > 0, 1, 0) bit1 from PredicateIntersect I inner join Asset S on I.PredicateUid = @PredicateUid and S.ID = I.SubjectAssetID and S.Uid = @assetUid " +
+																	"union all " +
+																	"select iif(count(1) > 0, 1, 0) bit1 from PredicateIntersect I inner join Asset O on I.PredicateUid = @PredicateUid and O.ID = I.ObjectAssetID and O.Uid = @assetUid " +
                                                             ") a";
 
                                                         switch (gDefinition.Predicate.Operator)
