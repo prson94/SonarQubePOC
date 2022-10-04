@@ -1097,14 +1097,14 @@ from	Asset A
 
 						if (rulegroupKey == "ResourceType")
 						{
-							whenSuffix.Append((whenSuffix.Length == 0 ? $" where " : " and ") + $"RO.[State] = 1");
+							whenSuffix.Append((whenSuffix.Length == 0 ? $" where ( " : " and ") + $"RO.[State] = 1");
 							if (IsHideData3SixtyUsers)
 							{
 								whenSuffix.Append(" and (RO.Email not like '%@data3sixty.com' and RO.Email not like '%@infogix.com' and RO.Email not like '%@precisely.com')");
 							}
 						}
 
-						if (whenSuffix.Length>0)
+						if (whenSuffix.Length > 0)
 						{
 							whenSuffix.Append(" ) ");
 						}
