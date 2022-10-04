@@ -5,7 +5,6 @@ import { Message, PrimeNGConfig, Translation } from 'primeng/api';
 import { CookieService } from './services/cookie.service';
 import { MessagesObservableService } from './services/messages-observable.service';
 import { MessageService } from 'primeng/api';
-import { ApplicationInsightsService } from './services/application-insights.service';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { datadogRum } from '@datadog/browser-rum';
 import { environment } from '../environments/environment';
@@ -59,7 +58,6 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     constructor(
         private messagesService: MessagesObservableService,
         protected headerActionsService: HeaderActionsService,
-        protected aiService: ApplicationInsightsService,
         private cookieService: CookieService,
         private route: ActivatedRoute,
         private toastService: MessageService,
@@ -79,7 +77,6 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             (infoMsg) => {
                 this.toastService.add({ severity: 'info', summary: infoMsg.summary, detail: infoMsg.detail });
             });
-        this.aiService.setUserId(String(CurrentResourceID));
 
         this.paramSub = this.route.queryParams.subscribe(() => {
             let url = new URL(window.location.href);
