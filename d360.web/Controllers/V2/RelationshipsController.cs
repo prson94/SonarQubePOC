@@ -581,7 +581,7 @@ namespace d360.web.Controllers.V2
 					}
 					var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 
-					var fieldTypes = Company.Query<string>("select F.Name from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { RelationshipTypeUid }, ApiTimeout).ToList().Select(x => x.ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToList();
+					var fieldTypes = Company.Query<string>("select F.Name from FieldType F inner join IntersectType I on F.IntersectTypeID = I.ID and I.[Uid] = @relationshipTypeUid", new { RelationshipTypeUid }, ApiTimeout).ToList().Select(x => x.ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToList();
 					fieldTypes.Add("object.[path]");
 					fieldTypes.Add("subject.[path]");
 					if (AssetUid != Guid.Empty)
