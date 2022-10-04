@@ -204,11 +204,11 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 				//preselect folder items
 				this.foldersFromTarget = [...folders];
-
 				this.isAvailableFolderItemsTableLoading = false;
 				this.isPermissionAssetTableLoading = false;
 				this.setRequiredCount();
 				this._initialVersion = JSON.stringify(this.getModel());
+				this.cdRef.detectChanges();
 			});
 	}
 
@@ -574,6 +574,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	get isSaveDisabled(): boolean {
-		return (this.isEdit && !this.hasChanges) || this.savingInProgress || this.folderModel === null || this.folderModel.Title === null || this.folderModel.Title === '' || ((this.foldersFromTarget === null || this.foldersFromTarget.length < 1) && this.hasFolderItems);
+		return (this.isEdit && !this.hasChanges) || this.savingInProgress || this.folderModel == null || this.folderModel.Title == null || this.folderModel.Title == '' || this.foldersFromTarget == null || (this.folderModel.IsCustom && this.foldersFromTarget.length < 1);
 	}
 }

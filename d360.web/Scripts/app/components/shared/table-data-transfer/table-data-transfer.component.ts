@@ -1,5 +1,4 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { cloneDeep } from 'lodash';
 import { SiteNav } from '../../../models/site-menu.model';
 import { DefaultTableSettingsService } from '../../../services/settings/default-table-settings.service';
 
@@ -13,7 +12,7 @@ export class TableDataTransferComponent implements OnInit {
   @Input() emptyTargetTableMessage: string = 'Please select at least one item';
   @Input() infoButton: boolean = false;
   @Input() isSortButtons: boolean = false;
-  @Input() itemsTitleProperty: string = 'Title';
+  @Input() itemsNameProperty: string = 'Title';
   @Input() sourceTableTitle: string = 'Source Table Title';
   @Input() targetTableTitle: string = 'Target Table Title';
   @Input() itemsFromSource: any[] = [];
@@ -129,7 +128,7 @@ export class TableDataTransferComponent implements OnInit {
       this.itemsFromTarget = this.itemsFromTarget.filter((itemFromTarget) => itemFromTarget !== selectedItemFromTarget);
     });
 
-    this.itemsFromSource.sort((a, b) => a?.Title?.localeCompare(b?.Title));
+    this.itemsFromSource.sort((a, b) => a[this.itemsNameProperty]?.localeCompare(b[this.itemsNameProperty]));
     this.selectedItemsFromTarget = [];
     this.itemsFromTarget = [...this.itemsFromTarget];
     this.itemsFromSource = [...this.itemsFromSource];

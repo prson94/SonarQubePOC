@@ -18,7 +18,7 @@
         </div>
         <div class="table-wrapper">
             <p-table #sourceDataTable
-                     [globalFilterFields]="[itemsTitleProperty]"
+                     [globalFilterFields]="[itemsNameProperty]"
                      [value]="itemsFromSource"
                      [(selection)]="selectedItemsFromSource"
                      selectionMode="multiple"
@@ -44,7 +44,7 @@
                         <td class="checkbox-column">
                             <p-tableCheckbox [value]="item"></p-tableCheckbox>
                         </td>
-                        <td>{{item[itemsTitleProperty]}}</td>
+                        <td>{{item[itemsNameProperty]}}</td>
                         <td class="information-button-column" *ngIf="infoButton">
                             <button igButton
                                     class="info-button"
@@ -149,7 +149,7 @@
              style="max-height: calc(100vh - 420px); min-height:300px">
             <p-table #targetDataTable
                      [value]="itemsFromTarget"
-                     [globalFilterFields]="[itemsTitleProperty]"
+                     [globalFilterFields]="[itemsNameProperty]"
                      selectionMode="multiple"
                      [(selection)]="selectedItemsFromTarget"
                      [metaKeySelection]="false"
@@ -163,12 +163,10 @@
                         </th>
                         <th i18n>{{targetTableTitle}}</th>
                     </tr>
-                    <tr *ngIf="isRequired && itemsFromTarget?.length == 0">
+                    <tr *ngIf="itemsFromTarget?.length == 0">
                         <div i18n
-                             class="empty-message highlighted">{{emptyTargetTableMessage}}</div>
-                    </tr>
-                    <tr *ngIf="!isRequired && itemsFromTarget?.length == 0">
-                        <div i18n class="empty-message">{{emptyTargetTableMessage}}</div>
+                             class="empty-message"
+                             [ngClass]="{'highlighted': isRequired}">{{emptyTargetTableMessage}}</div>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body"
@@ -177,7 +175,7 @@
                         <td class="checkbox-column">
                             <p-tableCheckbox [value]="item"></p-tableCheckbox>
                         </td>
-                        <td>{{item[itemsTitleProperty]}}</td>
+                        <td>{{item[itemsNameProperty]}}</td>
                     <tr>
                 </ng-template>
             </p-table>
