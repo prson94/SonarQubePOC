@@ -11,11 +11,25 @@
 </div>
 
 <div class="tile tile-detail">
-    <header>Example</header>
+    <header>Examples</header>
+    <h4 class="sub-title">Basic example:</h4>
     <d3s-table-data-transfer [itemsFromSource]="itemsFromSource"
                              [itemsFromTarget]="itemsFromTarget"
                              [sourceTableTitle]="'Source Table Title'"
-                             [targetTableTitle]="'Target Table Title'"></d3s-table-data-transfer>
+                             [targetTableTitle]="'Target Table Title'"
+                             [isItemsFromSourceLoading]="false"
+                             [isItemsFromTargetLoading]="false"
+                             [isSortButtons]="true"></d3s-table-data-transfer>
+    <h4 class="sub-title">Advanced example:</h4>
+    <d3s-table-data-transfer [itemsFromSource]="itemsFromSourceAdvanced"
+                             [itemsFromTarget]="itemsFromTargetAdvanced"
+                             [sourceTableTitle]="'Advanced Source Table Title'"
+                             [targetTableTitle]="'Advanced Target Table Title'"
+                             [isItemsFromSourceLoading]="false"
+                             [isItemsFromTargetLoading]="false"
+                             [isTargetDataReorderable]="true"
+                             [isRequired]="false"
+                             [infoButton]="true"></d3s-table-data-transfer>
 </div>
 
 <div class="tile tile-detail">

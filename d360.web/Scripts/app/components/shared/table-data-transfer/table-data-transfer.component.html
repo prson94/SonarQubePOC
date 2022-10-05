@@ -39,6 +39,10 @@
                         </th>
                         <th i18n>{{sourceTableTitle}}</th>
                     </tr>
+                    <tr *ngIf="itemsFromSource?.length == 0">
+                        <div i18n
+                             class="empty-message">{{emptySourceTableMessage}}</div>
+                    </tr>
                 </ng-template>
                 <ng-template pTemplate="body"
                              let-item>
@@ -106,7 +110,7 @@
                  tooltipPosition="top"
                  tooltipStyleClass="ig-tooltip">
                 <button igButton
-                        class="ig-lookup-grid-button"
+                        class="ig-lookup-grid-button button-up"
                         [disabled]="!isMoveUpPossible()"
                         icon="fa-caret-up"
                         (click)="moveUp()"></button>
@@ -116,7 +120,7 @@
                  tooltipPosition="top"
                  tooltipStyleClass="ig-tooltip">
                 <button igButton
-                        class="ig-lookup-grid-button"
+                        class="ig-lookup-grid-button button-down"
                         [disabled]="!isMoveDownPossible()"
                         icon="fa-caret-down"
                         (click)="moveDown()"></button>
