@@ -1,4 +1,4 @@
-import {debounceTime} from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 import { Component, Input, ElementRef, OnChanges, SimpleChange, Output, EventEmitter, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
@@ -74,8 +74,10 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     private searchSub: ISubscription;
     searchingTypeahed: boolean = false;
     
-    constructor(private elementRef: ElementRef, private router: Router,
-        private typeaheadSearchService: TypeaheadSearchService, private ref: ChangeDetectorRef) { }
+    constructor(private elementRef: ElementRef,
+				private router: Router, 
+				private typeaheadSearchService: TypeaheadSearchService,
+				private ref: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.breadcrumb)
@@ -218,13 +220,11 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
 
     navigateToLink(url: string, res?: any) {
-        if (url && url.length > 0) 
-            {this.router.navigateByUrl(url);}
+        if (url && url.length > 0) { this.router.navigateByUrl(url); }
     }
 
     hasLink(url: string) {
-        if (url && url.length > 0 && !this.isLastItem) {return true;}
-        else {false;}
+        return url && url.length > 0 && !this.isLastItem;
     }
 
     hasClass(element, className) {

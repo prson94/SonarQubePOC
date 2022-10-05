@@ -1400,7 +1400,7 @@ export class BaseComponent {
 							`${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/class/Rule`
 						)
 					);
-					this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.TypeName, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${data.ObjectTypeId}`,
+					this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.TypeName, `assets/${data.AssetTypeUid}`,
 						undefined,
 						'RuleType',
 						data.ObjectTypeId,
