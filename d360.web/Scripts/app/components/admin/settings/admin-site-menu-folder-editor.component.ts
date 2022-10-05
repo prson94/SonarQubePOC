@@ -469,7 +469,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	addNewFolder(item: SiteNav) {
-		let x = this.foldersFromSource.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
+		let x = this.foldersFromSource.findIndex((i) => i.ObjectID === item.ObjectID && i.Object === item.Object);
 		let i = _.cloneDeep(this.foldersFromSource.splice(x, 1)[0]);
 		this.foldersFromTarget.push(i);
 		this.setRequiredCount();
@@ -536,8 +536,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 		this.higlightedItem = item;
 		this.previewAssetUid = item.uid;
-		this.previewAssetType = item.Type
-
+		this.previewAssetType = item.Type;
 	}
 
 	clearInfoPanel() {
@@ -553,6 +552,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	get isSaveDisabled(): boolean {
-		return (this.isEdit && !this.hasChanges) || this.savingInProgress || this.folderModel == null || this.folderModel.Title == null || this.folderModel.Title == '' || this.foldersFromTarget == null || (this.folderModel.IsCustom && this.foldersFromTarget.length < 1);
+		return (this.isEdit && !this.hasChanges) || this.savingInProgress || this.folderModel === null || this.folderModel.Title === null || this.folderModel.Title === '' || this.foldersFromTarget === null || (this.folderModel.IsCustom && this.foldersFromTarget.length < 1);
 	}
 }

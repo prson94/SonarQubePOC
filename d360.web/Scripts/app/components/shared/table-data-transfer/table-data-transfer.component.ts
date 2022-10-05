@@ -125,7 +125,7 @@ export class TableDataTransferComponent {
 
   moveFromSourceToTarget() {
     this.selectedItemsFromSource.forEach((selectedItemFromSource) => {
-      this.itemsFromTarget.push(selectedItemFromSource)
+      this.itemsFromTarget.push(selectedItemFromSource);
       this.itemsFromSource = this.itemsFromSource.filter((itemFromSource) => itemFromSource !== selectedItemFromSource);
     });
 
@@ -141,7 +141,7 @@ export class TableDataTransferComponent {
 
   moveFromTargetToSource() {
     this.selectedItemsFromTarget.forEach((selectedItemFromTarget) => {
-      this.itemsFromSource.push(selectedItemFromTarget)
+      this.itemsFromSource.push(selectedItemFromTarget);
       this.itemsFromTarget = this.itemsFromTarget.filter((itemFromTarget) => itemFromTarget !== selectedItemFromTarget);
     });
 
@@ -161,7 +161,7 @@ export class TableDataTransferComponent {
 
   clearInfoPanel() {
     if (this.viewingItem) {
-      let found = this.selectedItemsFromSource.find((selectedItemFromSource) => selectedItemFromSource == this.viewingItem)
+      let found = this.selectedItemsFromSource.find((selectedItemFromSource) => selectedItemFromSource === this.viewingItem);
       if (found) {
         this.showInfo({});
       }

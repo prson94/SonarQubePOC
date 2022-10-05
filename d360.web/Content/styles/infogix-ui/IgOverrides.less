@@ -12,17 +12,18 @@
         border-bottom: 1px solid @ig-grey-t5;
     }
 
-    p-table .p-datatable-thead>tr>th,
-    p-table .p-datatable-tfoot>tr>td,
-    p-table .p-datatable-tbody>tr>td,
-    p-table .p-datatable-data>tr>td {
+    p-table .p-datatable-thead > tr > th, /* stylelint-disable-line selector-type-no-unknown */
+    p-table .p-datatable-tfoot > tr > td, /* stylelint-disable-line selector-type-no-unknown */
+    p-table .p-datatable-tbody > tr > td, /* stylelint-disable-line selector-type-no-unknown */
+    p-table .p-datatable-data > tr > td { /* stylelint-disable-line selector-type-no-unknown */
         height: 38px;
     }
 }
 
  /* Components */
 .data-transfer-controls {
-    .button-up, .button-down {
+    .button-up,
+    .button-down {
         .ig-button-icon {
             font-size: 18px;
         }
