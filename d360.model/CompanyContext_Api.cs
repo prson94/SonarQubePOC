@@ -10496,6 +10496,8 @@ where   ER.ExecutionID = @ExecutionID
 					ItemNumber =pd.ItemNumber 
 					and 
 					ExecutionId = pd.ExecutionId 
+					and 
+					[Object] is not null
 				for json path, include_null_values, without_array_wrapper
 				)ConditionsThen(json)
 
