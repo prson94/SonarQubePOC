@@ -146,12 +146,12 @@ namespace igx.UnitTests
 
             IList<Field> fields = new List<Field>
               {
-                new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 1, FormattedValue = "TestStringValue" },
-                new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 2, FormattedValue = "12.56" },
-                new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 3, FormattedValue = "10/10/2019", Value="5/2/2019" },
-                new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 4, Value = "True", FormattedValue = "True" },
-                new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 5, Value ="1,2", FormattedValue = "Test1,Test2" },
-                new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 6 }
+                new Field(){ AssetID = 1, FieldTypeID = 1, FormattedValue = "TestStringValue" },
+                new Field(){ AssetID = 1, FieldTypeID = 2, FormattedValue = "12.56" },
+                new Field(){ AssetID = 1, FieldTypeID = 3, FormattedValue = "10/10/2019", Value="5/2/2019" },
+                new Field(){ AssetID = 1, FieldTypeID = 4, Value = "True", FormattedValue = "True" },
+                new Field(){ AssetID = 1, FieldTypeID = 5, Value ="1,2", FormattedValue = "Test1,Test2" },
+                new Field(){ AssetID = 1, FieldTypeID = 6 }
               };
 
             var fieldsMock = CreateDbSetMock(fields);

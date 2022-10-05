@@ -411,7 +411,7 @@ namespace d360.model.DataAccessLayer
 
 			//Don't get field sql for OwnershipLookup fields, as that will return the definition rather than the json we want
 			//The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
-			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON, true, TempTableScriptList);
+			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Id]", listColorsAsJSON, true, TempTableScriptList);
 			var countJoins = fieldJoins.Clone();
 
 			TempTableScriptStr = string.Join("\n ", TempTableScriptList);

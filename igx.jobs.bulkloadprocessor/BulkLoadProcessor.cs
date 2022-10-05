@@ -1076,8 +1076,8 @@ when matched and S.Value is not null then
 	set	T.Value = S.Value,
 		T.UpdatedBy = S.UpdatedBy
 when not matched by target and S.Value is not null then
-    insert  (FieldTypeID, ObjectType, ObjectID, Value, UpdatedBy)
-    values  (S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.UpdatedBy);", transaction: trans);
+    insert  (AssetID, FieldTypeID, Value, UpdatedBy)
+    values  (S.AssetID, S.FieldTypeID, S.Value, S.UpdatedBy);", transaction: trans);
 
 					company.Execute(@"
 update	T

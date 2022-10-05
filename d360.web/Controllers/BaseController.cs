@@ -1636,7 +1636,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        filter = $" inner join field {tableId} on ({idColumn} = {tableId}.objectID and {tableId}.ObjectType = 'Artifact'  and {tableId}.fieldtypeid={fieldID} and {getFilteringConditionBind(tableId + ".FormattedValue", fCondition, i, dbParams, fValue, tableId, true)} )  ";
+                        filter = $" inner join field {tableId} on ({idColumn} = {tableId}.AssetID and {tableId}.fieldtypeid={fieldID} and {getFilteringConditionBind(tableId + ".FormattedValue", fCondition, i, dbParams, fValue, tableId, true)} )  ";
                     }
 
                     if (!string.IsNullOrEmpty(filter))
@@ -1680,12 +1680,24 @@ namespace d360.web.Controllers
             dbParams.Add(bind, $"{value}");
 
             var filter = $@"			inner join ( 
-			select F.objectID, F.ObjectType, F.FieldTypeID, dd.value as Value, F.[Value] as Val from Field F with (NOLOCK) 
-			cross apply string_split(F.Value,',') dd 
-			where F.FieldTypeID = {fieldType.ID} 
-			and exists (SELECT value  
-			FROM STRING_SPLIT(@{bind}, ',')  WHERE RTRIM(value)=dd.value) 
-			)  {prefix}  on   {prefix}.objectID={idColumn} ";
+			select 
+				CASE 
+					WHEN IssueID is not null THEN IssueID
+					WHEN IntersectID is not null THEN IntersectID
+					ELSE AssetID
+				end as idField,
+				F.FieldTypeID,
+				dd.value as Value,
+				F.[Value] as Val
+			from
+				Field F with (NOLOCK)
+				cross apply string_split(F.Value,',') dd
+			where 
+				F.FieldTypeID = {fieldType.ID}
+				and
+				exists (SELECT value  
+					FROM STRING_SPLIT(@{bind}, ',') WHERE RTRIM(value)=dd.value) 
+				) {prefix} on {prefix}.idField={idColumn} ";
 
             return filter;
         }

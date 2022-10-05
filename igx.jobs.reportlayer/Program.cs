@@ -104,9 +104,9 @@ namespace igx.jobs.reportlayer
                             var fjoins = string.Empty;
                             var ffields = string.Empty;
                             fieldTypes.ForEach(f =>
-                            {
+                            {  
                                 fjoins += $@" left join field as [Type_{f.ID}] on 
-                                        [Type_{f.ID}].fieldtypeId={f.ID} and [Type_{f.ID}].ObjectType='Resource' and [Type_{f.ID}].ObjectId=r.resourceid ";
+                                        [Type_{f.ID}].fieldtypeId={f.ID} and [Type_{f.ID}].AssetID=A.ID ";
                                 ffields += $@",[Type_{f.ID}].FormattedValue as [{f.FriendlyName}]";
                             });
 
@@ -126,6 +126,7 @@ namespace igx.jobs.reportlayer
                                     r.IsAdministrator
                                     {ffields}
                                     from reporting.Global_Resource as r
+									inner join Asset A on r.uid = A.Uid
                                     {fjoins}";
 
                             executeSqlWithTry(companyConnection, $@"CREATE OR ALTER VIEW {objectName} AS {selectSql}");

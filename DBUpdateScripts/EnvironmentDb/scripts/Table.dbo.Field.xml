@@ -592,4 +592,51 @@ END
     </rollback>
   </changeSet>
 
+	<changeSet author="bquinlivan" id="Table.dbo.Field-v2" runInTransaction="false">
+		<sql dbms="mssql"
+				endDelimiter="\nGO"
+				splitStatements="true"
+				stripComments="false">
+			<![CDATA[
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Field')
+			BEGIN
+				ALTER TABLE [dbo].[Field] DROP CONSTRAINT IF EXISTS [PK_Field]
+				DROP INDEX [CIX_Field] ON [dbo].[Field] WITH ( ONLINE = OFF )				
+				DROP INDEX [IX_Field_FieldTypeID] ON [dbo].[Field]
+				DROP INDEX [IX_Field_ObjectID] ON [dbo].[Field]
+				
+				alter table Field alter column [ObjectType] varchar(50) null
+				alter table Field alter column [ObjectID] int null
+				
+				ALTER TABLE [dbo].[Field] ADD CONSTRAINT [PK_Field] PRIMARY KEY CLUSTERED 
+				(	
+					[ID] ASC
+				)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]					
+				
+				alter table Field alter column AssetID bigint SPARSE
+				
+				IF COL_LENGTH('[dbo].[Field]', 'IntersectID') IS NULL
+				BEGIN
+					alter table Field add IntersectID int SPARSE
+				END
+				
+				IF COL_LENGTH('[dbo].[Field]', 'IssueID') IS NULL
+				BEGIN
+					alter table Field add IssueID int SPARSE
+				END				
+				
+				CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID_Include_Ids] ON [dbo].[Field]
+				(
+					[FieldTypeID] ASC
+				)
+				INCLUDE([AssetID],[IntersectID],[IssueID]) WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+			END
+			]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet> 
 </databaseChangeLog>

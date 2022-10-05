@@ -1810,4 +1810,29 @@ from	[Intersect] I
 	]]>
 	</sql>
   </changeSet>
+  <changeSet author="bquinlivan" id="Data.Corrections.GOV-18447">
+	<comment>GOV-18447 - populate field intersect and issue id columns</comment>	
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		IF COL_LENGTH('[dbo].[Field]', 'IntersectID') IS NOT NULL
+		BEGIN
+			UPDATE Field
+			SET IntersectID = ObjectID
+			WHERE 
+				objectType = 'Intersect'
+		END
+
+		IF COL_LENGTH('[dbo].[Field]', 'IssueID') IS NOT NULL
+		BEGIN
+			UPDATE Field
+			SET IssueID = ObjectID
+			WHERE 
+				objectType = 'Issue'
+		END
+	]]>
+	</sql>
+  </changeSet>
 </databaseChangeLog>
