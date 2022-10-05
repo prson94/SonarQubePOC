@@ -1,3 +1,21 @@
+using ComponentSpace.SAML2.Assertions;
+using ComponentSpace.SAML2.Profiles.SingleLogout;
+using ComponentSpace.SAML2.Profiles.SSOBrowser;
+using ComponentSpace.SAML2.Protocols;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.helpers;
+using d360.extensions;
+using d360.extensions.caching;
+using d360.web.caching;
+using d360.web.Extensions;
+using d360.web.Models;
+using Dapper;
+using IdentityModel.Client;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using Newtonsoft.Json;
+using Resources;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -11,43 +29,15 @@ using System.Net.Http;
 using System.Net.Mail;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 using System.Xml;
 
-using ComponentSpace.SAML2.Assertions;
-using ComponentSpace.SAML2.Profiles.SingleLogout;
-using ComponentSpace.SAML2.Profiles.SSOBrowser;
-using ComponentSpace.SAML2.Protocols;
-
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.helpers;
-using d360.extensions;
-using d360.extensions.azuregraph;
-using d360.extensions.caching;
-using d360.web.caching;
-using d360.web.Extensions;
-using d360.web.Models;
-using d360.web.Models.Attributes;
-
-using Dapper;
-
-using IdentityModel.Client;
-
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Resources;
-
 namespace d360.web.Controllers
 {
-    [RoutePrefix("")]
+	[RoutePrefix("")]
     public class AuthenticationController : BaseController
     {
         private const string APP_ID = "https://data3sixty.com/ui";
@@ -188,7 +178,8 @@ namespace d360.web.Controllers
                             break;
                         }
                     }
-                }
+					Telemetry.TrackTrace(new TraceTelemetry { Message = $"Environment has domain whitelist. User Domain = {userDomain}, In Whitelist = {isDomainWhitelisted}", SeverityLevel = SeverityLevel.Information });
+				}
                 else
                 {
                     isDomainWhitelisted = true;
@@ -215,15 +206,19 @@ namespace d360.web.Controllers
                         g.DomainSettingID == Community.CurrentDomainSettingID &&
 						allGroups.Contains(g.GroupName) &&
                         g.IsAdministrator);
-                }
+					
+					Telemetry.TrackTrace(new TraceTelemetry { Message = $"Should user be admin based on group membership = {isCompanyAdministrator}", SeverityLevel = SeverityLevel.Verbose});
+				}
 
                 if (resource == null)
                 {
-                    Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Did not find resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Warning });
+                    Telemetry.TrackTrace(new TraceTelemetry { 
+						Message = $"Did not find resource account for Username: {userName}. Other info: (First: {firstName}, Last: {lastName}, Allow New Users: {Community.CurrentCompanySsoModel.AllowNewUserLogin})", 
+						SeverityLevel = SeverityLevel.Information });
 
                     if (Community.CurrentCompanySsoModel.AllowNewUserLogin && !string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
                     {
-                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Now creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });
+                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"Now creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });
 
                         if (string.IsNullOrEmpty(firstName))
                         {
@@ -271,7 +266,7 @@ namespace d360.web.Controllers
                             });
                         }
 
-                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Verbose });
+                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Verbose });
                     }
                 }
                 else
@@ -280,7 +275,13 @@ namespace d360.web.Controllers
                     
                     if (companyResource == null)
                     {
-                        if (Community.CurrentCompanySsoModel.AllowNewUserLogin)
+						Telemetry.TrackTrace(new TraceTelemetry
+						{
+							Message = $"User not associated to tenant. Username: {userName}. Other info: (First: {firstName}, Last: {lastName}, Allow New Users: {Community.CurrentCompanySsoModel.AllowNewUserLogin})",
+							SeverityLevel = SeverityLevel.Information
+						});
+
+						if (Community.CurrentCompanySsoModel.AllowNewUserLogin)
                         {
                             companyResource = new CompanyResource
                             {
@@ -315,7 +316,13 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        if (companyResource.State == CompanyResourceState.Active)
+						Telemetry.TrackTrace(new TraceTelemetry
+						{
+							Message = $"Is user active on tenant? {companyResource.State}. Username: {userName}.",
+							SeverityLevel = SeverityLevel.Verbose
+						});
+
+						if (companyResource.State == CompanyResourceState.Active)
                         {
                             // We will not support downgrading users from admin to non-admin, ONLY upgrading (GOV-13515).
                             if (isCompanyAdministrator)
@@ -363,14 +370,20 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        return Redirect("/noaccess");
+						Telemetry.TrackTrace(new TraceTelemetry
+						{
+							Message = $"User attempting to log in does not have access. Username: {userName}.",
+							SeverityLevel = SeverityLevel.Verbose
+						});
+
+						return Redirect("/noaccess");
                     }
                 }
             }
 
             if (resource != null)
             {
-                Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Resource account exists for Username: {userName}. Now authorizing with cookie.", SeverityLevel = SeverityLevel.Verbose });
+                Telemetry.TrackTrace(new TraceTelemetry { Message = $"Resource account exists for Username: {userName}. Now authorizing with cookie.", SeverityLevel = SeverityLevel.Verbose });
 
                 if (resource.ID > 0)
                 {
@@ -585,7 +598,7 @@ namespace d360.web.Controllers
                     Telemetry.TrackTrace(
                         new TraceTelemetry
                         {
-                            Message = $"AssertionConsumerService => Referencing resource: {resource.ID}. Should not authorize with the system account.  The username is: {userName}",
+                            Message = $"Referencing resource: {resource.ID}. Should not authorize with the system account.  The username is: {userName}",
                             SeverityLevel = SeverityLevel.Error
                         });
                 }
@@ -721,15 +734,18 @@ namespace d360.web.Controllers
             // The SAML assertion may be signed or encrypted and signed.
             var telemetry = new TelemetryClient();
 
-            SAMLResponse samlResponse = null;
+			Telemetry.Context.Operation.Id = Guid.NewGuid().ToString();
+			Telemetry.Context.Operation.Name = "ParseSamlResponse";
+
+			SAMLResponse samlResponse = null;
             ServiceProvider.ReceiveSAMLResponseByHTTPPost(Request, out XmlElement samlResponseXml, out string relayState);
 
-            Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => samlResponseXml: {samlResponseXml.InnerXml}", SeverityLevel = SeverityLevel.Information });
+            Telemetry.TrackTrace(new TraceTelemetry { Message = $"samlResponseXml: {samlResponseXml.InnerXml}", SeverityLevel = SeverityLevel.Information });
 
             // Deserialize the XML.
             samlResponse = new SAMLResponse(samlResponseXml);
 
-            Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => IsSuccessful: {(samlResponse.IsSuccess() ? "Yes" : "No")}", SeverityLevel = SeverityLevel.Information });
+            Telemetry.TrackTrace(new TraceTelemetry { Message = $"IsSuccessful: {(samlResponse.IsSuccess() ? "Yes" : "No")}", SeverityLevel = SeverityLevel.Information });
 
             // Check whether the SAML response indicates success or an error and process accordingly.
             if (samlResponse.IsSuccess())
@@ -739,7 +755,7 @@ namespace d360.web.Controllers
                 Telemetry.TrackTrace(
                     new TraceTelemetry
                     {
-                        Message = $"AssertionConsumerService => Assertion Count: {samlResponse.GetAssertions().Count}, Signed Assertion Count: {samlResponse.GetSignedAssertions().Count}, Encrypted Assertion Count: {samlResponse.GetEncryptedAssertions().Count}",
+                        Message = $"Assertion Count: {samlResponse.GetAssertions().Count}, Signed Assertion Count: {samlResponse.GetSignedAssertions().Count}, Encrypted Assertion Count: {samlResponse.GetEncryptedAssertions().Count}",
                         SeverityLevel = SeverityLevel.Information
                     });
 
@@ -819,7 +835,7 @@ namespace d360.web.Controllers
                 }
 
                 Telemetry.TrackTrace(new TraceTelemetry { Message = $"SAML Attributes are: {submittedAttributes}", SeverityLevel = SeverityLevel.Verbose });
-                Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel = SeverityLevel.Information });
+                Telemetry.TrackTrace(new TraceTelemetry { Message = $"Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel = SeverityLevel.Information });
 
                 System.Action addSamlAssertionToCookie = () =>
                 {
@@ -845,7 +861,7 @@ namespace d360.web.Controllers
                 {
                     errorMessage = samlResponse.Status.StatusMessage.Message;
                 }
-                Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Unsuccessful: {errorMessage}", SeverityLevel = SeverityLevel.Error });
+                Telemetry.TrackTrace(new TraceTelemetry { Message = $"Unsuccessful: {errorMessage}", SeverityLevel = SeverityLevel.Error });
 
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
@@ -857,15 +873,22 @@ namespace d360.web.Controllers
             // From IdP.
             var code = Request.Form["code"];
             var state = Request.Form["state"];
+			
+			Telemetry.Context.Operation.Id = Guid.NewGuid().ToString();
+			Telemetry.Context.Operation.Name = "ParseOpenIdResponse";
+			Telemetry.TrackTrace(new TraceTelemetry { Message = $"Code = {code}, State = {state}", SeverityLevel = SeverityLevel.Information });
 
-            if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(state))
+			if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(state))
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.OpenIdCodeOrStateIsNotPresent);
+				Telemetry.TrackException(new ExceptionTelemetry { Message = $"Code and/or State is empty or null.", SeverityLevel = SeverityLevel.Critical });
+				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.OpenIdCodeOrStateIsNotPresent);
             }
 
             var authenticationSettings = Community.CurrentCompanySsoModel.StructuredAuthenticationSettings;
 
-            if (string.IsNullOrEmpty(authenticationSettings.baseUri) || string.IsNullOrEmpty(authenticationSettings.clientId) || string.IsNullOrEmpty(authenticationSettings.clientSecret) || string.IsNullOrEmpty(authenticationSettings.audience))
+			Telemetry.TrackTrace(new TraceTelemetry { Message = $"AuthenticationSettings: {Community.CurrentCompanySsoModel.AuthenticationSettings}", SeverityLevel = SeverityLevel.Information });
+
+			if (string.IsNullOrEmpty(authenticationSettings.baseUri) || string.IsNullOrEmpty(authenticationSettings.clientId) || string.IsNullOrEmpty(authenticationSettings.clientSecret) || string.IsNullOrEmpty(authenticationSettings.audience))
             {
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ApiMessages.MissingConfigInfo);
             }
@@ -875,7 +898,8 @@ namespace d360.web.Controllers
 
             if (openIdRequest == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthentication);
+				Telemetry.TrackException(new ExceptionTelemetry { Message = $"Could not find openIdRequest.", SeverityLevel = SeverityLevel.Error });
+				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthentication);
             }
 
             var client = new HttpClient();
@@ -888,8 +912,6 @@ namespace d360.web.Controllers
 			var response = await client.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
             {
                 Address = tokenUri,//$"{baseUri}/token",
-
-
 				ClientId = authenticationSettings.clientId,
                 ClientSecret = authenticationSettings.clientSecret,
                 ClientCredentialStyle = ClientCredentialStyle.PostBody,
@@ -900,10 +922,13 @@ namespace d360.web.Controllers
 
             if (response.IsError)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, response.HttpErrorReason);
+				Telemetry.TrackException(new ExceptionTelemetry { Message = $"Got error from RequestAuthorizationCodeTokenAsync.", Exception = response.Exception, SeverityLevel = SeverityLevel.Critical });
+				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, response.HttpErrorReason);
             }
 
-            var handler = new JwtSecurityTokenHandler();
+			Telemetry.TrackTrace(new TraceTelemetry { Message = $"Token Response: {response.Raw}", SeverityLevel = SeverityLevel.Verbose });
+
+			var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(response.IdentityToken);
 			var payload = token.Payload;
 			JwtSecurityToken accessToken = null;
@@ -914,7 +939,8 @@ namespace d360.web.Controllers
 			var incomingNonce = token.Claims.SingleOrDefault(c => c.Type == "nonce").Value.ToString();
             if (openIdRequest.Nonce != incomingNonce)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthenticationNonces);
+				Telemetry.TrackTrace(new TraceTelemetry { Message = $"Nonces do not match: Incoming: {incomingNonce}; Valid: {openIdRequest.Nonce}", SeverityLevel = SeverityLevel.Verbose });
+				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthenticationNonces);
             }
 
 			var combinedClaims = new List<System.Security.Claims.Claim>();
@@ -971,8 +997,8 @@ namespace d360.web.Controllers
             }
             catch (Exception ex)
             {
-                //nothing
-            }
+				Telemetry.TrackException(new ExceptionTelemetry { Message = $"Error when validating JWT token to active user.", Exception = ex, SeverityLevel = SeverityLevel.Critical });
+			}
 
             // If you got this far, then something was invalid.
             return new HttpStatusCodeResult(HttpStatusCode.BadRequest);

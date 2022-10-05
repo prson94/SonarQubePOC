@@ -930,9 +930,8 @@ namespace d360.web.Controllers
 
 			var assetTypeId = (type == SystemObjects.IntersectType || type == SystemObjects.IssueType) ? -1 : Company.AssetTypes.Where(a => a.Object == type.ToString() && a.ObjectID == id).FirstOrDefault().ID;
 
-			var fieldTypes = Company.Filter<FieldType>(i => ((type == SystemObjects.IssueType && i.IssueTypeID == id) || (type == SystemObjects.IntersectType && i.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && i.AssetTypeID == assetTypeId)) && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
 			var totalItems = Company
-				.Filter<FieldType>(i => ((type == SystemObjects.Issue && i.IssueTypeID == id) || (type == SystemObjects.Intersect && i.IntersectTypeID == id) || (type != SystemObjects.Issue && type != SystemObjects.Intersect && i.AssetTypeID == assetTypeId)) && !skippedFieldTypes.Contains(i.Type))
+				.Filter<FieldType>(i => ((type == SystemObjects.IssueType && i.IssueTypeID == id) || (type == SystemObjects.IntersectType && i.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && i.AssetTypeID == assetTypeId)) && !skippedFieldTypes.Contains(i.Type))
 				.ToList();
 
 			var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
