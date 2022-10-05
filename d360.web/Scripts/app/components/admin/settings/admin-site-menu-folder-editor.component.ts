@@ -476,7 +476,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	deleteNewFolder(item: SiteNav) {
-		let x = this.foldersFromSource.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
+		let x = this.foldersFromSource.findIndex((i) => i.ObjectID === item.ObjectID && i.Object === item.Object);
 		let i = _.cloneDeep(this.foldersFromTarget.splice(x, 1)[0]);
 		this.foldersFromSource.push(i);
 		this.setRequiredCount();
