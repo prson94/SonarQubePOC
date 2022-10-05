@@ -10,7 +10,7 @@ import { DefaultTableSettingsService } from '../../../services/settings/default-
 export class TableDataTransferComponent {
   @Input() isTargetDataReorderable: boolean = false;
   @Input() isRequired: boolean = true;
-  @Input() emptyTargetTableMessage: string = this.isRequired ? 'Please select at least one item' : 'No selected items';
+  @Input() emptyTargetTableMessage: string = 'Please select at least one item';
   @Input() emptySourceTableMessage: string = 'No available items';
   @Input() infoButton: boolean = false;
   @Input() isSortButtons: boolean = false;
