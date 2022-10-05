@@ -1,16 +1,15 @@
-import {catchError, debounceTime} from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 import { Component, Input, ElementRef, OnChanges, SimpleChange, Output, EventEmitter, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { TreeNode } from 'primeng/api';
-import {EMPTY, SubscriptionLike as ISubscription} from 'rxjs';
-import { ObjectDetailService } from "../../../services/object-detail.service";
+import { SubscriptionLike as ISubscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-header-breadcrumb-item',
-    providers: [TypeaheadSearchService, ObjectDetailService],    
+    providers: [TypeaheadSearchService],    
     host: {
         '(window:resize)': 'setMaxHeight()'
     },  
@@ -78,8 +77,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     constructor(private elementRef: ElementRef,
 				private router: Router, 
 				private typeaheadSearchService: TypeaheadSearchService,
-				private ref: ChangeDetectorRef,
-				private objectDetailService: ObjectDetailService) { }
+				private ref: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.breadcrumb)
