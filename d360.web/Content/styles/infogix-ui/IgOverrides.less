@@ -4,18 +4,18 @@
 
  /* Fix general theme. Theme usage: table-data-transfer component */
 .table-theme-1 {
-    p-table tbody.p-datatable-tbody > tr { /* stylelint-disable-line selector-type-no-unknown */
+    tbody.p-datatable-tbody > tr {
         border-bottom: none;
     }
 
-    p-table .p-datatable-thead > tr > th, /* stylelint-disable-line selector-type-no-unknown */
-    p-table .p-datatable-tfoot > tr > td, /* stylelint-disable-line selector-type-no-unknown */
-    p-table .p-datatable-tbody > tr > td, /* stylelint-disable-line selector-type-no-unknown */
-    p-table .p-datatable-data > tr > td { /* stylelint-disable-line selector-type-no-unknown */
+    .p-datatable-thead > tr > th,
+    .p-datatable-tfoot > tr > td,
+    .p-datatable-tbody > tr > td,
+    .p-datatable-data > tr > td {
         height: 38px;
     }
 
-    p-table .p-datatable-tbody > tr > td { /* stylelint-disable-line selector-type-no-unknown */
+    .p-datatable-tbody > tr > td {
         border-bottom: 1px solid @ig-grey-t5;
     }
 }
