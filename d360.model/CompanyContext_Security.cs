@@ -890,7 +890,7 @@ from	Asset A
 
 							if (whenFieldType != null)
 							{
-								whenSql.Append($" cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ");
+								whenSql.Append($" cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID");
 								
 								if (whenFieldType.AllowMultipleValues)// multiselect list
 								{
@@ -1030,7 +1030,7 @@ from	Asset A
 							{
 
 								var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();
-								whenSuffix.Append((whenSuffix.Length==0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = {objectIds[obj]}.{uniqueIdField} ");
+								whenSuffix.Append((whenSuffix.Length==0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldType FT inner join Field F on F.FieldTypeID = FT.ID inner join Asset A on A.Object = '{obj}' and A.ObjectID = {objectIds[obj]}.{uniqueIdField} ");
 								if (thenFieldType != null)
 								{
 									if (thenFieldType.AllowMultipleValues)// multiselect list

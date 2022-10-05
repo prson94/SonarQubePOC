@@ -1810,4 +1810,45 @@ from	[Intersect] I
 	]]>
 	</sql>
   </changeSet>
+  <changeSet author="bquinlivan" id="Data.Corrections.GOV-18447">
+	<comment>GOV-18447 - populate field intersect and issue id columns</comment>	
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		IF EXISTS 
+		(
+			SELECT *
+			FROM INFORMATION_SCHEMA.COLUMNS
+			WHERE table_name = 'Field'
+			AND column_name = 'IssueID'
+		)
+		BEGIN
+			UPDATE F
+			SET F.IssueID = I.ID
+			FROM 
+				Field F
+				INNER JOIN
+				Issue I ON I.ID = F.ObjectID AND F.ObjectType = 'Issue'
+		END
+
+		IF EXISTS 
+		(
+			SELECT *
+			FROM INFORMATION_SCHEMA.COLUMNS
+			WHERE table_name = 'Field'
+			AND column_name = 'IntersectID'
+		) 
+		BEGIN
+			UPDATE F
+			SET F.IntersectID = I.ID
+			FROM 
+				Field F
+				INNER JOIN
+				[Intersect] I ON I.ID = F.ObjectID AND F.ObjectType = 'Intersect'
+		END
+	]]>
+	</sql>
+  </changeSet>
 </databaseChangeLog>

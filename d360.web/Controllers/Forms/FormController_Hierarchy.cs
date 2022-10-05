@@ -130,13 +130,18 @@ namespace d360.web.Controllers
 					ItemSize = 20,
 					Value = (parent != null) ? parent.uid.ToString() : Guid.Empty.ToString() 
 				});
-				
+
+				long assetId = (long)model.AssetID;
+				int assetTypeId = (int)model.TypeID;
+				var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == assetTypeId).ToList();
+				var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == assetId).ToList();
+
 				list = loadDynamicFields(
 						 hierarchy.ToString(),
 						 id,
 						 list,
-						 Company.GetFieldTypesByObject(hierarchy == SystemObjects.Taxonomy ? SystemObjects.TaxonomyType : SystemObjects.PolicyType, (int)model.HierarchyTypeID).ToList(),
-						 Company.GetFieldRelationsByObject(hierarchy, id).ToList(),
+						 fieldTypes,
+						 fields,
 						 3,
 						 loadOnlySelectedLookupValue: true
 					 );

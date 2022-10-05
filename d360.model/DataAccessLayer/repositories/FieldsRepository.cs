@@ -2111,10 +2111,26 @@ namespace d360.model.DataAccessLayer
 
 		public IEnumerable<string> GetCustomFields(SystemObjects objectType, int objectId)
 		{
+			var whereSQL = "FT.AssetTypeId = @id";
+			var id = objectId;
+
+			if (objectType==SystemObjects.IntersectType)
+			{
+				whereSQL = "FT.InteresectTypeId = @id";
+			}
+			else if (objectType == SystemObjects.IssueType)
+			{
+				whereSQL = "FT.IssueTypeId = @id";
+			}
+			else
+			{
+				id = Company.AssetTypes.Where(a => a.Object == objectType.ToString() && a.ObjectID == objectId).FirstOrDefault().ID;
+			}
+
 			return Company.Query<string>(
-				@"select distinct  f.FriendlyName   as Name from fieldtype f  
-				inner join field f2 on f2.fieldtypeid = f.id 
-				 where f.[object] = @objectType and f.objectid = @id ", new { objectType = objectType.ToString(), id = objectId }, ApiTimeout);
+				$@"select distinct FT.FriendlyName as Name from fieldtype FT
+				inner join field F on F.fieldtypeid = FT.id 
+				 where {whereSQL}", new { id }, ApiTimeout);
 		}
 
 		public List<Tuple<string, Guid>> GetFieldInterSetUID(List<FieldType> ExistingFieldType)

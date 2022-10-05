@@ -64,7 +64,16 @@ namespace d360.core.entities
         [Key, Column(Order = 3)]
         public int ObjectID { get; set; }
 
-        public string Value { get; set; }
+		public int? AssetTypeID { get; set; }
+		public long? AssetID { get; set; }
+
+		public int? IntersectTypeID { get; set; }
+		public int? IntersectID { get; set; }
+
+		public int? IssueTypeID { get; set; }
+		public int? IssueID { get; set; }
+
+		public string Value { get; set; }
         
         public string FormattedValue { get; set; }
         

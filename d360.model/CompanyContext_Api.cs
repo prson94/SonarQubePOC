@@ -709,8 +709,7 @@ namespace d360.model
 									inner join FieldType FT on F.FieldTypeID = FT.ID
 									where 
 										FT.[Type] = 'Lookup'
-									  and F.ObjectType = EA.Object 
-									  and F.ObjectId = EA.ObjectID 
+									  and F.AssetId = EA.AssetID
 									  and EA.ItemNumber between @beginItemNumber and @endItemNumber
 									  and F.Value = ''", new { executionUid, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
@@ -817,7 +816,7 @@ namespace d360.model
             }
         }
 
-        public List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true)
+        public List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, SystemObjects objectType, string IdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true)
         {
             List<AssetFieldTypeUpdate> res = new List<AssetFieldTypeUpdate>();
 
@@ -832,8 +831,7 @@ namespace d360.model
 											and EA.ObjectID is not null 
 											and EF.FieldTypeID is not null
 							inner join Field F on F.FieldTypeId = EF.FieldTypeID 
-											and F.ObjectType = EA.Object 
-											and F.ObjectId = EA.ObjectID
+											and F.AssetID = {(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "EA.ObjectAssetID" : "EA.AssetID")} 
 					where   EA.ExecutionID = @executionID 
 							and EA.IsNew <> 1 
 							{(!isInsert ? "and F.FormattedValue <> EF.FieldValue" : "")} 
@@ -854,7 +852,7 @@ namespace d360.model
 							and EA.ItemNumber between @beginItemNumber and @endItemNumber
 							{(!isInsert ? "and coalesce(EF.FieldValue, '') <> ''" : "")} 
 							and not exists (select 1 from Field where FieldTypeID = EF.FieldTypeID 
-								and ObjectType = EA.Object and ObjectID = EA.ObjectID)";
+								and F.AssetID = {(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "EA.ObjectAssetID" : "EA.AssetID")} )";
 
                 if (!isInsert)
                 {
@@ -872,8 +870,7 @@ namespace d360.model
 							and EF.ItemNumber between @beginItemNumber and @endItemNumber
 							and EF.Ignore is null
 							and EF.FieldTypeID is not null
-							and F.ObjectID = A.ObjectID
-							and F.ObjectType = A.Object
+							and F.AssetID = A.AssetId
 							and F.FieldTypeID = EF.FieldTypeID
 							and EF.FieldValue is null 
 							and EF.LookupValue is null";
@@ -884,12 +881,11 @@ namespace d360.model
 
             // if we already have the asset id then insert it
             bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET");
+			bool hasIntersectID = ((tableName ?? "").ToUpper() == "API.EXECUTIONRELATIONSHIP");
 
-            string fieldValuesSql = $@"
+			string fieldValuesSql = $@"
 								select 
-										{objectSqlSyntax} as [Object]
-										,{objectIdSqlSyntax} as [ObjectID] 
-										,F.FieldTypeID as [FieldTypeID]                                        
+										F.FieldTypeID as [FieldTypeID]                                        
 										,case 
 											when FT.Type = 'Link' then F.FieldValue
 											else F.LookupValue
@@ -897,7 +893,8 @@ namespace d360.model
 										,F.FieldValue as [FormattedValue]
 										,getutcdate() as [UpdatedOn]
 										,@resourceId as [UpdatedBy]
-										{(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}                                          
+										{(hasAssetID ? ",A.AssetID" : ",null as AssetID")}                                          
+										{(hasIntersectID ? ",A.IntersectID" : ",null as IntersectID")}  
 								from    {tableName} A
 										inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
 											and F.ItemNumber = A.ItemNumber 
@@ -914,14 +911,13 @@ namespace d360.model
 
             string lookupFieldValuesSql = $@"
 								select 
-										{objectSqlSyntax} as [Object]
-										,{objectIdSqlSyntax} as [ObjectID] 
-										,F.FieldTypeID as [FieldTypeID]                                        
+										F.FieldTypeID as [FieldTypeID]                                        
 										,F.LookupValue as [Value]
 										,F.FieldValue as [FormattedValue]
 										,getutcdate() as [UpdatedOn]
 										,@resourceId as [UpdatedBy]
-										{(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}                                          
+										{(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}
+										{(hasIntersectID ? ",A.ObjectAssetID as IntersectID" : ",null as IntersectID")}  
 								from    {tableName} A
 										inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
 											and F.ItemNumber = A.ItemNumber 
@@ -941,14 +937,26 @@ namespace d360.model
                 Connection.Execute(
                     $@"
 						INSERT INTO 
-						dbo.[Field] ([ObjectType],[ObjectID],[FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID])                         
+						dbo.[Field] ([FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID],[IntersectID])                         
 						{fieldValuesSql}
 					"
                     , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
             }
             else
             {
-                Connection.Execute($@"
+				var fieldIdSQL = $" and F.AssetID = {IdSqlSyntax}";
+
+				if(objectType == SystemObjects.Intersect)
+				{
+					fieldIdSQL = $" and F.IntersectID = {IdSqlSyntax}";
+				}
+
+				if (objectType == SystemObjects.Issue)
+				{
+					fieldIdSQL = $" and F.IssueID = {IdSqlSyntax}";
+				}
+
+				Connection.Execute($@"
 					DELETE Field
 					FROM Field F
 						inner join {tableName} A on A.ExecutionID = @executionID 
@@ -956,8 +964,7 @@ namespace d360.model
 					WHERE EF.ItemNumber between @beginItemNumber and @endItemNumber
 					 and EF.Ignore is null
 					 and EF.FieldTypeID is not null
-					 and F.ObjectID = {objectIdSqlSyntax}
-					 and F.ObjectType = {objectSqlSyntax}
+					 {fieldIdSQL}
 					 and F.FieldTypeID = EF.FieldTypeID
 					 and EF.FieldValue is null 
 					 and EF.LookupValue is null;",
@@ -969,12 +976,12 @@ namespace d360.model
 					using       (
 									{fieldValuesSql} and FT.Type != 'Lookup'
 								) as S 
-					on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
+					on          ( T.FieldTypeID = S.FieldTypeID and (T.AssetID = S.AssetID or T.IntersectID = S.IntersectID) )
 					when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then
 					update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()                     
 					when		not matched by target then
-					insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID)
-					values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID);",
+					insert		(FieldTypeID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID, IntersectID)
+					values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID, S.IntersectID);",
                                 new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
                 if (hasLookupFieldTypes)
@@ -985,12 +992,12 @@ namespace d360.model
 					using       (
 									{lookupFieldValuesSql}
 								) as S 
-					on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
+					on          ( T.FieldTypeID = S.FieldTypeID and (T.AssetID = S.AssetID or T.IntersectID = S.IntersectID) )
 					when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS then
 					update set T.Value = S.Value, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()                     
 					when		not matched by target then
-					insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID)
-					values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID);",
+					insert		(FieldTypeID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID, IntersectID)
+					values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID, s.IntersectID);",
                                     new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
                 }
             }
@@ -1293,16 +1300,28 @@ namespace d360.model
             }
         }
 
-        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldTypeCore> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
+        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldTypeCore> jsonFieldTypes, SystemObjects objectType, string tableName, string IdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
         {
-            Stopwatch sw = Stopwatch.StartNew();
+			var fieldIdSQL = $" and F.AssetID = {IdSqlSyntax}";
+
+			if (objectType == SystemObjects.Intersect)
+			{
+				fieldIdSQL = $" and F.IntersectID = {IdSqlSyntax}";
+			}
+
+			if (objectType == SystemObjects.Issue)
+			{
+				fieldIdSQL = $" and F.IssueID = {IdSqlSyntax}";
+			}
+
+			Stopwatch sw = Stopwatch.StartNew();
             string jsonFieldTypeIDs = string.Join(",", jsonFieldTypes.Select(i => i.ID));
             IEnumerable<dynamic> fields = Connection.Query<dynamic>($@"
 					select  F.ID, 
 							F.FormattedValue 
 					from    Field F 
 							inner join {ApiExecutionFieldTable} E on E.ExecutionID = @executionID and E.ItemNumber between @beginItemNumber and @endItemNumber and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
-							inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
+							inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber {fieldIdSQL}",
                             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
             if (metrics != null)
@@ -1350,7 +1369,7 @@ namespace d360.model
 					select  F.ID
 					from    Field F 
 							inner join {ApiExecutionFieldTable} E on E.ExecutionID = @executionID and E.ItemNumber between @beginItemNumber and @endItemNumber and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
-							inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID)",
+							inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber {fieldIdSQL})",
                             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
             }
 
@@ -2979,9 +2998,9 @@ namespace d360.model
 					inner join Asset A on A.uid = #delAssets.uid
 					inner join [Intersect] I on I.Subject = A.Object and I.SubjectID = A.ObjectId
 
-				delete from Field where ObjectType = 'Intersect' and ObjectID in (select ID from #delRel)
+				delete from Field where IntersectID in (select ID from #delRel)
 
-				delete from Field where ObjectType = 'Task' and ObjectID in (select ObjectId from #delAssets)
+				delete from Field where AssetID in (select AssetId from #delAssets)
 				delete from asset where uid in (select uid from #delAssets)
 
 				delete from assetpath where id in (select assetid from #delAssets) 
@@ -3276,7 +3295,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									from Field T
 									where exists (
 										select 1
-										from api.ExecutionDeletedAsset S where s.[Object] = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix}
+										from api.ExecutionDeletedAsset S where S.AssetID = T.AssetID and {querySuffix}
 									);
 
 									create nonclustered index [cix_tempfieldid] on #tempfieldid (fieldid, id);
@@ -4850,7 +4869,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									}
 
 									sw.Restart();
-                                    List<AssetFieldTypeUpdate> transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, isInsert, hasLookupFieldTypes);
+                                    List<AssetFieldTypeUpdate> transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", SystemObjects.Artifact, "A.AssetID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, isInsert, hasLookupFieldTypes);
                                     AddMeasurement(metrics, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     sw.Restart();
 
@@ -4876,7 +4895,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                         sw.Restart();
 										AddMeasurement(metrics, $"MergeJsonFieldProperties >> {currentLoop} > Begin", 0, ++step);
 
-										MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, metrics, step, isInsert);
+										MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, SystemObjects.Artifact, "api.ExecutionAsset", "A.AssetID", beginItemNumber, endItemNumber, timeout, metrics, step, isInsert);
                                         AddMeasurement(metrics, $"MergeJsonFieldProperties >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
@@ -5868,7 +5887,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     if (relationshipTypeHasFieldTypes)
                                     {
                                         sw.Restart();
-                                        fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect'", "A.IntersectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+                                        fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", SystemObjects.Intersect, "A.IntersectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         AddMeasurement(metrics, "MergeFields", sw.ElapsedMilliseconds, ++step);
                                     }
 
@@ -6484,7 +6503,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     if (relationshipTypeHasFieldTypes)
                                     {
                                         sw.Restart();
-                                        fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect'", "A.IntersectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+                                        fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", SystemObjects.Intersect, "A.IntersectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         AddMeasurement(metrics, "MergeFields", sw.ElapsedMilliseconds, ++step);
                                     }
 
@@ -10966,9 +10985,7 @@ EG.GroupUid
                                         UpdateGroupCounterFields(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout: timeout);
                                     }
 
-                                    string fieldValuesSql = $@"select 		     
-										 A.Object as [Object]
-										,A.ObjectId as [ObjectID]
+                                    string fieldValuesSql = $@"select
 										,F.FieldTypeID as [FieldTypeID]
 										,case 
 											when FT.Type = 'Lookup' then F.FieldValue
@@ -11002,7 +11019,7 @@ EG.GroupUid
                                         Connection.Execute(
                                             $@"
 										INSERT INTO 
-										dbo.[Field] ([ObjectType],[ObjectID],[FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID])                         
+										dbo.[Field] ([FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID])                         
 										{fieldValuesSql}"
                                             , new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
                                     }
@@ -11019,8 +11036,7 @@ EG.GroupUid
 															WHERE EF.ItemNumber between @beginItemNumber and @endItemNumber
 															 and EF.Ignore is null
 															 and EF.FieldTypeID is not null
-															 and F.ObjectID = A.ObjectId
-															 and F.ObjectType = A.Object
+															 and F.AssetID = A.ID
 															 and F.FieldTypeID = EF.FieldTypeID
 															 and EF.FieldValue is null 
 															 and EF.LookupValue is null;",
@@ -11032,12 +11048,12 @@ EG.GroupUid
 															using       (
 																			{fieldValuesSql}
 																		) as S 
-															on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
+															on          ( T.FieldTypeID = S.FieldTypeID and T.AssetID = S.AssetID)
 															when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then
 															update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()                     
 															when		not matched by target then
-															insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID)
-															values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID);",
+															insert		(FieldTypeID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID)
+															values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID);",
                                                         new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
                                     }

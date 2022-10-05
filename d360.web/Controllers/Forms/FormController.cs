@@ -1452,7 +1452,10 @@ order by Sort, title";
 				});
 			}
 
-			list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.AssetType.ObjectID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row, false, false);
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).ToList();
+			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
+
+			list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, fieldTypes, fields, row, false, false);
 
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}
@@ -2004,9 +2007,9 @@ order by Sort, title";
 						where g.id = @groupId
 						", new { groupId }).FirstOrDefault();
 
-			var assetUid = Company.GetAssetUid(group.ID, SystemObjects.Group);
+			var asset = Company.Filter<Asset>(i => i.Object == "Group" && i.ObjectID == groupId).SingleOrDefault();
 
-			list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = assetUid.ToString() });
+			list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = asset.uid.ToString() });
 			list.Add(new EditableField { Category = "General", Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, Value = group.Name, FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 250) });
 			list.Add(new EditableField { Category = "General", Row = 1, Column = 2, Required = false, FieldName = "IsActiveDirectoryGroup", Name = FieldInfo.IsActiveDirectoryGroup_Name, Value = group.IsActiveDirectoryGroup.ToString(), FieldType = DataType.Boolean.ToString() });
 
@@ -2030,13 +2033,16 @@ order by Sort, title";
 
 			list.Add(new EditableField { Category = "General", Row = 3, Column = 1, Required = false, FieldName = "Description", Name = FieldInfo.Description_Name, Value = group.Description, FieldType = DataType.Html.ToString() });
 
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).ToList();
+			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
+
 			list = 
 			   loadDynamicFields(
 				   SystemObjects.Group.ToString(),
 				   groupId,
 				   list,
-				   Company.GetFieldTypesByObject(SystemObjects.GroupType, 1).ToList(),
-				   Company.GetFieldRelationsByObject(SystemObjects.Group, groupId).ToList(),
+				   fieldTypes,
+				   fields,
 				   4,
 				   loadOnlySelectedLookupValue: true
 			   );

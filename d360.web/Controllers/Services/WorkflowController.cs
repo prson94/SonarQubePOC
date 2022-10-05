@@ -269,7 +269,7 @@ namespace d360.web.Controllers.Services
 										from
 										fieldtype ft
 										inner
-										join field f on (ft.id = f.fieldtypeid and f.[objecttype] = 'Issue' and f.objectid = I.ID
+										join field f on (ft.id = f.fieldtypeid and f.IssueID = I.ID
 										and ft.FriendlyName = 'Description')) as DD
 						order by wi.StartedOn desc";
 
@@ -3021,7 +3021,7 @@ namespace d360.web.Controllers.Services
 					{
 						var fieldData = formFieldId.Trim().Split('|');
 						var actionFieldTypeId = int.Parse(fieldData[1]);
-						var actionField = Company.Fields.FirstOrDefault(x => x.FieldTypeID == actionFieldTypeId && x.ObjectID == detail.ObjectID);
+						var actionField = Company.Fields.FirstOrDefault(x => x.FieldTypeID == actionFieldTypeId && ((detail.Object == SystemObjects.Intersect.ToString() && x.IntersectID == detail.ObjectID) || (detail.Object == SystemObjects.Issue.ToString() && x.IssueID == detail.ObjectID) || (detail.Object != SystemObjects.Intersect.ToString() && detail.Object != SystemObjects.Issue.ToString() && x.AssetID == detail.AssetId)));
 
 						if (fieldChange.Type == "Link")
 						{

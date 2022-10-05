@@ -43,12 +43,15 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { FieldName = "AssetTypeUid", FieldType = DataType.Hidden.ToString(), Value = a.AssetType.uid.ToString() });
 
-            list = loadDynamicFields(
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).ToList();
+			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
+
+			list = loadDynamicFields(
                     SystemObjects.Task.ToString(),
                     id,
                     list,
-                    Company.GetFieldTypesByObject(SystemObjects.TaskType, a.AssetType.ObjectID).ToList(),
-                    Company.GetFieldRelationsByObject(SystemObjects.Task, id).ToList(),
+                    fieldTypes,
+                    fields,
                     2,
                     loadOnlySelectedLookupValue: true
                 );
@@ -140,12 +143,15 @@ namespace d360.web.Controllers
                 }
             }
 
-            list = loadDynamicFields(
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).ToList();
+			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
+
+			list = loadDynamicFields(
                     obj.ToString(),
                     id,
                     list,
-                    Company.GetFieldTypesByObject(type, a.AssetType.ObjectID).ToList(),
-                    Company.GetFieldRelationsByObject(obj, id).ToList(),
+                    fieldTypes,
+                    fields,
                     2,
                     loadOnlySelectedLookupValue: true
                 );

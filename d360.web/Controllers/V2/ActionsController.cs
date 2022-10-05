@@ -312,7 +312,7 @@ namespace d360.web.Controllers.V2
 									inner join Issue I on I.Object = A.Object and I.ObjectID = A.ObjectID
 									left join IssueType IT on IT.ID = I.IssueTypeID
 									left join FieldType FT on FT.IssueTypeID = IT.ID and (FT.Name = 'Description' or FT.Name = 'ProblemDesc')
-									left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = 'Issue' and F.ObjectID = I.ID
+									left join Field F on F.FieldTypeID = FT.ID and F.IssueID = I.ID
 							where	I.CompletedOn is null
 									and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
 							for json path";
@@ -895,7 +895,7 @@ namespace d360.web.Controllers.V2
 					{
 						issueModel.fields.ForEach(i =>
 						{
-							i.ObjectID = issueModel.Issue.ID;
+							i.IssueID = issueModel.Issue.ID;
 						});
 						Company.AddOrUpdateFields(issueModel.fields);
 					}
@@ -1158,7 +1158,7 @@ namespace d360.web.Controllers.V2
 
 						if (!string.IsNullOrEmpty(value))
 						{
-							fieldList.Add(new Field { FieldTypeID = ft.ID, ObjectID = issueId, ObjectType = SystemObjects.Issue.ToString(), Value = value });
+							fieldList.Add(new Field { FieldTypeID = ft.ID, IssueID = issueId, Value = value });
 						}
 					}
 				}

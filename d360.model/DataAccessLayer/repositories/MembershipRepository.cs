@@ -1176,7 +1176,7 @@ namespace d360.model.DataAccessLayer
 							}
 						}
 
-						CompanyContext.MergeFields(executionID, trans, "api.ExecutionUser", "A.[Object]", "A.ObjectID", 0, itemNumber, sendWorkflowEvents: true, isInsert: isInsertForMergeField);
+						CompanyContext.MergeFields(executionID, trans, "api.ExecutionUser", SystemObjects.Resource, "A.AssetID", 0, itemNumber, sendWorkflowEvents: true, isInsert: isInsertForMergeField);
 
 						if (hasRelationshipFieldTypes)
 						{

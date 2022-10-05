@@ -129,6 +129,7 @@ namespace d360.web.Controllers
 			var a = Community.GetById<Resource>(id, i => i.CompanyResources);
 			var stateList = CompanyResourceState.Active.GetList().Select(i => new SelectListItem { Text = i.Name, Value = (i.Name).ToString() }).ToList();
 			var cr = a.CompanyResources.Single(i => i.CompanyID == Company.CurrentCompanyID);
+			var asset = Company.Filter<Asset>(i => i.Object == "Resource" && i.ObjectID == id).SingleOrDefault();
 
 			list.Add(new EditableField 
 			{
@@ -210,12 +211,15 @@ namespace d360.web.Controllers
 				Items = stateList, Value = cr.State.ToString() 
 			});
 
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).ToList();
+			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
+
 			list = loadDynamicFields(
 					SystemObjects.Resource.ToString(),
 					id,
 					list,
-					Company.GetFieldTypesByObject(SystemObjects.ResourceType, 1).ToList(),
-					Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(),
+					fieldTypes,
+					fields,
 					4,
 					false,
 					false
@@ -230,6 +234,7 @@ namespace d360.web.Controllers
 			var list = new List<EditableField>();
 			var id = Company.CurrentResourceID;
 			var a = Community.GetById<Resource>(id);
+			var asset = Company.Filter<Asset>(i => i.Object == "Resource" && i.ObjectID == id).SingleOrDefault();
 
 			list.Add(new EditableField
 			{ 
@@ -265,12 +270,15 @@ namespace d360.web.Controllers
 										maxLength: 250) 
 			});
 
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).ToList();
+			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
+
 			list = loadDynamicFields(
 					SystemObjects.Resource.ToString(),
 					id,
 					list,
-					Company.GetFieldTypesByObject(SystemObjects.ResourceType, 1).ToList(),
-					Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(),
+					fieldTypes,
+					fields,
 					2,
 					false,
 					false

@@ -356,7 +356,7 @@ namespace d360.model.DataAccessLayer
 
 			if (fieldTypes != null)
 			{
-				getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "'Intersect'", "i.Id", listColorsAsJSON);
+				getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "i.Id", listColorsAsJSON, objectType: SystemObjects.Intersect);
 			}
 
 			if (queryParams.Any(x => x.Key.ToLower() == "_order"))
@@ -638,7 +638,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
 			if (fieldTypes != null)
 			{
-				getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "'Intersect'", "i.Id");
+				getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "i.Id", objectType: SystemObjects.Intersect);
 			}
 
 			var stateSql = "case I.State ";

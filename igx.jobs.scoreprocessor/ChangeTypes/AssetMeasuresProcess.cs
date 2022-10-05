@@ -230,7 +230,7 @@ where   AssetTypeID in (
 	    COALESCE (V.LookupValues, F.Value, F.FormattedValue, FT.DefaultValue) as [Values] 
     from	Asset A 
 	    inner join FieldType FT ON FT.AssetTypeID = A.AssetTypeID 
-	    left join Field F ON F.FieldTypeID = FT.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
+	    left join Field F ON F.FieldTypeID = FT.ID AND F.AssetID = A.ID
 	    outer apply (
 		    select	string_agg(lower(cast(LA.Uid as nvarchar(max))), ',') as LookupValues
 		    from	STRING_SPLIT(COALESCE(F.Value, FT.DefaultValue),',') MV

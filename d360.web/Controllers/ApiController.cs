@@ -377,7 +377,13 @@ namespace d360.web.Controllers
 				var intersectTypeID = ft.LookupObjectID.Value;
 				var fieldTypeID = ft.LookupObjectFieldTypeID.Value;
 				var sType = type.ToString();
-				var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id))).FirstOrDefault();
+				var issueID = -1;
+				var intersectID = -1;
+				var assetID = -1l;
+				
+				assetID = Company.Assets.Where(a => a.Object == sType && a.ObjectID == id).FirstOrDefault().ID;
+				
+				var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectTypeID && (i.SubjectAssetID == assetID || i.ObjectAssetID == assetID)).FirstOrDefault();
 
 				string fieldValue = null;
 
@@ -385,28 +391,26 @@ namespace d360.web.Controllers
 				{
 					var isSubject = intersect.Subject == sType && intersect.SubjectID == id;
 					var obj = isSubject ? intersect.Object : intersect.Subject;
-					var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+					var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;		
+					var intersectAssetID = isSubject ? intersect.ObjectAssetID : intersect.SubjectAssetID;
 
 					var rfld = (await Company.QueryAsync<string>(@"
 						declare @fieldValue nvarchar(max) = null,
 								@type varchar(50) = '',
-								@definition nvarchar(2500) = '[]',
-								@assetId bigint
+								@definition nvarchar(2500) = '[]'
+
 						select @type = [Type], @definition = [Definition] from FieldType where ID = @fieldTypeID
 
 						if @type = 'JsonElement'
 						begin
 							select	@fieldValue = P.Value
 							from	openjson(@definition) with (FieldTypeID int '$.FieldTypeID', DataType varchar(50) '$.DataType', [Path] varchar(250) '$.Path') D
-									left join Field F on F.FieldTypeID = D.FieldTypeID and [ObjectType] = @obj and ObjectID = @objID
+									left join Field F on F.FieldTypeID = D.FieldTypeID and F.AssetId = @intersectAssetID
 									left join FieldJsonProperty P on P.FieldID = F.ID and P.[Path] = D.[Path]
 						end
 						else if @type = 'Path'
 						begin
-							select  @assetId = ID 
-							from	Asset 
-							where	Object = @obj and ObjectID = @objId
-							select	@fieldValue = graph.GetPathByAssetId(@assetId, ' <i class=""fa fa-angle-right""></i> ', ' / ')
+							select	@fieldValue = graph.GetPathByAssetId(@intersectAssetID, ' <i class=""fa fa-angle-right""></i> ', ' / ')
 						end
 						else
 						begin
@@ -414,7 +418,7 @@ namespace d360.web.Controllers
 							from	FieldDetail
 							where	FieldTypeID = @fieldTypeID and [Object] = @obj and ObjectID = @objID
 						end
-						select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAnsi = true, Length = 50 }, objID }).ConfigureAwait(false)).SingleOrDefault();
+						select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAnsi = true, Length = 50 }, objID, intersectAssetID }).ConfigureAwait(false)).SingleOrDefault();
 
 					if (rfld != null)
 					{
@@ -471,7 +475,19 @@ namespace d360.web.Controllers
 
 			if (details != null)
 			{
-				var fields = Company.GetFieldRelationsByObject(type, id).ToList();
+				List<FieldWithRelation> fields = null;
+				switch (type)
+				{
+					case SystemObjects.Intersect:
+						fields = Company.Filter<FieldWithRelation>(i => i.IntersectID == id).ToList();
+						break;
+					case SystemObjects.Issue:
+						fields = Company.Filter<FieldWithRelation>(i => i.IssueID == id).ToList();
+						break;
+					default:
+						fields = Company.Filter<FieldWithRelation>(i => i.AssetID == details.AssetID).ToList();
+						break;
+				}
 
 				var assettypeID = -1;
 				var issueTypeID = -1;
@@ -502,7 +518,7 @@ namespace d360.web.Controllers
 				{
 					lookupDataSelectSQL = @"  from [Intersect] I
 					inner join fieldtype ft on ft.intersectTypeID = i.IntersectTypeID
-					left join Field f on f.ObjectID = i.ID and f.FieldTypeID = ft.ID";
+					left join Field f on f.IntersectID = i.ID and f.FieldTypeID = ft.ID";
 					lookupDataWhereSQL = "where I.ID = @assetId ";
 				}
 
@@ -2500,6 +2516,7 @@ namespace d360.web.Controllers
 		{
 			var objectDetail = Company.Query<ObjectDetailsSimplified>(@"
 					select 
+						asset.ID as AssetID,
 						asset.AssetTypeID,
 						assetType.Object as Type,
 						assetType.ObjectID as TypeID
@@ -2517,7 +2534,7 @@ namespace d360.web.Controllers
 				return null;
 			}
 
-			var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
+			var sql = "select FormattedValue from field where AssetID = @AssetID and fieldtypeid = @fieldId";
 
 			if (fieldType?.LookupObjectType == SystemObjects.ReferenceItem.ToString() && !LookupFieldHasColorItem(fieldType))
 			{
@@ -2544,16 +2561,15 @@ namespace d360.web.Controllers
 							field F
 							inner join FieldType ft on ft.ID = f.FieldTypeID
 							{joincondition}
-							inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = try_cast({joinconditionField} as int)   
-							outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and FT1.FriendlyName='description' and FD1.ObjectID = try_cast({joinconditionField} as int) and FD1.AssetID=ACF.ID) FD
-							outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and FT2.FriendlyName='profile level' and FD2.ObjectID = try_cast({joinconditionField} as int) and FD2.AssetID=ACF.ID) FPL
+							inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = try_cast({joinconditionField} as int)
+							outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and FT1.FriendlyName='description' and FD1.AssetID=ACF.ID) FD
+							outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FT2.[Type]='{DataType.Text}' and FT2.FriendlyName='profile level' and FD2.AssetID=ACF.ID) FPL
 						where 
-							F.objecttype = @obj 
-							and F.objectid = @id 
+							F.AssetID = @AssetID 
 							and F.fieldtypeid = @fieldId FOR JSON PATH";
 			}
 
-			string value = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
+			string value = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, AssetID = objectDetail.AssetID, fieldId = fieldType.ID }).FirstOrDefault();
 
 			if (string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(fieldType.DefaultFormattedValue))
 			{
@@ -2572,8 +2588,8 @@ namespace d360.web.Controllers
 								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
 								inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
 								cross apply dbo.GetAssetColorJsonByColor(ACf.Color) ACJ
-								outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.ObjectID = SPF.Value and FD1.AssetID=ACF.ID) FD
-								outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FD2.ObjectType='{SystemObjects.ReferenceItem}' and FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.ObjectID = SPF.Value and FD2.AssetID=ACF.ID) FPL
+								outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.AssetID=ACF.ID) FD
+								outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.AssetID=ACF.ID) FPL
 								where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type}' and f.[ObjectID] = {id}) FOR JSON PATH";
 				string colorAndValue = Company.Query<string>(colorAndValueSql).FirstOrDefault();
 
