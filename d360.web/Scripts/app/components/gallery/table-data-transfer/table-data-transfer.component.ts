@@ -8,9 +8,9 @@ import { EVENTS, ITEMS_FROM_SOURCE, ITEMS_FROM_SOURCE_ADVANCED, ITEMS_FROM_TARGE
   styleUrls: ['./table-data-transfer.component.less']
 })
 export class GalleryTableDataTransferComponent implements OnInit {
-  itemsFromSource: any[] = ITEMS_FROM_SOURCE;
+  itemsFromSource: any[] = ITEMS_FROM_SOURCE.sort((a, b) => a.Title?.localeCompare(b.Title));
   itemsFromTarget: any[] = ITEMS_FROM_TARGET;
-  itemsFromSourceAdvanced: any[] = ITEMS_FROM_SOURCE_ADVANCED;
+  itemsFromSourceAdvanced: any[] = ITEMS_FROM_SOURCE_ADVANCED.sort((a, b) => a.Title?.localeCompare(b.Title));
   itemsFromTargetAdvanced: any[] = ITEMS_FROM_TARGET_ADVANCED;
   sampleUsage: string = SAMPLE_USAGE;
   properties: Property[] = PROPERTIES;
