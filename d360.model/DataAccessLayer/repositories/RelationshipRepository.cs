@@ -1222,7 +1222,14 @@ where	Id = @Id
 					foreach (var field in fields)
 					{
 
-						var token = row[field.Name];						
+						var token = row[field.Name];
+
+						var fieldID = field.Name.Split('|');
+
+						if (fieldID.Count() > 1)
+						{
+							token = row[fieldID[0]][fieldID[1]];
+						}
 
 						string value = "";
 						if (token != null)
