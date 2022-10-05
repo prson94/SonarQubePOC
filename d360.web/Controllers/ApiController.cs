@@ -475,7 +475,19 @@ namespace d360.web.Controllers
 
 			if (details != null)
 			{
-				var fields = Company.GetFieldRelationsByObject(type, id).ToList();
+				List<FieldWithRelation> fields = null;
+				switch (type)
+				{
+					case SystemObjects.Intersect:
+						fields = Company.Filter<FieldWithRelation>(i => i.IntersectID == id).ToList();
+						break;
+					case SystemObjects.Issue:
+						fields = Company.Filter<FieldWithRelation>(i => i.IssueID == id).ToList();
+						break;
+					default:
+						fields = Company.Filter<FieldWithRelation>(i => i.AssetID == details.AssetID).ToList();
+						break;
+				}
 
 				var assettypeID = -1;
 				var issueTypeID = -1;
@@ -2575,7 +2587,7 @@ namespace d360.web.Controllers
 								cross apply STRING_SPLIT(F.Value, ',') SPF
 								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
 								inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
-								cross apply dbo.GetAssetColorJsonByColor(ACf.Color) ACJ //TODO
+								cross apply dbo.GetAssetColorJsonByColor(ACf.Color) ACJ
 								outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.AssetID=ACF.ID) FD
 								outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.AssetID=ACF.ID) FPL
 								where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type}' and f.[ObjectID] = {id}) FOR JSON PATH";

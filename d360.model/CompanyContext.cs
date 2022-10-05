@@ -199,7 +199,21 @@ namespace d360.model
 			if (items.Count > 0)
 			{
 				Field firstField = items[0];
-				List<Field> existingFields = Filter<Field>(i => (i.AssetID == firstField.AssetID || i.IssueID == firstField.IssueID || i.IntersectID == firstField.IntersectID)).ToList();
+				List<Field> existingFields;
+
+				if (firstField.IssueID > 0)
+				{
+					existingFields = Filter<Field>(i => i.IssueID == firstField.IssueID).ToList();
+				}
+				else if (firstField.IntersectID > 0)
+				{
+					existingFields = Filter<Field>(i => i.IntersectID == firstField.IntersectID).ToList();
+				}
+				else 
+				{
+					existingFields = Filter<Field>(i => i.AssetID == firstField.AssetID).ToList();
+				}
+				
 
 				List<int> existingFieldTypeIDs = existingFields.Select(i => i.FieldTypeID).ToList(); 
 				items.ForEach(item =>
@@ -418,12 +432,6 @@ namespace d360.model
 				SourceType = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = type.ToString() },
 				SourceTypeID = id
 			}).ConfigureAwait(false);
-		}
-
-		public IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id)
-		{
-			string sType = type.ToString();
-			return Filter<FieldWithRelation>(i => i.ObjectType == sType && i.ObjectID == id);
 		}
 
 		public IQueryable<FieldType> GetFieldTypesByObject(SystemObjects type, int id)

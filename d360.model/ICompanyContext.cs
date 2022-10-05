@@ -289,8 +289,6 @@ namespace d360.model
         
         Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id);
         
-        IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id);
-        
         IQueryable<FieldType> GetFieldTypesByObject(SystemObjects type, int id);
 
 		IQueryable<FollowDetail> GetFollowersByObject(int? assetTypeid, long? assetid);

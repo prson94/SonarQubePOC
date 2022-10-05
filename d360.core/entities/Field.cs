@@ -6,12 +6,12 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Field : BaseObject
+    public class Field : BaseLongObject
     {
         [DataMember]
         public long? AssetID { get; set; }
 
-        [Column(Order = 3), DataMember, Key]
+        [DataMember]
         public int FieldTypeID { get; set; }
 
         [DataMember]

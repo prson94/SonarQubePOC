@@ -881,7 +881,7 @@ namespace d360.model
 
             // if we already have the asset id then insert it
             bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET");
-			bool hasIntersectID = ((tableName ?? "").ToUpper() == "api.ExecutionRelationship");
+			bool hasIntersectID = ((tableName ?? "").ToUpper() == "API.EXECUTIONRELATIONSHIP");
 
 			string fieldValuesSql = $@"
 								select 
@@ -893,8 +893,8 @@ namespace d360.model
 										,F.FieldValue as [FormattedValue]
 										,getutcdate() as [UpdatedOn]
 										,@resourceId as [UpdatedBy]
-										{(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}                                          
-										{(hasIntersectID ? ",A.ObjectAssetID as IntersectID" : ",null as IntersectID")}  
+										{(hasAssetID ? ",A.AssetID" : ",null as AssetID")}                                          
+										{(hasIntersectID ? ",A.IntersectID" : ",null as IntersectID")}  
 								from    {tableName} A
 										inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
 											and F.ItemNumber = A.ItemNumber 
