@@ -1817,20 +1817,36 @@ from	[Intersect] I
             splitStatements="true"
             stripComments="false">
 	<![CDATA[
-		IF COL_LENGTH('[dbo].[Field]', 'IntersectID') IS NOT NULL
+		IF EXISTS 
+		(
+			SELECT *
+			FROM INFORMATION_SCHEMA.COLUMNS
+			WHERE table_name = 'Field'
+			AND column_name = 'IssueID'
+		)
 		BEGIN
-			UPDATE Field
-			SET IntersectID = ObjectID
-			WHERE 
-				objectType = 'Intersect'
+			UPDATE F
+			SET F.IssueID = I.ID
+			FROM 
+				Field F
+				INNER JOIN
+				Issue I ON I.ID = F.ObjectID AND F.ObjectType = 'Issue'
 		END
 
-		IF COL_LENGTH('[dbo].[Field]', 'IssueID') IS NOT NULL
+		IF EXISTS 
+		(
+			SELECT *
+			FROM INFORMATION_SCHEMA.COLUMNS
+			WHERE table_name = 'Field'
+			AND column_name = 'IntersectID'
+		) 
 		BEGIN
-			UPDATE Field
-			SET IssueID = ObjectID
-			WHERE 
-				objectType = 'Issue'
+			UPDATE F
+			SET F.IntersectID = I.ID
+			FROM 
+				Field F
+				INNER JOIN
+				[Intersect] I ON I.ID = F.ObjectID AND F.ObjectType = 'Intersect'
 		END
 	]]>
 	</sql>

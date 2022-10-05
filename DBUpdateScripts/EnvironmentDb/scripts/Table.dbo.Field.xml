@@ -601,26 +601,33 @@ END
 			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Field')
 			BEGIN
 				ALTER TABLE [dbo].[Field] DROP CONSTRAINT IF EXISTS [PK_Field]
-				DROP INDEX [CIX_Field] ON [dbo].[Field] WITH ( ONLINE = OFF )				
-				DROP INDEX [IX_Field_FieldTypeID] ON [dbo].[Field]
-				DROP INDEX [IX_Field_ObjectID] ON [dbo].[Field]
+				DROP INDEX IF EXISTS [CIX_Field] ON [dbo].[Field] WITH ( ONLINE = OFF )				
+				DROP INDEX IF EXISTS [IX_Field_FieldTypeID] ON [dbo].[Field]
+				DROP INDEX IF EXISTS [IX_Field_ObjectID] ON [dbo].[Field]
+				DROP INDEX IF EXISTS [IX_Field_AssetID_Include] ON [dbo].[Field]
 				
 				alter table Field alter column [ObjectType] varchar(50) null
-				alter table Field alter column [ObjectID] int null
+				alter table Field alter column [ObjectID] int null		
+				alter table Field alter column AssetID bigint SPARSE				
 				
-				ALTER TABLE [dbo].[Field] ADD CONSTRAINT [PK_Field] PRIMARY KEY CLUSTERED 
-				(	
-					[ID] ASC
-				)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]					
-				
-				alter table Field alter column AssetID bigint SPARSE
-				
-				IF COL_LENGTH('[dbo].[Field]', 'IntersectID') IS NULL
+				IF NOT EXISTS 
+				(
+					SELECT *
+					FROM INFORMATION_SCHEMA.COLUMNS
+					WHERE table_name = 'Field'
+					AND column_name = 'IntersectID'
+				) 
 				BEGIN
 					alter table Field add IntersectID int SPARSE
 				END
 				
-				IF COL_LENGTH('[dbo].[Field]', 'IssueID') IS NULL
+				IF NOT EXISTS 
+				(
+					SELECT *
+					FROM INFORMATION_SCHEMA.COLUMNS
+					WHERE table_name = 'Field'
+					AND column_name = 'IssueID'
+				)
 				BEGIN
 					alter table Field add IssueID int SPARSE
 				END				
@@ -629,7 +636,19 @@ END
 				(
 					[FieldTypeID] ASC
 				)
-				INCLUDE([AssetID],[IntersectID],[IssueID]) WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+				INCLUDE([AssetID],[IntersectID],[IssueID])
+				
+				ALTER TABLE [dbo].[Field] ADD CONSTRAINT [PK_Field] PRIMARY KEY CLUSTERED 
+				(	
+					[ID] ASC
+				)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]					
+								
+				CREATE NONCLUSTERED INDEX [IX_Field_AssetID_Include] ON [dbo].[Field] 
+				( 
+					[AssetID] ASC 
+				) 
+				INCLUDE([FieldTypeID],[Value],[FormattedValue])
+				
 			END
 			]]>
     </sql>
