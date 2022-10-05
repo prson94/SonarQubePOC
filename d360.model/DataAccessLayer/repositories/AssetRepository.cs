@@ -601,6 +601,8 @@ namespace d360.model.DataAccessLayer
 						
 							create index idx_tempInclRela on #tempInclRela(AssetID,isRefList) include (BAssetID,BAssetTypeID)";
 
+					var typeNameParameter = dbArgs.ParameterNames.Contains("RefListName") ? "@RefListName as TypeName" : "TB.[Name] as TypeName";
+
 					var innerSql = $@"
 							  select * from (
 									Select
@@ -617,7 +619,7 @@ namespace d360.model.DataAccessLayer
 									Select
 									TB.[UID] as AssetUid 
 									,TB.[Name] DisplayValue
-									,@RefListName as TypeName
+									,{typeNameParameter}
 									,@predicateUid as PredicateUid
 								from #tempInclRela TIR
 								inner join AssetType TB on TIR.BAssetId = 0 and TB.ID = TIR.BAssetTypeID 
