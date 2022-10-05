@@ -281,7 +281,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.clearInvalidFields();
 		switch (this.formMode) {
 			case FormMode.Editing:
-				var folder = this.getModel();
+				const folder = this.getModel();
 				this.siteMenuService.editFolder(folder)
 					.subscribe((result) => {
 						this.showMessageForResult(this.messagesService, result);
@@ -295,9 +295,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 					});
 				break;
 			case FormMode.Adding:
-				var model = {
+				const model = {
 					folder: this.getModel(),
-					items: this.itemsFromTarget,
+					items: this.itemsFromTarget
 				};
 
 				this.siteMenuService.addFolder(model)

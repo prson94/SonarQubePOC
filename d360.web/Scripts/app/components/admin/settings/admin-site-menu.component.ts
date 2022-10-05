@@ -392,7 +392,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 			case FormMode.Adding:
 
 				this.newFolder.IconPayload = this.iconImage.dataUrl;
-				var model = {
+				const model = {
 					folder: this.newFolder,
 					items: this.newFolderItems
 				};
