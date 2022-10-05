@@ -59,7 +59,11 @@
 													 [(itemsFromTarget)]="foldersFromTarget"
 													 [sourceTableTitle]="'Available Folder Items'"
 													 [targetTableTitle]="'Selected Folder Items'"
-													 [isSortButtons]="true"></d3s-table-data-transfer>
+													 [isSortButtons]="true"
+													 [isTargetDataReorderable]="true"
+													 [isItemsFromSourceLoading]="isItemsFromSourceLoading"
+													 [isItemsFromTargetLoading]="isItemsFromTargetLoading"
+													 (itemsFromTargetChange)="setRequiredCount()"></d3s-table-data-transfer>
 						</div>
 					</ig-property-group>
 
@@ -77,6 +81,8 @@
 													 [itemsNameProperty]="'Text'"
 													 [infoButton]="true"
 													 [isRequired]="false"
+													 [isItemsFromSourceLoading]="isItemsFromSourceLoading"
+													 [isItemsFromTargetLoading]="isItemsFromTargetLoading"
 													 [emptyTargetTableMessage]="'No selected items'"
 													 (showInfoEvent)="showInfo($event)"></d3s-table-data-transfer>
 						</div>

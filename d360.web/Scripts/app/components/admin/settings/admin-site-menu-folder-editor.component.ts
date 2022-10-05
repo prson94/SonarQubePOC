@@ -9,14 +9,12 @@
 } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import * as _ from 'lodash';
-import { Table } from 'primeng/table';
 import { forkJoin, Subject } from 'rxjs';
 import { startWith, takeUntil, tap } from 'rxjs/operators';
 import { FormHelper, FormMode } from '../../../models/form.model';
 import { CompanyImage } from '../../../models/settings.model';
-import { SiteNav } from '../../../models/site-menu.model';
+import { SiteNav, SiteNavPermission, SiteNavPermissionUID } from '../../../models/site-menu.model';
 import { DataProfileService } from '../../../services/dataprofile.service';
-import { LocaleService } from '../../../services/locale.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
@@ -72,10 +70,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	simpleTextFilter: string = '';
 	simpleTextFilterForExistingItems: string = '';
 
-	//this contains user or groups selected (2nd table in permission property group)
-	permissionsFromTarget: any[] = [];
-
-	permissionsFromSource: any[] = [];
+	permissionsFromTarget: SiteNavPermissionUID[] = [];
+	permissionsFromSource: SiteNavPermissionUID[] = [];
 	permissionAssetsTotalCount: number;
 	selectedPermissionsFromSource: any[] = [];
 	selectedPermissionsFromTarget: any[] = [];
@@ -91,6 +87,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	labelCancel = $localize`Cancel`;
 	labelDiscard = $localize`Discard Changes`;
+
+	isItemsFromSourceLoading = true;
+	isItemsFromTargetLoading = true;
 
 	hasFolderItems: boolean = false;
 
@@ -109,11 +108,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		private cdRef: ChangeDetectorRef,
 		private formBuilder: FormBuilder,
 		private messagesService: MessagesObservableService,
-		private dataProfileService: DataProfileService,
 		protected settingsService: CompanySettingsService,
 		private siteMenuService: SiteMenuService,
 		private stateService: StateService,
-		private localService: LocaleService,
 		private elRef: ElementRef
 	) {
 		super(settingsService);
@@ -185,31 +182,41 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		forkJoin([
 			this.siteMenuService.getSiteNavPermissions(this.navigationFolder.ID),
 			this.siteMenuService.getSiteNavFolderItems(this.navigationFolder.ID)
-		])
-			.subscribe((results) => {
-				let permissions = results[0];
-				let folders = results[1];
+		]).subscribe((results) => {
+				let selectedPermissionsRaw: SiteNavPermission[] = results[0];
+				let selectedFolders = results[1];
 
 				//preselect permission assets
-				var selectedPermissions = {};
-				permissions.forEach((item) => {
-					selectedPermissions[item.Object + "|" + item.ObjectID] = 1;
-				});
-				this.permissionsFromSource.forEach((res) => {
-					if (selectedPermissions[res["Value"]]) {
-						this.selectedPermissionsFromSource.push(res);
-					}
-				});
-				this.addPermissionAssets();
+				this.preselectPermissions(selectedPermissionsRaw);
 
 				//preselect folder items
-				this.foldersFromTarget = [...folders];
+				selectedFolders.sort((a, b) => a?.SortOrder - b?.SortOrder);
+				this.foldersFromTarget = [...selectedFolders];
 				this.isAvailableFolderItemsTableLoading = false;
 				this.isPermissionAssetTableLoading = false;
+				this.isItemsFromTargetLoading = false;
 				this.setRequiredCount();
 				this._initialVersion = JSON.stringify(this.getModel());
 				this.cdRef.detectChanges();
 			});
+	}
+
+	public preselectPermissions(selectedPermissionsRaw) {
+		// Find selected raw permissions in source and put in target
+		let permissionsFromSourceSelected = this.permissionsFromSource.filter((permissionFromSource: SiteNavPermissionUID) => {
+			return selectedPermissionsRaw.some((selectedPermission: SiteNavPermission) => {
+				return permissionFromSource.Value === selectedPermission.Object + '|' + selectedPermission.ObjectID;
+			});
+		});
+		this.permissionsFromTarget = [...permissionsFromSourceSelected];
+
+		// Remove selected raw permissions from source
+		let permissionsFromSourceWithoutSelected = this.permissionsFromSource.filter((permissionFromSource: SiteNavPermissionUID) => {
+			return selectedPermissionsRaw.every((selectedPermission: SiteNavPermission) => {
+				return permissionFromSource.Value !== selectedPermission.Object + '|' + selectedPermission.ObjectID;
+			});
+		});
+		this.permissionsFromSource = [...permissionsFromSourceWithoutSelected];
 	}
 
 	public isFormValid(): boolean {
@@ -447,6 +454,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			this.permissionsFromSource = perm["results"];
 			this.isPermissionAssetTableLoading = false;
 			this.isAvailableFolderItemsTableLoading = false;
+			this.isItemsFromSourceLoading = false;
 			if (this.navigationFolder) {
 				this.enrichFolderData();
 			}
@@ -518,35 +526,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		} else if (!this.foldersFromTarget || this.foldersFromTarget?.length === 0) {
 			this.elRef.nativeElement.querySelector("[name = availableFolderItemsSearchField]").querySelectorAll(".ig-input")[0].focus();
 			this.folderNameIsFocused = false;
-		}
-	}
-
-	addPermissionAssets() {
-		this.selectedPermissionsFromSource.forEach((pa) => {
-			if (this.permissionsFromTarget.indexOf(pa) === -1) {
-				this.permissionsFromTarget.push(pa);
-				this.permissionsFromSource = this.permissionsFromSource.filter((x) => x !== pa);
-				if (pa.uid === this.previewAssetUid) {
-					this.previewAssetUid = '';
-				}
-			}
-		});
-	}
-
-	removePermissionAssets() {
-		this.selectedPermissionsFromTarget.forEach((pa) => {
-			if (this.permissionsFromSource.indexOf(pa) === -1) {
-				this.permissionsFromSource.push(pa);
-				this.permissionsFromTarget = this.permissionsFromTarget.filter((x) => x !== pa);
-			}
-		});
-		this.permissionsFromSource = this.permissionsFromSource.sort((a, b) => a.Text.localeCompare(b.Text));
-	}
-
-	headerSelectAll($event, table: Table) {
-		this.selectedPermissionsFromSource = [];
-		for (let i = table.first; i < table.first + table.rows; i++) {
-			this.selectedPermissionsFromSource.push(this.permissionsFromSource.find((item) => item.uid == table.selection[i].uid));
 		}
 	}
 

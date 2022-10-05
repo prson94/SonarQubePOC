@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { SiteNav } from '../../../models/site-menu.model';
 import { DefaultTableSettingsService } from '../../../services/settings/default-table-settings.service';
 
@@ -7,16 +7,20 @@ import { DefaultTableSettingsService } from '../../../services/settings/default-
   templateUrl: './table-data-transfer.component.html',
   styleUrls: ['./table-data-transfer.component.less']
 })
-export class TableDataTransferComponent implements OnInit {
+export class TableDataTransferComponent {
+  @Input() isTargetDataReorderable: boolean = false;
   @Input() isRequired: boolean = true;
   @Input() emptyTargetTableMessage: string = 'Please select at least one item';
   @Input() infoButton: boolean = false;
   @Input() isSortButtons: boolean = false;
+  @Input() targetTableSortProperty: string = 'SortOrder';
   @Input() itemsNameProperty: string = 'Title';
   @Input() sourceTableTitle: string = 'Source Table Title';
   @Input() targetTableTitle: string = 'Target Table Title';
   @Input() itemsFromSource: any[] = [];
   @Input() itemsFromTarget: any[] = [];
+  @Input() isItemsFromSourceLoading: boolean = true;
+  @Input() isItemsFromTargetLoading: boolean = true;
   @Output() itemsFromSourceChange = new EventEmitter<any[]>();
   @Output() itemsFromTargetChange = new EventEmitter<any[]>();
   @Output() showInfoEvent = new EventEmitter<object>();
@@ -26,7 +30,7 @@ export class TableDataTransferComponent implements OnInit {
   targetTableSearchValue: string = '';
   selectedItemsFromSource: any[] = [];
   selectedItemsFromTarget: any[] = [];
-
+  
   constructor(
     public cdRef: ChangeDetectorRef,
     public defaultTableSettingsService: DefaultTableSettingsService,
@@ -41,9 +45,6 @@ export class TableDataTransferComponent implements OnInit {
     return this.selectedItemsFromTarget.findIndex((selectedItem): boolean => {
       return selectedItem.ObjectID === this.itemsFromTarget[lastIndex].ObjectID && selectedItem.Object === this.itemsFromTarget[lastIndex].Object; // eslint-disable-line
     }) > -1;
-  }
-
-  ngOnInit(): void {
   }
 
   setIndexes(arrayOfObjects: object[]): void {
@@ -68,12 +69,23 @@ export class TableDataTransferComponent implements OnInit {
     array.sort((a, b) => b.index - a.index);
   }
 
+  setSortOrder(array: any[]) {
+    array = array.map((item, index) => {
+      item[this.targetTableSortProperty] = index;
+    });
+  }
+
+  onRowReorder() {
+    this.setSortOrder(this.itemsFromTarget);
+  }
+
   moveUp() {
     this.setIndexes(this.itemsFromTarget);
     this.sortArrayByIndexes(this.selectedItemsFromTarget);
     this.selectedItemsFromTarget.forEach((selectedItemFromTarget: SiteNav) => {
       this.itemsFromTarget.splice(selectedItemFromTarget.index - 1, 0, this.itemsFromTarget.splice(selectedItemFromTarget.index, 1)[0]);
     });
+    this.setSortOrder(this.itemsFromTarget);
     this.itemsFromTarget = [...this.itemsFromTarget];
   }
 
@@ -83,6 +95,7 @@ export class TableDataTransferComponent implements OnInit {
     this.selectedItemsFromTarget.forEach((selectedItemFromTarget: SiteNav) => {
       this.itemsFromTarget.splice(selectedItemFromTarget.index + 1, 0, this.itemsFromTarget.splice(selectedItemFromTarget.index, 1)[0]);
     });
+    this.setSortOrder(this.itemsFromTarget);
     this.itemsFromTarget = [...this.itemsFromTarget];
   }
 
@@ -93,6 +106,7 @@ export class TableDataTransferComponent implements OnInit {
         this.itemsFromTarget.splice(j, 0, this.itemsFromTarget.splice(x, 1)[0]);
       }
     }
+    this.setSortOrder(this.itemsFromTarget);
     this.itemsFromTarget = [...this.itemsFromTarget];
   }
 
@@ -104,6 +118,7 @@ export class TableDataTransferComponent implements OnInit {
         this.itemsFromTarget.splice(newPosition - 1, 0, this.itemsFromTarget.splice(x, 1)[0]);
       }
     }
+    this.setSortOrder(this.itemsFromTarget);
     this.itemsFromTarget = [...this.itemsFromTarget];
   }
 
@@ -116,6 +131,7 @@ export class TableDataTransferComponent implements OnInit {
     this.clearInfoPanel();
 
     this.selectedItemsFromSource = [];
+    this.setSortOrder(this.itemsFromTarget);
     this.itemsFromTarget = [...this.itemsFromTarget];
     this.itemsFromSource = [...this.itemsFromSource];
     this.itemsFromTargetChange.emit(this.itemsFromTarget);
@@ -130,6 +146,7 @@ export class TableDataTransferComponent implements OnInit {
 
     this.itemsFromSource.sort((a, b) => a[this.itemsNameProperty]?.localeCompare(b[this.itemsNameProperty]));
     this.selectedItemsFromTarget = [];
+    this.setSortOrder(this.itemsFromTarget);
     this.itemsFromTarget = [...this.itemsFromTarget];
     this.itemsFromSource = [...this.itemsFromSource];
     this.itemsFromTargetChange.emit(this.itemsFromTarget);

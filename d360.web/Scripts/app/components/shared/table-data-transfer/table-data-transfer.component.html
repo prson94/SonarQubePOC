@@ -19,6 +19,8 @@
         <div class="table-wrapper">
             <p-table #sourceDataTable
                      [globalFilterFields]="[itemsNameProperty]"
+                     [loading]="isItemsFromSourceLoading"
+                     [loadingIcon]="'fa fa-spinner fa-spin'"
                      [value]="itemsFromSource"
                      [(selection)]="selectedItemsFromSource"
                      selectionMode="multiple"
@@ -32,7 +34,7 @@
                      scrollHeight="420px">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="max-width: 28px;">
+                        <th class="check-cell">
                             <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                         </th>
                         <th i18n>{{sourceTableTitle}}</th>
@@ -150,15 +152,20 @@
             <p-table #targetDataTable
                      [value]="itemsFromTarget"
                      [globalFilterFields]="[itemsNameProperty]"
+                     [loading]="isItemsFromTargetLoading"
+                     [loadingIcon]="'fa fa-spinner fa-spin'"
                      selectionMode="multiple"
                      [(selection)]="selectedItemsFromTarget"
                      [metaKeySelection]="false"
                      [rowsPerPageOptions]="defaultTableSettingsService.defaultPagingOptions"
                      [scrollable]="true"
+                     [reorderableColumns]="true"
+                     (onRowReorder)="onRowReorder()"
                      scrollHeight="420px">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="max-width: 28px;">
+                        <th *ngIf="isTargetDataReorderable" class="reorder-cell"></th>
+                        <th class="check-cell">
                             <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                         </th>
                         <th i18n>{{targetTableTitle}}</th>
@@ -170,8 +177,12 @@
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body"
-                             let-item>
-                    <tr [pSelectableRow]="item">
+                             let-item
+                             let-i="rowIndex">
+                    <tr [pSelectableRow]="item" [pReorderableRow]="i">
+                        <td *ngIf="isTargetDataReorderable" class="reorder-cell">
+                            <span class="reorder-icon" [pReorderableRowHandle]="i"></span>
+                        </td>
                         <td class="checkbox-column">
                             <p-tableCheckbox [value]="item"></p-tableCheckbox>
                         </td>
