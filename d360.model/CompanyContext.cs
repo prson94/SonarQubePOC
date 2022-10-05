@@ -270,7 +270,7 @@ namespace d360.model
 			return JObject.Parse(string.Concat(jsonRows));
 		}
 
-		public async Task<IEnumerable<TypeIdentifierInfoModel>> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid)
+		public async Task<TypeIdentifierInfoModel> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid)
 		{
 			IEnumerable<TypeIdentifierInfoModel> result;
 			switch (type)
@@ -288,7 +288,7 @@ namespace d360.model
 					throw new ArgumentNullException(CompanyContextErrors.InvalidTypeIdentifierInfoModel);
 			}
 
-			return result;
+			return result.FirstOrDefault();
 		}
 
 		public Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type)

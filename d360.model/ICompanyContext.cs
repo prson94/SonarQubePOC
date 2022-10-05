@@ -459,7 +459,7 @@ namespace d360.model
         
         List<RelationshipDirectionFieldInfo> getRelationFieldData(int assetTypeId, List<FieldType> fields);
 
-        Task<IEnumerable<TypeIdentifierInfoModel>> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid);
+        Task<TypeIdentifierInfoModel> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid);
         
         Task BulkLoadAssets(Load load, IAssetRepository repository, ITagRepository tagRepository);
 

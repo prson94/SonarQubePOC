@@ -98,45 +98,21 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<HttpResponseMessage> GetFieldTypesAsync()
 		{
-			var prefix = "Fields.GetFieldTypesAsync => ";
-			string errorMessage;
+			var queryParams = Request.GetQueryNameValuePairs();
+			string isValid = isPageSizeAndNumValid(queryParams);
 
-			try
+			if (!string.IsNullOrEmpty(isValid))
 			{
-				var queryParams = Request.GetQueryNameValuePairs();
-				string isValid = isPageSizeAndNumValid(queryParams);
-
-				if (!string.IsNullOrEmpty(isValid))
-				{
-					throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid);
-				}
-				var results = await FieldsRepository.GetFieldTypes(queryParams);
-
-				if (results.Item2.StatusCode != HttpStatusCode.OK)
-				{
-					throw new RestApiException(results.Item2.StatusCode, results.Item2.Error, results.Item2.Message);
-				}
-
-				return Request.CreateResponse(HttpStatusCode.OK, results.Item1);
+				throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid);
 			}
-			catch (RestApiException ex)
+			var results = await FieldsRepository.GetFieldTypes(queryParams);
+
+			if (results.Item2.StatusCode != HttpStatusCode.OK)
 			{
-				errorMessage = ex.GetFullExceptionData(false);
-
-				return ReturnApiError(ex.Status, errorMessage);
+				throw new RestApiException(results.Item2.StatusCode, results.Item2.Error, results.Item2.Message);
 			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(
-					ex,
-					new Dictionary<string, string>
-					{
-						{ "Endpoint Method", prefix }
-					});
 
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			return Request.CreateResponse(HttpStatusCode.OK, results.Item1);
 		}
 
 		/// <summary>
@@ -209,234 +185,182 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> PutFieldTypesAsync(FieldTypesApiEditModel model)
 		{
-			var prefix = "Fields.PutFieldTypesAsync => ";
-			var errorMessage = "";
-
-			try
+			if (!Company.CurrentResourceIsAdmin)
 			{
-				if (model == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
-				}
-
-				#region GetData
-
-				TypeIdentifierInfoModel typeIdentifierInfoModel = null;
-
-				IEnumerable<TypeIdentifierInfoModel> actionTypeIdentifierInfoModels = null;
-				TypeIdentifierInfoModel actionTypeIdentifierInfoModel = null;
-
-				IEnumerable<TypeIdentifierInfoModel> assetTypeIdentifierInfoModels = null;
-				TypeIdentifierInfoModel assetTypeIdentifierInfoModel = null;
-
-				IEnumerable<TypeIdentifierInfoModel> relationshipTypeIdentifierInfoModels = null;
-				TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel = null;
-
-				AssetType assetType = null;
-
-				if (model.ActionTypeUid.HasValue)
-				{
-					actionTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.ActionType, model.ActionTypeUid.Value);
-					typeIdentifierInfoModel = actionTypeIdentifierInfoModel = actionTypeIdentifierInfoModels.SingleOrDefault();
-
-					if (typeIdentifierInfoModel == null)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.ActionTypeUidIsNotValid, model.AssetTypeUid.Value.ToString()))).ConfigureAwait(false);
-					}
-				}
-
-				if (model.AssetTypeUid.HasValue)
-				{
-					assetTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.AssetType, model.AssetTypeUid.Value);
-					typeIdentifierInfoModel = assetTypeIdentifierInfoModel = assetTypeIdentifierInfoModels.SingleOrDefault();
-					assetType = AssetRepository.GetAssetTypeByUID(model.AssetTypeUid.Value);
-
-					if (typeIdentifierInfoModel == null)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, model.AssetTypeUid.Value.ToString()))).ConfigureAwait(false);
-					}
-				}
-
-				if (model.RelationshipTypeUid.HasValue)
-				{
-					relationshipTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.RelationshipType, model.RelationshipTypeUid.Value);
-					typeIdentifierInfoModel = relationshipTypeIdentifierInfoModel = relationshipTypeIdentifierInfoModels.SingleOrDefault();
-
-					if (typeIdentifierInfoModel == null)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, model.AssetTypeUid.Value.ToString()))).ConfigureAwait(false);
-					}
-				}
-
-				#endregion
-
-				#region SecurityCheck
-
-				bool hasPermissions = false;
-
-				if (Company.CurrentResourceIsAdmin)
-				{
-					hasPermissions = true;
-				}
-				else
-				{										
-					var typePermissions = Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ID.Value);
-
-					if (typePermissions != null)
-					{
-						hasPermissions = typePermissions.Any(i => i.ID == Permission.EditAsset);
-					}
-				}
-
-				if (!hasPermissions)
-				{
-					throw new RestApiException(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.ChangeFieldNotAllowed);
-				}
-
-				#endregion
-
-				#region Validation
-
-				var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
-				var ExistingIntersectID = new List<Tuple<string, Guid>>();
-
-				if (model.AssetTypeUid.HasValue)
-				{
-					ExistingIntersectID = FieldsRepository.GetFieldInterSetUID(existingFields);
-				}
-
-				var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID);
-
-				if (validationStatus.StatusCode != HttpStatusCode.OK)
-				{
-					throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
-				}
-
-				if (assetTypeIdentifierInfoModel != null && model.Fields.Any(x => x.Type.Counter != null))
-				{
-					int currentAssetCount = Company.Assets.Where(x => x.AssetTypeID == assetTypeIdentifierInfoModel.ID).Count();
-					model.Fields.ForEach(ft =>
-					{
-						int? currentInitialIndex = Company.FieldTypes.Where(x => x.AssetTypeID == assetTypeIdentifierInfoModel.ID && x.Name == ft.Name).FirstOrDefault()?.CounterInitialIndex;
-
-						if (ft.Type.Counter != null)
-						{
-							if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex && ft.Type.Counter.CounterInitialIndex <= currentAssetCount)
-							{
-								throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError, string.Format(ApiMessages.CounterInitialValueHigherCurrentValue, currentAssetCount.ToString()));
-							}
-						}
-					});
-				}
-
-				if (model.AssetTypeUid != null)
-				{
-					foreach (var ft in model.Fields.Where(x => x.Type?.Path?.Definition != null))
-					{
-						if (ft.Type.Path.Definition.AssetTypeUid != null)
-						{
-							switch (assetType.Class)
-							{
-								case AssetTypeClass.TechnicalAsset:
-								case AssetTypeClass.BusinessAsset:
-									break;
-								default:
-									throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,
-										$"Path field could not change selected segment if asset type is not technical or business class.");
-							}
-							var pathDefinitionAssetTypeUid = ft.Type.Path.Definition.AssetTypeUid;
-							var ancestryCollection = await AssetTypeRepository.GetAncestryAsync(model.AssetTypeUid.Value);
-							if (ancestryCollection.Any(x => x.uid == pathDefinitionAssetTypeUid) == false)
-							{
-								throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,
-									$"{ApiMessages.FieldTypeError}. Fields[].Type.Path.Definition.AssetTypeUid (\"{pathDefinitionAssetTypeUid}\") should be in ancestry list of (\"{model.AssetTypeUid}\")");
-							}
-						}
-					}
-				}
-
-				if (model.Fields.Any(x => x.Type.Lookup != null))
-				{
-					foreach (var ft in model.Fields.Where(x => x.Type.Lookup != null))
-					{
-						var exFt = existingFields.FirstOrDefault(x => x.Name == ft.Name);
-
-						if (exFt == null)
-						{
-							continue;
-						}
-
-						var hasFields = Company.Query<int>("select count(1) from field where fieldtypeid = @ftid", new { ftid = exFt.ID }).FirstOrDefault() > 0;
-
-						if (hasFields)
-						{
-							var newType = Company.AssetTypes.Where(x => x.uid == ft.Type.Lookup.List.Uid)
-								.Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
-
-							var restApiException = new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ChangeFieldNotAllowed, string.Format(ApiMessages.LookupFieldTypeInUse, exFt.FriendlyName));
-
-							if (exFt.LookupObjectType != "TaxonomyType" && ft.Type.Lookup.List.Class == AssetTypeClass.Model)
-							{
-								throw restApiException;
-							}
-
-							if (newType != null && (newType.Object.Replace("Type", "") != exFt.LookupObjectType || newType.ObjectID != exFt.LookupObjectID))
-							{
-								throw restApiException;
-							}
-						}
-					}
-				}
-
-				if (model.Action == FieldTypesApiEditAction.Replace)
-				{
-					// This is a full replace, so we need to validate that there are no current assets before we allow this.
-					bool anyExistingItems = FieldsRepository.HasExistingItems(typeIdentifierInfoModel);
-
-					if (anyExistingItems)
-					{
-						throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ExistItemInSystem, ApiMessages.ItemExistsNotReplaceMessage);
-					}
-				}
-
-				#endregion
-
-				#region Validation done, time to do some work
-
-				foreach (var field in model.Fields)
-				{
-					if (field.Type?.Text?.Validation != null && (!string.IsNullOrEmpty(field.Type.Text.Validation.Pattern) || !field.Type.Text.Validation.IsRequired))
-					{
-						field.Type.Text.Validation.MinimumLength = 0;
-					}
-				}
-
-				var status = FieldsRepository.UpdateFields(model, typeIdentifierInfoModel);
-
-				if (status.StatusCode != HttpStatusCode.OK)
-				{
-					throw new RestApiException(status.StatusCode, status.Error, status.Message);
-				}
-
-				#endregion
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = Fields.FieldsUpdated, Success = true, Uid = typeIdentifierInfoModel.Uid }))).ConfigureAwait(false);
+				throw new ForbiddenBusinessLayerException(ApiMessages.ChangeFieldNotAllowed);
 			}
-			catch (RestApiException ex)
-			{
-				errorMessage = ex.GetFullExceptionData(false);
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(ex.Status, errorMessage))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
+			if (model == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
+				throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage);
+			}
+
+			#region GetData
+
+			TypeIdentifierInfoModel typeIdentifierInfoModel = null;
+			TypeIdentifierInfoModel actionTypeIdentifierInfoModel = null;
+			TypeIdentifierInfoModel assetTypeIdentifierInfoModel = null;
+			TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel = null;
+
+			AssetType assetType = null;
+
+			if (model.ActionTypeUid.HasValue)
+			{
+				actionTypeIdentifierInfoModel = typeIdentifierInfoModel = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.ActionType, model.ActionTypeUid.Value);
+				if (typeIdentifierInfoModel == null)
+				{
+					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, model.ActionTypeUid.Value.ToString()));
+				}
+			}
+
+			if (model.AssetTypeUid.HasValue)
+			{
+				assetTypeIdentifierInfoModel = typeIdentifierInfoModel = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.AssetType, model.AssetTypeUid.Value);
+				assetType = AssetRepository.GetAssetTypeByUID(model.AssetTypeUid.Value);
+
+				if (typeIdentifierInfoModel == null)
+				{
+					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeNotFound, model.AssetTypeUid.Value.ToString()));
+				}
+			}
+
+			if (model.RelationshipTypeUid.HasValue)
+			{
+				relationshipTypeIdentifierInfoModel = typeIdentifierInfoModel = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.RelationshipType, model.RelationshipTypeUid.Value);
+				if (typeIdentifierInfoModel == null)
+				{
+					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.RelationShipTypeUidNotFound, model.RelationshipTypeUid.Value.ToString()));
+				}
+			}
+
+			#endregion
+
+			#region Validation
+
+			var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
+			var ExistingIntersectID = new List<Tuple<string, Guid>>();
+
+			if (model.AssetTypeUid.HasValue)
+			{
+				ExistingIntersectID = FieldsRepository.GetFieldInterSetUID(existingFields);
+			}
+
+			var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID);
+
+			if (validationStatus.StatusCode != HttpStatusCode.OK)
+			{
+				throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+			}
+
+			if (assetTypeIdentifierInfoModel != null && model.Fields.Any(x => x.Type.Counter != null))
+			{
+				int currentAssetCount = Company.Assets.Where(x => x.AssetTypeID == assetTypeIdentifierInfoModel.ID).Count();
+				model.Fields.ForEach(ft =>
+				{
+					int? currentInitialIndex = Company.FieldTypes.Where(x => x.AssetTypeID == assetTypeIdentifierInfoModel.ID && x.Name == ft.Name).FirstOrDefault()?.CounterInitialIndex;
+
+					if (ft.Type.Counter != null)
+					{
+						if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex && ft.Type.Counter.CounterInitialIndex <= currentAssetCount)
+						{
+							throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError, string.Format(ApiMessages.CounterInitialValueHigherCurrentValue, currentAssetCount.ToString()));
+						}
+					}
 				});
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
 			}
+
+			if (model.AssetTypeUid != null)
+			{
+				foreach (var ft in model.Fields.Where(x => x.Type?.Path?.Definition != null))
+				{
+					if (ft.Type.Path.Definition.AssetTypeUid != null)
+					{
+						switch (assetType.Class)
+						{
+							case AssetTypeClass.TechnicalAsset:
+							case AssetTypeClass.BusinessAsset:
+								break;
+							default:
+								throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,
+									$"Path field could not change selected segment if asset type is not technical or business class.");
+						}
+						var pathDefinitionAssetTypeUid = ft.Type.Path.Definition.AssetTypeUid;
+						var ancestryCollection = await AssetTypeRepository.GetAncestryAsync(model.AssetTypeUid.Value);
+						if (ancestryCollection.Any(x => x.uid == pathDefinitionAssetTypeUid) == false)
+						{
+							throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,
+								$"{ApiMessages.FieldTypeError}. Fields[].Type.Path.Definition.AssetTypeUid (\"{pathDefinitionAssetTypeUid}\") should be in ancestry list of (\"{model.AssetTypeUid}\")");
+						}
+					}
+				}
+			}
+
+			if (model.Fields.Any(x => x.Type.Lookup != null))
+			{
+				foreach (var ft in model.Fields.Where(x => x.Type.Lookup != null))
+				{
+					var exFt = existingFields.FirstOrDefault(x => x.Name == ft.Name);
+
+					if (exFt == null)
+					{
+						continue;
+					}
+
+					var hasFields = Company.Query<int>("select count(1) from field where fieldtypeid = @ftid", new { ftid = exFt.ID }).FirstOrDefault() > 0;
+
+					if (hasFields)
+					{
+						var newType = Company.AssetTypes.Where(x => x.uid == ft.Type.Lookup.List.Uid)
+							.Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+
+						var restApiException = new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ChangeFieldNotAllowed, string.Format(ApiMessages.LookupFieldTypeInUse, exFt.FriendlyName));
+
+						if (exFt.LookupObjectType != "TaxonomyType" && ft.Type.Lookup.List.Class == AssetTypeClass.Model)
+						{
+							throw restApiException;
+						}
+
+						if (newType != null && (newType.Object.Replace("Type", "") != exFt.LookupObjectType || newType.ObjectID != exFt.LookupObjectID))
+						{
+							throw restApiException;
+						}
+					}
+				}
+			}
+
+			if (model.Action == FieldTypesApiEditAction.Replace)
+			{
+				// This is a full replace, so we need to validate that there are no current assets before we allow this.
+				bool anyExistingItems = FieldsRepository.HasExistingItems(typeIdentifierInfoModel);
+
+				if (anyExistingItems)
+				{
+					throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.ExistItemInSystem, ApiMessages.ItemExistsNotReplaceMessage);
+				}
+			}
+
+			#endregion
+
+			#region Validation done, time to do some work
+
+			foreach (var field in model.Fields)
+			{
+				if (field.Type?.Text?.Validation != null && (!string.IsNullOrEmpty(field.Type.Text.Validation.Pattern) || !field.Type.Text.Validation.IsRequired))
+				{
+					field.Type.Text.Validation.MinimumLength = 0;
+				}
+			}
+
+			var status = FieldsRepository.UpdateFields(model, typeIdentifierInfoModel);
+
+			if (status.StatusCode != HttpStatusCode.OK)
+			{
+				throw new RestApiException(status.StatusCode, status.Error, status.Message);
+			}
+
+			#endregion
+
+			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = Fields.FieldsUpdated, Success = true, Uid = typeIdentifierInfoModel.Uid }))).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -457,6 +381,11 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeleteFieldTypesAsync(FieldTypesApiDeleteModel model)
 		{
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				throw new ForbiddenBusinessLayerException(ApiMessages.RemoveFieldNotAllowed);
+			}
+
 			(TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model);
 
 			if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
@@ -466,33 +395,6 @@ namespace d360.web.Controllers.V2
 					throw new ArgumentException(ApiMessages.DiagramAssetTypeSystemFieldValidation);
 				}
 			}
-
-			#region Security check
-
-			bool hasPermissions = false;
-
-			if (Company.CurrentResourceIsAdmin)
-			{
-				hasPermissions = true;
-			}
-			else
-			{
-				var typePermissions = typeIdentifierInfoModel == null 
-					? null 
-					: Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ID.Value);
-
-				if (typePermissions != null)
-				{
-					hasPermissions = typePermissions.Any(i => i.ID == Permission.DeleteAsset);
-				}
-			}
-
-			if (!hasPermissions)
-			{
-				throw new ForbiddenBusinessLayerException(ApiMessages.RemoveFieldNotAllowed);
-			}
-
-			#endregion
 
 			#region Validation
 
@@ -548,88 +450,60 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeleteFieldTypesBacthAsync(FieldTypesApiDeleteModel model)
 		{
-			var prefix = "Fields.DeleteFieldTypesBacthAsync => ";
-			var errorMessage = "";
-
-			#region Security check
-
 			if (!Company.CurrentResourceIsAdmin)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
+				throw new ForbiddenBusinessLayerException(ApiMessages.ForbiddenUserNotAuthorizedMessage);
 			}
 
-			#endregion
+			(TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model).ConfigureAwait(false);
 
-			try
+			if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
 			{
-				(TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model).ConfigureAwait(false);
-
-				if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
+				if (model.Fields.Any(x => new[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
 				{
-					if (model.Fields.Any(x => new[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
-					{
-						throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
-					}
+					throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
 				}
+			}
 
-				if (validationStatus.StatusCode != HttpStatusCode.OK)
-				{
-					throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
-				}
+			if (validationStatus.StatusCode != HttpStatusCode.OK)
+			{
+				throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+			}
 
-				bool anyExistingItems = FieldsRepository.HasExistingItems(typeIdentifierInfoModel);
+			bool anyExistingItems = FieldsRepository.HasExistingItems(typeIdentifierInfoModel);
 
-				List<FieldType> currentFieldTypes = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
-				bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes.FindAll(x => model.Fields.Any(f => f.Name == x.Name)));
+			List<FieldType> currentFieldTypes = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
+			bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes.FindAll(x => model.Fields.Any(f => f.Name == x.Name)));
 
-				if (anyResponsibilitiesUsingField)
-				{
-					throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.UsedinResponsibilityRules, ApiMessages.FieldUseInResponsibilityRule);
-				}
+			if (anyResponsibilitiesUsingField)
+			{
+				throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.UsedinResponsibilityRules, ApiMessages.FieldUseInResponsibilityRule);
+			}
 
-				(var fieldValidatorStatus, List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
+			(var fieldValidatorStatus, List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
 
-				if (fieldValidatorStatus.StatusCode != HttpStatusCode.OK)
-				{
-					throw new RestApiException(fieldValidatorStatus.StatusCode, fieldValidatorStatus.Error, fieldValidatorStatus.Message);
-				}
+			if (fieldValidatorStatus.StatusCode != HttpStatusCode.OK)
+			{
+				throw new RestApiException(fieldValidatorStatus.StatusCode, fieldValidatorStatus.Error, fieldValidatorStatus.Message);
+			}
 
-				var execution = getApiExecution(fieldNamesToDelete != null ? fieldNamesToDelete.Count : 0, new ApiExecutionFields_DeleteFieldtypes { TypeIdentifierInfo = typeIdentifierInfoModel, FieldNamesToDelete = fieldNamesToDelete });
+			var execution = getApiExecution(fieldNamesToDelete != null ? fieldNamesToDelete.Count : 0, new ApiExecutionFields_DeleteFieldtypes { TypeIdentifierInfo = typeIdentifierInfoModel, FieldNamesToDelete = fieldNamesToDelete });
 
-				var executionInfo = await FieldsRepository.BatchDeleteFields(execution);
+			var executionInfo = await FieldsRepository.BatchDeleteFields(execution);
 
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							new ApiExecutionRecievedResponse
-							{
-								ExecutionID = executionInfo.ExecutionID,
-								Message = ApiMessages.ExecutionIDStatus,
-								Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
-							}
-						)
+			return await Task.FromResult<IHttpActionResult>(
+				ResponseMessage(
+					Request.CreateResponse(
+						HttpStatusCode.OK,
+						new ApiExecutionRecievedResponse
+						{
+							ExecutionID = executionInfo.ExecutionID,
+							Message = ApiMessages.ExecutionIDStatus,
+							Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
+						}
 					)
-				).ConfigureAwait(false);
-			}
-			catch (RestApiException ex)
-			{
-				errorMessage = ex.GetFullExceptionData(false);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(ex.Status, errorMessage))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(
-					ex,
-					new Dictionary<string, string>
-					{
-						{ "Endpoint Method", prefix }
-					});
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
-			}
+				)
+			).ConfigureAwait(false);
 		}
 
 		private async Task<(TypeIdentifierInfoModel, WorkHttpStatus)> GetTypeIdentifierInfoModelAndValidate(FieldTypesApiDeleteModel model)
@@ -646,20 +520,17 @@ namespace d360.web.Controllers.V2
 
 			if (model.ActionTypeUid.HasValue)
 			{
-				actionTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.ActionType, model.ActionTypeUid.Value);
-				typeIdentifierInfoModel = actionTypeIdentifierInfoModel = actionTypeIdentifierInfoModels.SingleOrDefault();
+				actionTypeIdentifierInfoModel = typeIdentifierInfoModel = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.ActionType, model.ActionTypeUid.Value);
 			}
 
 			if (model.AssetTypeUid.HasValue)
 			{
-				assetTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.AssetType, model.AssetTypeUid.Value);
-				typeIdentifierInfoModel = assetTypeIdentifierInfoModel = assetTypeIdentifierInfoModels.SingleOrDefault();
+				assetTypeIdentifierInfoModel = typeIdentifierInfoModel = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.AssetType, model.AssetTypeUid.Value);
 			}
 
 			if (model.RelationshipTypeUid.HasValue)
 			{
-				relationshipTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.RelationshipType, model.RelationshipTypeUid.Value);
-				typeIdentifierInfoModel = relationshipTypeIdentifierInfoModel = relationshipTypeIdentifierInfoModels.SingleOrDefault();
+				relationshipTypeIdentifierInfoModel = typeIdentifierInfoModel = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.RelationshipType, model.RelationshipTypeUid.Value);
 			}
 
 			var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
