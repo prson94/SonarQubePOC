@@ -67,7 +67,13 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 
 		this.isLoading = true;
 		this.logAction("open", "Rule", this.assetUid);
-		this.load();
+
+		this.permissionsService.getAssetPermissions(this.assetUid)
+			.subscribe((res) => {
+				this.objectPermission = res;
+				this.load();
+			}
+			);
 
 		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this, ev);
