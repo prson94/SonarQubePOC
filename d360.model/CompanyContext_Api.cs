@@ -10848,45 +10848,45 @@ where   ER.ExecutionID = @ExecutionID
 														where ef.ExecutionID = @executionid and isnull(ef.FieldValue,'') <> isnull(f.FormattedValue,'') and EG.ItemNumber between @beginItemNumber and @endItemNumber and EG.Success is null;
 
 											
-			merge into [Group] G
-			using ( 
-select AG.ObjectID as GroupID ,
-EG.Name,EG.Description,
-EG.ExecutionItemUid,
-EG.IsActiveDirectoryGroup,
-PO.ObjectID as PrimaryID,
-SO.ObjectID as SecondaryID,
-EG.GroupUid
-					from api.ExecutionGroup EG
-					left join Asset AG on AG.uid = EG.GroupUid and AG.Object = 'Group'
-					left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
-					left join Asset SO on SO.uid = EG.SecondaryOwnerUid and SO.Object = 'Resource'
-					where EG.ExecutionID = @ExecutionID
-							and EG.ItemNumber between @beginItemNumber and @endItemNumber
-							and EG.Success is null
-					) S
-			on (G.ID = GroupID)
-			when matched then
-				update  
-					set G.Name = TRIM(S.Name),
-					G.Description = S.Description,
-					G.PrimaryOwnerResourceID = PrimaryID,
-					G.SecondaryOwnerResourceID = SecondaryID,
-					G.UpdatedBy = @CurrentResourceID,
-					G.UpdatedOn = GETUTCDATE(),
-					G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
-				when not matched then
-					insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
-					values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@CurrentResourceID)
-				output inserted.ID, $action, TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
+														merge into [Group] G
+														using ( 
+															select AG.ObjectID as GroupID ,
+															EG.Name,EG.Description,
+															EG.ExecutionItemUid,
+															EG.IsActiveDirectoryGroup,
+															PO.ObjectID as PrimaryID,
+															SO.ObjectID as SecondaryID,
+															EG.GroupUid
+																from api.ExecutionGroup EG
+																left join Asset AG on AG.uid = EG.GroupUid and AG.Object = 'Group'
+																left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
+																left join Asset SO on SO.uid = EG.SecondaryOwnerUid and SO.Object = 'Resource'
+																where EG.ExecutionID = @ExecutionID
+																		and EG.ItemNumber between @beginItemNumber and @endItemNumber
+																		and EG.Success is null
+																) S
+														on (G.ID = GroupID)
+														when matched then
+															update  
+																set G.Name = TRIM(S.Name),
+																G.Description = S.Description,
+																G.PrimaryOwnerResourceID = PrimaryID,
+																G.SecondaryOwnerResourceID = SecondaryID,
+																G.UpdatedBy = @CurrentResourceID,
+																G.UpdatedOn = GETUTCDATE(),
+																G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
+															when not matched then
+																insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
+																values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@CurrentResourceID)
+															output inserted.ID, $action, TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
 
-				INSERT INTO [dbo].[Asset] ([uid], [AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
-				SELECT	coalesce(EG.GroupUid, newid()), T.ID, 1, M.GroupID, 'Group', M.GroupID, G.UpdatedOn, coalesce(G.UpdatedBy, 0), G.UpdatedOn, coalesce(G.UpdatedBy, 0)
-				FROM	#mergeResultTable M
-						INNER JOIN api.ExecutionGroup EG on EG.ExecutionItemUid = M.ExecutionItemUid
-						INNER JOIN [Group] G on G.ID = M.GroupID
-						INNER JOIN AssetType T on T.Object = 'GroupType' and T.ObjectID = 1
-				WHERE EG.ExecutionID = @ExecutionID and M.[Action] = 'INSERT';
+															INSERT INTO [dbo].[Asset] ([uid], [AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+															SELECT	coalesce(EG.GroupUid, newid()), T.ID, 1, M.GroupID, 'Group', M.GroupID, G.UpdatedOn, coalesce(G.UpdatedBy, 0), G.UpdatedOn, coalesce(G.UpdatedBy, 0)
+															FROM	#mergeResultTable M
+																	INNER JOIN api.ExecutionGroup EG on EG.ExecutionItemUid = M.ExecutionItemUid
+																	INNER JOIN [Group] G on G.ID = M.GroupID
+																	INNER JOIN AssetType T on T.Object = 'GroupType' and T.ObjectID = 1
+															WHERE EG.ExecutionID = @ExecutionID and M.[Action] = 'INSERT';
 
 				
 															INSERT INTO [ResourceGroup](GroupID,[ResourceID])
