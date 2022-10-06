@@ -1041,9 +1041,9 @@ namespace d360.model
                       $@"insert into FieldCounterValue (AssetId, AssetTypeId, FieldTypeId, [Value])
 						select distinct a.id as AssetId, ft.assettypeid, ft.id, ef.FieldValue 
 							from api.executiongroup ea
+						inner join [asset] a on a.Object = 'Group' and a.uid = ea.groupuid
 						inner join FieldType ft on ft.assetTypeID = a.assetTypeID and ft.Type = @dataType
 						inner join api.execution ex on ex.executionid = @executionid
-						inner join [asset] a on a.Object = 'Group' and a.uid = ea.groupuid
 						inner join [group] g on g.id = a.objectid						
 						left join {ApiExecutionFieldTable} ef on ef.executionid = @executionid and ef.itemnumber = ea.itemnumber and ft.id = ef.fieldtypeid
 						left join dbo.FieldCounterValue FCV on FCV.AssetId = a.id and FCV.FieldTypeId = ft.id
@@ -10848,45 +10848,45 @@ where   ER.ExecutionID = @ExecutionID
 														where ef.ExecutionID = @executionid and isnull(ef.FieldValue,'') <> isnull(f.FormattedValue,'') and EG.ItemNumber between @beginItemNumber and @endItemNumber and EG.Success is null;
 
 											
-			merge into [Group] G
-			using ( 
-select AG.ObjectID as GroupID ,
-EG.Name,EG.Description,
-EG.ExecutionItemUid,
-EG.IsActiveDirectoryGroup,
-PO.ObjectID as PrimaryID,
-SO.ObjectID as SecondaryID,
-EG.GroupUid
-					from api.ExecutionGroup EG
-					left join Asset AG on AG.uid = EG.GroupUid and AG.Object = 'Group'
-					left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
-					left join Asset SO on SO.uid = EG.SecondaryOwnerUid and SO.Object = 'Resource'
-					where EG.ExecutionID = @ExecutionID
-							and EG.ItemNumber between @beginItemNumber and @endItemNumber
-							and EG.Success is null
-					) S
-			on (G.ID = GroupID)
-			when matched then
-				update  
-					set G.Name = TRIM(S.Name),
-					G.Description = S.Description,
-					G.PrimaryOwnerResourceID = PrimaryID,
-					G.SecondaryOwnerResourceID = SecondaryID,
-					G.UpdatedBy = @CurrentResourceID,
-					G.UpdatedOn = GETUTCDATE(),
-					G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
-				when not matched then
-					insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
-					values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@CurrentResourceID)
-				output inserted.ID, $action, TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
+														merge into [Group] G
+														using ( 
+															select AG.ObjectID as GroupID ,
+															EG.Name,EG.Description,
+															EG.ExecutionItemUid,
+															EG.IsActiveDirectoryGroup,
+															PO.ObjectID as PrimaryID,
+															SO.ObjectID as SecondaryID,
+															EG.GroupUid
+																from api.ExecutionGroup EG
+																left join Asset AG on AG.uid = EG.GroupUid and AG.Object = 'Group'
+																left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
+																left join Asset SO on SO.uid = EG.SecondaryOwnerUid and SO.Object = 'Resource'
+																where EG.ExecutionID = @ExecutionID
+																		and EG.ItemNumber between @beginItemNumber and @endItemNumber
+																		and EG.Success is null
+																) S
+														on (G.ID = GroupID)
+														when matched then
+															update  
+																set G.Name = TRIM(S.Name),
+																G.Description = S.Description,
+																G.PrimaryOwnerResourceID = PrimaryID,
+																G.SecondaryOwnerResourceID = SecondaryID,
+																G.UpdatedBy = @CurrentResourceID,
+																G.UpdatedOn = GETUTCDATE(),
+																G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
+															when not matched then
+																insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
+																values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@CurrentResourceID)
+															output inserted.ID, $action, TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
 
-				INSERT INTO [dbo].[Asset] ([uid], [AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
-				SELECT	coalesce(EG.GroupUid, newid()), T.ID, 1, M.GroupID, 'Group', M.GroupID, G.UpdatedOn, coalesce(G.UpdatedBy, 0), G.UpdatedOn, coalesce(G.UpdatedBy, 0)
-				FROM	#mergeResultTable M
-						INNER JOIN api.ExecutionGroup EG on EG.ExecutionItemUid = M.ExecutionItemUid
-						INNER JOIN [Group] G on G.ID = M.GroupID
-						INNER JOIN AssetType T on T.Object = 'GroupType' and T.ObjectID = 1
-				WHERE EG.ExecutionID = @ExecutionID and M.[Action] = 'INSERT';
+															INSERT INTO [dbo].[Asset] ([uid], [AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+															SELECT	coalesce(EG.GroupUid, newid()), T.ID, 1, M.GroupID, 'Group', M.GroupID, G.UpdatedOn, coalesce(G.UpdatedBy, 0), G.UpdatedOn, coalesce(G.UpdatedBy, 0)
+															FROM	#mergeResultTable M
+																	INNER JOIN api.ExecutionGroup EG on EG.ExecutionItemUid = M.ExecutionItemUid
+																	INNER JOIN [Group] G on G.ID = M.GroupID
+																	INNER JOIN AssetType T on T.Object = 'GroupType' and T.ObjectID = 1
+															WHERE EG.ExecutionID = @ExecutionID and M.[Action] = 'INSERT';
 
 				
 															INSERT INTO [ResourceGroup](GroupID,[ResourceID])
@@ -10986,7 +10986,7 @@ EG.GroupUid
                                     }
 
                                     string fieldValuesSql = $@"select
-										,F.FieldTypeID as [FieldTypeID]
+										F.FieldTypeID as [FieldTypeID]
 										,case 
 											when FT.Type = 'Lookup' then F.FieldValue
 											else null
