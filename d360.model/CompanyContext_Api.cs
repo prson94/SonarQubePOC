@@ -1041,9 +1041,9 @@ namespace d360.model
                       $@"insert into FieldCounterValue (AssetId, AssetTypeId, FieldTypeId, [Value])
 						select distinct a.id as AssetId, ft.assettypeid, ft.id, ef.FieldValue 
 							from api.executiongroup ea
+						inner join [asset] a on a.Object = 'Group' and a.uid = ea.groupuid
 						inner join FieldType ft on ft.assetTypeID = a.assetTypeID and ft.Type = @dataType
 						inner join api.execution ex on ex.executionid = @executionid
-						inner join [asset] a on a.Object = 'Group' and a.uid = ea.groupuid
 						inner join [group] g on g.id = a.objectid						
 						left join {ApiExecutionFieldTable} ef on ef.executionid = @executionid and ef.itemnumber = ea.itemnumber and ft.id = ef.fieldtypeid
 						left join dbo.FieldCounterValue FCV on FCV.AssetId = a.id and FCV.FieldTypeId = ft.id
@@ -10986,7 +10986,7 @@ EG.GroupUid
                                     }
 
                                     string fieldValuesSql = $@"select
-										,F.FieldTypeID as [FieldTypeID]
+										F.FieldTypeID as [FieldTypeID]
 										,case 
 											when FT.Type = 'Lookup' then F.FieldValue
 											else null
