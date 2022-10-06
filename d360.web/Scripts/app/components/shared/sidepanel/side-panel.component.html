@@ -7,7 +7,7 @@
                 (click)="clickButton(b)"
                 [tooltip]="getButtonTooltip(b)"
                 [igDataCy]="'Sidebar_' + getButtonTooltip(b)"
-                class="side-panel-button">
+                class="ig-button-secondary side-panel-button">
         </button>
     </div>
 </div>
@@ -19,7 +19,10 @@
                 <div class="side-panel-button-container">
                     <ng-container *ngIf="panelMenu.length > 0">
                         <ig-popup-menu [items]="panelMenu" #panelkebab></ig-popup-menu>
-                        <button igButton icon="fa-ellipsis-v" (click)="panelkebab.toggle($event)" class="side-panel-button"></button>
+                        <button igButton icon="fa-ellipsis-v"
+								(click)="panelkebab.toggle($event)"
+								class="ig-button-secondary side-panel-button">
+						</button>
                         <div class="side-panel-button-spacer"></div>
                     </ng-container>
                     <ng-container *ngIf="buttonCount > 1">
@@ -29,7 +32,7 @@
                                 (click)="clickButton(b)"
                                 [tooltip]="getButtonTooltip(b)"
                                 [igDataCy]="'Sidebar_' + getButtonTooltip(b)"
-                                class="side-panel-button"
+                                class="ig-button-secondary side-panel-button"
                                 [class.selected]="selectedPanel === b.key"
                                 [disabled]="b.disabled">
                         </button>
@@ -41,7 +44,7 @@
                             i18n-tooltip
                             tooltip="Hide Side Panel"
                             [igDataCy]="'Sidebar_Hide'"
-                            class="side-panel-button">
+                            class="ig-button-secondary side-panel-button">
                     </button>
                 </div>
             </div>

@@ -46,18 +46,18 @@
         </ng-container>
         <div class="action-bar">
             <ng-container *ngIf="!hideDeleteButton && !isUsageLoading">
-                <button *ngIf="!confirmationText" igAutoFocus class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText}}</button>
-                <button *ngIf="confirmationText" class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText}}</button>
-                <button *ngIf="showDownloadWhereUsed" (click)="onUsageExport.emit()" class="button" i18n>Download Where Used {items?.length, plural, =0 {Report} =1 {Report} other {Reports}}</button>
+                <button igButton class="ig-button-secondary" *ngIf="!confirmationText" igAutoFocus (click)="cancel()" [disabled]="isLoading">{{cancelButtonText}}</button>
+                <button igButton class="ig-button-secondary" *ngIf="confirmationText" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText}}</button>
+                <button igButton class="ig-button-secondary" *ngIf="showDownloadWhereUsed" (click)="onUsageExport.emit()" i18n>Download Where Used {items?.length, plural, =0 {Report} =1 {Report} other {Reports}}</button>
                 <span class="grow"></span>
-                <button class="button primary {{deletingInProgress ? 'loading' : ''}}" (click)="delete()" [disabled]="isLoading || (confirmationText && !isConfirmed)">
+                <button igButton class="ig-button-primary {{deletingInProgress ? 'loading' : ''}}" (click)="delete()" [disabled]="isLoading || (confirmationText && !isConfirmed)">
                     {{deleteButtonText}}
                     <span class="loader"><span class="spinner light"></span></span>
                 </button>
             </ng-container>
             <ng-container *ngIf="hideDeleteButton">
                 <span class="grow"></span>
-                <button class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText}}</button>
+                <button igButton class="ig-button-primary" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText}}</button>
             </ng-container>
         </div>
 

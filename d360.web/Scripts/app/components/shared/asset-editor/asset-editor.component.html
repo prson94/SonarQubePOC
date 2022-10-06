@@ -69,6 +69,7 @@
 				<div *ngIf="showActions && !useModelBinding" class="action-buttons flex-grid">
 					<button igButton
 							type="button"
+							class="ig-button-secondary"
 							[igDataCy]="'Asset_Modal_Button_Cancel'"
 							label="{{cancelButtonLabel}}"
 							tooltip="{{cancelButtonLabel}}"
@@ -78,6 +79,7 @@
 					<div class="flex-grow"></div>
 					<button *ngIf="!selection"
 							type="button"
+							class="ig-button-secondary"
 							[igDataCy]="'Asset_Modal_Button_Another'"
 							igButton
 							[disabled]="!form.valid || savingInProgress"

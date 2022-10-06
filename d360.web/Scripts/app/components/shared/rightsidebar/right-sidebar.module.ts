@@ -16,6 +16,7 @@ import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
 import { SimpleBadgeModule } from '../small-widgets/simple-badge/simple-badge.module';
 import { PortalsModule } from '../portals/portals.module';
 import { DataCyModule } from '../../../directives/ig-data-cy.directive';
+import { DirectivesModule } from "../../../directives/directives.module";
 
 @NgModule({
     imports: [
@@ -32,7 +33,8 @@ import { DataCyModule } from '../../../directives/ig-data-cy.directive';
         ScoreBadgeModule,
         InfoTooltipModule,
         SimpleBadgeModule,
-        PortalsModule
+        PortalsModule,
+        DirectivesModule
     ],
     declarations: [
         RightSidebarComponent

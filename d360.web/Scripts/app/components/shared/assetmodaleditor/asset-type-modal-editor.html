@@ -27,7 +27,8 @@
         </div>
     </div>
     <div class="action-bar">
-        <button class="left button"
+        <button class="left ig-button-secondary"
+				igButton
                 type="button"
                 (click)="cancel()"
                 [attr.data-cy]="'AssetType_Button_Cancel'"
@@ -36,7 +37,8 @@
             <ng-container i18n>Close</ng-container>
         </button>
         <span class="grow"></span>
-        <button class="right button primary {{savingInProgress ? 'loading' : ''}}"
+        <button class="right ig-button-primary {{savingInProgress ? 'loading' : ''}}"
+				igButton
                 (click)="confirm()"
                 [attr.data-cy]="'AssetType_Button_Save'"
                 [disabled]="!isValid"

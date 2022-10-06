@@ -54,11 +54,11 @@ export class GalleryModalDrawerComponent implements OnInit {
     </ig-property-group>
 </ng-container>
 <ng-container action>
-    <button class="button" (click)="isVisible=false">
+    <button igButton class="ig-button-secondary" (click)="isVisible=false">
         Cancel
     </button>
     <span class="grow"></span>
-    <button class="button primary">
+    <button igButton class="ig-button-primary">
         Confirm
     </button>
 </ng-container>`;
