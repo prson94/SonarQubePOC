@@ -58,11 +58,9 @@ namespace d360.core.entities
         public bool AllowMultipleValues { get; set; }
 
         /* Field Properties */
-        [Key, Column(Order = 2, TypeName = "varchar"), StringLength(25)]
         public string ObjectType { get; set; }
         
-        [Key, Column(Order = 3)]
-        public int ObjectID { get; set; }
+        public int? ObjectID { get; set; }
 
 		public int? AssetTypeID { get; set; }
 		public long? AssetID { get; set; }
