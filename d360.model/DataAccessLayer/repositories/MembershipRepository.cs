@@ -1145,7 +1145,7 @@ namespace d360.model.DataAccessLayer
 							U.ResourceID = GR.ResourceID,
 							U.AssetId = A.Id
 						from api.ExecutionUser U
-						left join Asset A on A.Object = U.Object and A.ObjectId = U.ObjectId
+						left join Asset A on (A.Object = U.Object and A.ObjectId = U.ObjectId) or (A.Uid = U.Uid)
 						inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.ObjectID = 0
 						inner join reporting.Global_resource GR on GR.uid = R.uid
 

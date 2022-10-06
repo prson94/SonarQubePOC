@@ -851,7 +851,7 @@ namespace d360.model
 							and EA.IsNew <> 1 
 							and EA.ItemNumber between @beginItemNumber and @endItemNumber
 							{(!isInsert ? "and coalesce(EF.FieldValue, '') <> ''" : "")} 
-							and not exists (select 1 from Field where FieldTypeID = EF.FieldTypeID 
+							and not exists (select 1 from Field F where FieldTypeID = EF.FieldTypeID 
 								and F.AssetID = {(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "EA.ObjectAssetID" : "EA.AssetID")} )";
 
                 if (!isInsert)
@@ -859,8 +859,8 @@ namespace d360.model
                     changedFieldsSql += $@"
 					union all
 
-					select  F.ObjectType as [Object], 
-							F.ObjectID, 
+					select  A.[Object], 
+							A.ObjectID, 
 							F.FieldTypeID as Id
 					from    Field F
 							inner join {tableName} E on E.ExecutionID = @executionID 
@@ -870,7 +870,7 @@ namespace d360.model
 							and EF.ItemNumber between @beginItemNumber and @endItemNumber
 							and EF.Ignore is null
 							and EF.FieldTypeID is not null
-							and F.AssetID = A.AssetId
+							and F.AssetID = A.Id
 							and F.FieldTypeID = EF.FieldTypeID
 							and EF.FieldValue is null 
 							and EF.LookupValue is null";
