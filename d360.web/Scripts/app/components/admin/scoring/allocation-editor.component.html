@@ -114,9 +114,9 @@
     </div>
     <br />
     <div class="action-bar">
-        <button class="button" (click)="cancel()" [disabled]="savingInProgress">{{closeLabel}}</button>
+        <button igButton class="ig-button-secondary" (click)="cancel()" [disabled]="savingInProgress">{{closeLabel}}</button>
         <span class="grow"></span>
-        <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="(isEdit && !modelChanged) || savingInProgress || !selection.assetTypeUid">
+        <button igButton class="ig-button-primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="(isEdit && !modelChanged) || savingInProgress || !selection.assetTypeUid">
             {{savingInProgress ? '' : saveLabel}}
             <span class="loader"><span class="spinner light"></span></span>
         </button>

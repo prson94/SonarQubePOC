@@ -12,6 +12,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { TooltipModule } from 'primeng/tooltip';
 import { FocusTrapModule } from 'primeng/focustrap';
 import { PortalsModule } from '../portals/portals.module';
+import { DirectivesModule } from "../../../directives/directives.module";
 
 @NgModule({
     imports: [
@@ -19,13 +20,14 @@ import { PortalsModule } from '../portals/portals.module';
         FormsModule,
 
         RouterModule,
-        PipesModule, 
+        PipesModule,
 
         //prime
         TooltipModule,
         FocusTrapModule,
 
-        PortalsModule
+        PortalsModule,
+        DirectivesModule
     ],
     declarations: [
         D3SModal

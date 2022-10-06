@@ -33,12 +33,12 @@
         </div>
     </div>
     <div class="action-bar">
-        <button class="button" (click)="cancel()">
+        <button igButton class="ig-button-secondary" (click)="cancel()">
             <ng-container i18n>Cancel</ng-container>
         </button>
         <span class="grow"></span>
 
-        <button class="button primary {{consolidateInProgress ? 'loading' : ''}}" (click)="consolidate()" [disabled]="!selected">
+        <button igButton class="ig-button-primary {{consolidateInProgress ? 'loading' : ''}}" (click)="consolidate()" [disabled]="!selected">
             <ng-container i18n>Consolidate</ng-container>
             <span class="loader"><span class="spinner light"></span></span>
         </button>

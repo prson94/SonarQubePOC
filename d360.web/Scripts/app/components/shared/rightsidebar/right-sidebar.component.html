@@ -19,22 +19,22 @@
                           [badgeValue]="badge"
                           [badgeType]="'Status'">
         </d3s-simple-badge>
-        <button class="button" *ngIf="showCertify" (click)="requestCertification()"><span i18n>Request Certification</span></button>
+        <button igButton *ngIf="showCertify" (click)="requestCertification()"><span i18n>Request Certification</span></button>
         <span class="grow"></span>
-        <button class="button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span i18n>Take Survey</span></button>
-        <button *ngFor="let button of buttons" (click)="button.dynamicCallback()" [ngClass]="{'loading': button.isLoading}" class="primary button" [disabled]="button.disabled">
+        <button igButton (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span i18n>Take Survey</span></button>
+        <button igButton class="ig-button-primary" *ngFor="let button of buttons" (click)="button.dynamicCallback()" [ngClass]="{'loading': button.isLoading}" [disabled]="button.disabled">
             <span class="content">{{button.text}}</span>
             <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>
         </button>
         <div [style.width]="assetActionWidth > 0 ? assetActionWidth + 'px' : null" [style.display]="'flex'" *ngIf="assetAction && assetAction.isVisible">
             <span class="grow"></span>
-            <button *ngIf="assetAction.showBack" (click)="assetAction.backCallback()" class="button">
+            <button igButton *ngIf="assetAction.showBack" (click)="assetAction.backCallback()">
                 <i class="fa fa-arrow-left"></i><ng-container i18n>Back</ng-container>
             </button>
-            <button *ngIf="assetAction.showEdit" (click)="assetAction.editCallback()" class="button">
+            <button igButton *ngIf="assetAction.showEdit" (click)="assetAction.editCallback()">
                 <i class="fa fa-pencil"></i><ng-container i18n>Edit</ng-container>
             </button>
-            <button *ngIf="assetAction.showDelete" (click)="assetAction.deleteCallback()" class="button">
+            <button igButton *ngIf="assetAction.showDelete" (click)="assetAction.deleteCallback()">
                 <i class="fa fa-trash"></i><ng-container i18n>Delete</ng-container>
             </button>
 
@@ -113,9 +113,9 @@
         <div i18n>Click Confirm to request certification of this asset.</div>
     </div>
     <div class="action-bar">
-        <button class="button" (click)="closeCertifyModal()" i18n>Cancel</button>
+        <button igButton class="ig-button-secondary" (click)="closeCertifyModal()" i18n>Cancel</button>
         <span class="grow"></span>
-        <button class="button primary" (click)="certify()">
+        <button igButton class="ig-button-primary" (click)="certify()">
             <ng-container i18n>Confirm</ng-container>
             <span class="loader"><span class="spinner light"></span></span>
         </button>
