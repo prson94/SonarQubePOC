@@ -176,7 +176,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				var joinBulder = new StringBuilder();
-				joinBulder.Append($@" outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A");
+				joinBulder.Append($@" outer apply (select object,objectid, ID from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A");
 
 				var whereBuilder = new StringBuilder();
 				var selectBuilder = new StringBuilder();
