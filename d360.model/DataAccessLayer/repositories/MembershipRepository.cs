@@ -684,7 +684,7 @@ namespace d360.model.DataAccessLayer
 						fieldRow["ItemNumber"] = user.ItemNumber;
 						fieldRow["FieldName"] = field;
 						fieldRow["FieldValue"] = user.Fields[field];
-						fieldRow["FieldTypeID"] = fieldType != null ? fieldType.ID : null;
+						fieldRow["FieldTypeID"] = fieldType != null ? fieldType.ID : (object)DBNull.Value;
 
 						fieldTable.Rows.Add(fieldRow);
 					}
