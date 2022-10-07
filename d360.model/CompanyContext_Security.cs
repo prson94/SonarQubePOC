@@ -895,46 +895,46 @@ from	Asset A
 								if (whenFieldType.AllowMultipleValues)// multiselect list
 								{
 									whenSql.Append(
-										$"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}");
+										$" where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}");
 								}else if (whenFieldType.Type == "Text")
 								{
 									switch (w.Operator)
 									{
 										case Operator.NotEquals:								
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) != '{w.Value}' ) FV{fCount}");
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) != '{w.Value}' ) FV{fCount}");
 											break;
 										case Operator.Contains:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{w.Value}%' ) FV{fCount}");
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{w.Value}%' ) FV{fCount}");
 											break;
 										case Operator.NotContains:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) NOT LIKE '%{w.Value}%' ) FV{fCount}");
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) NOT LIKE '%{w.Value}%' ) FV{fCount}");
 											break;
 										case Operator.StartsWith:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '{w.Value}%' ) FV{fCount}");
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '{w.Value}%' ) FV{fCount}");
 											break;
 										case Operator.EndsWith:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{w.Value}' ) FV{fCount}");
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{w.Value}' ) FV{fCount}");
 											break;
 										case Operator.Populated:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is not null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))>0) ) FV{fCount}");  // all field types plus single select list
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is not null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))>0) ) FV{fCount}");  // all field types plus single select list
 											break;
 										case Operator.NotPopulated:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))=0) ) FV{fCount}");  // all field types plus single select list
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))=0) ) FV{fCount}");  // all field types plus single select list
 											break;
 										default:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
 											break;
 									}
 									
 								}
 								else // all other field types including single select list
 								{
-									whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
+									whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
 								}
 							}
 							else // invalid field type ID so the when is always not going to return anything
 							{
-								whenSql.Append($"where 1 =0 ");
+								whenSql.Append($" where 1 =0 ");
 							}
 						}
 						fCount++;
