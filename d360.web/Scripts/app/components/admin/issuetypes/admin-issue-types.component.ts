@@ -219,7 +219,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 
     private closeEditor() {
         this.showEditor = false;
-        if (!this.selected) this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
+        if (!this.selected) {this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;}
     }
 
     private OnEdit() {

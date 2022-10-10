@@ -3,7 +3,7 @@
 @Pipe({ name: 'technicalNameToDisplayValue' })
 export class TechnicalNameToDisplayValuePipe implements PipeTransform {
     transform(objectType: string): any {
-        if (!objectType) return;
+        if (!objectType) {return;}
 
         switch (objectType.toUpperCase()) {
             case "ARTIFACTTYPE":

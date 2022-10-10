@@ -1,4 +1,4 @@
-import {debounceTime} from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 import { Component, Input, ElementRef, OnChanges, SimpleChange, Output, EventEmitter, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
@@ -74,12 +74,14 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     private searchSub: ISubscription;
     searchingTypeahed: boolean = false;
     
-    constructor(private elementRef: ElementRef, private router: Router,
-        private typeaheadSearchService: TypeaheadSearchService, private ref: ChangeDetectorRef) { }
+    constructor(private elementRef: ElementRef,
+				private router: Router, 
+				private typeaheadSearchService: TypeaheadSearchService,
+				private ref: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.breadcrumb)
-            this.treeItems = this.breadcrumb.treeItems;
+            {this.treeItems = this.breadcrumb.treeItems;}
     }
 
     ngOnInit() {
@@ -87,7 +89,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
 
     ngOnDestroy() {
-        if (this.searchSub)  this.searchSub.unsubscribe();
+        if (this.searchSub)  {this.searchSub.unsubscribe();}
     }
 
     private setMaxHeight() {
@@ -197,7 +199,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     setTreeNodeStyles(node) {
         console.log(node);
-        if (!node.data) return null;
+        if (!node.data) {return null;}
 
         let styles = {            
             'font-weight': node.data.hasRelations ? 'bold' : 'normal',            
@@ -207,7 +209,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     setLastBreadcrumbWidth() {
         if (!this.isLastItem || !this.maxLastCrumbWidth)
-            return;
+            {return;}
         //take 80 for the collapsed menu button
         return this.maxLastCrumbWidth - 80;
 
@@ -218,13 +220,11 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
 
     navigateToLink(url: string, res?: any) {
-        if (url && url.length > 0) 
-            this.router.navigateByUrl(url);
+        if (url && url.length > 0) { this.router.navigateByUrl(url); }
     }
 
     hasLink(url: string) {
-        if (url && url.length > 0 && !this.isLastItem) return true;
-        else false;
+        return url && url.length > 0 && !this.isLastItem;
     }
 
     hasClass(element, className) {

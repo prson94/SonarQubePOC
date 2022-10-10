@@ -56,7 +56,7 @@ export class AdminNymAllocationsComponent extends BaseComponent implements OnCha
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.objectID > 0 && this.objectType) this.load();
+        if (this.objectID > 0 && this.objectType) {this.load();}
     }
 
     private load() {

@@ -829,7 +829,6 @@ namespace d360.model.DataAccessLayer
 					end as SecurityAsset,
 					case 
 					   when RTOG.Id is not null then 1
-					   when RTOO.Id is not null then 1
 					   when RTOR.Id is not null then 1
 					   else 0
 					end as 'Exists'

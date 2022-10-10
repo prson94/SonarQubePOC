@@ -198,9 +198,24 @@ namespace d360.model
 		{
 			if (items.Count > 0)
 			{
-				int oID = items[0].ObjectID;
-				string oType = items[0].ObjectType;
-				List<int> existingFieldTypeIDs = Filter<Field>(i => i.ObjectID == oID && i.ObjectType == oType).Select(i => i.FieldTypeID).ToList();
+				Field firstField = items[0];
+				List<Field> existingFields;
+
+				if (firstField.IssueID > 0)
+				{
+					existingFields = Filter<Field>(i => i.IssueID == firstField.IssueID).ToList();
+				}
+				else if (firstField.IntersectID > 0)
+				{
+					existingFields = Filter<Field>(i => i.IntersectID == firstField.IntersectID).ToList();
+				}
+				else 
+				{
+					existingFields = Filter<Field>(i => i.AssetID == firstField.AssetID).ToList();
+				}
+				
+
+				List<int> existingFieldTypeIDs = existingFields.Select(i => i.FieldTypeID).ToList(); 
 				items.ForEach(item =>
 				{
 					item.UpdatedBy = CurrentResourceID;
@@ -220,8 +235,7 @@ namespace d360.model
 				});
 
 				try
-				{
-					List<Field> existingFields = Filter<Field>(i => i.ObjectID == oID && i.ObjectType == oType).ToList();
+				{					
 					existingFields.ForEach(item =>
 					{
 						//DELETE
@@ -418,12 +432,6 @@ namespace d360.model
 				SourceType = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = type.ToString() },
 				SourceTypeID = id
 			}).ConfigureAwait(false);
-		}
-
-		public IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id)
-		{
-			string sType = type.ToString();
-			return Filter<FieldWithRelation>(i => i.ObjectType == sType && i.ObjectID == id);
 		}
 
 		public IQueryable<FieldType> GetFieldTypesByObject(SystemObjects type, int id)
@@ -1193,23 +1201,23 @@ from	IntersectType I
 
 		public List<IntersectTypeOption> GetIntersectTypeOptions(Guid? subjectUid = null, Guid? objectUid = null, Guid? predicateUid = null, List<AssetTypeClass> limitToClasses = null)
 		{
-			string classLimitSql = "";
+			List<string> whereStatements = new List<string>();
 
 			if (limitToClasses != null && limitToClasses.Count > 0)
 			{
-				classLimitSql = " T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
+				whereStatements.Add("T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")");
 			}
 
 			Predicate predicate = Predicates.FirstOrDefault(x => x.UID == predicateUid);
-			string whereStatement = "";
 
 			if (predicate != null && predicate.Type == PredicateType.DiagramReference)
 			{
-				whereStatement = $@" and exists(select top 1 it.id from intersecttype it
+				whereStatements.Add($@"exists(select top 1 it.id from intersecttype it
 				 inner join Predicate p on it.PredicateID = p.ID and p.Type = {(int)PredicateType.Diagram}
-				 where it.SubjectAssetTypeID = T.ID
-				)";
+				 where it.SubjectAssetTypeID = T.ID)");
 			}
+
+			string whereStatement = whereStatements.Count == 0 ? "" : "where " + string.Join(" and ", whereStatements);
 
 			var sql = $@"
 						SELECT		I.ID,
@@ -1234,7 +1242,6 @@ from	IntersectType I
 											end + coalesce(P.[Path], T.Name) as Name
 									from	AssetType T
 											cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
-									where	{classLimitSql}
 									{whereStatement}
 									) I";
 
@@ -1614,10 +1621,6 @@ from	IntersectType I
 
 			if (fields != null && fields.Count > 0)
 			{
-				fields.ForEach(i =>
-				{
-					i.ObjectID = entity.ID;
-				});
 				AddOrUpdateFields(fields);
 			}
 			else
@@ -2090,25 +2093,39 @@ from	IntersectType I
 
 				foreach (Field item in fieldsToCheckForChanges)
 				{
-					if (item.ObjectID > 0 && item.FieldTypeID > 0 && !string.IsNullOrEmpty(item.ObjectType))
+					if(item.FieldTypeID > 0)
 					{
 						if (fieldSql.Length != 0)
 						{
 							fieldSql.Append(" or ");
 						}
-						fieldSql.Append($"(f.ObjectID = {item.ObjectID} and f.[ObjectType] = '{item.ObjectType}' and f.FieldTypeID = {item.FieldTypeID})");
-					}
+
+						if (item.AssetID > 0)
+						{
+							fieldSql.Append($"(f.AssetID = {item.AssetID} and f.FieldTypeID = {item.FieldTypeID})");
+						}
+
+						if (item.IssueID > 0)
+						{
+							fieldSql.Append($"(f.IssueID = {item.IssueID} and f.FieldTypeID = {item.FieldTypeID})");
+						}
+
+						if (item.IntersectID > 0)
+						{							
+							fieldSql.Append($"(f.IntersectID = {item.IntersectID} and f.FieldTypeID = {item.FieldTypeID})");
+						}
+					}					
 				}
 
 				if (fieldSql.Length != 0)
 				{
-					string sql = $"select f.ObjectID, f.ObjectType, f.Value, f.FieldTypeID from field f where {fieldSql}";
+					string sql = $"select f.AssetID, f.IssueID, f.IntersectID, f.Value, f.FieldTypeID from field f where {fieldSql}";
 
 					IEnumerable<dynamic> vals = Query<dynamic>(sql);
 
 					foreach (Field item in fieldsToCheckForChanges)
 					{
-						dynamic value = vals.FirstOrDefault(x => x.ObjectID == item.ObjectID && x.ObjectType == item.ObjectType && x.FieldTypeID == item.FieldTypeID);
+						dynamic value = vals.FirstOrDefault(x => (x.AssetID == item.AssetID || x.IssueID == item.IssueID || x.IntersectID == item.IntersectID) && x.FieldTypeID == item.FieldTypeID);
 
 						if ((value != null) && (item.Value != (string)value.Value))
 						{
@@ -2161,7 +2178,7 @@ from	IntersectType I
 				foreach (Field field in changedFields)
 				{
 					FieldType fieldType = FieldTypes.AsNoTracking().FirstOrDefault(f => f.ID == field.FieldTypeID);
-					EventObjectInfo eventInfo = fieldEvents.FirstOrDefault(f => f.Object.ToString() == field.ObjectType && f.ObjectID == field.ObjectID);
+					EventObjectInfo eventInfo = fieldEvents.FirstOrDefault(f => ((f.ObjectID == field.IssueID && f.ObjectType == SystemObjects.Issue) || (f.ObjectID == field.IntersectID && f.ObjectType == SystemObjects.Intersect) || (f.ObjectID == field.AssetID && f.ObjectType != SystemObjects.Issue && f.ObjectType != SystemObjects.Intersect)));
 					
 					if (eventInfo != null)
 					{
@@ -2171,10 +2188,10 @@ from	IntersectType I
 					{
 						eventInfo = new EventObjectInfo
 						{
-							Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), field.ObjectType),
-							ObjectID = field.ObjectID,
+							Object = ((field.IssueID.HasValue && field?.IssueID.Value > 0) ? SystemObjects.Issue : (field.IntersectID.HasValue && field?.IntersectID.Value > 0) ? SystemObjects.Intersect : SystemObjects.Artifact),
+							ObjectID = (int)((field.IssueID.HasValue && field?.IssueID.Value > 0) ? field.IssueID : (field.IntersectID.HasValue && field?.IntersectID.Value > 0) ? field.IntersectID : field.AssetID),
 							ObjectType = SystemObjects.FieldType,
-							ObjectTypeID = fieldType.ID
+							ObjectTypeID = fieldType.ID							
 						};
 						eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
 						fieldEvents.Add(eventInfo);
@@ -2235,9 +2252,10 @@ from	IntersectType I
 			StringBuilder joinbuilder = new StringBuilder();
 			joins = "";
 
+			string fieldTypeRelationType = type;
+
 			if (fields == null)
 			{
-				string fieldTypeRelationType = type;
 				if(type == "Rule" && ruleMeansEvent)
 				{
 					type = "Event";
@@ -2261,7 +2279,9 @@ from	IntersectType I
 				fields = fieldQry.OrderBy(i => i.ColumnOrder).ToList();
 			}
 
-			List<RelationshipDirectionFieldInfo> relationFieldInfos = getRelationFieldData(fields[0].AssetTypeID.GetValueOrDefault(), fields);
+			var assetTypeID = (fields.Count > 0) ? fields[0].AssetTypeID.GetValueOrDefault() : Filter<AssetType>(a => a.Object == fieldTypeRelationType && a.ObjectID == typeID).FirstOrDefault().ID;
+
+			List <RelationshipDirectionFieldInfo> relationFieldInfos = getRelationFieldData(assetTypeID, fields);
 
 			foreach (FieldType f in fields)
 			{
@@ -2352,7 +2372,7 @@ from	IntersectType I
 											end as [{(useFriendlyName ? friendlyName : name)}], ");
 
 					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}'  
-										   left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
+										   left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
 				}
 				else if (f.Type == DataType.Number.ToString())
 				{
@@ -2367,7 +2387,7 @@ from	IntersectType I
 											end as [{(useFriendlyName ? friendlyName : name)}], ");
 
 					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}'  
-											left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
+											left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
 				}
 				else if (f.Type == DataType.JsonElement.ToString())
 				{
@@ -2378,7 +2398,7 @@ from	IntersectType I
 					columnbuilder.Append($@"try_cast({name}_P.FormattedValue as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ");
 
 					joinbuilder.Append($@" 
-										left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
+										left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
 										left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ");
 				}
 				else if (f.Type == DataType.Path.ToString())
@@ -2403,14 +2423,14 @@ from	IntersectType I
 					columnbuilder.Append($@"(select string_agg(T.Value,'|') within group (order by T.Value) from AssetTag AT inner join Tag T on T.ID = AT.TagID  where AssetId = {assetIdPath}) as [{(useFriendlyName ? friendlyName : name)}], ");
 
 					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}'  
-										left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
+										left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
 				}
 				else if (f.Type == DataType.Lookup.ToString() && LookupFieldHasColorItem(f))
 				{
 					string fieldJoin = f.AllowMultipleValues ? "cross apply STRING_SPLIT(fi.Value, ',') SPFfi" : "";
 					string fieldclause = f.AllowMultipleValues ? "try_cast(SPFfi.value as int)" : "try_cast(fi.Value as int) and datalength(fi.Value) < 1000";
-					string whereClause = (type == SystemObjects.Intersect.ToString()) ? $@" fi.ObjectID = A.ID and fi.ObjectType = '{type}'" : "fi.AssetID = A.Id";
-
+					string whereClause = (type == SystemObjects.Intersect.ToString()) ? $@" fi.AssetID = A.ID" : "fi.AssetID = A.Id";
+					fieldJoin = $@"{fieldJoin} left join intersect I on fi.intersectID = I.ID";
 					columnbuilder.Append($"{name}_T.value as [{name}],");
 					joinbuilder.Append($@" outer apply(
 							select value = (
@@ -2441,7 +2461,7 @@ from	IntersectType I
 											end as [{(useFriendlyName ? friendlyName : name)}], ");
 
 					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}' 
-											left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
+											left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
 				}
 			}
 

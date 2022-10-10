@@ -32,7 +32,17 @@ export class RelationshipsService extends BaseObservableService {
                 map((response) => <RelationshipType[]>response),
                 catchError((err) => this.handleError(err))
             );
-    }
+	}
+
+	getRelationshipType(RelationshipTypeUid: string): Observable<RelationshipType[]> {
+		var url = `api/v2/relationships/types?state=1&RelationshipTypeUid=${RelationshipTypeUid}`;
+
+		return this.http.get(url)
+			.pipe(
+				map((response) => <RelationshipType[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
     getRelationshipTypesByAssetUid(uid: string): Observable<RelationshipType[]> {
         return this.http.get(`api/v2/relationships/types?state=1&AssetTypeUid=${uid}`)
@@ -271,7 +281,7 @@ export class RelationshipsService extends BaseObservableService {
 
         var cachedItem = this.tagTooltipsCache.find((x) => x.assetTypeUid == assetTypeUid);
         if (cachedItem)
-            return cachedItem.obs;
+            {return cachedItem.obs;}
 
         let url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active&includeHasFieldTypes=true`;
 

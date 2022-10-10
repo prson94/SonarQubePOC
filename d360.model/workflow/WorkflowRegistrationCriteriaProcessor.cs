@@ -4,7 +4,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.enums.Workflow;
@@ -82,7 +82,7 @@ namespace d360.model.workflow
                 return false;
             }
 
-            IQueryable<Field> fields = context.Fields.Where(x => x.ObjectID == objectId && x.ObjectType == @object);
+			IQueryable<Field> fields = context.Fields.Where(x => ((x.IssueID == objectId && @object == SystemObjects.Issue.ToString()) || (x.IntersectID == objectId && @object == SystemObjects.Intersect.ToString()) || (x.AssetID == objectId && @object != SystemObjects.Issue.ToString() && @object != SystemObjects.Intersect.ToString())));
 
             if (issueObjectTypeId > -1)
             {

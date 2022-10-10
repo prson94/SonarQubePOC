@@ -108,11 +108,9 @@
         </div>
 
         <div class="actions">
-            <button *ngIf="!isSavingAndContinue" (click)="saveAndContinue()" [disabled]="!IsValid" class="button" i18n>Create lineage chain</button>
-            <button class="button" *ngIf="isSavingAndContinue"><i style="padding:0px;" class="fa fa-spinner fa-spin ng-star-inserted"></i></button>
+            <button igButton (click)="saveAndContinue()" [disabled]="!IsValid" [loading]="isSavingAndContinue" i18n>Create lineage chain</button>
             <div class="flex-grow"></div>
-            <button *ngIf="!isSaving" (click)="save()" [disabled]="!IsValid" class="button primary" i18n>Apply lineage</button>
-            <button class="button" *ngIf="isSaving"><i style="padding:0px;" class="fa fa-spinner fa-spin ng-star-inserted"></i></button>
+            <button igButton class="ig-button-primary" [loading]="isSaving" (click)="save()" [disabled]="!IsValid" i18n>Apply lineage</button>
         </div>
 
         <div class="help-box">

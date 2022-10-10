@@ -269,7 +269,7 @@ namespace d360.web.Controllers.Services
 										from
 										fieldtype ft
 										inner
-										join field f on (ft.id = f.fieldtypeid and f.[objecttype] = 'Issue' and f.objectid = I.ID
+										join field f on (ft.id = f.fieldtypeid and f.IssueID = I.ID
 										and ft.FriendlyName = 'Description')) as DD
 						order by wi.StartedOn desc";
 
@@ -1515,8 +1515,8 @@ namespace d360.web.Controllers.Services
 
 		private List<FieldType> getFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
 		{
-			var assetTypeId = Company.AssetTypes.Where(a => a.Object == type && a.ObjectID == id).FirstOrDefault().ID;
-			var fields = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeId).ToList();
+			var assetTypeId = Company.AssetTypes.Where(a => a.Object == type && a.ObjectID == id).FirstOrDefault()?.ID;
+			var fields =  Company.FieldTypes.Where(f => (type == "IssueType") ? f.IssueTypeID == id : f.AssetTypeID == assetTypeId).ToList();
 			List<string> excludedTypes = DataType.Text.GetNonWorkflowConditionFields();
 
 			if (!allowHtml)
@@ -1537,9 +1537,30 @@ namespace d360.web.Controllers.Services
 				{
 					string objectType = objectData[0];
 					int objectId = int.Parse(objectData[1]);
-					var assetFields = Company.FieldTypes
-						.Where(f => f.IssueTypeID == objectId && !excludedTypes.Contains(f.Type))
-						.ToList();
+
+					List<FieldType> assetFields;
+
+					if (objectType == "IssueType")
+					{
+						assetFields = Company.FieldTypes
+							.Where(f => f.IssueTypeID == objectId && !excludedTypes.Contains(f.Type))
+							.ToList();
+
+					}
+					else if (objectType == "IntersectType")
+					{
+						assetFields = Company.FieldTypes
+							.Where(f => f.IntersectTypeID == objectId && !excludedTypes.Contains(f.Type))
+							.ToList();
+
+					}
+					else
+					{
+					     var assetTypeIdAddiField = Company.AssetTypes.Where(a => a.Object == objectType && a.ObjectID == objectId).FirstOrDefault()?.ID;
+						 assetFields = Company.FieldTypes
+								.Where(f => f.AssetTypeID == assetTypeIdAddiField && !excludedTypes.Contains(f.Type))
+								.ToList();
+					}
 
 					fields = fields.Union(assetFields).ToList();
 				}
@@ -3021,7 +3042,7 @@ namespace d360.web.Controllers.Services
 					{
 						var fieldData = formFieldId.Trim().Split('|');
 						var actionFieldTypeId = int.Parse(fieldData[1]);
-						var actionField = Company.Fields.FirstOrDefault(x => x.FieldTypeID == actionFieldTypeId && x.ObjectID == detail.ObjectID);
+						var actionField = Company.Fields.FirstOrDefault(x => x.FieldTypeID == actionFieldTypeId && ((detail.Object == SystemObjects.Intersect.ToString() && x.IntersectID == detail.ObjectID) || (detail.Object == SystemObjects.Issue.ToString() && x.IssueID == detail.ObjectID) || (detail.Object != SystemObjects.Intersect.ToString() && detail.Object != SystemObjects.Issue.ToString() && x.AssetID == detail.AssetId)));
 
 						if (fieldChange.Type == "Link")
 						{

@@ -272,9 +272,9 @@ namespace d360.model.helpers
 
 					if (f.FieldTypeName.StartsWith("Relation."))
 					{
-						joins.Add($@"LEFT JOIN Field {fieldSelector} ON {fieldSelector}.ObjectType = 'Intersect'
-                            AND {fieldSelector}.FieldTypeID = {f.FieldTypeID}
-                            AND {fieldSelector}.ObjectID = I{f.RelationIndex + 1}.ID
+						joins.Add($@"LEFT JOIN Field {fieldSelector} ON
+                            {fieldSelector}.FieldTypeID = {f.FieldTypeID}
+                            AND {fieldSelector}.IntersectID = I{f.RelationIndex + 1}.ID
                             AND {fieldSelector}.FormattedValue <> ''");
 					}
 					else if (ft.Type == "Counter")

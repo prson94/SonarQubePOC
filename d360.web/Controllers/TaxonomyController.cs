@@ -75,7 +75,7 @@ namespace d360.web.Controllers
 			var fields = getFieldTypesByObjectType("TaxonomyType", id, true);
 
 			// get the dynamic fields set as listable for this taxonomy
-			getDynamicFieldJoinStatements(id, "Taxonomy", out string joins, out string columns, false, false, true, fields, "A.ObjectID");
+			getDynamicFieldJoinStatements(id, "Taxonomy", out string joins, out string columns, false, false, true, fields);
 
 			List<string> orderFields = fields.Where(x => x.SortOrder > 0 && x.IsListable == true)
 				.OrderBy(x => x.SortOrder).ThenBy(x => x.Name)

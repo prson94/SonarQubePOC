@@ -56,7 +56,7 @@ export class PreviewTooltipComponent {
     ) {
         this.tooltipSingletonService.tooltipMessage$.subscribe(
             (info) => {
-                if (info.objectId == this.objectId && info.objectType == this.objectType) return;
+                if (info.objectId == this.objectId && info.objectType == this.objectType) {return;}
                 this.hide();
             });
 
@@ -125,9 +125,9 @@ export class PreviewTooltipComponent {
 
     private formattedUrl(url: string): string {
         if (url != null && !url.startsWith("/"))
-            return "/" + url;
+            {return "/" + url;}
         else
-            return url;
+            {return url;}
     }
 
     show(item, tip) {

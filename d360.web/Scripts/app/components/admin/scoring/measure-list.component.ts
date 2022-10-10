@@ -99,7 +99,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         }
 
         if ($event.value.toString().indexOf('Version History') != -1)
-            this.showHistory(true);
+            {this.showHistory(true);}
     }
 
     private groupMenuOptions = [
@@ -200,7 +200,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
                                 let found = null;
                                 this.metricTree.forEach((n) => {
                                     if (n.data.Name.toLowerCase() === initiallySelected.toLowerCase())
-                                        found = n;
+                                        {found = n;}
                                     else if (n.children && n.children.length > 0) {
                                         found = n.children.find((c) => c.data.Name.toLowerCase() === initiallySelected.toLowerCase());
                                     }
@@ -208,7 +208,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
                                 });
                                 if (found)
-                                    node = found;
+                                    {node = found;}
 
                             }
                             this.selection = node.data;
@@ -247,7 +247,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     public selectNode(e: any) {
         if (e == null)
-            return;
+            {return;}
         this.selectedNode = e;
         this.selection = e === null ? null : { ...e.data };
         this.selectionChange.emit(this.selection);
@@ -277,9 +277,9 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     public add(asChild: boolean = false) {
         if (this.selection)
-            this.previousSelection = { ...this.selection };
+            {this.previousSelection = { ...this.selection };}
         if (this.selectedNode)
-            this.previousSelectedNode = { ...this.selectedNode };
+            {this.previousSelectedNode = { ...this.selectedNode };}
         if (!asChild) {
             this.selection = null;
             this.selectedNode = null;
@@ -301,9 +301,9 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     public close() {
         this.formMode = FormMode.Default;
         if (this.previousSelectedNode && this.metrics && this.metrics.length > 0)
-            this.selectedNode = { ...this.previousSelectedNode };
+            {this.selectedNode = { ...this.previousSelectedNode };}
         if (this.previousSelection && this.metrics && this.metrics.length > 0)
-            this.selection = { ...this.previousSelection };
+            {this.selection = { ...this.previousSelection };}
         this.selectionChange.emit(this.selection);
     }
 
@@ -333,19 +333,19 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     getAsPrecentage(val: number) {
         if (val == 0)
-            return '0%';
+            {return '0%';}
         if (!val)
-            return;
+            {return;}
         if (val == 1)
-            return '100%';
+            {return '100%';}
         let s = val + '0000';
         s = s.replace('0.', '');
         if (s.length > 6)
-            s = (s.substr(0, 2)) + '.' + s[2] + "%";
+            {s = (s.substr(0, 2)) + '.' + s[2] + "%";}
         else
-            s = (s.substr(0, 2)) + "%";
+            {s = (s.substr(0, 2)) + "%";}
         if (s.startsWith('0'))
-            s = s.substr(1, s.length);
+            {s = s.substr(1, s.length);}
         return s;
     }
 

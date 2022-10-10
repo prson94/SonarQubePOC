@@ -81,9 +81,9 @@ export class PredicateSelectorComponent implements OnInit {
 
                             if (rel.Predicate.Type == this.predicateType.toString()) {
                                 if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Subject && this.assetTypeUid == rel.Subject.Uid)
-                                    this.predicates.push(rel.Predicate);
+                                    {this.predicates.push(rel.Predicate);}
                                 if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Object && this.assetTypeUid == rel.Object.Uid)
-                                    this.predicates.push(rel.Predicate);
+                                    {this.predicates.push(rel.Predicate);}
                             }
                         });
 
@@ -114,8 +114,8 @@ export class PredicateSelectorComponent implements OnInit {
         }
 
         if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Object)
-            return p.Name;
-        else return p.Inverse;
+            {return p.Name;}
+        else {return p.Inverse;}
     }
 
 }

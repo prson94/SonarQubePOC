@@ -252,7 +252,6 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 					this.loadInitialInfo();
 					setTimeout(() => {
 						//change detection fails when switching tabs back to definition page
-						this.table.reset();
 						this.isLoading = false;
 						this.cdRef.markForCheck();
 					}, 50);

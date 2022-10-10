@@ -59,11 +59,11 @@ export class GalleryDatePickerComponent implements OnInit {
     startDateValidator(startDate: Date): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } | null => {
         if (control.value == null)
-            return { };
+            {return { };}
         if (control.value == null || control.value < startDate)
-            return {
+            {return {
                 invalidDate: { value: control.value }
-            };
+            };}
         return null;
     };
 }

@@ -193,9 +193,9 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 							existsOperatorP = $localize`does not exist`;
 						}
 						if (predicate)
-							this.formattedCheck = predicate.Name + "/" + predicate.Inverse + " " + existsOperatorP;
+							{this.formattedCheck = predicate.Name + "/" + predicate.Inverse + " " + existsOperatorP;}
 						else
-							this.formattedCheck = "";
+							{this.formattedCheck = "";}
 						break;
 					case 'Relation':
 						let relationshipType = this.screenReferences.relationships.find((relationship: RelationshipType) => { return relationship.Uid.toLowerCase() === gov.Relation.IntersectTypeUid.toLowerCase(); });
@@ -237,14 +237,14 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 
 	public getPassTestValue() {
 		if (!this.formattedCheck && !this.definition)
-			return '';
+			{return '';}
 		var prefix = '';
 		let check: string = '';
 		if (this.definition && this.definition.Governance)
-			check = this.definition.Governance.Check.toString();
+			{check = this.definition.Governance.Check.toString();}
 
 		if (!check)
-			return '';
+			{return '';}
 
 		switch (check) {
 			case 'External': prefix = ''; break;

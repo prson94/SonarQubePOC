@@ -411,7 +411,7 @@ namespace d360.model.DataAccessLayer
 
 			//Don't get field sql for OwnershipLookup fields, as that will return the definition rather than the json we want
 			//The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
-			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON, true, TempTableScriptList);
+			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Id]", listColorsAsJSON, true, TempTableScriptList);
 			var countJoins = fieldJoins.Clone();
 
 			TempTableScriptStr = string.Join("\n ", TempTableScriptList);
@@ -601,6 +601,8 @@ namespace d360.model.DataAccessLayer
 						
 							create index idx_tempInclRela on #tempInclRela(AssetID,isRefList) include (BAssetID,BAssetTypeID)";
 
+					var typeNameParameter = dbArgs.ParameterNames.Contains("RefListName") ? "@RefListName as TypeName" : "TB.[Name] as TypeName";
+
 					var innerSql = $@"
 							  select * from (
 									Select
@@ -617,7 +619,7 @@ namespace d360.model.DataAccessLayer
 									Select
 									TB.[UID] as AssetUid 
 									,TB.[Name] DisplayValue
-									,@RefListName as TypeName
+									,{typeNameParameter}
 									,@predicateUid as PredicateUid
 								from #tempInclRela TIR
 								inner join AssetType TB on TIR.BAssetId = 0 and TB.ID = TIR.BAssetTypeID 

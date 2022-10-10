@@ -139,8 +139,8 @@ export class HeaderBreadcrumbService extends BaseObservableService {
                     }
                 });
 
-                if (folderName != menuID) resolve(folderName);
-                else reject(menuID.substr(1, menuID.length));
+                if (folderName != menuID) {resolve(folderName);}
+                else {reject(menuID.substr(1, menuID.length));}
 
             } else {
 
@@ -152,8 +152,8 @@ export class HeaderBreadcrumbService extends BaseObservableService {
                         }
                     });
                 }).add(() => {
-                    if (folderName != menuID) resolve(folderName);
-                    else reject(menuID.substr(1, menuID.length));
+                    if (folderName != menuID) {resolve(folderName);}
+                    else {reject(menuID.substr(1, menuID.length));}
                 });
             }
         });
@@ -162,7 +162,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
 
     getAssetFolderIcon(objectType: string, objectID: number, menuID: string): Observable<string> {
         if (!objectID)
-            return this.getFolderIcon(menuID);
+            {return this.getFolderIcon(menuID);}
 
 
         var d = forkJoin(this.assetStyleService.getAssetTypeObjectStyle(objectType, objectID), this.getFolderIcon(menuID)).pipe(
@@ -200,13 +200,13 @@ export class HeaderBreadcrumbService extends BaseObservableService {
             if (this.SiteNavItemsCache && this.SiteNavItemsCache.length > 0) {
                 const nav = this.SiteNavItemsCache.find((s) => s.Title === menuID);
                 icon = this.iconFromSiteNav(nav);
-                if (icon) resolve(icon);
+                if (icon) {resolve(icon);}
             } else {
                 this.sitenavservice.getSiteNavItems().subscribe((res) => {
                     const nav = res.find((s) => s.Title === menuID);
                     icon = this.iconFromSiteNav(nav);
                 }).add(() => {
-                    if (icon) resolve(icon);
+                    if (icon) {resolve(icon);}
                 });
             }
         });

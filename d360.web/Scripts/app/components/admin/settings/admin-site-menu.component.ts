@@ -128,12 +128,12 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 			return true;
 		}
 		else
-			return false;
+			{return false;}
 	}
 
 	onFileChange(event): void {
 		if (this.iconImage == null)
-			this.iconImage = new CompanyImage();
+			{this.iconImage = new CompanyImage();}
 
 		if (event == null) {
 			this.iconImage.file = null;
@@ -392,7 +392,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 			case FormMode.Adding:
 
 				this.newFolder.IconPayload = this.iconImage.dataUrl;
-				var model = {
+				const model = {
 					folder: this.newFolder,
 					items: this.newFolderItems
 				};

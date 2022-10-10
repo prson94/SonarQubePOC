@@ -140,9 +140,9 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
             this.shortcut.LinkTarget = LinkTarget.NewWindow;
         } else {
             if (this.shortcut.IconUrl != null)
-                this.iconType = 'image';
+                {this.iconType = 'image';}
             else
-                this.iconType = 'icon';
+                {this.iconType = 'icon';}
 
             this.showBackgroundColor = (this.shortcut.BackgroundColor != null);
             this.showTitleColor = (this.shortcut.TitleColor != null);
@@ -202,13 +202,13 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
 
     valid() {
         if (this.shortcut == null)
-            return false;
+            {return false;}
         if (this.shortcut.Name == null)
-            return false;
+            {return false;}
         //if (this.shortcut.Url == null)
         //    return false;
         if (this.shortcut.Icon == null && this.shortcut.IconUrl == null && this.shortcut.IconPayload == null && (this.iconImage.dataUrl == null || this.iconImage.dataUrl == ''))
-            return false;
+            {return false;}
 
         return true;
     }

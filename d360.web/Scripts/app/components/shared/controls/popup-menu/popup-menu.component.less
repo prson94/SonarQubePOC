@@ -28,9 +28,9 @@
     }
 
     .separator {
-      height: 0px;
+      height: 0;
       border-top: 1px solid @ig-grey-t4;
-      margin: 4px 0px;
+      margin: 4px 0;
     }
 
     .sub-menu {
@@ -42,7 +42,7 @@
     &.open-right {
       &.open-bottom {
         &.sub-menu {
-          right: 0px;
+          right: 0;
           transform: translateX(100%);
           background-color: white;
         }
@@ -50,7 +50,7 @@
 
       &.open-top {
         &.sub-menu {
-          right: 0px;
+          right: 0;
           transform: translateX(100%) translateY(-100%);
           background-color: white;
           top: 44px;
@@ -62,7 +62,7 @@
       &.open-top {
         &.sub-menu {
           transform: translateX(-100%) translateY(-100%);
-          left: 0px;
+          left: 0;
           right: initial;
           top: 44px;
         }
@@ -71,7 +71,7 @@
       &.open-bottom {
         &.sub-menu {
           transform: translateX(-100%) translateY(0%);
-          left: 0px;
+          left: 0;
           top: 2px;
           right: initial;
         }
@@ -80,7 +80,7 @@
 
     .menu-sub-item {
       max-height: 36px;
-      padding: 0px 16px;
+      padding: 0 16px;
 
       &.hover:not(.disabled) {
         background-color: var(--navbarBackColorSelectedHover);
@@ -162,7 +162,7 @@
 
     &.no-left-padding {
       li {
-        padding-left: 0px;
+        padding-left: 0;
       }
 
       .menu-sub-item.label {

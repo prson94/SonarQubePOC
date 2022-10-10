@@ -44,11 +44,11 @@ export class GalleryInputComponent implements OnInit {
 
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null)
-                return {};
+                {return {};}
             if (control.value == null || wordsIDontLikeArr.indexOf(control.value) != -1)
-                return {
+                {return {
                     notNiceWord: { value: control.value }
-                };
+                };}
             return null;
         };
     }

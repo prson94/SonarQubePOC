@@ -177,17 +177,21 @@ namespace d360.web.Models
                                 break;
                         }
 
-                        if (ignoreFieldIfNull)
-                        {
-                            if (!string.IsNullOrEmpty(value))
-                            {
-                                fields.Add(new Field { FieldTypeID = ft.ID, ObjectID = id, ObjectType = type.ToString(), Value = value });
-                            }
-                        }
-                        else
-                        {
-                            fields.Add(new Field { FieldTypeID = ft.ID, ObjectID = id, ObjectType = type.ToString(), Value = value });
-                        }
+                        if ((ignoreFieldIfNull && !string.IsNullOrEmpty(value)) || !ignoreFieldIfNull)
+                        {                            
+							if (type == SystemObjects.Intersect)
+							{
+								fields.Add(new Field { FieldTypeID = ft.ID, IntersectID = id, Value = value });
+							}
+							else if (type == SystemObjects.Issue)
+							{
+								fields.Add(new Field { FieldTypeID = ft.ID, IssueID = id, Value = value });
+							}
+							else
+							{
+								fields.Add(new Field { FieldTypeID = ft.ID, AssetID = id, Value = value });
+							}
+                        }                        
                     }
                 }
             }
@@ -495,7 +499,9 @@ namespace d360.web.Models
 
     public class ObjectDetailsSimplified
     {
-        public int AssetTypeID { get; set; }
+		public int AssetID { get; set; }
+
+		public int AssetTypeID { get; set; }
 
         public string Type { get; set; }
 

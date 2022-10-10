@@ -1729,8 +1729,8 @@ from	workflow.EventRegistration T
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
-    <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-19677">
-	<comment>GOV-19677 - Update Semantic change log for new routing.</comment>	
+    <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-19677-2">
+	<comment>GOV-19677 - Update More routes.</comment>	
 	<sql dbms="mssql"
             endDelimiter="GO"
             splitStatements="true"
@@ -1742,6 +1742,18 @@ from	workflow.EventRegistration T
 		inner join Semantic S on S.ID = F.SemanticID
 		where F.SemanticID is not null
 		and (Route like '%sidebar/audit%' or Route like '%log%')
+		
+		update F
+		set F.Route = CONCAT('asset/',CAST(a.uid as nvarchar(max)),'/results')
+		from dbo.Favorite f
+		inner join asset a on a.id = f.AssetID
+		where f.AssetID is not null 
+		and route like 'sidebar/ruleResults%'
+		
+		update F
+		set F.Route = REPLACE(f.route,'ownership','owners')
+		from dbo.Favorite f
+		where f.Route like 'asset%' and f.Route like '%ownership'
 	]]>
 	</sql>
   </changeSet>
@@ -1790,7 +1802,7 @@ from	[Intersect] I
     </sql>
   </changeSet>
 
-      <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-17952-2">
+      <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-17952-3">
 	<comment>GOV-17952 - remove organizations from Govern</comment>	
 	<sql dbms="mssql"
             endDelimiter="GO"
@@ -1798,10 +1810,56 @@ from	[Intersect] I
             stripComments="false">
 	<![CDATA[
 		delete from Asset where object = 'Organization'
+		
+		delete ATS
+		from AssetTypeStyle ATS
+		inner join AssetType AT on AT.ID = ATS.ID
+		where AT.Object = 'OrganizationType'
 
 		delete from AssetType where object = 'OrganizationType'
 		
 		delete from dbo.Setting where id = 19
+	]]>
+	</sql>
+  </changeSet>
+  <changeSet author="bquinlivan" id="Data.Corrections.GOV-18447">
+	<comment>GOV-18447 - populate field intersect and issue id columns</comment>	
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		IF EXISTS 
+		(
+			SELECT *
+			FROM INFORMATION_SCHEMA.COLUMNS
+			WHERE table_name = 'Field'
+			AND column_name = 'IssueID'
+		)
+		BEGIN
+			UPDATE F
+			SET F.IssueID = I.ID
+			FROM 
+				Field F
+				INNER JOIN
+				Issue I ON I.ID = F.ObjectID AND F.ObjectType = 'Issue'
+		END
+
+		IF EXISTS 
+		(
+			SELECT *
+			FROM INFORMATION_SCHEMA.COLUMNS
+			WHERE table_name = 'Field'
+			AND column_name = 'IntersectID'
+		) 
+		BEGIN
+			UPDATE F
+			SET F.IntersectID = I.ID
+			FROM 
+				Field F
+				INNER JOIN
+				[Intersect] I ON I.ID = F.ObjectID AND F.ObjectType = 'Intersect'
+		END
 	]]>
 	</sql>
   </changeSet>

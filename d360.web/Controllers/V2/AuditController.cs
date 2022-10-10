@@ -830,11 +830,11 @@ namespace d360.web.Controllers.V2
 				case 
 					when ga.ActionObjectTypeName = 'Intersect Type' 
 						then 'Relationship Type' 
-					else coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, '---') 
+					else coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, ga.ActionObjectTypeName) 
 				end as actionObjectTypeName,
 				coalesce(iname.Name,ga.actionObjectName) as actionObjectName,
 				case when O.ID > 0
-					then coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, '---')  + ' ' + R.Action
+					then coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, ga.ActionObjectTypeName)  + ' ' + R.Action
 					else ga.ActionDescription
 				end as actionDescription
 				from reporting.global_audit r

@@ -17,7 +17,7 @@ export class ObjectDetailFieldComponent {
     constructor(private router: Router) { }
     ngOnInit() {
         if ((this.field.DataType == 'date' || this.field.DataType == 'datetime') && isNaN(Date.parse(this.field.Value)))
-            this.field.Value = null;
+            {this.field.Value = null;}
 
 
     }
@@ -58,13 +58,13 @@ export class ObjectDetailFieldComponent {
 
     get isAlreadyUTC(): boolean {
         if (this.field && this.field.Value && this.field.Value.endsWith('Z'))
-            return true;
+            {return true;}
         return false;
     }
 
     get fieldDataType(): string {
         if (this.field == null || this.field.DataType == null)
-            return null;
+            {return null;}
         switch (this.field.DataType.toLowerCase()) {
             case 'text':
             case 'string':

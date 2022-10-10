@@ -197,7 +197,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.diagram.clearSelection();
             let part = this.diagram.findPartForKey(changes['selectedStepId'].currentValue);
             let node = this.diagram.findNodeForKey(changes['selectedStepId'].currentValue);
-            if (part) part.isSelected = true;
+            if (part) {part.isSelected = true;}
             if (node) {
                 this.selectedData = node.data;
                 this.selectionChange.emit(node.data);
@@ -210,9 +210,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     public ngOnDestroy() {
         //garbage collection
         if (this.diagram != null && this.diagram.div != null)
-            this.diagram.div = null;
+            {this.diagram.div = null;}
         if (this.fieldsSub != null)
-            this.fieldsSub.unsubscribe();
+            {this.fieldsSub.unsubscribe();}
     }
 
     //#endregion
@@ -281,9 +281,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     ff['@FieldName'] = 'Form :: ' + f['@label'];
                     ff['@type'] = f['@type'];
                     if (f['@referenceFieldId'] != null)
-                        ff['@referenceFieldId'] = f['@referenceFieldId'];
+                        {ff['@referenceFieldId'] = f['@referenceFieldId'];}
                     if (f['@intersectTypeId'] != null)
-                        ff['@intersectTypeId'] = f['@intersectTypeId'];
+                        {ff['@intersectTypeId'] = f['@intersectTypeId'];}
                     ff['@stepId'] = (<NodeModel>n).key;
                     ff['@VersionStepID'] = (<NodeModel>n).key;
 
@@ -312,9 +312,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         });
 
         if (this.fieldsSub == null)
-            this.fieldsSub = this.workflowFieldsService.formFields$.subscribe((s) => {
+            {this.fieldsSub = this.workflowFieldsService.formFields$.subscribe((s) => {
                 this.formFields = s;
-            });
+            });}
     }
 
     private initializeMenuItems() {
@@ -324,9 +324,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             icon: 'fa fa-info-circle'
         });
         if (this.hasClose)
-            this.menuItems.push({
+            {this.menuItems.push({
                 icon: 'fa fa-remove'
-            });
+            });}
     }
 
     //#endregion
@@ -365,7 +365,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 map((r) => {
                     this.model = r;
                     if (this.model.Nodes != null)
-                    this.model.Nodes.forEach((n) => n.ActivityTypeInfo = this.activityTypes.find((a) => a.ID == n.ActivityType));
+                    {this.model.Nodes.forEach((n) => n.ActivityTypeInfo = this.activityTypes.find((a) => a.ID == n.ActivityType));}
                     }),
                 map(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true, this.model.Event.IssueObject)
                     .subscribe((r) => this.fieldTypes = r)),
@@ -407,14 +407,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         var linkList = [];
 
         if (data.Nodes)
-            data.Nodes.forEach((n) => {
+            {data.Nodes.forEach((n) => {
                 nodeList.push(<NodeModel>this.convertToDiagramModel(n, DiagramObjectType.Node));
-            });
+            });}
 
         if (data.Links)
-            data.Links.forEach((l) => {
+            {data.Links.forEach((l) => {
                 linkList.push(<LinkModel>this.convertToDiagramModel(l, DiagramObjectType.Link));
-            });
+            });}
 
         nodeList.forEach((n) => {
             if (n.activityType == WorkflowActivityType.FieldChange) {
@@ -492,7 +492,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         var objectName = fieldData[1];
                         var f = types.filter((x) => x.ID == fieldId && x.Object == object && x.Name == objectName)[0];
                         if (f != undefined)
-                            fieldNode["@ObjectType"] = object;
+                            {fieldNode["@ObjectType"] = object;}
                     }
                 });
             }
@@ -570,12 +570,12 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         //can't link to self
         if (fromNode.data.key == toNode.data.key)
-            return false;
+            {return false;}
         //forms can always link, even backwards creating a cycle
         if (fromNode.data.activityType == WorkflowActivityType.Form && fromNode.data.key != toNode.data.key)
-            return true;
+            {return true;}
         if (toNode.data.activityType == WorkflowActivityType.Form && fromNode.data.key != toNode.data.key)
-            return true;
+            {return true;}
 
         //starting with the toNode, is there a way to traverse back to the fromNode?
         //if so we have a cycle and need to abort
@@ -598,13 +598,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     return;
                 }
                 if (visitedNodeKeys.indexOf(node.key) > -1)
-                    return;
+                    {return;}
                 visitedNodeKeys.push(node.key);
                 nodes.push(node);
             });
 
             if (hasCycle)
-                return false;
+                {return false;}
 
             links = [];
             nodes.forEach((n) => {
@@ -618,7 +618,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     private getObjectName() {
         if (this.objectTypeName != null || this.monitorView || !this.hasHeader)
-            return;
+            {return;}
 
         let obj = this.model.Event.Object;
         this.objectDetailService.getObject(this.model.Event.ObjectID, obj)
@@ -736,11 +736,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     let excluded = r.findIndex((a) => a.ID == WorkflowActivityType.None);
 
                     if (excluded >= 0)
-                    r.splice(excluded, 1);
+                    {r.splice(excluded, 1);}
 
                     excluded = r.findIndex((a) => a.ID == WorkflowActivityType.StatusChange); //deprecated
                     if (excluded >= 0)
-                    r.splice(excluded, 1);
+                    {r.splice(excluded, 1);}
 
                     excluded = r.findIndex((a) => a.ID == WorkflowActivityType.Procedure && a.IsShow == false); 
                     if (excluded >= 0)
@@ -752,7 +752,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
                     excluded = r.findIndex((a) => a.ID == WorkflowActivityType.StateChange);
                     if (excluded >= 0)
-                        r.splice(excluded, 1);
+                        {r.splice(excluded, 1);}
 
                     this.activityTypes = r;
                 })
@@ -867,9 +867,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             let activityType: ActivityTypeInfo;
 
             if (m.ActivityTypeInfo != null)
-                activityType = m.ActivityTypeInfo;
+                {activityType = m.ActivityTypeInfo;}
             else
-                activityType = this.activityTypes.find((a) => a.ID == n.activityType);
+                {activityType = this.activityTypes.find((a) => a.ID == n.activityType);}
 
             if (activityType != null) {
                 n.fore = activityType.ForeColor;
@@ -889,14 +889,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             }
 
             if (m.SettingsObject != null && m.SettingsObject.settings != null)
-                n.settings = m.SettingsObject.settings;
+                {n.settings = m.SettingsObject.settings;}
             else if (m.SettingsObject != null && !_.isEmpty(m.SettingsObject) && m.SettingsObject.settings == null)
-                n.settings = m.SettingsObject;
+                {n.settings = m.SettingsObject;}
 
             if (n.activityType == WorkflowActivityType.FieldChange) {
 
-                if (n.settings.FieldUpdate == null) n.settings.FieldUpdate = new FieldUpdateSettings();
-                if (n.settings.FieldUpdate.Field == null) n.settings.FieldUpdate.Field = [];
+                if (n.settings.FieldUpdate == null) {n.settings.FieldUpdate = new FieldUpdateSettings();}
+                if (n.settings.FieldUpdate.Field == null) {n.settings.FieldUpdate.Field = [];}
                 //handle obj vs array due to XML parsing
 
                 if (n.settings.FieldUpdate.Field != null && !_.isEmpty(n.settings.FieldUpdate.Field) && n.settings.FieldUpdate.Field.constructor !== Array) {
@@ -909,13 +909,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.settings.FieldUpdate.Field.forEach((f) => {
                     let id = f['@FieldId'];
                     let field = this.fieldTypes.find((t) => t.ID.toString() == id);
-                    if (field) f['@FieldName'] = field.FriendlyName;
+                    if (field) {f['@FieldName'] = field.FriendlyName;}
                 });
             }
 
             if (n.activityType == WorkflowActivityType.HTTPRequest) {
                 if (n.settings.HTTPRequest == null)
-                    n.settings.HTTPRequest = new HTTPRequestSettings();
+                    {n.settings.HTTPRequest = new HTTPRequestSettings();}
                 if (n.settings.HTTPRequest.Headers != null && n.settings.HTTPRequest.Headers.length == null) {
                     n.settings.HTTPRequest.Headers = [n.settings.HTTPRequest.Headers];
                 }
@@ -939,17 +939,17 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             if (n.activityType == WorkflowActivityType.RelationshipUpdate) {
                 if (n.settings.RelationshipUpdate == null)
-                    n.settings.RelationshipUpdate = new RelationshipUpdateSettings();
+                    {n.settings.RelationshipUpdate = new RelationshipUpdateSettings();}
                 if (n.settings.RelationshipUpdate.Relationship == null)
-                    n.settings.RelationshipUpdate.Relationship = {};
+                    {n.settings.RelationshipUpdate.Relationship = {};}
             }
 
             if (m.StepType == StepType.Start)
-                n.category = 'start';
+                {n.category = 'start';}
             else if (m.StepType == StepType.Finish)
-                n.category = 'finish';
+                {n.category = 'finish';}
             else if (m.StepType == StepType.Terminate)
-                n.category = 'finish';
+                {n.category = 'finish';}
 
             n.valid = this.validateNode(n);
 
@@ -1112,7 +1112,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     private validateNode(n: NodeModel): boolean {
         if (this.isReadOnly)
-            return true;
+            {return true;}
 
         n.errors = [];
 
@@ -1120,48 +1120,48 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             case WorkflowActivityType.EmailNotification:
 
                 if (n.settings == null || _.isEmpty(n.settings))
-                    return false;
+                    {return false;}
                 if (n.settings.MessageSubjectTemplate == null || n.settings.MessageSubjectTemplate.length < 1)
-                    return false;
+                    {return false;}
                 if (n.settings.MessageBodyTemplate == null || n.settings.MessageBodyTemplate.length < 1)
-                    return false;
+                    {return false;}
                 if (this.validateEmailRecipient(n) === false) {
                     return false;
                 }
 
                 n.errors = n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
 
-                if (n.errors.length > 0) return false;
+                if (n.errors.length > 0) {return false;}
 
                 break;
             case WorkflowActivityType.Form:
 
                 if (n.settings == null || _.isEmpty(n.settings))
-                    return false;
+                    {return false;}
                 if (n.settings.FormResponseType == null || n.settings.FormResponseType == '')
-                    return false;
+                    {return false;}
                 if (this.validateEmailRecipient(n) === false) {
                     return false;
                 }
 
                 if (n.settings.SendFormEmail != null && n.settings.SendFormEmail.toString().toLowerCase() == 'true') {
                     if (n.settings.MessageBodyTemplate == null || n.settings.MessageBodyTemplate.length < 1)
-                        return false;
+                        {return false;}
 
                     n.errors = n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
                 }
 
                 if (n.fields == null || _.isEmpty(n.fields))
-                    return false;
+                    {return false;}
 
                 if (n.fields && n.fields.form && n.fields.form["@description"]) {
                     n.errors = n.errors.concat(this.validateTextFields(n.fields.form["@description"]));
                 }
 
                 if (n.fields.form == null)
-                    return false;
+                    {return false;}
                 if (n.fields.form['@title'] == null || n.fields.form['@title'].length < 1)
-                    return false;
+                    {return false;}
 
                 
                 if (n.errors.length > 0) {
@@ -1170,18 +1170,18 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 break;
             case WorkflowActivityType.Procedure:
                 if (n.settings.ProcedureID == null || n.settings.ProcedureID == '')
-                    return false;
+                    {return false;}
                 break;
             case WorkflowActivityType.StatusChange:
                 if (n.settings.Status == null || n.settings.Status == '')
-                    return false;
+                    {return false;}
                 break;
             case WorkflowActivityType.FieldChange:
                 if (n.settings == null || n.settings.FieldUpdate == null || n.settings.FieldUpdate.Field == null || _.isEmpty(n.settings.FieldUpdate.Field))
-                    return false;
+                    {return false;}
 
                 if (n.settings.FieldUpdate.Field.length == null || n.settings.FieldUpdate.Field.length < 1)
-                    return false;
+                    {return false;}
 
                 let fields = n.settings.FieldUpdate.Field;
                 let hasInvalidField = false;
@@ -1208,28 +1208,28 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         }
                     }
                 });
-                if (hasInvalidField) return false;
+                if (hasInvalidField) {return false;}
                 break;
             case WorkflowActivityType.RelationshipUpdate:
                 if (n.settings == null || n.settings.RelationshipUpdate == null || n.settings.RelationshipUpdate.Relationship == null || _.isEmpty(n.settings.RelationshipUpdate.Relationship))
-                    return false;
+                    {return false;}
                 if (n.settings.RelationshipUpdate.Relationship['@ClearValue'] == null || n.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() == "false") {
                     if (n.settings.RelationshipUpdate.Relationship['@FormStepId'] == null || n.settings.RelationshipUpdate.Relationship['@FormFieldId'] == null)
-                        return false;
+                        {return false;}
                 }
                 break;
             case WorkflowActivityType.StateChange:
                 if (n.settings.State == null || n.settings.State == '')
-                    return false;
+                    {return false;}
                 break;
             case WorkflowActivityType.HTTPRequest:
                 if (n.settings.HTTPRequest == null)
-                    return false;
+                    {return false;}
                 if (n.settings.HTTPRequest.Url == null)
-                    return false;
+                    {return false;}
                 else {
                     if (n.settings.HTTPRequest.Url.length < 7)
-                        return false;
+                        {return false;}
                     if (n.settings.HTTPRequest.Url.indexOf('http://') != 0
                         && n.settings.HTTPRequest.Url.indexOf('https://') != 0) {
                         return false;
@@ -1237,16 +1237,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
 
                 if (n.settings.HTTPRequest.Timeout == null)
-                    return false;
+                    {return false;}
                 else {
                     if (isNaN(n.settings.HTTPRequest.Timeout))
-                        return false;
+                        {return false;}
                     if (+n.settings.HTTPRequest.Timeout < 1 || +n.settings.HTTPRequest.Timeout > 600)
-                        return false;
+                        {return false;}
                 }
 
                 if (n.settings.HTTPRequest.Method == null || n.settings.HTTPRequest.Method == '')
-                    return false;
+                    {return false;}
                 break;
             case WorkflowActivityType.HTTPResponse:               
                 if (n.settings.HTTPResponse == null) {
@@ -1266,59 +1266,59 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     private validateEmailRecipient(n: NodeModel): boolean {
         if (n.settings.MessageRecipientType == null || n.settings.MessageRecipientType == '')
-            return false;
+            {return false;}
         switch (n.settings.MessageRecipientType) {
             case 'SpecificUser':
                 if (n.settings.MessageToUser == null || n.settings.MessageToUser.length < 1)
-                    return false;
+                    {return false;}
                 break;
             case 'Responsibility':
                 if (this.model.Event.Object == 'IntersectType' && n.settings.ResponsibilitySide == null || n.settings.ResponsibilitySide == '')
-                    return false;
+                    {return false;}
                 if (n.settings.ResponsibilityTypeID == null)
-                    return false;
+                    {return false;}
                 if (!_.isArray(n.settings.ResponsibilityTypeID) && n.settings.ResponsibilityTypeID < 0) //we still need to check single value here for legacy workflows
-                    return false;
+                    {return false;}
                 if (_.isArray(n.settings.ResponsibilityTypeID)) {
                     if (n.settings.ResponsibilityTypeID.length < 1)
-                        return false;
+                        {return false;}
 
                     let x = n.settings.ResponsibilityTypeID.findIndex((r) => r == null || r == '' || r < 0);
                     if (x > -1)
-                        return false;
+                        {return false;}
                 }
                 break;
             case "Followers":
                 let obj = this.model.Event.Object;
                 if (obj == 'IntersectType')
-                    return false;
+                    {return false;}
 
                 if (!(this.model.Event.ChangeType == WorkflowChangeType.Add ||
                     this.model.Event.ChangeType == WorkflowChangeType.Update ||
                     this.model.Event.ChangeType == WorkflowChangeType.Schedule ||
                     this.model.Event.ChangeType == WorkflowChangeType.RequestCertification))
-                    return false;
+                    {return false;}
 
                 if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && !(obj == 'IssueType'))
-                    return false;
+                    {return false;}
 
                 if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && (obj == 'IssueType')) {
                     if (this.model.Event.IssueObject != null && this.model.Event.IssueObject != '') {
                         let objArr = this.model.Event.IssueObject.split("|", 1);
                         let Issobj = "";
                         if (objArr.length <= 0)
-                            Issobj = " ";
+                            {Issobj = " ";}
                         else
-                            Issobj = objArr[0];
+                            {Issobj = objArr[0];}
 
                         if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
-                            return;
+                            {return;}
                     }
                 }
                 break;
             case "Group":
                 if (n.settings.MessageToGroup == null || n.settings.MessageToGroup.length != 36)
-                    return false;
+                    {return false;}
                 break;
         }
 
@@ -1328,7 +1328,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private validateTextFields(desc: string): string[] {
         let errors: string[] = [];
 
-        if (!desc) return errors;
+        if (!desc) {return errors;}
 
         var results = desc.match(/(\[)(.*?)(?=\])/g);
         if (results && results.length) {
@@ -1358,16 +1358,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     private validateLink(l: LinkModel): boolean {
         if (this.isReadOnly)
-            return true;
+            {return true;}
 
         switch (+l.transitionType) {
             case TransitionType.Condition:
                 if (l.condition == null || l.condition.length < 1)
-                    return false;
+                    {return false;}
                 break;
             case TransitionType.Timer:
                 if (l.settings == null || l.settings.TimerInterval == null || l.settings.TimerInterval < 1)
-                    return false;
+                    {return false;}
                 break;
         }
         return true;
@@ -1413,7 +1413,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             //special case, steps from timer transitions don't require an output
             if (to != null && (+node.stepType == StepType.Task && (<LinkModel>to).transitionType == TransitionType.Timer))
-                return;
+                {return;}
 
             if (to != null && (+node.stepType == StepType.Task && +node.activityType == WorkflowActivityType.StateChange)) {
                 StateChangeCount++;
@@ -1427,14 +1427,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             
 
             if (to == null && +node.stepType != StepType.Start)
-                missingInputCount++;
+                {missingInputCount++;}
             if (from == null && +node.stepType != StepType.Finish && +node.stepType != StepType.Terminate)
-                missingOutputCount++;
+                {missingOutputCount++;}
             if (to == null && from == null)
-                disconnectedNodeCount++;
+                {disconnectedNodeCount++;}
 
             if (node.errors) {
-                node.errors.forEach((x) => { if (x == 'Invalid field type') invalidFieldReferences++; });
+                node.errors.forEach((x) => { if (x == 'Invalid field type') {invalidFieldReferences++;} });
             }
             
         });
@@ -1443,44 +1443,44 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             let link = <LinkModel>l;
 
             if (link.valid == false)
-                invalidLinkCount++;
+                {invalidLinkCount++;}
             if (startNodes == 1 && finishNodes == 1 && link.from == startKey && link.to == finishKey)
-                startToFinish = true;
+                {startToFinish = true;}
         });
 
 
         if (invalidNodeCount > 0)
-            this.errors.push($localize`There are one or more invalid steps on the diagram (highlighted in red)`);
+            {this.errors.push($localize`There are one or more invalid steps on the diagram (highlighted in red)`);}
 
         if (invalidLinkCount > 0)
-            this.errors.push($localize`There are one or more invalid transitions on the digram (highlighted in red)`);
+            {this.errors.push($localize`There are one or more invalid transitions on the digram (highlighted in red)`);}
 
         if (startNodes != 1)
-            this.errors.push($localize`There must be exactly 1 start step on the diagram`);
+            {this.errors.push($localize`There must be exactly 1 start step on the diagram`);}
 
         if (finishNodes != 1)
-            this.errors.push($localize`There must be exactly 1 finish step on the diagram`);
+            {this.errors.push($localize`There must be exactly 1 finish step on the diagram`);}
 
         if (disconnectedNodeCount > 0)
-            this.errors.push($localize`There are steps on the diagram which are not connected`);
+            {this.errors.push($localize`There are steps on the diagram which are not connected`);}
 
         if (missingInputCount > 0 || missingOutputCount > 0)
-            this.errors.push($localize`There are steps on the diagram which are missing an input or output`);
+            {this.errors.push($localize`There are steps on the diagram which are missing an input or output`);}
 
         if (startToFinish)
-            this.errors.push($localize`The start step cannot be connected directly to the finish step`);
+            {this.errors.push($localize`The start step cannot be connected directly to the finish step`);}
 
         if (invalidFieldReferences > 0)
-            this.errors.push($localize`There are ${invalidFieldReferences} invalid field references in workflow`);
+            {this.errors.push($localize`There are ${invalidFieldReferences} invalid field references in workflow`);}
 
         if (StateChangeCount > 0)
-            this.errors.push($localize`Unsupported workflow activity "State Change" exists in diagram. This workflow activity must be removed.`);
+            {this.errors.push($localize`Unsupported workflow activity "State Change" exists in diagram. This workflow activity must be removed.`);}
 
         if (SqlProcedureCount > 0)
-            this.errors.push($localize`Wrong workflow activity "Sql Procedure" exists in diagram. This workflow activity must be removed. Procedure configuration missing.`);
+            {this.errors.push($localize`Wrong workflow activity "Sql Procedure" exists in diagram. This workflow activity must be removed. Procedure configuration missing.`);}
         
         if (this.errors.length > 0)
-            this.isValid = false;
+            {this.isValid = false;}
 
         return this.isValid;
 
@@ -1531,9 +1531,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
                 if (e.settings.MessageRecipientType == 'Responsibility') {
                     if (this.model.Event.Object == 'IntersectType')
-                        n.settings.ResponsibilitySide = e.settings.ResponsibilitySide;
+                        {n.settings.ResponsibilitySide = e.settings.ResponsibilitySide;}
                     else
-                        delete e.settings.ResponsibilitySide;
+                        {delete e.settings.ResponsibilitySide;}
                     delete e.settings.MessageToUser;
                 } else {
                     delete e.settings.ResponsibilityTypeID;
@@ -1592,7 +1592,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
 
         if (!e.hasMultipleInputs && n.settings.WaitForAllTransitions != null)
-            delete n.settings.WaitForAllTransitions;
+            {delete n.settings.WaitForAllTransitions;}
 
         this.diagram.model.setDataProperty(n as go.ObjectData, 'name', e.name);
         this.diagram.model.setDataProperty(n as go.ObjectData, 'valid', this.validateNode(n));
@@ -1608,7 +1608,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let i = (<go.GraphLinksModel>this.diagram.model).linkDataArray.findIndex((l) => (<any>l).from == e.from && (<any>l).to == e.to);
         let l = null;
         if (i >= 0)
-            l = (<go.GraphLinksModel>this.diagram.model).linkDataArray[i];
+            {l = (<go.GraphLinksModel>this.diagram.model).linkDataArray[i];}
         if (l != null) {
 
             l.transitionType = e.transitionType;
@@ -1637,13 +1637,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     menuClick(e: any) {
         if (e.icon == 'fa fa-info-circle')
-            this.isWindowVisible = !this.isWindowVisible;
+            {this.isWindowVisible = !this.isWindowVisible;}
         if (e.icon == 'fa fa-remove')
-            this.onCloseClick.emit();
+            {this.onCloseClick.emit();}
         if (e.icon == 'fa fa-floppy-o')
-            this.save();
+            {this.save();}
         if (e.icon == 'fa fa-arrow-left')
-            this.backClick();
+            {this.backClick();}
     }
 
     @HostListener('window:resize', ['$event'])
@@ -1710,7 +1710,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private deleteSelection() {
 
         if (this.isReadOnly)
-            return;
+            {return;}
 
         let links: LinkModel[] = [];
         let nodes: NodeModel[] = [];
@@ -1731,12 +1731,12 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             to.forEach((t) => {
                 if (links.findIndex((l) => l.key == (<any>t).key) < 0)
-                    links.push(<LinkModel>t);
+                    {links.push(<LinkModel>t);}
             });
 
             from.forEach((f) => {
                 if (links.findIndex((l) => l.key == (<any>f).key) < 0)
-                    links.push(<LinkModel>f);
+                    {links.push(<LinkModel>f);}
             });
         });
 
@@ -1768,9 +1768,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                                     coll = coll.splice(i, 1);
                                 }
                                 if (l != null && l.data.condition != null)
-                                    l.data.condition.forEach((c) => {
+                                    {l.data.condition.forEach((c) => {
                                         this.workflowFieldsService.pushUsedField(c['@FormInputID'], c['@VersionStepID'], l.data.key, l.data.name);
-                                    });
+                                    });}
                             });
                         }
                     });
@@ -1801,10 +1801,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             //gojs doesn't like giving each node its own settings/fields object for some reason
             //set it here if it's empty
             if ((<any>n).settings == null || _.isEmpty((<any>n).settings))
-                (<any>n).settings = Object.create({});
+                {(<any>n).settings = Object.create({});}
 
             if ((<any>n).fields == null || _.isEmpty((<any>n).fields))
-                (<any>n).fields = Object.create({});
+                {(<any>n).fields = Object.create({});}
 
             this.diagram.model.setDataProperty(n, 'valid', this.validateNode(<NodeModel>n));
         });
@@ -1908,8 +1908,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 layout: this.g(go.GridLayout, {
                     sorting: go.GridLayout.Forward,
                     comparer: (a, b) => {
-                        if (a.activityType < b.activityType) return -1;
-                        if (a.activityType > b.activityType) return 1;
+                        if (a.activityType < b.activityType) {return -1;}
+                        if (a.activityType > b.activityType) {return 1;}
                         return 0;
                     }
                 })
@@ -2228,7 +2228,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     private showPorts(node, show) {
         let diagram = node.diagram;
-        if (!diagram || diagram.isReadOnly || !diagram.allowLink) return;
+        if (!diagram || diagram.isReadOnly || !diagram.allowLink) {return;}
         node.ports.each((port) => {
             port.stroke = (show ? "white" : null);
         });
@@ -2240,7 +2240,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.workflowService.clearLastExecutionDate(this.id, this.uid).subscribe((r) => {
             //Only clear if we get a positive response
             if (r != undefined)
-                this.model.Event.LastExecuted = null;
+                {this.model.Event.LastExecuted = null;}
         });
     }
 

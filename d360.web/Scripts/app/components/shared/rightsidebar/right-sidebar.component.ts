@@ -157,7 +157,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['menuOpen'])
-            return;
+            {return;}
         if (this.currentObject) {
             this.load();
         }
@@ -378,7 +378,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     try {
                         let colorObj = JSON.parse(this.status);
                         if (colorObj.length && colorObj.length > 0)
-                            statusHeading = colorObj[0].name;
+                            {statusHeading = colorObj[0].name;}
                     } catch (e) {
                         statusHeading = this.status;
                     }
@@ -386,7 +386,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     let draftArray = draftValues.toUpperCase().split(',');
                     draftArray.forEach((x) => {
                         if (statusHeading.toUpperCase().indexOf(x.toUpperCase()) != -1)
-                            isDraft = true;
+                            {isDraft = true;}
                     });
 
                     this.showCertify = statusHeading && isDraft && HasRequestCertificationWorkflow;
@@ -496,7 +496,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     itemClicked(item: SecondaryNavItem) {
         if (item.active == true)
-            return;
+            {return;}
 
         if (this.AllClosed()) {
             this.secondaryNavService.setLocalHomeUrl(this.router.url);
@@ -515,7 +515,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             return;
         }
         item.active = true;
-        if (item.url) this.router.navigateByUrl(item.url);
+        if (item.url) {this.router.navigateByUrl(item.url);}
         this.secondaryNavService.itemClicked(item);
         this.AllClosed();
     }
@@ -523,7 +523,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     AllClosed() {
         let count = this.items.filter((x) => x.active == true).length;
         if (count === 0)
-            this.secondaryNavService.setLocalActiveItem(undefined);
+            {this.secondaryNavService.setLocalActiveItem(undefined);}
         return count == 0;
     }
 
@@ -541,7 +541,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             return true;
         }
         else
-            return false;
+            {return false;}
     }
 
     IsIcon(icon: string) {
@@ -550,7 +550,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     GetURL(icon: string) {
         if (icon)
-            return icon.replace(/^URL-+/i, '');
+            {return icon.replace(/^URL-+/i, '');}
     }
 
     requestCertification() {
@@ -566,14 +566,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     certify() {
         this.showCertifyModal = false;
         if (this.currentObject && this.currentObject.Uid)
-            this.artifactService
+            {this.artifactService
                 .requestCertification(this.currentObject.Uid)
                 .subscribe((result) => {
                     window.setTimeout(
                         (x) => {
                             this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
                         }, 6000);
-                });
+                });}
     }
 
     navigateToSurvey() {

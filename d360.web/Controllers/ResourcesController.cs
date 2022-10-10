@@ -569,10 +569,10 @@ namespace d360.web.Controllers
 							from
 								fieldtype ft
 								inner join 
-								field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.IssueTypeID = @obj and ft.Name != 'Description')";
+								field f on ft.id = f.fieldtypeid and f.IssueID = @issueID and ft.Name != 'Description'";
 						int issueId = 0;
 
-						List<dynamic> issueRes = Company.Query<dynamic>(sql, new { ty = objectType, obj = objectID }).ToList();
+						List<dynamic> issueRes = Company.Query<dynamic>(sql, new { ty = objectType, issueID = objectID }).ToList();
 						issueRes.ForEach((item) =>
 						{
 							issueId = item.IssueId;
@@ -663,7 +663,8 @@ namespace d360.web.Controllers
 											RT.[Type]
 									from	FieldType RT 
 											cross apply openjson(RT.Definition) with (FieldTypeID int '$.FieldTypeID', [Path] nvarchar(250) '$.Path', DataType varchar(50) '$.DataType') D
-											inner join Field F on  F.ObjectType = @o and F.ObjectID = @oid and F.FieldTypeID = D.FieldTypeID and RT.[Type] = 'JsonElement'
+											inner join Field F on F.FieldTypeID = D.FieldTypeID and RT.[Type] = 'JsonElement'
+											inner join Asset A on F.AssetID = A.ID and A.Object = @o and A.ObjectID = @oid
 											inner join FieldJsonProperty P on P.FieldID = F.ID and P.[Path] = D.[Path] 
 									where   RT.Object = @type and RT.ObjectID = @typeID
 									union
@@ -674,7 +675,7 @@ namespace d360.web.Controllers
 									from	FieldType RT
 											inner join Asset A on A.[Object] = @o and A.ObjectID = @oid
 											outer apply dbo.GetAssetScoreById(A.ID, RT.ScoreType) S
-									where	RT.[Object] = @type and RT.ObjectID = @typeID and RT.[Type] = 'Score'
+									where	RT.AssetTypeID = A.AssetTypeID and RT.[Type] = 'Score'
 											and (S.[Value] is not null or RT.ShowIfEmpty = 1)
 									)
 									Select [Value],[Name],[Type]
@@ -801,7 +802,7 @@ namespace d360.web.Controllers
 						intersectTypeID = det.TypeID;
 					}
 
-					if(det.Type != SystemObjects.IntersectType.ToString() && det.Type != SystemObjects.Issue.ToString())
+					if(det.Type != SystemObjects.IntersectType.ToString() && det.Type != SystemObjects.IssueType.ToString())
 					{
 						assetTypeID = Company.AssetTypes.Where(a => a.Object == det.Type && a.ObjectID == det.TypeID).FirstOrDefault().ID;
 					}					

@@ -26,17 +26,17 @@
             </div>
         </div>
         <div class="action-bar">
-            <button class="left button" *ngIf="ShowCloseButton" type="button" i18n-label label="Close" (click)="closeDialog()" [disabled]="submitting">Cancel</button>
+            <button igButton class="left ig-button-secondary" *ngIf="ShowCloseButton" type="button" i18n-label label="Close" (click)="closeDialog()" [disabled]="submitting">Cancel</button>
             <span class="grow"></span>
-            <button class="button" *ngIf="currentQuestionIndex > 0" type="button" [disabled]="!surveyForm.form.valid || submitting" label="Previous" (click)="previousQuestion(currentQuestionIndex)">
+            <button igButton class="ig-button-secondary" *ngIf="currentQuestionIndex > 0" type="button" [disabled]="!surveyForm.form.valid || submitting" label="Previous" (click)="previousQuestion(currentQuestionIndex)">
                 <span *ngIf="submitting" class="spinner"></span>
                 <span *ngIf="!submitting"><i class="fa fa-arrow-circle-left"></i><ng-container i18n>Previous</ng-container></span>
             </button>
-            <button class="button primary" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex + 1 < surveyDetails.Questions.length" type="button" [disabled]="!surveyForm.form.valid || submitting" label="Next" (click)="nextQuestion(currentQuestionIndex)">
+            <button igButton class="ig-button-primary" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex + 1 < surveyDetails.Questions.length" type="button" [disabled]="!surveyForm.form.valid || submitting" label="Next" (click)="nextQuestion(currentQuestionIndex)">
                 <span *ngIf="submitting" class="spinner"></span>
                 <span *ngIf="!submitting"><i class="fa fa-arrow-circle-right"></i><ng-container i18n>Next</ng-container></span>
             </button>
-            <button class="button primary" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex+1 == surveyDetails.Questions.length" type="submit" [disabled]="!surveyForm.form.valid || submitting" label="Save">
+            <button igButton class="ig-button-primary" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex+1 == surveyDetails.Questions.length" type="submit" [disabled]="!surveyForm.form.valid || submitting" label="Save">
                 <span *ngIf="submitting" class="spinner"></span>
                 <span *ngIf="!submitting" i18n>Submit Survey</span>
             </button>

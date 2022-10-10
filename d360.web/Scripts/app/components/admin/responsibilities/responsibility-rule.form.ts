@@ -558,7 +558,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 	private loadThenValuesForFieldType(item: any, clearValue?: boolean): Promise<void> {
 		var fieldTypes = item.Object === this.resourceType ? this.thenUserFieldTypes : this.thenGroupFieldTypes;
 		let selectedFieldType = fieldTypes.find((f) => f.value === item.FieldTypeID);
-        if (clearValue !== undefined && clearValue === true) item.Value = "";
+        if (clearValue !== undefined && clearValue === true) {item.Value = "";}
         if (selectedFieldType) {
 			item.IsBool = false;
 			item.IsSimpleText = false;

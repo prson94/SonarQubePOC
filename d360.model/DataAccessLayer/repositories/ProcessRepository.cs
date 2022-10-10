@@ -356,14 +356,14 @@ namespace d360.model.DataAccessLayer
 										inner join api.executiondiagramasset S on S.Action = 'Delete'
 										inner join asset a on s.uid = a.uid
 										inner join [Intersect] I on i.object = a.object and i.objectid = a.objectid
-										where s.executionid = @ExecutionID and f.objecttype = 'Intersect' and f.objectid = I.Id
+										where s.executionid = @ExecutionID and f.IntersectID = I.Id
 
 									delete F
 									from Field F
 										inner join api.executiondiagramasset S on S.Action = 'Delete'
 										inner join asset a on s.uid = a.uid
 										inner join [Intersect] I on i.subject = a.object and i.subjectid = a.objectid
-										where s.executionid = @ExecutionID and f.objecttype = 'Intersect' and f.objectid = I.Id
+										where s.executionid = @ExecutionID and f.IntersectID = I.Id
 
 									 delete	T
 										from	[Intersect] T
@@ -449,7 +449,7 @@ namespace d360.model.DataAccessLayer
 										inner join fieldtype ft on ft.id = edaf.FieldTypeID
 										where eda.executionid = @executionid and edaf.executionid = @executionid and ft.type <> 'Tag'
 									) as S
-									on (T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID)
+									on (T.FieldTypeID = S.FieldTypeID and T.AssetID = S.AssetID)
 									when matched and T.Value <> S.FieldValue COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS 
 									then update 
 										set T.Value = S.FieldValue,
@@ -457,8 +457,8 @@ namespace d360.model.DataAccessLayer
 										T.UpdatedBy = @resourceId, 
 										T.UpdatedOn = getutcdate()
 									when		not matched by target then
-									insert		(AssetId,FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy, UpdatedOn)
-									values		(S.AssetId,S.FieldTypeID, S.Object, S.ObjectID, S.FieldValue, S.FormattedValue, @resourceId, getutcdate());
+									insert		(AssetId,FieldTypeID, Value, FormattedValue, UpdatedBy, UpdatedOn)
+									values		(S.AssetId,S.FieldTypeID, S.FieldValue, S.FormattedValue, @resourceId, getutcdate());
 
 								merge       AssetDisplayValue as T
 								using       (
@@ -753,10 +753,10 @@ namespace d360.model.DataAccessLayer
 							into #intersectMap;
 
 							
-							insert into Field (ObjectType,ObjectID,FieldTypeID,Value,FormattedValue,UpdatedBy,UpdatedOn)
-							select 'Intersect', IM.intersectToId, F.FieldTypeId, F.Value, F.FormattedValue, @resourceId,getutcdate() 
+							insert into Field (IntersectID,FieldTypeID,Value,FormattedValue,UpdatedBy,UpdatedOn )
+							select IM.intersectToId, F.FieldTypeId, F.Value, F.FormattedValue, @resourceId,getutcdate()
 							from #intersectMap IM
-								inner join Field F on F.ObjectType = 'Intersect' and F.ObjectID = IM.intersectFromId
+								inner join Field F on F.IntersectID = IM.intersectFromId
 
 							", new { execution.ExecutionID, resourceId = Company.CurrentResourceID, json = relJson }, transaction: trans);
 		}

@@ -132,7 +132,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 	private load() {
 		//check if the user has permission to read the selected type
 		if (this.loadPermissionSub)
-			this.loadPermissionSub.unsubscribe();
+			{this.loadPermissionSub.unsubscribe();}
 
 		this.loadPermissionSub = this.referenceService.canReadReferenceType(this.selectedReferenceListUid)
 			.subscribe((r) => {
@@ -152,7 +152,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 							this.headerBreadcrumbService.clearCurrentObjectInfo();
 							this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
 							if (this.selectedReferenceItemType)
-								this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selectedReferenceItemType.Name));
+								{this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selectedReferenceItemType.Name));}
 							if (this.auditSidebar) {
 								this.auditSidebar.url = `/assets/${this.selectedReferenceListUid}/log`;
 							}
@@ -165,18 +165,18 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 	ngOnDestroy() {
 		this.clearSidebar();
 		if (this.loadPermissionSub)
-			this.loadPermissionSub.unsubscribe();
+			{this.loadPermissionSub.unsubscribe();}
 
 		if (this.loadObjectDataSub)
-			this.loadObjectDataSub.unsubscribe();
+			{this.loadObjectDataSub.unsubscribe();}
 
 	}
 
 	private changeFormMode(formMode: FormMode) {
 		if (formMode == FormMode.Default)
-			this.showDefault = true;
+			{this.showDefault = true;}
 		else
-			this.showDefault = false;
+			{this.showDefault = false;}
 	}
 
 	changeType(e: any, replaceUrl: boolean) {

@@ -209,7 +209,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         this.tagService.getTagsList().subscribe((res) => {
             if (res && res.length > 0) {
                 this.tags = res.sort((a, b) => a.Value.localeCompare(b.Value));
-                if (this.tags.length > 0) this.selected.push(this.tags[0]);
+                if (this.tags.length > 0) {this.selected.push(this.tags[0]);}
             }
             this.isLoading = false;
         }, (err) => this.error = err);
@@ -417,13 +417,13 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     showRemoveTag() {
         if (this.isEditable) {
             if (!this.auth.isAdmin || !this.hasModifyAssetPermissions())
-                this.showDeleteOption = false;
+                {this.showDeleteOption = false;}
             if (this.auth.isAdmin || this.hasModifyAssetPermissions())
-                this.showDeleteOption = true;
+                {this.showDeleteOption = true;}
             if (!this.showDeleteOption) {
                 var tagElements = this.container.nativeElement.querySelectorAll('.tagging');
                 (function () {
-                    if (typeof NodeList.prototype.forEach === "function") return false;
+                    if (typeof NodeList.prototype.forEach === "function") {return false;}
                     tagElements.forEach = Array.prototype.forEach;
                 })();
                 this.tags.forEach((tag) => {
@@ -456,7 +456,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         var showDelete = tagElements.filter((te) => te.children[0].innerText.trim() == tag.Value.trim());
         if (showDelete.length == 1) {
             if (createdBy == CurrentResourceID)
-                this.showDeleteOption = true;
+                {this.showDeleteOption = true;}
             if (createdBy != CurrentResourceID) {
                 tagElements.forEach((e) => {
                     if (e.children[0].innerText.trim() == tag.Value.trim()) {
@@ -503,7 +503,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             }
         });
 
-        if (el) return el;
+        if (el) {return el;}
 
         if (element.parentElement) {
             return this.getParentForResizing(element.parentElement, tags);
@@ -576,14 +576,14 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         var index: number = -1;
         for (var tag of this.tags) {
             index++;
-            if (tag.uid == uid) return index;
+            if (tag.uid == uid) {return index;}
         }
     }
     findTagIndex(id: number) {
         var index: number = -1;
         for (var tag of this.tags) {
             index++;
-            if (tag.TooltipID == id) return index;
+            if (tag.TooltipID == id) {return index;}
         }
     }
 

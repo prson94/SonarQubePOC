@@ -4,10 +4,11 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { FieldTypeAPIModel, FieldTypeAPIModelField, FieldDisplayModel, FieldType } from '../../../models/fieldtype-api.model';
+import { FieldTypeAPIModelField, FieldDisplayModel, FieldType } from '../../../models/fieldtype-api.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
+import { RelationshipsService } from '../../../services/relationships.service';
 
 
 @Component({
@@ -64,6 +65,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 	constructor(
 		private fieldsService: FieldsObservableService,
+		private relationshipService: RelationshipsService,
 		private assetService: AssetService,
 		private messagesService: MessagesObservableService,
 		protected settingsService: CompanySettingsService
@@ -107,6 +109,18 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		}
 		this.isLoading = true;
 		this.hasKeyFields = false;
+
+		if (this.relationshipTypeUid) {
+			this.relationshipService.getRelationshipType(this.relationshipTypeUid)
+				.subscribe((res) => {
+					if (res.length > 0) {
+						var type = res[0];
+						var relationshipName = type.Subject.Name + ' [' + type.Predicate.Name + '] ' + type.Object.Name;
+						this.title = $localize`Field Definition for ${relationshipName}`;
+					}
+				});
+		}
+
 		this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
 			(data) => {
 				this.fieldDefinitions = data;
@@ -146,7 +160,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		if (this.fieldDisplayModel && this.fieldDisplayModel.length > 0) {
 			this.fieldDisplayModel.forEach((d) => {
 				if (!d.SortOrder)
-					d.SortOrder = 0;
+					{d.SortOrder = 0;}
 				if (d.IsPartOfKey) {
 					foundKeyField = true;
 				}
@@ -269,7 +283,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				if (items.length == 1) {
 					let index = this.fieldDisplayModel.indexOf(items[0]);
 					if (index > 0 && index < this.fieldDisplayModel.length)
-						[this.fieldDisplayModel[index], this.fieldDisplayModel[index - 1]] = [this.fieldDisplayModel[index - 1], this.fieldDisplayModel[index]];
+						{[this.fieldDisplayModel[index], this.fieldDisplayModel[index - 1]] = [this.fieldDisplayModel[index - 1], this.fieldDisplayModel[index]];}
 				}
 			}
 		);
@@ -283,7 +297,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				if (items.length == 1) {
 					let index = this.fieldDisplayModel.indexOf(items[0]);
 					if (index >= 0 && index < this.fieldDisplayModel.length - 1)
-						[this.fieldDisplayModel[index], this.fieldDisplayModel[index + 1]] = [this.fieldDisplayModel[index + 1], this.fieldDisplayModel[index]];
+						{[this.fieldDisplayModel[index], this.fieldDisplayModel[index + 1]] = [this.fieldDisplayModel[index + 1], this.fieldDisplayModel[index]];}
 				}
 			}
 		);
@@ -297,7 +311,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	showDeleteButtonByFieldType(fdm: FieldDisplayModel) {
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			if (fdm.Name == 'Name' || fdm.Name == 'StepNo' || fdm.Name == 'GovernanceRole')
-				return false;
+				{return false;}
 		}
 		return true;
 	}

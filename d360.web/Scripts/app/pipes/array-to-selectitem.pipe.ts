@@ -9,9 +9,9 @@ export class ArrayToSelectItemPipe implements PipeTransform {
         for (let item of items) {
             let data: string[] = (item as string).split("!~!");
             if (data.length == 2)
-                selectlist.push({ label: data[0], value: useLabelAsValue ? data[0] : data[1] });
+                {selectlist.push({ label: data[0], value: useLabelAsValue ? data[0] : data[1] });}
             else
-                selectlist.push({ label: item, value: item });
+                {selectlist.push({ label: item, value: item });}
         }
         return selectlist;
     }

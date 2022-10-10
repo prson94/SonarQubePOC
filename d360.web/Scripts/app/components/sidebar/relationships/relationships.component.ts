@@ -49,8 +49,9 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
 						this.permissionsService.getAssetTypePermissions(uid)
 							.subscribe((p) => {
 								this.objectPermission = p;
+								this.buildSecondaryNavigationForAssetTypeUid(uid);
+								this.assetTypeUid = uid;
 								this.uid = uid;
-								this.buildSecondaryNavigationForAssetTypeUid(this.uid);
 							});
 					}
 					else {

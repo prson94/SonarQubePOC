@@ -54,7 +54,7 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
         }
 
         if (requiredLoad)
-            this.delayedReload();
+            {this.delayedReload();}
 
         this.cdRef.markForCheck();
     }
@@ -117,7 +117,7 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
 
     checkModelChanged() {
         if (!this.model)
-            return false;
+            {return false;}
 
         if (
             this.model

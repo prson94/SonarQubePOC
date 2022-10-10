@@ -52,7 +52,8 @@ export class AssetBrowserApiHopAssetRequestModel {
 
 export class AssetBrowserGenericRelationModel {
     from: string;
-    to: string;
+	to: string;
+	rel: string;
 }
 
 export enum DiagramType {
@@ -73,6 +74,7 @@ export class DiagramTypesModel {
 export class AssetBrowserResponseModel {
     nodes: AssetBrowserTranslationNode[];
     links: AssetBrowserTranslationLink[];
+	highlightLinks: AssetBrowserTranslationLink[];
     hierarchy: AssetBrowserTranslationHierarchy[];
     reveals: AssetBrowserRevealNode[];
     dataLimitReached: boolean = false;

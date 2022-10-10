@@ -66,7 +66,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
 
     load(): void {
         if (this.id == null)
-            return;
+            {return;}
 
         this.isLoading = true;
 
@@ -124,7 +124,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
                 this.isDeleting = false;
                 let index = this.rows.findIndex((f) => f.ID == item.ID);
                 if (index >= 0 && index < this.rows.length)
-                    this.rows.splice(index, 1);
+                    {this.rows.splice(index, 1);}
                 this.onFieldsChanged.emit();
             }
         });

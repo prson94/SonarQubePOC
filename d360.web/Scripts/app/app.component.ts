@@ -5,7 +5,6 @@ import { Message, PrimeNGConfig, Translation } from 'primeng/api';
 import { CookieService } from './services/cookie.service';
 import { MessagesObservableService } from './services/messages-observable.service';
 import { MessageService } from 'primeng/api';
-import { ApplicationInsightsService } from './services/application-insights.service';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { datadogRum } from '@datadog/browser-rum';
 import { environment } from '../environments/environment';
@@ -59,7 +58,6 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     constructor(
         private messagesService: MessagesObservableService,
         protected headerActionsService: HeaderActionsService,
-        protected aiService: ApplicationInsightsService,
         private cookieService: CookieService,
         private route: ActivatedRoute,
         private toastService: MessageService,
@@ -79,7 +77,6 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             (infoMsg) => {
                 this.toastService.add({ severity: 'info', summary: infoMsg.summary, detail: infoMsg.detail });
             });
-        this.aiService.setUserId(String(CurrentResourceID));
 
         this.paramSub = this.route.queryParams.subscribe(() => {
             let url = new URL(window.location.href);
@@ -158,9 +155,9 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             let headerHeight = 0;
             let sidebarHeight = 0;
             if (this.sidebar?.nativeElement && this.sidebar.nativeElement.children[0])
-                sidebarHeight = this.sidebar.nativeElement.children[0].getBoundingClientRect().height;
+                {sidebarHeight = this.sidebar.nativeElement.children[0].getBoundingClientRect().height;}
             if (this.header?.nativeElement && this.header.nativeElement.children[0].children[0])
-                headerHeight = this.header.nativeElement.getBoundingClientRect().height;
+                {headerHeight = this.header.nativeElement.getBoundingClientRect().height;}
 
             this.maxContentPaneHeight = (window.innerHeight > 100) ? ((window.innerHeight - (headerHeight + sidebarHeight))) : 100;
             this.secondNavOpen = sidebarHeight > 61;

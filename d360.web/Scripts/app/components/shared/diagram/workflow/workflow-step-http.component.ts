@@ -64,7 +64,7 @@ export class WorkflowStepHttpComponent extends BaseComponent implements OnInit  
 
     append(e: string) {
         if (this.step.settings.HTTPRequest.Body == null)
-            this.step.settings.HTTPRequest.Body = '';
+            {this.step.settings.HTTPRequest.Body = '';}
 
         this.step.settings.HTTPRequest.Body += e;
         this.stepChange.emit(this.step);

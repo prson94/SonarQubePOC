@@ -351,11 +351,11 @@ namespace d360.model
 			SaveChanges();
 
 			//copy fields for original issue
-			IQueryable<Field> fields = Fields.Where(x => x.ObjectID == orgIssue.ID && x.ObjectType == "Issue");
+			IQueryable<Field> fields = Fields.Where(x => x.IssueID == orgIssue.ID);
 
 			foreach (Field field in fields)
 			{
-				Fields.Add(new Field { Value = field.Value, ObjectType = "Issue", ObjectID = issue.ID, FieldTypeID = field.FieldTypeID, UpdatedBy = CurrentResourceID });
+				Fields.Add(new Field { Value = field.Value, IssueID = issue.ID, FieldTypeID = field.FieldTypeID, UpdatedBy = CurrentResourceID });
 			}
 
 			SaveChanges();
@@ -1407,7 +1407,7 @@ namespace d360.model
 		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, bool isAssetEdited = false, Asset asset = null)
 		{
 			//check if the field exists
-			Field field = Fields.Where(x => x.ObjectID == objectId && x.ObjectType == objectType && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+			Field field = Fields.Where(x => ((x.IssueID == objectId && objectType == SystemObjects.Issue.ToString()) || (x.IntersectID == objectId && objectType == SystemObjects.Intersect.ToString()) || (x.AssetID == objectId && objectType != SystemObjects.Issue.ToString() && objectType != SystemObjects.Intersect.ToString())) && x.FieldTypeID == fieldType.ID).FirstOrDefault();
 
 			//validate list field value
 			if (fieldType.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(val))
@@ -1438,14 +1438,16 @@ namespace d360.model
 			//use SQL here instead of EF to avoid triggering further workflows
 			if (field == null && !string.IsNullOrEmpty(val))
 			{
-				await Database.Connection.ExecuteAsync("insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], UpdatedBy) values (@assetID, @fieldTypeID, @objectId, @objectType, @value, @updatedBy)"
+				await Database.Connection.ExecuteAsync("insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], IssueID, IntersectID UpdatedBy) values (@assetID, @fieldTypeID, @objectId, @objectType, @value, @IssueID, @IntersectID, @updatedBy)"
 					, new
 					{
 						value = val,
 						fieldTypeID = fieldType.ID,
 						assetID = isAssetEdited ? asset.ID : (long?)null,
 						objectId,
-						objectType = objectType.ToString(),
+						objectType = objectType.ToString(),						
+						IssueID = objectType == SystemObjects.Issue.ToString() ? objectId : (long?)null,
+						IntersectID = objectType == SystemObjects.Issue.ToString() ? objectId : (long?)null,
 						updatedBy = CurrentResourceID
 					});
 			}
@@ -1462,27 +1464,44 @@ namespace d360.model
 
 				}
 
+				var idSQL = "";
+
+				if (field.IssueID != null)
+				{
+					idSQL = "IssueID = @issueId";
+				}
+				else if (field.IntersectID != null)
+				{
+					idSQL = "intersectID = @intersectId";
+				}
+				else
+				{
+					idSQL = "AssetID = @assetId";
+				}
+
 				//remove the field from db if field value is null or empty 
 				if (string.IsNullOrEmpty(updateValue))
-				{
-					await Database.Connection.ExecuteAsync("delete from Field where FieldTypeID = @fieldTypeID and ObjectType = @objectType and ObjectID = @objectId"
+				{					
+					await Database.Connection.ExecuteAsync($"delete from Field where FieldTypeID = @fieldTypeID and {idSQL}"
 					, new
 					{
 						fieldTypeID = field.FieldTypeID,
-						objectType = field.ObjectType,
-						objectId = field.ObjectID
+						issueId = field.IssueID,
+						intersectId = field.IntersectID,
+						assetId = field.AssetID
 					});
 				}
 				else //update
 				{
-					await Database.Connection.ExecuteAsync("update Field set[Value] = @value, UpdatedOn = getutcdate(), UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and ObjectType = @objectType and ObjectID = @objectId"
+					await Database.Connection.ExecuteAsync($"update Field set [Value] = @value, UpdatedOn = getutcdate(), UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and {idSQL}"
 					, new
 					{
 						value = updateValue,
 						updatedBy = CurrentResourceID,
 						fieldTypeID = field.FieldTypeID,
-						objectType = field.ObjectType,
-						objectId = field.ObjectID
+						issueId = field.IssueID,
+						intersectId = field.IntersectID,
+						assetId = field.AssetID
 					});
 				}
 			}
@@ -1528,9 +1547,9 @@ namespace d360.model
 				if (item.ClearValue)
 				{
 					//delete the value
-					string sql = "delete field where objectid = @id and objecttype = @objectType and fieldtypeid = @fieldTypeId";
+					string sql = "delete field where AssetID = @id and fieldtypeid = @fieldTypeId";
 
-					await Database.Connection.ExecuteAsync(sql, new { id = objectId, objectType = objectType, fieldTypeId = item.FieldID });
+					await Database.Connection.ExecuteAsync(sql, new { id = asset.ID, fieldTypeId = item.FieldID });
 
 				}
 				else if (item.CurrentDate)
@@ -1567,7 +1586,7 @@ namespace d360.model
 					if (fieldData.Count() == 2)
 					{
 						int fieldTypeId = int.Parse(fieldData[1]);
-						Field actionField = Fields.FirstOrDefault(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == "Issue" && x.FieldTypeID == fieldTypeId);
+						Field actionField = Fields.FirstOrDefault(x => x.IssueID == objectInfo.ObjectID && x.FieldTypeID == fieldTypeId);
 						
 						if (actionField != null)
 						{
@@ -2768,7 +2787,7 @@ namespace d360.model
 						.OrderBy(x => x.ColumnOrder)
 						.ThenBy(x => x.FriendlyName);
 
-					IQueryable<Field> fieldValues = Fields.Where(x => x.ObjectType == "Issue" && x.ObjectID == issue.ID);
+					IQueryable<Field> fieldValues = Fields.Where(x => x.IssueID == issue.ID);
 
 					foreach (FieldType fieldType in fieldTypes)
 					{
@@ -2962,7 +2981,7 @@ namespace d360.model
 
 					if (fieldId > 0)
 					{
-						Field fieldRecord = Fields.Where(x => x.ObjectID == objectID && x.ObjectType == obj.ToString() && x.FieldTypeID == fieldId).FirstOrDefault();
+						Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == objectID && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == fieldId).FirstOrDefault();
 
 						//If there is no field and type is Issue, this might be asset field
 						if (fieldRecord == null && obj == SystemObjects.Issue)
@@ -2977,14 +2996,14 @@ namespace d360.model
 
 							if (intersect != null)
 							{
-								Field ofieldRecord = Fields.Where(x => x.ObjectID == intersect.ObjectID && x.ObjectType == intersect.Object && x.FieldTypeID == fieldId).FirstOrDefault();
+								Field ofieldRecord = Fields.Where(x => x.AssetID == intersect.ObjectAssetID && x.FieldTypeID == fieldId).FirstOrDefault();
 
 								if (ofieldRecord != null)
 								{
 									fieldValue = ofieldRecord.FormattedValue;
 								}
 
-								Field sfieldRecord = Fields.Where(x => x.ObjectID == intersect.SubjectID && x.ObjectType == intersect.Subject && x.FieldTypeID == fieldId).FirstOrDefault();
+								Field sfieldRecord = Fields.Where(x => x.AssetID == intersect.SubjectAssetID && x.FieldTypeID == fieldId).FirstOrDefault();
 
 								if (!string.IsNullOrEmpty(fieldValue))
 								{
@@ -3114,7 +3133,7 @@ namespace d360.model
 					{
 						jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(fieldType.Definition);
 
-						Field fieldRecord = Fields.Where(x => x.ObjectID == objectID && x.ObjectType == obj.ToString() && x.FieldTypeID == jsonElementDefinition.FieldTypeID).FirstOrDefault();
+						Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == objectID && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == jsonElementDefinition.FieldTypeID).FirstOrDefault();
 
 						JObject fielddata = JObject.Parse(fieldRecord.Value);
 

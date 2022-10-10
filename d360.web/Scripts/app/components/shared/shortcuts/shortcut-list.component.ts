@@ -52,7 +52,7 @@ export class ShortcutListComponent extends BaseComponent implements OnInit {
 
     confirmDelete() {
         if (this.selectedShortcut == null)
-            return;
+            {return;}
         this.shortcutService.deleteShortcut(this.selectedShortcut.ID)
             .subscribe((r) => {
                 this.showMessageForResult(this.messagesService, r);

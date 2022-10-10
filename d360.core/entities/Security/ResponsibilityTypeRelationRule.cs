@@ -132,7 +132,7 @@ namespace d360.core.entities
     {
         public string Object { get; set; }
 
-        public int ObjectID { get; set; }
+        public int? ObjectID { get; set; }
 
         public List<ResponsibilityRuleDefinitionWhen> Conditions { get; set; }
 

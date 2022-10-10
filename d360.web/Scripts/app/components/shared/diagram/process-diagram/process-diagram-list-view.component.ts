@@ -99,19 +99,19 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
             let result = null;
 
             if (value1 == null && value2 != null)
-                result = -1;
+                {result = -1;}
             else if (value1 != null && value2 == null)
-                result = 1;
+                {result = 1;}
             else if (value1 == null && value2 == null)
-                result = 0;
+                {result = 0;}
             else if (typeof value1 === 'string' && typeof value2 === 'string' && event.field != 'StepNo')
-                result = value1.localeCompare(value2);
+                {result = value1.localeCompare(value2);}
             else if (event.field == 'StepNo') {
                 result = (+value1 < +value2) ? -1 : (+value1 > +value2) ? 1 : 0;
 
             }
             else
-                result = (value1 < value2) ? -1 : (value1 > value2) ? 1 : 0;
+                {result = (value1 < value2) ? -1 : (value1 > value2) ? 1 : 0;}
 
             return (event.order * result);
         });
@@ -138,10 +138,10 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
                 var index = this.getNodeIndexInSelected(item);
 
                 if (index === -1)
-                    this.selected.push(item);
+                    {this.selected.push(item);}
 
                 if (index !== -1)
-                    this.selected = this.selected.filter((x) => x.key != item.key);
+                    {this.selected = this.selected.filter((x) => x.key !== item.key);}
             }
             else if (event.shiftKey) {
                 var arr = this.tableEl.value as Array<go.ObjectData>;
@@ -161,12 +161,12 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
             }
             else {
                 if (!isCheckboxClicked)
-                    this.selected = [];
+                    {this.selected = [];}
 
                 var index = this.getNodeIndexInSelected(item);
 
                 if (index === -1)
-                    this.selected.push(item);
+                    {this.selected.push(item);}
 
                 if (isCheckboxClicked && index !== -1) {
                     this.selected = this.selected.filter((x) => x.key != item.key);

@@ -281,9 +281,9 @@ namespace d360.model.DataAccessLayer
 							dbArgs.Add("@assetTypeId", type.ID);
 							filteredIntersectsTempTable = @"drop table if exists #filteredIntersects;
 							;with assetIntersects as (
-								select * from [Intersect] I where i.ObjectAssetTypeID = @assetTypeId and i.ObjectAssetID = 0
+								select * from [Intersect] I where i.ObjectAssetTypeID = @assetTypeId
 								union
-								select * from [Intersect] I where i.SubjectAssetTypeID = @assetTypeId and i.SubjectAssetID = 0
+								select * from [Intersect] I where i.SubjectAssetTypeID = @assetTypeId
 							)
 							select ID into #filteredIntersects from assetIntersects";
 						}
@@ -356,7 +356,7 @@ namespace d360.model.DataAccessLayer
 
 			if (fieldTypes != null)
 			{
-				getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "'Intersect'", "i.Id", listColorsAsJSON);
+				getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "i.Id", listColorsAsJSON, objectType: SystemObjects.Intersect);
 			}
 
 			if (queryParams.Any(x => x.Key.ToLower() == "_order"))
@@ -628,7 +628,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
 			fieldTypes = companyContext.Query<FieldType>(
 				$@"select F.* from FieldType F 
-					inner join IntersectType IT on and IT.ID = F.IntersectTypeID
+					inner join IntersectType IT on IT.ID = F.IntersectTypeID
 					inner join [intersect] I on I.IntersectTypeID = IT.ID
 					WHERE I.uid = @uid"
 				, new { uid }, ApiTimeout).ToList();
@@ -638,7 +638,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
 			if (fieldTypes != null)
 			{
-				getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "'Intersect'", "i.Id");
+				getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "i.Id", objectType: SystemObjects.Intersect);
 			}
 
 			var stateSql = "case I.State ";
@@ -719,8 +719,41 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 					var assetTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value;
 					if (Guid.TryParse(assetTypeUidString, out assetTypeUid))
 					{
+						bool IsReferenceType = false;
+						Guid RefListUid = Guid.Empty;
+						var assetType = companyContext.Filter<AssetType>(i => i.uid == assetTypeUid).FirstOrDefault();
+						if (assetType != null)
+						{
+							if (assetType.Class == AssetTypeClass.Reference)
+							{
+								var assetTypeRef = companyContext.Filter<AssetType>(i => i.Class == AssetTypeClass.Reference && i.ObjectID == 0).FirstOrDefault();
+								if (assetTypeRef != null)
+								{
+									RefListUid = assetTypeRef.uid;
+								}
+								IsReferenceType = true;
+							}
+						}
 						dbArgs.Add("@assettypeuid", assetTypeUid);
-						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid)";
+						if (IsReferenceType)
+						{
+							dbArgs.Add("@RefListUid", RefListUid);
+							whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid OR S9.Uid = @RefListUid OR O9.Uid = @RefListUid)";
+						}
+						else
+						{
+							whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid)";
+						}
+					}
+				}				
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "relationshiptypeuid"))
+				{
+					Guid relationshipTypeUid;
+					var relationshipTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "relationshiptypeuid").Value;
+					if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
+					{
+						dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
+						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (I.Uid = @relationshiptypeuid)";
 					}
 				}
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "state"))
@@ -1189,7 +1222,14 @@ where	Id = @Id
 					foreach (var field in fields)
 					{
 
-						var token = row[field.Name];						
+						var token = row[field.Name];
+
+						var fieldID = field.Name.Split('|');
+
+						if (fieldID.Count() > 1)
+						{
+							token = row[fieldID[0]][fieldID[1]];
+						}
 
 						string value = "";
 						if (token != null)

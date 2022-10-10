@@ -134,7 +134,7 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     public getPassCheckValue(): string {
-        if (!this.passTestRef) return "";
+        if (!this.passTestRef) {return "";}
         return this.passTestRef.getPassTestValue();
     }
 
@@ -145,7 +145,7 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
             if (this.conditions && this.conditions.length > 0) {
                 return true;
             } else
-                return false;
+                {return false;}
         } else {
             this.conditions = [];
             return false;

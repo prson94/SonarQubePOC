@@ -94,7 +94,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             requiredLoad = true;
         }
         if (requiredLoad)
-            this.delayedReload();
+            {this.delayedReload();}
 
         this.cdRef.markForCheck();
     }
@@ -335,7 +335,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
     checkModelChanged() {
         if (!this.model)
-            return false;
+            {return false;}
 
         this.hasModelChanged = false; //set default before testing.
 

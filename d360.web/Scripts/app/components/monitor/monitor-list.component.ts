@@ -117,7 +117,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
 
     ngOnChanges(changes: SimpleChanges) {
         if (!(changes['showSimpleFilter'] && changes['showSimpleFilter'].currentValue != changes['showSimpleFilter'].previousValue))
-            this.load();
+            {this.load();}
     }
 
     private load() {

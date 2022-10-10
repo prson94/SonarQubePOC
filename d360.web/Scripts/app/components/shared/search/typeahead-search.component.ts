@@ -67,7 +67,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     }
 
     createSubscription() {
-        if (this.searchSub) this.searchSub.unsubscribe();
+        if (this.searchSub) {this.searchSub.unsubscribe();}
         this.searchSub = this.typeaheadSearchService.getResults(this.typeAheadQuery$, 20, this.options)
             .subscribe((data) => {
                 this.results = data;
@@ -91,7 +91,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     ngOnDestroy(): void {
         clearTimeout(this.clearTimer);
-        if (this.searchSub) this.searchSub.unsubscribe();
+        if (this.searchSub) {this.searchSub.unsubscribe();}
     }
 
     private setOptions(options: string[]) {
@@ -118,7 +118,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     openSearch() {
         if (this.result)
-            this.searchText = (typeof this.result === 'string') ? this.result : this.result.Name;
+            {this.searchText = (typeof this.result === 'string') ? this.result : this.result.Name;}
         this.navigateQuery(this.searchText);
     }
 
@@ -207,6 +207,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { DataCyModule } from '../../../directives/ig-data-cy.directive';
 import { PipesModule } from '../../../pipes/pipes.module';
+import { DirectivesModule } from "../../../directives/directives.module";
 
 
 
@@ -228,6 +229,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         SharedModule,
         TreeModule,
         DialogModule,
+        DirectivesModule
     ],
     declarations: [
         TypeaheadSearchComponent

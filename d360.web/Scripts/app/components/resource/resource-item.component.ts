@@ -150,15 +150,15 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     showAssignment(e: any) {
         if (e.resourceID > 0) {
             if (e.workflowId)
-                this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${e.workflowId}/${e.version}/${e.stepId};resourceID=${e.resourceID}`);
+                {this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${e.workflowId}/${e.version}/${e.stepId};resourceID=${e.resourceID}`);}
             else
-                this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${e.workflowType};resourceID=${e.resourceID}`);
+                {this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${e.workflowType};resourceID=${e.resourceID}`);}
         }
         else {
             if (e.workflowId)
-                this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${e.workflowId}/${e.version}/${e.stepId}`);
+                {this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${e.workflowId}/${e.version}/${e.stepId}`);}
             else
-                this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${e.workflowType}`);
+                {this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${e.workflowType}`);}
         }
     }
 

@@ -96,7 +96,7 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
 
     operatorLabel(item: any): string {
         if (item == null || item['@Operator'] == null)
-            return null;
+            {return null;}
 
         switch (item['@Operator']) {
             case 'C':
@@ -112,7 +112,7 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
 
     valueLabel(item: any): string {
         if (item == null || item['@Operator'] == null)
-            return null;
+            {return null;}
 
         switch (item['@Operator']) {
             case 'C':

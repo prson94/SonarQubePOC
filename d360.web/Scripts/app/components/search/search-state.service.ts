@@ -161,7 +161,7 @@ export class SearchStateService extends BaseObservableService {
             this._query.From = 0;
         }
         if (resetPage)
-            this._query.From = 0;
+            {this._query.From = 0;}
 
         this.doSearch();
     }
@@ -451,28 +451,28 @@ export class SearchStateService extends BaseObservableService {
      */
     compareQueries(x: SearchQuery, y: SearchQuery): boolean {
         if (y.Force)
-            return false;
+            {return false;}
         if (x.Term != y.Term)
-            return false;
+            {return false;}
         if (x.Size != y.Size)
-            return false;
+            {return false;}
         if (x.From != y.From)
-            return false;
+            {return false;}
         if (x.Explain != y.Explain)
-            return false;
+            {return false;}
         if (x.SearchConnector !== y.SearchConnector) {
             return false;
         }
         if (x.Aggregations == undefined || y.Aggregations == undefined || x.Aggregations.length != y.Aggregations.length)
-            return false;
+            {return false;}
         if (JSON.stringify(x.Aggregations) != JSON.stringify(y.Aggregations))
-            return false;
+            {return false;}
         if (x.AggregationFilters == undefined || y.AggregationFilters == undefined || x.AggregationFilters.length != y.AggregationFilters.length)
-            return false;
+            {return false;}
         if (JSON.stringify(x.AggregationFilters) != JSON.stringify(y.AggregationFilters))
-            return false;
+            {return false;}
         if (x.FieldFilters == undefined || y.FieldFilters == undefined || x.FieldFilters.length != y.FieldFilters.length)
-            return false;
+            {return false;}
         if (JSON.stringify(x.FieldFilters) != JSON.stringify(y.FieldFilters)) {
             return false;
         }

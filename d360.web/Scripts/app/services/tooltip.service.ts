@@ -14,7 +14,7 @@ export class ToolTipService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getTooltipInfo(objectType: string, objectID: number): Observable<TooltipInfo> {
-        if (objectType === undefined || objectID === undefined) return empty(); 
+        if (objectType === undefined || objectID === undefined) {return empty();} 
 
         return this.http.get(`resources/tooltipdata/${objectType}/${objectID}`)
             .pipe(
@@ -27,7 +27,7 @@ export class ToolTipService extends BaseObservableService {
     getTooltipInfoByUid(uid: string, objectType: string = null): Observable<TooltipInfo> {
         var cachedItem = this.tooltipsCache.find((x) => x.uid == uid);
         if (cachedItem)
-            return cachedItem.obs;
+            {return cachedItem.obs;}
 
         var obs = this.http.get(`resources/tooltipdatabyuid/${uid}?objectType=${objectType}`)
             .pipe(

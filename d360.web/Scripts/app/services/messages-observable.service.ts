@@ -60,7 +60,7 @@ export class MessagesObservableService {
                 objError = new Error(error.toString());
             }
             if (error.message)
-                objError.message = error.message;
+                {objError.message = error.message;}
         }
         else {
             objError = new Error(error.error.message);

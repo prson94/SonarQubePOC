@@ -109,10 +109,10 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
         var retval = false;
         if (this.exportViewType) {
             if (this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot])
-                retval = true;
+                {retval = true;}
             else if ((this.exportViewType.toString() == ExportViewType[ExportViewType.Grouped] || this.exportViewType.toString() == ExportViewType[ExportViewType.None])
                 && (this.styleRules == null || this.styleRules.length == 0))
-                retval = true;
+                {retval = true;}
         }
         return retval;
     }
@@ -149,9 +149,9 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
         }
         this.exportTemplateService.getExportTemplateStyles(this.templateId).subscribe((result) => {
             if (this.exportViewType != ExportViewType.Pivot)
-                this.styleRules = result.filter((x) => x.Column == -1);
+                {this.styleRules = result.filter((x) => x.Column == -1);}
             else
-                this.styleRules = result;
+                {this.styleRules = result;}
             this.isLoading = false;
         });
     }

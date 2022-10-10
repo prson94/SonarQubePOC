@@ -50,7 +50,7 @@ export class TagService extends BaseObservableService {
         let url = `api/v2/tags/`;
 
         if (tags.length == 1)
-            return this.deleteTagByUid(tags[0].uid);
+            {return this.deleteTagByUid(tags[0].uid);}
 
         let body: any[] = [];
         tags.forEach((t) => {
@@ -217,7 +217,7 @@ export class TagService extends BaseObservableService {
         if (tagUid) {
             var cachedItem = this.tagTooltipsCache.find((x) => x.tagUid == tagUid && x.assetUid == assetUid);
             if (cachedItem)
-                return cachedItem.obs;
+                {return cachedItem.obs;}
         }
 
         let url = `api/v2/tags/${tagUid}/tooltip`;
@@ -225,10 +225,10 @@ export class TagService extends BaseObservableService {
         if (!tagUid) {
             url = `api/v2/tags/tooltipByName?tagName=${encodeURIComponent(value)}`;
             if (assetUid != null)
-                url += `&assetUid=${assetUid}`;
+                {url += `&assetUid=${assetUid}`;}
         }
         else if (assetUid != null)
-            url += `?assetUid=${assetUid}`;
+            {url += `?assetUid=${assetUid}`;}
 
         var obs = this.http.get(url)
             .pipe(map((response) => <any>response),

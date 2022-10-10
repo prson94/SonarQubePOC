@@ -38,9 +38,9 @@ export class UICheckTreeNode implements OnInit {
 
     toggle(event: Event) {
         if (this.node.expanded)
-            this.collapse(event);
+            {this.collapse(event);}
         else
-            this.expand(event);
+            {this.expand(event);}
     }
 
     expand(event: Event) {
@@ -152,9 +152,9 @@ export class UICheckTreeNode implements OnInit {
         let parentNodeElement = this.getParentNodeElement(nodeElement);
         if (parentNodeElement) {
             if (parentNodeElement.nextElementSibling)
-                return parentNodeElement.nextElementSibling;
+                {return parentNodeElement.nextElementSibling;}
             else
-                return this.findNextSiblingOfAncestor(parentNodeElement);
+                {return this.findNextSiblingOfAncestor(parentNodeElement);}
         }
         else {
             return null;

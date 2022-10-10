@@ -55,10 +55,10 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
                 }),
                 map(() => {
                     if (this.step != null)
-                        this.workflowService.getWorkflowFieldTypes(this.step.ObjectTypeID, this.step.ObjectType, true)
+                        {this.workflowService.getWorkflowFieldTypes(this.step.ObjectTypeID, this.step.ObjectType, true)
                             .subscribe((r) => {
                                 this.fields = r;
-                            });
+                            });}
                 })
             ).subscribe();
     }
@@ -99,7 +99,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
                 );
         }
         else
-            return of();
+            {return of();}
     }
 
 
@@ -109,13 +109,13 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
 
     private get reassignment() {
         if (this.reassignments == null || this.reassignments.length < 1)
-            return null;
+            {return null;}
         else if (this.reassignments.length == 1 && !this.reassignments[0].IsBulkReassignment)
-            return this.reassignments[0];
+            {return this.reassignments[0];}
         else if (this.reassignments.length > 1)
-            return this.reassignments.find((r) => !r.IsBulkReassignment);
+            {return this.reassignments.find((r) => !r.IsBulkReassignment);}
         else
-            return null;
+            {return null;}
     }
 
     private close() {

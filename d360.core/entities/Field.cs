@@ -6,18 +6,12 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Field : BaseObject
+    public class Field : BaseLongObject
     {
         [DataMember]
         public long? AssetID { get; set; }
 
-        [Column(Order = 1, TypeName = "varchar"), DataMember, Key, StringLength(25)]
-        public string ObjectType { get; set; }
-
-        [Column(Order = 2), DataMember, Key]
-        public int ObjectID { get; set; }
-
-        [Column(Order = 3), DataMember, Key]
+        [DataMember]
         public int FieldTypeID { get; set; }
 
         [DataMember]
@@ -34,7 +28,13 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public FieldType FieldType { get; set; }
-    }
+
+		[DataMember]
+		public long? IssueID { get; set; }
+
+		[DataMember]
+		public long? IntersectID { get; set; }
+	}
 
     [DataContract(Namespace = NAMESPACE)]
     public class FieldApiModel : BaseObject

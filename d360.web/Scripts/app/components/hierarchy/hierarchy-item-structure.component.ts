@@ -305,7 +305,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 	private isElementLink(element: HTMLElement): boolean {
 		while (element.parentElement) {
-			if (element.tagName === 'A') return true;
+			if (element.tagName === 'A') {return true;}
 			element = element.parentElement;
 		}
 		return false;
@@ -622,7 +622,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	}
 
 	setTreeNodeStyles(node) {
-		if (!node.data) return null;
+		if (!node.data) {return null;}
 
 		let styles = {
 			'font-weight': node.data.hasRelations ? 'bold' : 'normal',
@@ -639,34 +639,34 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			let thisLevel = this.levels.filter((x) => x.Level == this.selectedLevel + 1);
 
 			if (thisLevel && thisLevel.length > 0)
-				return thisLevel[0].Name;
+				{return thisLevel[0].Name;}
 			else
-				return $localize`(Level ${this.selectedLevel + 1}) Item`;
+				{return $localize`(Level ${this.selectedLevel + 1}) Item`;}
 		}
 
 		let thisLevel = this.levels.filter((x) => x.Level == this.selected.data.Level);
 
-		if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
+		if (thisLevel && thisLevel.length > 0) {return thisLevel[0].Name;}
 		return $localize`(Level ${this.selected.data.Level}) Item`;
 	}
 
 	getThreshold(value: string, lower: number, upper: number): string {
 		if (value == null || value.length < 1)
-			return '';
+			{return '';}
 		if (value.indexOf('%') > -1) {
 			value = value.replace('%', '');
 		}
 		if (isNaN(+value))
-			return '';
+			{return '';}
 
 		let v = +value;
 
 		if (v <= lower)
-			return 'poor';
+			{return 'poor';}
 		else if (v > lower && v <= upper)
-			return 'average';
+			{return 'average';}
 		else
-			return 'good';
+			{return 'good';}
 	}
 
 	showHierarchy($event, asset) {

@@ -890,51 +890,51 @@ from	Asset A
 
 							if (whenFieldType != null)
 							{
-								whenSql.Append($" cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ");
+								whenSql.Append($" cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID");
 								
 								if (whenFieldType.AllowMultipleValues)// multiselect list
 								{
 									whenSql.Append(
-										$"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}");
+										$" where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}");
 								}else if (whenFieldType.Type == "Text")
 								{
 									switch (w.Operator)
 									{
 										case Operator.NotEquals:								
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) != '{w.Value}' ) FV{fCount}");
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) != '{w.Value}' ) FV{fCount}");
 											break;
 										case Operator.Contains:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{w.Value}%' ) FV{fCount}");
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{w.Value}%' ) FV{fCount}");
 											break;
 										case Operator.NotContains:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) NOT LIKE '%{w.Value}%' ) FV{fCount}");
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) NOT LIKE '%{w.Value}%' ) FV{fCount}");
 											break;
 										case Operator.StartsWith:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '{w.Value}%' ) FV{fCount}");
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '{w.Value}%' ) FV{fCount}");
 											break;
 										case Operator.EndsWith:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{w.Value}' ) FV{fCount}");
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{w.Value}' ) FV{fCount}");
 											break;
 										case Operator.Populated:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is not null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))>0) ) FV{fCount}");  // all field types plus single select list
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is not null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))>0) ) FV{fCount}");  // all field types plus single select list
 											break;
 										case Operator.NotPopulated:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))=0) ) FV{fCount}");  // all field types plus single select list
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))=0) ) FV{fCount}");  // all field types plus single select list
 											break;
 										default:
-											whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
+											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
 											break;
 									}
 									
 								}
 								else // all other field types including single select list
 								{
-									whenSql.Append($"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
+									whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
 								}
 							}
 							else // invalid field type ID so the when is always not going to return anything
 							{
-								whenSql.Append($"where 1 =0 ");
+								whenSql.Append($" where 1 =0 ");
 							}
 						}
 						fCount++;
@@ -1030,7 +1030,7 @@ from	Asset A
 							{
 
 								var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();
-								whenSuffix.Append((whenSuffix.Length==0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = {objectIds[obj]}.{uniqueIdField} ");
+								whenSuffix.Append((whenSuffix.Length==0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldType FT inner join Field F on F.FieldTypeID = FT.ID inner join Asset A on A.Object = '{obj}' and A.ObjectID = {objectIds[obj]}.{uniqueIdField} ");
 								if (thenFieldType != null)
 								{
 									if (thenFieldType.AllowMultipleValues)// multiselect list
@@ -1097,14 +1097,14 @@ from	Asset A
 
 						if (rulegroupKey == "ResourceType")
 						{
-							whenSuffix.Append((whenSuffix.Length == 0 ? $" where " : " and ") + $"RO.[State] = 1");
+							whenSuffix.Append((whenSuffix.Length == 0 ? $" where ( " : " and ") + $"RO.[State] = 1");
 							if (IsHideData3SixtyUsers)
 							{
 								whenSuffix.Append(" and (RO.Email not like '%@data3sixty.com' and RO.Email not like '%@infogix.com' and RO.Email not like '%@precisely.com')");
 							}
 						}
 
-						if (whenSuffix.Length>0)
+						if (whenSuffix.Length > 0)
 						{
 							whenSuffix.Append(" ) ");
 						}

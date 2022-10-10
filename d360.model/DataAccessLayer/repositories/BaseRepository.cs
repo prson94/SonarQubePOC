@@ -124,10 +124,10 @@ namespace d360.model.DataAccessLayer.repositories
 			return "";
 		}
 
-		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null)
+		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string idSql = "A.[ID]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null, SystemObjects objectType = SystemObjects.Artifact)
 		{
 			List<string> TempTableNameList = new List<string>();
-
+			
 			fieldTypes.OrderBy(x => x.ID).ToList().ForEach(f =>
 			 {
 				 var defaultVal = f.DefaultFormattedValue;
@@ -138,6 +138,19 @@ namespace d360.model.DataAccessLayer.repositories
 				 var fieldDataType = getFieldDataType(f);
 				 var hasColor = CompanyContext.LookupFieldHasColorItem(f);
 				 FieldTypeDefinition_JsonElement jsonElementDefinition = null;
+				 var fieldJoinIdSQL = "";
+				 if (objectType == SystemObjects.Intersect)
+				 {
+					 fieldJoinIdSQL = $"{tableAlias}.[IntersectID] = {idSql}";
+				 }
+				 else if (objectType == SystemObjects.Issue)
+				 {
+					 fieldJoinIdSQL = $"{tableAlias}.[IssueID] = {idSql}";
+				 }
+				 else
+				 {
+					 fieldJoinIdSQL = $"{tableAlias}.[AssetID] = {idSql}";
+				 }
 
 				 if (f.Type == "JsonElement")
 				 {
@@ -209,6 +222,14 @@ namespace d360.model.DataAccessLayer.repositories
 					 else if (f.Type == "Counter")
 					 {
 						 fieldColumns.Add($"('{f.CounterPrefix}' + CAST({tableAlias}.{valueColumn} as nvarchar(max))) as [{columnName}]", f.ID.ToString());
+					 }
+					 else if (f.Type == "Html")
+					 {
+						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"CAST({tableAlias}.{valueColumn} as XML).value('.', 'nvarchar(max)')");
+					 }
+					 else if (f.Type == "Link")
+					 {
+						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"SUBSTRING({tableAlias}.{valueColumn}, 0, CHARINDEX('|', {tableAlias}.{valueColumn})) as [{columnName}]");
 					 }
 					 else
 					 {
@@ -299,9 +320,13 @@ namespace d360.model.DataAccessLayer.repositories
 						 {
 							 fieldColumns.Add($"('{f.CounterPrefix}' + CAST({tableAlias}.{valueColumn} as nvarchar(max))) as [{columnName}]", f.ID.ToString());
 						 }
+						 else if (f.Type == "Html")
+						 {
+							 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"CAST({tableAlias}.{valueColumn} as XML).value('.', 'nvarchar(max)')");
+						 }
 						 else if (f.Type == "Link")
 						 {
-							 fieldColumns.Add($"NULLIF(NULLIF({tableAlias}.{valueColumn},'|'), '') as [{columnName}]", f.ID.ToString());
+							 fieldColumns.Add($"NULLIF(NULLIF({tableAlias}.{valueColumn},'|'), '') as [{columnName}]", f.ID.ToString(), $"SUBSTRING({tableAlias}.{valueColumn}, 0, CHARINDEX('|', {tableAlias}.{valueColumn})) as [{columnName}]");
 						 }
 						 else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
 						 {
@@ -549,7 +574,7 @@ namespace d360.model.DataAccessLayer.repositories
 				 else if (f.Type == "JsonElement")
 				 {
 					 fieldJoins.Add($@"
-						{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {jsonElementDefinition.FieldTypeID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]
+						{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {jsonElementDefinition.FieldTypeID} and {fieldJoinIdSQL}
 						{joinPrefix} join FieldJsonProperty FJP{f.ID} on FJP{f.ID}.FieldID = {tableAlias}.ID and FJP{f.ID}.[Path] = @jsonPath{f.ID}
 					", f.ID.ToString());
 					 dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
@@ -578,7 +603,7 @@ namespace d360.model.DataAccessLayer.repositories
 				 {
 					 string temptablename;
 					 string temptableScript;
-					 string simpleFieldJoin = $"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql}";
+					 string simpleFieldJoin = $"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {fieldJoinIdSQL}";
 
 					 if (listColorsAsJSON && hasColor)
 					 {
@@ -620,9 +645,9 @@ namespace d360.model.DataAccessLayer.repositories
 								create index ix_{temptablename} on {temptablename}(object,objectid);
 
 								";
-
+							 
 							 sql = $@"
-								left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and F{tableAlias}.ObjectType = {objectSql} and F{tableAlias}.ObjectID = {objectIdSql}
+								left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and {fieldJoinIdSQL.Replace(tableAlias, "F" + tableAlias)}
 								outer apply(
 								select FormattedValue = 
 								(SELECT COALESCE({displayName}, ACF{tableAlias}.Code) as name,
@@ -641,7 +666,7 @@ namespace d360.model.DataAccessLayer.repositories
 						 else
 						 {
 							 sql = $@"
-								left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and F{tableAlias}.ObjectType = {objectSql} and F{tableAlias}.ObjectID = {objectIdSql}
+								left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and {fieldJoinIdSQL.Replace(tableAlias, "F" + tableAlias)}
 								left join FieldType FT{tableAlias} on FT{tableAlias}.ID = F{tableAlias}.FieldTypeID
 								outer apply(
 								select FormattedValue = 
@@ -701,7 +726,7 @@ namespace d360.model.DataAccessLayer.repositories
 				 }
 				 else
 				 {
-					 fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql}", f.ID.ToString());
+					 fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {fieldJoinIdSQL}", f.ID.ToString());
 				 }
 			 }
 			);

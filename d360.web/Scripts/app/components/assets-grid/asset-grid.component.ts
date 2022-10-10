@@ -251,7 +251,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	
 	private isElementLink(element: HTMLElement): boolean {
 		while (element.parentElement) {
-			if (element.tagName === 'A') return true;
+			if (element.tagName === 'A') {return true;}
 			element = element.parentElement;
 		}
 		return false;
@@ -379,7 +379,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         }
 
         if (this.stateService.artifactTypeFilters.sortOrder != SortOrder.None)
-            params._direction = this.stateService.artifactTypeFilters.sortOrder == SortOrder.Ascending ? "asc" : "desc";
+            {params._direction = this.stateService.artifactTypeFilters.sortOrder == SortOrder.Ascending ? "asc" : "desc";}
         else {
             delete params['_direction'];
         }
@@ -572,21 +572,21 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     getThreshold(value: string, lower: number, upper: number): string {
         if (value == null || value.length < 1)
-            return '';
+            {return '';}
         if (value.indexOf('%') > -1) {
             value = value.replace('%', '');
         }
         if (isNaN(+value))
-            return '';
+            {return '';}
 
         let v = +value;
 
         if (v <= lower)
-            return 'poor';
+            {return 'poor';}
         else if (v > lower && v <= upper)
-            return 'average';
+            {return 'average';}
         else
-            return 'good';
+            {return 'good';}
 
     }
 
@@ -634,7 +634,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     saveItem($event) {
         this.isEditing = false;
-        if ($event.item.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
+        if ($event.item.Uid) {this.headerActionsService.emitFavoritesChange();} // favorites need to be reloaded if an object was edited                
         if ($event && $event.addAnother) {
             this.add();
             this.getData(false);

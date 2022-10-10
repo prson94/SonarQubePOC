@@ -16,7 +16,7 @@ export class AdminHomeComponent  {
     
     onFileChange(event): void {
         if (this.homePageImage == null)
-            this.homePageImage = new CompanyImage();
+            {this.homePageImage = new CompanyImage();}
 
         if (!event) {
             this.homePageImage.file = null;

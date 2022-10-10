@@ -103,7 +103,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                 }
 
                 r.forEach((f) => {
-                    let fieldType = f.Object === "IssueType" ? "Action Field" : "Asset Field";
+                    let fieldType = f.IssueTypeID ? "Action Field" : "Asset Field";
 
                     this.fields.push({
                         value: (f.Type === "JsonElement" ? "[JSON" : "[FIELD") + f.ID + "]#[" + fieldType + " :: " + f.Name + "]",

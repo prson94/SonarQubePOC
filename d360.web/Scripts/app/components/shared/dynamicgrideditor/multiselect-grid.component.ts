@@ -327,12 +327,12 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     }
 
     private getObjectTypeForTooltip(item: any): string {
-        if (item.Value.indexOf('|') == -1) return item.ObjectType;
+        if (item.Value.indexOf('|') == -1) {return item.ObjectType;}
 
         return item.Value.split('|')[0];
     }
     private getObjectIdForTooltip(item: any): number {
-        if (item.Value.indexOf('|') == -1) return item.Value;
+        if (item.Value.indexOf('|') == -1) {return item.Value;}
 
         return item.Value.split('|')[1];
 	}

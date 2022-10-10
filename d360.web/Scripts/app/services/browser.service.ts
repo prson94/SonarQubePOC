@@ -53,22 +53,29 @@ export class BrowserService extends BaseObservableService {
             n.class = AssetTypeClass[n.class] as any;
             n.icon = this.getIconUnicode(n.icon, n.class);
             n.isGroup = !n.leaf;
-		});
+        });
 
-		response.links.forEach((l) => {
-			var fromRelIdx = l.from.split('|')[1];
-			var toRelIdx = l.to.split('|')[1];
-			l.links.forEach((link) => {
-				var partsFrom = link.from.split('|');
-				var partsTo = link.to.split('|');
+		if (response.links && response.links.length > 0) {
+			response.highlightLinks = JSON.parse(JSON.stringify(response.links));
 
-				partsFrom[1] = fromRelIdx;
-				partsTo[1] = toRelIdx;
+			response.highlightLinks.forEach((l) => {
+				//relationship id should be updated from format typeid|relationshipid|assetid
+				//when expanding relationship, from or to part hold relationship id value from previously expanded relationship
+				//we need to update new relationships data to hold correct id's
+				var fromRelIdx = l.from.split('|')[1];
+				var toRelIdx = l.to.split('|')[1];
+				l.links.forEach((link) => {
+					var partsFrom = link.from.split('|');
+					var partsTo = link.to.split('|');
 
-				link.from = partsFrom.join('|');
-				link.to = partsTo.join('|');
+					partsFrom[1] = fromRelIdx;
+					partsTo[1] = toRelIdx;
+
+					link.from = partsFrom.join('|');
+					link.to = partsTo.join('|');
+				});
 			});
-		});
+		}
 
         //#region Load root data from hierarchy array
 
@@ -205,7 +212,7 @@ export class BrowserService extends BaseObservableService {
     public getInitialLineage(ancestry: FilterAncestryMode, uid: string, numberOfHops: number, includeNonLeaf: boolean, descendancy: FilterDescendancyMode): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/lineage/initial`;
         if (numberOfHops <= 0 || numberOfHops > 5)
-            numberOfHops = 3;
+            {numberOfHops = 3;}
 
         return this.http.post(url, {
             ancestry: +ancestry,
@@ -225,7 +232,7 @@ export class BrowserService extends BaseObservableService {
     public getInitialImpact(uid: string, numberOfHops: number): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/impact/initial`;
         if (numberOfHops <= 0 || numberOfHops > 5)
-            numberOfHops = 3;
+            {numberOfHops = 3;}
 
         return this.http.post(url, {
             uid: uid,
@@ -342,15 +349,15 @@ export class BrowserService extends BaseObservableService {
         const url = `api/v2/browser/filters`;
 
         if (model.uid != undefined)
-            return this.http.put(url + '/' + model.uid, model).pipe(
+            {return this.http.put(url + '/' + model.uid, model).pipe(
                 map((response: StoredAssetBrowserFilterModel) => response),
                 catchError((err) => this.handleError(err))
-            );
+            );}
         else
-            return this.http.post(url, model).pipe(
+            {return this.http.post(url, model).pipe(
                 map((response: StoredAssetBrowserFilterModel) => response),
                 catchError((err) => this.handleError(err))
-            );
+            );}
     }
 
     public deleteUserFilter(model: StoredAssetBrowserFilterModel): Observable<boolean> {
@@ -377,7 +384,7 @@ export class BrowserService extends BaseObservableService {
 
         if (icon == null || icon.length == 0) {
             if (assetClass == null)
-                return null;
+                {return null;}
             id = this.iconService.getIconIdByClass(assetClass);
         }
 

@@ -133,7 +133,7 @@ export class HeaderHelpComponent implements OnInit {
     checkKey(event) {
         if (event.keyCode) {
             if (event.keyCode == 27 || event.keyCode == 13)
-                this.closeAbout();
+                {this.closeAbout();}
         }
     }
 } 

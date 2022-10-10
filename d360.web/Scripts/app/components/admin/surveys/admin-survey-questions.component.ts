@@ -132,7 +132,7 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
     closeEditor() {
         this.showEditor = false;
         if (this.selected == null && this.questions.length > 0)
-            this.selected = this.questions[0];
+            {this.selected = this.questions[0];}
     }
 
     findQuestionById(uid: string) {

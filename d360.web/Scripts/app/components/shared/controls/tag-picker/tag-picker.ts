@@ -86,10 +86,10 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
         if (!this.disabled) {
             var newValue: SelectItem[] = [];
             if (this.value)
-                newValue = this.value;
+                {newValue = this.value;}
 
             if (this.value && this.value.some((x) => x.title.trim().toLowerCase() == val.title.trim().toLowerCase()))
-                return;
+                {return;}
 
             newValue.push(val);
 
@@ -99,7 +99,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     }
 
     writeValue(obj: SelectItem[]): void {
-        if (this._el) this._el.nativeElement.focus();
+        if (this._el) {this._el.nativeElement.focus();}
 
         this.value = obj;
         this.onModelChange(this.value);
@@ -128,7 +128,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     ngOnDestroy() {
         if (this.searchSub)
-            this.searchSub.unsubscribe();
+            {this.searchSub.unsubscribe();}
     }
 
     private highlight(item, input) {
@@ -166,7 +166,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
             });
         }
         if (isAssigned)
-            return false;
+            {return false;}
 
         if (item.title.includes("|")) {
             this.messagesService.showError('Error', "Tag can't contain | character");
@@ -185,7 +185,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     search(event, searchValue) {
         if (this.searchSub)
-            this.searchSub.unsubscribe();
+            {this.searchSub.unsubscribe();}
 
         this.searchSub =
             this.tagService.searchTagsTypeAhead(searchValue, 10)
@@ -244,7 +244,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     }
 
     enter(tag: SelectItem, element: HTMLElement) {
-        if (this.disabled) return;
+        if (this.disabled) {return;}
 
         var box = element.getBoundingClientRect();
         var el = this._el.nativeElement as HTMLElement;
@@ -277,7 +277,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     }
 
     leave() {
-        if (this.disabled) return;
+        if (this.disabled) {return;}
 
         var el = this._el.nativeElement as HTMLElement;
         var tooltip = el.getElementsByClassName('tooltip-wrapper')[0] as HTMLElement;
@@ -287,7 +287,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     checkPermissions() {
         if (this.arePermissionsLoaded)
-            return;
+            {return;}
 
 
         //If there is no assetUid, asset id in creation so no permission check needed
@@ -306,7 +306,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     }
 
     canDeleteTag(tagValue: string) {
-        if (!this.arePermissionsLoaded) return false;
+        if (!this.arePermissionsLoaded) {return false;}
         return this.tagPermissions.some((x) => x.Value == tagValue && x.CanDelete == true);
     }
 

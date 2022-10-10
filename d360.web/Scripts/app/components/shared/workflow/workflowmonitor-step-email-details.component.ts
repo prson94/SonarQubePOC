@@ -41,8 +41,8 @@ export class WorkflowMonitorStepEmailDetailsComponent extends BaseComponent impl
                 let sorted = this.step.ItemSettings.emails.email.slice();
 
                 sorted.sort((a, b) => {
-                    if (a['@address'] < b['@address']) return -1;
-                    if (a['@address'] > b['@address']) return 1;
+                    if (a['@address'] < b['@address']) {return -1;}
+                    if (a['@address'] > b['@address']) {return 1;}
                     return 0;
                 });
 
@@ -50,9 +50,9 @@ export class WorkflowMonitorStepEmailDetailsComponent extends BaseComponent impl
             }
 
             if (this.isAggregate)
-                this.emailSettings = this.step.EventSettings;
+                {this.emailSettings = this.step.EventSettings;}
             else
-                this.emailSettings = this.step.Settings;
+                {this.emailSettings = this.step.Settings;}
 
         }
         this.ref.markForCheck();

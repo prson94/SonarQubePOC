@@ -70,8 +70,8 @@
     height: 40px;
     display: inline-block;
     position: absolute;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     background-image: var(--headerLogoUri);
     background-repeat: no-repeat;
     background-position: 12px top;
@@ -79,8 +79,8 @@
 
     .background {
       position: absolute;
-      top: 0px;
-      left: 0px;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 42px;
       z-index: -1;
@@ -503,7 +503,7 @@ d3s-navbar-item {
   height: 18px;
   margin-top: 6px;
   line-height: 18px;
-  text-indent: 0px;
+  text-indent: 0;
   margin-left: auto;
 }
 
@@ -527,7 +527,7 @@ d3s-navbar-item {
   padding-right: 12px;
 
   .s12 {
-    padding: 0px 4px;
+    padding: 0 4px;
   }
 
   .tile {
@@ -760,7 +760,7 @@ div.item-description {
     color: @d3s-gray-3;
     text-decoration: none;
     border: 1px solid transparent;
-    margin: 0px 10px 0px 5px;
+    margin: 0 10px 0 5px;
     padding: 11px 3px 1px 3px;
 
     span {
@@ -970,7 +970,7 @@ div.child .empty-count {
   }
 
   .p-overlaypanel-content {
-    padding: 0px;
+    padding: 0;
   }
 }
 
@@ -1025,7 +1025,7 @@ div.breadcrumbs {
 
 .collapsed-crumb-container {
   line-height: 20px;
-  text-indent: 0px;
+  text-indent: 0;
 
   &:hover, &.hover {
     background-color: @igx-lightblue-xlight;
@@ -1082,7 +1082,7 @@ div.breadcrumbs {
     .parent {
       background-color: @ig-lightblue;
       border-radius: 3px;
-      padding: 0px 5px;
+      padding: 0 5px;
       font-size: 12px;
       color: white;
 
@@ -1163,7 +1163,7 @@ a.breadcrumb {
   text-transform: none;
 
   .breadcrumb-text {
-    padding-right: 0px;
+    padding-right: 0;
     overflow: hidden;
     text-overflow: ellipsis;
 
@@ -1210,7 +1210,7 @@ a.breadcrumb {
 
 .header-action {
   position: absolute;
-  right: 0px;
+  right: 0;
 
   .header-action-container {
     display: flex;
@@ -1232,7 +1232,7 @@ a.breadcrumb {
         cursor: pointer;
 
         .photo {
-          padding: 0px 10px;
+          padding: 0 10px;
 
           &:hover, &.hover {
             background: rgba(255, 255, 255, 0.2);
@@ -1291,7 +1291,7 @@ a.breadcrumb {
   }
 
   .p-overlaypanel-content {
-    padding: 0px;
+    padding: 0;
     border-radius: 3px;
   }
 
@@ -1307,12 +1307,12 @@ a.breadcrumb {
       width: 100%;
 
       .p-tree-container {
-        padding: 0px;
+        padding: 0;
       }
 
       .p-treenode {
         width: 100%;
-        padding: 0px;
+        padding: 0;
       }
 
       .p-treenode-content {
@@ -1461,7 +1461,7 @@ a.breadcrumb {
     }
 
     &.tags-row {
-      margin-left: 0px;
+      margin-left: 0;
 
       .tag-list-container {
         overflow: hidden;
@@ -1484,14 +1484,14 @@ a.breadcrumb {
       width: 100%;
       margin-top: 8px;
       margin-bottom: 8px;
-      padding-bottom: 0px;
+      padding-bottom: 0;
 
       .search-all-res {
         color: @ig-black;
 
         .folder-icon.searchall {
           background: @igx-blue-color;
-          padding-left: 0px;
+          padding-left: 0;
         }
       }
 
@@ -1512,7 +1512,7 @@ a.breadcrumb {
     z-index: 500;
 
     .p-autocomplete-items {
-      padding: 0px;
+      padding: 0;
       border-bottom: 1px solid #d0d0d0;
     }
   }
@@ -1555,7 +1555,7 @@ a.breadcrumb {
     padding-left: 10px;
 
     &.spin {
-      padding: 0px;
+      padding: 0;
     }
 
     &.fa-caret-down {
@@ -1613,7 +1613,7 @@ a.breadcrumb {
       font-size: 14px;
       display: block;
       text-align: center;
-      padding: 0px;
+      padding: 0;
     }
 
     &.big {
@@ -1788,8 +1788,8 @@ a.breadcrumb {
 
 .header-help-dropdown::-webkit-scrollbar {
   /* WebKit hide scrollbar */
-  width: 0px !important;
-  height: 0px !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* end header search*/
@@ -1899,8 +1899,8 @@ chart {
 .artifact-context-menu {
   position: absolute;
   display: block !important;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   background: white;
   border: 1px solid #E2E2E2;
   padding: 5px 9px;
@@ -1978,7 +1978,7 @@ li.shortcut {
   color: @ig-black;
   background: @ig-white;
   border-radius: 8px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.16);
 
   &:hover {
     background: var(--navbarBackColorSelectedHover);
@@ -2444,7 +2444,7 @@ div.home-image-title-text {
     display: inline-flex;
 
     .grid-header-actions {
-      margin: 0px 0px 0px 16px;
+      margin: 0 0 0 16px;
       display: inline-flex;
       background-color: @ig-grey-t5;
       border-radius: 4px;
@@ -2524,7 +2524,7 @@ div.home-image-title-text {
     }
 
     .confirmation-wrapper {
-      padding: 0px 24px 24px 24px;
+      padding: 0 24px 24px 24px;
     }
 
     &.modal-extended {
@@ -2533,7 +2533,7 @@ div.home-image-title-text {
       .modal-side-panel {
         position: absolute;
         left: 800px;
-        top: 0px;
+        top: 0;
         height: 100%;
         width: 400px;
         border-left: 1px solid @ig-grey-t4;
@@ -2566,7 +2566,7 @@ div.home-image-title-text {
 
         &.position-relative {
           position: relative;
-          left: 0px;
+          left: 0;
 
           .resource-image {
             right: 32px;
@@ -2592,7 +2592,7 @@ div.home-image-title-text {
     max-height: 100%;
 
     .confirmation-wrapper {
-      padding: 0px 24px 24px 24px;
+      padding: 0 24px 24px 24px;
     }
   }
 
@@ -2600,7 +2600,7 @@ div.home-image-title-text {
     width: 200px;
 
     .content {
-      padding: 0px;
+      padding: 0;
     }
 
     .modal-title-bar {
@@ -2671,7 +2671,7 @@ div.home-image-title-text {
       color: @d3s-primary-red;
       font-weight: bold;
       background: none;
-      padding: 0px;
+      padding: 0;
       border: none;
       margin: 0;
     }
@@ -2685,7 +2685,7 @@ div.home-image-title-text {
 
   .search-wrapper {
     position: relative;
-    padding: 16px 0px 8px 0px;
+    padding: 16px 0 8px 0;
 
     input {
       width: 100%;
@@ -2715,9 +2715,9 @@ div.home-image-title-text {
   line-height: 32px;
   display: inline-flex;
   margin-right: 30px;
-  margin-left: 0px;
-  margin-bottom: 0px;
-  margin-top: 0px;
+  margin-left: 0;
+  margin-bottom: 0;
+  margin-top: 0;
 }
 
 .modal-overlay .modal-dialog .modal-title-bar button {
@@ -2729,7 +2729,7 @@ div.home-image-title-text {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 0px 24px 24px 24px;
+  padding: 0 24px 24px 24px;
 
   &.modal-action-bar {
     padding: 0;
@@ -2744,7 +2744,7 @@ div.home-image-title-text {
 
 .modal-overlay .modal-dialog .content {
   background: @ig-white;
-  padding: 0px 24px 24px 24px;
+  padding: 0 24px 24px 24px;
   flex-grow: 1;
   flex-shrink: 1;
   min-height: 32px;
@@ -2772,8 +2772,8 @@ div.home-image-title-text {
   width: 100%;
   height: 100%;
   background-color: white;
-  top: 0px;
-  right: 0px;
+  top: 0;
+  right: 0;
   z-index: 1000;
   opacity: 0.6;
 }
@@ -2871,14 +2871,14 @@ modal-overlay .modal-dialog .content {
 
   .about-binary {
     position: absolute;
-    bottom: 0px;
+    bottom: 0;
     z-index: -1;
   }
 
   .white-background {
     position: absolute;
-    top: 0px;
-    right: 0px;
+    top: 0;
+    right: 0;
     width: 460px;
     height: 100%;
     background: white;
@@ -3028,7 +3028,7 @@ button.button, a.link-button {
 
   &:not(.icon):not(.bar) {
     &:first-of-type {
-      margin-left: 0px;
+      margin-left: 0;
     }
 
     padding: 0 15px;
@@ -3280,8 +3280,8 @@ button.button, a.link-button {
     position: absolute;
     overflow-y: hidden;
     overflow-x: auto;
-    right: 0px;
-    left: 0px;
+    right: 0;
+    left: 0;
     width: auto;
     scrollbar-width: none !important; /* Firefox */
     -ms-overflow-style: none !important; /* IE 10+ */
@@ -3290,8 +3290,8 @@ button.button, a.link-button {
 }
 
 .tab-bar::-webkit-scrollbar { /* WebKit hide scrollbar */
-  width: 0px !important;
-  height: 0px !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 button.tab, button.tab-scroller {
@@ -3583,18 +3583,18 @@ button.tab-scroller {
 
     .row {
       p:first-child {
-        margin-top: 0px;
+        margin-top: 0;
       }
 
       p:last-child {
-        margin-bottom: 0px;
+        margin-bottom: 0;
       }
     }
   }
 
   .form-row {
     .col {
-      padding: 0px;
+      padding: 0;
 
       .p-autocomplete {
         width: 100%;
@@ -3607,7 +3607,7 @@ button.tab-scroller {
   }
 
   .table-borderless {
-    margin: 12px 0px;
+    margin: 12px 0;
     width: auto;
 
     label {
@@ -3630,14 +3630,14 @@ button.tab-scroller {
 
   .p-autocomplete {
     ul {
-      margin: 0px;
-      padding: 0px;
+      margin: 0;
+      padding: 0;
 
       li {
-        padding: 0px;
-        margin: 0px;
+        padding: 0;
+        margin: 0;
         color: black;
-        border: 0px;
+        border: 0;
         padding: 10px;
       }
     }
@@ -3849,7 +3849,7 @@ button.tab-scroller {
       font-size: 14px;
       background-color: #eeeeee;
       padding: 5px 10px;
-      border-radius: 2px 0px 2px 0px;
+      border-radius: 2px 0 2px 0;
       border: 1px solid #efefef;
       height: 34px;
       float: left;
@@ -3861,7 +3861,7 @@ button.tab-scroller {
       background-color: rgb(238,238,238);
       height: 34px;
       float: left;
-      border-radius: 0px 2px 0px 2px;
+      border-radius: 0 2px 0 2px;
       padding: 10px;
       position: relative;
 
@@ -3905,7 +3905,7 @@ button.tab-scroller {
 
   .title {
     color: @ig-purple;
-    padding: 0px;
+    padding: 0;
     display: inline-block;
   }
 
@@ -3963,11 +3963,11 @@ button.tab-scroller {
       overflow-y: auto;
 
       .table-borderless {
-        margin: 0px;
+        margin: 0;
         display: flex;
 
         td {
-          padding: 2px 0px;
+          padding: 2px 0;
           font-size: 14px;
 
           .tag-name {
@@ -4023,12 +4023,12 @@ button.tab-scroller {
       background-color: #e0e0e0;
       margin: 2px;
       line-height: 28px;
-      padding: 0px 10px;
+      padding: 0 10px;
       width: 42px;
       border-radius: 2px;
 
       &.first-opt {
-        margin-right: 0px;
+        margin-right: 0;
       }
 
       &.selected {
@@ -4054,7 +4054,7 @@ button.tab-scroller {
 .tile-detail {
   &.step-list {
     .ui-accordion .ui-accordion-header:first-child {
-      margin-top: 0px;
+      margin-top: 0;
     }
   }
 
@@ -4140,7 +4140,7 @@ button.tab-scroller {
     table-layout: fixed;
     border-collapse: collapse;
     border-spacing: 0;
-    margin: 0px;
+    margin: 0;
 
     & > li {
       display: table-row;
@@ -4240,7 +4240,7 @@ button.tab-scroller {
 
     &:focus {
       outline: none;
-      box-shadow: #0971b9 0px 0px 1px 1px;
+      box-shadow: #0971b9 0 0 1px 1px;
       transition-duration: 0.5s;
     }
 
@@ -4296,7 +4296,7 @@ button.tab-scroller {
   flex-direction: row;
 
   .error {
-    margin: 0px;
+    margin: 0;
     border-bottom-left-radius: 0;
 
     &.field {
@@ -4345,7 +4345,7 @@ button.tab-scroller {
     }
 
     header {
-      padding: 0px !important;
+      padding: 0 !important;
 
       d3s-tile-actions {
         display: flex;
@@ -4444,7 +4444,7 @@ button.tab-scroller {
     &.small {
       border-radius: 2px;
       height: 24px;
-      padding: 0px 8px !important;
+      padding: 0 8px !important;
     }
 
     .input:focus {
@@ -4623,7 +4623,7 @@ d3s-simple-badge + button.button:not(.icon):not(.bar):first-of-type {
 }
 
 .score-ranges {
-  padding: 5px 0px;
+  padding: 5px 0;
 
   .score-range {
     .score-box {
@@ -4690,7 +4690,7 @@ d3s-header-typeahead-search {
 
   .field {
     height: 56px;
-    border-radius: 0px 4px 4px 0px;
+    border-radius: 0 4px 4px 0;
 
     input {
       &:focus {
@@ -4709,7 +4709,7 @@ d3s-header-typeahead-search {
     background: @ig-grey-t5;
     max-width: 220px;
     height: 56px;
-    border-radius: 4px 0px 0px 4px;
+    border-radius: 4px 0 0 4px;
     background-color: @ig-grey-t5;
 
     .p-multiselect-panel {
@@ -4774,7 +4774,7 @@ d3s-header-typeahead-search {
       background-image: linear-gradient(to bottom, @ig-white, #f9fafb);
 
       .p-checkbox-icon {
-        padding-left: 0px !important;
+        padding-left: 0 !important;
       }
     }
 
@@ -4839,7 +4839,7 @@ d3s-header-typeahead-search {
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   background: white;
-  margin: 8px 0px;
+  margin: 8px 0;
 
   div:first-of-type {
     margin-left: 2px;
@@ -4853,7 +4853,7 @@ d3s-header-typeahead-search {
     margin: 2px 1px;
     background: #f7f7f7;
     line-height: 26px;
-    padding: 0px 8px;
+    padding: 0 8px;
     display: inline-flex;
 
     i {
@@ -4865,7 +4865,7 @@ d3s-header-typeahead-search {
     &.input {
       color: black;
       border: none;
-      margin: 0px;
+      margin: 0;
     }
 
     &.clickable {
@@ -4895,7 +4895,7 @@ d3s-header-typeahead-search {
           align-self: center;
           flex-shrink: 0;
           line-height: 20px;
-          margin: 10px 0px;
+          margin: 10px 0;
 
           &:focus-within {
             box-shadow: rgba(9, 113, 185, 0.67) 0 0 1px 1px;
@@ -4933,7 +4933,7 @@ d3s-header-typeahead-search {
           i {
             color: white;
             background-color: #006fc0;
-            padding: 0px 5px;
+            padding: 0 5px;
             border-radius: 2px;
             font-size: 14px;
             margin-right: 2px;
@@ -4957,7 +4957,7 @@ d3s-header-typeahead-search {
             padding-left: 12px;
 
             .button:first-child {
-              margin-left: 0px;
+              margin-left: 0;
             }
 
             .button {
@@ -5022,7 +5022,7 @@ d3s-header-typeahead-search {
       }
 
       i.fa {
-        padding: 0px !important;
+        padding: 0 !important;
       }
     }
   }
@@ -5041,16 +5041,16 @@ d3s-header-typeahead-search {
 .full-screen-ab {
   position: absolute;
   top: 40px;
-  left: 0px;
+  left: 0;
   width: 100%;
   height: 100%;
   z-index: 1000;
 
   .asset-browser-body {
-    padding: 0px 0px;
+    padding: 0 0;
 
     .tile {
-      margin-top: 0px;
+      margin-top: 0;
       border: none;
     }
   }
@@ -5096,8 +5096,8 @@ d3s-header-typeahead-search {
       position: absolute;
       width: 100%;
       background-color: rgba(239, 239, 239, 0.5);
-      top: 0px;
-      left: 0px;
+      top: 0;
+      left: 0;
       height: 100%;
       z-index: 10;
     }
@@ -5137,8 +5137,8 @@ d3s-header-typeahead-search {
       position: absolute;
       width: 100%;
       background-color: rgba(239, 239, 239, 0.5);
-      top: 0px;
-      left: 0px;
+      top: 0;
+      left: 0;
       height: 100%;
       z-index: 10;
     }
@@ -5160,11 +5160,11 @@ d3s-header-typeahead-search {
   .gas-search {
     position: absolute;
     max-width: 420px;
-    padding: 4px 0px;
+    padding: 4px 0;
     background-color: white;
     border: 1px solid #cccccc;
     border-radius: 4px;
-    box-shadow: 0px 0px 0px 0px black;
+    box-shadow: 0 0 0 0 black;
     width: 100%;
     margin-top: -1px;
     z-index: 50;
@@ -5178,7 +5178,7 @@ d3s-header-typeahead-search {
       }
 
       &.error {
-        margin: 0px;
+        margin: 0;
 
         input {
           border: 1px solid #b21a3e;
@@ -5226,7 +5226,7 @@ d3s-header-typeahead-search {
         font-size: 14px;
         display: block;
         text-align: center;
-        padding: 0px;
+        padding: 0;
       }
     }
 
@@ -5235,14 +5235,14 @@ d3s-header-typeahead-search {
       border-radius: 4px;
       width: 98%;
       padding: 8px;
-      margin: 0px 4px;
+      margin: 0 4px;
       box-sizing: border-box;
       height: 36px;
     }
 
 
     ul.search-result-box {
-      padding: 0px;
+      padding: 0;
 
       .value-box {
         display: inline-block;
@@ -5304,10 +5304,10 @@ d3s-header-typeahead-search {
       display: block;
       clear: both;
       border: 1px solid #cccccc;
-      margin-left: 0px;
+      margin-left: 0;
 
       &.no-margin {
-        margin-bottom: 0px;
+        margin-bottom: 0;
       }
 
       .unselect {
@@ -5335,7 +5335,7 @@ d3s-header-typeahead-search {
 
   .arrow-right {
     font-size: 10px;
-    margin: 0px 7px;
+    margin: 0 7px;
   }
 
   .no-results {
@@ -5407,7 +5407,7 @@ d3s-header-typeahead-search {
     }
 
     .fa {
-      padding: 0px;
+      padding: 0;
     }
   }
 
@@ -5420,7 +5420,7 @@ d3s-header-typeahead-search {
 
         .arrow-right {
           font-size: 8px;
-          margin: 0px 7px;
+          margin: 0 7px;
           position: relative;
           top: -1px;
         }
@@ -5456,7 +5456,7 @@ d3s-header-typeahead-search {
 }
 
 .stripped-list {
-  padding: 0px;
+  padding: 0;
 
   li {
     border: none;
@@ -5497,8 +5497,8 @@ d3s-header-typeahead-search {
     background-color: white;
     position: absolute;
     border: 1px solid #cccccc;
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
     z-index: 2;
 
     li {
@@ -5529,7 +5529,7 @@ d3s-header-typeahead-search {
   }
 
   .label {
-    padding: 0px;
+    padding: 0;
   }
 
   .separator {
@@ -5553,17 +5553,17 @@ d3s-header-typeahead-search {
   .definition {
     overflow-y: auto;
     margin-top: 25px;
-    padding-left: 0px;
+    padding-left: 0;
 
 
 
     d3s-dynamic-editor {
       header {
-        padding-left: 0px !important;
+        padding-left: 0 !important;
       }
 
       .field-col {
-        padding-left: 0px;
+        padding-left: 0;
       }
     }
   }
@@ -5572,7 +5572,7 @@ d3s-header-typeahead-search {
 .request-cert {
   .content {
     background: @ig-white !important;
-    padding: 20px 20px 0px 20px !important;
+    padding: 20px 20px 0 20px !important;
     min-height: 20px !important;
     margin: auto !important;
     text-align: center;
@@ -5680,13 +5680,13 @@ d3s-header-typeahead-search {
   .text-left {
     color: @igx-grey-xlight;
     position: absolute;
-    left: 0px;
+    left: 0;
   }
 
   .text-right {
     color: @igx-grey-xlight;
     position: absolute;
-    right: 0px;
+    right: 0;
   }
 
   .p-slider {
@@ -5835,8 +5835,8 @@ d3s-header-typeahead-search {
   }
 
   p {
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
   }
 }
 
@@ -5850,7 +5850,7 @@ d3s-header-typeahead-search {
 
   a {
     display: block;
-    padding: 2px 0px;
+    padding: 2px 0;
   }
 
   color: @ig-black;
@@ -5937,11 +5937,11 @@ d3s-header-typeahead-search {
   position: relative;
   height: 36px;
   transition-duration: 0.3s;
-  margin: 10px 0px;
+  margin: 10px 0;
 
   .navigate-left {
     position: absolute;
-    left: 0px;
+    left: 0;
     top: 4px;
     font-size: 12px;
     cursor: pointer;
@@ -5952,7 +5952,7 @@ d3s-header-typeahead-search {
 
   .navigate-right {
     position: absolute;
-    right: 0px;
+    right: 0;
     font-size: 12px;
     top: 4px;
     cursor: pointer;
@@ -5962,7 +5962,7 @@ d3s-header-typeahead-search {
   }
 
   .carousel-content {
-    padding: 0px 30px;
+    padding: 0 30px;
     display: inline-block;
     position: absolute;
   }
@@ -6038,7 +6038,7 @@ table {
     margin-top: -1px;
 
     .ig-colorfield-swatch, .ig-colorfield-item-label {
-      top: 0px
+      top: 0
     }
   }
 }
@@ -6095,7 +6095,7 @@ table {
   top: -4px;
 
   &.tooltip-no-top {
-    top: 0px;
+    top: 0;
   }
 }
 
@@ -6103,7 +6103,7 @@ table {
   top: -4px;
 
   &.tooltip-no-top {
-    top: 0px;
+    top: 0;
   }
 }
 
@@ -6112,7 +6112,7 @@ table {
 }
 
 .dropdown-govrole-correction {
-  top: 0px !important;
+  top: 0 !important;
 }
 
 .gov-form-v2 {
@@ -6120,7 +6120,7 @@ table {
     margin-top: 16px;
 
     &.no-margin {
-      margin-top: 0px;
+      margin-top: 0;
     }
   }
 }
@@ -6147,7 +6147,7 @@ table {
   &.primary {
     background: #08619f;
     color: white;
-    padding: 0px 16px;
+    padding: 0 16px;
 
     &:hover {
       background: #0067ad;
@@ -6295,7 +6295,7 @@ table {
       background: @ig-grey-t5;
       padding: 8px;
       border-radius: 4px;
-      margin: 0px 0px 8px 0px;
+      margin: 0 0 8px 0;
 
       .fa {
         margin-right: 8px;
@@ -6376,7 +6376,7 @@ table {
   }
 
   .modal-measure-history {
-    padding: 0px 24px 24px 24px;
+    padding: 0 24px 24px 24px;
     height: calc(100% - 40px);
     margin-top: -32px;
   }
@@ -6433,7 +6433,7 @@ table {
   }
 
   .action-bar {
-    padding: 0px 0px 0px 0px !important;
+    padding: 0 0 0 0 !important;
     margin-top: 16px;
   }
 }
@@ -6455,7 +6455,7 @@ table {
   }
 
   &.calendar {
-    padding: 0px 0px 0px 8px;
+    padding: 0 0 0 8px;
     display: inline-flex;
 
     p-calendar {
@@ -6541,11 +6541,11 @@ table {
           height: 150px;
           width: 490px;
           white-space: normal;
-          transform: translate(0px, -150px);
+          transform: translate(0, -150px);
 
           &.group {
             height: 105px;
-            transform: translate(0px, -105px);
+            transform: translate(0, -105px);
           }
         }
       }
@@ -6565,7 +6565,7 @@ table {
 .gov-accordion {
   .gov-accordion-item {
     .title {
-      padding: 0px;
+      padding: 0;
       border-bottom: 2px solid @ig-grey-t5;
       margin-bottom: 6px;
       font-size: 14px;
@@ -6644,7 +6644,7 @@ table {
 }
 
 .process-item-object-detail {
-  padding: 0px 7px;
+  padding: 0 7px;
 
   .row {
     .col {
@@ -6787,7 +6787,7 @@ table {
   padding: 8px 0 8px 0;
 
   .flex-col {
-    padding: 0px 16px 0px 0px;
+    padding: 0 16px 0 0;
   }
 }
 
@@ -6808,7 +6808,7 @@ table {
     .field-condition-grid {
       width: 100%;
       overflow-x: hidden;
-      margin-right: 0px;
+      margin-right: 0;
     }
   }
 
@@ -6845,7 +6845,7 @@ table {
   }
 
   .match-type {
-    padding-bottom: 0px;
+    padding-bottom: 0;
     margin-top: 3px;
 
     p-radioButton {

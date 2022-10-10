@@ -162,7 +162,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
 
         for (let i = 0; i < available.length; i++) {
             if (available[i].ExtOrder == null)
-                available[i].ExtOrder = order++;
+                {available[i].ExtOrder = order++;}
         }
         return available;
     }
@@ -183,7 +183,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
         field.ExtOrder = 0;
         for (let i = 0; i < this.availableFields.length; i++) {
             if (this.availableFields[i].ID != field.ID)
-                this.availableFields[i].ExtOrder++;
+                {this.availableFields[i].ExtOrder++;}
         }
         this.availableFields = _.clone(this.availableFields);
         this.isLoading = false;
@@ -197,8 +197,8 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
         let max: number = 0;
         for (let i = 0; i < this.availableFields.length; i++) {
             if (this.availableFields[i].ID == field.ID)
-                found = true;
-            if (found) this.availableFields[i].ExtOrder++;
+                {found = true;}
+            if (found) {this.availableFields[i].ExtOrder++;}
             max = this.availableFields[i].ExtOrder;
         }
         field.ExtOrder = max + 1;

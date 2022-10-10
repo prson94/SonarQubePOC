@@ -581,7 +581,7 @@ namespace d360.web.Controllers.V2
 					}
 					var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 
-					var fieldTypes = Company.Query<string>("select F.Name from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { RelationshipTypeUid }, ApiTimeout).ToList().Select(x => x.ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToList();
+					var fieldTypes = Company.Query<string>("select F.Name from FieldType F inner join IntersectType I on F.IntersectTypeID = I.ID and I.[Uid] = @relationshipTypeUid", new { RelationshipTypeUid }, ApiTimeout).ToList().Select(x => x.ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToList();
 					fieldTypes.Add("object.[path]");
 					fieldTypes.Add("subject.[path]");
 					if (AssetUid != Guid.Empty)
@@ -1001,7 +1001,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, State? State = null, bool? includeHasFieldTypes = null)
+		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, State? State = null, bool? includeHasFieldTypes = null, Guid? RelationshipTypeUid = null)
 		{
 			var prefix = "Relationships.GetRelationshipTypesAsync => ";
 			string errorMessage;
@@ -1028,6 +1028,11 @@ namespace d360.web.Controllers.V2
 				if (includeHasFieldTypes.HasValue)
 				{
 					queryParams.Add(new KeyValuePair<string, string>("includeHasFieldTypes", includeHasFieldTypes.ToString()));
+				}
+
+				if (RelationshipTypeUid.HasValue)
+				{
+					queryParams.Add(new KeyValuePair<string, string>("RelationshipTypeUid", RelationshipTypeUid.Value.ToString()));
 				}
 
 				var types = await RelationshipRepository.GetRelationshipTypes(queryParams);

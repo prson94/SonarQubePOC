@@ -35,7 +35,7 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        if (!this.isLoaded) this.load();
+        if (!this.isLoaded) {this.load();}
     }
 
     private load() {
@@ -46,7 +46,7 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
             .subscribe((res) => {
                 this.counts = res.filter((item) => (item.Total > 0));
                 if (loadResource)
-                    this.resourcesService.getResource(this.resourceId)
+                    {this.resourcesService.getResource(this.resourceId)
                         .subscribe((r) => {
                             this.items = r.items;
                             if (this.items.length > 0) {
@@ -55,7 +55,7 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
                             this.isLoading = false;
 							this.isLoaded = true;
 							this.cdRef.detectChanges();
-                        });
+                        });}
                 else {
                     this.isLoading = false;
 					this.isLoaded = true;
@@ -76,7 +76,7 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
     }
 
     private getWorkflowType(item): WorkflowType {
-        if (!item) return null;
+        if (!item) {return null;}
 
         switch (item.Name.toUpperCase()) {
             case "CERTIFY ARTIFACT":

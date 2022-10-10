@@ -78,7 +78,7 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
                 map((r) => {
                 this.isCompleted = true;
                 if (r && r.omittedCount)
-                    this.omittedCount = r.omittedCount;
+                    {this.omittedCount = r.omittedCount;}
                 }),
                 map(() => setTimeout(() => this.isSubmitting = false, 5000)))
             .subscribe(); //pause for 5 seconds to ensure user sees processing message
@@ -108,9 +108,9 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
                     this.omittedCount = res.OmittedCount;
                     this.hasItems = this.itemSteps == null ? false : this.itemSteps.length > 0;
                     if (this.hasItems)
-                        this.model.ItemStepIDs = this.itemSteps;
+                        {this.model.ItemStepIDs = this.itemSteps;}
                     else
-                        this.model.ItemStepIDs = null;
+                        {this.model.ItemStepIDs = null;}
                     this.isLoading = false;
                 }), map(() => {
                     window.setTimeout(() => {

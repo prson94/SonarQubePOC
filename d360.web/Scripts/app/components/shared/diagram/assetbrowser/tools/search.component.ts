@@ -55,7 +55,7 @@ export class AssetBrowserSearchComponent implements AfterViewInit, OnChanges {
     goToNext() {
         this.searchCurrentItem++;
         if (this.searchCurrentItem > this.numberOfResults)
-            this.searchCurrentItem--;
+            {this.searchCurrentItem--;}
 
         this.previous.emit(this.searchCurrentItem);
     }

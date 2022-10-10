@@ -231,7 +231,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         }
         else {
             if (isNumber(this.model.selectedResponsibilityType))
-                resTypeId = this.model.selectedResponsibilityType;
+                {resTypeId = this.model.selectedResponsibilityType;}
             else {
                 resTypeUid = this.model.selectedResponsibilityType;
                 resTypeId = 0;

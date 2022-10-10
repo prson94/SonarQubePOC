@@ -205,12 +205,15 @@ namespace d360.web.Controllers
 				new EditableField { FieldName = "ObjectUid", FieldType = DataType.Hidden.ToString(), Value = relationship.ObjectUid.ToString() }
 			};
 
+			var fieldTypes = Company.Filter<FieldType>(i => i.IntersectTypeID == relationship.IntersectTypeID).ToList();
+			var fields = Company.Filter<FieldWithRelation>(i => i.IntersectID == relationship.ID).ToList();
+
 			list = loadDynamicFields(
 				SystemObjects.Intersect.ToString(),
 				id,
 				list,
-				Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(),
-				Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(),
+				fieldTypes,
+				fields,
 				1,
 				false,
 				useDefaultCategory: true,

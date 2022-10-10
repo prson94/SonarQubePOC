@@ -135,7 +135,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
             }
         }
 
-        if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                                
+        if (asset.Uid) {this.headerActionsService.emitFavoritesChange();} // favorites need to be reloaded if an object was edited                                
         this.isLoading = false;
 
         this.load();

@@ -95,9 +95,9 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
 
     getDate(val: string): string {
         if (!isNaN(Date.parse(val)))
-            return new Date(val).toLocaleDateString();
+            {return new Date(val).toLocaleDateString();}
         else
-            return "";
+            {return "";}
     }
 
     getUrl(val: string): string {

@@ -33,7 +33,7 @@ namespace d360.web.Controllers.V2
 
 		public int ApiTimeout => Company.ApiTimeout;
 
-		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string joinObjectField = "A.[Object]", string joinObjectIdField = "A.[ObjectID]", string assetIdColumn = "A.ID")
+		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string joinObjectField = "A.[ID]", string joinObjectIdField = "A.[ObjectID]", string assetIdColumn = "A.ID")
 		{
 			fieldTypes.ForEach(f =>
 			{
@@ -43,8 +43,22 @@ namespace d360.web.Controllers.V2
 				var columnName = f.Name;
 				var valueColumn = "FormattedValue";
 				var fieldDataType = getFieldDataType(f);
+				var fieldJoinCondition = "";
 
 				FieldTypeDefinition_JsonElement jsonElementDefinition = null;
+
+				if (joinObjectField.Equals("Issue", StringComparison.InvariantCultureIgnoreCase))
+				{
+					fieldJoinCondition = $"{tableAlias}.[IssueID] = {joinObjectIdField}";
+				}
+				else if (joinObjectField.Equals("Intersect", StringComparison.InvariantCultureIgnoreCase))
+				{
+					fieldJoinCondition = $"{tableAlias}.[IntersectID] = {joinObjectIdField}";
+				}
+				else
+				{
+					fieldJoinCondition = $"{tableAlias}.[AssetID] = {assetIdColumn}";
+				}
 
 				if (f.Type == "JsonElement")
 				{
@@ -153,7 +167,7 @@ namespace d360.web.Controllers.V2
 				else if (f.Type == "JsonElement")
 				{
 					fieldJoins.Add($@"
-						{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {jsonElementDefinition.FieldTypeID} and {tableAlias}.[ObjectType] = {joinObjectField} and {tableAlias}.[ObjectID] = {joinObjectIdField}
+						{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {jsonElementDefinition.FieldTypeID} and {fieldJoinCondition}
 						{joinPrefix} join FieldJsonProperty FJP{f.ID} on FJP{f.ID}.FieldID = {tableAlias}.ID and FJP{f.ID}.[Path] = @jsonPath{f.ID}
 					");
 					dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
@@ -226,16 +240,16 @@ namespace d360.web.Controllers.V2
 								{lookupValueJoinCriteria}								
 								cross apply dbo.GetAssetColorJsonByColor(AC{tableAlias}.Color) ACJ{tableAlias}
 								inner join AssetDisplayValue ADV{tableAlias} on ADV{tableAlias}.AssetID = AC{tableAlias}.ID
-								where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {joinObjectField} and {tableAlias}.[ObjectID] = {joinObjectIdField} FOR JSON PATH),
+								where {tableAlias}.FieldTypeID = {f.ID} and {fieldJoinCondition} FOR JSON PATH),
 								[Value] = 
 									(SELECT [Value] from Field {tableAlias}
-									 where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {joinObjectField} and {tableAlias}.[ObjectID] = {joinObjectIdField})                                
+									 where {tableAlias}.FieldTypeID = {f.ID} and {fieldJoinCondition})                                
 							){tableAlias}(FormattedValue, [Value]) ";
 					fieldJoins.Add(sql);
 				}
 				else
-				{
-					fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {joinObjectField} and {tableAlias}.[ObjectID] = {joinObjectIdField}");
+				{					
+					fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {fieldJoinCondition}");										
 				}
 			});
 		}

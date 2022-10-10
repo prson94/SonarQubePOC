@@ -12,9 +12,9 @@ export class AdvancedFiltersHelper {
                 var field = fields.filter((x) => x.name.toLowerCase() == prop.toLowerCase())[0];
                 if (field) {
                     if (field.apiName)
-                        fieldName = field.apiName;
+                        {fieldName = field.apiName;}
                     else
-                        fieldName = field.name;
+                        {fieldName = field.name;}
                     
                 }
 
@@ -40,7 +40,7 @@ export class AdvancedFiltersHelper {
     }
 
     static escapeString(value): string {
-        if (!value) return '';
+        if (!value) {return '';}
         value = (value as string).replace(/'/g, "&apos;");
         return `${encodeURIComponent(value)}`;
     }

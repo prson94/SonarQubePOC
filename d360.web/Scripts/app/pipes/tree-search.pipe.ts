@@ -31,13 +31,13 @@ export class TreeSearchPipe implements PipeTransform {
     }
 
     private removeChildren(node: TreeNode, search: string, field?: string): TreeNode {        
-        if (!node.children) return node;
+        if (!node.children) {return node;}
 
         for (var i = node.children.length -1; i >= 0; i--) {
             let cNode = node.children[i];
             var nameField = field ? cNode.data[field] : cNode.label;
 
-            if (!nameField) continue;
+            if (!nameField) {continue;}
 
             if (nameField.toLowerCase().indexOf(search) == -1 && !this.findSelectedTreeNode(cNode.children, search, field)) {
                 node.children.splice(i, 1);
@@ -53,21 +53,21 @@ export class TreeSearchPipe implements PipeTransform {
     private findSelectedTreeNode(tree: TreeNode[], search: string, field?:string): TreeNode {
         let nodes: TreeNode[] = [];
 
-        if (!tree) return null;
+        if (!tree) {return null;}
         // add root nodes
         for (let rNode of tree) {
             nodes.push(rNode);
         }
 
         //do a breadth first search for the given treenode
-        if (!nodes || nodes.length == 0) return null;
+        if (!nodes || nodes.length == 0) {return null;}
 
         let node = nodes[0];
 
         while (node) {
             var nameField = field ? node.data[field] : node.label;
 
-            if (nameField && nameField.toLowerCase().indexOf(search) != -1) return node;
+            if (nameField && nameField.toLowerCase().indexOf(search) != -1) {return node;}
 
             //push children
             if (node.children) {
@@ -79,7 +79,7 @@ export class TreeSearchPipe implements PipeTransform {
             //remove this node
             nodes.splice(0, 1);
 
-            if (!nodes || nodes.length == 0) return null;
+            if (!nodes || nodes.length == 0) {return null;}
             node = nodes[0];
         }
     }

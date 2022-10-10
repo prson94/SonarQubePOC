@@ -96,7 +96,7 @@
     border: 1px solid var(--primaryButtonBackColor);
 
     &:focus:not(:disabled), &.ig-state-focus {
-      border: none;
+      border-color: transparent;
     }
 
     &:hover:not(:disabled), &.ig-state-hover {
@@ -118,6 +118,7 @@
     height: auto;
     padding: 4px;
     color: var(--primaryButtonBackColor);
+    font-weight: 400;
 
     &:hover:not(:disabled), &.ig-state-hover {
       -webkit-background-clip: text !important;
@@ -246,7 +247,7 @@
       }
 
       &:focus:not(:disabled), &.ig-state-focus {
-        background: @ig-white;
+        background: @ig-grey-t5;
       }
 
       &:hover:not(:disabled), &.ig-state-hover {
@@ -337,7 +338,7 @@
   height: 32px;
 
   &.ig-button-secondary {
-    background: @ig-white;
+    background: @ig-grey-t5;
     color: @ig-black;
     border: none;
 

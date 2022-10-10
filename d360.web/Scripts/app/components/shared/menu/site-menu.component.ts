@@ -239,7 +239,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                         default:
                             //is it a custom menu?
                             if (menu.MenuID.startsWith('~')) {
-								if (!menu.Title) menu.Title = menu.MenuID.replace('~', '');
+								if (!menu.Title) {menu.Title = menu.MenuID.replace('~', '');}
                             }
                             break;
                     }
@@ -281,9 +281,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     });
                     //set the nav state for the admin menu elements
                     if (this.adminMenu)
-                        this.setNavState(navigationState, this.adminMenu.NavigationItems, this.adminMenu.MenuID, this.adminMenu.ngUrl);
+                        {this.setNavState(navigationState, this.adminMenu.NavigationItems, this.adminMenu.MenuID, this.adminMenu.ngUrl);}
                     else
-                        this.setNavState(navigationState, [], null, null);
+                        {this.setNavState(navigationState, [], null, null);}
                 });
             });
     }

@@ -655,7 +655,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     private filterSemanticRelationItems(field: any) {
 
         if (field.FieldName === this.field.FieldName)
-            return;
+            {return;}
 
         if (this.field.FieldType === 'Relationship' && this.field.IsSemantic === true) {
             if (field.FieldType === 'Relationship' && field.IsSemantic === true) {

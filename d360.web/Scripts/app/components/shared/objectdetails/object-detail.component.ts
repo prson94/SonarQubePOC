@@ -124,13 +124,13 @@ export class ObjectDetailComponent implements OnChanges {
     private setDetailFieldType(field: DetailField) {
         field.Type = DetailFieldType.Field;
         if ((field.Value == null || field.Value == '') && field.ShowIfEmpty == false)
-            field.Type = DetailFieldType.None;
+            {field.Type = DetailFieldType.None;}
         if (field.TooltipContext != null) {
             if (field.Value != null && field.Value != '') {
                 field.Type = DetailFieldType.Tooltip;
             }
             else
-                field.Type = DetailFieldType.None;
+                {field.Type = DetailFieldType.None;}
         }
 
         if (field.ComplexLookupType === ComplexLookupType.Grid) {
@@ -174,19 +174,19 @@ export class ObjectDetailComponent implements OnChanges {
                         fcount--;
 
                         if (fcount <= 0)
-                            rcount--;
+                            {rcount--;}
 
                         if (rcount <= 0)
-                            c.loaded = true;
+                            {c.loaded = true;}
                     }
                     else {
                         if (f.Type != DetailFieldType.None)
-                            c.hasData = true;
+                            {c.hasData = true;}
                         fcount--;
                         if (fcount <= 0)
-                            rcount--;
+                            {rcount--;}
                         if (rcount <= 0)
-                            c.loaded = true;
+                            {c.loaded = true;}
                     }
                 });
             });

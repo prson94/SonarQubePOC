@@ -63,7 +63,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     ngOnChanges(changes: SimpleChanges) {
         if (changes && (changes.selectedPoint || changes.assetUid)) {
             if (this.selectedPoint)
-                this.measureChanged();
+                {this.measureChanged();}
         }
 
         if (changes && (changes.scoreType || changes.assetUid)) {
@@ -102,19 +102,19 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                     });
 
                     arr = arr.sort(function (a, b) {
-                        if (a.EffectiveDate > b.EffectiveDate) return -1;
-                        if (a.EffectiveDate < b.EffectiveDate) return 1;
+                        if (a.EffectiveDate > b.EffectiveDate) {return -1;}
+                        if (a.EffectiveDate < b.EffectiveDate) {return 1;}
                     });
 
                     for (var i = 0; i < arr.length - 1; i++) {
                         if (arr[i].Score > arr[i + 1].Score)
-                            arr[i].ScoreProgression = 1;
+                            {arr[i].ScoreProgression = 1;}
 
                         if (arr[i].Score < arr[i + 1].Score)
-                            arr[i].ScoreProgression = -1;
+                            {arr[i].ScoreProgression = -1;}
 
                         if (arr[i].Score == arr[i + 1].Score)
-                            arr[i].ScoreProgression = 0;
+                            {arr[i].ScoreProgression = 0;}
 
                     }
 
@@ -141,7 +141,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     public drawGraph() {
 
         if (this.scoresPoints.length <= 0)
-            return;
+            {return;}
 
         var currentGraphHash = this.assetUid + '_' + this.scoreType;
         if (this.selectedPoint) {
@@ -149,11 +149,11 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         }
 
         if (currentGraphHash == this.graphHash)
-            return;
+            {return;}
 
         this.graphHash = currentGraphHash;
         if (this.chartInstance)
-            this.chartInstance.destroy();
+            {this.chartInstance.destroy();}
 
 
         this.loadState();
@@ -414,7 +414,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
             return d1.getTime() === d2.getTime();
         }
-        else return false;
+        else {return false;}
     }
 
     ////scoring carousel, table and graph interactivity
@@ -478,7 +478,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             for (var i = 0; i < tblBody.children.length - 1; i++) {
                 var selected = tblBody.children[i].className.toLowerCase().indexOf('selected') > -1 ? tblBody.children[i] : null;
                 if (!selected)
-                    continue;
+                    {continue;}
 
                 if (selected && this.tableSelectedIDX != i) {
                     this.tableSelectedIDX = i;
@@ -503,12 +503,12 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     private getMeasurePoint(item: ScorePoint): ScorePoint {
         var point = null;
         if (this.measurePoints)
-            point = this.measurePoints.filter((x) => x.EffectiveDate == item.EffectiveDate)[0];
+            {point = this.measurePoints.filter((x) => x.EffectiveDate == item.EffectiveDate)[0];}
 
         if (point == null || point == undefined) {
             return null;
         }
-        else return point;
+        else {return point;}
     }
 
     private getStorageKey() {

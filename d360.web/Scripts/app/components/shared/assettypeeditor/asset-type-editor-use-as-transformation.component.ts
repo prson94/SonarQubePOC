@@ -48,7 +48,7 @@ export class AssetTypeEditorUseAsTransformationComponent extends BaseComponent i
     ngOnChanges(changes: SimpleChanges): void {
         if (typeof changes['UseAsTransformation'] !== "undefined" && changes['UseAsTransformation'].firstChange) {
             this.initialValue = changes['UseAsTransformation'].currentValue;
-            if (this.initialValue) this.IsTransformPredicateExists();
+            if (this.initialValue) {this.IsTransformPredicateExists();}
         }
     }
 
