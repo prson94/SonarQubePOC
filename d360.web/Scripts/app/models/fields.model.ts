@@ -109,7 +109,10 @@ export class FieldType {
     FilterPredicateID: number;
     FilterPredicateDirection: number;
     FilterFieldTypeID: number;
-    ShowIfEmpty: boolean;
+	ShowIfEmpty: boolean;
+	AssetTypeID: number;
+	IssueTypeID: number;
+	IntersectTypeID: number;
 }
 
 export class Field {
