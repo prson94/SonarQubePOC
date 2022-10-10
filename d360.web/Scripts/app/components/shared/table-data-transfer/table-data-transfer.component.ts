@@ -37,7 +37,10 @@ export class TableDataTransferComponent {
   constructor(
     public cdRef: ChangeDetectorRef,
     public defaultTableSettingsService: DefaultTableSettingsService,
-  ) { }
+  ) {
+    this.isSourceRowSelectable = this.isSourceRowSelectable.bind(this);
+    this.isTargetRowSelectable = this.isTargetRowSelectable.bind(this);
+  }
 
   get isFirstItemFromTargetSelected(): boolean {
     return this.selectedItemsFromTarget.findIndex((selectedItem) => selectedItem.ObjectID === this.itemsFromTarget[0].ObjectID && selectedItem.Object === this.itemsFromTarget[0].Object) > -1;
@@ -168,5 +171,21 @@ export class TableDataTransferComponent {
         this.showInfo({});
       }
     }
+  }
+
+  isSourceRowsSelectionDisabled(): boolean {
+    return this.selectedItemsFromTarget.length > 0;
+  }
+
+  isTargetRowsSelectionDisabled(): boolean {
+    return this.selectedItemsFromSource.length > 0;
+  }
+
+  isSourceRowSelectable() {
+    return !this.isSourceRowsSelectionDisabled();
+  }
+
+  isTargetRowSelectable() {
+    return !this.isTargetRowsSelectionDisabled();
   }
 }

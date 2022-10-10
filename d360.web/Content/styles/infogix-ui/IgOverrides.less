@@ -1,8 +1,10 @@
+@import './IgColorVariables.less';
+
 /**
  *  Themes
  */
 
- /* Fix general theme. Theme usage: table-data-transfer component */
+/* Table override theme 1. Theme usage: table-data-transfer component */
 .table-theme-1 {
     tbody.p-datatable-tbody > tr {
         border-bottom: none;
@@ -24,7 +26,17 @@
     }
 }
 
- /* Components */
+/* Checkbox override theme 1. Theme usage: table-data-transfer component */
+.checkbox-theme-1 {
+    .p-checkbox {
+        .p-disabled {
+            opacity: 1;
+            background: @ig-grey-t5;
+        }
+    }
+}
+
+/* Components */
 .data-transfer-controls {
     .button-up,
     .button-down {
