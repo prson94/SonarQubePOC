@@ -4855,9 +4855,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 											select count(*) from {ApiExecutionFieldTable} EF
 											inner join api.ExecutionAsset EA on EA.ItemNumber = EF.ItemNumber AND EA.ExecutionID = EF.ExecutionID
 											inner join FieldType FT ON FT.ID = EF.FieldTypeID AND FT.IsPartOfKey = 1
-											inner join Field F on F.AssetId = EA.AssetId and F.FieldTypeID = FT.ID
+											left join Field F on F.AssetId = EA.AssetId and F.FieldTypeID = FT.ID
 											WHERE EF.ExecutionID = @ExecutionID AND EF.ItemNumber between @beginItemNumber and @endItemNumber
-											and F.FormattedValue <> EF.FieldValue";
+											    and (F.FormattedValue <> EF.FieldValue or (F.FormattedValue is null and EF.FieldValue is not null))";
 
 										var result = Connection.QueryFirst<int>(checkUpdatedKeyFields,
 											new { executionID = execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, timeout);
