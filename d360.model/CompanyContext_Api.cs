@@ -3772,10 +3772,10 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 							Set PredicateID=ER.PredicateID,
 								SubjectCardinality=ER.SubjectCardinality, 
 								ObjectCardinality=ER.ObjectCardinality,
-								SubjectClass = ER.SubjectClass,
-								SubjectAssetTypeID = ER.SubjectAssetTypeID,
-								ObjectClass = ER.ObjectClass,
-								ObjectAssetTypeID = ER.ObjectAssetTypeID,
+								SubjectClass = coalesce(ER.SubjectClass, IT.SubjectClass),
+								SubjectAssetTypeID = coalesce(ER.SubjectAssetTypeID, IT.SubjectAssetTypeID),
+								ObjectClass = coalesce(ER.ObjectClass, IT.ObjectClass),
+								ObjectAssetTypeID = coalesce(ER.ObjectAssetTypeID, IT.ObjectAssetTypeID),
 								UpdatedBy=@resourceId,
 								UpdatedOn=@utcNow
 							from [intersecttype] IT
