@@ -55,6 +55,28 @@ export class BrowserService extends BaseObservableService {
             n.isGroup = !n.leaf;
         });
 
+		if (response.links && response.links.length > 0) {
+			response.highlightLinks = JSON.parse(JSON.stringify(response.links));
+
+			response.highlightLinks.forEach((l) => {
+				//relationship id should be updated from format typeid|relationshipid|assetid
+				//when expanding relationship, from or to part hold relationship id value from previously expanded relationship
+				//we need to update new relationships data to hold correct id's
+				var fromRelIdx = l.from.split('|')[1];
+				var toRelIdx = l.to.split('|')[1];
+				l.links.forEach((link) => {
+					var partsFrom = link.from.split('|');
+					var partsTo = link.to.split('|');
+
+					partsFrom[1] = fromRelIdx;
+					partsTo[1] = toRelIdx;
+
+					link.from = partsFrom.join('|');
+					link.to = partsTo.join('|');
+				});
+			});
+		}
+
         //#region Load root data from hierarchy array
 
         response.hierarchy.forEach((h) => {

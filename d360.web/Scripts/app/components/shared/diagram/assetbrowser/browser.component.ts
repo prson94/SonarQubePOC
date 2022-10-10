@@ -592,7 +592,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             });
                             response.links.forEach((o) => {
                                 this.diagramData.links.push(o);
-                            });
+							});
+							response.highlightLinks.forEach((o) => {
+								this.diagramData.highlightLinks.push(o);
+							});
                             response.nodes.forEach((o) => {
                                 this.diagramData.nodes.push(o);
                             });
@@ -1255,7 +1258,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (allRelations === undefined) {
             allRelations = [];
 
-            this.diagramData.links.forEach((l) => {
+			this.diagramData.highlightLinks.forEach((l) => {
                 if (l.links) {
 					l.links.forEach((cl) => {
 						var relIdFrom = cl.from.split('|')[1];
@@ -1701,7 +1704,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         });
                         response.links.forEach((o) => {
                             this.diagramData.links.push(o);
-                        });
+						});
+						response.highlightLinks.forEach((o) => {
+							this.diagramData.highlightLinks.push(o);
+						});
                         response.nodes.forEach((o) => {
                             this.diagramData.nodes.push(o);
                         });
