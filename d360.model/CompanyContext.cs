@@ -2252,9 +2252,10 @@ from	IntersectType I
 			StringBuilder joinbuilder = new StringBuilder();
 			joins = "";
 
+			string fieldTypeRelationType = type;
+
 			if (fields == null)
 			{
-				string fieldTypeRelationType = type;
 				if(type == "Rule" && ruleMeansEvent)
 				{
 					type = "Event";
@@ -2278,7 +2279,9 @@ from	IntersectType I
 				fields = fieldQry.OrderBy(i => i.ColumnOrder).ToList();
 			}
 
-			List<RelationshipDirectionFieldInfo> relationFieldInfos = getRelationFieldData(fields[0].AssetTypeID.GetValueOrDefault(), fields);
+			var assetTypeID = (fields.Count > 0) ? fields[0].AssetTypeID.GetValueOrDefault() : Filter<AssetType>(a => a.Object == fieldTypeRelationType && a.ObjectID == typeID).FirstOrDefault().ID;
+
+			List <RelationshipDirectionFieldInfo> relationFieldInfos = getRelationFieldData(assetTypeID, fields);
 
 			foreach (FieldType f in fields)
 			{
