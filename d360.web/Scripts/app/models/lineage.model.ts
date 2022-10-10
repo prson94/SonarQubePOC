@@ -74,6 +74,7 @@ export class DiagramTypesModel {
 export class AssetBrowserResponseModel {
     nodes: AssetBrowserTranslationNode[];
     links: AssetBrowserTranslationLink[];
+	highlightLinks: AssetBrowserTranslationLink[];
     hierarchy: AssetBrowserTranslationHierarchy[];
     reveals: AssetBrowserRevealNode[];
     dataLimitReached: boolean = false;
