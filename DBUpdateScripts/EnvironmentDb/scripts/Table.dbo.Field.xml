@@ -105,7 +105,7 @@ END
 	</rollback>
   </changeSet> 
 
-	<changeSet author="bquinlivan" id="Table.dbo.Field-v2" runInTransaction="false">
+	<changeSet author="Quinlivan/Pappas" id="Table.dbo.Field-v2.1" runInTransaction="false">
 		<sql dbms="mssql"
 				endDelimiter="\nGO"
 				splitStatements="true"
@@ -113,7 +113,11 @@ END
 			<![CDATA[
 			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Field')
 			BEGIN
-				ALTER TABLE [dbo].[Field] DROP CONSTRAINT IF EXISTS [PK_Field]
+				if exists (select * from sys.indexes where Name = 'PK_Field' and type_desc = 'NONCLUSTERED')
+				begin
+					ALTER TABLE [dbo].[Field] DROP CONSTRAINT IF EXISTS [PK_Field]
+				end
+
 				DROP INDEX IF EXISTS [CIX_Field] ON [dbo].[Field] WITH ( ONLINE = OFF )				
 				DROP INDEX IF EXISTS [IX_Field_FieldTypeID] ON [dbo].[Field]
 				DROP INDEX IF EXISTS [IX_Field_ObjectID] ON [dbo].[Field]
@@ -121,8 +125,12 @@ END
 				
 				alter table Field alter column [ObjectType] varchar(50) null
 				alter table Field alter column [ObjectID] int null		
-				alter table Field alter column AssetID bigint SPARSE				
-				
+
+				if not exists (select * from sys.Columns where object_id = object_id('Field') and Name = 'AssetID' and is_sparse = 1)
+				begin
+					alter table Field alter column AssetID bigint SPARSE
+				end
+
 				IF NOT EXISTS 
 				(
 					SELECT *
@@ -144,24 +152,21 @@ END
 				BEGIN
 					alter table Field add IssueID int SPARSE
 				END				
-				
-				CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID_Include_Ids] ON [dbo].[Field]
-				(
-					[FieldTypeID] ASC
-				)
-				INCLUDE([AssetID],[IntersectID],[IssueID])
-				
-				ALTER TABLE [dbo].[Field] ADD CONSTRAINT [PK_Field] PRIMARY KEY CLUSTERED 
-				(	
-					[ID] ASC
-				)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]					
 								
-				CREATE NONCLUSTERED INDEX [IX_Field_AssetID_Include] ON [dbo].[Field] 
-				( 
-					[AssetID] ASC 
-				) 
-				INCLUDE([FieldTypeID],[Value],[FormattedValue])
-				
+				if not exists (select * from sys.indexes where Name = 'PK_Field' and type_desc = 'CLUSTERED')
+				begin
+					ALTER TABLE [dbo].[Field] ADD CONSTRAINT [PK_Field] PRIMARY KEY CLUSTERED  ( [ID] ASC ) ON [PRIMARY]
+				end
+
+				if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeID_Include_Ids')
+				begin
+					CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID_Include_Ids] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([AssetID],[IntersectID],[IssueID])
+				end
+
+				if not exists (select * from sys.indexes where Name = 'IX_Field_AssetID_Include')
+				begin
+					CREATE NONCLUSTERED INDEX [IX_Field_AssetID_Include] ON [dbo].[Field] ( [AssetID] ASC ) INCLUDE([FieldTypeID],[Value],[FormattedValue])
+				end
 			END
 			]]>
     </sql>
