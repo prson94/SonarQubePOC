@@ -99,14 +99,15 @@ namespace igx.UnitTests
                                return null;
                            else
                            {
-                               var result = new List<TypeIdentifierInfoModel>();
-                               result.Add(new TypeIdentifierInfoModel()
+							   TypeIdentifierInfoModel result = null;
+                               result = new TypeIdentifierInfoModel()
                                {
                                    Object = type.ToString(),
                                    Uid = uid
-                               });
-                               return Task.FromResult(result as IEnumerable<TypeIdentifierInfoModel>);
-                           }
+                               };
+							   return Task.FromResult(result);
+
+						   }
                        }
 
                  );
