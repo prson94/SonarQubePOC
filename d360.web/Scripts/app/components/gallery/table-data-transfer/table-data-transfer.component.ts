@@ -15,6 +15,12 @@ export class GalleryTableDataTransferComponent implements OnInit {
   sampleUsage: string = SAMPLE_USAGE;
   properties: Property[] = PROPERTIES;
   events: OutputEvents[] = EVENTS;
+
+  basicSourceTableTitle = $localize`Source Table Title`;
+  basicTargetTableTitle = $localize`Target Table Title`;
+  advancedSourceTableTitle = $localize`Advanced Source Table Title`;
+  advancedTargetTableTitle = $localize`Advanced Target Table Title`;
+  advancedEmptyTargetTableMessage = $localize`No selected items`;
   
 
   constructor() { }

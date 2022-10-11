@@ -84,9 +84,13 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	labelAddFolder = $localize`Add Folder`;
 	labelSaveChanges = $localize`Save Changes`;
-
 	labelCancel = $localize`Cancel`;
 	labelDiscard = $localize`Discard Changes`;
+	folderSourceTableTitle = $localize`Available Folder Items`;
+	folderTargetTableTitle = $localize`Selected Folder Items`;
+	permissionsSourceTableTitle = $localize`Available Users/Groups`;
+	permissionsTargetTableTitle = $localize`Selected Users/Groups`;
+	permissionsEmptyTargetTableMessage = $localize`No selected items`;
 
 	isItemsFromSourceLoading = true;
 	isItemsFromTargetLoading = true;

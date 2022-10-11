@@ -10,14 +10,14 @@ import { DefaultTableSettingsService } from '../../../services/settings/default-
 export class TableDataTransferComponent {
   @Input() isTargetDataReorderable: boolean = false;
   @Input() isRequired: boolean = true;
-  @Input() emptyTargetTableMessage: string = 'Please select at least one item';
-  @Input() emptySourceTableMessage: string = 'No available items';
+  @Input() emptyTargetTableMessage: string = $localize`Please select at least one item`;
+  @Input() emptySourceTableMessage: string = $localize`No available items`;
   @Input() infoButton: boolean = false;
   @Input() isSortButtons: boolean = false;
   @Input() targetTableSortProperty: string = 'SortOrder';
   @Input() itemsNameProperty: string = 'Title';
-  @Input() sourceTableTitle: string = 'Source Table Title';
-  @Input() targetTableTitle: string = 'Target Table Title';
+  @Input() sourceTableTitle: string = $localize`Source Table Title`;
+  @Input() targetTableTitle: string = $localize`Target Table Title`;
   @Input() itemsFromSource: any[] = [];
   @Input() itemsFromTarget: any[] = [];
   @Input() isItemsFromSourceLoading: boolean = true;

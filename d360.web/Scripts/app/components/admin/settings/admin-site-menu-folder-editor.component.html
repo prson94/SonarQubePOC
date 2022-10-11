@@ -57,8 +57,8 @@
 						<div readonly>
 							<d3s-table-data-transfer [(itemsFromSource)]="foldersFromSource"
 													 [(itemsFromTarget)]="foldersFromTarget"
-													 [sourceTableTitle]="'Available Folder Items'"
-													 [targetTableTitle]="'Selected Folder Items'"
+													 [sourceTableTitle]="folderSourceTableTitle"
+													 [targetTableTitle]="folderTargetTableTitle"
 													 [isSortButtons]="true"
 													 [isTargetDataReorderable]="true"
 													 [isItemsFromSourceLoading]="isItemsFromSourceLoading"
@@ -76,14 +76,14 @@
 							</div>
 							<d3s-table-data-transfer [(itemsFromSource)]="permissionsFromSource"
 													 [(itemsFromTarget)]="permissionsFromTarget"
-													 [sourceTableTitle]="'Available Users/Groups'"
-													 [targetTableTitle]="'Selected Users/Groups'"
+													 [sourceTableTitle]="permissionsSourceTableTitle"
+													 [targetTableTitle]="permissionsTargetTableTitle"
 													 [itemsNameProperty]="'Text'"
 													 [infoButton]="true"
 													 [isRequired]="false"
 													 [isItemsFromSourceLoading]="isItemsFromSourceLoading"
 													 [isItemsFromTargetLoading]="isItemsFromTargetLoading"
-													 [emptyTargetTableMessage]="'No selected items'"
+													 [emptyTargetTableMessage]="permissionsEmptyTargetTableMessage"
 													 (showInfoEvent)="showInfo($event)"></d3s-table-data-transfer>
 						</div>
 					</ig-property-group>
