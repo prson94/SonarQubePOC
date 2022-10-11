@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.api.MergeAssetPaths-v3">
-    <comment>GOV-19641</comment>
+  <changeSet author="TDuric" id="Procedure.api.MergeAssetPaths-v5.2">
+    <comment>GOV-19901</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -16,7 +16,8 @@ create or alter procedure [api].[MergeAssetPaths]
 	@executionId uniqueidentifier = null,
 	@class int,
 	@begin int,
-	@end int
+	@end int,
+	@assetTypeUid uniqueidentifier = null
 as
 begin
 	set nocount on;
@@ -70,6 +71,14 @@ begin
 			inner join Asset A ON A.uid = EDA.Uid
 		where ExecutionID = @executionId
 	end
+
+	if @assetTypeUid is not null
+	begin
+		insert into #incoming
+		select A.ID from AssetType AT
+		inner join Asset A on A.AssetTypeID = AT.ID
+		where AT.uid = @assetTypeUid
+	end 
 
 	if exists (select top 1 * from #incoming)
 	begin
@@ -240,11 +249,11 @@ begin
 						A.ParentID,
 						A.[Level] - 1,
 						FT.ColumnOrder,
-						F.FormattedValue
+						coalesce(F.FormattedValue, FT.DefaultFormattedValue) as FormattedValue
 				from	#hierarchy A
 						inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-						inner join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
-						
+						left join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+				where 	coalesce(F.FormattedValue, FT.DefaultFormattedValue) is not null
 			--handle counter fields
 			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
 				select	distinct
@@ -337,28 +346,17 @@ begin
 				);
 			end
 		end
-
-		-- Merge paths
-		merge	AssetPath as T
-		using	(
-				select	distinct 
-						I.GroupID as ID,
-						SE.Segments
-				from	#ids I
-						cross apply (
-									select	g.XMLData as Segments
-									from	#tblgrp g
-									where	g.GroupID = I.GroupID
-									) SE
-				) as S
-		on		(S.ID = T.ID)
-		when	matched then
-		update	set
-				T.Segments = S.Segments
-		when	not matched then
-		insert	(ID, Segments)
-		values	(S.ID, S.Segments);
-
+		
+		update T
+		set T.Segments = g.XMLData
+		from AssetPath T
+		inner join #tblgrp g on g.GroupId = T.Id;
+		
+		insert into AssetPath (Id,Segments)
+		select g.GroupId, g.XMLData
+		from #tblgrp g
+		left join AssetPath AP on AP.Id = g.GroupId
+		where AP.ID is null;
 				
 		--Queue Search index updates to path, except when this procedure is called for an entire asset type
 		insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])

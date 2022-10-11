@@ -666,10 +666,16 @@ namespace d360.model.DataAccessLayer
 			public string FieldType { get; set; }
 		}
 
+		public string GetKeyFieldsHash(List<FieldType> fields)
+		{
+			return string.Join("|", fields.Where(f => f.IsPartOfKey).Select(f => f.ID + "DF:" + (f.DefaultValue ?? "")).OrderBy(f => f));
+		}
+
 		public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
 		{
 			var currentFieldTypes = Company.Filter<FieldType>(f => (f.AssetTypeID==typeIdentifierInfoModel.ID || f.IssueTypeID == typeIdentifierInfoModel.ID || f.IntersectTypeID == typeIdentifierInfoModel.ID), i => i.FieldTypeLookup).ToList();
-			var existingKeyFields = string.Join("|", currentFieldTypes.Where(f => f.IsPartOfKey).Select(f => f.ID).OrderBy(f => f));
+			var existingKeyFieldsHash = GetKeyFieldsHash(currentFieldTypes);
+
 			var newFieldTypes = new List<FieldType>();
 			var fieldTypeNamesToDelete = new List<string>();
 			var allowedConversions = DataType.Boolean.GetAllowedConversionOptions();
@@ -1951,19 +1957,17 @@ namespace d360.model.DataAccessLayer
 
 			Company.SaveChanges();
 
-			var newKeyFields = string.Join("|",
-				Company.Filter<FieldType>(f => ((typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() && f.IssueTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object != SystemObjects.IntersectType.ToString() && typeIdentifierInfoModel.Object != SystemObjects.IssueType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID)) && f.IsPartOfKey).Select(f => f.ID).OrderBy(f => f)
-			);
-
-			if (!newKeyFields.Equals(existingKeyFields))
+			if (model.AssetTypeUid.HasValue)
 			{
-				// Key fields have changed. You need to update the graph for this asset type.
-				if (model.AssetTypeUid.HasValue)
+				var newKeyFieldsHash = GetKeyFieldsHash(Company.FieldTypes.Where(x => x.AssetTypeID == typeIdentifierInfoModel.ID).AsNoTracking().ToList());
+
+				if (!newKeyFieldsHash.Equals(existingKeyFieldsHash))
 				{
-					Company.SendGraphAssetTypeEvent(model.AssetTypeUid.Value);
+					// Key fields have changed. You need to update the graph for this asset type.
+					Company.Connection.Execute("exec [api].[MergeAssetPaths] null,0,0,0,@uid", new { uid = model.AssetTypeUid.Value }, commandTimeout: 90);				
+				
 				}
 			}
-
 			return new WorkHttpStatus(HttpStatusCode.OK, "", "");
 		}
 
