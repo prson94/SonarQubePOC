@@ -2285,9 +2285,10 @@ namespace d360.web.Controllers.V2
 					parentValues = lookupParentValue.Split(',').ToList();
 					parentFieldJoins = $@"inner join Asset A on a.uid = V.AssetUid
 					cross apply GetParentByAssetID(A.ID)Parent
-					inner join [Intersect] I on I.Id = Parent.IntersectID";
+					inner join [Intersect] I on I.Id = Parent.IntersectID
+					inner join Asset SA on I.SubjectAssetID = SA.ID";
 
-					whereQuery += " and I.SubjectID in @parentValues ";
+					whereQuery += " and SA.ObjectID in @parentValues ";
 				}
 
 				string query = $@"

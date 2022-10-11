@@ -1729,8 +1729,8 @@ from	workflow.EventRegistration T
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
-    <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-19677">
-	<comment>GOV-19677 - Update Semantic change log for new routing.</comment>	
+    <changeSet author="Tomislav Duric" id="Data.Corrections.GOV-19677-2">
+	<comment>GOV-19677 - Update More routes.</comment>	
 	<sql dbms="mssql"
             endDelimiter="GO"
             splitStatements="true"
@@ -1742,6 +1742,18 @@ from	workflow.EventRegistration T
 		inner join Semantic S on S.ID = F.SemanticID
 		where F.SemanticID is not null
 		and (Route like '%sidebar/audit%' or Route like '%log%')
+		
+		update F
+		set F.Route = CONCAT('asset/',CAST(a.uid as nvarchar(max)),'/results')
+		from dbo.Favorite f
+		inner join asset a on a.id = f.AssetID
+		where f.AssetID is not null 
+		and route like 'sidebar/ruleResults%'
+		
+		update F
+		set F.Route = REPLACE(f.route,'ownership','owners')
+		from dbo.Favorite f
+		where f.Route like 'asset%' and f.Route like '%ownership'
 	]]>
 	</sql>
   </changeSet>

@@ -44,19 +44,27 @@ namespace d360.model.helpers.filters
             return (intersectTypes, filterAssets, filterAssetTypes);
         }
 
-		public (int, List<AssetTypeKeyFieldMap>) GetPathSegmentsMappingInfo(int assetTypeID, List<Guid> assetTypeUids)
+		public (List<Guid>, List<AssetTypeKeyFieldMap>) GetPathSegmentsMappingInfo(int assetTypeID, List<Guid> assetTypeUids)
 		{
 			var gridReader = companyContext.Database.Connection.QueryMultiple(@"
-								select ap.Segments.value('count(/path/segment)', 'int') - 1  
-								from AssetPath ap 
-								where ap.id = (select top 1 Id from asset where AssetTypeID = @assettypeid)
+								;with cte as (
+								select IT.SubjectAssetTypeID from [IntersectType] IT
+								inner join [Predicate] P on P.ID = IT.PredicateID AND P.Type IN (3,4)
+								where IT.ObjectAssetTypeID = @assetTypeid
+								union all
+								select IT.SubjectAssetTypeID from cte 
+								inner join [IntersectType] IT ON IT.ObjectAssetTypeID = cte.SubjectAssetTypeId
+								inner join [Predicate] P on P.ID = IT.PredicateID AND P.Type IN (3,4)
+								)
+								select at.uid from cte
+								inner join AssetType at on at.ID = cte.SubjectAssetTypeID
 
 								select at.uid as AssetTypeUid, ft.ID as FieldTypeId from FieldType ft
 								inner join AssetType at on at.ID = ft.AssetTypeID
-								where at.uid in @assetTypeUids and ft.IsPartOfKey = 1 and [Type] = 'Text'",new { assetTypeID, assetTypeUids });
+								where at.uid in @assetTypeUids and ft.IsPartOfKey = 1 and [Type] = 'Text'", new { assetTypeID, assetTypeUids });
 
 
-			int levels = gridReader.Read<int>().FirstOrDefault();
+			List<Guid> levels = gridReader.Read<Guid>().ToList();
 			var typeKeyFields = gridReader.Read<AssetTypeKeyFieldMap>().ToList();
 			return (levels, typeKeyFields);
 		}

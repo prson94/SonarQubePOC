@@ -11,6 +11,9 @@ import { LazyLoadEvent } from 'primeng/api';
 import { forkJoin } from 'rxjs';
 import { SemanticBaseComponent } from './semantics-base.component';
 import { FeatureFlagsService } from '../../services/featureflags.service';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { SecondaryNavItem } from '../../models/secondaryNav.model';
 
 declare var CurrentResourceID;
 
@@ -37,6 +40,7 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
     secondarySidePanelOpen: boolean = false;
     secondarySidePanel: string = 'detail';
     resourceUid: any;
+	semanticAssetsCount: number;
 
     constructor(private route: ActivatedRoute,
         protected router: Router,
@@ -67,13 +71,21 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
             this.isLoading = true;
             this.dataProfileService.getSemanticTypes(1, 1, "", `uid eq '${uid}'`).subscribe((s) => {
                 this.semanticType = s.items[0];
-                this.isLoading = false;
-                this.cdRef.markForCheck();
+				this.isLoading = false;
+				this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, 1, this.semanticType.threshold).subscribe((result) => {
+					this.semanticAssetsCount = result.total;
+					this.displayBreadCrumbs();
+					this.isLoading = false;
+					this.cdRef.markForCheck();
+				});
             });
         }
     }
 
-    selectAsset(asset: SemanticTypeAsset) {
+	selectAsset(asset: SemanticTypeAsset) {
+		if (!asset) {
+			return;
+		}
         this.selectedAsset = asset;
         this.sidePanelLoading = true;
         this.dataProfileService.getDataProfiles(this.selectedAsset.uid).subscribe(
@@ -113,5 +125,45 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
         } else {
             this.secondarySidePanel = 'status';
         }
-    }
+	}
+
+	displayBreadCrumbs() {
+		this.headerBreadcrumbService.getFolderTitle('#SemanticTypes').then((res) => {
+			this.folderTitle = res;
+			this.area = res;
+
+			this.headerBreadcrumbService.clearBreadcrumbs();
+			this.headerBreadcrumbService.clearCurrentObjectInfo();
+			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT));
+
+			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
+				this.semanticType.name,
+				`${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}`,
+				false,
+				'Semantic',
+				this.semanticType.id,
+				null,
+				null,
+				null));
+
+			this.setBrowserTitle(this.headerBreadcrumbService.getTitleService(), this.semanticType.name);
+
+			var breadCrumbsSub = this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
+				this.secondaryNavService.clearItems();
+				this.secondaryNavService.clearCurrentObject();
+				let disabledBadge = this.isDisabled() ? "[{\"name\":\"Disabled\", \"color\":\"#D7D8DC\"}]" : "";
+				this.secondaryNavService.setCurrentArea(this.semanticType.name, icon, $localize`Definition`, [disabledBadge]);
+				this.secondaryNavService.setLocalHomeUrl(`${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}`);
+				let assetstab = new SecondaryNavItem($localize`Assets`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount, 2);
+				assetstab.active = true;
+				this.secondaryNavService.showItem(assetstab);
+
+				this.secondaryNavService.showHeader(true);
+			});
+		});
+	}
+
+	isDisabled() {
+		return new Date(this.semanticType.effectiveDate) < new Date(this.semanticType.updatedOn);
+	}
 }

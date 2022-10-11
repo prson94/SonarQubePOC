@@ -251,7 +251,7 @@ where	a.[class] = @cls
 			select	1 
 			from	intersecttype I 
 					inner join [predicate] p on P.id = I.PredicateID and p.[Type] = 3 
-						and i.SubjectAssetTypeID = a.ID
+						and i.SubjectClass in ({(int)AssetTypeClass.BusinessAsset},{(int)AssetTypeClass.TechnicalAsset}) and i.ObjectAssetTypeID = a.ID
 		)
 		and a.Name = @name", new { name = model.Name.Trim(), cls = model.Class });
 					}
@@ -286,7 +286,7 @@ where	a.[class] = @cls
 						count = CompanyContext.Database.Connection.QuerySingleOrDefault<int>($@"
 								select count(1) from assettype a
 								where
-									a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.SubjectAssetTypeID = a.ID)
+									a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.SubjectClass in ({(int)AssetTypeClass.BusinessAsset},{(int)AssetTypeClass.TechnicalAsset}) and i.ObjectAssetTypeID = a.ID)
 										and a.Name = @name and a.UID <> @uid", new { name = model.Name.Trim(), cls = model.Class, uid = model.Uid });
 					}
 

@@ -6,7 +6,7 @@
                              i18n-placeholder
                              placeholder="Search"
                              [(ngModel)]="sourceTableSearchValue"
-                             (onSearch)="dt3.filterGlobal($event, 'contains')"
+                             (onSearch)="sourceDataTable.filterGlobal($event, 'contains')"
                              name="availableFolderItemsSearchField"
                              style="width:100%; padding-bottom:8px;"></ig-search-field>
             <div class="selected-counter"
@@ -17,8 +17,10 @@
                  i18n>{{selectedItemsFromSource.length}} items selected</div>
         </div>
         <div class="table-wrapper">
-            <p-table #dt3
-                     [globalFilterFields]="['Title']"
+            <p-table #sourceDataTable
+                     [globalFilterFields]="[itemsNameProperty]"
+                     [loading]="isItemsFromSourceLoading"
+                     [loadingIcon]="'fa fa-spinner fa-spin'"
                      [value]="itemsFromSource"
                      [(selection)]="selectedItemsFromSource"
                      selectionMode="multiple"
@@ -32,25 +34,40 @@
                      scrollHeight="420px">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="max-width: 28px;">
+                        <th class="check-cell">
                             <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                         </th>
                         <th i18n>{{sourceTableTitle}}</th>
+                    </tr>
+                    <tr *ngIf="itemsFromSource?.length == 0">
+                        <div i18n
+                             class="empty-message">{{emptySourceTableMessage}}</div>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body"
                              let-item>
                     <tr [pSelectableRow]="item">
-                        <td style="max-width: 28px; height: 32px">
+                        <td class="checkbox-column">
                             <p-tableCheckbox [value]="item"></p-tableCheckbox>
                         </td>
-                        <td>{{item.Title}}</td>
+                        <td>{{item[itemsNameProperty]}}</td>
+                        <td class="information-button-column" *ngIf="infoButton">
+                            <button igButton
+                                    class="info-button"
+                                    [ngClass]="{'highlighted': viewingItem === item}"
+                                    icon="fa-info-circle"
+                                    i18n-pTooltip
+                                    pTooltip="View Information"
+                                    tooltipPosition="top"
+                                    tooltipStyleClass="ig-tooltip"
+                                    (click)="showInfo(item)"></button>
+                        </td>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="summary">
-                    <d3s-grid-paging-info [first]="dt3.first"
-                                          [rows]="dt3.rows"
-                                          [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
+                    <d3s-grid-paging-info [first]="sourceDataTable.first"
+                                          [rows]="sourceDataTable.rows"
+                                          [totalRecords]="sourceDataTable.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-table>
         </div>
@@ -77,46 +94,48 @@
                     icon="fa-arrow-left"
                     (click)="moveFromTargetToSource()"></button>
         </div>
-        <div i18n-pTooltip
-             pTooltip="Move to top"
-             tooltipPosition="top"
-             tooltipStyleClass="ig-tooltip">
-            <button igButton
-                    class="ig-lookup-grid-button data-transfer-move-top-btn"
-                    [disabled]="!isMoveUpPossible()"
-                    icon="fa-step-backward"
-                    (click)="moveToTop()"></button>
-        </div>
-        <div i18n-pTooltip
-             pTooltip="Move up"
-             tooltipPosition="top"
-             tooltipStyleClass="ig-tooltip">
-            <button igButton
-                    class="ig-lookup-grid-button"
-                    [disabled]="!isMoveUpPossible()"
-                    icon="fa-caret-up"
-                    (click)="moveUp()"></button>
-        </div>
-        <div i18n-pTooltip
-             pTooltip="Move down"
-             tooltipPosition="top"
-             tooltipStyleClass="ig-tooltip">
-            <button igButton
-                    class="ig-lookup-grid-button"
-                    [disabled]="!isMoveDownPossible()"
-                    icon="fa-caret-down"
-                    (click)="moveDown()"></button>
-        </div>
-        <div i18n-pTooltip
-             pTooltip="Move to bottom"
-             tooltipPosition="top"
-             tooltipStyleClass="ig-tooltip">
-            <button igButton
-                    class="ig-lookup-grid-button data-transfer-move-bottom-btn"
-                    [disabled]="!isMoveDownPossible()"
-                    icon="fa-step-backward"
-                    (click)="moveToBottom()"></button>
-        </div>
+        <ng-container *ngIf="isSortButtons">
+            <div i18n-pTooltip
+                 pTooltip="Move to top"
+                 tooltipPosition="top"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        class="ig-lookup-grid-button data-transfer-move-top-btn"
+                        [disabled]="!isMoveUpPossible()"
+                        icon="fa-step-backward"
+                        (click)="moveToTop()"></button>
+            </div>
+            <div i18n-pTooltip
+                 pTooltip="Move up"
+                 tooltipPosition="top"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        class="ig-lookup-grid-button button-up"
+                        [disabled]="!isMoveUpPossible()"
+                        icon="fa-caret-up"
+                        (click)="moveUp()"></button>
+            </div>
+            <div i18n-pTooltip
+                 pTooltip="Move down"
+                 tooltipPosition="top"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        class="ig-lookup-grid-button button-down"
+                        [disabled]="!isMoveDownPossible()"
+                        icon="fa-caret-down"
+                        (click)="moveDown()"></button>
+            </div>
+            <div i18n-pTooltip
+                 pTooltip="Move to bottom"
+                 tooltipPosition="top"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        class="ig-lookup-grid-button data-transfer-move-bottom-btn"
+                        [disabled]="!isMoveDownPossible()"
+                        icon="fa-step-backward"
+                        (click)="moveToBottom()"></button>
+            </div>
+        </ng-container>
     </div>
     <div class="data-transfer-table">
         <div class="table-controls">
@@ -125,7 +144,7 @@
                              i18n-placeholder
                              placeholder="Search"
                              [(ngModel)]="targetTableSearchValue"
-                             (onSearch)="dt4.filterGlobal($event, 'contains')"
+                             (onSearch)="targetDataTable.filterGlobal($event, 'contains')"
                              style="width:100%; padding-bottom:8px;"></ig-search-field>
             <div class="selected-counter"
                  *ngIf="selectedItemsFromTarget && selectedItemsFromTarget.length > 0"
@@ -134,34 +153,44 @@
         </div>
         <div class="table-wrapper"
              style="max-height: calc(100vh - 420px); min-height:300px">
-            <p-table #dt4
+            <p-table #targetDataTable
                      [value]="itemsFromTarget"
-                     [globalFilterFields]="['Title']"
+                     [globalFilterFields]="[itemsNameProperty]"
+                     [loading]="isItemsFromTargetLoading"
+                     [loadingIcon]="'fa fa-spinner fa-spin'"
                      selectionMode="multiple"
                      [(selection)]="selectedItemsFromTarget"
                      [metaKeySelection]="false"
                      [rowsPerPageOptions]="defaultTableSettingsService.defaultPagingOptions"
                      [scrollable]="true"
+                     [reorderableColumns]="true"
+                     (onRowReorder)="onRowReorder()"
                      scrollHeight="420px">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="max-width: 28px;">
+                        <th *ngIf="isTargetDataReorderable" class="reorder-cell"></th>
+                        <th class="check-cell">
                             <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                         </th>
                         <th i18n>{{targetTableTitle}}</th>
                     </tr>
-                    <tr *ngIf="!itemsFromTarget || itemsFromTarget?.length == 0">
+                    <tr *ngIf="itemsFromTarget?.length == 0">
                         <div i18n
-                             class="invalid-table">Please select at least one item</div>
+                             class="empty-message"
+                             [ngClass]="{'highlighted': isRequired}">{{emptyTargetTableMessage}}</div>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body"
-                             let-item>
-                    <tr [pSelectableRow]="item">
-                        <td style="max-width: 28px; height: 32px">
+                             let-item
+                             let-i="rowIndex">
+                    <tr [pSelectableRow]="item" [pReorderableRow]="i">
+                        <td *ngIf="isTargetDataReorderable" class="reorder-cell">
+                            <span class="reorder-icon" [pReorderableRowHandle]="i"></span>
+                        </td>
+                        <td class="checkbox-column">
                             <p-tableCheckbox [value]="item"></p-tableCheckbox>
                         </td>
-                        <td>{{item.Title}}</td>
+                        <td>{{item[itemsNameProperty]}}</td>
                     <tr>
                 </ng-template>
             </p-table>

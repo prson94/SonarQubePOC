@@ -5,11 +5,52 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="View.dbo.SiteNavAvailable-v2">
+  <changeSet author="ALadchenko" id="View.dbo.SiteNavAvailable-v3.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
+		<![CDATA[
+	create or alter view [dbo].[SiteNavAvailable] 
+	as
+		select	u.ID,
+				u.ObjectID as ObjectID,
+				u.[Name],
+				u.[Class],
+				u.[url] as [Route],
+				u.[Object],
+				null as SortOrder,
+				null as ParentID
+		from	(
+				select	A.ID,
+						A.ObjectID,
+						A.[Object],
+						A.[Class],
+						A.[Name],
+						concat('assets/', A.Uid) As [url]
+				from	AssetType A
+				where	A.[Object] in ('ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType')
+				) u
+				left join SiteNav v on v.Object = u.Object and v.ObjectID = u.ObjectID
+		where	v.ObjectID is null 
+				and u.ID not in (
+								select	distinct 
+										C.ChildAssetTypeID 
+								from	SiteNav n
+										inner join AssetType T on T.Object = n.Object and T.ObjectID = n.Objectid
+										cross apply dbo.GetAssetTypeChildrenByID(T.ID) C
+								) 
+				and u.ID not in (
+								select	distinct 
+										AT.ID
+								from	IntersectType
+										inner join IntersectType IT on IT.ObjectAssetTypeID = u.ID
+										inner join AssetType AT on AT.ID = IT.ObjectAssetTypeID
+								where	IT.PredicateID in (SELECT ID from Predicate WHERE Type = 3)
+								)
+		]]>
+    </sql>
+	<rollback>
 		<![CDATA[
 	create or alter view [dbo].[SiteNavAvailable] 
 	as
@@ -48,11 +89,6 @@
 										inner join AssetType AT on AT.ID = IT.ObjectAssetTypeID
 								where	IT.PredicateID in (SELECT ID from Predicate WHERE Type = 3)
 								)
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

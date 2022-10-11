@@ -96,7 +96,7 @@
     border: 1px solid var(--primaryButtonBackColor);
 
     &:focus:not(:disabled), &.ig-state-focus {
-      border: none;
+      border-color: transparent;
     }
 
     &:hover:not(:disabled), &.ig-state-hover {
@@ -118,6 +118,7 @@
     height: auto;
     padding: 4px;
     color: var(--primaryButtonBackColor);
+    font-weight: 400;
 
     &:hover:not(:disabled), &.ig-state-hover {
       -webkit-background-clip: text !important;

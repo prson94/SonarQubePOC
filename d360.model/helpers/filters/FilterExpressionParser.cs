@@ -30,7 +30,7 @@ namespace d360.model.helpers
 		List<IFilterToken> filterTokens = new List<IFilterToken>();
 		DynamicQueryJoins dynamicQueryJoins;
 
-		int AssetTypeLevels;
+		List<Guid> AssetTypeLevels;
 		List<AssetTypeKeyFieldMap> AssetTypeKeyFieldMaps;
 
 		public FilterExpressionParser(
@@ -579,7 +579,7 @@ namespace d360.model.helpers
 					assetTypeUids.Add(Guid.Parse(definition.GetValue("AssetTypeUid").ToString()));
 				}
 
-				if (AssetTypeLevels > 0)
+				if (AssetTypeLevels.Count > 0)
 				{
 					StringBuilder sb = new StringBuilder();
 
@@ -595,12 +595,11 @@ namespace d360.model.helpers
 
 					temp_table_columns.Add("AssetId int");
 
-					for (int i = AssetTypeLevels; i > 0; i--)
+					for (int i = 0; i < AssetTypeLevels.Count; i++)
 					{
-						temp_table_columns.Add($"[lvl_{assetTypeUids[i-1]}] int");
-						targetJoins.Add($"ATarget{i}.ID");
+						temp_table_columns.Add($"[lvl_{AssetTypeLevels[i]}] int");
+						targetJoins.Add($"ATarget{i+1}.ID");
 					}
-					targetJoins.Reverse();
 
 					sb.AppendLine($@"
 								drop table if exists #assets_hierarchy
@@ -610,11 +609,11 @@ namespace d360.model.helpers
 											select a.id,{string.Join(",", targetJoins)}
 											from asset a
 											left join[Intersect] I1 on I1.ObjectAssetID = A.ID and I1.IntersectTypeID in (select id from #parent_relationships)");
-					for (int i = 2; i <= AssetTypeLevels; i++)
+					for (int i = 2; i <= AssetTypeLevels.Count; i++)
 					{
 						sb.AppendLine($"left join[Intersect] I{i} on I{i}.ObjectAssetID = I{i - 1}.SubjectAssetID and I{i}.IntersectTypeID in (select id from #parent_relationships)");
 					}
-					for (int i = 1; i <= AssetTypeLevels; i++)
+					for (int i = 1; i <= AssetTypeLevels.Count; i++)
 					{
 						sb.AppendLine($"left join Asset ATarget{i} on ATarget{i}.ID = I{i}.SubjectAssetID");
 					}

@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.graph.AssetBrowser_Lineage-v12">
-    <comment>GOV-18453 Convert Object/ObjectID/ObjectType/ObjectTypeID columns in dbo.Issue table</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Lineage-v13">
+    <comment>GOV-19956 Lineage diagram showing descendant assets relationships even when descendant assets are hidden</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -150,33 +150,37 @@ begin
 	end;
 
 	-- Get descendants (if any) of the current asset - this is the focal tree.
-	with d as (
-		select	ID,
-				cast(null as bigint) as ParentID,
-				1 as [Level],
-				cast(1 as bit) as IncludeInResult
-		from	Asset 
-		where	Uid in (select Uid from #assetsEditable)
-		union all
-		select	C.ID,
-				d.ID as ParentID,
-				d.[Level] + 1 as [Level],
-				case @descendancy
-					when 1 then cast(0 as bit) 
-					when 2 then cast(iif(d.[Level] < 2, 1, 0) as bit) 
-					else cast(1 as bit) 
-				end as IncludeInResult
-		from	d
-				inner join Asset P on P.ID = d.ID
-				inner join PredicateIntersect I on I.SubjectAssetID = P.ID and I.PredicateType in (3, 4)
-				inner join Asset C on C.ID = I.ObjectAssetID
-	)
+	
+	if @descendancy <> 1
+	begin
+		with d as (
+			select	ID,
+					cast(null as bigint) as ParentID,
+					1 as [Level],
+					cast(1 as bit) as IncludeInResult
+			from	Asset 
+			where	Uid in (select Uid from #assetsEditable)
+			union all
+			select	C.ID,
+					d.ID as ParentID,
+					d.[Level] + 1 as [Level],
+					case @descendancy
+						when 1 then cast(0 as bit) 
+						when 2 then cast(iif(d.[Level] < 2, 1, 0) as bit) 
+						else cast(1 as bit) 
+					end as IncludeInResult
+			from	d
+					inner join Asset P on P.ID = d.ID
+					inner join PredicateIntersect I on I.SubjectAssetID = P.ID and I.PredicateType in (3, 4)
+					inner join Asset C on C.ID = I.ObjectAssetID
+		)
 
-	insert into #hopAsset (Hop, ID, ParentID, IncludeInResult)
-		select @currentHop as Hop, ID, ParentID, IncludeInResult from d;
-
+		insert into #hopAsset (Hop, ID, ParentID, IncludeInResult)
+			select @currentHop as Hop, ID, ParentID, IncludeInResult from d;
+	end
+	
 	-- Get focal asset's ancestry, taking into account whether we should continue past direct parent or not.
-	with a as (
+	;with a as (
 		select	C.ID,
 				P.ID as ParentID
 		from	#assetsEditable H--#hopAsset H

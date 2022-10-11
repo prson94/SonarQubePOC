@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.dbo.GetIntersectTypeNames-v4">
+  <changeSet author="Puneet gupta" id="Function.dbo.GetIntersectTypeNames-v5">
   <comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -24,9 +24,9 @@ return
 	from	IntersectType I
 			inner join [Predicate] P on P.ID = I.PredicateID
 			left join AssetType S on S.ID = I.SubjectAssetTypeID
-			left join AssetType S_R on I.SubjectAssetTypeID = 0 and S_R.Class = I.SubjectClass
+			left join AssetType S_R on S_R.Class = 9 and S_R.ObjectId = 0 and I.SubjectAssetTypeID = 0 and S_R.Class = I.SubjectClass
 			left join AssetType O on O.ID = I.ObjectAssetTypeID 
-			left join AssetType O_R on I.ObjectAssetTypeID = 0 and O_R.Class = I.ObjectClass
+			left join AssetType O_R on O_R.Class = 9 and O_R.ObjectId = 0 and I.ObjectAssetTypeID = 0 and O_R.Class = I.ObjectClass
 	where	I.ID = @id				
 )
 		]]>

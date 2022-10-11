@@ -207,6 +207,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { DataCyModule } from '../../../directives/ig-data-cy.directive';
 import { PipesModule } from '../../../pipes/pipes.module';
+import { DirectivesModule } from "../../../directives/directives.module";
 
 
 
@@ -228,6 +229,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         SharedModule,
         TreeModule,
         DialogModule,
+        DirectivesModule
     ],
     declarations: [
         TypeaheadSearchComponent

@@ -1537,9 +1537,30 @@ namespace d360.web.Controllers.Services
 				{
 					string objectType = objectData[0];
 					int objectId = int.Parse(objectData[1]);
-					var assetFields = Company.FieldTypes
-						.Where(f => f.IssueTypeID == objectId && !excludedTypes.Contains(f.Type))
-						.ToList();
+
+					List<FieldType> assetFields;
+
+					if (objectType == "IssueType")
+					{
+						assetFields = Company.FieldTypes
+							.Where(f => f.IssueTypeID == objectId && !excludedTypes.Contains(f.Type))
+							.ToList();
+
+					}
+					else if (objectType == "IntersectType")
+					{
+						assetFields = Company.FieldTypes
+							.Where(f => f.IntersectTypeID == objectId && !excludedTypes.Contains(f.Type))
+							.ToList();
+
+					}
+					else
+					{
+					     var assetTypeIdAddiField = Company.AssetTypes.Where(a => a.Object == objectType && a.ObjectID == objectId).FirstOrDefault()?.ID;
+						 assetFields = Company.FieldTypes
+								.Where(f => f.AssetTypeID == assetTypeIdAddiField && !excludedTypes.Contains(f.Type))
+								.ToList();
+					}
 
 					fields = fields.Union(assetFields).ToList();
 				}
