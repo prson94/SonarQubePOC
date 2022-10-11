@@ -22,6 +22,8 @@ import { StateService } from '../../../services/state.service';
 import { BaseComponent } from '../../shared/base.component';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
 
+/*global $localize*/
+
 @Component({
 	selector: 'd3s-admin-site-menu-folder-editor',
 	templateUrl: './admin-site-menu-folder-editor.component.html',

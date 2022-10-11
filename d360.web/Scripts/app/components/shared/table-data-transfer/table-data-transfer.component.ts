@@ -2,6 +2,8 @@ import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angu
 import { SiteNav } from '../../../models/site-menu.model';
 import { DefaultTableSettingsService } from '../../../services/settings/default-table-settings.service';
 
+/*global $localize*/
+
 @Component({
   selector: 'd3s-table-data-transfer',
   templateUrl: './table-data-transfer.component.html',
