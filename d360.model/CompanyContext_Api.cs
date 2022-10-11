@@ -3182,12 +3182,12 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 									drop table if exists #tempexecdelass;
 
-									select IntersectID, [Object], ObjectID
+									select IntersectID, [AssetID]
 									into #tempexecdelass
 									from api.ExecutionDeletedAsset S
 									where {querySuffix};
 
-									create nonclustered index [cix_tempexecdelass] on #tempexecdelass ([Object], ObjectID);
+									create nonclustered index [cix_tempexecdelass] on #tempexecdelass ([AssetID]);
 									create nonclustered index [cix_tempexecdelass2] on #tempexecdelass (IntersectID);
 
 									drop table if exists #tempintersect;
@@ -3204,12 +3204,12 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									insert into #tempintersect (IntersectID)
 									select T.ID
 									from [Intersect] T 
-									where exists (select 1 from #tempexecdelass S where S.Object = T.Subject and S.ObjectID = T.SubjectID);
+									where exists (select 1 from #tempexecdelass S where S.AssetID = T.SubjectAssetID);
 
 									insert into #tempintersect (IntersectID)
 									select T.ID
 									from [Intersect] T 
-									where exists (select 1 from #tempexecdelass S where S.Object = T.Object and S.ObjectID = T.ObjectID);
+									where exists (select 1 from #tempexecdelass S where S.AssetID = T.ObjectAssetID);
 
 									create nonclustered index [cix_tempintersect] on #tempintersect(IntersectID, id);
 
@@ -3935,8 +3935,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									I.intersecttypeid = IST.ID
 									inner join api.ExecutionDeletedRelationshipType ER on ER.UID = IST.UID 
 									where ER.ExecutionID = @ExecutionID 
-									and ER.Success is null) S on T.ObjectType = 'Intersect' 
-									and S.ID = T.ObjectID ;
+									and ER.Success is null) S on S.ID = T.IntersectID ;
 
 							delete FT
 							from    [FieldType] FT
