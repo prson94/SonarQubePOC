@@ -1205,13 +1205,16 @@
         <div class="row">
             <div class="col s12">
                 <div style="padding-top:10px">
-                    <button pButton
+                    <button igButton
+							class="ig-button-primary"
                             type="submit"
+							margin
                             [igDataCy]="'FieldType_Button_Save'"
                             [disabled]="!fieldEditor.form.valid || !displayFieldSelected ||  !valid() || errorMessage != ''"
                             i18n-label
                             label="Save"></button>
-                    <button pButton
+                    <button igButton
+							class="ig-button-secondary"
                             type="button"
                             [igDataCy]="'FieldType_Button_Cancel'"
                             i18n-label

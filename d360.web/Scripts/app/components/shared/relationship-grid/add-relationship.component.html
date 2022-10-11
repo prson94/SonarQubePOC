@@ -60,7 +60,7 @@
             </p-table>
 
             <div class="action-bar no-padding">
-                <button igButton igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
+                <button igButton class="ig-button-secondary" igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
                 <span class="grow"></span>
                 <button igButton class="ig-button-primary" i18n-label label="Select Assets > " (click)="currentStep = 'SetAssets'" [disabled]="!selectedRelationshipType?.uid"></button>
             </div>
@@ -72,7 +72,7 @@
                     <div class="panel-header">
                         <span class="header-label" i18n>Information</span>
                         <div class="side-panel-button-container">
-                            <button igButton icon="fa-close" i18n-pTooltip pTooltip="Close side panel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" (click)="previewAssetUid = '';higlightedItem=null;"></button>
+                            <button igButton class="ig-button-primary" icon="fa-close" i18n-pTooltip pTooltip="Close side panel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" (click)="previewAssetUid = '';higlightedItem=null;"></button>
                         </div>
                     </div>
                 </div>
@@ -101,9 +101,9 @@
             </div>
 
             <div class="action-bar no-padding">
-                <button igButton igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
+                <button igButton class="ig-button-secondary" igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
                 <span class="grow"></span>
-                <button igButton class="back-button" igAutoFocus i18n-label label="Back" (click)="currentStep = 'SetRelationshipType';previewAssetUid = '';higlightedItem=null;resetSelectedAssets()"></button>
+                <button igButton class="back-button ig-button-secondary" igAutoFocus i18n-label label="Back" (click)="currentStep = 'SetRelationshipType';previewAssetUid = '';higlightedItem=null;resetSelectedAssets()"></button>
 
                 <button *ngIf="selectedRelationshipHasCustomFields" igButton class="ig-button-primary" i18n-label label="Set Relationship Properties > " (click)="confirmAssets();" [disabled]="!selectedAssets || selectedAssets.length === 0"></button>
                 <button *ngIf="!selectedRelationshipHasCustomFields" igButton class="ig-button-primary" i18n-label label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? addRelationshipsPlural : addRelationshipsSingular}}" (click)="saveRelationships();" [disabled]="!selectedAssets || selectedAssets.length === 0 || savingInProgress" [loading]="savingInProgress"></button>
@@ -126,9 +126,9 @@
                               (modelChanged)="updateFields($event)"></asset-editor>
             </div>
             <div class="action-bar no-padding">
-                <button igButton igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
+                <button igButton class="ig-button-secondary" igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
                 <span class="grow"></span>
-                <button igButton class="back-button" igAutoFocus i18n-label label="Back" (click)="currentStep = 'SetAssets'"></button>
+                <button igButton class="ig-button-secondary back-button" igAutoFocus i18n-label label="Back" (click)="currentStep = 'SetAssets'"></button>
                 <button igButton class="ig-button-primary" i18n-label label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? addRelationshipsPlural : addRelationshipsSingular}}" (click)="saveRelationships();" [disabled]="savingInProgress || !dynamicEditor.isFormValid()" [loading]="savingInProgress"></button>
             </div>
         </ng-container>

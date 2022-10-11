@@ -56,12 +56,15 @@
         <div i18n>
             Are you sure you want to delete the [{{selectedShortcut.Name}}] shortcut?
         </div>
-        <button pButton
+        <button igButton
+				class="ig-button-primary"
+				margin
                 type="button"
                 i18n-label
                 label="Delete"
                 (click)="confirmDelete()"></button>
-        <button pButton
+        <button igButton
+				class="ig-button-secondary"
                 type="button"
                 i18n-label
                 label="Cancel"

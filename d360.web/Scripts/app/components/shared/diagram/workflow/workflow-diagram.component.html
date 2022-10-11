@@ -104,20 +104,25 @@
          style="position: absolute; top: 137px; width: 100%;">
         <div class="col s6">
             <div>
-                <button pButton
+                <button igButton
+						class="ig-button-secondary"
+						margin
                         type="button"
                         i18n-label
                         label="Back"
                         (click)="backClick()"></button>
-                <button pButton
+                <button igButton
                         type="button"
-                        label="Save"
+						class="ig-button-primary"
+						margin
+						label="Save"
                         i18n-label
                         (click)="save()"
                         [disabled]="!isValid"></button>
-                <button pButton
+                <button igButton
                         type="button"
-                        label="Publish"
+						class="ig-button-primary"
+						label="Publish"
                         i18n-label
                         (click)="save(true)"
                         [disabled]="!isValid"></button>

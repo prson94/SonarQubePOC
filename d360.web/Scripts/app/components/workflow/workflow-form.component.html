@@ -109,31 +109,37 @@
                             <div class="col s12"
                                  *ngIf="reassignType">
                                 <div class="FieldName">&nbsp;</div>
-                                <button pButton
+								<button igButton
+										class="ig-button-secondary"
+										type="button"
+										margin
+										(click)="isReassignEnabled = false"
+										style="width: 150px;"
+										i18n-label
+										label="Cancel"></button>
+								<button igButton
+										class="ig-button-primary"
                                         type="button"
                                         (click)="reassign()"
                                         [disabled]="selectedReassignResource == null && selectedReassignmentAsset?.ID == null"
                                         style="width: 150px;"
                                         i18n-label
                                         label="Assign"></button>
-                                <button pButton
-                                        type="button"
-                                        (click)="isReassignEnabled = false"
-                                        style="width: 150px;"
-                                        i18n-label
-                                        label="Cancel"></button>
                             </div>
                         </div>
                     </div>
                     <div class="col s12">&nbsp;</div>
                     <div class="col s12" *ngIf="!isReassignEnabled">
-                        <button pButton
+                        <button igButton
+								class="ig-button-primary"
                                 type="submit"
+								margin
                                 [disabled]="!workflowForm.valid || isReassignEnabled"
                                 style="width: 150px;"
                                 i18n-label
                                 label="Submit"></button>
-                        <button pButton
+                        <button igButton
+								class="ig-button-secondary"
                                 *ngIf="hasCloseButton"
                                 type="button"
                                 (click)="close();"
@@ -151,7 +157,8 @@
                 <div class="col s12" i18n>Thank you, your responses have been submitted.</div>
                 <div class="col s12">&nbsp;</div>
                 <div class="col s12">
-                    <button pButton
+                    <button igButton
+							class="ig-button-primary"
                             *ngIf="hasCloseButton"
                             type="button"
                             (click)="close();"
@@ -168,7 +175,8 @@
                 <div class="col s12" i18n>You currently do not have access to complete this form.</div>
                 <div class="col s12">&nbsp;</div>
                 <div class="col s12">
-                    <button pButton
+                    <button igButton
+							class="ig-button-primary"
                             *ngIf="hasCloseButton"
                             type="button"
                             (click)="close();"
@@ -185,7 +193,8 @@
                 <div class="col s12" i18n>The item for this form has been deleted.</div>
                 <div class="col s12">&nbsp;</div>
                 <div class="col s12">
-                    <button pButton
+                    <button igButton
+							class="ig-button-primary"
                             *ngIf="hasCloseButton"
                             type="button"
                             (click)="close();"
@@ -202,7 +211,8 @@
                 <div class="col s12" i18n>The form configuration is invalid.</div>
                 <div class="col s12">&nbsp;</div>
                 <div class="col s12">
-                    <button pButton
+                    <button igButton
+							class="ig-button-primary"
                             *ngIf="hasCloseButton"
                             type="button"
                             (click)="close();"

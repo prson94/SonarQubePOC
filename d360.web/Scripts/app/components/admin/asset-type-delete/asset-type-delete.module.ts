@@ -14,13 +14,13 @@ import { TreeTableModule } from 'primeng/treetable';
 import { EditorModule } from 'primeng/editor';
 
 import { AssetTypeDeleteComponent } from './asset-type-delete.component';
+import { DirectivesModule } from "../../../directives/directives.module";
 
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
-
 
 
         //prime
@@ -33,6 +33,7 @@ import { AssetTypeDeleteComponent } from './asset-type-delete.component';
         MultiSelectModule,
         SharedModule,
         TreeTableModule,
+        DirectivesModule
     ],
     declarations: [
         AssetTypeDeleteComponent

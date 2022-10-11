@@ -148,13 +148,16 @@
             </div>
             <div class="row">
                 <div class="col s12">
-                    <button pButton
+                    <button igButton
+							class="ig-button-primary"
                             type="button"
+							margin
                             i18n-label
                             label="Save"
                             (click)="save();"
                             [disabled]="(selectedType != '_custom' && selectedSynonym?.uid == null) || (selectedType == '_custom' && (!customSynonymName))"></button>
-                    <button pButton
+                    <button igButton
+							class="ig-button-secondary"
                             type="button"
                             i18n-label
                             label="Cancel"

@@ -189,8 +189,8 @@
         </div>
         <div class="row" style="padding-top:10px">
             <div class="col s12">
-                <button pButton type="button" i18n-label label="Cancel" (click)="cancel()"></button>
-                <button pButton type="button" label="{{buttonLabel}}" (click)="save()" [disabled]="!valid()"></button>
+                <button igButton class="ig-button-secondary" margin type="button" i18n-label label="Cancel" (click)="cancel()"></button>
+                <button igButton class="ig-button-primary" type="button" label="{{buttonLabel}}" (click)="save()" [disabled]="!valid()"></button>
             </div>
         </div>
     </div>
@@ -203,8 +203,8 @@
         </div>
         <div class="row">
             <div class="col s12">
-                <button pButton type="button" i18n-label label="Cancel" (click)="selectedField = null; formMode = FormMode.Default"></button>
-                <button pButton type="button" i18n-label label="Delete" (click)="confirmDelete()"></button>
+                <button igButton class="ig-button-secondary" margin type="button" i18n-label label="Cancel" (click)="selectedField = null; formMode = FormMode.Default"></button>
+                <button igButton class="ig-button-primary" type="button" i18n-label label="Delete" (click)="confirmDelete()"></button>
             </div>
         </div>
     </div>

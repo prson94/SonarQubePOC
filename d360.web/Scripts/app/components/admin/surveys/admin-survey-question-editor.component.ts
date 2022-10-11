@@ -50,8 +50,8 @@ import { cloneDeep } from 'lodash';
                         </div>
                         <div class="col l12 s12">&nbsp;</div>
                         <div class="col s12">
-                            <button pButton i18n-label type="submit" [disabled]="!questionEditorForm.form.valid" label="Save"></button>
-                            <button pButton i18n-label type="button" (click)="closeClick.emit();" label="Close"></button>
+                            <button igButton class="ig-button-primary" margin i18n-label type="submit" [disabled]="!questionEditorForm.form.valid" label="Save"></button>
+                            <button igButton class="ig-button-secondary" i18n-label type="button" (click)="closeClick.emit();" label="Close"></button>
                         </div>
                     </form>
                 </div> 

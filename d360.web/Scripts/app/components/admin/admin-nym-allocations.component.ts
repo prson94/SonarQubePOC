@@ -33,7 +33,8 @@ import { CompanySettingsService } from '../../services/settings.service';
             <div *ngIf="!readonly"
                  class="pull-right"
                  style="padding:5px">
-                <button pButton
+                <button igButton
+						class="ig-button-primary"
                         i18n-label
                         label="Save Changes"
                         (click)="save()"></button>

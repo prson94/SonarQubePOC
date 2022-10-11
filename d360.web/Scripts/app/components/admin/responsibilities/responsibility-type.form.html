@@ -36,8 +36,8 @@
             <div class="row">
                 <div class="col s12">
                     <div style="padding-top:10px;">
-                        <button pButton label="{{saveLabel}}" type="submit" [disabled]="!isValid()"></button>
-                        <button pButton label="{{cancelLabel}}" type="button" (click)="cancel()"></button>
+                        <button igButton class="ig-button-primary" margin label="{{saveLabel}}" type="submit" [disabled]="!isValid()"></button>
+                        <button igButton class="ig-button-secondary" label="{{cancelLabel}}" type="button" (click)="cancel()"></button>
                     </div>
                 </div>
             </div>

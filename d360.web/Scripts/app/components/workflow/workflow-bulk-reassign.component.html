@@ -37,9 +37,8 @@
             </div>
             <div class="row">
                 <div class="col s6 m10 l12">
-                    <button *ngIf="isLoading" pButton type="button" icon="fa fa-spin fa-spinner" style="width: 150px;" [disabled]="true"></button>
-                    <button *ngIf="!isLoading" i18n-label pButton type="submit" (click)="save()" label="Submit" style="width: 150px;" [disabled]="!valid()"></button>
-                    <button pButton type="button" i18n-label (click)="onClose.emit()" label="Close" style="width: 150px;"></button>
+					<button igButton class="ig-button-primary" margin [loading]="isLoading" i18n-label type="submit" (click)="save()" label="Submit" style="width: 150px;" [disabled]="!valid()"></button>
+					<button igButton class="ig-button-secondary" type="button" i18n-label (click)="onClose.emit()" label="Close" style="width: 150px;"></button>
                 </div>
             </div>
         </div>

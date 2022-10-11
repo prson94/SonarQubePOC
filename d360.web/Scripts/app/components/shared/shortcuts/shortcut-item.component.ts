@@ -96,15 +96,15 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 <img *ngIf="iconImage != null && iconImage.dataUrl != null" [src]="iconImage.dataUrl" style="max-width: 72px; max-height: 128px;" />
                 <img *ngIf="shortcut.IconPayload == null && iconImage.dataUrl == null && shortcut.FullURL != null" [src]="shortcut.FullURL" style="max-width: 72px; max-height: 127px;" />
                 <div *ngIf="shortcut.IconPayload != null || shortcut.IconUrl != null">
-                    <button pButton type="button" i18n-label label="Clear" (click)="clearIcon()"></button>
+                    <button igButton class="ig-button-primary" type="button" i18n-label label="Clear" (click)="clearIcon()"></button>
                 </div>
             </div>
         </div>
     </div>
     <div class="row" style="padding-top:12px">
         <div class="col s12">
-            <button pButton type="button" i18n-label label="Save" (click)="save()" [disabled]="!valid()"></button>
-            <button pButton type="button" i18n-label label="Cancel" (click)="cancel()"></button>
+            <button igButton class="ig-button-primary" margin type="button" i18n-label label="Save" (click)="save()" [disabled]="!valid()"></button>
+            <button igButton class="ig-button-secondary" type="button" i18n-label label="Cancel" (click)="cancel()"></button>
         </div>
     </div>
 </div>

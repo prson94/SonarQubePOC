@@ -23,12 +23,15 @@
 	<div class="col s12">&nbsp;</div>
 </div>
 <div class="row">
-	<button pButton
+	<button igButton
+			class="ig-button-primary"
 			(click)="delete()"
 			[attr.data-cy]="'AssetType_Button_Delete'"
 			label="{{labelDelete}}"
+			margin
 			[disabled]="isLoading || (count > 0 && !signoff)"></button>
-	<button pButton
+	<button igButton
+			class="ig-button-secondary"
 			(click)="cancel()"
 			[attr.data-cy]="'AssetType_Button_Cancel'"
 			label="{{labelCancel}}"></button>

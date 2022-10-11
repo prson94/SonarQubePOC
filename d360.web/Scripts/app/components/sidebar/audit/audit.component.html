@@ -8,6 +8,7 @@
                          tooltipPosition="left"
                          tooltipStyleClass="ig-tooltip">
                         <button igButton
+								class="ig-button-secondary"
                                 [disabled]="!canExportRecords() || isExportInProgress"
                                 icon="fa-download"
                                 [loading]="isExportInProgress"

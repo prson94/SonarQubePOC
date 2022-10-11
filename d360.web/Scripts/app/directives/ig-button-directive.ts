@@ -7,6 +7,8 @@
 import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
+import { coerceBooleanProperty } from '@angular/cdk/coercion';
+
 
 @Directive({
     selector: '[igButton]'
@@ -18,6 +20,7 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
     public _label: string;
     public _icon: string;
     public _loading: boolean;
+	public _margin: boolean;
 
     constructor(public el: ElementRef) { }
 
@@ -32,12 +35,15 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
 
     getStyleClass(): string {
         let styleClass = 'ig-button';
-        if (!this.label) {
+        if (!this.label && this.icon) {
             styleClass = styleClass + ' ig-button-icon-only';
         }
         if (this.darkMode) {
             styleClass += ' ig-button-dark';
         }
+		if (this.margin) {
+			styleClass += ' ig-button-margin';
+		}
         return styleClass;
     }
 
@@ -114,6 +120,14 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
             DomHandler.removeClass(this.el.nativeElement, "ig-state-loading");
         }
     }
+	
+	@Input() get margin(): boolean {
+		return this._margin;
+	}
+	
+	set margin(value: boolean) {
+		this._margin = coerceBooleanProperty(value);
+	}
 
     ngOnDestroy() {
         while (this.el.nativeElement.hasChildNodes()) {

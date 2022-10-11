@@ -59,8 +59,8 @@
             <span style="color:maroon;" i18n>An error occurred while uploading the file: {{errorMessage}}</span>
         </div>
         <div class="col s12" style="padding-top:15px;">
-            <button pButton type="submit" label="{{saveLabel}}" [disabled]="!file || !showDetail() || isSaving"></button>
-            <button pButton label="{{cancelLabel}}" (click)="cancel()"></button><i *ngIf="isSaving" class="fa fa-spinner fa-spin"></i>
+            <button igButton class="ig-button-primary" margin type="submit" label="{{saveLabel}}" [disabled]="!file || !showDetail()" [loading]="isSaving"></button>
+            <button igButton class="ig-button-secondary" label="{{cancelLabel}}" (click)="cancel()"></button>
         </div>
     </div>
 </form>

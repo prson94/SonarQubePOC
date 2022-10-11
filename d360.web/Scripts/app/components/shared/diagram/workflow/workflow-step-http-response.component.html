@@ -66,17 +66,18 @@
             </div>
         </div>
         <div class="col s12" style="padding-top: 8px;">
-            <button *ngIf="isAdding" pButton label="Add" (click)="addOutput()"></button>
-            <button *ngIf="isEditing" pButton label="Edit" (click)="editOutput()"></button>
-            <button pButton label="Cancel" (click)="cancel()"></button>
-        </div>
+			<button igButton class="ig-button-secondary" margin label="Cancel" (click)="cancel()"></button>
+			<button *ngIf="isEditing" igButton class="ig-button-primary" label="Edit" (click)="editOutput()"></button>
+			<button *ngIf="isAdding" igButton class="ig-button-primary" label="Add" (click)="addOutput()"></button>
+		</div>
     </div>
     <div class="row" *ngIf="isDeleting">
         <div class="col s12" i18n>
             Are you sure you want to delete {{selectedRow.Name}}?
         </div>
         <div class="col s12">
-            <button pButton i18-label label="Delete" (click)="removeOutput()"></button>
-            <button pButton i18-label label="Cancel" (click)="cancel()"></button>
+            <button igButton class="ig-button-primary" i18-label label="Delete" (click)="removeOutput()" margin></button>
+            <button igButton class="ig-button-secondary" i18-label label="Cancel" (click)="cancel()"></button>
         </div>
     </div>
+</div>

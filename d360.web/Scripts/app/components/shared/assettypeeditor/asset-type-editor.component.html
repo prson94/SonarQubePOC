@@ -171,7 +171,9 @@
         <div class="row">
             <div class="col s12">
                 <div style="padding-top:10px;">
-                    <button pButton
+                    <button igButton
+							class="ig-button-primary"
+							margin
                             i18n-label
                             label="Save"
                             type="submit"
@@ -179,7 +181,8 @@
                             [igDataCy]="'AssetType_Button_Save'"
                             [disabled]="!form.form.valid || isSaving || (model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor)">
                     </button>
-                    <button pButton
+                    <button igButton
+							class="ig-button-secondary"
                             i18n-label
                             label="Cancel"
                             (click)="cancel()"

@@ -71,9 +71,9 @@
         </div>
         <div class="row" style="padding-top:12px">
             <div class="col s12">
-                <button pButton type="button" i18n-label label="Save" (click)="addNew(name.value,url.value,description.value)" [disabled]="!validAdd(name.value,url.value)"></button>
-                <button pButton type="button" i18n-label label="Cancel" (click)="closeSave()"></button>
-            </div>
+                <button igButton class="ig-button-secondary" margin type="button" i18n-label label="Cancel" (click)="closeSave()"></button>
+				<button igButton class="ig-button-primary " type="button" i18n-label label="Save" (click)="addNew(name.value,url.value,description.value)" [disabled]="!validAdd(name.value,url.value)"></button>
+			</div>
         </div>
     </div>
     <div *ngSwitchCase="FormMode.Editing">
@@ -97,8 +97,8 @@
         </div>
         <div class="row" style="padding-top:12px">
             <div class="col s12">
-                <button pButton type="button" label="Save" (click)="closeSave()" [disabled]="!valid()"></button>
-                <button pButton type="button" label="Cancel" (click)="cancel()"></button>
+                <button igButton class="ig-button-primary" margin type="button" label="Save" (click)="closeSave()" [disabled]="!valid()"></button>
+                <button igButton class="ig-button-secondary" type="button" label="Cancel" (click)="cancel()"></button>
             </div>
         </div>
     </div>
@@ -106,11 +106,14 @@
         <div>
             Are you sure you want to delete the menu item '{{selectedItem.Name}}'?
         </div>
-        <button pButton
+        <button igButton
+				class="ig-button-primary"
+				margin
                 type="button"
                 label="Delete"
                 (click)="confirmDelete()"></button>
-        <button pButton
+        <button igButton
+				class="ig-button-secondary"
                 type="button"
                 label="Cancel"
                 (click)="formMode = FormMode.Default"></button>

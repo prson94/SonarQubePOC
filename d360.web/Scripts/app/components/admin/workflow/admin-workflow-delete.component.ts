@@ -16,8 +16,8 @@ import { CompanySettingsService } from '../../../services/settings.service';
 </div>
 <div class="row" style="padding-top:10px;">
     <div class="col s12">
-        <button pButton i18n-label label="Delete" (click)="delete()" [disabled]="isLoading"></button>
-        <button pButton i18n-label label="Cancel" (click)="onCancel.emit()"></button>
+        <button igButton class="ig-button-primary" margin i18n-label label="Delete" (click)="delete()" [disabled]="isLoading"></button>
+        <button igButton class="ig-button-secondary" i18n-label label="Cancel" (click)="onCancel.emit()"></button>
     </div>
 </div>
 `

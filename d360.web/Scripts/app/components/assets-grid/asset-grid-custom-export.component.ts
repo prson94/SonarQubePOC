@@ -19,7 +19,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                     </div>  
                     <div class="col s12">&nbsp;</div>
                     <div class="col s12 buttons">
-                        <button pButton type="button" style="width: '150px';" i18n-label label="Close" (click)="closeClick.emit()"></button>                        
+                        <button igButton class="ig-button-primary" type="button" style="width: 150px;" i18n-label label="Close" (click)="closeClick.emit()"></button>                        
                     </div>                    
                 </div>        
                 `,
