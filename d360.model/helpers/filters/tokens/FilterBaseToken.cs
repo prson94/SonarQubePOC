@@ -41,7 +41,18 @@ namespace d360.model.helpers.filters
         {
             get
             {
-                return defaultFilter == null ? fieldType.Type.ToLower(CultureInfo.InvariantCulture) : defaultFilter.SqlFieldType.ToString().ToLower(CultureInfo.InvariantCulture);
+				if (defaultFilter != null)
+				{
+					return defaultFilter.SqlFieldType.ToString().ToLower(CultureInfo.InvariantCulture);
+				}
+
+				var isValidFieldFromRelationship = (fieldType.LookupObjectFieldTypeID > 0 && fieldType.Type == "FieldFromRelationship");
+				if (isValidFieldFromRelationship)
+				{
+					return this.dataProvider.GetFieldTypeById(fieldType.LookupObjectFieldTypeID).Type.ToLower(CultureInfo.InvariantCulture);
+				}
+
+				return fieldType.Type.ToLower(CultureInfo.InvariantCulture);
             }
         }
 
@@ -331,8 +342,7 @@ namespace d360.model.helpers.filters
 
         protected IFieldValueValidator GetValueValidator()
         {
-            string ft = defaultFilter == null ? fieldType.Type : defaultFilter.SqlFieldType.ToString();
-            switch (ft.ToLowerInvariant())
+            switch (this.CurrentFieldType)
             {
                 case "number":
                 case "counter":

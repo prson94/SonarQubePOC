@@ -950,18 +950,7 @@ namespace d360.model.DataAccessLayer
 					var tempArgs = new DynamicParameters();
 					var tempJoins = new DynamicQueryJoins();
 					var tempFieldColumns = new DynamicQuerySelects();
-					List<Tuple<int, string>> originalTypeMappings = new List<Tuple<int, string>>();
 
-					//handle field types in case "Field from relationship"
-					foreach (var ft in allFieldTypes.Where(x => x.LookupObjectFieldTypeID > 0 && x.Type == "FieldFromRelationship"))
-					{
-						var origFieldType = CompanyContext.FieldTypes.FirstOrDefault(x => x.ID == ft.LookupObjectFieldTypeID);
-						if (origFieldType != null)
-						{
-							originalTypeMappings.Add(new Tuple<int, string>(ft.ID, ft.Type));
-							ft.Type = origFieldType.Type;
-						}
-					}
 					getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
 					var filterDataProvider = new FilterDataProvider(CompanyContext);
@@ -986,15 +975,6 @@ namespace d360.model.DataAccessLayer
 
 					if (includeOnlyListableFields || includeFieldsList.Any())
 					{
-						if (originalTypeMappings.Count > 0)
-						{
-							foreach (var item in originalTypeMappings)
-							{
-								var ft = allFieldTypes.FirstOrDefault(x => x.ID == item.Item1);
-								ft.Type = item.Item2;
-							}
-						}
-
 						tempArgs = new DynamicParameters();
 						tempJoins.Clear();
 						tempFieldColumns.Clear();
