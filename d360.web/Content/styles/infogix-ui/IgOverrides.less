@@ -4,11 +4,32 @@
 
  /* Fix general theme. Theme usage: table-data-transfer component */
 .table-theme-1 {
-    p-table tbody.p-datatable-tbody > tr { /* stylelint-disable-line selector-type-no-unknown */
+    tbody.p-datatable-tbody > tr {
         border-bottom: none;
     }
 
-    p-table .p-datatable-tbody > tr > td { /* stylelint-disable-line selector-type-no-unknown */
+    .p-datatable-thead > tr > th,
+    .p-datatable-tfoot > tr > td,
+    .p-datatable-tbody > tr > td,
+    .p-datatable-data > tr > td {
+        height: 38px;
+    }
+
+    .p-datatable-tbody > tr > td {
         border-bottom: 1px solid @ig-grey-t5;
+    }
+
+    tbody.p-datatable-tbody > tr.p-highlight {
+        border-bottom: none;
+    }
+}
+
+ /* Components */
+.data-transfer-controls {
+    .button-up,
+    .button-down {
+        .ig-button-icon {
+            font-size: 18px;
+        }
     }
 }

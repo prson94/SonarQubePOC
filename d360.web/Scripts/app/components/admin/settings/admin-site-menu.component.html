@@ -9,7 +9,7 @@
 			<button igButton (click)="showAssetTypeModelDialog = true" i18n-label label="Add Asset Type" style="margin-right:11px"></button>
 		</div>
 		<p-table #dt [value]="companySettings.SiteNav" selectionMode="single" [metaKeySelection]="true" [(selection)]="selection"
-				 [scrollable]="true" scrollHeight="420px" style="margin-left:16px">
+				 [scrollable]="true" scrollHeight="420px">
 			<ng-template pTemplate="header">
 				<tr>
 					<th style="min-width: 600px" i18n>Name</th>

@@ -56,8 +56,14 @@ export class SiteNavPermission {
     SiteNavID: number;
     Object: string;
     ObjectID: number;
-
     Name: string;
+}
+
+export class SiteNavPermissionUID {
+    Text: string;
+    Value: string;
+    Type: string;
+    uid: string;
 }
 
 export class NavigationState {

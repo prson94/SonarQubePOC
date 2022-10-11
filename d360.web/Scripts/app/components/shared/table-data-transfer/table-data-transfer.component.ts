@@ -1,25 +1,39 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { cloneDeep } from 'lodash';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { SiteNav } from '../../../models/site-menu.model';
 import { DefaultTableSettingsService } from '../../../services/settings/default-table-settings.service';
+
+/*global $localize*/
 
 @Component({
   selector: 'd3s-table-data-transfer',
   templateUrl: './table-data-transfer.component.html',
   styleUrls: ['./table-data-transfer.component.less']
 })
-export class TableDataTransferComponent implements OnInit {
-  @Input() sourceTableTitle: string = 'Source Table Title';
-  @Input() targetTableTitle: string = 'Target Table Title';
+export class TableDataTransferComponent {
+  @Input() isTargetDataReorderable: boolean = false;
+  @Input() isRequired: boolean = true;
+  @Input() emptyTargetTableMessage: string = $localize`Please select at least one item`;
+  @Input() emptySourceTableMessage: string = $localize`No available items`;
+  @Input() infoButton: boolean = false;
+  @Input() isSortButtons: boolean = false;
+  @Input() targetTableSortProperty: string = 'SortOrder';
+  @Input() itemsNameProperty: string = 'Title';
+  @Input() sourceTableTitle: string = $localize`Source Table Title`;
+  @Input() targetTableTitle: string = $localize`Target Table Title`;
   @Input() itemsFromSource: any[] = [];
   @Input() itemsFromTarget: any[] = [];
-  @Output() targetDataChangeEvent = new EventEmitter<any[]>();
+  @Input() isItemsFromSourceLoading: boolean = true;
+  @Input() isItemsFromTargetLoading: boolean = true;
+  @Output() itemsFromSourceChange = new EventEmitter<any[]>();
+  @Output() itemsFromTargetChange = new EventEmitter<any[]>();
+  @Output() showInfoEvent = new EventEmitter<object>();
 
+  viewingItem: object;
   sourceTableSearchValue: string = '';
   targetTableSearchValue: string = '';
   selectedItemsFromSource: any[] = [];
   selectedItemsFromTarget: any[] = [];
-
+  
   constructor(
     public cdRef: ChangeDetectorRef,
     public defaultTableSettingsService: DefaultTableSettingsService,
@@ -34,9 +48,6 @@ export class TableDataTransferComponent implements OnInit {
     return this.selectedItemsFromTarget.findIndex((selectedItem): boolean => {
       return selectedItem.ObjectID === this.itemsFromTarget[lastIndex].ObjectID && selectedItem.Object === this.itemsFromTarget[lastIndex].Object; // eslint-disable-line
     }) > -1;
-  }
-
-  ngOnInit(): void {
   }
 
   setIndexes(arrayOfObjects: object[]): void {
@@ -61,12 +72,23 @@ export class TableDataTransferComponent implements OnInit {
     array.sort((a, b) => b.index - a.index);
   }
 
+  setSortOrder(array: any[]) {
+    array = array.map((item, index) => {
+      item[this.targetTableSortProperty] = index;
+    });
+  }
+
+  onRowReorder() {
+    this.setSortOrder(this.itemsFromTarget);
+  }
+
   moveUp() {
     this.setIndexes(this.itemsFromTarget);
     this.sortArrayByIndexes(this.selectedItemsFromTarget);
     this.selectedItemsFromTarget.forEach((selectedItemFromTarget: SiteNav) => {
       this.itemsFromTarget.splice(selectedItemFromTarget.index - 1, 0, this.itemsFromTarget.splice(selectedItemFromTarget.index, 1)[0]);
     });
+    this.setSortOrder(this.itemsFromTarget);
     this.itemsFromTarget = [...this.itemsFromTarget];
   }
 
@@ -76,6 +98,7 @@ export class TableDataTransferComponent implements OnInit {
     this.selectedItemsFromTarget.forEach((selectedItemFromTarget: SiteNav) => {
       this.itemsFromTarget.splice(selectedItemFromTarget.index + 1, 0, this.itemsFromTarget.splice(selectedItemFromTarget.index, 1)[0]);
     });
+    this.setSortOrder(this.itemsFromTarget);
     this.itemsFromTarget = [...this.itemsFromTarget];
   }
 
@@ -86,6 +109,7 @@ export class TableDataTransferComponent implements OnInit {
         this.itemsFromTarget.splice(j, 0, this.itemsFromTarget.splice(x, 1)[0]);
       }
     }
+    this.setSortOrder(this.itemsFromTarget);
     this.itemsFromTarget = [...this.itemsFromTarget];
   }
 
@@ -97,41 +121,52 @@ export class TableDataTransferComponent implements OnInit {
         this.itemsFromTarget.splice(newPosition - 1, 0, this.itemsFromTarget.splice(x, 1)[0]);
       }
     }
+    this.setSortOrder(this.itemsFromTarget);
     this.itemsFromTarget = [...this.itemsFromTarget];
   }
 
   moveFromSourceToTarget() {
-    for (let j = 0; j < this.selectedItemsFromSource.length; j++) {
-      if (this.itemsFromTarget.indexOf(this.selectedItemsFromSource[j]) === -1) { // eslint-disable-line
-        this.itemsFromTarget.push(this.selectedItemsFromSource[j]); // eslint-disable-line
-        this.itemsFromSource = this.itemsFromSource.filter((x) => x != this.selectedItemsFromSource[j]); // eslint-disable-line
-      }
-    }
-    this.itemsFromTarget = this.itemsFromTarget.sort((a, b) => a.Title.localeCompare(b.Title));
+    this.selectedItemsFromSource.forEach((selectedItemFromSource) => {
+      this.itemsFromTarget.push(selectedItemFromSource);
+      this.itemsFromSource = this.itemsFromSource.filter((itemFromSource) => itemFromSource !== selectedItemFromSource);
+    });
+
+    this.clearInfoPanel();
+
     this.selectedItemsFromSource = [];
+    this.setSortOrder(this.itemsFromTarget);
     this.itemsFromTarget = [...this.itemsFromTarget];
-    this.targetDataChangeEvent.emit(this.itemsFromTarget);
+    this.itemsFromSource = [...this.itemsFromSource];
+    this.itemsFromTargetChange.emit(this.itemsFromTarget);
     this.cdRef.markForCheck();
   }
 
   moveFromTargetToSource() {
-    for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
-      let x: number = this.itemsFromSource.findIndex((itemFromSource) => { 
-        return itemFromSource.ObjectID === this.selectedItemsFromTarget[j].ObjectID && itemFromSource.Object === this.selectedItemsFromTarget[j].Object; // eslint-disable-line
-      });
-      let y: number = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
-      if (y > -1) {
-        let i = cloneDeep(this.itemsFromTarget.splice(y, 1)[0]);
-        if (x === -1) {
-          this.itemsFromSource.push(i);
-        }
-      }
-    }
-    this.itemsFromSource = this.itemsFromSource.sort((a, b) => a.Title.localeCompare(b.Title));
+    this.selectedItemsFromTarget.forEach((selectedItemFromTarget) => {
+      this.itemsFromSource.push(selectedItemFromTarget);
+      this.itemsFromTarget = this.itemsFromTarget.filter((itemFromTarget) => itemFromTarget !== selectedItemFromTarget);
+    });
+
+    this.itemsFromSource.sort((a, b) => a[this.itemsNameProperty]?.localeCompare(b[this.itemsNameProperty]));
     this.selectedItemsFromTarget = [];
+    this.setSortOrder(this.itemsFromTarget);
     this.itemsFromTarget = [...this.itemsFromTarget];
     this.itemsFromSource = [...this.itemsFromSource];
-    this.targetDataChangeEvent.emit(this.itemsFromTarget);
+    this.itemsFromTargetChange.emit(this.itemsFromTarget);
     this.cdRef.markForCheck();
+  }
+
+  showInfo(item: object) {
+    this.viewingItem = item;
+    this.showInfoEvent.emit(item);
+  }
+
+  clearInfoPanel() {
+    if (this.viewingItem) {
+      let found = this.selectedItemsFromSource.find((selectedItemFromSource) => selectedItemFromSource === this.viewingItem);
+      if (found) {
+        this.showInfo({});
+      }
+    }
   }
 }
