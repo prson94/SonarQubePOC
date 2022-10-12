@@ -54,7 +54,7 @@
                                 </div>
                                 <div class="row" style="padding-top:10px;">
                                     <div class="col s12">
-                                        <button pButton label="Request Items" type="button" (click)="mode = CartMode.ConfirmRequest" [disabled]="cart.Request == null || cart.Request.length < 1"></button>
+                                        <button igButton label="Request Items" type="button" (click)="mode = CartMode.ConfirmRequest" [disabled]="cart.Request == null || cart.Request.length < 1"></button>
                                     </div>
                                 </div>
                             </div>
@@ -63,8 +63,8 @@
                     <div>
                         <div class="row">
                             <div class="col s12">
-                                <button pButton i18n-label label="Back" (click)="back()" type="button"></button>
-                                <button *ngIf="!cartIsEmpty" pButton i18n-label label="Clear Shopping Cart" (click)="mode = CartMode.ConfirmDelete"></button>
+                                <button igButton class="ig-button-secondary" margin i18n-label label="Back" (click)="back()" type="button"></button>
+                                <button *ngIf="!cartIsEmpty" igButton class="ig-button-primary" i18n-label label="Clear Shopping Cart" (click)="mode = CartMode.ConfirmDelete"></button>
                             </div>
                         </div>
                     </div>
@@ -77,8 +77,8 @@
                     </div>
                     <div class="row" style="padding-top:25px;">
                         <div class="col s12">
-                            <button pButton i18n-label label="Cancel" type="button" (click)="mode = CartMode.Default"></button>
-                            <button pButton i18n-label label="Submit" type="button" (click)="request()"></button>
+                            <button igButton class="ig-button-secondary" i18n-label label="Cancel" type="button" (click)="mode = CartMode.Default" margin></button>
+                            <button igButton class="ig-button-primary" i18n-label label="Submit" type="button" (click)="request()"></button>
                         </div>
                     </div>
                 </div>
@@ -90,8 +90,8 @@
                     </div>
                     <div class="row" style="padding-top:25px;">
                         <div class="col s12">
-                            <button pButton i18n-label label="Cancel" (click)="mode = CartMode.Default" type="button"></button>
-                            <button pButton i18n-label label="Clear" (click)="clear()"></button>
+                            <button igButton class="ig-button-secondary" i18n-label label="Cancel" (click)="mode = CartMode.Default" type="button" margin></button>
+                            <button igButton class="ig-button-primary" i18n-label label="Clear" (click)="clear()"></button>
                         </div>
                     </div>
                 </div>

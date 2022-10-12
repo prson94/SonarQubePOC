@@ -25,8 +25,8 @@
             <d3s-social-tag-input (selectTag)="addTag($event)"></d3s-social-tag-input>
         </div>
         <div class="col s2">
-            <button class="right" pButton type="button" [disabled]="isLoading" (click)="cancelClick()" i18n-label label="Cancel"></button>
-            <button class="right" pButton type="button" [disabled]="isLoading || !comment.Body" (click)="saveClick();" label="{{comment.Uid ? labelUpdate : labelPost}}"></button>
+            <button class="right ig-button-secondary" margin igButton type="button" [disabled]="isLoading" (click)="cancelClick()" i18n-label label="Cancel"></button>
+            <button class="right ig-button-primary" igButton type="button" [disabled]="isLoading || !comment.Body" (click)="saveClick();" label="{{comment.Uid ? labelUpdate : labelPost}}"></button>
         </div>
     </div>
 </div>

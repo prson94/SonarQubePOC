@@ -75,8 +75,8 @@
                         </div>
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
-                            <button pButton type="submit" [disabled]="!powerBICredsForm.form.valid" label="{{labelSave}}"></button>
-                            <button pButton type="button" (click)="showCredentials=false;" label="{{labelClose}}"></button>
+                            <button igButton class="ig-button-primary" margin type="submit" [disabled]="!powerBICredsForm.form.valid" label="{{labelSave}}"></button>
+                            <button igButton class="ig-button-secondary" type="button" (click)="showCredentials=false;" label="{{labelClose}}"></button>
                         </div>
                     </div>
                 </form>

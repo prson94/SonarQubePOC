@@ -91,8 +91,8 @@
         </p-table>
         <div [hidden]="!isAdmin">
             <div>
-                <button pButton type="button" (click)="selectAll()" i18n-label label="Select All" [disabled]="items.length < 1"></button>
-                <button pButton type="button" (click)="confirmDelete(true)" [label]="deleteLabel" [disabled]="selectedCount < 1"></button>
+                <button igButton type="button" class="ig-button-primary" margin (click)="selectAll()" i18n-label label="Select All" [disabled]="items.length < 1"></button>
+                <button igButton type="button" class="ig-button-primary" (click)="confirmDelete(true)" [label]="deleteLabel" [disabled]="selectedCount < 1"></button>
             </div>
             <p i18n>Use the {{getMetaKey()}} key to select multiple items.</p>
         </div>
@@ -104,8 +104,8 @@
         <div style="padding-left:10px;">
             <p>You have selected {{selectedCount}} workflow items.</p>
             <p>The deletion of workflow items cannot be undone.</p>
-            <button pButton type="button" (click)="deleteItems()" label="Delete Workflow Items" [disabled]="selectedCount < 1"></button>
-            <button pButton type="button" (click)="confirmDelete(false)" label="Cancel"></button>
+            <button igButton type="button" class="ig-button-primary" margin (click)="deleteItems()" label="Delete Workflow Items" [disabled]="selectedCount < 1"></button>
+            <button igButton type="button" class="ig-button-secondary" (click)="confirmDelete(false)" label="Cancel"></button>
         </div>
     </div>
 </div>

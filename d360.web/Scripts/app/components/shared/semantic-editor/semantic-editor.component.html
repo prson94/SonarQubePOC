@@ -205,7 +205,7 @@
                 <button *ngIf="!semanticType"
                         type="button"
                         [igDataCy]="'Semantic_Modal_Button_Another'"
-                        igButton
+                        igButton class="ig-button-secondary"
                         [disabled]="!semanticForm.valid || savingInProgress || !isValid()"
                         i18n-label
                         i18n-tooltip
@@ -216,9 +216,8 @@
                 </button>
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <button type="submit"
-                        class="ig-button-primary"
+						igButton class="ig-button-primary"
                         [igDataCy]="'Semantic_Modal_Button_Save'"
-                        igButton
                         [disabled]="!semanticForm.valid || savingInProgress || !hasFormChanged || !isValid()"
                         label="{{submitButtonLabel}}"
                         tooltip="{{submitButtonLabel}}"

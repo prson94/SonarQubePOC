@@ -45,8 +45,8 @@ import { CompanySettingsService } from '../../services/settings.service';
 </div>
 <div class="row" style="padding-top:15px;">
     <div class="col s12">
-        <button pButton i18n-label label="Cancel" type="button" (click)="onClose.emit()"></button>
-        <button pButton i18n-label label="Save" type="button" (click)="save()" [disabled]="isLoading || newPassword.length == 0 || newPassword2.length == 0 || !newPassword2Match || SamePasswordMatch || currentPassword.length == 0 || !newPasswordValid"></button>
+        <button igButton class="ig-button-secondary" margin i18n-label label="Cancel" type="button" (click)="onClose.emit()"></button>
+        <button igButton class="ig-button-primary" i18n-label label="Save" type="button" (click)="save()" [disabled]="isLoading || newPassword.length == 0 || newPassword2.length == 0 || !newPassword2Match || SamePasswordMatch || currentPassword.length == 0 || !newPasswordValid"></button>
     </div>
 </div>
 `,

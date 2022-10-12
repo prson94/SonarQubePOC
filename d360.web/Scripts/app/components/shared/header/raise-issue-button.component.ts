@@ -7,7 +7,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'd3s-raise-issue-button',
     template: `           
-        <button type="button"  class="issue-button" (click)="raiseIssue()" i18n>Take Action</button>
+        <button type="button" igButton class="ig-button-accent" (click)="raiseIssue()" i18n>Take Action</button>
         `,
     styles: [`
         :host{

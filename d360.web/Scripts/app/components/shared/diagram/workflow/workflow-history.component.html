@@ -74,7 +74,7 @@
 </div>
 <div *ngIf="formMode == FormMode.FormHistory">
     <div style="float: right">
-        <button pButton type="button" label="Back to history" (click)="formMode = FormMode.Default; selection = null;"></button>
+        <button igButton class="ig-button-primary" type="button" label="Back to history" (click)="formMode = FormMode.Default; selection = null;"></button>
     </div>
     <d3s-workflow-form-history [itemStepId]="selection.ItemStepID"
                                [settings]="selection.SettingsObject"

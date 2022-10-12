@@ -84,10 +84,13 @@ import { CompanySettingsService } from '../../../services/settings.service';
             <div>
                 <div class="row">
                     <div class="col s12">
-                        <button pButton
+                        <button igButton
+								class="ig-button-primary"
                                 label="{{labelSave}}"
+								margin
                                 (click)="save()"></button>
-                        <button pButton
+                        <button igButton
+								class="ig-button-secondary"
                                 type="button"
                                 (click)="reset()"
                                 label="{{labelRevert}}"></button>

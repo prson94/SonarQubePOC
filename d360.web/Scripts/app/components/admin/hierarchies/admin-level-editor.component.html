@@ -45,11 +45,14 @@
         </div>
         <div class="col s12">&nbsp;</div>
         <div class="col s12">
-            <button pButton
+            <button igButton
+					class="ig-button-primary"
                     [disabled]="!levelForm.form.valid"
                     type="submit"
-                    label="{{labelSave}}"></button>
-            <button pButton
+                    label="{{labelSave}}"
+					margin></button>
+            <button igButton
+					class="ig-button-secondary"
                     type="button"
                     (click)="close()"
                     label="{{labelCancel}}"></button>
@@ -64,7 +67,7 @@
         </div>
         <div class="col s12">&nbsp;</div>
         <div class="col s12">
-            <button pButton
+            <button igButton
                     type="button"
                     (click)="close()"
                     label="{{labelClose}}"></button>

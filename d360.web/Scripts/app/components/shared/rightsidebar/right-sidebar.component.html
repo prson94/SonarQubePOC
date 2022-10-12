@@ -19,9 +19,9 @@
                           [badgeValue]="badge"
                           [badgeType]="'Status'">
         </d3s-simple-badge>
-        <button igButton *ngIf="showCertify" (click)="requestCertification()"><span i18n>Request Certification</span></button>
+        <button igButton class="ig-button-primary" *ngIf="showCertify" (click)="requestCertification()"><span i18n>Request Certification</span></button>
         <span class="grow"></span>
-        <button igButton (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span i18n>Take Survey</span></button>
+        <button igButton class="ig-button-primary" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span i18n>Take Survey</span></button>
         <button igButton class="ig-button-primary" *ngFor="let button of buttons" (click)="button.dynamicCallback()" [ngClass]="{'loading': button.isLoading}" [disabled]="button.disabled">
             <span class="content">{{button.text}}</span>
             <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>

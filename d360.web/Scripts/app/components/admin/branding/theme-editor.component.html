@@ -213,7 +213,7 @@
             </form>
         </div>
         <div class="action-bar">
-            <button igButton igAutoFocus label="{{theme && changesMade ? labelDiscardChanges : labelCancel}}" (click)="cancel()"></button>
+            <button igButton class="ig-button-secondary" igAutoFocus label="{{theme && changesMade ? labelDiscardChanges : labelCancel}}" (click)="cancel()"></button>
             <span class="grow"></span>
             <button *ngIf="!isCurrentTheme" igButton class="ig-button-primary" label=" {{theme ? labelSaveChanges : labelCreate}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !formGroup.valid || (!changesMade && theme)"></button>
             <button *ngIf="isCurrentTheme" igButton class="ig-button-primary" label=" {{theme ? labelSaveChanges : labelCreate}}" (click)="confirmCurrentThemeSaveVisible = true" [disabled]="!formGroup.valid || (!changesMade && theme)"></button>
@@ -229,7 +229,7 @@
         Are you sure you want to make changes to the current theme, which will cause the app to look different the next time users refresh or log in?
     </div>
     <div class="action-bar">
-        <button igButton igAutoFocus i18n-label label="Cancel" (click)="confirmCurrentThemeSaveVisible = false" [disabled]="savingInProgress"></button>
+        <button igButton class="ig-button-secondary" igAutoFocus i18n-label label="Cancel" (click)="confirmCurrentThemeSaveVisible = false" [disabled]="savingInProgress"></button>
         <span class="grow"></span>
         <button igButton class="ig-button-primary" label=" {{theme ? labelApplyChanges : labelCreate}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !formGroup.valid"></button>
     </div>

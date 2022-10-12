@@ -68,8 +68,8 @@ import { CompanySettingsService } from "../../../services/settings.service";
             </div>
             <div class="row">
                 <div class="col s12 buttons">
-                    <button pButton type="submit" style="width: '150px';" label="{{labelSave}}" [disabled]="!styleForm.form.valid"></button>
-                    <button pButton type="button" style="width: '150px';" label="{{labelCancel}}" (click)="onCancel.emit(null)"></button>
+                    <button igButton type="submit" class="ig-button-primary" margin style="width: 150px;" label="{{labelSave}}" [disabled]="!styleForm.form.valid"></button>
+                    <button igButton type="button" class="ig-button-secondary" style="width: 150px;" label="{{labelCancel}}" (click)="onCancel.emit(null)"></button>
                 </div>
             </div>
         </form>
