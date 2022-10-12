@@ -177,8 +177,8 @@ END
 	</rollback>
   </changeSet> 
   
-    <changeSet author="bquinlivan" id="Table.dbo.Field-Field_AfterUpsert-v13">
-    <comment>GOV-18447</comment>
+    <changeSet author="Puneet Gupta" id="Table.dbo.Field-Field_AfterUpsert-v14">
+    <comment>GOV-19983, GOV-18447</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -205,15 +205,35 @@ AS
 		create table #insertedFields (ObjectType varchar(250), ObjectID int);
 		create clustered index IX_TempInsertedFields ON #insertedFields (ObjectType, ObjectID);
 
+		drop table if exists #distinctFieldTypeIDs;
+		create table #distinctFieldTypeIDs (ID int);
+		create clustered index IX_distinctFieldTypeIDs ON #distinctFieldTypeIDs (ID);
+		
+
+		insert into #distinctFieldTypeIDs
+		select distinct I.FieldTypeID
+		from inserted i
+		where exists (select 1 from deleted d where d.id = i.id);
+		
+		
 		insert into #insertedFields
 		select distinct
-			replace(FT.[Object],'Type',''),
-			FT.ObjectID
-		from inserted i
-		inner join FieldType FT on FT.ID = i.FieldTypeID
-		where exists (select 1 from deleted d where d.id = i.id);
-
-
+			replace(AT.[Object],'Type',''),
+			AT.ObjectID
+		from #distinctFieldTypeIDs i
+		inner join FieldType FT on FT.ID = i.ID
+		inner join assettype AT on AT.ID = FT.AssetTypeID and FT.AssetTypeID is not Null
+		union
+		select 'Intersect',
+			FT.IntersectTypeID
+		from #distinctFieldTypeIDs i
+		inner join FieldType FT on FT.ID = i.ID and FT.IntersectTypeID is not Null
+		union
+		select 'Issue',
+			FT.IssueTypeID
+		from #distinctFieldTypeIDs i
+		inner join FieldType FT on FT.ID = i.ID and FT.IssueTypeID is not Null;
+		
 		if exists(
 			select 1 from 	Field TF
 					inner join FieldType FT on FT.ID = TF.FieldTypeID
@@ -230,17 +250,6 @@ AS
 		end
 	end
 
-  -- only update the assetid field if one was not already provided
-  if exists( select 1 from inserted where AssetID is null )
-  begin
-		UPDATE	T
-		SET		T.AssetID = A.ID
-		FROM	Field T 
-				inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and T.AssetID is null
-				inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID;
-   end
-
-      
 	--------------------------------------------
    	-- audit field value changes													
 	--------------------------------------------
@@ -257,7 +266,7 @@ AS
 		select	distinct
 				@ActionName, 
 				a.Object, 
-				coalesce(i.AssetID,0),
+				coalesce(a.ObjectID,0),
 				(
 				select 	@ActionName as Action,
 						a.Object as ActionObject,
@@ -269,8 +278,7 @@ AS
 								f.FormattedValue as [Value] 
 						from	field f 
 								inner join fieldtype ft on f.fieldtypeid = ft.id 
-						where	f.objectid = i.objectid 
-								and f.objecttype = i.objecttype 
+						where	f.AssetID = i.AssetID 
 						for json path
 						) as Fields
 				from inserted i2 
@@ -282,7 +290,8 @@ AS
 		from	
 			inserted i 
 			inner join asset a on a.ID = i.AssetID
-		where	i.[ObjectType] != 'Intersect' and i.[ObjectType] != 'Group';
+			inner join AssetType Att on Att.ID = A.AssetTypeID
+		where Att.Class != 12 and I.[AssetID] Is not null;
 
 
 	-- handle relationships both sides need audit entries
@@ -305,8 +314,7 @@ AS
 									f.FormattedValue as [Value] 
 							from	field f 
 									inner join fieldtype ft on f.fieldtypeid = ft.id 
-							where	f.objectid = i.objectid 
-									and f.objecttype = i.objecttype 
+							where	f.IntersectID = i.IntersectID
 							for json path
 							) as Fields
 					from inserted i2 
@@ -337,12 +345,11 @@ AS
 									f.FormattedValue as [Value] 
 							from	field f 
 									inner join fieldtype ft on f.fieldtypeid = ft.id 
-							where	f.objectid = i.objectid 
-									and f.objecttype = i.objecttype 
+							where	f.IntersectID = i.IntersectID 
 							for json path
 							) as Fields
 					from inserted i2 
-					where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
+					where i2.IntersectID = i.IntersectID 
 					group by ObjectType, ObjectID, UpdatedBy
 					for json path, WITHOUT_ARRAY_WRAPPER
 					) as [Custom],
