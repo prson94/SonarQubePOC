@@ -378,7 +378,7 @@ namespace d360.web.Controllers
 					throw new ArgumentNullException(FormControllerApiMessage.FolderNameNotEmpty);
 				}
 
-				if (Company.SiteNav.Any(x => x.Title == model.Folder.Title))
+				if (model.Folder.Name != "#ASSET_TYPE" && Company.SiteNav.Any(x => x.Title == model.Folder.Title))
 				{
 					return new JsonNetResult
 					{
