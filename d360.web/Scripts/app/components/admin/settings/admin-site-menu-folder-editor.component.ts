@@ -545,6 +545,11 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.previewAssetType = item.Type;
 	}
 
+	closeSidePanel() {
+		this.clearInfoPanel();
+		this.higlightedItem = null;
+	}
+
 	clearInfoPanel() {
 		this.previewAssetUid = '';
 	}

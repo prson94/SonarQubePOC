@@ -24,11 +24,11 @@ export class TableDataTransferComponent {
   @Input() itemsFromTarget: any[] = [];
   @Input() isItemsFromSourceLoading: boolean = true;
   @Input() isItemsFromTargetLoading: boolean = true;
+  @Input() viewingItem: object;
   @Output() itemsFromSourceChange = new EventEmitter<any[]>();
   @Output() itemsFromTargetChange = new EventEmitter<any[]>();
   @Output() showInfoEvent = new EventEmitter<object>();
-
-  viewingItem: object;
+  
   sourceTableSearchValue: string = '';
   targetTableSearchValue: string = '';
   selectedItemsFromSource: any[] = [];
