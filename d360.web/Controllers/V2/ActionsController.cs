@@ -204,7 +204,7 @@ namespace d360.web.Controllers.V2
 						dbArgs.Add("actionTypeUid", actionTypeUid);
 
 						var fieldTypes = Company.Filter<FieldType>(f => f.IssueTypeID == issueType.ID).ToList();
-						getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "'Issue'", "I.ID");
+						getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "Issue", "I.ID");
 
 						foreach (FieldType customField in fieldTypes)
 						{
