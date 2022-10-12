@@ -483,10 +483,6 @@ namespace d360.model
         
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
         
-        void SendGraphAssetTypeEvent(Guid assetTypeUid);
-        
-        void SendApiGraphEvent(ApiExecutionInfo info);
-        
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
         
         List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600, bool sendWorkflowEvents = true);
@@ -523,7 +519,6 @@ namespace d360.model
 
 		void SendBatchApiCompletedEvent(ApiExecution execution);
 
-		void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false);
 		Task<IEnumerable<BulkTagAsset>> GetBulkTagAssetsAsync(int loadId, Guid executionId);
 
 		List<Guid> GetImpactedMeasureVersionsBy(MetricGovernanceCheckType check, int typeId);

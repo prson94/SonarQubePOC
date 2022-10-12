@@ -2082,7 +2082,7 @@ namespace d360.model.DataAccessLayer
 					var assetType = Company.GetById<AssetType>(assetTypeID.Value);
 					if (assetType != null)
 					{
-						Company.SendGraphAssetTypeEvent(assetType.uid);
+						// TODO: Add event grid calls here.
 					}
 				}
 			}

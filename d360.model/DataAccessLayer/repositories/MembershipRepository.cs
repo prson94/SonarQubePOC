@@ -1186,23 +1186,7 @@ namespace d360.model.DataAccessLayer
 
 					trans.Commit();
 
-					//Convert UserApiUpsertResult to DatabaseBulkAssetResult to use in SendAssetGraphEvents
-					IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r =>
-					{
-						return new DatabaseBulkAssetResult
-						{
-							ExecutionItemUid = r.ExecutionItemUid,
-							ItemNumber = r.ItemNumber,
-							uid = r.uid ?? Guid.Empty,
-							Message = r.Message,
-							Success = r.Success,
-							Object = SystemObjects.Resource.ToString()
-						};
-					}).AsEnumerable();
-					if (graphResults.Any())
-					{
-						CompanyContext.SendAssetGraphEvents(graphResults);
-					}
+					// TODO: Add event grid calls here.
 				}
 				catch (Exception)
 				{
