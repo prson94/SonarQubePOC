@@ -89,8 +89,6 @@ export class FieldType {
     MinimumLength: number;
     MaximumLength: number;
     Pattern: string;
-    Object: string;
-    ObjectID: number;
     IsDisplayable: boolean;
     IsEditable: boolean;
     IsListable: boolean;

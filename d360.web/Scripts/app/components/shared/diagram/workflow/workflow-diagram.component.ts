@@ -490,7 +490,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         var fieldId = +fieldNode["@FieldId"];
                         var object = fieldData[0];
                         var objectName = fieldData[1];
-                        var f = types.filter((x) => x.ID == fieldId && x.Object == object && x.Name == objectName)[0];
+                        var f = types.filter((x) => x.ID == fieldId && x.Name == objectName)[0];
                         if (f != undefined)
                             {fieldNode["@ObjectType"] = object;}
                     }
@@ -1061,7 +1061,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private setConditionLabel(condition: any) {
         let i = this.fieldTypes.findIndex((f) => f.ID == condition['@FieldTypeID']);
         if (i >= 0) {
-            condition['@FieldName'] = this.fieldTypes[i].FriendlyName + (this.fieldTypes[i].Object == 'IssueType' ? ' (Action Field)' : '');
+			condition['@FieldName'] = this.fieldTypes[i].FriendlyName + (this.fieldTypes[i].IssueTypeID != null ? ' (Action Field)' : '');
             return;
         }
 
@@ -1196,10 +1196,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (f["@IsActionForm"] && f["@IsActionForm"] == 'true' && f["@FormFieldId"]) {
                         var fieldData = f["@FormFieldId"].split('|');
                         if (fieldData[0] == 'IssueType') {
-                            refField = this.fieldTypes.find((x) => x.Object == 'IssueType' && x.ID == +fieldData[1]);
+							refField = this.fieldTypes.find((x) => x.IssueTypeID == null && x.ID == +fieldData[1]);
                         }
                         else {
-                            refField = this.fieldTypes.find((x) => x.Object != 'IssueType' && x.ID == +fieldData[1]);
+							refField = this.fieldTypes.find((x) => x.IssueTypeID != null && x.ID == +fieldData[1]);
                         }
 
                         if (!refField) {
@@ -1339,11 +1339,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     var fieldType = fieldData[0].replace('[', '').trim();
                     var fieldName = fieldData[1].trim();
                     let f: any = null;
-                    if (fieldType == 'Action Field') {
-                        f = this.fieldTypes.find((x) => x.Object == 'IssueType' && x.Name == fieldName);
+					if (fieldType == 'Action Field') {
+						f = this.fieldTypes.find((x) => x.IssueTypeID != null && x.Name == fieldName);
                     }
-                    else if (fieldType == 'Asset Field') {
-                        f = this.fieldTypes.find((x) => x.Object != 'IssueType' && x.Name == fieldName);
+					else if (fieldType == 'Asset Field') {
+						f = this.fieldTypes.find((x) => x.IssueTypeID == null && x.Name == fieldName);
                     } else if (fieldType == 'HTTPREQUEST') {
                         f = this.workflowFieldsService.getHttpFields().find((x) => x['@stepId'] == fieldData[1].trim());
                     }

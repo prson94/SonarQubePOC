@@ -94,11 +94,11 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 }),
                 map(() => {
                     if (this.issueObject != '') {
-                        var actionFields = this.fields.filter((x) => x.Object == 'IssueType');
+						var actionFields = this.fields.filter((x) => x.IssueTypeID != null);
                         actionFields.forEach(function (item) {
                             var actionFormField: any = {};
                             actionFormField['@FieldName'] = 'Action Type::' + item.FriendlyName;
-                            actionFormField['@FormFieldId'] = item.Object + '|' + item.ID;
+							actionFormField['@FormFieldId'] = 'IssueType|' + item.ID;
                             actionFormField['@FormLabel'] = 'Action Type::' + item.FriendlyName;
                             actionFormField['@VersionStepID'] = '-1';
                             actionFormField['@id'] = item.ID;
@@ -193,7 +193,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         }
 
         this.fieldUpdateChange.emit(this.fieldUpdate);
-        if (typeof f !== 'undefined' && this.issueObject != '' && f.Object != 'IssueType') {
+		if (typeof f !== 'undefined' && this.issueObject != '' && f.IssueTypeID == null) {
             this.canSelectFromAction = true;
         }
         else {this.canSelectFromAction = false;}
@@ -271,8 +271,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         let field = _.cloneDeep(this.selectedField);
         let fieldTypeIndex = this.fields.findIndex((f) => f.ID.toString() == field['@FieldId'].toString());
 
-        var selectedField = this.fields.filter((f) => f.ID.toString() == field['@FieldId'].toString())[0];
-        field["@ObjectType"] = this.formatObjectTypeName(selectedField.Object);
+		var selectedField = this.fields.filter((f) => f.ID.toString() == field['@FieldId'].toString())[0];
+		field["@ObjectType"] = this.formatObjectTypeName(selectedField.IssueTypeID == null ? "Undefined" : "Issue");
         if (this.field.Type.toLowerCase() == 'lookup') {
             //join multiselect value into a comma delimited string
             if (this.field.AllowMultipleValues) {
@@ -570,7 +570,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
     getFieldNameForDropDown(f: any): string {
         if (this.issueObject == "") {return f.FriendlyName;}
-        if (f.Object == "IssueType")
+        if (f.IssueTypeID != null)
             {return $localize`Action Field` + "::" + f.FriendlyName;}
         return $localize`Asset Field` + "::" + f.FriendlyName;
     }
