@@ -1822,7 +1822,7 @@ from	[Intersect] I
 	]]>
 	</sql>
   </changeSet>
-  <changeSet author="bquinlivan" id="Data.Corrections.GOV-18447">
+  <changeSet author="Quinlivan/Pappas" id="Data.Corrections.GOV-18447-Issue">
 	<comment>GOV-18447 - populate field intersect and issue id columns</comment>	
 	<sql dbms="mssql"
             endDelimiter="GO"
@@ -1837,14 +1837,22 @@ from	[Intersect] I
 			AND column_name = 'IssueID'
 		)
 		BEGIN
-			UPDATE F
-			SET F.IssueID = I.ID
-			FROM 
-				Field F
-				INNER JOIN
-				Issue I ON I.ID = F.ObjectID AND F.ObjectType = 'Issue'
+			UPDATE 	F
+			SET 	F.IssueID = I.ID
+			FROM 	Field F
+					INNER JOIN Issue I ON I.ID = F.ObjectID AND F.ObjectType = 'Issue' and F.IssueID is null
 		END
+	]]>
+	</sql>
+  </changeSet>
 
+  <changeSet author="Quinlivan/Pappas" id="Data.Corrections.GOV-18447-Intersect">
+	<comment>GOV-18447 - populate field intersect and issue id columns</comment>	
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
 		IF EXISTS 
 		(
 			SELECT *
@@ -1853,12 +1861,10 @@ from	[Intersect] I
 			AND column_name = 'IntersectID'
 		) 
 		BEGIN
-			UPDATE F
-			SET F.IntersectID = I.ID
-			FROM 
-				Field F
-				INNER JOIN
-				[Intersect] I ON I.ID = F.ObjectID AND F.ObjectType = 'Intersect'
+			UPDATE 	F
+			SET 	F.IntersectID = I.ID
+			FROM 	Field F
+					INNER JOIN [Intersect] I ON I.ID = F.ObjectID AND F.ObjectType = 'Intersect' and F.IntersectID is null
 		END
 	]]>
 	</sql>
