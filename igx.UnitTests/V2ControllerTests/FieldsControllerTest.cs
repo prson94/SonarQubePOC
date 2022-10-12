@@ -66,12 +66,15 @@ namespace igx.UnitTests
         [Fact]
         public async void PutFields_CheckIfValidatorIncluded()
         {
-            FieldTypesApiEditModel model = new FieldTypesApiEditModel();
-            var results = await fieldsController.PutFieldTypesAsync(model).Result.ExecuteAsync(CancellationToken.None);
-            var content = await results.Content.ReadAsStringAsync();
+            FieldTypesApiEditModel model = new FieldTypesApiEditModel() { 
+				AssetTypeUid = Guid.Parse(DataConstants.ValidGUID), 
+				Fields = new List<FieldTypeApiEditModel>(),
+				Action = FieldTypesApiEditAction.Merge
+			};
 
-            Assert.True(results.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
-            
+			var results = await fieldsController.PutFieldTypesAsync(model).Result.ExecuteAsync(CancellationToken.None);
+			var content = await results.Content.ReadAsStringAsync();
+			Assert.True(results.StatusCode == HttpStatusCode.OK);
         }
 
         [Fact]
