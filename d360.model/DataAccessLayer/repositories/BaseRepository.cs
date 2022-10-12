@@ -183,6 +183,7 @@ namespace d360.model.DataAccessLayer.repositories
 						 return;
 					 }
 
+					 fieldDataType = getFieldDataType(relatedField);
 				 }
 
 				 if (f.IsRequired && string.IsNullOrEmpty(f.DefaultValue))
