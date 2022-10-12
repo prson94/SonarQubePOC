@@ -14,14 +14,14 @@ import { AssetTypeClass } from '../../../models/asset.model';
 @Component({
 	selector: 'd3s-relationships-wrapper',
 	template: `
-     <gov-relationship-grid *ngIf="uid" [assetUid]="uid" [assetTypeUid]="assetTypeUid"></gov-relationship-grid>
+     <gov-relationship-grid *ngIf="assetUid" [assetUid]="assetUid" [assetTypeUid]="assetTypeUid"></gov-relationship-grid>
     `,
 	providers: [PermissionsService, ObjectDetailService]
 })
 
 export class RelationshipsComponent extends BaseComponent implements OnInit, OnDestroy {
 	private sub: any;
-	uid: string = '';
+	assetUid: string = '';
 	assetTypeUid: string = '';
 
 	constructor(
@@ -51,15 +51,15 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
 								this.objectPermission = p;
 								this.buildSecondaryNavigationForAssetTypeUid(uid);
 								this.assetTypeUid = uid;
-								this.uid = uid;
+								this.assetUid = uid;
 							});
 					}
 					else {
 						this.permissionsService.getAssetPermissions(uid)
 							.subscribe((p) => {
 								this.objectPermission = p;
-								this.uid = uid;
-								this.buildSecondaryNavigationByAssetUid(this.uid);
+								this.assetUid = uid;
+								this.buildSecondaryNavigationByAssetUid(this.assetUid);
 							});
 					}
 				});
