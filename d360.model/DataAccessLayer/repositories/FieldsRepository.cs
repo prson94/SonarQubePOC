@@ -2120,7 +2120,7 @@ namespace d360.model.DataAccessLayer
 
 			if (objectType==SystemObjects.IntersectType)
 			{
-				whereSQL = "FT.InteresectTypeId = @id";
+				whereSQL = "FT.IntersectTypeId = @id";
 			}
 			else if (objectType == SystemObjects.IssueType)
 			{
