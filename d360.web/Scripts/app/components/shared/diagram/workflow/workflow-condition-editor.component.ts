@@ -84,8 +84,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
             this.fields.forEach((f) => {
                 this.fieldList.push({
-                    value: 'FieldType|' + f.ID.toString(),
-                    label: f.FriendlyName + (f.Object == 'IssueType' ? ' (Action Field)' : '')
+					value: 'FieldType|' + f.ID.toString(),
+					label: f.FriendlyName + (f.IssueTypeID != null ? ' (Action Field)' : '')
                 });
             });
 
@@ -107,8 +107,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
                     this.fields.forEach((f) => {
                         this.fieldList.push({
-                            value: 'FieldType|' + f.ID.toString(),
-                            label: f.FriendlyName + (f.Object == 'IssueType' ? ' (Action Field)' : '')
+							value: 'FieldType|' + f.ID.toString(),
+							label: f.FriendlyName + (f.IssueTypeID != null ? ' (Action Field)' : '')
                         });
                     });
 
@@ -205,9 +205,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@Value'];
 
             this.setOperators(field, ConditionFieldType.Field);
-
-            this.condition['@FieldTypeID'] = field.ID.toString();
-            this.condition['@FieldName'] = field.FriendlyName + (field.Object == 'IssueType' ? ' (Action Field)' : '');
+			this.condition['@FieldTypeID'] = field.ID.toString();
+			this.condition['@FieldName'] = field.FriendlyName + (field.IssueTypeID != null ? ' (Action Field)' : '');
             this.condition['@ValueType'] = this.getValueType(field.Type);
 
             this.lookups = [];
