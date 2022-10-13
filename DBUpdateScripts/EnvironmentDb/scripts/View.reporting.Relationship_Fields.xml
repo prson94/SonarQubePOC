@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.reporting.Relationship_Fields-v1">
+  <changeSet author="bquinlivan" id="View.reporting.Relationship_Fields-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -27,13 +27,30 @@ CREATE OR ALTER VIEW [reporting].[Relationship_Fields] AS
             FT.FriendlyName as FieldFriendlyName, 
 	        F.FormattedValue as FieldValue 
     from	IntersectDetail O 
-	        inner join Field F on F.ObjectType = 'Intersect' and F.ObjectID = O.ID
+	        inner join Field F on F.IntersectID = O.ID
 	        inner join FieldType FT on FT.ID = F.FieldTypeID
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+CREATE OR ALTER VIEW [reporting].[Relationship_Fields] AS
+    select 	O.ID, 
+	        O.IntersectTypeID, 
+	        O.Subject, 
+	        O.SubjectID, 
+	        O.SubjectTypeName, 
+	        O.SubjectName, 
+	        O.Object, 
+	        O.ObjectID, 
+	        O.ObjectTypeName, 
+	        O.ObjectName, 
+	        F.FieldTypeID, 
+            FT.Name as FieldName, 
+            FT.FriendlyName as FieldFriendlyName, 
+	        F.FormattedValue as FieldValue 
+    from	IntersectDetail O 
+	        inner join Field F on F.ObjectType = 'Intersect' and F.ObjectID = O.ID
+	        inner join FieldType FT on FT.ID = F.FieldTypeID
 		]]>
 	</rollback>
   </changeSet>

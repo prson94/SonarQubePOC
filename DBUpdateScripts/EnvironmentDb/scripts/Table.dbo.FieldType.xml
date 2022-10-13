@@ -288,12 +288,89 @@ AS
 	</rollback>
   </changeSet>
   
-  <changeSet author="Core" id="Table.dbo.Field-FieldType_AfterUpsert-v1">
+  <changeSet author="bquinlivan" id="Table.dbo.Field-FieldType_AfterUpsert-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
+   ON  [dbo].[FieldType] 
+   AFTER INSERT,UPDATE
+AS 
+BEGIN
+		IF ((substring( columns_updated() , 1 , 1 ) & power( 2, 6 ) > 0) or
+		(substring( columns_updated() , 1 , 1 ) & power( 2, 7 ) > 0) or
+		(substring( columns_updated() , 2 , 1 ) & power( 2, 0 ) > 0) or
+		(substring( columns_updated() , 2 , 1 ) & power( 2, 1 ) > 0) or
+		(substring( columns_updated() , 5 , 1 ) & power( 2, 1 ) > 0))
+		BEGIN
+
+				UPDATE	F
+				set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+				FROM	Field F
+						inner join inserted FT on FT.ID = F.FieldTypeID and FT.LookupObjectType is not null
+		END
+		
+		IF ((substring( columns_updated() , 3 , 1 ) & power( 2, 7 ) > 0) or
+		(substring( columns_updated() , 4 , 1 ) & power( 2, 0 ) > 0))
+		BEGIN
+				update	FT	
+				set		FT.defaultformattedvalue  = [utility].[GetFormattedFieldLookupValueWrapper](FT.[Type],FT.[LookupDisplayFormat],FT.[LookupObjectType],FT.[LookupObjectID],FT.[DefaultValue])
+				from	FieldType FT
+						inner join inserted ins on ins.ID = FT.ID and ins.LookupObjectType is not null
+
+				update	FT	
+				set		FT.defaultformattedvalue  = [utility].[GetFormattedFieldLookupValueWrapper](FT.[Type],FT.[LookupDisplayFormat],FT.[LookupObjectType],FT.[LookupObjectID],FT.[DefaultValue])
+				from	FieldType FT
+						inner join inserted ins on ins.ID = FT.ID and ins.LookupObjectType is null and FT.Type='Link'
+		END
+		
+		IF (EXISTS (SELECT * FROM DELETED))
+		BEGIN
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+			SELECT 
+				'Update'
+				,CASE 
+					WHEN i.IntersectTypeID is not null THEN
+					[queue].WriteIndexXml('', 'IntersectType', i.IntersectTypeID, i.UpdatedBy)
+					WHEN i.IssueTypeID is not null THEN
+					[queue].WriteIndexXml('', 'IssueType', i.IssueTypeID, i.UpdatedBy)
+					ELSE
+					[queue].WriteIndexXml('', A.Object, A.ObjectID, i.UpdatedBy) 
+				END as Custom
+				, 'FieldType'
+				, i.ID 
+			FROM 
+				inserted i
+				LEFT JOIN 
+				AssetType A on A.ID = i.AssetTypeID				
+		END
+		ELSE IF (NOT EXISTS (SELECT * FROM DELETED))
+		BEGIN
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+			select 
+				'Add'
+				,CASE 
+					WHEN i.IntersectTypeID is not null THEN
+					[queue].WriteIndexXml('', 'IntersectType', i.IntersectTypeID, i.UpdatedBy)
+					WHEN i.IssueTypeID is not null THEN
+					[queue].WriteIndexXml('', 'IssueType', i.IssueTypeID, i.UpdatedBy)
+					ELSE
+					[queue].WriteIndexXml('', A.Object, A.ObjectID, i.UpdatedBy) 
+				END as Custom
+				, 'FieldType'
+				, i.ID 
+			FROM 
+				inserted i
+				LEFT JOIN 
+				AssetType A on A.ID = i.AssetTypeID		
+		END
+END;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
    ON  [dbo].[FieldType] 
    AFTER INSERT,UPDATE
@@ -337,11 +414,6 @@ BEGIN
 				select 'Add', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'FieldType', ID from inserted;
 		END
 END;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.dbo.FieldWithRelation-v3">
+  <changeSet author="bquinlivan" id="View.dbo.FieldWithRelation-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -36,8 +36,8 @@ create or alter view [dbo].[FieldWithRelation]
 				T.IsRequired,
 				T.SortOrder,
 				T.AllowMultipleValues,
-				F.ObjectType,
-				F.ObjectID,
+				A.Object as ObjectType,
+				A.ObjectID,
 				T.AssetTypeID,
 				F.AssetID,
 				T.IntersectTypeID,
@@ -57,6 +57,7 @@ create or alter view [dbo].[FieldWithRelation]
 				end as LookupUrl
 		FROM	FieldType T
 				left join Field F on F.FieldTypeID = T.ID
+				left join Asset A on A.ID = F.AssetID
 		WHERE	(F.FormattedValue is not null OR T.DefaultValue is not null)
 		]]>
     </sql>
@@ -89,6 +90,12 @@ create or alter view [dbo].[FieldWithRelation]
 				T.AllowMultipleValues,
 				F.ObjectType,
 				F.ObjectID,
+				T.AssetTypeID,
+				F.AssetID,
+				T.IntersectTypeID,
+				F.IntersectID,
+				T.IssueTypeID,
+				F.IssueID,
 				F.Value,
 				F.FormattedValue,
 				case  
