@@ -463,6 +463,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			this.isItemsFromSourceLoading = false;
 			if (this.navigationFolder) {
 				this.enrichFolderData();
+			} else {
+				this.isItemsFromTargetLoading = false;
 			}
 
 			this.cdRef.markForCheck();
