@@ -1227,11 +1227,6 @@ namespace d360.web.Controllers
 
 			if (type == SystemObjects.GroupType)
 			{
-				
-				totalItems = Company
-					.Filter<FieldType>(i => i.AssetTypeID == id && !skippedFieldTypes.Contains(i.Type))
-					.ToList();
-
 				items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 				items.Insert(0, new FieldType { FriendlyName = "Name", Name = "Name", Type = "Text" });
 				parseDynamicColumnsAndFields(items, columns, fields, 0, true);
@@ -1251,7 +1246,7 @@ namespace d360.web.Controllers
 			{
 				Title = (detail != null) ? detail.PluralizedName : "Child Items",
 				Type = type.ToString(),
-				ID = id,
+				ID = assetType.ID,
 				FieldsCount = totalItems.Count,
 				Fields = fields,
 				Columns = columns,
