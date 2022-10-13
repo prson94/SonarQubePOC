@@ -880,7 +880,7 @@ namespace d360.model
             }
 
             // if we already have the asset id then insert it
-            bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET");
+            bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET" || (tableName ?? "").ToUpper() ==  "API.EXECUTIONUSER");
 			bool hasIntersectID = ((tableName ?? "").ToUpper() == "API.EXECUTIONRELATIONSHIP");
 
 			string fieldValuesSql = $@"
