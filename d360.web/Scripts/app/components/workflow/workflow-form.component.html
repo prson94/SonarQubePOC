@@ -114,7 +114,6 @@
 										type="button"
 										margin
 										(click)="isReassignEnabled = false"
-										style="width: 150px;"
 										i18n-label
 										label="Cancel"></button>
 								<button igButton
@@ -122,7 +121,6 @@
                                         type="button"
                                         (click)="reassign()"
                                         [disabled]="selectedReassignResource == null && selectedReassignmentAsset?.ID == null"
-                                        style="width: 150px;"
                                         i18n-label
                                         label="Assign"></button>
                             </div>
@@ -135,7 +133,6 @@
                                 type="submit"
 								margin
                                 [disabled]="!workflowForm.valid || isReassignEnabled"
-                                style="width: 150px;"
                                 i18n-label
                                 label="Submit"></button>
                         <button igButton
@@ -144,8 +141,7 @@
                                 type="button"
                                 (click)="close();"
                                 label="Cancel"
-                                i18n-label
-                                style="width: 150px;"></button>
+                                i18n-label></button>
                     </div>
                 </div>
             </form>
@@ -163,8 +159,7 @@
                             type="button"
                             (click)="close();"
                             i18n-label
-                            label="Close"
-                            style="width: 150px;"></button>
+                            label="Close"></button>
                 </div>
             </div>
         </div>
@@ -181,8 +176,7 @@
                             type="button"
                             (click)="close();"
                             i18n-label
-                            label="Close"
-                            style="width: 150px;"></button>
+                            label="Close"></button>
                 </div>
             </div>
         </div>
@@ -199,8 +193,7 @@
                             type="button"
                             (click)="close();"
                             i18n-label
-                            label="Close"
-                            style="width: 150px;"></button>
+                            label="Close"></button>
                 </div>
             </div>
         </div>
@@ -217,8 +210,7 @@
                             type="button"
                             (click)="close();"
                             i18n-label
-                            label="Close"
-                            style="width: 150px;"></button>
+                            label="Close"></button>
                 </div>
             </div>
         </div>

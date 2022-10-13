@@ -37,15 +37,15 @@
             <ng-container i18n>Close</ng-container>
         </button>
         <span class="grow"></span>
-        <button class="right ig-button-primary {{savingInProgress ? 'loading' : ''}}"
+        <button class="right ig-button-primary"
 				igButton
                 (click)="confirm()"
                 [attr.data-cy]="'AssetType_Button_Save'"
                 [disabled]="!isValid"
+				[loading]="savingInProgress"
                 i18n-label
                 label="Confirm">
             <ng-container i18n>Confirm</ng-container>
-            <span class="loader"><span class="spinner light"></span></span>
         </button>
     </div>
 </d3s-modal>

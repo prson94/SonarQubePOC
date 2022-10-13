@@ -1,7 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
 import { SurveysService } from '../../../services/surveys.service';
-import { BaseComponent } from '../../shared/base.component';
-import { Survey, SurveyTypeDisplayStyle, SurveyTypeDetails, Question, SurveyResultsApiModel, SurveyQuestionResponseApiModel } from '../../../models/survey.model';
+import { BaseComponent } from '../base.component';
+import { Survey, SurveyTypeDetails, Question, SurveyResultsApiModel, SurveyQuestionResponseApiModel } from '../../../models/survey.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 
@@ -24,13 +24,11 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
     @Output() surveyBack = new EventEmitter();
 
 
-    private currentQuestionIndex: number = 0;
-    private errorMessage: string = '';
+    currentQuestionIndex: number = 0;
+	errorMessage: string = '';
     surveyDetails: SurveyTypeDetails;
-    SurveyTypeDisplayStyle = SurveyTypeDisplayStyle;
-
-    private submitting: boolean = false;
-    private currentQuestion: Question;
+	submitting: boolean = false;
+	currentQuestion: Question;
 
 
     constructor(
@@ -68,7 +66,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
         this.surveyBack.emit();
     }
 
-    private onSubmit() {
+	onSubmit() {
         if (!this.isValid()) {return;}
         this.submitting = true;
         this.currentQuestion = null;
@@ -85,10 +83,10 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
             this.errorMessage = $localize`You must select at least one answer`;
         }
 
-        return this.errorMessage.length > 0 ? false : true;
+        return this.errorMessage.length <= 0;
     }
 
-    private nextQuestion(currentIndex: number) {
+	nextQuestion(currentIndex: number) {
 
         if (!this.isValid()) {return;}
 
@@ -100,7 +98,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
         this.currentQuestion = this.surveyDetails.Questions[++this.currentQuestionIndex];
     }
 
-    private previousQuestion(currentIndex: number) {
+	previousQuestion(currentIndex: number) {
         if (currentIndex - 1 < 0) {
             console.log("ERROR - CANNOT MOVE TO PREVIOUS QUESTION INVALID ARRAY ARGUMENTS.");
 

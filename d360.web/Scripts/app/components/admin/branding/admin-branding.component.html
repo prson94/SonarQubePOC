@@ -7,6 +7,7 @@
                 <div class="flex-grow"></div>
                 <div class="grid-action-buttons">
                     <button igButton
+							class="ig-button-primary"
                             i18n-pTooltip
                             pTooltip="Add new Theme"
                             tooltipPosition="top"
@@ -16,6 +17,7 @@
                     </button>
                     <button *ngIf="selectedRow && selectedRow.hasDownloadOption"
                             igButton
+							class="ig-button-secondary"
                             i18n-pTooltip
                             pTooltip="Download"
                             tooltipPosition="top"
@@ -25,6 +27,7 @@
                     </button>
                     <input #uploadInput type="file" class="file-input" accept=".json" (change)="onFileSelected($event)" hidden>
                     <button igButton
+							class="ig-button-secondary"
                             [loading]="isThemeUploading"
                             i18n-pTooltip
                             pTooltip="Import"

@@ -50,8 +50,8 @@ import { CompanySettingsService } from '../../services/settings.service';
                     <div class="row">
                      
                         <div class="col s12 buttons">
-                            <button i18n-label igButton class="ig-button-primary" margin *ngIf="internalFilters.length > 0" type="submit" [disabled]="!filterForm.form.valid" style="width: 150px;" label="Filter Results"></button>
-                            <button i18n-label igButton class="ig-button-secondary" *ngIf="internalFilters.length" type="button" style="width: 150px;" label="Clear all Filters" (click)="resetFilters()"></button>                        
+                            <button i18n-label igButton class="ig-button-primary" margin *ngIf="internalFilters.length > 0" type="submit" [disabled]="!filterForm.form.valid" label="Filter Results"></button>
+                            <button i18n-label igButton class="ig-button-secondary" *ngIf="internalFilters.length" type="button" label="Clear all Filters" (click)="resetFilters()"></button>                        
                         </div>
                     </div>
                 </form>
