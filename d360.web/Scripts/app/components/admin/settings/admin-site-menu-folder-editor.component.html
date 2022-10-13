@@ -84,6 +84,7 @@
 													 [isItemsFromSourceLoading]="isItemsFromSourceLoading"
 													 [isItemsFromTargetLoading]="isItemsFromTargetLoading"
 													 [emptyTargetTableMessage]="permissionsEmptyTargetTableMessage"
+													 [viewingItem]="higlightedItem"
 													 (showInfoEvent)="showInfo($event)"></d3s-table-data-transfer>
 						</div>
 					</ig-property-group>
@@ -114,7 +115,7 @@
 				<div class="panel-header">
 					<span class="header-label" i18n>Information</span>
 					<div class="side-panel-button-container">
-						<button igButton icon="fa-close" i18n-pTooltip pTooltip="Close side panel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" (click)="previewAssetUid = '';higlightedItem=null;"></button>
+						<button igButton icon="fa-close" i18n-pTooltip pTooltip="Close side panel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" (click)="closeSidePanel()"></button>
 					</div>
 				</div>
 			</div>

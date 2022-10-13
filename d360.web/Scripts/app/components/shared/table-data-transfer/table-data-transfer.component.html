@@ -1,4 +1,4 @@
-<div class="table-data-transfer-grid table-theme-1">
+<div class="table-data-transfer-grid table-theme-1 checkbox-theme-1">
     <div class="data-transfer-table">
         <div class="table-controls">
             <ig-search-field class="search tooltip-full-width"
@@ -30,12 +30,13 @@
                      paginatorDropdownAppendTo="body"
                      [rows]="10"
                      [rowsPerPageOptions]="defaultTableSettingsService.defaultPagingOptions"
+                     [rowSelectable]="isSourceRowSelectable"
                      [scrollable]="true"
                      scrollHeight="420px">
                 <ng-template pTemplate="header">
                     <tr>
                         <th class="check-cell">
-                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                            <p-tableHeaderCheckbox [disabled]="isSourceRowsSelectionDisabled()"></p-tableHeaderCheckbox>
                         </th>
                         <th i18n>{{sourceTableTitle}}</th>
                     </tr>
@@ -48,12 +49,12 @@
                              let-item>
                     <tr [pSelectableRow]="item">
                         <td class="checkbox-column">
-                            <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                            <p-tableCheckbox [value]="item" [disabled]="isSourceRowsSelectionDisabled()"></p-tableCheckbox>
                         </td>
                         <td>{{item[itemsNameProperty]}}</td>
                         <td class="information-button-column" *ngIf="infoButton">
                             <button igButton
-                                    class="info-button"
+                                    class="info-button button-theme-1"
                                     [ngClass]="{'highlighted': viewingItem === item}"
                                     icon="fa-info-circle"
                                     i18n-pTooltip
@@ -164,13 +165,14 @@
                      [rowsPerPageOptions]="defaultTableSettingsService.defaultPagingOptions"
                      [scrollable]="true"
                      [reorderableColumns]="true"
+                     [rowSelectable]="isTargetRowSelectable"
                      (onRowReorder)="onRowReorder()"
                      scrollHeight="420px">
                 <ng-template pTemplate="header">
                     <tr>
                         <th *ngIf="isTargetDataReorderable" class="reorder-cell"></th>
                         <th class="check-cell">
-                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                            <p-tableHeaderCheckbox [disabled]="isTargetRowsSelectionDisabled()"></p-tableHeaderCheckbox>
                         </th>
                         <th i18n>{{targetTableTitle}}</th>
                     </tr>
@@ -188,7 +190,7 @@
                             <span class="reorder-icon" [pReorderableRowHandle]="i"></span>
                         </td>
                         <td class="checkbox-column">
-                            <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                            <p-tableCheckbox [value]="item" [disabled]="isTargetRowsSelectionDisabled()"></p-tableCheckbox>
                         </td>
                         <td>{{item[itemsNameProperty]}}</td>
                     <tr>
