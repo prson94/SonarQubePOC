@@ -26,6 +26,7 @@ import { IconService } from './icon.service';
 import { AssetTypeClass } from '../models/asset.model';
 import { IconProperties } from '../models/icon-properties.model';
 import { ApiResult } from '../models/apiresult.model';
+import { Link } from '../models/fieldtype-api.model';
 
 @Injectable({
     providedIn: 'root'
@@ -44,7 +45,7 @@ export class BrowserService extends BaseObservableService {
         });
     }
 
-    private processResponse(response: AssetBrowserResponseModel) {
+	private processResponse(response: AssetBrowserResponseModel, forceFromSideValue: string = null) {
         response.nodes.forEach((n) => {
             n.nonHiddenTemplate = n.template;
             if (n.class.toString() === 'Diagram') {
@@ -53,7 +54,29 @@ export class BrowserService extends BaseObservableService {
             n.class = AssetTypeClass[n.class] as any;
             n.icon = this.getIconUnicode(n.icon, n.class);
             n.isGroup = !n.leaf;
-        });
+		});
+
+		if (forceFromSideValue) {
+			//when loading impact/hops, diagram arrows should always point of out
+			//if our current hierarchy key is on other side of relationship (object) we need to switch relationships and predicated to other side 
+			//to render impact diagram correctly
+			let temp = '';
+			if (response.links) {
+				response.links.forEach((relationship) => {
+					if (relationship.from.toLowerCase() !== forceFromSideValue.toLowerCase()) {
+						temp = relationship.from;
+						relationship.from = relationship.to;
+						relationship.to = temp;
+
+						relationship.links.forEach((link) => {
+							temp = link.from;
+							link.from = link.to;
+							link.to = temp;
+						});
+					}
+				});
+			}
+		}
 
 		if (response.links && response.links.length > 0) {
 			response.highlightLinks = JSON.parse(JSON.stringify(response.links));
@@ -264,7 +287,7 @@ export class BrowserService extends BaseObservableService {
 			initialSaltValue
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
-                this.processResponse(response);
+				this.processResponse(response, hierarchyKey);
                 return response;
             }),
             catchError((err) => this.handleError(err))

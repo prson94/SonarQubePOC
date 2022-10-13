@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Impact-v6">
-    <comment>Pappas: GOV-19652 / TKlok: GOV-18453</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Impact-v7.2">
+    <comment>GOV-19977</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -108,21 +108,19 @@ begin
 						I.PredicateUid,
 						I.PredicateName,
 						I.PredicateType,
-						'T|' + cast(@salt as varchar(3)) + '|' + cast(S.AssetTypeID as varchar(15)),
-						'A|' + cast(@salt as varchar(3)) + '|' + cast(S.ID as varchar(20)),
+						'T|' + cast(@salt as varchar(3)) + '|' + cast(I.SubjectAssetTypeID as varchar(15)),
+						'A|' + cast(@salt as varchar(3)) + '|' + cast(I.SubjectAssetID as varchar(20)),
 						@salt,
-						S.ID as SubjectID,
-						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(O.AssetTypeID as varchar(15)),
-						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(O.ID as varchar(20)),
+						I.SubjectAssetID as SubjectID,
+						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(I.ObjectAssetTypeID as varchar(15)),
+						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(I.ObjectAssetID as varchar(20)),
 						@newSalt,
-						O.ID as ObjectID
+						I.ObjectAssetID as ObjectID
 				from	@a H
-						inner join Asset S on S.ID = H.ID and H.Salt = @salt
-						inner join PredicateIntersect I on I.Subject = S.Object and I.SubjectID = S.ObjectID 
+						inner join PredicateIntersect I on I.SubjectAssetID = H.ID
 							and I.PredicateType between 1 and 13 
 							and I.IntersectID not in (select Id from @hopIntersectIds)
 							and ((@predicateUid is null) OR (@predicateUid is not null and I.PredicateUid = @predicateUid))
-						inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
 		end
 
 		if @direction = 'A' or @direction = 'B'
@@ -134,21 +132,19 @@ begin
 						I.PredicateUid,
 						I.PredicateInverse,
 						I.PredicateType,
-						'T|' + cast(@salt as varchar(3)) + '|' + cast(S.AssetTypeID as varchar(15)),
-						'A|' + cast(@salt as varchar(3)) + '|' + cast(S.ID as varchar(20)),
-						@salt,
-						S.ID as SubjectID,
-						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(O.AssetTypeID as varchar(15)),
-						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(O.ID as varchar(20)),
+						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(I.SubjectAssetTypeID as varchar(15)),
+						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(I.SubjectAssetID as varchar(20)),
 						@newSalt,
-						O.ID as ObjectID
+						I.SubjectAssetID as SubjectID,
+						'T|' + cast(@salt as varchar(3)) + '|' + cast(I.ObjectAssetTypeID as varchar(15)),
+						'A|' + cast(@salt as varchar(3)) + '|' + cast(I.ObjectAssetID as varchar(20)),
+						@salt,
+						I.ObjectAssetID as ObjectID
 				from	@a H
-						inner join Asset S on S.ID = H.ID and H.Salt = @salt
-						inner join PredicateIntersect I on I.Object = S.Object and I.ObjectID = S.ObjectID 
+						inner join PredicateIntersect I on I.ObjectAssetID = H.ID
 							and I.PredicateType between 1 and 13 
 							and I.IntersectID not in (select Id from @hopIntersectIds)
 							and ((@predicateUid is null) OR (@predicateUid is not null and I.PredicateUid = @predicateUid))
-						inner join Asset O on O.Object = I.Subject and O.ObjectID = I.SubjectID
 		end
 
 		insert into @hopIntersectIds(Id)
