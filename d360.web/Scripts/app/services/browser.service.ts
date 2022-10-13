@@ -57,7 +57,7 @@ export class BrowserService extends BaseObservableService {
 		});
 
 		if (forceFromSideValue) {
-			//on impact diagram arrows should always point of out
+			//when loading impact/hops, diagram arrows should always point of out
 			//if our current hierarchy key is on other side of relationship (object) we need to switch relationships and predicated to other side 
 			//to render impact diagram correctly
 			let temp = '';
