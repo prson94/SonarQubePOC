@@ -5,8 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="View.dbo.FieldDetail-v2.1">
-    <comment>GOV-12516</comment>
+  <changeSet author="bquinlivan" id="View.dbo.FieldDetail-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -32,7 +31,7 @@
 				T.ShowIfEmpty
 		FROM	dbo.Asset AS A 
 				INNER JOIN dbo.FieldType AS T ON T.AssetTypeID = A.AssetTypeID 
-				LEFT OUTER JOIN dbo.Field AS F ON F.FieldTypeID = T.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
+				LEFT OUTER JOIN dbo.Field AS F ON F.FieldTypeID = T.ID AND F.AssetID = A.ID
 		WHERE	F.FormattedValue IS NOT NULL 
 				OR T.DefaultValue IS NOT NULL 
 				OR T.ShowIfEmpty = 1
@@ -50,7 +49,7 @@ create or alter view [dbo].[FieldDetail]
 				A.Object, 
 				A.ObjectID, 
 				T.Type, 
-				COALESCE (F.Value, T.DefaultValue) AS Value, 
+				COALESCE (F.Value, F.FormattedValue, T.DefaultValue) AS Value, 
 				CASE 
 					WHEN T.AllowAllValue = 1 AND F.[Value] = '0' THEN CAST(T.AllowAllLabel AS nvarchar(MAX)) 
 					WHEN F.FormattedValue IS NOT NULL THEN F.FormattedValue 
@@ -61,7 +60,7 @@ create or alter view [dbo].[FieldDetail]
 		FROM	dbo.Asset AS A 
 				INNER JOIN dbo.FieldType AS T ON T.AssetTypeID = A.AssetTypeID 
 				LEFT OUTER JOIN dbo.Field AS F ON F.FieldTypeID = T.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
-		WHERE	F.Value IS NOT NULL 
+		WHERE	F.FormattedValue IS NOT NULL 
 				OR T.DefaultValue IS NOT NULL 
 				OR T.ShowIfEmpty = 1
 		]]>

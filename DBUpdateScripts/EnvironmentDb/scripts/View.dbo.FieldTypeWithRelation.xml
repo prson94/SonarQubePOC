@@ -5,13 +5,50 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.dbo.FieldTypeWithRelation-v1">
+  <changeSet author="bquinlivan" id="View.dbo.FieldTypeWithRelation-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-	create or alter view [dbo].[FieldTypeWithRelation]
+	SELECT	distinct T.ID,
+				T.Name,
+				T.FriendlyName,
+				T.Category,
+				T.Description,
+				T.DisplayDescription,
+				T.FormDescription,
+				T.ValidationDescription,
+				T.Type,
+				T.LookupObjectType,
+				T.LookupObjectID ,
+				T.LookupDisplayFormat,
+				T.Length,
+				T.MinimumLength,
+				T.MaximumLength,
+				T.Pattern,
+				D.[Object],
+				D.ObjectID,
+				D.Name as ObjectName,
+				T.IsDisplayable,
+				T.IsEditable,
+				T.IsListable,
+				T.IsRequired,
+				T.SortOrder,
+				T.DefaultValue
+		FROM	FieldType T
+				inner join 
+				(
+					select Name, Object, ObjectID, ID from AssetType
+					union all
+					select ITypeName.Name as Name, 'IntersectType' as Object, ID as ObjectID, ID from IntersectType IT
+					cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName
+				) D on (D.[Object] = 'IntersectType' and D.ID = T.IntersectTypeID) OR (D.[Object] <> 'IntersectType' and D.ID = T.AssetTypeID)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+create or alter view [dbo].[FieldTypeWithRelation]
 	AS
 		SELECT	T.ID,
 				T.Name,
@@ -45,11 +82,6 @@
 					select ITypeName.Name as Name, 'IntersectType' as Object, ID as ObjectID from IntersectType IT
 					cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName
 				) D on D.[Object] = T.[Object] and D.ObjectID = T.ObjectID
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.dbo.GetRenderedTemplateBodyNg-v5">
+  <changeSet author="bquinlivan" id="Procedure.dbo.GetRenderedTemplateBodyNg-v6">
   <comment>Object/ObjectID retireing</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -56,8 +56,8 @@ BEGIN
 			@link = AUrl.Url
 	from	AssetDetail C_D	
 			cross apply [dbo].[GetAssetUrlById](C_D.ID) AUrl
-			left join fieldtype ft on (ft.[object] = C_D.[type] and ft.objectid = C_D.typeid and ft.name = 'Description')
-			left join field f on (f.fieldtypeid = ft.id and f.[objecttype] = C_D.[object] and f.objectid = C_D.objectid)
+			left join fieldtype ft on ft.AssetTypeID = C_D.AssetTypeID and ft.name = 'Description'
+			left join field f on f.fieldtypeid = ft.id and f.assetID = C_D.ID
 	where	C_D.[Object] = @Type
 			and C_D.ObjectID = @ID;
 
@@ -484,20 +484,20 @@ BEGIN
 			declare @refs table (RowID int identity, ID int)
 			declare @isHierarchy bit = 0;
 
-			declare @MyRefTypeID int
+			declare @MyRefAssetTypeID int
+			declare @MyRefAssetID int
 			if @Type = 'ReferenceItem'
 				begin
-					Select @MyRefTypeID = AST.[ObjectId] from Asset A 
-						inner join AssetType AST on
-						AST.ID = A.AssetTypeID
+					Select @MyRefAssetID = A.ID, @MyRefAssetTypeID = A.AssetTypeID from Asset A 
 						Where A.[Object]='ReferenceItem' and A.[ObjectId]=@ID
 
 					
-					select  @isHierarchy = count(1) from intersecttypedetail where [object] = 'ReferenceItemType' and [objectid] = @MyRefTypeID and predicatetype = 3
+					select  @isHierarchy = count(1) from intersecttypedetail where [objectassettypeid] = @MyRefAssetTypeID and predicatetype = 3
 				end
 			else
 				begin
-					set @MyRefTypeID = @ID
+					Select @MyRefAssetTypeID = AT.ID from AssetType AT 
+						Where AT.[Object]='ReferenceItemType' and AT.[ObjectId]=@ID
 				end
 
 			if @isHierarchy = 1 
@@ -507,11 +507,11 @@ BEGIN
 								A.objectid 
 						from	 Asset A
 								inner join AssetType AST on (AST.ID = A.AssetTypeID)
-								inner join AssetDisplayValue AD on AD.AssetID =A.ID
-								inner join [intersect] id on (id.objectid = A.objectid and id.[object] = A.[object])
-								inner join [intersect] id_2 on (id_2.[object] = 'ReferenceItem' and id_2.[objectid] = @id and id_2.subjectid = id.subjectid)
-								inner join [intersecttypedetail] it on (it.id = id.intersecttypeid and it.id = id_2.intersecttypeid and it.[object]='ReferenceItemType' and it.predicatetype = 3)
-						where	AST.objectid = @MyRefTypeID and  AST.[object] = 'ReferenceItemType'
+								inner join AssetDisplayValue AD on AD.AssetID = A.ID
+								inner join [intersect] id on id.objectassetid = A.ID
+								inner join [intersect] id_2 on (id_2.[objectassetid] = @MyRefAssetID and id_2.subjectassetid = id.subjectassetid)
+								inner join [intersecttypedetail] it on (it.id = id.intersecttypeid and it.id = id_2.intersecttypeid and it.[objectclass] = 9 and it.predicatetype = 3)
+						where	AST.id = @MyRefAssetTypeID
 								and A.[State] = 1 
 								and A.ID not in (select AssetID from ResponsibilityDetail where ((PermissionsBitMask & 1) = 0) and ResourceID = @resourceId)
 						order by DisplayValue asc
@@ -524,7 +524,7 @@ BEGIN
 						from	Asset A 
 								inner join AssetType AST on AST.ID = A.AssetTypeID
 								inner join AssetDisplayValue AD on AD.AssetID =A.ID
-						where	AST.ObjectId = @MyRefTypeID and AST.[object] = 'ReferenceItemType'
+						where	AST.id = @MyRefAssetTypeID
 								and A.[State] = 1 
 								and A.ID not in (select AssetID from ResponsibilityDetail where ((PermissionsBitMask & 1) = 0) and ResourceID = @resourceId)
 						order by DisplayValue asc
@@ -533,7 +533,7 @@ BEGIN
 			declare @refFieldTypes table (ID int identity, Name nvarchar(250))
 			insert into @refFieldTypes values ('Code')
 			insert into @refFieldTypes
-				select FriendlyName from FieldType where [Object] = 'ReferenceItemType' and ObjectID = @MyRefTypeID order by ColumnOrder asc
+				select FriendlyName from FieldType where AssetTypeID = @MyRefAssetTypeID order by ColumnOrder asc
 
 			declare @refHtml nvarchar(max)
 
