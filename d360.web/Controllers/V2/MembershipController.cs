@@ -735,12 +735,12 @@ namespace d360.web.Controllers.V2
 
 			foreach (var col in fieldColumns)
 			{
-				selectBuilder.Append("," + col);
+				selectBuilder.AppendLine("," + col);
 			}
 
 			foreach (var join in fieldJoins)
 			{
-				joinBuilder.Append(join);
+				joinBuilder.AppendLine(join);
 			}
 
 			foreach (FieldType customField in fieldTypes)

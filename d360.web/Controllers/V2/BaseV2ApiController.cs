@@ -203,14 +203,14 @@ namespace d360.web.Controllers.V2
 								from [Intersect] FRelation_I 
 								inner Join Asset FRelation_RA on 
 								FRelation_I.[IntersectTypeID] = {intersectType.ID} AND 
-								((({joinObjectField} = FRelation_I.[Subject] and {joinObjectIdField} = FRelation_I.[SubjectID]) AND (FRelation_RA.[Object] = FRelation_I.[Object] and FRelation_RA.[ObjectID] = FRelation_I.[ObjectID])) 
-								OR ({joinObjectField} = FRelation_I.[Object] and {joinObjectIdField} = FRelation_I.[ObjectID]) AND (FRelation_I.[Subject] = FRelation_RA.[Object] and FRelation_I.[SubjectID] = FRelation_RA.ObjectID))
+								(({joinObjectField} = FRelation_I.SubjectAssetId) 
+								OR ({joinObjectField} = FRelation_I.ObjectAssetId))
 								inner join AssetPath FRelation_P on FRelation_P.ID = FRelation_RA.ID  
 								Where 
 								FRelation_I.[IntersectTypeID] = {intersectType.ID} AND
-								((FRelation_I.[Object] = {joinObjectField} and FRelation_I.ObjectID = {joinObjectIdField}) 
+								((FRelation_I.ObjectAssetId = {joinObjectField}) 
 								or 
-								(FRelation_I.[Subject] = {joinObjectField} and FRelation_I.[SubjectID] = {joinObjectIdField}))
+								(FRelation_I.SubjectAssetId = {joinObjectField}))
 							for xml path ('')
 							), 2, 1, '')
 							){tableAlias}(FormattedValue) ");
