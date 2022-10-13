@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Impact-v7.1">
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Impact-v7">
     <comment>GOV-19977</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -78,7 +78,7 @@ begin
 	create nonclustered index IX_TempNodes_Key on #nodes ([key] asc);
 	
 	declare @a table (Salt int, Position int, Initial bit default(0), ID bigint, AssetTypeID int)
-	declare @i table (Direction char(1), Position int, IntersectID int, PredicateID int, PredicateUid uniqueidentifier, [Text] nvarchar(250), PredicateType int, SubjectHierarchyKey varchar(50), SubjectKey varchar(50), SubjectSalt int, SubjectID bigint, ObjectHierarchyKey varchar(50), ObjectKey varchar(50), ObjectSalt int, ObjectID bigint)
+	declare @i table (Position int, IntersectID int, PredicateID int, PredicateUid uniqueidentifier, [Text] nvarchar(250), PredicateType int, SubjectHierarchyKey varchar(50), SubjectKey varchar(50), SubjectSalt int, SubjectID bigint, ObjectHierarchyKey varchar(50), ObjectKey varchar(50), ObjectSalt int, ObjectID bigint)
 	declare @c int = 1,
 			@salt int = LEFT(CAST(RAND()*1000000000+999999 AS INT),3)	-- Random 3 digit number as salt
 
@@ -101,9 +101,8 @@ begin
 
 		if @direction = 'A' or @direction = 'F'
 		begin
-			insert into @i (Direction, Position, IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHierarchyKey, SubjectKey, SubjectSalt, SubjectID, ObjectHierarchyKey, ObjectKey, ObjectSalt, ObjectID)
-				select	'F',
-						@c,
+			insert into @i (Position, IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHierarchyKey, SubjectKey, SubjectSalt, SubjectID, ObjectHierarchyKey, ObjectKey, ObjectSalt, ObjectID)
+				select	@c,
 						I.IntersectID,
 						I.PredicateID,
 						I.PredicateUid,
@@ -128,22 +127,21 @@ begin
 
 		if @direction = 'A' or @direction = 'B'
 		begin
-			insert into @i (Direction, Position, IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHierarchyKey, SubjectKey, SubjectSalt, SubjectID, ObjectHierarchyKey, ObjectKey, ObjectSalt, ObjectID)
-				select	'B',
-						@c,
+			insert into @i (Position, IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHierarchyKey, SubjectKey, SubjectSalt, SubjectID, ObjectHierarchyKey, ObjectKey, ObjectSalt, ObjectID)
+				select	@c,
 						I.IntersectID,
 						I.PredicateID,
 						I.PredicateUid,
 						I.PredicateInverse,
 						I.PredicateType,
-						'T|' + cast(@salt as varchar(3)) + '|' + cast(S.AssetTypeID as varchar(15)),
-						'A|' + cast(@salt as varchar(3)) + '|' + cast(S.ID as varchar(20)),
-						@salt,
-						S.ID as SubjectID,
 						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(O.AssetTypeID as varchar(15)),
 						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(O.ID as varchar(20)),
 						@newSalt,
-						O.ID as ObjectID
+						O.ID as SubjectID,
+						'T|' + cast(@salt as varchar(3)) + '|' + cast(S.AssetTypeID as varchar(15)),
+						'A|' + cast(@salt as varchar(3)) + '|' + cast(S.ID as varchar(20)),
+						@salt,
+						S.ID as ObjectID
 				from	@a H
 						inner join Asset S on S.ID = H.ID and H.Salt = @salt
 						inner join PredicateIntersect I on I.Object = S.Object and I.ObjectID = S.ObjectID 
@@ -225,14 +223,14 @@ begin
 				inner join AssetDetail A on A.ID = O.ID 
 		order by O.Position
 
--- Add edges
+	-- Add edges
 	insert into #edges ([from], [to], [text], predicateIdsJson, linksJson)
 		select	case 
-					when @hierarchyKey is not null and g.Direction = 'F' then @hierarchyKey
+					when @hierarchyKey is not null and @direction = 'F' then @hierarchyKey
 					else [from]
 				end, 
 				case 
-					when @hierarchyKey is not null and g.Direction = 'B' then @hierarchyKey
+					when @hierarchyKey is not null and @direction = 'B' then @hierarchyKey
 					else [to]
 				end,
 				string_agg([text], ', ') as [text],
@@ -263,22 +261,15 @@ begin
 				for json path
 				)
 		from	(
-				select	
-						case when Direction = 'F'
-						then I.SubjectHierarchyKey 
-						else I.ObjectHierarchyKey end as [from],
-						case when Direction = 'F'
-						then I.ObjectHierarchyKey 
-						else I.SubjectHierarchyKey end as [to],
-						I.[text],
-						I.Direction
+				select	I.SubjectHierarchyKey as [from],
+						I.ObjectHierarchyKey as [to],
+						I.[text]
 				from	@i I
 				group by I.SubjectHierarchyKey,
 						I.ObjectHierarchyKey,
-						I.[text],
-						I.Direction
+						I.[text]
 				) g
-		group by [from], [to], Direction;
+		group by [from], [to];
 
 	-- Update properties on nodes before returning.
 	update	T
