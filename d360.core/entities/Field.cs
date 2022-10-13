@@ -30,10 +30,10 @@ namespace d360.core.entities
         public FieldType FieldType { get; set; }
 
 		[DataMember]
-		public long? IssueID { get; set; }
+		public int? IssueID { get; set; }
 
 		[DataMember]
-		public long? IntersectID { get; set; }
+		public int? IntersectID { get; set; }
 	}
 
     [DataContract(Namespace = NAMESPACE)]
