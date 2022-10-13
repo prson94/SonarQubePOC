@@ -665,22 +665,8 @@ namespace d360.model.DataAccessLayer
 				});
 			}
 
-			try
-			{
-				if (assetResults.Any())
-				{
-					Company.SendAssetGraphEvents(assetResults);
-				}
-				if (intersectResults.Any())
-				{
-					Company.SendAssetGraphEvents(intersectResults, null, true);
-				}
-			}
-			catch
-			{
-
-			}
-
+			// TODO: Add event grid calls here.
+			
 			return validationRes;
 		}
 

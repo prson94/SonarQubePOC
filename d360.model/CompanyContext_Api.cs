@@ -1294,10 +1294,7 @@ namespace d360.model
             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 
-            if (sendGraphEvents)
-            {
-                SendAssetGraphEvents(events);
-            }
+			// TODO: Add event grid calls here.
         }
 
         private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldTypeCore> jsonFieldTypes, SystemObjects objectType, string tableName, string IdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
@@ -1628,54 +1625,6 @@ namespace d360.model
 				.GetAwaiter()
 				.GetResult();
 		}
-
-        public void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false)
-        {
-            List<AssetEventInfo> events = new List<AssetEventInfo>();
-
-            foreach (IGraphAsset result in results)
-            {
-                if (result.Success)
-                {
-                    events.Add(new AssetEventInfo
-                    {
-                        CompanyID = CurrentCompanyID,
-                        Uid = result.uid,
-                        ChangedFieldNames = (fields != null && fields.ContainsKey(result.uid)) ? fields[result.uid] : null,
-                        Type = result.Object == "Intersect" ? AssetEventType.Edge : AssetEventType.Node
-                    });
-                }
-            }
-
-            if (events.Any())
-            {
-                QueueSource.CreateTopicMessages(Config.GetValue<string>("AssetBusTopicName"), events, delayedDelivery ? new DateTime?(DateTime.UtcNow.AddSeconds(15)) : null);
-            }
-        }
-
-        public void SendGraphAssetTypeEvent(Guid assetTypeUid)
-        {
-            AssetEventInfo e = new AssetEventInfo()
-            {
-                Uid = assetTypeUid,
-                CompanyID = CurrentCompanyID,
-                Type = AssetEventType.AssetType
-            };
-
-            QueueSource.CreateTopicMessage(Config.GetValue<string>("AssetBusTopicName"), e);
-        }
-
-        public void SendApiGraphEvent(ApiExecutionInfo info)
-        {
-            AssetEventInfo e = new AssetEventInfo()
-            {
-                execution = info,
-                CompanyID = CurrentCompanyID,
-                Type = AssetEventType.Execution
-            };
-
-            QueueSource.CreateTopicMessage<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), e);
-        }
 
         #region Validation
 
@@ -2962,6 +2911,7 @@ namespace d360.model
             #endregion
 
             #region Process diagram
+
             if (canHaveProcess)
             {
                 Connection.Execute(
@@ -3009,6 +2959,7 @@ namespace d360.model
                 AddMeasurement(metrics, $"remove process assets>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
                 sw.Restart();
             }
+
             #endregion
 
             #region Remove default value settings from FieldTypes
@@ -3042,41 +2993,6 @@ namespace d360.model
 
             #endregion
 
-            #region Get parents to rescore
-
-            Connection.Execute(@"
-								drop table if exists #DeletedRelationships;
-								create table #DeletedRelationships ([ID] int, ItemNumber int, Payload varchar(200));
-
-								insert into #DeletedRelationships
-									select  I.ID,
-											EA.ItemNumber,
-											'{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
-									from    IntersectDetail I
-											inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID and I.[PredicateType] in (3,4) 
-											inner join api.ExecutionDeletedAsset EA on 
-												EA.Object = I.Object 
-												and EA.ObjectID = I.ObjectID 
-												and EA.ExecutionID = @ExecutionID
-												and EA.Success is null 
-												and EA.ItemNumber between @beginItemNumber and @endItemNumber 
-												and EA.FromHierarchy = 0;
-
-								-- Log the parent removals into Dependent Change table
-								insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
-									select distinct  @ExecutionID, ItemNumber, 1, 3, Payload
-									from    #DeletedRelationships dr
-									where not exists (
-										select 1 from api.ExecutionItemDependentChange dc
-										where dc.ExecutionID = @ExecutionID
-										and dc.ItemNumber = dr.ItemNumber
-										and dc.DependentChangeType = 1
-										and dc.[Action] = 3
-									);",
-new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-
-			#endregion
-
 			#region Delete surveys
 
 			Connection.Execute($@"
@@ -3103,7 +3019,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 					from    api.ExecutionDeletedAsset S
 							inner join [Intersect] I on I.ObjectAssetId = S.AssetId
 							inner join Asset P on P.Id = I.SubjectAssetId
-					where   " + querySuffix, 
+					where   " + querySuffix + " group by S.ExecutionID, S.ItemNumber, cast(P.Uid as varchar(50))", 
 					new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 			Connection.Execute(
@@ -5037,43 +4953,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     Connection.Close();
 
-                    if (sendGraphEvents)
-                    {
-						AddMeasurement(metrics, $"SendAssetGraphEvents > Begin", 0, ++step);
-
-						IEnumerable<IGraphAsset> graphResults = results.AsEnumerable();
-
-                        if (parentIntersectGuids.Any())
-                        {
-                            graphResults = graphResults.Concat(parentIntersectGuids.Select(i => new DatabaseBulkRelationshipResult()
-                            {
-                                uid = i,
-                                Success = true
-                            }));
-                        }
-
-                        try
-                        {
-
-                            Dictionary<Guid, List<string>> changedFields = new Dictionary<Guid, List<string>>();
-                            foreach (int key in importFields.Keys)
-                            {
-                                DatabaseBulkAssetResult r = results.SingleOrDefault(i => i.ItemNumber == key);
-                                if (r != null && !changedFields.ContainsKey(r.uid))
-                                {
-                                    changedFields.Add(r.uid, importFields[key]);
-                                }
-                            }
-
-                            sw.Restart();
-                            SendAssetGraphEvents(graphResults, changedFields, true);
-                            AddMeasurement(metrics, $"SendAssetGraphEvents", sw.ElapsedMilliseconds, ++step);
-                        }
-                        catch
-                        {
-
-                        }
-                    }
+					// TODO: Add event grid calls here.
 
                     if (sendWorkflowEvents)
                     {
@@ -5951,12 +5831,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     Connection.Close();
                     sw.Restart();
 
-                    if (sendGraphEvents)
-                    {
-                        SendAssetGraphEvents(results);
-                        AddMeasurement(metrics, "SendAssetGraphEvents", sw.ElapsedMilliseconds, ++step);
-                        sw.Restart();
-                    }
+					// TODO: Add event grid calls here.
 
                     if (sendWorkflowEvents)
                     {
@@ -6567,12 +6442,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     Connection.Close();
                     sw.Restart();
 
-                    if (sendGraphEvents)
-                    {
-                        SendAssetGraphEvents(results);
-                        AddMeasurement(metrics, "SendAssetGraphEvents", sw.ElapsedMilliseconds, ++step);
-                        sw.Restart();
-                    }
+					// TODO: Add event grid calls here.
 
                     if (sendWorkflowEvents)
                     {
@@ -6996,12 +6866,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                 }
 
                 Connection.Close();
-                if (sendGraphEvents)
-                {
-                    SendAssetGraphEvents(results);
-                }
+				// TODO: Add event grid calls here.
 
-                if (sendWorkflowEvents)
+				if (sendWorkflowEvents)
                 {
                     SendWorkflowEvents("IntersectType", it.ID, results, ChangeType.Delete);
                 }
@@ -11103,25 +10970,8 @@ where   ER.ExecutionID = @ExecutionID
                 }
             }
 
-            //Convert GroupResponseResult to DatabaseBulkAssetResult to use in SendAssetGraphEvents
-            IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r =>
-            {
-                return new DatabaseBulkAssetResult
-                {
-                    ExecutionItemUid = r.ExecutionItemUid,
-                    ItemNumber = r.ItemNumber,
-                    uid = r.uid ?? Guid.Empty,
-                    Message = r.Message,
-                    Success = r.Success,
-                    Object = SystemObjects.Group.ToString()
-                };
-            }).AsEnumerable();
-            if (graphResults.Any())
-            {
-                SendAssetGraphEvents(graphResults);
-            }
-
-            return results;
+			// TODO: Add event grid calls here.
+			return results;
         }
 
         public List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups)

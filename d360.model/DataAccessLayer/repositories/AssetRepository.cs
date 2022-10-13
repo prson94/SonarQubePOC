@@ -3085,13 +3085,7 @@ where an.Uid = fam.uid)
 				execution.CompletedOn = DateTime.UtcNow;
 				CompanyContext.Update(execution);
 
-				CompanyContext.SendApiGraphEvent(new ApiExecutionInfo
-				{
-					ExecutionID = execution.ExecutionID,
-					Action = ApiExecutionAction.DeleteAssets,
-					CompanyID = CompanyContext.CurrentCompanyID
-				});
-
+				// TODO: Add event grid calls here.
 			}
 			catch (Exception ex)
 			{
