@@ -39,8 +39,8 @@
                     </div>
                     <div class="col s12"></div>
                     <div class="col s12">
-						<button igButton class="ig-button-primary" margin type="submit" i18n-label [disabled]="!workflowForm.valid" style="width: 150px;" label="Submit"></button>
-						<button igButton class="ig-button-secondary" type="button" i18n-label (click)="close()" label="Cancel" style="width: 150px;"></button>
+						<button igButton class="ig-button-primary" margin type="submit" i18n-label [disabled]="!workflowForm.valid" label="Submit"></button>
+						<button igButton class="ig-button-secondary" type="button" i18n-label (click)="close()" label="Cancel"></button>
 					</div>
                 </div>
             </form>
@@ -52,7 +52,7 @@
                 <div *ngIf="omittedCount > 0" class="col s12" i18n>{{omittedCount}} items were omitted because they were deleted, already completed, or you do not have permission to complete them.</div>
                 <div class="col s12"></div>
                 <div class="col s12">
-                    <button igButton class="ig-button-primary" type="button" i18n-label (click)="complete();" label="Close" style="width: 150px;"></button>
+                    <button igButton class="ig-button-primary" type="button" i18n-label (click)="complete();" label="Close"></button>
                 </div>
             </div>
         </div>
@@ -62,7 +62,7 @@
                 <div class="col s12" i18n>All the selected items have been omitted because they were deleted, already completed, or you do not have permission to complete them.</div>
                 <div class="col s12"></div>
                 <div class="col s12">
-                    <button igButton class="ig-button-primary" type="button" (click)="close();" i18n-label label="Close" style="width: 150px;"></button>
+                    <button igButton class="ig-button-primary" type="button" (click)="close();" i18n-label label="Close"></button>
                 </div>
             </div>
         </div>

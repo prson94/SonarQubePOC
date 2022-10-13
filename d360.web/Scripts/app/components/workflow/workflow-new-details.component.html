@@ -94,9 +94,9 @@
                 </ng-template>
             </p-table>
             <div style="padding:10px">
-                <button *ngIf="hasCloseButton" i18n-label igButton type="button" class="ig-button-secondary" margin (click)="close();" label="Close" style="width: 150px;"></button>
-                <button igButton type="button" class="ig-button-primary" margin i18n-label (click)="bulkRespond();" label="Bulk Respond" style="width: 150px;" [disabled]="selection == null || selection.length < 1 || !isMe"></button>
-                <button *ngIf="isAdmin" igButton i18n-label type="button" class="ig-button-primary" (click)="bulkReassign();" label="Bulk Reassign" style="width: 150px;" [disabled]="selection == null || selection.length < 1"></button>
+                <button *ngIf="hasCloseButton" i18n-label igButton type="button" class="ig-button-secondary" margin (click)="close();" label="Close"></button>
+                <button igButton type="button" class="ig-button-primary" margin i18n-label (click)="bulkRespond();" label="Bulk Respond" [disabled]="selection == null || selection.length < 1 || !isMe"></button>
+                <button *ngIf="isAdmin" igButton i18n-label type="button" class="ig-button-primary" (click)="bulkReassign();" label="Bulk Reassign" [disabled]="selection == null || selection.length < 1"></button>
             </div>
         </div>
     </div>
