@@ -1438,7 +1438,7 @@ namespace d360.model
 			//use SQL here instead of EF to avoid triggering further workflows
 			if (field == null && !string.IsNullOrEmpty(val))
 			{
-				await Database.Connection.ExecuteAsync("insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], IssueID, IntersectID UpdatedBy) values (@assetID, @fieldTypeID, @objectId, @objectType, @value, @IssueID, @IntersectID, @updatedBy)"
+				await Database.Connection.ExecuteAsync("insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], IssueID, IntersectID, UpdatedBy) values (@assetID, @fieldTypeID, @objectId, @objectType, @value, @IssueID, @IntersectID, @updatedBy)"
 					, new
 					{
 						value = val,
