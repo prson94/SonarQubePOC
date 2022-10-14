@@ -30,7 +30,7 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
                         </ng-template>
                     </p-dropdown>
                 </div>
-			  `,
+              `,
     providers: [COLORPICKER_VALUE_ACCESSOR],
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./color-picker.less'],

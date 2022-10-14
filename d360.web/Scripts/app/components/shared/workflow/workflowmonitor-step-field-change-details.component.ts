@@ -43,9 +43,9 @@ import { CompanySettingsService } from "../../../services/settings.service";
                                     <td>{{getFieldName(item)}}</td>
                                     <td>
                                          <div [ngSwitch]="item.Type" style="overflow-x: auto">
-	                                        <span *ngSwitchCase="'Html'" style="display:block; word-wrap:break-word !important" [innerHtml]="getHtmlFieldValue(item)"></span>
+                                            <span *ngSwitchCase="'Html'" style="display:block; word-wrap:break-word !important" [innerHtml]="getHtmlFieldValue(item)"></span>
                                             <span *ngSwitchCase="'Link'" style="display:block; word-wrap:break-word !important"><a href="{{getUrl(item.Value)}}" target="_blank" style="font-weight:bold">{{getName(item.Value)}}</a></span>
-	                                        <span *ngSwitchDefault style="display:block; word-wrap:break-word !important" >{{item.Value}}</span>
+                                            <span *ngSwitchDefault style="display:block; word-wrap:break-word !important" >{{item.Value}}</span>
                                         </div>
                                     </td>
                                     <td>{{item.FormValue}}</td>

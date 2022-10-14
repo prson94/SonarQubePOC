@@ -11,7 +11,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 @Component({
     selector: 'd3s-dayofweek-input',
     template: `
-		        <div class="dayofweek-input">
+                <div class="dayofweek-input">
                     <div *ngIf="label.length > 0" class="dayofweek-label">{{label}}</div>
                     <ul class="dayofweek-days">
                         <li *ngFor="let i of week"><p-checkbox
@@ -24,7 +24,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
                         </p-checkbox></li>
                     </ul>
                 </div>
-			  `,
+              `,
     styles: [`
         .dayofweek-label {
             margin-right: 2em;

@@ -22,7 +22,7 @@ import { LinkClickInterceptor } from '../../../../services/href-click-service';
                         <br/>
                     </span>
                 </div>
-			  `
+              `
 })
 
 export class ColorDisplayComponent implements OnInit {

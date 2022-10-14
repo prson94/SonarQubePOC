@@ -18,7 +18,7 @@ import { Router } from '@angular/router';
     <th [pSortableColumn]="'CurrentScore'"><ng-container i18n>Governance Score</ng-container>
     <d3s-sortIcon [field]="'CurrentScore'"></d3s-sortIcon></th>
             </tr>
-		    <tr [hidden]="showSimpleFilter">
+            <tr [hidden]="showSimpleFilter">
                 <th ><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
     <th ></th>
             </tr>
@@ -33,7 +33,7 @@ import { Router } from '@angular/router';
             </td>
             </tr>
         </ng-template>
-	    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords" ></d3s-grid-paging-info>
         </ng-template>
     </p-table>
