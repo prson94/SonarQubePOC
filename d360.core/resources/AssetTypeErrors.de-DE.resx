@@ -127,9 +127,6 @@
   <data name="CheckRequest" xml:space="preserve">
     <value>Prüfen Sie Ihre Anforderung und versuchen Sie es erneut.</value>
   </data>
-  <data name="ExistingOrganizationType" xml:space="preserve">
-    <value>Es gibt bereits einen Organisationstyp mit diesem Namen.</value>
-  </data>
   <data name="ImproperPredicate" xml:space="preserve">
     <value>Sie haben kein ordnungsgemäßes Prädikat basierend auf der Asset-Typ-Klasse angegeben.</value>
   </data>
@@ -268,9 +265,6 @@
   <data name="InvalidClass" xml:space="preserve">
     <value>Ungültige {0} angegeben.</value>
   </data>
-  <data name="InvalidOrganization" xml:space="preserve">
-    <value>Ungültige Organisation angegeben.</value>
-  </data>
   <data name="InvalidParentSelected" xml:space="preserve">
     <value>Ungültiges übergeordnetes Element ausgewählt</value>
   </data>
@@ -285,9 +279,6 @@
   </data>
   <data name="ParentChildRelationExists" xml:space="preserve">
     <value>Es sind übergeordnete/untergeordnete Beziehungen für Assets dieses Typs vorhanden. Sie können den übergeordneten Typ erst ändern, wenn diese Beziehungen entfernt wurden.</value>
-  </data>
-  <data name="TitleWrongOrganization" xml:space="preserve">
-    <value>Falsche Organisation</value>
   </data>
   <data name="WrongClass" xml:space="preserve">
     <value>{0} falsch</value>

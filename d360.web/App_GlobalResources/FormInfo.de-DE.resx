@@ -136,9 +136,6 @@
   <data name="NoFormData_FieldType" xml:space="preserve">
     <value>Feldtyp</value>
   </data>
-  <data name="OrganizationType" xml:space="preserve">
-    <value>Organisationstyp</value>
-  </data>
   <data name="Permisions_Error_Add" xml:space="preserve">
     <value>Sie verfügen nicht über die Berechtigung, dieses Element hinzuzufügen.</value>
   </data>

@@ -160,6 +160,12 @@
   <data name="ResponsibilitySuccessDeleteMessage" xml:space="preserve">
     <value>Responsabilité correctement supprimée</value>
   </data>
+  <data name="ResponsibilityTypeHasAssetAssigments" xml:space="preserve">
+    <value>Le type de responsabilité a des tâches d’asset et ne peut pas être supprimé. Utilisez [cascade]=true pour supprimer toutes les tâches et les règles</value>
+  </data>
+  <data name="ResponsibilityTypeUidNotExist" xml:space="preserve">
+    <value>Le type de responsabilité dont l’UID est '{0}' n’existe pas.</value>
+  </data>
   <data name="ResponsibilityUidNonUnique" xml:space="preserve">
     <value>UID de responsabilité non uniques : {0}. Les identifiants d’une même table doivent être uniques.</value>
   </data>

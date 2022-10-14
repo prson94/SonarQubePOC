@@ -199,12 +199,6 @@
   <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
-  <data name="DomainPartOfOrganization" xml:space="preserve">
-    <value>Este dominio ya es parte de esta organización</value>
-  </data>
-  <data name="EmailAlreadyInviteThisOrganization" xml:space="preserve">
-    <value>Este correo electrónico ya ha recibido una invitación a esta organización</value>
-  </data>
   <data name="emailNotValid" xml:space="preserve">
     <value>El correo electrónico que ha introducido no es válido</value>
   </data>
@@ -400,26 +394,11 @@
   <data name="NotAllowedUpdateRelationship" xml:space="preserve">
     <value>No está permitido actualizar este tipo de relación, ya que hay tipos de campo existentes que dependen de él.</value>
   </data>
-  <data name="NotDeleteOrganizationType" xml:space="preserve">
-    <value>No se ha podido eliminar el tipo de organización</value>
-  </data>
   <data name="NotFoundServiceEdit" xml:space="preserve">
     <value>No se puede encontrar el servicio especificado que desea editar</value>
   </data>
   <data name="NotFoundShoppingCart" xml:space="preserve">
     <value>No se ha podido encontrar la cesta de la compra especificada.</value>
-  </data>
-  <data name="Organization" xml:space="preserve">
-    <value>Organización</value>
-  </data>
-  <data name="OrganizationDomain" xml:space="preserve">
-    <value>Dominio de la organización</value>
-  </data>
-  <data name="OrganizationInvitation" xml:space="preserve">
-    <value>Invitación de la organización</value>
-  </data>
-  <data name="organizationType" xml:space="preserve">
-    <value>OrganizationType</value>
   </data>
   <data name="PleaseSpecifyUserNamePassword" xml:space="preserve">
     <value>Especifique un nombre de usuario y una contraseña válidos</value>
@@ -558,9 +537,6 @@
   </data>
   <data name="UriCreated" xml:space="preserve">
     <value>URI creado correctamente.</value>
-  </data>
-  <data name="UserAlreadyRegisteredThisOrganization" xml:space="preserve">
-    <value>Ya hay un usuario con esta dirección de correo electrónico registrado en esta organización</value>
   </data>
   <data name="UserDoesnotAdmin" xml:space="preserve">
     <value>El usuario no tiene privilegios de administrador.</value>

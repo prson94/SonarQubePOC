@@ -133,6 +133,9 @@
   <data name="AssetTypeInProcessNotDelete" xml:space="preserve">
     <value>Eliminazione del tipo di risorsa con l'UID {0} già in corso.</value>
   </data>
+  <data name="AssetTypeNotFound" xml:space="preserve">
+    <value>Nessun tipo di risorsa trovato per la GUID fornita [{0}]</value>
+  </data>
   <data name="AssetTypeUid" xml:space="preserve">
     <value>AssetTypeUid</value>
   </data>
@@ -180,6 +183,9 @@
   </data>
   <data name="InvalidAssetTypeClass" xml:space="preserve">
     <value>Classe tipo di risorsa '{0}' non valida</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>Non hai fornito un UID Tipo di risorsa valido per questa richiesta.</value>
   </data>
   <data name="InvalidExportTemplateCurrent" xml:space="preserve">
     <value>Modello di esportazione non valido per il tipo di risorsa corrente.</value>

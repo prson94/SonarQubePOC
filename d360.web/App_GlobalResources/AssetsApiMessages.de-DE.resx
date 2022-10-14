@@ -133,6 +133,9 @@
   <data name="AssetTypeInProcessNotDelete" xml:space="preserve">
     <value>Löschen von Asset-Typ mit UID {0} bereits in Bearbeitung.</value>
   </data>
+  <data name="AssetTypeNotFound" xml:space="preserve">
+    <value>Kein Asset-Typ für die angegebene GUID {0} gefunden.</value>
+  </data>
   <data name="AssetTypeUid" xml:space="preserve">
     <value>AssetTypeUid</value>
   </data>
@@ -180,6 +183,9 @@
   </data>
   <data name="InvalidAssetTypeClass" xml:space="preserve">
     <value>Ungültige Asset-Typ-Klasse '{0}'</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>Sie haben keine gültige Asset-UID für diese Anforderung angegeben.</value>
   </data>
   <data name="InvalidExportTemplateCurrent" xml:space="preserve">
     <value>Ungültige Exportvorlage für aktuellen Asset-Typ.</value>

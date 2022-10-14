@@ -199,12 +199,6 @@
   <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
-  <data name="DomainPartOfOrganization" xml:space="preserve">
-    <value>Diese Domäne ist bereits Teil dieser Organisation.</value>
-  </data>
-  <data name="EmailAlreadyInviteThisOrganization" xml:space="preserve">
-    <value>Diese E-Mail-Adresse wurde bereits zu dieser Organisation eingeladen.</value>
-  </data>
   <data name="emailNotValid" xml:space="preserve">
     <value>Die eingegebene E-Mail-Adresse ist nicht gültig.</value>
   </data>
@@ -400,26 +394,11 @@
   <data name="NotAllowedUpdateRelationship" xml:space="preserve">
     <value>Sie dürfen diesen Beziehungstyp nicht aktualisieren, da vorhandene Feldtypen davon abhängig sind.</value>
   </data>
-  <data name="NotDeleteOrganizationType" xml:space="preserve">
-    <value>Organisationstyp konnte nicht gelöscht werden</value>
-  </data>
   <data name="NotFoundServiceEdit" xml:space="preserve">
     <value>Angegebener zu bearbeitender Dienst wurde nicht gefunden</value>
   </data>
   <data name="NotFoundShoppingCart" xml:space="preserve">
     <value>Angegebener Warenkorb wurde nicht gefunden</value>
-  </data>
-  <data name="Organization" xml:space="preserve">
-    <value>Organisation</value>
-  </data>
-  <data name="OrganizationDomain" xml:space="preserve">
-    <value>Organisationsdomäne</value>
-  </data>
-  <data name="OrganizationInvitation" xml:space="preserve">
-    <value>Organisationseinladung</value>
-  </data>
-  <data name="organizationType" xml:space="preserve">
-    <value>OrganizationType</value>
   </data>
   <data name="PleaseSpecifyUserNamePassword" xml:space="preserve">
     <value>Geben Sie einen gültigen Benutzernamen und das zugehörige Passwort an.</value>
@@ -558,9 +537,6 @@
   </data>
   <data name="UriCreated" xml:space="preserve">
     <value>URI erstellt.</value>
-  </data>
-  <data name="UserAlreadyRegisteredThisOrganization" xml:space="preserve">
-    <value>Bei dieser Organisation ist bereits ein Benutzer mit dieser E-Mail-Adresse registriert</value>
   </data>
   <data name="UserDoesnotAdmin" xml:space="preserve">
     <value>Benutzer verfügt nicht über Administratorberechtigungen.</value>

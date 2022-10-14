@@ -127,9 +127,6 @@
   <data name="CheckRequest" xml:space="preserve">
     <value>Controllare la richiesta e riprovare.</value>
   </data>
-  <data name="ExistingOrganizationType" xml:space="preserve">
-    <value>Esiste già un tipo di organizzazione con quel nome.</value>
-  </data>
   <data name="ImproperPredicate" xml:space="preserve">
     <value>Non è stato fornito un predicato adeguato in base alla classe del tipo di risorsa.</value>
   </data>
@@ -268,9 +265,6 @@
   <data name="InvalidClass" xml:space="preserve">
     <value>{0} fornito non valido.</value>
   </data>
-  <data name="InvalidOrganization" xml:space="preserve">
-    <value>Organizzazione fornita non valida.</value>
-  </data>
   <data name="InvalidParentSelected" xml:space="preserve">
     <value>Entità principale non valida selezionata</value>
   </data>
@@ -285,9 +279,6 @@
   </data>
   <data name="ParentChildRelationExists" xml:space="preserve">
     <value>Esistono relazioni entità principale/figlio esistenti per risorse di questo tipo. Non è possibile modificare il tipo di entità principale finché queste relazioni non vengono rimosse.</value>
-  </data>
-  <data name="TitleWrongOrganization" xml:space="preserve">
-    <value>Organizzazione errata</value>
   </data>
   <data name="WrongClass" xml:space="preserve">
     <value>{0} errata</value>

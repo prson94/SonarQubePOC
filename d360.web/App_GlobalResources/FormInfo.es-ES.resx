@@ -136,9 +136,6 @@
   <data name="NoFormData_FieldType" xml:space="preserve">
     <value>tipo de campo</value>
   </data>
-  <data name="OrganizationType" xml:space="preserve">
-    <value>Tipo de organización</value>
-  </data>
   <data name="Permisions_Error_Add" xml:space="preserve">
     <value>No tiene permisos para añadir esto.</value>
   </data>

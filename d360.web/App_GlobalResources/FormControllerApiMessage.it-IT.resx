@@ -199,12 +199,6 @@
   <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
-  <data name="DomainPartOfOrganization" xml:space="preserve">
-    <value>Questo dominio fa già parte di questa organizzazione</value>
-  </data>
-  <data name="EmailAlreadyInviteThisOrganization" xml:space="preserve">
-    <value>Questa e-mail è già stata invitata a questa organizzazione</value>
-  </data>
   <data name="emailNotValid" xml:space="preserve">
     <value>L'e-mail che hai inserito non è valida</value>
   </data>
@@ -400,26 +394,11 @@
   <data name="NotAllowedUpdateRelationship" xml:space="preserve">
     <value>Non è consentito aggiornare questo tipo di relazione poiché sono presenti tipi di campo esistenti che dipendono da esso.</value>
   </data>
-  <data name="NotDeleteOrganizationType" xml:space="preserve">
-    <value>Impossibile eliminare il tipo di organizzazione</value>
-  </data>
   <data name="NotFoundServiceEdit" xml:space="preserve">
     <value>Impossibile trovare il servizio specificato da modificare</value>
   </data>
   <data name="NotFoundShoppingCart" xml:space="preserve">
     <value>Impossibile trovare il carrello specificato.</value>
-  </data>
-  <data name="Organization" xml:space="preserve">
-    <value>Organizzazione</value>
-  </data>
-  <data name="OrganizationDomain" xml:space="preserve">
-    <value>Dominio organizzazione</value>
-  </data>
-  <data name="OrganizationInvitation" xml:space="preserve">
-    <value>Invito organizzazione</value>
-  </data>
-  <data name="organizationType" xml:space="preserve">
-    <value>OrganizationType</value>
   </data>
   <data name="PleaseSpecifyUserNamePassword" xml:space="preserve">
     <value>Specificare un nome utente e una password validi.</value>
@@ -558,9 +537,6 @@
   </data>
   <data name="UriCreated" xml:space="preserve">
     <value>URI creato correttamente.</value>
-  </data>
-  <data name="UserAlreadyRegisteredThisOrganization" xml:space="preserve">
-    <value>Un utente con questo indirizzo e-mail è già registrato in questa organizzazione</value>
   </data>
   <data name="UserDoesnotAdmin" xml:space="preserve">
     <value>L'utente non dispone dei privilegi di amministratore.</value>

@@ -386,4 +386,10 @@
   <data name="LastSeen_Name" xml:space="preserve">
     <value>Visto por última vez</value>
   </data>
+  <data name="FieldsRemoved" xml:space="preserve">
+    <value>Campos eliminados correctamente.</value>
+  </data>
+  <data name="FieldsUpdated" xml:space="preserve">
+    <value>Campos actualizados correctamente.</value>
+  </data>
 </root>

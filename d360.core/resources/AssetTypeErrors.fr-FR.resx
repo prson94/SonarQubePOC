@@ -127,9 +127,6 @@
   <data name="CheckRequest" xml:space="preserve">
     <value>Veuillez vérifier votre requête et réessayer.</value>
   </data>
-  <data name="ExistingOrganizationType" xml:space="preserve">
-    <value>Il existe déjà un type d’organisation portant ce nom.</value>
-  </data>
   <data name="ImproperPredicate" xml:space="preserve">
     <value>Vous n’avez pas fourni de prédicat approprié basé sur la catégorie de type d’asset.</value>
   </data>
@@ -268,9 +265,6 @@
   <data name="InvalidClass" xml:space="preserve">
     <value>Valeur {0} fournie non valide.</value>
   </data>
-  <data name="InvalidOrganization" xml:space="preserve">
-    <value>Organisation fournie non valide.</value>
-  </data>
   <data name="InvalidParentSelected" xml:space="preserve">
     <value>Parent sélectionné non valide</value>
   </data>
@@ -285,9 +279,6 @@
   </data>
   <data name="ParentChildRelationExists" xml:space="preserve">
     <value>Des relations parent/enfant existent pour les assets de ce type. Vous ne pouvez pas modifier le type parent tant que ces relations ne sont pas supprimées.</value>
-  </data>
-  <data name="TitleWrongOrganization" xml:space="preserve">
-    <value>Organisation erronée</value>
   </data>
   <data name="WrongClass" xml:space="preserve">
     <value>Erreur au niveau de {0}</value>

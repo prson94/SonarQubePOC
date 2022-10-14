@@ -229,12 +229,6 @@
   <data name="EnableJsonAttribute_Name" xml:space="preserve">
     <value>JSON-attribuut inschakelen</value>
   </data>
-  <data name="EnableOrganizations_Desc" xml:space="preserve">
-    <value>Sta toe dat organisaties worden gemaakt en beheerd en dat gebruikers die bij deze organisaties horen in het systeem worden geregistreerd.</value>
-  </data>
-  <data name="EnableOrganizations_Name" xml:space="preserve">
-    <value>Organisaties inschakelen</value>
-  </data>
   <data name="EnableSagacity_Desc" xml:space="preserve">
     <value>Hiermee schakelt u het gebruik van DQ+-dashboards in</value>
   </data>
@@ -257,7 +251,7 @@
     <value>De UID van de referentielijst die de governancerollen bevat waarvan de Diagram Designer afhankelijk is.</value>
   </data>
   <data name="GovernanceRoleReferenceListUid_Name" xml:space="preserve">
-    <value>Referentielijst-UID van governancerol</value>
+    <value>Referentielijst-UID van governanceregel</value>
   </data>
   <data name="HasRegisterLink_Desc" xml:space="preserve">
     <value>Heeft registratiekoppeling op de aanmeldpagina</value>
