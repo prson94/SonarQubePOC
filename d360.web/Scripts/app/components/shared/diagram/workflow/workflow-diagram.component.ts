@@ -1196,10 +1196,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (f["@IsActionForm"] && f["@IsActionForm"] == 'true' && f["@FormFieldId"]) {
                         var fieldData = f["@FormFieldId"].split('|');
                         if (fieldData[0] == 'IssueType') {
-							refField = this.fieldTypes.find((x) => x.IssueTypeID == null && x.ID == +fieldData[1]);
+							refField = this.fieldTypes.find((x) => x.IssueTypeID != null && x.ID == +fieldData[1]);
                         }
                         else {
-							refField = this.fieldTypes.find((x) => x.IssueTypeID != null && x.ID == +fieldData[1]);
+							refField = this.fieldTypes.find((x) => x.IssueTypeID == null && x.ID == +fieldData[1]);
                         }
 
                         if (!refField) {
