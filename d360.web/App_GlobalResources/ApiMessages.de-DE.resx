@@ -361,9 +361,6 @@
   <data name="FileUploadMessage" xml:space="preserve">
     <value>Datei hochgeladen</value>
   </data>
-  <data name="GroupIsAcitveDirectorNotManageManually" xml:space="preserve">
-    <value>Bei der angegebenen Gruppen-UID handelt es sich um eine Active Directory-Gruppe, die nicht manuell verwaltet werden kann.</value>
-  </data>
   <data name="GroupUidNotExists" xml:space="preserve">
     <value>Die angegebene Gruppen-UID ist nicht gültig. Die Gruppe ist nicht vorhanden.</value>
   </data>
@@ -489,12 +486,6 @@
   </data>
   <data name="InvalidApiKeyOrApiSecret" xml:space="preserve">
     <value>[apiKey] oder [apiSecret] für aktuellen Benutzer ungültig</value>
-  </data>
-  <data name="InvalidOrgTypeUid" xml:space="preserve">
-    <value>Ungültige [organizationTypeUid] angegeben</value>
-  </data>
-  <data name="InvalidOrgUid" xml:space="preserve">
-    <value>Ungültige UID für Organisation angegeben</value>
   </data>
   <data name="InvalidUser" xml:space="preserve">
     <value>Ungültige Benutzerinformationen</value>
@@ -747,5 +738,14 @@
   </data>
   <data name="InvalidProfileIdentifier" xml:space="preserve">
     <value>Ungültige Profilkennung.</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="YouAreNoLongerWatching" xml:space="preserve">
+    <value>Sie überwachen {0} nicht mehr.</value>
+  </data>
+  <data name="YouAreNowWatching" xml:space="preserve">
+    <value>Sie überwachen {0} jetzt.</value>
   </data>
 </root>

@@ -160,6 +160,12 @@
   <data name="ResponsibilitySuccessDeleteMessage" xml:space="preserve">
     <value>Aufgabe gelöscht</value>
   </data>
+  <data name="ResponsibilityTypeHasAssetAssigments" xml:space="preserve">
+    <value>Der Aufgabentyp hat Asset-Zuordnungen und kann nicht gelöscht werden. Zum Löschen aller Zuordnungen und Regeln [cascade]=true verwenden</value>
+  </data>
+  <data name="ResponsibilityTypeUidNotExist" xml:space="preserve">
+    <value>Aufgabentyp mit UID '{0}' nicht vorhanden.</value>
+  </data>
   <data name="ResponsibilityUidNonUnique" xml:space="preserve">
     <value>Keine eindeutigen Aufgaben-UIDs: {0}. Kennungen müssen innerhalb einer Tabelle eindeutig sein.</value>
   </data>

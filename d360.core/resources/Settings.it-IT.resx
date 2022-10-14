@@ -229,12 +229,6 @@
   <data name="EnableJsonAttribute_Name" xml:space="preserve">
     <value>Abilita attributo JSON</value>
   </data>
-  <data name="EnableOrganizations_Desc" xml:space="preserve">
-    <value>Consente la creazione e la gestione di organizzazioni, nonché la registrazione degli utenti appartenenti a queste organizzazioni nel sistema</value>
-  </data>
-  <data name="EnableOrganizations_Name" xml:space="preserve">
-    <value>Abilita organizzazioni</value>
-  </data>
   <data name="EnableSagacity_Desc" xml:space="preserve">
     <value>Consente l'uso di dashboard DQ+</value>
   </data>

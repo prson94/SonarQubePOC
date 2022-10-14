@@ -199,12 +199,6 @@
   <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
-  <data name="DomainPartOfOrganization" xml:space="preserve">
-    <value>Dit domein maakt al deel uit van deze organisatie</value>
-  </data>
-  <data name="EmailAlreadyInviteThisOrganization" xml:space="preserve">
-    <value>Dit e-mailadres is al uitgenodigd voor deze organisatie</value>
-  </data>
   <data name="emailNotValid" xml:space="preserve">
     <value>Het ingevoerde e-mailadres is niet geldig</value>
   </data>
@@ -400,26 +394,11 @@
   <data name="NotAllowedUpdateRelationship" xml:space="preserve">
     <value>U mag dit relatietype niet bijwerken omdat er veldtypen bestaan die ervan afhankelijk zijn.</value>
   </data>
-  <data name="NotDeleteOrganizationType" xml:space="preserve">
-    <value>Kan organisatietype niet verwijderen</value>
-  </data>
   <data name="NotFoundServiceEdit" xml:space="preserve">
     <value>Kan de opgegeven service niet vinden om te bewerken</value>
   </data>
   <data name="NotFoundShoppingCart" xml:space="preserve">
     <value>Kan opgegeven winkelwagen niet vinden.</value>
-  </data>
-  <data name="Organization" xml:space="preserve">
-    <value>Organisatie</value>
-  </data>
-  <data name="OrganizationDomain" xml:space="preserve">
-    <value>Organisatiedomein</value>
-  </data>
-  <data name="OrganizationInvitation" xml:space="preserve">
-    <value>Uitnodiging organisatie</value>
-  </data>
-  <data name="organizationType" xml:space="preserve">
-    <value>OrganizationType</value>
   </data>
   <data name="PleaseSpecifyUserNamePassword" xml:space="preserve">
     <value>Geef een geldige gebruikersnaam en wachtwoord op.</value>
@@ -558,9 +537,6 @@
   </data>
   <data name="UriCreated" xml:space="preserve">
     <value>URI is gemaakt.</value>
-  </data>
-  <data name="UserAlreadyRegisteredThisOrganization" xml:space="preserve">
-    <value>Er is al een gebruiker met dit e-mailadres geregistreerd bij deze organisatie</value>
   </data>
   <data name="UserDoesnotAdmin" xml:space="preserve">
     <value>Gebruiker heeft geen admin-privileges.</value>

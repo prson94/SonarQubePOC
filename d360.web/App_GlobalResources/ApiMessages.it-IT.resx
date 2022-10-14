@@ -361,9 +361,6 @@
   <data name="FileUploadMessage" xml:space="preserve">
     <value>File caricato correttamente</value>
   </data>
-  <data name="GroupIsAcitveDirectorNotManageManually" xml:space="preserve">
-    <value>L'UID di gruppo fornito è un gruppo di Active Directory e non è possibile gestirlo manualmente.</value>
-  </data>
   <data name="GroupUidNotExists" xml:space="preserve">
     <value>L'UID di gruppo fornito non è valido. Il gruppo non esiste.</value>
   </data>
@@ -489,12 +486,6 @@
   </data>
   <data name="InvalidApiKeyOrApiSecret" xml:space="preserve">
     <value>[apiKey] o [apiSecret] non valido per l'utente attuale</value>
-  </data>
-  <data name="InvalidOrgTypeUid" xml:space="preserve">
-    <value>[organizationTypeUid] fornito non valido</value>
-  </data>
-  <data name="InvalidOrgUid" xml:space="preserve">
-    <value>UID organizzazione fornito non valido</value>
   </data>
   <data name="InvalidUser" xml:space="preserve">
     <value>Informazioni utente non valide</value>
@@ -747,5 +738,14 @@
   </data>
   <data name="InvalidProfileIdentifier" xml:space="preserve">
     <value>Identificatore del profilo non valido.</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>tipo</value>
+  </data>
+  <data name="YouAreNoLongerWatching" xml:space="preserve">
+    <value>Non è più in corso il controllo di {0}.</value>
+  </data>
+  <data name="YouAreNowWatching" xml:space="preserve">
+    <value>È in corso il controllo di {0}.</value>
   </data>
 </root>

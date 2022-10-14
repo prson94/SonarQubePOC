@@ -361,9 +361,6 @@
   <data name="FileUploadMessage" xml:space="preserve">
     <value>Bestand is geüpload</value>
   </data>
-  <data name="GroupIsAcitveDirectorNotManageManually" xml:space="preserve">
-    <value>De opgegeven groeps-UID is een Active Directory-groep. Deze kan niet handmatig worden beheerd.</value>
-  </data>
   <data name="GroupUidNotExists" xml:space="preserve">
     <value>De opgegeven groeps-UID is geen geldige groeps-UID. Groep bestaat niet.</value>
   </data>
@@ -489,12 +486,6 @@
   </data>
   <data name="InvalidApiKeyOrApiSecret" xml:space="preserve">
     <value>Ongeldige [apiKey] of [apiSecret] voor huidige gebruiker</value>
-  </data>
-  <data name="InvalidOrgTypeUid" xml:space="preserve">
-    <value>Ongeldige [organizationTypeUid] opgegeven</value>
-  </data>
-  <data name="InvalidOrgUid" xml:space="preserve">
-    <value>Ongeldige organisatie-UID opgegeven</value>
   </data>
   <data name="InvalidUser" xml:space="preserve">
     <value>Ongeldige gebruikersgegevens</value>
@@ -747,5 +738,14 @@
   </data>
   <data name="InvalidProfileIdentifier" xml:space="preserve">
     <value>Ongeldige profiel-ID.</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>type</value>
+  </data>
+  <data name="YouAreNoLongerWatching" xml:space="preserve">
+    <value>U kijkt niet langer naar {0}.</value>
+  </data>
+  <data name="YouAreNowWatching" xml:space="preserve">
+    <value>U kijkt nu naar {0}.</value>
   </data>
 </root>

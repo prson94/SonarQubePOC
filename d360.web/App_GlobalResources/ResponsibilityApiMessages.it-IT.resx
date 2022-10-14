@@ -160,6 +160,12 @@
   <data name="ResponsibilitySuccessDeleteMessage" xml:space="preserve">
     <value>Responsabilità eliminata correttamente</value>
   </data>
+  <data name="ResponsibilityTypeHasAssetAssigments" xml:space="preserve">
+    <value>Il tipo di responsabilità ha assegnazioni di risorse e non può essere eliminato. Usa [cascade]=true per eliminare tutte le assegnazioni e le regole</value>
+  </data>
+  <data name="ResponsibilityTypeUidNotExist" xml:space="preserve">
+    <value>Il tipo di responsabilità con UID '{0}' non esiste.</value>
+  </data>
   <data name="ResponsibilityUidNonUnique" xml:space="preserve">
     <value>UID di responsabilità non univoci: {0}. Gli identificatori devono essere univoci all'interno di una tabella.</value>
   </data>

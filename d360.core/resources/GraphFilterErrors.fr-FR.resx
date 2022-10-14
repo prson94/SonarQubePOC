@@ -115,82 +115,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AssetTypeClass_ActionType" xml:space="preserve">
-    <value>Actietype</value>
+  <data name="InvalidAncestryMode" xml:space="preserve">
+    <value>Mode d’ascendance non valide.</value>
   </data>
-  <data name="AssetTypeClass_Business" xml:space="preserve">
-    <value>Bedrijfsasset</value>
+  <data name="InvalidAssetType" xml:space="preserve">
+    <value>Le type d’asset n’existe pas.</value>
   </data>
-  <data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
-    <value>Diagramasset</value>
+  <data name="InvalidDiagramType" xml:space="preserve">
+    <value>Type de diagramme non valide.</value>
   </data>
-  <data name="AssetTypeClass_GenericType" xml:space="preserve">
-    <value>Generiek type</value>
+  <data name="InvalidName" xml:space="preserve">
+    <value>Le champ nom ne doit pas être vide.</value>
   </data>
-  <data name="AssetTypeClass_GramaticType" xml:space="preserve">
-    <value>Grammaticaal type</value>
+  <data name="InvalidNumberOfHops" xml:space="preserve">
+    <value>Nombre de sauts non valide.</value>
   </data>
-  <data name="AssetTypeClass_Group" xml:space="preserve">
-    <value>Groep</value>
+  <data name="InvalidPredicate" xml:space="preserve">
+    <value>Le prédicat n’existe pas.</value>
   </data>
-  <data name="AssetTypeClass_Model" xml:space="preserve">
-    <value>Model</value>
-  </data>
-  <data name="AssetTypeClass_ModelType" xml:space="preserve">
-    <value>Modeltype</value>
-  </data>
-  <data name="AssetTypeClass_Policy" xml:space="preserve">
-    <value>Beleid</value>
-  </data>
-  <data name="AssetTypeClass_PolicyType" xml:space="preserve">
-    <value>Beleidstype</value>
-  </data>
-  <data name="AssetTypeClass_Reference" xml:space="preserve">
-    <value>Referentie</value>
-  </data>
-  <data name="AssetTypeClass_ReferenceList" xml:space="preserve">
-    <value>Referentielijst</value>
-  </data>
-  <data name="AssetTypeClass_Relationship" xml:space="preserve">
-    <value>Relatie</value>
-  </data>
-  <data name="AssetTypeClass_Resource" xml:space="preserve">
-    <value>Resource</value>
-  </data>
-  <data name="AssetTypeClass_Rule" xml:space="preserve">
-    <value>Regel</value>
-  </data>
-  <data name="AssetTypeClass_RuleType" xml:space="preserve">
-    <value>Regeltype</value>
-  </data>
-  <data name="AssetTypeClass_SemanticType" xml:space="preserve">
-    <value>Semantisch type</value>
-  </data>
-  <data name="AssetTypeClass_Task" xml:space="preserve">
-    <value>Diagram</value>
-  </data>
-  <data name="AssetTypeClass_Technical" xml:space="preserve">
-    <value>Technische asset</value>
-  </data>
-  <data name="AssetTypeClass_User" xml:space="preserve">
-    <value>Gebruiker</value>
-  </data>
-  <data name="CommonName_AssetType" xml:space="preserve">
-    <value>Assettype</value>
-  </data>
-  <data name="Instance" xml:space="preserve">
-    <value>Exemplaar</value>
-  </data>
-  <data name="ReferenceItem" xml:space="preserve">
-    <value>Referentie-item</value>
-  </data>
-  <data name="Text_Folder" xml:space="preserve">
-    <value>Map</value>
-  </data>
-  <data name="Text_GroupMembership" xml:space="preserve">
-    <value>Groepslidmaatschap</value>
-  </data>
-  <data name="Text_Users" xml:space="preserve">
-    <value>Gebruikers</value>
+  <data name="InvalidResponsibilityType" xml:space="preserve">
+    <value>Le type de responsabilité n’existe pas.</value>
   </data>
 </root>

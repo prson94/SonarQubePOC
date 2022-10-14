@@ -160,6 +160,12 @@
   <data name="ResponsibilitySuccessDeleteMessage" xml:space="preserve">
     <value>Verantwoordelijkheid is verwijderd</value>
   </data>
+  <data name="ResponsibilityTypeHasAssetAssigments" xml:space="preserve">
+    <value>Verantwoordelijkheidstype heeft assettoewijzingen en kan niet worden verwijderd. Gebruik [cascade]=true om alle toewijzingen en regels te verwijderen</value>
+  </data>
+  <data name="ResponsibilityTypeUidNotExist" xml:space="preserve">
+    <value>Verantwoordelijkheidstype met UID {0} bestaat niet.</value>
+  </data>
   <data name="ResponsibilityUidNonUnique" xml:space="preserve">
     <value>Geen unieke verantwoordelijkheids-UID's: {0}. ID's binnen een tabel moeten uniek zijn.</value>
   </data>

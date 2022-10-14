@@ -361,9 +361,6 @@
   <data name="FileUploadMessage" xml:space="preserve">
     <value>El archivo se ha cargado correctamente</value>
   </data>
-  <data name="GroupIsAcitveDirectorNotManageManually" xml:space="preserve">
-    <value>El UID de grupo proporcionado es un grupo del directorio activo y no se puede gestionar manualmente.</value>
-  </data>
   <data name="GroupUidNotExists" xml:space="preserve">
     <value>El UID de grupo proporcionado no es un UID de grupo válido. El grupo no existe.</value>
   </data>
@@ -489,12 +486,6 @@
   </data>
   <data name="InvalidApiKeyOrApiSecret" xml:space="preserve">
     <value>[apiKey] o [apiSecret] no válido para el usuario actual</value>
-  </data>
-  <data name="InvalidOrgTypeUid" xml:space="preserve">
-    <value>[organizationTypeUid] proporcionado no válido</value>
-  </data>
-  <data name="InvalidOrgUid" xml:space="preserve">
-    <value>UID de organización proporcionado no válido</value>
   </data>
   <data name="InvalidUser" xml:space="preserve">
     <value>Información de usuario no válida</value>
@@ -747,5 +738,14 @@
   </data>
   <data name="InvalidProfileIdentifier" xml:space="preserve">
     <value>Identificador de perfil no válido.</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>tipo</value>
+  </data>
+  <data name="YouAreNoLongerWatching" xml:space="preserve">
+    <value>Ya no está viendo {0}.</value>
+  </data>
+  <data name="YouAreNowWatching" xml:space="preserve">
+    <value>Ahora está viendo {0}.</value>
   </data>
 </root>

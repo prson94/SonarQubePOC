@@ -122,7 +122,7 @@
     <value>Kan niet de zoekstrategie Geen gebruiken</value>
   </data>
   <data name="DuplicateCombination" xml:space="preserve">
-    <value>De aanvraag bevat dubbele combinaties van assetUid, metricAssetUid en effectiveDate. U moet unieke combinaties voor die drie velden verzenden.</value>
+    <value>De aanvraag bevat dubbele combinaties van assetUid, metricAssetUid en effectiveDate. U moet unieke combinatie voor die drie velden verzenden.</value>
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
     <value>Ongeldige waarde voor parameter [assetTypeUid]</value>
