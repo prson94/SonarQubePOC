@@ -1089,7 +1089,7 @@ cross apply (
 						COALESCE(F.[Value], F.[FormattedValue]) as Value, 
 						cast(FieldTypeID as nvarchar) + ':' as FieldTypeID
 				from	Asset B
-						inner join Field F on F.ObjectType = B.[Object] and F.ObjectID = B.ObjectID 
+						inner join Field F on F.AssetID = B.Id
 						inner join FieldType FT on FT.ID = F.FieldTypeID and FT.AssetTypeID = B.AssetTypeID and FT.IsPartOfKey = 1
 				where	B.ID = A.ID
 				
@@ -1267,7 +1267,7 @@ inner join AssetPath P on P.ID = A.ID
 		private async Task<string> GetModelPathForLevel(LoadItem item, AssetType assetType, int level)
 		{
 			return (await QueryAsync<string>(@"
-			select STRING_AGG( ISNULL(coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],''), ' '), '>') as [Value]
+			select STRING_AGG( ISNULL(coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],''), ' '), ' > ') as [Value]
 				from LoadColumn LC
 				inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @rowIndex and IC.ColumnIndex = LC.ColumnIndex
 				inner join FieldType FT on FT.AssetTypeID = @atID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
