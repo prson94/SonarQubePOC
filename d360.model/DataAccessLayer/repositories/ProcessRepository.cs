@@ -355,26 +355,26 @@ namespace d360.model.DataAccessLayer
 									from Field F
 										inner join api.executiondiagramasset S on S.Action = 'Delete'
 										inner join asset a on s.uid = a.uid
-										inner join [Intersect] I on i.object = a.object and i.objectid = a.objectid
+										inner join [Intersect] I on i.objectAssetId = a.id
 										where s.executionid = @ExecutionID and f.IntersectID = I.Id
 
 									delete F
 									from Field F
 										inner join api.executiondiagramasset S on S.Action = 'Delete'
 										inner join asset a on s.uid = a.uid
-										inner join [Intersect] I on i.subject = a.object and i.subjectid = a.objectid
+										inner join [Intersect] I on i.subjectAssetId = a.id
 										where s.executionid = @ExecutionID and f.IntersectID = I.Id
 
 									 delete	T
 										from	[Intersect] T
 												inner join api.executiondiagramasset S on S.Action = 'Delete'
 												inner join asset a on s.uid = a.uid
-										where s.executionid = @ExecutionID and T.object = a.object and T.objectid = a.objectid
+										where s.executionid = @ExecutionID and T.objectAssetId = a.id
 									delete	T
 										from	[Intersect] T
 												inner join api.executiondiagramasset S on S.Action = 'Delete'
 												inner join asset a on s.uid = a.uid
-										where s.executionid = @ExecutionID and T.subject = a.object and T.subjectid = a.objectid;
+										where s.executionid = @ExecutionID and T.subjectAssetID = a.id;
 
 									delete F
 									from Field F
@@ -646,11 +646,11 @@ namespace d360.model.DataAccessLayer
 			{
 				var intersectUids = Company.Query<Guid>(@"
 						select i.uid from [Intersect] I 
-							inner join Asset A on A.Object = I.Object and A.ObjectId = I.ObjectId
+							inner join Asset A on A.ID = I.ObjectAssetID
 						where A.uid in @assets
 						union
 						select i.uid from [Intersect] I 
-							inner join Asset A on A.Object = I.Subject and A.ObjectId = I.SubjectId
+							inner join Asset A on A.ID = I.SubjectAssetId
 						where A.uid in @assets
 				", new { assets = addedAssets }).ToList();
 
@@ -699,8 +699,12 @@ namespace d360.model.DataAccessLayer
 								select I.IntersectTypeId,
 										A.Object as Subject, 
 										A.ObjectID as SubjectID,
+										A.AssetTypeID as SubjectAssetTypeID,
+										A.ID as SubjectAssetID,
 										I.Object,
 										I.ObjectID,
+										I.ObjectAssetTypeID,
+										I.ObjectAssetID,
 										I.Id as OldIntersectId
 								from #relationshipMap
 									inner join api.ExecutionDiagramAsset eda on eda.executionitemuid = #relationshipMap.keyuid
@@ -711,8 +715,12 @@ namespace d360.model.DataAccessLayer
 								select I.IntersectTypeId,
 										A.Object, 
 										A.ObjectID,
+										A.AssetTypeID, 
+										A.ID,
 										I.Object as Subject,
 										I.ObjectID as SubjectID,
+										I.ObjectAssetID,
+										I.ObjectAssetTypeID,
 										I.Id as OldIntersectId
 								from #relationshipMap
 									inner join api.ExecutionDiagramAsset eda on eda.executionitemuid = #relationshipMap.keyuid
@@ -720,7 +728,7 @@ namespace d360.model.DataAccessLayer
 									inner join [Intersect] I on I.ID = #relationshipMap.intersectid
 									where eda.executionid = @executionid and eda.Action <> 'Delete' and #relationshipMap.Location = 'Object'
 							) src on (1=0)
-							WHEN NOT MATCHED THEN INSERT (IntersectTypeId,Subject,SubjectID,Object,ObjectID,State,CreatedBy,CreatedOn,UpdatedBy,UpdatedOn,Owner,Deleted,Visible,uid)
+							WHEN NOT MATCHED THEN INSERT (IntersectTypeId,Subject,SubjectID,Object,ObjectID,State,CreatedBy,CreatedOn,UpdatedBy,UpdatedOn,Owner,Deleted,Visible,uid,SubjectAssetID,SubjectAssetTypeID,ObjectAssetID,ObjectAssetTypeID)
 							VALUES (	src.IntersectTypeId,
 										src.Subject, 
 										src.SubjectID,
@@ -734,7 +742,11 @@ namespace d360.model.DataAccessLayer
 										'BULK_API',
 										0,
 										1,
-										newid())
+										newid(),
+										src.SubjectAssetID,
+										src.SubjectAssetTypeID,
+										src.ObjectAssetID,
+										src.ObjectAssetTypeID)
 							output src.OldIntersectId, Inserted.Id
 							into #intersectMap;
 
@@ -787,9 +799,9 @@ namespace d360.model.DataAccessLayer
 				select a.uid as AssetUid, sum(rels.cnt) as RelationshipCount from links
 				inner join Asset A on a.uid = links.AssetUid
 				cross apply(
-				select count(*) from [Intersect] I where A.Object = I.Object and A.ObjectID = I.ObjectID
+				select count(*) from [Intersect] I where A.ID = I.ObjectAssetID
 				union 
-				select count(*) from [Intersect] I where A.ObjectID = I.SubjectID AND a.Object = i.Subject
+				select count(*) from [Intersect] I where A.ID = I.SubjectAssetID 
 				)Rels(cnt)
 			group by a.uid";
 
