@@ -43,7 +43,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                         <div class="col s11">
                                     <ng-container i18n>Awaiting forms from</ng-container>: {{pendingFormList}}
                         </div>   
-			            <div class="col s1" style="align:right;">
+                        <div class="col s1" style="align:right;">
                              <a  *ngIf="step.IsAssignedLoginUser" style="cursor:pointer;color:#000000;" (click)="doSelect()"><i class="fa fa-edit"></i></a>
                         </div>  
              </div>
