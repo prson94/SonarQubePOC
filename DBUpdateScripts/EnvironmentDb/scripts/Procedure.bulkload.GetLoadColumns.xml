@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.bulkload.GetLoadColumns-v18">
+  <changeSet author="Puneet Gupta" id="Procedure.bulkload.GetLoadColumns-v19">
     <comment>GOV-20005</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -19,8 +19,11 @@ create or alter procedure [bulkload].[GetLoadColumns]
 	@getLookups bit = 1
 as
 begin
-	declare @fields table (ID int identity, FieldTypeID int, Name nvarchar(250), [Required] bit, PartOfKey bit, AllowMultipleValues bit, IsLookup bit, [Level] int)
-	declare @lookups table ([Value] uniqueidentifier, FieldTypeID int, [Label] nvarchar(max))
+	declare @fields table (ID int identity, FieldTypeID int, Name nvarchar(250), [Required] bit, 
+	                       PartOfKey bit, AllowMultipleValues bit, IsLookup bit, [Level] int,LookUpID int default 0,
+						   index ix1_tmp_fields (fieldtypeid,lookupid))
+	declare @lookups table ([Value] uniqueidentifier, FieldTypeID int, [Label] nvarchar(max),LookUpID int default 0,
+	                        index ix1_tmp_lookups (fieldtypeid,lookupid))
 	declare @current int = 1,
 			@max int,
 			@isLookup bit = 0,
@@ -54,42 +57,42 @@ begin
 	begin
 		if @id = 0 
 		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (1, 'Action', 1, 0, 0, 1, 1)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level],LookUpID) values (1, 'Action', 1, 0, 0, 1, 1,1001)
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Group Name', 1, 1, 0, 0, 1)
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'User Email', 1, 1, 0, 0, 1)
 
-			insert into @lookups (FieldTypeID, [Label]) values (1, 'Add')
-			insert into @lookups (FieldTypeID, [Label]) values (1, 'Remove')
+			insert into @lookups (FieldTypeID, [Label],LookUpID) values (1, 'Add',1001)
+			insert into @lookups (FieldTypeID, [Label],LookUpID) values (1, 'Remove',1001)
 		end
 
 		if @id = 1 
 		begin
 			set @type = 'ResourceType'
 
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (1, 'Status', 1, 1, 0, 0, 1)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level],LookUpID) values (1, 'Status', 1, 1, 0, 1, 1, 1002)
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'User Email', 1, 1, 0, 0, 1)
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'First Name', 1, 1, 0, 0, 1)
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Last Name', 1, 1, 0, 0, 1)
 
-			insert into @lookups (FieldTypeID, [Label]) values (1, 'Active')
-			insert into @lookups (FieldTypeID, [Label]) values (1, 'Inactive')
+			insert into @lookups (FieldTypeID, [Label],LookUpID) values (1, 'Active', 1002)
+			insert into @lookups (FieldTypeID, [Label],LookUpID) values (1, 'Inactive', 1002)
 		end
 	end
 
 	if @action = 'O'
 	begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (1, 'Responsibility', 1, 1, 0, 1, 1)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID) values (1, 'Responsibility', 1, 1, 0, 1, 1, 1003)
 
-			insert into @lookups (FieldTypeID, [Label])
-				select	1, Name from ResponsibilityType order by Name
+			insert into @lookups (FieldTypeID, [Label], LookUpID)
+				select	1, Name, 1003 from ResponsibilityType order by Name
 
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (2, 'Resource', 1, 1, 0, 1, 1)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID) values (2, 'Resource', 1, 1, 0, 1, 1, 1004)
 
-			insert into @lookups (FieldTypeID, [Label])
-				select	2, 'User:' + email from reporting.Global_Resource order by email
+			insert into @lookups (FieldTypeID, [Label], LookUpID)
+				select	2, 'User:' + email, 1004 from reporting.Global_Resource order by email
 
-			insert into @lookups (FieldTypeID, [Label])
-				select	2, 'Group:' + DisplayValue from AssetDetail A
+			insert into @lookups (FieldTypeID, [Label], LookUpID)
+				select	2, 'Group:' + DisplayValue, 1004 from AssetDetail A
 				where	A.Object = 'Group'
 				order by DisplayValue
 			
@@ -119,7 +122,7 @@ begin
 			end
 			else
 			begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID)
 					select	ID, 
 							'Subject ' + Name, 
 							IsRequired, 
@@ -129,7 +132,11 @@ begin
 								when 'Lookup' then cast(1 as bit)
 								else cast(0 as bit)
 							end as IsLookup, 
-							1
+							1,
+							case [Type]
+								when 'Lookup' then ID
+								else 0
+							end as LookUpID
 					from	FieldType
 					where	IsPartOfKey = 1 and AssetTypeID = @sid
 			end
@@ -140,7 +147,7 @@ begin
 			end
 			else
 			begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID)
 					select	ID, 
 							'Object ' + Name, 
 							IsRequired, 
@@ -150,7 +157,11 @@ begin
 								when 'Lookup' then cast(1 as bit)
 								else cast(0 as bit)
 							end as IsLookup,
-							1
+							1,
+							case [Type]
+								when 'Lookup' then ID
+								else 0
+							end as LookUpID							
 					from	FieldType 
 					where	IsPartOfKey = 1 and AssetTypeID = @oid
 			end
@@ -169,20 +180,20 @@ begin
 
 			if @parentTypeID is not null
 			begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values(0, @parentTypeName, 1, 1, 0, 1, 1);
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID) values(0, @parentTypeName, 1, 1, 0, 1, 1, 1005);
 
 				if @type = 'ArtifactType'
 				begin
-					insert into @lookups ([Value], FieldTypeID, [Label])
-						select	[uid], 0, DisplayValue 
+					insert into @lookups ([Value], FieldTypeID, [Label], LookUpID)
+						select	[uid], 0, DisplayValue, 1005
 						from	AssetDetail 
 						where	AssetTypeID = @parentTypeID and [AssetTypeClass] in (1, 8) order by DisplayValue;
 				end
 
 				if @type = 'ReferenceItemType'
 				begin
-					insert into @lookups ([Value], FieldTypeID, [Label])
-					select	[uid], 0, DisplayValue 
+					insert into @lookups ([Value], FieldTypeID, [Label], LookUpID)
+					select	[uid], 0, DisplayValue, 1005
 					from	AssetDetail 
 					where	AssetTypeID = @parentTypeID and [AssetTypeClass] in (9) order by DisplayValue;
 				end
@@ -206,7 +217,7 @@ begin
 				set @initialDepth = @initialDepth + 1
 			end
 
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) 
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID) 
 				select	FT.ID, 
 						case
 							when TTL.Name is not null then TTL.Name + ' ' + FT.Name
@@ -219,7 +230,11 @@ begin
 							when 'Lookup' then cast(1 as bit)
 							else cast(0 as bit)
 						end as IsLookup,
-						L.Value as [Level]
+						L.Value as [Level],
+						case FT.Type
+							when 'Lookup' then FT.ID
+							else 0
+						end as LookUpID				
 				from	@levels L 
 						inner join FieldType FT on FT.IsPartOfKey = 1 and FT.AssetTypeID = @assettypeid
 						left join AssetTypeLevel TTL on TTL.[Level] = L.Value and TTL.AssetTypeID = FT.AssetTypeID
@@ -269,7 +284,7 @@ begin
 	
 	if ((@action = 'M' and @id = 1 ) or @action = 'R' or @action = 'P')
 	begin
-		insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
+		insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID)
 			select		ft.ID,
 						ft.Name, 
 						ft.IsRequired,
@@ -279,7 +294,11 @@ begin
 							when 'Lookup' then cast(1 as bit)
 							else cast(0 as bit)
 						end as IsLookup, 
-						1
+						1,
+						case ft.Type
+							when 'Lookup' then ft.ID
+							else 0
+						end as LookUpID
 			from		FieldType ft
 			inner join @fieldType f on ft.id = f.id
 			where		ft.Type not in ('ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'RefListRelationship', 'Tag', 'Relationship')
@@ -290,7 +309,7 @@ begin
 			--add Tag and Tag Action columns if applicable
 			if exists (select 1 from FieldType ft inner join @fieldtype f on ft.id = f.id where ft.Type = 'Tag' and @action = 'P')
 			begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], [LookUpID])
 				select		ft.ID,
 							ft.Name, 
 							ft.IsRequired,
@@ -300,18 +319,22 @@ begin
 								when 'Lookup' then cast(1 as bit)
 								else cast(0 as bit)
 							end as IsLookup, 
-							1
+							1, 
+							case ft.Type
+								when 'Lookup' then ft.ID
+								else 0
+							end LookUpID
 				from		FieldType ft
 				inner join  @fieldtype f on ft.id = f.id
 				where		ft.Type = 'Tag' and @action = 'P'
 
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
-				values		(0, 'Tag Action', 0, 0, 0, 1, 1);
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], [LookUpID])
+				values		(0, 'Tag Action', 0, 0, 0, 1, 1, 1006);
 
-				insert into @lookups (FieldTypeID, [Label])
-				values		(0, 'Append');
-				insert into @lookups (FieldTypeID, [Label])
-				values		(0, 'Replace');
+				insert into @lookups (FieldTypeID, [Label], [LookUpID])
+				values		(0, 'Append', 1006);
+				insert into @lookups (FieldTypeID, [Label], [LookUpID])
+				values		(0, 'Replace', 1006);
 
 
 			end
@@ -320,8 +343,8 @@ begin
 			select @IDs = string_agg(FieldTypeID, ',') from @fields where FieldTypeID <> 0 and IsLookup = 1
 			if @IDs IS NOT NULL
 			begin
-				insert into @lookups (FieldTypeID, [Label])
-					exec('select FieldTypeID, [Text] from FieldLookupValue where FieldTypeID in (' + @IDs + ') order by FieldTypeID, [Text]');
+				insert into @lookups (FieldTypeID, [Label], [LookUpID])
+					exec('select FieldTypeID, [Text], [FieldTypeID] [LookUpID] from FieldLookupValue where FieldTypeID in (' + @IDs + ') order by FieldTypeID, [Text]');
 			end
 	end
 	
@@ -333,10 +356,10 @@ begin
 			F.[FieldTypeId],
 			F.[Level],
 			(
-			select	Value,
-					Label
-			from	@lookups
-			where	FieldTypeID = F.FieldTypeID
+			select	L.Value,
+					L.Label
+			from	@lookups L
+			where	L.FieldTypeID = F.FieldTypeID and L.lookupid = F.lookupid
 			order by Label
 			for json path
 			) as Lookups
