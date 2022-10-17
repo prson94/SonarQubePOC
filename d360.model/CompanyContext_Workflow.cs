@@ -1407,7 +1407,7 @@ namespace d360.model
 		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, bool isAssetEdited = false, Asset asset = null)
 		{
 			//check if the field exists
-			Field field = Fields.Where(x => ((x.IssueID == objectId && objectType == SystemObjects.Issue.ToString()) || (x.IntersectID == objectId && objectType == SystemObjects.Intersect.ToString()) || (x.AssetID == objectId && objectType != SystemObjects.Issue.ToString() && objectType != SystemObjects.Intersect.ToString())) && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+			Field field = Fields.Where(x => ((x.IssueID == objectId && objectType == SystemObjects.Issue.ToString()) || (x.IntersectID == objectId && objectType == SystemObjects.Intersect.ToString()) || (x.AssetID == asset.ID && objectType != SystemObjects.Issue.ToString() && objectType != SystemObjects.Intersect.ToString())) && x.FieldTypeID == fieldType.ID).FirstOrDefault();
 
 			//validate list field value
 			if (fieldType.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(val))
@@ -1555,12 +1555,12 @@ namespace d360.model
 				else if (item.CurrentDate)
 				{
 					string val = DateTime.UtcNow.Date.ToShortDateString();
-					await UpdateField(objectId, objectType, fieldType, item, val);
+					await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
 				}
 				else if (!item.IsActionForm && !item.UseFormValue && !item.UseOutputValue)
 				{
 					string val = item.Value;
-					await UpdateField(objectId, objectType, fieldType, item, val);
+					await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
 				}
 				//if the value is a form value get it
 				else if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
@@ -1574,7 +1574,7 @@ namespace d360.model
 						{
 							val = tempDate.Date.ToShortDateString();
 						}
-						await UpdateField(objectId, objectType, fieldType, item, val);
+						await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
 					}
 				}
 				//Get the value from action form (Issue)
