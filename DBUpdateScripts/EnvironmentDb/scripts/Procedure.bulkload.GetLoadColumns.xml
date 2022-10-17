@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.bulkload.GetLoadColumns-v19">
+  <changeSet author="Puneet Gupta" id="Procedure.bulkload.GetLoadColumns-v20">
     <comment>GOV-20005</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -19,6 +19,13 @@ create or alter procedure [bulkload].[GetLoadColumns]
 	@getLookups bit = 1
 as
 begin
+	declare @GroupActionLookupIDIdentifier int = 1001;
+	declare @UserStatusLookupIDIdentifier int = 1002;
+	declare @ResponsibilityLookupIDIdentifier int = 1003;
+	declare @UserEmailGroupdisplayValueLookupIDIdentifier int = 1004;
+	declare @ParentTypeNameLookupIDIdentifier int = 1005;
+	declare @TagActionLookupIDIdentifier int = 1006;
+	
 	declare @fields table (ID int identity, FieldTypeID int, Name nvarchar(250), [Required] bit, 
 	                       PartOfKey bit, AllowMultipleValues bit, IsLookup bit, [Level] int,LookUpID int default 0,
 						   index ix1_tmp_fields (fieldtypeid,lookupid))
@@ -57,42 +64,42 @@ begin
 	begin
 		if @id = 0 
 		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level],LookUpID) values (1, 'Action', 1, 0, 0, 1, 1,1001)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level],LookUpID) values (1, 'Action', 1, 0, 0, 1, 1,@GroupActionLookupIDIdentifier)
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Group Name', 1, 1, 0, 0, 1)
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'User Email', 1, 1, 0, 0, 1)
 
-			insert into @lookups (FieldTypeID, [Label],LookUpID) values (1, 'Add',1001)
-			insert into @lookups (FieldTypeID, [Label],LookUpID) values (1, 'Remove',1001)
+			insert into @lookups (FieldTypeID, [Label],LookUpID) values (1, 'Add',@GroupActionLookupIDIdentifier)
+			insert into @lookups (FieldTypeID, [Label],LookUpID) values (1, 'Remove',@GroupActionLookupIDIdentifier)
 		end
 
 		if @id = 1 
 		begin
 			set @type = 'ResourceType'
 
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level],LookUpID) values (1, 'Status', 1, 1, 0, 1, 1, 1002)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level],LookUpID) values (1, 'Status', 1, 1, 0, 1, 1, @UserStatusLookupIDIdentifier)
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'User Email', 1, 1, 0, 0, 1)
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'First Name', 1, 1, 0, 0, 1)
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Last Name', 1, 1, 0, 0, 1)
 
-			insert into @lookups (FieldTypeID, [Label],LookUpID) values (1, 'Active', 1002)
-			insert into @lookups (FieldTypeID, [Label],LookUpID) values (1, 'Inactive', 1002)
+			insert into @lookups (FieldTypeID, [Label],LookUpID) values (1, 'Active', @UserStatusLookupIDIdentifier)
+			insert into @lookups (FieldTypeID, [Label],LookUpID) values (1, 'Inactive', @UserStatusLookupIDIdentifier)
 		end
 	end
 
 	if @action = 'O'
 	begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID) values (1, 'Responsibility', 1, 1, 0, 1, 1, 1003)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID) values (1, 'Responsibility', 1, 1, 0, 1, 1, @ResponsibilityLookupIDIdentifier)
 
 			insert into @lookups (FieldTypeID, [Label], LookUpID)
-				select	1, Name, 1003 from ResponsibilityType order by Name
+				select	1, Name, @ResponsibilityLookupIDIdentifier from ResponsibilityType order by Name
 
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID) values (2, 'Resource', 1, 1, 0, 1, 1, 1004)
-
-			insert into @lookups (FieldTypeID, [Label], LookUpID)
-				select	2, 'User:' + email, 1004 from reporting.Global_Resource order by email
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID) values (2, 'Resource', 1, 1, 0, 1, 1, @UserEmailGroupdisplayValueLookupIDIdentifier)
 
 			insert into @lookups (FieldTypeID, [Label], LookUpID)
-				select	2, 'Group:' + DisplayValue, 1004 from AssetDetail A
+				select	2, 'User:' + email, @UserEmailGroupdisplayValueLookupIDIdentifier from reporting.Global_Resource order by email
+
+			insert into @lookups (FieldTypeID, [Label], LookUpID)
+				select	2, 'Group:' + DisplayValue, @UserEmailGroupdisplayValueLookupIDIdentifier from AssetDetail A
 				where	A.Object = 'Group'
 				order by DisplayValue
 			
@@ -180,12 +187,12 @@ begin
 
 			if @parentTypeID is not null
 			begin
-				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID) values(0, @parentTypeName, 1, 1, 0, 1, 1, 1005);
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID) values(0, @parentTypeName, 1, 1, 0, 1, 1, @ParentTypeNameLookupIDIdentifier);
 
 				if @type = 'ArtifactType'
 				begin
 					insert into @lookups ([Value], FieldTypeID, [Label], LookUpID)
-						select	[uid], 0, DisplayValue, 1005
+						select	[uid], 0, DisplayValue, @ParentTypeNameLookupIDIdentifier
 						from	AssetDetail 
 						where	AssetTypeID = @parentTypeID and [AssetTypeClass] in (1, 8) order by DisplayValue;
 				end
@@ -193,7 +200,7 @@ begin
 				if @type = 'ReferenceItemType'
 				begin
 					insert into @lookups ([Value], FieldTypeID, [Label], LookUpID)
-					select	[uid], 0, DisplayValue, 1005
+					select	[uid], 0, DisplayValue, @ParentTypeNameLookupIDIdentifier
 					from	AssetDetail 
 					where	AssetTypeID = @parentTypeID and [AssetTypeClass] in (9) order by DisplayValue;
 				end
@@ -329,12 +336,12 @@ begin
 				where		ft.Type = 'Tag' and @action = 'P'
 
 				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], [LookUpID])
-				values		(0, 'Tag Action', 0, 0, 0, 1, 1, 1006);
+				values		(0, 'Tag Action', 0, 0, 0, 1, 1, @TagActionLookupIDIdentifier);
 
 				insert into @lookups (FieldTypeID, [Label], [LookUpID])
-				values		(0, 'Append', 1006);
+				values		(0, 'Append', @TagActionLookupIDIdentifier);
 				insert into @lookups (FieldTypeID, [Label], [LookUpID])
-				values		(0, 'Replace', 1006);
+				values		(0, 'Replace', @TagActionLookupIDIdentifier);
 
 
 			end
