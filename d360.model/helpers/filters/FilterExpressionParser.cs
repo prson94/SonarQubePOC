@@ -409,6 +409,8 @@ namespace d360.model.helpers
                 }
 				else if (allowTempTableFiltering && fieldType.IsPathSegment)
 				{
+					filteredFieldIDs.Add(fieldType.ID);
+
 					TempTablePathSegmentToken token = new TempTablePathSegmentToken(fdp, field, op, value, AssetTypeKeyFieldMaps, paramIdx);
 					token.LoadFieldType(fieldType, fieldColumns);
 
@@ -416,6 +418,8 @@ namespace d360.model.helpers
 				}
 				else if (allowTempTableFiltering && filterTypesWithTempTables.Contains(fieldType.Type))
 				{
+					filteredFieldIDs.Add(fieldType.ID);
+
 					TempTableFieldToken token = new TempTableFieldToken(fdp, field, op, value, paramIdx);
 					token.LoadFieldType(fieldType, fieldColumns, dynamicQueryJoins);
 
