@@ -1429,6 +1429,11 @@ namespace d360.extensions.search
 					else
 					{
 						flds.Add(DYNAMIC_FIELD_PREFIX + fieldFilter.Field);
+						//For Name, also search the underscore field
+						if (fieldFilter.Field == "Name")
+						{
+							flds.Add(UNDERSCORE_FIELD_PREFIX + fieldFilter.Field);
+						}
 					}
 
 					if (fieldFilter.MatchWords)
