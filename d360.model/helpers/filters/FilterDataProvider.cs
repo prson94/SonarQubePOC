@@ -44,9 +44,11 @@ namespace d360.model.helpers.filters
             return (intersectTypes, filterAssets, filterAssetTypes);
         }
 
-		public (List<Guid>, List<AssetTypeKeyFieldMap>) GetPathSegmentsMappingInfo(int assetTypeID, List<Guid> assetTypeUids)
+		public (Guid, List<Guid>, List<AssetTypeKeyFieldMap>) GetPathSegmentsMappingInfo(int assetTypeID, List<Guid> assetTypeUids)
 		{
 			var gridReader = companyContext.Database.Connection.QueryMultiple(@"
+								select uid from assettype where id = @assetTypeid;
+
 								;with cte as (
 								select IT.SubjectAssetTypeID from [IntersectType] IT
 								inner join [Predicate] P on P.ID = IT.PredicateID AND P.Type IN (3,4)
@@ -63,10 +65,10 @@ namespace d360.model.helpers.filters
 								inner join AssetType at on at.ID = ft.AssetTypeID
 								where at.uid in @assetTypeUids and ft.IsPartOfKey = 1 and [Type] = 'Text'", new { assetTypeID, assetTypeUids });
 
-
+			Guid assetTypeUid = gridReader.Read<Guid>().FirstOrDefault();
 			List<Guid> levels = gridReader.Read<Guid>().ToList();
 			var typeKeyFields = gridReader.Read<AssetTypeKeyFieldMap>().ToList();
-			return (levels, typeKeyFields);
+			return (assetTypeUid, levels, typeKeyFields);
 		}
     }
 }
