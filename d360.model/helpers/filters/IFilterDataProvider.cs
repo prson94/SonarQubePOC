@@ -14,7 +14,7 @@ namespace d360.model.helpers.filters
         FieldType GetFieldTypeById(int? fieldTypeId);
         
         bool IsFieldFromRelationship(int fieldTypeId);
-		(List<Guid>, List<AssetTypeKeyFieldMap>) GetPathSegmentsMappingInfo(int assetTypeID, List<Guid> assetTypeUids);
+		(Guid, List<Guid>, List<AssetTypeKeyFieldMap>) GetPathSegmentsMappingInfo(int assetTypeID, List<Guid> assetTypeUids);
 
 	}
 }
