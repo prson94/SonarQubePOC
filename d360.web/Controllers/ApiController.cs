@@ -1246,7 +1246,7 @@ namespace d360.web.Controllers
 			{
 				Title = (detail != null) ? detail.PluralizedName : "Child Items",
 				Type = type.ToString(),
-				ID = assetType.ID,
+				ID = id,
 				FieldsCount = totalItems.Count,
 				Fields = fields,
 				Columns = columns,
