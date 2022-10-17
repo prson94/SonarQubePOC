@@ -778,7 +778,7 @@ order by Sort, title";
 								cross apply dbo.GetAssetTypeTextPathById (itd.SubjectAssetTypeId,' > ') SName 
 								cross apply dbo.GetAssetTypeTextPathById (itd.ObjectAssetTypeId,' > ') OName 
 								inner join [Predicate] P on P.ID = itd.PredicateID
-							 where (itd.IsSystem = 0 or (itd.Subject = 'ReferenceItemType' and itd.Object = 'ReferenceItemType')) 
+							 where (itd.IsSystem = 0 or (itd.SubjectClass = {(int)AssetTypeClass.Reference} and itd.ObjectClass = {(int)AssetTypeClass.Reference})) 
 							 and itd.predicatetype not in (3,4,{(int)PredicateType.Diagram},{(int)PredicateType.DiagramUse},{(int)PredicateType.DiagramReference}) 
 							 order by CONCAT(SName.Path,' <strong>' , P.Name ,'</strong> ',OName.Path)";
 					break;
