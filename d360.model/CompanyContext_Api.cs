@@ -7043,7 +7043,6 @@ namespace d360.model
 									where   ER.ExecutionID = @ExecutionID 
 											and ER.Success is null 
 											and (ER.SubjectUid is not null or ER.ObjectUid is not null)
-											and (ER.SubjectAssetTypeID <> T.SubjectAssetTypeID or ER.ObjectAssetTypeID <> T.ObjectAssetTypeID)
 											and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);",
                 new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
