@@ -2301,16 +2301,16 @@ from	IntersectType I
 							columnbuilder.Append(isReferenceItemType ? $"{name}_AS.Name" : $"{name}_ASP.DisplayPath");
 							columnbuilder.Append($" as [{(useFriendlyName ? friendlyName : name)}],");
 							joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
-							joinbuilder.Append($" {name}_T." + (relationFieldInfo.IsSubject ? "SubjectAssetID" : "ObjectAssetID") + $" = {name}_T.ID");
+							joinbuilder.Append($" {name}_T." + (relationFieldInfo.IsSubject ? "SubjectAssetID" : "ObjectAssetID") + $" = {idColumn}");
 
 							if (isReferenceItemType)
 							{
-								joinbuilder.Append($" inner join AssetType {name}_AS on {name}_AS.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetTypeID" : "SubjectAssetTypeID"));
+								joinbuilder.Append($" left join AssetType {name}_AS on {name}_AS.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetTypeID" : "SubjectAssetTypeID"));
 							}
 							else 
 							{
-								joinbuilder.Append($" inner join Asset {name}_AS on {name}_AS.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetID" : "SubjectAssetID"));
-								joinbuilder.Append($" inner join AssetPath {name}_ASP on {name}_AS.ID = {name}_ASP.ID");
+								joinbuilder.Append($" left join Asset {name}_AS on {name}_AS.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetID" : "SubjectAssetID"));
+								joinbuilder.Append($" left join AssetPath {name}_ASP on {name}_AS.ID = {name}_ASP.ID");
 							}
 						}
 					}
@@ -2430,7 +2430,7 @@ from	IntersectType I
 					string fieldJoin = f.AllowMultipleValues ? "cross apply STRING_SPLIT(fi.Value, ',') SPFfi" : "";
 					string fieldclause = f.AllowMultipleValues ? "try_cast(SPFfi.value as int)" : "try_cast(fi.Value as int) and datalength(fi.Value) < 1000";
 					string whereClause = (type == SystemObjects.Intersect.ToString()) ? $@" fi.AssetID = A.ID" : "fi.AssetID = A.Id";
-					fieldJoin = $@"{fieldJoin} left join intersect I on fi.intersectID = I.ID";
+					fieldJoin = $@"{fieldJoin} left join [intersect] I on fi.intersectID = I.ID";
 					columnbuilder.Append($"{name}_T.value as [{name}],");
 					joinbuilder.Append($@" outer apply(
 							select value = (

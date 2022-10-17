@@ -2295,11 +2295,11 @@ namespace d360.web.Controllers
 			dbArgs.Add("deleteStatus", CompanyResourceState.Deleted);
 			dbArgs.Add("inactiveStatus", CompanyResourceState.Inactive);
 
-			var statusCondition = $"State <> @deleteStatus";
+			var statusCondition = $"GR.State <> @deleteStatus";
 
 			if (includeInactive == false)
 			{
-				statusCondition = $"State not in (@deleteStatus, @inactiveStatus)";
+				statusCondition = $"GR.State not in (@deleteStatus, @inactiveStatus)";
 			}
 
 			var querySql = $@"
@@ -2310,18 +2310,20 @@ namespace d360.web.Controllers
 						case A.State when 1 then 'Active' when 2 then 'Inactive' else 'Deleted' end as [State],
 						A.IsAdministrator,
 						{columns}
-						A.ID,
-						A.ID as ResourceID,
+						A.ResourceID ID,
+						A.ResourceID,
 						A.FirstName + ' ' + A.LastName as FullName 
 				from    (
-						select	FirstName,
-								LastName,
-								Email,
-								LastLoggedInOn,
-								State,
-								IsAdministrator,
-								ResourceID as ID
-						from	reporting.Global_Resource
+						select	GR.FirstName,
+								GR.LastName,
+								GR.Email,
+								GR.LastLoggedInOn,
+								GR.State,
+								GR.IsAdministrator,
+								GR.ResourceID,
+								AI.ID as ID
+						from	reporting.Global_Resource GR
+						inner join Asset AI on AI.Uid = GR.Uid
 								where {statusCondition} 
 						) A 
 						{joins}";

@@ -1766,14 +1766,13 @@ namespace d360.web.Controllers.V2
 
 					if (fieldType.Type == "RefListRelationship")
 					{
-						var type = asset.Object;
-						var id = asset.ObjectID;
-						var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == fieldType.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
+						var refassetid = asset.ID;
+						var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == fieldType.LookupObjectID.Value && ((i.SubjectAssetID == refassetid) || (i.ObjectAssetID == refassetid))).FirstOrDefault();
 
 						if (intersect != null)
 						{
-							var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
-							var assetType = Company.Filter<AssetType>(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID).FirstOrDefault();
+							var referenceItemTypeID = (intersect.SubjectAssetID == refassetid) ? intersect.ObjectAssetTypeID : intersect.SubjectAssetTypeID;
+							var assetType = Company.Filter<AssetType>(x => x.Class == AssetTypeClass.Reference && x.ID == referenceItemTypeID).FirstOrDefault();
 
 							if (assetType != null)
 							{
@@ -1840,14 +1839,13 @@ namespace d360.web.Controllers.V2
 
 					if (fieldType.Type == "RefListRelationship")
 					{
-						var type = asset.Object;
-						var id = asset.ObjectID;
-						var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == fieldType.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
+						var refassetid = asset.ID;
+						var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == fieldType.LookupObjectID.Value && ((i.SubjectAssetID == refassetid) || (i.ObjectAssetID == refassetid))).FirstOrDefault();
 
 						if (intersect != null)
 						{
-							var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
-							var assetType = Company.Filter<AssetType>(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID).FirstOrDefault();
+							var referenceItemTypeID = (intersect.SubjectAssetID == refassetid) ? intersect.ObjectAssetTypeID : intersect.SubjectAssetTypeID;
+							var assetType = Company.Filter<AssetType>(x => x.Class == AssetTypeClass.Reference && x.ID == referenceItemTypeID).FirstOrDefault();
 
 							if (assetType != null)
 							{
