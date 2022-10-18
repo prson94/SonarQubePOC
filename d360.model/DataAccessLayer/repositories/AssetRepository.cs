@@ -4663,7 +4663,7 @@ where an.Uid = fam.uid)
 											d.AssetID, AAP.Id as ParentAssetID
 										from 
 											descendants as d
-											outer apply GetParentByAssetID(d.AssetID)AAP
+											cross apply GetParentByAssetID(d.AssetID)AAP
 									)
 
 									select * 

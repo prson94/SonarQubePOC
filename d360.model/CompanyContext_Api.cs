@@ -12701,7 +12701,7 @@ where   ER.ExecutionID = @ExecutionID
 										p.endDate
 									from 
 										#parent P 
-										outer apply GetParentByAssetID(P.assetID)AAP
+										cross apply GetParentByAssetID(P.assetID)AAP
 
 									delete from #parent 
 	
