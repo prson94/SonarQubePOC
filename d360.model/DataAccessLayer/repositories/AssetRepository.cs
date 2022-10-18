@@ -904,8 +904,8 @@ namespace d360.model.DataAccessLayer
 
 			string parentFieldSQL = @" Parent.uid as ParentAssetUid,
 					Parent.DisplayValue as ParentDisplayName,";
-			string parentApplySQL = $@"left join [utility].[ArtifactAssetParent] AAP on A.ID = AAP.AssetID 
-				left join AssetDetail Parent on Parent.ID = AAP.ParentAssetID";
+			string parentApplySQL = $@"outer apply GetParentByAssetID(A.ID)AAP
+				left join AssetDetail Parent on Parent.ID = AAP.Id";
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
 			{
 				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
@@ -1220,8 +1220,8 @@ namespace d360.model.DataAccessLayer
 					{
 						simpleFilters.Add($@"select  A.ID
 								from Asset A
-									left join [utility].[ArtifactAssetParent] AAP on A.ID = AAP.AssetID 
-									left join AssetDetail Parent on Parent.ID = AAP.ParentAssetID
+									outer apply GetParentByAssetID(A.ID)AAP
+									left join AssetDetail Parent on Parent.ID = AAP.Id
 									left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
 								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and Parent.DisplayValue like @simpleFilter
 								option(recompile)");
@@ -4660,11 +4660,10 @@ where an.Uid = fam.uid)
 										select @assetID as AssetID, CAST(0 AS BIGINT) as ParentAssetID
 										union all
 										select 
-											AAP.assetID, AAP.ParentAssetID
+											d.AssetID, AAP.Id as ParentAssetID
 										from 
 											descendants as d
-											inner join 
-											[utility].[ArtifactAssetParent] AAP on d.AssetID = AAP.ParentAssetID
+											outer apply GetParentByAssetID(d.AssetID)AAP
 									)
 
 									select * 

@@ -12696,13 +12696,12 @@ where   ER.ExecutionID = @ExecutionID
 									insert into #child
 									select 
 										ItemNumber,
-										AAP.Assetid,
+										AAP.Id as Assetid,
 										p.startDate,
 										p.endDate
 									from 
 										#parent P 
-										inner join 
-										[utility].[ArtifactAssetParent] AAP on P.assetID = AAP.ParentAssetID
+										outer apply GetParentByAssetID(P.assetID)AAP
 
 									delete from #parent 
 	
