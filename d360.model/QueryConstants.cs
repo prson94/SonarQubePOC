@@ -623,8 +623,8 @@ namespace d360.model
 				IST.CompletedOn,
 				RS.FirstName + ' ' + RS.LastName as StartedBy,
 				RC.FirstName + ' ' + RC.LastName as CompletedBy,
-				coalesce(s.[Object], I.[Object]) as [Object],
-				coalesce(s.ObjectID, I.ObjectID) as ObjectID,
+				coalesce(sa.[Object], I.[Object]) as [Object],
+				coalesce(sa.ObjectID, I.ObjectID) as ObjectID,
 				coalesce(dv.DisplayValue, ISD.SubjectShortName + ' [' + ISD.PredicateName + '] ' + ISD.ObjectShortName , '[unknown]') as [Name], 
 				coalesce(D.TypeName, DIT.Name, '[unknown]') as ObjectTypeName,
 				UL.[Url] as NgUrl, 
@@ -676,8 +676,9 @@ namespace d360.model
 				workflow.ItemStep IST
 				left join workflow.Item I on I.ID = IST.ItemID
 				left join Issue s on I.[Object] = 'Issue' and S.ID = I.ObjectID
-				left join [IntersectDetail] ISD on coalesce(s.[Object], I.[Object]) = 'Intersect' and ISD.ID = coalesce(s.ObjectID, I.ObjectID)
-				left join Asset A on A.[Object] = coalesce(s.[Object], I.[Object]) and A.ObjectID = coalesce(s.ObjectID, I.ObjectID)
+				left join asset sa on sa.id = s.AssetID 
+				left join [IntersectDetail] ISD on I.[Object] = 'Intersect' and ISD.ID = I.ObjectID
+				left join Asset A on A.[Object] = coalesce(sa.[Object], I.[Object]) and A.ObjectID = coalesce(sa.ObjectID, I.ObjectID)
 				left join AssetType AST on AST.id = A.AssetTypeID
 				left join AssetDisplayValue DV on DV.AssetID = A.ID
 				outer apply dbo.GetAssetUrlById(A.ID) UL
