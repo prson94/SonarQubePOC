@@ -1493,6 +1493,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
+			bool containsAnyFilter = useSimpleFilterTempTable || advancedFilterTempTableInfos.TempTableSQL() != String.Empty;
 
 			string GetBaseQuery(bool excludeFilterQueries = false)
 			{
@@ -1502,7 +1503,7 @@ namespace d360.model.DataAccessLayer
 				select  A.ID
 				from    Asset A 
 				{(needsNodeData ? "inner join AssetPath Node on Node.ID = a.ID" : "")} 
-				{(excludeFilterQueries ? "inner join #filtered_results fr on fr.AssetId = a.ID" : "")}
+				{(excludeFilterQueries && containsAnyFilter ? "inner join #filtered_results fr on fr.AssetId = a.ID" : "")}
 				{(!excludeFilterQueries && useSimpleFilterTempTable ? "inner join #TempFilteredAssets ta on ta.AssetId = a.ID" : "")}
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
@@ -1512,9 +1513,21 @@ namespace d360.model.DataAccessLayer
 				{(includePermissionDetails ? permissionDetailSQL : "")}
 				{(includeParentUIDSelect ? hierarchyParentUidSelect : "")}
 				{(includeParentQuery ? parentApplySQL : "")}
-				{(!excludeFilterQueries ? whereSql : "")}";
+				{(!excludeFilterQueries || !containsAnyFilter ? whereSql : "")}";
 			};
 
+			var filteredResultsTempTable = "";
+
+			if (containsAnyFilter)
+			{
+				filteredResultsTempTable = @$"
+				drop table if exists #filtered_results
+				create table #filtered_results (AssetId int)
+				create index ix_filtered_results_aid on #filtered_results (AssetId); 
+
+				insert into #filtered_results
+				{GetBaseQuery()}";
+			}
 
 			var baseSQL = $@"
 				{TempTableScriptStr}
@@ -1524,26 +1537,31 @@ namespace d360.model.DataAccessLayer
 				{advancedFilterTempTableInfos.TempTableSQL()}
 				
 				{simpleFiltersTempTablesQuery}
-
-				drop table if exists #filtered_results
-				create table #filtered_results (AssetId int)
-
-				insert into #filtered_results
-				{GetBaseQuery()}
+				
+				{filteredResultsTempTable}
 				
 				DROP TABLE IF EXISTS #tempasset;
 				create table #tempasset (id int identity(1,1), AssetId bigint);
+				create index ix_tempasset on #tempasset	(AssetId);
 
 				insert into #tempasset
 				{GetBaseQuery(true)}
 				{OrderMainQuery}
-				{pagingSql[1]};
-
-				create index ix_tempasset on #tempasset	(id);";
+				{pagingSql[1]};";
 
 			#endregion
-
-			var countSQL = $@"{(includeTotal ? $"select count(1) from #filtered_results;" : "")}";
+			string countSQL = "";
+			if (includeTotal)
+			{
+				if (containsAnyFilter)
+				{
+					countSQL = "select count(1) from #filtered_results;";
+				}
+				else
+				{
+					countSQL = "select count(1) from Asset where AssetTypeId = @assetTypeId;";
+				}
+			}
 
 			if (previousCount.HasValue)
 			{

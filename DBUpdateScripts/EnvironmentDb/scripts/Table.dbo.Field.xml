@@ -105,7 +105,7 @@ END
 	</rollback>
   </changeSet> 
 
-	<changeSet author="Quinlivan/Pappas" id="Table.dbo.Field-v2.1" runInTransaction="false">
+	<changeSet author="Quinlivan/Pappas/TDuric" id="Table.dbo.Field-v2.2" runInTransaction="false">
 		<sql dbms="mssql"
 				endDelimiter="\nGO"
 				splitStatements="true"
@@ -167,6 +167,12 @@ END
 				begin
 					CREATE NONCLUSTERED INDEX [IX_Field_AssetID_Include] ON [dbo].[Field] ( [AssetID] ASC ) INCLUDE([FieldTypeID],[Value],[FormattedValue])
 				end
+				
+				if not exists (select * from sys.indexes where Name = 'IX_FieldTypeIdAssetID_Include')
+				begin
+					create index [IX_FieldTypeIdAssetID_Include] on [dbo].[Field](FieldTypeID,AssetID) INCLUDE (FormattedValue)
+				end
+
 			END
 			]]>
     </sql>
@@ -176,7 +182,7 @@ END
 		]]>
 	</rollback>
   </changeSet> 
-  
+    
     <changeSet author="Puneet Gupta" id="Table.dbo.Field-Field_AfterUpsert-v14">
     <comment>GOV-19983, GOV-18447</comment>
     <sql dbms="mssql"
