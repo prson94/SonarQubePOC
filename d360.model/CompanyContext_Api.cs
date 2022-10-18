@@ -7043,7 +7043,6 @@ namespace d360.model
 									where   ER.ExecutionID = @ExecutionID 
 											and ER.Success is null 
 											and (ER.SubjectUid is not null or ER.ObjectUid is not null)
-											and (ER.SubjectAssetTypeID <> T.SubjectAssetTypeID or ER.ObjectAssetTypeID <> T.ObjectAssetTypeID)
 											and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);",
                 new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
@@ -12697,13 +12696,12 @@ where   ER.ExecutionID = @ExecutionID
 									insert into #child
 									select 
 										ItemNumber,
-										AAP.Assetid,
+										AAP.Id as Assetid,
 										p.startDate,
 										p.endDate
 									from 
 										#parent P 
-										inner join 
-										[utility].[ArtifactAssetParent] AAP on P.assetID = AAP.ParentAssetID
+										outer apply GetParentByAssetID(P.assetID)AAP
 
 									delete from #parent 
 	

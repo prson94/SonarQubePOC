@@ -31,6 +31,7 @@ namespace d360.model.helpers
 		DynamicQueryJoins dynamicQueryJoins;
 
 		List<Guid> AssetTypeLevels;
+		Guid AssetTypeUid;
 		List<AssetTypeKeyFieldMap> AssetTypeKeyFieldMaps;
 
 		public FilterExpressionParser(
@@ -207,7 +208,7 @@ namespace d360.model.helpers
 						assetTypeUids.Add(Guid.Parse(definition.GetValue("AssetTypeUid").ToString()));
 					}
 
-					(AssetTypeLevels, AssetTypeKeyFieldMaps) = dataProvider.GetPathSegmentsMappingInfo(fieldTypes.First().AssetTypeID.Value, assetTypeUids);
+					(AssetTypeUid, AssetTypeLevels, AssetTypeKeyFieldMaps) = dataProvider.GetPathSegmentsMappingInfo(fieldTypes.First().AssetTypeID.Value, assetTypeUids);
 				}
 
 				filterString = filterString.Trim();
@@ -409,6 +410,8 @@ namespace d360.model.helpers
                 }
 				else if (allowTempTableFiltering && fieldType.IsPathSegment)
 				{
+					filteredFieldIDs.Add(fieldType.ID);
+
 					TempTablePathSegmentToken token = new TempTablePathSegmentToken(fdp, field, op, value, AssetTypeKeyFieldMaps, paramIdx);
 					token.LoadFieldType(fieldType, fieldColumns);
 
@@ -416,6 +419,8 @@ namespace d360.model.helpers
 				}
 				else if (allowTempTableFiltering && filterTypesWithTempTables.Contains(fieldType.Type))
 				{
+					filteredFieldIDs.Add(fieldType.ID);
+
 					TempTableFieldToken token = new TempTableFieldToken(fdp, field, op, value, paramIdx);
 					token.LoadFieldType(fieldType, fieldColumns, dynamicQueryJoins);
 
@@ -595,6 +600,10 @@ namespace d360.model.helpers
 
 					temp_table_columns.Add("AssetId int");
 
+					//insert base asset type
+					temp_table_columns.Add($"[lvl_{AssetTypeUid}] int");
+
+					//append children columns
 					for (int i = 0; i < AssetTypeLevels.Count; i++)
 					{
 						temp_table_columns.Add($"[lvl_{AssetTypeLevels[i]}] int");
@@ -606,7 +615,7 @@ namespace d360.model.helpers
 								create table #assets_hierarchy({string.Join(",", temp_table_columns)})");
 
 					sb.AppendLine(@$"insert into #assets_hierarchy
-											select a.id,{string.Join(",", targetJoins)}
+											select a.id,a.id,{string.Join(",", targetJoins)}
 											from asset a
 											left join[Intersect] I1 on I1.ObjectAssetID = A.ID and I1.IntersectTypeID in (select id from #parent_relationships)");
 					for (int i = 2; i <= AssetTypeLevels.Count; i++)
