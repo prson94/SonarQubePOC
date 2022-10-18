@@ -172,7 +172,7 @@ namespace igx.UnitTests.RepositoryTests
             mustContain.Add("F3.FormattedValue as [OwnershipLookup]");
             mustContain.Add("from #OwnershipLookupAssets ola3");
             mustContain.Add("A.uid in @assetUids");
-            mustContain.Add("AssetDetail Parent on Parent.ID = AAP.ParentAssetID");
+            mustContain.Add("AssetDetail Parent on Parent.ID = AAP.Id");
 
             List<string> mustContainWithFilter = new List<string>();
             mustContainWithFilter.Add("F1.FormattedValue like @simpleFilter");
