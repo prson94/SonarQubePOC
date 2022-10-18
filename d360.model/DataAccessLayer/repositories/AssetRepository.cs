@@ -1506,7 +1506,7 @@ namespace d360.model.DataAccessLayer
 				{(!excludeFilterQueries && useSimpleFilterTempTable ? "inner join #TempFilteredAssets ta on ta.AssetId = a.ID" : "")}
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{includedJoins.SQLJoinStatement}
+				{includedJoins.SQLSimpleStatement}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
