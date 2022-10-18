@@ -177,8 +177,8 @@ END
 	</rollback>
   </changeSet> 
   
-    <changeSet author="Puneet Gupta" id="Table.dbo.Field-Field_AfterUpsert-v14">
-    <comment>GOV-19983, GOV-18447</comment>
+    <changeSet author="Puneet Gupta" id="Table.dbo.Field-Field_AfterUpsert-v15">
+    <comment>GOV-20074, GOV-19983, GOV-18447</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -194,12 +194,32 @@ AS
 	if exists( select 1 from inserted where [value] is not null or [formattedvalue] is not null)
 	begin
 
-		UPDATE	T
-		SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
-		FROM	Field T 
-				inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and ((F.AssetID IS NOT NULL AND F.AssetID = T.AssetID) OR (F.IntersectID IS NOT NULL AND F.IntersectID = T.IntersectID) OR (F.IssueID IS NOT NULL AND F.IssueID = T.IssueID)) 
-				INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
-		
+		if exists (select 1 from inserted where AssetID IS NOT NULL)
+			begin
+				UPDATE	T
+				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+				FROM	Field T 
+						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.AssetID IS NOT NULL AND F.AssetID = T.AssetID) 
+						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+			end
+
+		if exists (select 1 from inserted where IntersectID IS NOT NULL)
+			begin
+				UPDATE	T
+				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+				FROM	Field T 
+						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.IntersectID IS NOT NULL AND F.IntersectID = T.IntersectID) 
+						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+			end
+
+		if exists (select 1 from inserted where IssueID IS NOT NULL)
+			begin
+				UPDATE	T
+				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+				FROM	Field T 
+						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.IssueID IS NOT NULL AND F.IssueID = T.IssueID)
+						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+			end
 
 		drop table if exists #insertedFields;
 		create table #insertedFields (ObjectType varchar(250), ObjectID int);
