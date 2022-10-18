@@ -132,7 +132,7 @@ namespace d360.model.DataAccessLayer
 											AAP.Id as assetID
 										from 
 											descendants as d
-											outer apply GetParentByAssetID(d.AssetID)AAP
+											cross apply GetParentByAssetID(d.AssetID)AAP
 									)";
 			}
 
