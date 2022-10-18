@@ -308,7 +308,7 @@ namespace d360.core.entities
 		{
 			foreach (var value in values)
 			{
-				this.joins.Add(new DynamicQueryJoinData { SQLStatement = value.SQLStatement, FieldIdentifier = value.FieldIdentifier });
+				this.joins.Add(new DynamicQueryJoinData { SQLStatement = value.SQLStatement, FieldIdentifier = value.FieldIdentifier, SimpleStatement = value.SimpleStatement });
 			}
 		}
 
@@ -333,10 +333,23 @@ namespace d360.core.entities
 			}
 		}
 
+		public string SQLSimpleStatement
+		{
+			get
+			{
+				var sb = new StringBuilder();
+				foreach (var statement in joins.OrderBy(x => x.Sort).Distinct())
+				{
+					sb.AppendLine(statement.SimpleStatement ?? statement.SQLStatement);
+				}
+				return sb.ToString();
+			}
+		}
+
 		public DynamicQueryJoins Clone()
 		{
 			var clone = new DynamicQueryJoins();
-			joins.ForEach(assetQueryJoinData => clone.Add(assetQueryJoinData.SQLStatement, assetQueryJoinData.FieldIdentifier));
+			joins.ForEach(assetQueryJoinData => clone.Add(assetQueryJoinData.SQLStatement, assetQueryJoinData.FieldIdentifier, assetQueryJoinData.SimpleStatement));
 			return clone;
 		}
 
