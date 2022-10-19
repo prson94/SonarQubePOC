@@ -4678,10 +4678,11 @@ where an.Uid = fam.uid)
 										select @assetID as AssetID, CAST(0 AS BIGINT) as ParentAssetID
 										union all
 										select 
-											d.AssetID, AAP.Id as ParentAssetID
+											AAP.assetID, AAP.ParentAssetID
 										from 
 											descendants as d
-											cross apply GetParentByAssetID(d.AssetID)AAP
+											inner join 
+											[utility].[ArtifactAssetParent] AAP on d.AssetID = AAP.ParentAssetID
 									)
 
 									select * 
