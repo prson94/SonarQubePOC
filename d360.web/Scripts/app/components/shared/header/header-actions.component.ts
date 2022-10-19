@@ -204,10 +204,10 @@ export class HeaderActionsComponent {
         this.showShoppingCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
 
 		this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe((x) => {
-			if (x.showFollow !== null) {
+			if (typeof x.showFollow !== "undefined") {
 				this.headerActionsService.showFollow = x.showFollow;
 			}
-			if (x.showRaiseIssue !== null) {
+			if (typeof x.showRaiseIssue !== "undefined") {
 				this.headerActionsService.showRaiseIssue = x.showRaiseIssue;
 			}
         });
