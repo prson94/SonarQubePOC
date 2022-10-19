@@ -2509,8 +2509,8 @@ where	T.ExecutionID = @ExecutionID
 																				I.IntersectID,
 																				P.[Level] + 1 as [Level]
 																		from	PredicateIntersect I 
-																				inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = {(int)predicateType} and P.Object = I.Subject and P.ObjectID = I.SubjectID
-																				inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+																				inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = {(int)predicateType} and P.AssetID = I.SubjectAssetID 
+																				inner join Asset C on C.ID = I.ObjectAssetID 
 																		where   P.ItemNumber between @beginItemNumber and @endItemNumber and P.[Level] <= 15
 																	)
 																	insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy],[Object], [ObjectID], [Level])
@@ -2949,11 +2949,14 @@ where	T.ExecutionID = @ExecutionID
 			// Log the parent removals into Dependent Change table.
 			Connection.Execute(@"
 				insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
-					select  S.ExecutionID, S.ItemNumber, 1, 2, '{""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
-					from    api.ExecutionDeletedAsset S
-							inner join [Intersect] I on I.ObjectAssetId = S.AssetId
-							inner join Asset P on P.Id = I.SubjectAssetId
-					where   " + querySuffix + " group by S.ExecutionID, S.ItemNumber, cast(P.Uid as varchar(50))", 
+					select  ExecutionID, ItemNumber, 1, 2, '{""ParentAssetUid"": ""' + cast(Uid as varchar(50)) + '""}' 
+					from    (
+							select  S.ExecutionID, S.ItemNumber, P.Uid, ROW_NUMBER() OVER(PARTITION BY S.ExecutionID, S.ItemNumber ORDER BY P.Uid ASC) as RowNum
+							from	api.ExecutionDeletedAsset S 
+									inner join [Intersect] I on I.ObjectAssetId = S.AssetId 
+									inner join Asset P on P.Id = I.SubjectAssetId
+							where " + querySuffix + @" group by S.ExecutionID, S.ItemNumber, P.Uid 
+							) O where RowNum = 1", 
 					new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 			Connection.Execute(
