@@ -16,6 +16,8 @@ import { FormMode } from '../../models/form.model';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { Subscription } from 'rxjs';
 import { CompanySettingsService } from '../../services/settings.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
+import { HeaderActions } from '../../models/header.model';
 
 @Component({
 	selector: 'd3s-reference-list',
@@ -69,6 +71,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		private assetTypeService: AssetTypeService,
 		protected authenticationService: AuthenticationService,
 		protected headerBreadcrumbService: HeaderBreadcrumbService,
+		public headerActionsService: HeaderActionsService,
 		private permissionsService: PermissionsService,
 		protected referenceService: ReferenceService,
 		secondaryNavService: SecondaryNavService,
@@ -94,6 +97,10 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		//load default perms
 		this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 		refListIdString = this.assetTypeUid;
+
+		let headerActions: HeaderActions = new HeaderActions();
+		headerActions.showRaiseIssue = false;
+		this.headerActionsService.setCurrentHeaderActions(headerActions);
 
 		if (this.assetTypeUid && (this.assetTypeUid as string).indexOf(',') !== -1) {
 			var items = refListIdString.split(',');
