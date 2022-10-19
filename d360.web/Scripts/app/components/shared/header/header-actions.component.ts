@@ -134,7 +134,8 @@ export class HeaderActionsComponent {
 
                 let isMonitorUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_MONITOR_ROOT.toUpperCase());
                 let isCommunityUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT.toUpperCase());
-                let isDashboardUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT.toUpperCase());
+				let isDashboardUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT.toUpperCase());
+				let isSemanticsUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT.toUpperCase());
 
                 if (this.previousUrl) {
                     this.previousUrl = _.trimStart(this.previousUrl, '/');
@@ -154,8 +155,9 @@ export class HeaderActionsComponent {
                     && !isDashboardUrl
                     && !isResourceUrl
                     && !this.isAdminSidebarUrl
-                    && !disableIssueManagement
-                );
+					&& !disableIssueManagement
+					&& !isSemanticsUrl
+				);
 
                 setTimeout(() => { this.calculateControlWidth(); }, 250);
             }
@@ -201,8 +203,13 @@ export class HeaderActionsComponent {
 
         this.showShoppingCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
 
-        this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe((x) => {
-            this.headerActionsService.showFollow = x.showFollow;
+		this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe((x) => {
+			if (x.showFollow !== null) {
+				this.headerActionsService.showFollow = x.showFollow;
+			}
+			if (x.showRaiseIssue !== null) {
+				this.headerActionsService.showRaiseIssue = x.showRaiseIssue;
+			}
         });
 
     }
