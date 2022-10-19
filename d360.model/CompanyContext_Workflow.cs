@@ -1447,7 +1447,7 @@ namespace d360.model
 						objectId,
 						objectType = objectType.ToString(),						
 						IssueID = objectType == SystemObjects.Issue.ToString() ? objectId : (long?)null,
-						IntersectID = objectType == SystemObjects.Issue.ToString() ? objectId : (long?)null,
+						IntersectID = objectType == SystemObjects.Intersect.ToString() ? objectId : (long?)null,
 						updatedBy = CurrentResourceID
 					});
 			}
@@ -1530,6 +1530,8 @@ namespace d360.model
 				{
 					asset = Assets.Where(x => x.ID == issue.AssetID).FirstOrDefault();
 					assetType = AssetTypes.FirstOrDefault(a => a.ID == issue.AssetTypeID);
+					objectId = asset.ObjectID;
+					objectType = asset.Object;
 					ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
 					isAssetEdited = true;
 				}
@@ -1590,7 +1592,7 @@ namespace d360.model
 						
 						if (actionField != null)
 						{
-							FieldType actionFieldType = FieldTypes.FirstOrDefault(x => x.IntersectTypeID != null && x.ID == actionField.FieldTypeID);
+							FieldType actionFieldType = FieldTypes.FirstOrDefault(x => x.IssueTypeID == issue.IssueTypeID && x.ID == actionField.FieldTypeID);
 							
 							if (actionFieldType.Type == "Lookup" || actionFieldType.Type == "Link")
 							{
