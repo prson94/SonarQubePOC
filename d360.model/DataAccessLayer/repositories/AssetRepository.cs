@@ -1561,7 +1561,7 @@ namespace d360.model.DataAccessLayer
 				}
 				else
 				{
-					countSQL = "select count(1) from Asset where A.AssetTypeID = @assetTypeID;";
+					countSQL = "select count(1) from Asset where AssetTypeID = @assetTypeID;";
 				}
 			}
 
