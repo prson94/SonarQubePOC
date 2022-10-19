@@ -1860,18 +1860,24 @@ namespace d360.extensions.search
                     return CommonNames.AssetTypeClass_Business;
                 case "TECHNICALASSET":
                     return CommonNames.AssetTypeClass_Technical;
-                case "TAXONOMY":
+				case "MODEL":
+				case "TAXONOMY":
                     return CommonNames.AssetTypeClass_Model;
                 case "DIAGRAM":
                     return CommonNames.AssetTypeClass_DiagramAsset;
                 case "DOMAIN":
-                    return CommonNames.AssetTypeClass_Reference;
+				case "REFERENCE":
+					return CommonNames.AssetTypeClass_Reference;
                 case "SYNONYM":
                     return CommonNames.AssetTypeClass_GramaticType;
                 case "SEMANTICTYPE":
                     return CommonNames.AssetTypeClass_SemanticType; 
-                case "REFERENCE":
-                    return CommonNames.AssetTypeClass_Reference;
+				case "POLICY":
+					return CommonNames.AssetTypeClass_Policy;
+				case "GROUP":
+					return CommonNames.AssetTypeClass_Group;
+				case "USER":
+					return CommonNames.AssetTypeClass_User;
                 default:
                     return key;
             }
