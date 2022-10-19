@@ -1870,8 +1870,8 @@ from	[Intersect] I
 	]]>
 	</sql>
   </changeSet>
-  <changeSet author="bquinlivan" id="Data.Corrections.GOV-20069">
-	<comment>GOV-20069 - Correct values in assettypeid, IssueTypeID and IntersectTypeID columns</comment>	
+  <changeSet author="bquinlivan" id="Data.Corrections.GOV-20069-1">
+	<comment>GOV-20069 - Correct values in assettypeid column</comment>	
 	<sql dbms="mssql"
             endDelimiter="GO"
             splitStatements="true"
@@ -1904,21 +1904,6 @@ from	[Intersect] I
 				AssetType AST on AST.Object = ER.Object and AST.ObjectID = ER.ObjectID
 			WHERE
 				(ER.AssetTypeID =1 or ER.AssetTypeID is null) AND ast.id<> ER.AssetTypeID and ER.Object <> 'IssueType' and ER.Object <> 'IntersectType'
-
-
-			UPDATE ER
-				Set IssueTypeID = ObjectID
-			from 
-				[workflow].[EventRegistration] ER
-			WHERE
-				IssueTypeID is null AND ER.Object = 'IssueType'
-
-			UPDATE ER
-				Set IntersectTypeID = ObjectID
-			from 
-				[workflow].[EventRegistration] ER
-			WHERE
-				IntersectTypeID is null AND ER.Object = 'IntersectType'
 		END
 	]]>
 	</sql>
