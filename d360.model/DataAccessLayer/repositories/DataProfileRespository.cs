@@ -129,10 +129,11 @@ namespace d360.model.DataAccessLayer
 										select @assetID as AssetID
 										union all
 										select 
-											AAP.Id as assetID
+											AAP.assetID
 										from 
 											descendants as d
-											cross apply GetParentByAssetID(d.AssetID)AAP
+											inner join 
+											[utility].[ArtifactAssetParent] AAP on d.AssetID = AAP.ParentAssetID
 									)";
 			}
 
