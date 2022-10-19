@@ -275,7 +275,6 @@ namespace d360.model.DataAccessLayer
 			string profilingCheckSql = "";
 			string profilingCheckFields = "";
 			bool includeProfilingCheck = false;
-			bool hasFilters = false;
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -945,8 +944,6 @@ namespace d360.model.DataAccessLayer
 				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
 				if (!string.IsNullOrEmpty(value))
 				{
-					hasFilters = true;
-
 					//Temp vars for filter expression parsing
 					//Filter expression parser uses sql definitions from getFieldSql() method
 					var tempArgs = new DynamicParameters();
@@ -1001,8 +998,6 @@ namespace d360.model.DataAccessLayer
 				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_relationfilter").Value;
 				if (!string.IsNullOrEmpty(value))
 				{
-					hasFilters = true;
-
 					var filterDataProvider = new FilterDataProvider(CompanyContext);
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.Relationships);
 					Dictionary<string, object> sqlParams = new Dictionary<string, object>();
@@ -1068,7 +1063,6 @@ namespace d360.model.DataAccessLayer
 				var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
 				if (!string.IsNullOrEmpty(simpleFilter))
 				{
-					hasFilters = true;
 					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
 					simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
 
@@ -1498,7 +1492,10 @@ namespace d360.model.DataAccessLayer
 			}
 
 			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
-			bool containsAnyFilter = hasFilters || useSimpleFilterTempTable || advancedFilterTempTableInfos.TempTableSQL() != String.Empty;
+			bool containsAnyFilter = 
+				whereSql != "where A.AssetTypeID = @assetTypeID" 
+				|| useSimpleFilterTempTable 
+				|| advancedFilterTempTableInfos.TempTableSQL() != String.Empty;
 
 			string GetBaseQuery(bool excludeFilterQueries = false)
 			{
@@ -1564,7 +1561,7 @@ namespace d360.model.DataAccessLayer
 				}
 				else
 				{
-					countSQL = "select count(1) from Asset where AssetTypeId = @assetTypeId;";
+					countSQL = $"select count(1) from Asset where A.AssetTypeID = @assetTypeID;";
 				}
 			}
 
