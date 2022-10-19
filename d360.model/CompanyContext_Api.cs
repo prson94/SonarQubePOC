@@ -2391,100 +2391,33 @@ namespace d360.model
 
                                         try
                                         {
-                                            if (predicateType.HasValue)
-                                            {
-                                                sw.Restart();
+											if (predicateType.HasValue)
+											{
+												sw.Restart();
 
-                                                Connection.Execute($@" 
-																	if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
-																		truncate TABLE #ExecutionDeletedAsset
-																	else
-																		begin
-																			create table #ExecutionDeletedAsset (
-																				ExecutionID	uniqueidentifier,
-																				[Root] uniqueidentifier,
-																				ItemNumber	int,
-																				Uid	uniqueidentifier,
-																				AssetID	bigint,
-																				FromHierarchy	bit
-																			);
+												Connection.Execute($@"
+update	T
+set		T.Success = 0,
+		T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(A.ChildCount as nvarchar) + ' child asset(s) present for this item.'
+from    api.ExecutionDeletedAsset T
+		cross apply (
+			select  count(1) as ChildCount
+			from	[Intersect] I
+					inner join IntersectType It on IT.ID = I.IntersectTypeID
+					inner join Asset A on I.ObjectAssetID = A.ID and I.SubjectAssetID = T.AssetID and A.[State] not in (3,4)
+					inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] in (3,4)
+		) A 
+where	T.ExecutionID = @ExecutionID
+		and T.[Cascade] = 0
+		and T.ItemNumber between @beginItemNumber and @endItemNumber
+		and A.ChildCount > 0;", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-																			create nonclustered index cix_tempExecutionDeletedAsset on #ExecutionDeletedAsset([Root], ExecutionID, ItemNumber)
-																		end;
-
-																	with h as (
-																		select	D.ExecutionID,
-																				D.ItemNumber,
-																				D.AssetID,
-																				D.[Uid],
-																				A.Object,
-																				A.ObjectID, 
-																				D.IntersectID,
-																				0 as [Level],
-																				D.Uid as Root
-																		from	api.ExecutionDeletedAsset D
-																				inner join Asset A on D.ExecutionID = @ExecutionID and A.ID = D.AssetID
-																		where	D.AssetID is not null
-																				and D.ItemNumber between @beginItemNumber and @endItemNumber
-																		union all
-																		select	P.ExecutionID,
-																				P.ItemNumber,
-																				C.ID as AssetID,
-																				C.[Uid],
-																				C.Object,
-																				C.ObjectID, 
-																				I.IntersectID,
-																				P.[Level] + 1 as [Level],
-																				P.[Root] as Root
-																		from	PredicateIntersect I 
-																				inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = @predicateTypeValue and P.Object = I.Subject and P.ObjectID = I.SubjectID
-																				inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-																		where   P.ItemNumber between @beginItemNumber and @endItemNumber and P.[Level] <= 1
-																	)
-
-																	insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[FromHierarchy],[Root])
-																		select   
-																				ExecutionID, 
-																				ItemNumber, 
-																				[Uid], 
-																				AssetID, 
-																				1 as Hiearchy,
-																				h.[Root]
-																		from    h 
-																		where   IntersectID is not null 
-																				and [Level] > 0 
-																				and not exists (select 1 from api.ExecutionDeletedAsset ed where ed.ExecutionID = h.ExecutionID and ed.ItemNumber = h.ItemNumber and ed.Uid = h.uid)
-																				and  ExecutionID = @ExecutionID;
-
-																	drop table if exists #tempChildTable;
-
-																	select [Root] as UID,
-																		ExecutionID,
-																		ItemNumber
-																	into #tempChildTable
-																	from #ExecutionDeletedAsset
-																	group by [Root], ExecutionID, ItemNumber
-																	having count(1) > 0;
-
-																	create nonclustered index cix_tempchildtable on #tempChildTable (UID, ExecutionID, ItemNumber);
-			
-																	update  S 
-																	set     S.Success = 0 ,
-																			[Message] ='You have not enabled Cascade, yet there are child relationships for this asset.'
-																	from    api.ExecutionDeletedAsset S 
-																			inner join #tempChildTable E on S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
-																	where	{querySuffix}  and AssetId is not null
-																			and S.[Cascade] = 0;
-
-																	drop table if exists #tempChildTable;", new { execution.ExecutionID, predicateTypeValue = predicateType.HasValue ? (int)predicateType : -1, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                            }
-
-                                            AddMeasurement(metrics, $"Log parent and child relationships assets without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
+												AddMeasurement(metrics, $"Log parent and child relationships assets without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+												sw.Restart();
 
 
 
-                                            Connection.Execute($@" 
+												Connection.Execute($@" 
 																	if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
 																		truncate TABLE #ExecutionDeletedAsset
 																	else
@@ -2545,14 +2478,14 @@ namespace d360.model
 
 																	drop table if exists #tempworkflow;", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-                                            AddMeasurement(metrics, $"Log workflow for assets exists without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                            sw.Restart();
+												AddMeasurement(metrics, $"Log workflow for assets exists without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+												sw.Restart();
 
-                                            // Get the hierarchy items we also need to remove
-                                            if (predicateType.HasValue)
-                                            {
-                                                sw.Restart();
-                                                Connection.Execute($@"
+												// Get the hierarchy items we also need to remove
+												if (predicateType.HasValue)
+												{
+													sw.Restart();
+													Connection.Execute($@"
 																	with h as (
 																		select	S.ExecutionID,
 																				S.ItemNumber,
@@ -2595,14 +2528,15 @@ namespace d360.model
 																		where   IntersectID is not null 
 																				and [Level] > 0 
 																				and not exists (select 1 from api.ExecutionDeletedAsset ed where ed.ExecutionID = @ExecutionID and ed.Uid = h.Uid)",
-                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+													new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-                                                AddMeasurement(metrics, $"Get the hierarchy items we also need to remove>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                                sw.Restart();
+													AddMeasurement(metrics, $"Get the hierarchy items we also need to remove>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+													sw.Restart();
 
-                                            }
-                                            isCascadeCheckCompleted = true;
-                                            trans.Commit();
+												}
+												isCascadeCheckCompleted = true;
+												trans.Commit();
+											}
                                         }
                                         catch (Exception ex)
                                         {
