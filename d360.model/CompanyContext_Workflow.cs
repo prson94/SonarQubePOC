@@ -2983,7 +2983,9 @@ namespace d360.model
 
 					if (fieldId > 0)
 					{
-						Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == objectID && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == fieldId).FirstOrDefault();
+						//logic still uses objectId and in case of asset we needs to fetch assetid
+						var assetId = Assets.Where(x => x.ObjectID == objectID && x.Object == obj.ToString()).Select(x=> x.ID).FirstOrDefault();
+						Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == assetId && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == fieldId).FirstOrDefault();
 
 						//If there is no field and type is Issue, this might be asset field
 						if (fieldRecord == null && obj == SystemObjects.Issue)
