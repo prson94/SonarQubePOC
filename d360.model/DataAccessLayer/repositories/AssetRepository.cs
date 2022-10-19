@@ -275,7 +275,6 @@ namespace d360.model.DataAccessLayer
 			string profilingCheckSql = "";
 			string profilingCheckFields = "";
 			bool includeProfilingCheck = false;
-			bool hasFilters = false;
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -1493,7 +1492,10 @@ namespace d360.model.DataAccessLayer
 			}
 
 			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
-			bool containsAnyFilter = useSimpleFilterTempTable || advancedFilterTempTableInfos.TempTableSQL() != String.Empty;
+			bool containsAnyFilter = 
+				whereSql != "where A.AssetTypeID = @assetTypeID" 
+				|| useSimpleFilterTempTable 
+				|| advancedFilterTempTableInfos.TempTableSQL() != String.Empty;
 
 			string GetBaseQuery(bool excludeFilterQueries = false)
 			{
@@ -1559,7 +1561,7 @@ namespace d360.model.DataAccessLayer
 				}
 				else
 				{
-					countSQL = "select count(1) from Asset where AssetTypeId = @assetTypeId;";
+					countSQL = "select count(1) from Asset where AssetTypeID = @assetTypeID;";
 				}
 			}
 
