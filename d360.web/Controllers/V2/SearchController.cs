@@ -474,11 +474,10 @@ namespace d360.web.Controllers.V2
 
 		//Icons set based on Category/Class directly
 		private static readonly Dictionary<string, string> categoryMap = new Dictionary<string, string> {
-			{ "User", "fa-user" },
-			{ "Group", "fa-users" },
-			{ "Grammatic Type", "fa-comments" },
-			{ "Attribute", "fa-pencil-square-o" },
-			{ "Diagram Asset", "fa-share-alt" }
+			{ CommonNames.AssetTypeClass_User, "fa-user" },
+			{ CommonNames.AssetTypeClass_Group, "fa-users" },
+			{ CommonNames.AssetTypeClass_GramaticType, "fa-comments" },
+			{ CommonNames.AssetTypeClass_DiagramAsset, "fa-share-alt" }
 		};
 
 		private List<string> GetVisibleCategories()
@@ -720,7 +719,7 @@ namespace d360.web.Controllers.V2
 				var names = siteNavMap.Values.ToList();
 				Dictionary<string, (string, string)> iconMap = Company.Query<(string Name, string Icon, string ImageIconUrl)>(sql, new { names }).ToDictionary(t => t.Name, t => (t.Icon, t.ImageIconUrl));
 
-				foreach (var r in results.Where(res => res.MissingIcon() && iconMap.ContainsKey(siteNavMap[res.Group])))
+				foreach (var r in results.Where(res => res.MissingIcon() && siteNavMap.ContainsKey(res.Group) && iconMap.ContainsKey(siteNavMap[res.Group])))
 				{
 					if (!string.IsNullOrEmpty(iconMap[siteNavMap[r.Group]].Item2))
 					{
