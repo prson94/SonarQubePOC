@@ -945,6 +945,8 @@ namespace d360.model.DataAccessLayer
 				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
 				if (!string.IsNullOrEmpty(value))
 				{
+					hasFilters = true;
+
 					//Temp vars for filter expression parsing
 					//Filter expression parser uses sql definitions from getFieldSql() method
 					var tempArgs = new DynamicParameters();
@@ -999,6 +1001,8 @@ namespace d360.model.DataAccessLayer
 				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_relationfilter").Value;
 				if (!string.IsNullOrEmpty(value))
 				{
+					hasFilters = true;
+
 					var filterDataProvider = new FilterDataProvider(CompanyContext);
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.Relationships);
 					Dictionary<string, object> sqlParams = new Dictionary<string, object>();
@@ -1064,6 +1068,7 @@ namespace d360.model.DataAccessLayer
 				var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
 				if (!string.IsNullOrEmpty(simpleFilter))
 				{
+					hasFilters = true;
 					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
 					simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
 
@@ -1493,7 +1498,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
-			bool containsAnyFilter = useSimpleFilterTempTable || advancedFilterTempTableInfos.TempTableSQL() != String.Empty;
+			bool containsAnyFilter = hasFilters || useSimpleFilterTempTable || advancedFilterTempTableInfos.TempTableSQL() != String.Empty;
 
 			string GetBaseQuery(bool excludeFilterQueries = false)
 			{
