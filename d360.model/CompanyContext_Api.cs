@@ -2422,9 +2422,9 @@ where	T.ExecutionID = @ExecutionID
 												AddMeasurement(metrics, $"Log parent and child relationships assets without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
 												sw.Restart();
 
+											}
 
-
-												Connection.Execute($@" 
+											Connection.Execute($@" 
 																	if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
 																		truncate TABLE #ExecutionDeletedAsset
 																	else
@@ -2485,14 +2485,14 @@ where	T.ExecutionID = @ExecutionID
 
 																	drop table if exists #tempworkflow;", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-												AddMeasurement(metrics, $"Log workflow for assets exists without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-												sw.Restart();
+											AddMeasurement(metrics, $"Log workflow for assets exists without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+											sw.Restart();
 
-												// Get the hierarchy items we also need to remove
-												if (predicateType.HasValue)
-												{
-													sw.Restart();
-													Connection.Execute($@"
+											// Get the hierarchy items we also need to remove
+											if (predicateType.HasValue)
+											{
+												sw.Restart();
+												Connection.Execute($@"
 																	with h as (
 																		select	S.ExecutionID,
 																				S.ItemNumber,
@@ -2535,15 +2535,13 @@ where	T.ExecutionID = @ExecutionID
 																		where   IntersectID is not null 
 																				and [Level] > 0 
 																				and not exists (select 1 from api.ExecutionDeletedAsset ed where ed.ExecutionID = @ExecutionID and ed.Uid = h.Uid)",
-													new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+												new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-													AddMeasurement(metrics, $"Get the hierarchy items we also need to remove>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-													sw.Restart();
-
-												}
-												isCascadeCheckCompleted = true;
-												trans.Commit();
+												AddMeasurement(metrics, $"Get the hierarchy items we also need to remove>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+												sw.Restart();
 											}
+											isCascadeCheckCompleted = true;
+											trans.Commit();
                                         }
                                         catch (Exception ex)
                                         {
