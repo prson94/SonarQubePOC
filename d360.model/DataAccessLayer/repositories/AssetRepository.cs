@@ -1404,7 +1404,7 @@ namespace d360.model.DataAccessLayer
 			var fieldsSql = "";
 			if (fieldColumns.Any())
 			{
-				fieldsSql = $",\n {string.Join(",\n", fieldColumns.GetStatements())}";
+				fieldsSql = $",\n {string.Join(",\n", fieldColumns.GetStatements(true))}";
 			}
 
 			bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("Node.KeyPath");
@@ -1663,11 +1663,50 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
+			bool needFieldDataConversion = fieldColumns.NeedExplicitCast();
+
 			//Loop results once for if any applicable conversions
-			if (useTempTableForResults || includeRelationships || includePermissionDetails || includeSegments || (includeOwnershipLookup && ownershipFieldTypes.Any()))
+			if (needFieldDataConversion || useTempTableForResults || includeRelationships || includePermissionDetails || includeSegments || (includeOwnershipLookup && ownershipFieldTypes.Any()))
 			{
 				foreach (var result in results)
 				{
+					if (needFieldDataConversion)
+					{
+						var fields = fieldTypes.Where(x => x.Type == "Number" || x.Type == "Decimal").ToList();
+
+						foreach(var field in fields)
+						{
+							var data = (IDictionary<string, object>)result;
+
+							if (data.ContainsKey(field.Name) && data[field.Name] != null)
+							{
+								if (field.Type == "Number")
+								{
+									if (long.TryParse(data[field.Name].ToString(), out long value))
+									{
+										data[field.Name] = value;
+									}
+									else
+									{
+										data[field.Name] = null;
+									}
+								}
+
+								if (field.Type == "Decimal")
+								{
+									if(decimal.TryParse(data[field.Name].ToString(), out decimal value))
+									{
+										data[field.Name] = value;
+									}
+									else
+									{
+										data[field.Name] = null;
+									}
+								}
+							}
+						}
+					}
+
 					if (useTempTableForResults)
 					{
 						IDictionary<string, object> res = result;

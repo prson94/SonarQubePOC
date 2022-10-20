@@ -290,7 +290,7 @@ namespace d360.model.DataAccessLayer.repositories
 							 }
 							 else
 							 {
-								 fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as {fieldDataType}) as [{columnName}]", f.ID.ToString(), $"{tableAlias}.{valueColumn}");
+								 fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as {fieldDataType}) as [{columnName}]", f.ID.ToString(), $"{tableAlias}.{valueColumn}", $"{tableAlias}.{valueColumn} as [{columnName}]");
 							 }
 						 }
 						 else if (f.Type == "JsonElement")
