@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.api.DeleteAssetTypesByExecution-v4">
-    <comment>GOV-19966</comment>
+  <changeSet author="Pappas" id="Procedure.api.DeleteAssetTypesByExecution-v5">
+    <comment>GOV-19786</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -346,17 +346,21 @@ begin
 							inner join [metrics].[AssetVersion] V on V.Uid = R.AssetVersionUid
 							inner join [metrics].[Asset] M on M.Uid = V.AssetUid
 							inner join [metrics].[Allocation] S on S.Uid = M.AllocationUid and S.ScoreType = 2
-							inner join AssetType [AT] on [AT].Uid = S.AssetTypeUid and [AT].[Class] = 7 -- Rule
-							inner join Asset A on A.AssetTypeID = [AT].ID
-							inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = [AT].ID and T.ExecutionID = @ExecutionID and T.Success is null
 							cross apply openjson(R.Evidence, '$') RE
 							cross apply openjson(RE.[value]) REP
 							cross apply openjson(REP.[value]) with (Uid uniqueidentifier '$.Uid') REPI
 							inner join Asset RelyAsset on RelyAsset.Uid = REPI.Uid
 					where	ISNUMERIC(RE.[key]) = 1 
-							and REP.[key] = 'RollupPath';
+							and REP.[key] = 'RollupPath'
+							and RelyAsset.Uid in (
+								select	A.Uid 
+								from	Asset A 
+										inner join api.ExecutionDeletedAssetType T on T.AssetTypeID = A.AssetTypeID 
+											and T.ExecutionID = @ExecutionID 
+											and T.Success is null							
+							);
 
-				insert into [api].[ExecutionAsset] (ExecutionID, ItemNumber, Uid, AssetID)
+				insert into [api].[ExecutionDeletedAsset] (ExecutionID, ItemNumber, Uid, AssetID)
 					select	@ExecutionID, ItemNumber, Uid, ID from #RelyingAssets;
 			end try
 			begin catch
