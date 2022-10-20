@@ -226,7 +226,7 @@ namespace d360.model.DataAccessLayer.repositories
 					 }
 					 else if (f.Type == "Html")
 					 {
-						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"CAST({tableAlias}.{valueColumn} as XML).value('.', 'nvarchar(max)')");
+						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"TRY_CAST({tableAlias}.{valueColumn} as XML).value('.', 'nvarchar(max)')");
 					 }
 					 else if (f.Type == "Link")
 					 {
@@ -327,7 +327,7 @@ namespace d360.model.DataAccessLayer.repositories
 						 }
 						 else if (f.Type == "Html")
 						 {
-							 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"CAST({tableAlias}.{valueColumn} as XML).value('.', 'nvarchar(max)')");
+							 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"TRY_CAST({tableAlias}.{valueColumn} as XML).value('.', 'nvarchar(max)')");
 						 }
 						 else if (f.Type == "Link")
 						 {
