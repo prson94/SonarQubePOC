@@ -1574,7 +1574,7 @@ namespace d360.model
 						parameters.Add("id", asset.ID);
 					}
 
-					await Database.Connection.ExecuteAsync(sql, new { id = asset.ID, fieldTypeId = item.FieldID });
+					await Database.Connection.ExecuteAsync(sql, parameters);
 
 				}
 				else if (item.CurrentDate)
