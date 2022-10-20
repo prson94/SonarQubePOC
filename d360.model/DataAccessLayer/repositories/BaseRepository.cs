@@ -288,6 +288,10 @@ namespace d360.model.DataAccessLayer.repositories
 							 {
 								 fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} is null then null when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]", f.ID.ToString(), $"{tableAlias}.{valueColumn}");
 							 }
+							 else if(fieldDataType == "bigint" || fieldDataType == "float")
+							 {
+								 fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as {fieldDataType}) as [{columnName}]", f.ID.ToString(), $"{tableAlias}.{valueColumn}", $"{tableAlias}.{valueColumn} as [{columnName}]");
+							 }
 							 else
 							 {
 								 fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as {fieldDataType}) as [{columnName}]", f.ID.ToString(), $"{tableAlias}.{valueColumn}");

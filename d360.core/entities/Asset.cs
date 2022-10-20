@@ -395,15 +395,19 @@ namespace d360.core.entities
 	{
 		private List<DynamicQuerySelectData> selects { get; set; } = new List<DynamicQuerySelectData>();
 
-		public void Add(string statement, string fieldIdentifier, string simpleStatement = null)
+		public void Add(string statement, string fieldIdentifier, string simpleStatement = null, string statementWithoutCast = null)
 		{
-			this.selects.Add(new DynamicQuerySelectData { Statement = statement, FieldIdentifier = fieldIdentifier, SimpleStatement = simpleStatement });
+			this.selects.Add(new DynamicQuerySelectData { Statement = statement, FieldIdentifier = fieldIdentifier, SimpleStatement = simpleStatement, SelectStatementWithoutCast = statementWithoutCast });
 		}
 
 		public bool Any() { return this.selects.Any(); }
 
-		public List<string> GetStatements()
+		public List<string> GetStatements(bool takeWithoutCastIfExists = false)
 		{
+			if (takeWithoutCastIfExists)
+			{
+				return this.selects.Distinct().Select(x => x.SelectStatementWithoutCast ?? x.Statement).ToList();
+			}
 			return this.selects.Distinct().Select(x=> x.Statement).ToList(); 
 		}
 		public void AddRange(IEnumerable<DynamicQuerySelectData> values)
@@ -430,6 +434,11 @@ namespace d360.core.entities
 		{
 			return this.selects;
 		}
+
+		public bool NeedExplicitCast()
+		{
+			return this.selects.Any(x => x.SelectStatementWithoutCast != null);
+		}
 	}
 
 	public class DynamicQuerySelectData
@@ -437,6 +446,7 @@ namespace d360.core.entities
 		public string Statement { get; set; }
 		public string FieldIdentifier { get; set; }
 		public string SimpleStatement { get; set; }
+		public string SelectStatementWithoutCast { get; set; }
 
 		private string _filterStatement;
 		public string FilterStatement
