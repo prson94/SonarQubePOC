@@ -559,8 +559,8 @@ AS
 	</rollback>
   </changeSet>
   
-  <changeSet author="bquinlivan" id="Table.dbo.Field-Field_AfterDelete-v5">
-    <comment>GOV-18447</comment>
+  <changeSet author="PuneetGupta" id="Table.dbo.Field-Field_AfterDelete-v6">
+    <comment>GOV-20131,GOV-18447</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -656,8 +656,8 @@ BEGIN
 						I.ID,
 						(select 	
 							'Delete' as Action,
-							'Intersect', 
-							I.ID,
+							'Intersect' ActionObject, 
+							I.ID ActionObjectID,
 							coalesce(@resourceId, i2.UpdatedBy, 0) as ResourceID,
 							  (
 								select 
@@ -690,8 +690,8 @@ BEGIN
 						I.ID,
 						(select 	
 							'Delete' as Action,
-							'Issue', 
-							I.ID,
+							'Issue' ActionObject, 
+							I.ID ActionObjectID,
 							coalesce(@resourceId, i2.UpdatedBy, 0) as ResourceID,
 							  (
 								select 
