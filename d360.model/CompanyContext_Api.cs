@@ -917,7 +917,7 @@ namespace d360.model
 										,getutcdate() as [UpdatedOn]
 										,@resourceId as [UpdatedBy]
 										{(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}
-										{(hasIntersectID ? ",A.ObjectAssetID as IntersectID" : ",null as IntersectID")}  
+										{(hasIntersectID ? ",A.IntersectID as IntersectID" : ",null as IntersectID")}  
 								from    {tableName} A
 										inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
 											and F.ItemNumber = A.ItemNumber 
@@ -970,13 +970,20 @@ namespace d360.model
 					 and EF.LookupValue is null;",
                 new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
-                // update non-lookup fields
-                Connection.Execute($@"
+				// Merge Field Filter field
+				var mergefieldSQL = $" T.AssetID = S.AssetID";
+				if (hasIntersectID)
+				{
+					mergefieldSQL = $" T.IntersectID = S.IntersectID";
+				}
+
+				// update non-lookup fields
+				Connection.Execute($@"
 					merge       Field as T
 					using       (
 									{fieldValuesSql} and FT.Type != 'Lookup'
 								) as S 
-					on          ( T.FieldTypeID = S.FieldTypeID and (T.AssetID = S.AssetID or T.IntersectID = S.IntersectID) )
+					on          ( T.FieldTypeID = S.FieldTypeID and ({mergefieldSQL}) )
 					when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then
 					update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()                     
 					when		not matched by target then
@@ -992,7 +999,7 @@ namespace d360.model
 					using       (
 									{lookupFieldValuesSql}
 								) as S 
-					on          ( T.FieldTypeID = S.FieldTypeID and (T.AssetID = S.AssetID or T.IntersectID = S.IntersectID) )
+					on          ( T.FieldTypeID = S.FieldTypeID and ({mergefieldSQL}) )
 					when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS then
 					update set T.Value = S.Value, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()                     
 					when		not matched by target then

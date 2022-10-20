@@ -105,7 +105,7 @@ END
 	</rollback>
   </changeSet> 
 
-	<changeSet author="Quinlivan/Pappas/TDuric" id="Table.dbo.Field-v2.2" runInTransaction="false">
+	<changeSet author="Quinlivan/Pappas/TDuric/PuneetGupta" id="Table.dbo.Field-v2.3" runInTransaction="false">
 		<sql dbms="mssql"
 				endDelimiter="\nGO"
 				splitStatements="true"
@@ -173,6 +173,15 @@ END
 					create index [IX_FieldTypeIdAssetID_Include] on [dbo].[Field](FieldTypeID,AssetID) INCLUDE (FormattedValue)
 				end
 
+				if not exists (select * from sys.indexes where Name = 'IX_FieldTypeIdIntersectID_Include')
+				begin
+					create index [IX_FieldTypeIdIntersectID_Include] on [dbo].[Field](FieldTypeID,IntersectID) INCLUDE (FormattedValue)
+				end
+
+				if not exists (select * from sys.indexes where Name = 'IX_FieldTypeIdIssueID_Include')
+				begin
+					create index [IX_FieldTypeIdIssueID_Include] on [dbo].[Field](FieldTypeID,IssueID) INCLUDE (FormattedValue)
+				end
 			END
 			]]>
     </sql>
@@ -183,8 +192,8 @@ END
 	</rollback>
   </changeSet> 
   
-    <changeSet author="Puneet Gupta" id="Table.dbo.Field-Field_AfterUpsert-v15">
-    <comment>GOV-20074, GOV-19983, GOV-18447</comment>
+    <changeSet author="Puneet Gupta" id="Table.dbo.Field-Field_AfterUpsert-v16">
+    <comment>GOV-20038, GOV-20074, GOV-19983, GOV-18447</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -323,12 +332,33 @@ AS
 	-- handle relationships both sides need audit entries
 	if exists(select 1 from inserted i where i.[IntersectID] is not null)
 	begin
+	
+	    drop table if exists #tempinterdata;
+		
+		with rsdata as (
+		select IntersectID,inter.ObjectAssetID,inter.SubjectAssetID
+		from inserted i
+		inner join [intersect] inter on(i.IntersectID = inter.ID)
+		where i.[IntersectID] is not null)
+		select distinct a.*
+		into #tempinterdata
+		from 
+		(
+		select IntersectID, SubjectAssetID AssetID
+		from rsdata
+		union all
+		select IntersectID, ObjectAssetID AssetID
+		from rsdata) a;
+		
+		create index idx_tempinterdata on #tempinterdata(IntersectID,AssetID)
+		
+		
+		
 		-- object side of relationship
 		INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-			select	distinct
-					@ActionName, 
+			select	@ActionName, 
 					'Intersect', 
-					inter.ID,
+					i.IntersectID ID,
 					(
 					select 	@ActionName as Action,
 							a.Object as ActionObject,
@@ -349,41 +379,9 @@ AS
 					for json path, WITHOUT_ARRAY_WRAPPER
 					) as [Custom],
 					coalesce(a.ID,0) as [AssetID]
-			from	inserted i 
-					inner join [intersect] inter on(i.IntersectID = inter.ID)
-					inner join asset a on(a.ID = inter.ObjectAssetID)
-			where	i.[IntersectID] is not null;
+			from	#tempinterdata i 
+					inner join asset a on(a.ID = i.AssetID);
 
-			-- subject side
-		INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-			select	distinct
-					@ActionName, 
-					'Intersect', 
-					inter.ID,
-					(
-					select 	@ActionName as Action,
-							a.Object as ActionObject,
-							a.ObjectID as ActionObjectID,
-							coalesce(i2.UpdatedBy, 0) as ResourceID,
-							(
-							select	f.FieldTypeID,
-									ft.FriendlyName as [Name], 
-									f.FormattedValue as [Value] 
-							from	field f 
-									inner join fieldtype ft on f.fieldtypeid = ft.id 
-							where	f.IntersectID = i.IntersectID 
-							for json path
-							) as Fields
-					from inserted i2 
-					where i2.IntersectID = i.IntersectID 
-					group by ObjectType, ObjectID, UpdatedBy
-					for json path, WITHOUT_ARRAY_WRAPPER
-					) as [Custom],
-					coalesce(a.ID,0) as [AssetID]
-				from	inserted i 
-						inner join [intersect] inter on(i.IntersectID = inter.ID)
-						inner join asset a on(a.ID = inter.SubjectAssetID)
-				where	i.[IntersectID] is not null;
 	end
 
 ]]>
