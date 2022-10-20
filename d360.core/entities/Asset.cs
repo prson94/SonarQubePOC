@@ -402,9 +402,9 @@ namespace d360.core.entities
 
 		public bool Any() { return this.selects.Any(); }
 
-		public List<string> GetStatements(bool forSelectQuery = false)
+		public List<string> GetStatements(bool takeWithoutCastIfExists = false)
 		{
-			if (forSelectQuery)
+			if (takeWithoutCastIfExists)
 			{
 				return this.selects.Distinct().Select(x => x.SelectStatementWithoutCast ?? x.Statement).ToList();
 			}
