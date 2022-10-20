@@ -1870,4 +1870,42 @@ from	[Intersect] I
 	]]>
 	</sql>
   </changeSet>
+  <changeSet author="bquinlivan" id="Data.Corrections.GOV-20069-1">
+	<comment>GOV-20069 - Correct values in assettypeid column</comment>	
+	<sql dbms="mssql"
+            endDelimiter="GO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		IF EXISTS 
+		(
+			SELECT *
+			FROM INFORMATION_SCHEMA.COLUMNS
+			WHERE table_name = 'AssetType'
+			AND column_name = 'ObjectID'
+		) 
+		AND EXISTS 
+		(
+			SELECT *
+			FROM INFORMATION_SCHEMA.COLUMNS
+			WHERE 
+			TABLE_SCHEMA = 'workflow'
+			and
+			table_name = 'EventRegistration'
+			AND 
+			column_name = 'ObjectID'
+		) 
+		BEGIN
+			UPDATE ER
+				Set AssetTypeID = AST.ID
+			from 
+				[workflow].[EventRegistration] ER
+				INNER JOIN
+				AssetType AST on AST.Object = ER.Object and AST.ObjectID = ER.ObjectID
+			WHERE
+				(ER.AssetTypeID =1 or ER.AssetTypeID is null) AND ast.id<> ER.AssetTypeID and ER.Object <> 'IssueType' and ER.Object <> 'IntersectType'
+		END
+	]]>
+	</sql>
+  </changeSet>
 </databaseChangeLog>
