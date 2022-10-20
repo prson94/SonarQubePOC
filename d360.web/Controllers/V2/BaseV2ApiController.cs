@@ -198,19 +198,17 @@ namespace d360.web.Controllers.V2
 
 					fieldJoins.Add($@"
 					outer apply (
-							SELECT hello = Stuff((
-							SELECT  distinct ' | ' + FRelation_P.DisplayPath
-								from [Intersect] FRelation_I 
-								inner Join Asset FRelation_RA on 
-								FRelation_I.[IntersectTypeID] = {intersectType.ID} AND 
-								(({joinObjectField} = FRelation_I.SubjectAssetId) 
-								OR ({joinObjectField} = FRelation_I.ObjectAssetId))
-								inner join AssetPath FRelation_P on FRelation_P.ID = FRelation_RA.ID  
-								Where 
-								FRelation_I.[IntersectTypeID] = {intersectType.ID} AND
-								((FRelation_I.ObjectAssetId = {joinObjectField}) 
-								or 
-								(FRelation_I.SubjectAssetId = {joinObjectField}))
+							SELECT hello = Stuff(
+								(
+								select distinct ' | ' + DisplayPath from (
+								select AP.DisplayPath from [Intersect] I
+								inner join AssetPath AP on AP.Id = I.ObjectAssetId
+								where I.IntersectTypeID = {intersectType.ID} AND I.SubjectAssetID = {joinObjectField}
+								union 
+								select AP.DisplayPath from [Intersect] I
+								inner join AssetPath AP on AP.Id = I.SubjectAssetID
+								where I.IntersectTypeID = {intersectType.ID} AND I.ObjectAssetID = {joinObjectField}
+								)d
 							for xml path ('')
 							), 2, 1, '')
 							){tableAlias}(FormattedValue) ");
