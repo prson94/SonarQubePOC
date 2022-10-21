@@ -105,7 +105,7 @@ END
 	</rollback>
   </changeSet> 
 
-	<changeSet author="Quinlivan/Pappas/TDuric/PuneetGupta" id="Table.dbo.Field-v2.3" runInTransaction="false">
+	<changeSet author="Quinlivan/Pappas/TDuric/PuneetGupta" id="Table.dbo.Field-v2.4" runInTransaction="false">
 		<sql dbms="mssql"
 				endDelimiter="\nGO"
 				splitStatements="true"
@@ -122,6 +122,10 @@ END
 				DROP INDEX IF EXISTS [IX_Field_FieldTypeID] ON [dbo].[Field]
 				DROP INDEX IF EXISTS [IX_Field_ObjectID] ON [dbo].[Field]
 				DROP INDEX IF EXISTS [IX_Field_AssetID_Include] ON [dbo].[Field]
+				DROP INDEX IF EXISTS [IX_Field_AssetIDFieldTypeID_Include] ON [dbo].[Field]
+				DROP INDEX IF EXISTS [IX_Field_IntersectIDFieldTypeId] ON [dbo].[Field]
+				DROP INDEX IF EXISTS [IX_Field_IssueIDFieldTypeId] ON [dbo].[Field]
+				
 				
 				alter table Field alter column [ObjectType] varchar(50) null
 				alter table Field alter column [ObjectID] int null		
@@ -163,9 +167,9 @@ END
 					CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID_Include_Ids] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([AssetID],[IntersectID],[IssueID])
 				end
 
-				if not exists (select * from sys.indexes where Name = 'IX_Field_AssetID_Include')
+				if not exists (select * from sys.indexes where Name = 'IX_Field_AssetIDFieldTypeID_Include')
 				begin
-					CREATE NONCLUSTERED INDEX [IX_Field_AssetID_Include] ON [dbo].[Field] ( [AssetID] ASC ) INCLUDE([FieldTypeID],[Value],[FormattedValue])
+					CREATE NONCLUSTERED INDEX [IX_Field_AssetIDFieldTypeID_Include] ON [dbo].[Field] ( [AssetID] ASC, [FieldTypeID] ) INCLUDE([FormattedValue], [Value])
 				end
 				
 				if not exists (select * from sys.indexes where Name = 'IX_FieldTypeIdAssetID_Include')
@@ -173,14 +177,14 @@ END
 					create index [IX_FieldTypeIdAssetID_Include] on [dbo].[Field](FieldTypeID,AssetID) INCLUDE (FormattedValue)
 				end
 
-				if not exists (select * from sys.indexes where Name = 'IX_FieldTypeIdIntersectID_Include')
+				if not exists (select * from sys.indexes where Name = 'IX_Field_IntersectIDFieldTypeId')
 				begin
-					create index [IX_FieldTypeIdIntersectID_Include] on [dbo].[Field](FieldTypeID,IntersectID) INCLUDE (FormattedValue)
+					create index [IX_Field_IntersectIDFieldTypeId] on [dbo].[Field](IntersectID, FieldTypeID)
 				end
 
-				if not exists (select * from sys.indexes where Name = 'IX_FieldTypeIdIssueID_Include')
+				if not exists (select * from sys.indexes where Name = 'IX_Field_IssueIDFieldTypeId')
 				begin
-					create index [IX_FieldTypeIdIssueID_Include] on [dbo].[Field](FieldTypeID,IssueID) INCLUDE (FormattedValue)
+					create index [IX_Field_IssueIDFieldTypeId] on [dbo].[Field](IssueID, FieldTypeID)
 				end
 			END
 			]]>
