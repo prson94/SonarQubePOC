@@ -1,5 +1,7 @@
 ﻿using d360.model;
+using d360.model.DataAccessLayer;
 using d360.model.workflow;
+using igx.UnitTests.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +15,16 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
     public class WorkflowProcBoolTests : BaseTest
     {
         internal ICompanyContext context;
-        public WorkflowProcBoolTests()
+		//internal IAssetRepository assetsRepo;
+		public WorkflowProcBoolTests()
         {
-            this.context = GetCompany();
-        }
+            context = GetCompany();
+			//assetsRepo = GetAssetRepository();
+			//context.Assets = new System.Data.Entity.DbSet<d360.core.entities.Asset>();
+			//context.Set<d360.core.entities.Asset>().Add(new d360.core.entities.Asset{ ID = 1, Object = "Artifact", ObjectID = 1 });
+			//var assetType = assetsRepo.GetAssetType(new List<KeyValuePair<string, string>>(), null, assetTypeUid: Guid.Parse(DataConstants.ValidGUID));
+			//context.Assets = assetsRepo.GetAssets(assetType, new List<KeyValuePair<string, string>>());
+		}
 
         [Fact]
         public void BoolConditionEqualTest()
@@ -26,7 +34,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { 4 };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
 
@@ -38,7 +46,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { 4 };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
 
@@ -50,7 +58,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { 4 };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
 
@@ -62,7 +70,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { 4 };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
     }
