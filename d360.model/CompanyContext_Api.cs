@@ -3259,7 +3259,9 @@ where	T.ExecutionID = @ExecutionID
 			var results = new List<DatabaseBulkAssetTypeResult>();
             DateTime dt = DateTime.UtcNow;
 
-            var executionItemDupes = deletes.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+			SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+			var executionItemDupes = deletes.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
 
             if (executionItemDupes.Any())
             {

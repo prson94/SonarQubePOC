@@ -389,7 +389,6 @@ namespace igx.jobs.apiexecutionprocessor
                                 #region
                                 var deleteAssetTypes = await storage.DeserializeJsonObjectFromBlobAsync<AssetTypeDeletes>(Info.StorageFolder, Info.RequestFileName);
 
-								company.SetApiExecutionProcessingStartTime(dbExecutionItem.ExecutionID);
 								log.WriteLine($"DELETE Asset Types (DB Start): Total raw assets: {deleteAssetTypes.Count}.");
                                 var deleteAssetTypesResults = company.RemoveAssetTypes(dbExecutionItem, deleteAssetTypes, 28800, false); //dbExecutionTimeout = 8 hours
                                 dbExecutionItem.Processed = deleteAssetTypesResults.Count(i => i.Success);
