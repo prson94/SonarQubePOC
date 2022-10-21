@@ -410,8 +410,6 @@ namespace d360.model.helpers
                 }
 				else if (allowTempTableFiltering && fieldType.IsPathSegment)
 				{
-					filteredFieldIDs.Add(fieldType.ID);
-
 					TempTablePathSegmentToken token = new TempTablePathSegmentToken(fdp, field, op, value, AssetTypeKeyFieldMaps, paramIdx);
 					token.LoadFieldType(fieldType, fieldColumns);
 
