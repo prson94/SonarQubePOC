@@ -1515,7 +1515,7 @@ namespace d360.model.DataAccessLayer
 				{(includePermissionDetails ? permissionDetailSQL : "")}
 				{(includeParentUIDSelect ? hierarchyParentUidSelect : "")}
 				{(includeParentQuery ? parentApplySQL : "")}
-				{(!excludeFilterQueries || !containsAnyFilter ? whereSql : "")}";
+				{(!excludeFilterQueries || !containsAnyFilter ? whereSql : "where A.AssetTypeID = @assettypeid")}";
 			};
 
 			var filteredResultsTempTable = "";
@@ -1525,7 +1525,6 @@ namespace d360.model.DataAccessLayer
 				filteredResultsTempTable = @$"
 				drop table if exists #filtered_results
 				create table #filtered_results (AssetId int)
-				create index ix_filtered_results_aid on #filtered_results (AssetId); 
 
 				insert into #filtered_results
 				{GetBaseQuery()}";
