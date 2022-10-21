@@ -1407,7 +1407,19 @@ namespace d360.model
 		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, bool isAssetEdited = false, Asset asset = null)
 		{
 			//check if the field exists
-			Field field = Fields.Where(x => ((x.IssueID == objectId && objectType == SystemObjects.Issue.ToString()) || (x.IntersectID == objectId && objectType == SystemObjects.Intersect.ToString()) || (x.AssetID == asset.ID && objectType != SystemObjects.Issue.ToString() && objectType != SystemObjects.Intersect.ToString())) && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+			Field field = null;
+			if(objectType == SystemObjects.Issue.ToString())
+			{
+				field = Fields.Where(x => x.IssueID == objectId && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+			}
+			else if (objectType == SystemObjects.Intersect.ToString())
+			{
+				field = Fields.Where(x => x.IntersectID == objectId && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+			}
+			else if(asset != null)
+			{
+				field = Fields.Where(x => x.AssetID == asset.ID && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+			}
 
 			//validate list field value
 			if (fieldType.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(val))
@@ -1549,9 +1561,20 @@ namespace d360.model
 				if (item.ClearValue)
 				{
 					//delete the value
-					string sql = "delete field where AssetID = @id and fieldtypeid = @fieldTypeId";
+					string sql = "delete field where fieldtypeid = @fieldTypeId";
+					var parameters = new DynamicParameters(new { fieldTypeId = item.FieldID });
+					if(item.ObjectType == "Issue" || item.ObjectType == "Intersect")
+					{
+						sql += $" and {item.ObjectType}ID = @id";
+						parameters.Add("id", objectId);
+					}
+					else
+					{
+						sql += " and AssetID = @id";
+						parameters.Add("id", asset.ID);
+					}
 
-					await Database.Connection.ExecuteAsync(sql, new { id = asset.ID, fieldTypeId = item.FieldID });
+					await Database.Connection.ExecuteAsync(sql, parameters);
 
 				}
 				else if (item.CurrentDate)
