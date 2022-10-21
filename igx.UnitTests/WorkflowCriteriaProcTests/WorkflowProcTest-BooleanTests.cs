@@ -15,15 +15,9 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
     public class WorkflowProcBoolTests : BaseTest
     {
         internal ICompanyContext context;
-		//internal IAssetRepository assetsRepo;
 		public WorkflowProcBoolTests()
         {
             context = GetCompany();
-			//assetsRepo = GetAssetRepository();
-			//context.Assets = new System.Data.Entity.DbSet<d360.core.entities.Asset>();
-			//context.Set<d360.core.entities.Asset>().Add(new d360.core.entities.Asset{ ID = 1, Object = "Artifact", ObjectID = 1 });
-			//var assetType = assetsRepo.GetAssetType(new List<KeyValuePair<string, string>>(), null, assetTypeUid: Guid.Parse(DataConstants.ValidGUID));
-			//context.Assets = assetsRepo.GetAssets(assetType, new List<KeyValuePair<string, string>>());
 		}
 
         [Fact]
