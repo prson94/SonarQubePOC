@@ -2126,8 +2126,12 @@ namespace d360.web.Controllers.V2
 													where	A.uid = @assetUid
 													", new { assetUid }).SingleOrDefault();
 
-						sql = $@"select	P.DisplayPath as text,
+						sql = $@"
+								drop table if exists #results
+	
+								select	P.DisplayPath as text,
 										cast(a.uid as nvarchar(36)) as value
+								into #results
 								from	Asset A
 										inner join AssetType T on T.ID = A.AssetTypeID and T.Id = @id
 										inner join AssetPath P on P.ID = A.ID
@@ -2136,6 +2140,8 @@ namespace d360.web.Controllers.V2
 								order by P.DisplayPath 
 								{pagingQuery}
 								option (maxrecursion 100)
+
+								select * from #results where (value != @assetUid or @assetUid is null)
 
 								select	count(*) + 1
 								from	Asset A
@@ -2151,7 +2157,7 @@ namespace d360.web.Controllers.V2
 						}
 					}
 
-					var cmd = new CommandDefinition(sql, cancellationToken: cancellationToken, parameters: new { atype.ID, skip, take, filter });
+					var cmd = new CommandDefinition(sql, cancellationToken: cancellationToken, parameters: new { atype.ID, skip, take, filter, assetUid });
 					var resultsAssets = await Company.Connection.QueryMultipleAsync(cmd);
 					var items = resultsAssets.Read<DDLSelectItem>().ToList();
 

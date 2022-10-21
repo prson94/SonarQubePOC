@@ -4666,21 +4666,17 @@ where	T.ExecutionID = @ExecutionID
 																create table #DeletedRelationships ([ID] int, ItemNumber int, Payload varchar(200));
 
 																insert into #DeletedRelationships
-																	select  I.ID,
-																			EA.ItemNumber,
-																			'{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
-																	from    [Intersect] I
-																			inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-																			inner join api.ExecutionAsset EA on
-																				EA.IntersectTypeID = I.IntersectTypeID 
-																				and EA.Object = I.Object 
-																				and EA.ObjectID = I.ObjectID 
-																				and EA.ParentUid = '00000000-0000-0000-0000-000000000000'
-																				and EA.ExecutionID = @ExecutionID
-																				and EA.Success is null 
-																				and EA.ItemNumber between @beginItemNumber and @endItemNumber 
-																				and EA.IntersectTypeID is not null;
-
+																	select I.ID,
+																	EA.ItemNumber,
+																	'{ ""ParentAssetUid"": ""' + cast(Parent.Uid as varchar(50)) + '""}'
+																	from api.ExecutionAsset EA
+																	inner join [Intersect] I on I.IntersectTypeID = EA.IntersectTypeID and I.ObjectAssetID = EA.AssetID
+																	inner join Asset Parent on Parent.ID = I.SubjectAssetID
+																	WHERE EA.ExecutionID = @ExecutionID 
+																					and EA.ParentUid = '00000000-0000-0000-0000-000000000000'
+																					and EA.Success is null 
+																					and EA.ItemNumber between @beginItemNumber and @endItemNumber 
+																					and EA.IntersectTypeID is not null;
 
 																-- Log the parent removals into Dependent Change table
 																insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
@@ -4711,12 +4707,25 @@ where	T.ExecutionID = @ExecutionID
 										AddMeasurement(metrics, $"CheckIfKeyFieldsUpdated >> {currentLoop} > Begin", 0, ++step);
 
 										var checkUpdatedKeyFields = $@"
-											select count(*) from {ApiExecutionFieldTable} EF
+											declare @result int = 0;
+
+											declare @updatedFieldsCount int = (select count(*) from {ApiExecutionFieldTable} EF
 											inner join api.ExecutionAsset EA on EA.ItemNumber = EF.ItemNumber AND EA.ExecutionID = EF.ExecutionID
 											inner join FieldType FT ON FT.ID = EF.FieldTypeID AND FT.IsPartOfKey = 1
 											left join Field F on F.AssetId = EA.AssetId and F.FieldTypeID = FT.ID
 											WHERE EF.ExecutionID = @ExecutionID AND EF.ItemNumber between @beginItemNumber and @endItemNumber
-											    and (F.FormattedValue <> EF.FieldValue or (F.FormattedValue is null and EF.FieldValue is not null))";
+											    and (F.FormattedValue <> EF.FieldValue or (F.FormattedValue is null and EF.FieldValue is not null)))
+
+											declare @updatedHierarcyRelationships int = (
+																		select COUNT(*) from api.ExecutionItemDependentChange EIDC
+																		where EIDC.ExecutionID = @ExecutionID AND EIDC.ItemNumber between @beginItemNumber and @endItemNumber)
+
+											if @updatedFieldsCount > 0 or @updatedHierarcyRelationships > 0
+											begin
+												set @result = 1;
+											end
+
+											select @result;";
 
 										var result = Connection.QueryFirst<int>(checkUpdatedKeyFields,
 											new { executionID = execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, timeout);
