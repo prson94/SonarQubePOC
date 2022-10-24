@@ -866,13 +866,20 @@ namespace d360.model.DataAccessLayer.repositories
 										else
 										{
 											var tableAlias = $"F{field.ID}";
-											if(!string.IsNullOrEmpty(field.DefaultValue))
+											var fieldValue = $"{tableAlias}.{valueColumn}";
+
+											if (field.Type == "Text" || field.Type == "Html")
 											{
-												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"COALESCE({tableAlias}.{valueColumn}, @defaultValueF{field.ID}) {orderDirection}";
+												fieldValue = $"try_cast({fieldValue} as nvarchar(850))";
+											}
+
+											if (!string.IsNullOrEmpty(field.DefaultValue))
+											{
+												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"COALESCE({fieldValue}, @defaultValueF{field.ID}) {orderDirection}";
 											}
 											else
 											{
-												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"{tableAlias}.{valueColumn} {orderDirection}";
+												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"{fieldValue} {orderDirection}";
 											}
 										}
 									}
@@ -1037,6 +1044,11 @@ namespace d360.model.DataAccessLayer.repositories
 					{
 						return $"try_cast({val} as {fieldType})";
 					}
+				}
+
+				if (ft.Type == "Text" || ft.Type == "Html")
+				{
+					return $"try_cast({val} as nvarchar(850))";
 				}
 
 				return val;
