@@ -105,7 +105,7 @@ END
 	</rollback>
   </changeSet> 
 
-	<changeSet author="Quinlivan/Pappas/TDuric/PuneetGupta" id="Table.dbo.Field-v2.4" runInTransaction="false">
+	<changeSet author="Quinlivan/Pappas/TDuric/PuneetGupta" id="Table.dbo.Field-v2.5" runInTransaction="false">
 		<sql dbms="mssql"
 				endDelimiter="\nGO"
 				splitStatements="true"
