@@ -138,7 +138,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         if (this.singleSelectMode) {
             if (this.conditions.length == 0) {
                 var hash = this.randstr('id');
-                let cond = { assetTypeUid: '', field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash };
+                let cond = { assetTypeUid: '', field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash };
                 this.createFormControl(cond);
                 this.conditions.push(cond);
             }
@@ -146,7 +146,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
             if (!lastCondition || (lastCondition.operator != null && lastCondition.operator)) {
                 if (availableFields.length > 0) {
                     var hash = this.randstr('id');
-                    let cond = { assetTypeUid: '', field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash };
+                    let cond = { assetTypeUid: '', field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash };
                     this.createFormControl(cond);
                     this.conditions.push(cond);
                 }

@@ -782,18 +782,18 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
         //when using model binding onSubmit() is called on every change, but just emit form values, do not call save api (used on Process Designer)
         if (this.useModelBinding) {
-            this.modelChanged.emit({ values: values, fields: this.fields });
+            this.modelChanged.emit({ values, fields: this.fields });
             return;
         }
 
         if (this.objectType === "Group") {
-            this.postToGroupsApiV2({ item: values, action: action, addAnother: addAnother });
+            this.postToGroupsApiV2({ item: values, action, addAnother });
         }
         else if (this.objectType === "IntersectType") {
-            this.postToRelationshipApiV2({ item: values, action: action, addAnother: false });
+            this.postToRelationshipApiV2({ item: values, action, addAnother: false });
         }
         else {
-            this.postToApiV2({ item: values, action: action, addAnother: addAnother });
+            this.postToApiV2({ item: values, action, addAnother });
         }
 
     }

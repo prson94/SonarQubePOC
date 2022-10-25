@@ -166,7 +166,7 @@ export class BrowserService extends BaseObservableService {
             predicateIds: [],
             predicateType: null,
             predicateUid: null,
-            responsibilityTypeId: responsibilityTypeId,
+            responsibilityTypeId,
             links: [],
             badgeIdentifier: rootKey
         };
@@ -239,9 +239,9 @@ export class BrowserService extends BaseObservableService {
 
         return this.http.post(url, {
             ancestry: +ancestry,
-            uid: uid,
+            uid,
             hopCount: numberOfHops,
-            includeNonLeaf: includeNonLeaf,
+            includeNonLeaf,
             descendancy
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
@@ -258,7 +258,7 @@ export class BrowserService extends BaseObservableService {
             {numberOfHops = 3;}
 
         return this.http.post(url, {
-            uid: uid,
+            uid,
             hopCount: numberOfHops
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
@@ -278,9 +278,9 @@ export class BrowserService extends BaseObservableService {
 		}
 
         return this.http.post(url, {
-            assets: assets,
-            direction: direction,
-            hierarchyKey: hierarchyKey,
+            assets,
+            direction,
+            hierarchyKey,
             includeHierarchyBadges,
             intersects,
 			predicateUid,
@@ -315,8 +315,8 @@ export class BrowserService extends BaseObservableService {
 
         return this.http.post(url,
             {
-                assets: assets,
-                hierarchyKey: hierarchyKey,
+                assets,
+                hierarchyKey,
                 responsibilityTypeId
             }).pipe(
             map((response: AssetBrowserOwnersModel) => {

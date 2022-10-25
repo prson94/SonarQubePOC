@@ -590,7 +590,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         //when using model binding onSubmit() is called on every change, but just emit form values, do not call save api (used on Process Designer)
         if (this.useModelBinding) {
-            this.modelChanged.emit({ values: values, fields: this.fields });
+            this.modelChanged.emit({ values, fields: this.fields });
             return;
         }
 
@@ -601,18 +601,18 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 .subscribe((result) => {
                     this.showMessageForResult(this.messagesService, result);
                     this.isLoading = false;
-                    this.saveClick.emit({ item: result, action: action, values: values });
+                    this.saveClick.emit({ item: result, action, values });
                 });
         } else {
             if (this.consolidateToTag) {
-                this.saveClick.emit({ item: values, action: action, additionalOption: this.consolidateToTag });
+                this.saveClick.emit({ item: values, action, additionalOption: this.consolidateToTag });
 
             }
             else if (this.isV2API) {
-                this.postToApiV2({ item: values, action: action });
+                this.postToApiV2({ item: values, action });
             }
             else {
-                this.saveClick.emit({ item: values, action: action });
+                this.saveClick.emit({ item: values, action });
             }
         }
     }

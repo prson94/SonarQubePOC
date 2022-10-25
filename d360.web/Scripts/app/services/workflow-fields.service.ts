@@ -142,7 +142,7 @@ export class WorkflowFieldsService {
     }
 
     pushUsedField(fieldId: string, stepId: string, transitionId: string, transitionName: string) {
-        this.usedFields.push({ fieldId: fieldId, stepId: stepId, transitionId: transitionId, transitionName: transitionName });
+        this.usedFields.push({ fieldId, stepId, transitionId, transitionName });
     }
 
     deleteUsedField(fieldId: string, stepId: string, transitionId: string) {

@@ -1465,7 +1465,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 dm.addLinkData({
                     from: reveal.from,
                     to: reveal.to,
-                    badgeIdentifier: badgeIdentifier
+                    badgeIdentifier
                 });
             });
         }
@@ -1686,12 +1686,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let requestModel: AssetBrowserLineageRequest = {
                 ancestry: this.displayConfiguration.AncestryMode,
                 descendancy: this.displayConfiguration.Descendancy,
-                direction: direction,
-                assets: assets,
-                currentHop: currentHop,
+                direction,
+                assets,
+                currentHop,
                 includeNonLeaf: this.displayConfiguration.IncludeNonLeaf,
-                intersects: intersects,
-                hierarchyKey: hierarchyKey
+                intersects,
+                hierarchyKey
             };
             this.browserService.getLineageHop(requestModel)
                 .subscribe((response: AssetBrowserResponseModel) => {
@@ -2577,7 +2577,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             allowDrop: true,
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
-            layout: layout,
+            layout,
             "undoManager.isEnabled": true,
             "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" },
             "animationManager.isEnabled": false
@@ -2597,7 +2597,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private template_FocalPositioningHelper(spot, row, col, textprop, visprop) {
         return this.g(go.Panel, "Auto",
-            { row: row, column: col },
+            { row, column: col },
             this.g(go.Shape,
                 "Circle",
                 { fill: "transparent", stroke: "transparent" },

@@ -58,7 +58,7 @@ export class TagService extends BaseObservableService {
         });
 
         const httpHeaders = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: body
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body
         };
         return this.http.delete(url, httpHeaders)
             .pipe(map((response) => <any>response),
@@ -236,7 +236,7 @@ export class TagService extends BaseObservableService {
                 refCount(),
                 catchError((err) => this.handleError(err)));
 
-        var data = { tagUid: tagUid, assetUid: assetUid, obs: obs };
+        var data = { tagUid, assetUid, obs };
         this.tagTooltipsCache.push(data);
 
         return obs;

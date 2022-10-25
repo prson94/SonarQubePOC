@@ -291,7 +291,7 @@ export class RelationshipsService extends BaseObservableService {
                 refCount(),
                 catchError((err) => this.handleError(err)));
 
-        var data = { assetTypeUid: assetTypeUid, obs: obs };
+        var data = { assetTypeUid, obs };
         this.tagTooltipsCache.push(data);
 
         return obs;

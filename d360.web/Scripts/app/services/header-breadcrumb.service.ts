@@ -72,8 +72,8 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     }
 
 	setCurrentObjectInfo(type: string, id: number, AssetTypeUid: string = null, AssetUid: string = null) {
-		this.currentObject = { type: type, id: id, AssetTypeUid: AssetTypeUid, AssetUid: AssetUid };
-		this.currentObjectInfoSource.next({ type: type, id: id, AssetTypeUid: AssetTypeUid, AssetUid: AssetUid });
+		this.currentObject = { type, id, AssetTypeUid, AssetUid };
+		this.currentObjectInfoSource.next({ type, id, AssetTypeUid, AssetUid });
 	}
 
 	setCurrentObjectInfoByUid(uid: string) {

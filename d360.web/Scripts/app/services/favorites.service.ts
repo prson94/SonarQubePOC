@@ -117,7 +117,7 @@ export class FavoritesService extends BaseObservableService {
         admin: boolean = false
     ) {
         let m = {
-            route: route,
+            route,
             moveUp: true
         };
 
@@ -135,7 +135,7 @@ export class FavoritesService extends BaseObservableService {
         admin: boolean = false
     ) {
         let m = {
-            route: route,
+            route,
             moveUp: false
         };
 
