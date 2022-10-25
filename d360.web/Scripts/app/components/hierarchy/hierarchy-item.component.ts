@@ -128,7 +128,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 			this.synonymPermission = TempsynonymPermission;
 
 			this.load();
-		})
+		});
 
 		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this, ev);

@@ -49,7 +49,7 @@ export class AssetsBaseComponent extends BaseComponent implements OnInit, OnDest
 					this.showRuleList = cs === AssetTypeClass.Rule;
 					this.showHierarchyList = cs === AssetTypeClass.Policy || cs === AssetTypeClass.Model;
 					this.showReferenceComponent = cs === AssetTypeClass.Reference;
-				})
+				});
 		});
     }
 

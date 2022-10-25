@@ -130,7 +130,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     ngOnInit() {
 		this.load();
 
-		this.setRowsPerPage()
+		this.setRowsPerPage();
 		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
     }
 

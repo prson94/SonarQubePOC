@@ -1246,6 +1246,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     calculateBottomControlsPosition(): string {
-        return this.getSidePanelWidth() + 16 + 'px'
+        return this.getSidePanelWidth() + 16 + 'px';
     }
 }

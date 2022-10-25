@@ -1280,7 +1280,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 				visitedRelationships.push(l.rel);
 				if (oNode) {
 					oNode.isHighlighted = true;
-					nodesToHiglightParams.push({ node: l.to })
+					nodesToHiglightParams.push({ node: l.to });
 				}
 			}
 
@@ -1291,7 +1291,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 let sNode = this.diagram.findNodeForKey(l.from);
 				if (sNode) {
 					sNode.isHighlighted = true;
-					nodesToHiglightParams.push({ node: l.from })
+					nodesToHiglightParams.push({ node: l.from });
 				}
             }
 		});
@@ -4210,7 +4210,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     calculateBottomControlsPosition(): string {
-        return this.getSidePanelWidth() + 55 + 'px'
+        return this.getSidePanelWidth() + 55 + 'px';
     }
 
     onEditClick($event) {
