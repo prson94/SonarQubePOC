@@ -476,18 +476,24 @@ namespace d360.web.Controllers
 			if (details != null)
 			{
 				List<FieldWithRelation> fields = null;
+				string fieldsWithRelationWhere = "";
+				var dbArgs = new DynamicParameters();
 				switch (type)
 				{
 					case SystemObjects.Intersect:
-						fields = Company.Filter<FieldWithRelation>(i => i.IntersectID == id).ToList();
+						fieldsWithRelationWhere = "where IntersectID = @id";
+						dbArgs.Add("id", id);
 						break;
 					case SystemObjects.Issue:
-						fields = Company.Filter<FieldWithRelation>(i => i.IssueID == id).ToList();
+						fieldsWithRelationWhere = "where IssueID = @id";
+						dbArgs.Add("id", id);
 						break;
 					default:
-						fields = Company.Filter<FieldWithRelation>(i => i.AssetID == details.AssetID).ToList();
+						fieldsWithRelationWhere = "where AssetId = @id";
+						dbArgs.Add("id", details.AssetID);
 						break;
 				}
+				fields = Company.Query<FieldWithRelation>($"select * from FieldWithRelation {fieldsWithRelationWhere}", dbArgs).ToList();
 
 				var assettypeID = -1;
 				var issueTypeID = -1;
