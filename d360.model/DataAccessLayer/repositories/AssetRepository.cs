@@ -1137,15 +1137,15 @@ namespace d360.model.DataAccessLayer
 							StringBuilder sb = new StringBuilder();
 
 							sb.AppendLine(@"
-								drop table if exists #parent_relationships
+								drop table if exists #parent_relationships_simple_filter
 								select IT.ID
-								into #parent_relationships
+								into #parent_relationships_simple_filter
 								from [IntersectType] IT 
 								inner join [Predicate] P on P.ID  = IT.PredicateID AND p.Type in (3,4)");
 
 							sb.AppendLine(@"
-								drop table if exists #filtered_parents
-								create table #filtered_parents(AssetId int)");
+								drop table if exists #filtered_parents_simple_filter
+								create table #filtered_parents_simple_filter(AssetId int)");
 
 							List<string> filtersPerField = new List<string>();
 							foreach (var uid in assetTypeUids)
@@ -1154,7 +1154,7 @@ namespace d360.model.DataAccessLayer
 								if (keyFields.Count() == 0 || keyFields.Count() > 1)
 								{
 									sb.AppendLine(@$"
-									insert into #filtered_parents (AssetId)
+									insert into #filtered_parents_simple_filter (AssetId)
 									select a.ID from AssetType at
 									inner join Asset a on a.AssetTypeID = at.ID
 									cross apply dbo.GetAssetDisplayValueById(a.id)Val
@@ -1164,7 +1164,7 @@ namespace d360.model.DataAccessLayer
 								else
 								{
 									sb.AppendLine(@$"
-									insert into #filtered_parents (AssetId)
+									insert into #filtered_parents_simple_filter (AssetId)
 									select AssetId from Field f
 									where f.FieldTypeID = {keyFields.FirstOrDefault().FieldTypeId} and f.FormattedValue like @simpleFilter
 									option(recompile)");
@@ -1175,16 +1175,16 @@ namespace d360.model.DataAccessLayer
 											select a.id
 											from asset a
 											left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
-											left join[Intersect] I1 on I1.ObjectAssetID = A.ID and I1.IntersectTypeID in (select id from #parent_relationships)");
+											left join[Intersect] I1 on I1.ObjectAssetID = A.ID and I1.IntersectTypeID in (select id from #parent_relationships_simple_filter)");
 							for (int i = 2; i <= levels; i++)
 							{
-								sb.AppendLine($"left join[Intersect] I{i} on I{i}.ObjectAssetID = I{i - 1}.SubjectAssetID and I{i}.IntersectTypeID in (select id from #parent_relationships)");
+								sb.AppendLine($"left join[Intersect] I{i} on I{i}.ObjectAssetID = I{i - 1}.SubjectAssetID and I{i}.IntersectTypeID in (select id from #parent_relationships_simple_filter)");
 							}
 							List<string> targetJoins = new List<string>();
 							for (int i = 1; i <= levels; i++)
 							{
 								targetJoins.Add($"ATarget{i}.ID");
-								sb.AppendLine($"left join Asset ATarget{i} on ATarget{i}.ID = I{i}.SubjectAssetID AND ATarget{i}.ID IN (select AssetId from #filtered_parents)");
+								sb.AppendLine($"left join Asset ATarget{i} on ATarget{i}.ID = I{i}.SubjectAssetID AND ATarget{i}.ID IN (select AssetId from #filtered_parents_simple_filter)");
 							}
 							sb.AppendLine($"where tfa.AssetId is null and a.AssetTypeID = @assettypeid and coalesce({string.Join(",", targetJoins)}) is not null");
 
