@@ -9,6 +9,7 @@ const routes: Routes = [
         component: AdminComponent,        
         canActivate: [AdminUserGuard],
         children: [                                                
+            { path: 'configuration/assets', loadChildren: () => import('./asset-type-configuration/asset-type-configuration.module').then((m) => m.AssetTypeConfigurationModule) }, 
             { path: 'relationships', loadChildren: () => import('./relationships/admin-relationships.module').then((m) => m.AdminRelationshipsModule) }, 
             { path: 'surveys', loadChildren: () => import('./surveys/admin-surveys.module').then((m) => m.AdminSurveysModule) },             
             { path: 'workflow', loadChildren: () => import('./workflow/admin-workflow.module').then((m) => m.AdminWorkflowModule) },

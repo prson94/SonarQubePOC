@@ -20,6 +20,7 @@ import { ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
 import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import { AppConstants } from '../../static/constants';
 
 export class BaseComponent {
 	public isLoading = false;
@@ -97,7 +98,7 @@ export class BaseComponent {
 
 
 	// default paging options
-	defaultPagingOptions: number[] = [10, 25, 50, 100];
+	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
 	defaultInitialItemsPerPage = 10;
 
 	protected secondaryNavService: SecondaryNavService = null;
