@@ -108,38 +108,39 @@
                                 [ttSelectableRow]="rowNode"
                                 (click)="selectAsset(rowNode.node)"
                                 (contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selectAsset(rowNode.node)">
-                                <td class="no-text-overflow"
-                                    *ngFor="let column of columns; let i = index"
-                                    [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
-                                    <p-treeTableToggler [rowNode]="rowNode"
-                                                        style="margin-right: 8px;"
-                                                        [igDataCy]="'Hierarchy_Toggler_' + item.AssetUid"
-                                                        *ngIf="i === 0"></p-treeTableToggler>
-                                    <ng-container *ngIf="i === linkColumnIndex">
-                                        <a (click)="showHierarchy($event, item)"
-                                           context-link
-                                           [isOpenDefault]="true"
-                                           [ngStyle]="setTreeNodeStyles(rowNode.node)"
-                                           [igDataCy]="'Hierarchy_Item_' + item.AssetUid">
+                                <ng-container *ngFor="let column of columns; let i = index">
+                                    <td [ngClass]="{'no-text-overflow': column.fieldType !== 'Text' || (column.fieldType === 'Text' && i === linkColumnIndex)}"
+                                        [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
+                                        <p-treeTableToggler [rowNode]="rowNode"
+                                                            style="margin-right: 8px;"
+                                                            [igDataCy]="'Hierarchy_Toggler_' + item.AssetUid"
+                                                            *ngIf="i === 0"></p-treeTableToggler>
+                                        <ng-container *ngIf="i === linkColumnIndex">
+                                            <a (click)="showHierarchy($event, item)"
+                                               context-link
+                                               [isOpenDefault]="true"
+                                               [ngStyle]="setTreeNodeStyles(rowNode.node)"
+                                               [igDataCy]="'Hierarchy_Item_' + item.AssetUid">
+                                                <d3s-dynamic-field-value [column]="column"
+                                                                         [fields]="fields"
+                                                                         [useApiName]="true"
+                                                                         styleClass="cell-link"
+                                                                         [item]="item"
+                                                                         [isDateUTC]="true"
+                                                                         [interceptLinkClick]="true">
+                                                </d3s-dynamic-field-value>
+                                            </a>
+                                        </ng-container>
+                                        <ng-container *ngIf="i !== linkColumnIndex">
                                             <d3s-dynamic-field-value [column]="column"
                                                                      [fields]="fields"
                                                                      [useApiName]="true"
-                                                                     styleClass="cell-link"
                                                                      [item]="item"
                                                                      [isDateUTC]="true"
-                                                                     [interceptLinkClick]="true">
-                                            </d3s-dynamic-field-value>
-                                        </a>
-                                    </ng-container>
-                                    <ng-container *ngIf="i !== linkColumnIndex">
-                                        <d3s-dynamic-field-value [column]="column"
-                                                                 [fields]="fields"
-                                                                 [useApiName]="true"
-                                                                 [item]="item"
-                                                                 [isDateUTC]="true"
-                                                                 [interceptLinkClick]="true"></d3s-dynamic-field-value>
-                                    </ng-container>
-                                </td>
+                                                                     [interceptLinkClick]="true"></d3s-dynamic-field-value>
+                                        </ng-container>
+                                    </td>
+                                </ng-container>
                                 <td class="asset-grid-tools"
                                     #assetGridTools>
                                     <div>
