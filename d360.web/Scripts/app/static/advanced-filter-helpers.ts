@@ -3,13 +3,13 @@
 export class AdvancedFiltersHelper {
 
     static parseFiltersFromTableFilters(data, fields: GridField[]): string {
-        var props = Object.keys(data).filter((x) => x != 'global');
+        var props = Object.keys(data).filter((x) => x !== 'global');
         var ret: string = '';
         props.forEach((prop) => {
-            if (prop != 'global') {
+            if (prop !== 'global') {
                 let fieldName = prop;
                 var value = this.escapeString(data[prop].value);
-                var field = fields.filter((x) => x.name.toLowerCase() == prop.toLowerCase())[0];
+                var field = fields.filter((x) => x.name.toLowerCase() === prop.toLowerCase())[0];
                 if (field) {
                     if (field.apiName)
                         {fieldName = field.apiName;}
@@ -31,7 +31,7 @@ export class AdvancedFiltersHelper {
                         ret += `${fieldName} ct '${value}'`;
                 }
 
-                if (prop != props[props.length - 1]) {
+                if (prop !== props[props.length - 1]) {
                     ret += " and ";
                 }
             }
