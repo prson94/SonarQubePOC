@@ -151,7 +151,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 							this.canAddReferenceItem = this.hasAddAssetPermissions();
 							this.canEditReferenceItem = this.hasModifyAssetPermissions();
 							this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
-						})
+						});
 
 					this.buildSecondaryNavigationForAssetTypeUid(this.selectedReferenceListUid, () => {
 						this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {

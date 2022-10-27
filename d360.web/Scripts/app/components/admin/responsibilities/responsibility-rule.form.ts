@@ -94,11 +94,11 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 		{ label: "starts with", value: Operator[Operator.StartsWith] },
 		{ label: "ends with", value: Operator[Operator.EndsWith] },
 		{ label: "is populated", value: Operator[Operator.Populated] },
-		{ label: "is not populated", value: Operator[Operator.NotPopulated] }]
+		{ label: "is not populated", value: Operator[Operator.NotPopulated] }];
 
 	private relationshipOperatorTypes: SelectItem[] = [
 		{ label: "in", value: Operator[Operator.In] },
-		{ label: "not in", value: Operator[Operator.NotIn] }]
+		{ label: "not in", value: Operator[Operator.NotIn] }];
 
     private whenFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
     private whenIntersectTypes: (SelectItem<number> & { uid: string })[] = [];
