@@ -606,7 +606,7 @@ export class WorkflowStepReassignment {
             this.FromResourceName = reassignObject['@fromResourceName'];
             this.ReassignOn = reassignObject['@reassignOn'];
             this.NewItemId = reassignObject['@newItemId'];
-            this.IsBulkReassignment = (this.ReassignType == 'Resource' && this.ByResourceID != null);
+            this.IsBulkReassignment = (this.ReassignType === 'Resource' && this.ByResourceID != null);
         }
     }
 
