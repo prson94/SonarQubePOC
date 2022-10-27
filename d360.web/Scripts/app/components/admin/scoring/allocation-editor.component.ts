@@ -206,7 +206,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
                     msg = $localize`Your score has been updated`;
                 }
                 this.messagesService.showInfoMessage($localize`Success`, msg);
-                this.onSave.emit({ item: res, openItem: openItem });
+                this.onSave.emit({ item: res, openItem });
             });
     }
 

@@ -103,7 +103,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                         enabled: false
                     },
                     tooltip: {
-                        formatter: function () {
+                        formatter () {
                             return this.point.name + '<br>' + Highcharts.numberFormat(this.y, 0, '.', ',') + ' ' + $localize`Total Assigned Items`;
                         }
                     },
@@ -113,7 +113,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                             cursor: 'pointer',
                             dataLabels: {
                                 enabled: true,
-                                formatter: function () {
+                                formatter () {
                                     return '<b>' + this.point.name + '</b>: ' + Highcharts.numberFormat(this.y, 0, '.', ',');
                                 }
                             }

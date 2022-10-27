@@ -338,7 +338,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         var item = this.selected[idx];
         this.selected.splice(idx, 1);
         this.searchresults = this.searchresults.slice();
-        this.selectedChange.emit({ action: 'removed', item: item });
+        this.selectedChange.emit({ action: 'removed', item });
     }
 
     private unselectByUID(uid: string) {
@@ -353,7 +353,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         var item = this.selected[idx];
         item.Predicate = event;
 
-        this.selectedChange.emit({ action: 'predicate-updated', item: item });
+        this.selectedChange.emit({ action: 'predicate-updated', item });
     }
 
 }

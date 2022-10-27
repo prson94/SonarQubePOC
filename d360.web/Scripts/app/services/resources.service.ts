@@ -256,7 +256,7 @@ export class ResourcesService extends BaseObservableService {
         });
 
         return this.http
-            .post(`form/ResetResourcePassword`, 'ID=' + resourceID, { headers: headers })
+            .post(`form/ResetResourcePassword`, 'ID=' + resourceID, { headers })
             .pipe(
                 map((response) => response),
                 catchError((err) => this.handleError(err))

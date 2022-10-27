@@ -166,7 +166,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 .filter((x) => this.restrictedPredicateTypes.indexOf(x.Type) == -1)
                 .map((x, idx, self) => {
                     let label = x.Name + '/' + x.Inverse + ' (' + x.FriendlyTypeName + ')';
-                    return { label: label, value: x.Uid };
+                    return { label, value: x.Uid };
                 });
             this.predicateTypes = this.predicateTypes
                 .filter((x, pos, self) => (pos == self.findIndex((t) => (t.value == x.value))));
@@ -188,7 +188,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                         assetLabel = x.Subject.Name;
                     }
                     label = label + " " + assetLabel;
-                    return { label: label, value: x.Uid };
+                    return { label, value: x.Uid };
                 });
         }
 

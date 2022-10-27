@@ -129,7 +129,7 @@ export class PaginatorComponent implements OnChanges, OnInit {
 
     paginate(size, page, firstItemIndex) {
         this.CheckVisableNumbers();
-        this.onPageChange.emit({ size: size, page: page, first: firstItemIndex });
+        this.onPageChange.emit({ size, page, first: firstItemIndex });
     }
 
     CheckVisableNumbers() {

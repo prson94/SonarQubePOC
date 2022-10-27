@@ -93,7 +93,7 @@ export class WorkflowService extends BaseObservableService {
             'Content-Type': 'application/json'
         });
         return this.http
-            .post(`/services/workflow/tasks/${issue.WorkflowID}`, JSON.stringify({ WorkflowAction: action, AssignTo: assignTo, Comment: comment }), { headers: headers })
+            .post(`/services/workflow/tasks/${issue.WorkflowID}`, JSON.stringify({ WorkflowAction: action, AssignTo: assignTo, Comment: comment }), { headers })
             .pipe(
             map((response) => <JsonResult>response),
                 catchError((err) => this.handleError(err))

@@ -64,7 +64,7 @@ export class ProcessService extends BaseObservableService {
         headers.append('Content-Type', 'application/json');
         return this
             .http
-            .put(`/api/v2/process/${uid}`, model, { headers: headers })
+            .put(`/api/v2/process/${uid}`, model, { headers })
             .pipe(
                 map((response) => <any>response)
             );
@@ -76,7 +76,7 @@ export class ProcessService extends BaseObservableService {
         var model = {};
         return this
             .http
-            .put(`/api/v2/process/${targetUid}?sourceAssetUid=${sourceUid}`, model, { headers: headers })
+            .put(`/api/v2/process/${targetUid}?sourceAssetUid=${sourceUid}`, model, { headers })
             .pipe(
                 map((response) => <any>response)
             );
@@ -87,7 +87,7 @@ export class ProcessService extends BaseObservableService {
         headers.append('Content-Type', 'application/json');
         return this
             .http
-            .get(`/api/v2/process/urlByDiagramAsset/${uid}`, { headers: headers })
+            .get(`/api/v2/process/urlByDiagramAsset/${uid}`, { headers })
             .pipe(
                 map((response) => <any>response)
             );
@@ -98,7 +98,7 @@ export class ProcessService extends BaseObservableService {
         headers.append('Content-Type', 'application/json');
         return this
             .http
-            .get(`/api/v2/process/${uid}/importOptions`, { headers: headers })
+            .get(`/api/v2/process/${uid}/importOptions`, { headers })
             .pipe(
                 map((response) => <any>response)
             );
@@ -109,7 +109,7 @@ export class ProcessService extends BaseObservableService {
         headers.append('Content-Type', 'application/json');
         return this
             .http
-            .get(`/api/v2/process/ignoredCopyRelationships/${targetUid}`, { headers: headers })
+            .get(`/api/v2/process/ignoredCopyRelationships/${targetUid}`, { headers })
             .pipe(
                 map((response) => <any[]>response)
             );

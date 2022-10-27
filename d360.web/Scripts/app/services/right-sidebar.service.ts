@@ -100,8 +100,8 @@ export class SecondaryNavService {
     }
 
     setCurrentArea(area: string, icon: string, title: string, badges: string[] = []) {
-        this.currentAreaSource.next({ title: area, icon: icon, tabTitle: title, customBadges: badges.filter((x) => x.length > 0) });
-        this.secondaryNavState.currentState.currentArea = { title: area, icon: icon, tabTitle: title, customBadges: badges.filter((x) => x.length > 0) };
+        this.currentAreaSource.next({ title: area, icon, tabTitle: title, customBadges: badges.filter((x) => x.length > 0) });
+        this.secondaryNavState.currentState.currentArea = { title: area, icon, tabTitle: title, customBadges: badges.filter((x) => x.length > 0) };
         this.saveSecondaryNavState(this.secondaryNavState);
     }
 
@@ -239,6 +239,6 @@ export class SecondaryNavService {
     }
 
     updateObject(key: string, value: any) {
-        this.updateObjectSource.next({ key: key, value: value });
+        this.updateObjectSource.next({ key, value });
     }
 }

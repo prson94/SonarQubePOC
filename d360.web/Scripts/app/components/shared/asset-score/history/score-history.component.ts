@@ -256,7 +256,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 shared: true,
                 headerFormat: '',
                 footerFormat: '',
-                formatter: function () {
+                formatter () {
                     var tooltipString = '';
                     var startIdx = historicalTempData.findIndex((x) => x.x == this.points[0].x);
                     this.points.forEach((point) => {

@@ -13,6 +13,6 @@ export class TooltipSingletonService {
 
     // Service message commands
     tooltipShow(objectType: string, objectId: number) {
-        this.tooltipSource.next({ objectType: objectType, objectId: objectId });
+        this.tooltipSource.next({ objectType, objectId });
     }
 }

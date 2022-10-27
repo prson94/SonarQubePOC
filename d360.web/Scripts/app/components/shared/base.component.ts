@@ -828,7 +828,7 @@ export class BaseComponent {
 	buildSecondaryNavigationByAssetUid(uid: string, buildBreadcrumbOverride: Function = null) {
 		const reqModel: SecondaryNavRequestModel = {
 			assetUid: uid,
-			buildBreadcrumbOverride: buildBreadcrumbOverride
+			buildBreadcrumbOverride
 		};
 		this.buildSecondaryNavigation(reqModel);
 	}
@@ -836,26 +836,26 @@ export class BaseComponent {
 	buildSecondaryNavigationForAssetID(assetId: number, object: string, buildBreadcrumbOverride: Function = null) {
 		const reqModel: SecondaryNavRequestModel = {
 			objectType: object,
-			assetId: assetId,
-			buildBreadcrumbOverride: buildBreadcrumbOverride
+			assetId,
+			buildBreadcrumbOverride
 		};
 		this.buildSecondaryNavigation(reqModel);
 	}
 
 	buildSecondaryNavigationForAssetTypeUid(assetTypeUid: string, buildBreadcrumbOverride: Function = null) {
 		const reqModel: SecondaryNavRequestModel = {
-			assetTypeUid: assetTypeUid,
-			buildBreadcrumbOverride: buildBreadcrumbOverride
+			assetTypeUid,
+			buildBreadcrumbOverride
 		};
 		this.buildSecondaryNavigation(reqModel);
 	}
 
 	buildSecondaryNavigationForObject(objectId: number, object: string, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null) {
 		const reqModel: SecondaryNavRequestModel = {
-			objectId: objectId,
+			objectId,
 			objectType: object,
-			assetClass: assetClass,
-			buildBreadcrumbOverride: buildBreadcrumbOverride
+			assetClass,
+			buildBreadcrumbOverride
 		};
 		this.buildSecondaryNavigation(reqModel);
 	}

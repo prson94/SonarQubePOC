@@ -11,6 +11,6 @@ export class PreviewpopupSingletonService {
 
     // Service message commands
     popupShow(uid: string) {
-        this.popupSource.next({ uid: uid });
+        this.popupSource.next({ uid });
     }
 }

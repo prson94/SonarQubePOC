@@ -1044,7 +1044,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             n.ActivityType = m.activityType;
             n.Name = m.name;
             n.SettingsObject = settings;
-            n.Settings = JSON.stringify({ settings: settings });
+            n.Settings = JSON.stringify({ settings });
             n.Fields = (m.fields != null && m.fields.form != null) ? JSON.stringify({ fields: m.fields }) : '';
 
             n.StepType = m.stepType;

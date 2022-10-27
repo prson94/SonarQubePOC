@@ -37,7 +37,7 @@ export class ToolTipService extends BaseObservableService {
                 catchError((err) => this.handleError(err))
             );
 
-        var data = { uid: uid, obs: obs };
+        var data = { uid, obs };
         this.tooltipsCache.push(data);
 
         return obs;

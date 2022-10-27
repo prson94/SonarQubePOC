@@ -117,7 +117,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
                 }
 
                 this.selectionChange.emit(this.selection);
-                this.onNodeUnselect.emit({ originalEvent: event, node: node });
+                this.onNodeUnselect.emit({ originalEvent: event, node });
             }
             else {
                 if (this.propagateSelectionDown)
@@ -130,7 +130,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
                 }
 
                 this.selectionChange.emit(this.selection);
-                this.onNodeSelect.emit({ originalEvent: event, node: node });
+                this.onNodeSelect.emit({ originalEvent: event, node });
             }
         }
 
