@@ -105,7 +105,7 @@ END
 	</rollback>
   </changeSet> 
 
-	<changeSet author="Quinlivan/Pappas/TDuric/PuneetGupta" id="Table.dbo.Field-v2.5" runInTransaction="false">
+	<changeSet author="Quinlivan/Pappas/TDuric/PuneetGupta" id="Table.dbo.Field-v2.51" runInTransaction="false">
 		<sql dbms="mssql"
 				endDelimiter="\nGO"
 				splitStatements="true"
@@ -122,10 +122,52 @@ END
 				DROP INDEX IF EXISTS [IX_Field_FieldTypeID] ON [dbo].[Field]
 				DROP INDEX IF EXISTS [IX_Field_ObjectID] ON [dbo].[Field]
 				DROP INDEX IF EXISTS [IX_Field_AssetID_Include] ON [dbo].[Field]
-				DROP INDEX IF EXISTS [IX_Field_AssetIDFieldTypeID_Include] ON [dbo].[Field]
-				DROP INDEX IF EXISTS [IX_Field_IntersectIDFieldTypeId] ON [dbo].[Field]
-				DROP INDEX IF EXISTS [IX_Field_IssueIDFieldTypeId] ON [dbo].[Field]
-				
+
+				set nocount on;
+				declare @includes table (name varchar(250))
+				insert into @includes values ('Value'), ('FormattedValue')
+				declare @count int = 0
+				select	@count = count(1)
+				from	sys.indexes ix 
+						inner join sys.index_columns ixc on ix.object_id = ixc.object_id and ix.index_id = ixc.index_id
+						inner join sys.tables tab on ix.object_id = tab.object_id 
+						inner join @includes I on I.name = COL_NAME(ix.object_id, ixc.column_id)
+				where	ix.name = 'IX_Field_AssetIDFieldTypeID_Include'
+						and tab.name = 'Field'
+						and ixc.is_included_column = 1
+				if (@count <> 2)
+				begin
+					DROP INDEX IF EXISTS [IX_Field_AssetIDFieldTypeID_Include] ON [dbo].[Field]
+				end
+
+				delete 	@includes where name = 'FormattedValue'
+				set 	@count = 0
+				select	@count = count(1)
+				from	sys.indexes ix 
+						inner join sys.index_columns ixc on ix.object_id = ixc.object_id and ix.index_id = ixc.index_id
+						inner join sys.tables tab on ix.object_id = tab.object_id 
+						inner join @includes I on I.name = COL_NAME(ix.object_id, ixc.column_id)
+				where	ix.name = 'IX_Field_IntersectIDFieldTypeId'
+						and tab.name = 'Field'
+						and ixc.is_included_column = 1
+				if (@count <> 1)
+				begin
+					DROP INDEX IF EXISTS [IX_Field_IntersectIDFieldTypeId] ON [dbo].[Field]
+				end
+
+				set 	@count = 0
+				select	@count = count(1)
+				from	sys.indexes ix 
+						inner join sys.index_columns ixc on ix.object_id = ixc.object_id and ix.index_id = ixc.index_id
+						inner join sys.tables tab on ix.object_id = tab.object_id 
+						inner join @includes I on I.name = COL_NAME(ix.object_id, ixc.column_id)
+				where	ix.name = 'IX_Field_IssueIDFieldTypeId'
+						and tab.name = 'Field'
+						and ixc.is_included_column = 1
+				if (@count <> 1)
+				begin
+					DROP INDEX IF EXISTS [IX_Field_IssueIDFieldTypeId] ON [dbo].[Field]
+				end
 				
 				alter table Field alter column [ObjectType] varchar(50) null
 				alter table Field alter column [ObjectID] int null		
