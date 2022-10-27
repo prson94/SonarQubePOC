@@ -1516,7 +1516,7 @@ namespace d360.web.Controllers.Services
 		private List<FieldType> getFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
 		{
 			List<string> excludedTypes = DataType.Text.GetNonWorkflowConditionFields();
-			List<FieldType> fields = new List<FieldType>();
+			List<FieldType> fields;
 
 			if (type == SystemObjects.IssueType.ToString())
 			{
