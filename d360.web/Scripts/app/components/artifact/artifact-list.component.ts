@@ -10,7 +10,7 @@ import { ArtifactType } from '../../models/artifact-type.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { AssetTypeClass } from '../../models/asset.model';
+import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
 import { forkJoin, Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
@@ -33,6 +33,7 @@ declare var CurrentResourceID;
 })
 
 export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
+	@Input() assetTypeApiModel: AssetTypeApiModel;
 	@Input() assetTypeUid: string;
 
 	gridObject: AssetGridObject;

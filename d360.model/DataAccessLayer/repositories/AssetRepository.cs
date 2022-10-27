@@ -221,6 +221,9 @@ namespace d360.model.DataAccessLayer
 									,A.AutoDisplayParent
 									,A.FlowObjectType
 									,A.CanEditParent
+									,A.IsDescriptionEnabled
+									,A.IsDescriptionVisibleByDefault
+									,A.DescriptionButtonName
 									{extraColumns} 
 									,P.[Path]
 									,AT.IconBackColor as BackColor
@@ -2783,7 +2786,10 @@ where an.Uid = fam.uid)
 						UseAsTransformation = model.UseAsTransformation,
 						Parent = parentAssetType,
 						AutoDisplayParent = model.AutoDisplayParent,
-						CanEditParent = model.CanEditParent
+						CanEditParent = model.CanEditParent,
+						IsDescriptionEnabled = model.IsDescriptionEnabled,
+						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
+						DescriptionButtonName = model.DescriptionButtonName
 					};
 					CompanyContext.Add(at);
 
@@ -2816,7 +2822,10 @@ where an.Uid = fam.uid)
 						Hierarchical = true,
 						UseAsTransformation = model.UseAsTransformation,
 						Class = model.Class,
-						CanEditParent = model.CanEditParent
+						CanEditParent = model.CanEditParent,
+						IsDescriptionEnabled = model.IsDescriptionEnabled,
+						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
+						DescriptionButtonName = model.DescriptionButtonName
 					};
 
 					if (at.HierarchyMaximumDepth <= 0 || at.HierarchyMaximumDepth > 10)
@@ -2855,7 +2864,10 @@ where an.Uid = fam.uid)
 						CreatedOn = DateTime.UtcNow,
 						UseAsTransformation = model.UseAsTransformation,
 						Class = AssetTypeClass.Reference,
-						CanEditParent = model.CanEditParent
+						CanEditParent = model.CanEditParent,
+						IsDescriptionEnabled = model.IsDescriptionEnabled,
+						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
+						DescriptionButtonName = model.DescriptionButtonName
 					};
 					isNamePartOfKey = false;
 					nameFriendlyName = "Long Description";
@@ -2886,7 +2898,10 @@ where an.Uid = fam.uid)
 						Parent = parentAssetType,
 						AutoDisplayParent = model.AutoDisplayParent,
 						FlowObjectType = model.FlowObjectType,
-						CanEditParent = model.CanEditParent
+						CanEditParent = model.CanEditParent,
+						IsDescriptionEnabled = model.IsDescriptionEnabled,
+						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
+						DescriptionButtonName = model.DescriptionButtonName
 					};
 					CompanyContext.Add(at);
 					parentType = SystemObjects.TaskType;
@@ -2983,6 +2998,9 @@ where an.Uid = fam.uid)
 					assetType.Name = model.Name;
 					assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
 					assetType.Description = model.Description;
+					assetType.IsDescriptionEnabled = model.IsDescriptionEnabled;
+					assetType.IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault;
+					assetType.DescriptionButtonName = model.DescriptionButtonName;
 					assetType.HierarchyMaximumDepth = (model.Hierarchy != null) ? model.Hierarchy.MaximumDepth : 1;
 					assetType.AutoDisplayParent = model.AutoDisplayParent;
 					if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)

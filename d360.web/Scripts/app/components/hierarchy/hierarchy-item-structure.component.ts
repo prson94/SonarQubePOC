@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { AssetTypeClass, AssetTypeLevelApiModel } from '../../models/asset.model';
+import { AssetTypeApiModel, AssetTypeClass, AssetTypeLevelApiModel } from '../../models/asset.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -34,6 +34,7 @@ import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { LocalStorageKey } from "../../enums/localstorage.enum";
 
 declare var CurrentResourceID;
 
@@ -52,6 +53,7 @@ declare var CurrentResourceID;
 })
 
 export class HierarchyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
+	@Input() assetTypeApiModel: AssetTypeApiModel;
 	@Input() assetTypeClass: AssetTypeClass;
 	@Input() assetTypeUid: string;
 
@@ -128,7 +130,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		{ title: $localize`Open in New Tab` },
 	];
 	secondarySidePanel: string = "detail";
-
+	isDescriptionVisible: boolean = false;
 	resourceUid: string;
 
 	constructor(
@@ -215,6 +217,16 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				this.baseAssetTypeUid = this.assetTypeUid;
 				this.uid = this.assetTypeUid;
 
+				const descriptionVisibilitySavedState = localStorage.getItem(
+					`${LocalStorageKey.IsAssetTypeDescriptionVisible}_${this.assetTypeApiModel.uid}`
+				);
+				
+				if (descriptionVisibilitySavedState !== null) {
+					this.isDescriptionVisible = JSON.parse(descriptionVisibilitySavedState);
+				} else {
+					this.isDescriptionVisible = this.assetTypeApiModel.IsDescriptionVisibleByDefault;
+				}
+
 				this.levels = result[0].Levels;
 				this.maxLevelAllowed = result[0].HierarchyMaximumDepth;
 				this.load();
@@ -224,6 +236,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 		this.setRowsPerPage();
 		this.numberOfRowsByCategoryService.defineNumberOfRows();
+	}
+
+	setDescriptionVisibility(state: boolean): void {
+		this.isDescriptionVisible = state;
+		localStorage.setItem(
+			`${LocalStorageKey.IsAssetTypeDescriptionVisible}_${this.assetTypeApiModel.uid}`,
+			state.toString()
+		)
 	}
 
 	setRowsPerPage(): void {
