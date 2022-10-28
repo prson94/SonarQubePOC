@@ -4,6 +4,7 @@ import { Routes, ActivatedRouteSnapshot, RouterStateSnapshot, CanActivate } from
 import { ConfigurationAssetTypeListPageComponent } from './list/configuration-asset-type-list-page.component';
 import { StubComponent } from './stub.compnoent';
 import { AssetTypeClass } from '../../../models/asset.model';
+import { ConfigurationAssetTypeEditorPageComponent } from './edit/configuration-asset-type-editor-page.component';
 
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
@@ -40,17 +41,17 @@ class WhenCanSeeFieldDefinitionsGuard extends CanActivateOnlyForAvailableTypeCla
 export const assetTypeConfigurationRoutes: Routes = [
     {
         path: ':typeClass/new',
-        component: StubComponent,
+        component: ConfigurationAssetTypeEditorPageComponent,
         canActivate: [WhenCanAccessBasicFeaturesGuard]
     },
     {
-        path: ':typeClass/:uid/new',
-        component: StubComponent,
+        path: ':typeClass/:parentUid/new',
+        component: ConfigurationAssetTypeEditorPageComponent,
         canActivate: [WhenCanCreateNewAssetTypeChildGuard]
     },
     {
         path: ':typeClass/:uid/edit',
-        component: StubComponent,
+        component: ConfigurationAssetTypeEditorPageComponent,
         canActivate: [WhenCanAccessBasicFeaturesGuard]
     },
     {

@@ -16,6 +16,8 @@ import { StubComponent } from './stub.compnoent';
 import { D3SSortIconModule } from '../../shared/turbotable-sorticon.component';
 import { assetTypeConfigurationRoutes } from './asset-type-configuration.routes';
 import { AssetTypeListHeaderComponent } from './list/asset-type-list-header.component';
+import { ConfigurationAssetTypeEditorPageComponent } from './edit/configuration-asset-type-editor-page.component';
+import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared-asset-type-editor.module';
 
 
 @NgModule({
@@ -29,14 +31,16 @@ import { AssetTypeListHeaderComponent } from './list/asset-type-list-header.comp
         AngularSplitModule,
         SharedObjectDetailsModule,
         SearchFieldModule,
-        D3SSortIconModule
+        D3SSortIconModule,
+        SharedAssetTypeEditorModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
         ConfigurationAssetTypeListComponent,
         AssetTypeListSidePanelWrapperComponent,
         AssetTypeListHeaderComponent,
-        StubComponent
+        StubComponent,
+        ConfigurationAssetTypeEditorPageComponent
     ],
     exports: [],
 })
