@@ -86,7 +86,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @Input() readonly = true;
     @Input() assetUid: string;
 
-    @Output() saveStateChanged: EventEmitter<any> = new EventEmitter<any>();
+    @Output() saveStateChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
     @ViewChild('addLineagePanel', { static: false }) addLineagePanelRef;
     @ViewChild('alertPanel', { static: false }) alertPanelRef;
@@ -3491,10 +3491,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.isProcessDiagramInEditMode = true;
     }
 
-    processDiagramSavedState($event) {
-        if (this.displayConfiguration.DiagramType == DiagramType.Process)
-            {this.saveStateChanged.emit($event);}
-        else {this.saveStateChanged.emit(null);}
+    processDiagramSavedState($event: boolean) {
+        if (this.displayConfiguration.DiagramType === DiagramType.Process) {
+            this.saveStateChanged.emit($event);
+        }
+        else {
+            this.saveStateChanged.emit(null);
+        }
     }
 
     openProcessDiagramInfo() {

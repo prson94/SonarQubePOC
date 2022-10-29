@@ -35,7 +35,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @Input() assetUid: string = '';
 
     @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
-    @Output() saveState: EventEmitter<any> = new EventEmitter<any>();
+    @Output() saveState: EventEmitter<boolean> = new EventEmitter<boolean>();
 
     public viewType: string = 'diagram';
 
@@ -587,10 +587,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         return this.myDiagram ? (this.myDiagram.nodes.count == 0 && this.myDiagram.links.count == 0) : true;
     }
 
-    private isCurrentStateSaved() {
-        if (!this.savedState)
-            {return false;}
-        return this.getSignature(this.myDiagram.model) == this.getSignature(this.savedState);
+    private isCurrentStateSaved(): boolean {
+        if (!this.savedState) {
+            return false;
+        }
+        return this.getSignature(this.myDiagram.model) === this.getSignature(this.savedState);
     }
 
     private getSignature(model: go.Model) {

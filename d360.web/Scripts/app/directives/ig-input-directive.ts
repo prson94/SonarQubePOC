@@ -25,7 +25,7 @@ export class InputDirective implements AfterViewInit, OnDestroy {
         this.disabled = this.el.nativeElement.getAttribute("disabled");
         var placeholder = this.el.nativeElement.getAttribute("placeholder");
 
-        if (!placeholder && placeholder != '') {
+        if (!placeholder && placeholder !== '') {
             if (this.required == null) {
                 this.el.nativeElement.setAttribute("placeholder", $localize`Optional`);
             } else {
@@ -48,13 +48,13 @@ export class InputDirective implements AfterViewInit, OnDestroy {
     }
     set igSize(val: string) {
         this._size = val;
-        if (this._size && this._size == "small") {
+        if (this._size && this._size === "small") {
             DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-small");
-        } else if (this._size && this._size == "medium") {
+        } else if (this._size && this._size === "medium") {
             DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-medium");
-        } else if (this._size && this._size == "large") {
+        } else if (this._size && this._size === "large") {
             DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-large");
-        } else if (this._size && this._size == "full") {
+        } else if (this._size && this._size === "full") {
             DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-full");
         }
     }
