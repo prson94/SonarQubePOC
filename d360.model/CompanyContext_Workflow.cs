@@ -1404,8 +1404,9 @@ namespace d360.model
 			}
 		}
 
-		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, bool isAssetEdited = false, Asset asset = null)
+		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, Asset asset = null)
 		{
+			bool isAssetEdited = false;
 			//check if the field exists
 			Field field = null;
 			if(objectType == SystemObjects.Issue.ToString())
@@ -1416,9 +1417,10 @@ namespace d360.model
 			{
 				field = Fields.Where(x => x.IntersectID == objectId && x.FieldTypeID == fieldType.ID).FirstOrDefault();
 			}
-			else if(asset != null)
+			else if (asset != null)
 			{
 				field = Fields.Where(x => x.AssetID == asset.ID && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+				isAssetEdited = true;
 			}
 
 			//validate list field value
@@ -1529,7 +1531,6 @@ namespace d360.model
 			Issue issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
 			Asset asset = null;
 			AssetType assetType = null;
-			bool isAssetEdited = false;
 
 			foreach (WorkflowFieldUpdateSettings item in settings.FieldUpdateSettings)
 			{
@@ -1545,7 +1546,6 @@ namespace d360.model
 					objectId = asset.ObjectID;
 					objectType = asset.Object;
 					ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
-					isAssetEdited = true;
 				}
 				else
 				{
@@ -1580,12 +1580,12 @@ namespace d360.model
 				else if (item.CurrentDate)
 				{
 					string val = DateTime.UtcNow.Date.ToShortDateString();
-					await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
+					await UpdateField(objectId, objectType, fieldType, item, val, asset);
 				}
 				else if (!item.IsActionForm && !item.UseFormValue && !item.UseOutputValue)
 				{
 					string val = item.Value;
-					await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
+					await UpdateField(objectId, objectType, fieldType, item, val, asset);
 				}
 				//if the value is a form value get it
 				else if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
@@ -1599,7 +1599,7 @@ namespace d360.model
 						{
 							val = tempDate.Date.ToShortDateString();
 						}
-						await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
+						await UpdateField(objectId, objectType, fieldType, item, val, asset);
 					}
 				}
 				//Get the value from action form (Issue)
@@ -1634,12 +1634,12 @@ namespace d360.model
 						}
 					}
 
-					await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
+					await UpdateField(objectId, objectType, fieldType, item, val, asset);
 				}
 				else if (item.UseOutputValue)
 				{
 					string val = GetOutputFieldValue(item.FormStepID, itemStep.ItemID, item.FormField);
-					await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
+					await UpdateField(objectId, objectType, fieldType, item, val, asset);
 				}
 			}
 
