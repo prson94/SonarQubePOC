@@ -309,7 +309,7 @@ namespace d360.web.Controllers.V2
 									reporting.StripHTML(F.FormattedValue) as 'action.description'
 							from	AssetDetail A
 									inner join @uids U on U.Uid = A.Uid
-									inner join Issue I on I.Object = A.Object and I.ObjectID = A.ObjectID
+									inner join Issue I on I.AssetId = A.Id
 									left join IssueType IT on IT.ID = I.IssueTypeID
 									left join FieldType FT on FT.IssueTypeID = IT.ID and (FT.Name = 'Description' or FT.Name = 'ProblemDesc')
 									left join Field F on F.FieldTypeID = FT.ID and F.IssueID = I.ID
