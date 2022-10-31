@@ -476,13 +476,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let links = this.diagramModelAsGraph().linkDataArray;
         let badgeLinks = links.filter((l) => { return l.badgeIdentifier === badgeIdentifier; });
         badgeLinks.forEach((badgeLink) => {
-            if (badgeLink) {
+			if (badgeLink) {
                 // Line below would only be used IF impacts were to go in both directions. As it is now, we hard-code them to only go in one direction (forward).
-                let impactNodeKey = direction == AssetBrowserApiHopDirection.Backward ? badgeLink.from : badgeLink.to;
+				let impactNodeKey = direction == AssetBrowserApiHopDirection.Backward ? badgeLink.from : badgeLink.to;
+
+				//if we reveresed link to always show impact showing arrows out of the nodes, we need to apply reversed logic here
+				if (badgeLink["isReversed"]) {
+					impactNodeKey = direction == AssetBrowserApiHopDirection.Backward ? badgeLink.to : badgeLink.from;
+				}
+
                 //let impactNodeKey = badgeLink.to;
                 let impactNode = this.diagram.findNodeForKey(impactNodeKey);
                 if (impactNode) {
-                    let impactData = impactNode.data as AssetBrowserTranslationNode;
+					let impactData = impactNode.data as AssetBrowserTranslationNode;
                     if (impactData) {
                         // First, remove this node from the hierarchy collection, which represents all root nodes currently in the diagram.
                         let ixToDelete = this.diagramData.hierarchy.findIndex((o) => { return o.hierarchyKey === impactNodeKey; });
@@ -505,7 +511,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         });
                         // Last, remove the dependent impact nodes attached to the one we are currently trying to remove.
                         impactData.relations.forEach((r, rix) => {
-                            let innerBadgeIdentifier: string = impactData.hierarchyKey + '|' + rix;
+							let innerBadgeIdentifier: string = impactData.hierarchyKey + '|' + rix;
                             this.badge_RemoveDependentNodes(innerBadgeIdentifier, r.direction);
                         });
                     }
@@ -549,7 +555,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             let lastHighlightedPart = this.highlightedPart;
             if (!relation.disabled) {
-                if (relation.expanded) {
+				if (relation.expanded) {
                     this.badge_RemoveDependentNodes(badgeIdentifier, relation.direction);
                     this.diagram.model.removeArrayItem(node.relations, ix);
                     this.diagram.model.insertArrayItem(node.relations, ix, relation);

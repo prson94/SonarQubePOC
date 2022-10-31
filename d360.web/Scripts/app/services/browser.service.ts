@@ -67,6 +67,7 @@ export class BrowserService extends BaseObservableService {
 						temp = relationship.from;
 						relationship.from = relationship.to;
 						relationship.to = temp;
+						relationship.isReversed = true;
 
 						relationship.links.forEach((link) => {
 							temp = link.from;
@@ -78,6 +79,7 @@ export class BrowserService extends BaseObservableService {
 			}
 		}
 
+		response.highlightLinks = [];
 		if (response.links && response.links.length > 0) {
 			response.highlightLinks = JSON.parse(JSON.stringify(response.links));
 
@@ -168,7 +170,8 @@ export class BrowserService extends BaseObservableService {
             predicateUid: null,
             responsibilityTypeId,
             links: [],
-            badgeIdentifier: rootKey
+			badgeIdentifier: rootKey,
+			isReversed: false
         };
 
         response.ownerRelations.forEach((l) => {
