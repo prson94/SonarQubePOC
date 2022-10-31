@@ -2581,20 +2581,44 @@ namespace d360.web.Controllers
 
 			if (LookupFieldHasColorItem(fieldType))
 			{
-				string colorAndValueSql = $@"(SELECT TOP 1 F.FormattedValue as name,
+				string populateDefaultValueCheck = "";
+				if (!string.IsNullOrEmpty(fieldType.DefaultValue))
+				{
+					populateDefaultValueCheck = @"
+								declare @count int = (select COUNT(*) from #fields);
+								if @count = 0
+								begin
+									insert into #fields
+									select top 1 @fieldtypeid, @assetId, @DefaultValue, @DefaultFormattedValue from Field F
+								end";
+				}
+
+
+				string colorAndValueSql = $@"
+								drop table if exists #fields
+								create table #fields(FieldTypeId int, AssetId bigint, Value nvarchar(max), FormattedValue nvarchar(max))
+
+								insert into #fields
+								select top 1 FieldTypeID, AssetID, Value, FormattedValue from Field F
+								where F.FieldTypeID = @fieldTypeID and F.AssetID = @assetId
+
+								{populateDefaultValueCheck}
+
+								SELECT TOP 1 F.FormattedValue as name,
 								COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
 								, FD.FormattedValue as description
 								, FPL.FormattedValue as profilelevel
-								from Field F 
-								inner join FieldType ft on ft.ID = f.FieldTypeID
-								cross apply STRING_SPLIT(F.Value, ',') SPF
-								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
-								inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
-								cross apply dbo.GetAssetColorJsonByColor(ACf.Color) ACJ
-								outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.AssetID=ACF.ID) FD
-								outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.AssetID=ACF.ID) FPL
-								where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type}' and f.[ObjectID] = {id}) FOR JSON PATH";
-				string colorAndValue = Company.Query<string>(colorAndValueSql).FirstOrDefault();
+								from #fields F 
+									inner join FieldType ft on ft.ID = f.FieldTypeID
+									cross apply STRING_SPLIT(F.Value, ',') SPF
+									inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
+									inner join Asset AI on AI.AssetTypeId = @assetTypeId and AI.Id = @assetId
+									cross apply dbo.GetAssetColorJsonByColor(ACf.Color) ACJ
+									outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.AssetID=ACF.ID) FD
+									outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.AssetID=ACF.ID) FPL
+								FOR JSON PATH";
+				string colorAndValue = Company.Query<string>(colorAndValueSql, 
+					new { fieldTypeID = fieldType.ID, assetId = objectDetail.AssetID, assetTypeId = objectDetail.AssetTypeID, fieldType.DefaultValue, fieldType.DefaultFormattedValue }).FirstOrDefault();
 
 				if (!string.IsNullOrEmpty(colorAndValue))
 				{
