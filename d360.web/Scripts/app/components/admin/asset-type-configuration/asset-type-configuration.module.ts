@@ -18,6 +18,8 @@ import { assetTypeConfigurationRoutes } from './asset-type-configuration.routes'
 import { AssetTypeListHeaderComponent } from './list/asset-type-list-header.component';
 import { ConfigurationAssetTypeEditorPageComponent } from './edit/configuration-asset-type-editor-page.component';
 import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared-asset-type-editor.module';
+import { ConfigurationAssetTypeDeletePageComponent } from './delete/configuration-asset-type-delete-page.component';
+import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.module';
 
 
 @NgModule({
@@ -32,7 +34,8 @@ import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared
         SharedObjectDetailsModule,
         SearchFieldModule,
         D3SSortIconModule,
-        SharedAssetTypeEditorModule
+        SharedAssetTypeEditorModule,
+        AssetTypeDeleteModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
@@ -40,7 +43,8 @@ import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared
         AssetTypeListSidePanelWrapperComponent,
         AssetTypeListHeaderComponent,
         StubComponent,
-        ConfigurationAssetTypeEditorPageComponent
+        ConfigurationAssetTypeEditorPageComponent,
+        ConfigurationAssetTypeDeletePageComponent
     ],
     exports: [],
 })

@@ -5,6 +5,7 @@ import { ConfigurationAssetTypeListPageComponent } from './list/configuration-as
 import { StubComponent } from './stub.compnoent';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { ConfigurationAssetTypeEditorPageComponent } from './edit/configuration-asset-type-editor-page.component';
+import { ConfigurationAssetTypeDeletePageComponent } from './delete/configuration-asset-type-delete-page.component';
 
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
@@ -56,7 +57,7 @@ export const assetTypeConfigurationRoutes: Routes = [
     },
     {
         path: ':typeClass/:uid/delete',
-        component: StubComponent,
+        component: ConfigurationAssetTypeDeletePageComponent,
         canActivate: [WhenCanAccessBasicFeaturesGuard]
     },
     {
