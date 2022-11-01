@@ -115,7 +115,7 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['issueTypeUid'].currentValue != changes['issueTypeUid'].previousValue || changes['issueTypeUid'].isFirstChange) {
+        if (changes['issueTypeUid'].currentValue !== changes['issueTypeUid'].previousValue || changes['issueTypeUid'].isFirstChange) {
             this.formMode = FormMode.Default;
             this.load();
         }

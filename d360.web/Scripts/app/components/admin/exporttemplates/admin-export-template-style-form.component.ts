@@ -114,12 +114,12 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
 
     ngOnChanges(changes: SimpleChanges): void {
         this.model.AssetTypeExportTemplateID = changes["templateId"].currentValue;
-        if (changes["mode"].currentValue == $localize`Edit` && changes["selectedStyle"].currentValue) {
+        if (changes["mode"].currentValue === $localize`Edit` && changes["selectedStyle"].currentValue) {
             this.model = _.clone(changes["selectedStyle"].currentValue);
         }
-        this.model.SelectionType = this.exportViewType.toString() != ExportViewType[ExportViewType.Pivot] ? "Header" : this.model.Column == -1 ? "Row" : "Column";
+        this.model.SelectionType = this.exportViewType.toString() !== String(ExportViewType[ExportViewType.Pivot]) ? "Header" : this.model.Column === -1 ? "Row" : "Column";
 
-        if (this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot])
+        if (this.exportViewType.toString() === String(ExportViewType[ExportViewType.Pivot]))
             {this.selections = [
                 { label: $localize`Column`, value: "Column" },
                 { label: $localize`Row`, value: "Row" }];}
@@ -128,7 +128,7 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
 
     }
     selectionChange() {
-        if (this.model.SelectionType == "Row" || this.model.SelectionType == "Header") {
+        if (this.model.SelectionType === "Row" || this.model.SelectionType === "Header") {
             this.model.Column = -1;
             this.model.Row = 1;
         } else {

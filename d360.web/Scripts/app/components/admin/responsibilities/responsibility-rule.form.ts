@@ -568,7 +568,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 item.ValueOptions = selectedFieldType.values;
                 item.IsLookup = selectedFieldType.isLookup;
             }
-            else if (selectedFieldType.type == "Boolean") {
+            else if (selectedFieldType.type === "Boolean") {
                 item.IsBool = true;
 				item.ValueOptions = this.whenBoolTypes;
 				item.IsLookup = selectedFieldType.isLookup;
@@ -703,7 +703,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 .subscribe((r) => {
                     this.isLoading = false;
                     this.showMessageForResult(this.messagesService, r);
-                    if (r.type != "error") {
+                    if (r.type !== "error") {
                         this.onComplete.emit({ action: "edit", field: this.model });
                     }
                 });
@@ -712,7 +712,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 .subscribe((r) => {
                     this.showMessageForResult(this.messagesService, r);
                     this.isLoading = false;
-                    if (r.type != "error") {
+                    if (r.type !== "error") {
                         this.onComplete.emit({ action: "add", field: this.model });
                     }
                 });

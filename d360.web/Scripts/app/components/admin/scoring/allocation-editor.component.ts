@@ -194,11 +194,11 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
             .subscribe((res) => {
                 let openItem = false;
                 this.savingInProgress = false;
-                if (!res || (res.type && res.type == "error"))
+                if (!res || (res.type && res.type === "error"))
                     {return;}
 
                 let msg: string = '';
-                if (this.selection.uid == undefined) {
+                if (this.selection.uid == null) {
                     msg = $localize`Your score has been added`;
                     openItem = true;
                 }
@@ -212,7 +212,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 
     handleChange(e) {
         this.selection.lowerThreshold = e.values[0];
-        if (this.selection.lowerThreshold == 100)
+        if (this.selection.lowerThreshold === 100)
             {this.selection.lowerThreshold = 99;}
         this.selection.upperThreshold = e.values[1];
 
@@ -293,7 +293,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 
         this.rangeValues.forEach((value: number, index) => {
             var tooltip = sliders[index].getElementsByClassName('slider-tooltip');
-            if (tooltip.length == 0) {
+            if (tooltip.length === 0) {
                 var el = document.createElement("span");
                 el.className = 'slider-tooltip';
                 el.innerHTML = value + '%';

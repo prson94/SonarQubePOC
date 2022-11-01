@@ -170,10 +170,10 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     }
 
     private getAssetTypeByUid(uid: string): any {
-        return this.artifactTypes.filter((x) => x.uid == uid)[0];
+        return this.artifactTypes.filter((x) => x.uid === uid)[0];
     }
     private getAssetTypeById(id: number): any {
-        return this.artifactTypes.filter((x) => x.ID == id)[0];
+        return this.artifactTypes.filter((x) => x.ID === id)[0];
     }
 
     private loadDataAndExecuteAction(action: Function) {

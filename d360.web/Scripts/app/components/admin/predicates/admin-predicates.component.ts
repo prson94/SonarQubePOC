@@ -144,8 +144,8 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
             .subscribe((result) => {
                 this.showMessageForApiResults(this.messagesService, result, $localize`Predicate deleted`, true);
                 this.showDelete = false;
-                if (!result.some((x) => x.Success == false)) {
-                    this.predicates = this.predicates.filter((x) => x.Uid != uid);
+                if (!result.some((x) => x.Success === false)) {
+                    this.predicates = this.predicates.filter((x) => x.Uid !== uid);
                 }
             });
     }
@@ -174,7 +174,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
         this.predicatesService.savePredicate(event.item)
             .subscribe((result) => {
 
-                if (event.action == 'new') {
+                if (event.action === 'new') {
                     this.showMessageForApiResults(this.messagesService, result, $localize`Predicate succesfully added!`, true);
                 }
                 else {

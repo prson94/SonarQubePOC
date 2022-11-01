@@ -129,7 +129,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 			.subscribe((result) => {
 				this.isLoading = false;
 				this.showMessageForResult(this.messagesService, result);
-				if (result.type != 'error') {
+				if (result.type !== 'error') {
 					this.showCredentials = false;
 				}
 			});

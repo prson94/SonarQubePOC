@@ -138,7 +138,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                             let workflowItems: WorkflowListItem[] = [];
 
 
-                            r.filter((x) => x.State == 'Active' || x.State == 'InActive').forEach((x) => {
+                            r.filter((x) => x.State === 'Active' || x.State === 'InActive').forEach((x) => {
                                 let workflowItem: WorkflowListItem = new WorkflowListItem();
 
                                 workflowItem.Name = x.Name;
@@ -158,7 +158,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                                 this.selection = this.items[0];
                             }
                             this.items.forEach((i) => {
-                                var ChangeTypeDescription = this.changeTypes.find((c) => c.ID == i.ChangeType);
+                                var ChangeTypeDescription = this.changeTypes.find((c) => c.ID === i.ChangeType);
                                 if (ChangeTypeDescription) {
                                     i.ChangeTypeName = ChangeTypeDescription.Description;
                                 }

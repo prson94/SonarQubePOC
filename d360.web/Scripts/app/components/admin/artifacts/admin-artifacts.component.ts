@@ -71,7 +71,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 this.assetTypeClass = AssetTypeClass.BusinessAsset;
             }
 
-            let className: string = this.assetTypeClass == AssetTypeClass.BusinessAsset ? $localize`Business Asset` : $localize`Technical Asset`;
+            let className: string = this.assetTypeClass === AssetTypeClass.BusinessAsset ? $localize`Business Asset` : $localize`Technical Asset`;
             this.addClassName = "Add " + className;
             let singularLabel: string = `${className} Type`;
 

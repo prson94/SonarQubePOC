@@ -54,7 +54,7 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
             (result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
-                this.levels = this.levels.filter((x) => x.Level != id);
+                this.levels = this.levels.filter((x) => x.Level !== id);
             }
         );
     }

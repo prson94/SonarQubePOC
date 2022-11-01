@@ -89,8 +89,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	}
 
 	changeIconType(e: any) {
-		if (this.formMode == FormMode.Editing) {
-			if (this.iconType == 'icon') {
+		if (this.formMode === FormMode.Editing) {
+			if (this.iconType === 'icon') {
 				this.iconType = 'image';
 				this.selection.Icon = null;
 			} else {
@@ -99,8 +99,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 				this.selection.IconPayload = null;
 				this.iconImage = new CompanyImage();
 			}
-		} else if (this.formMode == FormMode.Adding) {
-			if (this.iconType == 'icon') {
+		} else if (this.formMode === FormMode.Adding) {
+			if (this.iconType === 'icon') {
 				this.iconType = 'image';
 				this.newFolder.Icon = null;
 			} else {
@@ -115,16 +115,16 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
 	clearIcon() {
 		this.iconImage = new CompanyImage();
-		if (this.formMode == FormMode.Editing) {
+		if (this.formMode === FormMode.Editing) {
 			this.selection.ImageIconUrl = null;
-		} else if (this.formMode == FormMode.Adding) {
+		} else if (this.formMode === FormMode.Adding) {
 			this.newFolder.ImageIconUrl = null;
 		}
 		this.onFileChange(null);
 	}
 
 	checkIfImg(value: string) {
-		if (value && value.indexOf('/Content') != -1) {
+		if (value && value.indexOf('/Content') !== -1) {
 			return true;
 		}
 		else
@@ -139,9 +139,9 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 			this.iconImage.file = null;
 			this.iconImage.setDataUrl();
 
-			if (this.formMode == FormMode.Editing) {
+			if (this.formMode === FormMode.Editing) {
 				this.selection.IconPayload = null;
-			} else if (this.formMode == FormMode.Adding) {
+			} else if (this.formMode === FormMode.Adding) {
 				this.newFolder.IconPayload = null;
 			}
 
@@ -162,9 +162,9 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
 		this.iconImage.file = files[0];
 		this.iconImage.setDataUrl();
-		if (this.formMode == FormMode.Editing) {
+		if (this.formMode === FormMode.Editing) {
 			this.selection.IconPayload = this.iconImage.dataUrl;
-		} else if (this.formMode == FormMode.Adding) {
+		} else if (this.formMode === FormMode.Adding) {
 			this.newFolder.IconPayload = this.iconImage.dataUrl;
 		}
 	}
@@ -186,7 +186,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	}
 
 	addFolder(item: SiteNav) {
-		let i = this.availableItems.findIndex((f) => f.ObjectID == item.ObjectID && f.Object == item.Object);
+		let i = this.availableItems.findIndex((f) => f.ObjectID === item.ObjectID && f.Object === item.Object);
 
 		if (i > -1) {
 			let item = this.availableItems[i];
@@ -213,7 +213,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	}
 
 	deleteFolderItem(item: SiteNav) {
-		let i = this.folderItems.findIndex((f) => f.ID == item.ID);
+		let i = this.folderItems.findIndex((f) => f.ID === item.ID);
 
 		if (i > -1) {
 			let item = this.folderItems[i];
@@ -230,7 +230,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	}
 
 	addFolderItem(item: SiteNav) {
-		let i = this.availableItems.findIndex((f) => f.ObjectID == item.ObjectID && f.Object == item.Object);
+		let i = this.availableItems.findIndex((f) => f.ObjectID === item.ObjectID && f.Object === item.Object);
 
 		if (i > -1) {
 			let item = this.availableItems[i];
@@ -246,13 +246,13 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	}
 
 	addNewFolder(item: SiteNav) {
-		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
+		let x = this.availableItems.findIndex((i) => i.ObjectID === item.ObjectID && i.Object === item.Object);
 		let i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
 		this.newFolderItems.push(i);
 	}
 
 	deleteNewFolder(item: SiteNav) {
-		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
+		let x = this.availableItems.findIndex((i) => i.ObjectID === item.ObjectID && i.Object === item.Object);
 		let i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
 		this.availableItems.push(i);
 	}
@@ -339,7 +339,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	}
 
 	moveFolderUp(item: SiteNav, i: number) {
-		if (i != 0) {
+		if (i !== 0) {
 			this.selection = item;
 			this.index = i;
 			this.prevFolderID = this.folderItems[i - 1].ID;
@@ -430,7 +430,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		this.isLoading = true;
 
 		this.folderItems.forEach((o) => {
-			let s = this.oldFolderItems.find((i) => i.ID == o.ID);
+			let s = this.oldFolderItems.find((i) => i.ID === o.ID);
 
 			if (s == null) {
 				promises.push(this.siteMenuService.removeFolderItem(o.ID));
@@ -439,7 +439,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
 		this.oldFolderItems.forEach((o) => {
 
-			let s = this.folderItems.find((i) => i.ID == o.ID);
+			let s = this.folderItems.find((i) => i.ID === o.ID);
 
 			if (s == null) {
 				promises.push(this.siteMenuService.addFolderItem(o));
@@ -490,7 +490,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
 	menuPermissionsOnModeChange($event) {
 		this.permissionMode = $event;
-		this.IsMenuPermissionsAdding = ($event == FormMode.Adding);
+		this.IsMenuPermissionsAdding = ($event === FormMode.Adding);
 
 	}
 
