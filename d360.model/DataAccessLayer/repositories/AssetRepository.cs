@@ -1525,6 +1525,9 @@ namespace d360.model.DataAccessLayer
 
 			if (containsAnyFilter)
 			{
+				var requestHash = assetType.uid + JsonConvert.SerializeObject(
+					queryParams.Where(x=> x.Key != "_pageSize" && x.Key != "_pageNum").OrderBy(x=> x.Key));
+
 				filteredResultsTempTable = @$"
 				drop table if exists #filtered_results
 				create table #filtered_results (AssetId int)
