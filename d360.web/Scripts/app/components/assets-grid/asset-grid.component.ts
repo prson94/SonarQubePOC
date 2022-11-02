@@ -302,7 +302,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         localStorage.setItem(
             `${LocalStorageKey.IsAssetTypeDescriptionVisible}_${this.assetTypeApiModel.uid}`,
             state.toString()
-        )
+        );
     }
 
     public filterGridData(dt: Table) {

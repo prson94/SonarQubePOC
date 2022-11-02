@@ -82,7 +82,6 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
 				, GETDATE(), 0, GETDATE(), 0
 				, NULL, '00000001-0000-0000-0000-B00000000014')
 		END
-		]]>
 		
 	  IF COL_LENGTH('dbo.AssetType', 'IsDescriptionEnabled') IS NULL
 	  BEGIN
@@ -90,8 +89,9 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
 		 add
 			IsDescriptionEnabled bit default(1) not null,
 			IsDescriptionVisibleByDefault bit default(1) not null,
-			DescriptionButtonName varchar(50) default('Information') not null
+			DescriptionButtonName varchar(50) null
 	  END
+	  ]]>
     </sql>
 	<rollback>
 		<![CDATA[]]>

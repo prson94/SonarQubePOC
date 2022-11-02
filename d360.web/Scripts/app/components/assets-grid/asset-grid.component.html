@@ -10,7 +10,12 @@
     <ng-template #descriptionButton>
         <a *ngIf="assetTypeApiModel.Description && assetTypeApiModel.IsDescriptionEnabled"
            class="asset-description-button" (click)="setDescriptionVisibility(!isDescriptionVisible)">
-            {{ assetTypeApiModel.DescriptionButtonName }}
+            <span *ngIf="assetTypeApiModel.DescriptionButtonName; else defaultButtonName">
+                {{ assetTypeApiModel.DescriptionButtonName }}
+            </span>
+            <ng-template #defaultButtonName>
+                <span i18n>Information</span>
+            </ng-template>
             <i class="fa asset-description-chevron"
                [ngClass]="{'fa-chevron-down': !isDescriptionVisible, 'fa-chevron-up': isDescriptionVisible}">
             </i>

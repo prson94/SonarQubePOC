@@ -243,7 +243,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		localStorage.setItem(
 			`${LocalStorageKey.IsAssetTypeDescriptionVisible}_${this.assetTypeApiModel.uid}`,
 			state.toString()
-		)
+		);
 	}
 
 	setRowsPerPage(): void {
