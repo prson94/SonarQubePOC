@@ -57,7 +57,7 @@ export class GroupResponsibilityComponent extends BaseComponent implements OnCha
     }
 
     isSelected(item: any) {
-        return (item == this.selected);
+        return (item === this.selected);
     }
 
     select(item: any) {

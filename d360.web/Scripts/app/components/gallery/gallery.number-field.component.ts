@@ -69,7 +69,7 @@ export class GalleryNumberFieldComponent implements OnInit {
         return (control: AbstractControl): { [key: string]: any } | null => {
             if (control.value == null)
                 {return {};}
-            if (control.value == null || numberIDontLike.indexOf(parseFloat(control.value)) != -1)
+            if (control.value == null || numberIDontLike.indexOf(parseFloat(control.value)) !== -1)
                 {return {
                     notNiceNumber: { value: control.value }
                 };}

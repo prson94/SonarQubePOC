@@ -224,7 +224,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
         this.connectorLabelService.saveLabel(event.item)
             .subscribe((result) => {
                 let msg: string = '';
-                if (event.item.uid == undefined) {
+                if (event.item.uid == null) {
                     msg = $localize`Connector label succesfully created`;
                 }
                 else {

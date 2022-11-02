@@ -60,7 +60,7 @@ export class GalleryColorVariablesComponent implements OnInit, AfterViewInit {
     }
 
     getClassName(base: string, tint: string): string {
-        if (tint == 'Base')
+        if (tint === 'Base')
             {return 'ig-'+base;}
         return 'ig-'+base + '-' + tint;
     }

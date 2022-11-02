@@ -43,7 +43,7 @@ export class GalleryAutocompleteComponent implements OnInit {
     filterItems($event) {
         this.filteredBrands = [];
         this.brands.forEach((brand) => {
-            if (brand.toLowerCase().indexOf($event.query.toLowerCase()) == 0) {
+            if (brand.toLowerCase().indexOf($event.query.toLowerCase()) === 0) {
                 this.filteredBrands.push(brand);
             }
         });

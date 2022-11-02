@@ -481,7 +481,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			if (this.hierarchy) {
 				this.hierarchy.forEach((i) => {
 					this.scoreAllocations.forEach((s) => {
-						var field = this.fields.find((f) => f.apiName == s.Name);
+						var field = this.fields.find((f) => f.apiName === s.Name);
 						if (field) {
 							i[field.apiName + '_threshold'] = this.getThreshold(i[field.apiName], s.LowerThreshold, s.UpperThreshold);
 						}
@@ -517,7 +517,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		}
 
 		//do a breadth first search for the given treenode
-		if (nodes.length == 0) {
+		if (nodes.length === 0) {
 			return;
 		}
 
@@ -531,7 +531,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			//push children
 			if (node.children) {
 				for (let i = 0; i < node.children.length; i++) {
-					if (node.children[i].data.AssetUid && node.children[i].data.AssetUid == id) {
+					if (node.children[i].data.AssetUid && node.children[i].data.AssetUid === id) {
 						node.children.splice(i, 1);
 						return;
 					}
@@ -542,7 +542,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			//remove this node
 			nodes.splice(0, 1);
 
-			if (nodes.length == 0) {
+			if (nodes.length === 0) {
 				return null;
 			}
 			node = nodes[0];
@@ -579,8 +579,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	private exportExcel(level: number) {
 		var params = new V2ApiFilters();
 		params._onlyListableFields = false;
-		params._direction = this.treeTable._sortOrder == 1 ? 'ASC' : 'DESC';
-		if (this.treeTable._sortField != undefined) {
+		params._direction = this.treeTable._sortOrder === 1 ? 'ASC' : 'DESC';
+		if (this.treeTable._sortField != null) {
 			var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
 			params._order = field["apiName"];
 		}
@@ -636,7 +636,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		}
 
 		if (!this.selected) {
-			let thisLevel = this.levels.filter((x) => x.Level == this.selectedLevel + 1);
+			let thisLevel = this.levels.filter((x) => x.Level === this.selectedLevel + 1);
 
 			if (thisLevel && thisLevel.length > 0)
 				{return thisLevel[0].Name;}
@@ -644,7 +644,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				{return $localize`(Level ${this.selectedLevel + 1}) Item`;}
 		}
 
-		let thisLevel = this.levels.filter((x) => x.Level == this.selected.data.Level);
+		let thisLevel = this.levels.filter((x) => x.Level === this.selected.data.Level);
 
 		if (thisLevel && thisLevel.length > 0) {return thisLevel[0].Name;}
 		return $localize`(Level ${this.selected.data.Level}) Item`;

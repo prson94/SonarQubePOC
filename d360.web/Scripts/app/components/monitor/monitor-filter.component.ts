@@ -58,7 +58,7 @@ export class MonitorFilterComponent extends BaseComponent implements OnInit {
                 this.items = r;
 
                 this.items.forEach((i) => {
-                    i.label = i.State == State.InActive ? i.Name + " ( " + $localize`Inactive` + " )" : i.Name;
+                    i.label = i.State === State.InActive ? i.Name + " ( " + $localize`Inactive` + " )" : i.Name;
                     i.value = i.ID.toString();
                 });
 

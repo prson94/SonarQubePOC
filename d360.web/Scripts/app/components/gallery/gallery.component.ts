@@ -67,10 +67,10 @@ export class GalleryComponent implements OnInit {
     ngOnInit(): void {
 
         this.controls.forEach((x) => {
-            if (!this.categories.some((c) => c.type == x.type)) {
+            if (!this.categories.some((c) => c.type === x.type)) {
                 this.categories.push({
                     type: x.type,
-                    controls: this.controls.sort((a, b) => { return a.label > b.label ? 1 : -1; }).filter((ct) => ct.type == x.type)
+                    controls: this.controls.sort((a, b) => { return a.label > b.label ? 1 : -1; }).filter((ct) => ct.type === x.type)
                 });
             }
         });

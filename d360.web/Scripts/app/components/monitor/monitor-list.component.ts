@@ -116,7 +116,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (!(changes['showSimpleFilter'] && changes['showSimpleFilter'].currentValue != changes['showSimpleFilter'].previousValue))
+        if (!(changes['showSimpleFilter'] && changes['showSimpleFilter'].currentValue !== changes['showSimpleFilter'].previousValue))
             {this.load();}
     }
 
@@ -151,7 +151,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
                     if (this.objectType != null && this.objectId != null) {
                         //artifact type
                         if (this.objectType.toLowerCase().endsWith('type')) {
-                            this.workflowItems = this.workflowItems.filter((i) => i.Object == this.objectType && i.ObjectID == this.objectId);
+                            this.workflowItems = this.workflowItems.filter((i) => i.Object === this.objectType && i.ObjectID === this.objectId);
                         } else if (this.useFilteredObject) {
                             //filtering is done on the server for specific objects. If the list comes back null, the specific object is not present
                             this.workflowItems = this.workflowItems.filter((i) => i.ObjectNames != null);
