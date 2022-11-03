@@ -214,7 +214,7 @@ END
 
 				if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIDAssetID_Include')
 				begin
-					CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeIDAssetID_Include] ON [dbo].[Field] ([FieldTypeID] ASC, [AssetID] ASC ) INCLUDE([FormattedValue], [Value])
+					CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeIDAssetID_Include] ON [dbo].[Field] ([FieldTypeID] ASC, [AssetID] ASC ) INCLUDE([FormattedValue])
 				end
 				
 				if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIdIntersectID')
