@@ -6,6 +6,7 @@ import { StubComponent } from './stub.compnoent';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { ConfigurationAssetTypeEditorPageComponent } from './edit/configuration-asset-type-editor-page.component';
 import { ConfigurationAssetTypeDeletePageComponent } from './delete/configuration-asset-type-delete-page.component';
+import { ConfigurationAssetTypeFieldsPageComponent } from './tabs/fields/configuration-asset-type-fields-page.component';
 
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
@@ -62,8 +63,28 @@ export const assetTypeConfigurationRoutes: Routes = [
     },
     {
         path: ':typeClass/:uid/fields',
-        component: StubComponent,
+        component: ConfigurationAssetTypeFieldsPageComponent,
         canActivate: [WhenCanSeeFieldDefinitionsGuard]
+    },
+    {
+        path: ':typeClass/:uid/owners',
+        component: StubComponent,
+        canActivate: []
+    },
+    {
+        path: ':typeClass/:uid/allocations',
+        component: StubComponent,
+        canActivate: []
+    },
+    {
+        path: ':typeClass/:uid/relationships',
+        component: StubComponent,
+        canActivate: []
+    },
+    {
+        path: ':typeClass/:uid/log',
+        component: StubComponent,
+        canActivate: []
     },
     {
         path: ':typeClass',

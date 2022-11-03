@@ -20,6 +20,12 @@ import { ConfigurationAssetTypeEditorPageComponent } from './edit/configuration-
 import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared-asset-type-editor.module';
 import { ConfigurationAssetTypeDeletePageComponent } from './delete/configuration-asset-type-delete-page.component';
 import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.module';
+import { ConfigurationAssetTypeFieldsPageComponent } from './tabs/fields/configuration-asset-type-fields-page.component';
+import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
+import { ConfigurationAssetTypeHeaderComponent } from './tabs/shared/configuration-asset-type-header/asset-type-header.component';
+import { PageHeaderModule } from '../../shared/page-header/page-header.module';
+import { TabsModule } from '../../shared/tabs/tabs.module';
+import { ConfigurationAssetTypeTabsComponent } from './tabs/shared/configuration-asset-type-tabs/asset-type-tabs.component';
 
 
 @NgModule({
@@ -35,7 +41,10 @@ import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.mo
         SearchFieldModule,
         D3SSortIconModule,
         SharedAssetTypeEditorModule,
-        AssetTypeDeleteModule
+        AssetTypeDeleteModule,
+        SharedFieldDefinitionModule,
+        PageHeaderModule,
+        TabsModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
@@ -44,7 +53,10 @@ import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.mo
         AssetTypeListHeaderComponent,
         StubComponent,
         ConfigurationAssetTypeEditorPageComponent,
-        ConfigurationAssetTypeDeletePageComponent
+        ConfigurationAssetTypeDeletePageComponent,
+        ConfigurationAssetTypeFieldsPageComponent,
+        ConfigurationAssetTypeHeaderComponent,
+        ConfigurationAssetTypeTabsComponent
     ],
     exports: [],
 })
