@@ -34,11 +34,11 @@ export class ResponsibilityTypeForm implements OnInit {
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         let reloadRequired = false;
         for (let p in changes) {
-            if (p == 'id') {
-                if (changes[p].currentValue == 0) {
+            if (p === 'id') {
+                if (changes[p].currentValue === 0) {
                     this.load();
                 }
-                if (changes[p].currentValue && (changes[p].currentValue != changes[p].previousValue)) {
+                if (changes[p].currentValue && (changes[p].currentValue !== changes[p].previousValue)) {
                     reloadRequired = true;
                 }
                 if (reloadRequired)
@@ -64,7 +64,7 @@ export class ResponsibilityTypeForm implements OnInit {
         //avoid sending this back to the server
         this.item.AllocationsList = null;
 
-        if (this.id == 0) {
+        if (this.id === 0) {
             this.responsibilityTypeService.postResponsibilityType(this.item)
                 .subscribe((d) => {
                     this.isLoading = false;

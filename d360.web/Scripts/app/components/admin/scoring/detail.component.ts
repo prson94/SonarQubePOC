@@ -102,14 +102,14 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                 this.allocationCopy = _.cloneDeep(this.allocation);
                 this.formatScoreCalc();
                 this.allocation.scoreType = ScoreType[this.allocation.scoreType.toString()];
-                if (this.allocation.scoreType == 2 || res.scoreType.toString() == "DataQuality") {
+                if (this.allocation.scoreType === 2 || res.scoreType.toString() === "DataQuality") {
                     this.metricsService.getRuleResultPathOptions(this.assetTypeUid, res.scoreType).subscribe((options) => {
                         options.forEach((p) => {
                             let processedUids: string[] = [];
                             let html: string = p.Path;
                             p.Segments.forEach((s) => {
                                 // Keep track of Uids we already replaced the paths for, so we do not mess up the resulting HTML.
-                                if (processedUids.findIndex((x) => { return x == s.AssetTypeUid; }) == -1) {
+                                if (processedUids.findIndex((x) => { return x === s.AssetTypeUid; }) === -1) {
                                     let segmentPath = s.Path.split('->').join(' > ');
                                     html = html.replace(new RegExp(s.Name, 'g'), `<b title="${segmentPath}">${s.Name}</b>`,);
                                     processedUids.push(s.AssetTypeUid);
@@ -123,7 +123,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                         this.screenReferences.paths = options;
                         this.screenReferences = { ...this.screenReferences };
 
-                        this.isMeasureListCommandBarDisabled = !this.allocation.isExternallyCalculated && options.length == 0;
+                        this.isMeasureListCommandBarDisabled = !this.allocation.isExternallyCalculated && options.length === 0;
                     });
                 }
                 else {
@@ -161,8 +161,8 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                     data = data.filter((r) => {
                         return (
                             (r.Predicate.Type !== "InterTypeHierarchy" && r.Predicate.Type !== "IntraTypeHierarchy")
-                            || (r.Predicate.Type == "InterTypeHierarchy" && r.Subject.Uid == this.assetTypeUid)
-                            || (r.Predicate.Type == "IntraTypeHierarchy" && r.Subject.Uid == this.assetTypeUid)
+                            || (r.Predicate.Type === "InterTypeHierarchy" && r.Subject.Uid === this.assetTypeUid)
+                            || (r.Predicate.Type === "IntraTypeHierarchy" && r.Subject.Uid === this.assetTypeUid)
                         );
                     });
 
@@ -225,7 +225,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                     this.headerBreadcrumbService.showBreadcrumb(crumb);
 
                     if (res && res.length > 0) {
-                        const items = res.filter((x) => { return x.uid == this.allocation.uid; });
+                        const items = res.filter((x) => { return x.uid === this.allocation.uid; });
 
                         if (items.length > 0) {
                             this.allocation = items[0];
@@ -304,11 +304,11 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     }
 
     getAsPrecentage(val: number) {
-        if (val == 0)
+        if (val === 0)
             {return '0%';}
         if (!val)
             {return;}
-        if (val == 1)
+        if (val === 1)
             {return '100%';}
         let s = val + '0000';
         s = s.replace('0.', '');
@@ -357,15 +357,15 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         this.formatScoreCalc();
         this.showEdit = false;
 
-        if (this.allocation.scoreType.toString() == 'DataQuality') {
+        if (this.allocation.scoreType.toString() === 'DataQuality') {
             this.secondaryNavService.updateObject('firstTabTitle', 'Data Quality Score');
         }
 
-        if (this.allocation.scoreType.toString() == 'Governance') {
+        if (this.allocation.scoreType.toString() === 'Governance') {
             this.secondaryNavService.updateObject('firstTabTitle', 'Governance Score');
         }
 
-        var needsReroute = this.assetTypeUid != this.allocation.assetTypeUid;
+        var needsReroute = this.assetTypeUid !== this.allocation.assetTypeUid;
         if (needsReroute) {
             var url = SiteUrlHelpers.SITE_URL_ADMIN_ROOT + '/' + SiteUrlHelpers.SITE_URL_ADMIN_SCORING + '/' + this.allocation.assetTypeUid + '/' + this.allocation.uid;
             this.router.navigateByUrl(url);

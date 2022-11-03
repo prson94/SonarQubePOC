@@ -35,7 +35,7 @@ export class TagUsageInfoBox {
     }
 
     showContent(isFromTooltip = false) {
-        if (this.uid != this.loadedUid)
+        if (this.uid !== this.loadedUid)
             {this.load();}
 
         if (isFromTooltip)

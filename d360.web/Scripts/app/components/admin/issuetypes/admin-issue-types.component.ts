@@ -156,7 +156,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
                 if (result) {
                     this.showMessageForApiResponse(this.messagesService, result);
                     if (result.Success) {
-                        this.issueTypes = this.issueTypes.filter((x) => x.Uid != uid);
+                        this.issueTypes = this.issueTypes.filter((x) => x.Uid !== uid);
                     }
                     this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
                 }

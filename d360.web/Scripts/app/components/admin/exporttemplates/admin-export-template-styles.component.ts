@@ -98,7 +98,7 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
     }
 
     isPivot(): boolean {
-        return (this.exportViewType && this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot]);
+        return (this.exportViewType && this.exportViewType.toString() === String(ExportViewType[ExportViewType.Pivot]));
     }
 
     ngOnInit(): void {
@@ -108,10 +108,10 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
     canAdd(): boolean {
         var retval = false;
         if (this.exportViewType) {
-            if (this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot])
+            if (this.exportViewType.toString() === String(ExportViewType[ExportViewType.Pivot]))
                 {retval = true;}
-            else if ((this.exportViewType.toString() == ExportViewType[ExportViewType.Grouped] || this.exportViewType.toString() == ExportViewType[ExportViewType.None])
-                && (this.styleRules == null || this.styleRules.length == 0))
+            else if ((this.exportViewType.toString() === String(ExportViewType[ExportViewType.Grouped]) || this.exportViewType.toString() === String(ExportViewType[ExportViewType.None]))
+                && (this.styleRules == null || this.styleRules.length === 0))
                 {retval = true;}
         }
         return retval;
@@ -143,13 +143,13 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
 
     private load() {
         this.isLoading = true;
-        if (!this.templateId || this.templateId == 0) {
+        if (!this.templateId || this.templateId === 0) {
             this.isLoading = false;
             return;
         }
         this.exportTemplateService.getExportTemplateStyles(this.templateId).subscribe((result) => {
-            if (this.exportViewType != ExportViewType.Pivot)
-                {this.styleRules = result.filter((x) => x.Column == -1);}
+            if (this.exportViewType !== ExportViewType.Pivot)
+                {this.styleRules = result.filter((x) => x.Column === -1);}
             else
                 {this.styleRules = result;}
             this.isLoading = false;

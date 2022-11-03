@@ -132,7 +132,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.ShowHomeBoardTile = this.getBooleanSetting(CompanySettingEnum.ShowHomeBoardTile);
         this.companySettings.ShowHomePageTitle = this.getBooleanSetting(CompanySettingEnum.ShowHomePageTitle);
         this.companySettings.SiteNav.forEach((s) => {
-            s.IsCustom = (s.Name.indexOf('#') != 0);
+            s.IsCustom = (s.Name.indexOf('#') !== 0);
         });
         this.companySettings.WorkflowCatchAllGroup = this.getNumberSetting(CompanySettingEnum.WorkflowCatchAllGroup);
         this.companySettings.WorkflowDigestEmailDays = this.getNumberSetting(CompanySettingEnum.WorkflowDigestEmailDays);

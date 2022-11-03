@@ -74,7 +74,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     deleteRuleType(uid: string) {
         this.assetTypeService.deleteSingleAssetType(uid).subscribe((result) => {
             this.showDelete = false;
-            if (result.type != "error") {
+            if (result.type !== "error") {
                 result.title = $localize`Success` + "!";
                 this.showMessageForResult(this.messagesService, result, $localize`Item successfully removed` + ".");
                 this.ruleTypes = this.ruleTypes.filter((x) => x.uid !== uid);
@@ -106,7 +106,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     }
 
     protected showHideBreadcrumbItem(activatedItem: SecondaryNavItem) {
-        if (activatedItem.tag == "dimensions") {
+        if (activatedItem.tag === "dimensions") {
             this.isDimensionsVisible = !this.isDimensionsVisible;
         }
     }
