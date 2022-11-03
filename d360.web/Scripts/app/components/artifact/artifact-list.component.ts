@@ -98,7 +98,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 				let folderName: string = '#Business';
 				this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 
-				if (artifactType.Class == AssetTypeClass.TechnicalAsset) {
+				if (artifactType.Class === AssetTypeClass.TechnicalAsset) {
 					folderName = '#Technical';
 					this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
 				}

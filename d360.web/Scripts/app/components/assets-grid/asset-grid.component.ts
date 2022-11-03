@@ -315,7 +315,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             (result) => {
                 let statusField;
 
-                this.columns = result.Columns.filter((x) => x.datafield != 'Name');
+                this.columns = result.Columns.filter((x) => x.datafield !== 'Name');
                 this.filtercolumns = result.FilterColumns;
                 this.fields = result.Fields;
                 this.topLevelFilters = result.TopLevelFilterColumns;
@@ -325,14 +325,14 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     this.hasProfilingChange.emit(this.hasProfiling);
                 }
 
-                statusField = this.fields.find((x) => x.apiName != null && x.apiName.toLowerCase() == "status");
+                statusField = this.fields.find((x) => x.apiName != null && x.apiName.toLowerCase() === "status");
 
                 if (statusField != null) {
                     this.showCertificationStatus = true;
                     this.certificationStatusIndex = statusField.apiName;
                 }
 
-                if (result.Columns && result.Columns.length == 0) {
+                if (result.Columns && result.Columns.length === 0) {
                     this.hasNoListableColumns = true;
                 }
                 else {
@@ -355,14 +355,14 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     getFieldAPINameByOldName(oldname: string) {
-        return this.fields.find((x) => x.name == oldname).apiName;
+        return this.fields.find((x) => x.name === oldname).apiName;
     }
 
 	_oldParamsJSON: string = '';
     getParams() {
         let autoDisplayParentSetting = this.gridObject.AutoDisplayParent === null ? true : this.gridObject.AutoDisplayParent;
         var params = new V2ApiFilters();
-        params._includeParent = this.gridObject.ObjectType == StringConstants.ObjectArtifactType ? autoDisplayParentSetting : true;
+        params._includeParent = this.gridObject.ObjectType === StringConstants.ObjectArtifactType ? autoDisplayParentSetting : true;
         params._loadPermissionDetails = true;
         params._pageSize = this.rowsPerPage;
         params._pageNum = this.stateService.artifactTypeFilters.currentPageNumber + 1;
@@ -378,8 +378,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             delete params['_order'];
         }
 
-        if (this.stateService.artifactTypeFilters.sortOrder != SortOrder.None)
-            {params._direction = this.stateService.artifactTypeFilters.sortOrder == SortOrder.Ascending ? "asc" : "desc";}
+        if (this.stateService.artifactTypeFilters.sortOrder !== SortOrder.None)
+            {params._direction = this.stateService.artifactTypeFilters.sortOrder === SortOrder.Ascending ? "asc" : "desc";}
         else {
             delete params['_direction'];
         }
@@ -515,7 +515,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 this.statusHasColor = this.items.filter((x) => {
                     let foundColorToken = false;
                     for (var prop in x) {
-                        if (Object.prototype.hasOwnProperty.call(x, prop) && prop.toLowerCase() == "status") {
+                        if (Object.prototype.hasOwnProperty.call(x, prop) && prop.toLowerCase() === "status") {
                             if ((x[prop] + "").indexOf('"name":') > -1 && (x[prop] + "").indexOf('"color":') > -1) {
 
                                 foundColorToken = true;
@@ -550,7 +550,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     getCertificationStatusColor(status: string) {
         status = status.toLowerCase().trim();
-        if (this.statusHasColor != true) {
+        if (this.statusHasColor !== true) {
             switch (status) {
                 case 'draft':
                     return '#BBBBBB';
@@ -658,10 +658,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     selectArtifact($event, artifact) {
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
             .subscribe((res) => {
-                if (this.gridObject.ObjectType == StringConstants.ObjectArtifactType) {
+                if (this.gridObject.ObjectType === StringConstants.ObjectArtifactType) {
 					this.itemUrl = SiteUrlHelpers.getAssetUrl(artifact.AssetUid);
                 }
-                else if (this.gridObject.ObjectType == StringConstants.ObjectRuleType) {
+                else if (this.gridObject.ObjectType === StringConstants.ObjectRuleType) {
 					this.itemUrl = SiteUrlHelpers.getAssetUrl(artifact.AssetUid);
                 }
                 else {
@@ -698,7 +698,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value  
         this.stateService.artifactTypeFilters.sortOrder = event.sortOrder;
-        this.stateService.artifactTypeFilters.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.stateService.artifactTypeFilters.sortField = event.sortField == null ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.stateService.artifactTypeFilters.currentPageNumber = event.first / event.rows;
         this.getData();
@@ -728,10 +728,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
             .subscribe((res) => {
-				if (this.gridObject.ObjectType == StringConstants.ObjectArtifactType) {
+				if (this.gridObject.ObjectType === StringConstants.ObjectArtifactType) {
 					this.itemUrl = SiteUrlHelpers.getAssetUrl(artifact.AssetUid);
 				}
-				else if (this.gridObject.ObjectType == StringConstants.ObjectRuleType) {
+				else if (this.gridObject.ObjectType === StringConstants.ObjectRuleType) {
 					this.itemUrl = SiteUrlHelpers.getAssetUrl(artifact.AssetUid);
 				}
 				else {
