@@ -40,7 +40,7 @@ export class DropdownDirective implements AfterContentInit {
         var placeholder = this.el.nativeElement.getAttribute("placeholder");
         this.el.nativeElement.tabIndex = -1;
         this.dropdownRef.tabindex = tabIndex;
-        let isPlaceholderSet = !(placeholder == undefined || placeholder == null || placeholder == "");
+        let isPlaceholderSet = !(placeholder == null || placeholder === "");
 
         if (!isPlaceholderSet) {
             if (this.required == null) {
@@ -56,7 +56,7 @@ export class DropdownDirective implements AfterContentInit {
 
         setInterval(() => {
             if (this.dropdownRef.overlayVisible && this.dropdownRef?.overlay) {
-                if (this.dropdownRef.overlay.className.indexOf("ig-dropdown-overlay") == -1) {
+                if (this.dropdownRef.overlay.className.indexOf("ig-dropdown-overlay") === -1) {
                     this.dropdownRef.overlay.classList.add("ig-dropdown-overlay");
 
                     if (this.ellipsisDirection === "ltr") {
@@ -114,13 +114,13 @@ export class DropdownDirective implements AfterContentInit {
     }
     set igSize(val: string) {
         this._size = val;
-        if (this._size && this._size == "small") {
+        if (this._size && this._size === "small") {
             DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-small");
-        } else if (this._size && this._size == "medium") {
+        } else if (this._size && this._size === "medium") {
             DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-medium");
-        } else if (this._size && this._size == "large") {
+        } else if (this._size && this._size === "large") {
             DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-large");
-        } else if (this._size && this._size == "full") {
+        } else if (this._size && this._size === "full") {
             DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-full");
         }
     }
