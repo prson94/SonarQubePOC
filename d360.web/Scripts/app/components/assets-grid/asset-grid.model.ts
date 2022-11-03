@@ -8,4 +8,7 @@
     Object: string;
     ObjectType: string;
     AssetTypePath: string;
+	IsDescriptionEnabled: boolean;
+	IsDescriptionVisibleByDefault: boolean;
+	DescriptionButtonName: string;
 }

@@ -100,6 +100,15 @@ namespace d360.core.entities
 
 		[JsonIgnore]
 		public int? IssueTypeID { get; set; }
+		
+		[DataMember]
+		public bool IsDescriptionEnabled { get; set; }
+		
+		[DataMember]
+		public bool IsDescriptionVisibleByDefault { get; set; }
+		
+		[DataMember, MaxLength(50, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
+		public string DescriptionButtonName { get; set; }
 	}
 
     public class AssetTypeSuccess

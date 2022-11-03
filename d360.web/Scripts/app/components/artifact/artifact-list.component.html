@@ -12,6 +12,7 @@
               (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
         <as-split-area class="tile tile-detail main-panel">
             <d3s-asset-grid #assetGrid [gridObject]="gridObject"
+                            [assetTypeApiModel]="assetTypeApiModel"
                             (selectedChange)="selectAsset($event)"
                             (hasProfilingChange)="hasProfiling=$event"
                             (showEditorChange)="showEditor=$event"

@@ -255,7 +255,10 @@ namespace d360.web.Controllers
                             },
                             AutoDisplayParent = assetType.AutoDisplayParent,
                             FlowObjectType = assetType.FlowObjectType,
-                            CanEditParent = assetType.CanEditParent
+                            CanEditParent = assetType.CanEditParent,
+                            IsDescriptionEnabled = assetType.IsDescriptionEnabled,
+                            IsDescriptionVisibleByDefault = assetType.IsDescriptionVisibleByDefault,
+                            DescriptionButtonName = assetType.DescriptionButtonName
                         },
                         Tokens = Company.Filter<FieldType>(
                             i => i.AssetTypeID == assetType.ID
@@ -346,7 +349,10 @@ namespace d360.web.Controllers
                             {
                                 PredicateUid = null,
                                 MaximumDepth = 1
-                            }
+                            },
+                            IsDescriptionEnabled = true,
+                            IsDescriptionVisibleByDefault = true,
+                            DescriptionButtonName = "Information"
                         },
                         Tokens = new List<PrimeSelectItem>() { new PrimeSelectItem { label = "Name", value = "{Name}" } }
                     };

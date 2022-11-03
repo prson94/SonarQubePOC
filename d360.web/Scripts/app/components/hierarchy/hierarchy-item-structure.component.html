@@ -7,13 +7,27 @@
               [class.side-panel-close]="!sidePanelOpen"
               (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
         <as-split-area class="tile tile-detail main-panel">
-            <ig-portal-content-provider name="asset-description"
-                                        [template]="description">
+            <ig-portal-content-provider name="asset-description" [template]="description">
                 <ng-template #description>
-                    <d3s-info-tooltip [titleValue]="infoIconHtmlString"
-                                      *ngIf="assetType && assetType.Description && assetType.Description.length > 0">
-                        <div [innerHtml]="assetType.Description | sanitize"></div>
-                    </d3s-info-tooltip>
+                    <div *ngIf="assetTypeApiModel.IsDescriptionEnabled && isDescriptionVisible" class="hierarchy-description"
+                         [innerHTML]="assetTypeApiModel.Description | sanitize">
+                    </div>
+                </ng-template>
+            </ig-portal-content-provider>
+            <ig-portal-content-provider name="asset-description-button" [template]="descriptionButton">
+                <ng-template #descriptionButton>
+                    <a *ngIf="assetTypeApiModel.Description && assetTypeApiModel.IsDescriptionEnabled"
+                       class="hierarchy-description-button" (click)="setDescriptionVisibility(!isDescriptionVisible)">
+                        <span *ngIf="assetTypeApiModel.DescriptionButtonName; else defaultButtonName">
+                            {{ assetTypeApiModel.DescriptionButtonName }}
+                        </span>
+                        <ng-template #defaultButtonName>
+                            <span i18n>Information</span>
+                        </ng-template>
+                        <i class="fa hierarchy-description-chevron"
+                           [ngClass]="{'fa-chevron-down': !isDescriptionVisible, 'fa-chevron-up': isDescriptionVisible}">
+                        </i>
+                    </a>
                 </ng-template>
             </ig-portal-content-provider>
 
@@ -45,7 +59,7 @@
                              tooltipPosition="left"
                              tooltipStyleClass="ig-tooltip">
                             <button igButton
-									class="ig-button-secondary"
+                                    class="ig-button-secondary"
                                     [disabled]="!canExportRecords() || isExportInProgress"
                                     icon="fa-download"
                                     [loading]="isExportInProgress"
@@ -300,7 +314,7 @@
                             <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
                         </ng-container>
                     </ng-container>
-                </ng-container>                
+                </ng-container>
             </side-panel>
         </as-split-area>
     </as-split>

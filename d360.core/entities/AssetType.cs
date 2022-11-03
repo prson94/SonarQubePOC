@@ -76,6 +76,15 @@ namespace d360.core.entities
 
 		[DataMember]
 		public bool? CanEditParent { get; set; }
+		
+		[DataMember]
+		public bool IsDescriptionEnabled { get; set; }
+		
+		[DataMember]
+		public bool IsDescriptionVisibleByDefault { get; set; }
+		
+		[DataMember]
+		public string DescriptionButtonName { get; set; }
 	}
 
 	public class AssetTypeBrowserApiViewModel
@@ -185,6 +194,15 @@ namespace d360.core.entities
 					: JsonConvert.DeserializeObject<List<AssetTypeLevelApiViewModel>>(LevelsJson);
 			}
 		}
+
+		[DataMember]
+		public bool IsDescriptionEnabled { get; set; }
+		
+		[DataMember]
+		public bool IsDescriptionVisibleByDefault { get; set; }
+		
+		[DataMember]
+		public string DescriptionButtonName { get; set; }
 	}
 
 	public class AssetTypeSelectApiModel

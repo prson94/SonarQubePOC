@@ -45,6 +45,8 @@ import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-
 import { FeatureFlags, FeatureFlagsService } from "../../services/featureflags.service";
 import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
 import { LinkClickInterceptor } from "../../services/href-click-service";
+import { AssetTypeApiModel } from "../../models/asset.model";
+import { LocalStorageKey } from "../../enums/localstorage.enum";
 
 @Component({
     selector: "d3s-asset-grid",
@@ -58,6 +60,7 @@ import { LinkClickInterceptor } from "../../services/href-click-service";
 })
 
 export class AssetGridComponent extends BaseComponent implements OnChanges, OnDestroy {
+    @Input() assetTypeApiModel: AssetTypeApiModel;
     @Input() rowID: string = 'ObjectID';
     @Input() gridObject: AssetGridObject;
     @Output() selectedChange = new EventEmitter();
@@ -132,6 +135,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     isDebugMode: boolean = false;
     initialLoadInterval: any;
     destroy = new Subject<void>();
+	isDescriptionVisible: boolean = false;
 
     get exportTooltip(): string {
         return this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
@@ -276,11 +280,29 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     load() {
+        const descriptionVisibilitySavedState = localStorage.getItem(
+            `${LocalStorageKey.IsAssetTypeDescriptionVisible}_${this.assetTypeApiModel.uid}`
+        );
+
+        if (descriptionVisibilitySavedState !== null) {
+            this.isDescriptionVisible = JSON.parse(descriptionVisibilitySavedState);
+        } else {
+            this.isDescriptionVisible = this.assetTypeApiModel.IsDescriptionVisibleByDefault;
+        }
+
         this
             .loadPermissions(this.permissionsService, this.gridObject.ObjectType, this.gridObject.ID)
             .then(() => this.changeDetectorRef.markForCheck());
 
         this.getFieldsDefinition();
+    }
+
+    setDescriptionVisibility(state: boolean): void {
+        this.isDescriptionVisible = state;
+        localStorage.setItem(
+            `${LocalStorageKey.IsAssetTypeDescriptionVisible}_${this.assetTypeApiModel.uid}`,
+            state.toString()
+        );
     }
 
     public filterGridData(dt: Table) {

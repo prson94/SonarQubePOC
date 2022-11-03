@@ -133,6 +133,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 if (this.model.AssetType.ParentUid !== null) {
                     this.originalParentUid = this.model.AssetType.ParentUid;
                 }
+                if (this.model.AssetType.DescriptionButtonName === null) {
+                    this.model.AssetType.DescriptionButtonName = $localize `Information`;
+                }
                 this.isLoading = false;
             });
     }

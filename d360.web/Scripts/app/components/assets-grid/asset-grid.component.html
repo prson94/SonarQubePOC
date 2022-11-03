@@ -1,9 +1,25 @@
 <d3s-loading [isLoading]="isEditing || !isDefinitionLoaded"></d3s-loading>
 <ig-portal-content-provider name="asset-description" [template]="description">
     <ng-template #description>
-        <d3s-info-tooltip [titleValue]="infoIconHtmlString" *ngIf="isDefinitionLoaded && gridObject && gridObject.Description">
-            <div [innerHtml]="gridObject.Description | sanitize"></div>
-        </d3s-info-tooltip>
+        <div *ngIf="assetTypeApiModel.IsDescriptionEnabled && isDescriptionVisible" class="asset-description"
+             [innerHTML]="assetTypeApiModel.Description | sanitize">
+        </div>
+    </ng-template>
+</ig-portal-content-provider>
+<ig-portal-content-provider name="asset-description-button" [template]="descriptionButton">
+    <ng-template #descriptionButton>
+        <a *ngIf="assetTypeApiModel.Description && assetTypeApiModel.IsDescriptionEnabled"
+           class="asset-description-button" (click)="setDescriptionVisibility(!isDescriptionVisible)">
+            <span *ngIf="assetTypeApiModel.DescriptionButtonName; else defaultButtonName">
+                {{ assetTypeApiModel.DescriptionButtonName }}
+            </span>
+            <ng-template #defaultButtonName>
+                <span i18n>Information</span>
+            </ng-template>
+            <i class="fa asset-description-chevron"
+               [ngClass]="{'fa-chevron-down': !isDescriptionVisible, 'fa-chevron-up': isDescriptionVisible}">
+            </i>
+        </a>
     </ng-template>
 </ig-portal-content-provider>
 

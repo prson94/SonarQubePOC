@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.AssetType-v6">
+  <changeSet author="ALadchenko" id="Table.dbo.AssetType-v7">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -82,7 +82,16 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
 				, GETDATE(), 0, GETDATE(), 0
 				, NULL, '00000001-0000-0000-0000-B00000000014')
 		END
-		]]>
+		
+	  IF COL_LENGTH('dbo.AssetType', 'IsDescriptionEnabled') IS NULL
+	  BEGIN
+		 alter table dbo.AssetType
+		 add
+			IsDescriptionEnabled bit default(1) not null,
+			IsDescriptionVisibleByDefault bit default(1) not null,
+			DescriptionButtonName varchar(50) null
+	  END
+	  ]]>
     </sql>
 	<rollback>
 		<![CDATA[]]>
