@@ -29,7 +29,7 @@
                     <ul>
                         <li><b i18n>Build Version:</b> {{environment.version}}</li>
                         <li><b i18n>Build Date:</b>&nbsp;<span *ngIf="environment.timeStamp !== $any('{BUILD_TIMESTAMP}')">{{environment.timeStamp | date:'short'}}</span></li>
-                        <li><b i18n>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
+                        <li><b i18n>Support:</b> <a href="https://support.precisely.com" target="_blank">https://support.precisely.com</a></li>
                         <li><a class="thirdPartyLicence" (click)="showThirdparty()" i18n>Third Party Licenses</a></li>
                         <li><b i18n>Usage information:</b> <br /></li>
                         <ul class="licence-info" *ngIf="licenceData">
