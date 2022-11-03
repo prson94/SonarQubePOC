@@ -105,7 +105,7 @@ END
 	</rollback>
   </changeSet> 
 
-	<changeSet author="Quinlivan/Pappas/TDuric/PuneetGupta" id="Table.dbo.Field-v4" runInTransaction="false">
+	<changeSet author="Quinlivan/Pappas/TDuric/PuneetGupta" id="Table.dbo.Field-v5" runInTransaction="false">
 		<sql dbms="mssql"
 				endDelimiter="\nGO"
 				splitStatements="true"
@@ -138,7 +138,7 @@ END
 				where	ix.name = 'IX_Field_FieldTypeIDAssetID_Include'
 						and tab.name = 'Field'
 						and ixc.is_included_column = 1
-				if (@count <> 2)
+				if (@count <> 1)
 				begin
 					DROP INDEX IF EXISTS [IX_Field_FieldTypeIDAssetID_Include] ON [dbo].[Field]
 				end
@@ -227,19 +227,19 @@ END
 					create index [IX_Field_FieldTypeIdIssueID] on [dbo].[Field](FieldTypeID, IssueID)
 				end
 				
-				if not exists (select * from sys.indexes where Name = 'IX_Field_AssetIDFieldTypeID_Include')
+				if not exists (select * from sys.indexes where Name = 'IX_Field_AssetID')
 				begin
-					CREATE NONCLUSTERED INDEX [IX_Field_AssetIDFieldTypeID_Include] ON [dbo].[Field] ([AssetID] ASC, [FieldTypeID] ASC) INCLUDE([FormattedValue])
+					CREATE NONCLUSTERED INDEX [IX_Field_AssetID] ON [dbo].[Field] ([AssetID] ASC)
 				end
 				
-				if not exists (select * from sys.indexes where Name = 'IX_Field_IntersectIDFieldTypeId')
+				if not exists (select * from sys.indexes where Name = 'IX_Field_IntersectID')
 				begin
-					create index [IX_Field_IntersectIDFieldTypeId] on [dbo].[Field](IntersectID, FieldTypeID)
+					CREATE NONCLUSTERED INDEX [IX_Field_IntersectID] ON [dbo].[Field] ([IntersectID] ASC)
 				end
 
-				if not exists (select * from sys.indexes where Name = 'IX_Field_IssueIDFieldTypeId')
+				if not exists (select * from sys.indexes where Name = 'IX_Field_IssueID')
 				begin
-					create index [IX_Field_IssueIDFieldTypeId] on [dbo].[Field](IssueID, FieldTypeID)
+					CREATE NONCLUSTERED INDEX [IX_Field_IssueID] ON [dbo].[Field] ([IssueID] ASC)
 				end
 			END
 			]]>
