@@ -65,11 +65,11 @@ export class GalleryColorPickerComponent implements OnInit {
     }
 
     onColorSelect(color, option) {
-        if(option == 1)
+        if(option === 1)
             {this.selectedColorBasic = color;}
-        if (option == 2)
+        if (option === 2)
             {this.selectedColorCustom = color;}
-        if (option == 3)
+        if (option === 3)
             {this.selectedColorBasic2 = color;}
     }
 

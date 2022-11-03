@@ -102,7 +102,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
             + (this.showBoardTile ? 1 : 0)
             + (this.showActivityTile ? 1 : 0);
 
-        this.colSize = 12.0 / (this.numTiles == 0 ? 1 : this.numTiles);
+        this.colSize = 12.0 / (this.numTiles === 0 ? 1 : this.numTiles);
 
         this.dashboardService.getHomePageDashboards().subscribe(
             (r) => {
