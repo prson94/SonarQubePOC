@@ -70,43 +70,16 @@
             </d3s-score-badge>
         </span>
     </div>
-    <div *ngIf="(items && items.length > 0) || showOnlyMainTab" class="tab-view">
-        <div class="tab-bar-outer">
-            <button *ngIf="showScrollButtons" class="left tab-scroller" (click)="scroll('L')" [ngClass]="{'disabled':disableScrollLeft}" [disabled]="disableScrollLeft">
-                <i class="fa fa-chevron-circle-left"></i>
-            </button>
-            <div #tabScroller class="tab-bar can-overflow" [ngStyle]="{'margin-left.px': showScrollButtons ? 40 : 0,'margin-right.px': showScrollButtons ? 40 : 0}">
-                <button *ngIf="!isScoringScreen"
-                        class="tab"
-                        [ngClass]="{'selected':AllClosed()}"
-                        [igDataCy]="area.tabTitle"
-                        (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">
-                    {{area.tabTitle}}
-                </button>
-                <button class="tab"
-                        title="{{getTitle(item)}}"
-                        [ngClass]="{'selected':item.active}"
-                        [igDataCy]="item.title"
-                        *ngFor="let item of items | genericFilter: filterScoringTabHasNoValue; trackBy: trackById;"
-                        (click)="itemClicked(item);">
-                    {{item.title}}
-                    <span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span>
-                    <span *ngIf="!(item.count== null || item.count== undefined ) && item.title === 'Assets'" class="d3s-icon small-icon primary">{{item.count}}</span>
-                    <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon" [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
-                    <span *ngIf="item.warningMessage" class="sidebar-warning">
-                        <d3s-info-tooltip [style]="'warning'">
-                            <span *ngIf="item.warningMessage == 'GovRoleWarning'" i18n>
-                                You must define your <strong>Governance Role</strong> settings in order to display and set the <strong>Governance Role</strong> property in your diagrams.
-                            </span>
-                        </d3s-info-tooltip>
-                    </span>
-                </button>
-            </div>
-            <button *ngIf="showScrollButtons" class="right tab-scroller" (click)="scroll('R')" [ngClass]="{'disabled':disableScrollRight}" [disabled]="disableScrollRight">
-                <i class="fa fa-chevron-circle-right"></i>
-            </button>
-        </div>
-    </div>
+    <d3s-tabs
+        [items]="items"
+        [showOnlyMainTab]="showOnlyMainTab"
+        [hideMainTab]="false"
+        [area]="area"
+        [isScoringScreen]="isScoringScreen"
+        [searchDetails]="searchDetails"
+        [statistics]="statistics"
+        [emitSecondaryNav]="true">
+    </d3s-tabs>
 </div>
 <d3s-modal [showTitle]="false" additionalClasses="request-cert small-dialog" (onClose)="closeCertifyModal()" [isVisible]="showCertifyModal">
     <div class="content">

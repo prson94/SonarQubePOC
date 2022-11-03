@@ -5,7 +5,6 @@ export class SecondaryNavItem {
     constructor(title?: string, tag?: any, icons?: string[], url?: string, count?: number, priority?: number) {
         if (title) {this.title = title;}
         if (tag) {this.tag = tag;}
-        this.active = false;
         this.icons = icons ? icons : ["fa-share-alt"];
         if (url != undefined) {this.url = url;}
         if (count != undefined) {this.count = count;}
@@ -13,7 +12,6 @@ export class SecondaryNavItem {
     }
     title: string;
     tag: any;
-    active: boolean;
     icons: string[];
     url: string;
     count: number;

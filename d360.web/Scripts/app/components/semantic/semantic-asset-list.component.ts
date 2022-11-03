@@ -153,9 +153,8 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
 				this.secondaryNavService.clearCurrentObject();
 				let disabledBadge = this.isDisabled() ? "[{\"name\":\"Disabled\", \"color\":\"#D7D8DC\"}]" : "";
 				this.secondaryNavService.setCurrentArea(this.semanticType.name, icon, $localize`Definition`, [disabledBadge]);
-				this.secondaryNavService.setLocalHomeUrl(`${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}`);
-				let assetstab = new SecondaryNavItem($localize`Assets`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount, 2);
-				assetstab.active = true;
+				this.secondaryNavService.setLocalHomeUrl(`/${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}`);
+				let assetstab = new SecondaryNavItem($localize`Assets`, null, null, `/${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount, 2);
 				this.secondaryNavService.showItem(assetstab);
 
 				this.secondaryNavService.showHeader(true);

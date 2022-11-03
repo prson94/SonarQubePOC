@@ -273,7 +273,6 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 							this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
 							let diagramTab = new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/assets/${this.assetTypeUid}/diagrams`, null, 7);
                             this.secondaryNavService.showItem(diagramTab);
-                            diagramTab.active = true;
 
 							if (this.auditSidebar) {
 								this.auditSidebar.url = `/assets/${this.assetTypeUid}/log`;

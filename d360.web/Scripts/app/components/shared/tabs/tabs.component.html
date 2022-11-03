@@ -1,0 +1,64 @@
+<div *ngIf="(items && items.length > 0) || (showOnlyMainTab && !hideMainTab)"
+	class="tab-view">
+	<div class="tab-bar-outer">
+		<button *ngIf="showScrollButtons"
+			[ngClass]="{'disabled':disableScrollLeft}"
+			[disabled]="disableScrollLeft"
+			(click)="scroll('L')"
+			class="left tab-scroller">
+			<i class="fa fa-chevron-circle-left"></i>
+		</button>
+		<div #tabScroller
+			[ngStyle]="{'margin-left.px': showScrollButtons ? 40 : 0,'margin-right.px': showScrollButtons ? 40 : 0}"
+			class="tab-bar can-overflow">
+			<button *ngIf="!isScoringScreen && !hideMainTab"
+				[ngClass]="{'selected':AllClosed()}"
+				[igDataCy]="area.tabTitle"
+				(click)="itemClicked({active:false,title:'homeClick', url: 'blank'})"
+				class="tab">
+				{{area.tabTitle}}
+			</button>
+			<button *ngFor="let item of items | genericFilter: isTabVisible; trackBy: trackById;"
+				[ngClass]="{'selected': isTabActive(item)}"
+				[igDataCy]="item.title"
+				(click)="itemClicked(item);"
+				class="tab"
+				title="{{getTitle(item)}}">
+				{{item.title}}
+				<span *ngIf="statistics?.CommentCount && item.title === 'Comments'"
+					class="d3s-icon small-icon primary">
+					{{statistics?.CommentCount}}
+				</span>
+				<span *ngIf="!(item.count== null || item.count== undefined ) && item.title === 'Assets'"
+					class="d3s-icon small-icon primary">
+					{{item.count}}
+				</span>
+				<span *ngIf="statistics?.IssueCount && item.title === 'Actions'"
+					[ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}"
+					class="d3s-icon small-icon">
+					{{statistics?.IssueCount}}
+				</span>
+				<span *ngIf="item.warningMessage"
+					class="sidebar-warning">
+					<d3s-info-tooltip [style]="'warning'">
+						<span *ngIf="item.warningMessage == 'GovRoleWarning'"
+							i18n>
+							You must define your
+							<strong>Governance Role</strong>
+							settings in order to display and set the
+							<strong>Governance Role</strong>
+							property in your diagrams.
+						</span>
+					</d3s-info-tooltip>
+				</span>
+			</button>
+		</div>
+		<button *ngIf="showScrollButtons"
+			[ngClass]="{'disabled':disableScrollRight}"
+			[disabled]="disableScrollRight"
+			(click)="scroll('R')"
+			class="right tab-scroller">
+			<i class="fa fa-chevron-circle-right"></i>
+		</button>
+	</div>
+</div>
