@@ -82,7 +82,7 @@ namespace d360.web.Controllers
 			if (nodes != null)
 			{
 				List<string> toggleVisibilityURLs = new List<string> {
-					"artifact/","policy/","quality/rule","model/"};
+					"assets/"};
 
 				nodes.ForEach(n =>
 				{
