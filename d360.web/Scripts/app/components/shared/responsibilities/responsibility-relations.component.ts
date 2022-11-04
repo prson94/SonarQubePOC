@@ -17,6 +17,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
     @Input() title: string = 'Asset Assignment';
 
+    @Input() showTitle: boolean = true;
     @Input() showAddButton: boolean = true;
     @Input() showEditButton: boolean = true;
     @Input() showDeleteButton: boolean = true;
