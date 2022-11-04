@@ -56,7 +56,7 @@ export class ResourceFollowingTile extends BaseComponent implements OnChanges {
     }
 
     isSelected(item: any) {
-        return (item == this.selected);
+        return (item === this.selected);
     }
 
     select(item: any) {
@@ -69,7 +69,7 @@ export class ResourceFollowingTile extends BaseComponent implements OnChanges {
         if (this.resource != null)
             {this.resourceId = this.resource.ResourceID;}
 
-        this.isMe = (this.resourceId == CurrentResourceID);
+        this.isMe = (this.resourceId === CurrentResourceID);
 
         this.resourcesService.getFollowingBreakdownByResource(this.resourceId)
             .subscribe((r) => {

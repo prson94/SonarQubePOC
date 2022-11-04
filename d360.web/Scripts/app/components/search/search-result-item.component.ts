@@ -98,7 +98,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     private navigateVisualization() {
-        let url = (this.result.Group == 'Diagram Asset') ? this.result.Url : `/asset/${this.result.Uid}/diagrams`;
+        let url = (this.result.Group === 'Diagram Asset') ? this.result.Url : `/asset/${this.result.Uid}/diagrams`;
         this.router.navigateByUrl(url);
     }
 
@@ -142,7 +142,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
                     break;
                 case 'boolean':
                     if (!forTitle) {
-                        if (field.Value == 'True')
+                        if (field.Value === 'True')
                             {val = '<i class="fa fa-check enabled"></i>';}
                         else
                             {val = '<i class="fa fa-times disabled"></i>';}
