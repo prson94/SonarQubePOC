@@ -519,7 +519,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 let name = "";
 
 
-                if (parts.length == 2) {
+                if (parts.length === 2) {
                     name = parts[0];
                     url = parts[1];
                 } else if (field.Value) {
@@ -573,7 +573,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                         field.Value.push(item.Value);
                     }
 
-                    if (field.Value.length == 0) {
+                    if (field.Value.length === 0) {
                         field.Value = null;
                     }
                 } else if (field.FieldType === "Lookup" && field.Value) {
@@ -617,7 +617,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                         }
 
                         var minParts = vals[0].split('=');
-                        if (minParts.length == 2) {
+                        if (minParts.length === 2) {
                             minLen = +minParts[1];
 
                             if (minLen > 1) {
@@ -700,7 +700,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         //adjust any dates to utc
         for (var p in this.form.value) {
             if (this.form.value.hasOwnProperty(p)) {
-                let field = this.fields.find((f) => f.FieldName == p);
+                let field = this.fields.find((f) => f.FieldName === p);
 
                 if (field === null || typeof field === "undefined") {
                     continue;

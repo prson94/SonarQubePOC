@@ -53,7 +53,7 @@ export class AssetTypeEditorUseAsTransformationComponent extends BaseComponent i
     }
 
     IsTransformPredicateExists() {
-        if (this.assetTypeId != undefined && this.assetTypeId != 0) {
+        if (this.assetTypeId != null && this.assetTypeId !== 0) {
             this.relationshipsService.IsTransformPredicateExists(this.assetTypeId).subscribe((res) => {
                 if (res) {
                     setTimeout(() => {

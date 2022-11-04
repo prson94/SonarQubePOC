@@ -309,7 +309,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     selectMatch(event: any, matchType: string) {
         let selectedAssets = event;
         this.multipleItemsSelected = false;
-        if (selectedAssets && selectedAssets.length == 1) {
+        if (selectedAssets && selectedAssets.length === 1) {
             //only reload side panel if selection has changed. 
             if (this.selection !== selectedAssets[0]) {
                 this.selection = selectedAssets[0];
@@ -348,7 +348,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     }
 
     private changeMatchAsset(event: any) {
-        if (event.assetUid != this.assetUid) {
+        if (event.assetUid !== this.assetUid) {
             this.similarAdvancedFilter = '';
             this.duplicateAdvancedFilter = '';
         }
