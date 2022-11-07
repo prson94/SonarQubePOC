@@ -28,7 +28,8 @@ import { TabsModule } from '../../shared/tabs/tabs.module';
 import { ConfigurationAssetTypeTabsComponent } from './tabs/shared/configuration-asset-type-tabs/asset-type-tabs.component';
 import { ConfigurationAssetTypeOwnersPageComponent } from './tabs/owners/configuration-asset-type-owners-page.component';
 import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
-
+import { ConfigurationAssetTypeAllocationsPageComponent } from './tabs/allocations/configuration-asset-type-allocations-page.component';
+import { AdminModule } from '../admin.module';
 
 @NgModule({
     imports: [
@@ -47,7 +48,8 @@ import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shar
         SharedFieldDefinitionModule,
         PageHeaderModule,
         TabsModule,
-        SharedResponsibilitiesModule
+        SharedResponsibilitiesModule,
+        AdminModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
@@ -60,7 +62,8 @@ import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shar
         ConfigurationAssetTypeFieldsPageComponent,
         ConfigurationAssetTypeHeaderComponent,
         ConfigurationAssetTypeTabsComponent,
-        ConfigurationAssetTypeOwnersPageComponent
+        ConfigurationAssetTypeOwnersPageComponent,
+        ConfigurationAssetTypeAllocationsPageComponent
     ],
     exports: [],
 })

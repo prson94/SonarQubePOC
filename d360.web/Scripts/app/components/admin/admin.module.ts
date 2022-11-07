@@ -29,7 +29,6 @@ import { SimpleAccordionModule } from "../shared/simple-accordion.part";
 import { DialogModule } from 'primeng/dialog';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DirectivesModule } from '../../directives/directives.module';
-import { AssetTypeConfigurationModule } from './asset-type-configuration/asset-type-configuration.module';
 
 
 @NgModule({

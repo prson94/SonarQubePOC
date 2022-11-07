@@ -8,6 +8,7 @@ import { ConfigurationAssetTypeEditorPageComponent } from './edit/configuration-
 import { ConfigurationAssetTypeDeletePageComponent } from './delete/configuration-asset-type-delete-page.component';
 import { ConfigurationAssetTypeFieldsPageComponent } from './tabs/fields/configuration-asset-type-fields-page.component';
 import { ConfigurationAssetTypeOwnersPageComponent } from './tabs/owners/configuration-asset-type-owners-page.component';
+import { ConfigurationAssetTypeAllocationsPageComponent } from './tabs/allocations/configuration-asset-type-allocations-page.component';
 
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
@@ -49,6 +50,14 @@ class WhenCanSeeOwnersGuard extends CanActivateOnlyForAvailableTypeClasses {
     ]
 }
 
+@Injectable({ providedIn: 'root' })
+class WhenCanSeeAllocationsGuard extends CanActivateOnlyForAvailableTypeClasses {
+    protected typeClasses: AssetTypeClass[] = [
+        AssetTypeClass.BusinessAsset,
+        AssetTypeClass.TechnicalAsset
+    ]
+}
+
 export const assetTypeConfigurationRoutes: Routes = [
     {
         path: ':typeClass/new',
@@ -82,8 +91,8 @@ export const assetTypeConfigurationRoutes: Routes = [
     },
     {
         path: ':typeClass/:uid/allocations',
-        component: StubComponent,
-        canActivate: []
+        component: ConfigurationAssetTypeAllocationsPageComponent,
+        canActivate: [WhenCanSeeAllocationsGuard]
     },
     {
         path: ':typeClass/:uid/relationships',
