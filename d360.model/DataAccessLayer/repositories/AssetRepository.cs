@@ -278,6 +278,7 @@ namespace d360.model.DataAccessLayer
 			string profilingCheckSql = "";
 			string profilingCheckFields = "";
 			bool includeProfilingCheck = false;
+			bool useCachedFilters = false;
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -296,7 +297,7 @@ namespace d360.model.DataAccessLayer
 			List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "RefListRelationship" };
 			var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).AsNoTracking().ToList();
 			var fieldTypes = allFieldTypes.Where(f => !hiddenFieldTypes.Contains(f.Type)).ToList();
-			
+
 			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
 			{
 				includeRelationships = true;
@@ -381,6 +382,11 @@ namespace d360.model.DataAccessLayer
 			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includeprofilingcheck"))
 			{
 				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includeprofilingcheck").Value, out includeProfilingCheck);
+			}
+
+			if (queryParams.ToList().Any(k => k.Key.ToLower() == "usecachedfilters"))
+			{
+				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "usecachedfilters").Value, out useCachedFilters);
 			}
 
 			//check for asset path fields now after include fields have been filtered
@@ -582,7 +588,7 @@ namespace d360.model.DataAccessLayer
 							inner join [Asset] B on B.ID = I.SubjectAssetID 
 							where ids.[AssetTypeID] =  @assetTypeID and ids.[ObjType] = 'O'
 							and ids.isRefList = 0 
-							{(IsApplyObjectFilter  ? " and I.ObjectAssetID = @ObjAssetID" : "")}
+							{(IsApplyObjectFilter ? " and I.ObjectAssetID = @ObjAssetID" : "")}
 							{(IsApplySubjectFilter && !SubjIsReferenceList ? " and I.SubjectAssetID = @SubjAssetID" : "")}
 
 							insert into #tempInclRela
@@ -1495,9 +1501,9 @@ namespace d360.model.DataAccessLayer
 			}
 
 			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
-			bool containsAnyFilter = 
-				whereSql != "where A.AssetTypeID = @assetTypeID" 
-				|| useSimpleFilterTempTable 
+			bool containsAnyFilter =
+				whereSql != "where A.AssetTypeID = @assetTypeID"
+				|| useSimpleFilterTempTable
 				|| advancedFilterTempTableInfos.TempTableSQL() != String.Empty;
 
 			string GetBaseQuery(bool excludeFilterQueries = false)
@@ -1525,25 +1531,41 @@ namespace d360.model.DataAccessLayer
 
 			if (containsAnyFilter)
 			{
-				var requestHash = assetType.uid + JsonConvert.SerializeObject(
-					queryParams.Where(x=> x.Key != "_pageSize" && x.Key != "_pageNum").OrderBy(x=> x.Key));
+				string requestHash = null;
+
+				if (useCachedFilters)
+				{
+					requestHash = assetType.uid + JsonConvert.SerializeObject(
+						queryParams.Where(x => x.Key != "_pageSize" && x.Key != "_pageNum").OrderBy(x => x.Key))
+						.GetD3sHashString();
+				}
+
+				dbArgs.Add("requestHash", requestHash);
 
 				filteredResultsTempTable = @$"
-				drop table if exists #filtered_results
-				create table #filtered_results (AssetId int)
+					drop table if exists #filtered_results
+					create table #filtered_results (AssetId int)
 
-				insert into #filtered_results
-				{GetBaseQuery()}";
+					--procedure that will insert data into #filtered_results if there are cached results for user & request
+					exec CachedAssetFiltersProvider 'FETCH', @userId, @requesthash
+		
+					IF((SELECT count(*) FROM #filtered_results)=0)
+					begin
+						{advancedFilterTempTableInfos.TempTableSQL()}
+				
+						{simpleFiltersTempTablesQuery}
+
+						insert into #filtered_results
+						{GetBaseQuery()}
+
+						exec CachedAssetFiltersProvider 'SET', @userId,@requesthash
+					end";
 			}
 
 			var baseSQL = $@"
 				{TempTableScriptStr}
 
 				{tempincludeRelationships}
-
-				{advancedFilterTempTableInfos.TempTableSQL()}
-				
-				{simpleFiltersTempTablesQuery}
 				
 				{filteredResultsTempTable}
 				
@@ -1679,7 +1701,7 @@ namespace d360.model.DataAccessLayer
 					{
 						var fields = fieldTypes.Where(x => x.Type == "Number" || x.Type == "Decimal").ToList();
 
-						foreach(var field in fields)
+						foreach (var field in fields)
 						{
 							var data = (IDictionary<string, object>)result;
 
@@ -1699,7 +1721,7 @@ namespace d360.model.DataAccessLayer
 
 								if (field.Type == "Decimal")
 								{
-									if(decimal.TryParse(data[field.Name].ToString(), out decimal value))
+									if (decimal.TryParse(data[field.Name].ToString(), out decimal value))
 									{
 										data[field.Name] = value;
 									}
@@ -2442,7 +2464,7 @@ namespace d360.model.DataAccessLayer
 											order by Level", new { ObjectId = id }, ApiTimeout).AsQueryable();
 		}
 
-		private bool GetIsListReferenceListType(int AssetTypeID,Guid PreditcateUid)
+		private bool GetIsListReferenceListType(int AssetTypeID, Guid PreditcateUid)
 		{
 
 			return CompanyContext.Query<bool>($@"select it.id
@@ -2465,7 +2487,7 @@ namespace d360.model.DataAccessLayer
 		{
 			return CompanyContext.Query<dynamic>($@"Select A.Id as AssetId,A.AssetTypeId
 											From Asset A
-											WHERE  [Uid]= @AssetUid", new {AssetUid }, ApiTimeout).FirstOrDefault();
+											WHERE  [Uid]= @AssetUid", new { AssetUid }, ApiTimeout).FirstOrDefault();
 		}
 
 
@@ -3056,7 +3078,7 @@ where an.Uid = fam.uid)
 					PredicateType.InterTypeHierarchy;
 
 				intersectType = CompanyContext.Filter<IntersectType>(
-					i => i.ObjectAssetTypeID == assetType.ID && i.Predicate.Type == parentPredicateType, 
+					i => i.ObjectAssetTypeID == assetType.ID && i.Predicate.Type == parentPredicateType,
 					i => i.Predicate
 				).SingleOrDefault();
 
