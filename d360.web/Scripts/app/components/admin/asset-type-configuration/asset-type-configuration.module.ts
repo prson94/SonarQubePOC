@@ -30,6 +30,8 @@ import { ConfigurationAssetTypeOwnersPageComponent } from './tabs/owners/configu
 import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 import { ConfigurationAssetTypeAllocationsPageComponent } from './tabs/allocations/configuration-asset-type-allocations-page.component';
 import { AdminModule } from '../admin.module';
+import { ConfigurationAssetTypeRelationshipsPageComponent } from './tabs/relationships/configuration-asset-type-relationships-page.component';
+import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
 
 @NgModule({
     imports: [
@@ -49,7 +51,8 @@ import { AdminModule } from '../admin.module';
         PageHeaderModule,
         TabsModule,
         SharedResponsibilitiesModule,
-        AdminModule
+        AdminModule,
+        AdminRelationshipEditorModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
@@ -63,7 +66,8 @@ import { AdminModule } from '../admin.module';
         ConfigurationAssetTypeHeaderComponent,
         ConfigurationAssetTypeTabsComponent,
         ConfigurationAssetTypeOwnersPageComponent,
-        ConfigurationAssetTypeAllocationsPageComponent
+        ConfigurationAssetTypeAllocationsPageComponent,
+        ConfigurationAssetTypeRelationshipsPageComponent
     ],
     exports: [],
 })
