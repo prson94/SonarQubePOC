@@ -342,11 +342,12 @@ export class AdvancedFilterFieldCondition {
                     let chevronHtml = "<i class='slim-fa fa fa-chevron-right'></i>";
                     let placeholder = "#chevronPlaceholder";
 
-                    //escape user input, but avoid escaping chevron icons using js replace all method .split(x).join(y)
-                    let arr = value
-                        .map((v: SelectItem) =>
-                            _.escape(v.title.split(chevronHtml).join(placeholder)).split(placeholder).join(chevronHtml)
-                        );
+                    // Escape user input, but avoid escaping chevron icons using js replace all method .split(x).join(y)
+                    
+                    let arr = value.map((v: SelectItem) => _.escape(
+                            v.title.replace(/(<i)(.*?)(i>)/g, placeholder)
+                        ).split(placeholder).join(chevronHtml)
+                    );
 
                     if (arr.length === 1) {
                         return arr[0];
