@@ -28,9 +28,6 @@ export class ConfigurationAssetTypeAllocationsPageComponent {
     }
 
     async loadAssetType(uid: string) {
-        // Note, that we don't set up loading indicator, because in this specific case assetType is not really important
-        // It's used only when we add relationship field definition to show information that user already knows.
-
         if (uid !== this.uid) {
             this.assetType = null;
         }
