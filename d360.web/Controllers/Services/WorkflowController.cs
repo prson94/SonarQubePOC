@@ -1631,6 +1631,7 @@ namespace d360.web.Controllers.Services
 				var @event = new WorkflowEventRegistration
 				{
 					ID = 0,
+					AssetTypeID = omodel.Event.AssetTypeID,
 					Object = omodel.Event.Object,
 					ObjectID = omodel.Event.ObjectID,
 					TypeID = @type.ID,
