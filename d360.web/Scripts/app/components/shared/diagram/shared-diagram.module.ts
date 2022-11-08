@@ -73,11 +73,11 @@ import { SharedResponsibilitiesModule } from '../responsibilities/shared-respons
 import { AssetDetailModule } from '../asset-detail/asset-detail.module';
 import { SidePanelModule } from '../sidepanel/side-panel.module';
 import { AssetEditorModule } from '../asset-editor/asset-editor.module';
-import { AssetTypeDetailModule } from '../asset-type-detail/asset-type-detail.module';
 import { TaggedAssetDetailModule } from '../tagged-assets/tagged-assets-detail.module';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { AddRelationshipModule } from "../relationship-grid/add-relationship.module";
 import { AngularSplitModule } from 'angular-split';
+import { AssetTypeDetailModule } from "../asset-type-detail/asset-type-detail.module";
 
 
 @NgModule({

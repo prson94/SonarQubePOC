@@ -178,3 +178,57 @@ export class AssetCount {
         return tree;
     }
 }
+
+export class AssetTypeModel {
+    Name: string;
+    Description: string;
+    DisplayFormat: string;
+    Uid: string;
+    Icon: string;
+    BackgroundColor: string;
+}
+
+export class BusinessTypeModel extends AssetTypeModel {
+    PredicateToParent: string;
+    AutoDisplayParent?: boolean;
+    EditParent?: boolean;
+    UseAsTransformation: boolean;
+}
+
+export class TechnicalTypeModel extends AssetTypeModel {
+    PredicateToParent: string;
+    AutoDisplayParent?: boolean;
+    EditParent?: boolean;
+    UseAsTransformation: boolean;
+}
+
+export class RuleTypeModel extends AssetTypeModel {
+    Id: number;
+    FlowObjectType?: FlowObjectType;
+}
+
+export class DiagramTypeModel extends AssetTypeModel {
+    Id: number;
+    FlowObjectType?: FlowObjectType;
+}
+
+export class ModelTypeModel extends AssetTypeModel {
+    Id: number;
+    PredicateToParent: string;
+    MaximumDepth: number;
+}
+
+export class PolicyTypeModel extends AssetTypeModel {
+    Id: number;
+    PredicateToParent: string;
+    MaximumDepth: number;
+}
+
+export enum AssetTypeModelClass {
+    BusinessType = "BusinessType",
+    TechnicalType = "TechnicalType",
+    RuleType = "RuleType",
+    DiagramType = "DiagramType",
+    ModelType = "ModelType",
+    PolicyType = "PolicyType"
+}
