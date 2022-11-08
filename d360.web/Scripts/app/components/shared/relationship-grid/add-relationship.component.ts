@@ -93,6 +93,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
 		for (let p in changes) {
 			if ((p === 'isVisible') || (p === 'assetUid' || p === 'assetTypeUid') && this.assetUid && this.assetTypeUid) {
                 this.initialLoad();
+                break;
             }
         }
     }
@@ -147,52 +148,51 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
 			return;
 		}
 
-        this.loadTypesSub = forkJoin(
+        this.loadTypesSub = forkJoin([
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid),
             this.relationshipService.getRelationshipsCountsForAsset(this.assetUid),
             this.assetService.getUIDetailsForAssetUID(this.assetUid)
-        )
-            .subscribe((data) => {
-                this.relationshipTypes = data[0].filter((type) => type.Predicate.Type !== 'Diagram');
-                this.relationshipCounts = data[1];
-                this.assetDetail = data[2];
-                this.relationshipTypesResolvedNames = [];
+        ]).subscribe((data) => {
+            this.relationshipTypes = data[0].filter((type) => type.Predicate.Type !== 'Diagram');
+            this.relationshipCounts = data[1];
+            this.assetDetail = data[2];
+            this.relationshipTypesResolvedNames = [];
 
-                this.relationshipTypes.forEach((type) => {
+            this.relationshipTypes.forEach((type) => {
 
-                    let count: number = 0;
-                    let disabledClass: string = "";
-                    let name: string = "";
-                    let thisCardinality: string = "";
-                    let targetCardinality: string = "";
-                    let rc = this.relationshipCounts.filter((item) => type.Uid.toLocaleLowerCase() === item.IntersectTypeUid.toLocaleLowerCase());
-                    if (rc.length > 0) {
-                        count = rc[0].Count;
-                    }
+                let count: number = 0;
+                let disabledClass: string = "";
+                let name: string = "";
+                let thisCardinality: string = "";
+                let targetCardinality: string = "";
+                let rc = this.relationshipCounts.filter((item) => type.Uid.toLocaleLowerCase() === item.IntersectTypeUid.toLocaleLowerCase());
+                if (rc.length > 0) {
+                    count = rc[0].Count;
+                }
 
-                    if ((type.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase())
-                        || (this.isReference && type.Subject.Name.toLowerCase() === "reference list" && type.Subject.Class.toLowerCase() === "reference")) {
-                        name = type.Predicate.Name + " " + type.Object.Name;
-                        targetCardinality = type.Subject.Cardinality;
-                        thisCardinality = type.Object.Cardinality;
-                        disabledClass = this.setDisabledClassOnConditions(count, thisCardinality, targetCardinality, type);
-                        this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass, perspective: "Subject" });
-                    }
+                if ((type.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase())
+                    || (this.isReference && type.Subject.Name.toLowerCase() === "reference list" && type.Subject.Class.toLowerCase() === "reference")) {
+                    name = type.Predicate.Name + " " + type.Object.Name;
+                    targetCardinality = type.Subject.Cardinality;
+                    thisCardinality = type.Object.Cardinality;
+                    disabledClass = this.setDisabledClassOnConditions(count, thisCardinality, targetCardinality, type);
+                    this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass, perspective: "Subject" });
+                }
 
-                    if ((type.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase())
-                       || (this.isReference && type.Object.Name.toLowerCase() === "reference list" && type.Object.Class.toLowerCase() === "reference")) {
-                        name = type.Predicate.Inverse + " " + type.Subject.Name;
-                        targetCardinality = type.Object.Cardinality;
-                        thisCardinality = type.Subject.Cardinality;
-                        disabledClass = this.setDisabledClassOnConditions(count, thisCardinality, targetCardinality, type);
-                        this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass, perspective: "Object" });
-                    }
+                if ((type.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase())
+                    || (this.isReference && type.Object.Name.toLowerCase() === "reference list" && type.Object.Class.toLowerCase() === "reference")) {
+                    name = type.Predicate.Inverse + " " + type.Subject.Name;
+                    targetCardinality = type.Object.Cardinality;
+                    thisCardinality = type.Subject.Cardinality;
+                    disabledClass = this.setDisabledClassOnConditions(count, thisCardinality, targetCardinality, type);
+                    this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass, perspective: "Object" });
+                }
 
-                });
-                this.relationshipTypesResolvedNames.sort((a, b) => a["name"].localeCompare(b["name"]));
-                this.cdRef.detectChanges();
-                this.currentStep = AddRelationshipStep.SetRelationshipType;
             });
+            this.relationshipTypesResolvedNames.sort((a, b) => a["name"].localeCompare(b["name"]));
+            this.currentStep = AddRelationshipStep.SetRelationshipType;
+            this.cdRef.detectChanges();
+        });
     }
 
     get selectedType(): RelationshipType {
