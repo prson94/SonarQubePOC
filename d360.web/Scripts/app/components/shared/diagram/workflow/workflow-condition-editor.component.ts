@@ -155,7 +155,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.httpFields.forEach((f) => {
                 this.fieldList.push({
                     value: 'HTTPRequest|' + f['@stepId'] + '|' + f['@id'],
-                    label: 'HTTP Request :: ' + f['@label']
+                    label: f["@stepName"] + ' :: ' + f['@label']
                 });
             });
         }
@@ -166,7 +166,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.outputFields.forEach((f) => {
                 this.fieldList.push({
                     value: 'HTTPResponse|' + f.StepId + '|' + f.Id,
-                    label: 'HTTP Response :: ' + f.Name
+                    label: f.StepName + ' :: ' + f.Name
                 });
             });
         }
@@ -303,7 +303,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.selectedType = field['@type'].toLowerCase();
             this.setOperators(field, ConditionFieldType.HttpRequest);
 
-            this.condition['@FieldName'] = 'HTTP Request :: ' + field['@label'];
+			this.condition["@StepName"] = field["@stepName"];
+            this.condition['@FieldName'] = field["@stepName"] + ' :: ' + field['@label'];
             this.condition['@ValueType'] = this.getValueType(this.selectedType);
             this.condition['@VersionStepID'] = field['@stepId'];
             this.condition['@FormInputID'] = field['@id'];
@@ -325,7 +326,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.selectedType = 'text';
             this.setOperators(field, ConditionFieldType.HttpResponse);
 
-            this.condition['@FieldName'] = 'HTTP Response :: ' + field.Name;
+            this.condition['@FieldName'] = field.StepName + ' :: ' + field.Name;
             this.condition['@ValueType'] = this.getValueType(this.selectedType);
             this.condition['@VersionStepID'] = field.StepId;
             this.condition['@FormInputID'] = field.Id;

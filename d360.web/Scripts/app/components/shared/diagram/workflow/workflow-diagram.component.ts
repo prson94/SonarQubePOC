@@ -443,7 +443,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                                     if (outputNode != null && outputNode.settings != null && outputNode.settings.HTTPResponse != null && outputNode.settings.HTTPResponse.Outputs != null) {
                                         let outputField = outputNode.settings.HTTPResponse.Outputs.find((f) => f.Id == field['@FormFieldId']);
                                         if (outputField != null) {
-                                            field['@FormLabel'] = 'HTTP Response :: ' + outputField.Name;
+											field['@FormLabel'] = outputField.StepName + ' :: ' + outputField.Name;
                                         }
                                     }
                                 }
@@ -931,7 +931,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         n.settings.HTTPResponse.Outputs = [n.settings.HTTPResponse.Outputs as any];
                     }
 
-                    n.settings.HTTPResponse.Outputs.forEach((o) => {
+					n.settings.HTTPResponse.Outputs.forEach((o) => {
+						o.StepName = n.name;
                         this.workflowFieldsService.pushOutputField(o);
                     });
                 }
@@ -1068,17 +1069,17 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (condition['@FormInputID'] != null) {
             switch (condition['@FormInputID']) {
                 case 'statusCode':
-                    condition['@FieldName'] = 'HTTP Request :: Status Code';
+					condition['@FieldName'] = (condition["@StepName"] ?? "HTTP Request") + ' :: Status Code';
                     break;
                 case 'responseBody':
-                    condition['@FieldName'] = 'HTTP Request :: Response Body';
+					condition['@FieldName'] = (condition["@StepName"] ?? "HTTP Request") + ' :: Response Body';
                     break;
                 default:
                     let step = this.model.Nodes.find((n) => n.Key == condition['@VersionStepID']);
                     if (step != null) {
                         if (step.SettingsObject != null && step.SettingsObject.settings != null && step.SettingsObject.settings.HTTPResponse != null) {
                             let output = step.SettingsObject.settings.HTTPResponse.Outputs.find((o) => o.Id == condition['@FormInputID']);
-                            condition['@FieldName'] = 'HTTP Response :: ' + output.Name;
+                            condition['@FieldName'] = output.StepName + ' :: ' + output.Name;//here
                         }
                     }
                     break;
@@ -1580,7 +1581,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 break;
             case WorkflowActivityType.HTTPRequest:
                 n.settings.HTTPRequest = e.settings.HTTPRequest;
-                this.workflowFieldsService.pushHttpRequestField({ key: n.key, name: n.name });
+                this.workflowFieldsService.pushHttpRequestField({ key: n.key, name: e.name });
                 break;
             case WorkflowActivityType.HTTPResponse:
                 n.settings.HTTPResponse = e.settings.HTTPResponse;  

@@ -170,7 +170,8 @@ export class HTTPRequestSettings {
 }
 
 export class HTTPResponseOutput {
-    StepId: string;
+	StepId: string;
+	StepName: string;
     Id: string;
     Name: string;
     Type: string = "text";
