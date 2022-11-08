@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Routes, ActivatedRouteSnapshot, RouterStateSnapshot, CanActivate } from '@angular/router';
 
 import { ConfigurationAssetTypeListPageComponent } from './list/configuration-asset-type-list-page.component';
-import { StubComponent } from './stub.compnoent';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { ConfigurationAssetTypeEditorPageComponent } from './edit/configuration-asset-type-editor-page.component';
 import { ConfigurationAssetTypeDeletePageComponent } from './delete/configuration-asset-type-delete-page.component';
@@ -10,6 +9,7 @@ import { ConfigurationAssetTypeFieldsPageComponent } from './tabs/fields/configu
 import { ConfigurationAssetTypeOwnersPageComponent } from './tabs/owners/configuration-asset-type-owners-page.component';
 import { ConfigurationAssetTypeAllocationsPageComponent } from './tabs/allocations/configuration-asset-type-allocations-page.component';
 import { ConfigurationAssetTypeRelationshipsPageComponent } from './tabs/relationships/configuration-asset-type-relationships-page.component';
+import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration-asset-type-log-page.component';
 
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
@@ -67,6 +67,14 @@ class WhenCanSeeRelationshipsGuard extends CanActivateOnlyForAvailableTypeClasse
     ]
 }
 
+@Injectable({ providedIn: 'root' })
+class WhenCanSeeLogGuard extends CanActivateOnlyForAvailableTypeClasses {
+    protected typeClasses: AssetTypeClass[] = [
+        AssetTypeClass.BusinessAsset,
+        AssetTypeClass.TechnicalAsset
+    ]
+}
+
 export const assetTypeConfigurationRoutes: Routes = [
     {
         path: ':typeClass/new',
@@ -110,8 +118,8 @@ export const assetTypeConfigurationRoutes: Routes = [
     },
     {
         path: ':typeClass/:uid/log',
-        component: StubComponent,
-        canActivate: []
+        component: ConfigurationAssetTypeLogPageComponent,
+        canActivate: [WhenCanSeeLogGuard]
     },
     {
         path: ':typeClass',

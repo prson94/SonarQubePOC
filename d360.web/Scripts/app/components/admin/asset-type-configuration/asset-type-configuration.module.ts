@@ -12,7 +12,6 @@ import { AngularSplitModule } from 'angular-split';
 import { AssetTypeListSidePanelWrapperComponent } from './list/asset-type-list-sidepanel-wrapper.component';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
-import { StubComponent } from './stub.compnoent';
 import { D3SSortIconModule } from '../../shared/turbotable-sorticon.component';
 import { assetTypeConfigurationRoutes } from './asset-type-configuration.routes';
 import { AssetTypeListHeaderComponent } from './list/asset-type-list-header.component';
@@ -32,6 +31,8 @@ import { ConfigurationAssetTypeAllocationsPageComponent } from './tabs/allocatio
 import { AdminModule } from '../admin.module';
 import { ConfigurationAssetTypeRelationshipsPageComponent } from './tabs/relationships/configuration-asset-type-relationships-page.component';
 import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
+import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration-asset-type-log-page.component';
+import { AuditModule } from '../../sidebar/audit/audit.module';
 
 @NgModule({
     imports: [
@@ -52,14 +53,14 @@ import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/a
         TabsModule,
         SharedResponsibilitiesModule,
         AdminModule,
-        AdminRelationshipEditorModule
+        AdminRelationshipEditorModule,
+        AuditModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
         ConfigurationAssetTypeListComponent,
         AssetTypeListSidePanelWrapperComponent,
         AssetTypeListHeaderComponent,
-        StubComponent,
         ConfigurationAssetTypeEditorPageComponent,
         ConfigurationAssetTypeDeletePageComponent,
         ConfigurationAssetTypeFieldsPageComponent,
@@ -67,7 +68,8 @@ import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/a
         ConfigurationAssetTypeTabsComponent,
         ConfigurationAssetTypeOwnersPageComponent,
         ConfigurationAssetTypeAllocationsPageComponent,
-        ConfigurationAssetTypeRelationshipsPageComponent
+        ConfigurationAssetTypeRelationshipsPageComponent,
+        ConfigurationAssetTypeLogPageComponent
     ],
     exports: [],
 })

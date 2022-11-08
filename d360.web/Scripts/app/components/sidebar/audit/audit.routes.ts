@@ -1,9 +1,9 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { AuditComponent } from './audit.component';
+import { AuditPageComponent } from './audit-page.component';
 
 const routes: Routes = [
-	{ path: ':uid/log', component: AuditComponent }
+	{ path: ':uid/log', component: AuditPageComponent }
 ];
 
 @NgModule({
