@@ -97,7 +97,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 					}
 					this.resourceId = this.resource["ResourceID"];
 
-                    if (!this.resource || this.resource.State != 'Active') {
+                    if (!this.resource || this.resource.State !== 'Active') {
                         this.isLoading = false;
                         this.pageMode = PageMode.NotFound;
                         return;
@@ -192,7 +192,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
         // handle dynamic fields
         for (let key in e.item) {
-            if (key != 'Email' && key != 'FirstName' && key != 'LastName' && key != 'IsAdministrator' && key != 'State' && key != 'ID' && key != 'Password' && key != 'uid' && key != 'ResourceID' && key != 'LastLoggedInOn') {
+            if (key !== 'Email' && key !== 'FirstName' && key !== 'LastName' && key !== 'IsAdministrator' && key !== 'State' && key !== 'ID' && key !== 'Password' && key !== 'uid' && key !== 'ResourceID' && key !== 'LastLoggedInOn') {
                 user.Fields[key] = e.item[key];
             }
         }
@@ -203,7 +203,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                 (result) => {
                     this.isLoading = false;
                     this.isSavingProcess = false;
-                    if (result.Message == "" && result.Success) {
+                    if (result.Message === "" && result.Success) {
                         result.Message = $localize`Info successfully updated.`;
                     }
                     this.showMessageForApiResult(this.messagesService, result, $localize`Info successfully updated.`);

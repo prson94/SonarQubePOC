@@ -77,7 +77,7 @@ export class SearchStateService extends BaseObservableService {
     loadState(term: string, searchCategories: string[], keepFilters: boolean) {
         this._loading.next(true);
         this.reset(keepFilters);
-        this._searchTypes = searchCategories.sort().filter((x, i, a) => !i || x != a[i - 1]);
+        this._searchTypes = searchCategories.sort().filter((x, i, a) => !i || x !== a[i - 1]);
 
         let state = SearchSession.getState(term);
         if (state !== undefined) {
@@ -99,7 +99,7 @@ export class SearchStateService extends BaseObservableService {
             Size: this._query.Size,
             SearchConnector: this._query.SearchConnector,
             SearchTypes: this._searchTypes,
-            CheckTreeKeys: (this._initial || this.selectedFilters == undefined) ? this._checkTreeKeys : this.selectedFilters.map((f) => new SearchCheckTreeVal(f.key, f.type)),
+            CheckTreeKeys: (this._initial || this.selectedFilters == null) ? this._checkTreeKeys : this.selectedFilters.map((f) => new SearchCheckTreeVal(f.key, f.type)),
             AdvancedFilters: this.advancedFilters,
             Querytime: new Date()
         });
@@ -156,7 +156,7 @@ export class SearchStateService extends BaseObservableService {
      * @param resetPage
      */
     search(term: string, resetPage: boolean = false) {
-        if (term != this._query.Term) {
+        if (term !== this._query.Term) {
             this._query.Term = term.substring(0,255);
             this._query.From = 0;
         }
@@ -230,18 +230,18 @@ export class SearchStateService extends BaseObservableService {
         if (categories.length > 0) {
             aggFilters.push(new SearchAggregationFilter({
                 Field: "Category",
-                Values: categories.sort().filter((x, i, a) => !i || x != a[i - 1])
+                Values: categories.sort().filter((x, i, a) => !i || x !== a[i - 1])
             }));
         }
         if (types.length > 0) {
             aggFilters.push(new SearchAggregationFilter({
                 Field: "AssetType",
-                Values: types.sort().filter((x, i, a) => !i || x != a[i - 1])
+                Values: types.sort().filter((x, i, a) => !i || x !== a[i - 1])
             }));
         }
 
         //If there are no search categories, force compareQueries to retrun false
-        let force = this._categories.value.length == 0;
+        let force = this._categories.value.length === 0;
 
         this.AggQuery$.next(new SearchQuery({
             Term: this._query.Term,
@@ -309,7 +309,7 @@ export class SearchStateService extends BaseObservableService {
                     };
                 }));
                 let selectedFilters = [];
-                if (this._checkTreeKeys != undefined && this._checkTreeKeys.length > 0) {
+                if (this._checkTreeKeys != null && this._checkTreeKeys.length > 0) {
                     for (let ctk of this._checkTreeKeys) {
                         let node = this.getNodeWithKey(ctk.key, filterTree);
                         if (node) {
@@ -371,8 +371,8 @@ export class SearchStateService extends BaseObservableService {
      * @param category
      */
     private getDisplayLookup(category: string) {
-        let type = this.searchTypes.find((t) => t.value == category);
-        return (type == undefined) ? category : type.title;
+        let type = this.searchTypes.find((t) => t.value === category);
+        return (type == null) ? category : type.title;
     }
 
     /**
@@ -452,28 +452,28 @@ export class SearchStateService extends BaseObservableService {
     compareQueries(x: SearchQuery, y: SearchQuery): boolean {
         if (y.Force)
             {return false;}
-        if (x.Term != y.Term)
+        if (x.Term !== y.Term)
             {return false;}
-        if (x.Size != y.Size)
+        if (x.Size !== y.Size)
             {return false;}
-        if (x.From != y.From)
+        if (x.From !== y.From)
             {return false;}
-        if (x.Explain != y.Explain)
+        if (x.Explain !== y.Explain)
             {return false;}
         if (x.SearchConnector !== y.SearchConnector) {
             return false;
         }
-        if (x.Aggregations == undefined || y.Aggregations == undefined || x.Aggregations.length != y.Aggregations.length)
+        if (x.Aggregations == null || y.Aggregations == null || x.Aggregations.length !== y.Aggregations.length)
             {return false;}
-        if (JSON.stringify(x.Aggregations) != JSON.stringify(y.Aggregations))
+        if (JSON.stringify(x.Aggregations) !== JSON.stringify(y.Aggregations))
             {return false;}
-        if (x.AggregationFilters == undefined || y.AggregationFilters == undefined || x.AggregationFilters.length != y.AggregationFilters.length)
+        if (x.AggregationFilters == null || y.AggregationFilters == null || x.AggregationFilters.length !== y.AggregationFilters.length)
             {return false;}
-        if (JSON.stringify(x.AggregationFilters) != JSON.stringify(y.AggregationFilters))
+        if (JSON.stringify(x.AggregationFilters) !== JSON.stringify(y.AggregationFilters))
             {return false;}
-        if (x.FieldFilters == undefined || y.FieldFilters == undefined || x.FieldFilters.length != y.FieldFilters.length)
+        if (x.FieldFilters == null || y.FieldFilters == null || x.FieldFilters.length !== y.FieldFilters.length)
             {return false;}
-        if (JSON.stringify(x.FieldFilters) != JSON.stringify(y.FieldFilters)) {
+        if (JSON.stringify(x.FieldFilters) !== JSON.stringify(y.FieldFilters)) {
             return false;
         }
         return true;

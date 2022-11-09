@@ -108,7 +108,7 @@ export class ResourcePasswordComponent extends BaseComponent {
                             .subscribe(
                                 (result) => {
                                     this.isLoading = false;
-                                    if (result.Message == "" && result.Success) {
+                                    if (result.Message === "" && result.Success) {
                                         result.Message = $localize`Password successfully updated...`;
                                     }
                                     this.showMessageForApiResult(this.messagesService, result, $localize`Password successfully updated...`);
@@ -135,12 +135,12 @@ export class ResourcePasswordComponent extends BaseComponent {
         else
             {this.newPasswordValid = true;}
 
-        if (this.newPassword != null && this.newPassword.length > 0 && this.newPassword2 != this.newPassword && this.newPasswordValid)
+        if (this.newPassword != null && this.newPassword.length > 0 && this.newPassword2 !== this.newPassword && this.newPasswordValid)
             {this.newPassword2Match = false;}
         else
             {this.newPassword2Match = true;}
 
-        if (this.newPassword != null && this.newPassword.length > 0 && this.currentPassword == this.newPassword && this.newPasswordValid)
+        if (this.newPassword != null && this.newPassword.length > 0 && this.currentPassword === this.newPassword && this.newPasswordValid)
             {this.SamePasswordMatch = true;}
         else
             {this.SamePasswordMatch = false;}
