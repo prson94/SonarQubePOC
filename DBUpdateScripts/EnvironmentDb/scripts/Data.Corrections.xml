@@ -1907,4 +1907,19 @@ from	[Intersect] I
 	]]>
 	</sql>
   </changeSet>
+
+  <changeSet author="Volodymyr Hlibko" id="Data.Corrections.GOV-20255">
+	<comment>GOV-20255 - Community link from the Documentation menu is invalid</comment>	
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		update HR
+		set HR.Url = 'https://community.precisely.com/home'
+		from dbo.HelpResource HR
+		where HR.Name = 'Community'
+	]]>
+	</sql>
+  </changeSet>
 </databaseChangeLog>

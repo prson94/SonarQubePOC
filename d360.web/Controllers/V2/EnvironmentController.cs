@@ -1047,7 +1047,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetHelpMenuItems()
 		{
-			const string supportUrl = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern";
+			const string supportUrl = "https://community.precisely.com/home";
 			const string aboutUrl = "about";
 			var baseUrl = System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString();
 
