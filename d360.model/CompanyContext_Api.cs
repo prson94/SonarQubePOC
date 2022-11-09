@@ -6717,11 +6717,11 @@ where	T.ExecutionID = @ExecutionID
                                 Connection.Execute($@"
 													delete  T
 													from    [Field] T
-														inner join api.ExecutionDeletedRelationship S on T.ObjectType = 'Intersect' 
-															and S.IntersectID = T.ObjectID 
+														inner join api.ExecutionDeletedRelationship S on T.IntersectId = S.IntersectID
 															and S.ExecutionID = @ExecutionID 
 															and S.ItemNumber between @beginItemNumber and @endItemNumber
-															and S.Success is null;",
+															and S.Success is null
+														where T.IntersectID is not null;",
                                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                 #endregion
