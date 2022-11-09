@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.Deletions-v2">
+  <changeSet author="TKlok" id="Procedure.Deletions-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -106,6 +106,8 @@ GO
 drop procedure if exists [graph].[UpdateAssetNode]
 GO
 drop procedure if exists [graph].[UpdateGraphTableHierarchyBy]
+GO
+drop procedure if exists [graph].[PopulateForwardLineage]
 		]]>
     </sql>
     <rollback>
