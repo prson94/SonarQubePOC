@@ -187,25 +187,31 @@ export class WorkflowFieldsService {
         let f: any;
         let i: number;
 
-        i = this.httpFields.findIndex((f) => f['@stepId'] == step.key && f['@id'] == 'statusCode');
-        if (i == -1) {
-            f = {};
-            f['@stepId'] = step.key;
-            f['@id'] = 'statusCode';
-            f['@label'] = $localize`Status Code`;
-            f['@type'] = 'number';
-            this.httpFields.push(f);
-        }
+		i = this.httpFields.findIndex((f) => f['@stepId'] == step.key && f['@id'] == 'statusCode');		
+		if (i == -1) {
+			f = {};
+			f['@stepName'] = step.name;
+			f['@stepId'] = step.key;
+			f['@id'] = 'statusCode';
+			f['@label'] = $localize`Status Code`;
+			f['@type'] = 'number';
+			this.httpFields.push(f);
+		} else {
+			this.httpFields[i]['@stepName'] = step.name;
+		}
 
         i = this.httpFields.findIndex((f) => f['@stepId'] == step.key && f['@id'] == 'responseBody');
         if (i == -1) {
-            f = {};
+			f = {};
+			f['@stepName'] = step.name;
             f['@stepId'] = step.key;
             f['@id'] = 'responseBody';
             f['@label'] = $localize`Response Body`;
             f['@type'] = 'text';
             this.httpFields.push(f);
-        }
+		} else {
+			this.httpFields[i]['@stepName'] = step.name;
+		}
         this.httpFieldsSource.next(this.httpFields);
     }
 
@@ -283,7 +289,8 @@ export class WorkflowFieldsService {
 
     updateOutputField(field: HTTPResponseOutput) {
         let i = this.outputFields.findIndex((f) => f.Id == field.Id);
-        if (i > -1) {
+		if (i > -1) {
+			this.outputFields[i].StepName = field.StepName;
             this.outputFields[i].Name = field.Name;
             this.outputFields[i].Path = field.Path;
             this.outputFields[i].StepId = field.StepId;

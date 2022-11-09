@@ -112,7 +112,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                 });
 
                 this.httpFields.forEach((f) => {
-                    let label = "HTTP Request :: " + f["@label"];
+					let label = f["@stepName"] + " :: " + f["@label"];
                     this.fields.push({
                         value: "[HTTPREQUEST|" + f["@stepId"] + "|" + f["@id"] + "]",
                         label
@@ -120,7 +120,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                 });
 
                 this.outputFields.forEach((f) => {
-                    let label = "HTTP Response :: " + f.Name;
+					let label = f.StepName + " :: " + f.Name;
                     this.fields.push({
                         value: "[HTTPRESPONSE|" + f.StepId + "|" + f.Id + "]",
                         label
@@ -161,7 +161,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
             let k = upstreamSteps.filter((u) => u === f["@stepId"]);
             if (k != null && k.length > 0) {
                 f["@FormFieldId"] = f["@id"] + "|" + f["@stepId"];
-                f["@FormLabel"] = "HTTP Request :: " + f["@label"];
+                f["@FormLabel"] = f["@stepName"] + " :: " + f["@label"];
                 this.httpFields.push(f);
             }
         });
@@ -181,8 +181,8 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
         fields.forEach((f) => {
             let k = upstreamSteps.filter((u) => u === f.StepId);
             if (k != null && k.length > 0) {
-                f["@FormFieldId"] = f.Id + "|" + f.StepId;
-                f["@FormLabel"] = "HTTP Response :: " + f.Name;
+				f["@FormFieldId"] = f.Id + "|" + f.StepId;
+				f["@FormLabel"] = f.StepName + " :: " + f.Name;
                 this.outputFields.push(f);
             }
         });
