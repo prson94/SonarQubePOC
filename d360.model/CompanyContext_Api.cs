@@ -781,7 +781,7 @@ namespace d360.model
 											from    api.ExecutionGroup EG
 													inner join Asset A on A.Object = 'Group' and A.uid = EG.GroupUid
 													inner join [Group] G on G.id = A.ObjectID
-													inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
+													cross apply GetAssetDisplayValueByID(A.ID) ADV
 											where   EG.ExecutionID = @executionID
 													and EG.ItemNumber between @beginItemNumber and @endItemNumber 
 													and EG.Success is null 
