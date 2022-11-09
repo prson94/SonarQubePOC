@@ -356,45 +356,39 @@ namespace d360.model
 							D.DisplayValue";
 
 		public static readonly string SynonymsByObjectList = @"
-				select	I.ID as IntersectID,
-						S.[Object],
-						S.ObjectID,
-						P.SubjectID as ParentID,
-						dbo.GenerateAssetUrl(SP.ID) as ParentUrl,
-						DP.DisplayValue as ParentName,
-						D.DisplayValue as [Name],
-						ST.[Name] as ObjectTypeName,
-						null as [Description],
-						dbo.GenerateAssetUrl(S.ID) as [Url]       
-						,null as [CustomID]
-						,I.uid as [IntersectUid]
-						,T.uid as [IntersectTypeUid]		
-						,S.uid as [AssetUid]
-						,ST.Uid as [AssetTypeUid]
-						,SP.uid as [ParentAssetUid]
-						,SPT.Uid as [ParentAssetTypeUid]
-				from	[Intersect] I
-						inner join IntersectType T on T.ID = I.IntersectTypeID  and T.PredicateID = @predicateId	
-						inner join Asset S on 
-							S.[Object] = case 
-								when I.[Subject] = @type and I.SubjectID = @id then I.[Object] 
-								else I.[Subject]
-							end
-							and S.ObjectID = case 
-								when I.[Subject] = @type and I.SubjectID = @id then I.ObjectID 
-								else I.SubjectID 
-							end	
-						inner join AssetType ST on ST.ID = S.AssetTypeID
-						inner join AssetDisplayValue D on D.AssetID = S.ID
-						outer apply (
-							select I.* from [Intersect] I
-							inner join IntersectTypeDetail D on D.ObjectAssetTypeID = ST.ID and PredicateType = 3
-							where I.IntersectTypeID = D.ID and I.ObjectID = S.ObjectID and I.[Object] = S.[Object]
-						) P
-						left join Asset SP on SP.[Object] = P.[Subject] and SP.ObjectID = P.SubjectID
-						left join AssetType SPT on SPT.ID = SP.AssetTypeID
-						inner join AssetDisplayValue DP on DP.AssetID = SP.ID
-				where	(I.Subject = @type and I.SubjectID = @id) or (I.[Object] = @type and I.ObjectID = @id) and I.visible = 1
+				declare @assetId bigint = (select top 1 ID from Asset where Object = @type and ObjectID = @id)
+
+				select I.ID as IntersectID,
+										S.[Object],
+										S.ObjectID,
+										Parent.ID as ParentID,
+										dbo.GenerateAssetUrl(SP.ID) as ParentUrl,
+										DP.DisplayValue as ParentName,
+										D.DisplayValue as [Name],
+										ST.[Name] as ObjectTypeName,
+										null as [Description],
+										dbo.GenerateAssetUrl(S.ID) as [Url]       
+										,null as [CustomID]
+										,I.uid as [IntersectUid]
+										,T.uid as [IntersectTypeUid]		
+										,S.uid as [AssetUid]
+										,ST.Uid as [AssetTypeUid]
+										,SP.uid as [ParentAssetUid]
+										,SPT.Uid as [ParentAssetTypeUid]
+				from [Intersect] I
+				inner join IntersectType T on T.ID = I.IntersectTypeID  and T.PredicateID = @predicateId	
+				inner join Asset S on 
+					S.ID = case 
+						when I.SubjectAssetID = @assetId then I.ObjectAssetID
+						else I.SubjectAssetID
+					end
+				inner join AssetType ST on ST.ID = S.AssetTypeID
+				inner join AssetDisplayValue D on D.AssetID = S.ID
+				outer apply GetParentByAssetID(S.ID)Parent
+				left join Asset SP on SP.ID = Parent.ID
+				left join AssetType SPT on SPT.ID = SP.AssetTypeID
+				left join AssetDisplayValue DP on DP.AssetID = SP.ID
+				where	(I.SubjectAssetID = @assetId or I.ObjectAssetID = @assetId) and I.visible = 1
 				union
 				select 
 					null as IntersectID
