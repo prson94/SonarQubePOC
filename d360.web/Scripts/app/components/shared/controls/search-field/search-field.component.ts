@@ -57,7 +57,7 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
     }
 
     writeValue(obj: any): void {
-        this.value = (obj != undefined && obj != null) ? obj : '';
+        this.value = (obj != null) ? obj : '';
         this.hasValue = this.value !== '';
 
         this.onModelChange(this.value);
@@ -78,7 +78,7 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
     }
 
     isKeypress(): boolean {
-        return (this.mode == 'Keypress');
+        return (this.mode === 'Keypress');
     }
     isEnter(): boolean {
         return !this.isKeypress();
@@ -97,14 +97,14 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
         this.onSearch.emit(this.value);
     }
     onInputKey(event: KeyboardEvent) {
-        if (event.which == 13 && this.isEnter()) {
+        if (event.which === 13 && this.isEnter()) {
             event.preventDefault();
             event.stopImmediatePropagation();
-            if (event.type == 'keydown') {
+            if (event.type === 'keydown') {
                 this.performsearch();
             }
             return false;
-        } else if (event.type == 'keyup' && this.isKeypress()) {
+        } else if (event.type === 'keyup' && this.isKeypress()) {
             this.valueChanged.next(this.value);
         }
     }

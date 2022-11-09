@@ -81,12 +81,12 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
         //event.sortField = Field name to sort with
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
         this.rowsPerPage = event.rows;
-        this.getResults((event.first / event.rows), event.rows, event.sortField, ((event.sortOrder == 1) ? "asc" : "desc"));
+        this.getResults((event.first / event.rows), event.rows, event.sortField, ((event.sortOrder === 1) ? "asc" : "desc"));
     }
 
     getResults(pageNum: number, pageSize: number, sortField: string = null, sortOrder: string = null) {
         if (this.scoreItem) {
-            if (this.scoreItem.ScoreType == ScoreType.DataQuality) {
+            if (this.scoreItem.ScoreType === ScoreType.DataQuality) {
                 this.isLoading = true;
                 if (this.currentSearchPhrase) {
                     this.currentSearchPhrase = this.currentSearchPhrase.replace("&", "");
