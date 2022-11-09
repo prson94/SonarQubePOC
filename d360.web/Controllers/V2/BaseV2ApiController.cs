@@ -20,6 +20,7 @@ using Resources;
 using d360.utils.excel;
 
 using SpreadsheetLight;
+using System.Xml;
 
 namespace d360.web.Controllers.V2
 {
@@ -246,8 +247,8 @@ namespace d360.web.Controllers.V2
 					fieldJoins.Add(sql);
 				}
 				else
-				{					
-					fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {fieldJoinCondition}");										
+				{
+					fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {fieldJoinCondition}");
 				}
 			});
 		}
@@ -846,14 +847,32 @@ namespace d360.web.Controllers.V2
 		}
 		private string getRowFieldValue(dynamic row, int fieldId, string hardCodedName = null)
 		{
+			string rowFieldValue = "";
 			if (fieldId > 0 && string.IsNullOrEmpty(hardCodedName))
 			{
-				return (string)((row as IDictionary<string, object>)[$"Field{fieldId}"]);
+				rowFieldValue = (string)((row as IDictionary<string, object>)[$"Field{fieldId}"]);
 			}
 			else
 			{
-				return (((row as IDictionary<string, object>)[$"{hardCodedName}"]) ?? "").ToString();
+				rowFieldValue = (((row as IDictionary<string, object>)[$"{hardCodedName}"]) ?? "").ToString();
 			}
+
+			rowFieldValue = RemoveInvalidXmlChars(rowFieldValue ?? "");
+
+			const int MaxExcelColumnCharacterLength = 32767;
+
+			if (rowFieldValue.Length > MaxExcelColumnCharacterLength)
+			{
+				rowFieldValue = rowFieldValue.Substring(0, MaxExcelColumnCharacterLength);
+			}
+
+			return rowFieldValue;
+		}
+
+		private string RemoveInvalidXmlChars(string text)
+		{
+			var validXmlChars = text.Where(ch => XmlConvert.IsXmlChar(ch)).ToArray();
+			return new string(validXmlChars);
 		}
 
 		private void SetExcelColumnWidths(SLDocument document, List<FieldType> fields)
