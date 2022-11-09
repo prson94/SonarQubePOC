@@ -88,7 +88,7 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
 		 alter table dbo.AssetType
 		 add
 			IsDescriptionEnabled bit default(1) not null,
-			IsDescriptionVisibleByDefault bit default(1) not null,
+			IsDescriptionVisibleByDefault bit default(0) not null,
 			DescriptionButtonName varchar(50) null
 	  END
 	  ]]>
