@@ -1871,13 +1871,13 @@ namespace d360.web.Controllers
 					sql = @"select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'ArtifactType')                            
-							inner join [Intersect] I on ( (I.Subject = 'Artifact' and ASS.ObjectID = I.SubjectID and I.IntersectTypeID = @intersectTypeId)) 
+							inner join [Intersect] I on I.SubjectAssetID = ASS.ID and I.IntersectTypeID = @intersectTypeId 
 							inner join AssetDisplayValue disp on disp.AssetID = ASS.ID
 							union
 							select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'ArtifactType')     
-							inner join [Intersect] I on ( (I.Object = 'Artifact' and ASS.ObjectID = I.ObjectID and I.IntersectTypeID = @intersectTypeId) ) 
+							inner join [Intersect] I on I.ObjectAssetID = ASS.ID and I.IntersectTypeID = @intersectTypeId) ) 
 							inner join AssetDisplayValue disp on disp.AssetID = ASS.ID
 							order by disp.DisplayValue";
 					break;
@@ -1888,13 +1888,13 @@ namespace d360.web.Controllers
 					sql = $@"select distinct disp.DisplayPath as Name, ASS.ObjectID as ID, '{ty}' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = '{ty}Type')                            
-							inner join [Intersect] I on ( (I.Subject = '{ty}' and ASS.ObjectID = I.SubjectID)) and I.IntersectTypeID = @intersectTypeId
+							inner join [Intersect] I on I.SubjectAssetID = ASS.ID and I.IntersectTypeID = @intersectTypeId
 							inner join AssetPath disp on disp.ID = ASS.ID
 							union
 							select distinct disp.DisplayPath as Name, ASS.ObjectID as ID, '{ty}' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = '{ty}Type')     
-							inner join [Intersect] I on ( (I.Object = '{ty}' and ASS.ObjectID = I.ObjectID) ) and I.IntersectTypeID = @intersectTypeId
+							inner join [Intersect] I on I.ObjectAssetiD = ASS.ID and I.IntersectTypeID = @intersectTypeId
 							inner join AssetPath disp on disp.ID = ASS.ID
 							order by disp.TextPath";
 					break;
@@ -1905,7 +1905,7 @@ namespace d360.web.Controllers
 							from Asset A 
 							inner join AssetType AST on AST.ID = A.AssetTypeID
 							inner join AssetDisplayValue AD on AD.AssetID =A.ID
-							inner join [Intersect] I on  ( (I.Subject = 'ReferenceItem' and A.ObjectID = I.SubjectID) OR (I.Object = 'ReferenceItem' and A.ObjectID = I.ObjectID) ) 
+							inner join [Intersect] I on I.SubjectAssetID = A.ID OR I.ObjectAssetID = A.ID 
 							where AST.ObjectID= @id and AST.[Object]='ReferenceItemType' and I.IntersectTypeID = @intersectTypeId
 							order by AD.DisplayValue";
 					}
@@ -1918,7 +1918,8 @@ namespace d360.web.Controllers
 				case SystemObjects.ResourceType:
 					sql = @"select distinct A.LastName + ', ' + A.FirstName as Name, A.ResourceID as ID, 'Resource' as [Type] , A.Uid
 							from reporting.Global_Resource A 
-							inner join [Intersect] I on ( (I.Subject = 'Resource' and A.ResourceID = I.SubjectID) OR (I.Object = 'Resource' and A.ResourceID = I.ObjectID) ) 
+							inner join Asset RA on RA.Object = 'Resource' and RA.ObjectID = A.ResourceID
+							inner join [Intersect] I on I.SubjectAssetID = RA.ID OR I.ObjectAssetID = RA.ID  
 							where I.IntersectTypeID = @intersectTypeId
 							order by 1";
 					break;
@@ -1926,24 +1927,24 @@ namespace d360.web.Controllers
 				case SystemObjects.Rule:
 					sql = @"select distinct D.DisplayValue as Name, D.ObjectID as ID, D.Object as [Type], D.Uid
 							from AssetDetail D
-							inner join [Intersect] I on D.Object = 'Rule' and D.TypeID = @id and (I.Subject = 'Rule' and A.ID = I.SubjectID) and I.IntersectTypeID = @intersectTypeId
+							inner join [Intersect] I on D.TypeID = @id and I.SubjectAssetID = D.ID and I.IntersectTypeID = @intersectTypeId
 							union
 							select distinct D.DisplayValue as Name, D.ObjectID as ID, D.Object as [Type], D.Uid
 							from AssetDetail D
-							inner join [Intersect] I on D.Object = 'Rule' and D.TypeID = @id and (I.Object = 'Rule' and A.ID = I.ObjectID) and I.IntersectTypeID = @intersectTypeId
+							inner join [Intersect] I on D.TypeID = @id and I.ObjectAssetID = D.ID and I.IntersectTypeID = @intersectTypeId
 							order by D.DisplayValue";
 					break;
 				case SystemObjects.TaskType:
 					sql = @"select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'TaskType' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'TaskType')                            
-							inner join [Intersect] I on ( (I.Subject = 'Task' and ASS.ObjectID = I.SubjectID and I.IntersectTypeID = @intersectTypeId)) 
+							inner join [Intersect] I on I.SubjectAssetID = ASS.ID and I.IntersectTypeID = @intersectTypeId)) 
 							inner join AssetDisplayValue disp on disp.AssetID = ASS.ID
 							union
 							select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'TaskType' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'TaskType')     
-							inner join [Intersect] I on ( (I.Object = 'Task' and ASS.ObjectID = I.ObjectID and I.IntersectTypeID = @intersectTypeId) ) 
+							inner join [Intersect] I on I.ObjectAssetID = ASS.ID and I.IntersectTypeID = @intersectTypeId) ) 
 							inner join AssetDisplayValue disp on disp.AssetID = ASS.ID
 							order by disp.DisplayValue";
 					break;
@@ -3456,7 +3457,7 @@ namespace d360.web.Controllers
 
 							if exists(select 1 from [Intersect] I 
 							left join [Asset] A on A.uid = @baseAssetUid
-							where I.ID = @intersectId and I.Subject = A.Object and I.SubjectID = A.ObjectID)
+							where I.ID = @intersectId and I.SubjectAssetID = A.ID)
 							begin
 							  set @isSubject = 1
 							end
@@ -5475,11 +5476,11 @@ where v.id = {0}", id)).FirstOrDefault();
 
 				sql += $@"from fieldlookupvalue V
 						inner join IntersectDetail I {join} 
-						where V.fieldTypeID = @id and I.PredicateId = @PredcateId and I.{(fieldType.FilterPredicateDirection == true ? "SubjectID" : "ObjectID")} in @Parents";
+						where V.fieldTypeID = @id and I.PredicateId = @PredicateId and I.{(fieldType.FilterPredicateDirection == true ? "SubjectID" : "ObjectID")} in @Parents";
 				var rawItems = Company.Query<dynamic>(sql, new
 				{
 					id = fieldTypeID,
-					PredcateId = fieldType.FilterPredicateID,
+					PredicateId = fieldType.FilterPredicateID,
 					Parents = parents
 				}).OrderBy(i => i.Text).ToList();
 
