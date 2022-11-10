@@ -43,7 +43,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { FieldName = "AssetTypeUid", FieldType = DataType.Hidden.ToString(), Value = a.AssetType.uid.ToString() });
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).ToList();
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
 
 			list = loadDynamicFields(
@@ -143,7 +143,7 @@ namespace d360.web.Controllers
                 }
             }
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).ToList();
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
 
 			list = loadDynamicFields(

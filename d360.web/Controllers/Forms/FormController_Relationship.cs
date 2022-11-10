@@ -205,7 +205,7 @@ namespace d360.web.Controllers
 				new EditableField { FieldName = "ObjectUid", FieldType = DataType.Hidden.ToString(), Value = relationship.ObjectUid.ToString() }
 			};
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.IntersectTypeID == relationship.IntersectTypeID).ToList();
+			var fieldTypes = Company.Filter<FieldType>(i => i.IntersectTypeID == relationship.IntersectTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.IntersectID == relationship.ID).ToList();
 
 			list = loadDynamicFields(
