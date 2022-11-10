@@ -1,12 +1,12 @@
-﻿import {Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {Observable} from "rxjs";
-import {catchError, map} from "rxjs/operators";
+﻿import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
-import { AuditResults, AuditObject, AuditFilterLists } from "../models/audit.model";
+import { AuditFilterLists, AuditObject, AuditResults } from "../models/audit.model";
 
-import {BaseObservableService} from './baseObservable.service';
-import {MessagesObservableService} from './messages-observable.service';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable({
     providedIn: 'root'

@@ -1,12 +1,11 @@
-
-import {catchError, map} from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { Injectable } from "@angular/core";
 import { BaseObservableService } from './baseObservable.service';
 import { Observable } from "rxjs";
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MessagesObservableService } from './messages-observable.service';
-import {  WorkflowMonitorItems } from "../models/workflowmonitor.model";
-import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from "../models/grid-definition.model";
+import { WorkflowMonitorItems } from "../models/workflowmonitor.model";
+import { GridFilterColumn, GridFilterExpression, GridFilterFieldType } from "../models/grid-definition.model";
 import { SortOrder } from "../models/enums.model";
 
 

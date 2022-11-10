@@ -1,10 +1,9 @@
-import { Component, OnDestroy, AfterContentInit, ViewChild, ElementRef, Inject, Renderer2 } from '@angular/core';
+import { AfterContentInit, Component, ElementRef, Inject, OnDestroy, Renderer2, ViewChild } from '@angular/core';
 import { HeaderActionsService } from './services/header-actions.service';
 import { Subscription } from 'rxjs';
-import { Message, PrimeNGConfig, Translation } from 'primeng/api';
+import { Message, MessageService, PrimeNGConfig, Translation } from 'primeng/api';
 import { CookieService } from './services/cookie.service';
 import { MessagesObservableService } from './services/messages-observable.service';
-import { MessageService } from 'primeng/api';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { datadogRum } from '@datadog/browser-rum';
 import { environment } from '../environments/environment';

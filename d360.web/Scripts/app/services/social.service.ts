@@ -1,5 +1,12 @@
 ﻿import { Injectable } from "@angular/core";
-import { CommentApiPutModel, Emoji, CommentApiPostModel, CommentDetail, CommentDetails, CommentVoteDetail } from "../models/social.model";
+import {
+    CommentApiPostModel,
+    CommentApiPutModel,
+    CommentDetail,
+    CommentDetails,
+    CommentVoteDetail,
+    Emoji
+} from "../models/social.model";
 import { Count } from "../models/counts.model";
 import { HttpClient, HttpErrorResponse, HttpHeaders } from "@angular/common/http";
 import { catchError, map } from "rxjs/operators";

@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
-import { TooltipInfo, LookupTooltipInfo } from '../models/tooltip-info.model';
+import { LookupTooltipInfo, TooltipInfo } from '../models/tooltip-info.model';
 import { HttpClient } from '@angular/common/http';
-import { Observable, empty } from 'rxjs';
+import { empty, Observable } from 'rxjs';
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';

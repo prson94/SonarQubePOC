@@ -4,12 +4,12 @@ import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 import { JsonResult } from "../models/jsonresult.model";
 import {
-    Classification,
     AssetDetail,
+    Classification,
     NymType,
+    ObjectDetail,
     Synonym,
-    SynonymItem,
-    ObjectDetail
+    SynonymItem
 } from "../models/object-detail.model";
 
 import { BaseObservableService } from "./baseObservable.service";

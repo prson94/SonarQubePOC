@@ -1,5 +1,12 @@
 ﻿import { Injectable } from '@angular/core';
-import { SurveyTypeUpsertModel, SurveyTypeDetails, SurveyResultsApiModel, Survey, SurveyTypesResponse, QuestionTypeV2 } from '../models/survey.model';
+import {
+    QuestionTypeV2,
+    Survey,
+    SurveyResultsApiModel,
+    SurveyTypeDetails,
+    SurveyTypesResponse,
+    SurveyTypeUpsertModel
+} from '../models/survey.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';

@@ -1,5 +1,4 @@
-﻿import { Subject } from "rxjs";
-import { AssetTypeClass } from "./asset.model";
+﻿import { AssetTypeClass } from "./asset.model";
 
 export class SecondaryNavItem {
     constructor(title?: string, tag?: any, icons?: string[], url?: string, count?: number, priority?: number) {

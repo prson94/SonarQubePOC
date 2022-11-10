@@ -1,4 +1,4 @@
-﻿import { PipeTransform, Pipe } from '@angular/core';
+﻿import { Pipe, PipeTransform } from '@angular/core';
 
 // provide the array and the callback function to filter to use this when filtering ngFor loops
 // callback can be implemented in the component to be object independant

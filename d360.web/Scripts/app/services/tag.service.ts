@@ -1,11 +1,10 @@
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { Tag, TagType, TagApiModel, TagPermissionItem } from '../models/tag.model';
+import { Tag, TagApiModel, TagPermissionItem, TagType } from '../models/tag.model';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
-import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable({
     providedIn: 'root'

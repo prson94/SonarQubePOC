@@ -1,5 +1,5 @@
 ﻿import { Pipe, PipeTransform } from '@angular/core';
-import { isString, isArray } from 'lodash';
+import { isArray, isString } from 'lodash';
 
 @Pipe({
     name: 'simpleSearch'

@@ -1,8 +1,8 @@
 ﻿import { Injectable } from "@angular/core";
-import { PointBreakdown, ScorePoint, AverageScore, DataQualityEvidenceModel } from "../models/score.model";
+import { AverageScore, DataQualityEvidenceModel, PointBreakdown, ScorePoint } from "../models/score.model";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { catchError, map } from "rxjs/operators";
-import { Observable, Subject, of } from "rxjs";
+import { Observable } from "rxjs";
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 import { ScoreType } from "../models/metrics.model";

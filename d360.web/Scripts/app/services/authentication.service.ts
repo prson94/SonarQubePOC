@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject, Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';

@@ -1,4 +1,4 @@
-﻿import { NgModule, LOCALE_ID, APP_INITIALIZER } from '@angular/core';
+﻿import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core';
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule, Title } from '@angular/platform-browser';
@@ -26,7 +26,10 @@ import { FollowerService } from './services/follower.service';
 import { StateService } from './services/state.service';
 import { WebAnalyticsService } from './services/web-analytics.service';
 import { SearchService } from './services/search.service';
-import { NumberOfRowsByCategoryService, NumberOfRowsByCategoryServiceInitializer } from './services/number-of-rows-by-category.service';
+import {
+    NumberOfRowsByCategoryService,
+    NumberOfRowsByCategoryServiceInitializer
+} from './services/number-of-rows-by-category.service';
 import { TitleAndTabsService } from './services/title-and-tabs.service';
 
 import { TooltipSingletonService } from './services/tooltip-singleton.service';
@@ -35,7 +38,6 @@ import { PreviewpopupSingletonService } from './services/previewpopup-singleton.
 import { CookieService } from './services/cookie.service';
 import { SiteMenuService } from './services/site-menu.service';
 import { DialogModule } from 'primeng/dialog';
-import { D3SModal } from './components/shared/modal/gov-modal.component';
 import { AssetStyleService } from './services/asset-style.service';
 import { CompanySettingsService } from './services/settings.service';
 import { FeatureFlagsService } from './services/featureflags.service';

@@ -1,9 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { TreeNode } from 'primeng/api';
-import {
-    ArtifactTypeEditorModel,
-    ArtifactType
-} from '../models/artifact-type.model';
+import { ArtifactType, ArtifactTypeEditorModel } from '../models/artifact-type.model';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { HttpClient } from '@angular/common/http';

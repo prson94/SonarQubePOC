@@ -4,20 +4,20 @@ import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 import {
-    AssetBrowserTranslationNode,
-    AssetBrowserTranslationLink,
-    AssetBrowserApiHopDirection,
-    FilterAncestryMode,
-    FilterSelectionsModel,
-    StoredAssetBrowserFilterModel,
-    AssetBrowserOwnersModel,
     AssetBrowserAlert,
     AssetBrowserAlertRequest,
-    DiagramTypesModel,
-    AssetBrowserResponseModel,
     AssetBrowserApiHopAssetRequestModel,
+    AssetBrowserApiHopDirection,
+    AssetBrowserLineageRequest,
+    AssetBrowserOwnersModel,
+    AssetBrowserResponseModel,
+    AssetBrowserTranslationLink,
+    AssetBrowserTranslationNode,
+    DiagramTypesModel,
+    FilterAncestryMode,
     FilterDescendancyMode,
-    AssetBrowserLineageRequest
+    FilterSelectionsModel,
+    StoredAssetBrowserFilterModel
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -26,7 +26,6 @@ import { IconService } from './icon.service';
 import { AssetTypeClass } from '../models/asset.model';
 import { IconProperties } from '../models/icon-properties.model';
 import { ApiResult } from '../models/apiresult.model';
-import { Link } from '../models/fieldtype-api.model';
 
 @Injectable({
     providedIn: 'root'

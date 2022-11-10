@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { CompanySettingEnum } from '../models/settings.model';
 import { CompanySettingsService } from '../services/settings.service';

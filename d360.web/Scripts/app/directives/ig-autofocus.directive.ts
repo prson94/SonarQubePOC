@@ -1,4 +1,4 @@
-﻿import { Directive, ElementRef, DoCheck, ChangeDetectorRef } from "@angular/core";
+﻿import { ChangeDetectorRef, Directive, DoCheck, ElementRef } from "@angular/core";
 
 @Directive({
     selector: "[igAutoFocus]"
