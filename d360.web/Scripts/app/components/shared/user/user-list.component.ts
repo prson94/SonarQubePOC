@@ -11,16 +11,31 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../../shared/base.component';
 import { LazyLoadEvent } from 'primeng/api';
-import { forkJoin, Observable, ReplaySubject, Subject, SubscriptionLike as ISubscription } from 'rxjs';
+import { forkJoin, Observable, of, ReplaySubject, Subject, SubscriptionLike as ISubscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
-import { Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnChanges, SimpleChange, OnDestroy, ViewChild, OnInit } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output,
+    SimpleChange,
+    ViewChild
+} from '@angular/core';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { ResourceApiModel } from '../../../models/resource.model';
 import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
+import {
+    AdvancedFilterFieldType,
+    Filters,
+    LookupValuesAPIModel,
+    LookupValuesAPIParameters
+} from "../../assets-grid/advanced-filtering/advanced-filtering.models";
 import { isEqual } from "lodash";
-import { of } from 'rxjs';
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 
 @Component({

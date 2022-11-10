@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LazyLoadEvent } from 'primeng/api';
 
@@ -10,7 +10,12 @@ import { SortOrder } from '../../../models/enums.model';
 import { GridColumn, GridFilterExpression } from '../../../models/grid-definition.model';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FieldType } from "../../../models/fieldtype-api.model";
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIParameters, LookupValuesAPIModel } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
+import {
+    AdvancedFilterFieldType,
+    Filters,
+    LookupValuesAPIModel,
+    LookupValuesAPIParameters
+} from "../../assets-grid/advanced-filtering/advanced-filtering.models";
 import { Observable, ReplaySubject } from "rxjs";
 import { map, shareReplay } from "rxjs/operators";
 import { CompanySettingsService } from '../../../services/settings.service';

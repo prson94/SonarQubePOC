@@ -1,8 +1,6 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'primeng/api';

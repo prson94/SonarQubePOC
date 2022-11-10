@@ -1,8 +1,22 @@
-import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, SimpleChange, OnChanges, OnDestroy, AfterViewInit, Output, EventEmitter, ViewChild, ViewChildren, QueryList } from '@angular/core';
-import { Router, NavigationEnd, NavigationStart, ActivatedRoute } from '@angular/router';
-import { Event as NavigationEvent } from "@angular/router";
+import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    Output,
+    QueryList,
+    SimpleChange,
+    ViewChild,
+    ViewChildren
+} from '@angular/core';
+import { ActivatedRoute, Event as NavigationEvent, NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
-import { SecondaryNavItem, DynamicButton, AssetAction } from '../../../models/secondaryNav.model';
+import { AssetAction, DynamicButton, SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { Subscription } from 'rxjs';
 import * as _ from 'lodash';
 import { ObjectStatistics } from '../../../models/object-statistics.model';

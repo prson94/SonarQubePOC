@@ -1,9 +1,18 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FollowerService } from '../../../services/follower.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { HeaderActionsService } from '../../../services/header-actions.service';
-import { MessageService } from 'primeng/api';//primeng/api
+import { MessageService } from 'primeng/api'; //primeng/api
 
 
 @Component({

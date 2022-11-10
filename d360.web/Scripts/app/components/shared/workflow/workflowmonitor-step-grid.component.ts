@@ -1,7 +1,16 @@
-﻿import { Component, OnChanges, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, SimpleChanges } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { WorkflowItemStep, WorkflowActivityType, StepType } from '../../../models/workflow.model';
+import { WorkflowActivityType, WorkflowItemStep } from '../../../models/workflow.model';
 import { WorkflowHelpers } from '../../../static/workflow-helpers';
 import { Router } from '@angular/router';
 import { StateService } from '../../../services/state.service';

@@ -1,4 +1,17 @@
-﻿import { Component, Input, OnChanges, ChangeDetectorRef, ViewChild, ElementRef, Output, SimpleChanges, EventEmitter, ViewEncapsulation, Inject, LOCALE_ID } from '@angular/core';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Inject,
+    Input,
+    LOCALE_ID,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 
 import * as Highcharts from 'highcharts';
 import { ObjectStatisticsService } from '../../../../services/object-statistics.service';

@@ -1,9 +1,19 @@
-import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 import {
-    AssetBrowserFilterModel,
-    FilterSelectionsModel,
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges
+} from '@angular/core';
+import {
     AssetBrowserFilterChangeEvent,
-    AssetBrowserFilterChangeEventType
+    AssetBrowserFilterChangeEventType,
+    AssetBrowserFilterModel,
+    FilterSelectionsModel
 } from '../../../../../models/lineage.model';
 
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';

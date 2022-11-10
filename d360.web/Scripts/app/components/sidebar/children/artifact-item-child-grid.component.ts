@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, Input, OnChanges, SimpleChange } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { BaseComponent } from '../../shared/base.component';

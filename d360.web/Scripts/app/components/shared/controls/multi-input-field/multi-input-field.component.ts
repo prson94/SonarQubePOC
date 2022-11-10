@@ -1,7 +1,18 @@
-﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, EventEmitter, Output } from "@angular/core";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    forwardRef,
+    Input,
+    NgModule,
+    Output,
+    ViewEncapsulation
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TooltipModule } from "primeng/tooltip";
-import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { IgBadgeModule } from "../badge/badge.module";
 
 export const IG_MULTIINPUTFIELD_ACCESSOR: any = {

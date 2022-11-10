@@ -1,11 +1,6 @@
-﻿import { Component, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
-import {
-    LinkModel,
-    TransitionType,
-    TransitionTypeInfo,
-    WorkflowChangeType,
-} from '../../../../models/workflow.model';
+import { LinkModel, TransitionType, TransitionTypeInfo, WorkflowChangeType, } from '../../../../models/workflow.model';
 import { FormMode } from '../../../../models/form.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';

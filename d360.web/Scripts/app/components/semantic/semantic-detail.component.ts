@@ -1,4 +1,13 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, Output, EventEmitter, OnDestroy, OnInit } from '@angular/core';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChange
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { SemanticType } from '../../models/semantic-type.model';
 import { AppSettingsEnum, CompanySettingEnum } from '../../models/settings.model';
@@ -11,7 +20,6 @@ import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { BaseComponent } from '../shared/base.component';
-import { SemanticBaseComponent } from './semantics-base.component';
 
 @Component({
     selector: 'semantic-detail',

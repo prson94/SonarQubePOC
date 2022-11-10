@@ -1,20 +1,14 @@
-﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import {
-    Permission,
     ResponsibilityTypeAllocation,
     ResponsibilityTypeAllocationPost,
-    ResponsibilityTypeRelation,
-    ResponsibilityTypeRelationPermission,
-    IResponsibilityTypeService,
-
-    ResponsibilityTypeRelation_FormData,
-    ResponsibilityTypeRelationAllocationOption
+    ResponsibilityTypeRelationFormData,
+    ResponsibilityTypeRelationAllocationOption,
+    ResponsibilityTypeRelationPermission
 } from '../../../models/responsibility-type.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { BaseComponent } from '../../shared/base.component';
-
-import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -45,7 +39,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 
 export class ResponsibilityRelationForm extends BaseComponent implements OnInit {
     @Input() relation: ResponsibilityTypeAllocation;
-    @Input() commonFormData: ResponsibilityTypeRelation_FormData;
+    @Input() commonFormData: ResponsibilityTypeRelationFormData;
     @Output() onComplete = new EventEmitter();
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();

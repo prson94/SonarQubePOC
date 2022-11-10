@@ -1,4 +1,4 @@
-﻿import { Component, Output, EventEmitter, Input, OnChanges } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import { FieldType } from '../../../../models/fields.model';
 import { WorkflowService } from '../../../../services/workflow.service';

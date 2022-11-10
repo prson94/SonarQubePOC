@@ -1,11 +1,20 @@
 ﻿import {
-    Component, Input, AfterContentInit, OnDestroy, Output, EventEmitter, OnInit, OnChanges,
-    ContentChildren, QueryList, TemplateRef, ElementRef
+    AfterContentInit,
+    Component,
+    ContentChildren,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    Optional,
+    Output,
+    QueryList,
+    TemplateRef
 } from '@angular/core';
-import { Optional } from '@angular/core';
 import { CheckTreeNode } from './checktreenode';
-import { PrimeTemplate } from 'primeng/api';
-import { TreeDragDropService } from 'primeng/api';
+import { PrimeTemplate, TreeDragDropService } from 'primeng/api';
 import { BlockableUI } from 'primeng/api/blockableui';
 import { ObjectUtils } from 'primeng/utils';
 

@@ -1,17 +1,22 @@
 import {
-	AfterViewInit,
-	Component,
-	Input,
-	OnInit,
-	ChangeDetectionStrategy,
-	ChangeDetectorRef,
-	Output,
-	EventEmitter,
-	OnChanges,
-	SimpleChanges,
-	ViewChild
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges,
+    ViewChild
 } from '@angular/core';
-import { StoredAssetBrowserFilterModel, AssetBrowserFilterModel, FilterSelectionsModel, DiagramType } from '../../../../../models/lineage.model';
+import {
+    AssetBrowserFilterModel,
+    DiagramType,
+    FilterSelectionsModel,
+    StoredAssetBrowserFilterModel
+} from '../../../../../models/lineage.model';
 import { BrowserService } from '../../../../../services/browser.service';
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
 import { Dropdown } from "primeng/dropdown";

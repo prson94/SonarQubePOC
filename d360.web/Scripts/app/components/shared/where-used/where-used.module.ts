@@ -1,5 +1,5 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { WhereUsedComponent } from './where-used.component';
 import { TableModule } from 'primeng/table';
 import { D3SSortIconModule } from '../turbotable-sorticon.component';

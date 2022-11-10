@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import { ConditionFieldType, WorkflowChangeType } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';

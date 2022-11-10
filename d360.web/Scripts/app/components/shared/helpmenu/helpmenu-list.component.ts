@@ -1,9 +1,8 @@
-﻿import { Input, Component, OnInit, Output, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
 import { HelpMenu } from '../../../models/helpmenu.model';
 import { FormMode } from '../../../models/form.model';
-import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 

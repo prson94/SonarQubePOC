@@ -3,15 +3,15 @@ import * as go from 'gojs';
 import * as _ from 'lodash';
 import {
     Component,
-    Input,
-    OnInit,
     ElementRef,
-    ViewChild,
-    HostListener,
-    Output,
     EventEmitter,
+    HostListener,
+    Input,
     OnChanges,
-    SimpleChanges
+    OnInit,
+    Output,
+    SimpleChanges,
+    ViewChild
 } from '@angular/core';
 
 import { PermissionsService } from '../../../../services/permissions.service';
@@ -21,30 +21,30 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
 import { ObjectDetailService } from '../../../../services/object-detail.service';
 import { UriBasedService } from '../../../../services/uri-based.service';
 import {
-    WorkflowDiagramModel,
-    WorkflowDiagramNode,
-    WorkflowDiagramLink,
-    NodeModel,
-    LinkModel,
+    ActivityTypeInfo,
     DiagramObjectType,
+    FieldUpdateSettings,
+    FormResponseType,
+    HTTPRequestSettings,
+    HTTPResponseSettings,
+    LinkModel,
+    NodeFields,
+    NodeModel,
+    NodeSettings,
+    RelationshipUpdateSettings,
     StepType,
     TransitionType,
-    ActivityTypeInfo,
-    WorkflowChangeType,
-    FormResponseType,
     WorkflowActivityType,
-    NodeSettings,
-    NodeFields,
-    HTTPRequestSettings,
-    RelationshipUpdateSettings,
-    FieldUpdateSettings,
-    HTTPResponseSettings,
+    WorkflowChangeType,
+    WorkflowDiagramLink,
+    WorkflowDiagramModel,
+    WorkflowDiagramNode,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
-import { tap, map, concatMap } from 'rxjs/operators';
+import { concatMap, map, tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { CompanySettingsService } from '../../../../services/settings.service';
- 
+
 declare var window: any;
 
 @Component({

@@ -1,5 +1,12 @@
-import * as _ from 'lodash';
-import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
 
 @Component({

@@ -1,10 +1,6 @@
-﻿import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
-import {
-    LinkModel,
-    WorkflowActivityType,
-    TransitionType,
-} from '../../../../models/workflow.model';
+import { LinkModel, TransitionType, WorkflowActivityType, } from '../../../../models/workflow.model';
 import { CompanySettingsService } from '../../../../services/settings.service';
 
 

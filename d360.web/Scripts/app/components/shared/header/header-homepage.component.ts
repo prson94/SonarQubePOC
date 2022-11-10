@@ -1,10 +1,18 @@
-﻿import { Component, Input, OnInit, OnDestroy, OnChanges, ChangeDetectionStrategy, ChangeDetectorRef, SimpleChanges } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    SimpleChanges
+} from '@angular/core';
 import { FavoritesService } from '../../../services/favorites.service';
 import { FavoriteApiModel } from '../../../models/favorite.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import * as _ from 'lodash';
 
 
 @Component({

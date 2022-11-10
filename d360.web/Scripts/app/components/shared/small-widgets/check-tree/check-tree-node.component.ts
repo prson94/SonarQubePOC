@@ -1,6 +1,4 @@
-﻿import {
-    Component, Input, OnInit, Inject, forwardRef
-} from '@angular/core';
+﻿import { Component, forwardRef, Inject, Input, OnInit } from '@angular/core';
 import { CheckTreeNode } from './checktreenode';
 import { CheckTree } from './check-tree.component';
 

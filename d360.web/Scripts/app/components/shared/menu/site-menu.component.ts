@@ -1,9 +1,25 @@
-﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, ViewChildren, QueryList, ViewEncapsulation, ViewChild, ElementRef, HostListener, AfterContentInit } from '@angular/core';
+﻿import {
+    AfterContentInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output,
+    QueryList,
+    ViewChild,
+    ViewChildren,
+    ViewEncapsulation
+} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
-import { SiteMenu, SiteMenuItem, NavigationState } from '../../../models/site-menu.model';
+import { NavigationState, SiteMenu, SiteMenuItem } from '../../../models/site-menu.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';

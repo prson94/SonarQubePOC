@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import * as _ from 'lodash';
 import { cloneDeep, isEqual } from 'lodash';
 import { FavoritesService } from '../../../services/favorites.service';
 import { HomepageAndFavoritesModel } from '../../../models/favorite.model';

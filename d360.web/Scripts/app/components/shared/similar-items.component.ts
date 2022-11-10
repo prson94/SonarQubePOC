@@ -1,9 +1,16 @@
-﻿import { Component, Input, OnChanges, OnInit, OnDestroy, SimpleChanges, NgModule, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    NgModule,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    SimpleChanges
+} from '@angular/core';
 import { UriBasedService } from '../../services/uri-based.service';
 import { CommonModule } from '@angular/common';
-
-import { HTTP_INTERCEPTORS } from '@angular/common/http';      
 
 
 import { CoreModule } from './core.module';

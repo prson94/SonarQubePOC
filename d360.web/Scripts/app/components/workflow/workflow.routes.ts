@@ -1,8 +1,8 @@
 ﻿import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { WorkflowComponent } from './workflow.component';
 import { WorkflowFormComponent } from './workflow-form.component';
-import { WorkflowRaiseIssueComponent} from './workflow-raise-issue.component';
+import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
 import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
 import { WorkflowNewDetailComponent } from './workflow-new-details.component';
 

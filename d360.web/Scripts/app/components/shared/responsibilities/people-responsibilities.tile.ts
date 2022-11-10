@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, NgModule } from "@angular/core";
+﻿import { ChangeDetectorRef, Component, Input, NgModule, OnChanges, SimpleChange } from "@angular/core";
 import { ResponsibilityItemDetailV2 } from "../../../models/responsibility.model";
 import { ResponsibilityService } from "../../../services/responsibility.service";
 import { PermissionsService } from "../../../services/permissions.service";
@@ -8,7 +8,6 @@ import * as _ from "lodash";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { HttpClientModule, HTTP_INTERCEPTORS } from "@angular/common/http";
 import { TableModule } from "primeng/table";
 import { SharedModule } from "primeng/api";
 import { TooltipModule } from "primeng/tooltip";

@@ -1,31 +1,20 @@
 ﻿import {
-    Input,
-    Component,
-    Output,
-    EventEmitter,
-    OnInit,
-    NgModule,
-    ChangeDetectorRef,
-    ViewEncapsulation,
-    ChangeDetectionStrategy,
-    forwardRef,
-
-    ViewChild,
     AfterViewInit,
-
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    forwardRef,
     HostListener,
-
-    OnDestroy
+    Input,
+    NgModule,
+    OnDestroy,
+    OnInit,
+    ViewChild,
+    ViewEncapsulation
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CalendarModule, Calendar } from 'primeng/calendar';
-import {
-    FormsModule,
-    ReactiveFormsModule,
-    NG_VALUE_ACCESSOR,
-    ControlValueAccessor
-} from '@angular/forms';
-import { PlotAbandsBottomLineOptions } from 'highcharts';
+import { Calendar, CalendarModule } from 'primeng/calendar';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 
 export const IG_DATE_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,

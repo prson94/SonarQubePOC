@@ -1,10 +1,8 @@
-﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter, HostListener, ViewChild, ElementRef } from '@angular/core';
+﻿import { Component, EventEmitter, HostListener, Input, OnChanges, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../base.component';
 
 //import * as Highcharts from 'highcharts';
 import * as Stockcharts from 'highcharts/highstock';
-import { AssetTypeService } from '../../../services/asset-type.service';
-import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SelectItem } from 'primeng/api';
 

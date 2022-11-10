@@ -9,7 +9,6 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
-import { Param } from '../../../enums/param.enum';
 
 @Component({
 	selector: 'd3s-dashboard',

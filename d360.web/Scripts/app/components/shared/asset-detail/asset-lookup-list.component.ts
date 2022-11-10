@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from "@angular/core";
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { LookupGrid, LookupGridField } from "../../../models/grid-definition.model";
 import { BaseComponent } from "../base.component";
 import { DetailField } from "../../../models/object-detail.model";

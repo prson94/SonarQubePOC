@@ -1,5 +1,5 @@
-﻿import { Component, Output, EventEmitter, ViewChild } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+﻿import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FavoritesService } from '../../../services/favorites.service';

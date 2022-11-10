@@ -1,12 +1,8 @@
-﻿import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+﻿import { Component, forwardRef, Input, NgModule } from '@angular/core';
+import { CommonModule, getLocaleFirstDayOfWeek, WeekDay } from '@angular/common';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DirectivesModule } from '../../../../directives/directives.module';
-
-import { Component, forwardRef, Input } from '@angular/core';
-import { WeekDay, getLocaleFirstDayOfWeek } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
     selector: 'd3s-dayofweek-input',

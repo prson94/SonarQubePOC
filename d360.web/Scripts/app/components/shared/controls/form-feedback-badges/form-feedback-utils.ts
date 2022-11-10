@@ -1,6 +1,5 @@
 import { ElementRef } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
-import * as _ from 'lodash';
+import { FormControl, FormGroup } from '@angular/forms';
 
 export function getFormControlDomElement({ formContainer, controlName }: { formContainer: ElementRef; controlName: string; }) {
     if (formContainer == null) {

@@ -1,4 +1,12 @@
-﻿import { Component, Input, OnChanges, SimpleChange, ChangeDetectorRef, AfterViewChecked, ViewEncapsulation, ViewChildren } from '@angular/core';
+﻿import {
+    AfterViewChecked,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnChanges,
+    SimpleChange,
+    ViewEncapsulation
+} from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
@@ -10,7 +18,6 @@ import { MetricsService } from '../../../services/metrics.service';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { Router } from '@angular/router';
-import { drop } from 'lodash';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 

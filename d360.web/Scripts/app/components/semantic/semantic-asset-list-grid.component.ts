@@ -1,6 +1,5 @@
-﻿import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
+﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';

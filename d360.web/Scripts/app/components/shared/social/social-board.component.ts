@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, ViewEncapsulation } from "@angular/core";
+﻿import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from "@angular/core";
 import { BaseComponent } from "../base.component";
 import { SocialService } from "../../../services/social.service";
 import { CommentDetail, CommentType } from "../../../models/social.model";

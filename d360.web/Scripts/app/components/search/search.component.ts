@@ -1,16 +1,27 @@
-﻿import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { Observable, forkJoin, ReplaySubject } from "rxjs";
+﻿import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { forkJoin, Observable, ReplaySubject } from "rxjs";
 import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SearchStateService } from './search-state.service';
-import { SearchResults, SearchAggregation, SearchSelection, SearchFieldFilter, SearchConnector, SearchOperator } from '../../models/search-result.model';
+import {
+    SearchAggregation,
+    SearchConnector,
+    SearchFieldFilter,
+    SearchOperator,
+    SearchResults,
+    SearchSelection
+} from '../../models/search-result.model';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { SidePanelButton } from "../../models/side-panel.model";
-import { AdvancedFilterFieldConditionCollection, AdvancedFilterFieldCondition, AdvancedFilterFieldType } from "../assets-grid/advanced-filtering/advanced-filtering.models";
+import {
+    AdvancedFilterFieldCondition,
+    AdvancedFilterFieldConditionCollection,
+    AdvancedFilterFieldType
+} from "../assets-grid/advanced-filtering/advanced-filtering.models";
 import { DatePipe } from "@angular/common";
 import { CheckTree } from "../shared/small-widgets/check-tree/check-tree.component";
 import { CheckTreeNode } from '../shared/small-widgets/check-tree/checktreenode';

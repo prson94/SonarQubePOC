@@ -1,5 +1,5 @@
-﻿import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { PermissionsService } from '../../../services/permissions.service';
 import { ObjectDetailService } from '../../../services/object-detail.service';

@@ -1,4 +1,16 @@
-﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges, OnInit, ViewChild, ElementRef, HostListener, ChangeDetectorRef } from '@angular/core';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetType } from '../../../models/asset.model';

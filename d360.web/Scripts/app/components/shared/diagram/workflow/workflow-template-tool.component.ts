@@ -1,4 +1,15 @@
-﻿import { Component, OnInit, Output, EventEmitter, Input, AfterViewChecked, ViewChild, SimpleChanges, OnDestroy, OnChanges } from "@angular/core";
+﻿import {
+    AfterViewChecked,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from "@angular/core";
 import * as _ from "lodash";
 import { WorkflowService } from "../../../../services/workflow.service";
 import { WorkflowFieldsService } from "../../../../services/workflow-fields.service";

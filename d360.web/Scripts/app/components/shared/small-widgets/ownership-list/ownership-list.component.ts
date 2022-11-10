@@ -1,4 +1,4 @@
-﻿import { NgModule, Component, Input, OnInit } from "@angular/core";
+﻿import { Component, Input, NgModule, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { DirectivesModule } from "../../../../directives/directives.module";
 import { LinkClickInterceptor } from "../../../../services/href-click-service";

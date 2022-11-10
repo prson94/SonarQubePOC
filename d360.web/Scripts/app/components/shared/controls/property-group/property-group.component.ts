@@ -1,6 +1,20 @@
-﻿import { Component, NgModule, Input, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter, HostBinding, ChangeDetectorRef, HostListener } from '@angular/core';
+﻿import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostBinding,
+    HostListener,
+    Input,
+    NgModule,
+    OnInit,
+    Output,
+    ViewChild
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormGroup } from '@angular/forms';
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormFeedbackBadgesModule } from '../form-feedback-badges/form-feedback-badges.component';
 import { isFormContainerValid } from '../form-feedback-badges/form-feedback-utils';

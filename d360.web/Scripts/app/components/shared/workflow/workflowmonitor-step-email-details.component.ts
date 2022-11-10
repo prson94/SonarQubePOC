@@ -1,4 +1,12 @@
-﻿import { Component, OnInit, OnChanges, Input, ChangeDetectionStrategy, ChangeDetectorRef, SimpleChanges } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnChanges,
+    OnInit,
+    SimpleChanges
+} from '@angular/core';
 import { WorkflowStepDetail } from '../../../models/workflow.model';
 import { BaseComponent } from '../base.component';
 import { WorkflowHelpers } from '../../../static/workflow-helpers';

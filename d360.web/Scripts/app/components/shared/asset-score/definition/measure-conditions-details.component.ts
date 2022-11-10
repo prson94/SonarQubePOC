@@ -1,9 +1,11 @@
 ﻿import { Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from "@angular/core";
-import { MetricAssetVersionConditionItemFieldValueViewModel, MetricAssetVersionConditionViewModel } from "../../../../models/metrics.model";
+import {
+    MetricAssetVersionConditionItemFieldValueViewModel,
+    MetricAssetVersionConditionViewModel
+} from "../../../../models/metrics.model";
 import { CompanySettingsService } from "../../../../services/settings.service";
 import { CommonScreenReferencesModel } from "../../../admin/scoring/common-screen-references-model";
 import { BaseComponent } from "../../base.component";
-
 
 
 @Component({

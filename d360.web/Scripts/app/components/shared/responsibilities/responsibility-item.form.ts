@@ -1,6 +1,11 @@
-﻿import { Input, Output, Component, OnInit, OnChanges, EventEmitter, NgModule } from '@angular/core';
-import { ResponsibilityEditorModel, ResponsibilityItemDetailV2, ResponsibilityItemV2, ResponsibilityOverridePostModel } from '../../../models/responsibility.model';
-import { FormMessage, FormHelper } from '../../../models/form.model';
+﻿import { Component, EventEmitter, Input, NgModule, OnInit, Output } from '@angular/core';
+import {
+    ResponsibilityEditorModel,
+    ResponsibilityItemDetailV2,
+    ResponsibilityItemV2,
+    ResponsibilityOverridePostModel
+} from '../../../models/responsibility.model';
+import { FormMessage } from '../../../models/form.model';
 import { SelectItem, SharedModule } from 'primeng/api';
 import { ResponsibilityService } from '../../../services/responsibility.service';
 import { BaseComponent } from '../../shared/base.component';

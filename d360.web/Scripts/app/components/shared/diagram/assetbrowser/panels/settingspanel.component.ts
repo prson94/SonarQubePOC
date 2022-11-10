@@ -1,6 +1,17 @@
-import * as _ from 'lodash';
-import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
-import { AssetBrowserFilterModel, AssetBrowserFilterChangeEvent, AssetBrowserFilterChangeEventType, DiagramType } from '../../../../../models/lineage.model';
+import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    Output
+} from '@angular/core';
+import {
+    AssetBrowserFilterChangeEvent,
+    AssetBrowserFilterChangeEventType,
+    AssetBrowserFilterModel
+} from '../../../../../models/lineage.model';
 
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
 

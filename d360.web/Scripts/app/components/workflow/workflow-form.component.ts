@@ -1,7 +1,6 @@
-
-import { Input, Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, Subscription, SubscriptionLike as ISubscription } from 'rxjs';
 import { map } from 'rxjs/operators';

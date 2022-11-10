@@ -1,13 +1,22 @@
-﻿import { Input, Component, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, NgModule, ViewEncapsulation } from "@angular/core";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    forwardRef,
+    Input,
+    NgModule,
+    OnChanges,
+    SimpleChange,
+    ViewEncapsulation
+} from "@angular/core";
 import * as _ from "lodash";
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from "@angular/forms";
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { SortOrder } from "../../models/enums.model";
 import { EditorField } from "../../models/editor-field.model";
 import { BaseComponent } from "./base.component";
 import { ResourcesService } from "../../services/resources.service";
 import { LazyLoadEvent, SharedModule } from "primeng/api";
 import { CommonModule } from "@angular/common";
-import { HttpClientModule, HTTP_INTERCEPTORS } from "@angular/common/http";
 import { RouterModule } from "@angular/router";
 import { MultiSelectModule } from "primeng/multiselect";
 import { InputSwitchModule } from "primeng/inputswitch";

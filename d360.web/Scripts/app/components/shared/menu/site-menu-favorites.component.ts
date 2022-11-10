@@ -1,14 +1,13 @@
-﻿import { Component, OnInit, OnDestroy, ChangeDetectorRef, Input, EventEmitter, Output } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SiteMenu } from '../../../models/site-menu.model';
-import * as _ from 'lodash';
+import { isEqual } from 'lodash';
 import { StringConstants } from "../../../static/string-constants";
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FavoritesManagementService } from './FavoritesManagementService';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
-import { isEqual } from 'lodash';
 import { SiteMenuComponent } from './site-menu.component';
 
 @Component({

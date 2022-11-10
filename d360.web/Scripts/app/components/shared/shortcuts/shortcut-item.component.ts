@@ -1,9 +1,8 @@
-﻿import { Input, Output, Component, OnInit, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { Shortcut, LinkTarget } from '../../../models/shortcuts.model';
+import { LinkTarget, Shortcut } from '../../../models/shortcuts.model';
 import { CompanyImage } from '../../../models/settings.model';
 import { ShortcutService } from '../../../services/shortcuts.service';
-import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 

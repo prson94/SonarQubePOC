@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 

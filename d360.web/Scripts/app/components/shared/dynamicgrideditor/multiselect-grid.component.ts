@@ -1,7 +1,19 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    forwardRef,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output,
+    ViewChild
+} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import * as _ from 'lodash';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LazyLoadEvent } from 'primeng/api';
 import { AssetService } from '../../../services/asset.service';
 import { forkJoin, Subject, Subscription } from 'rxjs';

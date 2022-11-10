@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { AssetService } from "../../../services/asset.service";
 import { MessagesObservableService } from '../../../services/messages-observable.service';

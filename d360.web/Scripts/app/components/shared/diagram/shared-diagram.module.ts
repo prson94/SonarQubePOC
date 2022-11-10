@@ -1,7 +1,6 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
-
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 
 import { RouterModule } from '@angular/router';
@@ -44,7 +43,7 @@ import { ModelDiagramComponent } from './model-diagram.component';
 import { D3SOverlayWindowModule } from '../overlay-window.component';
 
 import { CoreModule } from '../core.module';
-import { TilesModule  } from '../tiles/tiles.module';
+import { TilesModule } from '../tiles/tiles.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part';

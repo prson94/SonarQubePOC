@@ -1,5 +1,24 @@
-﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, OnInit, OnChanges, SimpleChanges, HostListener } from "@angular/core";
-import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR, Validator, AbstractControl, ValidationErrors } from "@angular/forms";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    forwardRef,
+    HostListener,
+    Input,
+    NgModule,
+    OnInit,
+    ViewEncapsulation
+} from "@angular/core";
+import {
+    AbstractControl,
+    ControlValueAccessor,
+    FormsModule,
+    NG_VALUE_ACCESSOR,
+    ReactiveFormsModule,
+    ValidationErrors,
+    Validator
+} from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { DirectivesModule } from "../../../../directives/directives.module";
 import { ButtonModule } from "../../../../directives/ig-button-directive";

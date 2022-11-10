@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnDestroy, EventEmitter, Output, OnChanges, SimpleChanges } from "@angular/core";
+﻿import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from "@angular/core";
 import * as _ from "lodash";
 import { LazyLoadEvent } from "primeng/api";
 import { MetricAssetDefinitionViewModel, MetricRuleResultOperation, ScoreType } from "../../../../models/metrics.model";

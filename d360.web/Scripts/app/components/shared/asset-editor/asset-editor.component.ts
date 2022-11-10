@@ -1,22 +1,21 @@
 import * as _ from 'lodash';
 import {
+    AfterViewChecked,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
+    ElementRef,
     EventEmitter,
+    HostListener,
     Input,
     OnChanges,
     OnInit,
     Output,
-    SimpleChange,
-
-    ViewChild,
-    ElementRef,
-
-    ViewEncapsulation,
-    ViewChildren,
     QueryList,
-    HostListener
+    SimpleChange,
+    ViewChild,
+    ViewChildren,
+    ViewEncapsulation
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
@@ -36,7 +35,6 @@ import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AfterViewChecked } from '@angular/core';
 import { PropertyGroupComponent } from '../controls/property-group/property-group.component';
 import { AssetEditorFieldComponent } from './asset-editor-field.component';
 import { GroupService } from '../../../services/group.service';

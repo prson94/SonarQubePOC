@@ -1,4 +1,17 @@
-﻿import { Component, Input, Output, HostListener, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef, AfterContentInit, OnDestroy, AfterViewChecked } from '@angular/core';
+﻿import {
+    AfterContentInit,
+    AfterViewChecked,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input,
+    OnChanges,
+    OnDestroy,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 
 
 @Component({

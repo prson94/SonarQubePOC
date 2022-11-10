@@ -1,10 +1,10 @@
-﻿import { Input, Component, EventEmitter, Output, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { RelationshipsService } from '../../../services/relationships.service';
 import {
+    Cardinality,
     PredicateDropdown,
     RelationshipType,
-    Cardinality,
     RelationshipTypeEdge
 } from '../../../models/relationship.model';
 import { forkJoin } from 'rxjs';

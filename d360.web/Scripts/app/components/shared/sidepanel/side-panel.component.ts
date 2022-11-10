@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+﻿import { Component, EventEmitter, Input, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { SidePanelButton } from '../../../models/side-panel.model';
 import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { BaseComponent } from '../base.component';
