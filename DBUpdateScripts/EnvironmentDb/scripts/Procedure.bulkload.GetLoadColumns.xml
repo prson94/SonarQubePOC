@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.bulkload.GetLoadColumns-v20">
+  <changeSet author="Tomislav Duric" id="Procedure.bulkload.GetLoadColumns-v21">
     <comment>GOV-20005</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -184,6 +184,11 @@ begin
 					@parentTypeName = I.SubjectName
 			from	IntersectTypeDetail I     
 			where   I.ObjectAssetTypeID = @assettypeid and I.[PredicateType] = 3;
+
+			if @type = 'ReferenceItemType'
+			begin
+				set @parentTypeName = (select top 1 [Name] from AssetType where ID = @parentTypeID)
+			end
 
 			if @parentTypeID is not null
 			begin
