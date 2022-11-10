@@ -8180,7 +8180,7 @@ where   ER.ExecutionID = @ExecutionID
 													insert into #Keys WITH(TABLOCK)
 													select		A.ID, P.UID as ParentAssetUID, Null, Null
 													from		Asset A 
-															left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+															left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.ObjectAssetId = A.Id
 															left join Asset P on P.Id = I.SubjectAssetId
 													where		A.AssetTypeID = @ID and @hasUpdatedKeyFields = 1;
 

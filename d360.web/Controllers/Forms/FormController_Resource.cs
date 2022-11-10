@@ -211,7 +211,7 @@ namespace d360.web.Controllers
 				Items = stateList, Value = cr.State.ToString() 
 			});
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).ToList();
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
 
 			list = loadDynamicFields(
@@ -270,7 +270,7 @@ namespace d360.web.Controllers
 										maxLength: 250) 
 			});
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).ToList();
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
 
 			list = loadDynamicFields(
