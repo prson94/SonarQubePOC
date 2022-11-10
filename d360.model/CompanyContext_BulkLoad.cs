@@ -884,8 +884,8 @@ namespace d360.model
 												utility.GetHash(cast(@assetttypeID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
 									into		#AssetActiveKey
 									from		#tempcalasset t
-												left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.Object = t.Object and I.ObjectID = t.ObjectID
-												left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+												left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.ObjectAssetID = t.ID
+												left join Asset P on P.ID = I.SubjectAssetID
 												inner join FieldType FT on FT.AssetTypeID = @assetttypeID and FT.IsPartOfKey = 1
 												left join Field F on FT.ID = F.FieldTypeID and F.AssetID = T.ID
 									group by    t.AssetUid, P.Uid
