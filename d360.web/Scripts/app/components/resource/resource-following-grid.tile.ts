@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
+﻿import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { FollowingDetailForResource } from '../../models/resource.model';
 import { ResourcesService } from '../../services/resources.service';
 import { FormHelper } from '../../models/form.model';

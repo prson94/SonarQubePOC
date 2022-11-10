@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { ResourceComponent } from './resource.component';
 import { ResourceItemComponent } from './resource-item.component';
 import { ResourceListComponent } from './resource-list.component';

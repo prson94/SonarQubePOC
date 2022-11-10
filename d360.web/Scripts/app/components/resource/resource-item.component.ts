@@ -1,5 +1,5 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -7,7 +7,6 @@ import { ResourcesService } from '../../services/resources.service';
 import { ObjectStatisticsService } from '../../services/object-statistics.service';
 import { UriBasedService } from '../../services/uri-based.service';
 import { SocialService } from '../../services/social.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ObjectStatistics } from '../../models/object-statistics.model';
 import { WorkflowType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';

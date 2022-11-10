@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { ReferenceListComponent } from './reference-list.component';
 import { ReferenceComponent } from './reference.component';
 

@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, AfterContentInit, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { FormControl, Validators, FormGroup, ValidatorFn, AbstractControl, FormBuilder } from '@angular/forms';
+﻿import { Component, OnInit } from '@angular/core';
+import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 
 export class DummyformModel {
     constructor(
