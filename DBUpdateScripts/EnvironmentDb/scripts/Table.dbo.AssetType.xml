@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="ALadchenko" id="Table.dbo.AssetType-v7">
+  <changeSet author="ALadchenko" id="Table.dbo.AssetType-v8">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -87,8 +87,8 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
 	  BEGIN
 		 alter table dbo.AssetType
 		 add
-			IsDescriptionEnabled bit default(1) not null,
-			IsDescriptionVisibleByDefault bit default(0) not null,
+			IsDescriptionEnabled bit constraint [DF_AssetType_IsDescriptionEnabled] default(1) not null,
+			IsDescriptionVisibleByDefault bit constraint [DF_AssetType_IsDescriptionVisibleByDefault] default(0) not null,
 			DescriptionButtonName varchar(50) null
 	  END
 	  ]]>
