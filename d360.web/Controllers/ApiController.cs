@@ -389,9 +389,7 @@ namespace d360.web.Controllers
 
 				if (intersect != null)
 				{
-					var isSubject = intersect.Subject == sType && intersect.SubjectID == id;
-					var obj = isSubject ? intersect.Object : intersect.Subject;
-					var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;		
+					var isSubject = intersect.SubjectAssetID == assetID;
 					var intersectAssetID = isSubject ? intersect.ObjectAssetID : intersect.SubjectAssetID;
 
 					var rfld = (await Company.QueryAsync<string>(@"
@@ -416,9 +414,9 @@ namespace d360.web.Controllers
 						begin
 							select	@fieldValue = FormattedValue
 							from	FieldDetail
-							where	FieldTypeID = @fieldTypeID and [Object] = @obj and ObjectID = @objID
+							where	FieldTypeID = @fieldTypeID and AssetID = @intersectAssetID
 						end
-						select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAnsi = true, Length = 50 }, objID, intersectAssetID }).ConfigureAwait(false)).SingleOrDefault();
+						select @fieldValue", new { fieldTypeID, intersectAssetID }).ConfigureAwait(false)).SingleOrDefault();
 
 					if (rfld != null)
 					{

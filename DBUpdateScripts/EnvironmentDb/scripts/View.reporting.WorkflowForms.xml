@@ -5,8 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="View.reporting.WorkflowForms-v2">
-    <comment>GOV-18453 Convert Object/ObjectID/ObjectType/ObjectTypeID columns in dbo.Issue table</comment>
+  <changeSet author="Pappas" id="View.reporting.WorkflowForms-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -15,7 +14,7 @@
 CREATE OR ALTER VIEW [reporting].[WorkflowForms] AS
 	select 	t.ID as WorkflowID,
 			i.ID as ItemID,
-			coalesce(a.DisplayValue, ai.DisplayValue, arn.[Name], '[unknown]') as WorkflowItem,
+			coalesce(a.DisplayValue, ai.DisplayValue, '[unknown]') as WorkflowItem,
 			coalesce(a.ID, ai.ID) as AssetID,
 			si.StepID,
 			form.fieldId as FieldID,
@@ -29,7 +28,6 @@ CREATE OR ALTER VIEW [reporting].[WorkflowForms] AS
 			left join Issue on issue.ID = i.ObjectID and i.[Object] = 'Issue'
 			left join AssetDetail ai on ai.ID = issue.AssetID
 			left join IntersectDetail ar on ar.ID = i.ID and i.[Object] = 'Intersect'
-			outer apply dbo.GetIntersectNames(ar.ID) arn
 			inner join workflow.versionstep vs on vs.ID = si.StepID
 			inner join workflow.[version] v on v.ID = vs.VersionID
 			inner join workflow.[type] t on t.ID = v.TypeID

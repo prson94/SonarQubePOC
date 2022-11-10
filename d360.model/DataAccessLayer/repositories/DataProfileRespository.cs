@@ -128,12 +128,9 @@ namespace d360.model.DataAccessLayer
 				descendantsSQL = $@"with descendants as (
 										select @assetID as AssetID
 										union all
-										select 
-											AAP.assetID
-										from 
-											descendants as d
-											inner join 
-											[utility].[ArtifactAssetParent] AAP on d.AssetID = AAP.ParentAssetID
+										select	AAP.ObjectAssetID as AssetID
+										from	descendants as d
+												inner join PredicateIntersect AAP on AAP.SubjectAssetID = d.AssetID and AAP.PredicateType in (3,4)
 									)";
 			}
 

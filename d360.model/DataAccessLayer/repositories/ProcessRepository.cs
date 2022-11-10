@@ -697,12 +697,8 @@ namespace d360.model.DataAccessLayer
 							merge [Intersect] IT
 							using(
 								select I.IntersectTypeId,
-										A.Object as Subject, 
-										A.ObjectID as SubjectID,
 										A.AssetTypeID as SubjectAssetTypeID,
 										A.ID as SubjectAssetID,
-										I.Object,
-										I.ObjectID,
 										I.ObjectAssetTypeID,
 										I.ObjectAssetID,
 										I.Id as OldIntersectId
@@ -713,12 +709,8 @@ namespace d360.model.DataAccessLayer
 									where eda.executionid = @executionid and eda.Action <> 'Delete' and #relationshipMap.Location = 'Subject'
 								union
 								select I.IntersectTypeId,
-										A.Object, 
-										A.ObjectID,
 										A.AssetTypeID, 
 										A.ID,
-										I.Object as Subject,
-										I.ObjectID as SubjectID,
 										I.ObjectAssetID,
 										I.ObjectAssetTypeID,
 										I.Id as OldIntersectId
@@ -728,12 +720,8 @@ namespace d360.model.DataAccessLayer
 									inner join [Intersect] I on I.ID = #relationshipMap.intersectid
 									where eda.executionid = @executionid and eda.Action <> 'Delete' and #relationshipMap.Location = 'Object'
 							) src on (1=0)
-							WHEN NOT MATCHED THEN INSERT (IntersectTypeId,Subject,SubjectID,Object,ObjectID,State,CreatedBy,CreatedOn,UpdatedBy,UpdatedOn,Owner,Deleted,Visible,uid,SubjectAssetID,SubjectAssetTypeID,ObjectAssetID,ObjectAssetTypeID)
+							WHEN NOT MATCHED THEN INSERT (IntersectTypeId,State,CreatedBy,CreatedOn,UpdatedBy,UpdatedOn,Owner,Deleted,Visible,uid,SubjectAssetID,SubjectAssetTypeID,ObjectAssetID,ObjectAssetTypeID)
 							VALUES (	src.IntersectTypeId,
-										src.Subject, 
-										src.SubjectID,
-										src.Object,
-										src.ObjectID,
 										'1',
 										@resourceid,
 										getutcdate(),

@@ -2208,14 +2208,14 @@ namespace d360.model.DataAccessLayer
 							select	top 1
 									@referenceId = A.ID
 							from	[Intersect] I
-									inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.SubjectAssetID = @objectAssetId
+									inner join AssetType A on A.ID = I.ObjectAsetTypeID and I.ObjectAssetID = 0 and I.SubjectAssetID = @objectAssetId
 						end
 						else
 						begin 
 							select	top 1
 									@referenceId = A.ID
 							from	[Intersect] I
-									inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.ObjectAssetID = @objectAssetId
+									inner join AssetType A on A.ID = I.SubjectAssetTypeID and I.SubjectAssetID = 0 and I.ObjectAssetID = @objectAssetId
 						end
 
 				   select * from fieldtype
@@ -2781,14 +2781,14 @@ namespace d360.model.DataAccessLayer
 							select	top 1
 									@referenceId = A.ID
 							from	[Intersect] I
-									inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.SubjectAssetID = @objectAssetId
+									inner join AssetType A on A.ID = I.ObjectAssetTypeID and I.ObjectAssetID = 0 and I.SubjectAssetID = @objectAssetId
 						end
 						else
 						begin 
 							select	top 1
 									@referenceId = A.ID
 							from	[Intersect] I
-									inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.ObjectAssetID = @objectAssetId
+									inner join AssetType A on A.ID = I.SubjectAssetTypeID and I.SubjectAssetID = 0 and I.ObjectAssetID = @objectAssetId
 						end
 
 						select @referenceId", dbArgs)).FirstOrDefault();

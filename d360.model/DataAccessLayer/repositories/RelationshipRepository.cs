@@ -581,8 +581,6 @@ select	@pageSize as 'pageSize',
 				{(includeAssetPath ? ",ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'" : "")}
 				{(isExport ? ",PS.[Path] as 'Subject.AssetTypePath'" : "")}                
 				{(isExport ? ",ADVS.DisplayValue as 'Subject.DisplayName'" : "")}
-				{(includeLegacyData ? ",I.Subject as 'Subject.Type'" : "")}
-				{(includeLegacyData ? ",I.Object as 'Object.Type'" : "")}
 				,lower(O.Uid) as 'Object.Uid'
 				,ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
 				{(isExport ? ",ADVO.DisplayValue as 'Object.DisplayName'" : "")}
@@ -614,11 +612,11 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 								left join [Predicate] P on P.ID = T.PredicateID 
 								left join Asset S on S.ID = I.SubjectAssetID 
 								left join AssetType ST1 on S.ID is not null and ST1.ID = S.AssetTypeID
-								left join AssetType ST2 on S.ID is null and ST2.Object = I.Subject and ST2.ObjectID = I.SubjectID
+								left join AssetType ST2 on S.ID is null and ST2.ID = I.SubjectAssetTypeID 
 								left join dbo.AssetPath SKP on SKP.ID = S.ID
 								left join Asset O on O.ID = I.ObjectAssetID 
 								left join AssetType OT1 on O.ID is not null and OT1.ID = O.AssetTypeID
-								left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.ObjectID = I.ObjectID
+								left join AssetType OT2 on O.ID is null and OT2.ID = I.ObjectAssetTypeID 
 								left join dbo.AssetPath OKP on OKP.ID = O.ID 
 								";
 			var whereClause = " WHERE I.[Uid] = @uid ";
@@ -809,11 +807,6 @@ from	IntersectType I
 			var models = await companyContext.GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs, ApiTimeout);
 
 			return models;
-		}
-
-		public Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type)
-		{
-			return GetRelationshipTypes(null, $"where I.State = 1 and ((I.SubjectID = {id} and I.[Subject] = '{type.ToString()}') or (I.ObjectID = {id} and I.Object = '{type.ToString()}'))");
 		}
 
 		public async Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, ApiExecution execution, bool triggerWorkflow = false)
@@ -1271,13 +1264,10 @@ where	Id = @Id
 
 			if (includeTotal)
 			{
-				var cntsql = $@"select
-							count(1)
-						from
-							[intersect] i	                        
-						where 
-							i.IntersectTypeID = @intersectTypeID
-							{whereFilter}";
+				var cntsql = $@"
+select	count(1)
+from	[Intersect] i 
+where	i.IntersectTypeID = @intersectTypeID {whereFilter}";
 
 				total = await companyContext.QueryFirstOrDefaultAsync<int>(cntsql, new { intersectTypeID, owner }, ApiTimeout);
 			}
@@ -1289,54 +1279,40 @@ where	Id = @Id
 						 create table #TempIntersectInfo
 						(
 							IntersectUid UniqueIdentifier not null, 
+							SubjectAssetID bigint,
 							SubjectUid UniqueIdentifier null,
+							ObjectAssetID bigint,
 							ObjectUid UniqueIdentifier null,
-							[Object] varchar(20) not null,
-							[ObjectID] int not null,
-							[Subject] varchar(20) not null,
-							[SubjectID] int not null,
-							[Owner] varchar(100) null
+						    [Owner] varchar(100) null
 						)
 
-						create nonclustered index temp_intersectInfo_idx on #TempIntersectInfo ([Object],[ObjectID],[Subject],[SubjectID])
+						create nonclustered index temp_intersectInfo_idx on #TempIntersectInfo ([ObjectAssetID],[SubjectAssetID])
 
 						 -- add intersect info into temp table
 
 						 insert into #TempIntersectInfo
-							(IntersectUid, [Object],[ObjectID], [Subject], [SubjectID],[Owner])
+							(IntersectUid, [SubjectAssetID],[ObjectAssetID],[Owner])
 						   select 
 							I.[UID],
-							I.[Object],
-							I.[ObjectID],
-							I.[Subject],
-							I.[SubjectID],
+							I.[SubjectAssetID],
+							I.[ObjectAssetID],
 							I.[Owner]
-						   from [intersect] I 
-						   where I.IntersectTypeID = @intersectTypeID
-								{whereFilter}
-							Order by I.ID OFFSET @offset ROWS 
-								FETCH NEXT @rows ROWS ONLY
+							from	[intersect] I 
+							where	I.IntersectTypeID = @intersectTypeID {whereFilter}
+							order by I.ID OFFSET @offset ROWS 
+							FETCH NEXT @rows ROWS ONLY
 
+							UPDATE	#TempIntersectInfo
+							SET		#TempIntersectInfo.SubjectUid =  a.[uid]
+							FROM	Asset a
+									INNER JOIN #TempIntersectInfo t ON a.ID = t.SubjectAssetID;
 
-							UPDATE
-								#TempIntersectInfo
-							SET
-								#TempIntersectInfo.SubjectUID =  a.[uid]
-							FROM 
-								asset a
-								INNER JOIN #TempIntersectInfo t ON a.[object] = t.[subject] and a.[objectid] = t.[subjectid];
+							UPDATE	#TempIntersectInfo
+							SET		#TempIntersectInfo.ObjectUID =  a.[uid]
+							FROM	asset a	
+									INNER JOIN #TempIntersectInfo t ON a.ID = t.ObjectAssetID;
 
-							UPDATE
-								#TempIntersectInfo
-							SET
-								#TempIntersectInfo.ObjectUID =  a.[uid]
-							FROM 
-								asset a
-								INNER JOIN #TempIntersectInfo t ON a.[object] = t.[object] and a.[objectid] = t.[objectid];
-
-							select IntersectUid as RelationshipUid,ObjectUid,SubjectUid,Owner from #TempIntersectInfo
-
-
+							select IntersectUid as RelationshipUid, ObjectUid, SubjectUid, Owner from #TempIntersectInfo 
 						end";
 
 			var results = await companyContext.QueryAsync<RelationshipUidResultItem>(sql, new { intersectTypeID, offset = ((pageNum - 1) * (pageSize)), rows = pageSize, owner }, ApiTimeout);

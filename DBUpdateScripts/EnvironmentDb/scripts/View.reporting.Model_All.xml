@@ -5,16 +5,16 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.reporting.Model_All-v2">
+  <changeSet author="Pappas" id="View.reporting.Model_All-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE or ALTER VIEW [reporting].[Model_All] AS
+CREATE OR ALTER VIEW [reporting].[Model_All] AS
     select	A.ID as AssetID,
-			A.ObjectID as [Taxonomy ID],
-		    I.SubjectID as ParentID,
+			A.ID as [Taxonomy ID],
+		    I.SubjectAssetID as ParentID,
 			A.TypeID as [Taxonomy Type id],
 		    A.DisplayValue,
 		    P.DisplayPath as TextPath,
@@ -34,13 +34,13 @@ CREATE or ALTER VIEW [reporting].[Model_All] AS
     </sql>
 	<rollback>
 		<![CDATA[	
-CREATE OR ALTER VIEW [reporting].[Model_All] AS
+CREATE or ALTER VIEW [reporting].[Model_All] AS
     select	A.ID as AssetID,
 			A.ObjectID as [Taxonomy ID],
 		    I.SubjectID as ParentID,
 			A.TypeID as [Taxonomy Type id],
 		    A.DisplayValue,
-		    TP.TextPath,
+		    P.DisplayPath as TextPath,
 		    LV.[Level] as [Taxonomy Level],
 		    A.UpdatedOn,
 		    A.UpdatedBy,
@@ -48,9 +48,9 @@ CREATE OR ALTER VIEW [reporting].[Model_All] AS
 		    A.TypeName as [Taxonomy Type Name],
 		    coalesce(TL.Name, 'Level ' + cast(LV.[Level] as varchar)) as [Level Name]
     from	AssetDetail A
-		    cross apply dbo.GetAssetTextPathById(A.ID, '/') TP
+			inner join AssetPath P on P.ID = A.ID
 		    cross apply dbo.GetAssetLevelById(A.ID) LV
-		    left join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 4
+		    left join PredicateIntersect I on I.ObjectAssetID = A.ID and I.PredicateType = 4
 		    left join AssetTypeLevel TL on TL.[AssetTypeID] = A.AssetTypeID and TL.[Level] = LV.[Level]
     where	A.AssetTypeClass = 2
 		]]>
