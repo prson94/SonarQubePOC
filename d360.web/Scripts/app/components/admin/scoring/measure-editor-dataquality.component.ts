@@ -1,12 +1,29 @@
-import { Input, Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation, ElementRef, ViewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    OnChanges,
+    OnInit,
+    SimpleChanges,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricFieldTypeViewModel, MetricAssetDefinitionViewModel, MetricRuleResultOperation, MetricMatchType, MetricPathOptionViewModel, MetricAssetDefinitionDataQualityViewModel, MetricAssetDefinitionDataQualityFilterViewModel } from '../../../models/metrics.model';
+import {
+    MetricAssetDefinitionDataQualityFilterViewModel,
+    MetricAssetDefinitionDataQualityViewModel,
+    MetricAssetDefinitionViewModel,
+    MetricFieldTypeViewModel,
+    MetricMatchType,
+    MetricRuleResultOperation
+} from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
-import { FormBuilder, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldType, FieldTypeHelper } from '../../../models/fieldtype-api.model';
-import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../models/field-condition-grid.models';
+import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';

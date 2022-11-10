@@ -1,17 +1,9 @@
-﻿import {
-    Component,
-    OnInit,
-    Input,
-    Output,
-    EventEmitter,
-    OnChanges,
-    SimpleChanges
-} from '@angular/core';
-import {BaseComponent} from '../../shared/base.component';
-import {ExportTemplateService} from '../../../services/export-template.service';
-import {ExportTemplate} from '../../../models/export-template.model';
-import {FieldsObservableService} from '../../../services/fieldsObservable.service';
-import {FieldDefinition} from '../../../models/fields.model';
+﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { BaseComponent } from '../../shared/base.component';
+import { ExportTemplateService } from '../../../services/export-template.service';
+import { ExportTemplate } from '../../../models/export-template.model';
+import { FieldsObservableService } from '../../../services/fieldsObservable.service';
+import { FieldDefinition } from '../../../models/fields.model';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';

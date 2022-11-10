@@ -1,7 +1,6 @@
 ﻿import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { AdminArtifactsComponent } from './admin-artifacts.component';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 const routes: Routes = [
     { path: `:class`, component: AdminArtifactsComponent },

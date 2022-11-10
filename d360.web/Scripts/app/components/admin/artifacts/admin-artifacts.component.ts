@@ -9,7 +9,7 @@ import { ArtifactTypeService } from '../../../services/artifact-type.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AssetTypeClass, AssetCount } from '../../../models/asset.model';
+import { AssetCount, AssetTypeClass } from '../../../models/asset.model';
 import { TreeTable } from 'primeng/treetable';
 import { AssetService } from '../../../services/asset.service';
 import { AssetTypeService } from '../../../services/asset-type.service';

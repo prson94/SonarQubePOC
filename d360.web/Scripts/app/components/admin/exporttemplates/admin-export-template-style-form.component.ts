@@ -1,5 +1,5 @@
 ﻿import { FormEvents } from "../../../models/form.model";
-import { Input, Output, Component, EventEmitter, OnChanges, SimpleChanges, OnInit } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import { BaseComponent } from "../../shared/base.component";
 import { ExportTemplateStyle, ExportViewType } from "../../../models/export-template.model";
 import { SelectItem } from "primeng/api";

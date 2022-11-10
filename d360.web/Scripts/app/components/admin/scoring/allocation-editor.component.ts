@@ -1,4 +1,16 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
+﻿import {
+    AfterViewChecked,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { ScoreTypeAllocation } from '../../../models/metrics.model';
 import { AssetTypeClass } from '../../../models/asset.model';
@@ -7,7 +19,7 @@ import { AllocationService } from '../../../services/allocations.service';
 import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AppSettingsEnum } from '../../../models/settings.model';
-import {Dropdown} from "primeng/dropdown";
+import { Dropdown } from "primeng/dropdown";
 
 @Component({
     selector: 'allocation-editor',

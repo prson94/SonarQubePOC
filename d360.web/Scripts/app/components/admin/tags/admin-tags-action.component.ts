@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TagType } from '../../../models/tag.model';
 
 @Component({

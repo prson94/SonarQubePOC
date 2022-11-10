@@ -1,5 +1,5 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AssetTypeClass } from '../../models/asset.model';
 import { AssetService } from '../../services/asset.service';
 import { CompanySettingsService } from '../../services/settings.service';

@@ -1,9 +1,29 @@
-import { Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation, ViewChild, ElementRef } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    OnChanges,
+    OnInit,
+    SimpleChanges,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceFieldViewModel, MetricAssetDefinitionGovernanceOwnerViewModel, MetricAssetDefinitionGovernanceRelationViewModel, MetricAssetDefinitionGovernancePredicateViewModel } from '../../../models/metrics.model';
+import {
+    MetricAssetDefinitionGovernanceExternalViewModel,
+    MetricAssetDefinitionGovernanceFieldViewModel,
+    MetricAssetDefinitionGovernanceOwnerViewModel,
+    MetricAssetDefinitionGovernancePredicateViewModel,
+    MetricAssetDefinitionGovernanceRelationViewModel,
+    MetricAssetDefinitionGovernanceViewModel,
+    MetricAssetDefinitionViewModel,
+    MetricGovernanceCheckType,
+    MetricUpdateFrequency
+} from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
-import { FormBuilder, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldCondition } from '../../../models/field-condition-grid.models';
 import * as _ from 'lodash';

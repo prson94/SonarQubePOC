@@ -1,6 +1,6 @@
-﻿import { Component, NgZone, OnInit, Output, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { WorkflowListItem, ChangeTypeInfo, WorkflowChangeType } from '../../../models/workflow.model';
+import { ChangeTypeInfo, WorkflowChangeType, WorkflowListItem } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { Router } from '@angular/router';
 import { map } from 'rxjs/operators';

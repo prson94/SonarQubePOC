@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { ResponsibilityTypeRelationRuleSummary } from '../../../models/responsibility-type.model';
 import { BaseComponent } from '../../shared/base.component';

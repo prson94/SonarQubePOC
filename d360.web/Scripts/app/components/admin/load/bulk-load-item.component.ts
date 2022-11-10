@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
 import { LoadService } from '../../../services/load.service';
 import { GridColumn } from '../../../models/grid-definition.model';
 import { BaseComponent } from '../../shared/base.component';

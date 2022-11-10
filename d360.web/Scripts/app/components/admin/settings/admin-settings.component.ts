@@ -1,6 +1,15 @@
 import { Component } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { CompanySettings, CompanyImage, SearchType, SettingsHelper, CompanyRebuildJobStatusApiModel, CompanyRebuildJobStatusState, CompanySettingEnum, SettingsPutModel } from '../../../models/settings.model';
+import {
+    CompanyImage,
+    CompanyRebuildJobStatusApiModel,
+    CompanyRebuildJobStatusState,
+    CompanySettingEnum,
+    CompanySettings,
+    SearchType,
+    SettingsHelper,
+    SettingsPutModel
+} from '../../../models/settings.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { SearchService } from '../../../services/search.service';

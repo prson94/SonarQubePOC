@@ -1,5 +1,5 @@
 ﻿import { NgModule } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { CommonModule, DatePipe } from "@angular/common";
 import { TooltipModule } from "primeng/tooltip";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { DropdownModule } from "primeng/dropdown";
@@ -17,7 +17,6 @@ import { MultiInputFieldModule } from "../../shared/controls/multi-input-field/m
 import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.component";
 import { OverlayPanelModule } from "primeng/overlaypanel";
 import { FocusTrapModule } from "primeng/focustrap";
-import { DatePipe } from '@angular/common';
 import { IgColorPickerModule } from "../../shared/controls/color-picker/color-picker.module";
 import { CheckboxModule } from 'primeng/checkbox';
 

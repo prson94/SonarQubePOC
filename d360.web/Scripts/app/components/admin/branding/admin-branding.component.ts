@@ -1,16 +1,23 @@
 ﻿import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    OnInit,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { DomSanitizer, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
 import { forkJoin } from 'rxjs';
 import { BrandingService, Theme } from '../../../services/branding.service';
-import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
+import { FeatureFlagsService } from '../../../services/featureflags.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { AdminBaseComponent } from '../admin-base.component';
 
