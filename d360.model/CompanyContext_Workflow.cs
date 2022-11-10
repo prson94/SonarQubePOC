@@ -1366,6 +1366,7 @@ namespace d360.model
 		{
 			var targetColumn = isSubject ? "SubjectAssetID" : "ObjectAssetID";
 			string sql = $"delete from [intersect] output deleted.uid into #deletedIntersects where {targetColumn} = @assetId and intersecttypeid = @intersectTypeId";
+			Database.Connection.Execute(sql, new { assetId, intersectTypeId });
 		}
 
 		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, Asset asset = null)
