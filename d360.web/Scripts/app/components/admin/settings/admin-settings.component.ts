@@ -46,7 +46,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     companyLogo: CompanyImage = new CompanyImage();
     companyIcon: CompanyImage = new CompanyImage();
     homePageImage: CompanyImage = new CompanyImage();
-    groups: SelectItem[];
+    groups: SelectItem[] = [];
     sub: any;
     routeValidationMessage = "";
     disableExcel: boolean = false;
@@ -133,18 +133,21 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.ShowHomePageTitle = this.getBooleanSetting(CompanySettingEnum.ShowHomePageTitle);
         this.companySettings.SiteNav.forEach((s) => {
             s.IsCustom = (s.Name.indexOf('#') !== 0);
-        });
-        this.companySettings.WorkflowCatchAllGroup = this.getNumberSetting(CompanySettingEnum.WorkflowCatchAllGroup);
+		});
+		let workflowCatchAllGroup = this.getNumberSetting(CompanySettingEnum.WorkflowCatchAllGroup);
+		this.groups.push({ label: "", value: workflowCatchAllGroup });
+		this.companySettings.WorkflowCatchAllGroup = workflowCatchAllGroup;
         this.companySettings.WorkflowDigestEmailDays = this.getNumberSetting(CompanySettingEnum.WorkflowDigestEmailDays);
         this.companySettings.WriteActionDescription = this.getBooleanSetting(CompanySettingEnum.WriteActionDescription);
         this.companySettings.RequestCertificationDraft = this.getStringSetting(CompanySettingEnum.RequestCertificationDraft);
 
         this.settingsService.getGroups()
             .subscribe((x) => {
-                this.groups = x.map((x) => {
+                let groups = x.map((x) => {
                     return { label: x.label, value: +x.value };
                 });
-                this.groups.unshift({ label: $localize`[Administrators]`, value: 0 });
+				groups.unshift({ label: $localize`[Administrators]`, value: 0 });
+				this.groups = groups;
                 this.isLoading = false;
             });
         this.resetSaveButton();
