@@ -52,7 +52,7 @@ export class HeaderBreadcrumbComponent {
             (breadcrumb) => {
                 if (!_.isEqual(_.omit(this.breadcrumbs[this.breadcrumbs.length - 1], ['active']), _.omit(breadcrumb, ['active']))) {
 
-                    if (this.breadcrumbs.length != 0) {
+                    if (this.breadcrumbs.length !== 0) {
                         this.breadcrumbs[this.breadcrumbs.length - 1].active = true;
                         breadcrumb.active = false;
                     }
@@ -181,7 +181,7 @@ export class HeaderBreadcrumbComponent {
 
             max += tempCrumb.offsetWidth;
 
-            var last = (this.breadcrumbs.length - 1) == i;
+            var last = (this.breadcrumbs.length - 1) === i;
             if (!last)
                 {max += 25;} // for the icon separator
 
@@ -197,10 +197,10 @@ export class HeaderBreadcrumbComponent {
     }
 
     showCrumb() {
-        if (this.showThisManyCrumbs == 0)
+        if (this.showThisManyCrumbs === 0)
             {return;}
 
-        if (this.breadcrumbs.length == this.showThisManyCrumbs) {
+        if (this.breadcrumbs.length === this.showThisManyCrumbs) {
             this.showLastOnly = false;
             this.breadcrumbs.forEach((x) => { x.show = true; });
             return;

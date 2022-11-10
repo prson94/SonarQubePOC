@@ -49,7 +49,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if ((changes['filterToName'] && changes['filterToName'].currentValue != changes['filterToName'].previousValue) || (changes['objectID'] && changes['objectID'].currentValue != changes['objectID'].previousValue)) {
+        if ((changes['filterToName'] && changes['filterToName'].currentValue !== changes['filterToName'].previousValue) || (changes['objectID'] && changes['objectID'].currentValue !== changes['objectID'].previousValue)) {
             this.getRelationships();
         }
     }
@@ -123,7 +123,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         if (sessionStorage.getItem(this.gridStorageKey)) {
             let gridData = JSON.parse(sessionStorage.getItem(this.gridStorageKey));
 
-            if (gridData.filters && Object.keys(gridData.filters).filter((x) => x != "global").length > 0)
+            if (gridData.filters && Object.keys(gridData.filters).filter((x) => x !== "global").length > 0)
                 {this.showSimpleFilter = false;}
 
             this.cdRef.detectChanges();
@@ -134,7 +134,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         var index: number = -1;
         for (var relationship of this.relationships) {
             index++;
-            if (relationship.Uid == uid) {return index;}
+            if (relationship.Uid === uid) {return index;}
         }
     }
 

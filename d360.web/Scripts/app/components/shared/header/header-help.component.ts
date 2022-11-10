@@ -120,7 +120,7 @@ export class HeaderHelpComponent implements OnInit {
 
     @HostListener('wheel', ['$event'])
     handleWheelEvent(event) {
-        if (this.display == true) {
+        if (this.display === true) {
             event.preventDefault();
         }
     }
@@ -132,7 +132,7 @@ export class HeaderHelpComponent implements OnInit {
 
     checkKey(event) {
         if (event.keyCode) {
-            if (event.keyCode == 27 || event.keyCode == 13)
+            if (event.keyCode === 27 || event.keyCode === 13)
                 {this.closeAbout();}
         }
     }

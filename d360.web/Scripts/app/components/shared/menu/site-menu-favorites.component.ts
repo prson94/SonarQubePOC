@@ -89,7 +89,7 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
                 return;
             }
             
-            if (activeMenu?.MenuID != this.menu.MenuID) {
+            if (activeMenu?.MenuID !== this.menu.MenuID) {
                 this.store.toggleManageFavoritesOffAction();
             }
         }));

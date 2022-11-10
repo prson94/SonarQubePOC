@@ -102,7 +102,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 (event: NavigationEvent) => {
                     this.secondaryNavService.saveLastState();
                     if (event instanceof NavigationStart) {
-                        if (event.navigationTrigger != 'imperative') {
+                        if (event.navigationTrigger !== 'imperative') {
                             let state = this.secondaryNavService.getItemState(event.url);
                             if (state) {
                                 this.secondaryNavService.rebuildFromStorage(state);
@@ -175,7 +175,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     checkScrollPos() {
         if (this.tabScroller && this.tabScroller.length > 0) {
             let currentPosition = this.tabScroller.first.nativeElement.scrollLeft;
-            this.disableScrollLeft = currentPosition == 0;
+            this.disableScrollLeft = currentPosition === 0;
 
             let maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
             let lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
@@ -196,7 +196,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         let scrollAmount = 0;
         let scrollDistance = 300;
         let move = () => {
-            if (direction == 'L') {
+            if (direction === 'L') {
                 this.tabScroller.first.nativeElement.scrollLeft -= 10;
             } else {
                 this.tabScroller.first.nativeElement.scrollLeft += 10;
@@ -214,7 +214,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     getTitle(item: SecondaryNavItem) {
         if (this.statistics && this.statistics.IssueCount > 0 && item.title === 'Actions') {
-            let plurality = this.statistics.IssueCount == 1 ? ' is' : 's are';
+            let plurality = this.statistics.IssueCount === 1 ? ' is' : 's are';
             return this.statistics.IssueCount + " outstanding action" + plurality + " assigned to you";
         } else {
             return "";
@@ -303,10 +303,10 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
         this.assetActionSub = this.secondaryNavService.assetAction$.subscribe((res) => {
             this.assetAction = res;
-            if (this.assetAction && this.assetAction.type == "CONNECTORLABEL") {
+            if (this.assetAction && this.assetAction.type === "CONNECTORLABEL") {
                 this.showOnlyMainTab = true;
             }
-            if (this.assetAction && this.assetAction.type == "TAG") {
+            if (this.assetAction && this.assetAction.type === "TAG") {
                 var AssetActionwidthCalc = 0;
                 if (this.assetAction.showBack) {
                     AssetActionwidthCalc = AssetActionwidthCalc + 110;
@@ -344,7 +344,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
         this.updateSub = this.secondaryNavService.updateObject$.subscribe((res) => {
             if (res) {
-                if (res.key == 'firstTabTitle') {
+                if (res.key === 'firstTabTitle') {
                     this.items[0].title = res.value;
                 }
                 if (res.key === 'areaTitle') {
@@ -368,7 +368,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.objectStatisticsService.getObjectColorAndValue(objectID, objectName, "status").subscribe(
             (result) => {
                 this.status = result;
-                if (this.status != undefined && this.status != null && this.status.length > 0) {
+                if (this.status != null && this.status.length > 0) {
                     var draftValues = this.settingsService.getSettingById(CompanySettingEnum.RequestCertificationDraft).StringSetting.Value;
 
                     if (!draftValues) {
@@ -385,7 +385,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     let isDraft = false;
                     let draftArray = draftValues.toUpperCase().split(',');
                     draftArray.forEach((x) => {
-                        if (statusHeading.toUpperCase().indexOf(x.toUpperCase()) != -1)
+                        if (statusHeading.toUpperCase().indexOf(x.toUpperCase()) !== -1)
                             {isDraft = true;}
                     });
 
@@ -407,7 +407,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.dataClassification = result;
                 try {
                     let dataClassificationAttributes = JSON.parse(this.dataClassification);
-                    if (this.dataClassification != undefined && this.dataClassification != null && dataClassificationAttributes.length > 0) {
+                    if (this.dataClassification != null && dataClassificationAttributes.length > 0) {
                         this.showDataClassification = true;
                     }
                     else {
@@ -420,7 +420,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             }
         );
 
-        if (this.currentObject.Uid && this.currentObject.Uid != '00000000-0000-0000-0000-000000000000') {
+        if (this.currentObject.Uid && this.currentObject.Uid !== '00000000-0000-0000-0000-000000000000') {
             this.objectStatisticsService.getSearchDetails(this.currentObject.Uid).subscribe(
                 (result) => {
                     this.searchDetails = result;
@@ -495,7 +495,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     itemClicked(item: SecondaryNavItem) {
-        if (item.active == true)
+        if (item.active === true)
             {return;}
 
         if (this.AllClosed()) {
@@ -503,7 +503,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.homeUrl = this.router.url;
         }
         this.closeAll();
-        if (item.title == "homeClick") {
+        if (item.title === "homeClick") {
             this.secondaryNavService.clearLocalActiveItem();
             let home = this.homeUrl ? this.homeUrl : this.secondaryNavService.getLocalHomeUrl();
             if (!home) {
@@ -521,10 +521,10 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     AllClosed() {
-        let count = this.items.filter((x) => x.active == true).length;
+        let count = this.items.filter((x) => x.active === true).length;
         if (count === 0)
             {this.secondaryNavService.setLocalActiveItem(undefined);}
-        return count == 0;
+        return count === 0;
     }
 
     closeAll() {
@@ -537,7 +537,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     checkIfImg(value: string) {
-        if (value && value.indexOf('/Content') != -1) {
+        if (value && value.indexOf('/Content') !== -1) {
             return true;
         }
         else
@@ -595,7 +595,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     OpenScoring(scoreType: string) {
         if (this.currentObject.Uid) {
             let scoreItems = this.items.filter((x) => x.title === 'Scoring');
-            if (scoreItems.length == 1) {
+            if (scoreItems.length === 1) {
                 this.router.navigateByUrl(`/sidebar/score/${this.currentObject.Uid}/${scoreType}`);
             }
         }

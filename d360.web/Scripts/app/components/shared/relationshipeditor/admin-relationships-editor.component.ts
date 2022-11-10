@@ -92,7 +92,7 @@ export class AdminRelationshipsEditor {
                             this.limitedChangesOnly = true;
                         }
 
-                        if (this.relationshipType.Predicate.Uid != undefined && hasRelationships) {
+                        if (this.relationshipType.Predicate.Uid != null && hasRelationships) {
                             this.canChangePredicate = false;
                         }
                     }
@@ -115,11 +115,11 @@ export class AdminRelationshipsEditor {
 
     private predicateChanged(value) {
         if (!value) {return;}
-        let predicate = this.predicates.find((p) => p.value == value);
+        let predicate = this.predicates.find((p) => p.value === value);
         this.selectedPredicate = predicate;
         this.loadCardinalityOptions();
 
-        if (predicate != null && predicate.isSemantic == true) {
+        if (predicate != null && predicate.isSemantic === true) {
             this.canChangeObject = false;
             this.objectOptions = this.subjectOptions.slice();
 			this.cdRef.detectChanges();
