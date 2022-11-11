@@ -33,6 +33,7 @@ import { CoreModule } from "../../shared/core.module";
 import { ResourceApiKeyModule } from '../../resource/api-key/resource-api.module';
 import { HeaderBackButtonComponent } from './header-back-button.component';
 import { ThirdPartyLicensesModule } from '../controls/third-party-licenses/third-party-licenses.component';
+import { UseBreadcrumbsComponent } from './use-breadcrumbs.component';
 
 
 @NgModule({
@@ -73,9 +74,11 @@ import { ThirdPartyLicensesModule } from '../controls/third-party-licenses/third
         HeaderProfileComponent,
         HeaderMiniMenuComponent,
         HeaderBackButtonComponent,
+        UseBreadcrumbsComponent
     ],
     exports: [
-        HeaderComponent
+        HeaderComponent,
+        UseBreadcrumbsComponent
     ],
     providers: [
 

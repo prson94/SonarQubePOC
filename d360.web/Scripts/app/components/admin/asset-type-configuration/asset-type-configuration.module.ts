@@ -33,6 +33,8 @@ import { ConfigurationAssetTypeRelationshipsPageComponent } from './tabs/relatio
 import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
 import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration-asset-type-log-page.component';
 import { AuditModule } from '../../sidebar/audit/audit.module';
+import { ConfigurationAssetTypeBreadcrumbsComponent } from './tabs/shared/configuration-asset-type-breadcrumbs/configuration-asset-type-breadcrumbs.component';
+import { HeaderModule } from '../../shared/header/header.module';
 
 @NgModule({
     imports: [
@@ -54,7 +56,8 @@ import { AuditModule } from '../../sidebar/audit/audit.module';
         SharedResponsibilitiesModule,
         AdminModule,
         AdminRelationshipEditorModule,
-        AuditModule
+        AuditModule,
+        HeaderModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
@@ -69,7 +72,8 @@ import { AuditModule } from '../../sidebar/audit/audit.module';
         ConfigurationAssetTypeOwnersPageComponent,
         ConfigurationAssetTypeAllocationsPageComponent,
         ConfigurationAssetTypeRelationshipsPageComponent,
-        ConfigurationAssetTypeLogPageComponent
+        ConfigurationAssetTypeLogPageComponent,
+        ConfigurationAssetTypeBreadcrumbsComponent
     ],
     exports: [],
 })
