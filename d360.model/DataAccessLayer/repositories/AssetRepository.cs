@@ -4736,7 +4736,7 @@ where an.Uid = fam.uid)
 										select	@assetID as AssetID, 
 												CAST(0 AS BIGINT) as ParentAssetID
 										union all
-										select	AAP.assetID, AAP.SubjectAssetID as ParentAssetID
+										select	AAP.ObjectAssetID as AssetID, AAP.SubjectAssetID as ParentAssetID
 										from	descendants as d
 												inner join PredicateIntersect AAP on AAP.SubjectAssetID = d.AssetID and AAP.PredicateType in (3,4)
 									)
