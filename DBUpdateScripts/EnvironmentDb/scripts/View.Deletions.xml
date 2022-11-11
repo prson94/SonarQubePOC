@@ -5,86 +5,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="View.Deletions.v4">
-  <comment>GOV-17952</comment>
+  <changeSet author="Pappas" id="View.Deletions.v5">
+  <comment>GOV-19415</comment>
   <comment></comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-drop view if exists [reporting].[Fusion_All]
-GO
-drop view if exists [reporting].[Fusion_Fields]
-GO
-drop view if exists [reporting].[FusionQuery_All]
-GO
-drop view if exists [reporting].[FusionQuery_Fields]
-GO
-drop view if exists [reporting].[Integration_ExecutionErrors]
-GO
-drop view if exists [reporting].[Integration_Mappings]
-GO
-drop view if exists [reporting].[RuleImplementations_All]
-GO
-drop view if exists [reporting].[RuleImplementations_ResultQualifiers]
-GO
-drop view if exists [graph].[AssetNodeDisplayPath]
-GO
-drop view if exists [graph].[AssetNodeKeyPath]
-GO
-drop view if exists [cache].[ObjectDetails]
-GO
-drop view if exists dbo.OrganizationDetail
-GO
-drop view if exists dbo.OrganizationInvitationDetail
-GO
-drop view if exists dbo.OrganizationResourceDetail
+drop view if exists [utility].[ArtifactAssetParent]
 		]]>
     </sql>
 	<rollback></rollback>
   </changeSet>
 
-    <changeSet author="Puneet Gupta" id="View.Deletions.ReportingSpecificAssetType.v1">
-  <comment>GOV-18455</comment>
-  <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-DECLARE @ViewName nvarchar(255);
-DECLARE cursorDropView CURSOR
-LOCAL STATIC
-FOR
-select	TABLE_NAME
-from	[INFORMATION_SCHEMA].[VIEWS] 
-where	TABLE_SCHEMA = 'reporting' 
-and (
-	TABLE_NAME like 'BusinessAsset_%' 
-	OR TABLE_NAME like 'Model_%'
-	OR TABLE_NAME like 'Policy_%'
-	)
-and (
-	TABLE_NAME not like '%_All'
-	and	TABLE_NAME not like '%_Fields'
-	and	TABLE_NAME not like 'ModelInterRelationships'
-	);
-
-OPEN cursorDropView;
-
-FETCH NEXT FROM cursorDropView INTO @ViewName;
-WHILE @@FETCH_STATUS = 0
-BEGIN
-	EXEC('drop view if exists [reporting].' + @ViewName);
-    FETCH NEXT FROM cursorDropView INTO @ViewName;
-END;
-CLOSE cursorDropView; 
-DEALLOCATE cursorDropView;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-		]]>
-</rollback>
-  </changeSet>
 </databaseChangeLog>

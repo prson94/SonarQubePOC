@@ -828,7 +828,6 @@ namespace d360.model
 					from    {tableName} EA 
 							inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
 											and EF.ItemNumber = EA.ItemNumber 
-											and EA.ObjectID is not null 
 											and EF.FieldTypeID is not null
 							inner join Field F on F.FieldTypeId = EF.FieldTypeID 
 											and F.AssetID = {(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "EA.ObjectAssetID" : "EA.AssetID")} 
@@ -845,7 +844,6 @@ namespace d360.model
 					from    {tableName} EA 
 							inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
 											and EF.ItemNumber = EA.ItemNumber 
-											and EA.ObjectID is not null 
 											and EF.FieldTypeID is not null
 					where   EA.ExecutionID = @executionID 
 							and EA.IsNew <> 1 
@@ -898,7 +896,6 @@ namespace d360.model
 								from    {tableName} A
 										inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
 											and F.ItemNumber = A.ItemNumber 
-											and A.ObjectID is not null 
 											and F.FieldTypeID is not null
 											and A.Success is null
 										inner join FieldType FT on FT.Id = F.FieldTypeID
@@ -921,7 +918,6 @@ namespace d360.model
 								from    {tableName} A
 										inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
 											and F.ItemNumber = A.ItemNumber 
-											and A.ObjectID is not null 
 											and F.FieldTypeID is not null
 											and A.Success is null
 										inner join FieldType FT on FT.Id = F.FieldTypeID
@@ -1075,12 +1071,8 @@ namespace d360.model
 					ID int,
 					[uid] uniqueidentifier,
 					IntersectTypeID int,
-					[Subject] varchar(50),
-					SubjectID int,
 					SubjectAssetID bigint,
 					SubjectAssetTypeID int,
-					[Object] varchar(50),
-					ObjectID int,
 					ObjectAssetID bigint,
 					ObjectAssetTypeID int,
 					SwitchObject bit
@@ -1101,14 +1093,10 @@ namespace d360.model
 
 				select  distinct 
 						A.AssetID as ObjectAssetID,
-						A.[Object],
-						A.ObjectID,
 						OT.ID as ObjectAssetTypeID,
 						FT.LookupObjectId as IntersectTypeID,
 						Cast(0 as int) as SubjectAssetTypeID,
 						Cast(0 as bigint) as SubjectAssetID,
-						Cast(' ' as varchar(50)) as [Subject],
-						Cast(0 as int) as SubjectID,
 						Cast(0 as bit) as switchObject,
 						V.value [Value],
 						0 IsFound,
@@ -1134,8 +1122,6 @@ namespace d360.model
 
 				update V
 				set [SubjectAssetID] = AD.[ID],
-					[Subject] = AD.[Object],
-					SubjectID = AD.[ObjectID],
 					SubjectAssetTypeID = AD.AssetTypeID,
 					switchObject = 1,
 					isfound = 1
@@ -1145,8 +1131,6 @@ namespace d360.model
 
 				update V
 				set [SubjectAssetID] = AD.[ID],
-					[Subject] = AD.[Object],
-					SubjectID = AD.[ObjectID],
 					SubjectAssetTypeID = AD.AssetTypeID,
 					switchObject = 0,
 					isfound = 2
@@ -1158,8 +1142,6 @@ namespace d360.model
 				begin
 					update V
 					set [SubjectAssetID] = 0,
-						[Subject] = att.[Object],
-						SubjectID = att.[ObjectID],
 						SubjectAssetTypeID = att.ID,
 						switchObject = 1,
 						isfound = 3
@@ -1173,8 +1155,6 @@ namespace d360.model
 				begin
 					update V
 					set [SubjectAssetID] = 0,
-						[Subject] = att.[Object],
-						SubjectID = att.[ObjectID],
 						SubjectAssetTypeID = att.ID,
 						switchObject = 0,
 						isfound = 4
@@ -1184,7 +1164,7 @@ namespace d360.model
 					where isfound = 0;
 				end
 
-				insert into #Relationships WITH(TABLOCK) (ID, [uid], IntersectTypeID, SubjectAssetID, SubjectAssetTypeID, Subject, SubjectId, ObjectAssetID, ObjectAssetTypeID, Object, ObjectID, SwitchObject)
+				insert into #Relationships WITH(TABLOCK) (ID, [uid], IntersectTypeID, SubjectAssetID, SubjectAssetTypeID, ObjectAssetID, ObjectAssetTypeID, SwitchObject)
 				select
 					null as ID,
 					null as [uid],
@@ -1198,14 +1178,6 @@ namespace d360.model
 						else ObjectAssetTypeID
 					END AS SubjectAssetTypeID, 
 					CASE 
-						when switchObject = 0 then Subject
-						else Object
-					END AS Subject, 
-					CASE 
-						when switchObject = 0 then SubjectId
-						else ObjectID
-					END AS SubjectId,
-					CASE 
 						when switchObject = 0 then ObjectAssetID
 						else SubjectAssetID
 					END AS ObjectAssetID, 
@@ -1213,14 +1185,6 @@ namespace d360.model
 						when switchObject = 0 then ObjectAssetTypeID
 						else SubjectAssetTypeID
 					END AS ObjectAssetTypeID, 
-					CASE 
-						when switchObject = 0 then Object
-						else Subject
-					END AS Object, 
-					CASE 
-						when switchObject = 0 then ObjectId
-						else SubjectId
-					END AS ObjectID,
 					SwitchObject
 				from #tempdata
 				where isfound <> 0;
@@ -1230,8 +1194,8 @@ namespace d360.model
 						R.[uid] = I.[uid]
 				from	#Relationships R
 						inner join [Intersect] I on I.IntersectTypeID = R.IntersectTypeID 
-							and I.[Subject] = R.[Subject] and I.SubjectID = R.SubjectID 
-							and I.[Object] = R.[Object] and I.ObjectID = R.ObjectID;
+							and I.SubjectAssetID = R.SubjectAssetID 
+							and I.ObjectAssetID = R.ObjectAssetID;
 
 				--check reverse if subject/object type are the same
 				update	R
@@ -1244,11 +1208,11 @@ namespace d360.model
 
 				drop table if exists #tempdatasmy;
 
-				select distinct IntersectTypeID, Object, ObjectID
+				select distinct IntersectTypeID, ObjectAssetID
 				into #tempdatasmy
 				from #tempdata;
 
-				create index idx_tempdatasmy on #tempdatasmy(IntersectTypeID, Object, ObjectID);
+				create index idx_tempdatasmy on #tempdatasmy(IntersectTypeID, ObjectAssetID);
 
 				With IIDs as
 				(
@@ -1256,11 +1220,11 @@ namespace d360.model
 				(
 				select I.ID,I.Uid
 				from #tempdatasmy A
-                inner join [Intersect] I on I.IntersectTypeID = A.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+                inner join [Intersect] I on I.IntersectTypeID = A.IntersectTypeID and I.ObjectAssetID = A.ObjectAssetID
 				union all
 				select I.ID,I.Uid
 				from #tempdatasmy A
-                inner join [Intersect] I on I.IntersectTypeID = A.IntersectTypeID and I.Subject = A.Object and I.SubjectID = A.ObjectID
+                inner join [Intersect] I on I.IntersectTypeID = A.IntersectTypeID and I.SubjectAssetID = A.ObjectAssetID
 				) a
 				)
 				insert into #DeletedRelationships WITH(TABLOCK)
@@ -1269,17 +1233,17 @@ namespace d360.model
 				left join #Relationships R on R.ID = I.Id
 				where R.ID is null ;	
 
-				delete i
-				from [Intersect] I 
-				where exists (select 1 from #DeletedRelationships d where d.uid = I.[uid]);
+				delete	i
+				from	[Intersect] I 
+				where	exists (select 1 from #DeletedRelationships d where d.uid = I.[uid]);
 
 				insert into [Intersect] (IntersectTypeID, 
-										SubjectAssetID, SubjectAssetTypeID, Subject, SubjectId, 
-										ObjectAssetID, ObjectAssetTypeID, Object, ObjectID, 
+										SubjectAssetID, SubjectAssetTypeID, 
+										ObjectAssetID, ObjectAssetTypeID, 
 										CreatedBy, UpdatedBy)
 				select  IntersectTypeID,
-						SubjectAssetID, SubjectAssetTypeID, Subject, SubjectID,
-						ObjectAssetID, ObjectAssetTypeID, Object, ObjectID,
+						SubjectAssetID, SubjectAssetTypeID, 
+						ObjectAssetID, ObjectAssetTypeID, 
 						{CurrentResourceID}, {CurrentResourceID}
 					from   #Relationships
 					where  ID is null
@@ -1288,9 +1252,8 @@ namespace d360.model
 					set		R.ID = I.ID,
 							R.[uid] = I.[uid]
 					from	#Relationships R
-							inner join [Intersect] I on I.Subject = R.Subject and I.SubjectID = R.SubjectID and I.Object = R.Object
-								and I.ObjectID = R.ObjectID and I.IntersectTypeID = R.IntersectTypeID
-					where R.ID is null;
+							inner join [Intersect] I on I.SubjectAssetID = R.SubjectAssetID and I.ObjectAssetID = R.ObjectAssetID and I.IntersectTypeID = R.IntersectTypeID
+					where	R.ID is null;
 
 					select [uid], 1 as Success, 'Intersect' as [Object] from #Relationships
 					union all
@@ -2881,11 +2844,11 @@ where	T.ExecutionID = @ExecutionID
 				insert into #delRel
 				select i.uid,I.Id from #delAssets
 					inner join Asset A on A.uid = #delAssets.uid
-					inner join [Intersect] I on I.Object = A.Object and I.ObjectId = A.ObjectId
+					inner join [Intersect] I on I.ObjectAssetID = A.ID
 				union 
 				select i.uid,I.Id from #delAssets
 					inner join Asset A on A.uid = #delAssets.uid
-					inner join [Intersect] I on I.Subject = A.Object and I.SubjectID = A.ObjectId
+					inner join [Intersect] I on I.SubjectAssetID = A.ID
 
 				delete from Field where IntersectID in (select ID from #delRel)
 
@@ -3100,7 +3063,6 @@ where	T.ExecutionID = @ExecutionID
 									drop table if exists #tempintersect;",
             new { execution.ExecutionID, beginItemNumber, endItemNumber, predicateType = predicateType.HasValue ? 1 : 0 }, transaction: trans, commandTimeout: timeout);
 
-            AddMeasurement(metrics, $"remove from Intersect-(IntersectID, subject/subjectid and object/objectid) >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
             sw.Restart();
 
             #endregion
@@ -3552,12 +3514,8 @@ where	T.ExecutionID = @ExecutionID
                     table.Columns.Add("ExecutionItemUid", typeof(Guid));
                     table.Columns.Add("ItemNumber", typeof(int));
                     table.Columns.Add("SubjectUid", typeof(Guid));
-                    table.Columns.Add("Subject", typeof(string));
-                    table.Columns.Add("SubjectID", typeof(int));
                     table.Columns.Add("SubjectCardinality", typeof(int));
                     table.Columns.Add("ObjectUid", typeof(Guid));
-                    table.Columns.Add("Object", typeof(string));
-                    table.Columns.Add("ObjectID", typeof(int));
                     table.Columns.Add("ObjectCardinality", typeof(int));
                     table.Columns.Add("PredicateUid", typeof(Guid));
                     table.Columns.Add("PredicateID", typeof(int));
@@ -3628,26 +3586,25 @@ where	T.ExecutionID = @ExecutionID
                         ValidateRelationshipTypes(false, execution, timeout);
 
                         Connection.Execute(@"
-							Update IT
-							Set PredicateID=ER.PredicateID,
-								SubjectCardinality=ER.SubjectCardinality, 
-								ObjectCardinality=ER.ObjectCardinality,
-								SubjectClass = coalesce(ER.SubjectClass, IT.SubjectClass),
-								SubjectAssetTypeID = coalesce(ER.SubjectAssetTypeID, IT.SubjectAssetTypeID),
-								ObjectClass = coalesce(ER.ObjectClass, IT.ObjectClass),
-								ObjectAssetTypeID = coalesce(ER.ObjectAssetTypeID, IT.ObjectAssetTypeID),
-								UpdatedBy=@resourceId,
-								UpdatedOn=@utcNow
+							Update	IT
+							Set		PredicateID = ER.PredicateID,
+									SubjectCardinality = ER.SubjectCardinality, 
+									ObjectCardinality = ER.ObjectCardinality,
+									SubjectClass = coalesce(ER.SubjectClass, IT.SubjectClass),
+									SubjectAssetTypeID = coalesce(ER.SubjectAssetTypeID, IT.SubjectAssetTypeID),
+									ObjectClass = coalesce(ER.ObjectClass, IT.ObjectClass),
+									ObjectAssetTypeID = coalesce(ER.ObjectAssetTypeID, IT.ObjectAssetTypeID),
+									UpdatedBy = @resourceId,
+									UpdatedOn = @utcNow
 							from [intersecttype] IT
 							inner join [api].[ExecutionRelationshipType] ER on IT.UID = ER.UID
 							where  ER.ExecutionID=@executionID and
 							ER.Success is null
-
 						   
-								Update api.ExecutionRelationshipType
-							Set Success =1,
-							Message ='Updated Successfully'
-							Where ExecutionID=@executionID and Success is null; ",
+							Update	api.ExecutionRelationshipType
+							Set		Success =1,
+									Message ='Updated Successfully'
+							Where	ExecutionID=@executionID and Success is null; ",
                                 new { executionID = execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow }, commandTimeout: timeout);
 
                         results = Query<RelationshipTypeResult>(
@@ -4636,12 +4593,10 @@ where	T.ExecutionID = @ExecutionID
 																							update 
 																							set     T.SubjectAssetTypeID = S.SubjectAssetTypeID,
 																									T.SubjectAssetID = S.ParentAssetID,
-																									T.Subject = 'NONE',
-																									T.SubjectID = 0,
 																									T.UpdatedBy = @R
 																						when not matched by target then
-																							insert  (IntersectTypeID, SubjectAssetTypeID, SubjectAssetID, Subject, SubjectID, ObjectAssetTypeID, ObjectAssetID, Object, ObjectID, CreatedBy, UpdatedBy)
-																							values  (S.IntersectTypeID, S.SubjectAssetTypeID, S.ParentAssetID, 'NONE', 0, S.ObjectAssetTypeID, S.AssetID, 'NONE', 0, @R, @R)
+																							insert  (IntersectTypeID, SubjectAssetTypeID, SubjectAssetID, ObjectAssetTypeID, ObjectAssetID, CreatedBy, UpdatedBy)
+																							values  (S.IntersectTypeID, S.SubjectAssetTypeID, S.ParentAssetID, S.ObjectAssetTypeID, S.AssetID, @R, @R)
 																						output $action, inserted.[uid], S.ItemNumber into #ParentChildRelationships;
 
 																						-- Log the parent removals into Dependent Change table
@@ -5290,8 +5245,8 @@ where	T.ExecutionID = @ExecutionID
 											into #tempdupuid
 											from api.ExecutionRelationship T
 											inner join [Intersect] I on I.Uid = T.Uid
-											left join Asset S on S.[object] = I.[Subject] and S.[objectId] = I.[SubjectId]
-											left join Asset O on O.[object] = I.[object] and O.[objectId] = I.[objectId]
+											left join Asset S on S.ID = I.SubjectAssetID 
+											left join Asset O on O.ID = I.ObjectAssetID 
 											where   T.ExecutionId = @ExecutionID and T.Uid is not null;
 
 											create index idx_tempdupuid on #tempdupuid(IntersectTypeID);
@@ -5391,33 +5346,19 @@ where	T.ExecutionID = @ExecutionID
 										update	T
 										set		T.SubjectAssetID = coalesce(I.SubjectAssetID, 0),
 												T.SubjectAssetTypeID = coalesce(I.SubjectAssetTypeID, 0),
-												T.Subject = I.Subject,
-												T.SubjectID = I.SubjectID,
 												T.ObjectAssetID = coalesce(I.ObjectAssetID, 0),
 												T.ObjectAssetTypeID = coalesce(I.ObjectAssetTypeID, 0),
-												T.Object = I.Object,
-												T.ObjectID = I.ObjectID,
-												T.IsNew = CASE
-															WHEN I.Id is null THEN 1
-															ELSE 0
-														  END
+												T.IsNew = iif(I.Id is null, 1, 0)
 										from	api.ExecutionRelationship T
-												inner join [Intersect] I on abs(I.IntersectTypeId) =  @it and I.Uid = T.Uid
+												inner join [Intersect] I on abs(I.IntersectTypeId) = @it and I.Uid = T.Uid
 										where	T.ExecutionID = @ExecutionID and T.Uid Is not null;
 
 										update	T
 										set		T.SubjectAssetID = coalesce(S.ID, 0),
 												T.SubjectAssetTypeID = coalesce(S.AssetTypeID, 0),
-												T.Subject = S.Object,
-												T.SubjectID = S.ObjectID,
 												T.ObjectAssetID = coalesce(O.ID, 0),
 												T.ObjectAssetTypeID = coalesce(O.AssetTypeID, 0),
-												T.Object = O.Object,
-												T.ObjectID = O.ObjectID,
-												T.IsNew = CASE
-															WHEN I.Id is null THEN 1
-															ELSE 0
-														  END
+												T.IsNew = iif(I.Id is null, 1, 0)
 										from	api.ExecutionRelationship T
 												left join Asset S on S.AssetTypeID = @stid and S.[uid] = T.SubjectUid
 												left join Asset O on O.AssetTypeID = @otid and O.[uid] = T.ObjectUid
@@ -5429,11 +5370,9 @@ where	T.ExecutionID = @ExecutionID
 										begin
 										update	T
 										set		T.SubjectAssetID = 0,
-												T.SubjectAssetTypeID = S.ID,
-												T.Subject = S.Object,
-												T.SubjectID = S.ObjectID
+												T.SubjectAssetTypeID = S.ID
 										from	api.ExecutionRelationship T
-												inner join AssetType S on S.[uid] = T.SubjectUid and T.Subject is null and S.[Class] = @sc
+												inner join AssetType S on S.[uid] = T.SubjectUid and T.SubjectAssetID is null and S.[Class] = @sc
 												where T.ExecutionID = @ExecutionID;
 										end
 
@@ -5441,11 +5380,9 @@ where	T.ExecutionID = @ExecutionID
 										begin
 										update	T
 										set		T.ObjectAssetID = 0,
-												T.ObjectAssetTypeID = O.ID,
-												T.Object = O.Object,
-												T.ObjectID = O.ObjectID
+												T.ObjectAssetTypeID = O.ID
 										from	api.ExecutionRelationship T
-												inner join AssetType O on O.[uid] = T.ObjectUid and T.Object is null and O.[Class] = @oc
+												inner join AssetType O on O.[uid] = T.ObjectUid and T.ObjectAssetID is null and O.[Class] = @oc
 												where T.ExecutionID = @ExecutionID;
 										end",
                                         new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
@@ -5460,12 +5397,12 @@ where	T.ExecutionID = @ExecutionID
 										update	api.ExecutionRelationship
 										set		Success = 0,
 											[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve subject of this relationship to a valid asset.'
-										where	ExecutionID = @ExecutionID and (Subject is null or SubjectID is null);
+										where	ExecutionID = @ExecutionID and (SubjectAssetID is null or SubjectAssetTypeID is null);
 	
 										update	api.ExecutionRelationship
 										set		Success = 0,
 											[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve object of this relationship to a valid asset.'
-										where	ExecutionID = @ExecutionID and (Object is null or ObjectID is null);
+										where	ExecutionID = @ExecutionID and (ObjectAssetID is null or ObjectAssetTypeID is null);
 
 										update	api.ExecutionRelationship
 										set		Success = 0,
@@ -5493,8 +5430,8 @@ where	T.ExecutionID = @ExecutionID
 																	count(1) as RelationshipCount
 															from	api.ExecutionRelationship ER
 																	inner join Asset O on O.Uid = ER.ObjectUid and ER.ExecutionID = @ExecutionID
-																	inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.Object = O.Object and I.ObjectID = O.ObjectID
-																	inner join Asset S on S.Uid <> ER.SubjectUid and S.Object = I.Subject and S.ObjectID = I.SubjectID 
+																	inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.ObjectAssetID = O.ID
+																	inner join Asset S on S.Uid <> ER.SubjectUid and S.ID = I.SubjectAssetID 
 															group by ER.ExecutionID, ER.ItemNumber
 															) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 
@@ -5632,8 +5569,10 @@ where	T.ExecutionID = @ExecutionID
 											set		T.Message = coalesce(T.Message + '; ', '') + 'Not able to create this relationship because a relationship for this functional type already exists.',
 													T.Success = 0
 											from	api.ExecutionRelationship T
-													inner join [Intersect] I on ((I.[Subject] = T.[Subject] and I.SubjectID = T.SubjectID and I.[Object] = T.[Object] and I.ObjectID = T.ObjectID) 
-														or (I.[Object] = T.[Subject] and I.ObjectID = T.SubjectID and I.[Subject] = T.[Object] and I.SubjectID = T.ObjectID))
+													inner join [Intersect] I on ( 
+														(I.SubjectAssetID = T.SubjectAssetID and I.ObjectAssetID = T.ObjectAssetID) 
+														or (I.ObjectAssetID = T.SubjectAssetID and I.SubjectAssetID = T.ObjectAssetID)
+													)
 													inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
 													inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = @predicateType  
 													where IT.ID <> @intersectTypeID and T.ExecutionId = @ExecutionID 
@@ -5691,15 +5630,15 @@ where	T.ExecutionID = @ExecutionID
 																				and ItemNumber between @beginItemNumber and @endItemNumber
 																				and Success is null	
 																) S
-														on      ( T.IntersectTypeID = @rtID and T.Subject = S.Subject and T.SubjectID = S.SubjectID and T.Object = S.Object and T.ObjectID = S.ObjectID )
+														on      ( T.IntersectTypeID = @rtID and T.SubjectAssetID = S.SubjectAssetID and T.ObjectAssetID = S.ObjectAssetID )
 														when matched then
 															update set
 																	T.UpdatedBy = @CurrentResourceID,
 																	T.UpdatedOn = getutcdate(),
 																	T.Owner = coalesce(S.Owner,T.Owner)
 														when not matched by target then
-															insert  (uid,IntersectTypeID, SubjectAssetID, SubjectAssetTypeID, Subject, SubjectID, ObjectAssetID, ObjectAssetTypeID, Object, ObjectID, [State], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
-															values  (isnull(S.Uid,newid()),@rtID, S.SubjectAssetID, S.SubjectAssetTypeID, S.Subject, S.SubjectID, S.ObjectAssetID, S.ObjectAssetTypeID, S.Object, S.ObjectID, 1, @CurrentResourceID, getutcdate(), @CurrentResourceID, getutcdate(), coalesce(S.Owner,'BULK_API'))
+															insert  (uid,IntersectTypeID, SubjectAssetID, SubjectAssetTypeID, ObjectAssetID, ObjectAssetTypeID, [State], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+															values  (isnull(S.Uid,newid()),@rtID, S.SubjectAssetID, S.SubjectAssetTypeID, S.ObjectAssetID, S.ObjectAssetTypeID, 1, @CurrentResourceID, getutcdate(), @CurrentResourceID, getutcdate(), coalesce(S.Owner,'BULK_API'))
 														output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
 														update	T
@@ -6160,31 +6099,25 @@ where	T.ExecutionID = @ExecutionID
 										set		T.IntersectID = I.ID,
 												T.SubjectAssetID = I.SubjectAssetID,
 												T.SubjectAssetTypeID = I.SubjectAssetTypeID,
-												T.Subject = I.Subject,
-												T.SubjectID = I.SubjectID,
 												T.ObjectAssetID = I.ObjectAssetID,
 												T.ObjectAssetTypeID = I.ObjectAssetTypeID,
-												T.Object = I.Object,
-												T.ObjectID = I.ObjectID,
 												T.IsNew = 0
 										from	api.ExecutionRelationship T
 												inner join [Intersect] I on abs(I.IntersectTypeId) =  @it and I.Uid = T.Uid
 										where	T.ExecutionID = @ExecutionID and T.Uid Is not null;
 
 										update	T
-										set		T.SubjectUid = A.Uid,
-												T.SubjectAssetID = A.ID,
+										set		T.SubjectAssetID = A.ID,
 												T.SubjectAssetTypeID = A.AssetTypeID
 										from	api.ExecutionRelationship T
-												inner join [Asset] A on A.Object = T.[Subject] and A.objectID = T.[subjectID]
+												inner join [Asset] A on A.Uid = T.SubjectUid 
 										where	T.ExecutionID = @ExecutionID and T.Subject Is not null;
 
 										update	T
-										set		T.ObjectUid = A.Uid,
-												T.ObjectAssetID = A.ID,
+										set		T.ObjectAssetID = A.ID,
 												T.ObjectAssetTypeID = A.AssetTypeID
 										from	api.ExecutionRelationship T
-												inner join [Asset] A on A.Object = T.[Object] and A.objectID = T.[ObjectID]
+												inner join [Asset] A on A.Uid = T.ObjectUid 
 										where	T.ExecutionID = @ExecutionID and T.Object Is not null;
 										",
                                         new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
@@ -6589,12 +6522,10 @@ where	T.ExecutionID = @ExecutionID
 
                 Connection.Execute(@"
 									update	T
-									set		T.SubjectID = S.ID,
-											T.ObjectID = O.ID
+									set		T.SubjectID = I.SubjectAssetID,
+											T.ObjectID = I.ObjectAssetID
 									from	api.ExecutionDeletedRelationship T
 											inner join [Intersect] I on I.ID = T.IntersectID
-											left join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
-											left join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
 									where   T.ExecutionID = @ExecutionID;",
                 new { execution.ExecutionID, it.uid }, commandTimeout: timeout);
 
@@ -6618,7 +6549,7 @@ where	T.ExecutionID = @ExecutionID
 													select	R.ExecutionID, R.ItemNumber
 													from	api.ExecutionDeletedRelationship R 
 															inner join [Intersect] I on I.ID = R.IntersectID and R.ExecutionID = @ExecutionID 
-															inner join Asset A on A.Object = I.Subject and A.ObjectID = I.SubjectID
+															inner join Asset A on A.ID = I.SubjectAssetID 
 															outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
 													where	R.FromHierarchy = 0
 															and P.AssetTypeID = A.AssetTypeID
@@ -6641,7 +6572,7 @@ where	T.ExecutionID = @ExecutionID
 													select	R.ExecutionID, R.ItemNumber
 													from	api.ExecutionDeletedRelationship R
 															inner join [Intersect] I on I.ID = R.IntersectID and R.ExecutionID = @ExecutionID
-															inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+															inner join Asset A on A.ID = I.ObjectAssetID 
 															outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
 													where	R.FromHierarchy = 0
 															and P.AssetTypeID = A.AssetTypeID
@@ -6657,26 +6588,6 @@ where	T.ExecutionID = @ExecutionID
 										and S.ItemNumber is null;
 									end",
                 new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.DeleteRelationships }, commandTimeout: timeout);
-
-                #endregion
-
-                #region Cascade Validation
-
-                Connection.Execute(@"
-									update	T
-									set		T.Message = coalesce(T.Message + '; ', '') + 'You have not enabled Cascade on this relationship, and there are ' + cast(S.[Count] as nvarchar) + ' child relationship(s) associated with it.',
-										T.Success = 0
-									from	api.ExecutionDeletedRelationship T
-										inner join	(
-													select  S.ExecutionID,
-															S.ItemNumber,
-															count(1) as [Count]
-													from    api.ExecutionDeletedRelationship S
-															inner join [Intersect] T on T.Subject = 'Intersect' and T.SubjectID = S.IntersectID and S.ExecutionID = @ExecutionID and S.Success is null
-													where   S.[Cascade] = 0
-													group by S.ExecutionID, S.ItemNumber
-													) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;",
-                                                    new { execution.ExecutionID }, commandTimeout: timeout);
 
                 #endregion
 
@@ -6740,19 +6651,18 @@ where	T.ExecutionID = @ExecutionID
 																'Intersect',
 																I.ID, 
 																TName.[Name], 
-																SUBSTRING(IName.[Name],1,250), 
+																'Relationship', 
 																'This relationship has been removed.' 
 														from	[Intersect] I
 																inner join AssetDetail A on {0}
-																cross apply dbo.getIntersectNames(I.ID) IName
 																cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName
 																inner join api.ExecutionDeletedRelationship S on S.IntersectID = I.ID 
 																	and S.ExecutionID = @executionID 
 																	and S.ItemNumber between @beginItemNumber and @endItemNumber 
 																	and S.Success is null;";
 
-                                Connection.Execute(string.Format(auditSql, "A.[Object] = I.[Subject] and A.ObjectID = I.SubjectID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                Connection.Execute(string.Format(auditSql, "A.[Object] = I.[Object] and A.ObjectID = I.ObjectID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                Connection.Execute(string.Format(auditSql, "A.ID = I.SubjectAssetID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                Connection.Execute(string.Format(auditSql, "A.ID = I.ObjectAssetID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                 #endregion
 
@@ -8512,8 +8422,8 @@ where   ER.ExecutionID = @ExecutionID
 																from	cte
 																		inner join [metrics].[RollupPathLink] L on L.RollupPathUid = cte.RollupPathUid and L.EndPosition = cte.Position and L.StartPosition < cte.Position
 																		inner join [Intersect] I on I.IntersectTypeID = L.IntersectTypeID
-																		inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
-																		inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID and O.Uid = cte.AssetUid
+																		inner join Asset S on S.ID = I.SubjectAssetID 
+																		inner join Asset O on O.ID = I.ObjectAssetID and O.Uid = cte.AssetUid
 																		inner join AssetType ST on ST.ID = S.AssetTypeID
 															)
 
@@ -12654,8 +12564,7 @@ where   ER.ExecutionID = @ExecutionID
 										p.endDate
 									from 
 										#parent P 
-										inner join 
-										[utility].[ArtifactAssetParent] AAP on P.assetID = AAP.ParentAssetID
+										inner join PredicateIntersect AAP on AAP.SubjectAssetID = P.AssetID and AAP.PredicateType in (3,4)
 
 									delete from #parent 
 	

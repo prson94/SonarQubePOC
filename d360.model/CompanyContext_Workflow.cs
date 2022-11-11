@@ -1226,8 +1226,6 @@ namespace d360.model
 
 		private void DeleteItemWorkflowActivity(EventObjectInfo objectInfo)
 		{
-			TelemetryClient.TrackTrace($"DEBUG - DELETING ITEM.");
-
 			if (objectInfo.Object == SystemObjects.Intersect)
 			{
 				DeleteRelationship(objectInfo.ObjectID);
@@ -1282,46 +1280,30 @@ namespace d360.model
 					throw new ArgumentNullException(nameof(intersectType), $"ERROR - INVALID INTERSECT TYPE ID SPECIFIED.  PLEASE CHECK THE SETTINGS ASSOCIATED WITH THE RELATIONSHIP UPDATE ACTION OF THE CURRENT WORKFLOW. INTERSECT TYPE ID IS [{intersectTypeId}]");
 				}
 
-				EventObjectInfo assetInfo;
+				Asset asset = null;
 
 				//get underlying asset if this is an action
 				if (objectInfo.ObjectType == SystemObjects.IssueType)
 				{
-					Issue issue = Issues.FirstOrDefault(i => i.ID == objectInfo.ObjectID);
-
+					var issue = Issues.FirstOrDefault(i => i.ID == objectInfo.ObjectID);
 					if (issue == null || issue.AssetID == null)
 					{
 						throw new ArgumentNullException(nameof(issue), $"ERROR - ASSET FOR ACTION ID [{objectInfo.ObjectID}] NOT FOUND");
 					}
-
-					Asset issueAsset = Assets.FirstOrDefault(a => a.ID == issue.AssetID);
-					AssetType issueAssetType = AssetTypes.FirstOrDefault(at => at.ID == issue.AssetTypeID);
-
-					assetInfo = new EventObjectInfo
-					{
-						Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), issueAsset.Object),
-						ObjectID = issueAsset.ObjectID,
-						ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), issueAssetType.Object),
-						ObjectTypeID = issueAssetType.ObjectID
-					};
+					asset = Assets.FirstOrDefault(a => a.ID == issue.AssetID);
 				}
 				else
 				{
-					assetInfo = new EventObjectInfo
-					{
-						Object = objectInfo.Object,
-						ObjectID = objectInfo.ObjectID,
-						ObjectType = objectInfo.ObjectType,
-						ObjectTypeID = objectInfo.ObjectTypeID
-					};
+					var sType = objectInfo.Object.ToString();
+					asset = Assets.FirstOrDefault(a => a.Object == sType && a.ObjectID == objectInfo.ObjectID);
 				}
 
-				bool isSubject = intersectType.SubjectAssetTypeID == assetInfo.AssetTypeID;
+				bool isSubject = intersectType.SubjectAssetTypeID == asset.AssetTypeID;
 
 				if (item.ClearValue)
 				{
 					//delete intersects with the given intersect type id for the current object
-					DeleteIntersects(assetInfo.Object, assetInfo.ObjectID, intersectTypeId, isSubject);
+					DeleteIntersects(asset.ID, intersectTypeId, isSubject);
 				}
 				else
 				{
@@ -1331,7 +1313,7 @@ namespace d360.model
 
 					if (!item.AppendValue || supportsJustOne)
 					{
-						DeleteIntersects(assetInfo.Object, assetInfo.ObjectID, intersectTypeId, isSubject);
+						DeleteIntersects(asset.ID, intersectTypeId, isSubject);
 					}
 
 					//split the value on , 
@@ -1351,57 +1333,40 @@ namespace d360.model
 						{
 							string[] parts = rel.Split('|');
 
-							Intersect intersect = new Intersect
-							{
-								IntersectTypeID = intersectType.ID
-							};
+							var intersect = new Intersect { IntersectTypeID = intersectType.ID };
+							var otherAsset = Assets.FirstOrDefault(a => a.Object == (parts[0] ?? "").Replace("Type", "") && a.ObjectID == int.Parse(parts[1]));
 
-							if (isSubject)
-							{
-								intersect.Subject = assetInfo.Object.ToString();
-								intersect.SubjectID = assetInfo.ObjectID;
-								intersect.Object = (parts[0] ?? "").Replace("Type", "");
-								intersect.ObjectID = int.Parse(parts[1]);
+							if (otherAsset != null)
+							{ 
+								if (isSubject)
+								{
+									intersect.SubjectAssetID = asset.ID;
+									intersect.ObjectAssetID = otherAsset.ID;
+								}
+								else
+								{
+									intersect.ObjectAssetID = asset.ID;
+									intersect.SubjectAssetID = otherAsset.ID;
+								}
+
+								//check that this relationship doesnt already exist
+								if (!Intersects.Any(x => x.IntersectTypeID == intersectTypeId && x.SubjectAssetID == intersect.SubjectAssetID && x.ObjectAssetID == intersect.ObjectAssetID))
+								{
+									Add(intersect);
+								}							
 							}
-							else
-							{
-								intersect.Object = assetInfo.Object.ToString();
-								intersect.ObjectID = assetInfo.ObjectID;
-								intersect.Subject = (parts[0] ?? "").Replace("Type", "");
-								intersect.SubjectID = int.Parse(parts[1]);
-							}
 
-							//check that this relationship doesnt already exist
-							if (!Intersects.Any(x => x.IntersectTypeID == intersectTypeId && x.Subject == intersect.Subject && x.SubjectID == intersect.SubjectID && x.Object == intersect.Object && x.ObjectID == intersect.ObjectID))
-							{
-
-								intersect.CreatedBy = CurrentResourceID;
-								intersect.CreatedOn = DateTime.UtcNow;
-								intersect.UpdatedBy = CurrentResourceID;
-								intersect.UpdatedOn = DateTime.UtcNow;
-
-								Intersects.Add(intersect);
-
-								SaveChanges();
-							}
 						}
 					}
 				}
 			}
 		}
 
-		private void DeleteIntersects(SystemObjects @object, int objectID, int intersectTypeId, bool isSubject)
+		private void DeleteIntersects(long assetId, int intersectTypeId, bool isSubject)
 		{
-			string sql;
-
-			if (isSubject)
-			{
-				sql = "delete from [intersect] output deleted.uid into #deletedIntersects where subject = @obj and subjectid = @objectid and intersecttypeid = @intersectTypeId";
-			}
-			else
-			{
-				sql = "delete from [intersect] output deleted.uid into #deletedIntersects where [object] = @obj and objectid = @objectid and intersecttypeid = @intersectTypeId";
-			}
+			var targetColumn = isSubject ? "SubjectAssetID" : "ObjectAssetID";
+			string sql = $"delete from [intersect] output deleted.uid into #deletedIntersects where {targetColumn} = @assetId and intersecttypeid = @intersectTypeId";
+			Database.Connection.Execute(sql, new { assetId, intersectTypeId });
 		}
 
 		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, Asset asset = null)
@@ -2733,17 +2698,16 @@ namespace d360.model
 
 					if (intersect != null)
 					{
-						ObjectDetail item = GetObjectDetail(intersect.Object, intersect.ObjectID);
-
-						if (item != null)
+						var assetDetail = AssetDetails.SingleOrDefault(a => a.ID == intersect.ObjectAssetID);
+						if (assetDetail != null)
 						{
 							if (supportHtml)
 							{
-								itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+								itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{assetDetail.DisplayValue}</a></b>";
 							}
 							else
 							{
-								itemLink = item.Name;
+								itemLink = assetDetail.DisplayValue;
 							}
 						}
 					}
@@ -2762,17 +2726,16 @@ namespace d360.model
 
 					if (intersect != null)
 					{
-						ObjectDetail item = GetObjectDetail(intersect.Subject, intersect.SubjectID);
-
-						if (item != null)
+						var assetDetail = AssetDetails.SingleOrDefault(a => a.ID == intersect.SubjectAssetID);
+						if (assetDetail != null)
 						{
 							if (supportHtml)
 							{
-								itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+								itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{assetDetail.DisplayValue}</a></b>";
 							}
 							else
 							{
-								itemLink = item.Name;
+								itemLink = assetDetail.DisplayValue;
 							}
 						}
 					}
@@ -3441,11 +3404,10 @@ namespace d360.model
 
 					if (intersect != null)
 					{
-						ObjectDetail item = GetObjectDetail(intersect.Subject, intersect.SubjectID);
-
-						if (item != null)
+						var assetDetail = Assets.SingleOrDefault(a => a.ID == intersect.SubjectAssetID);
+						if (assetDetail != null)
 						{
-							uid = item.UID.ToString();
+							uid = assetDetail.uid.ToString();
 						}
 					}
 				}
@@ -3458,15 +3420,13 @@ namespace d360.model
 				string uid = null;
 				if (obj == SystemObjects.Intersect)
 				{
-					Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
-
+					var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
 					if (intersect != null)
 					{
-						ObjectDetail item = GetObjectDetail(intersect.Object, intersect.ObjectID);
-
-						if (item != null)
+						var assetDetail = Assets.SingleOrDefault(a => a.ID == intersect.ObjectAssetID);
+						if (assetDetail != null)
 						{
-							uid = item.UID.ToString();
+							uid = assetDetail.uid.ToString();
 						}
 					}
 				}

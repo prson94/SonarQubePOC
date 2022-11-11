@@ -885,7 +885,7 @@ namespace d360.model
 									into		#AssetActiveKey
 									from		#tempcalasset t
 												left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.ObjectAssetID = t.ID
-												left join Asset P on P.ID = I.SubjectAssetID
+												left join Asset P on P.ID = I.SubjectAssetID 
 												inner join FieldType FT on FT.AssetTypeID = @assetttypeID and FT.IsPartOfKey = 1
 												left join Field F on FT.ID = F.FieldTypeID and F.AssetID = T.ID
 									group by    t.AssetUid, P.Uid

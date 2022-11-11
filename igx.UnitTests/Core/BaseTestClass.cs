@@ -539,9 +539,6 @@ namespace igx.UnitTests
             mock.Setup(x => x.BulkPostRelationships(It.IsAny<Guid>(), It.IsAny<RelationshipInserts>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
                 .Returns(Task.FromResult(new ApiExecutionInfo() { Action = ApiExecutionAction.PostRelationships, CompanyDomainPrefix = "", CompanyID = -1, ExecutionID = Guid.NewGuid(), ResourceID = 56 }));
 
-            mock.Setup(x => x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
-                .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>()));
-
             mock.Setup(x => x.GetBulkResults(It.IsAny<ApiExecutionInfo>()))
                 .Returns(Task.FromResult(new List<DatabaseBulkAssetResult>()));
 

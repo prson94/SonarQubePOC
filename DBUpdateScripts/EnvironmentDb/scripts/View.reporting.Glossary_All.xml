@@ -5,27 +5,26 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.reporting.Glossary_All-v1">
+  <changeSet author="Pappas" id="View.reporting.Glossary_All-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
- CREATE OR ALTER VIEW [reporting].[Glossary_All] AS
+CREATE OR ALTER VIEW [reporting].[Glossary_All] AS
     select  A.ObjectID as ID,
         A.ID as AssetID,
-        I.SubjectID as ParentID,
+        I.SubjectAssetID as ParentID,
         A.TypeID as ArtifactTypeID,
         A.DisplayValue,
         A.TypeName as ArtifactType,
         A.CreatedOn,
         coalesce(A.UpdatedOn, A.CreatedOn) as UpdatedOn,
-		A1.KeyHash,
+		'' as KeyHash,
         S.Value as CurrentScore,
         cast(S.Value * 100 as int) as CurrentScorePct
 from    AssetDetail A  
-		left join PredicateIntersect I on I.Object = 'Artifact' and I.ObjectID = A.ID and I.PredicateType = 3
-		inner join Asset A1 ON A.Id = A1.Id
+		left join PredicateIntersect I on I.ObjectAssetID = A.ID and I.PredicateType = 3
         outer apply (
 					select	max(EffectiveDate) as EffectiveDate
 					from	[metrics].[Score] 

@@ -4138,9 +4138,9 @@ where an.Uid = fam.uid)
 									select	PA.Uid,
 											PD.DisplayValue
 									from	[Intersect] I
-											inner join Asset PA on PA.Object = I.Subject and PA.ObjectID = I.SubjectID
+											inner join Asset PA on PA.ID = I.SubjectAssetID 
 											inner join AssetDisplayValue PD on PD.AssetID = PA.ID
-									where	I.Object = A.Object and I.ObjectID = A.ObjectID
+									where	I.ObjectAssetID = A.ID
 								) P 
 								{string.Join("\n", fieldJoins.GetStatements())}
 						where   A.[uid] = @assetUid";
@@ -4733,14 +4733,12 @@ where an.Uid = fam.uid)
 
 			var descendantsSQL = $@"drop table if exists #descendants;
 									with descendants as (							
-										select @assetID as AssetID, CAST(0 AS BIGINT) as ParentAssetID
+										select	@assetID as AssetID, 
+												CAST(0 AS BIGINT) as ParentAssetID
 										union all
-										select 
-											AAP.assetID, AAP.ParentAssetID
-										from 
-											descendants as d
-											inner join 
-											[utility].[ArtifactAssetParent] AAP on d.AssetID = AAP.ParentAssetID
+										select	AAP.assetID, AAP.SubjectAssetID as ParentAssetID
+										from	descendants as d
+												inner join PredicateIntersect AAP on AAP.SubjectAssetID = d.AssetID and AAP.PredicateType in (3,4)
 									)
 
 									select * 

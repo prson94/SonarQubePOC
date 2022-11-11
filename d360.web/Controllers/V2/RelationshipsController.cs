@@ -673,8 +673,8 @@ namespace d360.web.Controllers.V2
 					return ReturnApiError(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.RelationShipUidNotFound, uid.ToString()));
 				}
 
-				var hasObjectReadPermission = Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ReadRelationships);
-				var hasSubjectReadPermission = Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.ReadRelationships);
+				var hasObjectReadPermission = Company.HasAssetPermission(intersect.ObjectAssetID ?? 0, Permission.ReadRelationships);
+				var hasSubjectReadPermission = Company.HasAssetPermission(intersect.SubjectAssetID ?? 0, Permission.ReadRelationships);
 				
 				if (!hasObjectReadPermission || !hasSubjectReadPermission)
 				{
