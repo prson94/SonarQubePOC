@@ -54,10 +54,10 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             this.socialMessage = null;
         }
         else {
-            if (this.limitToType == CommentType.Social) {
+            if (this.limitToType === CommentType.Social) {
                 this.socialMessage = $localize`My comments ${this.daysMessage()}`;
             }
-            else if (this.limitToType == CommentType.Issue) {
+            else if (this.limitToType === CommentType.Issue) {
                 this.socialMessage = $localize`My issues ${this.daysMessage()}`;
             }
             else {
@@ -115,7 +115,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             subscribe((res) => {
                 if (res) {
                     comment.IsDeleted = true;
-                    let index = this.comments.findIndex((x) => x.ID == comment.ID);
+                    let index = this.comments.findIndex((x) => x.ID === comment.ID);
 
                     if (index >= 0 && !(comment.Comments && comment.Comments.length > 0)) {
                         this.comments.splice(index, 1);

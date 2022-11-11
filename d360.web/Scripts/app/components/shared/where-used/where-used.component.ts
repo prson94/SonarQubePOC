@@ -44,25 +44,25 @@ export class WhereUsedComponent implements OnChanges, AfterViewChecked {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes && changes.uid.currentValue != changes.uid.previousValue) {
+        if (changes && changes.uid.currentValue !== changes.uid.previousValue) {
             this.load();
         }
     }
     getFriendlyObjectType(): string {
-        if (this.objectType == "ConnectorLabel") {
+        if (this.objectType === "ConnectorLabel") {
             return "label";
         }
         return "";
     }
 
     load() {
-        if (this.objectType == "ConnectorLabel") {
+        if (this.objectType === "ConnectorLabel") {
             this.loadConnectorLabelUsage();
         }
     }
 
     export() {
-        if (this.objectType == "ConnectorLabel") {
+        if (this.objectType === "ConnectorLabel") {
             this.connectorLabelService.exportLabelUsage(this.uid, $localize`Where Used report for Connector Label "${this.displayValue}"`);
         }
     }

@@ -18,11 +18,11 @@ export class InfoTooltipComponent implements OnInit {
     @Input() style: string;
 
     ngOnInit() {
-        if (this.titleValue == '') {
-            if (!this.style || this.style == 'info') {
+        if (this.titleValue === '') {
+            if (!this.style || this.style === 'info') {
                 this.titleValue = `<i class='fa fa-question-circle'><i/>`;
             }
-            if (this.style == 'warning') {
+            if (this.style === 'warning') {
                 this.titleValue = `<i class='fa fa-exclamation-triangle'></i>`;
             }
         }
