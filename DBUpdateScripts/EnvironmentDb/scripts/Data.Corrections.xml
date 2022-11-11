@@ -1922,4 +1922,17 @@ from	[Intersect] I
 	]]>
 	</sql>
   </changeSet>
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-20330">
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		update ResponsibilityTypeRelationRule
+		set LastRunOn = '1900-01-01'
+	]]>
+	</sql>
+  </changeSet>
+
 </databaseChangeLog>
