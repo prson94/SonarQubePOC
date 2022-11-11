@@ -1071,7 +1071,7 @@ from	Asset A
 									}
 									else // all other field types including single select list
 									{
-										whenSuffix.Append($"and FieldTypeID = {rc.FieldTypeID} and FormattedValue = '{sqlEscapedValue}' )  ");  // all field types plus single select list
+										whenSuffix.Append($"and FieldTypeID = {rc.FieldTypeID} and [Value] = '{sqlEscapedValue}' )  ");  // all field types plus single select list
 									}
 								}
 								else
