@@ -251,8 +251,8 @@ END
 	</rollback>
   </changeSet> 
   
-    <changeSet author="Puneet Gupta" id="Table.dbo.Field-Field_AfterUpsert-v16">
-    <comment>GOV-20038, GOV-20074, GOV-19983, GOV-18447</comment>
+    <changeSet author="Tomislav Duric" id="Table.dbo.Field-Field_AfterUpsert-v17">
+    <comment>GOV-20348</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -274,7 +274,7 @@ AS
 				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
 				FROM	Field T 
 						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.AssetID IS NOT NULL AND F.AssetID = T.AssetID) 
-						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID and FT.Type in ('Link','Lookup');
 			end
 
 		if exists (select 1 from inserted where IntersectID IS NOT NULL)
@@ -283,7 +283,7 @@ AS
 				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
 				FROM	Field T 
 						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.IntersectID IS NOT NULL AND F.IntersectID = T.IntersectID) 
-						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID and FT.Type in ('Link','Lookup');
 			end
 
 		if exists (select 1 from inserted where IssueID IS NOT NULL)
@@ -292,7 +292,7 @@ AS
 				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
 				FROM	Field T 
 						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.IssueID IS NOT NULL AND F.IssueID = T.IssueID)
-						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID and FT.Type in ('Link','Lookup');
 			end
 
 		drop table if exists #insertedFields;
