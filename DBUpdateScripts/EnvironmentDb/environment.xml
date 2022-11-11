@@ -294,7 +294,6 @@
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.GetBackwardLineage.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
-    <include file="scripts/Function.utility.DeriveIntersectName.xml"/>
     <include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.FieldDetailsByAssetId.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
