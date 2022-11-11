@@ -187,7 +187,7 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
             r /= 255, g /= 255, b /= 255;
             var max = Math.max(r, g, b), min = Math.min(r, g, b);
             var h, s, l = (max + min) / 2;
-            if (max == min) {
+            if (max === min) {
                 h = s = 0;
             } else {
                 var d = max - min;
@@ -210,7 +210,7 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
         if (color == null) {
             return true;
         }
-        if (color.substr(0, 1) == '#') {
+        if (color.substr(0, 1) === '#') {
             color = this.hexToHSL(color);
         }            
         let hsl = /^hsl\(\s*(\d{1,3})\s*,\s*(0|[1-9]\d?|100)%\s*,\s*(0|[1-9]\d?|100)%\s*\)$/i.exec(color);

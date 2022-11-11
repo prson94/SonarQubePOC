@@ -35,7 +35,7 @@ export class PaginatorComponent implements OnChanges, OnInit {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if ((changes['page'] != undefined && !changes['page'].firstChange) || (changes['totalRecords'] != undefined && !changes['totalRecords'].firstChange))
+        if ((changes['page'] != null && !changes['page'].firstChange) || (changes['totalRecords'] != null && !changes['totalRecords'].firstChange))
             {this.CheckVisableNumbers();}
     }
 
@@ -69,7 +69,7 @@ export class PaginatorComponent implements OnChanges, OnInit {
     }
 
     isFirstPage(): boolean {
-        if (0 == this.page) {
+        if (this.page === 0) {
             return true;
         }
         return false;

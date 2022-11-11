@@ -147,7 +147,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
         if (this.selection) {
             for (let i = 0; i < this.selection.length; i++) {
                 let selectedNode = this.selection[i];
-                let areNodesEqual = (selectedNode.key && selectedNode.key === node.key) || selectedNode == node;
+                let areNodesEqual = (selectedNode.key && selectedNode.key === node.key) || selectedNode === node;
                 if (areNodesEqual) {
                     index = i;
                     break;
@@ -179,7 +179,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
             if (node.children) {
                 let matchedNode = this.getNodeWithKey(key, node.children);
                 if (matchedNode) {
-                    if (matchedNode.parent == undefined)
+                    if (matchedNode.parent == null)
                         {matchedNode.parent = node;}
                     return matchedNode;
                 }
@@ -200,7 +200,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
                 }
             }
 
-            if (select && selectedCount == node.children.length) {
+            if (select && selectedCount === node.children.length) {
                 this.selection = [...this.selection || [], node];
                 node.partialSelected = false;
             }
@@ -208,11 +208,11 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
                 if (!select) {
                     let index = this.findIndexInSelection(node);
                     if (index >= 0) {
-                        this.selection = this.selection.filter((val, i) => i != index);
+                        this.selection = this.selection.filter((val, i) => i !== index);
                     }
                 }
 
-                if (childPartialSelected || selectedCount > 0 && selectedCount != node.children.length)
+                if (childPartialSelected || selectedCount > 0 && selectedCount !== node.children.length)
                     {node.partialSelected = true;}
                 else
                     {node.partialSelected = false;}
@@ -230,11 +230,11 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
     propagateDown(node: CheckTreeNode, select: boolean) {
         let index = this.findIndexInSelection(node);
 
-        if (select && index == -1) {
+        if (select && index === -1) {
             this.selection = [...this.selection || [], node];
         }
         else if (!select && index > -1) {
-            this.selection = this.selection.filter((val, i) => i != index);
+            this.selection = this.selection.filter((val, i) => i !== index);
         }
 
         node.partialSelected = false;
@@ -249,11 +249,11 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
     }
 
     isSelected(node: CheckTreeNode) {
-        return this.findIndexInSelection(node) != -1;
+        return this.findIndexInSelection(node) !== -1;
     }
 
     isNodeLeaf(node) {
-        return node.leaf == false ? false : !(node.children && node.children.length);
+        return node.leaf === false ? false : !(node.children && node.children.length);
     }
 
     getRootNode() {
@@ -363,7 +363,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
                 if (node.parent) {
                     let parent = node.parent;
                     parent.expanded = true;
-                    if (this.findIndexInSelection(parent) == -1) {
+                    if (this.findIndexInSelection(parent) === -1) {
                         this.propagateUp(parent, true);
                     }
                 }

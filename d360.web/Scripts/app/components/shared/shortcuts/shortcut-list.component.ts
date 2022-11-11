@@ -42,12 +42,12 @@ export class ShortcutListComponent extends BaseComponent implements OnInit {
 
     edit(id: number) {
         this.formMode = FormMode.Editing;
-        this.selectedShortcut = this.shortcuts.find((s) => s.ID == id);
+        this.selectedShortcut = this.shortcuts.find((s) => s.ID === id);
     }
 
     delete(id: number) {
         this.formMode = FormMode.Deleting;
-        this.selectedShortcut = this.shortcuts.find((s) => s.ID == id);
+        this.selectedShortcut = this.shortcuts.find((s) => s.ID === id);
     }
 
     confirmDelete() {

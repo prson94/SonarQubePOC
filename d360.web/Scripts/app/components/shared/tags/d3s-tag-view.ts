@@ -91,7 +91,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                         if ((message.assetUIDList && message.assetUIDList.indexOf(this.assetUID) > -1) || message.uid === this.assetUID) {
                             let tagExists = false;
                             this.tags.forEach((x) => {
-                                if (x.Value == message.data) {
+                                if (x.Value === message.data) {
                                     tagExists = true;
                                 }
                             });
@@ -116,11 +116,11 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         this.tags = [];
         if (this.data) {
 
-            if (typeof this.data == 'string') {
+            if (typeof this.data === 'string') {
                 this.data.split('|').forEach((t) => {
                     this.tags = this.tags.concat([{ Value: t, uid: null }]);
                 });
-            } else if (typeof this.data == 'object') {
+            } else if (typeof this.data === 'object') {
                 if (Array.isArray(this.data) && this.data.every((item) => typeof item === "string")) {
                     this.data.forEach((t) => {
                         this.tags.push({ Value: t, uid: null });
@@ -192,7 +192,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                         this.tagsLoading = false;
                         this.ref.markForCheck();
                     }
-                    else if (res && res.length == 0) {
+                    else if (res && res.length === 0) {
                         this.searchResults = res;
                         this.tagsLoading = false;
                         this.ref.markForCheck();
@@ -216,13 +216,13 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     }
 
     openDeleteModal(tag: any) {
-        if (this.isEditable == true) {
+        if (this.isEditable) {
             this.deleteTags(tag);
         }
     }
 
     checkKey(event, value) {
-        if (event.key == "Enter" && !this.savingTag) {
+        if (event.key === "Enter" && !this.savingTag) {
             // mostly value is string as it supposed to be
             // but in some cases when you pick existing tag from dropdown
             // then primeng/autocomplete some fome reason saves select-event into inputValue field
@@ -254,7 +254,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             tags = tags.concat([tag]);
         }
         this.tags.forEach((x) => {
-            if (x.Value == event.Value) {
+            if (x.Value === event.Value) {
                 this.existingTag = true;
                 this.showEditor = false;
                 this.savingTag = false;
@@ -284,7 +284,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             this.searchResults = [];
             this.tagService.doesTagExist(event)
                 .subscribe((result) => {
-                    if (result == 200) {
+                    if (result === 200) {
                         this.tagService.createAssetTag(tags)
                             .subscribe((result) => {
                                 let msg: string = '';
@@ -312,22 +312,22 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                     }
                 },
                     (error) => {
-                        if (error.status == 404) {
+                        if (error.status === 404) {
                             this.tagService.saveTag(event)
                                 .subscribe((result) => {
                                     let msg: string = '';
-                                    if (event.uid == undefined) {
+                                    if (event.uid == null) {
                                         msg = $localize`${event.Value} successfully created`;
                                     }
                                     this.showMessageForResult(this.messagesService, result, msg);
                                     this.tagService.createAssetTag(tags)
                                         .subscribe((result) => {
                                             let msg: string = '';
-                                            if (event.uid == undefined) {
+                                            if (event.uid == null) {
                                                 msg = $localize`${event.Value} successfully added to ` + (tags.length === 1 ? $localize`Asset` : $localize`Assets`);
                                             }
                                             this.showMessageForResult(this.messagesService, result, msg);
-                                            if (event.uid == undefined) {
+                                            if (event.uid == null) {
                                                 event.uid = result[0].Uid;
                                                 this.tags = this.tags.concat([event]);
                                             }
@@ -388,7 +388,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 msg = $localize`Tag successfully removed`;
                 this.showMessageForResult(this.messagesService, result, msg);
                 //remove the template with this id from the grid
-                if (result.type != 'error') {
+                if (result.type !== 'error') {
                     this.tags = this.tags.filter((x) => x.Value !== selectedTag.Value);
                 }
                 this.genericMessageService.sendMessage({
@@ -453,13 +453,13 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 
     showDeleteOnOwnedTags(tagElements, tag, createdBy) {
         tagElements.filter = Array.prototype.filter;
-        var showDelete = tagElements.filter((te) => te.children[0].innerText.trim() == tag.Value.trim());
-        if (showDelete.length == 1) {
-            if (createdBy == CurrentResourceID)
+        var showDelete = tagElements.filter((te) => te.children[0].innerText.trim() === tag.Value.trim());
+        if (showDelete.length === 1) {
+            if (createdBy === CurrentResourceID)
                 {this.showDeleteOption = true;}
-            if (createdBy != CurrentResourceID) {
+            if (createdBy !== CurrentResourceID) {
                 tagElements.forEach((e) => {
-                    if (e.children[0].innerText.trim() == tag.Value.trim()) {
+                    if (e.children[0].innerText.trim() === tag.Value.trim()) {
                         e.children[1].parentElement.removeChild(e.children[1]);
                     }
                 });
@@ -498,7 +498,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         var searchFor = tags.split(',');
         var el = null;
         searchFor.forEach((tagName) => {
-            if (element.parentElement.tagName == tagName) {
+            if (element.parentElement.tagName === tagName) {
                 el = element.parentElement;
             }
         });
@@ -524,7 +524,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             return;
         }
 
-        if ((this.isEditable != true && this.showDelete == false) || (<HTMLElement>event.target).className == 'tag-item-wrapper') {
+        if ((this.isEditable !== true && this.showDelete === false) || (<HTMLElement>event.target).className === 'tag-item-wrapper') {
             this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid.toString().toLowerCase()}`]);
         }
         event.stopPropagation();
@@ -551,7 +551,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 }
 
                 this.tags.forEach((x) => {
-                    if (x.Value == tag.Value) {
+                    if (x.Value === tag.Value) {
                         if (!x.uid) {
                             x.uid = t[0].TagUid;
                         }
@@ -576,14 +576,14 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         var index: number = -1;
         for (var tag of this.tags) {
             index++;
-            if (tag.uid == uid) {return index;}
+            if (tag.uid === uid) {return index;}
         }
     }
     findTagIndex(id: number) {
         var index: number = -1;
         for (var tag of this.tags) {
             index++;
-            if (tag.TooltipID == id) {return index;}
+            if (tag.TooltipID === id) {return index;}
         }
     }
 

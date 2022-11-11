@@ -64,7 +64,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['itemStepId'] != null && (changes['itemStepId'].isFirstChange || (changes['itemStepId'].currentValue != changes['itemStepId'].previousValue))) {
+        if (changes['itemStepId'] != null && (changes['itemStepId'].isFirstChange || (changes['itemStepId'].currentValue !== changes['itemStepId'].previousValue))) {
             this.load().subscribe();
         }
     }
@@ -90,10 +90,10 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
                         this.ref.markForCheck();
                     }),
                     map(() => {
-                        if (typeof this.step.Condition != 'undefined' && typeof this.step.Condition.length != 'undefined') {
+                        if (typeof this.step.Condition !== 'undefined' && typeof this.step.Condition.length !== 'undefined') {
 
                             this.showAllAnyCondition = this.step.Condition.filter((x) => x['@FieldTypeID']).length > 1;
-                            this.isSatisfyAll = this.step.Condition.every((x) => x['@Connector'] == 'AND');
+                            this.isSatisfyAll = this.step.Condition.every((x) => x['@Connector'] === 'AND');
                         }
                     })
                 );
@@ -110,7 +110,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     private get reassignment() {
         if (this.reassignments == null || this.reassignments.length < 1)
             {return null;}
-        else if (this.reassignments.length == 1 && !this.reassignments[0].IsBulkReassignment)
+        else if (this.reassignments.length === 1 && !this.reassignments[0].IsBulkReassignment)
             {return this.reassignments[0];}
         else if (this.reassignments.length > 1)
             {return this.reassignments.find((r) => !r.IsBulkReassignment);}
