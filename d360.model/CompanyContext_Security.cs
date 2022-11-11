@@ -1030,53 +1030,56 @@ from	Asset A
 							{
 
 								var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();
-								whenSuffix.Append((whenSuffix.Length==0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"exists(select 1 from FieldDetail where Object = '{obj}' and ObjectID = {objectIds[obj]}.{uniqueIdField} ");
+								whenSuffix.Append(whenSuffix.Length == 0 ? $" where ( " : $" {ThenSqlConnector(rule.StructuredDefinition.Then)} ");
+								
+								var fieldDetailInitialSql = $"select 1 from FieldDetail where Object = '{obj}' and ObjectID = {objectIds[obj]}.{uniqueIdField}";
+
 								if (thenFieldType != null)
 								{
 									if (thenFieldType.AllowMultipleValues)// multiselect list
 									{
 										whenSuffix.Append(
-											$"and FieldTypeID = {rc.FieldTypeID} and '{sqlEscapedValue}' in (select value from string_split([Value],',')) ) ");
+											$"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and '{sqlEscapedValue}' in (select value from string_split([Value],',')) ) ");
 									}
 									else if (thenFieldType.Type == "Text")
 									{
 										switch (rc.Operator)
 										{
 											case Operator.NotEquals:												
-												whenSuffix.Append($"and FieldTypeID = {rc.FieldTypeID} and FormattedValue != '{sqlEscapedValue}' )  ");
+												whenSuffix.Append($"not exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue = '{sqlEscapedValue}' )  ");
 												break;
 											case Operator.Contains:												
-												whenSuffix.Append($"and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '%{sqlEscapedValue}%' )  ");
+												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '%{sqlEscapedValue}%' )  ");
 												break;
 											case Operator.NotContains:												
-												whenSuffix.Append($"and FieldTypeID = {rc.FieldTypeID} and FormattedValue NOT LIKE '%{sqlEscapedValue}%' )  ");
+												whenSuffix.Append($"not exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '%{sqlEscapedValue}%' )  ");
 												break;
 											case Operator.StartsWith:
-												whenSuffix.Append($"and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '{sqlEscapedValue}%' )  ");
+												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '{sqlEscapedValue}%' )  ");
 												break;
 											case Operator.EndsWith:
-												whenSuffix.Append($"and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '%{sqlEscapedValue}' )  ");												
+												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '%{sqlEscapedValue}' )  ");												
 												break;
 											case Operator.Populated:												
-												whenSuffix.Append($"and FieldTypeID = {rc.FieldTypeID} and (FormattedValue is not null or LEN(FormattedValue)>0) ) ");
+												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and (FormattedValue is not null or LEN(FormattedValue)>0) ) ");
 												break;
 											case Operator.NotPopulated:												
-												whenSuffix.Append($"and FieldTypeID = {rc.FieldTypeID} and (FormattedValue is null or LEN(FormattedValue)=0) ) ");
+												whenSuffix.Append($"not exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and (FormattedValue is not null or LEN(FormattedValue)>0) ) ");
 												break;
 											default:
-												whenSuffix.Append($"and FieldTypeID = {rc.FieldTypeID} and FormattedValue = '{sqlEscapedValue}' )  ");												
+												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue = '{sqlEscapedValue}' )  ");												
 												break;
 										}
 
 									}
 									else // all other field types including single select list
 									{
-										whenSuffix.Append($"and FieldTypeID = {rc.FieldTypeID} and FormattedValue = '{sqlEscapedValue}' )  ");  // all field types plus single select list
+										whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and [Value] = '{sqlEscapedValue}' )  ");  // all field types plus single select list
 									}
 								}
 								else
 								{
-									whenSuffix.Append($"and FieldTypeID = {rc.FieldTypeID} and [Value] = '{sqlEscapedValue}' )  ");
+									whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and [Value] = '{sqlEscapedValue}' )  ");
 								}
 							}
 							else
