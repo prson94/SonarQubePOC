@@ -5,15 +5,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.Deletions-v6">
+  <changeSet author="Pappas" id="Function.Deletions-v7">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-drop function if exists [dbo].[GetIntersectNames]
+drop function if exists dbo.GetIntersectNames
 GO
-
+drop function if exists utility.DeriveIntersectName
+GO
+drop function if exists utility.GetIntersectNames
+GO
 		]]>
     </sql>
 	<rollback></rollback>
