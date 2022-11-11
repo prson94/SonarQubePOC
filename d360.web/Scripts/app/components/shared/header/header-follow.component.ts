@@ -115,7 +115,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 
 		this.followerService.updateFollowStatus(this.assetUId, this.assetTypeUId, includeChildren).subscribe(
             (f) => {
-                if (f.type == 'notification') {
+                if (f.type === 'notification') {
                     this.active = !this.active;
                     let crumbs = this.breadcrumbService.getBreadcrumbsFromStorage();
                     let toastMessage = `You are now following '${crumbs[crumbs.length - 1].text}'`;

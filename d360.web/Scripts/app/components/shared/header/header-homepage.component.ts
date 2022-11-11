@@ -109,7 +109,7 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     isIssueUri() {
-        return (this.uri || '').toUpperCase() == `${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE}`.toUpperCase();
+        return (this.uri || '').toUpperCase() === `${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE}`.toUpperCase();
     }
 }
 
