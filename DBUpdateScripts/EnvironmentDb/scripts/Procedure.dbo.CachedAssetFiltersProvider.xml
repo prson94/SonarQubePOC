@@ -26,7 +26,7 @@ CREATE or alter  PROCEDURE [dbo].[CachedAssetFiltersProvider]
 @assetTypeId int
 AS
 BEGIN TRY  
-	declare @expiryDate datetime = (select DATEADD(MINUTE,-2, GETUTCDATE()))
+	declare @expiryDate datetime = (select DATEADD(MINUTE,-5, GETUTCDATE()))
 	
 	if @requestHash is null
 	begin
