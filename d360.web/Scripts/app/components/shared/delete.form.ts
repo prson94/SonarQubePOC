@@ -58,7 +58,7 @@ export class DeleteForm implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.items && changes.items.previousValue != changes.items.currentValue) 
+        if (changes.items && changes.items.previousValue !== changes.items.currentValue) 
             {this.deletingInProgress = false;}        
     }
 

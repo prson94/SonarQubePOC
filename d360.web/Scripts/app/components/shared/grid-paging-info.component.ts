@@ -24,7 +24,7 @@ export class GridPagingInfoComponent extends BaseComponent {
     }
 
     get startValue() {
-        if (this.first != undefined) {
+        if (this.first != null) {
             return (this.first + 1).toLocaleString();
         }
         return '';

@@ -67,7 +67,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
 
         this.isLoading = true;
 
-        let type = (this.objectType.toLowerCase() == 'artifact') ? "1" : this.objectType;
+        let type = (this.objectType.toLowerCase() === 'artifact') ? "1" : this.objectType;
 
         this.objectDetailService.getObject(this.objectID, type).subscribe(
             (r) => {
@@ -121,13 +121,13 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
 
         //convert to an asset
         for (var p in values) {
-            if (p.toUpperCase() == "PARENTUID") {
+            if (p.toUpperCase() === "PARENTUID") {
                 asset.ParentUid = values[p];
             }
-            else if (p.toUpperCase() == "UID") {
+            else if (p.toUpperCase() === "UID") {
                 asset.Uid = values[p];
             }
-            else if (p.toUpperCase() == "ASSETTYPEUID") {
+            else if (p.toUpperCase() === "ASSETTYPEUID") {
                 assetTypeUid = values[p];
             }
             else {
