@@ -12559,7 +12559,7 @@ where   ER.ExecutionID = @ExecutionID
 									insert into #child
 									select 
 										ItemNumber,
-										AAP.Assetid,
+										AAP.ObjectAssetID as AssetID,
 										p.startDate,
 										p.endDate
 									from 
