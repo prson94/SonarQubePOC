@@ -711,11 +711,16 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.Boolean.ToString();
 					newFieldType.ColumnOrder = f.Type.Boolean.ColumnOrder.HasValue ? f.Type.Boolean.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Boolean.ColumnWidth;
-					
+
 					if (f.Type.Boolean.DefaultValue.HasValue)
 					{
 						newFieldType.DefaultValue = f.Type.Boolean.DefaultValue.Value.ToString().ToLower();
 						newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
+					}
+					else
+					{
+						newFieldType.DefaultValue = null;
+						newFieldType.DefaultFormattedValue = null;
 					}
 					
 					if (f.Type.Boolean.Description != null)
@@ -1165,7 +1170,12 @@ namespace d360.model.DataAccessLayer
 						newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
 
 					}
-					
+					else
+					{
+						newFieldType.DefaultValue = null;
+						newFieldType.DefaultFormattedValue = null;
+					}
+
 					if (f.Type.Date.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Date.Description.Display;
@@ -1206,6 +1216,11 @@ namespace d360.model.DataAccessLayer
 					if (f.Type.DateTime.DefaultValue.HasValue)
 					{
 						newFieldType.DefaultValue = f.Type.DateTime.DefaultValue.Value.ToString();
+					}
+					else
+					{
+						newFieldType.DefaultValue = null;
+						newFieldType.DefaultFormattedValue = null;
 					}
 
 					if (f.Type.DateTime.Description != null)
@@ -1248,7 +1263,12 @@ namespace d360.model.DataAccessLayer
 						newFieldType.DefaultValue = f.Type.Decimal.DefaultValue.Value.ToString();
 						newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
 					}
-					
+					else
+					{
+						newFieldType.DefaultValue = null;
+						newFieldType.DefaultFormattedValue = null;
+					}
+
 					if (f.Type.Decimal.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Decimal.Description.Display;
@@ -1288,8 +1308,16 @@ namespace d360.model.DataAccessLayer
 					newFieldType.ColumnOrder = f.Type.Html.ColumnOrder.HasValue ? f.Type.Html.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Html.ColumnWidth;
 
-					newFieldType.DefaultValue = f.Type.Html.DefaultValue;
-					newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
+					if (string.IsNullOrEmpty(f.Type.Html.DefaultValue))
+					{
+						newFieldType.DefaultValue = null;
+						newFieldType.DefaultFormattedValue = null;
+					}
+					else
+					{ 
+						newFieldType.DefaultValue = f.Type.Html.DefaultValue;
+						newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;					
+					}
 
 					if (f.Type.Html.Description != null)
 					{
@@ -1370,19 +1398,24 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.Link.ToString();
 					newFieldType.ColumnOrder = f.Type.Link.ColumnOrder.HasValue ? f.Type.Link.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Link.ColumnWidth;
-					
+
 					if (f.Type.Link.DefaultValue != null)
 					{
 						if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Text) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Text))
 						{
 							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkTextValue, f.Name));
 						}
-						
+
 						if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Url) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Url))
 						{
 							return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.MustProvideLinkUrlValue, f.Name));
 						}
 						newFieldType.DefaultValue = $"{f.Type.Link.DefaultValue.Text}|{f.Type.Link.DefaultValue.Url}";
+					}
+					else
+					{
+						newFieldType.DefaultValue = null;
+						newFieldType.DefaultFormattedValue = null;
 					}
 					
 					if (f.Type.Link.Description != null)
@@ -1606,7 +1639,12 @@ namespace d360.model.DataAccessLayer
 						newFieldType.DefaultValue = f.Type.Number.DefaultValue.Value.ToString();
 						newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
 					}
-					
+					else
+					{
+						newFieldType.DefaultValue = null;
+						newFieldType.DefaultFormattedValue = null;
+					}
+
 					if (f.Type.Number.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Number.Description.Display;
@@ -1710,9 +1748,18 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.Text.ToString();
 					newFieldType.ColumnOrder = f.Type.Text.ColumnOrder.HasValue ? f.Type.Text.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Text.ColumnWidth;
-					newFieldType.DefaultValue = f.Type.Text.DefaultValue;
-					newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
-					
+
+					if (string.IsNullOrEmpty(f.Type.Text.DefaultValue))
+					{
+						newFieldType.DefaultValue = null;
+						newFieldType.DefaultFormattedValue = null;
+					}
+					else
+					{
+						newFieldType.DefaultValue = f.Type.Text.DefaultValue;
+						newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
+					}
+
 					if (f.Type.Text.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Text.Description.Display;
