@@ -390,6 +390,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         params._pageNum = this.stateService.artifactTypeFilters.currentPageNumber + 1;
         params._listColorsAsJSON = true;
         params._includeProfilingCheck = true;
+		params.usecachedfilters = true;
 
         if (this.stateService.artifactTypeFilters.sortField) {
             params._order = this.getFieldAPINameByOldName(this.stateService.artifactTypeFilters.sortField);
