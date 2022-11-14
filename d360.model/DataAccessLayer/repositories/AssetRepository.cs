@@ -1547,7 +1547,7 @@ namespace d360.model.DataAccessLayer
 					create table #filtered_results (AssetId int)
 
 					--procedure that will insert data into #filtered_results if there are cached results for user & request
-					exec CachedAssetFiltersProvider 'FETCH', @userId, @requesthash
+					exec CachedAssetFiltersProvider 'FETCH', @userId, @requesthash, @assetTypeId
 		
 					IF((SELECT count(*) FROM #filtered_results)=0)
 					begin
@@ -1558,7 +1558,7 @@ namespace d360.model.DataAccessLayer
 						insert into #filtered_results
 						{GetBaseQuery()}
 
-						exec CachedAssetFiltersProvider 'SET', @userId,@requesthash
+						exec CachedAssetFiltersProvider 'SET', @userId, @requesthash, @assetTypeId
 					end";
 			}
 
