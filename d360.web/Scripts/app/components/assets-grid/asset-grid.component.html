@@ -127,7 +127,7 @@
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
-                <tr (dblclick)="selectArtifact($event, item)" [pSelectableRow]="item" (click)="selectRow(item)"
+                <tr (dblclick)="selectArtifact($event, item)" [pSelectableRow]="item" (focus)="selectRow(item)"
 					(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selectRow(item)">
                     <td *ngFor="let col of columns; let i=index">
                         <ng-container *ngIf="i != linkColumnIndex; else linked">

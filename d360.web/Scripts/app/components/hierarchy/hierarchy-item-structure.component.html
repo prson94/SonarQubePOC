@@ -120,7 +120,7 @@
                                      let-item="rowData">
                             <tr [ttRow]="rowNode"
                                 [ttSelectableRow]="rowNode"
-                                (click)="selectAsset(rowNode.node)"
+                                (focus)="selectAsset(rowNode.node)"
                                 (contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selectAsset(rowNode.node)">
                                 <ng-container *ngFor="let column of columns; let i = index">
                                     <td [ngClass]="{'no-text-overflow': column.fieldType !== 'Text' || (column.fieldType === 'Text' && i === linkColumnIndex)}"
