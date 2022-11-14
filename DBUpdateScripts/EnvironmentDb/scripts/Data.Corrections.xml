@@ -1024,65 +1024,6 @@ drop table if exists #tempfieldid;
 	</rollback>
   </changeSet>
   
-  <changeSet author="Pappas" id="Data.Corrections.GOV-18612">
-  <validCheckSum>7:295c472b9c68f533e2b8929af6797c49</validCheckSum>
-  <comment>Intersect table new column data updates</comment>
-  <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-DISABLE TRIGGER ALL ON [dbo].[Intersect];
-		
-update	T
-set		T.SubjectAssetID = S.ID,
-		T.SubjectAssetTypeID = S.AssetTypeID
-from	[Intersect] T inner join Asset S on S.Object = T.Subject and S.ObjectId = T.SubjectID
-where   T.SubjectAssetID is null;
-
-update	T
-set		T.ObjectAssetID = S.ID,
-		T.ObjectAssetTypeID = S.AssetTypeID
-from	[Intersect] T inner join Asset S on S.Object = T.Object and S.ObjectId = T.ObjectID
-where	T.ObjectAssetID is null;
-
-update	T
-set		T.ObjectAssetID = 0,
-		T.ObjectAssetTypeID = S.ID
-from	[Intersect] T inner join AssetType S on S.Object = T.Object and S.ObjectId = T.ObjectID
-where	T.ObjectAssetID is null;
-
-ENABLE TRIGGER ALL ON [dbo].[Intersect];
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="TKlok" id="Data.Corrections.GOV-18612.2">
-  <comment>Intersect table new column data updates</comment>
-  <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-DISABLE TRIGGER ALL ON [dbo].[Intersect];
-
-update	T
-set		T.SubjectAssetID = 0,
-		T.SubjectAssetTypeID = S.ID
-from	[Intersect] T inner join AssetType S on S.Object = T.Subject and S.ObjectId = T.SubjectID
-where	T.SubjectAssetID is null;
-
-ENABLE TRIGGER ALL ON [dbo].[Intersect];
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[]]>
-	</rollback>
-  </changeSet>
-
   <changeSet author="TDuric" id="Data.Corrections.GOV-18080-v1.69">
   <comment>Update Data for reports</comment>
   <sql dbms="mssql"
@@ -1787,17 +1728,21 @@ from	workflow.EventRegistration T
   </changeSet>
 
 <changeSet author="Pappas" id="Data.Corrections.GOV-19761">
+	<validCheckSum>7:82f04261f39dcaca83dfa992f241964c</validCheckSum>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
       <![CDATA[
-update	I
-set		I.SubjectAssetID = A.ID
-from	[Intersect] I
-		inner join IntersectType T on T.ID = I.IntersectTypeID and I.SubjectAssetID = 0
-		inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] in (3,4)
-		inner join Asset A on A.Object = I.Subject and A.ObjectID = I.SubjectID
+IF EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'Subject')
+BEGIN
+	update	I
+	set		I.SubjectAssetID = A.ID
+	from	[Intersect] I
+			inner join IntersectType T on T.ID = I.IntersectTypeID and I.SubjectAssetID = 0
+			inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] in (3,4)
+			inner join Asset A on A.Object = I.Subject and A.ObjectID = I.SubjectID
+END
 		]]>
     </sql>
   </changeSet>
