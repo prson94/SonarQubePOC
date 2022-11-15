@@ -510,7 +510,23 @@ namespace d360.web.Controllers
 					assettypeID = Company.Assets.Where(a => a.Object == type.ToString() && a.ObjectID == id).FirstOrDefault().AssetTypeID;
 				}
 
-				var fieldTypes = Company.Filter<FieldType>(i => ((type == SystemObjects.IssueType && i.IssueTypeID == issueTypeID) || (type == SystemObjects.IntersectType && i.IntersectTypeID == intersectTypeID) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && i.AssetTypeID == assettypeID)) && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
+				IQueryable<FieldType> ftQuery = Company.FieldTypes.Where(x => x.IsDisplayable);
+
+				if (type == SystemObjects.IssueType || type == SystemObjects.Issue)
+				{
+					ftQuery = ftQuery.Where(x => x.IssueTypeID == issueTypeID);
+				}
+				else if (type == SystemObjects.Intersect || type == SystemObjects.IntersectType)
+				{
+					ftQuery = ftQuery.Where(x => x.IntersectTypeID == intersectTypeID);
+				}
+				else
+				{
+					ftQuery = ftQuery.Where(x => x.AssetTypeID == assettypeID);
+				}
+
+				var fieldTypes = ftQuery.OrderBy(i => i.ColumnOrder).ToList();
+
 
 				string lookupDataSelectSQL = @" from asset a
 					inner join fieldtype ft on ft.assettypeid = a.AssetTypeID 
