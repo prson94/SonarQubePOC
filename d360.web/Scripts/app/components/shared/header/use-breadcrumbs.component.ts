@@ -1,4 +1,6 @@
 import { Component, Input } from "@angular/core";
+import { Subscription } from "rxjs";
+import { skip } from "rxjs/operators";
 import { Breadcrumb } from "../../../models/breadcrumb.model";
 import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
 
@@ -15,18 +17,40 @@ export class UseBreadcrumbsComponent {
     ) {
     }
 
+    isChangingBreadcrumbs = false;
+    breadcrumbsSubscription: Subscription;
+
     ngOnInit() {
-        this.headerBreadcrumbService.clearBreadcrumbs();
+        this.setBreadcrumbs([]);
+        this.breadcrumbsSubscription = this.headerBreadcrumbService.breadcrumbs$
+            .pipe(skip(1))
+            .subscribe((v) => {
+                if (this.isChangingBreadcrumbs) {
+                    return;
+                }
+
+                this.setBreadcrumbs(this.breadcrumbs);
+            })
     }
 
     ngOnChanges() {
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        for (let breadcrumbItem of this.breadcrumbs ?? []) {
-            this.headerBreadcrumbService.showBreadcrumb(breadcrumbItem);
+        this.setBreadcrumbs(this.breadcrumbs);
+    }
+
+    setBreadcrumbs(breadcrumbs: Breadcrumb[]) {
+        this.isChangingBreadcrumbs = true;
+        try {
+            this.headerBreadcrumbService.clearBreadcrumbs();
+            for (let breadcrumbItem of breadcrumbs ?? []) {
+                this.headerBreadcrumbService.showBreadcrumb(breadcrumbItem);
+            }
+        } finally {
+            this.isChangingBreadcrumbs = false;
         }
     }
 
     ngOnDestroy() {
-        this.headerBreadcrumbService.clearBreadcrumbs();
+        this.setBreadcrumbs([]);
+        this.breadcrumbsSubscription.unsubscribe();
     }
 }
