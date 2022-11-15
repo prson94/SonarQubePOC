@@ -1,6 +1,4 @@
 ﻿import { SiteNav } from './site-menu.model';
-import { Observable } from 'rxjs';
-import { StringConstants } from '../static/string-constants';
 
 export class CompanySettings {
     AllowedOrigins: string;

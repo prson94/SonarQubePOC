@@ -5,7 +5,6 @@ import { BaseObservableService } from "./baseObservable.service";
 import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 import { Predicate, PredicateType } from '../models/predicate.model';
-import { JsonResult } from '../models/jsonresult.model';
 import { ApiResult } from '../models/apiresult.model';
 
 @Injectable({

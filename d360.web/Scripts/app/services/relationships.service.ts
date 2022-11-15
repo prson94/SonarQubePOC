@@ -3,12 +3,18 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
-import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, PredicateDropdown, RelationshipCount } from '../models/relationship.model';
+import {
+    ObjectRelationship,
+    PredicateDropdown,
+    RelatedItem,
+    RelationshipCount,
+    RelationshipDetail,
+    RelationshipType
+} from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
-import { Observable, forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { ApiResult } from '../models/apiresult.model';
-import { Relation } from '../models/fieldtype-api.model';
 import * as _ from 'lodash';
 
 @Injectable({

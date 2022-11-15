@@ -1,18 +1,18 @@
 ﻿import { Injectable } from '@angular/core';
 import {
     IResponsibilityTypeService,
-    ResponsibilityType,
-    ResponsibilityTypeRelation,
-    ResponsibilityTypeCount,
     ResourceResponsibilityTypeCount,
-    ResponsibilityTypeRelationRule,
-    ResponsibilityTypeRelationRuleSummary,
-    ResponsibilityTypeRelationRuleFormData,
-    ResponsibilityTypeRelation_FormData,
+    ResponsibilityRuleTestResponseModel,
+    ResponsibilityType,
     ResponsibilityTypeAllocation,
     ResponsibilityTypeAllocationPost,
-    ResponsibilityTypeRelationRuleV2,
-    ResponsibilityRuleTestResponseModel
+    ResponsibilityTypeCount,
+    ResponsibilityTypeRelation,
+    ResponsibilityTypeRelation_FormData,
+    ResponsibilityTypeRelationRule,
+    ResponsibilityTypeRelationRuleFormData,
+    ResponsibilityTypeRelationRuleSummary,
+    ResponsibilityTypeRelationRuleV2
 } from '../models/responsibility-type.model';
 import { SelectItem } from "primeng/api";
 import { HttpClient, HttpHeaders } from '@angular/common/http';

@@ -1,4 +1,4 @@
-﻿import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input } from '@angular/core';
+﻿import { AfterViewInit, Directive, ElementRef, Input, NgModule, OnDestroy } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
 

@@ -4,7 +4,6 @@ import { SiteMessage } from '../models/site-message.model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { HeaderActionsService } from './header-actions.service';
 import { catchError, map } from "rxjs/operators";
-import { factories } from 'powerbi-client';
 
 @Injectable()
 export class MessagesObservableService {

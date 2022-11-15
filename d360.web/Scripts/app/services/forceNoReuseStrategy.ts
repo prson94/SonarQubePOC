@@ -1,4 +1,3 @@
-
 import { ActivatedRouteSnapshot, DetachedRouteHandle, RouteReuseStrategy } from '@angular/router';
 
 export class ForceNoReuseStrategy implements RouteReuseStrategy {

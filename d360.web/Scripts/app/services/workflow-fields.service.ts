@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Subject} from 'rxjs';
-import { WorkflowChangeType, NodeModel, EmailTaskRecipientType, HTTPResponseOutput } from '../models/workflow.model';
+import { Subject } from 'rxjs';
+import { EmailTaskRecipientType, HTTPResponseOutput, NodeModel, WorkflowChangeType } from '../models/workflow.model';
 
 
 @Injectable({

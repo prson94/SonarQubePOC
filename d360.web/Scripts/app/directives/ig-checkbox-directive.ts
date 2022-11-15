@@ -1,7 +1,6 @@
-﻿import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input, forwardRef, Provider, HostListener } from '@angular/core';
+﻿import { AfterViewInit, Directive, ElementRef, NgModule, OnDestroy } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
-import { NG_VALIDATORS, AbstractControl } from '@angular/forms';
 
 @Directive({
     selector: '[igCheckbox]'

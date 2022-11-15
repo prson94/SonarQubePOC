@@ -1,8 +1,7 @@
-﻿import { NgModule, Directive, ElementRef, AfterViewInit, Input, ChangeDetectorRef, AfterContentInit } from "@angular/core";
+﻿import { AfterContentInit, ChangeDetectorRef, Directive, ElementRef, Input, NgModule } from "@angular/core";
 import { DomHandler } from "primeng/dom";
 import { CommonModule } from "@angular/common";
 import { Dropdown } from "primeng/dropdown";
-import { Page } from "powerbi-client";
 
 @Directive({
     selector: "[igDropdown]"

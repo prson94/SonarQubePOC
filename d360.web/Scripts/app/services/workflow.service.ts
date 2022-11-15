@@ -1,37 +1,35 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {
-    Issue,
-    IssueDetail,
-    WorkflowIssueType,
-    WorkflowDiagramModel,
-    ActivityTypeInfo,     
-    WorkflowForm,
-    WorkflowListItem,
-    WorkflowObjectType,
-    ChangeTypeInfo,
-    WorkflowEventRegistration,
-    TransitionTypeInfo,
-    WorkflowTaskProcedure,   
-    EmailTaskRecipientTypeInfo,
-    WorkflowChangeType,
-    BulkWorkflowFormModel,
-    WorkflowItemStep,
-    BulkWorkflowReassignModel,
-    WorkflowTypeItem,
     ActionEditorModel,
+    ActivityTypeInfo,
     AllocationAPIModel,
     AllocationRequestModel,
+    BulkWorkflowFormModel,
+    BulkWorkflowReassignModel,
+    ChangeTypeInfo,
+    EmailTaskRecipientTypeInfo,
+    Issue,
+    IssueDetail,
+    TransitionTypeInfo,
+    WorkflowChangeType,
+    WorkflowDiagramModel,
+    WorkflowForm,
+    WorkflowIssueType,
+    WorkflowItemStep,
+    WorkflowListItem,
+    WorkflowObjectType,
     WorkflowReassignmentAsset,
+    WorkflowTaskProcedure,
+    WorkflowTypeItem,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
-import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
-import { Observable,of } from 'rxjs';
-import { map, catchError, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { AssetTypeClass } from '../models/asset.model';
 

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { IOutputData } from 'angular-split';
 import { BehaviorSubject, fromEvent } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
-import { map, distinctUntilChanged  } from 'rxjs/operators';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable({

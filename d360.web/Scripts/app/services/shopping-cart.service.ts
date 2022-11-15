@@ -1,10 +1,7 @@
-﻿import {
-    ShoppingCart,
-    CartModel,
-} from '../models/shopping-cart.model';
+﻿import { CartModel, ShoppingCart, } from '../models/shopping-cart.model';
 
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';

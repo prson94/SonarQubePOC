@@ -1,7 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { SortOrder } from '../models/enums.model';
-import { GridFilterExpression, GridRelationshipFilterExpression, GridOwnerFilter } from '../models/grid-definition.model';
+import {
+    GridFilterExpression,
+    GridOwnerFilter,
+    GridRelationshipFilterExpression
+} from '../models/grid-definition.model';
 
 export class ArtifactTypeFilters {
     artifactTypeId: number;

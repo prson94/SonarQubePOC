@@ -3,13 +3,7 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 
-import {
-    IGroupService,
-    GroupSearchResultModel,
-    GroupResourceInfo,
-    Group,
-    AddUserToGroup
-} from '../models/group.model';
+import { AddUserToGroup, Group, GroupResourceInfo, GroupSearchResultModel, IGroupService } from '../models/group.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { CountObject } from '../models/resource.model';
 import { MessagesObservableService } from './messages-observable.service';

@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { RuleType, RuleDetail, RuleResultPagedResults } from '../models/rule.model';
+import { RuleDetail, RuleResultPagedResults, RuleType } from '../models/rule.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { SortOrder } from '../models/enums.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';

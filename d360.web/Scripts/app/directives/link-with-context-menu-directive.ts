@@ -1,7 +1,15 @@
 ﻿import { DOCUMENT } from '@angular/common';
-import { AfterViewChecked, Input, OnDestroy } from '@angular/core';
-import { Inject, OnInit, Renderer2 } from '@angular/core';
-import { Directive, ElementRef, HostListener } from '@angular/core';
+import {
+    AfterViewChecked,
+    Directive,
+    ElementRef,
+    HostListener,
+    Inject,
+    Input,
+    OnDestroy,
+    OnInit,
+    Renderer2
+} from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CompanySettingEnum } from '../models/settings.model';
 import { AuthenticationService } from '../services/authentication.service';

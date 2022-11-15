@@ -1,5 +1,12 @@
 ﻿import { Injectable } from "@angular/core";
-import { CompanyRebuildJobToken, CompanyRebuildJobStatusApiModel, CompanySettingEnum, SettingsPutModel, SettingsGetModel, AppSettingModel, AppSettingsEnum } from "../models/settings.model";
+import {
+    AppSettingModel,
+    CompanyRebuildJobStatusApiModel,
+    CompanyRebuildJobToken,
+    CompanySettingEnum,
+    SettingsGetModel,
+    SettingsPutModel
+} from "../models/settings.model";
 import { AuthenticationProperties } from "../models/authentication-properties.model";
 import { SelectItem } from "primeng/api";
 import { JsonResult } from "../models/jsonresult.model";

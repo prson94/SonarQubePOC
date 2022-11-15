@@ -1,8 +1,6 @@
 ﻿import { AbstractControl } from "@angular/forms";
 
 
-
-
 export class FormHelpers {
 
     static numberValidator(f: AbstractControl) {

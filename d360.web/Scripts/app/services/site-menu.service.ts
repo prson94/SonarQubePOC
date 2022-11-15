@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SecondaryNavPostModel } from '../models/secondaryNav.model';
-import { IS_QUERY, ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
+import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 
 @Injectable({
     providedIn: 'root'

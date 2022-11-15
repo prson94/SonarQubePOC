@@ -3,13 +3,13 @@ import { catchError, distinctUntilChanged, map, switchMap } from 'rxjs/operators
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { SelectItem } from 'primeng/api';
-import { FieldDefinition, Lookups, IFieldsService, FieldTypeEditorModel } from '../models/fields.model';
+import { FieldDefinition, FieldTypeEditorModel, IFieldsService, Lookups } from '../models/fields.model';
 import { EditorDropDownItem } from '../models/editor-field.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
-import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from '../models/fieldtype-api.model';
+import { FieldTypeAPIModel, FieldTypeAPIModelField } from '../models/fieldtype-api.model';
 import { LookupValuesAPIModel } from '../components/assets-grid/advanced-filtering/advanced-filtering.models';
 
 @Injectable({

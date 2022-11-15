@@ -1,5 +1,4 @@
-﻿import { Pipe, PipeTransform, Injectable } from '@angular/core';
-import { escape } from 'querystring';
+﻿import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({ name: 'assetpathSeparator' })
 export class AssetpathSeparatorPipe implements PipeTransform {

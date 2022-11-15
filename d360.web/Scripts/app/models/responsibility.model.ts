@@ -1,5 +1,4 @@
-﻿
-import { SelectItem } from '../models/form.model';
+﻿import { SelectItem } from '../models/form.model';
 import { Observable } from 'rxjs';
 
 export interface IResponsibilityService {    
