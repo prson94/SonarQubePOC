@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, OnChanges, SimpleChange, ViewEncapsulation } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { BaseComponent } from '../shared/base.component';
 import { NymType } from '../../models/object-detail.model';

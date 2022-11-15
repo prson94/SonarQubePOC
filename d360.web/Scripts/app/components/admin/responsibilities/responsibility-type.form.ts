@@ -1,7 +1,6 @@
-﻿import { Input, Output, Component, OnInit, EventEmitter, SimpleChange } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output, SimpleChange } from '@angular/core';
 import { ResponsibilityType, ResponsibilityTypeRelation } from '../../../models/responsibility-type.model';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-responsibility-type-form',

@@ -10,14 +10,19 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import {
+    AdvancedFilterFieldType,
+    Filters,
+    LookupValuesAPIModel,
+    LookupValuesAPIParameters
+} from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
 import { Observable, of } from 'rxjs';
 import { Table } from 'primeng/table';
 import { tap } from 'rxjs/operators';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 import { SearchService } from '../../../services/search.service';
-import {uniqWith as _uniqWith, isEqual as _isEqual} from 'lodash';
+import { isEqual as _isEqual, uniqWith as _uniqWith } from 'lodash';
 
 @Component({
     selector: 'd3s-admin-tags',

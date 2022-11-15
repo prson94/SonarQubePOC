@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, OnDestroy, Output, ViewChild } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';

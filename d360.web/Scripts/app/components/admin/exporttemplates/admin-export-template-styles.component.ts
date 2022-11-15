@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnChanges, SimpleChanges, OnInit } from "@angular/core";
+﻿import { Component, Input, OnChanges, OnInit, SimpleChanges } from "@angular/core";
 import { BaseComponent } from "../../shared/base.component";
 import { ExportTemplateService } from "../../../services/export-template.service";
 import { ExportTemplateStyle, ExportViewType } from "../../../models/export-template.model";

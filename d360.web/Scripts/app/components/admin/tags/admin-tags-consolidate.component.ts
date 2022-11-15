@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
 import { TagType } from '../../../models/tag.model';
 
 @Component({

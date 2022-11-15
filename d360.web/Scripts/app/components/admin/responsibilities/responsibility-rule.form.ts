@@ -1,24 +1,22 @@
-﻿import { Input, Output, Component, EventEmitter, OnInit } from "@angular/core";
+﻿import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { SelectItem } from "primeng/api";
 import { ResponsibilityTypeService } from "../../../services/responsibility-type.service";
 import {
+    ResponsibilityRuleTestRow,
     ResponsibilityTypeRelationRule,
     ResponsibilityTypeRelationRuleDefinition,
-    ResponsibilityTypeRelationRuleDefinitionWhenItem,
     ResponsibilityTypeRelationRuleDefinitionThen,
     ResponsibilityTypeRelationRuleDefinitionThenItem,
+    ResponsibilityTypeRelationRuleDefinitionWhenItem,
     ResponsibilityTypeRelationRuleFormDataFieldType,
-    RuleThenV2,
-    ResponsibilityRuleTestRow
+    RuleThenV2
 } from "../../../models/responsibility-type.model";
 import { ObjectDetailService } from "../../../services/object-detail.service";
 import { BaseComponent } from "../../shared/base.component";
 import * as _ from "lodash";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
-import { HelpResource } from "../../../models/resource.model";
 import { Operator } from "../../../models/operator.model";
-import { forEach } from "core-js/fn/dict";
 import { forkJoin } from "rxjs";
 
 

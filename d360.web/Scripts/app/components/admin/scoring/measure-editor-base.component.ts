@@ -1,12 +1,26 @@
-import { Component, Input, EventEmitter, Output, HostListener, ChangeDetectorRef, ViewChildren, QueryList } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    HostListener,
+    Input,
+    Output,
+    QueryList,
+    ViewChildren
+} from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricAssetVersionConditionViewModel, MetricAssetVersionConditionItemViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
+import {
+    MetricAssetVersionConditionItemViewModel,
+    MetricAssetVersionConditionViewModel,
+    MetricAssetViewModel,
+    ScoreTypeAllocation
+} from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
-import { FormGroup, ValidatorFn, AbstractControl, FormControl } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ValidatorFn } from '@angular/forms';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
 import * as _ from 'lodash';

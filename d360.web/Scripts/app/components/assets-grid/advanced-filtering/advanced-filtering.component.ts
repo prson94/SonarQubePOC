@@ -1,11 +1,31 @@
-﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter, AfterViewChecked, ViewChildren, ElementRef, HostBinding } from "@angular/core";
-import * as _ from "lodash";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostBinding,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    ViewChild,
+    ViewEncapsulation
+} from "@angular/core";
 import { OperatorModel } from "../../../models/operator.model";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
 import { forkJoin, Observable, of } from "rxjs";
-import { AdvancedFilterFieldType, AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, ComplexFieldDefinition, FieldTypeAPIModelFieldAdvancedCondition, Filters, SystemFields } from "./advanced-filtering.models";
+import {
+    AdvancedFilterFieldCondition,
+    AdvancedFilterFieldConditionCollection,
+    AdvancedFilterFieldType,
+    ComplexFieldDefinition,
+    FieldTypeAPIModelFieldAdvancedCondition,
+    Filters,
+    SystemFields
+} from "./advanced-filtering.models";
 import { DatePipe } from "@angular/common";
 import { AllocationService } from "../../../services/allocations.service";
 import { ScoreTypeAllocation } from "../../../models/metrics.model";

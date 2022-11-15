@@ -5,7 +5,7 @@ import { SecondaryNavService } from "../../../services/right-sidebar.service";
 import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
 import { Title } from "@angular/platform-browser";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
-import { IndexableType, IndexableStatus } from "../../../models/search-admin.model";
+import { IndexableStatus, IndexableType } from "../../../models/search-admin.model";
 import { TreeNode } from "primeng/api";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ReuseInterceptor } from '../../../http-interceptors/reuse.interceptor';

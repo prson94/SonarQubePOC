@@ -1,11 +1,10 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
-
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 
 import { CoreModule } from '../../shared/core.module';
-import { TilesModule  } from '../../shared/tiles/tiles.module';
+import { TilesModule } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
@@ -33,7 +32,6 @@ import { ToastModule } from 'primeng/toast';
 import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 import { CheckboxModule } from 'primeng/checkbox';
-import { CheckboxDirective } from '../../../directives/ig-checkbox-directive';
 
 
 @NgModule({

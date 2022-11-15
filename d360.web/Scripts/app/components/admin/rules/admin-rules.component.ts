@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy } from "@angular/core";
+﻿import { Component, OnDestroy, OnInit } from "@angular/core";
 import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
 import { SecondaryNavService } from "../../../services/right-sidebar.service";
 import { StateService } from "../../../services/state.service";
@@ -6,7 +6,7 @@ import { AdminBaseComponent } from "../admin-base.component";
 import { Title } from "@angular/platform-browser";
 import { SecondaryNavItem } from "../../../models/secondaryNav.model";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
-import { AssetTypeClass, AssetTypeApiModel } from "../../../models/asset.model";
+import { AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
 import { StringConstants } from "../../../static/string-constants";
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { AssetService } from "../../../services/asset.service";

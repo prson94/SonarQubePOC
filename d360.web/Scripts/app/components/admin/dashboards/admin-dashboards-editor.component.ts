@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { DropdownOption } from '../../../models/dropdown.model';
 import * as _ from 'lodash';

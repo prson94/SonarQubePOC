@@ -1,27 +1,21 @@
 import { of as observableOf, Subject, Subscription } from "rxjs";
-import { debounceTime, map, distinctUntilChanged, delay, mergeMap, takeUntil } from "rxjs/operators";
+import { debounceTime, delay, distinctUntilChanged, map, mergeMap, takeUntil } from "rxjs/operators";
 import {
-    Component,
-    Input,
-    OnChanges,
-    SimpleChange,
-    ViewChild,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
-
-    OnDestroy,
+    Component,
     EventEmitter,
-    Output
+    Input,
+    OnChanges,
+    OnDestroy,
+    Output,
+    SimpleChange,
+    ViewChild
 } from "@angular/core";
 import { LazyLoadEvent } from "primeng/api";
 import { Table } from "primeng/table";
 import { ActivatedRoute, Router } from "@angular/router";
-import {
-    GridColumn,
-    GridField,
-    GridFilterColumn,
-    GridScoreAllocation
-} from "../../models/grid-definition.model";
+import { GridColumn, GridField, GridFilterColumn, GridScoreAllocation } from "../../models/grid-definition.model";
 import { GridDefinitionService } from "../../services/grid-definition.service";
 import { ArtifactService } from "../../services/artifacts.service";
 import { AssetService } from "../../services/asset.service";

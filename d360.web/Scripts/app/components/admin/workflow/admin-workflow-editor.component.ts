@@ -1,20 +1,17 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, ViewChild, AfterViewChecked } from '@angular/core';
+﻿import { AfterViewChecked, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import {
-    WorkflowEventRegistration,
-    WorkflowObjectType,
-    WorkflowChangeType,
     ChangeTypeInfo,
-    EventCondition,
-    WorkflowListItem,
-    WorkflowDiagramModel,
     EmailTaskRecipientType,
+    WorkflowChangeType,
+    WorkflowDiagramModel,
+    WorkflowObjectType,
 } from '../../../models/workflow.model';
 import { Editor } from 'primeng/editor';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { map, finalize, concatMap } from 'rxjs/operators';
+import { concatMap, finalize, map } from 'rxjs/operators';
 import * as _ from 'lodash';
 import { State } from '../../../models/asset.model';
 import { of, Subscription } from 'rxjs';

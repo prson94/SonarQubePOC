@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';

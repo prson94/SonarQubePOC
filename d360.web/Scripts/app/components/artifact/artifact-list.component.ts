@@ -1,5 +1,5 @@
-﻿import { Component, Input, OnDestroy, OnInit, ViewChild, HostListener } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
 import { ArtifactTypeService } from '../../services/artifact-type.service';
@@ -8,7 +8,7 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
+import { SecondaryNavCurrentObject, SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
 import { forkJoin, Subscription } from 'rxjs';

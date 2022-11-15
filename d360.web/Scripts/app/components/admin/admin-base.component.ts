@@ -4,7 +4,7 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { ViewChildren, Component } from '@angular/core';
+import { Component, ViewChildren } from '@angular/core';
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';

@@ -1,11 +1,17 @@
 ﻿import {
 	ChangeDetectionStrategy,
 	ChangeDetectorRef,
-	Component, ElementRef, EventEmitter,
+	Component,
+	ElementRef,
+	EventEmitter,
 	Input,
 	OnChanges,
 	OnInit,
-	Output, QueryList, SimpleChanges, ViewChildren, ViewEncapsulation
+	Output,
+	QueryList,
+	SimpleChanges,
+	ViewChildren,
+	ViewEncapsulation
 } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import * as _ from 'lodash';

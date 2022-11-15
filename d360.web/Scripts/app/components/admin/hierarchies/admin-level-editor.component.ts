@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { LevelsService } from '../../../services/levels.service';
 import { HierarchyTypeLevel } from '../../../models/hierarchy-type-level.model';
 import { BaseComponent } from '../../shared/base.component';

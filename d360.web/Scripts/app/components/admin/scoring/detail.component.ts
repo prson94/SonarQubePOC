@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -6,13 +6,21 @@ import { Title } from '@angular/platform-browser';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { MetricsService } from '../../../services/metrics.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AllocationService } from '../../../services/allocations.service';
-import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricMatchType, MetricGovernanceCheckType, ScoreType, MetricPathOptionViewModel } from '../../../models/metrics.model';
+import {
+    MetricAssetVersionConditionItemViewModel,
+    MetricAssetViewModel,
+    MetricGovernanceCheckType,
+    MetricMatchType,
+    MetricPathOptionViewModel,
+    ScoreType,
+    ScoreTypeAllocation
+} from '../../../models/metrics.model';
 import { MeasureListComponent } from './measure-list.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';

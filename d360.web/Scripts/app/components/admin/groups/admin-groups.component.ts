@@ -1,11 +1,17 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnDestroy, SimpleChange, ViewChild, ViewEncapsulation } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    OnDestroy,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { GroupService } from '../../../services/group.service';
 import { GroupApiModel } from '../../../models/group.model';
 import { Title } from '@angular/platform-browser';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';

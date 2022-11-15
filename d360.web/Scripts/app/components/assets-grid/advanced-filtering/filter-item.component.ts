@@ -1,8 +1,27 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, ElementRef, OnInit, OnDestroy, OnChanges, Output, EventEmitter, HostListener, AfterViewChecked } from "@angular/core";
+﻿import {
+	ChangeDetectionStrategy,
+	ChangeDetectorRef,
+	Component,
+	ElementRef,
+	EventEmitter,
+	HostListener,
+	Input,
+	OnChanges,
+	OnDestroy,
+	OnInit,
+	Output,
+	ViewChild
+} from "@angular/core";
 import { LazyLoadEvent, SelectItem, SelectItemGroup } from "primeng/api";
-import * as _ from "lodash";
 import { OperatorModel } from "../../../models/operator.model";
-import { FieldTypeAPIModelFieldAdvancedCondition, AdvancedFilterFieldCondition, ComplexFieldDefinition, SystemFields, LookupValuesAPIParameters, LookupValuesAPIModel } from "./advanced-filtering.models";
+import {
+	AdvancedFilterFieldCondition,
+	ComplexFieldDefinition,
+	FieldTypeAPIModelFieldAdvancedCondition,
+	LookupValuesAPIModel,
+	LookupValuesAPIParameters,
+	SystemFields
+} from "./advanced-filtering.models";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { TagService } from "../../../services/tag.service";

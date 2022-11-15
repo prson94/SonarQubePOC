@@ -2,24 +2,24 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import {AdminModule} from '../admin.module';
-import {CoreModule} from '../../shared/core.module';
-import {PipesModule} from '../../../pipes/pipes.module';
-import {TilesModule} from '../../shared/tiles/tiles.module';
-import {SharedGridPagingInfoModule} from '../../shared/grid-paging-info.component';
-import {SharedDeleteFormModule} from '../../shared/delete.form';
+import { AdminModule } from '../admin.module';
+import { CoreModule } from '../../shared/core.module';
+import { PipesModule } from '../../../pipes/pipes.module';
+import { TilesModule } from '../../shared/tiles/tiles.module';
+import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
+import { SharedDeleteFormModule } from '../../shared/delete.form';
 
-import {SharedObjectDetailsModule} from '../../shared/objectdetails/shared-object-details.module';
-import {SharedResponsibilitiesModule} from '../../shared/responsibilities/shared-responsibilities.module';
-import {SharedFieldDefinitionModule} from '../../shared/fielddefinition/shared-field-definition.module';
-import {SharedAssetTypeEditorModule} from '../../shared/assettypeeditor/shared-asset-type-editor.module';
-import {AdminRelationshipEditorModule} from '../../shared/relationshipeditor/admin-relationship-editor.module';
+import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
+import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
+import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
+import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared-asset-type-editor.module';
+import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
 
-import {AdminArtifactsComponent} from './admin-artifacts.component';
+import { AdminArtifactsComponent } from './admin-artifacts.component';
 
-import {AdminArtifactsRoutingModule} from './admin-artifacts.routes';
+import { AdminArtifactsRoutingModule } from './admin-artifacts.routes';
 
-import {SimpleAccordionModule} from '../../shared/simple-accordion.part';
+import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
 
 import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';

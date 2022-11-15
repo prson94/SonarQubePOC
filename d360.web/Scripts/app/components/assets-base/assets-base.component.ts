@@ -1,6 +1,5 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router, ActivatedRoute, Route } from '@angular/router';
-import { split } from 'core-js/fn/symbol';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { AssetService } from '../../services/asset.service';
