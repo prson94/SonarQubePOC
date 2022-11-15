@@ -58,7 +58,7 @@ export class ResourcePasswordComponent extends BaseComponent {
     @Output() onClose = new EventEmitter();
 
     private sub: any;
-    private resourceId = -1;
+    private resourceUid;
     private items: any[] = [];
     private resource: any;
 
@@ -84,41 +84,41 @@ export class ResourcePasswordComponent extends BaseComponent {
         const user = new ResourceApiModel;
 
         this.sub = this.route.params.subscribe((params) => {
-            this.resourceId = +params['resourceId']; // (+) converts string 'id' to a number
-            this.resourcesService.getResource(this.resourceId)
-                .subscribe((r) => {
-                    this.items = r.items;
-                    if (this.items.length > 0) {
-                        this.resource = this.items[0];
+			this.resourceUid = params['uid'];
+			this.resourcesService.getResourceByUid(this.resourceUid)
+					.subscribe((r) => {
+						this.items = r.items;
+						if (this.items.length > 0) {
+							this.resource = this.items[0];
 
-                        user.FirstName = this.resource.FirstName;
-                        user.LastName = this.resource.LastName;
-                        user.uid = this.resource.uid;
-                        user.State = this.resource.State;
-                        user.Username = this.resource.Email;
-                        user.IsAdministrator = this.resource.IsAdministrator;
+							user.FirstName = this.resource.FirstName;
+							user.LastName = this.resource.LastName;
+							user.uid = this.resource.uid;
+							user.State = this.resource.State;
+							user.Username = this.resource.Email;
+							user.IsAdministrator = this.resource.IsAdministrator;
 
-                        user.Fields = new Object();
+							user.Fields = new Object();
 
-                        user.Fields['NewPassword'] = this.newPassword;
-                        user.Fields['CurrentPassword'] = this.currentPassword;
+							user.Fields['NewPassword'] = this.newPassword;
+							user.Fields['CurrentPassword'] = this.currentPassword;
 
-                        this.isLoading = true;
-                        this.resourcesService.saveResource(user, false, true)
-                            .subscribe(
-                                (result) => {
-                                    this.isLoading = false;
-                                    if (result.Message === "" && result.Success) {
-                                        result.Message = $localize`Password successfully updated...`;
-                                    }
-                                    this.showMessageForApiResult(this.messagesService, result, $localize`Password successfully updated...`);
-                                    if (result.Success) {
-                                        this.onSave.emit();
-                                    }
-                                }
-                            );
-                    }
-                });
+							this.isLoading = true;
+							this.resourcesService.saveResource(user, false, true)
+								.subscribe(
+									(result) => {
+										this.isLoading = false;
+										if (result.Message === "" && result.Success) {
+											result.Message = $localize`Password successfully updated...`;
+										}
+										this.showMessageForApiResult(this.messagesService, result, $localize`Password successfully updated...`);
+										if (result.Success) {
+											this.onSave.emit();
+										}
+									}
+								);
+						}
+					});            
         });
     }
 
