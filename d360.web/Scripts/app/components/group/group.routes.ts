@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { GroupComponent } from './group.component';
 import { GroupListComponent } from './group-list.component';
 import { GroupItemComponent } from './group-item.component';

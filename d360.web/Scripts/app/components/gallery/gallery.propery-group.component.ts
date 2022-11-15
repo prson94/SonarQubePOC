@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Validators, ValidatorFn, AbstractControl, FormGroup, FormBuilder, FormControl } from '@angular/forms';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { AssetService } from '../../services/asset.service';
 

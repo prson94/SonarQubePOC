@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { AssetTypeApiModel, AssetTypeClass, AssetTypeLevelApiModel } from '../../models/asset.model';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,7 +23,6 @@ import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.mo
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
-import { ChangeDetectorRef } from '@angular/core';
 import { AssetEditorComponent } from '../shared/asset-editor/asset-editor.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';

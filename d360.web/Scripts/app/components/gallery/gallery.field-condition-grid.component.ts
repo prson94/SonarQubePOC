@@ -1,10 +1,10 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, HostListener, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FieldsObservableService } from '../../services/fieldsObservable.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { OperatorModel } from '../../models/operator.model';
 import { FieldTypeHelper } from '../../models/fieldtype-api.model';
 import { FieldTypeAPIModelFieldCondition } from '../../models/field-condition-grid.models';
-import { FormGroup, FormBuilder } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 
 @Component({

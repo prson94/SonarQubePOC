@@ -1,9 +1,9 @@
-﻿import {Component, Input, OnInit, OnChanges, SimpleChange} from '@angular/core';
-import {GroupService} from '../../services/group.service';
-import {ResourcesService} from '../../services/resources.service';
-import {CountObject} from '../../models/resource.model';
-import {Group} from '../../models/group.model';
-import {BaseComponent} from '../shared/base.component';
+﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
+import { GroupService } from '../../services/group.service';
+import { ResourcesService } from '../../services/resources.service';
+import { CountObject } from '../../models/resource.model';
+import { Group } from '../../models/group.model';
+import { BaseComponent } from '../shared/base.component';
 import { CompanySettingsService } from '../../services/settings.service';
 
 /* FIXME: Extract templates and styles to their own files

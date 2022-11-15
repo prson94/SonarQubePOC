@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { AssetService } from '../../services/asset.service';
 

@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { ResourceAPICredentials } from '../../../models/resource.model';
 import { ResourcesService } from '../../../services/resources.service';

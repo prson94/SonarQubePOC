@@ -1,4 +1,13 @@
-﻿import { Input, Component, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef, ViewChild, OnInit } from '@angular/core';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { AssetService } from '../../services/asset.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
