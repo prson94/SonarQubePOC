@@ -25,6 +25,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     @Input() objectType: string;
     @Input() objectID: number;
 
+    @Input() showTitle: boolean = true;
+
     @Input() selected: RelationshipType;
     @Output() selectedChange = new EventEmitter();
 

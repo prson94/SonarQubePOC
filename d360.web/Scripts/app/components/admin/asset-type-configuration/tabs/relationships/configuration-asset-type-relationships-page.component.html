@@ -7,6 +7,7 @@
 <div class="tile tile-detail">
 	<d3s-loading [isLoading]="loadingCount != 0"></d3s-loading>
 	<d3s-admin-relationships-list *ngIf="loadingCount == 0"
+		[showTitle]="false" 
 		[filterToName]="undefined"
 		[objectType]="assetType.Object"
 		[objectID]="assetType.ObjectID"></d3s-admin-relationships-list>
