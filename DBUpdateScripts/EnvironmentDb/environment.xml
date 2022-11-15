@@ -64,6 +64,7 @@
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateField.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateStyle.xml"/>
 	<include file="scripts/Table.dbo.Asset.xml"/>
+	<include file="scripts/Table.dbo.AssetFilterCache.xml"/>
 	<include file="scripts/Table.dbo.AssetCrossReference.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfile.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfileSample.xml"/>
@@ -350,6 +351,7 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
     <include file="scripts/Procedure.dbo.GetResponsibilityBreakdownByResource.xml"/>
+	<include file="scripts/Procedure.dbo.CachedAssetFiltersProvider.xml"/>
 
     <include file="scripts/Function.Deletions.xml"/>
 	<include file="scripts/Procedure.Deletions.xml"/>
