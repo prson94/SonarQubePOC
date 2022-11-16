@@ -150,10 +150,7 @@ namespace d360.web.Controllers.V2
 
 				if (assetType == null)
 				{
-					if (assetType == null)
-					{
-						throw new NotFoundBusinessLayerException(AssetTypeErrors.NotFoundGeneric);
-					}
+					throw new NotFoundBusinessLayerException(AssetTypeErrors.NotFoundGeneric);
 				}
 			}
 
