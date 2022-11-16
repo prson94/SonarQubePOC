@@ -197,10 +197,10 @@ AS
   </changeSet>
   
   <changeSet author="ALadchenko" id="Table.dbo.AssetType_Add_Missed_IsDescriptionEnabled_Default-v1">
-	<comment>GOV-19431</comment>
 	<preConditions onFail="MARK_RAN">
 		<columnExists tableName="AssetType" schemaName="dbo" columnName="IsDescriptionEnabled" />
 	</preConditions>
+	<comment>GOV-19431</comment>
 	<sql dbms="mssql">
 	<![CDATA[
 		ALTER TABLE dbo.AssetType ADD CONSTRAINT DF_AssetType_IsDescriptionEnabled DEFAULT 1 FOR IsDescriptionEnabled;
@@ -209,10 +209,10 @@ AS
   </changeSet>
   
   <changeSet author="ALadchenko" id="Table.dbo.AssetType_Add_Missed_IsDescriptionVisibleByDefault_Default-v1">
-	<comment>GOV-19431</comment>
 	<preConditions onFail="MARK_RAN">
 		<columnExists tableName="AssetType" schemaName="dbo" columnName="IsDescriptionVisibleByDefault" />
 	</preConditions>
+	<comment>GOV-19431</comment>
 	<sql dbms="mssql">
 	<![CDATA[
 		ALTER TABLE dbo.AssetType ADD CONSTRAINT DF_AssetType_IsDescriptionVisibleByDefault DEFAULT 0 FOR IsDescriptionVisibleByDefault;
