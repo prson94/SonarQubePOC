@@ -2162,7 +2162,7 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
             return b.Build();
         }
 
-        protected async Task AppendSettingsToViewData()
+        protected async Task AppendSettingsToViewData(HttpContext httpContext = null)
         {
             if (ViewData.ContainsKey("Settings"))
             {
@@ -2190,7 +2190,12 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
             }
 
             ViewData.Add("Settings", settings);
-        }
+			if (httpContext != null && httpContext.GetOwinContext() != null)
+			{
+				ViewData.Add("ApplicationLanguageSetting", 
+					httpContext.GetOwinContext().Get<string>("ApplicationLanguageSetting"));
+			}
+		}
 
     }
 }
