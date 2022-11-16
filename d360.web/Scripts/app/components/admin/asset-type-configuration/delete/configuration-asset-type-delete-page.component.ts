@@ -15,7 +15,7 @@ import { BaseComponent } from "../../../shared/base.component";
 export class ConfigurationAssetTypeDeletePageComponent extends BaseComponent {
     assetTypeClass: AssetTypeClass;
     uid: string;
-    
+
     assetType: any;
     assetsCount: any;
 
@@ -48,8 +48,9 @@ export class ConfigurationAssetTypeDeletePageComponent extends BaseComponent {
     async loadAssetType(uid: string) {
         this.loadingCounter++;
         try {
+            const assetType = await this.assetTypeService.GetAssetTypeByUid(uid).toPromise();
             if (uid === this.uid) {
-                this.assetType = await this.assetTypeService.GetAssetTypeByUid(uid).toPromise();
+                this.assetType = assetType;
             }
         } finally {
             this.loadingCounter--;
@@ -59,8 +60,9 @@ export class ConfigurationAssetTypeDeletePageComponent extends BaseComponent {
     async loadCount(uid: string) {
         this.loadingCounter++;
         try {
+            const assetsCount = (await this.assetsService.getAssetCountOfArtifactTypeUid(uid).toPromise()).count;
             if (uid === this.uid) {
-                this.assetsCount = (await this.assetsService.getAssetCountOfArtifactTypeUid(uid).toPromise()).count;
+                this.assetsCount = assetsCount;
             }
         } finally {
             this.loadingCounter--;
