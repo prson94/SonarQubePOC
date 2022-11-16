@@ -37,7 +37,7 @@ namespace d360.web.Controllers
 							A.[Uid],
 							A.DisplayValue,
 							A.DisplayValue as TextPath,
-							P.SubjectID as ParentID,
+							Parent.ObjectId as ParentID,
 							A.ID as AssetID,        
 							CASE WHEN EXISTS (select 1 from report where assettypeid = AT.ID)    
 								THEN 1  
@@ -51,11 +51,12 @@ namespace d360.web.Controllers
 							inner join AssetType AT on AT.ID = A.AssetTypeID
 							inner join #tempFilteredAssets tfa on tfa.ID = a.Id
 							outer apply (
-										select	I.SubjectID
+										select	I.SubjectAssetId
 										from	[Intersect] I
 												inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.ObjectAssetId = A.Id
 												inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 										) P
+							left join Asset Parent on Parent.Id = P.SubjectAssetId
 							cross apply (
 										select	count(1) as [Count]
 										from	workflow.EventRegistration WER
