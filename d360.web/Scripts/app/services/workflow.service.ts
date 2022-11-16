@@ -65,7 +65,7 @@ export class WorkflowService extends BaseObservableService {
     getIssues(objectID: number, objectType: string): Observable<Issue[]> {
         let url = 'services/workflow/issue/type/';
 
-        if (objectID > 0 && objectType != undefined) {
+        if (objectID > 0 && objectType != null) {
             url += `${objectID}/${objectType}`;
         }
 
@@ -159,7 +159,7 @@ export class WorkflowService extends BaseObservableService {
 
     saveIssueType(issueType: WorkflowIssueType): Observable<ApiResult & ErrorResponse> {
         var model = { Uid: issueType.Uid, Name: issueType.Name, Description: issueType.Description };
-        if (issueType.Uid == undefined || !issueType.Uid) {            
+        if (issueType.Uid == null || !issueType.Uid) {            
             return this.http.post(`/api/v2/actions/type/`, model)
                 .pipe(
                     map((response) => <ApiResult & ErrorResponse>response),
@@ -325,7 +325,7 @@ export class WorkflowService extends BaseObservableService {
     }
 
     getWorkflowObjectTypes(changeType: WorkflowChangeType): Observable<WorkflowObjectType[]> {
-        if (changeType == null || <any>changeType == '')
+        if (changeType == null || <any>changeType === '')
             {return of([]);}
 
         return this.http.get(`services/workflow/objecttypes?changeType=${changeType}`)
@@ -397,7 +397,7 @@ export class WorkflowService extends BaseObservableService {
     }
 
     getWorkflowTypeModel(id: number,uid:string): Observable<WorkflowDiagramModel> {
-        if ((id == null || id < 1) && (uid==null  || uid == "00000000-0000-0000-0000-000000000000")) 
+        if ((id == null || id < 1) && (uid==null  || uid === "00000000-0000-0000-0000-000000000000")) 
             {return of(null);}
         return this.http.get(`services/workflow/type/${id}/${uid}`)
             .pipe(

@@ -39,7 +39,7 @@ export class LevelsService extends BaseObservableService {
         level.ID = objectId;
         let methodName = 'putDynamic';
 
-        if (action == 'new') {
+        if (action === 'new') {
             methodName = 'postDynamic';
         }
 

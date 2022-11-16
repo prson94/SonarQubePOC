@@ -35,7 +35,7 @@ export class AsyncValidatorService {
                 .pipe(map((res) => {
                     var doesExist = false;
                     res.forEach((s) => {
-                        if (s.name.toLowerCase() == control.value.toLowerCase()) {
+                        if (s.name.toLowerCase() === control.value.toLowerCase()) {
                             doesExist = true;
                         }
                     });

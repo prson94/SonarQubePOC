@@ -34,7 +34,7 @@ export class UriBasedService extends BaseObservableService {
     }
 
     saveItem(createUri: string, editUri: string, item: any): Observable<JsonResult> {
-        if (createUri && (item.ID == undefined || !item.ID)) {
+        if (createUri && (item.ID == null || !item.ID)) {
             return this.post(createUri, item);
         }
         return this.put(editUri, item);
