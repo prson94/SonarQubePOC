@@ -205,7 +205,7 @@ namespace d360.web.Controllers
 				new EditableField { FieldName = "ObjectUid", FieldType = DataType.Hidden.ToString(), Value = relationship.ObjectUid.ToString() }
 			};
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.IntersectTypeID == relationship.IntersectTypeID).ToList();
+			var fieldTypes = Company.Filter<FieldType>(i => i.IntersectTypeID == relationship.IntersectTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.IntersectID == relationship.ID).ToList();
 
 			list = loadDynamicFields(
@@ -355,8 +355,8 @@ namespace d360.web.Controllers
 					return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 				}
 
-				if (!Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.EditRelationships) &&
-					!Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.EditRelationships))
+				if (!Company.HasAssetPermission(intersect.SubjectAssetID ?? 0, Permission.EditRelationships) &&
+					!Company.HasAssetPermission(intersect.ObjectAssetID ?? 0, Permission.EditRelationships))
 				{
 					return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 				}

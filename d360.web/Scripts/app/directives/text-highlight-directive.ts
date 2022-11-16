@@ -1,4 +1,4 @@
-﻿import { Directive, ElementRef, Input, AfterViewChecked, HostListener } from '@angular/core';
+﻿import { AfterViewChecked, Directive, ElementRef, HostListener, Input } from '@angular/core';
 
 @Directive({
     selector: '[d3s-text-highlight]'

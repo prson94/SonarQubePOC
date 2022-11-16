@@ -1,6 +1,6 @@
-﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { AssetTypeClass, AssetTypeLevelApiModel } from '../../models/asset.model';
+import { AssetTypeApiModel, AssetTypeClass, AssetTypeLevelApiModel } from '../../models/asset.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -23,7 +23,6 @@ import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.mo
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
-import { ChangeDetectorRef } from '@angular/core';
 import { AssetEditorComponent } from '../shared/asset-editor/asset-editor.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
@@ -34,6 +33,7 @@ import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { LocalStorageKey } from "../../enums/localstorage.enum";
 
 declare var CurrentResourceID;
 
@@ -52,6 +52,7 @@ declare var CurrentResourceID;
 })
 
 export class HierarchyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
+	@Input() assetTypeApiModel: AssetTypeApiModel;
 	@Input() assetTypeClass: AssetTypeClass;
 	@Input() assetTypeUid: string;
 
@@ -128,7 +129,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		{ title: $localize`Open in New Tab` },
 	];
 	secondarySidePanel: string = "detail";
-
+	isDescriptionVisible: boolean = false;
 	resourceUid: string;
 
 	constructor(
@@ -215,6 +216,16 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				this.baseAssetTypeUid = this.assetTypeUid;
 				this.uid = this.assetTypeUid;
 
+				const descriptionVisibilitySavedState = localStorage.getItem(
+					`${LocalStorageKey.IsAssetTypeDescriptionVisible}_${this.assetTypeApiModel.uid}`
+				);
+				
+				if (descriptionVisibilitySavedState !== null) {
+					this.isDescriptionVisible = JSON.parse(descriptionVisibilitySavedState);
+				} else {
+					this.isDescriptionVisible = this.assetTypeApiModel.IsDescriptionVisibleByDefault;
+				}
+
 				this.levels = result[0].Levels;
 				this.maxLevelAllowed = result[0].HierarchyMaximumDepth;
 				this.load();
@@ -224,6 +235,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 		this.setRowsPerPage();
 		this.numberOfRowsByCategoryService.defineNumberOfRows();
+	}
+
+	setDescriptionVisibility(state: boolean): void {
+		this.isDescriptionVisible = state;
+		localStorage.setItem(
+			`${LocalStorageKey.IsAssetTypeDescriptionVisible}_${this.assetTypeApiModel.uid}`,
+			state.toString()
+		);
 	}
 
 	setRowsPerPage(): void {
@@ -481,7 +500,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			if (this.hierarchy) {
 				this.hierarchy.forEach((i) => {
 					this.scoreAllocations.forEach((s) => {
-						var field = this.fields.find((f) => f.apiName == s.Name);
+						var field = this.fields.find((f) => f.apiName === s.Name);
 						if (field) {
 							i[field.apiName + '_threshold'] = this.getThreshold(i[field.apiName], s.LowerThreshold, s.UpperThreshold);
 						}
@@ -517,7 +536,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		}
 
 		//do a breadth first search for the given treenode
-		if (nodes.length == 0) {
+		if (nodes.length === 0) {
 			return;
 		}
 
@@ -531,7 +550,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			//push children
 			if (node.children) {
 				for (let i = 0; i < node.children.length; i++) {
-					if (node.children[i].data.AssetUid && node.children[i].data.AssetUid == id) {
+					if (node.children[i].data.AssetUid && node.children[i].data.AssetUid === id) {
 						node.children.splice(i, 1);
 						return;
 					}
@@ -542,7 +561,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			//remove this node
 			nodes.splice(0, 1);
 
-			if (nodes.length == 0) {
+			if (nodes.length === 0) {
 				return null;
 			}
 			node = nodes[0];
@@ -579,8 +598,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	private exportExcel(level: number) {
 		var params = new V2ApiFilters();
 		params._onlyListableFields = false;
-		params._direction = this.treeTable._sortOrder == 1 ? 'ASC' : 'DESC';
-		if (this.treeTable._sortField != undefined) {
+		params._direction = this.treeTable._sortOrder === 1 ? 'ASC' : 'DESC';
+		if (this.treeTable._sortField != null) {
 			var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
 			params._order = field["apiName"];
 		}
@@ -636,7 +655,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		}
 
 		if (!this.selected) {
-			let thisLevel = this.levels.filter((x) => x.Level == this.selectedLevel + 1);
+			let thisLevel = this.levels.filter((x) => x.Level === this.selectedLevel + 1);
 
 			if (thisLevel && thisLevel.length > 0)
 				{return thisLevel[0].Name;}
@@ -644,7 +663,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				{return $localize`(Level ${this.selectedLevel + 1}) Item`;}
 		}
 
-		let thisLevel = this.levels.filter((x) => x.Level == this.selected.data.Level);
+		let thisLevel = this.levels.filter((x) => x.Level === this.selected.data.Level);
 
 		if (thisLevel && thisLevel.length > 0) {return thisLevel[0].Name;}
 		return $localize`(Level ${this.selected.data.Level}) Item`;

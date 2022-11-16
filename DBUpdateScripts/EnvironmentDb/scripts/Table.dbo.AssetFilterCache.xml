@@ -5,34 +5,26 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.utility.DeriveIntersectName-v1">
+  <changeSet author="TDuric" id="Table.dbo.AssetFilterCache-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER FUNCTION [utility].[DeriveIntersectName] 
-(	
-	@id int
-)
-RETURNS nvarchar(500)
-AS
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetFilterCache')
 BEGIN
-	DECLARE @result nvarchar(500)
-
-	SET @result =	(
-					SELECT	COALESCE(SA.DisplayValue, '') + ' / ' + COALESCE(OA.DisplayValue, '')
-					FROM	[Intersect] I
-
-							left join AssetDetail SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
-							left join AssetDetail OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
-
-							left join [Intersect] SI on I.Subject = 'Intersect' and SI.ID = I.SubjectID
-
-					WHERE	I.ID = @id										
-					)
-
-	RETURN @result
+	CREATE TABLE [dbo].[AssetFilterCache](
+		[Id] [int] IDENTITY(1,1) NOT NULL,
+		[AssetTypeId] [int] NULL,
+		[LastUsedOn] [datetime] NULL,
+		[ResourceId] [int] NULL,
+		[RequestHash] [nvarchar](255) NULL,
+		[Data] [varbinary](max) NULL,
+	 CONSTRAINT [PK_AssetFilterCache] PRIMARY KEY CLUSTERED 
+	(
+		[Id] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+	) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 END
 		]]>
     </sql>
@@ -42,5 +34,4 @@ END
 		]]>
 	</rollback>
   </changeSet>
-
 </databaseChangeLog>

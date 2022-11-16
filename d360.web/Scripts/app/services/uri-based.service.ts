@@ -1,4 +1,4 @@
-import { switchMap, distinctUntilChanged, debounceTime, map, catchError } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable } from 'rxjs';
@@ -46,7 +46,7 @@ export class UriBasedService extends BaseObservableService {
         });
 
         return this.http
-            .post(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
+            .post(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers })
             .pipe(
                 map((res) => <JsonResult>res),
                 catchError((err) => this.handleError(err))
@@ -59,7 +59,7 @@ export class UriBasedService extends BaseObservableService {
         });
 
         return this.http
-            .put(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
+            .put(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers })
             .pipe(
                 map((res) => <JsonResult>res),
                 catchError((err) => this.handleError(err))

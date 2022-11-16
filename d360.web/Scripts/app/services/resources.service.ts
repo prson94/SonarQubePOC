@@ -1,7 +1,16 @@
 import { catchError, map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
-import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials, MulitSelectResourceData, ResourceApiModel } from '../models/resource.model';
+import {
+    CountObject,
+    FollowingDetailForResource,
+    HelpResource,
+    MulitSelectResourceData,
+    Resource,
+    ResourceAPICredentials,
+    ResourceApiModel,
+    ResponsibilityDetailForResource
+} from '../models/resource.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable, throwError } from "rxjs";
 import { BaseObservableService } from './baseObservable.service';
@@ -256,7 +265,7 @@ export class ResourcesService extends BaseObservableService {
         });
 
         return this.http
-            .post(`form/ResetResourcePassword`, 'ID=' + resourceID, { headers: headers })
+            .post(`form/ResetResourcePassword`, 'ID=' + resourceID, { headers })
             .pipe(
                 map((response) => response),
                 catchError((err) => this.handleError(err))

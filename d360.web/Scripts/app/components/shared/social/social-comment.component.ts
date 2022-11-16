@@ -46,8 +46,8 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.isDeletable = this.isAdmin || (this.comment.CreatedBy == CurrentResourceID);
-        this.isEditable = this.comment.CreatedBy == CurrentResourceID;
+        this.isDeletable = this.isAdmin || (this.comment.CreatedBy === CurrentResourceID);
+        this.isEditable = this.comment.CreatedBy === CurrentResourceID;
         this.isPostingDisabled = this.settingsService.getSettingById(CompanySettingEnum.DisableCommunityPosting).BooleanSetting.Value;
         this.calculateVotes();
     }
@@ -97,7 +97,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     isModified() {
-        return (this.comment.CreatedOn != this.comment.UpdatedOn);
+        return (this.comment.CreatedOn !== this.comment.UpdatedOn);
     }
 
     private commentTypeIcon() {
@@ -112,11 +112,11 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     isSocial(): boolean {
-        return this.comment.CommentType == CommentType.Social;
+        return this.comment.CommentType === CommentType.Social;
     }
 
     isIssue(): boolean {
-        return this.comment.CommentType == CommentType.Issue;
+        return this.comment.CommentType === CommentType.Issue;
     }
 
     canReply(): boolean {

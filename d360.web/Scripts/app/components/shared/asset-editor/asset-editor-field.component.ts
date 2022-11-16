@@ -448,11 +448,11 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             if (this.field.FieldType === 'Number') {
                 if (elem.value.split('.').length > 1
                     || elem.value.split('+').length > 1
-                    || (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1)
+                    || (elem.value.indexOf('-') !== 0 && elem.value.split('-').length > 1)
                     || elem.value.split('e').length > 1
                     || elem.value.split('E').length > 1
                 ) {
-                    if (this.field.FieldName == elem.name) {
+                    if (this.field.FieldName === elem.name) {
                         this.form.controls[this.field.FieldName].setErrors({ integer: true });
                     }
                 }
@@ -464,7 +464,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             } else if (this.field.FieldType === 'Decimal') {
                 if (elem.value.split('.').length > 2
                     || elem.value.split('+').length > 1
-                    || (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1)
+                    || (elem.value.indexOf('-') !== 0 && elem.value.split('-').length > 1)
                     || elem.value.split('e').length > 1
                     || elem.value.split('E').length > 1
                 ) {
@@ -705,7 +705,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
         }
 
-        return this.field.Validations && this.field.Validations.some((x) => x.rule === 'required') == true;
+        return this.field.Validations && this.field.Validations.some((x) => x.rule === 'required') === true;
     }
 
     getPlaceholder() {
@@ -902,7 +902,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         var values = this.form.controls[this.field.FieldName].value as any[];
         var newValues = [];
         this.lookupSelectedValue.forEach((item) => {
-            if (values.indexOf(item.value) != -1) {
+            if (values.indexOf(item.value) !== -1) {
                 newValues.push(item);
             }
         });

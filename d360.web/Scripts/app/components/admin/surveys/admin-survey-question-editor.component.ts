@@ -1,10 +1,9 @@
-﻿import { Input, Component, EventEmitter, Output, ViewChild } from '@angular/core';
+﻿import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { SurveysService } from '../../../services/surveys.service';
 import { QuestionTypeV2 } from '../../../models/survey.model';
 import { DropdownOption } from '../../../models/dropdown.model';
-import * as _ from 'lodash';
-import { NgForm, FormGroup } from '@angular/forms';
 import { cloneDeep } from 'lodash';
+import { FormGroup, NgForm } from '@angular/forms';
 
 @Component({
     selector: 'd3s-admin-survey-question-editor',
@@ -124,10 +123,10 @@ export class AdminSurveyQuestionEditorEditor {
             var options: string[] = [];
             var option_values: string[] = [];
             keys.forEach((key) => {
-                if (key.indexOf('item_') == 0) {
+                if (key.indexOf('item_') === 0) {
                     options.push(form.value[key]);
                 }
-                if (key.indexOf('value_') == 0) {
+                if (key.indexOf('value_') === 0) {
                     option_values.push('no_' + form.value[key]);
                 }
             });

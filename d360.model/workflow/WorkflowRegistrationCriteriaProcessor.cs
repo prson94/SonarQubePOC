@@ -82,7 +82,10 @@ namespace d360.model.workflow
                 return false;
             }
 
-			IQueryable<Field> fields = context.Fields.Where(x => ((x.IssueID == objectId && @object == SystemObjects.Issue.ToString()) || (x.IntersectID == objectId && @object == SystemObjects.Intersect.ToString()) || (x.AssetID == objectId && @object != SystemObjects.Issue.ToString() && @object != SystemObjects.Intersect.ToString())));
+			//We have to get the asset id, because if asset is null, the expression in the Fields where throws an exception.
+			var assetID = context.Assets.Where(a => a.Object == @object && a.ObjectID == objectId).FirstOrDefault()?.ID;
+
+			IQueryable<Field> fields = context.Fields.Where(x => ((x.IssueID == objectId && @object == SystemObjects.Issue.ToString()) || (x.IntersectID == objectId && @object == SystemObjects.Intersect.ToString()) || (x.AssetID == assetID && @object != SystemObjects.Issue.ToString() && @object != SystemObjects.Intersect.ToString())));
 
             if (issueObjectTypeId > -1)
             {

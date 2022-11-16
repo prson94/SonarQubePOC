@@ -151,7 +151,7 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
     }
 
     changeIconType(e: any) {
-        if (this.iconType == 'icon') {
+        if (this.iconType === 'icon') {
             this.iconType = 'image';
             this.shortcut.Icon = null;
         } else {
@@ -207,7 +207,7 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
             {return false;}
         //if (this.shortcut.Url == null)
         //    return false;
-        if (this.shortcut.Icon == null && this.shortcut.IconUrl == null && this.shortcut.IconPayload == null && (this.iconImage.dataUrl == null || this.iconImage.dataUrl == ''))
+        if (this.shortcut.Icon == null && this.shortcut.IconUrl == null && this.shortcut.IconPayload == null && (this.iconImage.dataUrl == null || this.iconImage.dataUrl === ''))
             {return false;}
 
         return true;

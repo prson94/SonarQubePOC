@@ -709,7 +709,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         this.relationSource$.next({
             fieldTypeID: this.field.FieldTypeID,
-            object: object,
+            object,
             objectID: objectId,
             event: e
         });

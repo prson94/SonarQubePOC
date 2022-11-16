@@ -60,24 +60,24 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         if (searchString) {
             var el = this.getLastHoveredElement(this.navigationArr);
             var currentIndex = this.navigationArr.indexOf(el);
-            if (currentIndex == -1)
+            if (currentIndex === -1)
                 {currentIndex = 0;}
 
             var foundIdx = -1;
             for (let idx = currentIndex; idx < this.navigationArr.length; idx++) {
-                if (this.navigationArr[idx].title && this.navigationArr[idx].title.toLowerCase().indexOf(searchString) > -1 && this.navigationArr[idx].disabled != true) {
+                if (this.navigationArr[idx].title && this.navigationArr[idx].title.toLowerCase().indexOf(searchString) > -1 && this.navigationArr[idx].disabled !== true) {
                     foundIdx = idx;
                 }
             }
-            if (foundIdx == -1) {
+            if (foundIdx === -1) {
                 for (let idx = 0; idx < this.navigationArr.indexOf(el); idx++) {
-                    if (this.navigationArr[idx].title && this.navigationArr[idx].title.toLowerCase().indexOf(searchString) > -1 && this.navigationArr[idx].disabled != true) {
+                    if (this.navigationArr[idx].title && this.navigationArr[idx].title.toLowerCase().indexOf(searchString) > -1 && this.navigationArr[idx].disabled !== true) {
                         foundIdx = idx;
                     }
                 }
             }
 
-            if (foundIdx != -1) {
+            if (foundIdx !== -1) {
                 var foundEL = this.navigationArr[foundIdx];
                 this.setHoverStateToElement(foundEL);
             }
@@ -113,7 +113,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         items.forEach((i) => {
             i.parent = parent;
             i.itemID = nextId;
-            if (i.isLabel == true) {
+            if (i.isLabel === true) {
                 i.disabled = true;
             }
             if (i.hasCheckbox) {
@@ -123,7 +123,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             nextId += 1;
 
             //If there are keys, but Mac keys are not set, populate mac keys array and replace CTRL->Command key
-            if ((i.keys && i.keys.length > 0) && (!i.keysMac || i.keysMac.length == 0)) {
+            if ((i.keys && i.keys.length > 0) && (!i.keysMac || i.keysMac.length === 0)) {
                 i.keysMac = [];
                 i.keys.forEach((x) => {
                     if (x === 17) {
@@ -190,14 +190,14 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     handleKeyboardEvent(event: KeyboardEvent) {
         if (this.isVisible) {
             this.pressedKeys[event.keyCode] = true;
-            let isNavigationKey: boolean = [39, 37, 40, 38].indexOf(event.keyCode) != -1;
+            let isNavigationKey: boolean = [39, 37, 40, 38].indexOf(event.keyCode) !== -1;
 
             if (isNavigationKey) {
                 let el: PopupMenuItem = null;
-                if ([39, 37, 40, 38].indexOf(event.keyCode) != -1) {
+                if ([39, 37, 40, 38].indexOf(event.keyCode) !== -1) {
                     var activeItemIndex = this.navigationArr.indexOf(this.navigationArr.filter((x) => x.hasHoverState)[0]);
                     el = this.getLastHoveredElement(this.items);
-                    if (el == undefined) {
+                    if (el == null) {
                         this.items[0].hasHoverState = true;
                     }
                 }
@@ -212,7 +212,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                     if (el && el.items) {
                         this.navigationArr = el.items;
                         el.isSubMenuOpened = true;
-                        var firstActiveElement = this.navigationArr.filter((x) => x.disabled != true)[0];
+                        var firstActiveElement = this.navigationArr.filter((x) => x.disabled !== true)[0];
                         this.moveThroughElements(this.navigationArr.indexOf(firstActiveElement) - 1, true, this.navigationArr);
                     }
                 }
@@ -323,7 +323,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
             if (this.anchorElement) {
 
-                if (this.currentLocation == PopupMenuLocation.BottomLeft || this.currentLocation == PopupMenuLocation.BottomRight) {
+                if (this.currentLocation === PopupMenuLocation.BottomLeft || this.currentLocation === PopupMenuLocation.BottomRight) {
                     topPosition = this.anchorElement.getBoundingClientRect().bottom + window.scrollY - 12;
                 }
                 else {
@@ -331,11 +331,11 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                 }
             }
 
-            if (this.currentLocation == PopupMenuLocation.TopLeft || this.currentLocation == PopupMenuLocation.TopRight) {
+            if (this.currentLocation === PopupMenuLocation.TopLeft || this.currentLocation === PopupMenuLocation.TopRight) {
                 topPosition = topPosition - menu.offsetHeight;
             }
 
-            if (this.currentLocation == PopupMenuLocation.TopRight || this.currentLocation == PopupMenuLocation.BottomRight) {
+            if (this.currentLocation === PopupMenuLocation.TopRight || this.currentLocation === PopupMenuLocation.BottomRight) {
                 leftPosition = leftPosition - menu.offsetWidth;
                 if (this.anchorElement) {
                     var ancBox = this.anchorElement.getBoundingClientRect();
@@ -380,7 +380,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         if (item && item.items) {
             this.navigationArr = item.items;
             item.isSubMenuOpened = true;
-            var firstActiveElement = this.navigationArr.filter((x) => x.disabled != true)[0];
+            var firstActiveElement = this.navigationArr.filter((x) => x.disabled !== true)[0];
             this.moveThroughElements(this.navigationArr.indexOf(firstActiveElement) - 1, true, this.navigationArr);
             return;
         }
@@ -441,8 +441,8 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         }
 
         var el = arr[nextIdx];
-        if (el && el.isSeparator != true) {
-            if (el.disabled == true) {
+        if (el && el.isSeparator !== true) {
+            if (el.disabled === true) {
                 this.moveThroughElements(nextIdx, forward, arr);
             } else {
                 this.setHoverStateToElement(el);
@@ -469,13 +469,13 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     }
 
     hasIcons(items: PopupMenuItem[]) {
-        return items.some((x) => x.icon && x.icon != '');
+        return items.some((x) => x.icon && x.icon !== '');
     }
     hasCheckboxes(items: PopupMenuItem[]) {
-        return items.some((x) => x.hasCheckbox == true);
+        return items.some((x) => x.hasCheckbox === true);
     }
     hasSelectedboxes(items: PopupMenuItem[]) {
-        return items.some((x) => x.hasSelectedBox == true);
+        return items.some((x) => x.hasSelectedBox === true);
     }
     hasShortcuts(items: PopupMenuItem[]) {
         return items.some((x) => x.keys && x.keys.length > 0);
@@ -545,7 +545,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
     getFocusedElement(items: PopupMenuItem[]): PopupMenuItem {
         items.forEach((item) => {
-            if (item.isFocused == true) {
+            if (item.isFocused === true) {
                 return item;
             }
             else if (item.items) {
@@ -559,7 +559,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     getLastHoveredElement(items: PopupMenuItem[]): PopupMenuItem {
         var el: PopupMenuItem;
         items.forEach((item) => {
-            if (item.hasHoverState == true) {
+            if (item.hasHoverState === true) {
                 el = item;
             }
 

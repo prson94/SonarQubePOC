@@ -135,7 +135,8 @@ export class AssetBrowserTranslationLink {
 
     links: AssetBrowserTranslationChildLink[] = [];
 
-    badgeIdentifier: string;
+	badgeIdentifier: string;
+	isReversed: boolean = false;
 }
 
 export class AssetBrowserTranslationNode {

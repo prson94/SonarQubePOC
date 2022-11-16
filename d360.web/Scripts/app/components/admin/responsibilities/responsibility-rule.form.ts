@@ -1,24 +1,22 @@
-﻿import { Input, Output, Component, EventEmitter, OnInit } from "@angular/core";
+﻿import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { SelectItem } from "primeng/api";
 import { ResponsibilityTypeService } from "../../../services/responsibility-type.service";
 import {
+    ResponsibilityRuleTestRow,
     ResponsibilityTypeRelationRule,
     ResponsibilityTypeRelationRuleDefinition,
-    ResponsibilityTypeRelationRuleDefinitionWhenItem,
     ResponsibilityTypeRelationRuleDefinitionThen,
     ResponsibilityTypeRelationRuleDefinitionThenItem,
+    ResponsibilityTypeRelationRuleDefinitionWhenItem,
     ResponsibilityTypeRelationRuleFormDataFieldType,
-    RuleThenV2,
-    ResponsibilityRuleTestRow
+    RuleThenV2
 } from "../../../models/responsibility-type.model";
 import { ObjectDetailService } from "../../../services/object-detail.service";
 import { BaseComponent } from "../../shared/base.component";
 import * as _ from "lodash";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
-import { HelpResource } from "../../../models/resource.model";
 import { Operator } from "../../../models/operator.model";
-import { forEach } from "core-js/fn/dict";
 import { forkJoin } from "rxjs";
 
 
@@ -94,11 +92,11 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 		{ label: "starts with", value: Operator[Operator.StartsWith] },
 		{ label: "ends with", value: Operator[Operator.EndsWith] },
 		{ label: "is populated", value: Operator[Operator.Populated] },
-		{ label: "is not populated", value: Operator[Operator.NotPopulated] }]
+		{ label: "is not populated", value: Operator[Operator.NotPopulated] }];
 
 	private relationshipOperatorTypes: SelectItem[] = [
 		{ label: "in", value: Operator[Operator.In] },
-		{ label: "not in", value: Operator[Operator.NotIn] }]
+		{ label: "not in", value: Operator[Operator.NotIn] }];
 
     private whenFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
     private whenIntersectTypes: (SelectItem<number> & { uid: string })[] = [];
@@ -568,7 +566,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 item.ValueOptions = selectedFieldType.values;
                 item.IsLookup = selectedFieldType.isLookup;
             }
-            else if (selectedFieldType.type == "Boolean") {
+            else if (selectedFieldType.type === "Boolean") {
                 item.IsBool = true;
 				item.ValueOptions = this.whenBoolTypes;
 				item.IsLookup = selectedFieldType.isLookup;
@@ -703,7 +701,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 .subscribe((r) => {
                     this.isLoading = false;
                     this.showMessageForResult(this.messagesService, r);
-                    if (r.type != "error") {
+                    if (r.type !== "error") {
                         this.onComplete.emit({ action: "edit", field: this.model });
                     }
                 });
@@ -712,7 +710,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 .subscribe((r) => {
                     this.showMessageForResult(this.messagesService, r);
                     this.isLoading = false;
-                    if (r.type != "error") {
+                    if (r.type !== "error") {
                         this.onComplete.emit({ action: "add", field: this.model });
                     }
                 });

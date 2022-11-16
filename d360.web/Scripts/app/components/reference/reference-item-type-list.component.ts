@@ -1,6 +1,5 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ReferenceService } from '../../services/reference.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ReferenceItemType } from '../../models/reference.model';

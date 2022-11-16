@@ -24,31 +24,35 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
 import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DirectivesModule } from '../directives/directives.module';
+import { SwitchModule } from "../controls/switch/switch";
+import { RadioButtonModule } from "primeng/radiobutton";
 
 @NgModule({
-    imports: [CommonModule,
+	imports: [CommonModule,
 
-        ReactiveFormsModule,
-        FormsModule,
-        RouterModule,
-        SharedDynamicGridEditorModule,
-        //d3s
-        CoreModule,                
-        TilesModule,
-        SimpleAccordionModule,        
-        IconPickerModule,
-        InfoTooltipModule,
-        DirectivesModule,
-        //prime        
-        ButtonModule,
-        ColorPickerModule,
-        DropdownModule,
-        SpinnerModule,
-        EditorModule,
-        InputTextModule,
-        SharedModule,
-        CheckboxModule
-    ],
+		ReactiveFormsModule,
+		FormsModule,
+		RouterModule,
+		SharedDynamicGridEditorModule,
+		//d3s
+		CoreModule,
+		TilesModule,
+		SimpleAccordionModule,
+		IconPickerModule,
+		InfoTooltipModule,
+		DirectivesModule,
+		//prime        
+		ButtonModule,
+		ColorPickerModule,
+		DropdownModule,
+		SpinnerModule,
+		EditorModule,
+		InputTextModule,
+		SharedModule,
+		CheckboxModule,
+		SwitchModule,
+		RadioButtonModule
+	],
     declarations: [
         AssetTypeEditorComponent,
         AssetTypeEditorUseAsTransformationComponent

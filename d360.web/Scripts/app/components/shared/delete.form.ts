@@ -58,7 +58,7 @@ export class DeleteForm implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.items && changes.items.previousValue != changes.items.currentValue) 
+        if (changes.items && changes.items.previousValue !== changes.items.currentValue) 
             {this.deletingInProgress = false;}        
     }
 
@@ -92,7 +92,7 @@ export class DeleteForm implements OnChanges {
                 }
                 break;
             case 'post':
-                this.http.post(this.uri, JSON.stringify(this.model), { headers: headers }).pipe(
+                this.http.post(this.uri, JSON.stringify(this.model), { headers }).pipe(
                     map((data) => data))
                     .subscribe(
                         (data) => {
@@ -112,7 +112,7 @@ export class DeleteForm implements OnChanges {
                     );
                 break;
             case 'put':
-                this.http.put(this.uri, JSON.stringify(this.model), { headers: headers }).pipe(
+                this.http.put(this.uri, JSON.stringify(this.model), { headers }).pipe(
                     map((data) => data))
                     .subscribe(
                         (data) => {

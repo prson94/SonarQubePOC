@@ -1,6 +1,5 @@
-﻿import { FieldType } from "./fields.model";
-import { State, AssetTypeClass } from "./asset.model";
-import { OperatorModel, Operator } from "./operator.model";
+﻿import { AssetTypeClass, State } from "./asset.model";
+import { Operator, OperatorModel } from "./operator.model";
 import { FieldCondition } from "./field-condition-grid.models";
 
 export class MetricAssetViewModel {

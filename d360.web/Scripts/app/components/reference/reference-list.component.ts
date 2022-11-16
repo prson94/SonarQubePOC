@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
@@ -10,7 +10,6 @@ import { ReferenceItemType } from '../../models/reference.model';
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { ReferenceService } from '../../services/reference.service';
 import { UriBasedService } from '../../services/uri-based.service';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AuthenticationService } from '../../services/authentication.service';
 import { FormMode } from '../../models/form.model';
 import { AssetTypeService } from '../../services/asset-type.service';
@@ -151,7 +150,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 							this.canAddReferenceItem = this.hasAddAssetPermissions();
 							this.canEditReferenceItem = this.hasModifyAssetPermissions();
 							this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
-						})
+						});
 
 					this.buildSecondaryNavigationForAssetTypeUid(this.selectedReferenceListUid, () => {
 						this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {
@@ -192,7 +191,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		this.baseAssetTypeUid = this.selectedReferenceListUid = this.selectedReferenceItemType.uid;
 		this.setSecondaryNavItems();
 		if (requiresRedirect) {
-			this.router.navigateByUrl(`/assets/${e.uid}`, { replaceUrl: replaceUrl });
+			this.router.navigateByUrl(`/assets/${e.uid}`, { replaceUrl });
 		}
 	}
 

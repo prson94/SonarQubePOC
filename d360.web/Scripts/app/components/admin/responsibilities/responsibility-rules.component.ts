@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { ResponsibilityTypeRelationRuleSummary } from '../../../models/responsibility-type.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -53,7 +53,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            if (p == 'id') {
+            if (p === 'id') {
                 this.id = changes['id'].currentValue;
                 this.isEditing = false;
                 this.isAdding = false;
@@ -79,7 +79,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     }
 
     edit(id: number): void {
-        this.selectedRow = this.rows.find((f) => f.ID == id);
+        this.selectedRow = this.rows.find((f) => f.ID === id);
         this.isEditing = true;
         this.isDeleting = false;
         this.isAdding = false;
@@ -94,7 +94,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     }
 
     delete(id: number): void {
-        this.selectedRow = this.rows.find((f) => f.ID == id);
+        this.selectedRow = this.rows.find((f) => f.ID === id);
         this.isEditing = false;
         this.isDeleting = true;
         this.isAdding = false;
@@ -102,7 +102,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     }
 
     clearDate(id: number): void {
-        this.selectedRow = this.rows.find((f) => f.ID == id);
+        this.selectedRow = this.rows.find((f) => f.ID === id);
         this.isEditing = false;
         this.isDeleting = false;
         this.isAdding = false;
@@ -122,7 +122,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
             this.showMessageForApiResponse(this.messagesService, res[0]);
             if (!res.isError) {
                 this.isDeleting = false;
-                let index = this.rows.findIndex((f) => f.ID == item.ID);
+                let index = this.rows.findIndex((f) => f.ID === item.ID);
                 if (index >= 0 && index < this.rows.length)
                     {this.rows.splice(index, 1);}
                 this.onFieldsChanged.emit();

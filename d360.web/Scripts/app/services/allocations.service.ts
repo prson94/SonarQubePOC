@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ScoreTypeAllocation, ScoreType } from '../models/metrics.model';
+import { ScoreType, ScoreTypeAllocation } from '../models/metrics.model';
 import { Observable } from 'rxjs';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
-import { map, catchError } from 'rxjs/operators';
-
+import { catchError, map } from 'rxjs/operators';
 
 
 @Injectable({

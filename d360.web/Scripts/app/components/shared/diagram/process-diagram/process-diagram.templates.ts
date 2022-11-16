@@ -48,7 +48,7 @@ export class ProcessDiagramTemplates {
                     spacingBelow: 3,
                     maxSize: new go.Size(180, NaN),
                     wrap: go.TextBlock.WrapDesiredSize,
-                    textValidation: function (tb: go.TextBlock, oldVal, newVal) {
+                    textValidation (tb: go.TextBlock, oldVal, newVal) {
                         component.dynEditorService.updateForm({ assetUid: tb.part.data.key, fieldName: 'Name', fieldValue: newVal });
                         return true;
                     }
@@ -269,8 +269,8 @@ export class ProcessDiagramTemplates {
             }
             ,
             {
-                mouseEnter: function (e, node) { showSmallPorts(node, true); },
-                mouseLeave: function (e, node) { showSmallPorts(node, false); }
+                mouseEnter (e, node) { showSmallPorts(node, true); },
+                mouseLeave (e, node) { showSmallPorts(node, false); }
             },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             $(go.Panel, "Vertical",
@@ -329,7 +329,7 @@ export class ProcessDiagramTemplates {
                         wrap: go.TextBlock.WrapDesiredSize,
                         editable: true,
                         stroke: 'black',
-                        textValidation: function (tb: go.TextBlock, oldVal, newVal) {
+                        textValidation (tb: go.TextBlock, oldVal, newVal) {
                             component.dynEditorService.updateForm({ assetUid: tb.part.data.key, fieldName: 'Name', fieldValue: newVal });
                             return true;
                         }
@@ -387,8 +387,8 @@ export class ProcessDiagramTemplates {
             this.makePort("R", go.Spot.Right),
             this.makePort("B", go.Spot.Bottom),
             {
-                mouseEnter: function (e, node) { showSmallPorts(node, true); },
-                mouseLeave: function (e, node) { showSmallPorts(node, false); }
+                mouseEnter (e, node) { showSmallPorts(node, true); },
+                mouseLeave (e, node) { showSmallPorts(node, false); }
             }
         );
     }
@@ -475,7 +475,7 @@ export class ProcessDiagramTemplates {
                         wrap: go.TextBlock.WrapDesiredSize,
                         editable: true,
                         stroke: 'black',
-                        textValidation: function (tb: go.TextBlock, oldVal, newVal) {
+                        textValidation (tb: go.TextBlock, oldVal, newVal) {
                             component.dynEditorService.updateForm({ assetUid: tb.part.data.key, fieldName: 'Name', fieldValue: newVal });
                             return true;
                         }
@@ -486,8 +486,8 @@ export class ProcessDiagramTemplates {
             this.getRelBadge('gateway', component)
             ,
             {
-                mouseEnter: function (e, node) { showSmallPorts(node, true); },
-                mouseLeave: function (e, node) { showSmallPorts(node, false); }
+                mouseEnter (e, node) { showSmallPorts(node, true); },
+                mouseLeave (e, node) { showSmallPorts(node, false); }
             },
         );
     }

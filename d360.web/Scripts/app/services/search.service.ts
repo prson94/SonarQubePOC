@@ -1,12 +1,12 @@
 ﻿import { Injectable } from '@angular/core';
-import { SearchResults, SearchQuery } from '../models/search-result.model';
+import { SearchQuery, SearchResults } from '../models/search-result.model';
 import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
-import { catchError, map, takeUntil, shareReplay, delay } from 'rxjs/operators';
-import { Observable, Subject, of, throwError } from 'rxjs';
+import { catchError, delay, map, shareReplay, takeUntil } from 'rxjs/operators';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
-import { SettingsHelper, SearchType } from '../models/settings.model';
-import { IndexableType, IndexableStatus, IndexPartialRebuild } from "../models/search-admin.model";
+import { SearchType, SettingsHelper } from '../models/settings.model';
+import { IndexableStatus, IndexableType, IndexPartialRebuild } from "../models/search-admin.model";
 import { FeatureFlags, FeatureFlagsService } from './featureflags.service';
 import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 import { Table } from 'primeng/table';

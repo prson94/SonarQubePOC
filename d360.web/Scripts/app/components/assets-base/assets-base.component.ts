@@ -1,7 +1,6 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router, ActivatedRoute, Route } from '@angular/router';
-import { split } from 'core-js/fn/symbol';
-import { AssetTypeClass } from '../../models/asset.model';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { AssetService } from '../../services/asset.service';
 import { CompanySettingsService } from '../../services/settings.service';
@@ -10,15 +9,16 @@ import { BaseComponent } from '../shared/base.component';
 @Component({
 	selector: 'd3s-assets-base',
 	template: `<div id="main">
-		<d3s-artifact-list *ngIf="showArtifactList" [assetTypeUid]="assetTypeUid"></d3s-artifact-list>
-		<d3s-rule-list *ngIf="showRuleList" [assetTypeUid]="assetTypeUid"></d3s-rule-list>
-		<d3s-hierarchy-item-structure *ngIf="showHierarchyList" [assetTypeClass]="assetTypeClass" [assetTypeUid]="assetTypeUid"></d3s-hierarchy-item-structure>
+		<d3s-artifact-list *ngIf="showArtifactList" [assetTypeApiModel]="assetType" [assetTypeUid]="assetTypeUid"></d3s-artifact-list>
+		<d3s-rule-list *ngIf="showRuleList" [assetTypeApiModel]="assetType" [assetTypeUid]="assetTypeUid"></d3s-rule-list>
+		<d3s-hierarchy-item-structure *ngIf="showHierarchyList" [assetTypeApiModel]="assetType" [assetTypeClass]="assetTypeClass" [assetTypeUid]="assetTypeUid"></d3s-hierarchy-item-structure>
 		<d3s-reference-list *ngIf="showReferenceComponent" [assetTypeUid]="assetTypeUid"></d3s-reference-list>
 </div>`,
     providers: [AssetService],
 })
 
 export class AssetsBaseComponent extends BaseComponent implements OnInit, OnDestroy {
+	assetType: AssetTypeApiModel;
 	assetTypeUid: string;
 	assetTypeClass: AssetTypeClass;
 
@@ -41,7 +41,7 @@ export class AssetsBaseComponent extends BaseComponent implements OnInit, OnDest
 			this.assetTypeService.GetAssetTypeByUid(uidToLoad)
 				.subscribe((res) => {
 					let cs = res.Class.ID;
-
+                    this.assetType = res;
 					this.assetTypeUid = params['assetTypeUid'];
 					this.assetTypeClass = cs;
 
@@ -49,7 +49,7 @@ export class AssetsBaseComponent extends BaseComponent implements OnInit, OnDest
 					this.showRuleList = cs === AssetTypeClass.Rule;
 					this.showHierarchyList = cs === AssetTypeClass.Policy || cs === AssetTypeClass.Model;
 					this.showReferenceComponent = cs === AssetTypeClass.Reference;
-				})
+				});
 		});
     }
 

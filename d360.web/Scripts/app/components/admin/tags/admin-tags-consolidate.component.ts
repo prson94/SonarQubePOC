@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
 import { TagType } from '../../../models/tag.model';
 
 @Component({
@@ -19,7 +19,7 @@ export class AdminTagsConsolidateComponent implements OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['isModalVisible']) {
-            if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue != changes['isModalVisible'].currentValue)) { // visibility has changed            
+            if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue !== changes['isModalVisible'].currentValue)) { // visibility has changed            
                 this.consolidateInProgress = false;
             }
         }
@@ -30,7 +30,7 @@ export class AdminTagsConsolidateComponent implements OnChanges {
         let parentUid: string = this.selected.uid;
         let childrenUids: string[] = [];
         this.tags.forEach((t) => {
-            if (t.uid != parentUid)
+            if (t.uid !== parentUid)
                 {childrenUids.push(t.uid);}
         });
         this.callback(parentUid, childrenUids);

@@ -1,7 +1,6 @@
-﻿import { Component, Input, Output, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettings, IpRestriction } from '../../../models/settings.model';
-import { SiteNav } from '../../../models/site-menu.model';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';

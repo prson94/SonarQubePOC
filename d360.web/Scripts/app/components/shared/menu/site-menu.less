@@ -53,6 +53,32 @@
       font-size: 15px;
       width: 40px;
       text-align: center;
+      
+      &.fa.fa-caret-right {
+        min-width: 40px;
+        
+        &.caret-active {
+          background: none;
+          position: relative;
+
+          &::before {
+            z-index: 1;
+            position: relative;
+          }
+
+          &::after {
+            content: '';
+            width: 40px;
+            height: 40px;
+            left: 0;
+            top: 0;
+            position: absolute;
+            background: var(--navbarBackColorSelected);
+            opacity: .6;
+            z-index: 0;
+          }
+        }
+      }
 
       &.subitem {
         width: 20px;
@@ -60,7 +86,7 @@
     }
 
     .caption {
-      width: 150px;
+      width: 160px;
       display: inline-flex;
 
       &.min {
@@ -69,7 +95,6 @@
 
       & > div {
         width: 100%;
-        min-width: 140px;
         overflow-wrap: break-word;
         line-height: 17px;
         padding-top: 12px;
@@ -146,6 +171,28 @@
     &:hover {
       background: var(--navbarBackColorSelectedHover);
       color: var(--calculatedNavbarSelectedTextColor);
+      
+      &.fa.fa-caret-right {
+        background: none;
+        position: relative;
+        
+        &::before {
+          z-index: 1;
+          position: relative;
+        }
+        
+        &::after {
+          content: '';
+          width: 40px;
+          height: 40px;
+          left: 0;
+          top: 0;
+          position: absolute;
+          background: var(--navbarBackColorSelected);
+          opacity: .6;
+          z-index: 0;
+        }
+      }
 
       .menu-category-box {
         color: var(--calculatedNavbarSelectedTextColor);

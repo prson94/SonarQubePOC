@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { AssetGridTopLevelListComponent } from '../assets-grid/asset-grid-top-level-list.component';
 import { HierarchyListComponent } from '../hierarchy/hierarchy-list.component';
 import { AuditComponent } from '../sidebar/audit/audit.component';

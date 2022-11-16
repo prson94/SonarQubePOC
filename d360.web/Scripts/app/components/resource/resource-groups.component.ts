@@ -1,5 +1,5 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit} from '@angular/core';
-import { Router }       from '@angular/router';
+﻿import { Component, Input, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { ResourcesService } from '../../services/resources.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';

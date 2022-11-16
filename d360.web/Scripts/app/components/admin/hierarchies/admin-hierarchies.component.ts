@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -53,7 +53,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                 this.selectedAssetTypeID = res.Id;
 
                 this.types.forEach((t) => {
-                    if (t.uid == this.selected.uid) {
+                    if (t.uid === this.selected.uid) {
                         t['AssetTypeId'] = res.Id;
                     }
 				});
@@ -88,13 +88,13 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                 return;
             }
 
-            if (url.toUpperCase() == 'TAXONOMIES') {
+            if (url.toUpperCase() === 'TAXONOMIES') {
                 this.assetTypeClass = AssetTypeClass.Model;
                 this.areaName = StringConstants.Section_Models;
                 this.tabTitle = $localize`Model Types`;
                 this.objectType = 'TaxonomyType';
             }
-            else if (url.toUpperCase() == 'POLICIES') {
+            else if (url.toUpperCase() === 'POLICIES') {
                 this.assetTypeClass = AssetTypeClass.Policy;
                 this.areaName = StringConstants.Section_Policies;
                 this.tabTitle = $localize`Policy Types`;
@@ -149,7 +149,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     }
 
     deleteType(id: number) {
-        var uid = this.types.filter((x) => x.AssetTypeId == id)[0].uid;
+        var uid = this.types.filter((x) => x.AssetTypeId === id)[0].uid;
 
         this
             .assetTypeService
@@ -157,8 +157,8 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
             .subscribe((res) => {
                 this.showMessageForResult(this.messagesService, res);
 
-                if (res.type != 'error') {
-                    this.types = this.types.filter((x) => x.uid != this.selected.uid);
+                if (res.type !== 'error') {
+                    this.types = this.types.filter((x) => x.uid !== this.selected.uid);
                     this.selected = this.types.length > 0 ? this.types[0] : null;
                     this.selectedItemChange();
                     this.stateService.reloadLeftNavMenu();
@@ -169,11 +169,11 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     }
 
     get typeEditorModalTitle(): string {
-        return (this.selected == null ? $localize`New` : $localize`Edit`) + ' ' + (this.assetTypeClass == AssetTypeClass.Model ? $localize`Model` : $localize`Policy`) + ' ' + $localize`Type`;
+        return (this.selected == null ? $localize`New` : $localize`Edit`) + ' ' + (this.assetTypeClass === AssetTypeClass.Model ? $localize`Model` : $localize`Policy`) + ' ' + $localize`Type`;
     }
 
     get deleteModalTitle(): string {
-        var typeClass = this.assetTypeClass == AssetTypeClass.Model ? $localize`Model`.toLowerCase() : $localize`Policy`.toLowerCase();
+        var typeClass = this.assetTypeClass === AssetTypeClass.Model ? $localize`Model`.toLowerCase() : $localize`Policy`.toLowerCase();
         return $localize`Are you sure you want to delete the ${typeClass} [${this.selected?.Name}]?`;
     }
 }

@@ -88,7 +88,7 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
     ngAfterViewInit() {
         this.checkInterval = setInterval(() => {
             if (this.calendar.overlayVisible && this.calendar.overlay) {
-                if (this.calendar.overlay.className.indexOf(this.getStyleClass) == -1) {
+                if (this.calendar.overlay.className.indexOf(this.getStyleClass) === -1) {
                     this.calendar.overlay.classList.add(this.getStyleClass);
                     this.calendar.overlay.classList.add("ig-date-overlay-normal-index");
                     if (this.overlayLowerZIndex) {
@@ -96,12 +96,12 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
                     }
                     var self = this;
                     this.calendar.overlay.onkeydown = (e: KeyboardEvent) => {
-                        if (e.keyCode == 27) {
+                        if (e.keyCode === 27) {
                             event.stopPropagation();
                             event.preventDefault();
                             setTimeout(() => { self.focus(event); });
                         }
-                        if (e.keyCode == 13) {
+                        if (e.keyCode === 13) {
                             setTimeout(() => { self.focus(event); });
                         }
                     };
@@ -148,8 +148,8 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
     }
 
     @HostListener('keydown', ['$event']) onKeyDown(e: KeyboardEvent) {
-        if (this.calendar.appendTo == 'body') {
-            if (e.keyCode == 9 && this.calendar.overlay) {
+        if (this.calendar.appendTo === 'body') {
+            if (e.keyCode === 9 && this.calendar.overlay) {
                 var firstEl = (this.calendar.overlay as HTMLElement).getElementsByClassName('p-datepicker-next')[0] as HTMLElement;
                 var secondLe = (this.calendar.overlay as HTMLElement).getElementsByClassName('p-datepicker-prev')[0] as HTMLElement;
                 setTimeout(() => { firstEl.click(); secondLe.click(); });

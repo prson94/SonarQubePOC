@@ -58,7 +58,7 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
     }
 
     ngOnInit() {
-        this.filterHttpRequestFields();
+		this.filterHttpRequestFields();	
 
         this.workflowFieldsService.httpRequest$.subscribe(() => {
             this.filterHttpRequestFields();
@@ -94,7 +94,8 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
 
         let selected = this.step.settings.HTTPResponse.Outputs[this.selectedIndex];
 
-        this.selectedRow = new HTTPResponseOutput();
+		this.selectedRow = new HTTPResponseOutput();
+		this.selectedRow.StepName = selected.StepName;
         this.selectedRow.Name = selected.Name;
         this.selectedRow.Path = selected.Path;
         this.selectedRow.StepId = selected.StepId;
@@ -129,7 +130,8 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
         this.selectedRow.Id = count;
     }
 
-    addOutput() {
+	addOutput() {
+		this.selectedRow.StepName = this.step.name;
         this.step.settings.HTTPResponse.Outputs.push(this.selectedRow);
         this.workflowFieldsService.pushOutputField(this.selectedRow);
         this.stepChange.emit(this.step);

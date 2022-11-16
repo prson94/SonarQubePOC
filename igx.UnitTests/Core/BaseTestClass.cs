@@ -113,7 +113,14 @@ namespace igx.UnitTests
                  );
 
             var assetTypes = new List<AssetType> { new AssetType { ID = 1, Name = "unit test" } }.AsQueryable();
-            var assetTypeMock = CreateDbSetMock<AssetType>(assetTypes);
+
+			var assets = new List<Asset> { new Asset { ID = 1, AssetTypeID=1,Object="Artifact", ObjectID =1} }.AsQueryable();
+
+			var assetMock = CreateDbSetMock<Asset>(assets);
+			mock.Setup(x => x.Assets)
+				.Returns(assetMock.Object);
+
+			var assetTypeMock = CreateDbSetMock<AssetType>(assetTypes);
             mock.Setup(x => x.Filter<AssetType>(It.IsAny<Expression<Func<AssetType, bool>>>()))
                 .Returns(assetTypeMock.Object);
 
@@ -169,8 +176,7 @@ namespace igx.UnitTests
                 .Returns((int id) => id > 0 ? new ShoppingCart() { ID = id, RequestedOn = new DateTime(2000, 1, 1) } : null);
 
             mock.Setup(x => x.GetFieldLookupValue(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
-                .Returns((string type, int objId, int ftId, string value) => value == "validlookupvalue" ? 1 : 0);
-
+                .Returns((string type, int objId, int ftId, string value) => value == "validlookupvalue" ? 1 : 0);			
 
             var workflowItemSteps = new List<WorkflowItemStep>() {
  new WorkflowItemStep(){
@@ -532,9 +538,6 @@ namespace igx.UnitTests
 
             mock.Setup(x => x.BulkPostRelationships(It.IsAny<Guid>(), It.IsAny<RelationshipInserts>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
                 .Returns(Task.FromResult(new ApiExecutionInfo() { Action = ApiExecutionAction.PostRelationships, CompanyDomainPrefix = "", CompanyID = -1, ExecutionID = Guid.NewGuid(), ResourceID = 56 }));
-
-            mock.Setup(x => x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
-                .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>()));
 
             mock.Setup(x => x.GetBulkResults(It.IsAny<ApiExecutionInfo>()))
                 .Returns(Task.FromResult(new List<DatabaseBulkAssetResult>()));

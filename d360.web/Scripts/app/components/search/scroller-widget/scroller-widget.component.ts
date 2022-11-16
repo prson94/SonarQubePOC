@@ -43,7 +43,7 @@ export class ScrollerWidgetComponent implements OnInit {
 	checkScrollPos() {
 		if (this.fieldScroller) {
 			let currentPosition = this.fieldScroller.nativeElement.scrollLeft;
-			this.disableScrollLeft = currentPosition == 0;
+			this.disableScrollLeft = currentPosition === 0;
 
 			let maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
 			let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastElementChild);
@@ -72,7 +72,7 @@ export class ScrollerWidgetComponent implements OnInit {
 		let scrollAmount = 0;
 		let scrollDistance = Math.floor(this.getElementWidth(el) * 0.95);
 		let move = () => {
-			if (direction == 'L') {
+			if (direction === 'L') {
 				el.scrollLeft -= 10;
 			} else {
 				el.scrollLeft += 10;

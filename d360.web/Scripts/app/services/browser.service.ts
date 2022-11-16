@@ -4,20 +4,20 @@ import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 import {
-    AssetBrowserTranslationNode,
-    AssetBrowserTranslationLink,
-    AssetBrowserApiHopDirection,
-    FilterAncestryMode,
-    FilterSelectionsModel,
-    StoredAssetBrowserFilterModel,
-    AssetBrowserOwnersModel,
     AssetBrowserAlert,
     AssetBrowserAlertRequest,
-    DiagramTypesModel,
-    AssetBrowserResponseModel,
     AssetBrowserApiHopAssetRequestModel,
+    AssetBrowserApiHopDirection,
+    AssetBrowserLineageRequest,
+    AssetBrowserOwnersModel,
+    AssetBrowserResponseModel,
+    AssetBrowserTranslationLink,
+    AssetBrowserTranslationNode,
+    DiagramTypesModel,
+    FilterAncestryMode,
     FilterDescendancyMode,
-    AssetBrowserLineageRequest
+    FilterSelectionsModel,
+    StoredAssetBrowserFilterModel
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -26,7 +26,6 @@ import { IconService } from './icon.service';
 import { AssetTypeClass } from '../models/asset.model';
 import { IconProperties } from '../models/icon-properties.model';
 import { ApiResult } from '../models/apiresult.model';
-import { Link } from '../models/fieldtype-api.model';
 
 @Injectable({
     providedIn: 'root'
@@ -67,6 +66,7 @@ export class BrowserService extends BaseObservableService {
 						temp = relationship.from;
 						relationship.from = relationship.to;
 						relationship.to = temp;
+						relationship.isReversed = true;
 
 						relationship.links.forEach((link) => {
 							temp = link.from;
@@ -78,6 +78,7 @@ export class BrowserService extends BaseObservableService {
 			}
 		}
 
+		response.highlightLinks = [];
 		if (response.links && response.links.length > 0) {
 			response.highlightLinks = JSON.parse(JSON.stringify(response.links));
 
@@ -166,9 +167,10 @@ export class BrowserService extends BaseObservableService {
             predicateIds: [],
             predicateType: null,
             predicateUid: null,
-            responsibilityTypeId: responsibilityTypeId,
+            responsibilityTypeId,
             links: [],
-            badgeIdentifier: rootKey
+			badgeIdentifier: rootKey,
+			isReversed: false
         };
 
         response.ownerRelations.forEach((l) => {
@@ -239,9 +241,9 @@ export class BrowserService extends BaseObservableService {
 
         return this.http.post(url, {
             ancestry: +ancestry,
-            uid: uid,
+            uid,
             hopCount: numberOfHops,
-            includeNonLeaf: includeNonLeaf,
+            includeNonLeaf,
             descendancy
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
@@ -258,7 +260,7 @@ export class BrowserService extends BaseObservableService {
             {numberOfHops = 3;}
 
         return this.http.post(url, {
-            uid: uid,
+            uid,
             hopCount: numberOfHops
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
@@ -278,9 +280,9 @@ export class BrowserService extends BaseObservableService {
 		}
 
         return this.http.post(url, {
-            assets: assets,
-            direction: direction,
-            hierarchyKey: hierarchyKey,
+            assets,
+            direction,
+            hierarchyKey,
             includeHierarchyBadges,
             intersects,
 			predicateUid,
@@ -315,8 +317,8 @@ export class BrowserService extends BaseObservableService {
 
         return this.http.post(url,
             {
-                assets: assets,
-                hierarchyKey: hierarchyKey,
+                assets,
+                hierarchyKey,
                 responsibilityTypeId
             }).pipe(
             map((response: AssetBrowserOwnersModel) => {

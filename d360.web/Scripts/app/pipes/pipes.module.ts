@@ -1,5 +1,5 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 import { DropdownItemToSelectItemPipe } from './dropdown-to-selectitem.pipe';
 import { ModelTypePipe } from './model-type.pipe';
@@ -14,7 +14,7 @@ import { UtcDatePipe } from './utc-date.pipe';
 import { MetricConditionDisabledFilterPipe } from './metric-condition-disabled-filter.pipe';
 import { SelectItemTextToLabelPipe } from './selectitem-text-to-label.pipe';
 import { SimpleSearch } from './simple-search-pipe';
-import { AssetpathSeparatorPipe  } from './assetpath-separator.pipe';
+import { AssetpathSeparatorPipe } from './assetpath-separator.pipe';
 import { GenericFilter } from './generic-filter.pipe';
 import { EnumToSelectitemPipe } from './enum-to-selectitem.pipe';
 import { ReplaceStringPipe } from './replace.pipe';

@@ -64,6 +64,7 @@
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateField.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateStyle.xml"/>
 	<include file="scripts/Table.dbo.Asset.xml"/>
+	<include file="scripts/Table.dbo.AssetFilterCache.xml"/>
 	<include file="scripts/Table.dbo.AssetCrossReference.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfile.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfileSample.xml"/>
@@ -205,7 +206,6 @@
 	<include file="scripts/Function.dbo.GetAssetDisplayValueById.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetUrlById.xml"/>					<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetTypeUrlById.xml"/>				<!--Function used for computed column-->
-	<include file="scripts/Function.dbo.GetIntersectNames.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetIntersectTypeNames.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetScoreById.xml"/>
 	<include file="scripts/View.dbo.ArtifactTypeDisplayFormatFieldTypes.xml"/>
@@ -231,7 +231,6 @@
 	<include file="scripts/View.dbo.ResponsibilityDetail.xml"/>
 	<include file="scripts/View.dbo.SiteNavAvailable.xml"/>
 	<include file="scripts/View.dbo.SiteNavFlat.xml"/>
-    <include file="scripts/View.utility.ArtifactAssetParent.xml"/>
     <include file="scripts/View.utility.FieldValue.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>
 	<include file="scripts/View.dbo.ProcessExpandedData.xml"/>
@@ -296,11 +295,9 @@
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.GetBackwardLineage.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
-    <include file="scripts/Function.utility.DeriveIntersectName.xml"/>
     <include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.FieldDetailsByAssetId.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
-	<include file="scripts/Function.utility.GetIntersectNames.xml"/>
 	<include file="scripts/Function.utility.GetIntersectTypesByType.xml"/>
 	<include file="scripts/Function.utility.GetObjectTypePath.xml"/>
 	<include file="scripts/Function.utility.GetPredicateFunctionalTypeValue.xml"/>
@@ -318,7 +315,6 @@
 	<include file="scripts/Procedure.dbo.AzureSQLMaintenance.xml"/>	
 	<include file="scripts/Procedure.dbo.CheckDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.DeleteAssetDataProfileRecords.xml"/>
-	<include file="scripts/Procedure.dbo.DeleteIntersect.xml"/>
 	<include file="scripts/Procedure.dbo.DeleteObject.xml"/>
 	<include file="scripts/Procedure.dbo.FollowObject.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateAllAssetTypeDisplayValues.xml"/>
@@ -355,7 +351,7 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
     <include file="scripts/Procedure.dbo.GetResponsibilityBreakdownByResource.xml"/>
-	<include file="scripts/Procedure.graph.PopulateForwardLineage.xml"/>
+	<include file="scripts/Procedure.dbo.CachedAssetFiltersProvider.xml"/>
 
     <include file="scripts/Function.Deletions.xml"/>
 	<include file="scripts/Procedure.Deletions.xml"/>

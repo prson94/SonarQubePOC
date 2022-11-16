@@ -1,8 +1,6 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
-
-import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({

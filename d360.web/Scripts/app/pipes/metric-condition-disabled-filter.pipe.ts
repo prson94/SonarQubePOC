@@ -1,5 +1,4 @@
-﻿import { Pipe, PipeTransform, Injectable } from '@angular/core';
-import { MetricFieldTypeViewModel } from '../models/metrics.model';
+﻿import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({ name: 'metricConditionDisabledFilter' })
 export class MetricConditionDisabledFilterPipe implements PipeTransform {

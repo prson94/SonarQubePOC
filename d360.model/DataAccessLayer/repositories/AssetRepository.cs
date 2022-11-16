@@ -221,6 +221,9 @@ namespace d360.model.DataAccessLayer
 									,A.AutoDisplayParent
 									,A.FlowObjectType
 									,A.CanEditParent
+									,A.IsDescriptionEnabled
+									,A.IsDescriptionVisibleByDefault
+									,A.DescriptionButtonName
 									{extraColumns} 
 									,P.[Path]
 									,AT.IconBackColor as BackColor
@@ -275,6 +278,7 @@ namespace d360.model.DataAccessLayer
 			string profilingCheckSql = "";
 			string profilingCheckFields = "";
 			bool includeProfilingCheck = false;
+			bool useCachedFilters = false;
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -293,7 +297,7 @@ namespace d360.model.DataAccessLayer
 			List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "RefListRelationship" };
 			var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).AsNoTracking().ToList();
 			var fieldTypes = allFieldTypes.Where(f => !hiddenFieldTypes.Contains(f.Type)).ToList();
-			
+
 			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
 			{
 				includeRelationships = true;
@@ -378,6 +382,11 @@ namespace d360.model.DataAccessLayer
 			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includeprofilingcheck"))
 			{
 				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includeprofilingcheck").Value, out includeProfilingCheck);
+			}
+
+			if (queryParams.ToList().Any(k => k.Key.ToLower() == "usecachedfilters"))
+			{
+				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "usecachedfilters").Value, out useCachedFilters);
 			}
 
 			//check for asset path fields now after include fields have been filtered
@@ -579,7 +588,7 @@ namespace d360.model.DataAccessLayer
 							inner join [Asset] B on B.ID = I.SubjectAssetID 
 							where ids.[AssetTypeID] =  @assetTypeID and ids.[ObjType] = 'O'
 							and ids.isRefList = 0 
-							{(IsApplyObjectFilter  ? " and I.ObjectAssetID = @ObjAssetID" : "")}
+							{(IsApplyObjectFilter ? " and I.ObjectAssetID = @ObjAssetID" : "")}
 							{(IsApplySubjectFilter && !SubjIsReferenceList ? " and I.SubjectAssetID = @SubjAssetID" : "")}
 
 							insert into #tempInclRela
@@ -1137,15 +1146,15 @@ namespace d360.model.DataAccessLayer
 							StringBuilder sb = new StringBuilder();
 
 							sb.AppendLine(@"
-								drop table if exists #parent_relationships
+								drop table if exists #parent_relationships_simple_filter
 								select IT.ID
-								into #parent_relationships
+								into #parent_relationships_simple_filter
 								from [IntersectType] IT 
 								inner join [Predicate] P on P.ID  = IT.PredicateID AND p.Type in (3,4)");
 
 							sb.AppendLine(@"
-								drop table if exists #filtered_parents
-								create table #filtered_parents(AssetId int)");
+								drop table if exists #filtered_parents_simple_filter
+								create table #filtered_parents_simple_filter(AssetId int)");
 
 							List<string> filtersPerField = new List<string>();
 							foreach (var uid in assetTypeUids)
@@ -1154,7 +1163,7 @@ namespace d360.model.DataAccessLayer
 								if (keyFields.Count() == 0 || keyFields.Count() > 1)
 								{
 									sb.AppendLine(@$"
-									insert into #filtered_parents (AssetId)
+									insert into #filtered_parents_simple_filter (AssetId)
 									select a.ID from AssetType at
 									inner join Asset a on a.AssetTypeID = at.ID
 									cross apply dbo.GetAssetDisplayValueById(a.id)Val
@@ -1164,7 +1173,7 @@ namespace d360.model.DataAccessLayer
 								else
 								{
 									sb.AppendLine(@$"
-									insert into #filtered_parents (AssetId)
+									insert into #filtered_parents_simple_filter (AssetId)
 									select AssetId from Field f
 									where f.FieldTypeID = {keyFields.FirstOrDefault().FieldTypeId} and f.FormattedValue like @simpleFilter
 									option(recompile)");
@@ -1175,16 +1184,16 @@ namespace d360.model.DataAccessLayer
 											select a.id
 											from asset a
 											left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
-											left join[Intersect] I1 on I1.ObjectAssetID = A.ID and I1.IntersectTypeID in (select id from #parent_relationships)");
+											left join[Intersect] I1 on I1.ObjectAssetID = A.ID and I1.IntersectTypeID in (select id from #parent_relationships_simple_filter)");
 							for (int i = 2; i <= levels; i++)
 							{
-								sb.AppendLine($"left join[Intersect] I{i} on I{i}.ObjectAssetID = I{i - 1}.SubjectAssetID and I{i}.IntersectTypeID in (select id from #parent_relationships)");
+								sb.AppendLine($"left join[Intersect] I{i} on I{i}.ObjectAssetID = I{i - 1}.SubjectAssetID and I{i}.IntersectTypeID in (select id from #parent_relationships_simple_filter)");
 							}
 							List<string> targetJoins = new List<string>();
 							for (int i = 1; i <= levels; i++)
 							{
 								targetJoins.Add($"ATarget{i}.ID");
-								sb.AppendLine($"left join Asset ATarget{i} on ATarget{i}.ID = I{i}.SubjectAssetID AND ATarget{i}.ID IN (select AssetId from #filtered_parents)");
+								sb.AppendLine($"left join Asset ATarget{i} on ATarget{i}.ID = I{i}.SubjectAssetID AND ATarget{i}.ID IN (select AssetId from #filtered_parents_simple_filter)");
 							}
 							sb.AppendLine($"where tfa.AssetId is null and a.AssetTypeID = @assettypeid and coalesce({string.Join(",", targetJoins)}) is not null");
 
@@ -1492,9 +1501,9 @@ namespace d360.model.DataAccessLayer
 			}
 
 			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
-			bool containsAnyFilter = 
-				whereSql != "where A.AssetTypeID = @assetTypeID" 
-				|| useSimpleFilterTempTable 
+			bool containsAnyFilter =
+				whereSql != "where A.AssetTypeID = @assetTypeID"
+				|| useSimpleFilterTempTable
 				|| advancedFilterTempTableInfos.TempTableSQL() != String.Empty;
 
 			string GetBaseQuery(bool excludeFilterQueries = false)
@@ -1515,30 +1524,50 @@ namespace d360.model.DataAccessLayer
 				{(includePermissionDetails ? permissionDetailSQL : "")}
 				{(includeParentUIDSelect ? hierarchyParentUidSelect : "")}
 				{(includeParentQuery ? parentApplySQL : "")}
-				{(!excludeFilterQueries || !containsAnyFilter ? whereSql : "")}";
+				{(!excludeFilterQueries || !containsAnyFilter ? whereSql : "where A.AssetTypeID = @assettypeid")}";
 			};
 
 			var filteredResultsTempTable = "";
 
 			if (containsAnyFilter)
 			{
-				filteredResultsTempTable = @$"
-				drop table if exists #filtered_results
-				create table #filtered_results (AssetId int)
-				create index ix_filtered_results_aid on #filtered_results (AssetId); 
+				string requestHash = null;
 
-				insert into #filtered_results
-				{GetBaseQuery()}";
+				if (useCachedFilters)
+				{
+					string[] ignoreQueryKeys = new string[] { "_pagesize", "_pagenum", "_order", "_direction" };
+
+					requestHash = assetType.uid + JsonConvert.SerializeObject(
+						queryParams.Where(x => !ignoreQueryKeys.Contains(x.Key.ToLowerInvariant())).OrderBy(x => x.Key))
+						.GetD3sHashString();
+				}
+
+				dbArgs.Add("requestHash", requestHash);
+
+				filteredResultsTempTable = @$"
+					drop table if exists #filtered_results
+					create table #filtered_results (AssetId int)
+
+					--procedure that will insert data into #filtered_results if there are cached results for user & request
+					exec CachedAssetFiltersProvider 'FETCH', @userId, @requesthash, @assetTypeId
+		
+					IF((SELECT count(*) FROM #filtered_results)=0)
+					begin
+						{advancedFilterTempTableInfos.TempTableSQL()}
+				
+						{simpleFiltersTempTablesQuery}
+
+						insert into #filtered_results
+						{GetBaseQuery()}
+
+						exec CachedAssetFiltersProvider 'SET', @userId, @requesthash, @assetTypeId
+					end";
 			}
 
 			var baseSQL = $@"
 				{TempTableScriptStr}
 
 				{tempincludeRelationships}
-
-				{advancedFilterTempTableInfos.TempTableSQL()}
-				
-				{simpleFiltersTempTablesQuery}
 				
 				{filteredResultsTempTable}
 				
@@ -1674,7 +1703,7 @@ namespace d360.model.DataAccessLayer
 					{
 						var fields = fieldTypes.Where(x => x.Type == "Number" || x.Type == "Decimal").ToList();
 
-						foreach(var field in fields)
+						foreach (var field in fields)
 						{
 							var data = (IDictionary<string, object>)result;
 
@@ -1694,7 +1723,7 @@ namespace d360.model.DataAccessLayer
 
 								if (field.Type == "Decimal")
 								{
-									if(decimal.TryParse(data[field.Name].ToString(), out decimal value))
+									if (decimal.TryParse(data[field.Name].ToString(), out decimal value))
 									{
 										data[field.Name] = value;
 									}
@@ -2437,7 +2466,7 @@ namespace d360.model.DataAccessLayer
 											order by Level", new { ObjectId = id }, ApiTimeout).AsQueryable();
 		}
 
-		private bool GetIsListReferenceListType(int AssetTypeID,Guid PreditcateUid)
+		private bool GetIsListReferenceListType(int AssetTypeID, Guid PreditcateUid)
 		{
 
 			return CompanyContext.Query<bool>($@"select it.id
@@ -2460,7 +2489,7 @@ namespace d360.model.DataAccessLayer
 		{
 			return CompanyContext.Query<dynamic>($@"Select A.Id as AssetId,A.AssetTypeId
 											From Asset A
-											WHERE  [Uid]= @AssetUid", new {AssetUid }, ApiTimeout).FirstOrDefault();
+											WHERE  [Uid]= @AssetUid", new { AssetUid }, ApiTimeout).FirstOrDefault();
 		}
 
 
@@ -2784,7 +2813,10 @@ where an.Uid = fam.uid)
 						UseAsTransformation = model.UseAsTransformation,
 						Parent = parentAssetType,
 						AutoDisplayParent = model.AutoDisplayParent,
-						CanEditParent = model.CanEditParent
+						CanEditParent = model.CanEditParent,
+						IsDescriptionEnabled = model.IsDescriptionEnabled,
+						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
+						DescriptionButtonName = model.DescriptionButtonName
 					};
 					CompanyContext.Add(at);
 
@@ -2817,7 +2849,10 @@ where an.Uid = fam.uid)
 						Hierarchical = true,
 						UseAsTransformation = model.UseAsTransformation,
 						Class = model.Class,
-						CanEditParent = model.CanEditParent
+						CanEditParent = model.CanEditParent,
+						IsDescriptionEnabled = model.IsDescriptionEnabled,
+						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
+						DescriptionButtonName = model.DescriptionButtonName
 					};
 
 					if (at.HierarchyMaximumDepth <= 0 || at.HierarchyMaximumDepth > 10)
@@ -2856,7 +2891,10 @@ where an.Uid = fam.uid)
 						CreatedOn = DateTime.UtcNow,
 						UseAsTransformation = model.UseAsTransformation,
 						Class = AssetTypeClass.Reference,
-						CanEditParent = model.CanEditParent
+						CanEditParent = model.CanEditParent,
+						IsDescriptionEnabled = model.IsDescriptionEnabled,
+						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
+						DescriptionButtonName = model.DescriptionButtonName
 					};
 					isNamePartOfKey = false;
 					nameFriendlyName = "Long Description";
@@ -2887,7 +2925,10 @@ where an.Uid = fam.uid)
 						Parent = parentAssetType,
 						AutoDisplayParent = model.AutoDisplayParent,
 						FlowObjectType = model.FlowObjectType,
-						CanEditParent = model.CanEditParent
+						CanEditParent = model.CanEditParent,
+						IsDescriptionEnabled = model.IsDescriptionEnabled,
+						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
+						DescriptionButtonName = model.DescriptionButtonName
 					};
 					CompanyContext.Add(at);
 					parentType = SystemObjects.TaskType;
@@ -2984,6 +3025,9 @@ where an.Uid = fam.uid)
 					assetType.Name = model.Name;
 					assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
 					assetType.Description = model.Description;
+					assetType.IsDescriptionEnabled = model.IsDescriptionEnabled;
+					assetType.IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault;
+					assetType.DescriptionButtonName = model.DescriptionButtonName;
 					assetType.HierarchyMaximumDepth = (model.Hierarchy != null) ? model.Hierarchy.MaximumDepth : 1;
 					assetType.AutoDisplayParent = model.AutoDisplayParent;
 					if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
@@ -3036,7 +3080,7 @@ where an.Uid = fam.uid)
 					PredicateType.InterTypeHierarchy;
 
 				intersectType = CompanyContext.Filter<IntersectType>(
-					i => i.ObjectAssetTypeID == assetType.ID && i.Predicate.Type == parentPredicateType, 
+					i => i.ObjectAssetTypeID == assetType.ID && i.Predicate.Type == parentPredicateType,
 					i => i.Predicate
 				).SingleOrDefault();
 
@@ -4121,9 +4165,9 @@ where an.Uid = fam.uid)
 									select	PA.Uid,
 											PD.DisplayValue
 									from	[Intersect] I
-											inner join Asset PA on PA.Object = I.Subject and PA.ObjectID = I.SubjectID
+											inner join Asset PA on PA.ID = I.SubjectAssetID 
 											inner join AssetDisplayValue PD on PD.AssetID = PA.ID
-									where	I.Object = A.Object and I.ObjectID = A.ObjectID
+									where	I.ObjectAssetID = A.ID
 								) P 
 								{string.Join("\n", fieldJoins.GetStatements())}
 						where   A.[uid] = @assetUid";
@@ -4716,14 +4760,12 @@ where an.Uid = fam.uid)
 
 			var descendantsSQL = $@"drop table if exists #descendants;
 									with descendants as (							
-										select @assetID as AssetID, CAST(0 AS BIGINT) as ParentAssetID
+										select	@assetID as AssetID, 
+												CAST(0 AS BIGINT) as ParentAssetID
 										union all
-										select 
-											AAP.assetID, AAP.ParentAssetID
-										from 
-											descendants as d
-											inner join 
-											[utility].[ArtifactAssetParent] AAP on d.AssetID = AAP.ParentAssetID
+										select	AAP.ObjectAssetID as AssetID, AAP.SubjectAssetID as ParentAssetID
+										from	descendants as d
+												inner join PredicateIntersect AAP on AAP.SubjectAssetID = d.AssetID and AAP.PredicateType in (3,4)
 									)
 
 									select * 

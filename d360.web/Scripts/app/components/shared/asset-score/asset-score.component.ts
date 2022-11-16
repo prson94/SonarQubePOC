@@ -103,13 +103,13 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         this.selectedScoreType = <any>ScoreType[this.scoreType];
 
         for (let p in changes) {
-            if (p == 'uid') {
-                uidChanged = (changes['uid'].currentValue != changes['uid'].previousValue) && changes['uid'] != undefined;
+            if (p === 'uid') {
+                uidChanged = (changes['uid'].currentValue !== changes['uid'].previousValue) && changes['uid'] != null;
                 if (uidChanged) {
                     this.loadInitialDataForAsset();
                 }
             }
-            if (p == 'scoreType' && !uidChanged) {
+            if (p === 'scoreType' && !uidChanged) {
                 this.loadScoreTypeDataAndSettings();
             }
         }
@@ -135,7 +135,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
             if (alloc['metricDefinition']) {
                 var arr = alloc['metricDefinition'] as any[];
                 arr.forEach((metric) => {
-                    if (metric['Uid'] == this.selectedPoint.Uid) {
+                    if (metric['Uid'] === this.selectedPoint.Uid) {
                         this.selectedMetric = null;
                         var effDate = new Date(metric.EffectiveDate);
                         var selectedDate = new Date(this.scoreDate);
@@ -187,7 +187,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 this.scoreTypes = x.map((x) => <any>ScoreType[x.scoreType]);
                 this.allocationData = x;
                 if (x.length > 0) {
-                    let selectedScoreTypeIndex = this.scoreTypes.findIndex((a) => { return a == this.selectedScoreType; });
+                    let selectedScoreTypeIndex = this.scoreTypes.findIndex((a) => { return a === this.selectedScoreType; });
                     if (selectedScoreTypeIndex > -1) {
                         this.scoreType = <any>ScoreType[this.scoreTypes[selectedScoreTypeIndex]];
                     }
@@ -268,7 +268,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                             if (this.scoresPoints[i].Score < this.scoresPoints[i + 1].Score)
                                 {this.scoresPoints[i].ScoreProgression = -1;}
 
-                            if (this.scoresPoints[i].Score == this.scoresPoints[i + 1].Score)
+                            if (this.scoresPoints[i].Score === this.scoresPoints[i + 1].Score)
                                 {this.scoresPoints[i].ScoreProgression = 0;}
 
                         }
@@ -291,7 +291,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
                         if (this.allocationData) {
                             let stype = ScoreType[this.selectedScoreType];
-                            let selected = this.allocationData.filter((x) => x.scoreType.toString() == stype.toString());
+                            let selected = this.allocationData.filter((x) => x.scoreType.toString() === stype.toString());
                             if (selected.length > 0) {
                                 this.isExternallyCalculated = selected[0]['isExternallyCalculated'];
                                 this.lowerThreshold = +selected[0]['lowerThreshold'] / 100;
@@ -335,11 +335,11 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private loadPoints(isTabChange: boolean = false) {
         this.isDataLoaded = false;
         if (this.uid) {
-            if (this.scoreDate.indexOf('0Z') == -1) {
+            if (this.scoreDate.indexOf('0Z') === -1) {
                 this.scoreDate += 'T00:00:00.000Z';
             }
 
-            let selectedAllocation = this.allocationData.find((o) => { return <any>ScoreType[o.scoreType] == this.selectedScoreType; });
+            let selectedAllocation = this.allocationData.find((o) => { return <any>ScoreType[o.scoreType] === this.selectedScoreType; });
             this.allocationUid = selectedAllocation.uid;
 
             this.scoreService.getScoreHistoryByAllocationAndAssetAndEffectiveDate(this.allocationUid, this.uid, this.scoreDate)
@@ -385,12 +385,12 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     var preselected: PointBreakdown;
                     if (this.selectedMeasureUid && this.pointBreakdown) {
                         this.pointBreakdown.forEach((pb) => {
-                            if (pb.Uid == this.selectedMeasureUid)
+                            if (pb.Uid === this.selectedMeasureUid)
                                 {preselected = pb;}
 
                             if (pb.Measures) {
                                 pb.Measures.forEach((m) => {
-                                    if (m.Uid == this.selectedMeasureUid) {
+                                    if (m.Uid === this.selectedMeasureUid) {
                                         preselected = m;
                                     }
                                 });
@@ -438,7 +438,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
         var panel = dropdown.getElementsByClassName('p-dropdown-panel').length > 0 ? dropdown.getElementsByClassName('p-dropdown-panel')[0] : null;
         if (panel) {
-            if (panel.getElementsByClassName('score-dropdown-header').length == 0) {
+            if (panel.getElementsByClassName('score-dropdown-header').length === 0) {
 
                 var div = document.createElement('div');
                 div.className = 'score-dropdown-header';
@@ -484,9 +484,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private getMeasurePoint(effectiveDate: any): ScorePoint {
         var point = null;
         if (this.measurePoints)
-            {point = this.measurePoints.filter((x) => x.EffectiveDate == effectiveDate)[0];}
+            {point = this.measurePoints.filter((x) => x.EffectiveDate === effectiveDate)[0];}
 
-        if (point == null || point == undefined) {
+        if (point == null) {
             return null;
         }
         else {return point;}
@@ -494,8 +494,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     private isDQAndNoItems() {
         if (this.pointBreakdown) {
-            this.showEmptyMessage = this.pointBreakdown.filter((x) => { return x.ScoreType == ScoreType.DataQuality; }).length == 0
-                && this.selectedScoreType == ScoreType.DataQuality;
+            this.showEmptyMessage = this.pointBreakdown.filter((x) => { return x.ScoreType === ScoreType.DataQuality; }).length === 0
+                && this.selectedScoreType === ScoreType.DataQuality;
         }
     }
 
@@ -525,7 +525,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     }
 
     getAsPrecentage(val: number, isDecimal: boolean = true) {
-        if (val == 0)
+        if (val === 0)
             {return '0%';}
         if (!val)
             {return;}
@@ -544,7 +544,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     dateChanged($event) {
         this.scoreDate = $event;
         this.scoresPointsDDL.forEach((point) => {
-            if (point.value['EffectiveDate'].indexOf(this.scoreDate) == 0) {
+            if (point.value['EffectiveDate'].indexOf(this.scoreDate) === 0) {
                 this.scoresPointSelected = point.value;
             }
         });
@@ -580,7 +580,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     saveState() {
         if (this.pointBreakdown) {
             var data = {};
-            data['expanded'] = this.pointBreakdown.filter((x) => x._isCollapsed == true).map((x) => x.Uid);
+            data['expanded'] = this.pointBreakdown.filter((x) => x._isCollapsed === true).map((x) => x.Uid);
             localStorage.setItem(this.getStorageKey(), JSON.stringify(data));
         }
     }
@@ -593,7 +593,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     var expanded = data['expanded'] as [];
                     expanded.forEach((ex) => {
                         this.pointBreakdown.forEach((pb) => {
-                            if (pb.Uid == ex)
+                            if (pb.Uid === ex)
                                 {pb._isCollapsed = true;}
                         });
                     });

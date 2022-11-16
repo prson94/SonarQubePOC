@@ -1,4 +1,4 @@
-﻿import { Directive, ElementRef, DoCheck, ChangeDetectorRef } from "@angular/core";
+﻿import { ChangeDetectorRef, Directive, DoCheck, ElementRef } from "@angular/core";
 
 @Directive({
     selector: "[igAutoFocus]"
@@ -36,7 +36,7 @@ export class AutoFocusDirective implements DoCheck {
         var tagName = htmlElement.tagName;
         if (tagName === "P-AUTOCOMPLETE" || tagName === "P-CHECKBOX" || tagName === "P-DROPDOWN") {
             var inputF = htmlElement.getElementsByTagName("input");
-            if (inputF && inputF.length != 0) {
+            if (inputF && inputF.length !== 0) {
                 inputF[0].focus();
             }
         }

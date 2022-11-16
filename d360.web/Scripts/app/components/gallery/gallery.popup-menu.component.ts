@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, HostListener, OnInit } from '@angular/core';
 
 
 @Component({

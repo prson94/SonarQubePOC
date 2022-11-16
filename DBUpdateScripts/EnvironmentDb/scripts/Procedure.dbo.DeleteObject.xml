@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.dbo.DeleteObject-v23">
+  <changeSet author="TKlok" id="Procedure.dbo.DeleteObject-v24">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -143,20 +143,28 @@ create or alter procedure [dbo].[DeleteObject]
 				declare @startAssetID bigint
 				select @startAssetID = ID from Asset where Object = @Object and ObjectID = @ObjectID
 				;with itemCte as (
-					select	ObjectAssetID as ID,
-							Object,
-							ObjectID
-					from	PredicateIntersect 
-					where	SubjectAssetID = @startAssetID and PredicateType = @predicateType
+					select	PI.ObjectAssetID as ID,
+							NULL as Object,
+							NULL as ObjectId
+					from	PredicateIntersect PI
+					where	PI.SubjectAssetID = @startAssetID and PI.PredicateType = @predicateType
 					union all
 					select	I.ObjectAssetID as ID,
-							I.Object,
-							I.ObjectID
+							NULL as Object,
+							NULL as ObjectId
 					from	itemCte P
 							inner join PredicateIntersect I on I.SubjectAssetID = P.ID and I.PredicateType = @predicateType
 				)
 				insert into #items
 					select ID, Object, ObjectID, 1 from itemCte;
+
+				-- Still relying on Object/ObjectID for audit
+				UPDATE #items
+				SET Object = A.Object,
+					ObjectID = A.ObjectID
+				FROM #items T
+				INNER JOIN Asset A on T.ID = A.ID
+				where T.ObjectID IS NULL;
 			  end;
 		  end;
   
@@ -881,7 +889,7 @@ create or alter procedure [dbo].[DeleteObject]
 						  'This field has been removed.'
 				  from	Field O
 						  inner join FieldType T on T.ID = O.FieldTypeID and T.ID = @ObjectID
-						  inner join AssetDetail A on A.Object = O.ObjectType and A.ObjectID = O.ObjectID
+						  inner join AssetDetail A on A.ID = O.AssetID
 				  union
 				  select	A.Object,
 						  A.ObjectID,
@@ -895,19 +903,19 @@ create or alter procedure [dbo].[DeleteObject]
 						  O.Name,
 						  'This field type has been removed.'
 				  from	FieldType O
-						  inner join AssetType A on A.Object = O.Object and A.ObjectID = O.ObjectID and O.ID = @ObjectID;
+						  inner join AssetType A on A.ID = O.AssetTypeID and O.ID = @ObjectID;
 
 			  update	T
 			  set		T.UpdatedBy = @ResourceID,
 					  T.UpdatedOn = @CurrentDate
 			  from	Asset T
-					  inner join Field S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID and S.FieldTypeID = @ObjectID;
+					  inner join Field S on S.AssetID = T.ID and S.FieldTypeID = @ObjectID;
 
 			  update	T
 			  set		T.UpdatedBy = @ResourceID,
 					  T.UpdatedOn = @CurrentDate
 			  from	AssetType T
-					  inner join FieldType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ID = @ObjectID;
+					  inner join FieldType S on S.AssetTypeID = T.ID and S.ID = @ObjectID;
 
 			  delete	Field
 			  where	FieldTypeID = @ObjectID;
@@ -1216,17 +1224,17 @@ create or alter procedure [dbo].[DeleteObject]
 				  delete	O
 				  from	Field O 
 						  inner join FieldType F on F.ID = O.FieldTypeID
-						  inner join #types I on F.Object = I.Object and I.ObjectID = F.ObjectID;
+						  inner join #types I on F.AssetTypeID = I.ID
 
 				  delete	O
 				  from	FieldType O
-						  inner join #types I on O.Object = I.Object and I.ObjectID = O.ObjectID;
+						  inner join #types I on O.AssetTypeID = I.ID;
 			  end
 			  else
 			  begin
 				  delete	O
 				  from	Field O
-						  inner join #items I on O.ObjectType = I.Object and I.ObjectID = O.ObjectID;
+						  inner join #items I on O.AssetID = I.ID;
 			  end
 		  end;
  

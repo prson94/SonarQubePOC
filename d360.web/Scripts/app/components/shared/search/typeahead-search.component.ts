@@ -131,7 +131,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     }
 
     selectItem(ac) {
-        if (this.result.Type == this.endSearchAllTypeToken) {
+        if (this.result.Type === this.endSearchAllTypeToken) {
             this.result.Name = this.searchText;
             this.openSearch();
         } else {
@@ -154,7 +154,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     }
 
     checkKey(event, ac) {
-        if (event.keyCode == 13) {
+        if (event.keyCode === 13) {
             this.navigateQuery(event.srcElement.value);
             this.removeFocus(ac);
         }

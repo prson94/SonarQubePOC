@@ -5,8 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Impact-v7.2">
-    <comment>GOV-19977</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Impact-v9">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -287,9 +286,10 @@ begin
 			inner join Asset A on A.ID = T.assetId
 			cross apply (
 			select	count(1) as [Count] 
-			from	Issue 
-			where	AssetID = A.ID 
+			from	Issue I
+			where	I.AssetID = A.ID 
 					and CompletedOn is null
+					and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
 			) C;
 
 	-- Update asset read permissions
@@ -385,7 +385,7 @@ begin
 														count(1) as [count]
 											from		#nodes IH
 														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-														inner join PredicateIntersect I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.Object <> 'ReferenceItemType' and I.PredicateType not in (select [Type] from @restrictedTypes) and I.IntersectID not in (select Id from @hopIntersectIds)
+														inner join PredicateIntersect I on I.SubjectAssetID = A.ID and I.PredicateType not in (select [Type] from @restrictedTypes) and I.IntersectID not in (select Id from @hopIntersectIds)
 											group by	I.PredicateID,
 														I.PredicateUid,
 														I.PredicateName
@@ -397,7 +397,7 @@ begin
 														count(1) as [count]
 											from		#nodes IH
 														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-														inner join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject <> 'ReferenceItemType' and I.PredicateType not in (select [Type] from @restrictedTypes) and I.IntersectID not in (select Id from @hopIntersectIds)
+														inner join PredicateIntersect I on I.ObjectAssetID = A.ID and I.PredicateType not in (select [Type] from @restrictedTypes) and I.IntersectID not in (select Id from @hopIntersectIds)
 											group by	I.PredicateID,
 														I.PredicateUid,
 														I.PredicateInverse
@@ -510,21 +510,19 @@ begin
 						I.PredicateUid,
 						I.PredicateName,
 						I.PredicateType,
-						'T|' + cast(@salt as varchar(3)) + '|' + cast(S.AssetTypeID as varchar(15)),
-						'A|' + cast(@salt as varchar(3)) + '|' + cast(S.ID as varchar(20)),
+						'T|' + cast(@salt as varchar(3)) + '|' + cast(I.SubjectAssetTypeID as varchar(15)),
+						'A|' + cast(@salt as varchar(3)) + '|' + cast(I.SubjectAssetID as varchar(20)),
 						@salt,
-						S.ID as SubjectID,
-						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(O.AssetTypeID as varchar(15)),
-						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(O.ID as varchar(20)),
+						I.SubjectAssetID as SubjectID,
+						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(I.ObjectAssetTypeID as varchar(15)),
+						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(I.ObjectAssetID as varchar(20)),
 						@newSalt,
-						O.ID as ObjectID
+						I.ObjectAssetID as ObjectID
 				from	@a H
-						inner join Asset S on S.ID = H.ID and H.Salt = @salt
-						inner join PredicateIntersect I on I.Subject = S.Object and I.SubjectID = S.ObjectID 
+						inner join PredicateIntersect I on I.SubjectAssetID = H.ID
 							and I.PredicateType between 1 and 13 
 							and I.IntersectID not in (select Id from @hopIntersectIds)
 							and ((@predicateUid is null) OR (@predicateUid is not null and I.PredicateUid = @predicateUid))
-						inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
 		end
 
 		if @direction = 'A' or @direction = 'B'
@@ -536,21 +534,19 @@ begin
 						I.PredicateUid,
 						I.PredicateInverse,
 						I.PredicateType,
-						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(O.AssetTypeID as varchar(15)),
-						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(O.ID as varchar(20)),
+						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(I.SubjectAssetTypeID as varchar(15)),
+						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(I.SubjectAssetID as varchar(20)),
 						@newSalt,
-						O.ID as SubjectID,
-						'T|' + cast(@salt as varchar(3)) + '|' + cast(S.AssetTypeID as varchar(15)),
-						'A|' + cast(@salt as varchar(3)) + '|' + cast(S.ID as varchar(20)),
+						I.SubjectAssetID as SubjectID,
+						'T|' + cast(@salt as varchar(3)) + '|' + cast(I.ObjectAssetTypeID as varchar(15)),
+						'A|' + cast(@salt as varchar(3)) + '|' + cast(I.ObjectAssetID as varchar(20)),
 						@salt,
-						S.ID as ObjectID
+						I.ObjectAssetID as ObjectID
 				from	@a H
-						inner join Asset S on S.ID = H.ID and H.Salt = @salt
-						inner join PredicateIntersect I on I.Object = S.Object and I.ObjectID = S.ObjectID 
+						inner join PredicateIntersect I on I.ObjectAssetID = H.ID
 							and I.PredicateType between 1 and 13 
 							and I.IntersectID not in (select Id from @hopIntersectIds)
 							and ((@predicateUid is null) OR (@predicateUid is not null and I.PredicateUid = @predicateUid))
-						inner join Asset O on O.Object = I.Subject and O.ObjectID = I.SubjectID
 		end
 
 		insert into @hopIntersectIds(Id)
@@ -694,8 +690,7 @@ begin
 			cross apply (
 			select	count(1) as [Count] 
 			from	Issue 
-			where	Object = A.Object 
-					and ObjectID = A.ObjectID 
+			where	AssetID = A.ID 
 					and CompletedOn is null
 			) C;
 

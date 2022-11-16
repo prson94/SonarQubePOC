@@ -1,4 +1,4 @@
-import { catchError, map, debounceTime, distinctUntilChanged, switchMap } from "rxjs/operators";
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap } from "rxjs/operators";
 import { Injectable } from '@angular/core';
 import { SearchResult } from '../models/search-result.model';
 import { Observable, of } from "rxjs";

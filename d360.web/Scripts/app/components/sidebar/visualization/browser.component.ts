@@ -16,6 +16,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 
 export class BrowserComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
+    public isSaved: boolean = null;
 
     constructor(
         private route: ActivatedRoute,
@@ -43,8 +44,7 @@ export class BrowserComponent extends BaseComponent implements OnInit, OnDestroy
         }
     }
 
-    public isSaved: boolean = null;
-    saveStateChanged($event) {
+    saveStateChanged($event: boolean) {
         this.isSaved = $event;
     }
 }

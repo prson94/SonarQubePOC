@@ -1,11 +1,10 @@
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { Tag, TagType, TagApiModel, TagPermissionItem } from '../models/tag.model';
+import { Tag, TagApiModel, TagPermissionItem, TagType } from '../models/tag.model';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
-import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable({
     providedIn: 'root'
@@ -58,7 +57,7 @@ export class TagService extends BaseObservableService {
         });
 
         const httpHeaders = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: body
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body
         };
         return this.http.delete(url, httpHeaders)
             .pipe(map((response) => <any>response),
@@ -236,7 +235,7 @@ export class TagService extends BaseObservableService {
                 refCount(),
                 catchError((err) => this.handleError(err)));
 
-        var data = { tagUid: tagUid, assetUid: assetUid, obs: obs };
+        var data = { tagUid, assetUid, obs };
         this.tagTooltipsCache.push(data);
 
         return obs;

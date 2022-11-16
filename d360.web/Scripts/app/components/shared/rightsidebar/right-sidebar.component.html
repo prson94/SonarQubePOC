@@ -6,7 +6,7 @@
             <img class="d3s-asset-img" *ngIf=" checkIfImg(area.icon)" [src]="area.icon" />
         </span>
         <h1 title="{{area.title ? area.title: 'D3S'}}">{{area.title ? area.title: 'D3S'}}</h1>
-        <ig-portal-renderer name="asset-description"></ig-portal-renderer>
+        <ig-portal-renderer name="asset-description-button"></ig-portal-renderer>
         <d3s-simple-badge *ngIf="showDataClassification"
                           [badgeValue]="dataClassification"
                           [badgeType]="'DataClassification'">
@@ -70,6 +70,7 @@
             </d3s-score-badge>
         </span>
     </div>
+	<ig-portal-renderer name="asset-description"></ig-portal-renderer>
     <d3s-tabs
         [items]="items"
         [showOnlyMainTab]="showOnlyMainTab"

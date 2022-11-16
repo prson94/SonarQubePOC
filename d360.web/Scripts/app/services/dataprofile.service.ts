@@ -1,17 +1,19 @@
 ﻿import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpClientJsonpModule, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of, throwError } from "rxjs";
-import { catchError, map, debounceTime } from "rxjs/operators";
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Observable, of } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
 import { JsonResult } from '../models/jsonresult.model';
-import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
 
-import { SemanticSource, SemanticType, SemanticTypeGetAssetsResponse, SemanticTypeGetResponse } from '../models/semantic-type.model';
-
-import * as _ from 'lodash';
+import {
+    SemanticSource,
+    SemanticType,
+    SemanticTypeGetAssetsResponse,
+    SemanticTypeGetResponse
+} from '../models/semantic-type.model';
 import { SortOrder } from '../models/enums.model';
 
 @Injectable()

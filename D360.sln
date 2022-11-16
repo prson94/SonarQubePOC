@@ -36,6 +36,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{250BEFFF-E46A-41D1-8421-587E325EAA34}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.eslintrc.json = .eslintrc.json
 		codeanalysis.ruleset = codeanalysis.ruleset
 		deadcode.ruleset = deadcode.ruleset
 		Local.testsettings = Local.testsettings
@@ -200,7 +201,7 @@ Global
 		{DF57BE56-958B-4C4D-B82C-6B61297434AB} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
+		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 	EndGlobalSection
 EndGlobal

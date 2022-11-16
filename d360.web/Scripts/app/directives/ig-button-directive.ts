@@ -4,7 +4,7 @@
     DomUtils replaced by DomHandler for primefaces 7.1.3 compatability
 */
 
-import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input } from '@angular/core';
+import { AfterViewInit, Directive, ElementRef, Input, NgModule, OnDestroy } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
 import { coerceBooleanProperty } from '@angular/cdk/coercion';

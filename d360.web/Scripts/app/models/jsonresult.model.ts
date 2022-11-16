@@ -26,10 +26,10 @@ export class JsonResult extends JsonCoreResult {
     }
 
     get isError(): boolean {
-        return ((this.type || '').toLowerCase().trim() == 'error');
+        return ((this.type || '').toLowerCase().trim() === 'error');
     }
 
     get isSuccess(): boolean {
-        return ((this.type || '').toLowerCase().trim() == 'confirm' || (this.type || '').toLowerCase().trim() == 'success');
+        return ((this.type || '').toLowerCase().trim() === 'confirm' || (this.type || '').toLowerCase().trim() === 'success');
     }
 }

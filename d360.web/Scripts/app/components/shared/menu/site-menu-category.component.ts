@@ -52,12 +52,16 @@ export class SiteMenuCategoryComponent extends BaseComponent {
         }
     }
 
-    show(item) {
-        this.activeItemChanged.emit({ item: this });
-        this.positionMenu();
+    onCategoryExpand() {
+        if (this.menu && this.menu.isActiveItem) {
+            this.activeItemChanged.emit(undefined);
+        } else {
+            this.activeItemChanged.emit({ item: this });
+            this.positionMenu();
+        }
     }
 
-    private positionMenu() {
+    positionMenu() {
         if (!this.menu || !this.menu.NavigationItems) {
             return;
         }

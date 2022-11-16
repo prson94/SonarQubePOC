@@ -20,6 +20,7 @@ using Resources;
 using d360.utils.excel;
 
 using SpreadsheetLight;
+using System.Xml;
 
 namespace d360.web.Controllers.V2
 {
@@ -198,19 +199,17 @@ namespace d360.web.Controllers.V2
 
 					fieldJoins.Add($@"
 					outer apply (
-							SELECT hello = Stuff((
-							SELECT  distinct ' | ' + FRelation_P.DisplayPath
-								from [Intersect] FRelation_I 
-								inner Join Asset FRelation_RA on 
-								FRelation_I.[IntersectTypeID] = {intersectType.ID} AND 
-								(({joinObjectField} = FRelation_I.SubjectAssetId) 
-								OR ({joinObjectField} = FRelation_I.ObjectAssetId))
-								inner join AssetPath FRelation_P on FRelation_P.ID = FRelation_RA.ID  
-								Where 
-								FRelation_I.[IntersectTypeID] = {intersectType.ID} AND
-								((FRelation_I.ObjectAssetId = {joinObjectField}) 
-								or 
-								(FRelation_I.SubjectAssetId = {joinObjectField}))
+							SELECT hello = Stuff(
+								(
+								select distinct ' | ' + DisplayPath from (
+								select AP.DisplayPath from [Intersect] I
+								inner join AssetPath AP on AP.Id = I.ObjectAssetId
+								where I.IntersectTypeID = {intersectType.ID} AND I.SubjectAssetID = {joinObjectField}
+								union 
+								select AP.DisplayPath from [Intersect] I
+								inner join AssetPath AP on AP.Id = I.SubjectAssetID
+								where I.IntersectTypeID = {intersectType.ID} AND I.ObjectAssetID = {joinObjectField}
+								)d
 							for xml path ('')
 							), 2, 1, '')
 							){tableAlias}(FormattedValue) ");
@@ -248,8 +247,8 @@ namespace d360.web.Controllers.V2
 					fieldJoins.Add(sql);
 				}
 				else
-				{					
-					fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {fieldJoinCondition}");										
+				{
+					fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {fieldJoinCondition}");
 				}
 			});
 		}
@@ -848,14 +847,32 @@ namespace d360.web.Controllers.V2
 		}
 		private string getRowFieldValue(dynamic row, int fieldId, string hardCodedName = null)
 		{
+			string rowFieldValue = "";
 			if (fieldId > 0 && string.IsNullOrEmpty(hardCodedName))
 			{
-				return (string)((row as IDictionary<string, object>)[$"Field{fieldId}"]);
+				rowFieldValue = (string)((row as IDictionary<string, object>)[$"Field{fieldId}"]);
 			}
 			else
 			{
-				return (((row as IDictionary<string, object>)[$"{hardCodedName}"]) ?? "").ToString();
+				rowFieldValue = (((row as IDictionary<string, object>)[$"{hardCodedName}"]) ?? "").ToString();
 			}
+
+			rowFieldValue = RemoveInvalidXmlChars(rowFieldValue ?? "");
+
+			const int MaxExcelColumnCharacterLength = 32767;
+
+			if (rowFieldValue.Length > MaxExcelColumnCharacterLength)
+			{
+				rowFieldValue = rowFieldValue.Substring(0, MaxExcelColumnCharacterLength);
+			}
+
+			return rowFieldValue;
+		}
+
+		private string RemoveInvalidXmlChars(string text)
+		{
+			var validXmlChars = text.Where(ch => XmlConvert.IsXmlChar(ch)).ToArray();
+			return new string(validXmlChars);
 		}
 
 		private void SetExcelColumnWidths(SLDocument document, List<FieldType> fields)

@@ -43,7 +43,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { FieldName = "AssetTypeUid", FieldType = DataType.Hidden.ToString(), Value = a.AssetType.uid.ToString() });
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).ToList();
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
 
 			list = loadDynamicFields(
@@ -143,7 +143,7 @@ namespace d360.web.Controllers
                 }
             }
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).ToList();
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
 
 			list = loadDynamicFields(
@@ -255,7 +255,10 @@ namespace d360.web.Controllers
                             },
                             AutoDisplayParent = assetType.AutoDisplayParent,
                             FlowObjectType = assetType.FlowObjectType,
-                            CanEditParent = assetType.CanEditParent
+                            CanEditParent = assetType.CanEditParent,
+                            IsDescriptionEnabled = assetType.IsDescriptionEnabled,
+                            IsDescriptionVisibleByDefault = assetType.IsDescriptionVisibleByDefault,
+                            DescriptionButtonName = assetType.DescriptionButtonName
                         },
                         Tokens = Company.Filter<FieldType>(
                             i => i.AssetTypeID == assetType.ID
@@ -346,7 +349,10 @@ namespace d360.web.Controllers
                             {
                                 PredicateUid = null,
                                 MaximumDepth = 1
-                            }
+                            },
+                            IsDescriptionEnabled = true,
+                            IsDescriptionVisibleByDefault = true,
+                            DescriptionButtonName = "Information"
                         },
                         Tokens = new List<PrimeSelectItem>() { new PrimeSelectItem { label = "Name", value = "{Name}" } }
                     };

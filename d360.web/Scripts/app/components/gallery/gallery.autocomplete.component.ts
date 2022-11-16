@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 
 @Component({
@@ -43,7 +43,7 @@ export class GalleryAutocompleteComponent implements OnInit {
     filterItems($event) {
         this.filteredBrands = [];
         this.brands.forEach((brand) => {
-            if (brand.toLowerCase().indexOf($event.query.toLowerCase()) == 0) {
+            if (brand.toLowerCase().indexOf($event.query.toLowerCase()) === 0) {
                 this.filteredBrands.push(brand);
             }
         });

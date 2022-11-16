@@ -1,0 +1,74 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="Procedure.dbo.CachedAssetFiltersProvider-v2">
+   <comment>GOV-18457</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE or alter  PROCEDURE [dbo].[CachedAssetFiltersProvider]
+@action nvarchar(10),
+@resourceId int, 
+@requestHash nvarchar(255),
+@assetTypeId int
+AS
+BEGIN TRY  
+	declare @expiryDate datetime = (select DATEADD(MINUTE,-5, GETUTCDATE()))
+	
+	if @requestHash is null
+	begin
+		delete from [dbo].[AssetFilterCache] where ResourceId = @resourceId and AssetTypeId = @assetTypeId;
+		return 0;
+	end
+
+	delete from [dbo].[AssetFilterCache] where ResourceId = @resourceId and LastUsedOn < @expiryDate
+
+    if @action = 'FETCH'
+	begin
+		delete from [dbo].[AssetFilterCache] where ResourceId = @resourceId and RequestHash <> @requesthash and AssetTypeId = @assetTypeId;
+		declare @cachedFilterId varbinary(max) = (select top 1 Id from [dbo].[AssetFilterCache] where ResourceId = @resourceId and RequestHash = @requesthash and AssetTypeId = @assetTypeId)
+	
+		if @cachedFilterId is not null
+		begin
+			declare @cachedFilter varbinary(max) = (select top 1 Data from[dbo].[AssetFilterCache] where ID = @cachedFilterId)
+			insert into #filtered_results
+			select AssetId from openjson(CAST(DECOMPRESS(@cachedFilter) as nvarchar(max))) with (AssetId int)
+
+			update [dbo].[AssetFilterCache] 
+			set LastUsedOn = GETUTCDATE();
+		end
+		else
+		begin
+			delete from [dbo].[AssetFilterCache] where ResourceId = @resourceId and AssetTypeId = @assetTypeId;
+		end
+	end
+	
+	if @action = 'SET'
+	begin
+		declare @data varbinary(max) = (select COMPRESS(Json.val) from (
+		select AssetId from #filtered_results for json path
+		)Json(val))
+
+		insert into [dbo].[AssetFilterCache] (ResourceId, RequestHash, Data, AssetTypeId,LastUsedOn)
+		values (@resourceId, @requesthash, @data,@assetTypeId, GETUTCDATE())
+	end
+END TRY  
+BEGIN CATCH  
+	return 0
+END CATCH; 
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

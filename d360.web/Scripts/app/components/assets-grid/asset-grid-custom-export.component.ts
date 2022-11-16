@@ -1,10 +1,22 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnInit,
+    Output
+} from '@angular/core';
 import { ArtifactType, AssetTypeExportTemplate } from '../../models/artifact-type.model';
 import { ArtifactService } from '../../services/artifacts.service';
 import { ExportTemplateService } from '../../services/export-template.service';
 import { BaseComponent } from '../shared/base.component';
 import { SortOrder } from '../../models/enums.model';
-import { GridFilterExpression, GridRelationshipFilterExpression, GridOwnerFilter } from '../../models/grid-definition.model';
+import {
+    GridFilterExpression,
+    GridOwnerFilter,
+    GridRelationshipFilterExpression
+} from '../../models/grid-definition.model';
 import { RulesService } from '../../services/rules.service';
 import { CompanySettingsService } from '../../services/settings.service';
 

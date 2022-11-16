@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { AdvancedFilterFieldCondition, ConnectingOperator, FilterBetweenParams, Filters } from '../components/assets-grid/advanced-filtering/advanced-filtering.models';
+import {
+    AdvancedFilterFieldCondition,
+    ConnectingOperator,
+    FilterBetweenParams,
+    Filters
+} from '../components/assets-grid/advanced-filtering/advanced-filtering.models';
 import { remove } from 'lodash';
 import { OperatorString } from '../models/operator.model';
 import { MessagesObservableService } from './messages-observable.service';

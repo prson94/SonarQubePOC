@@ -93,7 +93,7 @@ export class HeaderActionsComponent {
                 this.uri = _.trimStart(e.urlAfterRedirects, '/');
                 
                 let isHomeUrl: boolean = false;
-                isHomeUrl = (this.uri && this.uri.toUpperCase() == SiteUrlHelpers.SITE_URL_HOME_ROOT.toUpperCase());
+                isHomeUrl = (this.uri && this.uri.toUpperCase() === SiteUrlHelpers.SITE_URL_HOME_ROOT.toUpperCase());
 
                 //dont show raise issue button on raise issue screen or any admin screens or user profile    
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
@@ -105,7 +105,7 @@ export class HeaderActionsComponent {
 
                 if (!isReferenceUrl)
                 {
-                    if ((this.currentObject != null && this.currentObjectId != null) && (this.currentObject == 'ReferenceItemType'))
+                    if ((this.currentObject != null && this.currentObjectId != null) && (this.currentObject === 'ReferenceItemType'))
                     {
                         if (((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_FIELDS_ROOT.toUpperCase()))
 							||

@@ -329,8 +329,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         fields.forEach((f) => {
             let k = upstreamSteps.filter((u) => u == f['@stepId']);
             if (k != null && k.length > 0) {
-                f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
-                f['@FormLabel'] = 'HTTP Request :: ' + f['@label'];
+				f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
+				f['@FormLabel'] = this.step.name + ' :: ' + f['@label'];
                 this.httpFields.push(f);
             }
         });
@@ -347,8 +347,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         fields.forEach((f) => {
             let k = upstreamSteps.filter((u) => u == f.StepId);
             if (k != null && k.length > 0) {
-                f['@FormFieldId'] = f.Id + '|' + f.StepId;
-                f['@FormLabel'] = 'HTTP Response :: ' + f.Name;
+				f['@FormFieldId'] = f.Id + '|' + f.StepId;
+				f['@FormLabel'] = this.step.name + ' :: ' + f.Name;
                 this.outputFields.push(f);
             }
         });
@@ -398,6 +398,16 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     changeName(e: any) {
         this.step.name = e;
-        this.stepChange.emit(this.step);
+		this.stepChange.emit(this.step);
+		if (this.step.activityType == WorkflowActivityType.HTTPRequest) {
+			this.workflowFieldsService.pushHttpFields(this.step);
+		}
+
+		if (this.step.activityType == WorkflowActivityType.HTTPResponse) {
+			this.step.settings.HTTPResponse.Outputs.forEach(o => {
+				o.StepName = this.step.name;
+				this.workflowFieldsService.updateOutputField(o);
+			});			
+		}
     }
 }

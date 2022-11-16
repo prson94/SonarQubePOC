@@ -9,7 +9,7 @@ import { ArtifactTypeService } from '../../../services/artifact-type.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AssetTypeClass, AssetCount } from '../../../models/asset.model';
+import { AssetCount, AssetTypeClass } from '../../../models/asset.model';
 import { TreeTable } from 'primeng/treetable';
 import { AssetService } from '../../../services/asset.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
@@ -71,7 +71,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 this.assetTypeClass = AssetTypeClass.BusinessAsset;
             }
 
-            let className: string = this.assetTypeClass == AssetTypeClass.BusinessAsset ? $localize`Business Asset` : $localize`Technical Asset`;
+            let className: string = this.assetTypeClass === AssetTypeClass.BusinessAsset ? $localize`Business Asset` : $localize`Technical Asset`;
             this.addClassName = "Add " + className;
             let singularLabel: string = `${className} Type`;
 

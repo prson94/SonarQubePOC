@@ -148,7 +148,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         console.log(event);
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
-        this.responsibilities = _.orderBy(this.responsibilities, [(item) => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? "desc" : "asc"]);
+        this.responsibilities = _.orderBy(this.responsibilities, [(item) => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order === -1 ? "desc" : "asc"]);
     }
 
     private deleteResponsibility() {

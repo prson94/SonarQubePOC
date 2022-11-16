@@ -1,11 +1,17 @@
 ﻿import {
 	ChangeDetectionStrategy,
 	ChangeDetectorRef,
-	Component, ElementRef, EventEmitter,
+	Component,
+	ElementRef,
+	EventEmitter,
 	Input,
 	OnChanges,
 	OnInit,
-	Output, QueryList, SimpleChanges, ViewChildren, ViewEncapsulation
+	Output,
+	QueryList,
+	SimpleChanges,
+	ViewChildren,
+	ViewEncapsulation
 } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import * as _ from 'lodash';
@@ -381,9 +387,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	clearIcon() {
 		this.iconImage = new CompanyImage();
-		if (this.formMode == FormMode.Editing) {
+		if (this.formMode === FormMode.Editing) {
 			this.folderModel.ImageIconUrl = null;
-		} else if (this.formMode == FormMode.Adding) {
+		} else if (this.formMode === FormMode.Adding) {
 			this.folderModel.ImageIconUrl = null;
 		}
 		this.onFileChange(null);
@@ -473,7 +479,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	menuPermissionsOnModeChange($event) {
 		this.permissionMode = $event;
-		this.IsMenuPermissionsAdding = ($event == FormMode.Adding);
+		this.IsMenuPermissionsAdding = ($event === FormMode.Adding);
 	}
 
 	addNewFolder(item: SiteNav) {
@@ -525,7 +531,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	focusRequired(event) {
 		event.stopPropagation();
-		if (this.requiredCount == 0) {
+		if (this.requiredCount === 0) {
 			return;
 		}
 		if (!this.folderForm.get('title')?.errors?.empty && !this.folderNameIsFocused) {

@@ -1,11 +1,10 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from "rxjs";
-import { catchError, map, throwIfEmpty } from "rxjs/operators";
+import { catchError, map } from "rxjs/operators";
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
-import * as _ from 'lodash';
 
 export class CreatedBy {
     uid: string;

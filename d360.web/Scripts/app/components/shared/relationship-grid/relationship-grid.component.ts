@@ -259,21 +259,20 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                     permissionObs = of(p);
                 }
 
-                this.loadTypesSub = forkJoin(
+                this.loadTypesSub = forkJoin([
                     this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid),
                     this.relationshipService.getRelationshipsCountsForAsset(this.assetUid),
                     permissionObs
-                )
-                    .subscribe((data) => {
-                        this.relationshipTypes = data[0];
-                        this.relationshipCounts = data[1];
-                        this.assetPermissions = data[2];
+                ]).subscribe((data) => {
+                    this.relationshipTypes = data[0];
+                    this.relationshipCounts = data[1];
+                    this.assetPermissions = data[2];
 
-                        this.processCountData();
+                    this.processCountData();
 
-                        this.areTypesLoaded = true;
-                        this.cdRef.detectChanges();
-                    });
+                    this.areTypesLoaded = true;
+                    this.cdRef.detectChanges();
+                });
             });
 
 

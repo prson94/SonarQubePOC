@@ -4,7 +4,7 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { ViewChildren, Component } from '@angular/core';
+import { Component, ViewChildren } from '@angular/core';
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';
@@ -56,8 +56,8 @@ export class AdminBaseComponent extends BaseComponent {
     ngAfterContentChecked() {
         if (this.treeTableElements !== undefined && !this.isDefaultTreeValuesSet) {
             if (!this.treeTableElements.some((x) => x.nativeElement.className.includes('p-highlight'))) {
-                this.treeTableElements.map((x, index) => {
-                    if (index == 0) {
+                this.treeTableElements.map((x, index: number) => {
+                    if (index === 0) {
                         x.nativeElement.click();
                         this.isDefaultTreeValuesSet = true;
                     }

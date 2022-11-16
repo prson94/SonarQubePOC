@@ -37,7 +37,7 @@ export class SimilarItemsComponent implements OnChanges, OnInit, OnDestroy {
     ngOnInit() {
         this.searchSub = this.uriBasedService.search(this.uri, this.queryStream$)
             .subscribe((res) => {
-                if (this.query == '')
+                if (this.query === '')
                     {this.items = [];}
                 else
                     {this.items = res;}
@@ -52,8 +52,8 @@ export class SimilarItemsComponent implements OnChanges, OnInit, OnDestroy {
             return;
         }
 
-        if ((changes['uri'] != null && changes['uri'].currentValue != changes['uri'].previousValue) ||
-            (changes['query'] != null && changes['query'].currentValue != changes['query'].previousValue)) {
+        if ((changes['uri'] != null && changes['uri'].currentValue !== changes['uri'].previousValue) ||
+            (changes['query'] != null && changes['query'].currentValue !== changes['query'].previousValue)) {
             this.queryStream$.next(changes['query'].currentValue);
         }
     }

@@ -1,10 +1,10 @@
-﻿import {Component, OnInit} from '@angular/core';
-import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {LoadDetail} from '../../../models/load.model';
-import {AdminBaseComponent} from '../admin-base.component';
-import {FormMode} from '../../../models/form.model';
-import {LoadService} from '../../../services/load.service';
-import {Title} from '@angular/platform-browser';
+﻿import { Component, OnInit } from '@angular/core';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { LoadDetail } from '../../../models/load.model';
+import { AdminBaseComponent } from '../admin-base.component';
+import { FormMode } from '../../../models/form.model';
+import { LoadService } from '../../../services/load.service';
+import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';

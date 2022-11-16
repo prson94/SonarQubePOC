@@ -132,13 +132,13 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
 
         this.sub = this.route.queryParams.subscribe((params) => {
             this.searchText = params['query'] ? params['query'] : '';
-            if (params['types'] != undefined) {
+            if (params['types'] != null) {
                 this.searchTypes = params['types'].split(',').filter((x): x is string => x.length > 0);
             }
-            let keepFilter = params['f'] ? (params['f'] == 1 ? true : false) : false;
+            let keepFilter = params['f'] ? (params['f'] === 1 ? true : false) : false;
             this.searchStateService.loadState(this.searchText, this.searchTypes, keepFilter);
-            if (params['explain'] != undefined) {
-                this.searchStateService.setExplain(params['explain'] == 'please');
+            if (params['explain'] != null) {
+                this.searchStateService.setExplain(params['explain'] === 'please');
             }
         });
 

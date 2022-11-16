@@ -1,13 +1,12 @@
-﻿import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {catchError, map} from 'rxjs/operators';
+﻿import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
-import {PolicyType, Policy} from '../models/policy.model';
-import {JsonResult} from '../models/jsonresult.model';
+import { PolicyType } from '../models/policy.model';
 
-import {MessagesObservableService} from './messages-observable.service';
-import {BaseObservableService} from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
+import { BaseObservableService } from './baseObservable.service';
 
 @Injectable({
     providedIn: 'root'

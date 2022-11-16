@@ -117,7 +117,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
                     .subscribe((r) => {
                         this.isLoading = false;
                         this.showMessageForResult(this.messagesService, r);
-                        if (r.type != 'error') {
+                        if (r.type !== 'error') {
                             this.onComplete.emit({ action: 'edit', field: this.relation });
                         }
                     });
@@ -126,7 +126,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
                     .subscribe((r) => {
                         this.showMessageForResult(this.messagesService, r);
                         this.isLoading = false;
-                        if (r.type != 'error') {
+                        if (r.type !== 'error') {
                             this.onComplete.emit({ action: 'add', field: this.relation });
                         }
                     });

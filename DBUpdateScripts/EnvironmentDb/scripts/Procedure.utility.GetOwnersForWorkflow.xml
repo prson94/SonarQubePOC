@@ -5,8 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.utility.GetOwnersForWorkflow-v3">
-    <comment>GOV-18453 Convert Object/ObjectID/ObjectType/ObjectTypeID columns in dbo.Issue table</comment>
+  <changeSet author="Pappas" id="Procedure.utility.GetOwnersForWorkflow-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -70,19 +69,18 @@ begin
 				where i.id = @objectId
 			end
 
-			
-			
-
 			if @objectType = 'Intersect'
 			begin				
 				if @responsibleSide = 'SUBJECT'
 				begin
-					select @objectType = [subject], @objectId = [subjectId] from [intersect] where id = @objectId;
+					select @assetId = SubjectAssetId from [Intersect] where ID = @objectId;
 				end
 				else if @responsibleSide = 'OBJECT'
 				begin
-					select @objectType = [object], @objectId = [objectId] from [intersect] where id = @objectId;
+					select @assetId = ObjectAssetId from [Intersect] where ID = @objectId;
 				end
+
+				select @assetTypeId = AssetTypeID from Asset where ID = @assetId
 			end
 
 			insert into @tbl
@@ -95,8 +93,10 @@ begin
 						case R.State when 1 then 'Active' else 'Inactive' end as [Status]
 				from	ResponsibilityDetail RD
 						inner join reporting.Global_Resource R on 
-								((RD.Object = @objectType and RD.ObjectID = @objectId) 
-									or (@assetTypeId != 0 and RD.AssetID = 0 and RD.AssetTypeID = @assetTypeId))
+								(
+									(RD.AssetID = @assetId) 
+									or (@assetTypeId != 0 and RD.AssetID = 0 and RD.AssetTypeID = @assetTypeId)
+								)
 								and RD.ResponsibilityTypeID = @responsibilityTypeID
 								and RD.ResourceID = R.ResourceID
 								and R.Email not like '%?subject=%' and R.State = 1
@@ -158,12 +158,12 @@ begin
 			begin				
 				select 
 					@issueId = i.id, 
-					@objectType = i.[object], 
-					@objectId = i.[objectid],
+					@objectType = a.[object], 
+					@objectId = a.[objectid],
 					@assetId = a.id,
 					@assetTypeId = a.assetTypeID
 				from Issue i
-				left join Asset a on a.Object = i.Object and a.ObjectID = i.ObjectID
+				left join Asset a on a.ID = i.AssetID
 				where i.id = @objectId
 			end
 

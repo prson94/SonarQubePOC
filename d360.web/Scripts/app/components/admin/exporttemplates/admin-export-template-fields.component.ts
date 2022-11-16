@@ -1,17 +1,9 @@
-﻿import {
-    Component,
-    OnInit,
-    Input,
-    Output,
-    EventEmitter,
-    OnChanges,
-    SimpleChanges
-} from '@angular/core';
-import {BaseComponent} from '../../shared/base.component';
-import {ExportTemplateService} from '../../../services/export-template.service';
-import {ExportTemplate} from '../../../models/export-template.model';
-import {FieldsObservableService} from '../../../services/fieldsObservable.service';
-import {FieldDefinition} from '../../../models/fields.model';
+﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { BaseComponent } from '../../shared/base.component';
+import { ExportTemplateService } from '../../../services/export-template.service';
+import { ExportTemplate } from '../../../models/export-template.model';
+import { FieldsObservableService } from '../../../services/fieldsObservable.service';
+import { FieldDefinition } from '../../../models/fields.model';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -134,7 +126,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
         //load available fields for the artifact type
         this.fieldsService.getAssetTypeFields(this.exportTemplate.AssetTypeUID).subscribe(
             (data) => {
-                data = data.filter((x) => x.Type != 'ComplexRelationLookup' && x.Type != 'OwnershipLookup' && x.Type != 'JSON' && x.Type != 'JsonElement');
+                data = data.filter((x) => x.Type !== 'ComplexRelationLookup' && x.Type !== 'OwnershipLookup' && x.Type !== 'JSON' && x.Type !== 'JsonElement');
                 //split the string of selected fields and populate the selected fields array
                 this.availableFields = this.setInitialFields(data);
             }
@@ -155,7 +147,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
             let selectedFieldNames = this.exportTemplate.IncludeFieldTypes;
             for (let j = 0; j < selectedFieldNames.length; j++) {
                 for (let k = 0; k < available.length; k++) {
-                    if (selectedFieldNames[j] == available[k].Name) {
+                    if (selectedFieldNames[j] === available[k].Name) {
                         this.selectedFields[this.selectedFields.length] = available[k];
                         available[k].ExtOrder = order++;
                     }
@@ -185,7 +177,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
         //push everything down        
         field.ExtOrder = 0;
         for (let i = 0; i < this.availableFields.length; i++) {
-            if (this.availableFields[i].ID != field.ID)
+            if (this.availableFields[i].ID !== field.ID)
                 {this.availableFields[i].ExtOrder++;}
         }
         this.availableFields = _.clone(this.availableFields);
@@ -199,7 +191,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
         let found: boolean = false;
         let max: number = 0;
         for (let i = 0; i < this.availableFields.length; i++) {
-            if (this.availableFields[i].ID == field.ID)
+            if (this.availableFields[i].ID === field.ID)
                 {found = true;}
             if (found) {this.availableFields[i].ExtOrder++;}
             max = this.availableFields[i].ExtOrder;
@@ -214,7 +206,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
         this.isLoading = true;
 
         for (let i = 0; i < this.availableFields.length; i++) {
-            if (this.availableFields[i].ID == field.ID && i > 0) {
+            if (this.availableFields[i].ID === field.ID && i > 0) {
                 let order = this.availableFields[i].ExtOrder;
                 this.availableFields[i].ExtOrder = this.availableFields[i - 1].ExtOrder;
                 this.availableFields[i - 1].ExtOrder = order;
@@ -230,7 +222,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
         this.isLoading = true;
 
         for (let i = 0; i < this.availableFields.length; i++) {
-            if (this.availableFields[i].ID == field.ID && i < this.availableFields.length - 1) {
+            if (this.availableFields[i].ID === field.ID && i < this.availableFields.length - 1) {
                 let order = this.availableFields[i].ExtOrder;
                 this.availableFields[i].ExtOrder = this.availableFields[i + 1].ExtOrder;
                 this.availableFields[i + 1].ExtOrder = order;

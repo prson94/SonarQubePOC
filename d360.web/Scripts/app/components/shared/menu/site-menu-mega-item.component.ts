@@ -56,7 +56,7 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
     }
 
     getMainIndent() {
-        if (this.item.Items && this.level == 0)
+        if (this.item.Items && this.level === 0)
             {return '0px';}
         else if (this.level > 0 && this.item.Items == null)
             {return ((this.level + 1) * 20) + 'px';}
@@ -97,9 +97,9 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
         let nav: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu"));
 
         //check if there's already a branch for this category
-        if (nav.some((x) => x.SiteMenuID == this.category)) {
+        if (nav.some((x) => x.SiteMenuID === this.category)) {
             nav.forEach((menu) => {
-                if (menu.SiteMenuID == this.category) {
+                if (menu.SiteMenuID === this.category) {
                     menu.DisplayElements.push({ ParentUrl: this.parentUrl, Url: this.item.Url ? this.item.Url : this.item.Name });
                 }
             });
@@ -115,8 +115,8 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
         let nav: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu"));
 
         nav.forEach((menu) => {
-            if (menu.SiteMenuID == this.category) {
-                menu.DisplayElements.splice(menu.DisplayElements.findIndex((element) => (element.ParentUrl == this.parentUrl && element.Url == this.item.Url) || (!element.ParentUrl && element.Url == this.item.Name)), 1);
+            if (menu.SiteMenuID === this.category) {
+                menu.DisplayElements.splice(menu.DisplayElements.findIndex((element) => (element.ParentUrl === this.parentUrl && element.Url === this.item.Url) || (!element.ParentUrl && element.Url === this.item.Name)), 1);
             }
         });
 

@@ -26,7 +26,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { 4 };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
 
@@ -38,7 +38,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { 4 };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
 
@@ -50,7 +50,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { 4 };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
 
@@ -62,7 +62,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { 4 };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
     }

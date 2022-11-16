@@ -35,7 +35,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @Input() assetUid: string = '';
 
     @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
-    @Output() saveState: EventEmitter<any> = new EventEmitter<any>();
+    @Output() saveState: EventEmitter<boolean> = new EventEmitter<boolean>();
 
     public viewType: string = 'diagram';
 
@@ -414,11 +414,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             $(go.Diagram, "diagram",  // must name or refer to the DIV HTML element
                 {
                     "undoManager.isEnabled": true,
-                    "textEditingTool.doActivate": function () {
+                    "textEditingTool.doActivate" () {
                         go.TextEditingTool.prototype.doActivate.call(this);
                         if (this.textBlock) {this.textBlock.opacity = 0.0;}
                     },
-                    "textEditingTool.doDeactivate": function () {
+                    "textEditingTool.doDeactivate" () {
                         if (this.textBlock) {this.textBlock.opacity = 1.0;}
                         go.TextEditingTool.prototype.doDeactivate.call(this);
                     },
@@ -587,10 +587,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         return this.myDiagram ? (this.myDiagram.nodes.count == 0 && this.myDiagram.links.count == 0) : true;
     }
 
-    private isCurrentStateSaved() {
-        if (!this.savedState)
-            {return false;}
-        return this.getSignature(this.myDiagram.model) == this.getSignature(this.savedState);
+    private isCurrentStateSaved(): boolean {
+        if (!this.savedState) {
+            return false;
+        }
+        return this.getSignature(this.myDiagram.model) === this.getSignature(this.savedState);
     }
 
     private getSignature(model: go.Model) {
@@ -902,7 +903,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             }
                         ),
                     "toolManager.hoverDelay": 200,
-                    "draggingTool.doActivate": function () {
+                    "draggingTool.doActivate" () {
                         this.diagram.toolManager.hideToolTip();
                         go.DraggingTool.prototype.doActivate.call(this);
                     }
@@ -948,7 +949,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             }
                         ),
                     "toolManager.hoverDelay": 200,
-                    "draggingTool.doActivate": function () {
+                    "draggingTool.doActivate" () {
                         this.diagram.toolManager.hideToolTip();
                         go.DraggingTool.prototype.doActivate.call(this);
                     }
@@ -994,7 +995,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             }
                         ),
                     "toolManager.hoverDelay": 200,
-                    "draggingTool.doActivate": function () {
+                    "draggingTool.doActivate" () {
                         this.diagram.toolManager.hideToolTip();
                         go.DraggingTool.prototype.doActivate.call(this);
                     }
@@ -1246,6 +1247,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     calculateBottomControlsPosition(): string {
-        return this.getSidePanelWidth() + 16 + 'px'
+        return this.getSidePanelWidth() + 16 + 'px';
     }
 }

@@ -133,7 +133,7 @@ namespace d360.web.Controllers
 
 				long assetId = (long)model.AssetID;
 				int assetTypeId = (int)model.TypeID;
-				var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == assetTypeId).ToList();
+				var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == assetTypeId).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 				var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == assetId).ToList();
 
 				list = loadDynamicFields(

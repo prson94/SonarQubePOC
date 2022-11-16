@@ -1,6 +1,4 @@
 ﻿import { SiteNav } from './site-menu.model';
-import { Observable } from 'rxjs';
-import { StringConstants } from '../static/string-constants';
 
 export class CompanySettings {
     AllowedOrigins: string;
@@ -243,7 +241,7 @@ export module SettingsHelper {
     export function searchTypeStringToList(searchTypes: string, list: SearchType[] = undefined): SearchType[] {
         let t = (list === undefined) ? getSearchTypesList() : list;
         searchTypes.split(',').forEach((i) => {
-            let k = t.find((j) => j.value == i);
+            let k = t.find((j) => j.value === i);
             if (k)
                 {k.selected = true;}
         });

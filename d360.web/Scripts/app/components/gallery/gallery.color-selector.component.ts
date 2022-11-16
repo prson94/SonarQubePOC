@@ -1,5 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { FormGroup, FormControl, ValidatorFn, AbstractControl, Validators } from '@angular/forms';
+﻿import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 
 
 @Component({

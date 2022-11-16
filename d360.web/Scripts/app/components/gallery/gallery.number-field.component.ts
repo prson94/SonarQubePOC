@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, AfterContentInit, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { FormControl, Validators, FormGroup, ValidatorFn, AbstractControl, FormBuilder } from '@angular/forms';
+﻿import { Component, OnInit } from '@angular/core';
+import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 
 export class DummyformModel {
     constructor(
@@ -69,7 +69,7 @@ export class GalleryNumberFieldComponent implements OnInit {
         return (control: AbstractControl): { [key: string]: any } | null => {
             if (control.value == null)
                 {return {};}
-            if (control.value == null || numberIDontLike.indexOf(parseFloat(control.value)) != -1)
+            if (control.value == null || numberIDontLike.indexOf(parseFloat(control.value)) !== -1)
                 {return {
                     notNiceNumber: { value: control.value }
                 };}

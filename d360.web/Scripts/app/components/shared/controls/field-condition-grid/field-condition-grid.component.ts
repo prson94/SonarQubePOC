@@ -68,7 +68,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
             setTimeout(() => {
                 if (!this.conditions) {return;}
                 this.conditions.forEach((cond) => {
-                    if (this.disabledValuesOperators.some((x) => (x === +cond.operator || Operator[x] == <any>cond.operator))) {
+                    if (this.disabledValuesOperators.some((x) => (x === +cond.operator || Operator[x] === <any>cond.operator))) {
                         cond.disabled = true;
                     }
                     else
@@ -93,7 +93,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes && changes.fields && changes.fields.currentValue != changes.fields.previousValue) {
+        if (changes && changes.fields && changes.fields.currentValue !== changes.fields.previousValue) {
             this.fieldsSelect = [];
 
             this.fields.forEach((f) => {
@@ -104,7 +104,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
             });
         }
 
-        if (changes && changes.conditions && changes.conditions.currentValue != changes.conditions.previousValue) {
+        if (changes && changes.conditions && changes.conditions.currentValue !== changes.conditions.previousValue) {
             this.initializeData();
         }
         this.cdRef.detectChanges();
@@ -116,12 +116,12 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         while (this.conditions.length > 0)
             {tempArr.push(this.conditions.pop());}
 
-        var arr = tempArr.filter((x) => x.field != item.field);
+        var arr = tempArr.filter((x) => x.field !== item.field);
         while (arr.length > 0) {
             this.conditions.push(arr.pop());
         }
 
-        if (this.conditions.length == 0) {
+        if (this.conditions.length === 0) {
             this.tryAddNewCondition();
         } else {
             this.onChange.emit({ event: 'Value changed', value: this.conditions });
@@ -136,9 +136,9 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         var lastCondition = this.conditions[this.conditions.length - 1];
         var availableFields = this.getAvailableFields(null);
         if (this.singleSelectMode) {
-            if (this.conditions.length == 0) {
+            if (this.conditions.length === 0) {
                 var hash = this.randstr('id');
-                let cond = { assetTypeUid: '', field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash };
+                let cond = { assetTypeUid: '', field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash };
                 this.createFormControl(cond);
                 this.conditions.push(cond);
             }
@@ -146,7 +146,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
             if (!lastCondition || (lastCondition.operator != null && lastCondition.operator)) {
                 if (availableFields.length > 0) {
                     var hash = this.randstr('id');
-                    let cond = { assetTypeUid: '', field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash };
+                    let cond = { assetTypeUid: '', field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash };
                     this.createFormControl(cond);
                     this.conditions.push(cond);
                 }
@@ -204,7 +204,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         let type = this.getTypeForCondition(hash);
         this.formGroup.addControl(this.conditionPrefix + 'option_' + hash.hash, new FormControl(''));
         this.formGroup.addControl(this.conditionPrefix + 'condition_' + hash.hash, new FormControl(''));
-        if (type == "date" || type == "date") {
+        if (type === "date" || type === "date") {
             this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl(new Date(hash.value), [Validators.maxLength(250)]));
             this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl(new Date(hash.value2), [Validators.maxLength(250)]));
         } else {
@@ -294,7 +294,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         var allowedFields = this.fieldsSelect.filter((x) => !this.conditions.some((c) => c.field === x.value));
         if (item && item.field) {
             let fieldDataArray = item.field.split('.');
-            var field = this.fields.filter((x) => x.AssetTypeUid == fieldDataArray[0] && x.Name == fieldDataArray[1])[0];
+            var field = this.fields.filter((x) => x.AssetTypeUid === fieldDataArray[0] && x.Name === fieldDataArray[1])[0];
             if (field) {
                 allowedFields.push({ value: `${field.AssetTypeUid}.${field.Name}`, label: field.FriendlyName });
                 allowedFields = allowedFields.sort((a, b) => a.label > b.label ? 1 : -1);

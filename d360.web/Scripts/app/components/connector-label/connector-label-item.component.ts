@@ -10,7 +10,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { AssetAction, EditFormData } from '../../models/secondaryNav.model';
+import { AssetAction } from '../../models/secondaryNav.model';
 import { Location } from '@angular/common';
 import { CompanySettingsService } from '../../services/settings.service';
 
@@ -224,7 +224,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
         this.connectorLabelService.saveLabel(event.item)
             .subscribe((result) => {
                 let msg: string = '';
-                if (event.item.uid == undefined) {
+                if (event.item.uid == null) {
                     msg = $localize`Connector label succesfully created`;
                 }
                 else {

@@ -56,7 +56,7 @@ export class PreviewTooltipComponent {
     ) {
         this.tooltipSingletonService.tooltipMessage$.subscribe(
             (info) => {
-                if (info.objectId == this.objectId && info.objectType == this.objectType) {return;}
+                if (info.objectId === this.objectId && info.objectType === this.objectType) {return;}
                 this.hide();
             });
 
@@ -90,12 +90,12 @@ export class PreviewTooltipComponent {
                         }
 
                         this.data = res;
-                        if (tip.innerText != " " && tip.textContent != " ") {
+                        if (tip.innerText !== " " && tip.textContent !== " ") {
                             this.showPanel(tip, item);
                             this.ref.markForCheck();
                         }
-                        this.data.FieldValues.filter((x) => x.Type == "Color").length > 0 ?
-                            this.setColorHtml(this.data.FieldValues.filter((x) => x.Type == "Color")[0].Value) : null;
+                        this.data.FieldValues.filter((x) => x.Type === "Color").length > 0 ?
+                            this.setColorHtml(this.data.FieldValues.filter((x) => x.Type === "Color")[0].Value) : null;
                     });
             } else {
                 this.toolTipService.getTooltipInfo(this.objectType, this.objectId)
@@ -106,17 +106,17 @@ export class PreviewTooltipComponent {
                         }
 
                         this.data = res;
-                        this.data.FieldValues.filter((x) => x.Type == "Color").length > 0 ?
-                            this.setColorHtml(this.data.FieldValues.filter((x) => x.Type == "Color")[0].Value) : null;
+                        this.data.FieldValues.filter((x) => x.Type === "Color").length > 0 ?
+                            this.setColorHtml(this.data.FieldValues.filter((x) => x.Type === "Color")[0].Value) : null;
 
-                        if (tip.innerText != " " && tip.textContent != " ") {
+                        if (tip.innerText !== " " && tip.textContent !== " ") {
                             this.showPanel(tip, item);
                             this.ref.markForCheck();
                         }
                 });
             }
         } else {
-            if (tip.innerText != " " && tip.textContent != " ") {
+            if (tip.innerText !== " " && tip.textContent !== " ") {
                 this.showPanel(tip, item);
                 this.ref.markForCheck();
             }

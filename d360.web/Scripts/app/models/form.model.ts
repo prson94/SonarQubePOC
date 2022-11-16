@@ -1,5 +1,5 @@
 ﻿import { EventEmitter } from '@angular/core';
-import { TreeNode, MenuItem } from 'primeng/api';
+import { MenuItem, TreeNode } from 'primeng/api';
 import { ToolbarItem } from './object-detail.model';
 
 export class BaseEditorModel {
@@ -74,7 +74,7 @@ export module FormHelper {
     }
 
     export function formTreeR(node: TreeNode, data: any[], idField: string, parentField: string, expandAll: boolean = true) {
-        data.filter((d) => d[parentField] == node.data[idField]).forEach((d) => {
+        data.filter((d) => d[parentField] === node.data[idField]).forEach((d) => {
             let child: TreeNode = { data: d, children: [], expanded: expandAll };
             node.children.push(child);
             FormHelper.formTreeR(child, data, idField, parentField, expandAll);
@@ -155,19 +155,19 @@ export class FormMessage {
     }
 
     get isError(): boolean {
-        return this.MessageType == MessageType.Error;
+        return this.MessageType === MessageType.Error;
     }
 
     get isSuccess(): boolean {
-        return this.MessageType == MessageType.Success;
+        return this.MessageType === MessageType.Success;
     }
 
     get isInfo(): boolean {
-        return this.MessageType == MessageType.Info;
+        return this.MessageType === MessageType.Info;
     }
 
     get isWarning(): boolean {
-        return this.MessageType == MessageType.Warning;
+        return this.MessageType === MessageType.Warning;
     }
 
 }

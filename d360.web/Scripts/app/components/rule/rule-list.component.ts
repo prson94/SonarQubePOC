@@ -19,7 +19,7 @@ import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { forkJoin, Subscription } from 'rxjs';
-import { AssetTypeClass } from '../../models/asset.model';
+import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { AssetGridComponent } from '../assets-grid/asset-grid.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
@@ -37,6 +37,7 @@ declare var CurrentResourceID;
 })
 
 export class RuleListComponent extends BaseComponent implements OnInit, OnDestroy {
+	@Input() assetTypeApiModel: AssetTypeApiModel;
 	@Input() assetTypeUid: string;
 
 	routeParamsSubscription: any;

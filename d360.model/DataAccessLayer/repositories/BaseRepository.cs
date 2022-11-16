@@ -226,7 +226,7 @@ namespace d360.model.DataAccessLayer.repositories
 					 }
 					 else if (f.Type == "Html")
 					 {
-						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"CAST({tableAlias}.{valueColumn} as XML).value('.', 'nvarchar(max)')");
+						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"TRY_CAST({tableAlias}.{valueColumn} as XML).value('.', 'nvarchar(max)')");
 					 }
 					 else if (f.Type == "Link")
 					 {
@@ -288,9 +288,13 @@ namespace d360.model.DataAccessLayer.repositories
 							 {
 								 fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} is null then null when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]", f.ID.ToString(), $"{tableAlias}.{valueColumn}");
 							 }
-							 else
+							 else if(fieldDataType == "bigint" || fieldDataType == "float")
 							 {
 								 fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as {fieldDataType}) as [{columnName}]", f.ID.ToString(), $"{tableAlias}.{valueColumn}", $"{tableAlias}.{valueColumn} as [{columnName}]");
+							 }
+							 else
+							 {
+								 fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as {fieldDataType}) as [{columnName}]", f.ID.ToString(), $"{tableAlias}.{valueColumn}");
 							 }
 						 }
 						 else if (f.Type == "JsonElement")
@@ -323,7 +327,7 @@ namespace d360.model.DataAccessLayer.repositories
 						 }
 						 else if (f.Type == "Html")
 						 {
-							 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"CAST({tableAlias}.{valueColumn} as XML).value('.', 'nvarchar(max)')");
+							 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString(), $"TRY_CAST({tableAlias}.{valueColumn} as XML).value('.', 'nvarchar(max)')");
 						 }
 						 else if (f.Type == "Link")
 						 {
@@ -385,6 +389,9 @@ namespace d360.model.DataAccessLayer.repositories
 									) a;";
 								 break;
 						 }
+
+						 temptableScript += @$"
+								create index ix_TempGraphFwd on {temptablename} (SourceAssetID);";
 
 						 if (!TempTableNameList.Contains(temptablename))
 						 {
@@ -553,9 +560,9 @@ namespace d360.model.DataAccessLayer.repositories
 						 }
 						 
 						 assetIdFinalQuery = $@" outer apply (
-							select STRING_AGG(DisplayPath,'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetPath where ID in (
+							select STRING_AGG(TRY_CAST(DisplayPath as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetPath where ID in (
 							{assetIdQuery})
-							having string_agg(DisplayPath,'{RELATIONSHIP_DELIMITER}') is not null
+							having string_agg(TRY_CAST(DisplayPath as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') is not null
 							) {tableAlias} ";
 
 						 fieldJoins.Add(assetIdFinalQuery, f.ID.ToString());
@@ -862,13 +869,20 @@ namespace d360.model.DataAccessLayer.repositories
 										else
 										{
 											var tableAlias = $"F{field.ID}";
-											if(!string.IsNullOrEmpty(field.DefaultValue))
+											var fieldValue = $"{tableAlias}.{valueColumn}";
+
+											if (field.Type == "Text" || field.Type == "Html")
 											{
-												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"COALESCE({tableAlias}.{valueColumn}, @defaultValueF{field.ID}) {orderDirection}";
+												fieldValue = $"try_cast({fieldValue} as nvarchar(850))";
+											}
+
+											if (!string.IsNullOrEmpty(field.DefaultValue))
+											{
+												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"COALESCE({fieldValue}, @defaultValueF{field.ID}) {orderDirection}";
 											}
 											else
 											{
-												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"{tableAlias}.{valueColumn} {orderDirection}";
+												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"{fieldValue} {orderDirection}";
 											}
 										}
 									}
@@ -1033,6 +1047,11 @@ namespace d360.model.DataAccessLayer.repositories
 					{
 						return $"try_cast({val} as {fieldType})";
 					}
+				}
+
+				if (ft.Type == "Text" || ft.Type == "Html")
+				{
+					return $"try_cast({val} as nvarchar(850))";
 				}
 
 				return val;

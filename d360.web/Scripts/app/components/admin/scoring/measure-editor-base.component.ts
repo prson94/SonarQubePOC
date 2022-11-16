@@ -1,12 +1,26 @@
-import { Component, Input, EventEmitter, Output, HostListener, ChangeDetectorRef, ViewChildren, QueryList } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    HostListener,
+    Input,
+    Output,
+    QueryList,
+    ViewChildren
+} from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricAssetVersionConditionViewModel, MetricAssetVersionConditionItemViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
+import {
+    MetricAssetVersionConditionItemViewModel,
+    MetricAssetVersionConditionViewModel,
+    MetricAssetViewModel,
+    ScoreTypeAllocation
+} from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
-import { FormGroup, ValidatorFn, AbstractControl, FormControl } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ValidatorFn } from '@angular/forms';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
 import * as _ from 'lodash';
@@ -157,10 +171,10 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     delete(pos) {
-        this.conditionGroups = [...this.conditionGroups.filter((x) => x.Position != pos)];
+        this.conditionGroups = [...this.conditionGroups.filter((x) => x.Position !== pos)];
         this.removeConditionGroupFormControls(pos);
 
-        if (this.conditionGroups.length == 0)
+        if (this.conditionGroups.length === 0)
             {this.addNewGroup();}
         this.orderConditionGroups();
     }
@@ -179,7 +193,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     duplicate(pos) {
-        let itemToDupe = this.conditionGroups.find((x) => x.Position == pos);
+        let itemToDupe = this.conditionGroups.find((x) => x.Position === pos);
         let newGroup = _.cloneDeep(itemToDupe);
         newGroup.Position = this.getMaxPositionForGroups();
         newGroup.DisplayOrder = this.getMaxDisplayOrderForGroups();
@@ -189,8 +203,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     moveGroupItems(from, to) {
         let temp = from;
-        let fromitem = this.conditionGroups.find((x) => x.DisplayOrder == from);
-        let toitem = this.conditionGroups.find((x) => x.DisplayOrder == to);
+        let fromitem = this.conditionGroups.find((x) => x.DisplayOrder === from);
+        let toitem = this.conditionGroups.find((x) => x.DisplayOrder === to);
 
         fromitem.DisplayOrder = to;
         toitem.DisplayOrder = temp;
@@ -299,17 +313,17 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 if (conditions.length > 0) {
                     conditions.forEach((c) => {
                         const cond = new FieldCondition();
-                        c.FieldType = this.screenReferences.fields.find((x) => x.ApiName == c.ConditionFieldTypeName);
+                        c.FieldType = this.screenReferences.fields.find((x) => x.ApiName === c.ConditionFieldTypeName);
                         cond['uid'] = c.Uid;
                         cond.field = `${this.allocation.assetTypeUid}.${c.FieldType.ApiName}`;
                         cond.isValid = true;
                         cond.operator = c.Operator;
                         cond.value = c.Values[0];
 
-                        if (c.FieldType.Type == 'DateTime' || c.FieldType.Type == 'Date') {
+                        if (c.FieldType.Type === 'DateTime' || c.FieldType.Type === 'Date') {
                             cond.value = new Date(cond.value);
                         }
-                        if (c.FieldType.Type == 'Lookup') {
+                        if (c.FieldType.Type === 'Lookup') {
                             cond.value = cond.value.toString();
                         }
 
@@ -480,7 +494,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             this.model.EffectiveDate = condate;
         }
 
-        this.matchType = (this.matchType == 'Any') ? 'Any' : 'All';
+        this.matchType = (this.matchType === 'Any') ? 'Any' : 'All';
 
         if (this.allocation.isExternallyCalculated) {
             this.model.ConditionGroups = [];
@@ -503,7 +517,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                     let fieldCondition = new MetricAssetVersionConditionItemViewModel();
                     fieldCondition.ConditionFieldTypeName = c.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
                     fieldCondition.Operator = c.operator;
-                    fieldCondition.FieldType = this.screenReferences.fields.filter((x) => x.ApiName == fieldCondition.ConditionFieldTypeName)[0];
+                    fieldCondition.FieldType = this.screenReferences.fields.filter((x) => x.ApiName === fieldCondition.ConditionFieldTypeName)[0];
 
                     if (!fieldCondition.Values) {
                         fieldCondition.Values = [];
@@ -539,7 +553,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
         this.metricsService.saveMetric(this.model)
             .subscribe((r) => {
-                if (r && r.type != 'error') {
+                if (r && r.type !== 'error') {
                     this.isSaving = false;
                     this.showMessageForResult(this.messagesService, r);
                     this.onSave.emit(this.model.Name);
@@ -579,7 +593,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null)
                 {return {};}
-            if ((control.value as string).trim() == '' && (control.value as string) != '')
+            if ((control.value as string).trim() === '' && (control.value as string) !== '')
                 {return {
                     empty: { value: control.value }
                 };}
@@ -600,7 +614,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     isValidThreshold(): ValidatorFn {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null || control.value == undefined)
+            if (control.value == null)
                 {return {};}
             if (this.isThresholdGreaterThanDecimalLimit(control.value))
                 {return {
@@ -617,7 +631,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     isValidThresholdOptional(): ValidatorFn {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null || control.value == undefined || control.value == "")
+            if (control.value == null || control.value === "")
                 {return {};}
             if (this.isThresholdGreaterThanDecimalLimit(control.value))
                 {return {
@@ -634,7 +648,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     isValidWeight(): ValidatorFn {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null || control.value == undefined)
+            if (control.value == null)
                 {return {};}
             if ((control.value as number) < 1 || (control.value as number) > 100)
                 {return {
@@ -647,7 +661,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     isValidWeightOptional(): ValidatorFn {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null || control.value == undefined || control.value == "")
+            if (control.value == null || control.value === "")
                 {return {};}
             if ((control.value as number) < 1 || (control.value as number) > 100)
                 {return {
@@ -671,9 +685,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         }
 
         if (updated && original) {
-            let changeFound = updated.length != original.length;
+            let changeFound = updated.length !== original.length;
             updated.forEach((x) => {
-                let originalMatch = original.find((y) => y.Uid == x.Uid);
+                let originalMatch = original.find((y) => y.Uid === x.Uid);
                 if (originalMatch) {
                     if (x.MatchType !== originalMatch.MatchType
                         || x.Position !== originalMatch.Position
@@ -686,9 +700,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                         || x.conditionItemFields.filter((x) => x.field).length !== originalMatch.conditionItemFields.filter((x) => x.field).length) {
                         changeFound = true;
                     } else if (!originalMatch.conditionItemFields.every((item) => {
-                        return x.conditionItemFields.findIndex((x) => x.field == item.field
-                            && (x.operator == item.operator || Operator[x.operator] == <any>item.operator)
-                            && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1;
+                        return x.conditionItemFields.findIndex((x) => x.field === item.field
+                            && (x.operator === item.operator || Operator[x.operator] === <any>item.operator)
+                            && (x.value ? x.value.toString() : "") === (item.value ? item.value.toString() : "")) > -1;
                     })) {
                         changeFound = true;
                     }
@@ -706,10 +720,10 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         }
 
         if (updated && original) {
-            if (updated.length != original.length || !original.every((item) => {
-                return updated.findIndex((x) => x.field == item.field
-                    && (x.operator == item.operator || Operator[x.operator] == <any>item.operator)
-                    && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1;
+            if (updated.length !== original.length || !original.every((item) => {
+                return updated.findIndex((x) => x.field === item.field
+                    && (x.operator === item.operator || Operator[x.operator] === <any>item.operator)
+                    && (x.value ? x.value.toString() : "") === (item.value ? item.value.toString() : "")) > -1;
             })) {
                 return true;
             }

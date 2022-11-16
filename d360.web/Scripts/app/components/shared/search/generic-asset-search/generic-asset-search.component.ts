@@ -115,8 +115,8 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
 
     ngOnInit() {
-        if (this.resultDisplayStyle == CommonComponentDisplayStyle.AbbreviatedPath
-            || this.resultDisplayStyle == CommonComponentDisplayStyle.Name) {
+        if (this.resultDisplayStyle === CommonComponentDisplayStyle.AbbreviatedPath
+            || this.resultDisplayStyle === CommonComponentDisplayStyle.Name) {
             this.isFullPathVisible = false;
         }
         else {
@@ -128,11 +128,11 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
     ngOnChanges(changes: SimpleChanges) {
 
-        if (changes.prepopulatedResults && changes.prepopulatedResults.previousValue != changes.prepopulatedResults.currentValue) {
+        if (changes.prepopulatedResults && changes.prepopulatedResults.previousValue !== changes.prepopulatedResults.currentValue) {
             this.prePopulate();
         }
 
-        if (changes.selected && changes.selected.previousValue != changes.selected.currentValue) {
+        if (changes.selected && changes.selected.previousValue !== changes.selected.currentValue) {
             clearTimeout(this.resolveAssetTimeout);
             this.resolveAssetTimeout = setTimeout(() => this.resolveAssetSegments(), 50);
         }
@@ -157,7 +157,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
                 var items = res.items;
                 if (items) {
                     items.forEach((asset) => {
-                        var update = this.selected.find((x) => x.Uid == asset.AssetUid && x.AssetTypeUid == asset.AssetTypeUid);
+                        var update = this.selected.find((x) => x.Uid === asset.AssetUid && x.AssetTypeUid === asset.AssetTypeUid);
                         update.Segments = asset.Segments;
                         if (!asset.Segments) {
                             update.Segments = [];
@@ -194,7 +194,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
                     var items = res.items;
                     if (items) {
                         items.forEach((asset) => {
-                            var update = this.searchresults.find((x) => x.Uid == asset.AssetUid && x.AssetTypeUid == asset.AssetTypeUid);
+                            var update = this.searchresults.find((x) => x.Uid === asset.AssetUid && x.AssetTypeUid === asset.AssetTypeUid);
                             if (update) {
                                 update.Segments = [];
                                 update.Segments = asset.Segments;
@@ -229,7 +229,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
 
     private isValidPhrase(phrase: string): boolean {
-        if (!phrase || phrase.length == 0) {return false;}
+        if (!phrase || phrase.length === 0) {return false;}
         return phrase.split('').some((character) => '0123456789abcdefghijklmnopqrstuvwxyzABCEDEFGHIJKLMNOPQRSTUVWXYZ'.includes(character));
     }
 
@@ -241,7 +241,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
                     {this.closeSearch();}
             }
 
-            if (this.searchOption.SearchPhrase == $event.target.value)
+            if (this.searchOption.SearchPhrase === $event.target.value)
                 {return;}
 
             this.searchOption.SearchPhrase = $event.target.value;
@@ -262,7 +262,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
                 this.searchresults = JSON.parse(JSON.stringify(result.items));
 
                 this.selected.forEach((s) => {
-                    let ix = this.searchresults.findIndex((x) => x.Uid == s.Uid);
+                    let ix = this.searchresults.findIndex((x) => x.Uid === s.Uid);
 
                     if (ix > -1) {
                         this.searchresults.splice(ix, 1);
@@ -274,7 +274,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
                 this.numberOfPages = Math.ceil(result.total / result.pageSize);
 
                 this.searchresults.forEach((sr) => {
-                    if (this.selected.some((x) => x.Uid == sr.Uid)) {
+                    if (this.selected.some((x) => x.Uid === sr.Uid)) {
                         sr.IsSelected = true;
                     }
                     else {
@@ -298,14 +298,14 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     private onSelect(idx: number, $event: any) {
 
         //input type=checkbox triggers click 2 times, lets skip it
-        if ($event && $event.target.className.indexOf('checker') != -1) {
+        if ($event && $event.target.className.indexOf('checker') !== -1) {
             return;
         }
         var item = this.searchresults[idx];
 
-        if (this.selected.some((x) => x.Uid == item.Uid)) {
+        if (this.selected.some((x) => x.Uid === item.Uid)) {
 
-            if (this.multiSelectStyle == CommonComponentSelectStyle.CheckBox) {
+            if (this.multiSelectStyle === CommonComponentSelectStyle.CheckBox) {
                 this.unselectByUID(item.Uid);
             }
             return;
@@ -317,7 +317,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         selectedItem.Predicate = null;
         selectedItem.Segments = item.Segments;
 
-        if (!this.multiSelectStyle || this.multiSelectStyle == CommonComponentSelectStyle.Button)
+        if (!this.multiSelectStyle || this.multiSelectStyle === CommonComponentSelectStyle.Button)
             {this.closeSearch();}
 
         if (this.multiSelect)
@@ -338,11 +338,11 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         var item = this.selected[idx];
         this.selected.splice(idx, 1);
         this.searchresults = this.searchresults.slice();
-        this.selectedChange.emit({ action: 'removed', item: item });
+        this.selectedChange.emit({ action: 'removed', item });
     }
 
     private unselectByUID(uid: string) {
-        this.unselect(this.selected.findIndex((x) => x.Uid == uid));
+        this.unselect(this.selected.findIndex((x) => x.Uid === uid));
     }
 
     toggleFullPaths() {
@@ -353,7 +353,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         var item = this.selected[idx];
         item.Predicate = event;
 
-        this.selectedChange.emit({ action: 'predicate-updated', item: item });
+        this.selectedChange.emit({ action: 'predicate-updated', item });
     }
 
 }

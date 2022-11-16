@@ -1452,7 +1452,7 @@ order by Sort, title";
 				});
 			}
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).ToList();
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
 
 			list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, fieldTypes, fields, row, false, false);
@@ -2033,7 +2033,7 @@ order by Sort, title";
 
 			list.Add(new EditableField { Category = "General", Row = 3, Column = 1, Required = false, FieldName = "Description", Name = FieldInfo.Description_Name, Value = group.Description, FieldType = DataType.Html.ToString() });
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).ToList();
+			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
 
 			list = 

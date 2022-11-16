@@ -1,12 +1,29 @@
-import { Input, Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation, ElementRef, ViewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    OnChanges,
+    OnInit,
+    SimpleChanges,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricFieldTypeViewModel, MetricAssetDefinitionViewModel, MetricRuleResultOperation, MetricMatchType, MetricPathOptionViewModel, MetricAssetDefinitionDataQualityViewModel, MetricAssetDefinitionDataQualityFilterViewModel } from '../../../models/metrics.model';
+import {
+    MetricAssetDefinitionDataQualityFilterViewModel,
+    MetricAssetDefinitionDataQualityViewModel,
+    MetricAssetDefinitionViewModel,
+    MetricFieldTypeViewModel,
+    MetricMatchType,
+    MetricRuleResultOperation
+} from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
-import { FormBuilder, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldType, FieldTypeHelper } from '../../../models/fieldtype-api.model';
-import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../models/field-condition-grid.models';
+import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
@@ -85,11 +102,11 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
     ngOnChanges(changes: SimpleChanges): void {
         let requiredLoad = false;
-        if (changes['uid'] && (changes['uid'].currentValue != changes['uid'].previousValue && !changes['uid'].firstChange)) {
+        if (changes['uid'] && (changes['uid'].currentValue !== changes['uid'].previousValue && !changes['uid'].firstChange)) {
             this.isLoading = true;
             requiredLoad = true;
         }
-        if (changes['parentUid'] && (changes['parentUid'].currentValue != changes['parentUid'].previousValue && !changes['parentUid'].firstChange)) {
+        if (changes['parentUid'] && (changes['parentUid'].currentValue !== changes['parentUid'].previousValue && !changes['parentUid'].firstChange)) {
             this.isLoading = true;
             requiredLoad = true;
         }
@@ -287,7 +304,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     save() {
         // Specific to DataQuality measure.
         this.model.Definition.DataQuality.ResultOperation = MetricRuleResultOperation[this.model.Definition.DataQuality.ResultOperation + ''];
-        this.model.Definition.DataQuality.FilterMatchType = (this.ruleResultFiltersMatchType == "All") ? MetricMatchType.All : MetricMatchType.Any;
+        this.model.Definition.DataQuality.FilterMatchType = (this.ruleResultFiltersMatchType === "All") ? MetricMatchType.All : MetricMatchType.Any;
 
         this.model.Definition.DataQuality.Filters = [];
         this.ruleResultFilters = this.ruleResultFilters.filter((x) => x.field && x.operator); // Make sure we have valid items selected here.
@@ -297,7 +314,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             filter.AssetTypeUid = fieldData[0];
             filter.FieldTypeName = fieldData[1];
             filter.Operator = Operator[f.operator + ''];
-            let fieldTypes = this.ruleResultFields.filter((x) => x.AssetTypeUid == filter.AssetTypeUid && x.Name == filter.FieldTypeName);
+            let fieldTypes = this.ruleResultFields.filter((x) => x.AssetTypeUid === filter.AssetTypeUid && x.Name === filter.FieldTypeName);
 
             let fieldDataType = 'Text'; //Default
 
@@ -344,19 +361,19 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         }
 
         if (this.model && this.originalModel) {
-            if (this.model.Name && this.originalModel.Name != this.model.Name) {
+            if (this.model.Name && this.originalModel.Name !== this.model.Name) {
                 this.hasModelChanged = true;
             }
-            if (this.originalModel.Description && this.originalModel.Description != this.model.Description) {
+            if (this.originalModel.Description && this.originalModel.Description !== this.model.Description) {
                 this.hasModelChanged = true;
             }
-            if (!this.originalModel.Description && !(!this.model.Description || this.model.Description == null || this.model.Description.trim() == "")) {
+            if (!this.originalModel.Description && !(!this.model.Description || this.model.Description == null || this.model.Description.trim() === "")) {
                 this.hasModelChanged = true;
             }
             if (this.displayThreshold && (this.originalModel.Threshold * 100) !== this.displayThreshold) {
                 this.hasModelChanged = true;
             }
-            if (this.displayWeight && (this.originalModel.Weight * 100) != this.displayWeight) {
+            if (this.displayWeight && (this.originalModel.Weight * 100) !== this.displayWeight) {
                 this.hasModelChanged = true;
             }
             if (this.displayEffectiveDate && this.getFormattedEffectiveDate(this.originalEffectiveDate).getTime() !== this.getFormattedEffectiveDate(this.displayEffectiveDate).getTime()) {
@@ -380,7 +397,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
         }
 
-        if (this.verb == "Edit") {
+        if (this.verb === "Edit") {
             if (this.hasModelChanged) {
                 this.closeLabel = $localize`Discard Changes`;
             } else {
@@ -401,19 +418,19 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             if (!original.DataQuality.Filters) { original.DataQuality.Filters = []; }
             if (!updated.DataQuality.Filters) { updated.DataQuality.Filters = []; }
 
-            if (updated.DataQuality.ResultPathUid != original.DataQuality.ResultPathUid) {
+            if (updated.DataQuality.ResultPathUid !== original.DataQuality.ResultPathUid) {
                 return true;
             }
 
-            if (updated.DataQuality.ResultOperation != original.DataQuality.ResultOperation) {
+            if (updated.DataQuality.ResultOperation !== original.DataQuality.ResultOperation) {
                 return true;
             }
 
-            if (updated.DataQuality.FilterMatchType != original.DataQuality.FilterMatchType) {
+            if (updated.DataQuality.FilterMatchType !== original.DataQuality.FilterMatchType) {
                 return true;
             }
 
-            if (updated.DataQuality.Filters.length != original.DataQuality.Filters.length) {
+            if (updated.DataQuality.Filters.length !== original.DataQuality.Filters.length) {
                 return true;
             }
         }

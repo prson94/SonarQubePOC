@@ -154,7 +154,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.getFieldsDefinition();
 
         this.settingsService.getAuthenticationModel().subscribe((res) => {
-            if (res.model == 'forms') {
+            if (res.model === 'forms') {
                 this.allowPasswordReset = true;
             }
         });
@@ -267,7 +267,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         var params = new V2ApiFilters();
         let baseFilter = `(State eq 'Active' or State eq 'Inactive')`;
 
-        params._direction = this.sortOrder == 1 ? 'asc' : 'desc';
+        params._direction = this.sortOrder === 1 ? 'asc' : 'desc';
         if (this.sortField) {
             params._order = this.getApiName(this.sortField);
         }
@@ -303,7 +303,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     getApiName(fieldName: string): string {
-        return this.fields.find((x) => x.name == fieldName).apiName;
+        return this.fields.find((x) => x.name === fieldName).apiName;
     }
 
     public lazyLoadUsers(event: LazyLoadEvent) {
@@ -319,7 +319,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value      
 
         this.sortOrder = event.sortOrder;
-        this.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.sortField = event.sortField == null ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;
         this.getData();
@@ -355,7 +355,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
 
         // handle dynamic fields
         for (let key in event.item) {
-            if (key != 'Email' && key != 'FirstName' && key != 'LastName' && key != 'IsAdministrator' && key != 'State' && key != 'ID' && key != 'Password') {
+            if (key !== 'Email' && key !== 'FirstName' && key !== 'LastName' && key !== 'IsAdministrator' && key !== 'State' && key !== 'ID' && key !== 'Password') {
                 user.Fields[key] = event.item[key];
             }
         }

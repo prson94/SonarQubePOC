@@ -1,6 +1,5 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 
 import { RouterModule } from '@angular/router';
@@ -14,10 +13,10 @@ import { SharedAssignmentsModule } from '../shared/assignments/shared-assignment
 import { ShortcutDisplayModule } from '../shared/shortcutdisplay/shortcut-display.module';
 import { DashboardModule } from '../sidebar/dashboard/dashboard.module';
 
-import { HomeComponent} from './home.component';
+import { HomeComponent } from './home.component';
 import { ActivityTile } from './activity-tile.component';
 import { ActivityDetailsTile } from './activity-details-tile.component';
-import { BoardTile} from './board-tile.component';
+import { BoardTile } from './board-tile.component';
 import { HomeRoutingModule } from './home.routes';
 
 import { ButtonModule } from 'primeng/button';

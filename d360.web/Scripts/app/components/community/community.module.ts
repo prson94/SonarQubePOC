@@ -1,7 +1,6 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
-
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 
 import { RouterModule } from '@angular/router';
@@ -18,7 +17,6 @@ import { CommunityRoutingModule } from './community.routes';
 import { ToastModule } from 'primeng/toast';
 import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
-
 
 
 @NgModule({

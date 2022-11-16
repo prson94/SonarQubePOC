@@ -70,6 +70,9 @@ export class AssetType {
     Class: AssetTypeClass;
     FlowObjectType: FlowObjectType;
     Description: string;
+	IsDescriptionEnabled: boolean;
+	IsDescriptionVisibleByDefault: boolean;
+	DescriptionButtonName: string;
     DisplayFormat: string;
     ParentUid: string;
     Notes: string;
@@ -109,7 +112,9 @@ export class AssetTypeApiModel {
     ID: number;
     AssetTypeID: number;
     count: number = 0; //not currently loaded from API.
-
+	IsDescriptionEnabled: boolean;
+	IsDescriptionVisibleByDefault: boolean;
+	DescriptionButtonName: string;
     Levels: AssetTypeLevelApiModel[];
 }
 

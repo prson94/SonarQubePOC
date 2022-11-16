@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 
 @Component({
@@ -60,7 +60,7 @@ export class GalleryColorVariablesComponent implements OnInit, AfterViewInit {
     }
 
     getClassName(base: string, tint: string): string {
-        if (tint == 'Base')
+        if (tint === 'Base')
             {return 'ig-'+base;}
         return 'ig-'+base + '-' + tint;
     }

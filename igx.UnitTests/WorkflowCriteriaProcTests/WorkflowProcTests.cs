@@ -75,7 +75,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.False(res, "Conditions with change conditions needs to have changed fields");
         }
 
@@ -88,7 +88,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { 1, 2 };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
 
@@ -101,7 +101,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { 1 };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
 
@@ -120,7 +120,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             List<int> changedFields = new List<int> { 1, 2, 3, 4, 5 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
             dateField.FormattedValue = DateTime.Now.AddDays(5).ToString(CultureInfo.InvariantCulture);
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
 
@@ -138,7 +138,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             List<int> changedFields = new List<int> { 1, 2, 3, 4, 5 };
             var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
             dateField.FormattedValue = DateTime.Now.AddDays(5).ToString(CultureInfo.InvariantCulture);
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
 
@@ -151,7 +151,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { 1 };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
 
@@ -165,7 +165,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { 2 };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
 
@@ -178,7 +178,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
 
@@ -192,7 +192,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             List<int> changedFields = new List<int> { };
             try
             {
-                res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+                res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Artifact", 1, condition, -1, changedFields);
             }
             catch
             {

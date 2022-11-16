@@ -1,6 +1,6 @@
-﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/api';
-import { LoadFilePostModel, LoadColumn } from '../../../models/load.model';
+import { LoadColumn, LoadFilePostModel } from '../../../models/load.model';
 import { LoadService } from '../../../services/load.service';
 import { FormHelper } from '../../../models/form.model';
 import * as _ from 'lodash';
@@ -44,7 +44,7 @@ export class LoadForm implements OnInit, OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            if (p == 'id') {
+            if (p === 'id') {
                 this.load();
             }
         }
@@ -102,15 +102,15 @@ export class LoadForm implements OnInit, OnChanges {
         type = type.toLowerCase();
         col = col.toLowerCase();
 
-        if (this.selectedAction == 'P' && type == 'artifacttype') {
+        if (this.selectedAction === 'P' && type === 'artifacttype') {
             if (_.includes(['name', 'subject area'], col) || col.startsWith('parent ')) {return true;}
             return false;
         }
-        if (this.selectedAction == 'P' && type == 'domain') {
+        if (this.selectedAction === 'P' && type === 'domain') {
             if (_.includes(['name', 'code'], col)) {return true;}
             return false;
         }
-        if (this.selectedAction == 'P' && type == 'domaintype') {
+        if (this.selectedAction === 'P' && type === 'domaintype') {
             if (_.includes(['name', 'domain group'], col)) {return true;}
             return false;
         }
@@ -118,7 +118,7 @@ export class LoadForm implements OnInit, OnChanges {
     }
 
     showDetail() {
-        return (this.selectedAction && this.selectedAction != '' && this.selectedType && this.selectedType != '');
+        return (this.selectedAction && this.selectedAction !== '' && this.selectedType && this.selectedType !== '');
     }
 
     private getTemplateDownloadUri() {
@@ -159,7 +159,7 @@ export class LoadForm implements OnInit, OnChanges {
                 .then(() => {
                     this.loadService.postLoad(model).subscribe(
                         (data) => {
-                            if (data["type"] == 'error') {
+                            if (data["type"] === 'error') {
                                 this.onError.emit(null);
                                 this.errorMessage = data["message"];
                             } else {

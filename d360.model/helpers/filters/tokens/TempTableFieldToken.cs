@@ -194,13 +194,26 @@ namespace d360.model.helpers.filters
 
 					if (!string.IsNullOrEmpty(defaultValue))
 					{
-
-						filterExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldTypeId}.{valueQueryPart},@defLookupValue{parameterIdx}),','))";
+						if (fieldType.AllowMultipleValues)
+						{
+							filterExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldTypeId}.{valueQueryPart},@defLookupValue{parameterIdx}),','))";
+						}
+						else
+						{
+							filterExpression = $"@filter_{parameterIdx} {(condition == "in" ? "=" : "!=")} coalesce(F{fieldTypeId}.{valueQueryPart},@defLookupValue{parameterIdx})";
+						}
 						sqlParamsRef.Add($"@defLookupValue{parameterIdx}", defaultValue);
 					}
 					else
 					{
-						filterExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldTypeId}.{valueQueryPart},','))";
+						if (fieldType.AllowMultipleValues)
+						{
+							filterExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldTypeId}.{valueQueryPart},','))";
+						}
+						else
+						{
+							filterExpression = $"@filter_{parameterIdx} {(condition == "in" ? "=" : "!=")} F{fieldTypeId}.{valueQueryPart}";
+						}
 					}
 
 					if (allowAllValue)
