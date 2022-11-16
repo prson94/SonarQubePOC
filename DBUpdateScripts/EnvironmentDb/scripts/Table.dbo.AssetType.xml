@@ -98,7 +98,7 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
 	</rollback>
   </changeSet>
 
-<changeSet author="Puneet Gupta" id="Table.dbo.AssetType-Indices-v1">
+  <changeSet author="Puneet Gupta" id="Table.dbo.AssetType-Indices-v1">
     <comment>GOV-14285</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -120,7 +120,6 @@ END
 		]]>
 	</rollback>
   </changeSet>
-  
   
   <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterInsert-v2">
     <sql dbms="mssql"
@@ -166,6 +165,59 @@ AS
 
 		]]>
 	</rollback>
+  </changeSet>
+
+  <changeSet author="ALadchenko" id="Table.dbo.AssetType_Drop_Misnamed_Defaults-v1">
+	<comment>GOV-19431</comment>
+	<sql dbms="mssql"
+		endDelimiter=";"
+		splitStatements="false">
+		<![CDATA[
+			DECLARE @sql NVARCHAR(250);
+			DECLARE @cur CURSOR;
+			
+			SET @cur = CURSOR FOR 
+			select 'ALTER TABLE AssetType DROP CONSTRAINT ' + c.name as script from sys.default_constraints c 
+			inner join sys.objects t on t.object_id = c.parent_object_id and t.name = 'AssetType' 
+			inner join sys.columns f on f.column_id = c.parent_column_id and f.name in ('IsDescriptionEnabled', 'IsDescriptionVisibleByDefault')
+
+			OPEN @cur
+			FETCH NEXT FROM @cur INTO @sql
+
+			WHILE @@FETCH_STATUS = 0
+			BEGIN
+				EXEC sp_executesql @sql
+				FETCH NEXT FROM @cur INTO @sql 
+			END; 
+
+			CLOSE @cur;
+			DEALLOCATE @cur;
+		]]>
+	</sql>
+  </changeSet>
+  
+  <changeSet author="ALadchenko" id="Table.dbo.AssetType_Add_Missed_IsDescriptionEnabled_Default-v1">
+	<comment>GOV-19431</comment>
+	<preConditions onFail="MARK_RAN">
+		<columnExists tableName="AssetType" schemaName="dbo" columnName="IsDescriptionEnabled" />
+	</preConditions>
+	<sql dbms="mssql">
+	<![CDATA[
+		ALTER TABLE dbo.AssetType ADD CONSTRAINT DF_AssetType_IsDescriptionEnabled DEFAULT 1 FOR IsDescriptionEnabled;
+	]]>
+	</sql>
+  </changeSet>
+  
+  <changeSet author="ALadchenko" id="Table.dbo.AssetType_Add_Missed_IsDescriptionVisibleByDefault_Default-v1">
+	<comment>GOV-19431</comment>
+	<preConditions onFail="MARK_RAN">
+		<columnExists tableName="AssetType" schemaName="dbo" columnName="IsDescriptionVisibleByDefault" />
+	</preConditions>
+	<sql dbms="mssql">
+	<![CDATA[
+		ALTER TABLE dbo.AssetType ADD CONSTRAINT DF_AssetType_IsDescriptionVisibleByDefault DEFAULT 0 FOR IsDescriptionVisibleByDefault;
+	]]>
+	</sql>
   </changeSet>
 
 </databaseChangeLog>
