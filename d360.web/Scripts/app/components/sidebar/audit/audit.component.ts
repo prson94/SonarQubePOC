@@ -8,7 +8,7 @@ import { SortOrder } from '../../../models/enums.model';
 import { GridColumn, GridFilterExpression } from '../../../models/grid-definition.model';
 import { FieldType } from "../../../models/fieldtype-api.model";
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIParameters, LookupValuesAPIModel } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
-import { Observable, ReplaySubject } from "rxjs";
+import { Observable, ReplaySubject, Subscription } from "rxjs";
 import { map, shareReplay } from "rxjs/operators";
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
@@ -26,12 +26,12 @@ export class AuditComponent implements OnInit, OnDestroy {
     @Input() uid: string;
 
     totalRecords: number;
-    rowsPerPage: number = 10;
+    rowsPerPage = 10;
     audits: Audit[] = [];
-    private sub: any;
+    private sub?: Subscription;
 
     selected: Audit;
-    currentPageNumber: number = 0;
+    currentPageNumber = 0;
     sortField: string = undefined;
     sortOrder: SortOrder = SortOrder.None;
     filters: GridFilterExpression[] = [];
@@ -39,13 +39,13 @@ export class AuditComponent implements OnInit, OnDestroy {
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 
-    advancedFilter: string = "";
-    isFiltersReady: boolean = false;
+    advancedFilter = "";
+    isFiltersReady = false;
     columns: GridColumn[] = [];
     lookupColumns: string[] = ["resourceName", "action", "actionObject"];
-    isExportInProgress: boolean = false;
+    isExportInProgress = false;
 
-    exportTooltip: string = "";
+    exportTooltip = "";
 
     get isNullAudit(): boolean {
         return this.uid === "00000000-0000-0000-0000-000000000000";
@@ -147,7 +147,7 @@ export class AuditComponent implements OnInit, OnDestroy {
     }
 
     public export() {
-        var fileName = this.objectName;
+        let fileName = this.objectName;
         if (this.objectID === 0) {
             fileName = this.objectType;
         }
@@ -162,7 +162,7 @@ export class AuditComponent implements OnInit, OnDestroy {
     }
 
     private getParams() {
-        var params = new AuditApiFilters();
+        const params = new AuditApiFilters();
         params._pageSize = this.rowsPerPage;
         params._pageNum = this.currentPageNumber + 1;
 
@@ -229,10 +229,10 @@ export class AuditComponent implements OnInit, OnDestroy {
     }
 
     public setAdvancedFilters(): void {
-        let fields: AdvancedFilterFieldType[] = [];
+        const fields: AdvancedFilterFieldType[] = [];
 
         this.columns.forEach((c) => {
-            let field: AdvancedFilterFieldType = {
+            const field: AdvancedFilterFieldType = {
                 Name: c.datafield,
                 FriendlyName: c.text,
                 Type: this.lookupColumns.indexOf(c.datafield) !== -1 ? new FieldType("Lookup") : new FieldType(c.fieldType),

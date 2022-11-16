@@ -2,11 +2,11 @@ import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, OnDe
 import { Router } from '@angular/router';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { Subscription } from 'rxjs';
-import * as _ from 'lodash';
 import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { SearchDetail } from '../../../models/search-result.model';
 import { Tab } from './tabs.models';
+import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 
 // TODO: it will be great to move out next out of this component: 
 // • statistics
@@ -26,24 +26,24 @@ import { Tab } from './tabs.models';
 
 export class TabsComponent implements OnDestroy {
     @Input() items: Tab[];
-    @Input() showOnlyMainTab: boolean = false;
+    @Input() showOnlyMainTab = false;
     @Input() hideMainTab = true;
     @Input() area = { icon: 'fa-folder', title: '' };
     @Input() emitSecondaryNav = false;
     @Input() statistics: ObjectStatistics;
     @Input() searchDetails: SearchDetail;
-    @Input() isScoringScreen: boolean = false;
+    @Input() isScoringScreen = false;
 
     homeUrlChangeSub: Subscription;
     homeUrl: string;
 
     routerUrlChangeSub: Subscription;
-    private routerUrl: string = '';
+    private routerUrl = '';
 
     @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
-    showScrollButtons: boolean = false;
-    disableScrollLeft: boolean = false;
-    disableScrollRight: boolean = false;
+    showScrollButtons = false;
+    disableScrollLeft = false;
+    disableScrollRight = false;
 
     constructor(
         private secondaryNavService: SecondaryNavService,
@@ -53,7 +53,7 @@ export class TabsComponent implements OnDestroy {
 
     ngOnInit() {
         this.routerUrl = this.router.url;
-        this.routerUrlChangeSub = this.router.events.subscribe(x => {
+        this.routerUrlChangeSub = this.router.events.subscribe(() => {
             this.routerUrl = this.router.url;
             this.ref.markForCheck();
         })
@@ -83,8 +83,8 @@ export class TabsComponent implements OnDestroy {
 
     checkSize() {
         if (this.tabScroller && this.tabScroller.length > 0) {
-            let maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
-            let lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
+            const maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
+            const lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
             this.showScrollButtons = lastTab > maxWidth;
         }
         this.checkScrollPos();
@@ -92,11 +92,11 @@ export class TabsComponent implements OnDestroy {
 
     checkScrollPos() {
         if (this.tabScroller && this.tabScroller.length > 0) {
-            let currentPosition = this.tabScroller.first.nativeElement.scrollLeft;
-            this.disableScrollLeft = currentPosition == 0;
+            const currentPosition = this.tabScroller.first.nativeElement.scrollLeft;
+            this.disableScrollLeft = currentPosition === 0;
 
-            let maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
-            let lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
+            const maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
+            const lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
             this.disableScrollRight = lastTab <= maxWidth;
 
             this.ref.markForCheck();
@@ -112,9 +112,9 @@ export class TabsComponent implements OnDestroy {
 
     scroll(direction: string) {
         let scrollAmount = 0;
-        let scrollDistance = 300;
-        let move = () => {
-            if (direction == 'L') {
+        const scrollDistance = 300;
+        const move = () => {
+            if (direction === 'L') {
                 this.tabScroller.first.nativeElement.scrollLeft -= 10;
             } else {
                 this.tabScroller.first.nativeElement.scrollLeft += 10;
@@ -127,12 +127,12 @@ export class TabsComponent implements OnDestroy {
             this.checkScrollPos();
         };
 
-        let id = window.setInterval(move, 5);
+        const id = window.setInterval(move, 5);
     }
 
     getTitle(item: Tab) {
         if (this.statistics && this.statistics.IssueCount > 0 && item.title === 'Actions') {
-            let plurality = this.statistics.IssueCount == 1 ? ' is' : 's are';
+            const plurality = this.statistics.IssueCount === 1 ? ' is' : 's are';
             return this.statistics.IssueCount + " outstanding action" + plurality + " assigned to you";
         } else {
             return "";
@@ -165,7 +165,7 @@ export class TabsComponent implements OnDestroy {
             this.homeUrl = this.router.url;
         }
         this.closeAll();
-        if (item.title == "homeClick") {
+        if (item.title === "homeClick") {
             this.secondaryNavService.clearLocalActiveItem();
 
             let home = this.homeUrl ? this.homeUrl : this.secondaryNavService.getLocalHomeUrl();
@@ -181,23 +181,23 @@ export class TabsComponent implements OnDestroy {
         if (item.url) { this.router.navigateByUrl(item.url); }
 
         if (this.emitSecondaryNav) {
-            this.secondaryNavService.itemClicked(item as any);
+            this.secondaryNavService.itemClicked(item as SecondaryNavItem);
         }
 
         this.AllClosed();
     }
 
     AllClosed() {
-        let count = this.items.filter((x) => this.isTabActive(x)).length;
+        const count = this.items.filter((x) => this.isTabActive(x)).length;
         if (count === 0) { this.secondaryNavService.setLocalActiveItem(undefined); }
-        return count == 0;
+        return count === 0;
     }
 
     closeAll() {
-        for (let ritem of this.items) {
+        for (const ritem of this.items) {
             if (this.isTabActive(ritem)) {
                 if (this.emitSecondaryNav) {
-                    this.secondaryNavService.itemClicked(ritem as any);
+                    this.secondaryNavService.itemClicked(ritem as SecondaryNavItem);
                 }
             }
         }

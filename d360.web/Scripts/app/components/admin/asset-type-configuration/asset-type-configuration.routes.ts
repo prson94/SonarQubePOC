@@ -14,6 +14,8 @@ import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
     protected abstract typeClasses: AssetTypeClass[];
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
         return this.typeClasses.includes(AssetTypeClass[route.params.typeClass as string]);
     }

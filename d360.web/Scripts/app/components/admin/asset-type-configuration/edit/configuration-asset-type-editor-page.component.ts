@@ -24,7 +24,7 @@ export class ConfigurationAssetTypeEditorPageComponent {
         private router: Router) { }
 
     ngOnInit() {
-        this.route.params.subscribe(params => {
+        this.route.params.subscribe((params) => {
             this.assetTypeClass = AssetTypeClass[params["typeClass"] as string];
             this.uid = params["uid"];
             this.parentUid = params["parentUid"];
@@ -78,15 +78,15 @@ export class ConfigurationAssetTypeEditorPageComponent {
     }
 
     goBack() {
-        this.router.navigateByUrl(`/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`)
+        this.router.navigateByUrl(`/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`);
     }
     
     get formTitle() {
-        let isEdit = this.uid != null;
+        const isEdit = this.uid != null;
 
-        let baseTitle = isEdit ? $localize`Edit` : $localize`Add`;
-        let typeToTitle = isEdit ? this.typeClassToConfigurationEditTitle : this.typeClassToConfigurationAddTitle;
-        let typeClassTitle = typeToTitle.get(this.assetTypeClass);
+        const baseTitle = isEdit ? $localize`Edit` : $localize`Add`;
+        const typeToTitle = isEdit ? this.typeClassToConfigurationEditTitle : this.typeClassToConfigurationAddTitle;
+        const typeClassTitle = typeToTitle.get(this.assetTypeClass);
         if (typeClassTitle == null) {
             throw new Error(`Failed to find localization for ${this.assetTypeClass} (${AssetTypeClass[this.assetTypeClass]})`);
         }

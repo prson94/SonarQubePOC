@@ -8,6 +8,7 @@ import { AppConstants } from "../../../../static/constants";
 import { takeUntil } from "rxjs/operators";
 import { Router } from "@angular/router";
 
+// eslint-disable-next-line no-var
 declare var CurrentResourceID;
 
 @Component({
@@ -25,9 +26,9 @@ export class ConfigurationAssetTypeListComponent {
 
     artifactTypes = [];
     loadingCounter = 0;
-    dataCyPrefix: string = 'AssetType_';
+    dataCyPrefix = 'AssetType_';
     destroy = new Subject<void>();
-    simpleFilterValue: string = '';
+    simpleFilterValue = '';
     public tabTitle: string = $localize`Admin`;
 
     constructor(
@@ -41,14 +42,14 @@ export class ConfigurationAssetTypeListComponent {
     }
 
     get sidePanelStorageKey() {
-        return 'configuration_' + this.assetTypeClass + '_' + CurrentResourceID;;
+        return 'configuration_' + this.assetTypeClass + '_' + CurrentResourceID;
     }
 
     async load() {
         this.loadingCounter++;
         try {
-            let items = await this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false).toPromise();
-            let treeNodes = items.map(AssetCount.ConvertToTreeNode);
+            const items = await this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false).toPromise();
+            const treeNodes = items.map(AssetCount.ConvertToTreeNode);
             this.artifactTypes = AssetCount.ListToTree(treeNodes);
         }
         finally {

@@ -35,14 +35,14 @@ export class ConfigurationAssetTypeHeaderComponent {
             this.assetType = null;
         }
 
-        let newAssetType = await this.assetTypeService.GetAssetTypeByUid(uid).toPromise();
+        const newAssetType = await this.assetTypeService.GetAssetTypeByUid(uid).toPromise();
         if (uid === this.uid) {
             this.assetType = newAssetType;
         }
     }
 
     get settings() {
-        let settings = this.typeClassToSettings.get(this.assetTypeClass);
+        const settings = this.typeClassToSettings.get(this.assetTypeClass);
         if (!settings) {
             throw new Error(`Failed to find settings for asset type class ${this.assetTypeClass} (${AssetTypeClass[this.assetTypeClass]})`);
         }

@@ -20,7 +20,7 @@ export class ConfigurationAssetTypeRelationshipsPageComponent {
     }
 
     ngOnInit() {
-        this.route.params.subscribe(params => {
+        this.route.params.subscribe((params) => {
             this.assetTypeClass = AssetTypeClass[params["typeClass"] as string];
             this.uid = params["uid"];
             this.loadAssetType(this.uid);
@@ -34,7 +34,7 @@ export class ConfigurationAssetTypeRelationshipsPageComponent {
 
         this.loadingCount++;
         try {
-            let newAssetType = await this.assetTypeService.getAssetTypeObjectAndID(uid).toPromise();
+            const newAssetType = await this.assetTypeService.getAssetTypeObjectAndID(uid).toPromise();
             if (uid === this.uid) {
                 this.assetType = newAssetType;
             }

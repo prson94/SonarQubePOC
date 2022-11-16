@@ -41,7 +41,7 @@ export class UseBreadcrumbsComponent {
         this.isChangingBreadcrumbs = true;
         try {
             this.headerBreadcrumbService.clearBreadcrumbs();
-            for (let breadcrumbItem of breadcrumbs ?? []) {
+            for (const breadcrumbItem of breadcrumbs ?? []) {
                 this.headerBreadcrumbService.showBreadcrumb(breadcrumbItem);
             }
         } finally {

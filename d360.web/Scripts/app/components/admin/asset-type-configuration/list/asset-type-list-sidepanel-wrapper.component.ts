@@ -13,7 +13,7 @@ export class AssetTypeListSidePanelWrapperComponent {
     @Input() sidePanelStorageKey: string;
     @Input() selectedItem: TreeNode;
 
-    sidePanelOpen: boolean = false;
+    sidePanelOpen = false;
     
     constructor(public sidePanelService: SidePanelService) {
     }

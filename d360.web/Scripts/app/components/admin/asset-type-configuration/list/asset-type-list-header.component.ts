@@ -19,7 +19,7 @@ export class AssetTypeListHeaderComponent {
     }
 
     get settings() {
-        let settings = this.typeClassToSettings.get(this.assetTypeClass);
+        const settings = this.typeClassToSettings.get(this.assetTypeClass);
         if (!settings) {
             throw new Error(`Failed to find settings for asset type class ${this.assetTypeClass} (${AssetTypeClass[this.assetTypeClass]})`);
         }

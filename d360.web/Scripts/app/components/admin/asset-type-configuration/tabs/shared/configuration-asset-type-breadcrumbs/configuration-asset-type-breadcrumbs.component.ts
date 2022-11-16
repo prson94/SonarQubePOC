@@ -22,12 +22,13 @@ export class ConfigurationAssetTypeBreadcrumbsComponent {
     idToItemMap?: _.Dictionary<{ Class: AssetTypeClass; Name: string; Uid: string; ParentUid: string; }>;
 
     get breadcrumbs() {
-        let breadcrumbs: Breadcrumb[] = []
+        const breadcrumbs: Breadcrumb[] = []
 
         if (this.uid != null && this.idToItemMap != null) {
             let currentUid = this.uid;
+            // eslint-disable-next-line no-constant-condition
             while (true) {
-                let item = this.idToItemMap[currentUid];
+                const item = this.idToItemMap[currentUid];
                 breadcrumbs.push(new Breadcrumb(item.Name, `/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}/${item.Uid}/fields`));
                 if (item.ParentUid == null) {
                     break;

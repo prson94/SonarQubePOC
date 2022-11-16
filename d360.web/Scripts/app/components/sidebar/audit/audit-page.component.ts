@@ -51,7 +51,7 @@ export class AuditPageComponent extends BaseComponent implements OnInit, OnDestr
                         reloadNav = false;
                     }
 
-                    let objectID = this.objectType == 'Tag' ? params['uid'] : this.objectID;
+                    const objectID = this.objectType == 'Tag' ? params['uid'] : this.objectID;
 
 					if (this.uid === this.metricAllocationUid) {
 						this.buildSecondaryNavigation({ isScoringDefinitionPage:true });

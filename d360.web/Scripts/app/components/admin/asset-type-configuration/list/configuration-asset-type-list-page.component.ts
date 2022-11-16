@@ -14,7 +14,7 @@ export class ConfigurationAssetTypeListPageComponent {
         private route: ActivatedRoute) { }
 
     ngOnInit() {
-        this.route.params.subscribe(params => {
+        this.route.params.subscribe((params) => {
             this.assetTypeClass = AssetTypeClass[params["typeClass"] as string];
         })
     }
