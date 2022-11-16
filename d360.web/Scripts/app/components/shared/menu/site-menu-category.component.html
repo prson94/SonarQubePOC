@@ -5,13 +5,15 @@
     (click)="navigateToUrl(url)" 
     style="cursor: pointer;"
     [igDataCy]="'PrimaryNav_' + title">
-    <div class="menu-category-box">
+    <div class="menu-category-box" [ngClass]="{'caret-hovered':isCaretHovered}">
         <img class="d3s-gov-icon" *ngIf="rootIconName && rootIconName.indexOf('/Content') != -1" [src]="rootIconName" />
         <i *ngIf="rootIconName && rootIconName.indexOf('/Content') == -1" [class]="'fa ' + rootIconName"></i>
         <img *ngIf="imageUrl" [src]="imageUrl" />
         <div [ngClass]="{'caption':true, 'min':!expanded}">
             <div [ngClass]="{'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
-            <i [ngClass]="{'menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded,'icon':!expanded,'caret-active': menu?.isActiveItem}" (click)="$event.stopPropagation(); onCategoryExpand()"></i>
+            <i [ngClass]="{'menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded,'icon':!expanded}"
+               (mouseover)="isCaretHovered = true;" (mouseout)="isCaretHovered = false;" (click)="$event.stopPropagation(); onCategoryExpand()">
+            </i>
         </div>
     </div>
     <div *ngIf="menu?.NavigationItems?.length > 0; else emptyHintContainer" 

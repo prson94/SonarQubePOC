@@ -33,6 +33,8 @@ export class SiteMenuCategoryComponent extends BaseComponent {
             this.activeItemChanged.emit(undefined);
         }
     }
+    
+    isCaretHovered: boolean = false;
 
     constructor(
         protected settingsService: CompanySettingsService,
