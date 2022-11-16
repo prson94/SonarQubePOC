@@ -33,6 +33,7 @@ using Microsoft.PowerBI.Api.V2;
 using d360.web.Extensions;
 using System.Net.Http.Formatting;
 using System.Collections.Specialized;
+using d360.web.Utilities;
 
 namespace d360.web.Controllers.V2
 {
@@ -2627,6 +2628,30 @@ namespace d360.web.Controllers.V2
 		}
 
 		#endregion
+
+		[HttpPost, AjaxValidateAntiForgeryToken, Route("me/language"), ApiExplorerSettings(IgnoreApi = true)]
+		public async Task<HttpResponseMessage> UpdateCurrentUserLanguage(UserLanguageModel model)
+		{
+			try
+			{
+				if (model == null)
+				{
+					return ReturnApiError(HttpStatusCode.InternalServerError, ApiMessages.InvalidModel);
+				}
+
+				if (model.LanguageCode != null && !InternationalizationUtilities.AllowedUILocales.Select(x=> x.ToLowerInvariant()).Contains(model.LanguageCode.ToLowerInvariant()))
+				{
+					return ReturnApiError(HttpStatusCode.InternalServerError, String.Format(ApiMessages.InvalidLanguageCode, String.Join(", ", InternationalizationUtilities.AllowedUILocales)));
+				}
+
+				return Request.CreateResponse(HttpStatusCode.OK);
+
+			}
+			catch (Exception ex)
+			{
+				return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
+			}
+		}
 		private bool IsDark(string htmlColor)
 		{
 			Color color = ColorTranslator.FromHtml(htmlColor);

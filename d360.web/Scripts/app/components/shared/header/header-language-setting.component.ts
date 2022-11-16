@@ -44,7 +44,7 @@ export class HeaderLanguageSettingComponent {
 			},
 			{
 				name: 'English - US',
-				code: 'en-US'
+				code: 'en'
 			},
 			{
 				name: 'Español - ES',
@@ -79,7 +79,11 @@ export class HeaderLanguageSettingComponent {
 	}
 
 	saveChanges() {
+		this.settingService.setLanguage(this.selectedLanguage.code).subscribe((res) => {
 
+			this.initialLanguage = _.cloneDeep(this.selectedLanguage);
+
+		});
 	}
 
 	get isSaveDisabled() {
