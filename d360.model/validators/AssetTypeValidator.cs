@@ -333,8 +333,17 @@ where	a.[class] = @cls
 				return false;
 			}
 
-			bool doesOrderFieldExists = CompanyContext.FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == order.ToLower());
+			FieldType fieldType = CompanyContext.FieldTypes.FirstOrDefault(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == order.ToLower());
 			List<string> defaultAssetFields = new List<string>() { "createdon", "updatedon", "assetid" };
+
+			string includeOwnershipLookup = queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "_includeownershiplookup").Value;
+
+			bool.TryParse(includeOwnershipLookup, out bool isIncludeOwnershipLookup);
+
+			if (!isIncludeOwnershipLookup && fieldType?.Type == "OwnershipLookup")
+			{
+				return false;
+			}
 
 			if (assetType.Object == SystemObjects.ReferenceItemType.ToString())
 			{
@@ -354,7 +363,7 @@ where	a.[class] = @cls
 
 			bool isOrderByPathSegment = order.ToUpperInvariant().Contains("PATH_SEGMENT_IDX_");
 
-			return isOrderByPathSegment || doesOrderFieldExists || defaultAssetFields.Contains(order.Trim().ToLowerInvariant());
+			return isOrderByPathSegment || fieldType != null || defaultAssetFields.Contains(order.Trim().ToLowerInvariant());
 		}
 
 		public bool IsValidOrderDirectionGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams)
