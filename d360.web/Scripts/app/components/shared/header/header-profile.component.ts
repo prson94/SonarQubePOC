@@ -27,7 +27,9 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
     public userName: string = ResourceName;
     public userEmail: string = ResourceEmail;
     showAllUsersAPIKey: boolean = false;
-    isApiKeysPopupVisible: boolean = false;
+	isApiKeysPopupVisible: boolean = false;
+	isLanguageSettingModalVisible: boolean = false;
+
     private isAdminSub: Subscription;
     constructor(
         private router: Router,
