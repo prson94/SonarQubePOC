@@ -13,4 +13,4 @@ export const typeClassToHeaderSettings = new Map([
             title: $localize`Technical Assets`
         }
     ]
-])
+]);
