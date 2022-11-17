@@ -18,11 +18,10 @@ using d360.web.Utilities;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core;
+using Resources;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
-using Resources;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -443,7 +442,26 @@ namespace igx.UnitTests.V2ControllerTests
 					 .WithMessage(expectedMessage);
 		}
 
-        [Fact]
+		[Fact]
+		public async Task ERR_PostRelationshipsAsync_InvalidSubjectAssetUid()
+		{
+			var validUid = Guid.Parse(DataConstants.ValidGUID);
+			var invalidUid = Guid.Parse(DataConstants.InvalidGUID);
+
+			var model = new RelationshipInserts();
+			for (var i = 0; i <= 10; i++)
+			{
+				model.Add(new RelationshipInsert() { SubjectAssetUid = invalidUid });
+			}
+
+			Func<Task> act = async () => { await relationshipsController.PostRelationshipsAsync(validUid, model); };
+
+			await act.Should()
+					 .ThrowAsync<ArgumentException>()
+					 .WithMessage(AssetsApiMessages.InvalidSubjectAssetUid);
+		}
+
+		[Fact]
         public async Task PostRelationshipsAsync()
         {
 			var validUid = Guid.Parse(DataConstants.ValidGUID);
