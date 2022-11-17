@@ -2,7 +2,7 @@ export type Tab =  {
     title: string;
     count?: number;
     url: string;
-    tag?: any;
+    tag?: string;
     warningMessage?: string;
     subTabsUrl?: string[] ;
     isVisible?: () => boolean;
