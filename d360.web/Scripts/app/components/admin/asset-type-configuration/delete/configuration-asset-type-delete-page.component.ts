@@ -1,4 +1,4 @@
-import { Component, Input } from "@angular/core";
+import { Component } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AssetTypeClass } from "../../../../models/asset.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
@@ -16,8 +16,8 @@ export class ConfigurationAssetTypeDeletePageComponent extends BaseComponent {
     assetTypeClass: AssetTypeClass;
     uid: string;
 
-    assetType: any;
-    assetsCount: any;
+    assetType: { Name: string };
+    assetsCount?: number;
 
     loadingCounter = 0;
 

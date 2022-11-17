@@ -31,7 +31,7 @@ export class PageHeaderComponent {
 
         // Next lines fix concurrent issue when breadcrumbs are set by other page after page destroyed
         this.secondaryNavSubscription = this.secondaryNavService.hideHeader$
-            .pipe(filter(x => x == true))
+            .pipe(filter((x) => x === true))
             .subscribe(() => {
                 this.secondaryNavService.showHeader(false);
             });

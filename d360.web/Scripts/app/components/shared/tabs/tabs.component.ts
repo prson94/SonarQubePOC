@@ -56,7 +56,7 @@ export class TabsComponent implements OnDestroy {
         this.routerUrlChangeSub = this.router.events.subscribe(() => {
             this.routerUrl = this.router.url;
             this.ref.markForCheck();
-        })
+        });
 
         this.homeUrlChangeSub = this.secondaryNavService.homeUrlChange$.subscribe(
             (item) => {
@@ -113,6 +113,7 @@ export class TabsComponent implements OnDestroy {
     scroll(direction: string) {
         let scrollAmount = 0;
         const scrollDistance = 300;
+        
         const move = () => {
             if (direction === 'L') {
                 this.tabScroller.first.nativeElement.scrollLeft -= 10;
@@ -145,7 +146,7 @@ export class TabsComponent implements OnDestroy {
         }
 
         return this.routerUrl.startsWith(tab.url)
-            || (tab.subTabsUrl ?? []).some(subTabUrl => this.routerUrl.startsWith(subTabUrl));
+            || (tab.subTabsUrl ?? []).some((subTabUrl) => this.routerUrl.startsWith(subTabUrl));
     }
 
     trackById(index, item) {

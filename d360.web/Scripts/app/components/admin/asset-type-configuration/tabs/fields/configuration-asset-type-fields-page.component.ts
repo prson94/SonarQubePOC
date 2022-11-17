@@ -4,6 +4,11 @@ import { AssetTypeClass } from "../../../../../models/asset.model";
 import { AssetTypeService } from "../../../../../services/asset-type.service";
 import { FieldDefinitionComponent } from "../../../../shared/fielddefinition/field-definition.component";
 
+type FieldTileSettings = Pick<
+    FieldDefinitionComponent,
+    'supportsPrimaryFilterOption' | 'showDisplayInColumn' | 'allowSingleSegmentPath'
+>;
+
 @Component({
     selector: "d3s-configuration-asset-type-fields-page",
     templateUrl: './configuration-asset-type-fields-page.component.html'
@@ -68,9 +73,3 @@ export class ConfigurationAssetTypeFieldsPageComponent {
         ]
     ])
 }
-
-
-type FieldTileSettings = Pick<
-    FieldDefinitionComponent,
-    'supportsPrimaryFilterOption' | 'showDisplayInColumn' | 'allowSingleSegmentPath'
->;

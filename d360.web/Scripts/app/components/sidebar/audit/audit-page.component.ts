@@ -6,6 +6,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { AuditService } from '../../../services/audit.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-audit-page',
@@ -15,7 +16,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class AuditPageComponent extends BaseComponent implements OnInit, OnDestroy {
-    private sub: any;
+    private sub?: Subscription;
 
     constructor(
         private route: ActivatedRoute,
@@ -51,7 +52,7 @@ export class AuditPageComponent extends BaseComponent implements OnInit, OnDestr
                         reloadNav = false;
                     }
 
-                    const objectID = this.objectType == 'Tag' ? params['uid'] : this.objectID;
+                    const objectID = this.objectType === 'Tag' ? params['uid'] : this.objectID;
 
 					if (this.uid === this.metricAllocationUid) {
 						this.buildSecondaryNavigation({ isScoringDefinitionPage:true });
