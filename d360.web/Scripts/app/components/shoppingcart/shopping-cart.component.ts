@@ -57,7 +57,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
                 this.cart = r.Cart;
                 this.items = r.Items;
 
-                this.cartIsEmpty = (this.items == null || this.items.length == 0);
+                this.cartIsEmpty = (this.items == null || this.items.length === 0);
                 this.isLoading = false;
             });
     }

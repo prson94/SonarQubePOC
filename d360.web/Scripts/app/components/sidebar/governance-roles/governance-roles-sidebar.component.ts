@@ -87,7 +87,7 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
 
     private isDirty() {
         var orig = this.getInitialData();
-        return orig.Name != this.model.Name || orig.Description != this.model.Description || orig.RefListUid != this.model.RefListUid;
+        return orig.Name !== this.model.Name || orig.Description !== this.model.Description || orig.RefListUid !== this.model.RefListUid;
     }
 
     private save() {

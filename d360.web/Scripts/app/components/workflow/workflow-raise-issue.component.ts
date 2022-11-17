@@ -206,7 +206,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
         //populate field collection
         for (var p in values) {
-            if (p.toUpperCase() == "ISSUETYPEID") {
+            if (p.toUpperCase() === "ISSUETYPEID") {
                 //ignore
             }
             else {

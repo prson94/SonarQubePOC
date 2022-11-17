@@ -42,10 +42,10 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes && changes.label && changes.label.currentValue != changes.label.previousValue) {
+        if (changes && changes.label && changes.label.currentValue !== changes.label.previousValue) {
             this.load();
         }
-        if (changes && changes.isVisible && changes.isVisible.currentValue != changes.isVisible.previousValue) {
+        if (changes && changes.isVisible && changes.isVisible.currentValue !== changes.isVisible.previousValue) {
             this.load();
             this.setValidators();
         }
@@ -97,7 +97,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
                 this.suggestionResultsArray.forEach((x) => this.suggestionResults.push(x.name));
 
                 this.suggestionResultsArray.forEach((s) => {
-                    if (s.name.toLowerCase() == this.connectorLabelForm.controls['value'].value.toLowerCase()) {
+                    if (s.name.toLowerCase() === this.connectorLabelForm.controls['value'].value.toLowerCase()) {
                         this.autoCompleteSelected(s);
                     }
                 });
@@ -107,7 +107,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     }
 
     onAutocompleteSelect(event) {
-        var obj = this.suggestionResultsArray.filter((x) => x.name.toLowerCase().trim() == event.toLowerCase().trim())[0];
+        var obj = this.suggestionResultsArray.filter((x) => x.name.toLowerCase().trim() === event.toLowerCase().trim())[0];
         this.autoCompleteSelected(obj);
     }
 
