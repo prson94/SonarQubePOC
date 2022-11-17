@@ -78,6 +78,6 @@ export class ConfigurationAssetTypeDeletePageComponent extends BaseComponent {
     }
 
     goBack() {
-        this.router.navigateByUrl(`/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`)
+        this.router.navigateByUrl(`/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`);
     }
 }

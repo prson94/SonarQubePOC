@@ -40,6 +40,6 @@ export class ConfigurationAssetTypeTabsComponent {
                 title: $localize`Change Log`,
                 isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset].includes(this.assetTypeClass),
             }
-        ]
+        ];
     }
 }

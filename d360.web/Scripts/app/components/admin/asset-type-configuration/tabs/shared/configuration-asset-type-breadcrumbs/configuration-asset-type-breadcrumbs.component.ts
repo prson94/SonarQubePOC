@@ -22,7 +22,7 @@ export class ConfigurationAssetTypeBreadcrumbsComponent {
     idToItemMap?: _.Dictionary<{ Class: AssetTypeClass; Name: string; Uid: string; ParentUid: string; }>;
 
     get breadcrumbs() {
-        const breadcrumbs: Breadcrumb[] = []
+        const breadcrumbs: Breadcrumb[] = [];
 
         if (this.uid != null && this.idToItemMap != null) {
             let currentUid = this.uid;
@@ -49,7 +49,7 @@ export class ConfigurationAssetTypeBreadcrumbsComponent {
     }
 
     async ngOnInit() {
-        this.idToItemMap = _.keyBy(await this.siteMenuService.getAdminConfigurationMenu().toPromise(), x => x.Uid);
+        this.idToItemMap = _.keyBy(await this.siteMenuService.getAdminConfigurationMenu().toPromise(), (x) => x.Uid);
         this.cdRef.markForCheck();
     }
 }

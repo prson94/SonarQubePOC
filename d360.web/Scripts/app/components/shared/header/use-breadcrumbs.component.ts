@@ -24,13 +24,13 @@ export class UseBreadcrumbsComponent {
         this.setBreadcrumbs([]);
         this.breadcrumbsSubscription = this.headerBreadcrumbService.breadcrumbs$
             .pipe(skip(1))
-            .subscribe((v) => {
+            .subscribe(() => {
                 if (this.isChangingBreadcrumbs) {
                     return;
                 }
 
                 this.setBreadcrumbs(this.breadcrumbs);
-            })
+            });
     }
 
     ngOnChanges() {
