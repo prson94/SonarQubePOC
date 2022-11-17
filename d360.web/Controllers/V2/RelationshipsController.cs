@@ -1273,6 +1273,8 @@ namespace d360.web.Controllers.V2
 				execution.ErrorMessage = message;
 				execution.CompletedOn = DateTime.UtcNow;
 				Company.Update(execution);
+
+				throw new RestApiException(HttpStatusCode.InternalServerError, message);
 			}
 
 			return Ok(results);
