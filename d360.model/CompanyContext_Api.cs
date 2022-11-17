@@ -6126,14 +6126,14 @@ where	T.ExecutionID = @ExecutionID
 												T.SubjectAssetTypeID = A.AssetTypeID
 										from	api.ExecutionRelationship T
 												inner join [Asset] A on A.Uid = T.SubjectUid 
-										where	T.ExecutionID = @ExecutionID and T.SubjectUid Is not null;
+										where	T.ExecutionID = @ExecutionID;
 
 										update	T
 										set		T.ObjectAssetID = A.ID,
 												T.ObjectAssetTypeID = A.AssetTypeID
 										from	api.ExecutionRelationship T
 												inner join [Asset] A on A.Uid = T.ObjectUid 
-										where	T.ExecutionID = @ExecutionID and T.ObjectUid Is not null;
+										where	T.ExecutionID = @ExecutionID;
 										",
                                         new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
                     AddMeasurement(metrics, "Validate subjects/objects", sw.ElapsedMilliseconds, ++step);
