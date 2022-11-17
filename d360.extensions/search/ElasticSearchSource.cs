@@ -2030,7 +2030,11 @@ namespace d360.extensions.search
                                 new BoolQuery {
                                     Must = mustClauses
                                 },
-                                new NestedQuery {
+								new MatchPhrasePrefixQuery {
+									Field = UNDERSCORE_FIELD_PREFIX + "Name",
+									Query = phrase
+								},
+								new NestedQuery {
                                     Path = D3S_FIELD_PREFIX + "Tags",
                                     Query = new BoolQuery{
                                         Must = new QueryContainer[] { new QueryStringQuery {
