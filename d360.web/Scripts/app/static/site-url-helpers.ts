@@ -37,7 +37,6 @@ export class SiteUrlHelpers {
     static SITE_URL_ITEM_FOLLOW_ROOT = 'sidebar/itemfollow';
 	static SITE_URL_COMMENTS_ROOT = 'sidebar/comments';
 	static SITE_URL_ITEM_OWN_ROOT = 'sidebar/itemown';
-    static SITE_URL_SCORE_ROOT = 'sidebar/score';
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
     static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';
     static SITE_URL_GOVERNANCE_ROLES_ROOT = 'sidebar/governanceRoles';
