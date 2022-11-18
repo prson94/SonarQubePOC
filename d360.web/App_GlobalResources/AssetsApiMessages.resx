@@ -237,6 +237,9 @@
   <data name="InvalidResourceUID" xml:space="preserve">
     <value>Invalid [resourceUid] provided</value>
   </data>
+  <data name="InvalidSubjectAssetUid" xml:space="preserve">
+    <value>Invalid guid value for parameter [SubjectAssetUid]</value>
+  </data>
   <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
     <value>Invalid user or group uid as non owner passed in the request</value>
   </data>

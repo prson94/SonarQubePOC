@@ -20,6 +20,7 @@ using d360.model.helpers.filters;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+using d360.web.Services;
 
 using Dapper;
 
@@ -1214,71 +1215,69 @@ namespace d360.web.Controllers.V2
 		{
 			var prefix = "Relationships.PostRelationshipsAsync => ";
 
+			if (applicationId != null && applicationId.Length > 200)
+			{
+				throw new ArgumentException(ApiMessages.ApplicationIdMaxLengthViolated);
+			}
+
+			IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
+			if (intersectType == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()));
+			}
+
+			if (relationships == null)
+			{
+				relationships = await readRequestJsonContent<RelationshipInserts>(Request, true);
+			}
+
+			if (relationships == null)
+			{
+				throw new ArgumentException(ApiMessages.JSONValidMessage);
+			}
+
+			foreach (var relation in relationships)
+			{
+				if (relation.SubjectAssetUid == Guid.Empty)
+				{
+					throw new ArgumentException(AssetsApiMessages.InvalidSubjectAssetUid);
+				}
+			}
+
+			if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				throw new ArgumentException(string.Format(RelationshipsApiMessages.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+			}
+
+			var execution = getApiExecution(
+				relationships.Count,
+				new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
+				applicationId: applicationId);
+
+			Company.Add(execution);
+
+			List<DatabaseBulkRelationshipResult> results = null;
 			try
 			{
-				if (applicationId != null && applicationId.Length > 200)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ApplicationIdMaxLengthViolated);
-				}
+				results = Company.ImportRelationships(execution, intersectType, relationships, 3600, triggerWorkflow, lookupFieldsPassedByValue);
 
-				IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
-
-				if (intersectType == null)
-				{
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString())))).ConfigureAwait(false);
-				}
-
-				if (relationships == null)
-				{
-					relationships = readRequestJsonContent<RelationshipInserts>(Request, true).Result;
-				}
-
-				if (relationships == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
-				}
-
-				if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
-				}
-
-				var execution = getApiExecution(
-					relationships.Count,
-					new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
-					applicationId: applicationId);
-
-				Company.Add(execution);
-
-				List<DatabaseBulkRelationshipResult> results = null;
-				try
-				{
-					results = Company.ImportRelationships(execution, intersectType, relationships, 3600, triggerWorkflow, lookupFieldsPassedByValue);
-
-					// Close execution record.
-					execution.Processed = results.Count;
-					execution.Error = results.Count(i => !i.Success);
-					execution.CompletedOn = DateTime.UtcNow;
-					Company.Update(execution);
-
-				}
-				catch (Exception ex)
-				{
-					string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-					execution.ErrorMessage = message;
-					execution.CompletedOn = DateTime.UtcNow;
-					Company.Update(execution);
-				}
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+				// Close execution record.
+				execution.Processed = results.Count;
+				execution.Error = results.Count(i => !i.Success);
+				execution.CompletedOn = DateTime.UtcNow;
+				Company.Update(execution);
 			}
 			catch (Exception ex)
 			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
+				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+				execution.ErrorMessage = message;
+				execution.CompletedOn = DateTime.UtcNow;
+				Company.Update(execution);
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+				throw new RestApiException(HttpStatusCode.InternalServerError, message);
 			}
+
+			return Ok(results);
 		}
 
 		/// <summary>
