@@ -1,7 +1,7 @@
-﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { AssetTypeService } from '../../../services/asset-type.service';
-import { FlowObjectType, AssetTypeClass, AssetTypeEditorModel } from '../../../models/asset.model';
+import { AssetTypeClass, AssetTypeEditorModel, FlowObjectType } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -229,6 +229,10 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     get isPredicateRequired(): boolean {
         return (this.assetTypeClass === AssetTypeClass.Model) || (this.assetTypeClass === AssetTypeClass.Policy) || this.parentID !== undefined;
+    }
+    
+    get isDescriptionSettingsApplicable(): boolean {
+        return this.assetTypeClass < AssetTypeClass.Reference || this.assetTypeClass === AssetTypeClass.DiagramAsset;
     }
 
     public selectFlowObject($event) {
