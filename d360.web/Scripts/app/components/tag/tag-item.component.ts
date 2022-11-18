@@ -326,7 +326,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     openTagPage(item: TagItem) {
-        if (item.Uid != this.tagUid) {
+        if (item.Uid !== this.tagUid) {
             this.openTagPageByID(item.Uid);
         }
     }
@@ -447,7 +447,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.tagsService.saveTag(event.item)
             .subscribe((result) => {
                 let msg: string = '';
-                if (event.item.uid == undefined) {
+                if (event.item.uid == null) {
                     msg = $localize`${result.Value} succesfully created`;
                 }
                 else {
