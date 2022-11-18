@@ -21,7 +21,6 @@ import { CompanySettingsService } from '../../../../services/settings.service';
 import { SidePanelService } from '../../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { forkJoin } from 'rxjs';
-import { result } from 'lodash';
 
 @Component({
     selector: 'd3s-process-diagram',
