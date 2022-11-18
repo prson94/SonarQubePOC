@@ -263,8 +263,10 @@ export class BrowserService extends BaseObservableService {
             uid,
             hopCount: numberOfHops
         }).pipe(
-            map((response: AssetBrowserResponseModel) => {
-                this.processResponse(response);
+			map((response: AssetBrowserResponseModel) => {
+				let hierarchyKey = response.nodes.find((x) => x.assetUid == uid)?.hierarchyKey;
+
+				this.processResponse(response, hierarchyKey);
                 return response;
             }),
             catchError((err) => this.handleError(err))
