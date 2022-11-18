@@ -1813,11 +1813,14 @@ namespace d360.web.Controllers
 			var objectsWithoutReadAccess = await GetObjectsWithoutReadAccess(objectsToCheckAccesFor);
 
 			var relationshipAssetInfo = Company.Query<BasicAsset>(@"select 
-					A.Uid,AT.uid as 'AssetTypeUid',AP.DisplayPath
+					A.Uid,AT.uid as 'AssetTypeUid',AP.DisplayPath, adv.DisplayValue
 					from Asset A
 					inner join AssetType AT on AT.Id = A.AssetTypeID
 					left join AssetPath AP ON AP.ID = A.ID
+					left join AssetDisplayValue adv on adv.AssetID = a.ID
 					where a.uid in @assets", new { assets = objectsToCheckAccesFor.Select(x=> x.Uid).ToList() }).ToList();
+
+			bool displayPath = relationshipAssetInfo.GroupBy(x => x.DisplayValue).Any(x => x.Count() > 1);
 
 			foreach (var intersect in intersects)
 			{
@@ -1828,7 +1831,7 @@ namespace d360.web.Controllers
 				var assetUid = isSubject ? intersect.ObjectUid : intersect.SubjectUid;
 
 				var assetInfo = relationshipAssetInfo.Where(x => x.Uid == assetUid).FirstOrDefault();
-				var intersectDisplayValue = assetInfo?.DisplayPath;
+				var intersectDisplayValue = displayPath ? assetInfo?.DisplayPath : assetInfo?.DisplayValue;
 
 				if (objectsWithoutReadAccess != null && objectsWithoutReadAccess.Any(x => x.Object == obj && x.ObjectID == objID))
 				{

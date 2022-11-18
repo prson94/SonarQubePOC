@@ -20,8 +20,12 @@ namespace d360.core.entities
         public string ObjectName { get; set; }
 
 		public Guid? Uid { get; set; }
+
 		public Guid? AssetTypeUid { get; set; }
+
 		public string DisplayPath { get; set; }
+
+		public string DisplayValue { get; set; }
 	}
 	public class AllocationPossibility
     {
