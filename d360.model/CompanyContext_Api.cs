@@ -822,10 +822,12 @@ namespace d360.model
 
             if (sendWorkflowEvents)
             {
-                string changedFieldsSql = $@"select  EA.Object, 
-							EA.ObjectID, 
+                string changedFieldsSql = $@"select  
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.Object" : "EA.Object")}, 
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.ObjectID" : "EA.ObjectID")}, 
 							EF.FieldTypeID AS Id 
 					from    {tableName} EA 
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "inner join Asset a on a.id = EA.ObjectAssetID" : " ")}
 							inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
 											and EF.ItemNumber = EA.ItemNumber 
 											and EF.FieldTypeID is not null
@@ -838,10 +840,12 @@ namespace d360.model
 
 					union all
 
-					select  EA.Object, 
-							EA.ObjectID, 
+					select  
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.Object" : "EA.Object")}, 
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.ObjectID" : "EA.ObjectID")}, 
 							EF.FieldTypeID AS Id 
 					from    {tableName} EA 
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "inner join Asset a on a.id = EA.ObjectAssetID" : " ")}
 							inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
 											and EF.ItemNumber = EA.ItemNumber 
 											and EF.FieldTypeID is not null
@@ -5372,7 +5376,7 @@ where	T.ExecutionID = @ExecutionID
 										set		T.SubjectAssetID = 0,
 												T.SubjectAssetTypeID = S.ID
 										from	api.ExecutionRelationship T
-												inner join AssetType S on S.[uid] = T.SubjectUid and T.SubjectAssetID is null and S.[Class] = @sc
+												inner join AssetType S on S.[uid] = T.SubjectUid and S.[Class] = @sc and T.SubjectAssetTypeID = 0 
 												where T.ExecutionID = @ExecutionID;
 										end
 
@@ -5382,9 +5386,21 @@ where	T.ExecutionID = @ExecutionID
 										set		T.ObjectAssetID = 0,
 												T.ObjectAssetTypeID = O.ID
 										from	api.ExecutionRelationship T
-												inner join AssetType O on O.[uid] = T.ObjectUid and T.ObjectAssetID is null and O.[Class] = @oc
+												inner join AssetType O on O.[uid] = T.ObjectUid and O.[Class] = @oc  and T.ObjectAssetTypeID = 0
 												where T.ExecutionID = @ExecutionID;
-										end",
+										end
+
+										if ((@sc = 9 and @stid = 0) or (@oc = 9 and @otid = 0))
+										begin
+										update	T
+										set		T.IsNew = 0
+										from	api.ExecutionRelationship T
+												inner join [Intersect] I on  I.IntersectTypeId = @it 
+												and I.SubjectAssetId= T.SubjectAssetID and I.SubjectAssetTypeId= T.SubjectAssetTypeID 
+												and I.ObjectAssetId = T.ObjectAssetId and I.ObjectAssetTypeID = T.ObjectAssetTypeID
+										where T.ExecutionID = @ExecutionID and T.IsNew = 1;
+										end
+											",
                                         new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
                     AddMeasurement(metrics, "Validate subjects/objects", sw.ElapsedMilliseconds, ++step);
 
@@ -5397,12 +5413,12 @@ where	T.ExecutionID = @ExecutionID
 										update	api.ExecutionRelationship
 										set		Success = 0,
 											[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve subject of this relationship to a valid asset.'
-										where	ExecutionID = @ExecutionID and (SubjectAssetID is null or SubjectAssetTypeID is null);
+										where	ExecutionID = @ExecutionID and (SubjectAssetID = 0 and SubjectAssetTypeID = 0);
 	
 										update	api.ExecutionRelationship
 										set		Success = 0,
 											[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve object of this relationship to a valid asset.'
-										where	ExecutionID = @ExecutionID and (ObjectAssetID is null or ObjectAssetTypeID is null);
+										where	ExecutionID = @ExecutionID and (ObjectAssetID = 0 and ObjectAssetTypeID = 0);
 
 										update	api.ExecutionRelationship
 										set		Success = 0,
@@ -6090,7 +6106,6 @@ where	T.ExecutionID = @ExecutionID
                     Connection.Execute(@"
 										declare @it int
 
-
 										select	@it = ID
 										from	IntersectType
 										where	[uid] = @uid
@@ -6111,14 +6126,14 @@ where	T.ExecutionID = @ExecutionID
 												T.SubjectAssetTypeID = A.AssetTypeID
 										from	api.ExecutionRelationship T
 												inner join [Asset] A on A.Uid = T.SubjectUid 
-										where	T.ExecutionID = @ExecutionID and T.Subject Is not null;
+										where	T.ExecutionID = @ExecutionID and T.SubjectUid Is not null;
 
 										update	T
 										set		T.ObjectAssetID = A.ID,
 												T.ObjectAssetTypeID = A.AssetTypeID
 										from	api.ExecutionRelationship T
 												inner join [Asset] A on A.Uid = T.ObjectUid 
-										where	T.ExecutionID = @ExecutionID and T.Object Is not null;
+										where	T.ExecutionID = @ExecutionID and T.ObjectUid Is not null;
 										",
                                         new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
                     AddMeasurement(metrics, "Validate subjects/objects", sw.ElapsedMilliseconds, ++step);
