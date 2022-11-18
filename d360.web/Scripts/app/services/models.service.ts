@@ -57,7 +57,7 @@ export class ModelsService extends BaseObservableService {
 	}
 
 	saveModelHierarchy(hierarchy: ModelHierarchy): Observable<JsonResult> {
-		if (hierarchy.ID == undefined || !hierarchy.ID) {
+		if (hierarchy.ID == null || !hierarchy.ID) {
 			return this.postDynamic(this.http, 'taxonomy', hierarchy);
 		}
 

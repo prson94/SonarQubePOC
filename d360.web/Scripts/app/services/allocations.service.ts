@@ -54,7 +54,7 @@ export class AllocationService extends BaseObservableService {
 
     public save(allocation: ScoreTypeAllocation): Observable<any> {
         let url = `api/v2/scoring/allocations`;
-        if (allocation.uid == undefined) {
+        if (allocation.uid == null) {
             return this.http.post(url, allocation)
                 .pipe(map((response) => <any>response),
                     catchError((err) => this.handleError(err, true)));

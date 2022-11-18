@@ -119,7 +119,7 @@ export class BrowserService extends BaseObservableService {
 
                     // Handle initial expanded logic.
                     rootNode.relations.forEach((r, rix) => {
-                        let ix = response.links.findIndex((l) => { return l.predicateId == r.predicateId && l.from == rootNode.key && l.text == r.predicate; });
+                        let ix = response.links.findIndex((l) => { return l.predicateId === r.predicateId && l.from === rootNode.key && l.text === r.predicate; });
                         if (ix > -1) {
                             r.expanded = true;
                             response.links[ix].badgeIdentifier = rootNode.hierarchyKey + '|' + rix;
@@ -373,7 +373,7 @@ export class BrowserService extends BaseObservableService {
     public saveUserFilter(model: StoredAssetBrowserFilterModel): Observable<StoredAssetBrowserFilterModel> {
         const url = `api/v2/browser/filters`;
 
-        if (model.uid != undefined)
+        if (model.uid != null)
             {return this.http.put(url + '/' + model.uid, model).pipe(
                 map((response: StoredAssetBrowserFilterModel) => response),
                 catchError((err) => this.handleError(err))
@@ -407,14 +407,14 @@ export class BrowserService extends BaseObservableService {
     private getIconUnicode(icon, assetClass): string {
         let id = this.iconService.removeIconPrefix(icon);
 
-        if (icon == null || icon.length == 0) {
+        if (icon == null || icon.length === 0) {
             if (assetClass == null)
                 {return null;}
             id = this.iconService.getIconIdByClass(assetClass);
         }
 
         if (id != null) {
-            let iconProperties = this.iconProperties.find((d) => d.id == id);
+            let iconProperties = this.iconProperties.find((d) => d.id === id);
             if (iconProperties != null) {
                 return String.fromCharCode(parseInt(iconProperties.unicodeValue, 16));
             }

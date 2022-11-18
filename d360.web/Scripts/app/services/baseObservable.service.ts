@@ -53,7 +53,7 @@ export class BaseObservableService {
                             }
                         }
 
-                        if (errorMessage == null || errorMessage == '') {
+                        if (errorMessage == null || errorMessage === '') {
                             errorMessage = 'An error has occurred.';
                         }
 
@@ -117,7 +117,7 @@ export class BaseObservableService {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
 
-        if (file != undefined) {
+        if (file != null) {
             let form = new FormData();
 
             form.append('json', JSON.stringify(item));
@@ -159,7 +159,7 @@ export class BaseObservableService {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
 
-        if (file != undefined) {
+        if (file != null) {
             let form = new FormData();
 
             form.append('json', JSON.stringify(item));
@@ -193,6 +193,6 @@ export class BaseObservableService {
     }
 
     public isErrorFromFilterExpression(err: any) {
-        return err && err.error && err.error.message && err.error.message.indexOf('Invalid filter expression') != -1;
+        return err && err.error && err.error.message && err.error.message.indexOf('Invalid filter expression') !== -1;
     }
 }

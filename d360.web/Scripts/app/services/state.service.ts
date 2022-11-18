@@ -45,7 +45,7 @@ export class StateService {
     recalculateTagSize$ = this.recalculateTagSizeSource.asObservable();
 
     public resetArtifactTypeFilterIfRequired(artifactTypeId: number) {
-        if (this.artifactTypeFilters.artifactTypeId != artifactTypeId) {            
+        if (this.artifactTypeFilters.artifactTypeId !== artifactTypeId) {            
             this.artifactTypeFilters = new ArtifactTypeFilters();
             this.artifactTypeFilters.artifactTypeId = artifactTypeId;
         }
