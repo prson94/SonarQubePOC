@@ -55,6 +55,7 @@
       
       i.menu-category.fa.fa-caret-right {
         background: var(--navbarBackColorSelected);
+
         &::after {
           display: none;
         }
@@ -66,8 +67,11 @@
       width: 40px;
       text-align: center;
       
-      &.fa.fa-caret-right {
+      &.menu-category.fa.fa-caret-right {
         min-width: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
 
       &.subitem {
@@ -184,7 +188,7 @@
         &::after {
           content: '';
           width: 40px;
-          height: 40px;
+          height: 100%;
           left: 0;
           top: 0;
           position: absolute;

@@ -34,7 +34,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
         }
     }
     
-    isCaretHovered: boolean = false;
+    isCaretHovered = false;
 
     constructor(
         protected settingsService: CompanySettingsService,
