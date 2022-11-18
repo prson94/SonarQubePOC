@@ -78,7 +78,7 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
         this.workflowService.postWorkflowBulkReassign(this.model)
             .subscribe((response) => {
                 this.isLoading = false;
-                if (response.type != null && response.type == 'success') {
+                if (response.type != null && response.type === 'success') {
                     this.showMessageForResult(this.messagesService, response);
                     //console.log('submit complete', response);
                 }

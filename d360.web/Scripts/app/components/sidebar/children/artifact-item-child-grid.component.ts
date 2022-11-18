@@ -93,7 +93,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         }
 
         this.sortOrder = event.sortOrder;
-        this.sortField = event.sortField == undefined ? "" : this.getFieldApiName(event.sortField);
+        this.sortField = event.sortField == null ? "" : this.getFieldApiName(event.sortField);
         this.numberOfRows = event.rows;
         this.currentPage = (event.first / event.rows) + 1;
         this.getData();
@@ -152,7 +152,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     getParams() {
-        let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
+        let sortOrderText = this.sortOrder === SortOrder.None ? "" : (this.sortOrder === SortOrder.Descending ? "desc" : "asc");
         var params = { _pagesize: this.numberOfRows, _pagenum: this.currentPage, _subjectUid: this.subjectUid, _filter: "ParentUid eq '" + this.parentUid + "'", _order: this.sortField, _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: this.useGraph, useTypeLevelDefaultSorts: true, _listColorsAsJSON: true };
 
         if (params._order === '' || typeof params._order === "undefined") {
@@ -171,7 +171,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         this.isLoading = true;
         this.gridDefinitionService.getGridDefinition(this.selected.TypeID, "ArtifactType").subscribe(
 			(result) => {
-                this.columns = result.Columns.filter((x) => x.datafield != 'Name');
+                this.columns = result.Columns.filter((x) => x.datafield !== 'Name');
                 /* remove name we want it to be a cool link with tooltip we know its there! */
                 this.fields = result.Fields;
                 this.scoreAllocations = result.ScoreAllocations;
@@ -183,11 +183,11 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     getFieldApiName(field: string) {
-        return this.fields.find((x) => x.name == field).apiName;
+        return this.fields.find((x) => x.name === field).apiName;
     }
 
     private checkSimpleSearchEnter(event, dt: Table) {
-        if (event.keyCode == 13) {
+        if (event.keyCode === 13) {
             this.doSimpleSearch(dt);
         } else {
             if (this.simpleSearchID > 0) {

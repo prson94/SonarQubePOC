@@ -323,6 +323,11 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                     this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
                 });
                 this.selectSingleItem(null, { value: null });
+                if (this.field.MultiSelect) {
+                    this.field.Items = this.field.Items.filter((item) => value.includes(item.value));
+                } else {
+                    this.field.Items = this.field.Items.filter((item) => item.value === value);
+                }
             } else {
 				this.field.Items = [];
             }

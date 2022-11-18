@@ -83,9 +83,9 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
                         item.StepName = "";
                         continue;
                     }
-                    var step = res.Steps.filter((x) => x.ID == item.StepID);
+                    var step = res.Steps.filter((x) => x.ID === item.StepID);
 
-                    if (!step || step.length == 0) {
+                    if (!step || step.length === 0) {
                         item.StepName = "(unresolved)";
                         continue;
                     }
@@ -129,9 +129,9 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
 
     private getStepName(itemStep: any): string {
         if (!this.details || !this.details.Steps) {return "";}
-        var step = this.details.Steps.filter((x) => x.ID == itemStep.StepID);
+        var step = this.details.Steps.filter((x) => x.ID === itemStep.StepID);
 
-        if (!step || step.length == 0) {return "";}
+        if (!step || step.length === 0) {return "";}
         return step[0].Name;
     }
 

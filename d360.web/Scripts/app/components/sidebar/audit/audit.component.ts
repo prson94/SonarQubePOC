@@ -140,7 +140,7 @@ export class AuditComponent implements OnInit, OnDestroy {
 
     public loadAuditsLazy(event: LazyLoadEvent) {
         this.sortOrder = event.sortOrder;
-        this.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.sortField = event.sortField == null ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;
         this.getData();
@@ -173,8 +173,8 @@ export class AuditComponent implements OnInit, OnDestroy {
             delete params['_order'];
         }
 
-        if (this.sortOrder != SortOrder.None)
-            {params._direction = this.sortOrder == SortOrder.Ascending ? "asc" : "desc";}
+        if (this.sortOrder !== SortOrder.None)
+            {params._direction = this.sortOrder === SortOrder.Ascending ? "asc" : "desc";}
         else {
             delete params['_direction'];
         }

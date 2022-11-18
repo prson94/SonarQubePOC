@@ -127,7 +127,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 						this.showError = true;
 					}
 
-					if (this.showSingle || this.objectType == undefined) {
+					if (this.showSingle || this.objectType == null) {
 						this.buildBreadcrumb(true);
 					} else {
 						this.buildBreadcrumb(false);
@@ -152,7 +152,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 						this.showSingle = true;
 					}
 
-					if (this.showSingle || this.objectType == undefined) {
+					if (this.showSingle || this.objectType == null) {
 						this.buildBreadcrumb(true);
 					} else {
 						this.buildBreadcrumb(false);

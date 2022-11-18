@@ -119,7 +119,7 @@ export class CompanySettingsService extends BaseObservableService {
         let settingId: number = <number>setting;
         let foundSetting: SettingsGetModel = null;
         if (this.settings && this.settings.length > 0) {
-            foundSetting = this.settings.find((s) => s.SettingID == settingId);
+            foundSetting = this.settings.find((s) => s.SettingID === settingId);
         }
         return foundSetting;
     }

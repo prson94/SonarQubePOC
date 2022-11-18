@@ -98,7 +98,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
                     this.items = r;
 
                     this.items.forEach((i) => {
-                        i.label = i.State == State.InActive ? i.Name + " ( " + $localize`Inactive` + " )" : i.Name;
+                        i.label = i.State === State.InActive ? i.Name + " ( " + $localize`Inactive` + " )" : i.Name;
                         i.value = i.ID.toString();
                     });
 
@@ -147,7 +147,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
         let typeList = "";
         e.forEach((s) => typeList += s.toString() + ',');
         data.value = typeList;
-        this.workflowTypeFilters = typeList != "" ? data : null;
+        this.workflowTypeFilters = typeList !== "" ? data : null;
         this.workflowTypeFiltersChange.emit(this.workflowTypeFilters);
         this.filterChange.emit();
     }
