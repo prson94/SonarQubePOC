@@ -21,8 +21,15 @@
                 "ecmaVersion": "latest",
                 "sourceType": "module"
             },
-            "rules": {}
+            "rules": {
+                "no-undef": 2
+            }
         }
     ],
+    "globals": {
+        "$localize": "readonly",
+        "go": "readonly",
+        "NodeListOf": "readonly"
+    },
     "ignorePatterns": ["**/*.js"]
 }
