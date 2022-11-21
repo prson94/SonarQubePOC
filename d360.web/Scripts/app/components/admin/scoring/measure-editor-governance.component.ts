@@ -51,6 +51,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 	public labelPredicate: string = $localize`Choose a predicate`;
 	public labelRelType: string = $localize`Choose a relationship type`;
 	public labelResType: string = $localize`Choose a responsibility type`;
+    public labelMatchAll: string = $localize`Match all conditions`;
+    public labelMatchAny: string = $localize`Match any condition`;
 
 	//#endregion
 
