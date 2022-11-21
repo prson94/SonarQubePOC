@@ -174,7 +174,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
 		forkJoin(
 			this.processService.getProcessDiagramColors(this.assetUid),
-			this.processService.getProcessDiagramColors(this.assetUid)
+			this.processService.getAvailableNodes(this.assetUid)
 		).subscribe((results) => {
 			this.colors = results[0];
 
