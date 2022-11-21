@@ -5,7 +5,8 @@ import { AssetTypeService } from "../../../../../services/asset-type.service";
 
 @Component({
     selector: "d3s-configuration-asset-type-log-page",
-    templateUrl: './configuration-asset-type-log-page.component.html'
+    templateUrl: './configuration-asset-type-log-page.component.html',
+    styleUrls: ['./configuration-asset-type-log-page.component.less'],
 })
 export class ConfigurationAssetTypeLogPageComponent {
     assetTypeClass: AssetTypeClass;
