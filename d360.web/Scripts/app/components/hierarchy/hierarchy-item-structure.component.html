@@ -9,8 +9,8 @@
         <as-split-area class="tile tile-detail main-panel">
             <ig-portal-content-provider name="asset-description" [template]="description">
                 <ng-template #description>
-                    <div *ngIf="assetTypeApiModel.IsDescriptionEnabled && isDescriptionVisible" class="hierarchy-description"
-                         [innerHTML]="assetTypeApiModel.Description | safeHtml">
+                    <div *ngIf="assetTypeApiModel.IsDescriptionEnabled && isDescriptionVisible" class="hierarchy-description">
+                        <div class="ql-editor" [innerHTML]="assetTypeApiModel.Description | safeHtml"></div>
                     </div>
                 </ng-template>
             </ig-portal-content-provider>
