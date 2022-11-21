@@ -591,16 +591,16 @@ namespace d360.model
 
 					break;
 				case AssetTypeClass.User:
-					formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "'Resource'", "R.ResourceID");
-					formattedIntersectJoin = string.Format(intersectJoin, "'Resource'", "R.ResourceID");
+					formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.Id");
+					formattedIntersectJoin = string.Format(intersectJoin, "A.Id");
 
 					countSql = $@"
 							select	count(*) 
 							from	reporting.Global_Resource R 
+									inner join Asset A on A.Object = 'Resource' and A.ObjectId = R.ResourceId
 									inner join [IntersectType] IT on IT.Id = @intersectTypeID
 									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
 							where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
-									and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
 									{formattedCardinalityCheck}";
 
 					sql = $@"
@@ -608,10 +608,10 @@ namespace d360.model
 									R.LastName + ', ' + R.FirstName as Text, 
 									case when I.ID is not null then 1 else 0 end as Selected 
 							from	reporting.[Global_Resource] R
+									inner join Asset A on A.Object = 'Resource' and A.ObjectId = R.ResourceId
 									inner join [IntersectType] IT on IT.Id = @intersectTypeID
 									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
 							where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
-									and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
 									{formattedCardinalityCheck} 
 							order by 3 desc, R.LastName + ', ' + R.FirstName asc 
 							OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";

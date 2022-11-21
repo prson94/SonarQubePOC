@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -1371,6 +1372,10 @@ namespace d360.model
 
 		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, Asset asset = null)
 		{
+			//wait a moment in case there are multiple workflow steps that are trying to update/create same field
+			//https://jira.syncsort.com/browse/GOV-20406
+			Thread.Sleep(new Random().Next(1000));
+
 			bool isAssetEdited = false;
 			//check if the field exists
 			Field field = null;

@@ -481,8 +481,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     OpenScoring(scoreType: string) {
         if (this.currentObject.Uid) {
             let scoreItems = this.items.filter((x) => x.title === 'Scoring');
-            if (scoreItems.length === 1) {
-                this.router.navigateByUrl(`/sidebar/score/${this.currentObject.Uid}/${scoreType}`);
+			if (scoreItems.length === 1) {
+				this.router.navigateByUrl(`/asset/${(this.currentObject.Uid as string).toLowerCase()}/score/${scoreType}`);
             }
         }
     }

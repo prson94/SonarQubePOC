@@ -132,7 +132,7 @@ export class SiteMenuService extends BaseObservableService {
                 map((response) => <SiteNav[]>response),
                 map((r) => {
                     r.forEach((s) => {
-                        s.IsCustom = (s.Name.indexOf('#') != 0);
+                        s.IsCustom = (s.Name.indexOf('#') !== 0);
                     });
                     return r;
                 }),

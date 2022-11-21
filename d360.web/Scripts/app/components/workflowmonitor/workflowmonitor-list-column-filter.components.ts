@@ -77,7 +77,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
 
 
     ngOnInit() {
-        if (!this.filters || this.filters.length == 0)
+        if (!this.filters || this.filters.length === 0)
             {this.addFilter();}
     }
 
@@ -91,13 +91,13 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
                 });
             }
             if (this.filters.length > 0) {
-                this.internalFilters = this.internalFilters.filter((x) => x.Type != FilterFieldType.Field);
+                this.internalFilters = this.internalFilters.filter((x) => x.Type !== FilterFieldType.Field);
 
                 for (let filter of this.filters) {
                     this.internalFilters.push({
                         Type: FilterFieldType.Field,
                         Data: filter,
-                        Field: this.availableFilters.filter((x) => x.Type == FilterFieldType.Field && x.Data.datafield == filter.field)[0],
+                        Field: this.availableFilters.filter((x) => x.Type === FilterFieldType.Field && x.Data.datafield === filter.field)[0],
                     });
                 }
             }
@@ -107,7 +107,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     onSubmit() {
         this.filters = [];
         for (let internalFilter of this.internalFilters) {
-            if (internalFilter.Type == FilterFieldType.Field && internalFilter.Data.value) {
+            if (internalFilter.Type === FilterFieldType.Field && internalFilter.Data.value) {
                 this.filters.push(internalFilter.Data);
             }
         }
@@ -116,14 +116,14 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
 
     private onDateSelected($event, filter) {
         let d = new Date(Date.parse($event));
-        if (d.toString() != "Invalid Date") {
+        if (d.toString() !== "Invalid Date") {
             filter.Data.value = this.getUTCFormattedDateForSearch(d, false, false);
         }
     }
 
     private onDateBlur(filter) {
         let d = new Date(Date.parse(filter.Data.value));
-        if (d.toString() != "Invalid Date")
+        if (d.toString() !== "Invalid Date")
             {filter.Data.value = this.getUTCFormattedDateForSearch(d, true, false);}
         else
             {filter.Data.value = null;}
@@ -131,7 +131,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
 
     private prepareDateValueForCalendar(filter): string {
         let d = new Date(Date.parse(filter.Data.value));
-        if (d.toString() != "Invalid Date")
+        if (d.toString() !== "Invalid Date")
             {return this.getUTCFormattedDateForSearch(d, true, true);}
         else
             {return null;}
@@ -158,12 +158,12 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     }
 
     private changeFilterField(target, filter) {
-        if (target.Type == FilterFieldType.Field) {
+        if (target.Type === FilterFieldType.Field) {
             filter.Data = new GridFilterExpression();
             filter.Data.field = target.Data.datafield;
             filter.Type = FilterFieldType.Field;
 
-            if (target.Data.columntype == "dropdownlist" || target.Data.columntype == "numberinput")
+            if (target.Data.columntype === "dropdownlist" || target.Data.columntype === "numberinput")
                 {filter.Data.condition = "EQUAL";}
             else
                 {filter.Data.condition = "CONTAINS";}

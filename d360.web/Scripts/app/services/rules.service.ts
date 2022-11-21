@@ -36,7 +36,7 @@ export class RulesService extends BaseObservableService {
     }
 
     saveRuleType(ruleType: RuleType): Observable<JsonResult> {
-        if (ruleType.ID == undefined || !ruleType.ID) {
+        if (ruleType.ID == null || !ruleType.ID) {
             return this.postDynamic(this.http, 'ruletype', ruleType);
         }
         return this.putDynamic(this.http, 'ruletype', ruleType);
@@ -51,14 +51,14 @@ export class RulesService extends BaseObservableService {
         simpleFilter: string = "",
         advancedFilter: string = ""
     ): Observable<RuleResultPagedResults> {
-        let sortOrderText = sortOrder == SortOrder.None ? "desc" : (sortOrder == SortOrder.Descending ? "desc" : "asc");
+        let sortOrderText = sortOrder === SortOrder.None ? "desc" : (sortOrder === SortOrder.Descending ? "desc" : "asc");
         let uri = `api/v2/metrics/quality/results?_owningAssetUid=${uid}`;
 
         let fileName = " Rule Results";
 
         if (sortField) {
             uri += "&_order=" + sortField;
-            if (sortOrder && sortOrderText != "") {
+            if (sortOrder && sortOrderText !== "") {
                 uri += "&_direction=" + sortOrderText;
             }
         }

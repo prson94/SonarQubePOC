@@ -898,12 +898,8 @@ namespace d360.extensions.search
                 I.ID,
                 'S' as 'Direction',
                 SubjectAdv.DisplayValue as 'Synonym',
-                I.Subject as 'SynonymObjectType',
-                I.SubjectID as  'SynonymObjectID',
-                I.SubjectAssetID as 'SynonymAssetID', 
                 ObjectAdv.DisplayValue as 'SynonymFor', 
-                I.Object as 'SynonymForObject', 
-                I.ObjectID as 'SynonymForObjectID',
+                ObjectAsset.Object as 'SynonymForObject', 
                 dbo.GenerateAssetUrl(I.ObjectAssetID) as 'Url',
                 ObjectAsset.uid as Uid,
                 ArtType.Name as 'SynonymForObjectType',
@@ -921,12 +917,8 @@ namespace d360.extensions.search
                 I.ID, 
                 'O' as 'Direction', 
                 SubjectAdv.DisplayValue as 'Synonym', 
-                I.Object as 'SynonymObjectType', 
-                I.ObjectID as  'SynonymObjectID', 
-                I.SubjectAssetID as 'SynonymAssetID', 
                 ObjectAdv.DisplayValue as 'SynonymFor', 
-                I.Subject as 'SynonymForObject', 
-                I.SubjectID as 'SynonymForObjectID', 
+                ObjectAsset.Object as 'SynonymForObject', 
                 dbo.GenerateAssetUrl(I.ObjectAssetID) as 'Url', 
                 ObjectAsset.uid as Uid,
                 ArtType.Name as 'SynonymForObjectType', 
@@ -971,7 +963,6 @@ namespace d360.extensions.search
 	                        s.Name as 'Synonym'
 	                        ,d.DisplayValue as 'SynonymFor'
 	                        ,s.[Object] as 'SynonymForObject'
-	                        ,s.[ObjectID] as 'SynonymForObjectID'
 	                        ,dbo.GenerateAssetUrl(a.ID) as 'Url'
                             ,a.uid as Uid
 	                        ,t.Name as 'SynonymForObjectType'	

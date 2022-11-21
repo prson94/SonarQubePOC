@@ -421,6 +421,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid guid value for parameter [SubjectAssetUid].
+        /// </summary>
+        public static string InvalidSubjectAssetUid {
+            get {
+                return ResourceManager.GetString("InvalidSubjectAssetUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid user or group uid as non owner passed in the request.
         /// </summary>
         public static string InvalidUserGroupRequestAsNonOwner {

@@ -2096,6 +2096,7 @@ namespace d360.web.Controllers.V2
 								from asset a
 								inner join AssetPath Node on Node.ID = a.ID 
 								where a.AssetTypeID = @parentAssetTypeId
+								option(recompile);
 
 								select 
 								cast(uid as nvarchar(36)) as value,
@@ -2139,7 +2140,7 @@ namespace d360.web.Controllers.V2
 								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
 								order by P.DisplayPath 
 								{pagingQuery}
-								option (maxrecursion 100)
+								option (maxrecursion 100, RECOMPILE)
 
 								select * from #results where (value != @assetUid or @assetUid is null)
 
@@ -2149,7 +2150,7 @@ namespace d360.web.Controllers.V2
 										inner join AssetPath P on P.ID = A.ID
 										cross apply dbo.GetAssetLevelById(A.ID) LV
 								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
-								option (maxrecursion 100)";
+								option (maxrecursion 100, RECOMPILE)";
 
 						if(skip != null && skip > 0)
 						{

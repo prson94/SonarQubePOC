@@ -14,6 +14,7 @@ import { ProcessService } from '../../../services/process.service';
 import { Group } from '../../../models/group.model';
 import { StringConstants } from '../../../static/string-constants';
 import { AuthenticationService } from '../../../services/authentication.service';
+import { mergeMap } from "rxjs/operators";
 
 declare var CurrentResourceID;
 
@@ -137,6 +138,22 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
 
             if (this.objectType && this.objectUID) {
                 detailObservable = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition, this.baseAssetUid);
+            }
+            
+            if (this.objectUID && !this.objectType) {
+                detailObservable = this.objectDetailService.getObjectDetailByObjectUid(this.objectUID).pipe(
+                    mergeMap((response) => {
+                        this.objectType = response.UID === response.AssetTypeUid ? response.Type : response.Type.slice(0, -4);
+                        return this.objectDetailService.getObjectDetailByUid(
+                            this.objectUID,
+                            this.objectType,
+                            true,
+                            this.showHeader,
+                            this.useAssetDetailColumnDefinition,
+                            this.baseAssetUid
+                        );
+                    })
+                );
             }
         }
 

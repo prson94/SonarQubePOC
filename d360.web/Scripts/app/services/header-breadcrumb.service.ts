@@ -139,7 +139,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
                     }
                 });
 
-                if (folderName != menuID) {resolve(folderName);}
+                if (folderName !== menuID) {resolve(folderName);}
                 else {reject(menuID.substr(1, menuID.length));}
 
             } else {
@@ -152,7 +152,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
                         }
                     });
                 }).add(() => {
-                    if (folderName != menuID) {resolve(folderName);}
+                    if (folderName !== menuID) {resolve(folderName);}
                     else {reject(menuID.substr(1, menuID.length));}
                 });
             }

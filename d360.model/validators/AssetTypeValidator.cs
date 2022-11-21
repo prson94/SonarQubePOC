@@ -310,9 +310,10 @@ where	a.[class] = @cls
 
 			string isHierachyItem = queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "_ishierachyitem").Value;
 
+			string order = queryParams.FirstOrDefault(q => q.Key.ToLowerInvariant() == "_order").Value;
+
 			if (!string.IsNullOrEmpty(isHierachyItem))
 			{
-				string order = queryParams.ToList().FirstOrDefault(q => q.Key.ToLowerInvariant() == "_order").Value;
 				if (!string.IsNullOrEmpty(order))
 				{
 					int orderID = 0;
@@ -332,12 +333,17 @@ where	a.[class] = @cls
 				return false;
 			}
 
-			string fieldName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLowerInvariant() == "_order").Value;
-
-			string[] validFields = { "name", "sourceid", "textpath", "code" };
-
-			bool doesOrderFieldExists = CompanyContext.FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == fieldName.ToLower());
+			FieldType fieldType = CompanyContext.FieldTypes.FirstOrDefault(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == order.ToLower());
 			List<string> defaultAssetFields = new List<string>() { "createdon", "updatedon", "assetid" };
+
+			string includeOwnershipLookup = queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "_includeownershiplookup").Value;
+
+			bool.TryParse(includeOwnershipLookup, out bool isIncludeOwnershipLookup);
+
+			if (!isIncludeOwnershipLookup && fieldType?.Type == "OwnershipLookup")
+			{
+				return false;
+			}
 
 			if (assetType.Object == SystemObjects.ReferenceItemType.ToString())
 			{
@@ -345,7 +351,7 @@ where	a.[class] = @cls
 				defaultAssetFields.Add("color");
 			}
 
-			if (queryParams.ToList().Any(x => x.Key.ToLowerInvariant() == "_includeparent"))
+			if (queryParams.Any(x => x.Key.ToLowerInvariant() == "_includeparent"))
 			{
 				string value = queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "_includeparent").Value;
 				bool.TryParse(value, out bool includeParent);
@@ -355,9 +361,9 @@ where	a.[class] = @cls
 				}
 			}
 
-			bool isOrderByPathSegment = fieldName.ToUpperInvariant().Contains("PATH_SEGMENT_IDX_");
+			bool isOrderByPathSegment = order.ToUpperInvariant().Contains("PATH_SEGMENT_IDX_");
 
-			return isOrderByPathSegment || doesOrderFieldExists || defaultAssetFields.Contains(fieldName.Trim().ToLowerInvariant());
+			return isOrderByPathSegment || fieldType != null || defaultAssetFields.Contains(order.Trim().ToLowerInvariant());
 		}
 
 		public bool IsValidOrderDirectionGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams)

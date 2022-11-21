@@ -2,7 +2,7 @@
 <ig-portal-content-provider name="asset-description" [template]="description">
     <ng-template #description>
         <div *ngIf="assetTypeApiModel.IsDescriptionEnabled && isDescriptionVisible" class="asset-description"
-             [innerHTML]="assetTypeApiModel.Description | sanitize">
+             [innerHTML]="assetTypeApiModel.Description | safeHtml">
         </div>
     </ng-template>
 </ig-portal-content-provider>

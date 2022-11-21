@@ -362,8 +362,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
         parentItemId?: string,
         parentValues?: string
     ): Observable<EditorDropDownItem[]> {
-        parentItemId = (parentItemId != undefined) ? parentItemId : '';
-        parentValues = (parentValues != undefined) ? encodeURIComponent(parentValues) : '';
+        parentItemId = (parentItemId != null) ? parentItemId : '';
+        parentValues = (parentValues != null) ? encodeURIComponent(parentValues) : '';
 
         return this
             .http

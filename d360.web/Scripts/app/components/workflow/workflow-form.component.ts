@@ -197,7 +197,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
 
     private reassign() {
         this.isLoading = true;
-        if (this.reassignType == 'object') {
+        if (this.reassignType === 'object') {
             this.workflowService.reassignObject(this.workflowItemId, this.workflowId, this.selectedReassignmentAsset.ObjectID, this.selectedReassignmentAsset.Object, this.workflowItemStepId)
                 .subscribe((result) => {
                     this.showMessageForResult(this.messagesService, result, $localize`Successfully Assigned`);
@@ -205,7 +205,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                     this.isCompleted = true;
                 });
         }
-        else if (this.reassignType == 'resource') {
+        else if (this.reassignType === 'resource') {
             this.workflowService.reassignUser(this.workflowItemStepId, this.selectedReassignResource, this.clearAssignments).subscribe((result) => {
                 this.showMessageForResult(this.messagesService, result, $localize`Successfully Assigned`);
                 this.isLoading = false;

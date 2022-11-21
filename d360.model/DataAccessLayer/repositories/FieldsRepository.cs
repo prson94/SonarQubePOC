@@ -2255,7 +2255,7 @@ namespace d360.model.DataAccessLayer
 							select	top 1
 									@referenceId = A.ID
 							from	[Intersect] I
-									inner join AssetType A on A.ID = I.ObjectAsetTypeID and I.ObjectAssetID = 0 and I.SubjectAssetID = @objectAssetId
+									inner join AssetType A on A.ID = I.ObjectAssetTypeID and I.ObjectAssetID = 0 and I.SubjectAssetID = @objectAssetId
 						end
 						else
 						begin 

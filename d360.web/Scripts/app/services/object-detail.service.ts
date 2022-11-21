@@ -189,7 +189,7 @@ export class ObjectDetailService extends BaseObservableService {
         classification: Classification,
         objectType: string
     ): Observable<JsonResult> {
-        if (classification.ID == undefined || !classification.ID) {
+        if (classification.ID == null || !classification.ID) {
             return this.postDynamic(this.http, objectType, classification);
         }
 
