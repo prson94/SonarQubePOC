@@ -162,7 +162,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     }
 
     savePredicate(event) {
-        let predicate: Predicate = event.item;
+        const predicate: Predicate = event.item;
 
         if (this.selected) {
             predicate.Uid = this.selected.Uid;

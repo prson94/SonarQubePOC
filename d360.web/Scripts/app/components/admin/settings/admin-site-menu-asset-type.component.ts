@@ -47,7 +47,7 @@ export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent im
 		private assetTypeService: AssetTypeService
 	) {
 		super(headerBreadcrumbService, titleService, settingsService);
-		let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+		const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
 		this.addAssetTypeHelpLink = helpBaseUri + "Default.htm#d-admin/establishing-responsibilities.htm?TocPath=Administration%257CManaging%2520users%2520and%2520groups%257C_____3";
 	}
 
@@ -93,7 +93,7 @@ export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent im
 			return;
 		}
 		this.addAssetTypeFolderSaving = true;
-		let nav = new SiteNav();
+		const nav = new SiteNav();
 		nav.Name = "#ASSET_TYPE";
 		nav.Object = this.selectedAssetType.Object;
 		nav.ObjectID = this.selectedAssetType.ObjectID;
