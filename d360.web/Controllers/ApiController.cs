@@ -2591,7 +2591,14 @@ namespace d360.web.Controllers
 
 			if (string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(fieldType.DefaultFormattedValue))
 			{
-				value = $@"[{{""name"":""{fieldType.DefaultFormattedValue}""}}]";
+				if (!LookupFieldHasColorItem(fieldType))
+				{
+					value = $@"[{{""name"":""{fieldType.DefaultFormattedValue}"", ""color"":""transparent""}}]";
+				}
+				else
+				{
+					value = $@"[{{""name"":""{fieldType.DefaultFormattedValue}""}}]";
+				}
 			}
 
 			if (LookupFieldHasColorItem(fieldType))
