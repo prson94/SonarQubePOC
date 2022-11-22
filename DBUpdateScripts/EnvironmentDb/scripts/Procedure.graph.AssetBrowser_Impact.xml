@@ -160,6 +160,8 @@ begin
 
 				if @hasSameSidedRelationship = 1
 				begin
+					-- When relationship has same Asset Type on Object and Subject side, one side should be shown as a different node so we use @newSalt+1 to create a new node
+				
 					insert into @i (Position, IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHierarchyKey, SubjectKey, SubjectSalt, SubjectID, ObjectHierarchyKey, ObjectKey, ObjectSalt, ObjectID)
 					select	@c,
 							I.IntersectID,
