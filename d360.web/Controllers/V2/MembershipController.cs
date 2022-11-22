@@ -137,8 +137,7 @@ namespace d360.web.Controllers.V2
 				}
 				else if (Uid != null)
 				{
-					var user = Company.GlobalReportingResources.Where(r => r.Uid == Uid).FirstOrDefault();
-					if (user.ResourceID == Company.CurrentResourceID)
+					if (Company.GlobalReportingResources.Any(r => r.Uid == Uid && r.ResourceID == Company.CurrentResourceID))
 					{
 						IsCurrentUser = true;
 					}
