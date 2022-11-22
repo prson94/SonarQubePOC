@@ -6,7 +6,7 @@
 </div>
 <ng-container *ngIf="field.value; else emptyValue" [ngSwitch]="field.type">
     <div class="ig-value" *ngSwitchCase="fieldType.HTML">
-        <span [innerHTML]="field.value"></span>
+        <span [innerHTML]="field.value | safeHtml"></span>
     </div>
     <div class="ig-value" *ngSwitchCase="fieldType.BOOL">
         <ng-container *ngIf="field.value; else falseTemplate">
