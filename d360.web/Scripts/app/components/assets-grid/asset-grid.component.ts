@@ -781,17 +781,22 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     private newAdvancedFilters: Filters;
     public advancedFiltersChanged($event) {
-        this.newAdvancedFilters = $event;
-        this.stateService.artifactTypeFilters.currentPageNumber = 0;
-        if (this.dt) {
-            this.dt.first = 0;
-        }
+		this.newAdvancedFilters = $event;
+		this.resetPageNumber();
         this.getData();
     }
 
     public onSimpleSearch($event) {
+		this.resetPageNumber();
         this.getData();
     }
+
+	resetPageNumber() {
+		this.stateService.artifactTypeFilters.currentPageNumber = 0;
+		if (this.dt) {
+			this.dt.first = 0;
+		}
+	}
 
     public triggerEdit() {
         this.onEdit(this.selected);
