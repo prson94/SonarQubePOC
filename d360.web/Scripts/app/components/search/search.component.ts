@@ -135,7 +135,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
             if (params['types'] != null) {
                 this.searchTypes = params['types'].split(',').filter((x): x is string => x.length > 0);
             }
-            let keepFilter = params['f'] ? (params['f'] === 1 ? true : false) : false;
+            const keepFilter = params['f'] ? (params['f'] === 1 ? true : false) : false;
             this.searchStateService.loadState(this.searchText, this.searchTypes, keepFilter);
             if (params['explain'] != null) {
                 this.searchStateService.setExplain(params['explain'] === 'please');
@@ -266,11 +266,11 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
     }
 
     public getSavedFilters(): string {
-        let state: AdvancedFilterFieldConditionCollection = new AdvancedFilterFieldConditionCollection();
+        const state: AdvancedFilterFieldConditionCollection = new AdvancedFilterFieldConditionCollection();
         state.connector = ` ${this.parseConnectorToString(this.searchStateService.connector)} `;
         state.filters = this.searchStateService.advancedFilters.map((af) => {
             const op: any = af.Operator === SearchOperator.NotContains ? Operator[Operator.NotContains] : Operator[Operator.Contains];
-            let condition: AdvancedFilterFieldCondition = new AdvancedFilterFieldCondition(this.datePipe);
+            const condition: AdvancedFilterFieldCondition = new AdvancedFilterFieldCondition(this.datePipe);
             condition.field = af.Field;
             condition.exact = af.MatchWords;
             if (af.Field === "Tags") {

@@ -145,11 +145,11 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.currentAreaName = $localize`Connector Labels`;
-                    let areaBreadcrumb = new Breadcrumb(
+                    const areaBreadcrumb = new Breadcrumb(
                         this.currentAreaName, ``
                     );
 
-                    let itemBreadcrumb = new Breadcrumb(
+                    const itemBreadcrumb = new Breadcrumb(
                         this.label.Value,
                         `${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${this.label.uid}`
                     );
@@ -215,7 +215,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
     saveLabel(event) {
         this.isSaving = true;
         if (event.additionalOption && event.additionalOption.uid) {
-            let arr: string[] = [];
+            const arr: string[] = [];
             arr.push(event.item.uid);
             this.consolidateLabels(event.additionalOption.uid, arr);
             return;

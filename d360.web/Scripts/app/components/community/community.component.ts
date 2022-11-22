@@ -82,7 +82,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
         this.isLoading = true;
         this.responsibilityTypeService.getResponsibilityTypeBreakdown().
             subscribe((result) => {
-                let options: any = {
+                const options: any = {
                     chart: {
                         plotBackgroundColor: null,
                         plotBorderWidth: null,

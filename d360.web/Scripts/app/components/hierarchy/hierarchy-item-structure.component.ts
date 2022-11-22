@@ -189,7 +189,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 		this.sidePanelStorageKey = 'list_' + AssetTypeClass[this.assetTypeClass] + '_' + CurrentResourceID;
 
-		let uriParams: any = {};
+		const uriParams: any = {};
 
 		const obs = new Observable((observer) => {
 			if (this.assetTypeUid) {
@@ -341,7 +341,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 
 	clickMenuItem(menuItem: any, item: any) {
-		let key = menuItem.value.toLowerCase();
+		const key = menuItem.value.toLowerCase();
 		const event = menuItem.event;
 		if (key === $localize`View Information`.toLowerCase()) {
 			event['from-context-method'] = 'info';
@@ -451,17 +451,17 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	}
 
 	private buildTreeNodeArray(hierarchies: any[], levelNumber: number, Parent?: string): TreeNode[] {
-		let rootNodes = hierarchies.filter((x) => (Parent !== undefined ? x.ParentAssetUid === Parent : !x.ParentAssetUid));
+		const rootNodes = hierarchies.filter((x) => (Parent !== undefined ? x.ParentAssetUid === Parent : !x.ParentAssetUid));
 
 		if (rootNodes.length === 0) {
 			return null;
 		}
 
-		let res: TreeNode[] = [];
+		const res: TreeNode[] = [];
 
 
-		for (let root of rootNodes) {
-			let isExpanded = this.expandedNodes.indexOf(root.AssetUid) !== -1 || this.areAllExpanded;
+		for (const root of rootNodes) {
+			const isExpanded = this.expandedNodes.indexOf(root.AssetUid) !== -1 || this.areAllExpanded;
 			root.Level = levelNumber;
 
 			root[this.menuKey] = [
@@ -478,7 +478,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				root[this.menuKey].push({ title: $localize`Edit` });
 			}
 
-			let children = (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.AssetUid));
+			const children = (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.AssetUid));
 
 			if (root.Permissions.DeleteAsset && (!children || children?.length === 0)) {
 				root[this.menuKey].push({ title: $localize`Delete` });
@@ -524,7 +524,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	}
 
 	private deleteSelectedTreeNode(id: number): TreeNode {
-		let nodes: TreeNode[] = [];
+		const nodes: TreeNode[] = [];
 
 		// add root nodes
 		for (let i = 0; i < this.treeNodeArray.length; i++) {
@@ -643,7 +643,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	setTreeNodeStyles(node) {
 		if (!node.data) {return null;}
 
-		let styles = {
+		const styles = {
 			'font-weight': node.data.hasRelations ? 'bold' : 'normal',
 		};
 		return styles;
@@ -655,7 +655,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		}
 
 		if (!this.selected) {
-			let thisLevel = this.levels.filter((x) => x.Level === this.selectedLevel + 1);
+			const thisLevel = this.levels.filter((x) => x.Level === this.selectedLevel + 1);
 
 			if (thisLevel && thisLevel.length > 0)
 				{return thisLevel[0].Name;}
@@ -663,7 +663,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				{return $localize`(Level ${this.selectedLevel + 1}) Item`;}
 		}
 
-		let thisLevel = this.levels.filter((x) => x.Level === this.selected.data.Level);
+		const thisLevel = this.levels.filter((x) => x.Level === this.selected.data.Level);
 
 		if (thisLevel && thisLevel.length > 0) {return thisLevel[0].Name;}
 		return $localize`(Level ${this.selected.data.Level}) Item`;
@@ -678,7 +678,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		if (isNaN(+value))
 			{return '';}
 
-		let v = +value;
+		const v = +value;
 
 		if (v <= lower)
 			{return 'poor';}
@@ -691,7 +691,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	showHierarchy($event, asset) {
 		this.assetService.getUIDetailsForAssetUID(asset.AssetUid)
 			.subscribe((res) => {
-				let url = SiteUrlHelpers.getAssetUrl(asset.AssetUid);
+				const url = SiteUrlHelpers.getAssetUrl(asset.AssetUid);
 				if ($event['from-context-method']) {
 					this.linkClickInterceptor.sendEvent($event, {
 						Values: [{
@@ -763,7 +763,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				this.loadNodesSub.unsubscribe();
 			}
 
-			let uriParams: any = {
+			const uriParams: any = {
 				_pageSize: 50000,
 				_includeParent: "true",
 				_pageNum: 1,

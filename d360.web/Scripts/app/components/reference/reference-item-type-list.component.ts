@@ -112,7 +112,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                 this.referenceTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.referenceTypes.length > 0) {
                     if (this.initialSelectedListUid.length > 0) {
-                        let index = this.referenceTypes.findIndex((x) => x.uid == this.initialSelectedListUid);
+                        const index = this.referenceTypes.findIndex((x) => x.uid == this.initialSelectedListUid);
                         this.initialSelectedListUid = '';
                         if (index >= 0 && index < this.referenceTypes.length) {
                             this.selected = this.referenceTypes[index];
@@ -146,7 +146,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                     this.showMessageForResult(this.messagesService, result);
 
                     if (result.type != 'error') {
-                        let index = this.referenceTypes.findIndex((x) => x.AssetTypeID == id);
+                        const index = this.referenceTypes.findIndex((x) => x.AssetTypeID == id);
                         if (index >= 0 && index < this.referenceTypes.length) {
                             this.referenceTypes.splice(index, 1);
                         }
