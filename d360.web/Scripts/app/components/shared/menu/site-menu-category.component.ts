@@ -54,7 +54,8 @@ export class SiteMenuCategoryComponent extends BaseComponent {
         }
     }
 
-    onCategoryExpand() {
+    onCategoryExpand($event: MouseEvent) {
+        $event.stopPropagation();
         if (this.menu && this.menu.isActiveItem) {
             this.activeItemChanged.emit(undefined);
         } else {
