@@ -430,7 +430,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
 
                 if (this.categories.findIndex((dc) => dc.name === currentCategory) === -1) {
-                    let category = new EditorCategory();
+                    const category = new EditorCategory();
                     category.name = currentCategory;
                     category.rows = [];
                     if (currentCategory === "" || currentCategory === "General") {
@@ -453,13 +453,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     }
                 }
 
-                let curCategory = this.categories.find((dc) => dc.name === currentCategory);
+                const curCategory = this.categories.find((dc) => dc.name === currentCategory);
 
-                let r = curCategory.rows.find((r) => r.Row === (f.Row || 0));
+                const r = curCategory.rows.find((r) => r.Row === (f.Row || 0));
                 if (r) {
                     r.Fields.push(f);
                 } else {
-                    let n = new EditorRow();
+                    const n = new EditorRow();
 
                     n.Row = f.Row;
                     n.Fields.push(f);
@@ -509,12 +509,12 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     }
 
     toFormGroup(editorField: EditorField[]) {
-        let group: any = {};
+        const group: any = {};
 
         editorField.forEach((field) => {
             //if its a link we need to add two fields a link and name            
             if (field.FieldType === "Link") {
-                let parts = (field.Value ? field.Value.split("|") : []);
+                const parts = (field.Value ? field.Value.split("|") : []);
                 let url = "";
                 let name = "";
 
@@ -531,7 +531,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
             } else if (field.FieldType === "DateTime" || field.FieldType === "Date") {
                 if (field.Value != null) {
-                    let date = new Date(field.Value);
+                    const date = new Date(field.Value);
 
                     if (field.FieldType === "DateTime") {
                         date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
@@ -566,10 +566,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     }
                 }
                 else if (field.FieldType === "Lookup" && !field.Value && this.selection) {
-                    let selected = field.Items.filter((x) => x.Selected);
+                    const selected = field.Items.filter((x) => x.Selected);
                     field.Value = [];
 
-                    for (let item of selected) {
+                    for (const item of selected) {
                         field.Value.push(item.Value);
                     }
 
@@ -602,7 +602,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         let maxLen = Number.MAX_SAFE_INTEGER;
 
         if (field.Validations) {
-            for (let validation of field.Validations) {
+            for (const validation of field.Validations) {
                 if (validation.rule && validation.rule.startsWith('length=')) {
                     var vals = validation.rule.split(',');
 
@@ -694,13 +694,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.savingInProgressWithAddNew = true;
         }
 
-        let action = (this.selection === null ? "new" : "edit");
-        let values: any = {};
+        const action = (this.selection === null ? "new" : "edit");
+        const values: any = {};
 
         //adjust any dates to utc
         for (var p in this.form.value) {
             if (this.form.value.hasOwnProperty(p)) {
-                let field = this.fields.find((f) => f.FieldName === p);
+                const field = this.fields.find((f) => f.FieldName === p);
 
                 if (field === null || typeof field === "undefined") {
                     continue;
@@ -766,12 +766,12 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         // if this is the v2 api we need to combine any link field types into the format stored in the db
         // tallyfy|https://tallyfy.com/what-is-compliance-management/
         if (this.isV2API || this.useV2ApiLink) {
-            let links = this.fields.filter((x) => x.FieldType === 'Link');
+            const links = this.fields.filter((x) => x.FieldType === 'Link');
             //need to get the link and url for each            
-            for (let link of links) {
-                let url = values[link.FieldName + '_Url'];
+            for (const link of links) {
+                const url = values[link.FieldName + '_Url'];
                 delete values[link.FieldName + '_Url'];
-                let name = values[link.FieldName + '_Name'];
+                const name = values[link.FieldName + '_Name'];
                 delete values[link.FieldName + '_Name'];
                 //No name and url, use empty string rather than '|'
                 values[link.FieldName] = (name === '' && url === '') ? `` : `${name}|${url}`;
@@ -800,8 +800,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     postToApiV2(event) {
         this.savingInProgress = true;
-        let values: any = {};
-        let asset: AssetEditorModel = new AssetEditorModel();
+        const values: any = {};
+        const asset: AssetEditorModel = new AssetEditorModel();
         asset.Fields = {};
 
         //takes the form and convert any array values to , separated string values
@@ -838,7 +838,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 event.Success = res.Success;
 
                 if (res.Success) {
-                    let msg = asset.Uid ? $localize`Successfully updated` : $localize`Successfully added`;
+                    const msg = asset.Uid ? $localize`Successfully updated` : $localize`Successfully added`;
 					const keyFields = this.fields.filter((field) => field.IsPartOfKey).map((field) => field.FieldName);
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     if (res.uid) {
@@ -872,8 +872,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     postToGroupsApiV2(event) {
         this.savingInProgress = true;
-        let values: any = {};
-        let group: Group = new Group();
+        const values: any = {};
+        const group: Group = new Group();
         group.Fields = {};
 
         //takes the form and convert any array values to , separated string values
@@ -889,7 +889,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
         var upsertSub = this.groupsService.postGroup(group);
 
-        let rootProperties: string[] = ['Name', 'Description', 'IsActiveDirectoryGroup', 'PrimaryOwnerUid', 'SecondaryOwnerUid', 'UID'];
+        const rootProperties: string[] = ['Name', 'Description', 'IsActiveDirectoryGroup', 'PrimaryOwnerUid', 'SecondaryOwnerUid', 'UID'];
         for (var p in values) {
             if (rootProperties.some((prop) => prop.toUpperCase() === p.toUpperCase())) {
                 group[p] = values[p];
@@ -908,7 +908,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             event.Success = res.Success;
 
             if (res.Success) {
-                let msg = group.Uid ? $localize`Successfully updated` : $localize`Successfully added`;
+                const msg = group.Uid ? $localize`Successfully updated` : $localize`Successfully added`;
 				const keyFields = this.fields.filter((field) => field.IsPartOfKey).map((field) => field.FieldName);
                 this.showMessageForApiResult(this.messagesService, res, msg);
                 if (res.uid) {
@@ -935,8 +935,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     postToRelationshipApiV2(event) {
         this.savingInProgress = true;
-        let values: any = {};
-        let relationship: RelationshipV2 = new RelationshipV2();
+        const values: any = {};
+        const relationship: RelationshipV2 = new RelationshipV2();
         relationship.Fields = {};
 
         //takes the form and convert any array values to , separated string values
@@ -967,7 +967,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             .subscribe((result) => {
                 var res = result[0];
                 if (res.Success) {
-                    let msg = $localize`Successfully updated`;
+                    const msg = $localize`Successfully updated`;
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     if (res.uid) {
                         event.relationshipUid = res.uid;

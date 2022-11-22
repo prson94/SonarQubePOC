@@ -102,7 +102,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         let uidChanged: boolean = false;
         this.selectedScoreType = <any>ScoreType[this.scoreType];
 
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === 'uid') {
                 uidChanged = (changes['uid'].currentValue !== changes['uid'].previousValue) && changes['uid'] != null;
                 if (uidChanged) {
@@ -187,7 +187,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 this.scoreTypes = x.map((x) => <any>ScoreType[x.scoreType]);
                 this.allocationData = x;
                 if (x.length > 0) {
-                    let selectedScoreTypeIndex = this.scoreTypes.findIndex((a) => { return a === this.selectedScoreType; });
+                    const selectedScoreTypeIndex = this.scoreTypes.findIndex((a) => { return a === this.selectedScoreType; });
                     if (selectedScoreTypeIndex > -1) {
                         this.scoreType = <any>ScoreType[this.scoreTypes[selectedScoreTypeIndex]];
                     }
@@ -290,8 +290,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         subject.next(true);
 
                         if (this.allocationData) {
-                            let stype = ScoreType[this.selectedScoreType];
-                            let selected = this.allocationData.filter((x) => x.scoreType.toString() === stype.toString());
+                            const stype = ScoreType[this.selectedScoreType];
+                            const selected = this.allocationData.filter((x) => x.scoreType.toString() === stype.toString());
                             if (selected.length > 0) {
                                 this.isExternallyCalculated = selected[0]['isExternallyCalculated'];
                                 this.lowerThreshold = +selected[0]['lowerThreshold'] / 100;
@@ -315,8 +315,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private calculateBadgeStyle(alloc: ScoreTypeAllocation, actualRatio: number, isDecimal: boolean = true) {
         let style = 'positive';
 
-        let lowerThreshold: number = (isDecimal ? (alloc.lowerThreshold / 100) : alloc.lowerThreshold);
-        let upperThreshold: number = (isDecimal ? (alloc.upperThreshold / 100) : alloc.upperThreshold);
+        const lowerThreshold: number = (isDecimal ? (alloc.lowerThreshold / 100) : alloc.lowerThreshold);
+        const upperThreshold: number = (isDecimal ? (alloc.upperThreshold / 100) : alloc.upperThreshold);
 
         if (actualRatio > lowerThreshold && actualRatio <= upperThreshold) {
             style = 'warning';
@@ -339,7 +339,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 this.scoreDate += 'T00:00:00.000Z';
             }
 
-            let selectedAllocation = this.allocationData.find((o) => { return <any>ScoreType[o.scoreType] === this.selectedScoreType; });
+            const selectedAllocation = this.allocationData.find((o) => { return <any>ScoreType[o.scoreType] === this.selectedScoreType; });
             this.allocationUid = selectedAllocation.uid;
 
             this.scoreService.getScoreHistoryByAllocationAndAssetAndEffectiveDate(this.allocationUid, this.uid, this.scoreDate)
@@ -363,7 +363,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     }
 
                     // Get sum of root measures.
-                    let rootRawWeightSum: number = this.calculateRawWeightSumAtThisLevel(this.pointBreakdown);
+                    const rootRawWeightSum: number = this.calculateRawWeightSumAtThisLevel(this.pointBreakdown);
 
                     this.pointBreakdown.forEach((pb) => {
                         pb._groupDisplayMaxWeight = null;
@@ -372,7 +372,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
                         if (pb.Measures) {
                             // Calculate the raw weight sum under this specific group.
-                            let childrenRawWeightSum = this.calculateRawWeightSumAtThisLevel(pb.Measures);
+                            const childrenRawWeightSum = this.calculateRawWeightSumAtThisLevel(pb.Measures);
                             pb.Measures.forEach((m) => {
                                 m._rawWeightSum = childrenRawWeightSum;// pb.DisplayWeight;
                                 m._groupDisplayWeight = pb.DisplayWeight;
@@ -416,7 +416,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         let sum: number = 0;
 
         points.forEach((pb) => {
-            let match = pb.Conditions?.find((c) => c.Uid === pb.ConditionUid);
+            const match = pb.Conditions?.find((c) => c.Uid === pb.ConditionUid);
             let weight = 0;
             if (match) {
                 // GOV-13832 Make sure the weight is defined on the condition, if it is not fall back to the weight on the measure.

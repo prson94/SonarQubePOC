@@ -115,7 +115,7 @@ export class AssetDetailFieldComponent {
         if (this.field == null || this.field.Value.indexOf("|") === -1) {
             return null;
         }
-        let index = this.field.Value.indexOf("|");
+        const index = this.field.Value.indexOf("|");
 
         return this.field.Value.substring(index + 1);
     }
@@ -124,7 +124,7 @@ export class AssetDetailFieldComponent {
         if (this.field == null || this.field.Value.indexOf("|") === -1) {
             return null;
         }
-        let index = this.field.Value.indexOf("|");
+        const index = this.field.Value.indexOf("|");
         if (index === 0) {
             return this.linkUrl;
         }

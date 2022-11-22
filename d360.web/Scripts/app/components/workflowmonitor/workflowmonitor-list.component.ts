@@ -87,7 +87,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
     }
 
     export() {
-        let filter: GridFilterExpression[] = this.getFilter();
+        const filter: GridFilterExpression[] = this.getFilter();
         if (filter == null || filter.length < 1) {
             return;
         }
@@ -132,7 +132,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
     }
 
     private loadData() {
-        let filter: GridFilterExpression[] = this.getFilter();
+        const filter: GridFilterExpression[] = this.getFilter();
         if (filter == null || filter.length < 1) {
             this.items = [];
             this.totalRecords = 0;

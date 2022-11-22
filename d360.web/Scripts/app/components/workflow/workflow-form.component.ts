@@ -123,7 +123,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     get objectUrl() {
-        let path = SiteUrlHelpers.getObjectUrl(this.objectType, this.objectID, this.objectTypeID);
+        const path = SiteUrlHelpers.getObjectUrl(this.objectType, this.objectID, this.objectTypeID);
         return path == null ? null : '/' + path;
     }
 
