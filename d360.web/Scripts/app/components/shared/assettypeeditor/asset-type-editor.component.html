@@ -166,7 +166,7 @@
                         </div>
                     </div>
                 </simple-accordion>
-				<simple-accordion header="Asset Description" active="true">
+				<simple-accordion *ngIf="isDescriptionSettingsApplicable" header="Asset Description" active="true">
 					<div>
 						<div class="FieldInstructions" style="margin-bottom: 8px" i18n>
 							Enable or Disable showing the description of the asset type

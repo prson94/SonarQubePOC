@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using d360.core.enums;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer.repositories
@@ -24,7 +25,7 @@ namespace d360.model.DataAccessLayer.repositories
 					where not exists  (
 						select	IT.SubjectAssetTypeID
 						from	IntersectType IT
-								inner join [Predicate] P on IT.ObjectAssetTypeID = assetType.ID and P.ID = IT.PredicateID and P.Type = 3
+								inner join [Predicate] P on IT.ObjectAssetTypeID = assetType.ID and P.ID = IT.PredicateID and P.Type = @InterTypeHierarchy
 					)
 
 					union all
@@ -37,7 +38,7 @@ namespace d360.model.DataAccessLayer.repositories
 						parent.uid as ParentUid
 					from cte_assetType parent
 						join dbo.IntersectType IT on IT.SubjectAssetTypeID = parent.ID
-						join dbo.[Predicate] p on P.ID = IT.PredicateID and P.Type = 3
+						join dbo.[Predicate] p on P.ID = IT.PredicateID and P.Type = @InterTypeHierarchy
 						join dbo.AssetType child on child.Id = IT.ObjectAssetTypeID
 				)
 				select 
@@ -46,15 +47,18 @@ namespace d360.model.DataAccessLayer.repositories
 					Uid,
 					ParentUid
 				from cte_assetType
-				where Class in (
-					1, -- Business Assets
-					2, -- Models
-					6, -- Policies
-					7, -- Rules,
-					8, -- Technical Asset,
-					15 -- Diagram Asset
-				)
-			");
+				where Class in @Classes
+			", new {
+				PredicateType.InterTypeHierarchy,
+				Classes = new[] { 
+					AssetTypeClass.BusinessAsset, 
+					AssetTypeClass.Model, 
+					AssetTypeClass.Policy,
+					AssetTypeClass.Rule,
+					AssetTypeClass.TechnicalAsset,
+					AssetTypeClass.Diagram
+				}
+			});
 		}
 	}
 }
