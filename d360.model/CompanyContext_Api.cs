@@ -6157,7 +6157,7 @@ where	T.ExecutionID = @ExecutionID
 										select	R.ExecutionID, R.ItemNumber
 										into #temppremissionSub
 										from	api.ExecutionRelationship R
-												inner join Asset A on A.Uid = R.SubjectUid and R.ExecutionID = @ExecutionID
+												inner join Asset A on A.ID = R.SubjectAssetID and R.ExecutionID = @ExecutionID
 												outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
 										where	(
 												(P.AssetID = A.ID) 
@@ -6185,7 +6185,7 @@ where	T.ExecutionID = @ExecutionID
 										select	R.ExecutionID, R.ItemNumber
 										into #temppremissionObj
 										from	api.ExecutionRelationship R
-												inner join Asset A on A.Uid = R.ObjectUid and R.ExecutionID = @ExecutionID
+												inner join Asset A on A.ID = R.ObjectAssetID and R.ExecutionID = @ExecutionID
 												outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
 										where	(
 												(P.AssetID = A.ID) 
