@@ -82,9 +82,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.subParams = this.route.queryParams.subscribe(() => {
             let markForCheck = false;
-            let url = new URL(window.location.href);
-            let search = url.search;
-            let params = new URLSearchParams(search);
+            const url = new URL(window.location.href);
+            const search = url.search;
+            const params = new URLSearchParams(search);
             if (params.has('nonavigation')) {
                 this.hideNav = params.get('nonavigation').toLowerCase() === 'true';
                 markForCheck = true;
@@ -117,8 +117,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     doScroll() {
         if (this.menu && this.isScrollerVisable) {
-            let elem = this.menu.nativeElement;
-            let scrollDistance = (elem.offsetHeight - 120);
+            const elem = this.menu.nativeElement;
+            const scrollDistance = (elem.offsetHeight - 120);
             if (this.scrollingUp) {
                 elem.scrollTop -= scrollDistance;
             } else {
@@ -132,7 +132,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }, 50);
 
     checkScrollerPos() {
-        let elem = this.menu.nativeElement;
+        const elem = this.menu.nativeElement;
         let top = elem.scrollTop;
         let max = this.menuOpen ? (elem.scrollHeight - elem.offsetHeight) - 5 : (elem.scrollHeight - elem.offsetHeight) - 45;
         if (this.scrollingUp === true) {
@@ -180,7 +180,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     loadMenu() {
 
-        let navigationState: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu")) ? JSON.parse(localStorage.getItem("NavigationMenu")) : [];
+        const navigationState: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu")) ? JSON.parse(localStorage.getItem("NavigationMenu")) : [];
 
         this.siteMenuService.getMenu().subscribe(
             (result) => {
@@ -194,7 +194,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     result.MenuItems = result.MenuItems.filter((x) => (x.MenuID !== '#SemanticTypes'));
                 }
                 // add properties we need to add to the burned in menus
-                for (let menu of result.MenuItems) {
+                for (const menu of result.MenuItems) {
                     menu.ShouldDisplay = true;
 
                     switch (menu.MenuID) {
@@ -372,14 +372,14 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu.MenuID = '-Admin';
         this.adminMenu.NavigationItems = [];
 
-        let integrationMenu = new SiteMenuItem();
+        const integrationMenu = new SiteMenuItem();
         integrationMenu.Name = $localize`Integration`;
         integrationMenu.Items = [];
         integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, count: null });
         integrationMenu.Items.push({ Name: $localize`Bulk Loader`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, count: null });
         this.adminMenu.NavigationItems.push(integrationMenu);
 
-        let securityMenu = new SiteMenuItem();
+        const securityMenu = new SiteMenuItem();
         securityMenu.Name = $localize`Security`;
         securityMenu.Items = [];
 

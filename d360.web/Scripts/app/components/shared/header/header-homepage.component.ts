@@ -80,7 +80,7 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
         }
 
         this.isLoading = true;
-        let f = new FavoriteApiModel();
+        const f = new FavoriteApiModel();
         f.Name = this.name;
         f.Route = this.currentUri;
         this.favoritesService.toggleHomePageV2(f).subscribe(

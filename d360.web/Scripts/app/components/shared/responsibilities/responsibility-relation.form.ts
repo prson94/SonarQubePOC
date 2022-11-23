@@ -79,7 +79,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
                 this.actionName = 'Edit';
 
                 //#region Mark the one in use as not used so it will show up in the edit list.
-                let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === this.relation.AssetTypeUid);
+                const ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === this.relation.AssetTypeUid);
                 if (ix) {
                     ix.IsUsed = false;
                     this.selectedAllocation = ix;
@@ -108,7 +108,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
         this.isLoading = true;
 
         if (this.validate()) {
-            let allocation = new ResponsibilityTypeAllocationPost();
+            const allocation = new ResponsibilityTypeAllocationPost();
             allocation.AssetTypeUid = this.relation.AssetTypeUid;
             allocation.Permissions = this.relation.Permissions.filter((p) => p.Selected).map((p) => parseInt(p.ID));
 

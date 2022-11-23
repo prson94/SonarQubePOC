@@ -135,9 +135,9 @@ export class HeaderBreadcrumbComponent {
 
         this.breadcrumbs.forEach((x) => { x.show = false; });
 
-        let element = this.breadcrumbUIElement.nativeElement;
+        const element = this.breadcrumbUIElement.nativeElement;
         var controlsWidth = this.controlWidth ? this.controlWidth : 0; // only visible medium and up
-        let logo = this.showBackButton ? element.parentElement.previousElementSibling.previousElementSibling : element.parentElement.previousElementSibling;
+        const logo = this.showBackButton ? element.parentElement.previousElementSibling.previousElementSibling : element.parentElement.previousElementSibling;
         var logoWidth = logo.offsetWidth;
         var breadcrumbWidth = element.offsetWidth;
 
@@ -177,7 +177,7 @@ export class HeaderBreadcrumbComponent {
 
             this.breadcrumbUIElement.nativeElement.insertAdjacentHTML('beforeend', html);
 
-            let tempCrumb = this.breadcrumbUIElement.nativeElement.lastElementChild;
+            const tempCrumb = this.breadcrumbUIElement.nativeElement.lastElementChild;
 
             max += tempCrumb.offsetWidth;
 
@@ -205,8 +205,8 @@ export class HeaderBreadcrumbComponent {
             this.breadcrumbs.forEach((x) => { x.show = true; });
             return;
         }
-        let maxIndex = this.breadcrumbs.length - 1;
-        let minIndex = this.breadcrumbs.length - this.showThisManyCrumbs;
+        const maxIndex = this.breadcrumbs.length - 1;
+        const minIndex = this.breadcrumbs.length - this.showThisManyCrumbs;
         for (var i = 0; i < this.breadcrumbs.length; i++) {
             if (i >= minIndex && i <= maxIndex) {this.breadcrumbs[i].show = true;}
             else {this.breadcrumbs[i].show = false;}

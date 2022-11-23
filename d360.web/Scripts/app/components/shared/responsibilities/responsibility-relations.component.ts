@@ -51,7 +51,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === "uid") {
                 this.uid = changes["uid"].currentValue;
                 this.isEditing = false;
@@ -88,7 +88,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
                         //#region Remove the already-populated relations from the list of options.
                         this.rows.forEach((e) => {
-                            let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === e.AssetTypeUid);
+                            const ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === e.AssetTypeUid);
                             if (ix) {
                                 ix.IsUsed = true;
                             }
@@ -106,7 +106,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
                         //#region Remove the already-populated relations from the list of options.
                         this.rows.forEach((e) => {
-                            let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === e.AssetTypeUid);
+                            const ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === e.AssetTypeUid);
                             if (ix) {
                                 ix.IsUsed = true;
                             }
