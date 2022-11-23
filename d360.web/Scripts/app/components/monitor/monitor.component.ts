@@ -148,7 +148,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
 
         this.querySub = this.route.queryParams.subscribe((params) => {
             if (params['tab'] != null) {
-                let i = this.tabs.findIndex((t) => t.key === params['tab'].toLowerCase());
+                const i = this.tabs.findIndex((t) => t.key === params['tab'].toLowerCase());
                 if (i > -1) {
                     this.activeIndex = i;
                     this.activeTab = this.tabs[i];

@@ -103,7 +103,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     }
 
                     this.resourceUid = this.resource.uid;
-                    let showApi = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
+                    const showApi = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
                     this.showAllUsersAPIKey = (this.resource.IsAdministrator || showApi);
 
                     if (this.resourceId.toString() === CurrentResourceID.toString()) {
@@ -190,7 +190,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         user.Fields = new Object();
 
         // handle dynamic fields
-        for (let key in e.item) {
+        for (const key in e.item) {
             if (key !== 'Email' && key !== 'FirstName' && key !== 'LastName' && key !== 'IsAdministrator' && key !== 'State' && key !== 'ID' && key !== 'Password' && key !== 'uid' && key !== 'ResourceID' && key !== 'LastLoggedInOn') {
                 user.Fields[key] = e.item[key];
             }

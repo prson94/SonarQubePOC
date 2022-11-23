@@ -159,7 +159,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
                     }
                 }),
                 map(() => {
-                    let filteredTypeList = [];
+                    const filteredTypeList = [];
                     if (this.workflowItems != null) {
                         this.workflowItems.forEach((w) => filteredTypeList.push(w.TypeID));
                         this.filteredTypes.emit(filteredTypeList);
