@@ -12,7 +12,6 @@ using System.Web.Http.Description;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.exceptions;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
@@ -551,8 +550,9 @@ namespace d360.web.Controllers.V2
 		/// </summary>
 		/// <param name="model">The information of the workflow action type to be created</param>
 		[
-			Route("type"),
 			HttpPost,
+			Route("type"),
+			RequireAdminPermissions,
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "Workflow Action Type successfully created.", typeof(AddIssueTypeApiModel)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -562,80 +562,64 @@ namespace d360.web.Controllers.V2
 		{
 			var prefix = "Issues.AddWorkflowActionType => ";
 			AddIssueTypeApiModel result = new AddIssueTypeApiModel();
-			try
+
+			if (model.Uid != null)
 			{
-				if (!Company.CurrentResourceIsAdmin)
+				var validUid = Company.IssueTypes.Any(i => i.uid == model.Uid);
+
+				if (validUid)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
+					throw new ArgumentException(ActionApiMessages.UniqueUid);
 				}
+			}
 
-				if (model.Uid != null)
-				{
-					var validUid = Company.IssueTypes.Any(i => i.uid == model.Uid);
+			if (string.IsNullOrEmpty(model.Name.Trim()))
+			{
+				throw new ArgumentException(ActionApiMessages.NameNotEmptyAndRequired));
+			}
 
-					if (validUid)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.UniqueUid)).ConfigureAwait(false);
-					}
-				}
+			if (model.Name.Trim().Length > 250)
+			{
+				throw new ArgumentException(ActionApiMessages.NameMaxLength250Char));
+			}
 
-				if (string.IsNullOrEmpty(model.Name.Trim()))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameNotEmptyAndRequired)).ConfigureAwait(false);
-				}
+			var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower());
 
-				if (model.Name.Trim().Length > 250)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameMaxLength250Char)).ConfigureAwait(false);
-				}
+			if (validName)
+			{
+				throw new ArgumentException(ActionApiMessages.UniqueNameWorkflowAction));
+			}
 
-				var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower());
+			if (model.Uid == null || model.Uid == Guid.Empty)
+			{
+				model.Uid = Guid.NewGuid();
+			}
 
-				if (validName)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.UniqueNameWorkflowAction)).ConfigureAwait(false);
-				}
-
-				if (model.Uid == null || model.Uid == Guid.Empty)
-				{
-					model.Uid = Guid.NewGuid();
-				}
-
-				var res = await Company.Database.Connection.ExecuteAsync(@" insert into [dbo].[IssueType]([Name],[Description],[IsSystem],[UpdatedOn]
+			var res = await Company.Database.Connection.ExecuteAsync(@" insert into [dbo].[IssueType]([Name],[Description],[IsSystem],[UpdatedOn]
 				,[UpdatedBy],[uid]) values(@name,@desc,0,@date,@user,@uid)",
 				new { name = model.Name.Trim(), desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid, date = DateTime.UtcNow });
 
-				if (res > 0)
-				{
-					var issueType = Company.IssueTypes.Where(i => i.Name.ToLower() == model.Name.ToLower()).FirstOrDefault();
-					Company.Add(new FieldType
-					{
-						IssueTypeID = issueType.ID,
-						IsListable = true,
-						IsRequired = true,
-						IsEditable = true,
-						FriendlyName = "Description",
-						Name = "ProblemDesc",
-						SortOrder = 1,
-						Type = DataType.Html.ToString()
-					});
-				}
-
-				result.Uid = (Guid)model.Uid;
-				result.Message = "Action Type is created";
-				result.Success = true;
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
+			if (res > 0)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", prefix }
+				var issueType = Company.IssueTypes.FirstOrDefault(i => i.Name.ToLower() == model.Name.ToLower());
+				Company.Add(new FieldType
+				{
+					IssueTypeID = issueType.ID,
+					IsListable = true,
+					IsRequired = true,
+					IsEditable = true,
+					FriendlyName = "Description",
+					Name = "ProblemDesc",
+					SortOrder = 1,
+					Type = DataType.Html.ToString()
 				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
 			}
+
+			result.Uid = (Guid)model.Uid;
+			result.Message = "Action Type is created";
+			result.Success = true;
+
+			return Ok(result);
 		}
 
 
