@@ -480,4 +480,20 @@ from	workflow.EventRegistration T
 	</sql>
   </changeSet>
 
+  <changeSet author="TKlok" id="Data.Corrections.GOV-20459">
+	<comment>GOV-20459 - Queue reindexing of Users and Reference Lists to update URL</comment>	
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
+		SELECT 'QueueRebuild', 'SearchIndex', DATEADD(hour, 3, getdate()), 'User', 0;
+		
+		INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
+		SELECT 'QueueRebuild', 'SearchIndex', DATEADD(hour, 3, getdate()), 'ReferenceItemType', 0;
+	]]>
+	</sql>
+  </changeSet>
+
 </databaseChangeLog>
