@@ -575,19 +575,19 @@ namespace d360.web.Controllers.V2
 
 			if (string.IsNullOrEmpty(model.Name.Trim()))
 			{
-				throw new ArgumentException(ActionApiMessages.NameNotEmptyAndRequired));
+				throw new ArgumentException(ActionApiMessages.NameNotEmptyAndRequired);
 			}
 
 			if (model.Name.Trim().Length > 250)
 			{
-				throw new ArgumentException(ActionApiMessages.NameMaxLength250Char));
+				throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
 			}
 
 			var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower());
 
 			if (validName)
 			{
-				throw new ArgumentException(ActionApiMessages.UniqueNameWorkflowAction));
+				throw new ArgumentException(ActionApiMessages.UniqueNameWorkflowAction);
 			}
 
 			if (model.Uid == null || model.Uid == Guid.Empty)
