@@ -8,8 +8,8 @@ import {
     AssetType,
     AssetTypeApiModel,
     AssetTypeClass,
-    AssetTypeEditorModel, AssetTypeLevelApiModel,
-    AssetTypeModelClass
+    AssetTypeEditorModel,
+    AssetTypeLevelApiModel
 } from "../models/asset.model";
 
 
@@ -195,15 +195,6 @@ export class AssetTypeService extends BaseObservableService {
             .get(`api/v2/assets/${assetTypeUid}/levels`)
             .pipe(
                 map((res) => <AssetTypeLevelApiModel[] & ErrorResponse>res),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
-    public getAssetTypeDetails<T>(assetTypeUid: string, assetTypeClass: AssetTypeModelClass): Observable<T> {
-        return this.http
-            .get(`api/v2/assets/types/${assetTypeUid}/${assetTypeClass}`)
-            .pipe(
-                map((res) => <T & ErrorResponse>res),
                 catchError((err) => this.handleError(err))
             );
     }

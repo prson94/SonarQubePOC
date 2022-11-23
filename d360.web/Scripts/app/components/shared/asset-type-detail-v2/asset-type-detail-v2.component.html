@@ -1,4 +1,4 @@
-﻿<div *ngIf="uid && class" class="asset-detail">
+﻿<div *ngIf="uid" class="asset-detail">
     <ng-template #loading>
         <div style="width:100%; text-align:center;">
             <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
@@ -10,7 +10,7 @@
                 {{ assetTypeModel.Name }}
             </div>
             <div class="class-name">
-                {{ class.slice(0, -4) }} Asset Type
+                {{ assetTypeModel.Class.Name | assetTypeClassDisplay }}
             </div>
             <div>
                 <a (click)="onAssetTypeOpen(false)" i18n>

@@ -13,16 +13,6 @@
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthenticationService } from '../../../services/authentication.service';
-import {
-    AssetTypeModel,
-    AssetTypeModelClass,
-    BusinessTypeModel,
-    DiagramTypeModel,
-    ModelTypeModel,
-    PolicyTypeModel,
-    RuleTypeModel,
-    TechnicalTypeModel
-} from '../../../models/asset.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import {
@@ -32,6 +22,7 @@ import {
     ControlsOptions,
     OpenBehaviour
 } from './asset-type-detail-v2.model';
+import { AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
 
 declare var CurrentResourceID;
 
@@ -51,11 +42,10 @@ declare var CurrentResourceID;
 
 export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
     @Input() uid: string;
-    @Input() class: AssetTypeModelClass;
     @Input() controlsOptions: ControlsOptions = { showEdit: false, showOpen: OpenBehaviour.NEW_TAB };
     @Output() onEditClick: EventEmitter<string> = new EventEmitter<string>();
 
-    assetTypeModel: AssetTypeModel;
+    assetTypeModel: AssetTypeApiModel;
     categories: AssetTypeDetailCategory[] = [];
     subscription: Subscription;
 
@@ -86,8 +76,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
     public load(): void {
         this.isLoading = true;
 
-        this.subscription = this.assetTypeService.getAssetTypeDetails<AssetTypeModel>
-        (this.uid, this.class).subscribe((data) => {
+        this.subscription = this.assetTypeService.GetAssetTypeByUid(this.uid).subscribe((data) => {
             this.assetTypeModel = data;
             this.fillCategories(data);
             this.loadState();
@@ -123,7 +112,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
         return `asset_type_detail_${ CurrentResourceID }_${ this.uid }`;
     }
 
-    onAssetTypeOpen(isNewTab: boolean = false) {
+    onAssetTypeOpen(isNewTab = false) {
         const openUrl = `${ SiteUrlHelpers.getAssetTypeUrl(this.uid) }`;
         if (isNewTab) {
             window.open(openUrl, '_blank');
@@ -153,7 +142,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
         }
     }
 
-    private fillBasicCategories(assetTypeModel: AssetTypeModel): void {
+    private fillBasicCategories(assetTypeModel: AssetTypeApiModel): void {
         this.addFieldsToCategory($localize`General`, [
             { name: $localize`Name`, type: AssetTypeDetailFieldType.TEXT, value: assetTypeModel.Name },
             {
@@ -171,147 +160,141 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
             {
                 name: $localize`Background Color`,
                 type: AssetTypeDetailFieldType.COLOR,
-                value: assetTypeModel.BackgroundColor
+                value: assetTypeModel.IconStyle.BackColor
             },
             {
                 name: $localize`Icon`,
                 type: AssetTypeDetailFieldType.ICON,
-                value: assetTypeModel.Icon
+                value: assetTypeModel.IconStyle.Icon
             }
         ]);
         this.addFieldsToCategory($localize`System Fields`, [
-            { name: 'UID', type: AssetTypeDetailFieldType.SYSTEM, value: assetTypeModel.Uid }
+            { name: 'UID', type: AssetTypeDetailFieldType.SYSTEM, value: assetTypeModel.uid }
         ]);
     }
 
-    private fillCategories(assetTypeModel: AssetTypeModel): void {
+    private fillCategories(assetTypeModel: AssetTypeApiModel): void {
         this.fillBasicCategories(assetTypeModel);
-        switch (this.class) {
-            case AssetTypeModelClass.BusinessType:
-                let businessTypeModel: BusinessTypeModel = <BusinessTypeModel>assetTypeModel;
+        switch (assetTypeModel.Class.ID) {
+            case AssetTypeClass.BusinessAsset:
                 this.addFieldsToCategory($localize`General`, [
                     {
                         name: 'Predicate to Parent',
                         type: AssetTypeDetailFieldType.TEXT,
-                        value: businessTypeModel.PredicateToParent
+                        value: assetTypeModel.PredicateToParent
                     }
                 ]);
                 this.addFieldsToCategory($localize`Settings`, [
                     {
                         name: 'Use as Transformation?',
                         type: AssetTypeDetailFieldType.BOOL,
-                        value: businessTypeModel.UseAsTransformation
+                        value: assetTypeModel.UseAsTransformation
                     },
                     {
                         name: 'Auto Display Owner/Parent?',
                         type: AssetTypeDetailFieldType.BOOL,
-                        value: businessTypeModel.AutoDisplayParent
+                        value: assetTypeModel.AutoDisplayParent
                     },
-                    { name: 'Edit Parent?', type: AssetTypeDetailFieldType.BOOL, value: businessTypeModel.EditParent }
+                    { name: 'Edit Parent?', type: AssetTypeDetailFieldType.BOOL, value: assetTypeModel.EditParent }
                 ]);
                 break;
-            case AssetTypeModelClass.TechnicalType:
-                let technicalTypeModel: TechnicalTypeModel = <TechnicalTypeModel>assetTypeModel;
+            case AssetTypeClass.TechnicalAsset:
                 this.addFieldsToCategory($localize`General`, [
                     {
                         name: 'Predicate to Parent',
                         type: AssetTypeDetailFieldType.TEXT,
-                        value: technicalTypeModel.PredicateToParent
+                        value: assetTypeModel.PredicateToParent
                     }
                 ]);
                 this.addFieldsToCategory($localize`Settings`, [
                     {
                         name: 'Use as Transformation?',
                         type: AssetTypeDetailFieldType.BOOL,
-                        value: technicalTypeModel.UseAsTransformation
+                        value: assetTypeModel.UseAsTransformation
                     },
                     {
                         name: 'Auto Display Owner/Parent?',
                         type: AssetTypeDetailFieldType.BOOL,
-                        value: technicalTypeModel.AutoDisplayParent
+                        value: assetTypeModel.AutoDisplayParent
                     },
-                    { name: 'Edit Parent?', type: AssetTypeDetailFieldType.BOOL, value: technicalTypeModel.EditParent }
+                    { name: 'Edit Parent?', type: AssetTypeDetailFieldType.BOOL, value: assetTypeModel.EditParent }
                 ]);
                 break;
-            case AssetTypeModelClass.DiagramType:
-                let diagramTypeModel: DiagramTypeModel = <DiagramTypeModel>assetTypeModel;
+            case AssetTypeClass.DiagramAsset:
                 this.addFieldsToCategory($localize`System Fields`, [
                     {
                         name: 'ID',
                         type: AssetTypeDetailFieldType.SYSTEM,
-                        value: diagramTypeModel.Id
+                        value: assetTypeModel.ID
                     }
                 ]);
                 this.addFieldsToCategory($localize`General`, [
                     {
                         name: 'Flow Object Type',
                         type: AssetTypeDetailFieldType.FLOW_OBJECT_TYPE,
-                        value: diagramTypeModel.FlowObjectType
+                        value: assetTypeModel.FlowObjectType
                     }
                 ]);
                 break;
-            case AssetTypeModelClass.ModelType:
-                let modelTypeModel: ModelTypeModel = <ModelTypeModel>assetTypeModel;
+            case AssetTypeClass.Model:
                 this.addFieldsToCategory($localize`System Fields`, [
                     {
                         name: 'ID',
                         type: AssetTypeDetailFieldType.SYSTEM,
-                        value: modelTypeModel.Id
+                        value: assetTypeModel.ID
                     }
                 ]);
                 this.addFieldsToCategory($localize`General`, [
                     {
                         name: 'Predicate to Parent',
                         type: AssetTypeDetailFieldType.TEXT,
-                        value: modelTypeModel.PredicateToParent
+                        value: assetTypeModel.PredicateToParent
                     }
                 ]);
                 this.addFieldsToCategory($localize`Settings`, [
                     {
                         name: 'Maximum Depth',
                         type: AssetTypeDetailFieldType.TEXT,
-                        value: modelTypeModel.MaximumDepth
+                        value: assetTypeModel.MaximumDepth
                     }
                 ]);
                 break;
-            case AssetTypeModelClass.PolicyType:
-                let policyTypeModel: PolicyTypeModel = <PolicyTypeModel>assetTypeModel;
+            case AssetTypeClass.Policy:
                 this.addFieldsToCategory($localize`System Fields`, [
                     {
                         name: 'ID',
                         type: AssetTypeDetailFieldType.SYSTEM,
-                        value: policyTypeModel.Id
+                        value: assetTypeModel.ID
                     }
                 ]);
                 this.addFieldsToCategory($localize`General`, [
                     {
                         name: 'Predicate to Parent',
                         type: AssetTypeDetailFieldType.TEXT,
-                        value: policyTypeModel.PredicateToParent
+                        value: assetTypeModel.PredicateToParent
                     }
                 ]);
                 this.addFieldsToCategory($localize`Settings`, [
                     {
                         name: 'Maximum Depth',
                         type: AssetTypeDetailFieldType.TEXT,
-                        value: policyTypeModel.MaximumDepth
+                        value: assetTypeModel.MaximumDepth
                     }
                 ]);
                 break;
-            case AssetTypeModelClass.RuleType:
-                let ruleTypeModel: RuleTypeModel = <RuleTypeModel>assetTypeModel;
+            case AssetTypeClass.Rule:
                 this.addFieldsToCategory($localize`System Fields`, [
                     {
                         name: 'ID',
                         type: AssetTypeDetailFieldType.SYSTEM,
-                        value: ruleTypeModel.Id
+                        value: assetTypeModel.ID
                     }
                 ]);
                 this.addFieldsToCategory($localize`General`, [
                     {
                         name: 'Flow Object Type',
                         type: AssetTypeDetailFieldType.FLOW_OBJECT_TYPE,
-                        value: ruleTypeModel.FlowObjectType
+                        value: assetTypeModel.FlowObjectType
                     }
                 ]);
                 break;

@@ -20,6 +20,7 @@ import { EnumToSelectitemPipe } from './enum-to-selectitem.pipe';
 import { ReplaceStringPipe } from './replace.pipe';
 import { SanitizePipe } from './sanitize.pipe';
 import { IconNamePipe } from "./icon-name.pipe";
+import { AssetTypeClassDisplayPipe } from "./asset-type-class-display.pipe";
 
 @NgModule({
     imports: [CommonModule],
@@ -42,7 +43,8 @@ import { IconNamePipe } from "./icon-name.pipe";
         GenericFilter,
         EnumToSelectitemPipe,
         SanitizePipe,
-        IconNamePipe
+        IconNamePipe,
+        AssetTypeClassDisplayPipe
     ],
     exports: [
         ArrayToSelectItemPipe,
@@ -63,7 +65,8 @@ import { IconNamePipe } from "./icon-name.pipe";
         GenericFilter,
         EnumToSelectitemPipe,
         SanitizePipe,
-        IconNamePipe
+        IconNamePipe,
+        AssetTypeClassDisplayPipe
     ]
 })
 export class PipesModule { }
