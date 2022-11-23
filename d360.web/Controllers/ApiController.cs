@@ -5171,7 +5171,11 @@ where v.id = {0}", id)).FirstOrDefault();
 		public HttpResponseMessage GetObjectandId(Guid uid)
 		{
 			var sql = $@"SELECT top 1 Object, ObjectID, Id from AssetType WHERE Uid = @uid";
-			var details = Company.Query<dynamic>(sql, new { uid }).Single();
+			var details = Company.Query<dynamic>(sql, new { uid }).SingleOrDefault();
+			if (details == null)
+			{
+				return Request.CreateResponse(HttpStatusCode.NotFound, AssetTypeErrors.NotFoundBasedOnUid);
+			}
 
 			return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID, details.Id });
 		}

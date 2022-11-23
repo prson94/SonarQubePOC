@@ -173,32 +173,46 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     }
 
     private onSelect() {
-        this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+        this.assetTypeService.GetAssetTypeByUid(this.selected.uid)
             .subscribe((res) => {
-                this.selected.ID = +res.ObjectID;
-                this.selectedChange.emit(this.selected);
+             if (res) {
+                    this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+                        .subscribe((res) => {
+                            this.selected.ID = +res.ObjectID;
+                            this.selectedChange.emit(this.selected);
+                        });
+                  }
             });
     }
 
     private onEdit(item: ReferenceItemType) {
         this.selected = item;
-        this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+        this.assetTypeService.GetAssetTypeByUid(this.selected.uid)
             .subscribe((res) => {
-                this.selected.ID = +res.ObjectID;
-                this.selected.AssetTypeID = +res.Id;
-                this.showEditor = true;
+             if (res) {
+                    this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+                        .subscribe((res) => {
+                            this.selected.ID = +res.ObjectID;
+                            this.selected.AssetTypeID = +res.Id;
+                            this.showEditor = true;
+                            });
+                  }
             });
     }
 
     private onDelete(item: ReferenceItemType) {
         this.selected = item;
-        this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+        this.assetTypeService.GetAssetTypeByUid(this.selected.uid)
             .subscribe((res) => {
-                this.selected.ID = +res.ObjectID;
-                this.selected.AssetTypeID = +res.Id;
-                this.showDelete = true;
+             if (res) {
+                 this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+                     .subscribe((res) => {
+                          this.selected.ID = +res.ObjectID;
+                          this.selected.AssetTypeID = +res.Id;
+                          this.showDelete = true;
+                      });
+                  }
             });
-
     }
 
     ngOnDestroy() {
