@@ -123,7 +123,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
                         if ((this.ChangeType == WorkflowChangeType.Add) && (this.objectType == 'IssueType')) {
                             if (this.issueObject != null && this.issueObject != '') {
-                                let objArr = this.issueObject.split("|", 1);
+                                const objArr = this.issueObject.split("|", 1);
                                 let Issobj = "";
                                 if (objArr.length <= 0)
                                     {Issobj = " ";}
@@ -277,8 +277,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             {this.quill = this.ed.quill;}
 
         if (this.quill != null) {
-            let pos = this.quill.getSelection(true);
-            let len = pos.index || this.quill.getLength();
+            const pos = this.quill.getSelection(true);
+            const len = pos.index || this.quill.getLength();
             this.quill.insertText(len > 0 ? len - 1 : 0, e, 'api');
 
             //manually set the html in the model
@@ -300,12 +300,12 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         this.formRelationshipFields = [];
         if (this.diagram == null) {return;}
 
-        let fields = this.workflowFieldsService.getFields();
+        const fields = this.workflowFieldsService.getFields();
 
-        let upstreamSteps = [];
+        const upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
         fields.forEach((f) => {
-            let k = upstreamSteps.filter((u) => u == f['@stepId']);
+            const k = upstreamSteps.filter((u) => u == f['@stepId']);
             if (k != null && k.length > 0) {
                 f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
                 f['@FormLabel'] = 'Form :: ' + f['@label'];
@@ -322,12 +322,12 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     filterHttpFields() {
         this.httpFields = [];
-        let fields = this.workflowFieldsService.getHttpFields();
-        let upstreamSteps = [];
+        const fields = this.workflowFieldsService.getHttpFields();
+        const upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
 
         fields.forEach((f) => {
-            let k = upstreamSteps.filter((u) => u == f['@stepId']);
+            const k = upstreamSteps.filter((u) => u == f['@stepId']);
             if (k != null && k.length > 0) {
 				f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
 				f['@FormLabel'] = this.step.name + ' :: ' + f['@label'];
@@ -340,12 +340,12 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     filterOutputFields() {
         this.outputFields = [];
-        let fields = this.workflowFieldsService.getOutputFields();
-        let upstreamSteps = [];
+        const fields = this.workflowFieldsService.getOutputFields();
+        const upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
 
         fields.forEach((f) => {
-            let k = upstreamSteps.filter((u) => u == f.StepId);
+            const k = upstreamSteps.filter((u) => u == f.StepId);
             if (k != null && k.length > 0) {
 				f['@FormFieldId'] = f.Id + '|' + f.StepId;
 				f['@FormLabel'] = this.step.name + ' :: ' + f.Name;
@@ -357,11 +357,11 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     }
 
     traverseDiagram(key: any, upstreamSteps: any[]) {
-        let steps = <any[]>this.diagram.model.nodeDataArray;
-        let links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
+        const steps = <any[]>this.diagram.model.nodeDataArray;
+        const links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
 
-        let step = steps.find((s) => s.key == key);
-        let toLinks = links.filter((l) => l.to == key);
+        const step = steps.find((s) => s.key == key);
+        const toLinks = links.filter((l) => l.to == key);
 
         if (_.includes(upstreamSteps, key)) {return;}
         upstreamSteps.push(step.key);
@@ -378,7 +378,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             this.step.settings.RelationshipUpdate.Relationship['@FormFieldId'] = null;
             this.step.settings.RelationshipUpdate.Relationship['@FormStepId'] = null;
         } else {
-            let vals = this.formRelationship.split('|');
+            const vals = this.formRelationship.split('|');
             this.step.settings.RelationshipUpdate.Relationship['@FormFieldId'] = vals[0];
             this.step.settings.RelationshipUpdate.Relationship['@FormStepId'] = vals[1];
         }

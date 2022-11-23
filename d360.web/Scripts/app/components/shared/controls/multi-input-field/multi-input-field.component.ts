@@ -40,7 +40,7 @@ export class MultiInputField implements ControlValueAccessor {
         public el: ElementRef) { }
 
     removeChip(item: string) {
-        let idx: number = (this.value as string[]).indexOf(item);
+        const idx: number = (this.value as string[]).indexOf(item);
         (this.value as string[]).splice(idx, 1);
         this.writeValue(this.value);
     }
@@ -82,7 +82,7 @@ export class MultiInputField implements ControlValueAccessor {
     }
 
     getElementClass() {
-        let classes: string[] = ["ig-multi-input-field"];
+        const classes: string[] = ["ig-multi-input-field"];
         if (this.disabled) {
             classes.push("disabled");
         }

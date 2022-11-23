@@ -136,7 +136,7 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
     }
 
     _handleReaderLoaded(e) {
-        let reader = e.target;
+        const reader = e.target;
         var i = new Image();
         i.src = reader.result;
 
