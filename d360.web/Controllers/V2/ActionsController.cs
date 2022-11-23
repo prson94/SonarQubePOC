@@ -820,53 +820,51 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> CreateAction(Guid actionTypeUid, List<ActionUpsertRequest> models, bool lookupFieldsPassedByValue = false)
 		{
-			try
+			bool isWriteActionDescriptionEnabled = IsWriteActionDescriptionEnabled();
+
+			List<ApiStatusResponse> response = new List<ApiStatusResponse>();
+
+			List<IssueInsertAPIModel> issueModels = new List<IssueInsertAPIModel>();
+
+			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				bool isWriteActionDescriptionEnabled = IsWriteActionDescriptionEnabled();
+				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
+			}
 
-				List<ApiStatusResponse> response = new List<ApiStatusResponse>();
+			var issueType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
 
-				List<IssueInsertAPIModel> issueModels = new List<IssueInsertAPIModel>();
+			if (issueType == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()));
+			}
 
-				if (actionTypeUid == null || actionTypeUid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.InvalidActionTypeUid)).ConfigureAwait(false);
-				}
-
-				var issueType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
-
-				if (issueType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.NotFound, string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()))).ConfigureAwait(false);
-				}
-
-				WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType, lookupFieldsPassedByValue);
+			WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType, lookupFieldsPassedByValue);
 				
-				if (validationStatus.StatusCode != HttpStatusCode.OK)
+			if (validationStatus.StatusCode != HttpStatusCode.OK)
+			{
+				throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+			}
+
+			foreach (var issueModel in issueModels)
+			{
+				if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(issueModel.Issue.AssetTypeID, Permission.ReadAsset))
 				{
-					return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message)).ConfigureAwait(false);
+					throw new ForbiddenBusinessLayerException(ActionApiMessages.AssetTypeAddActionPermissionsDenied);
 				}
 
-				foreach (var issueModel in issueModels)
+				if (isWriteActionDescriptionEnabled && issueModel.Issue.AssetID != null)
 				{
-					if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(issueModel.Issue.AssetTypeID, Permission.ReadAsset))
+  					var comment = new CommentApiPostModel
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetTypeAddActionPermissionsDenied)).ConfigureAwait(false);
-					}
+						AssetUid = issueModel.AssetUid,
+						Body = issueModel.Comment ?? string.Format(ActionApiMessages.ActionAssetCommentBody, issueType.Name),
+						Tags = new List<Guid> { issueModel.AssetUid }       // Add relation to current artifact
+					};
+					var dtl = await commentRepository.AddComment(comment, CommentType.Issue);
+					issueModel.Issue.CommentID = dtl.ID;
+				}
 
-					if (isWriteActionDescriptionEnabled && issueModel.Issue.AssetID != null)
-					{
-  						var comment = new CommentApiPostModel
-						{
-							AssetUid = issueModel.AssetUid,
-							Body = issueModel.Comment ?? string.Format(ActionApiMessages.ActionAssetCommentBody, issueType.Name),
-							Tags = new List<Guid> { issueModel.AssetUid }       // Add relation to current artifact
-						};
-						var dtl = await commentRepository.AddComment(comment, CommentType.Issue);
-						issueModel.Issue.CommentID = dtl.ID;
-					}
-
-					var insertSQL = $@"INSERT INTO [dbo].[Issue]
+				var insertSQL = $@"INSERT INTO [dbo].[Issue]
 												   ([IssueTypeID]
 												   ,[AssetID]
 												   ,[AssetTypeID]
@@ -886,37 +884,26 @@ namespace d360.web.Controllers.V2
 												   ,@userId
 												   ,@commentId)";
 
-					var res = await Company.Database.Connection.QueryAsync<(Guid uid, int id)>(insertSQL, new { issueTypeID = issueType.ID, assetID = issueModel.Issue.AssetID, assetTypeID = issueModel.Issue.AssetTypeID, userId = Company.CurrentResourceID, commentId = issueModel.Issue.CommentID });
+				var res = await Company.Database.Connection.QueryAsync<(Guid uid, int id)>(insertSQL, new { issueTypeID = issueType.ID, assetID = issueModel.Issue.AssetID, assetTypeID = issueModel.Issue.AssetTypeID, userId = Company.CurrentResourceID, commentId = issueModel.Issue.CommentID });
 
-					issueModel.Issue.ID = res.FirstOrDefault().id;
-					issueModel.Issue.UID = res.FirstOrDefault().uid;
+				issueModel.Issue.ID = res.FirstOrDefault().id;
+				issueModel.Issue.UID = res.FirstOrDefault().uid;
 
-					if (issueModel.fields != null && issueModel.fields.Count > 0)
+				if (issueModel.fields != null && issueModel.fields.Count > 0)
+				{
+					issueModel.fields.ForEach(i =>
 					{
-						issueModel.fields.ForEach(i =>
-						{
-							i.IssueID = issueModel.Issue.ID;
-						});
-						Company.AddOrUpdateFields(issueModel.fields);
-					}
-
-					response.Add(new ApiStatusResponse { Uid = issueModel.Issue.UID.Value, Message = ActionApiMessages.ActionCreatedMsg, Success = true });
+						i.IssueID = issueModel.Issue.ID;
+					});
+					Company.AddOrUpdateFields(issueModel.fields);
 				}
 
-				Company.CreateEventsForAddedActions(issueModels.Select(x => x.Issue).ToList());
+				response.Add(new ApiStatusResponse { Uid = issueModel.Issue.UID.Value, Message = ActionApiMessages.ActionCreatedMsg, Success = true });
+			}
 
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
-			}
-			catch (BaseException ex)
-			{
-				return await Task.FromResult(errorMessageResponse(ex.StatusCode, ApiMessages.BadRequest, ex.StatusDescription)).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+			Company.CreateEventsForAddedActions(issueModels.Select(x => x.Issue).ToList());
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
-			}
+			return Ok(response);
 		}
 
 		private WorkHttpStatus ValidateRequest(IssueType issueType, ActionUpsertRequest model, out Asset asset, out AssetType assetType, bool lookupFieldsPassedByValue = false)
