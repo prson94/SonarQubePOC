@@ -120,7 +120,7 @@ export class TableDataTransferComponent {
     if (this.selectedItemsFromTarget.length > 0) {
       for (let j = 0; j < this.selectedItemsFromTarget.length; j++) {
         let x = this.itemsFromTarget.findIndex((i) => i.ObjectID === this.selectedItemsFromTarget[j].ObjectID && i.Object === this.selectedItemsFromTarget[j].Object); // eslint-disable-line
-        let newPosition = this.itemsFromTarget.length - j;
+        const newPosition = this.itemsFromTarget.length - j;
         this.itemsFromTarget.splice(newPosition - 1, 0, this.itemsFromTarget.splice(x, 1)[0]);
       }
     }
@@ -166,7 +166,7 @@ export class TableDataTransferComponent {
 
   clearInfoPanel() {
     if (this.viewingItem) {
-      let found = this.selectedItemsFromSource.find((selectedItemFromSource) => selectedItemFromSource === this.viewingItem);
+      const found = this.selectedItemsFromSource.find((selectedItemFromSource) => selectedItemFromSource === this.viewingItem);
       if (found) {
         this.showInfo({});
       }

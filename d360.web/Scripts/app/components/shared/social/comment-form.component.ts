@@ -51,7 +51,7 @@ export class CommentFormComponent extends BaseComponent {
     }
 
     removeTag(tag: Tag) {
-        let index = this.comment.Tags.findIndex((x) => x.AssetUid === tag.AssetUid);
+        const index = this.comment.Tags.findIndex((x) => x.AssetUid === tag.AssetUid);
 
         if (index >= 0 && index < this.comment.Tags.length) {
             this.comment.Tags.splice(index, 1);

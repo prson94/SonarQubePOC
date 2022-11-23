@@ -105,7 +105,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     }
 
     deleteComment(event) {
-        let comment = event.comment as CommentDetail;
+        const comment = event.comment as CommentDetail;
 
         if (!comment) {return;}
 
@@ -115,7 +115,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             subscribe((res) => {
                 if (res) {
                     comment.IsDeleted = true;
-                    let index = this.comments.findIndex((x) => x.ID === comment.ID);
+                    const index = this.comments.findIndex((x) => x.ID === comment.ID);
 
                     if (index >= 0 && !(comment.Comments && comment.Comments.length > 0)) {
                         this.comments.splice(index, 1);
@@ -140,7 +140,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             this.addComment(comment);
         }
         if (event.event === "edit") {
-            let idx: number = this.comments.findIndex((x) => x.Uid === comment.Uid);
+            const idx: number = this.comments.findIndex((x) => x.Uid === comment.Uid);
             this.comments[idx] = comment;
         }
         this.updateResourceData();

@@ -108,10 +108,10 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
     }
 
     private getSurveyResponseObject(): SurveyResultsApiModel {
-        let surveyResponse = new SurveyResultsApiModel();
+        const surveyResponse = new SurveyResultsApiModel();
         surveyResponse.AssetUid = this.assetUid;
         this.surveyDetails.Questions.forEach((x) => {
-            let q = new SurveyQuestionResponseApiModel();
+            const q = new SurveyQuestionResponseApiModel();
             q.Comments = x.Comments;
             q.Responses = Array.isArray(x.Value) ? x.Value : [x.Value];
             q.SurveyQuestionUid = x.Uid;
