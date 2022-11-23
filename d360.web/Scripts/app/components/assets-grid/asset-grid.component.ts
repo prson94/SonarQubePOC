@@ -218,7 +218,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     clickMenuItem(menuItem: any, item: any) {
-        let key = menuItem.value.toLowerCase();
+        const key = menuItem.value.toLowerCase();
 		const event = menuItem.event;
 		if (key === $localize`View Information`.toLowerCase()) {
 			event['from-context-method'] = 'info';
@@ -329,8 +329,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(this.gridObject.ID, this.gridObject.ObjectType).subscribe(
             (result) => {
-                let statusField;
-
                 this.columns = result.Columns.filter((x) => x.datafield !== 'Name');
                 this.filtercolumns = result.FilterColumns;
                 this.fields = result.Fields;
@@ -341,7 +339,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     this.hasProfilingChange.emit(this.hasProfiling);
                 }
 
-                statusField = this.fields.find((x) => x.apiName != null && x.apiName.toLowerCase() === "status");
+                const statusField = this.fields.find((x) => x.apiName != null && x.apiName.toLowerCase() === "status");
 
                 if (statusField != null) {
                     this.showCertificationStatus = true;
@@ -376,7 +374,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
 	_oldParamsJSON: string = '';
     getParams() {
-        let autoDisplayParentSetting = this.gridObject.AutoDisplayParent === null ? true : this.gridObject.AutoDisplayParent;
+        const autoDisplayParentSetting = this.gridObject.AutoDisplayParent === null ? true : this.gridObject.AutoDisplayParent;
         var params = new V2ApiFilters();
         params._includeParent = this.gridObject.ObjectType === StringConstants.ObjectArtifactType ? autoDisplayParentSetting : true;
         params._loadPermissionDetails = true;
@@ -415,7 +413,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         }
 
         if (this.stateService.artifactTypeFilters.filters && this.stateService.artifactTypeFilters.filters.length > 0) {
-            let expressions: string[] = [];
+            const expressions: string[] = [];
             this.stateService.artifactTypeFilters.filters.forEach((f) => {
                 expressions.push(f.getAsV2ApiFilter(this.filtercolumns));
             });
@@ -426,7 +424,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         }
 
         if (this.stateService.artifactTypeFilters.relationships && this.stateService.artifactTypeFilters.relationships.length > 0) {
-            let expressions: string[] = [];
+            const expressions: string[] = [];
             this.stateService.artifactTypeFilters.relationships.forEach((f) => {
                 expressions.push(f.getAsV2ApiFilter());
             });
@@ -466,7 +464,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		}
 
 		params._includeTotal = true;
-		let paramsJson: string = params.countUpdateFilters();
+		const paramsJson: string = params.countUpdateFilters();
 		if (paramsJson === this._oldParamsJSON) {
 			params._includeTotal = false;
 		}
@@ -487,7 +485,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 				this._oldParamsJSON = params.countUpdateFilters();
 
                 this.items = res.items;
-                let hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
+                const hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
 				let isRowSelected = false;
 
                 this.items.forEach((item) => {
@@ -596,7 +594,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         if (isNaN(+value))
             {return '';}
 
-        let v = +value;
+        const v = +value;
 
         if (v <= lower)
             {return 'poor';}

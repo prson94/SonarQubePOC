@@ -118,7 +118,7 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
     }
 
     private getRowStyles(item: ExportTemplateStyle): any {
-        let styles = {
+        const styles = {
             'background-color': item.BgColor,
             'font-weight': item.IsBold ? 'bold' : 'normal',
             'color': item.TextColor,

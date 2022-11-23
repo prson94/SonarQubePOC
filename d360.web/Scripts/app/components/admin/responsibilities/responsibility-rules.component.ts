@@ -52,7 +52,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === 'id') {
                 this.id = changes['id'].currentValue;
                 this.isEditing = false;
@@ -122,7 +122,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
             this.showMessageForApiResponse(this.messagesService, res[0]);
             if (!res.isError) {
                 this.isDeleting = false;
-                let index = this.rows.findIndex((f) => f.ID === item.ID);
+                const index = this.rows.findIndex((f) => f.ID === item.ID);
                 if (index >= 0 && index < this.rows.length)
                     {this.rows.splice(index, 1);}
                 this.onFieldsChanged.emit();

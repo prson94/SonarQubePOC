@@ -94,9 +94,9 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         protected cdRef: ChangeDetectorRef
     ) {
         super(fieldsService, metricsService, messagesService, settingsService, cdRef);
-        let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+        const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
         this.helpUri = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
-        let conditionHelpLink: string = helpBaseUri + "/Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
+        const conditionHelpLink: string = helpBaseUri + "/Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
         this.thresholdOverrideTooltipText = $localize`You can override the <b>Pass Threshold</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.<br/><a target='help' href='" + conditionHelpLink + "'><i class='fa fa-external-link'></i>&#160;Read more about Asset Conditions and Weighting.</a>`;
     }
 
@@ -266,7 +266,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     }
 
     onPathChange(event: any) {
-        let ruleResultPathUid = this.model.Definition.DataQuality.ResultPathUid;
+        const ruleResultPathUid = this.model.Definition.DataQuality.ResultPathUid;
         this.metricsService.getRuleResultPathOptionFields(ruleResultPathUid).subscribe((fields) => {
             this.parseRuleResultFilters(fields);
             this.cdRef.markForCheck();
@@ -276,7 +276,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     parseRuleResultFilters(fields: MetricFieldTypeViewModel[]) {
         this.ruleResultFilters = [];
         this.ruleResultFields = fields.map((f) => {
-            let fieldOption: FieldTypeAPIModelFieldCondition = {
+            const fieldOption: FieldTypeAPIModelFieldCondition = {
                 AssetTypeUid: f.AssetTypeUid,
                 RelationshipTypeUid: '',
                 Category: '',
@@ -309,17 +309,17 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         this.model.Definition.DataQuality.Filters = [];
         this.ruleResultFilters = this.ruleResultFilters.filter((x) => x.field && x.operator); // Make sure we have valid items selected here.
         this.ruleResultFilters.forEach((f) => {
-            let filter = new MetricAssetDefinitionDataQualityFilterViewModel();
-            let fieldData = f.field.split('.'); // {assetTypeUid}.{FieldTypeName}
+            const filter = new MetricAssetDefinitionDataQualityFilterViewModel();
+            const fieldData = f.field.split('.'); // {assetTypeUid}.{FieldTypeName}
             filter.AssetTypeUid = fieldData[0];
             filter.FieldTypeName = fieldData[1];
             filter.Operator = Operator[f.operator + ''];
-            let fieldTypes = this.ruleResultFields.filter((x) => x.AssetTypeUid === filter.AssetTypeUid && x.Name === filter.FieldTypeName);
+            const fieldTypes = this.ruleResultFields.filter((x) => x.AssetTypeUid === filter.AssetTypeUid && x.Name === filter.FieldTypeName);
 
             let fieldDataType = 'Text'; //Default
 
             if (fieldTypes.length > 0) {
-                let fieldType = fieldTypes[0].Type;
+                const fieldType = fieldTypes[0].Type;
                 fieldDataType = FieldTypeHelper.getFieldType(fieldType);
             }
 

@@ -144,7 +144,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
         this.selectedFields = [];        
 
         if (this.exportTemplate.IncludeFieldTypes) {
-            let selectedFieldNames = this.exportTemplate.IncludeFieldTypes;
+            const selectedFieldNames = this.exportTemplate.IncludeFieldTypes;
             for (let j = 0; j < selectedFieldNames.length; j++) {
                 for (let k = 0; k < available.length; k++) {
                     if (selectedFieldNames[j] === available[k].Name) {
@@ -163,7 +163,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
     }
 
     public save() {
-        let fields = "";
+        const fields = "";
         let fieldTypes = [];
         fieldTypes = this.selectedFields.sort((a, b) => a.ExtOrder - b.ExtOrder).map((a) => a.Name);
 
@@ -207,7 +207,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
 
         for (let i = 0; i < this.availableFields.length; i++) {
             if (this.availableFields[i].ID === field.ID && i > 0) {
-                let order = this.availableFields[i].ExtOrder;
+                const order = this.availableFields[i].ExtOrder;
                 this.availableFields[i].ExtOrder = this.availableFields[i - 1].ExtOrder;
                 this.availableFields[i - 1].ExtOrder = order;
 
@@ -223,7 +223,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
 
         for (let i = 0; i < this.availableFields.length; i++) {
             if (this.availableFields[i].ID === field.ID && i < this.availableFields.length - 1) {
-                let order = this.availableFields[i].ExtOrder;
+                const order = this.availableFields[i].ExtOrder;
                 this.availableFields[i].ExtOrder = this.availableFields[i + 1].ExtOrder;
                 this.availableFields[i + 1].ExtOrder = order;
             }
