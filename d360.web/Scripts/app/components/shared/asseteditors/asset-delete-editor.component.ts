@@ -40,7 +40,7 @@ export class AssetDeleteEditorComponent extends BaseComponent {
         this.assetService.getAssetDescendants(this.uid, params)
             .subscribe(
                 (result) => {
-                    let descendantsCount = result.total;
+                    const descendantsCount = result.total;
                     this.descendantsMessage = '';
                     if (descendantsCount > 0) {
                         this.descendantsMessage = $localize`The selected asset contains <b>${descendantsCount}</b> descendants that will be deleted. This action cannot be undone. Please check the box to continue.`;
