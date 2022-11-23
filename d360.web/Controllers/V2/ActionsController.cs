@@ -1129,7 +1129,7 @@ namespace d360.web.Controllers.V2
 
 						if (!string.IsNullOrEmpty(value))
 						{
-							fieldList.Add(new Field { FieldTypeID = ft.ID, IssueID = issueId, Value = value });
+							fieldList.Add(new Field { FieldTypeID = ft.ID, IssueID = issueId, Value = value, FormattedValue = value });
 						}
 					}
 				}
