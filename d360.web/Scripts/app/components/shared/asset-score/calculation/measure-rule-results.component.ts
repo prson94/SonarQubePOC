@@ -141,7 +141,7 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     getMissingRuleResultMessage() {
         let message = "";
         if (this.selected && !this.selected.EffectiveDate) {
-            let operation = MetricRuleResultOperation[this.definition?.DataQuality?.ResultOperation + ""];
+            const operation = MetricRuleResultOperation[this.definition?.DataQuality?.ResultOperation + ""];
             if (operation) {
                 let messagePart = ``;
                 if (operation === MetricRuleResultOperation.Maximum) {

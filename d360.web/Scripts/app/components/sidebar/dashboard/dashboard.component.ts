@@ -78,7 +78,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 
 		this.headerBreadcrumbService.getFolderTitle('#Dashboards').then((res) => {
 			this.folderTitle = res;
-			let areaBreadcrumb = new Breadcrumb(
+			const areaBreadcrumb = new Breadcrumb(
 				this.folderTitle ? this.folderTitle : 'Dashboards',
 				'/dashboard',
 				false
@@ -86,7 +86,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 			this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
 
 			if (this.selected) {
-				let dashboardCrumb = new Breadcrumb(
+				const dashboardCrumb = new Breadcrumb(
 					this.selected.Name,
 					SiteUrlHelpers.getObjectUrl("Dashboard", this.selected.uid),
 					false

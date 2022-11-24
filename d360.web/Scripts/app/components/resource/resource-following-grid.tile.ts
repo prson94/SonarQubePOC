@@ -73,7 +73,7 @@ export class ResourceFollowingGridTile implements OnInit, OnChanges {
     }
 
     navigate(e: any) {
-        let url = e.data.Url;
+        const url = e.data.Url;
         this.router.navigateByUrl(url);
 
     }

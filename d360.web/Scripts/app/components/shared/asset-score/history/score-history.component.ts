@@ -177,7 +177,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         // Adds arbitrary last point for current date.
         let currentDate = new Date(Date.now());
         currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-        let currenDateMs = currentDate.getTime();
+        const currenDateMs = currentDate.getTime();
         if (currenDateMs > Date.parse(this.scoresPoints[0].EffectiveDate)) {
             this.historicalData.unshift(
                 [currenDateMs, this.scoresPoints[0].Score, this.getScoreType()]
@@ -348,17 +348,17 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         var days = Math.floor(milliseconds / day);
         var months = Math.floor(days / 31);
         var years = Math.floor(months / 12);
-        let type = this.scoreType === ScoreType.Governance ? $localize`Governance` : $localize`Data Quality`;
+        const type = this.scoreType === ScoreType.Governance ? $localize`Governance` : $localize`Data Quality`;
         let latestScore = score;
-        let hasEndDate: boolean = false;
+        const hasEndDate: boolean = false;
 
         if (latestScore > 1) {
             latestScore /= 100;
         }
 
-        let scorePercentage = this.getAsPrecentage(latestScore);
+        const scorePercentage = this.getAsPrecentage(latestScore);
 
-        let verb: string = hasEndDate ? $localize`was` : $localize`has been`;
+        const verb: string = hasEndDate ? $localize`was` : $localize`has been`;
         if (days === 0 || days === 1) {
             this.calculatedScoreText = $localize`Your ${type} Score changed to <strong> ${scorePercentage} </strong> today</strong>`;
         }
@@ -380,8 +380,8 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
     getCurrentScoreDateText() {
         if (this.scoresPoints && this.scoresPoints.length > 0) {
-            let mostRecent = Date.parse(this.scoresPoints[0].EffectiveDate);
-            let milliseconds = new Date(Date.now()).getTime() - new Date(mostRecent).getTime();
+            const mostRecent = Date.parse(this.scoresPoints[0].EffectiveDate);
+            const milliseconds = new Date(Date.now()).getTime() - new Date(mostRecent).getTime();
             this.formatCalculatedScoreText(milliseconds, this.scoresPoints[0].Score);
         }
         else {

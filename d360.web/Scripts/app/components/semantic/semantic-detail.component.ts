@@ -113,7 +113,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     }
 
     getUserDetails() {
-        let createdByUserParam = {};
+        const createdByUserParam = {};
         createdByUserParam["Uid"] = this.semanticDetails.createdBy.uid;
 
         this.resourcesService.getResourceLazy(createdByUserParam)
@@ -127,7 +127,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
                 }
             });
         if (this.semanticDetails.createdBy.uid !== this.semanticDetails.updatedBy.uid) {
-            let updatedByUserParam = {};
+            const updatedByUserParam = {};
             updatedByUserParam["Uid"] = this.semanticDetails.updatedBy.uid;
             this.resourcesService.getResourceLazy(updatedByUserParam)
                 .subscribe((result) => {
@@ -140,7 +140,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     }
 
     navigateToUser(resourceID: number, newTab: boolean = false) {
-        let url = `${SiteUrlHelpers.SITE_URL_RESOURCE_ROOT}/${resourceID}`;
+        const url = `${SiteUrlHelpers.SITE_URL_RESOURCE_ROOT}/${resourceID}`;
         if (url) {
             if (newTab) {
                 window.open(url, '_blank');
@@ -151,7 +151,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     }
 
     openSemanticType(newTab: boolean = false) {
-        let url = `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticDetails.uid}`;
+        const url = `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticDetails.uid}`;
         if (url) {
             if (newTab) {
                 window.open(url, '_blank');

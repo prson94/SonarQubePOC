@@ -163,7 +163,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
             if (this.selected == null && this.exportTemplates != null && this.exportTemplates.length > 0)
                 {this.selected = this.exportTemplates[0];}
             else if (this.selected != null && this.exportTemplates != null && this.exportTemplates.length > 0) {
-                let item = this.exportTemplates.filter((x) => x.Uid === this.selected.Uid);
+                const item = this.exportTemplates.filter((x) => x.Uid === this.selected.Uid);
                 if (item != null && item.length !== 0)
                     {this.selected = item[0];}
             }

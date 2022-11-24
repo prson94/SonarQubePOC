@@ -11,8 +11,9 @@
         <img *ngIf="imageUrl" [src]="imageUrl" />
         <div [ngClass]="{'caption':true, 'min':!expanded}">
             <div [ngClass]="{'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
-            <i [ngClass]="{'menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded,'icon':!expanded}"
-               (mouseover)="isCaretHovered = true;" (mouseout)="isCaretHovered = false;" (click)="$event.stopPropagation(); onCategoryExpand()">
+            <i *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0"
+               class="menu-category fa fa-caret-right" [ngClass]="{'icon-active':expanded,'icon':!expanded}"
+               (mouseover)="isCaretHovered = true;" (mouseout)="isCaretHovered = false;" (click)="onCategoryExpand($event)">
             </i>
         </div>
     </div>

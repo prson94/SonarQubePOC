@@ -291,7 +291,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     }
 
     selectSemanticType(semanticType: SemanticType, newTab: boolean = false) {
-        let url = `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${semanticType.uid}`;
+        const url = `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${semanticType.uid}`;
         if (url) {
             if (newTab) {
                 window.open(url, '_blank');
@@ -302,7 +302,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     }
 
     clickMenuItem(event: any, item: SemanticType) {
-        let key = event.value.toLowerCase();
+        const key = event.value.toLowerCase();
 
         switch (key) {
             case $localize`Open`.toLowerCase():
@@ -412,8 +412,8 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
                     this.showMessageForResult(this.messagesService, result, $localize`Semantic Type successfully deleted`);
                     this.showDelete = false;
                     if (result.type !== 'error') {
-                        let currentIndex = this.semanticTypes.findIndex((s) => s.uid === this.selectedType.uid);
-                        let nextRow = currentIndex === this.semanticsTotal - 1 ? this.semanticsTotal - 2 : currentIndex;
+                        const currentIndex = this.semanticTypes.findIndex((s) => s.uid === this.selectedType.uid);
+                        const nextRow = currentIndex === this.semanticsTotal - 1 ? this.semanticsTotal - 2 : currentIndex;
                         this.getData(nextRow);
                     }
                 }

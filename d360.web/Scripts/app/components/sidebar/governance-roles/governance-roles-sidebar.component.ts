@@ -79,7 +79,6 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
                 this.cdRef.detectChanges();
 
             });
-
     }
 
     discard() {

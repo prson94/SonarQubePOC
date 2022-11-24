@@ -135,7 +135,7 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     }
 
     selectSemanticTypeAsset(asset: SemanticTypeAsset, newTab: boolean = false) {
-        let url = `${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${asset.uid}`;
+        const url = `${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${asset.uid}`;
         if (url) {
             if (newTab) {
                 window.open(url, '_blank');
@@ -151,7 +151,7 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
 
 
     clickMenuItem(event: any, item: SemanticTypeAsset) {
-        let key = event.value.toLowerCase();
+        const key = event.value.toLowerCase();
 
         if (key === $localize`Open`.toLowerCase()) {
             this.selectSemanticTypeAsset(item);
@@ -170,9 +170,9 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     }
 
 	isOutOfDate(profileDate) {		
-		let effectiveDate = (new Date(this.semanticType.effectiveDate)).getTime();
-		let profileDateTime = (new Date(profileDate)).getTime();
-		let updatedDate = (new Date(this.semanticType.updatedOn)).getTime();
+		const effectiveDate = (new Date(this.semanticType.effectiveDate)).getTime();
+		const profileDateTime = (new Date(profileDate)).getTime();
+		const updatedDate = (new Date(this.semanticType.updatedOn)).getTime();
 
 		return effectiveDate > profileDateTime || (updatedDate !== effectiveDate && profileDateTime > updatedDate);
     }

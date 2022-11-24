@@ -27,8 +27,8 @@ export class AdminTagsConsolidateComponent implements OnChanges {
 
     public consolidate(): void {
         this.consolidateInProgress = true;
-        let parentUid: string = this.selected.uid;
-        let childrenUids: string[] = [];
+        const parentUid: string = this.selected.uid;
+        const childrenUids: string[] = [];
         this.tags.forEach((t) => {
             if (t.uid !== parentUid)
                 {childrenUids.push(t.uid);}

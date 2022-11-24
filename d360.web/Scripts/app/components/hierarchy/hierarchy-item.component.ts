@@ -117,7 +117,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 			this.selected = res[0];
 			this.baseAssetTypeUid = this.selected["AssetTypeUid"];
 
-			let TempsynonymPermission = new SynonymPermission;
+			const TempsynonymPermission = new SynonymPermission;
 			if (this.hasAddRelationshipsPermissions() || this.hasModifyRelationshipsPermissions()) {
 				TempsynonymPermission.addModifySynonym = true;
 			}

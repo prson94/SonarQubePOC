@@ -62,7 +62,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     ngOnInit() {
         this.sub = this.route.params.subscribe((params) => {
             try {
-                let assetTypeClassString: keyof typeof AssetTypeClass = params['class'];
+                const assetTypeClassString: keyof typeof AssetTypeClass = params['class'];
                 this.assetTypeClass = AssetTypeClass[assetTypeClassString];
                 if (!this.assetTypeClass) {
                     this.assetTypeClass = AssetTypeClass.BusinessAsset;
@@ -71,9 +71,9 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 this.assetTypeClass = AssetTypeClass.BusinessAsset;
             }
 
-            let className: string = this.assetTypeClass === AssetTypeClass.BusinessAsset ? $localize`Business Asset` : $localize`Technical Asset`;
+            const className: string = this.assetTypeClass === AssetTypeClass.BusinessAsset ? $localize`Business Asset` : $localize`Technical Asset`;
             this.addClassName = "Add " + className;
-            let singularLabel: string = `${className} Type`;
+            const singularLabel: string = `${className} Type`;
 
             this.tabTitle = `${singularLabel}s`;
             this.formTitle = $localize`Edit` + `${singularLabel}`;
@@ -102,7 +102,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false)
             .subscribe((data) => {
                 this.isLoading = false;
-                let temp: TreeNode[] = [];
+                const temp: TreeNode[] = [];
                 data.forEach((n) => {
                     temp.push(AssetCount.ConvertToTreeNode(n));
                 });
@@ -122,7 +122,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     expandParent(uid) {
-        let node = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+        const node = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
         if (node) {
             node.expanded = true;
         }
@@ -200,8 +200,8 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     private deleteArtifactType(uid: string) {
-        let node = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
-        let data: any = node ? node.data : null;
+        const node = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+        const data: any = node ? node.data : null;
         this.isLoading = true;
         if (data) {
             this.assetTypeService.deleteSingleAssetType(data.uid).subscribe((result) => {
