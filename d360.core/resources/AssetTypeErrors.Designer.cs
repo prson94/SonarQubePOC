@@ -493,6 +493,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for parameter [parentAssetTypeUid].
+        /// </summary>
+        public static string InvalidValueParentAssetTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidValueParentAssetTypeUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for parameter [ReturnCount].
         /// </summary>
         public static string InvalidValueReturnCount {

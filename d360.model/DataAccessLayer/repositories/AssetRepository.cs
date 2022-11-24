@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -186,10 +185,31 @@ namespace d360.model.DataAccessLayer
 				dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
 			}
 
-			if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
+			if (assetTypeUid != null && assetTypeUid.Value != Guid.Empty)
 			{
 				condition += " and A.uid=@assetTypeUid ";
 				dbArgs.Add("assetTypeUid", assetTypeUid.Value);
+
+				if (queryParams.Any(q => q.Key.ToLower() == "parentassettypeuid"))
+				{
+					var parentAssetTypeUidString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "parentassettypeuid").Value;
+					if (!Guid.TryParse(parentAssetTypeUidString, out var parentAssetTypeUid) && parentAssetTypeUid == Guid.Empty &&
+						GetAssetTypeByUID(parentAssetTypeUid) == null)
+					{
+						throw new ArgumentException(AssetTypeErrors.InvalidValueParentAssetTypeUid);
+					}
+
+					dbArgs.Add("parentAssetTypeUid", parentAssetTypeUid);
+
+					extraColumns += @", ITD.PredicateInverse";
+
+					extraJoins += @$" outer apply (
+											select ITD.PredicateInverse
+											from	IntersectTypeDetail ITD
+											inner join AssetType ATParent on ATParent.uid = @parentAssetTypeUid
+													where ITD.SubjectAssetTypeID = ATParent.ID and ITD.ObjectAssetTypeID = A.ID
+										) ITD ";
+				}
 			}
 
 			//in case of Reference List items, check if there is parent to calculate if it is Hierarchical
@@ -210,6 +230,7 @@ namespace d360.model.DataAccessLayer
 									,A.[Class] as ClassID
 									,ISNULL(A.[Notes],'') as Notes
 									,A.[uid]
+									,A.ID
 									,HA.Hierarchical
 									,A.HierarchyMaximumDepth
 									,A.DisplayFormat
