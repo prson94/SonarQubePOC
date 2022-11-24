@@ -67,7 +67,7 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
                     this.refListDDL.push({ value: x.uid, label: x.Name });
                 });
 
-                let setting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);
+       const setting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);;
                 this.originalModel = new GovernanceRole();
                 if (setting.ScalarValue && setting.ScalarValue !== "00000000-0000-0000-0000-000000000000") {
                     this.originalModel.RefListUid = setting.ScalarValue;
