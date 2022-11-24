@@ -138,6 +138,8 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("UseAsTransformation", "Filter results by Use As Transformation setting. This filter is used to show only Business and Technical asset types which have been marked as transformational asset types in their configuration. Transformational assets have special meaning in the asset browser. Please see the Govern user guide for further details about transformational assets.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("Hierarchical", "Filter results by Hierarchical setting. This value is used to show Model and Policy Types.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("AutoDisplayParent", "Filter results by AutoDisplayParent setting. The value is used by the Govern UI to display or hide the parent column on the data grids.", DataType = "boolean", ParameterType = "query", Required = false),
+			SwaggerParameter("IncludeLevels", "Include values of Level, Name, Description properties of the AssetTypeLevel table in response model", DataType = "boolean", ParameterType = "query", Required = false),
+			SwaggerParameter("IncludeDashboardFlag", "Include value of HasDashboards property of the Report table in response model", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))

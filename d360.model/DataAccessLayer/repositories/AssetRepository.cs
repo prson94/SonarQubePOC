@@ -85,12 +85,11 @@ namespace d360.model.DataAccessLayer
 			List<string> whereStatements = new List<string>();
 			if (queryParams != null)
 			{
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "useastransformation"))
+				if (queryParams.Any(q => q.Key.ToLower() == "useastransformation"))
 				{
-					var useAsTransformationString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "useastransformation").Value;
+					var useAsTransformationString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "useastransformation").Value;
 					if (bool.TryParse(useAsTransformationString, out bool useAsTransformation))
 					{
-
 						condition += " and A.UseAsTransformation=@useAsTransformation ";
 						dbArgs.Add("useAsTransformation", useAsTransformation);
 					}
@@ -100,12 +99,11 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "hierarchical"))
+				if (queryParams.Any(q => q.Key.ToLower() == "hierarchical"))
 				{
-					var hierarchicalString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "hierarchical").Value;
+					var hierarchicalString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "hierarchical").Value;
 					if (bool.TryParse(hierarchicalString, out bool hierarchical))
 					{
-
 						condition += " and HA.Hierarchical=@hierarchical ";
 						dbArgs.Add("hierarchical", hierarchical);
 					}
@@ -115,12 +113,11 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplayparent"))
+				if (queryParams.Any(q => q.Key.ToLower() == "autodisplayparent"))
 				{
-					var autoDisplayParentString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "autodisplayparent").Value;
+					var autoDisplayParentString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "autodisplayparent").Value;
 					if (bool.TryParse(autoDisplayParentString, out bool autoDisplayParent))
 					{
-
 						condition += " and A.AutoDisplayParent=@autoDisplayParent ";
 						dbArgs.Add("autoDisplayParent", autoDisplayParent);
 					}
@@ -130,10 +127,10 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "obj") && queryParams.ToList().Any(q => q.Key.ToLower() == "objid"))
+				if (queryParams.Any(q => q.Key.ToLower() == "obj") && queryParams.ToList().Any(q => q.Key.ToLower() == "objid"))
 				{
-					var obj = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "obj").Value;
-					var objId = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "objid").Value;
+					var obj = queryParams.FirstOrDefault(q => q.Key.ToLower() == "obj").Value;
+					var objId = queryParams.FirstOrDefault(q => q.Key.ToLower() == "objid").Value;
 					if (Enum.TryParse(obj, out SystemObjects ot))
 					{
 						condition += " and A.Object=@obj ";
@@ -154,9 +151,9 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includedashboardflag"))
+				if (queryParams.Any(q => q.Key.ToLower() == "includedashboardflag"))
 				{
-					var includeString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includedashboardflag").Value;
+					var includeString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "includedashboardflag").Value;
 					if (bool.TryParse(includeString, out bool include))
 					{
 						extraJoins += @$" cross apply (select count(1) as [Count] from Report where AssetTypeId = A.ID and Location = {(int)DashboardLocation.List}) D ";
@@ -168,9 +165,9 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includelevels"))
+				if (queryParams.Any(q => q.Key.ToLower() == "includelevels"))
 				{
-					var includeLevelsString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includelevels").Value;
+					var includeLevelsString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "includelevels").Value;
 					if (bool.TryParse(includeLevelsString, out bool includeLevels))
 					{
 						extraColumns += @", (select Level, Name, Description from AssetTypeLevel where AssetTypeID = A.ID order by Level for json path) as LevelsJson";
