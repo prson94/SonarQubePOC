@@ -24,7 +24,7 @@ import {
 } from './asset-type-detail-v2.model';
 import { AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
 
-declare var CurrentResourceID;
+declare const CurrentResourceID;
 
 @Component({
     selector: 'ig-asset-type-detail-v2',
@@ -64,7 +64,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes.uid || changes.class) {
+        if (changes.uid || changes.parentUid) {
             this.load();
         }
     }
@@ -75,13 +75,14 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 
     public load(): void {
         this.isLoading = true;
-
         this.subscription = this.assetTypeService.GetAssetTypeByUid(this.uid).subscribe((data) => {
             this.assetTypeModel = data;
-            this.fillCategories(data);
-            this.loadState();
-            this.isLoading = false;
-            this.cdRef.markForCheck();
+            if (this.assetTypeModel) {
+                this.fillCategories(this.assetTypeModel);
+                this.loadState();
+                this.isLoading = false;
+                this.cdRef.markForCheck();
+            }
         });
     }
 
@@ -177,33 +178,12 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
         this.fillBasicCategories(assetTypeModel);
         switch (assetTypeModel.Class.ID) {
             case AssetTypeClass.BusinessAsset:
-                this.addFieldsToCategory($localize`General`, [
-                    {
-                        name: 'Predicate to Parent',
-                        type: AssetTypeDetailFieldType.TEXT,
-                        value: assetTypeModel.PredicateToParent
-                    }
-                ]);
-                this.addFieldsToCategory($localize`Settings`, [
-                    {
-                        name: 'Use as Transformation?',
-                        type: AssetTypeDetailFieldType.BOOL,
-                        value: assetTypeModel.UseAsTransformation
-                    },
-                    {
-                        name: 'Auto Display Owner/Parent?',
-                        type: AssetTypeDetailFieldType.BOOL,
-                        value: assetTypeModel.AutoDisplayParent
-                    },
-                    { name: 'Edit Parent?', type: AssetTypeDetailFieldType.BOOL, value: assetTypeModel.EditParent }
-                ]);
-                break;
             case AssetTypeClass.TechnicalAsset:
                 this.addFieldsToCategory($localize`General`, [
                     {
                         name: 'Predicate to Parent',
                         type: AssetTypeDetailFieldType.TEXT,
-                        value: assetTypeModel.PredicateToParent
+                        value: assetTypeModel.PredicateInverse
                     }
                 ]);
                 this.addFieldsToCategory($localize`Settings`, [
@@ -217,9 +197,10 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
                         type: AssetTypeDetailFieldType.BOOL,
                         value: assetTypeModel.AutoDisplayParent
                     },
-                    { name: 'Edit Parent?', type: AssetTypeDetailFieldType.BOOL, value: assetTypeModel.EditParent }
+                    { name: 'Edit Parent?', type: AssetTypeDetailFieldType.BOOL, value: assetTypeModel.CanEditParent }
                 ]);
                 break;
+            case AssetTypeClass.Rule:
             case AssetTypeClass.DiagramAsset:
                 this.addFieldsToCategory($localize`System Fields`, [
                     {
@@ -237,28 +218,6 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
                 ]);
                 break;
             case AssetTypeClass.Model:
-                this.addFieldsToCategory($localize`System Fields`, [
-                    {
-                        name: 'ID',
-                        type: AssetTypeDetailFieldType.SYSTEM,
-                        value: assetTypeModel.ID
-                    }
-                ]);
-                this.addFieldsToCategory($localize`General`, [
-                    {
-                        name: 'Predicate to Parent',
-                        type: AssetTypeDetailFieldType.TEXT,
-                        value: assetTypeModel.PredicateToParent
-                    }
-                ]);
-                this.addFieldsToCategory($localize`Settings`, [
-                    {
-                        name: 'Maximum Depth',
-                        type: AssetTypeDetailFieldType.TEXT,
-                        value: assetTypeModel.MaximumDepth
-                    }
-                ]);
-                break;
             case AssetTypeClass.Policy:
                 this.addFieldsToCategory($localize`System Fields`, [
                     {
@@ -271,30 +230,14 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
                     {
                         name: 'Predicate to Parent',
                         type: AssetTypeDetailFieldType.TEXT,
-                        value: assetTypeModel.PredicateToParent
+                        value: assetTypeModel.PredicateInverse
                     }
                 ]);
                 this.addFieldsToCategory($localize`Settings`, [
                     {
                         name: 'Maximum Depth',
                         type: AssetTypeDetailFieldType.TEXT,
-                        value: assetTypeModel.MaximumDepth
-                    }
-                ]);
-                break;
-            case AssetTypeClass.Rule:
-                this.addFieldsToCategory($localize`System Fields`, [
-                    {
-                        name: 'ID',
-                        type: AssetTypeDetailFieldType.SYSTEM,
-                        value: assetTypeModel.ID
-                    }
-                ]);
-                this.addFieldsToCategory($localize`General`, [
-                    {
-                        name: 'Flow Object Type',
-                        type: AssetTypeDetailFieldType.FLOW_OBJECT_TYPE,
-                        value: assetTypeModel.FlowObjectType
+                        value: assetTypeModel.HierarchyMaximumDepth
                     }
                 ]);
                 break;

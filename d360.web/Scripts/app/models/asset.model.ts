@@ -58,6 +58,24 @@ export enum AssetTypeClass {
     SemanticType = 18
 }
 
+export enum AssetTypeClassText {
+    Generic = "Generic",
+    BusinessAsset = "BusinessAsset",
+    Model = "Model",
+    Policy = "Policy",
+    Rule = "Rule",
+    TechnicalAsset = "TechnicalAsset",
+    Reference = "Reference",
+    User = "User",
+    Group = "Group",
+    ReferenceItemType = "ReferenceItemType",
+    Diagram = "Diagram",
+    MetricAllocation = "MetricAllocation",
+    Predicate = "Predicate",
+    SemanticType = "SemanticType",
+    Glossary = "Glossary"
+}
+
 export enum FlowObjectType {
     Event = 1,
     Activity = 2,
@@ -117,10 +135,9 @@ export class AssetTypeApiModel {
 	DescriptionButtonName: string;
     Levels: AssetTypeLevelApiModel[];
     IconStyle: IconStyle;
-    PredicateToParent: string;
+    PredicateInverse: string;
     AutoDisplayParent: boolean;
-    EditParent: boolean;
-    MaximumDepth: number;
+    CanEditParent: boolean;
 }
 
 export class IconStyle {

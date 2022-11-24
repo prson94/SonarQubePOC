@@ -1,6 +1,6 @@
 export interface AssetTypeDetailField {
     name: string;
-    value: unknown;
+    value: any;
     type: AssetTypeDetailFieldType;
 }
 

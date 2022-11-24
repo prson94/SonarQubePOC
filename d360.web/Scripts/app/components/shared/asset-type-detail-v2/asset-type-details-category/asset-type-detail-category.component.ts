@@ -2,7 +2,7 @@
     ChangeDetectionStrategy,
     Component,
     Input,
-    OnInit, ViewEncapsulation
+    ViewEncapsulation
 } from '@angular/core';
 import { AssetTypeDetailCategory } from "../asset-type-detail-v2.model";
 
@@ -15,12 +15,6 @@ import { AssetTypeDetailCategory } from "../asset-type-detail-v2.model";
 })
 
 
-export class AssetTypeDetailCategoryComponent implements OnInit {
+export class AssetTypeDetailCategoryComponent {
     @Input() category: AssetTypeDetailCategory;
-
-    constructor() {
-    }
-
-    ngOnInit(): void {
-    }
 }

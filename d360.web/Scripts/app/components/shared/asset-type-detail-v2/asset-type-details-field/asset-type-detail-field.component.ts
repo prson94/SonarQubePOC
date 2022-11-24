@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from '@angular/core';
 import { AssetTypeDetailField, AssetTypeDetailFieldType } from "../asset-type-detail-v2.model";
 
 @Component({
@@ -14,16 +14,10 @@ import { AssetTypeDetailField, AssetTypeDetailFieldType } from "../asset-type-de
 })
 
 
-export class AssetTypeDetailFieldComponent implements OnInit {
+export class AssetTypeDetailFieldComponent {
     @Input() field: AssetTypeDetailField;
     
     get fieldType(): typeof AssetTypeDetailFieldType {
         return AssetTypeDetailFieldType;
-    }
-    
-    constructor() {
-    }
-
-    ngOnInit(): void {
     }
 }
