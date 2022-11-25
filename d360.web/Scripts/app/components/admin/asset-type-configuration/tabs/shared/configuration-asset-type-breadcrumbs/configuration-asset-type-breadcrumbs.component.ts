@@ -3,6 +3,7 @@ import * as _ from "lodash";
 import { AssetTypeClass } from "../../../../../../models/asset.model";
 import { Breadcrumb } from "../../../../../../models/breadcrumb.model";
 import { SiteMenuService } from "../../../../../../services/site-menu.service";
+import { typeClassToHeaderSettings } from "../../../shared/typeClassToHeaderSettings";
 
 
 @Component({
@@ -37,9 +38,9 @@ export class ConfigurationAssetTypeBreadcrumbsComponent {
                 currentUid = item.ParentUid;
             }
         }
-
+        
         breadcrumbs.push(
-            new Breadcrumb('Business Assets', `/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`),
+            new Breadcrumb(typeClassToHeaderSettings.get(this.assetTypeClass).title, `/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`),
             new Breadcrumb('Configuration'),
         );
 
