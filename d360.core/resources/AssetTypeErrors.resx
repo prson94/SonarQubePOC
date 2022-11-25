@@ -360,7 +360,4 @@
   <data name="MaxLengthExceeded" xml:space="preserve">
     <value>{0} cannot exceed {1} characters.</value>
   </data>
-  <data name="InvalidValueParentAssetTypeUid" xml:space="preserve">
-    <value>Invalid value for parameter [parentAssetTypeUid]</value>
-  </data>
 </root>

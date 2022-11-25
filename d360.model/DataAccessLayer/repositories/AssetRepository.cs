@@ -190,26 +190,15 @@ namespace d360.model.DataAccessLayer
 				condition += " and A.uid=@assetTypeUid ";
 				dbArgs.Add("assetTypeUid", assetTypeUid.Value);
 
-				if (queryParams.Any(q => q.Key.ToLower() == "parentassettypeuid"))
-				{
-					var parentAssetTypeUidString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "parentassettypeuid").Value;
-					if (!Guid.TryParse(parentAssetTypeUidString, out var parentAssetTypeUid) && parentAssetTypeUid == Guid.Empty &&
-						GetAssetTypeByUID(parentAssetTypeUid) == null)
-					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueParentAssetTypeUid);
-					}
+				extraColumns += @", PredicateInverse";
 
-					dbArgs.Add("parentAssetTypeUid", parentAssetTypeUid);
-
-					extraColumns += @", ITD.PredicateInverse";
-
-					extraJoins += @$" outer apply (
-											select ITD.PredicateInverse
-											from	IntersectTypeDetail ITD
-											inner join AssetType ATParent on ATParent.uid = @parentAssetTypeUid
-													where ITD.SubjectAssetTypeID = ATParent.ID and ITD.ObjectAssetTypeID = A.ID
-										) ITD ";
-				}
+				extraJoins += @$" outer apply (
+											select ITD.PredicateInverse from IntersectTypeDetail ITD
+											inner join [Predicate] P on ITD.ObjectAssetTypeID = A.ID 
+											and P.ID = ITD.PredicateID 
+											and P.Type = {(int)PredicateType.InterTypeHierarchy}
+											  ) PredicateInverse ";
+				
 			}
 
 			//in case of Reference List items, check if there is parent to calculate if it is Hierarchical
@@ -222,7 +211,7 @@ namespace d360.model.DataAccessLayer
 												where A.Class = {(int)AssetTypeClass.Reference} and P.Type in (3,4) and IT.ObjectAssetTypeID = A.ID)
 												then 1 
 										else A.Hierarchical
-										end as Hierarchical)HA ";
+										end as Hierarchical) HA ";
 
 			var sql = $@"
 						SELECT     A.[Name]
