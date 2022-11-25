@@ -37,7 +37,11 @@ export class ConfigurationAssetTypeTabsComponent {
             {
                 url: `${baseUrl}/relationships`,
                 title: $localize`Relationship Types`,
-                isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset].includes(this.assetTypeClass),
+                isVisible: () => [
+                    AssetTypeClass.BusinessAsset,
+                    AssetTypeClass.TechnicalAsset,
+                    AssetTypeClass.DiagramAsset
+                ].includes(this.assetTypeClass),
             },
             {
                 url: `${baseUrl}/log`,
