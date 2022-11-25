@@ -108,8 +108,8 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
                 (res) => {
                     this.isSaving = false;
                     this.originalModel = this.model;
-                    this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
-                    window.location.reload();
+					this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
+					this.settingsService.loadSettings();
                 },
                 (err) => {
                     this.messagesService.showError($localize`Error saving governance role`, err.error.message);
