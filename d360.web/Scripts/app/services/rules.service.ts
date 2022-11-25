@@ -58,7 +58,7 @@ export class RulesService extends BaseObservableService {
 
         if (sortField) {
             uri += "&_order=" + sortField;
-            if (sortOrder && sortOrderText !== "") {
+            if (sortOrder) {
                 uri += "&_direction=" + sortOrderText;
             }
         }
