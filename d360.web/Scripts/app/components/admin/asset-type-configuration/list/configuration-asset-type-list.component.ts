@@ -8,6 +8,8 @@ import { AppConstants } from "../../../../static/constants";
 import { takeUntil } from "rxjs/operators";
 import { Router } from "@angular/router";
 import { featuresToTypeClasses } from "../shared/featuresToTypeClasses";
+import { CompanySettingsService } from "../../../../services/settings.service";
+import { CompanySettingEnum } from "../../../../models/settings.model";
 
 // eslint-disable-next-line no-var
 declare var CurrentResourceID;
@@ -35,7 +37,8 @@ export class ConfigurationAssetTypeListComponent {
     constructor(
         private assetsService: AssetService,
         public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
-        private router: Router) {
+        private router: Router,
+        protected settingsService: CompanySettingsService) {
     }
 
     ngOnChanges() {
@@ -97,5 +100,16 @@ export class ConfigurationAssetTypeListComponent {
 
     get hasAssetTypeChildsFeature() {
         return featuresToTypeClasses.assetTypeChilds.includes(this.assetTypeClass);
+    }
+
+    get addNewAssetTypeWarning() {
+        const governanceRoleIsSet = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid).GuidSetting.Value
+            !== '00000000-0000-0000-0000-000000000000';
+
+        if (this.assetTypeClass === AssetTypeClass.DiagramAsset && !governanceRoleIsSet) {
+            return $localize`Cannot add new Diagram Asset Type before Governance Role is set.`;
+        }
+
+        return null;
     }
 }
