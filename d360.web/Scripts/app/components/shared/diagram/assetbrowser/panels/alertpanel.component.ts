@@ -52,7 +52,7 @@ export class AssetBrowserAlertPanelComponent implements OnInit, AfterViewInit, O
         if (this.assets.length > 0) {
             this.loading = true;
 
-            let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
+            const model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
 
             this.assets.forEach((a) => {
                 model.assets.push({ uid: a });

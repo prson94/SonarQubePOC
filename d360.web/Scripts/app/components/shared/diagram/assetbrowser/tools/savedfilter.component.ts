@@ -116,7 +116,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         if (!this.hasSelectedUserFilter())
             {return;}
 
-        let model: AssetBrowserFilterModel = this.filterModel;
+        const model: AssetBrowserFilterModel = this.filterModel;
 
         const selectedAssetTypes = this.options.AssetTypeOptions
             .filter((a) => this.selectedFilter.assetTypes.findIndex((f) => f.uid == a.Uid) > -1)

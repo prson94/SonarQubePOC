@@ -120,7 +120,7 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
                 nodes.push(s);
             }
             if (s.children != null && s.children.length > 0) {
-                let childNodes = this.getTreeNodeSelectionNodes(keys, s.children);
+                const childNodes = this.getTreeNodeSelectionNodes(keys, s.children);
                 if (childNodes != null && childNodes.length > 0) {
                     nodes = nodes.concat(childNodes);
                 }
@@ -131,7 +131,7 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     }
 
     private getTreeNodeSelectionKeys(selection: TreeNode[]): number[] {
-        let keys: number[] = [];
+        const keys: number[] = [];
 
         selection.forEach((s) => {
             keys.push(+s.data);
@@ -147,7 +147,7 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
                 nodes.push(s);
             }
             if (s.children != null && s.children.length > 0) {
-                let childNodes = this.helper_GetTreeNodeSelectionNodes(keys, s.children);
+                const childNodes = this.helper_GetTreeNodeSelectionNodes(keys, s.children);
                 if (childNodes != null && childNodes.length > 0) {
                     nodes = nodes.concat(childNodes);
                 }

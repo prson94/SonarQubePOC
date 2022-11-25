@@ -79,7 +79,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
 
         //convert single value to array
         if (this.step.settings.ResponsibilityTypeID != null && !_.isArray(this.step.settings.ResponsibilityTypeID)) {
-            let id = this.step.settings.ResponsibilityTypeID;
+            const id = this.step.settings.ResponsibilityTypeID;
             delete this.step.settings.ResponsibilityTypeID;
             this.step.settings.ResponsibilityTypeID = [];
             this.step.settings.ResponsibilityTypeID.push(id);
@@ -110,7 +110,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
 
         this.step.settings.ResponsibilitySide = e;
         //console.log('changeResponsibilitySide', this.step, e, this.intersectType, this.responsibleObject, this.responsibleObjectId);
-        let promises = [];
+        const promises = [];
         this.isLoading = true;
 
         if (this.intersectType == null)

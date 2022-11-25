@@ -94,8 +94,8 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
 
     customSort(event: SortEvent) {
         event.data.sort((data1, data2) => {
-            let value1 = data1[event.field];
-            let value2 = data2[event.field];
+            const value1 = data1[event.field];
+            const value2 = data2[event.field];
             let result = null;
 
             if (value1 == null && value2 != null)

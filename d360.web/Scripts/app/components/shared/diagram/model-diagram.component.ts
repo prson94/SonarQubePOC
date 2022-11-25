@@ -97,7 +97,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 				var result = res[0];
 
 				this.assetType = result;
-				let root = data.find((x) => x.parent === null);
+				const root = data.find((x) => x.parent === null);
 				if (root) {
 					delete root.parent;
 				}
@@ -153,7 +153,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 			return;
 		}
         let offset = this.diagramRef.nativeElement.offsetTop;
-        let height = window.innerHeight;
+        const height = window.innerHeight;
 
         if (this.diagramRef.nativeElement.offsetParent) {
             offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
@@ -173,7 +173,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     }
 
     private ChangedSelection(e: any) {
-        let node = e.diagram.selection.first();
+        const node = e.diagram.selection.first();
 
         if (node == null) {
             this.selectedNode = null;
@@ -271,7 +271,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
                             this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, $localize`Model`);
                             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
 							this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
-							let diagramTab = new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/assets/${this.assetTypeUid}/diagrams`, null, 7);
+							const diagramTab = new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/assets/${this.assetTypeUid}/diagrams`, null, 7);
                             this.secondaryNavService.showItem(diagramTab);
                             diagramTab.active = true;
 
