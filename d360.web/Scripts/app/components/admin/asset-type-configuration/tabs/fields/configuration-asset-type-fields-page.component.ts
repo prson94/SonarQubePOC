@@ -70,6 +70,14 @@ export class ConfigurationAssetTypeFieldsPageComponent {
                 showDisplayInColumn: true,
                 allowSingleSegmentPath: true
             }
+        ],
+        [
+            AssetTypeClass.DiagramAsset,
+            {
+                supportsPrimaryFilterOption: true,
+                showDisplayInColumn: false,
+                allowSingleSegmentPath: true
+            }
         ]
     ])
 }

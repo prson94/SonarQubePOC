@@ -18,7 +18,11 @@ export class ConfigurationAssetTypeTabsComponent {
             {
                 url: `${baseUrl}/fields`,
                 title: $localize`Fields`,
-                isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset].includes(this.assetTypeClass),
+                isVisible: () => [
+                    AssetTypeClass.BusinessAsset,
+                    AssetTypeClass.TechnicalAsset,
+                    AssetTypeClass.DiagramAsset
+                ].includes(this.assetTypeClass),
             },
             {
                 url: `${baseUrl}/owners`,

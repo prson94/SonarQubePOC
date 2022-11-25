@@ -40,7 +40,8 @@ class WhenCanCreateNewAssetTypeChildGuard extends CanActivateOnlyForAvailableTyp
 class WhenCanSeeFieldDefinitionsGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+        AssetTypeClass.TechnicalAsset,
+        AssetTypeClass.DiagramAsset
     ]
 }
 
