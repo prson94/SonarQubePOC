@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.utility.AddAuditEntry-v23">
+  <changeSet author="TDuric" id="Procedure.utility.AddAuditEntry-v23.1">
   <comment>GOV-20267</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -440,14 +440,17 @@ begin
 		set @MainObjectName = 'Tag'
 	end
 
-	insert into @tempAuditField(FieldTypeID, FieldName, [Version],[Value])
-	select distinct F.FieldTypeID,
-		   case when F.FieldTypeID > 0 then ' ' else F.FieldName end FieldName,
-		   F.Version,
-		   F.Value
-	from reporting.Global_Audit A
-	inner join reporting.Global_FieldAudit F on F.AuditID = A.ID
-	where A.[Object] = @DependentObject and A.ObjectID = @DependentObjectID and A.ActionObject = @MainObject and A.ActionObjectID = @MainObjectID;
+	if @MainObject <> 'Intersect'
+	begin
+		insert into @tempAuditField(FieldTypeID, FieldName, [Version],[Value])
+		select distinct F.FieldTypeID,
+			   case when F.FieldTypeID > 0 then ' ' else F.FieldName end FieldName,
+			   F.Version,
+			   F.Value
+		from reporting.Global_Audit A
+		inner join reporting.Global_FieldAudit F on F.AuditID = A.ID
+		where A.[Object] = @DependentObject and A.ObjectID = @DependentObjectID and A.ActionObject = @MainObject and A.ActionObjectID = @MainObjectID;
+	end
 	
 	if not exists(select 1 from @tempAuditField)
 	   begin
