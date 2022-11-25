@@ -147,7 +147,7 @@ export class BrandingService extends BaseObservableService {
     }
 
     public getThemes(): Observable<Theme[] | number> {
-        const url: string = '/api/v2/environment/themes';
+        const url = '/api/v2/environment/themes';
 
         return this
             .http
