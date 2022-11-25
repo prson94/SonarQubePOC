@@ -13,7 +13,7 @@ export class AsyncValidatorService {
 
     public labelUniqueValidator(): AsyncValidatorFn {
         return (control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> => {
-            let url = `/api/v2/connectorLabels/search?q=${encodeURIComponent(control.value)}&isExact=true`;
+            const url = `/api/v2/connectorLabels/search?q=${encodeURIComponent(control.value)}&isExact=true`;
             return this
                 .httpClient
                 .get(url)
@@ -29,7 +29,7 @@ export class AsyncValidatorService {
     public tagUniqueValidator(): AsyncValidatorFn {
 
         return (control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> => {
-            let url = `api/v2/tags/search?value=${control.value}&ignoreCounts=true`;
+            const url = `api/v2/tags/search?value=${control.value}&ignoreCounts=true`;
             return this.httpClient.get(url)
                 .pipe(map((response) => <any[]>response))
                 .pipe(map((res) => {

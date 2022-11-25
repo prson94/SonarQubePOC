@@ -105,7 +105,7 @@ export class BrowserService extends BaseObservableService {
 
         response.hierarchy.forEach((h) => {
             try {
-                let rootNode = response.nodes.find((n) => { return n.hierarchyKey === h.hierarchyKey && !n.group; });
+                const rootNode = response.nodes.find((n) => { return n.hierarchyKey === h.hierarchyKey && !n.group; });
                 if (rootNode) {
                     rootNode.predictableId = h.predictableId;
                     rootNode.owners = h.owners;
@@ -119,7 +119,7 @@ export class BrowserService extends BaseObservableService {
 
                     // Handle initial expanded logic.
                     rootNode.relations.forEach((r, rix) => {
-                        let ix = response.links.findIndex((l) => { return l.predicateId === r.predicateId && l.from === rootNode.key && l.text === r.predicate; });
+                        const ix = response.links.findIndex((l) => { return l.predicateId === r.predicateId && l.from === rootNode.key && l.text === r.predicate; });
                         if (ix > -1) {
                             r.expanded = true;
                             response.links[ix].badgeIdentifier = rootNode.hierarchyKey + '|' + rix;
@@ -141,13 +141,13 @@ export class BrowserService extends BaseObservableService {
         response: AssetBrowserOwnersModel
     ): AssetBrowserResponseModel {
 
-        let newResponse = new AssetBrowserResponseModel();
+        const newResponse = new AssetBrowserResponseModel();
         newResponse.hierarchy = [];
         newResponse.nodes = [];
         newResponse.links = [];
         newResponse.reveals = null;
 
-        let rootKey = hierarchyKey + '|O|' + badgeIndex;
+        const rootKey = hierarchyKey + '|O|' + badgeIndex;
 
         newResponse.hierarchy.push({
             hierarchyKey: rootKey,
@@ -158,7 +158,7 @@ export class BrowserService extends BaseObservableService {
             predictableId: null
         });
 
-        let rootLink: AssetBrowserTranslationLink = {
+        const rootLink: AssetBrowserTranslationLink = {
             from: hierarchyKey,
             to: rootKey,
             text: "",
@@ -184,7 +184,7 @@ export class BrowserService extends BaseObservableService {
         newResponse.links.push(rootLink);
 
         // Add root node.
-        let rootNode = new AssetBrowserTranslationNode();
+        const rootNode = new AssetBrowserTranslationNode();
         rootNode.hierarchyKey = rootKey;
         rootNode.key = rootKey;
         rootNode.text = responsibilityTypeName;
@@ -206,7 +206,7 @@ export class BrowserService extends BaseObservableService {
         newResponse.nodes.push(rootNode);
 
         response.owners.forEach((o) => {
-            let n = new AssetBrowserTranslationNode();
+            const n = new AssetBrowserTranslationNode();
             n.hierarchyKey = rootKey;
             n.key = o.key;
             n.group = rootKey;
@@ -416,7 +416,7 @@ export class BrowserService extends BaseObservableService {
         }
 
         if (id != null) {
-            let iconProperties = this.iconProperties.find((d) => d.id === id);
+            const iconProperties = this.iconProperties.find((d) => d.id === id);
             if (iconProperties != null) {
                 return String.fromCharCode(parseInt(iconProperties.unicodeValue, 16));
             }

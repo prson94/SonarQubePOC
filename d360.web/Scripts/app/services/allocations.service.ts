@@ -15,7 +15,7 @@ export class AllocationService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     public getAllocations(): Observable<ScoreTypeAllocation[]> {
-        let url = `/api/v2/scoring/allocations?_state=Active&includeFlags=true`;
+        const url = `/api/v2/scoring/allocations?_state=Active&includeFlags=true`;
         return this.http.get(url)
             .pipe(map((response) => <ScoreTypeAllocation[]>response),
                 catchError((err) => this.handleError(err, true)));
@@ -38,14 +38,14 @@ export class AllocationService extends BaseObservableService {
     }
 
     public deleteAllocationByUid(uid: string): Observable<any> {
-        let url = `api/v2/scoring/allocations/${uid}`;
+        const url = `api/v2/scoring/allocations/${uid}`;
         return this.http.delete(url)
             .pipe(map((response) => <any>response),
                 catchError((err) => this.handleError(err, true)));
     }
 
     public getunallocatedAssetTypes(scoreType: ScoreType): Observable<any[]> {
-        let url = `api/v2/scoring/unallocatedAssetTypes/` + scoreType;
+        const url = `api/v2/scoring/unallocatedAssetTypes/` + scoreType;
         return this.http.get(url)
             .pipe(map((response) => <any>response),
                 catchError((err) => this.handleError(err, true)));
@@ -53,7 +53,7 @@ export class AllocationService extends BaseObservableService {
     }
 
     public save(allocation: ScoreTypeAllocation): Observable<any> {
-        let url = `api/v2/scoring/allocations`;
+        const url = `api/v2/scoring/allocations`;
         if (allocation.uid == null) {
             return this.http.post(url, allocation)
                 .pipe(map((response) => <any>response),

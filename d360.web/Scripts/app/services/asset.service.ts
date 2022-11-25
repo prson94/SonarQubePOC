@@ -74,7 +74,7 @@ export class AssetService extends BaseObservableService {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        let assetArray: AssetEditorModel[] = [];
+        const assetArray: AssetEditorModel[] = [];
         assetArray.push(asset);
 
         if (asset.Uid) {

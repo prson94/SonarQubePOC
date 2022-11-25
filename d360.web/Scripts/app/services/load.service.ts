@@ -82,7 +82,7 @@ export class LoadService extends BaseObservableService {
         return this.http.get(`/form/Load_TypeOptions?act=${action}`)
             .pipe(
                 map((response) => {
-                    let i = [];
+                    const i = [];
 
                     response["forEach"]((r) => {
                         i.push({ label: r.title, value: r.value });

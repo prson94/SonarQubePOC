@@ -125,7 +125,7 @@ export class SurveysService extends BaseObservableService {
     }
 
     saveSurveyResponse(surveyUid: string, response: SurveyResultsApiModel): Observable<JsonResult> {
-        let headers = new HttpHeaders({
+        const headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });
 
