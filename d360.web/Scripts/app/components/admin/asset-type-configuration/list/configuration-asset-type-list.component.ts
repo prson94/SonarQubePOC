@@ -7,6 +7,7 @@ import { NumberOfRowsByCategoryService } from "../../../../services/number-of-ro
 import { AppConstants } from "../../../../static/constants";
 import { takeUntil } from "rxjs/operators";
 import { Router } from "@angular/router";
+import { featuresToTypeClasses } from "../shared/featuresToTypeClasses";
 
 // eslint-disable-next-line no-var
 declare var CurrentResourceID;
@@ -92,5 +93,9 @@ export class ConfigurationAssetTypeListComponent {
 
     get baseUrl() {
         return `/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`;
+    }
+
+    get hasAssetTypeChildsFeature() {
+        return featuresToTypeClasses.assetTypeChilds.includes(this.assetTypeClass);
     }
 }

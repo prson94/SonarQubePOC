@@ -10,6 +10,7 @@ import { ConfigurationAssetTypeOwnersPageComponent } from './tabs/owners/configu
 import { ConfigurationAssetTypeAllocationsPageComponent } from './tabs/allocations/configuration-asset-type-allocations-page.component';
 import { ConfigurationAssetTypeRelationshipsPageComponent } from './tabs/relationships/configuration-asset-type-relationships-page.component';
 import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration-asset-type-log-page.component';
+import { featuresToTypeClasses } from './shared/featuresToTypeClasses';
 
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
@@ -25,16 +26,14 @@ abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
 class WhenCanAccessBasicFeaturesGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+        AssetTypeClass.TechnicalAsset,
+        AssetTypeClass.DiagramAsset
     ]
 }
 
 @Injectable({ providedIn: 'root' })
 class WhenCanCreateNewAssetTypeChildGuard extends CanActivateOnlyForAvailableTypeClasses {
-    protected typeClasses: AssetTypeClass[] = [
-        AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
-    ]
+    protected typeClasses: AssetTypeClass[] = featuresToTypeClasses.assetTypeChilds;
 }
 
 @Injectable({ providedIn: 'root' })
