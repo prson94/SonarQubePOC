@@ -1162,6 +1162,7 @@ namespace d360.web.Controllers
 					responseModel.DisplayValue = PageNames.DiagramAssetsPage;
 					responseModel.MainTabTitle = PageNames.DiagramAssetsPageTabTitle;
 					responseModel.Object = SystemObjects.TaskType.ToString();
+					responseModel.AssetTypeClass = AssetTypeClass.Diagram;
 
 					var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
 
@@ -1253,6 +1254,7 @@ namespace d360.web.Controllers
 					responseModel.DisplayValue = PageNames.DiagramAssetsPage;
 					responseModel.MainTabTitle = PageNames.DiagramAssetsPageTabTitle;
 					responseModel.Items.HasAudit = true;
+					responseModel.AssetTypeClass = AssetTypeClass.Diagram;
 					var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
 
 					if ((responseModel.Uid == null || responseModel.Uid == Guid.Empty) && responseModel.ObjectID == 0)
