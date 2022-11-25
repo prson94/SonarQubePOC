@@ -118,7 +118,7 @@
                         <ng-template pTemplate="body"
                                      let-rowNode
                                      let-item="rowData">
-                            <tr [ttRow]="rowNode"
+                            <tr #tableRow [ttRow]="rowNode"
                                 [ttSelectableRow]="rowNode"
                                 (focus)="selectAsset(rowNode.node)"
                                 (contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selectAsset(rowNode.node)">

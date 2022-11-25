@@ -1,4 +1,15 @@
-﻿import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import {
+	ChangeDetectorRef,
+	Component,
+	ElementRef,
+	HostListener,
+	Input,
+	OnDestroy,
+	OnInit,
+	QueryList,
+	ViewChild,
+	ViewChildren
+} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { AssetTypeApiModel, AssetTypeClass, AssetTypeLevelApiModel } from '../../models/asset.model';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -55,6 +66,22 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	@Input() assetTypeApiModel: AssetTypeApiModel;
 	@Input() assetTypeClass: AssetTypeClass;
 	@Input() assetTypeUid: string;
+
+	@ViewChildren('tableRow') tableRows: QueryList<ElementRef>;
+
+	@HostListener('document:keydown.arrowup', ['$event'])
+	@HostListener('document:keydown.arrowdown', ['$event'])
+	onArrowKeysDownHandler($event: KeyboardEvent) {
+		$event.preventDefault();
+		const selectedRow = this.tableRows.toArray().find((elRef) => {
+			return elRef.nativeElement.classList.contains('p-highlight');
+		});
+		if (selectedRow && document.activeElement !== selectedRow.nativeElement) {
+			selectedRow.nativeElement.dispatchEvent(
+				new KeyboardEvent($event.type, { key: $event.key })
+			);
+		}
+	}
 
 	rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
 
