@@ -3,7 +3,7 @@ import { Injectable } from "@angular/core";
 import { Observable, throwError } from "rxjs";
 import { catchError } from "rxjs/operators";
 
-declare var ApplicationLanguageSetting;
+declare let ApplicationLanguageSetting;
 
 @Injectable()
 export class GovernRequestInterceptor implements HttpInterceptor {
