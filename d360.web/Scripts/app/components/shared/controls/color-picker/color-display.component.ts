@@ -7,22 +7,7 @@ import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 @Component({
     selector: 'd3s-color-display',
-    template: `
-                <div *ngIf="colorsObject && colorsObject.length > 0">
-                    <span *ngFor="let item of colorsObject;">
-                        <span [class]="'ig-colorfield-item ' + styleClass" style="display: inline-flex !important; height: auto">
-                            <span class="ig-colorfield-swatch" [ngClass]="{'empty': (item.color == 'transparent' || item.color == null)}" [ngStyle]="{'background-color': item.color}"></span>
-                            <span *ngIf="!url" class="ig-colorfield-item-label" [style.white-space]="whiteSpace">
-                                {{item.name}}
-                            </span>
-                            <a context-link *ngIf="url" class="ig-colorfield-item-label" [style.white-space]="whiteSpace" (click)="navigate(url, $event)">
-                                {{item.name}}
-                            </a>
-                        </span>
-                        <br/>
-                    </span>
-                </div>
-              `
+    templateUrl: 'color-display.component.html'
 })
 
 export class ColorDisplayComponent implements OnInit {
