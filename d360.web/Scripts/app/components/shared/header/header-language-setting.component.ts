@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnInit, Input, Output, EventEmitter } from "@angular/core";
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, Input, Output, EventEmitter } from "@angular/core";
 import * as _ from "lodash";
 import { CompanySettingsService } from "../../../services/settings.service";
 
@@ -83,7 +83,7 @@ export class HeaderLanguageSettingComponent {
 
 	saveChanges() {
 		this.savingInProgress = true;
-		this.settingService.setLanguage(this.selectedLanguage.code).subscribe((res) => {
+		this.settingService.setLanguage(this.selectedLanguage.code).subscribe(() => {
 			location.reload();
 		});
 	}
