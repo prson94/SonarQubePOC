@@ -15,6 +15,7 @@
 import { OperatorModel } from "../../../models/operator.model";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
+import { UserSettingsService } from "../../../services/usersettings.service";
 import { FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
 import { forkJoin, Observable, of } from "rxjs";
 import {
@@ -134,7 +135,8 @@ export class AdvancedFilteringComponent implements OnChanges {
         private fieldsService: FieldsObservableService,
         protected settingsService: CompanySettingsService,
         private allocationService: AllocationService,
-        private relationshipService: RelationshipsService,
+		private relationshipService: RelationshipsService,
+		private usersettingsService: UserSettingsService,
         private datePipe: DatePipe,
         private router: Router
     ) {
@@ -394,8 +396,13 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     private saveFilters() {
-        if (this.enableFilterSaving) {
-            localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(this.conditions));
+		if (this.enableFilterSaving) {
+			let storageValue = JSON.stringify(this.conditions);
+			localStorage.setItem(this.getLocalStorageKey(), storageValue);
+
+			if (this.isAssetType) {
+				this.usersettingsService.updateUserSetting(this.assetTypeUid, "AdvancedFilters", storageValue).subscribe();
+			}
         }
     }
 
