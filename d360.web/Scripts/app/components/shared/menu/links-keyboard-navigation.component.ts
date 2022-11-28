@@ -17,7 +17,7 @@ export class LinksKeyboardNavigationComponent {
     checkKey(event, elem) {
         if (event.keyCode === downKeycode || event.keyCode === enterKeyCode || event.keyCode === upKeyCode) {
 
-            let allAItems = elem.getElementsByTagName("a");
+            const allAItems = elem.getElementsByTagName("a");
             if (!allAItems.length)
                 {return;}
 
@@ -37,7 +37,7 @@ export class LinksKeyboardNavigationComponent {
                 {this.currentButtonIndex = 0;}
 
             this.resetColor(allAItems);
-            let arr = allAItems[this.currentButtonIndex].className.split(" ");
+            const arr = allAItems[this.currentButtonIndex].className.split(" ");
             if (arr.indexOf("highlight") === -1) {
                 allAItems[this.currentButtonIndex].className += " highlight";
             }

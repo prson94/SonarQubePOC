@@ -224,8 +224,8 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         let resTypeUid;
         let securityAsset;
         let securityAssetId;
-        let selectedRespType = this.model == null ? "" : this.model.selectedResponsibilityType;
-        let selectedResource = this.model == null ? "" : this.model.selectedResource;
+        const selectedRespType = this.model == null ? "" : this.model.selectedResponsibilityType;
+        const selectedResource = this.model == null ? "" : this.model.selectedResource;
         if (StringHelpers.isNullOrEmpty(selectedRespType)) {
             resTypeId = 0;
         }
@@ -260,7 +260,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.field.Value = value;
 
         if (this.field.Value != null && this.field.Value.length > 0) {
-            let x = this.field.Value[0];
+            const x = this.field.Value[0];
             this.resouceAssigned = x.split('|')[2];
             this.resourceGrid = false;
             this.model.selectedResource = x;

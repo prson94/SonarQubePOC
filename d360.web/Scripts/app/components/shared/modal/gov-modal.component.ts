@@ -68,7 +68,7 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
 
     @HostListener('wheel', ['$event'])
     handleWheelEvent(event) {
-        let path: any[] = event.path;
+        const path: any[] = event.path;
 		//add scroll exceptions here
         if (this.display === true
             && !(path.filter((x) => x.tagName === 'D3S-TAG-USAGE').length > 0)

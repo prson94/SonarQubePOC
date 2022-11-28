@@ -56,7 +56,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === 'groupId' || p === 'groupUid') {
                 this.showAddMembers = false;
                 this.showDelete = false;
