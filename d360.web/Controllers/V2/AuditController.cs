@@ -832,7 +832,7 @@ namespace d360.web.Controllers.V2
 						then 'Relationship Type' 
 					else coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, ga.ActionObjectTypeName) 
 				end as actionObjectTypeName,
-				ga.actionObjectName as actionObjectName,
+				coalesce (ObjectName.Name, ga.actionObjectName) as actionObjectName,
 				case when O.ID > 0
 					then coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, ga.ActionObjectTypeName)  + ' ' + R.Action
 					else ga.ActionDescription
@@ -840,6 +840,12 @@ namespace d360.web.Controllers.V2
 				from reporting.global_audit r
 					left join [Intersect] O on R.ActionObject = 'Intersect' and O.ID = r.ActionObjectID
 					left join IntersectTypeDetail T on T.ID = O.IntersectTypeID
+					outer apply (SELECT  COALESCE(S_A.DisplayValue, 'Map') + ' / ' + COALESCE(O_A.DisplayValue,O_AT.Name, 'Map') as Name
+								FROM  [Intersecttype] IT
+								left outer join AssetDisplayValue S_A On S_A.AssetID = O.SubjectAssetID
+								left outer join AssetDisplayValue O_A On O_A.AssetID = O.ObjectAssetID
+								left outer join AssetType O_AT On O_AT.ID = O.ObjectAssetTypeID  and IT.ObjectAssetTypeID = 0 and IT.ObjectClass = {(int)AssetTypeClass.ReferenceItemType}
+								WHERE  	IT.ID = O.IntersecttypeID ) ObjectName
 				where r.ID = ga.ID
 			)ActionData
 			inner join  (
