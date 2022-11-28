@@ -19,6 +19,8 @@ import { GenericFilter } from './generic-filter.pipe';
 import { EnumToSelectitemPipe } from './enum-to-selectitem.pipe';
 import { ReplaceStringPipe } from './replace.pipe';
 import { SanitizePipe } from './sanitize.pipe';
+import { IconNamePipe } from "./icon-name.pipe";
+import { AssetTypeClassDisplayPipe } from "./asset-type-class-display.pipe";
 
 @NgModule({
     imports: [CommonModule],
@@ -40,7 +42,9 @@ import { SanitizePipe } from './sanitize.pipe';
         AssetpathSeparatorPipe,
         GenericFilter,
         EnumToSelectitemPipe,
-        SanitizePipe
+        SanitizePipe,
+        IconNamePipe,
+        AssetTypeClassDisplayPipe
     ],
     exports: [
         ArrayToSelectItemPipe,
@@ -60,7 +64,9 @@ import { SanitizePipe } from './sanitize.pipe';
         AssetpathSeparatorPipe,
         GenericFilter,
         EnumToSelectitemPipe,
-        SanitizePipe
+        SanitizePipe,
+        IconNamePipe,
+        AssetTypeClassDisplayPipe
     ]
 })
 export class PipesModule { }
