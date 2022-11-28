@@ -4,13 +4,17 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
+    ElementRef,
     EventEmitter,
+    HostListener,
     Input,
     OnChanges,
     OnDestroy,
     Output,
+    QueryList,
     SimpleChange,
-    ViewChild
+    ViewChild,
+    ViewChildren
 } from "@angular/core";
 import { LazyLoadEvent } from "primeng/api";
 import { Table } from "primeng/table";
@@ -63,8 +67,24 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
+
     @ViewChild('dt', { static: false }) dt: Table;
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
+    @ViewChildren('tableRow') tableRows: QueryList<ElementRef>;
+
+    @HostListener('document:keydown.arrowup', ['$event'])
+    @HostListener('document:keydown.arrowdown', ['$event'])
+    onArrowKeysDownHandler($event: KeyboardEvent) {
+        $event.preventDefault();
+        const selectedRow = this.tableRows.toArray().find((elRef) => {
+            return elRef.nativeElement.classList.contains('p-highlight');
+        });
+        if (selectedRow && document.activeElement !== selectedRow.nativeElement) {
+            selectedRow.nativeElement.dispatchEvent(
+                new KeyboardEvent($event.type, { key: $event.key })
+            );
+        }
+    }
 
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
@@ -779,17 +799,22 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     private newAdvancedFilters: Filters;
     public advancedFiltersChanged($event) {
-        this.newAdvancedFilters = $event;
-        this.stateService.artifactTypeFilters.currentPageNumber = 0;
-        if (this.dt) {
-            this.dt.first = 0;
-        }
+		this.newAdvancedFilters = $event;
+		this.resetPageNumber();
         this.getData();
     }
 
     public onSimpleSearch($event) {
+		this.resetPageNumber();
         this.getData();
     }
+
+	resetPageNumber() {
+		this.stateService.artifactTypeFilters.currentPageNumber = 0;
+		if (this.dt) {
+			this.dt.first = 0;
+		}
+	}
 
     public triggerEdit() {
         this.onEdit(this.selected);

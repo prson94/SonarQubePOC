@@ -20,7 +20,7 @@ export class SearchService extends BaseObservableService  {
     constructor(private http: HttpClient, messagesService: MessagesObservableService, private featureFlagService: FeatureFlagsService) { super(messagesService); }
 
     public getEmptyResult(): SearchResults {
-        let result = new SearchResults();
+        const result = new SearchResults();
         result.Results = [];
         result.Aggregations = { category: []};
         result.Matches = 0;
@@ -80,7 +80,7 @@ export class SearchService extends BaseObservableService  {
     }
 
     public getSearchCategories(showUsers: boolean = true, keepNotVisible: boolean = false): Observable<SearchType[]> {
-        let exclude: string[] = [];
+        const exclude: string[] = [];
         if (!showUsers) {
             exclude.push('Group');
             exclude.push('User');
@@ -170,7 +170,7 @@ export class SearchService extends BaseObservableService  {
     }
 
 	public sendRebuildRequest(assets: IndexableStatus[]): Observable<any> {
-		let requests: IndexPartialRebuild[] = [];
+		const requests: IndexPartialRebuild[] = [];
 		assets.forEach((asset) => {
 			requests.push({
 				Class: asset.Class,

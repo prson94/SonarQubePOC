@@ -139,7 +139,7 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
         this.sortField = this.sortField == null ? "" : this.sortField;
         this.globalfilter = this.globalfilter == null ? "" : this.globalfilter;
 
-        let url = `${this.field.TypeaheadUri}&pagenum=${this.currentPageNumber}&pagesize=${this.rowsPerPage}&sortdatafield=${this.sortField}&sortorder=${this.sortOrder === SortOrder.None ? "" : (this.sortOrder === SortOrder.Ascending ? "asc" : "desc")}&gbfilter=${this.globalfilter}`;
+        const url = `${this.field.TypeaheadUri}&pagenum=${this.currentPageNumber}&pagesize=${this.rowsPerPage}&sortdatafield=${this.sortField}&sortorder=${this.sortOrder === SortOrder.None ? "" : (this.sortOrder === SortOrder.Ascending ? "asc" : "desc")}&gbfilter=${this.globalfilter}`;
 
         this.resourceService.getResourceItems(url).
             subscribe((data) => {
@@ -162,8 +162,8 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
     handleItemSelection(event) {
         if (this.multiple) {
             this.selectedItems = event;
-            let seletions = [];
-            for (let item of event) {
+            const seletions = [];
+            for (const item of event) {
                 seletions.push(item.Value);
             }
             this.value = _.cloneDeep(seletions);

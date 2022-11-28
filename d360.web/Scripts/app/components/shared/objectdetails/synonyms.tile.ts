@@ -145,9 +145,9 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         this.isLoading = true;
 
         if (this.selectedSynonym && this.selectedSynonym.uid) {
-            let type = this.synonymTypes.find((t) => t.Value == this.selectedType);
-            let relationships: Array<RelationshipV2> = [];
-            let relationship = new RelationshipV2();
+            const type = this.synonymTypes.find((t) => t.Value == this.selectedType);
+            const relationships: Array<RelationshipV2> = [];
+            const relationship = new RelationshipV2();
 
             if (type.IntersectTypeIsSubjectSide) {
                 relationship.SubjectAssetUid = this.assetUid;
@@ -202,7 +202,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     protected search(e: any) {
         this.isLoadingItems = true;
 
-        let type = this.synonymTypes.find((t) => t.Value == this.selectedType);
+        const type = this.synonymTypes.find((t) => t.Value == this.selectedType);
 
         if (!type) {
             this.isLoadingItems = false;

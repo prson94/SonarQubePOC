@@ -142,9 +142,9 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
             if (this.badgeAttributes.length > 0) {
                 let color = "";
                 for (var i = 0; i < this.badgeAttributes.length; i++) {
-                    let currentToken = this.badgeAttributes[i];
+                    const currentToken = this.badgeAttributes[i];
                     color = currentToken.color;
-                    let name = currentToken.name;
+                    const name = currentToken.name;
                     if (!firstToken) {
                         this.formattedBadge += "/";
                     } 
@@ -162,8 +162,8 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
             if (this.badgeAttributes.length === 1) {
                 return this.badgeAttributes[0].color;
             }
-            let split = Math.round( 100 / this.badgeAttributes.length);
-            let gradients = this.badgeAttributes.map((x) => {
+            const split = Math.round( 100 / this.badgeAttributes.length);
+            const gradients = this.badgeAttributes.map((x) => {
                 if (x) {
                     return x.color + " " + split + "%";
                 }                    
@@ -174,8 +174,8 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
     }
 
     private hsl2rgb(h:number, s:number, l:number): number[]{
-        let a = s * Math.min(l, 1 - l);
-        let f = (n, k = (n + h / 30) % 12) => l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        const a = s * Math.min(l, 1 - l);
+        const f = (n, k = (n + h / 30) % 12) => l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
         return [f(0), f(8), f(4)];
     }
     private hexToHSL(hex) {
@@ -213,11 +213,11 @@ export class SimpleBadgeComponent implements OnInit, OnChanges {
         if (color.substr(0, 1) === '#') {
             color = this.hexToHSL(color);
         }            
-        let hsl = /^hsl\(\s*(\d{1,3})\s*,\s*(0|[1-9]\d?|100)%\s*,\s*(0|[1-9]\d?|100)%\s*\)$/i.exec(color);
+        const hsl = /^hsl\(\s*(\d{1,3})\s*,\s*(0|[1-9]\d?|100)%\s*,\s*(0|[1-9]\d?|100)%\s*\)$/i.exec(color);
         if (hsl) {
-            let h = (360 + parseInt(hsl[1], 10)) % 360;
-            let s = parseInt(hsl[2], 10) * 0.01;
-            let l = parseInt(hsl[3], 10) * 0.01;
+            const h = (360 + parseInt(hsl[1], 10)) % 360;
+            const s = parseInt(hsl[2], 10) * 0.01;
+            const l = parseInt(hsl[3], 10) * 0.01;
             var rgb = this.hsl2rgb(h, s, l).map((x) => Math.round(x * 255));
             var luma = ((rgb[0] * 299) + (rgb[1] * 587) + (rgb[2] * 114)) / 1000;
             return (luma >= lumaLimit);

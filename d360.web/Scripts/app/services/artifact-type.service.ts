@@ -94,7 +94,7 @@ export class ArtifactTypeService extends BaseObservableService {
         data
     ) {
         data.filter((d) => d.ParentID === node.data.ID).forEach((d) => {
-            let child: TreeNode = { data: d, children: [] };
+            const child: TreeNode = { data: d, children: [] };
             node.children.push(child);
             this.formTreeR(child, data);
         });

@@ -87,7 +87,7 @@ export class HeaderHelpComponent implements OnInit {
     }
 
     show(item) {
-        let panel = item.children[0].nextElementSibling;
+        const panel = item.children[0].nextElementSibling;
         if (panel) {
             this.active = true;
 

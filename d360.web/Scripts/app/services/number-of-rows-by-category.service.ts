@@ -187,7 +187,7 @@ export class NumberOfRowsByCategoryService {
   }
 
   private getPageCategoryFromBreadcrumbs(): string {
-    let breadcrumb: Breadcrumb[] = this.headerBreadcrumbService.getBreadcrumbsFromStorage();
+    const breadcrumb: Breadcrumb[] = this.headerBreadcrumbService.getBreadcrumbsFromStorage();
     if (breadcrumb && breadcrumb[0]) {
       return breadcrumb[0].text;
     } else {

@@ -38,7 +38,7 @@ export class WorkflowMonitorStepEmailDetailsComponent extends BaseComponent impl
     load() {
         if (this.step != null) {
             if (!this.isAggregate && this.step.ItemSettings.emails.email != null) {
-                let sorted = this.step.ItemSettings.emails.email.slice();
+                const sorted = this.step.ItemSettings.emails.email.slice();
 
                 sorted.sort((a, b) => {
                     if (a['@address'] < b['@address']) {return -1;}

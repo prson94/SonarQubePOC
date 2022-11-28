@@ -53,7 +53,7 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
             menu.MenuID = StringConstants.MenuId_Favorites;
             menu.NavigationItems = [];
 
-            for (let favorite of homefav.Favorites) {
+            for (const favorite of homefav.Favorites) {
                 menu.NavigationItems.push({
                     Name: favorite.Name,
                     Url: favorite.Route,

@@ -279,6 +279,7 @@ namespace d360.model.DataAccessLayer
 			string profilingCheckFields = "";
 			bool includeProfilingCheck = false;
 			bool useCachedFilters = false;
+			var simpleFilterTempTables = new StringBuilder();
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -1103,10 +1104,16 @@ namespace d360.model.DataAccessLayer
 						if (select != null && join != null)
 						{
 							var selectField = select.StatementWithoutColumnName;
-
 							var joinStatement = !string.IsNullOrEmpty(join.SimpleStatement) ? join.SimpleStatement : join.SQLStatement;
 
-							simpleFilters.Add($@"
+							if (join.FieldFilter != null)
+							{
+								simpleFilterTempTables.AppendLine(join.FieldFilter.SimpleFilterTempTable);
+								simpleFilters.Add(join.FieldFilter.SimpleFilterStatement);
+							}
+							else
+							{
+								simpleFilters.Add($@"
 								select  A.ID
 								from    Asset A 
 								{advancedFilterTempTableInfos.JoinFilter()}
@@ -1115,6 +1122,7 @@ namespace d360.model.DataAccessLayer
 								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
 								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and {selectField} like @simpleFilter
 								option(recompile)");
+							}
 						}
 					}
 
@@ -1484,20 +1492,19 @@ namespace d360.model.DataAccessLayer
 			string simpleFiltersTempTablesQuery = "";
 			if (dbArgs.ParameterNames.Contains("simpleFilter"))
 			{
-				var sb = new StringBuilder();
-				sb.AppendLine("drop table if exists #TempFilteredAssets");
-				sb.AppendLine("create table #TempFilteredAssets(AssetId bigint)");
-				sb.AppendLine("create index ix_TempFilteredAssets on #TempFilteredAssets (AssetId)");
+				simpleFilterTempTables.AppendLine("drop table if exists #TempFilteredAssets");
+				simpleFilterTempTables.AppendLine("create table #TempFilteredAssets(AssetId bigint)");
+				simpleFilterTempTables.AppendLine("create index ix_TempFilteredAssets on #TempFilteredAssets (AssetId)");
 
 				for (int i = 0; i < simpleFilters.Count; i++)
 				{
-					sb.AppendLine("insert into #TempFilteredAssets");
-					sb.AppendLine(simpleFilters[i]);
+					simpleFilterTempTables.AppendLine("insert into #TempFilteredAssets");
+					simpleFilterTempTables.AppendLine(simpleFilters[i]);
 				}
 
-				sb.Remove(sb.Length - 1, 1);
-				sb.AppendLine(pathSegmentsSimpleFilterTempTables);
-				simpleFiltersTempTablesQuery = sb.ToString();
+				simpleFilterTempTables.Remove(simpleFilterTempTables.Length - 1, 1);
+				simpleFilterTempTables.AppendLine(pathSegmentsSimpleFilterTempTables);
+				simpleFiltersTempTablesQuery = simpleFilterTempTables.ToString();
 			}
 
 			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
@@ -1535,7 +1542,7 @@ namespace d360.model.DataAccessLayer
 
 				if (useCachedFilters)
 				{
-					string[] ignoreQueryKeys = new string[] { "_pagesize", "_pagenum", "_order", "_direction" };
+					string[] ignoreQueryKeys = new string[] { "_pagesize", "_pagenum", "_order", "_direction", "_includetotal" };
 
 					requestHash = assetType.uid + JsonConvert.SerializeObject(
 						queryParams.Where(x => !ignoreQueryKeys.Contains(x.Key.ToLowerInvariant())).OrderBy(x => x.Key))
@@ -1857,8 +1864,16 @@ namespace d360.model.DataAccessLayer
 							//If dynamic object for property orderBy does not implement IComparable (i.e. JObject,JArray), use string comparison
 							results.Sort((x, y) =>
 							{
-								var value1 = ((IDictionary<string, object>)x)[orderBy].ToString();
-								var value2 = ((IDictionary<string, object>)y)[orderBy].ToString();
+								var obj1 = ((IDictionary<string, object>)x);
+								var obj2 = ((IDictionary<string, object>)y);
+								string value1 = "", value2 = "";
+
+								if (obj1.ContainsKey(orderBy) && obj2.ContainsKey(orderBy))
+								{
+									value1 = obj1[orderBy].ToString();
+									value2 = obj2[orderBy].ToString();
+								}
+
 								return value1.CompareTo(value2);
 							});
 						}

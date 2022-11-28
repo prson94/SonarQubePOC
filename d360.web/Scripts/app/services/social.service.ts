@@ -74,7 +74,7 @@ export class SocialService extends BaseObservableService  {
     }
 
     addComment(comment: CommentApiPostModel): Observable<CommentDetail> {
-        let headers = new HttpHeaders();
+        const headers = new HttpHeaders();
 
         headers.append("Content-Type", "application/json");
         return this.http

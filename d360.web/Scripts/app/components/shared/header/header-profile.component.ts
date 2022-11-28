@@ -39,10 +39,10 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit() {
-        let showApiKey = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
+        const showApiKey = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
 
         this.isAdminSub = this.authenticationService.isAdmin$.subscribe((x) => {
-            let isAdmin: boolean = x;
+            const isAdmin: boolean = x;
             this.showAllUsersAPIKey = isAdmin || showApiKey;
         });
 
@@ -66,9 +66,9 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
     }
 
     show(item) {
-        let menuPanel = item.children[1].nextElementSibling;
-        let minimizedMenuItem = item.children[0].nextElementSibling;
-        let dims = minimizedMenuItem.getBoundingClientRect();
+        const menuPanel = item.children[1].nextElementSibling;
+        const minimizedMenuItem = item.children[0].nextElementSibling;
+        const dims = minimizedMenuItem.getBoundingClientRect();
         if (menuPanel) {
             this.active = true;
 

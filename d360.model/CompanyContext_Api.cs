@@ -4732,8 +4732,8 @@ where	T.ExecutionID = @ExecutionID
 										AddMeasurement(metrics, $"MergeAssetPaths >> {currentLoop} > Begin", 0, ++step);
 
 										Connection.Execute(
-											"exec api.MergeAssetPaths @executionId, @class, @begin, @end",
-											new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber },
+											"exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, @isInsert",
+											new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber, isInsert },
 											transaction: trans, timeout);
 										AddMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
 										sw.Restart();
@@ -4759,14 +4759,15 @@ where	T.ExecutionID = @ExecutionID
                                         AddMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
+									AddMeasurement(metrics, $"CheckKeyHashes >> {currentLoop} > Begin", sw.ElapsedMilliseconds, ++step);
 									#region Generate proposed key hash and compare against existing data.
-									var invalidHashState = Connection.Query<int>(@"
+									var invalidHashState = Connection.Query<dynamic>(@"
 										declare @assetTypeId int =  (select top 1 a.AssetTypeID from api.ExecutionAsset ea
 										inner join Asset a on a.ID = ea.AssetID
 										where ExecutionId = @executionid and ea.AssetID is not null and  ItemNumber between @beginItemNumber and @endItemNumber )
 
 										drop table if exists #HashData
-										select AssetID, Ap.KeyPathHash 
+										select AssetID, Ap.KeyPathHash, A.CreatedOn, ea.ItemNumber
 											into #HashData
 										from api.ExecutionAsset ea
 											inner join Asset A on a.ID = ea.AssetID
@@ -4774,21 +4775,22 @@ where	T.ExecutionID = @ExecutionID
 										where ea.ExecutionID = @executionid 
 										and ItemNumber between @beginItemNumber and @endItemNumber 
 
-										select count(1) from Asset A WITH (NOLOCK)
+										select hd.ItemNumber, a.id as AssetId, datediff(second,a.CreatedOn, hd.CreatedOn) as CreatedBefore from Asset A WITH (NOLOCK)
 										inner join AssetPath ap WITH (NOLOCK) on ap.ID = a.ID
 										inner join #HashData hd on hd.assetid != a.ID and hd.KeyPathHash = ap.KeyPathHash
 										where a.AssetTypeID = @assetTypeId
 										option(recompile)
 										", new { executionID = execution.ExecutionID, beginItemNumber, endItemNumber },
-										transaction: trans, commandTimeout: timeout).FirstOrDefault();
+										transaction: trans, commandTimeout: timeout).ToList();
 
-									if (invalidHashState > 0)
-									{
-										throw new DuplicateHashException("Key values match another asset under a different set of key fields or 2 or more concurrent requests contains same key field values.");
-									}
-
-									AddMeasurement(metrics, "CheckKeyHashes", sw.ElapsedMilliseconds, ++step);
+									AddMeasurement(metrics, $"CheckKeyHashes >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 									sw.Restart();
+
+									if (invalidHashState.Count > 0)
+									{
+										string duplicates = string.Join(",", invalidHashState.Select(x => $"[ItemNumber:{x.ItemNumber},ID:{x.AssetId},CreatedBefore:{x.CreatedBefore}s]"));
+										throw new DuplicateHashException("Key values match another asset under a different set of key fields or 2 or more concurrent requests contains same key field values."+ duplicates);
+									}
 
 									#endregion
 
@@ -4865,43 +4867,43 @@ where	T.ExecutionID = @ExecutionID
 
                     Connection.Close();
 
-					// TODO: Add event grid calls here.
+				//TODO: Add event grid calls here.
 
                     if (sendWorkflowEvents)
                     {
                         sw.Restart();
 						AddMeasurement(metrics, $"SendWorkflowEvents > Begin", 0, ++step);
 						SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
-                        AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
-                    }
+						AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
+					}
 
 					try
 					{
 						SendBatchApiCompletedEvent(execution);
 						AddMeasurement(metrics, $"SendCompletedEvent", sw.ElapsedMilliseconds, ++step);
 					}
-					catch 
+					catch
 					{
 
 					}
-					
+
 					#region Send score recalculation notifications.
 
 					if (intersectTypeID.HasValue)
-                    {
+					{
 						sw.Restart();
 						AddMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution > Begin", 0, ++step);
 						CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
 						AddMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution", 0, ++step);
-                    }
+					}
 
-                    if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
-                    {
-                        sw.Restart();
+					if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
+					{
+						sw.Restart();
 						AddMeasurement(metrics, $"SendScoreEventWithPayload > Begin", 0, ++step);
 						CreateImportAssetsExecution(execution.ExecutionID, at.uid);
-                        AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
-                    }
+						AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
+					}
 
                     #endregion
                 }

@@ -94,7 +94,7 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
     }
 
     showChildElements() {
-        let nav: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu"));
+        const nav: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu"));
 
         //check if there's already a branch for this category
         if (nav.some((x) => x.SiteMenuID === this.category)) {
@@ -112,7 +112,7 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
     }
 
     hideChildElements() {
-        let nav: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu"));
+        const nav: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu"));
 
         nav.forEach((menu) => {
             if (menu.SiteMenuID === this.category) {

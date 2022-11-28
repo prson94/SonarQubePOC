@@ -156,7 +156,7 @@ export class ObjectDetailService extends BaseObservableService {
         object: string,
         nyms: NymType[]
     ): Observable<JsonResult> {
-        let model = {
+        const model = {
             Object: object,
             ObjectID: objectID,
             PredicateIDs: nyms.filter((x) => x.Enabled).map((a) => a.ID)
