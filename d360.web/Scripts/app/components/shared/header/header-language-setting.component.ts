@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, Eleme
 import * as _ from "lodash";
 import { CompanySettingsService } from "../../../services/settings.service";
 
-declare var ApplicationLanguageSetting: string;
+declare let ApplicationLanguageSetting: string;
 
 interface Language {
 	name: string,
@@ -24,13 +24,13 @@ interface Language {
 	`]
 })
 export class HeaderLanguageSettingComponent {
-	@Input() isModalVisible: boolean = false;
+	@Input() isModalVisible = false;
 	@Output() onClose = new EventEmitter();
 
 	languages: Language[] = [];
 	selectedLanguage: Language;
 	initialLanguage: Language;
-	savingInProgress: boolean = false;
+	savingInProgress = false;
 
 	@ViewChild("popupBox", { static: false }) popupBox: ElementRef;
 
