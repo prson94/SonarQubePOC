@@ -1,5 +1,4 @@
-import * as _ from 'lodash';
-import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { AssetBrowserDiagramAsset, AssetBrowserPanelCommand, DiagramType } from '../../../../../models/lineage.model';
 import { Permissions } from "../../../../../services/permissions.service";
 

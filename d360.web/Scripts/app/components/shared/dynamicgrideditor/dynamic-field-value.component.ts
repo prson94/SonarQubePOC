@@ -1,9 +1,9 @@
-﻿import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../../models/grid-definition.model';
+import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({

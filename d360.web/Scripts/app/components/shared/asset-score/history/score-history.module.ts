@@ -2,9 +2,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { DirectivesModule } from '../../../../directives/directives.module';
-import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-request.interceptor';
 import { PipesModule } from '../../../../pipes/pipes.module';
 import { ScoreHistoryComponent } from './score-history.component';
 import { CoreModule } from '../../core.module';

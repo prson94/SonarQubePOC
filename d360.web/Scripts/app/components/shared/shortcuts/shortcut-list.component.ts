@@ -1,9 +1,8 @@
-﻿import { Input, Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { Shortcut } from '../../../models/shortcuts.model';
 import { ShortcutService } from '../../../services/shortcuts.service';
 import { FormMode } from '../../../models/form.model';
-import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 

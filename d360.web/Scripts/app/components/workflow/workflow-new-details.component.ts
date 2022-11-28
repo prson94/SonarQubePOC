@@ -1,14 +1,14 @@
-﻿import { Input, Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { Router, ActivatedRoute }       from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import {
-    WorkflowType,
+    BulkWorkflowFormModel,
+    BulkWorkflowReassignModel,
     WorkflowAssignmentDetail,
     WorkflowAssignmentSummary,
-    BulkWorkflowFormModel,
-    BulkWorkflowReassignModel
+    WorkflowType
 } from '../../models/workflow.model';
 import { Title } from '@angular/platform-browser';
 import { WorkflowService } from '../../services/workflow.service';

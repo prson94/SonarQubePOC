@@ -1,5 +1,5 @@
-﻿import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { BaseComponent } from '../../shared/base.component';
 

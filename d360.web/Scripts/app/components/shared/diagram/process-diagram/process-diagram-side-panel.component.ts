@@ -1,5 +1,14 @@
-
-import { Component, Input, OnInit, ChangeDetectionStrategy, AfterViewChecked, OnChanges, SimpleChange, SimpleChanges, ChangeDetectorRef, EventEmitter, Output, OnDestroy } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -8,6 +17,7 @@ import { EditorField } from '../../../../models/editor-field.model';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
 import { Subscription } from 'rxjs';
+
 @Component({
     selector: 'd3s-process-diagram-side-panel',
     templateUrl: './process-diagram-side-panel.component.html',

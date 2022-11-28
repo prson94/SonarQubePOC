@@ -1,17 +1,27 @@
-﻿import { Component, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild, AfterViewChecked } from '@angular/core';
+﻿import {
+    AfterViewChecked,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    Output,
+    ViewChild
+} from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import {
-    WorkflowChangeType,
-    NodeModel,
-    WorkflowActivityType,
-    WorkflowTaskProcedure,
     EmailTaskRecipientType,
-    StepType,
+    FieldUpdateSettings,
+    HTTPRequestSettings,
+    HTTPResponseSettings,
+    NodeModel,
     NodeSettings,
     RelationshipUpdateSettings,
-    HTTPRequestSettings,
-    FieldUpdateSettings,
-    HTTPResponseSettings,
+    StepType,
+    WorkflowActivityType,
+    WorkflowChangeType,
+    WorkflowTaskProcedure,
 } from '../../../../models/workflow.model';
 import { Editor } from 'primeng/editor';
 import { WorkflowService } from '../../../../services/workflow.service';

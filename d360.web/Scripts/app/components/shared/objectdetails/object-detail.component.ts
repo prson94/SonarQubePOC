@@ -1,5 +1,12 @@
-import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
-import { DetailRow, DetailField, DetailFieldType, ComplexLookupType, NymType, Category } from '../../../models/object-detail.model';
+import { ChangeDetectorRef, Component, Input, OnChanges, SimpleChange } from '@angular/core';
+import {
+    Category,
+    ComplexLookupType,
+    DetailField,
+    DetailFieldType,
+    DetailRow,
+    NymType
+} from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetService } from '../../../services/asset.service';

@@ -1,9 +1,17 @@
-﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, ViewChild } from "@angular/core";
-import { LookupGrid, GridFilterColumn, LookupGridField } from "../../../models/grid-definition.model";
-import { NavigationEnd, Router } from "@angular/router";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnDestroy,
+    OnInit,
+    ViewChild
+} from "@angular/core";
+import { GridFilterColumn, LookupGrid, LookupGridField } from "../../../models/grid-definition.model";
+import { Router } from "@angular/router";
 import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { BaseComponent } from "../base.component";
-import { ComplexLookupType, DetailField } from "../../../models/object-detail.model";
+import { DetailField } from "../../../models/object-detail.model";
 import { AssetService } from "../../../services/asset.service";
 import { Subscription } from "rxjs";
 import { Filters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";

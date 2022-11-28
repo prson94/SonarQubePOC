@@ -1,12 +1,20 @@
-﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, OnInit, OnChanges, SimpleChanges } from "@angular/core";
-import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR, Validator, AbstractControl, ValidationErrors } from "@angular/forms";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    forwardRef,
+    Input,
+    NgModule,
+    ViewEncapsulation
+} from "@angular/core";
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { DirectivesModule } from "../../../../directives/directives.module";
 import { ButtonModule } from "../../../../directives/ig-button-directive";
 import { TooltipModule } from "primeng/tooltip";
 import { DomSanitizer } from '@angular/platform-browser';
 import { ColorPickerModule } from "primeng/colorpicker";
-import { forEach } from "core-js/js/array";
 
 export class ColorSelecterEvaluator {
     evaluator: Function;

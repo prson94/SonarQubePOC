@@ -1,7 +1,11 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { IResponsibilityTypeService, ResponsibilityTypeAllocation, ResponsibilityTypeRelation_FormData, ResponsibilityTypeRelationAllocationOption } from '../../../models/responsibility-type.model';
-import { BaseComponent } from '../../shared/base.component';
+import {
+    ResponsibilityTypeAllocation,
+    ResponsibilityTypeRelationFormData,
+    ResponsibilityTypeRelationAllocationOption
+} from '../../../models/responsibility-type.model';
+import { BaseComponent } from '../base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -36,7 +40,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
     private rows = new Array<ResponsibilityTypeAllocation>();
     private selectedRow = new ResponsibilityTypeAllocation();
-    private commonFormData = new ResponsibilityTypeRelation_FormData();
+    private commonFormData = new ResponsibilityTypeRelationFormData();
 
     private theDeleteCallback: Function;
 

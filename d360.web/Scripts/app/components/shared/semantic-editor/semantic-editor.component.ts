@@ -1,30 +1,23 @@
 ﻿import * as _ from 'lodash';
 import {
+    AfterViewChecked,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
+    ElementRef,
     EventEmitter,
+    HostListener,
     Input,
     OnChanges,
     OnInit,
     Output,
-    ElementRef,
-    ViewEncapsulation,
-    ViewChildren,
     QueryList,
-    HostListener,
-    AfterViewChecked,
     SimpleChanges,
-    ViewChild
+    ViewChild,
+    ViewChildren,
+    ViewEncapsulation
 } from '@angular/core';
-import {
-	AbstractControl,
-	FormBuilder,
-	FormGroup,
-	ValidationErrors,
-	ValidatorFn,
-	Validators
-} from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { SemanticMatchType, SemanticSource, SemanticType } from '../../../models/semantic-type.model';
 import { DataProfileService } from '../../../services/dataprofile.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';

@@ -1,5 +1,5 @@
-﻿import { CommonModule }       from '@angular/common';
-import {NgModule, Input, Component, OnInit } from '@angular/core';
+﻿import { CommonModule } from '@angular/common';
+import { Component, Input, NgModule, OnInit } from '@angular/core';
 import { FormMessage, MessageType } from '../../models/form.model';
 
 

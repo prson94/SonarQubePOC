@@ -1,10 +1,6 @@
-﻿import { Component, ChangeDetectionStrategy, Input, OnChanges, ChangeDetectorRef, OnInit } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnInit } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
-import {
-    NodeModel,
-    WorkflowActivityType,
-    StepType
-} from '../../../../models/workflow.model';
+import { NodeModel, StepType, WorkflowActivityType } from '../../../../models/workflow.model';
 
 
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';

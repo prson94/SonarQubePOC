@@ -1,5 +1,5 @@
-﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from "@angular/core";
-import { LookupGrid, GridFilterColumn } from "../../../models/grid-definition.model";
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy } from "@angular/core";
+import { GridFilterColumn, LookupGrid } from "../../../models/grid-definition.model";
 import { Router } from "@angular/router";
 import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { BaseComponent } from "../base.component";

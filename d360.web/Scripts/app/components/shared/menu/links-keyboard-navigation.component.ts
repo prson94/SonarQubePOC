@@ -1,6 +1,4 @@
 import { Component } from '@angular/core';
-import * as _ from 'lodash';
-
 
 
 const upKeyCode = 38;

@@ -1,11 +1,26 @@
-﻿import { Component, OnInit, OnChanges, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, SimpleChanges } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
-import { WorkflowActivityType, StepType, WorkflowStepDetail, WorkflowChangeType, WorkflowStepReassignment } from '../../../models/workflow.model';
+import {
+    StepType,
+    WorkflowActivityType,
+    WorkflowChangeType,
+    WorkflowStepDetail,
+    WorkflowStepReassignment
+} from '../../../models/workflow.model';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { WorkflowHelpers } from '../../../static/workflow-helpers';
 import { map } from 'rxjs/operators';
-import * as _ from 'lodash';
 import { Observable, of } from 'rxjs';
 import { ResponsibilityType } from '../../../models/responsibility-type.model';
 import { CompanySettingsService } from '../../../services/settings.service';

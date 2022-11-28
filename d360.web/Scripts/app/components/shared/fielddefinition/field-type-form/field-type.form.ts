@@ -1,14 +1,14 @@
 import * as _ from 'lodash';
-import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 
 import {
-    FieldTypeEditorModel,
-    Lookups,
-    FieldTypeRelationItemEditorModel,
-    FieldTypeItemDisplayFieldEditorModel,
+    AssetTypeAncestry,
     Direction,
-    AssetTypeAncestry
+    FieldTypeEditorModel,
+    FieldTypeItemDisplayFieldEditorModel,
+    FieldTypeRelationItemEditorModel,
+    Lookups
 } from '../../../../models/fields.model';
 
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
@@ -18,7 +18,13 @@ import { FormHelpers } from '../../../../static/form-helpers';
 import { Observable, Subscription } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
-import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel, DefinitionField, Relation } from '../../../../models/fieldtype-api.model';
+import {
+    DefinitionField,
+    FieldType,
+    FieldTypeAPIModel,
+    FieldTypeAPIModelField,
+    Relation
+} from '../../../../models/fieldtype-api.model';
 import { AssetService } from '../../../../services/asset.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
 

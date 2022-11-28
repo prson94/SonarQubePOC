@@ -1,7 +1,5 @@
-﻿
-import { Component, OnInit, Input } from '@angular/core';
+﻿import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import * as _ from 'lodash';
 import { DetailField } from '../../../../models/object-detail.model';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
 

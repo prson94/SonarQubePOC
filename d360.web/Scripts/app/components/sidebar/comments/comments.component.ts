@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, OnDestroy } from "@angular/core";
+﻿import { Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { BaseComponent } from "../../shared/base.component";
 import { SecondaryNavService } from "../../../services/right-sidebar.service";

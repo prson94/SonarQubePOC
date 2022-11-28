@@ -1,10 +1,26 @@
-﻿import { Component, EventEmitter, ChangeDetectionStrategy, OnInit, HostBinding, Input, OnChanges, SimpleChanges, ChangeDetectorRef, Output } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    HostBinding,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { RelationshipsService } from '../../../../../services/relationships.service';
 import { AssetBrowserResponseModel, AssetBrowserTranslationNode } from '../../../../../models/lineage.model';
-import { CommonComponentAssetResult, CommonComponentAssetSelection, CommonComponentAssetTypeFilter, CommonComponentAssetTypeFilterSideOfRelationship, CommonComponentAssetTypeFilterRelationshipSide } from '../../../../../models/asset-search.model';
+import {
+    CommonComponentAssetResult,
+    CommonComponentAssetSelection,
+    CommonComponentAssetTypeFilter,
+    CommonComponentAssetTypeFilterRelationshipSide,
+    CommonComponentAssetTypeFilterSideOfRelationship
+} from '../../../../../models/asset-search.model';
 import { Predicate, PredicateType } from '../../../../../models/predicate.model';
-import { AssetTypeClass } from '../../../../../models/asset.model';
 
 export enum RelationshipEditorType {
     Lineage = 'Lineage',

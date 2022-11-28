@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
-import { Shortcut, LinkTarget } from '../../../models/shortcuts.model';
+import { LinkTarget, Shortcut } from '../../../models/shortcuts.model';
 import { ShortcutService } from '../../../services/shortcuts.service';
 import { Observable } from 'rxjs';
 import { CompanySettingsService } from '../../../services/settings.service';

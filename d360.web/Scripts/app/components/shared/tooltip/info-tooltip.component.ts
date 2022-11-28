@@ -1,4 +1,5 @@
-﻿import { Component, EventEmitter, Output, Input, HostBinding, ChangeDetectionStrategy, OnInit } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, Input, NgModule, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'd3s-info-tooltip',
@@ -28,9 +29,6 @@ export class InfoTooltipComponent implements OnInit {
         }
     }
 }
-
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 
 @NgModule({

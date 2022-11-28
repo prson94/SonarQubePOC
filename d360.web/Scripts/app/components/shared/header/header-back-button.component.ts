@@ -1,14 +1,5 @@
-﻿import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    OnDestroy,
-    OnInit,
-} from '@angular/core';
-import {
-    Router,
-    NavigationEnd
-} from '@angular/router';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 
 
 @Component({

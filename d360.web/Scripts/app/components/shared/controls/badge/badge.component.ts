@@ -1,6 +1,4 @@
-﻿
-import { Component, Input, AfterViewInit } from '@angular/core';
-import { TooltipModule } from 'primeng/tooltip';
+﻿import { Component, Input } from '@angular/core';
 
 @Component({
     selector: 'ig-badge',

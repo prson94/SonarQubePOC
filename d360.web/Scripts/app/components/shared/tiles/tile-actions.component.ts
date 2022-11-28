@@ -1,4 +1,13 @@
-﻿import { Component, EventEmitter, Output, Input, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChange
+} from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { ReuseInterceptor } from '../../../http-interceptors/reuse.interceptor';
 
