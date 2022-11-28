@@ -118,9 +118,6 @@ namespace d360.core.entities
 		public Guid uid { get; set; }
 
 		[DataMember]
-		public int ID { get; set; }
-
-		[DataMember]
 		public string PredicateInverse { get; set; }
 
 		[DataMember]

@@ -219,7 +219,6 @@ namespace d360.model.DataAccessLayer
 									,A.[Class] as ClassID
 									,ISNULL(A.[Notes],'') as Notes
 									,A.[uid]
-									,A.ID
 									,HA.Hierarchical
 									,A.HierarchyMaximumDepth
 									,A.DisplayFormat
