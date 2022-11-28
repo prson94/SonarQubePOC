@@ -92,12 +92,11 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                 .subscribe((res) => {
                     this.isLoading = false;
                     this.comments = this.comments.concat(res.comments);
-                    this.hasMore = (res.comments.length && res.comments.length > 0);
+					this.hasMore = (res.comments.length && res.comments.length > 0);
+					this.pageNumber++;
                     this.updateResourceData();
                 });
         }
-
-        this.pageNumber++;
     }
 
     allowComments(): boolean {
