@@ -288,7 +288,7 @@ export class WorkflowFieldsService {
     }
 
     updateOutputField(field: HTTPResponseOutput) {
-        const i = this.outputFields.findIndex((f) => f.Id === field.Id);
+		const i = this.outputFields.findIndex((f) => f.Id === field.Id && f.StepId === field.StepId);
 		if (i > -1) {
 			this.outputFields[i].StepName = field.StepName;
             this.outputFields[i].Name = field.Name;
