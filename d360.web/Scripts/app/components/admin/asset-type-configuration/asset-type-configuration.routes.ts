@@ -74,7 +74,8 @@ class WhenCanSeeRelationshipsGuard extends CanActivateOnlyForAvailableTypeClasse
 class WhenCanSeeLogGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+        AssetTypeClass.TechnicalAsset,
+        AssetTypeClass.DiagramAsset
     ]
 }
 
