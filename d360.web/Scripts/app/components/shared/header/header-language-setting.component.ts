@@ -50,11 +50,11 @@ export class HeaderLanguageSettingComponent {
 				code: 'en'
 			},
 			{
-				name: 'Español - ES',
+				name: 'Espa\u00F1ol - ES',
 				code: 'es-ES'
 			},
 			{
-				name: 'Français - FR',
+				name: 'Fran\u00E7ais - FR',
 				code: 'fr-FR'
 			},
 			{
