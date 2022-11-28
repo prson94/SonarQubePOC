@@ -141,7 +141,7 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
     }
 
     getResponsibilityTypesByObject(type: string, id: number): Observable<any> {
-        let uri = `api/ownership/${type}/${id}/responsibilitytypes`;
+        const uri = `api/ownership/${type}/${id}/responsibilitytypes`;
         return this.http.get(uri)
             .pipe(
                 map((response) => <any>response),

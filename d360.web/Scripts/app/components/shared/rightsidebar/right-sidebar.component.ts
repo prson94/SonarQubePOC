@@ -117,12 +117,12 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     this.secondaryNavService.saveLastState();
                     if (event instanceof NavigationStart) {
                         if (event.navigationTrigger !== 'imperative') {
-                            let state = this.secondaryNavService.getItemState(event.url);
+                            const state = this.secondaryNavService.getItemState(event.url);
                             if (state) {
                                 this.secondaryNavService.rebuildFromStorage(state);
                             }
                         } else {
-                            let extras = router.getCurrentNavigation().extras;
+                            const extras = router.getCurrentNavigation().extras;
                             if (extras.state?.invalidateKey) {
                                 this.secondaryNavService.invalidateKey();
                             }
@@ -143,9 +143,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     ngOnInit(): void {
         this.paramsSub = this.route.queryParams.subscribe(() => {
             let markForCheck = false;
-            let url = new URL(window.location.href);
-            let search = url.search;
-            let params = new URLSearchParams(search);
+            const url = new URL(window.location.href);
+            const search = url.search;
+            const params = new URLSearchParams(search);
 
             if (params.has('nonavigation')) {
                 this.showNav = params.get('nonavigation').toLowerCase() !== 'true';
@@ -179,8 +179,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     checkSize() {
         if (this.tabScroller && this.tabScroller.length > 0) {
-            let maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
-            let lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
+            const maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
+            const lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
             this.showScrollButtons = lastTab > maxWidth;
         }
         this.checkScrollPos();
@@ -188,11 +188,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     checkScrollPos() {
         if (this.tabScroller && this.tabScroller.length > 0) {
-            let currentPosition = this.tabScroller.first.nativeElement.scrollLeft;
+            const currentPosition = this.tabScroller.first.nativeElement.scrollLeft;
             this.disableScrollLeft = currentPosition === 0;
 
-            let maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
-            let lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
+            const maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
+            const lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
             this.disableScrollRight = lastTab <= maxWidth;
 
             this.ref.markForCheck();
@@ -208,8 +208,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     scroll(direction: string) {
         let scrollAmount = 0;
-        let scrollDistance = 300;
-        let move = () => {
+        const scrollDistance = 300;
+        const move = () => {
             if (direction === 'L') {
                 this.tabScroller.first.nativeElement.scrollLeft -= 10;
             } else {
@@ -223,12 +223,12 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.checkScrollPos();
         };
 
-        let id = window.setInterval(move, 5);
+        const id = window.setInterval(move, 5);
     }
 
     getTitle(item: SecondaryNavItem) {
         if (this.statistics && this.statistics.IssueCount > 0 && item.title === 'Actions') {
-            let plurality = this.statistics.IssueCount === 1 ? ' is' : 's are';
+            const plurality = this.statistics.IssueCount === 1 ? ' is' : 's are';
             return this.statistics.IssueCount + " outstanding action" + plurality + " assigned to you";
         } else {
             return "";
@@ -257,7 +257,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.secondaryNavService.setLocalCurrentTabs([...this.items]);
 
                 if (item.tag === 'GovernanceRoles') {
-                    let setting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);
+                    const setting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);
                     if (!setting.ScalarValue || setting.ScalarValue === "00000000-0000-0000-0000-000000000000") {
                         item.warningMessage = `GovRoleWarning`;
                         this.ref.markForCheck();
@@ -390,14 +390,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     }
                     let statusHeading = "";
                     try {
-                        let colorObj = JSON.parse(this.status);
+                        const colorObj = JSON.parse(this.status);
                         if (colorObj.length && colorObj.length > 0)
                             {statusHeading = colorObj[0].name;}
                     } catch (e) {
                         statusHeading = this.status;
                     }
                     let isDraft = false;
-                    let draftArray = draftValues.toUpperCase().split(',');
+                    const draftArray = draftValues.toUpperCase().split(',');
                     draftArray.forEach((x) => {
                         if (statusHeading.toUpperCase().indexOf(x.toUpperCase()) !== -1)
                             {isDraft = true;}
@@ -420,7 +420,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             (result) => {
                 this.dataClassification = result;
                 try {
-                    let dataClassificationAttributes = JSON.parse(this.dataClassification);
+                    const dataClassificationAttributes = JSON.parse(this.dataClassification);
                     if (this.dataClassification != null && dataClassificationAttributes.length > 0) {
                         this.showDataClassification = true;
                     }
@@ -462,7 +462,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         );
         this.workflowService.getIssues(objectID, objectName)
             .subscribe((result) => {
-                let issues = result;
+                const issues = result;
                 if (issues.length && issues.length > 0) {
                     this.actionsAssigned = true;
                 }
@@ -535,14 +535,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     AllClosed() {
-        let count = this.items.filter((x) => x.active === true).length;
+        const count = this.items.filter((x) => x.active === true).length;
         if (count === 0)
             {this.secondaryNavService.setLocalActiveItem(undefined);}
         return count === 0;
     }
 
     closeAll() {
-        for (let ritem of this.items) {
+        for (const ritem of this.items) {
             if (ritem.active) {
                 ritem.active = false;
                 this.secondaryNavService.itemClicked(ritem);
@@ -608,7 +608,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     OpenScoring(scoreType: string) {
         if (this.currentObject.Uid) {
-            let scoreItems = this.items.filter((x) => x.title === 'Scoring');
+            const scoreItems = this.items.filter((x) => x.title === 'Scoring');
 			if (scoreItems.length === 1) {
 				this.router.navigateByUrl(`/asset/${(this.currentObject.Uid as string).toLowerCase()}/score/${scoreType}`);
             }

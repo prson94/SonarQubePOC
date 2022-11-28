@@ -339,12 +339,12 @@ export class AdvancedFilterFieldCondition {
             if (this.fieldType === "Lookup" || this.fieldType === "Tag" || this.fieldType === "Relationship" || this.field === SystemFields.OwnedByFieldCode || this.isRelationship) {
                 let valueAsString = "";
                 if (Array.isArray(value)) {
-                    let chevronHtml = "<i class='slim-fa fa fa-chevron-right'></i>";
-                    let placeholder = "#chevronPlaceholder";
+                    const chevronHtml = "<i class='slim-fa fa fa-chevron-right'></i>";
+                    const placeholder = "#chevronPlaceholder";
 
                     // Escape user input, but avoid escaping chevron icons using js replace all method .split(x).join(y)
                     
-                    let arr = value.map((v: SelectItem) => _.escape(
+                    const arr = value.map((v: SelectItem) => _.escape(
                             v.title.replace(/(<i)(.*?)(i>)/g, placeholder)
                         ).split(placeholder).join(chevronHtml)
                     );
@@ -507,8 +507,8 @@ export class AdvancedFilterFieldCondition {
             return `(${this.field} ge ${this.getValue()} and ${this.field} le ${this.getValue2()})`;
         }
         else {
-            let operation: string = this.getOperatorString();
-            let value: string = this.getValue();
+            const operation: string = this.getOperatorString();
+            const value: string = this.getValue();
             return `(${this.field} ${operation} ${value})`;
         }
     }
@@ -532,15 +532,15 @@ export class AdvancedFilterFieldConditionCollection {
             return "";
         }
         const lenghtOfTheGuid = 36;
-        let queries: string[] = [];
+        const queries: string[] = [];
         let valuesArr: any[];
         this.filters.filter((x) => x.field && x.operator && x.markForDeletion !== true).forEach((cond) => {
-            let treatAsRelationship: boolean =
+            const treatAsRelationship: boolean =
                 (cond.operator.toString() !== "Populated" && cond.operator.toString() !== "NotPopulated" && cond.relationshipFieldName.indexOf("|") === 36)
                 || (cond.fieldType == null && cond.field.indexOf("|") === 36);
 
             if ((cond.fieldType === "Lookup" || cond.fieldType === "Tag" || cond.field === SystemFields.OwnedByFieldCode) && cond.value) {
-                let subConditions: AdvancedFilterFieldCondition[] = [];
+                const subConditions: AdvancedFilterFieldCondition[] = [];
                 valuesArr = cond.value as SelectItem[];
 
                 if (cond.field === "Color" && typeof cond.value === "string") {
@@ -553,7 +553,7 @@ export class AdvancedFilterFieldConditionCollection {
                         if ((r.value as string).length === lenghtOfTheGuid) {
                             subConditions.push(cond.getCopyWithNewValue(r.value));
                         } else if ((r.value as string).length > lenghtOfTheGuid) {
-                            let ownerAndResponsibilitySubCondition = cond.getCopyWithNewValue(r.value);
+                            const ownerAndResponsibilitySubCondition = cond.getCopyWithNewValue(r.value);
                             ownerAndResponsibilitySubCondition.field = "$OwnedByAndResponsibility";
                             subConditions.push(ownerAndResponsibilitySubCondition);
                         }
@@ -563,7 +563,7 @@ export class AdvancedFilterFieldConditionCollection {
                     }
                 });
 
-                let subQueries: string[] = [];
+                const subQueries: string[] = [];
                 subConditions.forEach((sc) => {
                     subQueries.push(sc.getQueryString());
                 });
@@ -580,12 +580,12 @@ export class AdvancedFilterFieldConditionCollection {
                     var stringArr = cond.value as string[];
 
                     if (cond.operator.toString().indexOf("Equals") === -1) {
-                        let subConditions: AdvancedFilterFieldCondition[] = [];
+                        const subConditions: AdvancedFilterFieldCondition[] = [];
                         stringArr.forEach((r) => {
                             subConditions.push(cond.getCopyWithNewValue(r));
                         });
 
-                        let subQueries: string[] = [];
+                        const subQueries: string[] = [];
                         subConditions.forEach((sc) => {
                             subQueries.push(sc.getQueryString());
                         });
@@ -602,7 +602,7 @@ export class AdvancedFilterFieldConditionCollection {
                 }
             }
             else if (treatAsRelationship) {
-                let subConditions: AdvancedFilterFieldCondition[] = [];
+                const subConditions: AdvancedFilterFieldCondition[] = [];
                 if (cond.value) {
                     valuesArr = cond.value as SelectItem[];
                     valuesArr.forEach((r) => {
@@ -617,7 +617,7 @@ export class AdvancedFilterFieldConditionCollection {
                         subConditions.push(copyCond);
                     });
 
-                    let subQueries: string[] = [];
+                    const subQueries: string[] = [];
                     subConditions.forEach((sc) => {
                         subQueries.push(sc.getQueryString());
                     });
@@ -651,7 +651,7 @@ export class AdvancedFilterFieldConditionCollection {
                 scoreType = 2;
             }
 
-            let alloc = this.allocations.filter((x) => x.scoreType === scoreType || x.scoreType.toString() === scoreTypeString)[0];
+            const alloc = this.allocations.filter((x) => x.scoreType === scoreType || x.scoreType.toString() === scoreTypeString)[0];
 
             switch (cond.value) {
                 case "poor":

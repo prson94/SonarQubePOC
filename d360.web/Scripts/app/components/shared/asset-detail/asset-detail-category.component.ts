@@ -42,7 +42,7 @@ export class AssetDetailCategoryComponent {
 
     getColumnWidth(data: any[]): string {
         if (this.showInColumn(data)) {
-            let columnWidth = this.settingsService.getSettingById(CompanySettingEnum.AssetDefinitionColumnWidth).NumberSetting.Value;
+            const columnWidth = this.settingsService.getSettingById(CompanySettingEnum.AssetDefinitionColumnWidth).NumberSetting.Value;
             return (columnWidth).toString();
         }
         return 'unset';

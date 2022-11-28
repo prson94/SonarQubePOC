@@ -36,6 +36,7 @@ import { AssetBrowserOverviewComponent } from '../assetbrowser/tools/overview.co
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { SidePanelService } from '../../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { forkJoin } from 'rxjs';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -179,7 +180,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.route.params.subscribe((params) => {
             this.focusKey = params['focusKey'];
             if (this.focusKey) {
-                let url: string = `/asset/${params['assetUid']}/diagrams/${params['diagramType']}`;
+                const url: string = `/asset/${params['assetUid']}/diagrams/${params['diagramType']}`;
                 this.location.replaceState(url);
                 this.isInfoPanelOpened = true;
             }
@@ -187,38 +188,37 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
+		forkJoin(
+			this.processService.getProcessDiagramColors(this.assetUid),
+			this.processService.getAvailableNodes(this.assetUid)
+		).subscribe((results) => {
+			this.colors = results[0];
 
-        this.processService.getProcessDiagramColors(this.assetUid)
-            .subscribe((colors) => {
-                this.colors = colors;
-            });
-        this.processService.getAvailableNodes(this.assetUid)
-            .subscribe((res) => {
-                this.assetTypeNodes = res;
-                this.events = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Event);
-                this.activities = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Activity);
-                this.gateways = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Gateway);
+			this.assetTypeNodes = results[1];
+			this.events = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Event);
+			this.activities = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Activity);
+			this.gateways = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Gateway);
 
-                var nodeHeight = 130;
-                var numberOfEventRows = this.events.length % 2 == 0 ? this.events.length / 2 : (this.events.length + 1) / 2;
-                this.eventPalleteHeight = numberOfEventRows * nodeHeight;
+			var nodeHeight = 130;
+			var numberOfEventRows = this.events.length % 2 == 0 ? this.events.length / 2 : (this.events.length + 1) / 2;
+			this.eventPalleteHeight = numberOfEventRows * nodeHeight;
 
-                var numberOfActivityRows = this.activities.length % 2 == 0 ? this.activities.length / 2 : (this.activities.length + 1) / 2;
-                this.activityPalleteHeight = numberOfActivityRows * nodeHeight;
+			var numberOfActivityRows = this.activities.length % 2 == 0 ? this.activities.length / 2 : (this.activities.length + 1) / 2;
+			this.activityPalleteHeight = numberOfActivityRows * nodeHeight;
 
-                var numberOfGatewatRows = this.gateways.length % 2 == 0 ? this.gateways.length / 2 : (this.gateways.length + 1) / 2;
-                this.gatewayPalleteHeight = numberOfGatewatRows * nodeHeight;
+			var numberOfGatewatRows = this.gateways.length % 2 == 0 ? this.gateways.length / 2 : (this.gateways.length + 1) / 2;
+			this.gatewayPalleteHeight = numberOfGatewatRows * nodeHeight;
 
-                this.isLoaded = true;
-                this.loadDiagram();
-            });
+			this.isLoaded = true;
+			this.loadDiagram();
+		});
     }
     @ViewChild('diagram', { static: false }) diagramRef;
     @ViewChild('editors', { static: false }) editorRef;
     @HostListener('window:resize', ['$event'])
     public onResize(event) {
         if (!this.diagramRef) {return;}
-        let height = window.innerHeight;
+        const height = window.innerHeight;
         if (this.isEditMode)
             {this.diagramRef.nativeElement.style.height = (height - 115) + 'px';}
         else if (this.isFullScreen)

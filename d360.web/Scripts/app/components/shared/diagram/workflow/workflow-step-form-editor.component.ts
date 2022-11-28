@@ -119,7 +119,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     ngOnInit() {
         this.originalStep = _.cloneDeep(this.step);
-        let promises = [];
+        const promises = [];
 
         this.usedFields = this.workflowFieldsService.getUsedFields();
 
@@ -202,7 +202,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         }
 
         if (this.step.fields.form.field.length == null) {
-            let f = _.cloneDeep(this.step.fields.form.field);
+            const f = _.cloneDeep(this.step.fields.form.field);
             this.step.fields.form.field = [];
             this.step.fields.form.field.push(f);
         }
@@ -246,7 +246,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     remove() {
-        let item = this.step.fields.form.field[this.selectedIndex];
+        const item = this.step.fields.form.field[this.selectedIndex];
         this.deletingField = item;
 
         this.usedIn = [];
@@ -256,11 +256,11 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     edit() {
-        let item = this.step.fields.form.field[this.selectedIndex];
+        const item = this.step.fields.form.field[this.selectedIndex];
         this.usedIn = [];
         this.usedIn = this.usedFields.filter((u) => u.stepId === this.step.key && u.fieldId === item["@id"]);
 
-        let i = this.step.fields.form.field.find((f) => f["@id"] === item["@id"]);
+        const i = this.step.fields.form.field.find((f) => f["@id"] === item["@id"]);
         this.newField = i;
         if ((item["@required"] === "true" || item["@required"] === true || (item["@type"] === "boolean"))) {
             this.newField["@required"] = true;
@@ -278,8 +278,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     move(offset) {
-        let item = this.step.fields.form.field[this.selectedIndex];
-        let nextItem = this.step.fields.form.field[this.selectedIndex + offset];
+        const item = this.step.fields.form.field[this.selectedIndex];
+        const nextItem = this.step.fields.form.field[this.selectedIndex + offset];
 
         this.step.fields.form.field[this.selectedIndex] = nextItem;
         this.step.fields.form.field[this.selectedIndex + offset] = item;
@@ -289,8 +289,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     moveTop() {
-        let first = this.step.fields.form.field.splice(0, 1)[0];
-        let item = this.step.fields.form.field.splice(this.selectedIndex - 1, 1)[0];
+        const first = this.step.fields.form.field.splice(0, 1)[0];
+        const item = this.step.fields.form.field.splice(this.selectedIndex - 1, 1)[0];
 
         this.step.fields.form.field.unshift(first);
         this.step.fields.form.field.unshift(item);
@@ -299,21 +299,21 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     moveBottom() {
-        let lastIndex = this.step.fields.form.field.length - 1;
-        let item = this.step.fields.form.field.splice(this.selectedIndex, 1)[0];
+        const lastIndex = this.step.fields.form.field.length - 1;
+        const item = this.step.fields.form.field.splice(this.selectedIndex, 1)[0];
 
         this.step.fields.form.field.push(item);
         this.select(lastIndex);
     }
 
     confirmDelete() {
-        let i = this.step.fields.form.field.findIndex((f) => f["@id"] === this.deletingField["@id"]);
+        const i = this.step.fields.form.field.findIndex((f) => f["@id"] === this.deletingField["@id"]);
 
         if (i >= 0) {
             this.step.fields.form.field.splice(i, 1);
 
             //primeng v4.1 issue
-            let fields = _.cloneDeep(this.step.fields.form.field);
+            const fields = _.cloneDeep(this.step.fields.form.field);
             this.step.fields.form.field = null;
             this.step.fields.form.field = fields;
 
@@ -341,20 +341,20 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     save() {
         //calculate the next id # based on existing fields
-        let newFieldType = this.newField["@type"]?.toLowerCase();
-        let len = this.step.fields.form.field.filter((f) => f["@type"]?.toLowerCase() === newFieldType).length;
-        let count = len === 0 ? 1 : this.step.fields.form.field
+        const newFieldType = this.newField["@type"]?.toLowerCase();
+        const len = this.step.fields.form.field.filter((f) => f["@type"]?.toLowerCase() === newFieldType).length;
+        const count = len === 0 ? 1 : this.step.fields.form.field
             .filter((f) => f["@type"]?.toLowerCase() === newFieldType)
             .map((f) => +(f["@id"]?.toLowerCase().replace(newFieldType, "")))
             .sort((a, b) => { return a - b; })[len - 1] + 1;
 
-        let typeChanged = (this.newField["@oldType"] !== this.newField["@type"]);
+        const typeChanged = (this.newField["@oldType"] !== this.newField["@type"]);
         let existing = null;
         let f = {};
 
         if (this.newField["@oldId"] != null) {
             if (typeChanged) {
-                let i = this.step.fields.form.field.findIndex((f) => f["@id"] === this.newField["@oldId"]);
+                const i = this.step.fields.form.field.findIndex((f) => f["@id"] === this.newField["@oldId"]);
 
                 if (i >= 0) {
                     existing = _.cloneDeep(this.step.fields.form.field[i]);
@@ -411,8 +411,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         }
 
         if (this.quill != null) {
-            let pos = this.quill.getSelection(true);
-            let len = pos.index || this.quill.getLength();
+            const pos = this.quill.getSelection(true);
+            const len = pos.index || this.quill.getLength();
             this.quill.insertText(len > 0 ? len - 1 : 0, e, "api");
 
             //manually set the html in the model
@@ -433,8 +433,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         }
 
         if (this.quill != null) {
-            let pos = this.quill.getSelection(true);
-            let len = pos.index || this.quill.getLength();
+            const pos = this.quill.getSelection(true);
+            const len = pos.index || this.quill.getLength();
             this.quill.insertText(len > 0 ? len - 1 : 0, e, "api");
 
             //manually set the html in the model
@@ -495,13 +495,13 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                 if (this.lookups == null) {
                     return "List";
                 }
-                let list = this.lookups.find((l) => l.value.toString() === i["@referenceFieldId"]);
+                const list = this.lookups.find((l) => l.value.toString() === i["@referenceFieldId"]);
                 return "List" + (list == null ? "" : " :: " + list.label);
             case "relationshipType":
                 if (this.intersectTypes == null) {
                     return "Relationship";
                 }
-                let rel = this.intersectTypes.find((l) => l.IntersectTypeID.toString() === i["@intersectTypeId"]);
+                const rel = this.intersectTypes.find((l) => l.IntersectTypeID.toString() === i["@intersectTypeId"]);
                 return "Relationship" + (rel == null ? "" : ( " :: " + ((rel.PredicateName != null && rel.PredicateName.length > 0) ? `[${rel.PredicateName}] ` : " ") + rel.TargetName));
             default:
                 return (i["@type"].charAt(0).toUpperCase() + i["@type"].substr(1));

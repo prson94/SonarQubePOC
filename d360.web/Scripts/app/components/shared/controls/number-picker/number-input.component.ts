@@ -194,7 +194,7 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
         return 'ig-number-field ' + this.styleClass;
     }
     getElementClass() {
-        let classes: string[] = ["ig-number-input"];
+        const classes: string[] = ["ig-number-input"];
         if (["small", "medium", "large", "full"].indexOf(this._size) !== -1) {
             classes.push("ig-input-" + this._size);
         }

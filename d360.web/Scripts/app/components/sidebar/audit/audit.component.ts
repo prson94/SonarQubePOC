@@ -113,7 +113,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                         reloadNav = false;
                     }
 
-                    let objectID = this.objectType === 'Tag' ? params['uid'] : this.objectID;
+                    const objectID = this.objectType === 'Tag' ? params['uid'] : this.objectID;
 
 					if (this.uid === this.metricAllocationUid) {
 						this.buildSecondaryNavigation({ isScoringDefinitionPage:true });
@@ -250,10 +250,10 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     public setAdvancedFilters(): void {
-        let fields: AdvancedFilterFieldType[] = [];
+        const fields: AdvancedFilterFieldType[] = [];
 
         this.columns.forEach((c) => {
-            let field: AdvancedFilterFieldType = {
+            const field: AdvancedFilterFieldType = {
                 Name: c.datafield,
                 FriendlyName: c.text,
                 Type: this.lookupColumns.indexOf(c.datafield) !== -1 ? new FieldType("Lookup") : new FieldType(c.fieldType),

@@ -71,8 +71,8 @@ export class BaseObservableService {
         if (!filename.endsWith(".xlsx")) {
             filename += ` ${new Date().toDateString()}.xlsx`;
         }
-        let url = window.URL.createObjectURL(data);
-        let anchor = document.createElement("a");
+        const url = window.URL.createObjectURL(data);
+        const anchor = document.createElement("a");
         anchor.setAttribute("style", "display:none;");
         document.body.appendChild(anchor);
         anchor.setAttribute("download", filename);
@@ -118,12 +118,12 @@ export class BaseObservableService {
         });
 
         if (file != null) {
-            let form = new FormData();
+            const form = new FormData();
 
             form.append('json', JSON.stringify(item));
             form.append('file', file);
 
-            let method = (isCopy !== undefined) ? 'create' : 'copy';
+            const method = (isCopy !== undefined) ? 'create' : 'copy';
 
             return http
                 .post(`form/dynamicedit/${method}/${type}`, form)
@@ -160,7 +160,7 @@ export class BaseObservableService {
         });
 
         if (file != null) {
-            let form = new FormData();
+            const form = new FormData();
 
             form.append('json', JSON.stringify(item));
             form.append('file', file);

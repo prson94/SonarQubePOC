@@ -53,7 +53,7 @@ export class WorkflowService extends BaseObservableService {
     }
 
     getAllIssueDetails(all?: boolean): Observable<IssueDetail[]> {
-        let url = `services/workflow/${(all === undefined || all) ? 'all':'my'}/issues?$orderby=DateStarted%20desc,Issue`;
+        const url = `services/workflow/${(all === undefined || all) ? 'all':'my'}/issues?$orderby=DateStarted%20desc,Issue`;
                 
         return this.http.get(url)
             .pipe(
@@ -77,7 +77,7 @@ export class WorkflowService extends BaseObservableService {
 	}
 
 	getIssuesByAssetUid(uid: string): Observable<Issue[]> {
-		let url = 'services/workflow/issue/type/' + uid;
+		const url = 'services/workflow/issue/type/' + uid;
 
 		return this.http.get(url)
 			.pipe(
@@ -87,7 +87,7 @@ export class WorkflowService extends BaseObservableService {
 	}
     
     updateIssue(issue: Issue, action: string, comment: string, assignTo?: string): Observable<JsonResult> {
-        let headers = new HttpHeaders({
+        const headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });
         return this.http
@@ -99,7 +99,7 @@ export class WorkflowService extends BaseObservableService {
     }
   
     raiseIssues(actionTypeUid: string, action: any): Observable<ApiResult & ErrorResponse> {
-        let actionArray: ActionEditorModel[] = [];
+        const actionArray: ActionEditorModel[] = [];
         actionArray.push(action);
 
         return this.http.post(`/api/v2/actions/${actionTypeUid}?lookupFieldsPassedByValue=true`, actionArray)
@@ -583,7 +583,7 @@ export class WorkflowService extends BaseObservableService {
         return this.http.get(`api/v2/actions/allocations/${actionTypeUid}`)
             .pipe(
                 map((response) => {
-                    let r = <AllocationAPIModel[]>response;                    
+                    const r = <AllocationAPIModel[]>response;                    
                     r.forEach((x) => x.ClassName = AssetTypeClass[x.Class]);
                     return r;
                 }),

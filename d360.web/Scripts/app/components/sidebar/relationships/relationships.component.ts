@@ -41,7 +41,7 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
 
 	ngOnInit() {
 		this.sub = this.route.params.subscribe((params) => {
-			let uid = params['uid'];
+			const uid = params['uid'];
 
 			this.assetService.getAssetTypeClassForAsset(uid)
 				.subscribe((res) => {

@@ -43,7 +43,7 @@ export class LoadForm implements OnInit, OnChanges {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === 'id') {
                 this.load();
             }
@@ -141,7 +141,7 @@ export class LoadForm implements OnInit, OnChanges {
     }
 
     save(): void {
-        let model = new LoadFilePostModel();
+        const model = new LoadFilePostModel();
 
         this.errorMessage = "";
         this.isSaving = true;

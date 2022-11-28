@@ -2107,9 +2107,6 @@
       <Name>d360.utils.excel</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
-  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\Core.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

@@ -60,7 +60,7 @@ export class IconPickerComponent implements ControlValueAccessor {
                     {result = [...result, ...images];}
 
                 result.forEach((i) => {
-                    let index = this.categories.findIndex((x) => x.label === i.categories[0]);
+                    const index = this.categories.findIndex((x) => x.label === i.categories[0]);
                     if (!i.img) {
                         if (index === -1) {
                             this.categories.push({

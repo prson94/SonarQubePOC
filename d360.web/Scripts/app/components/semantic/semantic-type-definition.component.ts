@@ -68,7 +68,7 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
 
     ngOnInit() {
         this.sub = this.route.params.subscribe((params) => {
-            let uid = params['semanticTypeUid'];
+            const uid = params['semanticTypeUid'];
             this.headerBreadcrumbService.setCurrentObjectInfo('SemanticType', uid);            
             this.logAction('open', 'SemanticType', uid);            
             this.getData(uid);
@@ -120,9 +120,9 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
             var breadCrumbsSub = this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
                 this.secondaryNavService.clearItems();
                 this.secondaryNavService.clearCurrentObject();
-                let disabledBadge = this.isDisabled() ? "[{\"name\":\"Disabled\", \"color\":\"#D7D8DC\"}]" : "";
+                const disabledBadge = this.isDisabled() ? "[{\"name\":\"Disabled\", \"color\":\"#D7D8DC\"}]" : "";
                 this.secondaryNavService.setCurrentArea(this.semanticType.name, icon, $localize`Definition`, [disabledBadge]);
-                let assetstab = new SecondaryNavItem($localize`Assets`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount, 2);
+                const assetstab = new SecondaryNavItem($localize`Assets`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount, 2);
 
                 this.secondaryNavService.showItem(assetstab);
 

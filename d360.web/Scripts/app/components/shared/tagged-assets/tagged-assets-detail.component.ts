@@ -56,7 +56,7 @@ export class TaggedAssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === 'uid') {
                 this.load();
             }
@@ -102,7 +102,7 @@ export class TaggedAssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     open(isNewTab: boolean = false) {
-        let url : string = 'tag/' + this.tag.uid;
+        const url : string = 'tag/' + this.tag.uid;
         if (!isNewTab) {
             this.router.navigateByUrl(url);
             return;

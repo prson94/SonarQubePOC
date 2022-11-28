@@ -6,21 +6,16 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-
 using d360.core.entities;
 using d360.core.enums;
 using d360.model;
-
 using Dapper;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using Resources;
 using d360.utils.excel;
-
 using SpreadsheetLight;
-using System.Xml;
+using d360.core;
 
 namespace d360.web.Controllers.V2
 {
@@ -856,23 +851,7 @@ namespace d360.web.Controllers.V2
 			{
 				rowFieldValue = (((row as IDictionary<string, object>)[$"{hardCodedName}"]) ?? "").ToString();
 			}
-
-			rowFieldValue = RemoveInvalidXmlChars(rowFieldValue ?? "");
-
-			const int MaxExcelColumnCharacterLength = 32767;
-
-			if (rowFieldValue.Length > MaxExcelColumnCharacterLength)
-			{
-				rowFieldValue = rowFieldValue.Substring(0, MaxExcelColumnCharacterLength);
-			}
-
-			return rowFieldValue;
-		}
-
-		private string RemoveInvalidXmlChars(string text)
-		{
-			var validXmlChars = text.Where(ch => XmlConvert.IsXmlChar(ch)).ToArray();
-			return new string(validXmlChars);
+			return rowFieldValue.GetSafeXLSColumnValue();
 		}
 
 		private void SetExcelColumnWidths(SLDocument document, List<FieldType> fields)

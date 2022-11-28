@@ -22,7 +22,7 @@ export class UriBasedService extends BaseObservableService {
     }
 
     deleteItemWithResult(uri: string, id: number): Observable<JsonResult> {
-        let headers = new HttpHeaders();
+        const headers = new HttpHeaders();
         headers.append('Content-Type', 'application/json');
 
         return this.http
@@ -41,7 +41,7 @@ export class UriBasedService extends BaseObservableService {
     }
 
     private post(uri: string, item: any): Observable<JsonResult> {
-        let headers = new HttpHeaders({
+        const headers = new HttpHeaders({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
 
@@ -54,7 +54,7 @@ export class UriBasedService extends BaseObservableService {
     }
 
     private put(uri: string, item: any): Observable<JsonResult> {
-        let headers = new HttpHeaders({
+        const headers = new HttpHeaders({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
 

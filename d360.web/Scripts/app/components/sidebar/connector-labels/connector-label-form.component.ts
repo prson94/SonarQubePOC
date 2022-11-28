@@ -94,7 +94,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     }
 
     OnBlurTrim() {
-        let value: string = this.connectorLabelForm.controls['value'].value;
+        const value: string = this.connectorLabelForm.controls['value'].value;
         if (value)
             {this.connectorLabelForm.controls['value'].setValue(value.trim());}
     }

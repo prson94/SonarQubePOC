@@ -39,7 +39,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 	}
 
 	ngOnInit() {
-		let assetTypeClassString: keyof typeof AssetTypeClass = this.route.snapshot.data.type;
+		const assetTypeClassString: keyof typeof AssetTypeClass = this.route.snapshot.data.type;
 		try {
 
 			this.assetTypeClass = AssetTypeClass[assetTypeClassString];
@@ -78,7 +78,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 				this.area = assetType;
 				break;
 			default:
-				let className: string = AssetTypeClass[this.assetTypeClass];
+				const className: string = AssetTypeClass[this.assetTypeClass];
 				this.folderTitle = `${className} Assets`;
 				this.setBrowserTitle(this.titleService, this.folderTitle);
 				this.area = this.folderTitle;
@@ -94,7 +94,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 			.assetService
 			.getAssetCountsByAssetType(this.assetTypeClass)
 			.subscribe((data) => {
-				let dataNodes: TreeNode[] = [];
+				const dataNodes: TreeNode[] = [];
 
 				for (let i = 0; i < data.length; i++) {
 					if (data[i].description != null)

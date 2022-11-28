@@ -78,7 +78,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
         this.isLoading = true;
         this.workflowService.getWorkflowDetailsV2(this.workflowId)
             .subscribe((res) => {
-                for (let item of res.ItemSteps) {
+                for (const item of res.ItemSteps) {
                     if (!res.Steps) {
                         item.StepName = "";
                         continue;
@@ -110,12 +110,12 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
     }
 
     private isUid(value: string) {
-        let regex = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
+        const regex = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
         return regex.test(value);
     }
 
     private showHideFollow(show: boolean) {
-        let headerActions: HeaderActions = new HeaderActions();
+        const headerActions: HeaderActions = new HeaderActions();
         headerActions.showFollow = show;
         this.headerActionsService.setCurrentHeaderActions(headerActions);
     }

@@ -240,7 +240,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                     if (error.status === 404) {
                         this.tagService.saveTag(tagType)
                             .subscribe((result) => {
-                                let msg: string = '';
+                                const msg: string = '';
                                 if (result.Value != null) {
                                     result.message = `${result.Value} succesfully created`;
                                 }

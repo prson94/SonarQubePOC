@@ -52,7 +52,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     ngOnChanges(changes: SimpleChanges): void {
         let triggerLoad = false;
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === 'id' || p === 'parentID' || p === 'topTypeID') {
                 triggerLoad = true;
             }
@@ -192,7 +192,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     ShowAutoDisplayOption() {
         if (this.showParentPredicates && this.model.AssetType.Hierarchy.PredicateUid) {
-            let selectedPredicate = this.model.Predicates.filter((x) => x.value.toLowerCase() === this.model.AssetType.Hierarchy.PredicateUid.toLowerCase());
+            const selectedPredicate = this.model.Predicates.filter((x) => x.value.toLowerCase() === this.model.AssetType.Hierarchy.PredicateUid.toLowerCase());
             if (selectedPredicate.length > 0) {
                 return true;
             }
@@ -203,7 +203,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         if (e == null)
             {return;}
 
-        let value = e.value;
+        const value = e.value;
 
         if (e.value == null || e.value === '' || e.value === 'null')
             {return;}

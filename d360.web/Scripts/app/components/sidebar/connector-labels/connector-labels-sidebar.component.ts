@@ -140,7 +140,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     saveLabel(event) {
         this.isSaving = true;
         if (event.additionalOption && event.additionalOption.uid) {
-            let arr: string[] = [];
+            const arr: string[] = [];
             arr.push(event.item.uid);
             this.consolidateLabels(event.additionalOption.uid, arr);
             return;
@@ -309,7 +309,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
             }
 
         }
-        let target = (<any>(event.target));
+        const target = (<any>(event.target));
         if (element && target.nodeName !== "P-TABLECHECKBOX") {
             this.selected = [];
             this.selected.push(item);

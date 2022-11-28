@@ -4,8 +4,7 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Lineage-v15">
-    <comment>GOV-19768</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Lineage-v16">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -570,9 +569,10 @@ begin
 			inner join Asset A on A.ID = T.assetId
 			cross apply (
 			select	count(1) as [Count] 
-			from	Issue 
-			where	AssetID = A.ID 
+			from	Issue I
+			where	I.AssetID = A.ID 
 					and CompletedOn is null
+					and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
 			) C;
 
 	-- Update asset read permissions

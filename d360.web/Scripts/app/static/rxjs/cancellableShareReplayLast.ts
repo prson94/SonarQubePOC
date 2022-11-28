@@ -8,7 +8,7 @@ import { MonoTypeOperatorFunction, Observable, Subscriber, Subscription } from "
  export function cancellableShareReplayLast<T>(): MonoTypeOperatorFunction<T> {
     return (source: Observable<T>) => {
         let innerSubscription: Subscription = null;
-        let outerSubscribers: Set<Subscriber<T>> = new Set();
+        const outerSubscribers: Set<Subscriber<T>> = new Set();
         let lastResult: { resultType: 'value', value: T } | { resultType: 'error', error: any } = null;
         let isCompleted = false;
 

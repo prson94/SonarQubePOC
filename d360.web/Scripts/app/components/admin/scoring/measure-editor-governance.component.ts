@@ -187,7 +187,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             this.predicateTypes = this.screenReferences.predicates
                 .filter((x) => this.restrictedPredicateTypes.indexOf(x.Type) === -1)
                 .map((x, idx, self) => {
-                    let label = x.Name + '/' + x.Inverse + ' (' + x.FriendlyTypeName + ')';
+                    const label = x.Name + '/' + x.Inverse + ' (' + x.FriendlyTypeName + ')';
                     return { label, value: x.Uid };
                 });
             this.predicateTypes = this.predicateTypes
@@ -198,8 +198,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             this.relationshipTypes = this.screenReferences.relationships
                 .filter((x) => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) === -1)
                 .map((x) => {
-                    let isSubject = (x.Subject.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());
-                    let isObject = (x.Object.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());
+                    const isSubject = (x.Subject.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());
+                    const isObject = (x.Object.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());
                     let label = "";
                     let assetLabel = "";
                     if (isSubject) {
@@ -257,21 +257,21 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 }
                 break;
             case 1:
-                let condition = new FieldCondition();
+                const condition = new FieldCondition();
                 condition.field = `${this.allocation.assetTypeUid}.${this.model.Definition.Governance.Field.FieldTypeName}`;
                 condition.operator = this.model.Definition.Governance.Field.Operator;
                 condition.value = this.model.Definition.Governance.Field.Values[0];
                 condition.value2 = this.model.Definition.Governance.Field.Values.length > 1 ? this.model.Definition.Governance.Field.Values[1] : null;
 
-                let field = this.screenReferences.fields.filter((x) => x.ApiName === this.model.Definition.Governance.Field.FieldTypeName)[0];
+                const field = this.screenReferences.fields.filter((x) => x.ApiName === this.model.Definition.Governance.Field.FieldTypeName)[0];
 
                 if (field && (field.Type === "Date" || field.Type === "DateTime")) {
-                    let date = new Date(condition.value);
+                    const date = new Date(condition.value);
                     var utc = this.getUtcDate(date);
                     condition.value = utc;
 
                     if (condition.value2) {
-                        let date = new Date(condition.value2);
+                        const date = new Date(condition.value2);
                         var utc = this.getUtcDate(date);
                         condition.value2 = utc;
                     }
@@ -389,7 +389,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 break;
             case 1:
                 if (this.testFieldConditions && this.testFieldConditions.length === 1) {
-                    let condition = this.testFieldConditions[0];
+                    const condition = this.testFieldConditions[0];
                     this.model.Definition.Governance.Field.FieldTypeName = condition.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
                     this.model.Definition.Governance.Field.Operator = condition.operator;
 

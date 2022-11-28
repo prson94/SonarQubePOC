@@ -30,12 +30,12 @@ export class HeaderComponent extends BaseComponent implements OnInit, OnDestroy 
     }
 
     ngOnInit(): void {
-        let logoSetting = this.settingsService.getSettingById(CompanySettingEnum.CompanyLogo);
+        const logoSetting = this.settingsService.getSettingById(CompanySettingEnum.CompanyLogo);
 
         this.subParams = this.route.queryParams.subscribe(() => {
-            let url = new URL(window.location.href);
-            let search = url.search;
-            let params = new URLSearchParams(search);
+            const url = new URL(window.location.href);
+            const search = url.search;
+            const params = new URLSearchParams(search);
             if (params.has('showbackbutton')) {
                 this.showBackButton = params.get('showbackbutton').toLowerCase() === 'true';
             }

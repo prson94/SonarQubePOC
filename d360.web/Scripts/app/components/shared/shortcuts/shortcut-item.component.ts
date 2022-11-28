@@ -222,8 +222,8 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
             return;
         }
 
-        let target = event.target || event.srcElement;
-        let files = target.files;
+        const target = event.target || event.srcElement;
+        const files = target.files;
 
         this.iconImage.file = files[0];
         this.iconImage.setDataUrl();

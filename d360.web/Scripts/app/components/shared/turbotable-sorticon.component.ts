@@ -41,7 +41,7 @@ export class D3SSortIcon implements OnInit, OnDestroy {
             this.sortOrder = this.dt.isSorted(this.field) ? this.dt.sortOrder : 0;
         }
         else if (this.dt.sortMode === 'multiple') {
-            let sortMeta = this.dt.getSortMeta(this.field);
+            const sortMeta = this.dt.getSortMeta(this.field);
             this.sortOrder = sortMeta ? sortMeta.order : 0;
         }
         this.changeCallback.emit({ field: this.dt.sortField, order: this.dt.sortOrder });

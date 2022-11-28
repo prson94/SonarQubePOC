@@ -148,7 +148,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
     change(e: any) {
         if (this.usePredefinedFilters)
             {return;}
-        let data = new GridFilterExpression();
+        const data = new GridFilterExpression();
         data.field = "WorkflowId";
         data.condition = "IN";
         data.fieldtype = GridFilterFieldType.Normal;

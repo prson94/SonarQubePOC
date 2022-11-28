@@ -74,7 +74,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         });
 
         //set values on initial load
-        let o = this.breadcrumbService.currentObject;
+        const o = this.breadcrumbService.currentObject;
         if (o != null) {
 			this.assetTypeUId = o.AssetTypeUid;
 			this.assetUId = o.AssetUid;
@@ -126,7 +126,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
             (f) => {
                 if (f.type === 'notification') {
                     this.active = !this.active;
-                    let crumbs = this.breadcrumbService.getBreadcrumbsFromStorage();
+                    const crumbs = this.breadcrumbService.getBreadcrumbsFromStorage();
                     let toastMessage = `You are now following '${crumbs[crumbs.length - 1].text}'`;
                     let toastTitle = "Followed";
                     if (this.active) {

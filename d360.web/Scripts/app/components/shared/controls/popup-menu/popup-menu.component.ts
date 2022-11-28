@@ -205,7 +205,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     handleKeyboardEvent(event: KeyboardEvent) {
         if (this.isVisible) {
             this.pressedKeys[event.keyCode] = true;
-            let isNavigationKey: boolean = [39, 37, 40, 38].indexOf(event.keyCode) !== -1;
+            const isNavigationKey: boolean = [39, 37, 40, 38].indexOf(event.keyCode) !== -1;
 
             if (isNavigationKey) {
                 let el: PopupMenuItem = null;

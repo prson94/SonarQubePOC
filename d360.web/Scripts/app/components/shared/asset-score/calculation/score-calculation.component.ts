@@ -86,7 +86,7 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
 
     isDate(item) {
         if (this.fields && this.fields.length > 0) {
-            let f = this.fields.find((x) => x.Name === item.FieldName);
+            const f = this.fields.find((x) => x.Name === item.FieldName);
             if (f) {
                 return (f.Type === "Date");
             }

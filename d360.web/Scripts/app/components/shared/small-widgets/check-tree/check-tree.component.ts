@@ -86,7 +86,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
     }
 
     get styles(): string {
-        let styles: string[] = ["check-tree-container"];
+        const styles: string[] = ["check-tree-container"];
         if (this.styleClass) {
             styles.push(this.styleClass);
         }
@@ -94,7 +94,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
     }
 
     onNodeClick(event, node: CheckTreeNode) {
-        let eventTarget = (<Element>event.target);
+        const eventTarget = (<Element>event.target);
 
         if (eventTarget.className && eventTarget.className.indexOf('tree-toggler') === 0) {
             return;
@@ -112,8 +112,8 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
                 }
             }
 
-            let index = this.findIndexInSelection(node);
-            let selected = (index >= 0);
+            const index = this.findIndexInSelection(node);
+            const selected = (index >= 0);
 
             if (selected) {
                 if (this.propagateSelectionDown)
@@ -155,8 +155,8 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
 
         if (this.selection) {
             for (let i = 0; i < this.selection.length; i++) {
-                let selectedNode = this.selection[i];
-                let areNodesEqual = (selectedNode.key && selectedNode.key === node.key) || selectedNode === node;
+                const selectedNode = this.selection[i];
+                const areNodesEqual = (selectedNode.key && selectedNode.key === node.key) || selectedNode === node;
                 if (areNodesEqual) {
                     index = i;
                     break;
@@ -180,13 +180,13 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
     }
 
     getNodeWithKey(key: string, nodes: CheckTreeNode[]): CheckTreeNode {
-        for (let node of nodes) {
+        for (const node of nodes) {
             if (node.key === key) {
                 return node;
             }
 
             if (node.children) {
-                let matchedNode = this.getNodeWithKey(key, node.children);
+                const matchedNode = this.getNodeWithKey(key, node.children);
                 if (matchedNode) {
                     if (matchedNode.parent == null)
                         {matchedNode.parent = node;}
@@ -200,7 +200,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
         if (node.children && node.children.length) {
             let selectedCount: number = 0;
             let childPartialSelected: boolean = false;
-            for (let child of node.children) {
+            for (const child of node.children) {
                 if (this.isSelected(child)) {
                     selectedCount++;
                 }
@@ -215,7 +215,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
             }
             else {
                 if (!select) {
-                    let index = this.findIndexInSelection(node);
+                    const index = this.findIndexInSelection(node);
                     if (index >= 0) {
                         this.selection = this.selection.filter((val, i) => i !== index);
                     }
@@ -230,14 +230,14 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
             this.syncNodeOption(node, this.filteredNodes, 'partialSelected');
         }
 
-        let parent = node.parent;
+        const parent = node.parent;
         if (parent) {
             this.propagateUp(parent, select);
         }
     }
 
     propagateDown(node: CheckTreeNode, select: boolean) {
-        let index = this.findIndexInSelection(node);
+        const index = this.findIndexInSelection(node);
 
         if (select && index === -1) {
             this.selection = [...this.selection || [], node];
@@ -251,7 +251,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
         this.syncNodeOption(node, this.filteredNodes, 'partialSelected');
 
         if (node.children && node.children.length) {
-            for (let child of node.children) {
+            for (const child of node.children) {
                 this.propagateDown(child, select);
             }
         }
@@ -277,7 +277,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
     }
 
     onFilter(event) {
-        let filterValue = event.target.value;
+        const filterValue = event.target.value;
         if (filterValue === '') {
             this.filteredNodes = null;
         }
@@ -286,9 +286,9 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
             const searchFields: string[] = this.filterBy.split(',');
             const filterText = ObjectUtils.removeAccents(filterValue).toLowerCase();
             const isStrictMode = this.filterMode === 'strict';
-            for (let node of this.value) {
-                let copyNode = { ...node };
-                let paramsWithoutNode = { searchFields, filterText, isStrictMode };
+            for (const node of this.value) {
+                const copyNode = { ...node };
+                const paramsWithoutNode = { searchFields, filterText, isStrictMode };
                 if ((isStrictMode && (this.findFilteredNodes(copyNode, paramsWithoutNode) || this.isFilterMatched(copyNode, paramsWithoutNode))) ||
                     (!isStrictMode && (this.isFilterMatched(copyNode, paramsWithoutNode) || this.findFilteredNodes(copyNode, paramsWithoutNode)))) {
                     this.filteredNodes.push(copyNode);
@@ -301,10 +301,10 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
         if (node) {
             let matched = false;
             if (node.children) {
-                let childNodes = [...node.children];
+                const childNodes = [...node.children];
                 node.children = [];
-                for (let childNode of childNodes) {
-                    let copyChildNode = { ...childNode };
+                for (const childNode of childNodes) {
+                    const copyChildNode = { ...childNode };
                     if (this.isFilterMatched(copyChildNode, paramsWithoutNode)) {
                         matched = true;
                         node.children.push(copyChildNode);
@@ -321,8 +321,8 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
 
     isFilterMatched(node, { searchFields, filterText, isStrictMode }) {
         let matched = false;
-        for (let field of searchFields) {
-            let fieldValue = ObjectUtils.removeAccents(String(ObjectUtils.resolveFieldData(node, field))).toLowerCase();
+        for (const field of searchFields) {
+            const fieldValue = ObjectUtils.removeAccents(String(ObjectUtils.resolveFieldData(node, field))).toLowerCase();
             if (fieldValue.indexOf(filterText) > -1) {
                 matched = true;
             }
@@ -345,14 +345,14 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
     }
 
     public expandAll() {
-        let nodes = this.getRootNode();
+        const nodes = this.getRootNode();
         nodes.forEach((n) => {
             this.expandCollapse(n, true);
         });
     }
 
     public collapseAll() {
-        let nodes = this.getRootNode();
+        const nodes = this.getRootNode();
         nodes.forEach((n) => {
             this.expandCollapse(n, false);
         });
@@ -365,12 +365,12 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
 
     private checkPropagation() {
         for (let i = 0; i < this.selection.length; i++) {
-            let node = this.getNodeWithKey(this.selection[i].key, this.value);
+            const node = this.getNodeWithKey(this.selection[i].key, this.value);
             if (node) {
                 this.propagateDown(node, true);
                 node.expanded = true;
                 if (node.parent) {
-                    let parent = node.parent;
+                    const parent = node.parent;
                     parent.expanded = true;
                     if (this.findIndexInSelection(parent) === -1) {
                         this.propagateUp(parent, true);

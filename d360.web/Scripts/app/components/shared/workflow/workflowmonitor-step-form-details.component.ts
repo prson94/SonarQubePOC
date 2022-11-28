@@ -88,7 +88,7 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
         if (this.step != null) {
             if (this.step.ItemSettings.hasPendingForms) {
                 if (this.step.AssignedUsers != null) {
-                    let completedForms: any[] = this.step.ItemFields.form.map((f) => f['@ResourceID']);
+                    const completedForms: any[] = this.step.ItemFields.form.map((f) => f['@ResourceID']);
 
                     this.pendingFormList = this.step.AssignedUsers
                         .filter((a) => completedForms.indexOf(a.ResourceID.toString()) == -1)

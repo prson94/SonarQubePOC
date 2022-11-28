@@ -132,7 +132,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     private showHideFollow(show: boolean) {
-        let headerActions: HeaderActions = new HeaderActions();
+        const headerActions: HeaderActions = new HeaderActions();
         headerActions.showFollow = show;
         this.headerActionsService.setCurrentHeaderActions(headerActions);
     }
@@ -160,7 +160,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
     private loadIssueTypes() {
         this.isLoading = true;
-        let params = { _assetUid: "", _assetTypeUid: "", _resourceUid: "", _limitToActiveWorkflows: "true" };
+        const params = { _assetUid: "", _assetTypeUid: "", _resourceUid: "", _limitToActiveWorkflows: "true" };
         if (this.baseAssetUid) {
             params._assetUid = this.baseAssetUid;
             params._resourceUid = this.resourceUid;
@@ -182,8 +182,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
     private save(data) {
         this.isLoading = true;
-        let values: any = {};
-        let action: ActionEditorModel = new ActionEditorModel();
+        const values: any = {};
+        const action: ActionEditorModel = new ActionEditorModel();
         action.Fields = {};
 
         if (this.baseAssetUid) {

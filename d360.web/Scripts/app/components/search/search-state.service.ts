@@ -87,7 +87,7 @@ export class SearchStateService extends BaseObservableService {
         this.reset(keepFilters);
         this._searchTypes = searchCategories.sort().filter((x, i, a) => !i || x !== a[i - 1]);
 
-        let state = SearchSession.getState(term);
+        const state = SearchSession.getState(term);
         if (state !== undefined) {
             this._query.Term = state.Term;
             this._query.From = state.From;
@@ -101,7 +101,7 @@ export class SearchStateService extends BaseObservableService {
     }
 
     private saveState() {
-        let state = new SearchState({
+        const state = new SearchState({
             Term: this._query.Term,
             From: this._query.From,
             Size: this._query.Size,
@@ -193,7 +193,7 @@ export class SearchStateService extends BaseObservableService {
         this.saveState();
 
         //Create the Aggregate filters from either the checkbox tree or the provided searchTypes
-        let aggFilters: SearchAggregationFilter[] = [];
+        const aggFilters: SearchAggregationFilter[] = [];
         let types = [];
         let categories = [];
 
@@ -249,7 +249,7 @@ export class SearchStateService extends BaseObservableService {
         }
 
         //If there are no search categories, force compareQueries to retrun false
-        let force = this._categories.value.length === 0;
+        const force = this._categories.value.length === 0;
 
         this.AggQuery$.next(new SearchQuery({
             Term: this._query.Term,
@@ -316,10 +316,10 @@ export class SearchStateService extends BaseObservableService {
                         })
                     };
                 }));
-                let selectedFilters = [];
+                const selectedFilters = [];
                 if (this._checkTreeKeys != null && this._checkTreeKeys.length > 0) {
-                    for (let ctk of this._checkTreeKeys) {
-                        let node = this.getNodeWithKey(ctk.key, filterTree);
+                    for (const ctk of this._checkTreeKeys) {
+                        const node = this.getNodeWithKey(ctk.key, filterTree);
                         if (node) {
                             selectedFilters.push(node);
                         }
@@ -362,7 +362,7 @@ export class SearchStateService extends BaseObservableService {
     }
 
     public getExcel(limit: number): Observable<any> {
-        let q = this.MainQuery$.value;
+        const q = this.MainQuery$.value;
         q.Size = limit;
 
         return this.searchService.downloadSearchExcel(q);
@@ -379,7 +379,7 @@ export class SearchStateService extends BaseObservableService {
      * @param category
      */
     private getDisplayLookup(category: string) {
-        let type = this.searchTypes.find((t) => t.value === category);
+        const type = this.searchTypes.find((t) => t.value === category);
         return (type == null) ? category : type.title;
     }
 
@@ -390,13 +390,13 @@ export class SearchStateService extends BaseObservableService {
      * @param nodes
      */
     getNodeWithKey(key: string, nodes: CheckTreeNode[]) {
-        for (let node of nodes) {
+        for (const node of nodes) {
             if (node.key === key) {
                 return node;
             }
 
             if (node.children) {
-                let matchedNode = this.getNodeWithKey(key, node.children);
+                const matchedNode = this.getNodeWithKey(key, node.children);
                 if (matchedNode) {
                     return matchedNode;
                 }
@@ -433,9 +433,9 @@ export class SearchStateService extends BaseObservableService {
      * @param aggResult
      */
     private buildTree(aggResult: CheckTreeNode[]): CheckTreeNode[] {
-        let tree = [].concat(this.getBaseCategoryTree());
+        const tree = [].concat(this.getBaseCategoryTree());
         aggResult.forEach(function (v, i, a) {
-            let idx = tree.findIndex((f) => f.key === v.key);
+            const idx = tree.findIndex((f) => f.key === v.key);
             if (idx >= 0) {
                 tree[idx] = v;
             } else {

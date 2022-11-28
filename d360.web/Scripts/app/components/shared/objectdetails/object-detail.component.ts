@@ -48,7 +48,7 @@ export class ObjectDetailComponent implements OnChanges {
         private cdRef: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
+        for (const p in changes) {
             if (p == 'objectType') {
                 this.objectType = changes['objectType'].currentValue;
             }
@@ -84,7 +84,7 @@ export class ObjectDetailComponent implements OnChanges {
 
                     this.rows.forEach((r) => {
                         if (r.Category && r.Category.toUpperCase() !== this.noCategory.toUpperCase() && this.categories.find((c) => c.name === r.Category) == null) {
-                            let category = new Category(r.Category);
+                            const category = new Category(r.Category);
                             category.active = true;
                             this.categories.push(category);
                         }
@@ -93,14 +93,14 @@ export class ObjectDetailComponent implements OnChanges {
                         this.populateRow(r);
                     });
 
-                    let displayRows = this.rows.filter((r) => (r.Category == null || r.Category.toUpperCase() == this.noCategory.toUpperCase()) && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
+                    const displayRows = this.rows.filter((r) => (r.Category == null || r.Category.toUpperCase() == this.noCategory.toUpperCase()) && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
                     if (this.categories.findIndex((x) => x.name.toUpperCase() == this.systemProperties.toUpperCase()) >= 0) {
                         this.categories.push(this.categories.splice(this.categories.findIndex((x) => x.name.toUpperCase() == this.systemProperties.toUpperCase()), 1)[0]);
                     }
                     for (let i = 0; i < this.categories.length; i++) {
-                        let items = this.rows.filter((r) => r.Category == this.categories[i].name);
+                        const items = this.rows.filter((r) => r.Category == this.categories[i].name);
                         this.categories[i].rows = [];
-                        for (let j of items) {
+                        for (const j of items) {
                             if ((j.FirstColumnFields && j.FirstColumnFields.length > 0) || (j.SecondColumnFields && j.SecondColumnFields.length)) {
                                 this.categories[i].rows.push(j);
                             }
@@ -156,7 +156,7 @@ export class ObjectDetailComponent implements OnChanges {
 
         if (state != null) {
             state.forEach((s) => {
-                let ix = this.categories.findIndex((c) => c.name === s.name);
+                const ix = this.categories.findIndex((c) => c.name === s.name);
                 if (ix > -1) {
                     this.categories[ix].active = s.active;
                 }
@@ -246,10 +246,10 @@ export class ObjectDetailComponent implements OnChanges {
     }
 
     private populateSystemProperties(rows: DetailRow[]) {
-        let systemPropertyItems = this.rows.filter((row) => row.Category && row.Category.toUpperCase() == this.systemProperties.toUpperCase());
+        const systemPropertyItems = this.rows.filter((row) => row.Category && row.Category.toUpperCase() == this.systemProperties.toUpperCase());
 
         this.systemPropertiesCategory.rows = [];
-        for (let j of systemPropertyItems) {
+        for (const j of systemPropertyItems) {
             if ((j.FirstColumnFields && j.FirstColumnFields.length > 0) || (j.SecondColumnFields && j.SecondColumnFields.length)) {
                 this.systemPropertiesCategory.rows.push(j);
             }

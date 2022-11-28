@@ -116,7 +116,7 @@ export class CompanySettingsService extends BaseObservableService {
     }
 
     getSettingById(setting: CompanySettingEnum): SettingsGetModel {
-        let settingId: number = <number>setting;
+        const settingId: number = <number>setting;
         let foundSetting: SettingsGetModel = null;
         if (this.settings && this.settings.length > 0) {
             foundSetting = this.settings.find((s) => s.SettingID === settingId);
@@ -125,7 +125,7 @@ export class CompanySettingsService extends BaseObservableService {
     }
 
     private parseSettingChange(setting: SettingsPutModel): SettingsPutModel {
-        let currentSetting = this.settings.find((s) => s.SettingID === setting.SettingID);
+        const currentSetting = this.settings.find((s) => s.SettingID === setting.SettingID);
 
         if (currentSetting.BooleanSetting && setting.BooleanSetting && currentSetting.BooleanSetting.Value !== setting.BooleanSetting.Value) {
             currentSetting.BooleanSetting.Value = setting.BooleanSetting.Value;
@@ -155,7 +155,7 @@ export class CompanySettingsService extends BaseObservableService {
     }
 
     putSetting(setting: SettingsPutModel): Observable<any> {
-        let updatedSetting = this.parseSettingChange(setting);
+        const updatedSetting = this.parseSettingChange(setting);
         var headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });

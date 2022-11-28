@@ -137,7 +137,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
             return '';
         }
 
-        let v = +value;
+        const v = +value;
 
         if (v <= lower) {
             return 'poor';
@@ -152,7 +152,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     getParams() {
-        let sortOrderText = this.sortOrder === SortOrder.None ? "" : (this.sortOrder === SortOrder.Descending ? "desc" : "asc");
+        const sortOrderText = this.sortOrder === SortOrder.None ? "" : (this.sortOrder === SortOrder.Descending ? "desc" : "asc");
         var params = { _pagesize: this.numberOfRows, _pagenum: this.currentPage, _subjectUid: this.subjectUid, _filter: "ParentUid eq '" + this.parentUid + "'", _order: this.sortField, _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: this.useGraph, useTypeLevelDefaultSorts: true, _listColorsAsJSON: true };
 
         if (params._order === '' || typeof params._order === "undefined") {

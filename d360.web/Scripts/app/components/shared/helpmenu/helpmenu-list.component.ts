@@ -133,7 +133,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     addNew(name: string, url: string, description: string) {
-        let newItem = new HelpMenu();
+        const newItem = new HelpMenu();
         newItem.ID = this.newID;
         newItem.Name = name;
         newItem.Url = url;
@@ -166,9 +166,9 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     moveUp(id: number) {
-        let option = this.items.find((r) => r.ID === id);
+        const option = this.items.find((r) => r.ID === id);
         var num = option.order - 1;
-        let newOption = this.items.find((o) => o.order === num);
+        const newOption = this.items.find((o) => o.order === num);
 
         this.items.forEach((i) => {
             if (i.ID === option.ID) {
@@ -183,9 +183,9 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     moveDown(id: number) {
-        let option = this.items.find((r) => r.ID === id);
+        const option = this.items.find((r) => r.ID === id);
         var num = option.order + 1;
-        let newOption = this.items.find((o) => o.order === num);
+        const newOption = this.items.find((o) => o.order === num);
 
         this.items.forEach((i) => {
             if (i.ID === option.ID) {

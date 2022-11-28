@@ -76,7 +76,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === "assetUid") {
                 this.assetUid = changes["assetUid"].currentValue;
             } 
