@@ -20,6 +20,7 @@ import { AssetBrowserOverviewComponent } from '../assetbrowser/tools/overview.co
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { SidePanelService } from '../../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { forkJoin } from 'rxjs';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -171,31 +172,30 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
+		forkJoin(
+			this.processService.getProcessDiagramColors(this.assetUid),
+			this.processService.getAvailableNodes(this.assetUid)
+		).subscribe((results) => {
+			this.colors = results[0];
 
-        this.processService.getProcessDiagramColors(this.assetUid)
-            .subscribe((colors) => {
-                this.colors = colors;
-            });
-        this.processService.getAvailableNodes(this.assetUid)
-            .subscribe((res) => {
-                this.assetTypeNodes = res;
-                this.events = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Event);
-                this.activities = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Activity);
-                this.gateways = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Gateway);
+			this.assetTypeNodes = results[1];
+			this.events = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Event);
+			this.activities = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Activity);
+			this.gateways = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Gateway);
 
-                var nodeHeight = 130;
-                var numberOfEventRows = this.events.length % 2 == 0 ? this.events.length / 2 : (this.events.length + 1) / 2;
-                this.eventPalleteHeight = numberOfEventRows * nodeHeight;
+			var nodeHeight = 130;
+			var numberOfEventRows = this.events.length % 2 == 0 ? this.events.length / 2 : (this.events.length + 1) / 2;
+			this.eventPalleteHeight = numberOfEventRows * nodeHeight;
 
-                var numberOfActivityRows = this.activities.length % 2 == 0 ? this.activities.length / 2 : (this.activities.length + 1) / 2;
-                this.activityPalleteHeight = numberOfActivityRows * nodeHeight;
+			var numberOfActivityRows = this.activities.length % 2 == 0 ? this.activities.length / 2 : (this.activities.length + 1) / 2;
+			this.activityPalleteHeight = numberOfActivityRows * nodeHeight;
 
-                var numberOfGatewatRows = this.gateways.length % 2 == 0 ? this.gateways.length / 2 : (this.gateways.length + 1) / 2;
-                this.gatewayPalleteHeight = numberOfGatewatRows * nodeHeight;
+			var numberOfGatewatRows = this.gateways.length % 2 == 0 ? this.gateways.length / 2 : (this.gateways.length + 1) / 2;
+			this.gatewayPalleteHeight = numberOfGatewatRows * nodeHeight;
 
-                this.isLoaded = true;
-                this.loadDiagram();
-            });
+			this.isLoaded = true;
+			this.loadDiagram();
+		});
     }
     @ViewChild('diagram', { static: false }) diagramRef;
     @ViewChild('editors', { static: false }) editorRef;
