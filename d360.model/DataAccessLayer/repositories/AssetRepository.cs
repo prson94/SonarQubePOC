@@ -1542,7 +1542,7 @@ namespace d360.model.DataAccessLayer
 
 				if (useCachedFilters)
 				{
-					string[] ignoreQueryKeys = new string[] { "_pagesize", "_pagenum", "_order", "_direction" };
+					string[] ignoreQueryKeys = new string[] { "_pagesize", "_pagenum", "_order", "_direction", "_includetotal" };
 
 					requestHash = assetType.uid + JsonConvert.SerializeObject(
 						queryParams.Where(x => !ignoreQueryKeys.Contains(x.Key.ToLowerInvariant())).OrderBy(x => x.Key))
