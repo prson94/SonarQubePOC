@@ -222,8 +222,6 @@ namespace d360.web
 					{
 						context.Set("IsAdministrator", u.IsAdministrator);
 						context.Set("ResourceID", u.ResourceID);
-						context.Set<string>("ApplicationLanguageSetting", null);
-
 						context.Request.User = new System.Security.Principal.GenericPrincipal(new System.Security.Principal.GenericIdentity(u.ResourceID.ToString(), "ID"), null);
 					}
 					else

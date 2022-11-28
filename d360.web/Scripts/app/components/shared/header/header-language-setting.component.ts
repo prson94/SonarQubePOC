@@ -30,8 +30,11 @@ export class HeaderLanguageSettingComponent {
 	languages: Language[] = [];
 	selectedLanguage: Language;
 	initialLanguage: Language;
+	savingInProgress: boolean = false;
 
 	@ViewChild("popupBox", { static: false }) popupBox: ElementRef;
+
+	defaultSelectionTooltip: string = $localize`Interface will be translated to the browser language if the language version is available. If the version is not available, interface will be displayed in English.`;
 
 	constructor(
 		private ref: ChangeDetectorRef,
@@ -79,10 +82,9 @@ export class HeaderLanguageSettingComponent {
 	}
 
 	saveChanges() {
+		this.savingInProgress = true;
 		this.settingService.setLanguage(this.selectedLanguage.code).subscribe((res) => {
-
-			this.initialLanguage = _.cloneDeep(this.selectedLanguage);
-
+			location.reload();
 		});
 	}
 

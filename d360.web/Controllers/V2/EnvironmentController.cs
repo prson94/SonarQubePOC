@@ -2634,25 +2634,27 @@ namespace d360.web.Controllers.V2
 		[HttpPost, AjaxValidateAntiForgeryToken, Route("me/language"), ApiExplorerSettings(IgnoreApi = true)]
 		public async Task<HttpResponseMessage> UpdateCurrentUserLanguage(UserLanguageModel model)
 		{
-			try
+			
+			if (model == null)
 			{
-				if (model == null)
-				{
-					return ReturnApiError(HttpStatusCode.InternalServerError, ApiMessages.InvalidModel);
-				}
-
-				if (model.LanguageCode != null && !InternationalizationUtilities.AllowedUILocales.Select(x=> x.ToLowerInvariant()).Contains(model.LanguageCode.ToLowerInvariant()))
-				{
-					return ReturnApiError(HttpStatusCode.InternalServerError, String.Format(ApiMessages.InvalidLanguageCode, String.Join(", ", InternationalizationUtilities.AllowedUILocales)));
-				}
-
-				return Request.CreateResponse(HttpStatusCode.OK);
-
+				throw new ArgumentException(ApiMessages.InvalidModel);
 			}
-			catch (Exception ex)
+
+			if (model.LanguageCode != null && !InternationalizationUtilities.AllowedUILocales.Select(x=> x.ToLowerInvariant()).Contains(model.LanguageCode.ToLowerInvariant()))
 			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
+				throw new ArgumentException(String.Format(ApiMessages.InvalidLanguageCode, String.Join(", ", InternationalizationUtilities.AllowedUILocales)));
 			}
+
+			if (model.LanguageCode == null)
+			{
+				await this.ResourceSettingRepository.DeleteGlobalSetting(Company.CurrentResourceID, "ApplicationLanguage");
+			}
+			else
+			{
+				await this.ResourceSettingRepository.UpsertGlobalSetting(Company.CurrentResourceID, "ApplicationLanguage", model.LanguageCode);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK);
 		}
 		private bool IsDark(string htmlColor)
 		{

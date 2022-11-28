@@ -28,6 +28,15 @@
 	<div class="action-bar">
 		<button igButton focus-me="focusInput" (click)="onClose.emit()" i18n-label label="Cancel"></button>
 		<span class="grow"></span>
-		<button igButton class="ig-button-primary" focus-me="focusInput" [disabled]="isSaveDisabled" (click)="saveChanges()" i18n-label label="Save Changes"></button>
+		<button igButton class="ig-button-primary"
+				focus-me="focusInput"
+				[disabled]="isSaveDisabled"
+				(click)="saveChanges()"
+				[loading]="savingInProgress"
+				i18n-label
+				label="Save Changes"
+				pTooltip="{{selectedLanguage.code == null ? defaultSelectionTooltip : ''}}"
+				tooltipPosition="top"
+				tooltipStyleClass="ig-tooltip"></button>
 	</div>
 </d3s-modal>
