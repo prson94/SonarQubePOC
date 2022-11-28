@@ -4732,8 +4732,8 @@ where	T.ExecutionID = @ExecutionID
 										AddMeasurement(metrics, $"MergeAssetPaths >> {currentLoop} > Begin", 0, ++step);
 
 										Connection.Execute(
-											"exec api.MergeAssetPaths @executionId, @class, @begin, @end",
-											new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber },
+											"exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, @isInsert",
+											new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber, isInsert },
 											transaction: trans, timeout);
 										AddMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
 										sw.Restart();
@@ -4867,43 +4867,43 @@ where	T.ExecutionID = @ExecutionID
 
                     Connection.Close();
 
-					// TODO: Add event grid calls here.
+				//TODO: Add event grid calls here.
 
                     if (sendWorkflowEvents)
                     {
                         sw.Restart();
 						AddMeasurement(metrics, $"SendWorkflowEvents > Begin", 0, ++step);
 						SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
-                        AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
-                    }
+						AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
+					}
 
 					try
 					{
 						SendBatchApiCompletedEvent(execution);
 						AddMeasurement(metrics, $"SendCompletedEvent", sw.ElapsedMilliseconds, ++step);
 					}
-					catch 
+					catch
 					{
 
 					}
-					
+
 					#region Send score recalculation notifications.
 
 					if (intersectTypeID.HasValue)
-                    {
+					{
 						sw.Restart();
 						AddMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution > Begin", 0, ++step);
 						CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
 						AddMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution", 0, ++step);
-                    }
+					}
 
-                    if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
-                    {
-                        sw.Restart();
+					if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
+					{
+						sw.Restart();
 						AddMeasurement(metrics, $"SendScoreEventWithPayload > Begin", 0, ++step);
 						CreateImportAssetsExecution(execution.ExecutionID, at.uid);
-                        AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
-                    }
+						AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
+					}
 
                     #endregion
                 }
