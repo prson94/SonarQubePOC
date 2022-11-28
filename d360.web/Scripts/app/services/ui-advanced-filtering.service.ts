@@ -52,7 +52,7 @@ export class UiAdvancedFiltering {
 
     filterByAndLogic(dataToFilter: ReadonlyArray<any>, filters: Filters): FilteredData {
         let filtredData = [...dataToFilter];
-        let filterOptions = {
+        const filterOptions = {
             [OperatorString.Contains]: (filterOption: AdvancedFilterFieldCondition) => {
                 filtredData = filtredData.filter((elementToFilter: object) => {
                     return this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption);
@@ -158,10 +158,10 @@ export class UiAdvancedFiltering {
 
     filterByOrLogic(dataToFilter: ReadonlyArray<any>, filters: Filters): FilteredData {
         let filterResult = [];
-        let fullData = [...dataToFilter];
+        const fullData = [...dataToFilter];
         let filteredData = [];
 
-        let filterOptions = {
+        const filterOptions = {
             [OperatorString.Contains]: (filterOption: AdvancedFilterFieldCondition) => {
                 filteredData = remove(fullData, (elementToFilter: object) => {
                     return this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption);

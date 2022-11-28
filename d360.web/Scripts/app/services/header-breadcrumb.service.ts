@@ -131,7 +131,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
 
     getFolderTitle(menuID: string): Promise<string> {
         let folderName = menuID;
-        let promise = new Promise<string>((resolve, reject) => {
+        const promise = new Promise<string>((resolve, reject) => {
             if (this.SiteNavItemsCache && this.SiteNavItemsCache.length > 0) {
                 this.SiteNavItemsCache.forEach((s) => {
                     if (s.Name.indexOf(menuID) !== -1) {
@@ -196,7 +196,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
 
     getFolderIcon(menuID: string): Observable<string> {
         let icon = "fa-folder";
-        let promise = new Promise<string>((resolve, reject) => {
+        const promise = new Promise<string>((resolve, reject) => {
             if (this.SiteNavItemsCache && this.SiteNavItemsCache.length > 0) {
                 const nav = this.SiteNavItemsCache.find((s) => s.Title === menuID);
                 icon = this.iconFromSiteNav(nav);

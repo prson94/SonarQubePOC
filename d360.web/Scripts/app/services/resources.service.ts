@@ -260,7 +260,7 @@ export class ResourcesService extends BaseObservableService {
     }
 
     resetResourcesPassword(resourceID: number): Observable<JsonResult> {
-        let headers = new HttpHeaders({
+        const headers = new HttpHeaders({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
 
