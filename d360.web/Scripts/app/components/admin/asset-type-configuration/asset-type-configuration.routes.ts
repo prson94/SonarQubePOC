@@ -11,6 +11,7 @@ import { ConfigurationAssetTypeAllocationsPageComponent } from './tabs/allocatio
 import { ConfigurationAssetTypeRelationshipsPageComponent } from './tabs/relationships/configuration-asset-type-relationships-page.component';
 import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration-asset-type-log-page.component';
 import { featuresToTypeClasses } from './shared/featuresToTypeClasses';
+import { GovernanceRolesComponent } from './governanceRoles/governance-roles.component';
 
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
@@ -80,6 +81,10 @@ class WhenCanSeeLogGuard extends CanActivateOnlyForAvailableTypeClasses {
 }
 
 export const assetTypeConfigurationRoutes: Routes = [
+    {
+        path: 'DiagramAsset/governanceRoles',
+        component: GovernanceRolesComponent
+    },
     {
         path: ':typeClass/new',
         component: ConfigurationAssetTypeEditorPageComponent,

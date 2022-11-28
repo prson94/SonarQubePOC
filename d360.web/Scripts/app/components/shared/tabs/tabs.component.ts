@@ -51,6 +51,20 @@ export class TabsComponent implements OnDestroy {
         private router: Router) {
     }
 
+    get visibleItems() {
+        if (!this.items) {
+            return [];
+        }
+
+        return this.items.filter(item => {
+            if (item.isVisible) {
+                return item.isVisible();
+            }
+
+            return true;
+        });
+    }
+
     ngOnInit() {
         this.routerUrl = this.router.url;
         this.routerUrlChangeSub = this.router.events.subscribe(() => {
@@ -113,7 +127,7 @@ export class TabsComponent implements OnDestroy {
     scroll(direction: string) {
         let scrollAmount = 0;
         const scrollDistance = 300;
-        
+
         const move = () => {
             if (direction === 'L') {
                 this.tabScroller.first.nativeElement.scrollLeft -= 10;
@@ -145,7 +159,7 @@ export class TabsComponent implements OnDestroy {
             return true;
         }
 
-        return this.routerUrl.startsWith(tab.url)
+        return this.routerUrl == tab.url
             || (tab.subTabsUrl ?? []).some((subTabUrl) => this.routerUrl.startsWith(subTabUrl));
     }
 

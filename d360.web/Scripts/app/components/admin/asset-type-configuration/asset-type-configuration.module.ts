@@ -35,13 +35,23 @@ import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration
 import { AuditModule } from '../../sidebar/audit/audit.module';
 import { ConfigurationAssetTypeBreadcrumbsComponent } from './tabs/shared/configuration-asset-type-breadcrumbs/configuration-asset-type-breadcrumbs.component';
 import { HeaderModule } from '../../shared/header/header.module';
+import { ConfigurationAssetTypeListTabsComponent } from './list/asset-type-list-tabs.component';
+import { GovernanceRolesComponent } from './governanceRoles/governance-roles.component';
+import { FormsModule } from '@angular/forms';
+import { EditorModule } from 'primeng/editor';
+import { DropdownModule } from 'primeng/dropdown';
+import { ButtonModule } from 'primeng/button';
 
 @NgModule({
     imports: [
         RouterModule.forChild(assetTypeConfigurationRoutes),
         CommonModule,
+        FormsModule,
         CoreModule,
         TreeTableModule,
+        EditorModule,
+        DropdownModule,
+        ButtonModule,
         PipesModule,
         SidePanelModule,
         AngularSplitModule,
@@ -73,7 +83,9 @@ import { HeaderModule } from '../../shared/header/header.module';
         ConfigurationAssetTypeAllocationsPageComponent,
         ConfigurationAssetTypeRelationshipsPageComponent,
         ConfigurationAssetTypeLogPageComponent,
-        ConfigurationAssetTypeBreadcrumbsComponent
+        ConfigurationAssetTypeBreadcrumbsComponent,
+        ConfigurationAssetTypeListTabsComponent,
+        GovernanceRolesComponent
     ],
     exports: [],
 })

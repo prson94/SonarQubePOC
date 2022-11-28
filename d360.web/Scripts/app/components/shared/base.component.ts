@@ -78,7 +78,6 @@ export class BaseComponent {
 	itemOwnSidebar: SecondaryNavItem;
 	followingSidebar: SecondaryNavItem;
 
-	governanceRolesSidebar: SecondaryNavItem;
 	connectorLabels: SecondaryNavItem;
 
 	// tabs
@@ -268,7 +267,6 @@ export class BaseComponent {
 		hasField?: boolean,
 		hasChild?: boolean,
 		hasRuleResult?: boolean,
-		hasGovernanceRoleSet?: boolean,
 		hasProcessDiagram?: boolean,
 		hasGroups?: boolean,
 		hasFollowing?: boolean,
@@ -505,14 +503,6 @@ export class BaseComponent {
 			}
 
 			if (this.objectType === 'TaskType') {
-				this.governanceRolesSidebar = new SecondaryNavItem(
-					$localize`Governance Roles`, 'GovernanceRoles', null,
-					'/sidebar/governanceRoles', null, 3);
-				if (!opts.hasGovernanceRoleSet) {
-					this.governanceRolesSidebar.warningMessage = 'GovRoleWarning';
-				}
-				this.secondaryNavService.showItem(this.governanceRolesSidebar);
-
 				this.connectorLabels = new SecondaryNavItem(
 					$localize`Connector Labels`, 'ConnectorLabels', null,
 					'/sidebar/connectorLabels', null, 4);
@@ -1104,7 +1094,6 @@ export class BaseComponent {
 				hasField: r.Items.HasField,
 				hasChild: r.Items.HasChild,
 				hasRuleResult: this.objectType === 'Rule',
-				hasGovernanceRoleSet: r.Items.HasGovernanceRoleUidSet,
 				hasProcessDiagram: r.Items.HasProcessDiagram,
 				hasGroups: r.Items.HasGroups,
 				hasFollowing: r.Items.HasFollowing,
@@ -1203,7 +1192,6 @@ export class BaseComponent {
 		components.push(this.childSidebar);
 		components.push(this.fieldNav);
 		components.push(this.ruleResultSidebar);
-		components.push(this.governanceRolesSidebar);
 		components.push(this.connectorLabels);
 		components.push(this.groupsSidebar);
 		components.push(this.itemOwnSidebar);
