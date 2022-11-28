@@ -32,7 +32,7 @@ export class ResponsibilityTypeForm implements OnInit {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         let reloadRequired = false;
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === 'id') {
                 if (changes[p].currentValue === 0) {
                     this.load();
@@ -87,7 +87,7 @@ export class ResponsibilityTypeForm implements OnInit {
         this.item.ResponsibilityTypeRelations = [];
         if (this.selectedAllocations)
             {this.selectedAllocations.forEach((s) => {
-                let r = new ResponsibilityTypeRelation();
+                const r = new ResponsibilityTypeRelation();
                 r.ObjectID = parseInt(s.split('|')[1]);
                 r.ObjectType = s.split('|')[0];
                 r.ResponsibilityTypeID = this.item.ID;
@@ -99,7 +99,7 @@ export class ResponsibilityTypeForm implements OnInit {
         this.selectedAllocations = [];
         if (this.item.ResponsibilityTypeRelations)
             {this.item.ResponsibilityTypeRelations.forEach((r) => {
-                let s = r.ObjectID.toString();
+                const s = r.ObjectID.toString();
                 this.selectedAllocations.push(r.ObjectType + '|' + r.ObjectID.toString());
             });}
     }

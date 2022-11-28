@@ -1,8 +1,8 @@
 <d3s-loading [isLoading]="isEditing || !isDefinitionLoaded"></d3s-loading>
 <ig-portal-content-provider name="asset-description" [template]="description">
     <ng-template #description>
-        <div *ngIf="assetTypeApiModel.IsDescriptionEnabled && isDescriptionVisible" class="asset-description"
-             [innerHTML]="assetTypeApiModel.Description | sanitize">
+        <div *ngIf="assetTypeApiModel.IsDescriptionEnabled && isDescriptionVisible" class="asset-description">
+            <div class="ql-editor" [innerHTML]="assetTypeApiModel.Description | safeHtml"></div>
         </div>
     </ng-template>
 </ig-portal-content-provider>

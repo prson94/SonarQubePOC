@@ -9,6 +9,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { forkJoin } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { CompanySettingEnum, SettingsPutModel, StringSetting, GuidSetting } from '../../../models/settings.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -54,6 +55,11 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
                 this.buildSecondaryNavigationForObject(0, 'TaskType');
             });
         this.refListSub = this.assetsService.getAssetTypesByClass(AssetTypeClass.Reference)
+            .pipe(
+                finalize(() => {
+                    this.isLoading = false;
+                })
+            )
             .subscribe((res) => {
                 this.refListDDL = [];
                 this.refListDDL.push({ value: '', label: $localize`Select Reference List...` });
@@ -61,20 +67,18 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
                     this.refListDDL.push({ value: x.uid, label: x.Name });
                 });
 
+                const setting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);;
+                this.originalModel = new GovernanceRole();
+                if (setting.ScalarValue && setting.ScalarValue !== "00000000-0000-0000-0000-000000000000") {
+                    this.originalModel.RefListUid = setting.ScalarValue;
+                    this.datatype = 4;
+                }
+
+                this.model = this.getInitialData();
+                this.isLoading = false;
                 this.cdRef.detectChanges();
 
             });
-
-        let setting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);
-        this.originalModel = new GovernanceRole();
-        if (setting.ScalarValue && setting.ScalarValue !== "00000000-0000-0000-0000-000000000000") {
-            this.originalModel.RefListUid = setting.ScalarValue;
-            this.datatype = 4;
-        }
-
-        this.model = this.getInitialData();
-        this.isLoading = false;
-        this.cdRef.detectChanges();
     }
 
     discard() {
@@ -87,7 +91,7 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
 
     private isDirty() {
         var orig = this.getInitialData();
-        return orig.Name != this.model.Name || orig.Description != this.model.Description || orig.RefListUid != this.model.RefListUid;
+        return orig.Name !== this.model.Name || orig.Description !== this.model.Description || orig.RefListUid !== this.model.RefListUid;
     }
 
     private save() {
@@ -104,7 +108,8 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
                 (res) => {
                     this.isSaving = false;
                     this.originalModel = this.model;
-                    this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
+					this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
+					this.settingsService.loadSettings();
                 },
                 (err) => {
                     this.messagesService.showError($localize`Error saving governance role`, err.error.message);

@@ -176,7 +176,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
 
     duplicateSelectedTheme() {
         var theme = _.cloneDeep(this.selectedRow._orig);
-        let uid = theme.uid;
+        const uid = theme.uid;
         theme.name = this.getUniqueName(this.selectedRow.name, 0);
         theme.isCurrent = false;
         theme.uid = "";
@@ -299,7 +299,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     onFileSelected(event) {
         this.themeToLoad = null;
         this.file = event.target.files[0];
-        let fileReader = new FileReader();
+        const fileReader = new FileReader();
         fileReader.onload = (e) => {
             try {
                 this.themeToLoad = JSON.parse(fileReader.result as string);

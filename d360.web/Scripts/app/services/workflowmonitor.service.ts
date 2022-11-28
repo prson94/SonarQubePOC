@@ -17,13 +17,13 @@ export class WorkflowMonitorService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getWorkFlowMonitorItems(pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[]): Observable<WorkflowMonitorItems> {
-        let uri = `internal/monitor/workflowmonitor/items?pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortorder=${sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Ascending ? "asc" : "desc")}`;
+        let uri = `internal/monitor/workflowmonitor/items?pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortorder=${sortorder === SortOrder.None ? "" : (sortorder === SortOrder.Ascending ? "asc" : "desc")}`;
 
-        if (filters != undefined) {
+        if (filters != null) {
 
             //#region regular fields
 
-            let normalFilters = filters.filter((f) => f.fieldtype == GridFilterFieldType.Normal);
+            let normalFilters = filters.filter((f) => f.fieldtype === GridFilterFieldType.Normal);
             let count = 0;
             uri += '&filterscount=' + normalFilters.length;
 
@@ -49,13 +49,13 @@ export class WorkflowMonitorService extends BaseObservableService {
     }
 
     exportToExcel(pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[]) {
-        let uri = `internal/monitor/workflowmonitor/items/download/excel.xls?pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortorder=${sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Ascending ? "asc" : "desc")}`;
+        let uri = `internal/monitor/workflowmonitor/items/download/excel.xls?pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortorder=${sortorder === SortOrder.None ? "" : (sortorder === SortOrder.Ascending ? "asc" : "desc")}`;
 
-        if (filters != undefined) {
+        if (filters != null) {
 
             //#region regular fields
 
-            let normalFilters = filters.filter((f) => f.fieldtype == GridFilterFieldType.Normal);
+            let normalFilters = filters.filter((f) => f.fieldtype === GridFilterFieldType.Normal);
             let count = 0;
             uri += '&filterscount=' + normalFilters.length;
 

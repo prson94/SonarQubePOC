@@ -115,14 +115,14 @@ export class CompanySettingsService extends BaseObservableService {
 		return this.appSettings.find((a) => a.Name === setting).Value;
 	}
 
-	getSettingById(setting: CompanySettingEnum): SettingsGetModel {
-		let settingId: number = <number>setting;
-		let foundSetting: SettingsGetModel = null;
-		if (this.settings && this.settings.length > 0) {
-			foundSetting = this.settings.find((s) => s.SettingID == settingId);
-		}
-		return foundSetting;
-	}
+    getSettingById(setting: CompanySettingEnum): SettingsGetModel {
+        let settingId: number = <number>setting;
+        let foundSetting: SettingsGetModel = null;
+        if (this.settings && this.settings.length > 0) {
+            foundSetting = this.settings.find((s) => s.SettingID === settingId);
+        }
+        return foundSetting;
+    }
 
 	private parseSettingChange(setting: SettingsPutModel): SettingsPutModel {
 		let currentSetting = this.settings.find((s) => s.SettingID === setting.SettingID);

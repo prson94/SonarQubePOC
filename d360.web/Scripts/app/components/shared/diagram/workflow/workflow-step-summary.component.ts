@@ -80,7 +80,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
                 if (this.step.settings['MessageRecipientType'] == 'Responsibility') {
                     if (this.step.settings.ResponsibilityTypeID != null) {
                         if (!_.isArray(this.step.settings.ResponsibilityTypeID)) {
-                            let id = this.step.settings.ResponsibilityTypeID;
+                            const id = this.step.settings.ResponsibilityTypeID;
                             delete this.step.settings.ResponsibilityTypeID;
                             this.step.settings.ResponsibilityTypeID = [];
                             this.step.settings.ResponsibilityTypeID.push(id);
@@ -110,7 +110,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         if (typeof item['@ObjectType'] == 'undefined' || item['@ObjectType'] == 'Issue')
             {return "Action Field::" + item['@FieldName'];}
         else {
-            let f = this.fields.find((f) => f.ID == +item['@FieldId']);
+            const f = this.fields.find((f) => f.ID == +item['@FieldId']);
             if (f == undefined)
                 {return "";}
             return $localize`Asset Field` + "::" + f.FriendlyName;
@@ -118,11 +118,11 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     }
 
     getResponsibilityName(i: number): string {
-        let id = this.step.settings.ResponsibilityTypeID[i];
+        const id = this.step.settings.ResponsibilityTypeID[i];
         if (id == null || +id < 0)
             {return "";}
 
-        let r = this.responsibilities.find((r) => r.ID == +id);
+        const r = this.responsibilities.find((r) => r.ID == +id);
 
         if (r != null)
             {return r.Name;}
@@ -148,7 +148,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     isHtml(i: any): boolean {
         //console.log('isHtml', i, this.fields);
         if (i == null) {return false;}
-        let f = this.fields.find((f) => f.ID == +i['@FieldId']);
+        const f = this.fields.find((f) => f.ID == +i['@FieldId']);
         if (f == null) {return false;}
         return f.Type == 'Html';
     }
@@ -178,12 +178,12 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
             case 'list':
                 if (this.lookups == null)
                     {return 'List';}
-                let list = this.lookups.find((l) => l.value.toString() == i['@referenceFieldId']);
+                const list = this.lookups.find((l) => l.value.toString() == i['@referenceFieldId']);
                 return 'List' + (list == null ? '' : ' :: ' + list.label);
             case 'relationshipType':
                 if (this.intersectTypes == null)
                     {return 'Relationship';}
-                let rel = this.intersectTypes.find((l) => l.IntersectTypeID.toString() == i['@intersectTypeId']);
+                const rel = this.intersectTypes.find((l) => l.IntersectTypeID.toString() == i['@intersectTypeId']);
                 return 'Relationship' + (rel == null ? '' : (' :: ' + ((rel.PredicateName != null && rel.PredicateName.length > 0) ? `[${rel.PredicateName}] ` : ' ') + rel.TargetName));
             default:
                 return (i['@type'].charAt(0).toUpperCase() + i['@type'].substr(1));

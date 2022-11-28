@@ -33,6 +33,8 @@ export class SiteMenuCategoryComponent extends BaseComponent {
             this.activeItemChanged.emit(undefined);
         }
     }
+    
+    isCaretHovered = false;
 
     constructor(
         protected settingsService: CompanySettingsService,
@@ -52,7 +54,8 @@ export class SiteMenuCategoryComponent extends BaseComponent {
         }
     }
 
-    onCategoryExpand() {
+    onCategoryExpand($event: MouseEvent) {
+        $event.stopPropagation();
         if (this.menu && this.menu.isActiveItem) {
             this.activeItemChanged.emit(undefined);
         } else {

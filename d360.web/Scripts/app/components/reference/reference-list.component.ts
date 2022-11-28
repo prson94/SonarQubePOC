@@ -97,7 +97,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 		refListIdString = this.assetTypeUid;
 
-		let headerActions: HeaderActions = new HeaderActions();
+		const headerActions: HeaderActions = new HeaderActions();
 		headerActions.showRaiseIssue = false;
 		this.headerActionsService.setCurrentHeaderActions(headerActions);
 

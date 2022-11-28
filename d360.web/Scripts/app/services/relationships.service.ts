@@ -219,7 +219,7 @@ export class RelationshipsService extends BaseObservableService {
     }
 
     saveRelationship(relationship: RelationshipDetail): Observable<JsonResult> {
-        if (relationship.ID == undefined || !relationship.ID) {
+        if (relationship.ID == null || !relationship.ID) {
             return this.postDynamic(this.http, 'intersecttype', relationship);
         }
         return this.putDynamic(this.http, 'intersecttype', relationship);
@@ -227,10 +227,10 @@ export class RelationshipsService extends BaseObservableService {
 
     getRelationshipPredicates(subjectUid: string, objectUid?: string, predicateUid?: string): Observable<PredicateDropdown[]> {
         let url = `form/IntersectType_PredicateOptions?subjectUid=${subjectUid}`;
-        if (objectUid != undefined) {
+        if (objectUid != null) {
             url = url += `&objectUid=${objectUid}`;
         }
-        if (predicateUid != undefined) {
+        if (predicateUid != null) {
             url = url += `&predicateUid=${predicateUid}`;
         }
         return this.http.get(url)
@@ -258,10 +258,10 @@ export class RelationshipsService extends BaseObservableService {
 
     getObjectOptions(subjectUid: string, objectUid?: string, predicateUid?: string): Observable<DropdownOption[]> {
         let url = `form/IntersectType_ObjectOptions?subjectUid=${subjectUid}`;
-        if (objectUid != undefined) {
+        if (objectUid != null) {
             url = url += `&objectUid=${objectUid}`;
         }
-        if (predicateUid != undefined) {
+        if (predicateUid != null) {
             url = url += `&predicateUid=${predicateUid}`;
         }
 
@@ -285,7 +285,7 @@ export class RelationshipsService extends BaseObservableService {
 
     getRelationshipsByAssetTypeUid(assetTypeUid: string): Observable<RelationshipType[]> {
 
-        var cachedItem = this.tagTooltipsCache.find((x) => x.assetTypeUid == assetTypeUid);
+        var cachedItem = this.tagTooltipsCache.find((x) => x.assetTypeUid === assetTypeUid);
         if (cachedItem)
             {return cachedItem.obs;}
 

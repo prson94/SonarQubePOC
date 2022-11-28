@@ -94,10 +94,10 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
     }
 
     private disableChartOptions() {
-        let lastDate = new Date(this.dataProfileList[this.dataProfileList.length - 1].profileSetDate);
-        let currentDate = new Date(this.dataProfileList[0].profileSetDate);
+        const lastDate = new Date(this.dataProfileList[this.dataProfileList.length - 1].profileSetDate);
+        const currentDate = new Date(this.dataProfileList[0].profileSetDate);
         this.graphRangeOptions.forEach((g) => {
-            let d = new Date();
+            const d = new Date();
             if (isNaN(g.value)) {
                 d.setFullYear(d.getFullYear(), 0, 1);
                 if (g.value === "YTD" && d > currentDate) {
@@ -149,7 +149,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
 
     private renderTimeSeriesChart(chartType: string) {
         this.graphTitle = this.graphType.get(chartType).title;
-        let graphSeries = [];
+        const graphSeries = [];
 
         if (this.graphType.get(chartType).seriesType === "combined" && this.graphType.get(chartType)?.series?.length > 0) {
             this.graphType.get(chartType).series.forEach((s) => graphSeries.push(this.generateSeries(s)));
@@ -157,7 +157,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
             graphSeries.push(this.generateSeries(chartType));
         }
 
-        let chartOptions: Stockcharts.Options = {
+        const chartOptions: Stockcharts.Options = {
             title: {
                 text: '',
             },
@@ -186,19 +186,19 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                 },
                 events: {
                     afterSetExtremes: (e) => {
-                        let d = new Date();
+                        const d = new Date();
                         d.setMinutes(0);
                         d.setSeconds(0);
                         d.setMilliseconds(0);
-                        let baseMonth = d.getMonth();
+                        const baseMonth = d.getMonth();
                         let isCustom = true;
-                        let maxdate = new Date(e.max);
-                        let mindate = new Date(e.min);
+                        const maxdate = new Date(e.max);
+                        const mindate = new Date(e.min);
                         mindate.setMinutes(0);
                         mindate.setSeconds(0);
                         mindate.setMilliseconds(0);
 
-                        let currentProfileDate = new Date(this.dataProfileList[0].profileSetDate);
+                        const currentProfileDate = new Date(this.dataProfileList[0].profileSetDate);
                         if (currentProfileDate.getTime() <= maxdate.getTime()) {
                             d.setMonth(baseMonth - 1);
                             if (isCustom && (mindate.getTime() - d.getTime() === 0)) { // 1 Months
@@ -218,7 +218,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                                 isCustom = false;
                             }
                             if (isCustom) {
-                                let lastProfileDate = new Date(this.dataProfileList[this.dataProfileList.length - 1].profileSetDate);
+                                const lastProfileDate = new Date(this.dataProfileList[this.dataProfileList.length - 1].profileSetDate);
                                 if (lastProfileDate.getTime() >= mindate.getTime()) { //All
                                     isCustom = false;
                                 }

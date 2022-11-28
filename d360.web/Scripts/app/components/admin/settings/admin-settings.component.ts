@@ -143,7 +143,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.SiteNav.forEach((s) => {
             s.IsCustom = (s.Name.indexOf('#') !== 0);
 		});
-		let workflowCatchAllGroup = this.getNumberSetting(CompanySettingEnum.WorkflowCatchAllGroup);
+		const workflowCatchAllGroup = this.getNumberSetting(CompanySettingEnum.WorkflowCatchAllGroup);
 		this.groups.push({ label: "", value: workflowCatchAllGroup });
 		this.companySettings.WorkflowCatchAllGroup = workflowCatchAllGroup;
         this.companySettings.WorkflowDigestEmailDays = this.getNumberSetting(CompanySettingEnum.WorkflowDigestEmailDays);
@@ -152,7 +152,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
         this.settingsService.getGroups()
             .subscribe((x) => {
-                let groups = x.map((x) => {
+                const groups = x.map((x) => {
                     return { label: x.label, value: +x.value };
                 });
 				groups.unshift({ label: $localize`[Administrators]`, value: 0 });
@@ -198,7 +198,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
         //#region Translate to settings array for v2 API.
 
-        let settings: SettingsPutModel[] = [];
+        const settings: SettingsPutModel[] = [];
 
         settings.push({
             SettingID: CompanySettingEnum.AllowedOrigins,
@@ -254,7 +254,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             IpAddressSetting: null,
             NumberSetting: null
         });
-        let defaultSearchTypes = SettingsHelper.searchTypeListToString(this.searchTypes);
+        const defaultSearchTypes = SettingsHelper.searchTypeListToString(this.searchTypes);
         settings.push({
             SettingID: CompanySettingEnum.DefaultSearchTypes,
             StringSetting: { Value: defaultSearchTypes },
@@ -419,7 +419,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         if (this.companySettings.DefaultRoute === '' || this.companySettings.DefaultRoute === '/')
             {return;}
 
-        let r = new RegExp('^(?:[a-z]+:)?//', 'i');
+        const r = new RegExp('^(?:[a-z]+:)?//', 'i');
 
         if (r.test(this.companySettings.DefaultRoute))
             {this.routeValidationMessage = $localize`The value entered must be a relative url (ex: /artifact/1)`;}

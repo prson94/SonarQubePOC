@@ -133,8 +133,10 @@ namespace d360.model
         DbSet<QuestionType> QuestionTypes { get; set; }
         
         DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
-        
-        DbSet<Report> Reports { get; set; }
+
+		DbSet<ResourceSetting> ResourceSettings { get; set; }
+		
+		DbSet<Report> Reports { get; set; }
         
         DbSet<ResourceGroup> ResourceGroups { get; set; }
         

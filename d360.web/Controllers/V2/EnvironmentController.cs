@@ -49,6 +49,7 @@ namespace d360.web.Controllers.V2
 	{
 		readonly IThemeRepository ThemeRepository;
 		readonly IDashboardRepository DashboardRepository;
+		readonly IResourceSettingRepository ResourceSettingRepository;
 		readonly IStorageProvider _storage;
 
 		//power bi report settings
@@ -59,10 +60,11 @@ namespace d360.web.Controllers.V2
 		private static readonly string pbiUrl = "https://api.powerbi.com";
 
 
-		public EnvironmentController(ICoreComponentSet set, IThemeRepository themeRepository, IDashboardRepository dashboardRepository, IStorageProvider storage) : base(set)
+		public EnvironmentController(ICoreComponentSet set, IThemeRepository themeRepository, IDashboardRepository dashboardRepository, IStorageProvider storage, IResourceSettingRepository resourceSettingRepository) : base(set)
 		{
 			ThemeRepository = themeRepository;
 			DashboardRepository = dashboardRepository;
+			ResourceSettingRepository = resourceSettingRepository;
 			_storage = storage;
 		}
 
@@ -2722,5 +2724,141 @@ namespace d360.web.Controllers.V2
 
 			return await PowerBI.ImportPbix(pbiUsername, pbiPassword, clientId, groupId, name, file.InputStream);
 		}
+
+		#region User Settings endpoints
+
+		const string USER_SETTING_UID_FILTER = "An optional Asset Type UID, to get user settings for that asset type.";
+		const string USER_SETTING_VALUE = "The setting value";
+
+		/// <summary>
+		/// Gets User Settings
+		/// If no UID is provided, the user's global settings are returned.
+		/// </summary>
+		/// <returns>A list of settings for the current user.</returns>
+		[
+			HttpGet,
+			Route("usersettings"),
+			ApiExplorerSettings(IgnoreApi = true),
+			SwaggerProduces("application/json"),
+			SwaggerParameter("assetTypeUid", USER_SETTING_UID_FILTER, DataType = "string", ParameterType = "query", Required = false),
+			SwaggerResponse(HttpStatusCode.OK, "Returns the list of settings.", typeof(List<GetTheme>)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetUserSettings(CancellationToken cancellationToken)
+		{
+			try
+			{
+				var queryParams = Request.GetQueryNameValuePairs();
+				Guid AssetTypeUID = Guid.Empty;
+
+				if (queryParams.ToList().Any(x => x.Key.ToLower() == "assetTypeUid"))
+				{
+					if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetTypeUid").Value, out AssetTypeUID))
+					{
+						AssetTypeUID = Guid.Empty;
+						throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.Error, OthersError.InvalidAssetTypeUid);
+					}
+				}
+
+				var settings = await ResourceSettingRepository.GetSettings(Company.CurrentResourceID, AssetTypeUID);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, settings));
+			}
+			catch (GenericException)
+			{
+				throw;
+			}
+			catch
+			{
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, ApiMessages.UnknownErrorInvestigatingMessage);
+			}
+		}
+
+		/// <summary>
+		/// Creates/updates a user setting.
+		/// </summary>
+		/// <param name="assetTypeUid">The Asset Type UID for which this user setting applies.</param>
+		/// <param name="setting">The name of the setting.</param>
+		/// <param name="value">The name of the setting.</param>
+		[
+			HttpPut,
+			Route("usersetting/{assetTypeUid:Guid}/{setting}"),
+			ApiExplorerSettings(IgnoreApi = true),
+			SwaggerConsumes("text/plain"),
+			SwaggerProduces("application/json"),
+			SwaggerParameter("value", USER_SETTING_VALUE, DataType = "string", ParameterType = "body", Required = true),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Request to update the setting is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> PutUserSetting(Guid assetTypeUid, string setting)
+		{
+			try
+			{
+				string value = await Request.Content.ReadAsStringAsync();
+
+				if (string.IsNullOrEmpty(value))
+				{
+					{
+						throw new GenericException(HttpStatusCode.Conflict, ApiMessages.UnknownError, ApiMessages.UnknownError);
+					}
+				}
+
+				await ResourceSettingRepository.UpsertSetting(Company.CurrentResourceID, assetTypeUid, setting, value);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+			}
+			catch (GenericException ex)
+			{
+				throw ex;
+			}
+			catch
+			{
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.Error, ApiMessages.UnknownErrorInvestigatingMessage);
+			}
+		}
+
+		/// <summary>
+		/// Creates/updates a global user setting.
+		/// </summary>
+		/// <param name="setting">The name of the setting.</param>
+		/// <param name="value">The value of the setting.</param>
+		[
+			HttpPut,
+			Route("usersetting/{setting}"),
+			ApiExplorerSettings(IgnoreApi = true),
+			SwaggerConsumes("text/plain"),
+			SwaggerProduces("application/json"),
+			SwaggerParameter("value", USER_SETTING_VALUE, DataType = "string", ParameterType = "body", Required = true),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Request to update the setting is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> PutUserGlobalSetting(string setting)
+		{
+			try
+			{
+				string value = await Request.Content.ReadAsStringAsync();
+
+				if (string.IsNullOrEmpty(value))
+				{
+					{
+						throw new GenericException(HttpStatusCode.Conflict, ApiMessages.UnknownError, ApiMessages.UnknownError);
+					}
+				}
+
+				await ResourceSettingRepository.UpsertGlobalSetting(Company.CurrentResourceID, setting, value);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+			}
+			catch (GenericException ex)
+			{
+				throw ex;
+			}
+			catch
+			{
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.Error, ApiMessages.UnknownErrorInvestigatingMessage);
+			}
+		}
+		#endregion
 	}
 }

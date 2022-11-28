@@ -253,7 +253,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             params["_order"] = "Code";
         }
 
-        let filters: string[] = [];
+        const filters: string[] = [];
         if ($event) {
             if ($event.globalFilter) {
                 var value = ($event.globalFilter as string).replace(/'/g, "&apos;");
@@ -341,7 +341,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         if (this.multiple) {
             this.selectedItems = event;
             var items = [];
-            for (let item of event) {
+            for (const item of event) {
                 items.push(item.Value);
             }
             this.value = _.cloneDeep(items);

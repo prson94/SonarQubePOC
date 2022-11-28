@@ -1,21 +1,27 @@
-﻿using d360.web.Controllers.V2;
-using Newtonsoft.Json;
-using System;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+
 using Xunit;
-using igx.UnitTests.Core;
-using d360.core.entities;
-using Newtonsoft.Json.Linq;
-using d360.core.enums;
-using System.Threading;
-using System.Net;
-using System.Threading.Tasks;
-using d360.core;
-using d360.web.Utilities;
 using Moq;
+using FluentAssertions;
+using igx.UnitTests.Core;
+
+using d360.web.Controllers.V2;
+using d360.web.Services;
+using d360.web.Utilities;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core;
+using Resources;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -382,7 +388,6 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public void GetIntersectType()
         {
-
             var actionResult = relationshipsController.GetIntersectType(1);
 
             Assert.True(actionResult.Count() > 0);
@@ -390,109 +395,141 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void ERR_PostRelationshipAsync_InvalidUid()
+        public async Task ERR_PostRelationshipAsync_InvalidUid()
         {
             var model = new RelationshipInserts();
 
-            var actionResult = await relationshipsController.PostRelationshipsAsync(Guid.Parse(DataConstants.InvalidGUID), model);
-            var result = await actionResult.ExecuteAsync(new CancellationToken());
-            var str = result.Content.ReadAsStringAsync();
+			var invalidIntersectTypeUid = Guid.Parse(DataConstants.InvalidGUID);
 
-            Assert.True(!result.IsSuccessStatusCode);
-            Assert.True(result.StatusCode == HttpStatusCode.NotFound);
+			var expectedMessage = string.Format(ActionApiMessages.RelationShipTypeUidNotFound, invalidIntersectTypeUid.ToString());
+
+			Func<Task> act = async () => { await relationshipsController.PostRelationshipsAsync(Guid.Parse(DataConstants.InvalidGUID), model); };
+
+			await act.Should()
+					 .ThrowAsync<NotFoundBusinessLayerException>()
+					 .WithMessage(expectedMessage);
         }
 
         [Fact]
-        public async void ERR_PostRelationshipAsync_InvalidModel()
+        public async Task ERR_PostRelationshipsAsync_InvalidModel()
         {
-            var model = new RelationshipInserts();
+			var validIntersectTypeUid = Guid.Parse(DataConstants.ValidGUID);
 
-            var actionResult = await relationshipsController.PostRelationshipsAsync(Guid.Parse(DataConstants.ValidGUID), null);
-            var result = await actionResult.ExecuteAsync(new CancellationToken());
-            var str = result.Content.ReadAsStringAsync();
+			Func<Task> act = async () => { await relationshipsController.PostRelationshipsAsync(validIntersectTypeUid, null); };
 
-            Assert.True(!result.IsSuccessStatusCode);
-            Assert.True(result.StatusCode == HttpStatusCode.InternalServerError);
+			await act.Should()
+					 .ThrowAsync<ArgumentException>();
         }
 
         [Fact]
-        public async void ERR_PostRelationshipAsync_MaxLimitReached()
+        public async Task ERR_PostRelationshipsAsync_MaxLimitReached()
         {
-            var model = new RelationshipInserts();
-            for (int i = 0; i <= 251; i++)
+			var maxSyncApiItemCount = 250;
+			var validUid = Guid.Parse(DataConstants.ValidGUID);
+
+			var model = new RelationshipInserts();
+            for (var i = 0; i <= maxSyncApiItemCount; i++)
             {
-                model.Add(new RelationshipInsert());
+                model.Add(new RelationshipInsert() { SubjectAssetUid = validUid });
             }
 
-            var actionResult = await relationshipsController.PostRelationshipsAsync(Guid.Parse(DataConstants.ValidGUID), model);
-            var result = await actionResult.ExecuteAsync(new CancellationToken());
-            var str = result.Content.ReadAsStringAsync();
+			var expectedMessage = string.Format(RelationshipsApiMessages.MaxRelationShipLimit, maxSyncApiItemCount, maxSyncApiItemCount);
 
-            Assert.True(!result.IsSuccessStatusCode);
-            Assert.True(result.StatusCode == HttpStatusCode.BadRequest);
-        }
-        [Fact]
-        public async void PostRelationshipAsync()
+			Func<Task> act = async () => { await relationshipsController.PostRelationshipsAsync(validUid, model); };
+
+			await act.Should()
+					 .ThrowAsync<ArgumentException>()
+					 .WithMessage(expectedMessage);
+		}
+
+		[Fact]
+		public async Task ERR_PostRelationshipsAsync_InvalidSubjectAssetUid()
+		{
+			var validUid = Guid.Parse(DataConstants.ValidGUID);
+			var invalidUid = Guid.Parse(DataConstants.InvalidGUID);
+
+			var model = new RelationshipInserts();
+			for (var i = 0; i <= 10; i++)
+			{
+				model.Add(new RelationshipInsert() { SubjectAssetUid = invalidUid });
+			}
+
+			Func<Task> act = async () => { await relationshipsController.PostRelationshipsAsync(validUid, model); };
+
+			await act.Should()
+					 .ThrowAsync<ArgumentException>()
+					 .WithMessage(AssetsApiMessages.InvalidSubjectAssetUid);
+		}
+
+		[Fact]
+        public async Task PostRelationshipsAsync()
         {
-            var model = new RelationshipInserts();
+			var validUid = Guid.Parse(DataConstants.ValidGUID);
+
+			var model = new RelationshipInserts();
             for (int i = 0; i <= 10; i++)
             {
-                model.Add(new RelationshipInsert());
+                model.Add(new RelationshipInsert() { SubjectAssetUid = validUid});
             }
 
-            var actionResult = await relationshipsController.PostRelationshipsAsync(Guid.Parse(DataConstants.ValidGUID), model);
+            var actionResult = await relationshipsController.PostRelationshipsAsync(validUid, model);
             var result = await actionResult.ExecuteAsync(new CancellationToken());
             var str = await result.Content.ReadAsStringAsync();
+			var data = JsonConvert.DeserializeObject<List<DatabaseBulkRelationshipResult>>(str);
 
-            Assert.True(result.IsSuccessStatusCode);
+			Assert.True(result.IsSuccessStatusCode);
             Assert.True(result.StatusCode == HttpStatusCode.OK);
             Assert.True(!string.IsNullOrEmpty(str));
-            var data = JsonConvert.DeserializeObject<List<DatabaseBulkRelationshipResult>>(str);
             Assert.True(data.Count > 0);
         }
 
         [Fact]
-        public async void ERR_PutRelationshipAsync_InvalidUid()
+        public async Task ERR_PutRelationshipAsync_InvalidUid()
         {
-            var model = new RelationshipUpdates();
+			var invalidUid = Guid.Parse(DataConstants.InvalidGUID);
 
-            var actionResult = await relationshipsController.PutRelationshipsAsync(Guid.Parse(DataConstants.InvalidGUID), model);
-            var result = await actionResult.ExecuteAsync(new CancellationToken());
-            var str = result.Content.ReadAsStringAsync();
+			var expectedMessage = string.Format(ActionApiMessages.RelationShipTypeUidNotFound, invalidUid.ToString());
 
-            Assert.True(!result.IsSuccessStatusCode);
-            Assert.True(result.StatusCode == HttpStatusCode.NotFound);
-        }
+			var model = new RelationshipUpdates();
+
+			Func<Task> act = async () => { await relationshipsController.PutRelationshipsAsync(invalidUid, model); };
+
+			await act.Should()
+					 .ThrowAsync<NotFoundBusinessLayerException>()
+					 .WithMessage(expectedMessage);
+		}
 
         [Fact]
-        public async void ERR_PutRelationshipAsync_InvalidModel()
+        public async Task ERR_PutRelationshipAsync_InvalidModel()
         {
-            var model = new RelationshipUpdates();
+			var validUid = Guid.Parse(DataConstants.ValidGUID);
 
-            var actionResult = await relationshipsController.PutRelationshipsAsync(Guid.Parse(DataConstants.ValidGUID), null);
-            var result = await actionResult.ExecuteAsync(new CancellationToken());
-            var str = result.Content.ReadAsStringAsync();
+			Func<Task> act = async () => { await relationshipsController.PutRelationshipsAsync(validUid, null); };
 
-            Assert.True(!result.IsSuccessStatusCode);
-            Assert.True(result.StatusCode == HttpStatusCode.InternalServerError);
-        }
+			await act.Should()
+					 .ThrowAsync<ArgumentException>();
+		}
 
         [Fact]
-        public async void ERR_PutRelationshipAsync_MaxLimitReached()
+        public async Task ERR_PutRelationshipAsync_MaxLimitReached()
         {
-            var model = new RelationshipUpdates();
-            for (int i = 0; i <= 251; i++)
+			var maxSyncApiItemCount = 250;
+			var validUid = Guid.Parse(DataConstants.ValidGUID);
+
+			var expectedMessage = string.Format(RelationshipsApiMessages.MaxRelationShipLimit, maxSyncApiItemCount, maxSyncApiItemCount);
+
+			var model = new RelationshipUpdates();
+            for (int i = 0; i <= maxSyncApiItemCount; i++)
             {
                 model.Add(new RelationshipUpdate());
             }
 
-            var actionResult = await relationshipsController.PutRelationshipsAsync(Guid.Parse(DataConstants.ValidGUID), model);
-            var result = await actionResult.ExecuteAsync(new CancellationToken());
-            var str = result.Content.ReadAsStringAsync();
+			Func<Task> act = async () => { await relationshipsController.PutRelationshipsAsync(validUid, model); };
 
-            Assert.True(!result.IsSuccessStatusCode);
-            Assert.True(result.StatusCode == HttpStatusCode.BadRequest);
-        }
+			await act.Should()
+					 .ThrowAsync<ArgumentException>()
+					 .WithMessage(expectedMessage);
+		}
 
         [Fact]
         public async void ERR_PostBulkRelationshipAsync_InvalidUid()

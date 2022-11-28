@@ -146,7 +146,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
 
 			this.items.forEach((asset) => {
 				if (asset.DisplayPath) {
-					let pathSegments = (asset.DisplayPath as string).split('>').map((item) => item.trim());
+					const pathSegments = (asset.DisplayPath as string).split('>').map((item) => item.trim());
 					for (let i = 0; i < pathSegments.length; i++) {
 						asset["PATH_SEGMENT_IDX_" + i] = pathSegments[i];
 					}

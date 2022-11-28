@@ -273,12 +273,12 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.currentAreaName = $localize`Tags`;
-                    let areaBreadcrumb = new Breadcrumb(
+                    const areaBreadcrumb = new Breadcrumb(
                         this.currentAreaName,
                         `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`
                     );
 
-                    let itemBreadcrumb = new Breadcrumb(
+                    const itemBreadcrumb = new Breadcrumb(
                         this.tag.Value,
                         `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${this.tag.uid}`
                     );
@@ -326,7 +326,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     openTagPage(item: TagItem) {
-        if (item.Uid != this.tagUid) {
+        if (item.Uid !== this.tagUid) {
             this.openTagPageByID(item.Uid);
         }
     }
@@ -352,7 +352,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         if (this.isAdmin) {
             this.actions.showEdit = true;
             this.actions.editCallback = this.onActionEditClick.bind(this);
-            let editAction: EditFormData = new EditFormData();
+            const editAction: EditFormData = new EditFormData();
             editAction.title = $localize`Edit Tag`;
             editAction.closeClick = this.onActionEditCloseClick.bind(this);
             editAction.selected = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
@@ -365,7 +365,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             this.actions.edit = editAction;
 
             this.actions.showDelete = true;
-            let deleteAction: DeleteFormData = new DeleteFormData();
+            const deleteAction: DeleteFormData = new DeleteFormData();
             deleteAction.callback = this.deleteCallback.bind(this);
             deleteAction.item = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
             deleteAction.modalTitle = $localize`Delete Tag`;
@@ -409,7 +409,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     deleteCallback() {
-        let tagForDelete: TagType[] = [];
+        const tagForDelete: TagType[] = [];
         tagForDelete.push(this.tag);
         this.tagsService.deleteTags(tagForDelete).
             subscribe((result) => {
@@ -438,7 +438,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     saveTag(event) {
 
         if (event.additionalOption && event.additionalOption.code) {
-            let arr: string[] = [];
+            const arr: string[] = [];
             arr.push(event.item.uid);
             this.consolidateTags(event.additionalOption.code, arr);
             return;
@@ -447,7 +447,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.tagsService.saveTag(event.item)
             .subscribe((result) => {
                 let msg: string = '';
-                if (event.item.uid == undefined) {
+                if (event.item.uid == null) {
                     msg = $localize`${result.Value} succesfully created`;
                 }
                 else {

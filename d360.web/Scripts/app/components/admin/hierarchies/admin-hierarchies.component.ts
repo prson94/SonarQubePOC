@@ -115,7 +115,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         this.assetTypeService
             .getAssetTypesByClass(this.assetTypeClass)
             .subscribe((results) => {
-                let t = results.sort((a, b) => a.Name.localeCompare(b.Name));
+                const t = results.sort((a, b) => a.Name.localeCompare(b.Name));
                 this.types = t.map((item) => {
                     return { MaximumDepth: item.HierarchyMaximumDepth, ...item };
                 });

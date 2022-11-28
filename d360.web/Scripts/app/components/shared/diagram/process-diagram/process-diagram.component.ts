@@ -163,7 +163,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.route.params.subscribe((params) => {
             this.focusKey = params['focusKey'];
             if (this.focusKey) {
-                let url: string = `/asset/${params['assetUid']}/diagrams/${params['diagramType']}`;
+                const url: string = `/asset/${params['assetUid']}/diagrams/${params['diagramType']}`;
                 this.location.replaceState(url);
                 this.isInfoPanelOpened = true;
             }
@@ -202,7 +202,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @HostListener('window:resize', ['$event'])
     public onResize(event) {
         if (!this.diagramRef) {return;}
-        let height = window.innerHeight;
+        const height = window.innerHeight;
         if (this.isEditMode)
             {this.diagramRef.nativeElement.style.height = (height - 115) + 'px';}
         else if (this.isFullScreen)

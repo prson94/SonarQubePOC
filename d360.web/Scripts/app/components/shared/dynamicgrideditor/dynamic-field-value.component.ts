@@ -84,14 +84,14 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         }
 
         if (this.column['fieldType'] == 'Score' && this.fieldValue) {
-            let thresholdKey = colKey + '_threshold';
+            const thresholdKey = colKey + '_threshold';
             this.fieldValue = `<div class="score-pill-small score-${this.item[thresholdKey]}"></div><span>${this.fieldValue}</span>`;
         }
 
         if (this.fieldType == 'Color') {
-            let hasValue = this.item[colKey] ? true : false;
+            const hasValue = this.item[colKey] ? true : false;
             if (hasValue) {
-                let parsedJSON = JSON.parse(this.item[colKey]);
+                const parsedJSON = JSON.parse(this.item[colKey]);
                 if (parsedJSON) {
                     this.hasColor = true;
                     this.fieldValue = parsedJSON.Value;
@@ -109,7 +109,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     }
 
     private formatAsPath(): string {
-        let replacement = (this.fieldValue !== '' && this.fieldValue !== null ? this.fieldValue.split(" > ").join(" <i class='fa fa-angle-right'></i> ") : ""); 
+        const replacement = (this.fieldValue !== '' && this.fieldValue !== null ? this.fieldValue.split(" > ").join(" <i class='fa fa-angle-right'></i> ") : ""); 
         return replacement;
     }
 

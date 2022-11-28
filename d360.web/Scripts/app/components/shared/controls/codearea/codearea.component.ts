@@ -101,10 +101,10 @@ export class CodeArea implements ControlValueAccessor, OnInit {
     get isCodeValid() {
         let valid = true;
         if (this.codeType.toLocaleLowerCase() === "json") {
-            let json = this.value;
+            const json = this.value;
             try {
                 if (json && json.trim() !== "") {
-                    let j = JSON.parse(json);
+                    const j = JSON.parse(json);
                 } else if (this.required) {
                     valid = false;
                 }

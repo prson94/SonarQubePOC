@@ -48,7 +48,7 @@ export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
         private cdRef: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === 'uid') {
                 this.load();
             }

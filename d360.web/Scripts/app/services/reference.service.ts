@@ -22,7 +22,7 @@ export class ReferenceService extends BaseObservableService {
     }
 
     saveReferenceItemType(item: ReferenceItemType) {
-        if (item.ID == undefined || !item.ID) {
+        if (item.ID == null || !item.ID) {
             return this.postDynamic(this.http, 'referenceItemType', item);
         }
         return this.postDynamic(this.http, 'referenceItemType', item);

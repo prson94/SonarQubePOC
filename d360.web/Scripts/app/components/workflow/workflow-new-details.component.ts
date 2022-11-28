@@ -70,7 +70,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.stepId = +params['stepId'];
             this.fromMail = params['fromMail'] === '1' ? true : false;
 
-            this.isMe = this.resourceID ? this.resourceID == CurrentResourceID : true;
+            this.isMe = this.resourceID ? this.resourceID === CurrentResourceID : true;
             this.authenticationService.checkCurrentUserAdmin().subscribe((x) => {
                 this.isAdmin = x;
             });
@@ -112,7 +112,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
                 this.bulkEditorModel.ItemStepIDs = this.selection.map((i) => i.ItemStepID);
 
                 this.showBulkFormEditor = true;
-            } else if (this.selection.length == 1) {
+            } else if (this.selection.length === 1) {
                 this.open(this.selection[0]);
             }
         }
@@ -125,7 +125,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.bulkReassignModel.OriginalAssigneeResourceID = isNaN(this.resourceID) ? CurrentResourceID : this.resourceID;
             this.bulkReassignModel.StepName = this.assignmentSummary.StepName;
             this.bulkReassignModel.StepHasFormEmails = this.assignmentSummary.SendFormEmail;
-            let noOfItemsCanClearAssignments = this.selection.filter((x) => { return x.countAssigned > 1 && x.responseType.toLowerCase() === "firstresponse"; }).length;
+            const noOfItemsCanClearAssignments = this.selection.filter((x) => { return x.countAssigned > 1 && x.responseType.toLowerCase() === "firstresponse"; }).length;
             //only show option to bulk clear other assignments if all have the ability to clear assignments 
             this.bulkReassignModel.IsClearOtherAssignmentsAllowed = (noOfItemsCanClearAssignments === this.selection.length);
             this.showBulkReassignEditor = true;

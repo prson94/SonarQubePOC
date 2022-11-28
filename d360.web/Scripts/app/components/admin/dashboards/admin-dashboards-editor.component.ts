@@ -41,7 +41,7 @@ export class AdminDashboardsEditor {
 	}
 
 	ngOnInit() {
-		let enableDqPlus = this.settingsService.getSettingById(CompanySettingEnum.EnableSagacity).BooleanSetting.Value;
+		const enableDqPlus = this.settingsService.getSettingById(CompanySettingEnum.EnableSagacity).BooleanSetting.Value;
 		if (enableDqPlus) {
 			this.reportTypes.push({ value: "DqPlus", title: "Data360 DQ+" });
 		}

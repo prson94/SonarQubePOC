@@ -101,14 +101,14 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                     if (this.objectName === "MetricAllocation") {
                         this.objectName = "Score Definition";
                     }
-                    let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
+                    let reloadNav = params['isAdminPage'] && params['isAdminPage'] === 'false' ? false : true;
 
                     //do not reload 2nd navigation for audit page as both grid pages and config pages share same URL
                     if (["PolicyType", "TaxonomyType", "Report", "IntersectType", "ResponsibilityType", "ReferenceItemType"].indexOf(this.objectType) > -1) {
                         reloadNav = false;
                     }
 
-                    let objectID = this.objectType == 'Tag' ? params['uid'] : this.objectID;
+                    const objectID = this.objectType === 'Tag' ? params['uid'] : this.objectID;
 
 					if (this.uid === this.metricAllocationUid) {
 						this.buildSecondaryNavigation({ isScoringDefinitionPage:true });
@@ -156,7 +156,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
 
     public loadAuditsLazy(event: LazyLoadEvent) {
         this.sortOrder = event.sortOrder;
-        this.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.sortField = event.sortField == null ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;
         this.getData();
@@ -189,8 +189,8 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             delete params['_order'];
         }
 
-        if (this.sortOrder != SortOrder.None)
-            {params._direction = this.sortOrder == SortOrder.Ascending ? "asc" : "desc";}
+        if (this.sortOrder !== SortOrder.None)
+            {params._direction = this.sortOrder === SortOrder.Ascending ? "asc" : "desc";}
         else {
             delete params['_direction'];
         }
@@ -245,10 +245,10 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     public setAdvancedFilters(): void {
-        let fields: AdvancedFilterFieldType[] = [];
+        const fields: AdvancedFilterFieldType[] = [];
 
         this.columns.forEach((c) => {
-            let field: AdvancedFilterFieldType = {
+            const field: AdvancedFilterFieldType = {
                 Name: c.datafield,
                 FriendlyName: c.text,
                 Type: this.lookupColumns.indexOf(c.datafield) !== -1 ? new FieldType("Lookup") : new FieldType(c.fieldType),

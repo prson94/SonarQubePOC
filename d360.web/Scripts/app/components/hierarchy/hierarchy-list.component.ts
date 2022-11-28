@@ -48,7 +48,7 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
     }
 
 	ngOnInit() {
-		let assetTypeClassString: keyof typeof AssetTypeClass = this.route.snapshot.data.type;
+		const assetTypeClassString: keyof typeof AssetTypeClass = this.route.snapshot.data.type;
 		try {
 
 			this.assetTypeClass = AssetTypeClass[assetTypeClassString];

@@ -44,7 +44,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
 		this.sub = this.route.params.subscribe((params) => {
 			this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, $localize`Workflow`);
 
-			let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
+			const reloadNav = params['isAdminPage'] && params['isAdminPage'] === 'false' ? false : true;
 			this.baseAssetUid = params['assetUid'];
 			this.baseAssetTypeUid = params["assetTypeUid"];
 

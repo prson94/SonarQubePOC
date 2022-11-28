@@ -584,7 +584,7 @@ export class ProcessDiagramTemplates {
         var $ = go.GraphObject.make;
 
         function isDirectLink(link: go.Link) {
-            let directLinks: string[] = ['BT', 'TB', 'LR', 'RL'];
+            const directLinks: string[] = ['BT', 'TB', 'LR', 'RL'];
 
             var dir = link.data.fromPort + link.data.toPort;
 

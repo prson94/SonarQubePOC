@@ -124,7 +124,7 @@ export class ConnectorLabelService extends BaseObservableService {
     saveLabel(label: ConnectorLabel): Observable<any> {
         let url = `api/v2/connectorLabels/`;
 
-        if (label.uid == undefined || !label.uid) {
+        if (label.uid == null || !label.uid) {
             return this.http.post(url, label)
                 .pipe(map((response) => <any>response),
                     catchError((err) => this.handleError(err, true)));

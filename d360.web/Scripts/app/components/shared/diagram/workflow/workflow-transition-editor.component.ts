@@ -112,7 +112,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     }
 
     remove(e: any) {
-        let i = this.transition.condition.findIndex((c) => c == e);
+        const i = this.transition.condition.findIndex((c) => c == e);
 
         if (e["@FormInputID"] != null) {
             this.workflowFieldsService.deleteUsedField(this.transition.condition[i]["@FormInputID"], this.transition.condition[i]["@VersionStepID"], this.transition.key);

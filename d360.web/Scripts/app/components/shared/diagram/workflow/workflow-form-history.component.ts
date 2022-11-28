@@ -42,20 +42,20 @@ export class WorkflowFormHistoryComponent extends BaseComponent implements OnIni
                 //normalize input
                 if (this.fields != null && this.fields.form != null) {
                     if (this.fields.form.constructor !== Array) {
-                        let f = this.fields.form;
+                        const f = this.fields.form;
                         this.fields.form = [];
                         this.fields.form.push(f);
                     }
 
                     this.fields.form.forEach((f) => {
                         if (f['@ResourceID'] != null) {
-                            let r = this.resources.find((r) => r.ID == +f['@ResourceID']);
+                            const r = this.resources.find((r) => r.ID == +f['@ResourceID']);
                             f.ResourceName = r ? r.FirstName + ' ' + r.LastName : '[unknown]';
                         }
 
                         if (f.field != null) {
                             if (f.field.constructor !== Array) {
-                                let l = f.field;
+                                const l = f.field;
                                 f.field = [];
                                 f.field.push(l);
                             }

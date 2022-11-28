@@ -660,7 +660,7 @@ namespace d360.extensions.search
                             AssetID = o.AssetID,
                             ItemUniqueID = o.ItemUniqueID,
                             AssetType = o.TypeName,
-                            RelativeUrl = $"asset/{o.Uid}",
+                            RelativeUrl = $"asset/{o.Uid.ToString().ToLower()}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
                             AssetPath = GetPathArrayFromSegments(o.Segments),
@@ -700,7 +700,7 @@ namespace d360.extensions.search
                             CompanyID = companyID,
                             ID = o.ID,
                             AssetType = "Reference List",
-                            RelativeUrl = $"reference/{o.ID}",
+                            RelativeUrl = $"assets/{o.AssetTypeUid.ToString().ToLower()}",
                             AssetTypeUid = o.AssetTypeUid,
                             AssetPath = o.Path.Split(new[] { pathSeperator }, StringSplitOptions.RemoveEmptyEntries),
                             Fields = new Dictionary<string, string>() {
@@ -758,7 +758,7 @@ namespace d360.extensions.search
                             AssetID = o.AssetID,
                             ItemUniqueID = o.ItemUniqueID,
                             AssetType = o.TypeName,
-                            RelativeUrl = $"resource/{o.ID}",
+                            RelativeUrl = $"users/{o.Uid.ToString().ToLower()}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
                             Fields = new Dictionary<string, string>() {
@@ -898,12 +898,8 @@ namespace d360.extensions.search
                 I.ID,
                 'S' as 'Direction',
                 SubjectAdv.DisplayValue as 'Synonym',
-                I.Subject as 'SynonymObjectType',
-                I.SubjectID as  'SynonymObjectID',
-                I.SubjectAssetID as 'SynonymAssetID', 
                 ObjectAdv.DisplayValue as 'SynonymFor', 
-                I.Object as 'SynonymForObject', 
-                I.ObjectID as 'SynonymForObjectID',
+                ObjectAsset.Object as 'SynonymForObject', 
                 dbo.GenerateAssetUrl(I.ObjectAssetID) as 'Url',
                 ObjectAsset.uid as Uid,
                 ArtType.Name as 'SynonymForObjectType',
@@ -921,12 +917,8 @@ namespace d360.extensions.search
                 I.ID, 
                 'O' as 'Direction', 
                 SubjectAdv.DisplayValue as 'Synonym', 
-                I.Object as 'SynonymObjectType', 
-                I.ObjectID as  'SynonymObjectID', 
-                I.SubjectAssetID as 'SynonymAssetID', 
                 ObjectAdv.DisplayValue as 'SynonymFor', 
-                I.Subject as 'SynonymForObject', 
-                I.SubjectID as 'SynonymForObjectID', 
+                ObjectAsset.Object as 'SynonymForObject', 
                 dbo.GenerateAssetUrl(I.ObjectAssetID) as 'Url', 
                 ObjectAsset.uid as Uid,
                 ArtType.Name as 'SynonymForObjectType', 
@@ -971,7 +963,6 @@ namespace d360.extensions.search
 	                        s.Name as 'Synonym'
 	                        ,d.DisplayValue as 'SynonymFor'
 	                        ,s.[Object] as 'SynonymForObject'
-	                        ,s.[ObjectID] as 'SynonymForObjectID'
 	                        ,dbo.GenerateAssetUrl(a.ID) as 'Url'
                             ,a.uid as Uid
 	                        ,t.Name as 'SynonymForObjectType'	
@@ -1027,8 +1018,8 @@ namespace d360.extensions.search
                             CompanyID = companyID,
                             ID = o.ID,
                             AssetType = "Reference List",
-                            RelativeUrl = $"reference/{o.ID}",
-                            AssetTypeUid = o.AssetTypeUid,
+                            RelativeUrl = $"assets/{o.AssetTypeUid.ToString().ToLower()}",
+							AssetTypeUid = o.AssetTypeUid,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Name },
                                 { "Description", o.Description }

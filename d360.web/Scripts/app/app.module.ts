@@ -41,6 +41,7 @@ import { DialogModule } from 'primeng/dialog';
 import { AssetStyleService } from './services/asset-style.service';
 import { CompanySettingsService } from './services/settings.service';
 import { FeatureFlagsService } from './services/featureflags.service';
+import { UserSettingsService } from './services/usersettings.service';
 import { governHttpInterceptorProviders } from './http-interceptors';
 import { SelectAssetService } from './services/select-asset.service';
 import { ForceNoReuseStrategy } from './services/forceNoReuseStrategy';
@@ -134,7 +135,8 @@ export function localeInitializer(localeId: string) {
         CookieService,
         TitleAndTabsService,
         SelectAssetService,
-        SiteMenuService,
+		SiteMenuService,
+		UserSettingsService,
         { provide: LOCALE_ID, useFactory: localeIdFactory },
         {
             provide: APP_INITIALIZER,

@@ -48,7 +48,7 @@ export class TagService extends BaseObservableService {
     deleteTags(tags: TagType[]): Observable<any> {
         let url = `api/v2/tags/`;
 
-        if (tags.length == 1)
+        if (tags.length === 1)
             {return this.deleteTagByUid(tags[0].uid);}
 
         let body: any[] = [];
@@ -67,7 +67,7 @@ export class TagService extends BaseObservableService {
     saveTag(tag: TagType): Observable<any> {
         let url = `api/v2/tags/`;
 
-        if (tag.uid == undefined || !tag.uid) {
+        if (tag.uid == null || !tag.uid) {
             return this.http.post(url, tag)
                 .pipe(map((response) => <any>response),
                     catchError((err) => this.handleError(err, true)));
@@ -214,7 +214,7 @@ export class TagService extends BaseObservableService {
     getTagTooltip(tagUid: string, assetUid: string = null, value: string = null): Observable<any> {
 
         if (tagUid) {
-            var cachedItem = this.tagTooltipsCache.find((x) => x.tagUid == tagUid && x.assetUid == assetUid);
+            var cachedItem = this.tagTooltipsCache.find((x) => x.tagUid === tagUid && x.assetUid === assetUid);
             if (cachedItem)
                 {return cachedItem.obs;}
         }

@@ -62,7 +62,7 @@ export class IconService extends BaseObservableService {
     }
 
     public removeIconPrefix(s: string): string {
-        if (s == null || s.length == 0)
+        if (s == null || s.length === 0)
             {return s;}
         return s.replace(this.prefix, '');
     }

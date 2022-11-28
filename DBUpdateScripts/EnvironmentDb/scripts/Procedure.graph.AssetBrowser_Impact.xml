@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Impact-v9">
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Impact-v9.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -144,6 +144,7 @@ begin
 							and I.PredicateType between 1 and 13 
 							and I.IntersectID not in (select Id from @hopIntersectIds)
 							and ((@predicateUid is null) OR (@predicateUid is not null and I.PredicateUid = @predicateUid))
+				where I.SubjectAssetTypeId <> I.ObjectAssetTypeId
 		end
 
 		insert into @hopIntersectIds(Id)

@@ -59,9 +59,9 @@ namespace d360.model.helpers.filters
 			else
 			{
 				stringBuilder.Append($@"{condition} (select AT.Uid from [IntersectType] IT
-				left join [Intersect] I1 on I1.IntersectTypeID = IT.ID and I1.Object = A.Object and I1.ObjectId = A.ObjectID
-				left join [Intersect] I2 on I2.IntersectTypeID = IT.ID and I2.Subject = A.Object and I2.SubjectID = A.ObjectID
-				inner join AssetType AT on AT.Object = ISNULL(I1.Subject,I2.Object) and AT.ObjectID = ISNULL(I1.SubjectId, I2.ObjectID)
+				left join [Intersect] I1 on I1.IntersectTypeID = IT.ID and I1.ObjectAssetID = A.ID
+				left join [Intersect] I2 on I2.IntersectTypeID = IT.ID and I2.SubjectAssetID = A.ID
+				inner join AssetType AT on AT.ID = ISNULL(I1.SubjectAssetTypeID,I2.ObjectAssetTypeID) 
 				where IT.Uid = @intersectFilter{parameterIdx} and AT.Uid = @intersectAssetFilter{parameterIdx})");
 			}
 

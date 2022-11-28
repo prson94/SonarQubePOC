@@ -68,11 +68,11 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
     ngOnChanges(changes: SimpleChanges) {
 
-        let formFieldsChanged = changes['formFields'] != null && !changes['formFields'].isFirstChange();
-        let changeTypeChanged = changes['changeType'] != null && !changes['changeType'].isFirstChange();
-        let httpFieldsChanged = changes['httpFields'] != null && !changes['httpFields'].isFirstChange();
-        let outputFieldsChanged = changes['outputFields'] != null && !changes['outputFields'].isFirstChange();
-        let objectChanged = (changes['objectType'] != null && !changes['objectType'].isFirstChange()) || (changes['objectId'] != null && !changes['objectId'].isFirstChange());
+        const formFieldsChanged = changes['formFields'] != null && !changes['formFields'].isFirstChange();
+        const changeTypeChanged = changes['changeType'] != null && !changes['changeType'].isFirstChange();
+        const httpFieldsChanged = changes['httpFields'] != null && !changes['httpFields'].isFirstChange();
+        const outputFieldsChanged = changes['outputFields'] != null && !changes['outputFields'].isFirstChange();
+        const objectChanged = (changes['objectType'] != null && !changes['objectType'].isFirstChange()) || (changes['objectId'] != null && !changes['objectId'].isFirstChange());
 
         if (outputFieldsChanged || formFieldsChanged || httpFieldsChanged || changeTypeChanged || objectChanged) {
             this.loadContextualFields();
@@ -191,7 +191,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
         if (this.selectedField.split('|')[0] == 'FieldType') {
 
-            let field = this.fields.find((f) => f.ID == +this.selectedField.split('|')[1]);
+            const field = this.fields.find((f) => f.ID == +this.selectedField.split('|')[1]);
 
             this.selectedType = field.Type.toLowerCase();
 
@@ -218,7 +218,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                     });
             }
         } else if (this.selectedField.split('|')[0] == 'FormInput') {
-            let input = this.formFields.find((f) => f['@id'] == this.selectedField.split('|')[2] && f['@stepId'] == this.selectedField.split('|')[1]);
+            const input = this.formFields.find((f) => f['@id'] == this.selectedField.split('|')[2] && f['@stepId'] == this.selectedField.split('|')[1]);
 
             this.selectedType = input['@type'].toLowerCase();
 
@@ -227,11 +227,11 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             if (this.selectedType == 'list' || this.selectedType == 'relationshiptype') {
                 if (this.diagram != null) {
                     //find the form step and figure out what the reference field is
-                    let node = this.diagram.model.findNodeDataForKey(input['@stepId']);
+                    const node = this.diagram.model.findNodeDataForKey(input['@stepId']);
                     if (node != null) {
-                        let formField = node.fields.form.field.find((i) => i['@id'] == input['@id']);
+                        const formField = node.fields.form.field.find((i) => i['@id'] == input['@id']);
                         if (formField != null) {
-                            let fieldId = +formField['@referenceFieldId'] || 0;
+                            const fieldId = +formField['@referenceFieldId'] || 0;
                             if (fieldId != null && fieldId > 0) {
                                 this.workflowService.getReferenceItemsForField(fieldId)
                                     .subscribe((r) => {
@@ -263,8 +263,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.condition['@FieldName'] = 'Form :: ' + input['@label'];
 
         } else if (this.selectedField.split('|')[0] == 'Contextual') {
-            let fieldId = this.selectedField.split('|')[1];
-            let special = this.contextualFields.find((s) => s.value == this.selectedField);
+            const fieldId = this.selectedField.split('|')[1];
+            const special = this.contextualFields.find((s) => s.value == this.selectedField);
             this.selectedType = special.type.toLowerCase();
 
             delete this.condition['@FormInputID'];
@@ -289,7 +289,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
         }
         else if (this.selectedField.split('|')[0] == 'HTTPRequest') {
-            let field = this.httpFields.find((f) => f['@stepId'] == this.selectedField.split('|')[1] && f['@id'] == this.selectedField.split('|')[2]);
+            const field = this.httpFields.find((f) => f['@stepId'] == this.selectedField.split('|')[1] && f['@id'] == this.selectedField.split('|')[2]);
 
             delete this.condition['@FormInputID'];
             delete this.condition['@VersionStepID'];
@@ -311,7 +311,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         }
         else if (this.selectedField.split('|')[0] == 'HTTPResponse') {
 
-            let field = this.outputFields.find((f) => f.StepId == this.selectedField.split('|')[1] && f.Id == this.selectedField.split('|')[2]);
+            const field = this.outputFields.find((f) => f.StepId == this.selectedField.split('|')[1] && f.Id == this.selectedField.split('|')[2]);
             console.log(this.selectedField, this.outputFields, this.httpFields, field);
 
             delete this.condition['@FormInputID'];
@@ -336,7 +336,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     setOperators(field: any = null, fieldType: ConditionFieldType = null) {
         let type: string = '';
         let fieldId: string = '';
-        let ops = new Set<string>();
+        const ops = new Set<string>();
 
         switch (fieldType) {
             case ConditionFieldType.Field:
@@ -418,7 +418,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
         this.operators = [];
         ops.forEach((o) => {
-            let ix = this.allowedOperators.findIndex((a) => a.value == o);
+            const ix = this.allowedOperators.findIndex((a) => a.value == o);
             if (ix > -1) {
                 this.operators.push(this.allowedOperators[ix]);
             }
@@ -482,7 +482,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         this.condition['@Value'] = e;
 
         if (this.selectedType == 'lookup' || this.selectedType == 'list') {
-            let lookup = this.lookups.find((l) => l.value == e);
+            const lookup = this.lookups.find((l) => l.value == e);
 
             this.condition['@ValueLabel'] = lookup == null ? e : lookup.label;
         } else {

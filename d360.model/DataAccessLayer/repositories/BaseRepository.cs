@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using System.Xml;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
@@ -1115,7 +1115,7 @@ namespace d360.model.DataAccessLayer.repositories
 					break;
 				case "HTML":
 					var doc = new HtmlAgilityPack.HtmlDocument();
-					doc.LoadHtml(value + "");
+					doc.LoadHtml((value as string).GetSafeXLSColumnValue());
 					var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
 					if (txt.StartsWith("="))
 					{
@@ -1132,7 +1132,7 @@ namespace d360.model.DataAccessLayer.repositories
 							var ownerships = ((JArray)value).ToObject<List<dynamic>>();
 							owners = string.Join(" | ", ownerships.OrderBy(o => o.ResourceName).Select(o => $"{o.ResourceName} ({o.ResponsibilityTypes})"));
 						}
-						document.SetCellValue(rowIndex, colIndex, owners);
+						document.SetCellValue(rowIndex, colIndex, owners.GetSafeXLSColumnValue());
 					}
 					break;
 				default:
@@ -1140,7 +1140,7 @@ namespace d360.model.DataAccessLayer.repositories
 					{
 						valueString = "'" + valueString;
 					}
-					document.SetCellValue(rowIndex, colIndex, valueString);
+					document.SetCellValue(rowIndex, colIndex, valueString.GetSafeXLSColumnValue());
 					break;
 			}
 		}
