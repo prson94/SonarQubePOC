@@ -1857,8 +1857,16 @@ namespace d360.model.DataAccessLayer
 							//If dynamic object for property orderBy does not implement IComparable (i.e. JObject,JArray), use string comparison
 							results.Sort((x, y) =>
 							{
-								var value1 = ((IDictionary<string, object>)x)[orderBy].ToString();
-								var value2 = ((IDictionary<string, object>)y)[orderBy].ToString();
+								var obj1 = ((IDictionary<string, object>)x);
+								var obj2 = ((IDictionary<string, object>)y);
+								string value1 = "", value2 = "";
+
+								if (obj1.ContainsKey(orderBy) && obj2.ContainsKey(orderBy))
+								{
+									value1 = obj1[orderBy].ToString();
+									value2 = obj2[orderBy].ToString();
+								}
+
 								return value1.CompareTo(value2);
 							});
 						}
