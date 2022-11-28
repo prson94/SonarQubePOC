@@ -145,7 +145,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         this.selected.forEach((item) => {
             if (!item.Segments) {itemsToResolve.push({ uid: item.Uid, typeUid: item.AssetTypeUid });}
         });
-        let groups = itemsToResolve.reduce((r, a) => {
+        const groups = itemsToResolve.reduce((r, a) => {
             r[a.typeUid] = [...r[a.typeUid] || [], a];
             return r;
         }, {});
@@ -182,7 +182,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
             this.searchresults.forEach((item) => {
                 if (!item.Segments) {itemsToResolve.push({ uid: item.Uid, typeUid: item.AssetTypeUid });}
             });
-            let groups = itemsToResolve.reduce((r, a) => {
+            const groups = itemsToResolve.reduce((r, a) => {
                 r[a.typeUid] = [...r[a.typeUid] || [], a];
                 return r;
             }, {});
@@ -262,7 +262,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
                 this.searchresults = JSON.parse(JSON.stringify(result.items));
 
                 this.selected.forEach((s) => {
-                    let ix = this.searchresults.findIndex((x) => x.Uid === s.Uid);
+                    const ix = this.searchresults.findIndex((x) => x.Uid === s.Uid);
 
                     if (ix > -1) {
                         this.searchresults.splice(ix, 1);

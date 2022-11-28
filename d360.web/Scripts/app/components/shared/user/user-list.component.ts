@@ -70,7 +70,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     private destroy = new Subject<void>();
 
     get globalFilterFields(): string[] {
-        let f = this.columns.map((c) => c.datafield);
+        const f = this.columns.map((c) => c.datafield);
         return f;
     }
 
@@ -165,7 +165,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     getFieldsDefinition() {
-        let params = { IsCommunityUserResposibility: this.IsCommunityUserResposibility };
+        const params = { IsCommunityUserResposibility: this.IsCommunityUserResposibility };
 
         forkJoin(
             this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType, null, null, params),
@@ -197,7 +197,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     setAdvancedFilterFields(columns: GridColumn[], customFields: FieldTypeAPIModelField[]) {
-        let output: AdvancedFilterFieldType[] = columns.map((c) => {
+        const output: AdvancedFilterFieldType[] = columns.map((c) => {
             const apiName = this.getApiName(c.datafield);
             if (c.datafield === "State") {
                 return {
@@ -265,7 +265,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
 
     public getParams() {
         var params = new V2ApiFilters();
-        let baseFilter = `(State eq 'Active' or State eq 'Inactive')`;
+        const baseFilter = `(State eq 'Active' or State eq 'Inactive')`;
 
         params._direction = this.sortOrder === 1 ? 'asc' : 'desc';
         if (this.sortField) {
@@ -354,7 +354,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         user.Fields = new Object();
 
         // handle dynamic fields
-        for (let key in event.item) {
+        for (const key in event.item) {
             if (key !== 'Email' && key !== 'FirstName' && key !== 'LastName' && key !== 'IsAdministrator' && key !== 'State' && key !== 'ID' && key !== 'Password') {
                 user.Fields[key] = event.item[key];
             }
