@@ -443,25 +443,6 @@ namespace igx.UnitTests.V2ControllerTests
 		}
 
 		[Fact]
-		public async Task ERR_PostRelationshipsAsync_InvalidSubjectAssetUid()
-		{
-			var validUid = Guid.Parse(DataConstants.ValidGUID);
-			var invalidUid = Guid.Parse(DataConstants.InvalidGUID);
-
-			var model = new RelationshipInserts();
-			for (var i = 0; i <= 10; i++)
-			{
-				model.Add(new RelationshipInsert() { SubjectAssetUid = invalidUid });
-			}
-
-			Func<Task> act = async () => { await relationshipsController.PostRelationshipsAsync(validUid, model); };
-
-			await act.Should()
-					 .ThrowAsync<ArgumentException>()
-					 .WithMessage(AssetsApiMessages.InvalidSubjectAssetUid);
-		}
-
-		[Fact]
         public async Task PostRelationshipsAsync()
         {
 			var validUid = Guid.Parse(DataConstants.ValidGUID);
