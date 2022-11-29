@@ -352,10 +352,10 @@ namespace d360.web.Controllers.V2
 
 				sql += " " + orderBySql + " " + offsetSql;
 
-				var query = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout).ToList();
+				var items = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout).ToList();
 
 				//Translate actionObject values
-				query.ForEach(r =>
+				items.ForEach(r =>
 				{
 					if (new[] { "Artifact", "ArtifactType" }.Contains(r.actionObject))
 					{
@@ -374,11 +374,19 @@ namespace d360.web.Controllers.V2
 					{
 						r.actionObject = ActionObjectDictionary[r.actionObject];
 					}
+
+					//this logic is moved from procedure due to performance issues 
+					//https://github.com/Infogix/govern/pull/9091/files
+					//although, Relationship was created, from perspective of an asset, its relationship property was Updated
+					if (r.actionObject == "Relationship")
+					{
+						r.action = "Updated";
+					}
 				});
 
 				if (isStreamResponse)
 				{
-					return Excel(GetExcelDocumentFromQuery(query), $"{assetUid} Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
+					return Excel(GetExcelDocumentFromQuery(items), $"{assetUid} Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
 				}
 				else
 				{
@@ -387,7 +395,7 @@ namespace d360.web.Controllers.V2
 						total = Company.Query<int>(countSql, dbArgs, ApiTimeout).First(),
 						pageNum = pageNum,
 						pageSize = pageSize,
-						items = query
+						items = items
 					};
 
 					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
