@@ -875,6 +875,7 @@ namespace d360.model
 		public async Task ExecuteStep(long itemStepID, long itemID, EventInfo eventInfo)
 		{
 			bool isStepCompleted = false;
+			bool isFormEmailSent = false;
 			WorkflowItemStep itemStep = getWorkflowItemStep(itemStepID);
 			EventObjectInfo objectInfo = eventInfo.Object;
 
@@ -932,7 +933,7 @@ namespace d360.model
 						break;
 					case WorkflowActivityType.Form:
 						// send form notification to owners
-						await SendFormWorkflowEmail(itemStep, itemStepID, itemID, eventInfo, stepSettings);
+						isFormEmailSent = await SendFormWorkflowEmail(itemStep, itemStepID, itemID, eventInfo, stepSettings);
 						break;
 					case WorkflowActivityType.StatusChange:
 						// deprecated, just set to true and move on
