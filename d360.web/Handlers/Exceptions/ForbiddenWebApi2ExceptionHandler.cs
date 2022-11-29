@@ -21,7 +21,6 @@ namespace d360.web.Handlers.Exceptions
 		{
 			problemDetails.Status = 403;
 			problemDetails.Title = ApiMessages.Forbidden;
-			problemDetails.Detail = ApiMessages.ForbiddenUserNotAuthorizedMessage;
 		}
 	}
 }
