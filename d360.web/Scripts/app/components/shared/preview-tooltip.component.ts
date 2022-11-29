@@ -177,8 +177,8 @@ export class PreviewTooltipComponent {
             panel.style.top = item.getBoundingClientRect().bottom + 'px';
 
             if (this.align) {
-                let minwidth = getComputedStyle(panel).minWidth;
-                let panelWidth = parseInt(minwidth.substr(0, minwidth.length - 2)) || 400;
+                const minwidth = getComputedStyle(panel).minWidth;
+                const panelWidth = parseInt(minwidth.substr(0, minwidth.length - 2)) || 400;
 
                 if (this.isRightAligned()) {
                     panel.style.left = xoffset + (item.getBoundingClientRect().right - panelWidth) + 'px';
@@ -206,7 +206,7 @@ export class PreviewTooltipComponent {
 
     setColorHtml(colorJSON: string) {
         try {
-            let colorObj = JSON.parse(colorJSON);
+            const colorObj = JSON.parse(colorJSON);
             this.colorHtml = "<div class=\"ig-colorfield-item-selected\"><span class=\"ig-colorfield-swatch tooltip-no-top\" style=\"background-color:" + colorObj.Value + "\"></span><span class=\"ig-colorfield-item-label tooltip-no-top\">" + colorObj.Name + "</span></div>";
             this.ref.markForCheck();
         } catch (err) {

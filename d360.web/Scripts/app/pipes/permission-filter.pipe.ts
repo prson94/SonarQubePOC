@@ -5,7 +5,7 @@ import { ResponsibilityTypeRelationPermission } from '../models/responsibility-t
 export class PermissionFilterPipe implements PipeTransform {
     transform(items: ResponsibilityTypeRelationPermission[], category: string): any {
         if (!category || category.length == 0) {return items;}
-        let search = category.toUpperCase();
+        const search = category.toUpperCase();
         return items.filter((item) => item.Category === category);
     }
 }

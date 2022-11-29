@@ -195,7 +195,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
+        for (const p in changes) {
             if (p == 'name') {
                 this.load();
                 this.initialItem = _.cloneDeep(this.model);
@@ -217,16 +217,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private getFieldTypeEditorHandler = (responseGetFieldTypeEditor: FieldTypeAPIModelField) => {
         this.currentType = this.currentFieldType(responseGetFieldTypeEditor);
-        let DBType = this.currentType;
+        const DBType = this.currentType;
         this.currentType = this.checkCurrentTypeName(this.currentType);
         if (DBType != this.currentType) {
             //only one type to be defined for editing so remove the missnamed DBType after assigning its values to the correct object
-            let correctNameType = new FieldType(this.currentType);
+            const correctNameType = new FieldType(this.currentType);
             responseGetFieldTypeEditor.Type[this.currentType] = { ...(correctNameType[this.currentType]), ...responseGetFieldTypeEditor.Type[DBType] };
             responseGetFieldTypeEditor.Type[DBType] = null;
         } else {
             //requires initialising as some parameters like isRequired will be null from the DB
-            let intiialisedType = new FieldType(this.currentType);
+            const intiialisedType = new FieldType(this.currentType);
             responseGetFieldTypeEditor.Type[this.currentType] = { ...(intiialisedType[this.currentType]), ...responseGetFieldTypeEditor.Type[this.currentType] };
         }
 
@@ -323,20 +323,20 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         });
 
 
-        let clone = _.cloneDeep(this.model.RelationItems);
+        const clone = _.cloneDeep(this.model.RelationItems);
         if (this.model.RelationItems != null && this.model.RelationItems.length) {
             for (let i = 0; i < this.model.RelationItems.length; i++) {
-                let item = this.model.RelationItems[i];
+                const item = this.model.RelationItems[i];
 
                 //load cascading dropdowns
                 this.loadRelationItems(i).subscribe(
                     () => {
                         item.selectedRelationItemID = item.IntersectTypeUid.toUpperCase() + '|' + item.AssetTypeUid.toUpperCase() + '|' + item.Direction;
                         this.changeRel(i).subscribe(() => {
-                            let parent = item;
+                            const parent = item;
                             item.DisplayFields.forEach(
                                 (d) => {
-                                    let item = clone[i].DisplayFields.find((f) => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
+                                    const item = clone[i].DisplayFields.find((f) => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
 
                                     if (item) {
                                         d.Show = item.Show;
@@ -369,7 +369,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 //load display order/sort order drop down lists
                 this.model.RelationItems.forEach(
                     (r) => {
-                        let s = [];
+                        const s = [];
 
                         for (let i = 1; i <= r.DisplayFields.length; i++) {
                             r.DisplayFields[i - 1].DisplayOrder = i;
@@ -386,7 +386,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private loadDataType(value: string, isFromLoad: boolean = false) {
-        let observables: Array<Observable<any>> = [];
+        const observables: Array<Observable<any>> = [];
         this.showDescription = true;
         this.enableAllowMultipleValues = true;
         this.hasDisplayInColumn = true;
@@ -408,7 +408,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
                 }
                 else if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type['Lookup'].List.Class && !this.model.FieldType.Type[this.currentType].List.Uid) {
-                    let valToPass = this.model.FieldType.Type['Lookup'].List.Class == 'Reference' ? 'ReferenceItemType' : 'TaxonomyType';
+                    const valToPass = this.model.FieldType.Type['Lookup'].List.Class == 'Reference' ? 'ReferenceItemType' : 'TaxonomyType';
                     this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
                     observables.push(this.lookupTypeSelected(valToPass));
                 }
@@ -464,7 +464,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.showDescription = false;
                 this.hasDisplayInColumn = false;
                 if (this.model.RelationItems == null || this.model.RelationItems.length == 0) {
-                    let r = new FieldTypeRelationItemEditorModel();
+                    const r = new FieldTypeRelationItemEditorModel();
 
                     r.DisplayFields = [];
                     r.AssetTypeUid = this.GetCurrentUid();
@@ -552,7 +552,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
     private isUid(value: string) {
-        let regex = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
+        const regex = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
         return regex.test(value);
     }
     // called when the lookup type field is changed
@@ -821,7 +821,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
 
-        let apiModel = new FieldTypeAPIModel();
+        const apiModel = new FieldTypeAPIModel();
         apiModel.Action = "Merge";
         apiModel.ActionTypeUid = this.actionTypeUid;
         apiModel.AssetTypeUid = this.assetTypeUid;
@@ -928,8 +928,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     //#region dropdown functions
 
     private loadRelationItems(index: number): Observable<any> {
-        let item = this.model.RelationItems[index];
-        let last = (index == 0) ? null : this.model.RelationItems[index - 1];
+        const item = this.model.RelationItems[index];
+        const last = (index == 0) ? null : this.model.RelationItems[index - 1];
         item.relationsLoading = true;
         item.DisplayFields = [];
         let uid = this.GetCurrentUid();
@@ -954,7 +954,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             {return this.relationshipTypeUid;}
     }
     private changeRel(index: number): Observable<any> {
-        let item = this.model.RelationItems[index];
+        const item = this.model.RelationItems[index];
 
         let params = [];
         if (item.selectedRelationItemID) {
@@ -970,9 +970,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 return;
             }
 
-            let intersectType = params[0];
-            let assetTypeUid = params[1];
-            let direction = params[2];
+            const intersectType = params[0];
+            const assetTypeUid = params[1];
+            const direction = params[2];
 
             item.IntersectTypeUid = intersectType.toLowerCase();
             item.Direction = direction;
@@ -983,8 +983,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     (r) => {
                         r.forEach(
                             (i) => {
-                                let params = i.value.split('|');
-                                let d = new FieldTypeItemDisplayFieldEditorModel();
+                                const params = i.value.split('|');
+                                const d = new FieldTypeItemDisplayFieldEditorModel();
 
                                 d.FieldTypeID = parseInt(params[0]);
                                 d.FieldTypeName = params[1];
@@ -993,7 +993,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                 d.SortOrder = null;
                                 d.value = i.value;
 
-                                let e = item.DisplayFields.find((j) => j.FieldTypeID == d.FieldTypeID && j.FieldTypeName == d.FieldTypeName);
+                                const e = item.DisplayFields.find((j) => j.FieldTypeID == d.FieldTypeID && j.FieldTypeName == d.FieldTypeName);
 
                                 if (e != null) {
                                     e.Show = true;
@@ -1003,7 +1003,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                 }
                             });
 
-                        let s = [];
+                        const s = [];
                         for (let i = 1; i <= item.DisplayFields.length; i++) {
                             item.DisplayFields[i - 1].DisplayOrder = i;
                             s.push({ id: i, text: i });
@@ -1018,11 +1018,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private changeDisplayOrder(item: FieldTypeItemDisplayFieldEditorModel, parent: FieldTypeRelationItemEditorModel) {
-        let other = parent.DisplayFields.find((f) => f.DisplayOrder == item.DisplayOrder && f.value != item.value);
+        const other = parent.DisplayFields.find((f) => f.DisplayOrder == item.DisplayOrder && f.value != item.value);
 
         if (other) {
-            let sum = (parent.DisplayFields.length * (parent.DisplayFields.length + 1)) / 2;
-            let total = _.sumBy(parent.DisplayFields,
+            const sum = (parent.DisplayFields.length * (parent.DisplayFields.length + 1)) / 2;
+            const total = _.sumBy(parent.DisplayFields,
                 (i) => {
                     return (i == other) ? 0 : (+i.DisplayOrder || 0);
                 }
@@ -1198,11 +1198,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
             if (fieldname == '*' || fieldname == 'Precision' || fieldname == 'DefaultValue') {
                 if (this.model.FieldType.Type[this.currentType].Validation.Precision && FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].DefaultValue)) {
-                    let asString = '' + this.model.FieldType.Type[this.currentType].DefaultValue;
+                    const asString = '' + this.model.FieldType.Type[this.currentType].DefaultValue;
 
                     if (asString.split('.').length == 2 && asString.split('.')[1].length >= this.model.FieldType.Type[this.currentType].Validation.Precision) {
-                        let val = +this.model.FieldType.Type[this.currentType].DefaultValue;
-                        let newVal = +val.toFixed(this.model.FieldType.Type[this.currentType].Validation.Precision);
+                        const val = +this.model.FieldType.Type[this.currentType].DefaultValue;
+                        const newVal = +val.toFixed(this.model.FieldType.Type[this.currentType].Validation.Precision);
 
                         if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
                             this.model.FieldType.Type[this.currentType].DefaultValue = newVal;
@@ -1340,16 +1340,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private updateApiName(event) {
         if (this.actionName == $localize`Edit`)
             {return;}
-        let nameValue: string = event.target.value.replace(/[^a-zA-Z0-9_]/g, '');
+        const nameValue: string = event.target.value.replace(/[^a-zA-Z0-9_]/g, '');
         this.model.FieldType.Name = nameValue.substring(0, 128);
         this.validate('NameTaken');
     }
 
     private addRelation(item: FieldTypeRelationItemEditorModel) {
-        let i = new FieldTypeRelationItemEditorModel();
-        let params = item.selectedRelationItemID.split('|');
-        let assetTypeUid = params[1];
-        let intersectType = params[0];
+        const i = new FieldTypeRelationItemEditorModel();
+        const params = item.selectedRelationItemID.split('|');
+        const assetTypeUid = params[1];
+        const intersectType = params[0];
 
         i.AssetTypeUid = assetTypeUid;
         i.IntersectTypeUid = intersectType.toLocaleLowerCase();
@@ -1476,14 +1476,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         var definitionArray: Relation[] = [];
         var fieldsArray: DefinitionField[] = [];
         this.model.RelationItems.forEach((x, i) => {
-            let definition = {
+            const definition = {
                 IntersectTypeUid: x.IntersectTypeUid,
                 AssetTypeUid: x.AssetTypeUid,
                 RelationType: null, //deprecated
                 Direction: Direction[x.Direction]
             };
 
-            let mappedFields: DefinitionField[] = x.DisplayFields.filter((xf) => xf.Show || xf.Filter !== '' || xf.SortOrder).map((f) => {
+            const mappedFields: DefinitionField[] = x.DisplayFields.filter((xf) => xf.Show || xf.Filter !== '' || xf.SortOrder).map((f) => {
                 return {
                     AssetTypeUid: x.AssetTypeUid,
                     FieldTypeName: f.FieldTypeName,

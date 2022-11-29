@@ -160,7 +160,7 @@ export class AssetCount {
     count: number;
 
     public static ConvertToTreeNode(data: AssetCount): TreeNode {
-        let node: TreeNode = {};
+        const node: TreeNode = {};
         node.data = data;
         node.key = data.uid;
         node['id'] = data.uid;

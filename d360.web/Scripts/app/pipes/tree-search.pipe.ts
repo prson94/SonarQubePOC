@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 @Pipe({ name: 'treeSearch' })
 export class TreeSearchPipe implements PipeTransform {
     transform(tree: TreeNode[], searchTerm: string, field?: string): any {        
-        let newTree: TreeNode[] = [];
+        const newTree: TreeNode[] = [];
 
         if (!searchTerm || searchTerm.length == 0) {
             return tree;
@@ -14,7 +14,7 @@ export class TreeSearchPipe implements PipeTransform {
 
         var dupTree = _.cloneDeep(tree); // dup tree so we dont mess with original
         
-        let search = searchTerm.toLowerCase();
+        const search = searchTerm.toLowerCase();
         
         for (let node of dupTree) {
             var nameField = field ? node.data[field] : node.label;
@@ -51,11 +51,11 @@ export class TreeSearchPipe implements PipeTransform {
     }
 
     private findSelectedTreeNode(tree: TreeNode[], search: string, field?:string): TreeNode {
-        let nodes: TreeNode[] = [];
+        const nodes: TreeNode[] = [];
 
         if (!tree) {return null;}
         // add root nodes
-        for (let rNode of tree) {
+        for (const rNode of tree) {
             nodes.push(rNode);
         }
 
@@ -71,7 +71,7 @@ export class TreeSearchPipe implements PipeTransform {
 
             //push children
             if (node.children) {
-                for (let cNode of node.children) {
+                for (const cNode of node.children) {
                     nodes.push(cNode);
                 }
             }

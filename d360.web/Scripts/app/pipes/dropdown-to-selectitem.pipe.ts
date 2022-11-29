@@ -4,9 +4,9 @@ import { SelectItem } from 'primeng/api';
 @Pipe({ name: 'dropdownItemToSelectItemPipe' })
 export class DropdownItemToSelectItemPipe implements PipeTransform {
     transform(items: any): any {
-        let selectlist: SelectItem[] = [];
+        const selectlist: SelectItem[] = [];
 
-        for (let item of items) {
+        for (const item of items) {
             selectlist.push({ label: item.Text, value: item.Value });
         } 
         return selectlist;

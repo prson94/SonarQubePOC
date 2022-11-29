@@ -39,7 +39,7 @@ export class DropdownDirective implements AfterContentInit {
         var placeholder = this.el.nativeElement.getAttribute("placeholder");
         this.el.nativeElement.tabIndex = -1;
         this.dropdownRef.tabindex = tabIndex;
-        let isPlaceholderSet = !(placeholder == null || placeholder === "");
+        const isPlaceholderSet = !(placeholder == null || placeholder === "");
 
         if (!isPlaceholderSet) {
             if (this.required == null) {
@@ -76,7 +76,7 @@ export class DropdownDirective implements AfterContentInit {
 
             }
 
-            let count: number = this.getItemsCount();
+            const count: number = this.getItemsCount();
             if (count > 10) {
                 this.dropdownRef.filter = true;
                 this.dropdownRef.filterPlaceholder = $localize`Search fields`;
