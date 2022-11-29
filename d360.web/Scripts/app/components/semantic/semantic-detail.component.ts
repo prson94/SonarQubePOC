@@ -1,4 +1,13 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, Output, EventEmitter, OnDestroy, OnInit } from '@angular/core';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChange
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { SemanticType } from '../../models/semantic-type.model';
 import { AppSettingsEnum, CompanySettingEnum } from '../../models/settings.model';
@@ -11,7 +20,6 @@ import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { BaseComponent } from '../shared/base.component';
-import { SemanticBaseComponent } from './semantics-base.component';
 
 @Component({
     selector: 'semantic-detail',
@@ -113,7 +121,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     }
 
     getUserDetails() {
-        let createdByUserParam = {};
+        const createdByUserParam = {};
         createdByUserParam["Uid"] = this.semanticDetails.createdBy.uid;
 
         this.resourcesService.getResourceLazy(createdByUserParam)
@@ -127,7 +135,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
                 }
             });
         if (this.semanticDetails.createdBy.uid !== this.semanticDetails.updatedBy.uid) {
-            let updatedByUserParam = {};
+            const updatedByUserParam = {};
             updatedByUserParam["Uid"] = this.semanticDetails.updatedBy.uid;
             this.resourcesService.getResourceLazy(updatedByUserParam)
                 .subscribe((result) => {
@@ -140,7 +148,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     }
 
     navigateToUser(resourceID: number, newTab: boolean = false) {
-        let url = `${SiteUrlHelpers.SITE_URL_RESOURCE_ROOT}/${resourceID}`;
+        const url = `${SiteUrlHelpers.SITE_URL_RESOURCE_ROOT}/${resourceID}`;
         if (url) {
             if (newTab) {
                 window.open(url, '_blank');
@@ -151,7 +159,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     }
 
     openSemanticType(newTab: boolean = false) {
-        let url = `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticDetails.uid}`;
+        const url = `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticDetails.uid}`;
         if (url) {
             if (newTab) {
                 window.open(url, '_blank');

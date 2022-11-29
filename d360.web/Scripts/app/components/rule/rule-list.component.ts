@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, OnDestroy, ViewChild, Input } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';

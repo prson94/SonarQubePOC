@@ -3,7 +3,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-
+using System.Xml;
 using d360.core.resources;
 
 namespace d360.core
@@ -130,5 +130,28 @@ namespace d360.core
                 builder.AppendLine($" --{name}: {value};");
             }
         }
-    }
+
+		public static string GetSafeXLSColumnValue(this string value)
+		{
+			return (value ?? "").RemoveInvalidXmlChars().UpdateValueToMaxColumnSize();
+		}
+
+		private static string UpdateValueToMaxColumnSize(this string rowFieldValue)
+		{
+			const int MaxExcelColumnCharacterLength = 32767;
+
+			if (rowFieldValue.Length > MaxExcelColumnCharacterLength)
+			{
+				rowFieldValue = rowFieldValue.Substring(0, MaxExcelColumnCharacterLength);
+			}
+			return rowFieldValue;
+		}
+
+		private static string RemoveInvalidXmlChars(this string text)
+		{
+			var validXmlChars = text.Where(ch => XmlConvert.IsXmlChar(ch)).ToArray();
+			return new string(validXmlChars);
+		}
+
+	}
 }

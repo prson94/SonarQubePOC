@@ -1,5 +1,14 @@
-import * as _ from 'lodash';
-import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, SimpleChanges, OnChanges } from '@angular/core';
+import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { DiagramType } from '../../../../../models/lineage.model';
 
 @Component({

@@ -1,0 +1,36 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="TKlok" id="Table.dbo.ResourceSetting-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResourceSetting')
+BEGIN
+	CREATE TABLE [dbo].[ResourceSetting](
+		[ResourceID] [int] NOT NULL,
+		[AssetTypeID] [int] NOT NULL,
+		[Setting] nvarchar(200) NOT NULL,
+		[Value] nvarchar(max) NOT NULL,
+		CONSTRAINT [PK_ResourceSetting] PRIMARY KEY CLUSTERED ( ResourceID ASC, AssetTypeID ASC, Setting ASC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResourceSetting')
+BEGIN
+	drop table dbo.ResourceSetting
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

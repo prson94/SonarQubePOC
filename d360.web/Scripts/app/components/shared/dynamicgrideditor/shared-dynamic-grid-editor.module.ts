@@ -1,7 +1,6 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
 
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -21,7 +20,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedAssetEditorsModule } from '../asseteditors/shared-asset-editor.module';
-import { TilesModule  } from '../tiles/tiles.module';
+import { TilesModule } from '../tiles/tiles.module';
 import { SimilarItemsModule } from '../similar-items.component';
 
 import { DynamicEditorComponent } from './dynamic-editor.component';

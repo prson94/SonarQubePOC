@@ -1,4 +1,19 @@
-﻿import { EventEmitter, Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, OnInit, Input, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked, AfterContentInit, OnDestroy, HostListener, OnChanges, SimpleChanges, Output, DoCheck } from '@angular/core';
+﻿import {
+    AfterContentInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    DoCheck,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input,
+    NgModule,
+    OnDestroy,
+    Output,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
@@ -190,7 +205,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     handleKeyboardEvent(event: KeyboardEvent) {
         if (this.isVisible) {
             this.pressedKeys[event.keyCode] = true;
-            let isNavigationKey: boolean = [39, 37, 40, 38].indexOf(event.keyCode) !== -1;
+            const isNavigationKey: boolean = [39, 37, 40, 38].indexOf(event.keyCode) !== -1;
 
             if (isNavigationKey) {
                 let el: PopupMenuItem = null;

@@ -173,7 +173,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 				label = $localize`Semantic Type Fields`;
 			}
 
-			let mainFieldGroup: SelectItemGroup = { value: "asset-field", label, items: [] };
+			const mainFieldGroup: SelectItemGroup = { value: "asset-field", label, items: [] };
 			this.allFieldsDropdown.push(mainFieldGroup);
 
 			this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
@@ -185,7 +185,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			this.addSystemFields();
 
 			if (SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).length > 0) {
-				let relationshipGroup: SelectItemGroup = { value: "rel-field", label: $localize`Relationships`, items: [] };
+				const relationshipGroup: SelectItemGroup = { value: "rel-field", label: $localize`Relationships`, items: [] };
 				this.allFieldsDropdown.push(relationshipGroup);
 
 				SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
@@ -201,7 +201,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	private addSystemFields() {
 		var systemFields = SystemFields.GetSystemFieldDefinition(this.gridType, this.loadIdentifier);
 		if (systemFields.length > 0) {
-			let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: $localize`System Fields`, items: [] };
+			const systemFieldsGroup: SelectItemGroup = { value: "system-field", label: $localize`System Fields`, items: [] };
 			this.allFieldsDropdown.push(systemFieldsGroup);
 
 			systemFields.forEach((f) => {
@@ -244,10 +244,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			}
 
 			let calculatedHeight: number = 0;
-			let maxHeight: number = 320;
-			let minHeight: number = 50;
-			let margins: number = 180;
-			let bottomPos: number = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect().bottom;
+			const maxHeight: number = 320;
+			const minHeight: number = 50;
+			const margins: number = 180;
+			const bottomPos: number = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect().bottom;
 
 			if (count < 10) {
 				calculatedHeight = count * 32 + 44; //44px is total height of search bar
@@ -285,7 +285,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 		var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
 		selectionElement.style.removeProperty("top");
 		selectionElement.style.removeProperty("left");
-		let fieldSelectionElement = html.getElementsByClassName("field-selection")[0] as HTMLElement;
+		const fieldSelectionElement = html.getElementsByClassName("field-selection")[0] as HTMLElement;
 		fieldSelectionElement.style.removeProperty("left");
 	}
 
@@ -294,16 +294,16 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			var html = this.elRef.nativeElement as HTMLElement;
 			var scrollWrapper = html.getElementsByClassName("p-datatable-wrapper")[0];
 			if (scrollWrapper) {
-				let width = 500 + 60;
+				const width = 500 + 60;
 
 				var tableWrapper = html.getElementsByClassName("p-datatable-wrapper")[0] as HTMLElement;
 
 				if (tableWrapper) {
 					var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
 
-					let distanceFromRight = window.outerWidth - html.getBoundingClientRect().left;
+					const distanceFromRight = window.outerWidth - html.getBoundingClientRect().left;
 					if (distanceFromRight < width) {
-						let diff = Math.abs(width - distanceFromRight);
+						const diff = Math.abs(width - distanceFromRight);
 						selectionElement.style.left = (html.getBoundingClientRect().left - diff) + "px";
 					} else {
 						selectionElement.style.removeProperty("left");
@@ -327,7 +327,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			}
 
 			const fieldSelectionLeftOffset = window.innerWidth - html.getBoundingClientRect().left - 350;
-			let fieldSelectionElement = html.getElementsByClassName("field-selection")[0] as HTMLElement;
+			const fieldSelectionElement = html.getElementsByClassName("field-selection")[0] as HTMLElement;
 			if (fieldSelectionElement) {
 				if (fieldSelectionLeftOffset < 0) {
 					fieldSelectionElement.style.left = fieldSelectionLeftOffset + "px";
@@ -687,7 +687,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			fieldTypeUid = this.currentField.RelationshipTypeUid ?? "00000000-0000-0000-0000-000000000000";
 		}
 
-		let lookupMethod = (this.currentField.ValueLoader) ? this.currentField.ValueLoader(params) : this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params);
+		const lookupMethod = (this.currentField.ValueLoader) ? this.currentField.ValueLoader(params) : this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params);
 
 		this.lazyLoadSubscription = lookupMethod.subscribe((res) => this.consumeLoadedLookupValues(res, params));
 	}
@@ -697,7 +697,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			this.currentField.Values = Array.from({ length: res.count });
 		}
 
-		let loadedData = [];
+		const loadedData = [];
 
 		res.items.forEach((str) => {
 			if (typeof str === 'object' && str.value && str.name) {
@@ -735,7 +735,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 					this.currentField.Values = Array.from({ length: res.count });
 				}
 
-				let loadedData = [];
+				const loadedData = [];
 
 				res.items.forEach((str) => {
 					loadedData.push({ title: str.title, value: str.value });
@@ -752,7 +752,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	}
 
 	loadTagValues() {
-		let loadValues: boolean = !this.currentField.Values || this.currentField.Values.length === 0;
+		const loadValues: boolean = !this.currentField.Values || this.currentField.Values.length === 0;
 		if (loadValues) {
 			this.isLookupValuesLoading = true;
 
@@ -771,7 +771,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	loadLookupValuesForCreators(params: any) {
 		this.isLookupValuesLoading = true;
 
-		let possibleCreatorsLookup = () => {
+		const possibleCreatorsLookup = () => {
 			if (this.isSemanticTypes) {
 				return this.dataProfileService.GetPossibleCreators();
 			}
@@ -798,7 +798,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	loadLookupValuesForRedactors(params: any) {
 		this.isLookupValuesLoading = true;
 
-		let possibleRedactorsLookup = () => {
+		const possibleRedactorsLookup = () => {
 			if (this.isSemanticTypes) {
 				return this.dataProfileService.GetPossibleRedactors();
 			}
@@ -828,7 +828,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
 			this.assetTypeService.GetAssetTypePossibleOwners(this.assetTypeUid).subscribe((res) => {
 				this.currentField.Values = [];
-				let mapped: any[] = [];
+				const mapped: any[] = [];
 				res.forEach((item) => {
 					if (item.Name.indexOf("] - ")) {
 						var data = (item.Name as string).split("] - ");
@@ -883,7 +883,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
 				this.oldSearchPhrase = params.filter ?? "";
 
-				let loadedData = [];
+				const loadedData = [];
 				
 				const domParser = new DOMParser();
 
@@ -924,7 +924,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 				if (!this.currentField.Values || this.currentField.Values.length === 0) {
 					this.currentField.Values = Array.from({ length: res.length });
 				}
-				let loadedData = [];
+				const loadedData = [];
 
 				res.forEach((item) => {
 					loadedData.push({ title: item.Name, value: item.Level });
@@ -1414,7 +1414,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	}
 
 	@HostListener("keydown", ["$event"]) onKeydownHandler(event: KeyboardEvent) {
-		let allowedTypes = ["text", "number", "lookup", "date", "date-time", "score-band", "multi-date", "multi-number"];
+		const allowedTypes = ["text", "number", "lookup", "date", "date-time", "score-band", "multi-date", "multi-number"];
 		if (allowedTypes.some((x) => x === this.currentInputType)) {
 			if (event.keyCode === 13 && !this.isSaveDisabled()) {
 				this.confirmValue();
@@ -1432,8 +1432,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 		if (!this.condition.value) {
 			this.condition.value = [];
 		}
-		let valueRef = this.condition.value as SelectItem[];
-		let elIdx = valueRef.findIndex((x) => x.value === item.value);
+		const valueRef = this.condition.value as SelectItem[];
+		const elIdx = valueRef.findIndex((x) => x.value === item.value);
 
 		if (elIdx > -1) {
 			valueRef.splice(elIdx, 1);
@@ -1474,7 +1474,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	}
 
 	get complexFieldDefinition(): ComplexFieldDefinition {
-		let res = new ComplexFieldDefinition();
+		const res = new ComplexFieldDefinition();
 		if (this.isComplexField) {
 			var data = this.loadIdentifier.replace("ComplexField", "").replace("ComplexField", "").split("|");
 			res.AssetUid = data[0];

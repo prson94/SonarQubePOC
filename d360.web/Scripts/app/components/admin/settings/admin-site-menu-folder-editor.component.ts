@@ -143,7 +143,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	ngOnChanges(changes: SimpleChanges): void {
-		let c = changes;
+		const c = changes;
 		if (changes.navigationFolder && changes.navigationFolder.currentValue !== changes.navigationFolder.previousValue) {
 			this._initialVersion = "";
 			if (!this.navigationFolder?.Name.startsWith("#")) {
@@ -195,8 +195,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			this.siteMenuService.getSiteNavPermissions(this.navigationFolder.ID),
 			this.siteMenuService.getSiteNavFolderItems(this.navigationFolder.ID)
 		]).subscribe((results) => {
-				let selectedPermissionsRaw: SiteNavPermission[] = results[0];
-				let selectedFolders = results[1];
+				const selectedPermissionsRaw: SiteNavPermission[] = results[0];
+				const selectedFolders = results[1];
 
 				//preselect permission assets
 				this.preselectPermissions(selectedPermissionsRaw);
@@ -215,7 +215,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	public preselectPermissions(selectedPermissionsRaw) {
 		// Find selected raw permissions in source and put in target
-		let permissionsFromSourceSelected = this.permissionsFromSource.filter((permissionFromSource: SiteNavPermissionUID) => {
+		const permissionsFromSourceSelected = this.permissionsFromSource.filter((permissionFromSource: SiteNavPermissionUID) => {
 			return selectedPermissionsRaw.some((selectedPermission: SiteNavPermission) => {
 				return permissionFromSource.Value === selectedPermission.Object + '|' + selectedPermission.ObjectID;
 			});
@@ -223,7 +223,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.permissionsFromTarget = [...permissionsFromSourceSelected];
 
 		// Remove selected raw permissions from source
-		let permissionsFromSourceWithoutSelected = this.permissionsFromSource.filter((permissionFromSource: SiteNavPermissionUID) => {
+		const permissionsFromSourceWithoutSelected = this.permissionsFromSource.filter((permissionFromSource: SiteNavPermissionUID) => {
 			return selectedPermissionsRaw.every((selectedPermission: SiteNavPermission) => {
 				return permissionFromSource.Value !== selectedPermission.Object + '|' + selectedPermission.ObjectID;
 			});
@@ -239,7 +239,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	private getModel(): any {
-		let folder: any = {};
+		const folder: any = {};
 		folder.Id = this.folderModel.ID;
 		folder.Title = this.folderModel.Title;
 		folder.Icon = this.folderModel.Icon;
@@ -248,7 +248,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 
 		if (this.folderModel.Icon && typeof this.folderModel.Icon !== "string") {
-			let path: string = this.folderModel.Icon["path"];
+			const path: string = this.folderModel.Icon["path"];
 			if (path.indexOf(this.folderModel.ImageIconUrl) !== -1) {
 				folder.ImageIconUrl = this.folderModel.ImageIconUrl;
 				folder.Icon = null;
@@ -357,7 +357,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	clearInvalidFields() {
-		let allowedFields = ["name", "qualifier", "description", "threshold", "priority", "status", "matchType", "baseType", "source"];
+		const allowedFields = ["name", "qualifier", "description", "threshold", "priority", "status", "matchType", "baseType", "source"];
 	}
 
 	changeIconType(e: any) {
@@ -422,8 +422,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			return;
 		}
 
-		let target = event.target || event.srcElement;
-		let files = target.files;
+		const target = event.target || event.srcElement;
+		const files = target.files;
 
 		if (files[0] != null) {
 			if (files[0].size > (1024 * 1024)) {
@@ -460,7 +460,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			this.siteMenuService.getSiteNavPermissionsAssets(),
 			this.siteMenuService.getAvailableItems()
 		]).subscribe((result) => {
-			let perm = result[0];
+			const perm = result[0];
 			this.foldersFromSource = result[1];
 			this.permissionAssetsTotalCount = perm["total"];
 			this.permissionsFromSource = perm["results"];
@@ -483,22 +483,22 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	addNewFolder(item: SiteNav) {
-		let x = this.foldersFromSource.findIndex((i) => i.ObjectID === item.ObjectID && i.Object === item.Object);
-		let i = _.cloneDeep(this.foldersFromSource.splice(x, 1)[0]);
+		const x = this.foldersFromSource.findIndex((i) => i.ObjectID === item.ObjectID && i.Object === item.Object);
+		const i = _.cloneDeep(this.foldersFromSource.splice(x, 1)[0]);
 		this.foldersFromTarget.push(i);
 		this.setRequiredCount();
 	}
 
 	deleteNewFolder(item: SiteNav) {
-		let x = this.foldersFromSource.findIndex((i) => i.ObjectID === item.ObjectID && i.Object === item.Object);
-		let i = _.cloneDeep(this.foldersFromTarget.splice(x, 1)[0]);
+		const x = this.foldersFromSource.findIndex((i) => i.ObjectID === item.ObjectID && i.Object === item.Object);
+		const i = _.cloneDeep(this.foldersFromTarget.splice(x, 1)[0]);
 		this.foldersFromSource.push(i);
 		this.setRequiredCount();
 	}
 
 	imageUploadClick(event: any) {
 		event.preventDefault();
-		let el: HTMLElement = document.getElementById('imageUpload') as HTMLElement;
+		const el: HTMLElement = document.getElementById('imageUpload') as HTMLElement;
 		el.click();
 	}
 

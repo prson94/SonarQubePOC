@@ -1,6 +1,5 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, Input, NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { BaseComponent } from './base.component';
 import { CompanySettingsService } from '../../services/settings.service';
 

@@ -86,10 +86,10 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     todayAndEffectiveDateAreSame(item: MetricAssetViewModel): boolean {
         if (item) {
-            let today = new Date();
-            let todayMs = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
-            let effectiveDate = new Date(item.EffectiveDate);
-            let effectiveDateMs = effectiveDate.getTime();
+            const today = new Date();
+            const todayMs = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+            const effectiveDate = new Date(item.EffectiveDate);
+            const effectiveDateMs = effectiveDate.getTime();
             return (effectiveDateMs === todayMs);
         }
         else {
@@ -151,7 +151,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         private scoreService: ScoreService) {
         super(settingsService);
 
-        let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+        const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
         this.helpUri = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
     }
 
@@ -188,7 +188,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
                     this.metrics = r;
                     if (this.metrics) {
                         this.metrics.filter((g) => g.ParentUid == null).forEach((g) => {
-                            let n = {
+                            const n = {
                                 data: g,
                                 children: [],
                                 expanded: true
@@ -239,10 +239,10 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     addChildren(node: TreeNode) {
         if (this.metrics) {
-            let children = this.metrics.filter((g) => g.ParentUid === node.data.Uid);
+            const children = this.metrics.filter((g) => g.ParentUid === node.data.Uid);
             if (children.length > 0) {
                 children.forEach((c) => {
-                    let n = {
+                    const n = {
                         data: c,
                         children: [],
                         expanded: true
@@ -265,19 +265,19 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     updateSelectionMenuLabel() {
         if (this.groupMenuOptions && this.groupMenuOptions.length > 0) {
-            let versionMenuItem = this.groupMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
+            const versionMenuItem = this.groupMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
         if (this.itemMenuOptions && this.itemMenuOptions.length > 0) {
-            let versionMenuItem = this.itemMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
+            const versionMenuItem = this.itemMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
         if (this.disabledMenuOptions && this.disabledMenuOptions.length > 0) {
-            let versionMenuItem = this.disabledMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
+            const versionMenuItem = this.disabledMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }

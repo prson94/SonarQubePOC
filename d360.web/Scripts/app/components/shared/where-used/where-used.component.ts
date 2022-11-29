@@ -1,4 +1,16 @@
-﻿import { Component, ChangeDetectionStrategy, Input, OnChanges, SimpleChanges, ChangeDetectorRef, Output, EventEmitter, ElementRef, AfterViewChecked, ViewChild } from '@angular/core';
+﻿import {
+    AfterViewChecked,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 import { ConnectorLabelService } from '../../../services/connectorLabel.service';
 
 @Component({

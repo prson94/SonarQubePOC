@@ -1,16 +1,16 @@
 import {
-	AfterViewChecked,
-	ChangeDetectionStrategy,
-	ChangeDetectorRef,
-	Component,
-	EventEmitter,
-	Input,
-	OnChanges,
-	OnDestroy,
-	OnInit,
-	Output,
-	ViewChild,
-	ElementRef
+    AfterViewChecked,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    Output,
+    ViewChild
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
@@ -175,13 +175,13 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             return;
         }
 
-        let quill = this.ed.getQuill();
+        const quill = this.ed.getQuill();
 
         if (e == null && quill != null) {
-            let contents = quill.getContents();
+            const contents = quill.getContents();
 
             if (contents != null && contents.ops != null) {
-                let content = contents.ops.find((i) => i.insert !== null && i.insert !== '\n');
+                const content = contents.ops.find((i) => i.insert !== null && i.insert !== '\n');
 
                 if (content != null) {
                     this.field.Value = quill.container.querySelector('.ql-editor').innerHTML;
@@ -229,7 +229,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
 
         if (this.field && this.field.Validations) {
-            for (let validation of this.field.Validations) {
+            for (const validation of this.field.Validations) {
                 if (validation.regex) {
                     this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : $localize`Value does not match the required pattern.`;
                 } else if (validation.rule && validation.rule.startsWith('increment')) {
@@ -239,7 +239,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 } else if (validation.rule && validation.rule.startsWith('max')) {
                     this.Max = +validation.rule.split("maxLength=")[1];
                 } else if (validation.rule && validation.rule.startsWith('length')) {
-                    let vals = validation.rule.split("length=")[1];
+                    const vals = validation.rule.split("length=")[1];
 
                     this.Min = +vals.split(",")[0];
                     this.Max = +vals.split(",")[1];
@@ -439,7 +439,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         const numInputs = document.querySelectorAll('input[type=number]');
 
         for (let i = 0; i < numInputs.length; i++) {
-            let elem = numInputs[i] as HTMLInputElement;
+            const elem = numInputs[i] as HTMLInputElement;
 
             if (elem.validity.badInput && elem.validationMessage === $localize`Please enter a number.`) {
                 if (this.field.FieldType === 'Number' && this.field.FieldName === elem.name) {
@@ -498,7 +498,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     private fieldMessage(field: string) {
         let message = "";
-        let errors = this.form.controls[field].errors;
+        const errors = this.form.controls[field].errors;
 
         if (typeof this.form.controls[field] === "undefined") {
             return '';
@@ -581,9 +581,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     }
 
     private toDecimalPlaces(e: any, precision: number) {
-        let asString = '' + e.target.value;
-        let val = +e.target.value;
-        let newVal = +val.toFixed(precision);
+        const asString = '' + e.target.value;
+        const val = +e.target.value;
+        const newVal = +val.toFixed(precision);
 
         if (e === null || e.target === null || precision === null || typeof precision === "undefined") {
             return;
@@ -600,8 +600,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     }
 
     private clamp(e: any, min: number, max: number, precision: number) {
-        let val = e.target.value;
-        let newVal = FormHelpers.clamp(val, min, max, precision);
+        const val = e.target.value;
+        const newVal = FormHelpers.clamp(val, min, max, precision);
 
         if (e === null || e.target === null || min === null || max === null) {
             return;
@@ -614,7 +614,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     }
 
     OnBlurTrim() {
-        let value: string = this.form.controls[this.field.FieldName].value;
+        const value: string = this.form.controls[this.field.FieldName].value;
 
         this.form.controls[this.field.FieldName].setValue(value.trim());
     }
@@ -649,7 +649,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     private onEditorChange(event: any) {
         if (event === null || event.field === null) { return; }
 
-        let field = event.field;
+        const field = event.field;
 
 
         if (this.field.FieldType === 'Relationship') {
@@ -668,15 +668,15 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                     return;
                 }
 
-                let selectedItems = field.Value.split(',');
+                const selectedItems = field.Value.split(',');
 
                 field.Items.forEach((i) => {
-                    let selected = selectedItems.findIndex((s) => s === i.Value) > -1;
+                    const selected = selectedItems.findIndex((s) => s === i.Value) > -1;
                     if (selected) {
-                        let ix = this.field.Items.findIndex((r) => r.Value === i.Value);
+                        const ix = this.field.Items.findIndex((r) => r.Value === i.Value);
 
                         if (ix > -1) {
-                            let item = this.field.Items.slice()[ix];
+                            const item = this.field.Items.slice()[ix];
                             this.field.Items.splice(ix, 1);
                             if (this.excludedRelationitems[field.FieldName] === null) {
                                 this.excludedRelationitems[field.FieldName] = [];
@@ -688,9 +688,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                         if (this.excludedRelationitems[field.FieldName] === null) {
                             return;
                         }
-                        let ix = this.excludedRelationitems[field.FieldName].findIndex((r) => r.Value === i.Value);
+                        const ix = this.excludedRelationitems[field.FieldName].findIndex((r) => r.Value === i.Value);
                         if (ix > -1) {
-                            let item = this.excludedRelationitems[field.FieldName].slice()[ix];
+                            const item = this.excludedRelationitems[field.FieldName].slice()[ix];
                             this.excludedRelationitems[field.FieldName].splice(ix, 1);
                             this.field.Items.push(item);
                         }
@@ -808,7 +808,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 this.showLookupSearchField = false;
             }
 
-            let loadedData = [];
+            const loadedData = [];
 
             res.items.forEach((str) => {
 				const color = str.color;
@@ -939,8 +939,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
 
             let calculatedHeight: number = 0;
-            let maxHeight: number = 320;
-            let minHeight: number = 50;
+            const maxHeight: number = 320;
+            const minHeight: number = 50;
 
             if (count < 10) {
                 calculatedHeight = count * 32;

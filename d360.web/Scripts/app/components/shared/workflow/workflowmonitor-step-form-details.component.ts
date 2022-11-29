@@ -1,57 +1,21 @@
-﻿import { Component, OnInit, OnChanges, Input, ChangeDetectionStrategy, ChangeDetectorRef, SimpleChanges } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnChanges,
+    OnInit,
+    SimpleChanges
+} from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowStepDetail } from '../../../models/workflow.model';
-import * as _ from 'lodash';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-monitor-step-form-details',
-    template: `
-<ng-container *ngIf="step != null">
-    <div class="row">
-        <div class="col s12">
-            <div>
-                <ng-container i18n>Completed Forms </ng-container> ({{step.ItemFields['@NumberOfResponses'] ? step.ItemFields['@NumberOfResponses'] : 0 }}/{{step.ItemFields['@TotalResources']}}):
-            </div>
-            <ng-container *ngFor="let form of step.ItemFields.form">
-                <div class="panel-section">        
-                    <div *ngIf="form.resourceName != null">
-                       <ng-container i18n>Form completed by</ng-container> {{form.resourceName}}
-                    </div>
-                    <div *ngFor="let f of form.field">
-                        <ng-container [ngSwitch]="f['@fieldtype']">
-                            <ng-container *ngSwitchCase="'date'">
-                                <strong>{{f['@label']}}</strong>: {{(f['@displayvalue'] == null ? getDate(f['@value']) : getDate(f['@displayvalue']))}}
-                            </ng-container>
-                            <ng-container *ngSwitchCase="'html'">
-                                <strong>{{f['@label']}}</strong>: <div [innerHtml]="f['@value'] | safeHtml"></div>
-                            </ng-container>
-                            <ng-container *ngSwitchCase="'link'">
-                                <strong>{{f['@label']}}</strong>: <a href="{{getUrl(f['@value'])}}" target="_blank" style="font-weight:bold">{{getName(f['@value'])}}</a>
-                            </ng-container>
-                            <ng-container *ngSwitchDefault>
-                                <strong>{{f['@label']}}</strong>: {{(f['@displayvalue'] == null ? f['@value'] : f['@displayvalue'])}}
-                            </ng-container>
-                        </ng-container>
-                    </div>
-                </div>
-            </ng-container>
-            <ng-container *ngIf="step.ItemSettings.hasPendingForms == true && pendingFormList !=''">
-               <div class="row panel-section warning">
-                        <div class="col s11">
-                                    <ng-container i18n>Awaiting forms from</ng-container>: {{pendingFormList}}
-                        </div>   
-                        <div class="col s1" style="align:right;">
-                             <a  *ngIf="step.IsAssignedLoginUser" style="cursor:pointer;color:#000000;" (click)="doSelect()"><i class="fa fa-edit"></i></a>
-                        </div>  
-             </div>
-            </ng-container>
-        </div>
-    </div>
-</ng-container>
-`,
+    templateUrl: 'workflowmonitor-step-form-details.component.html',
     providers: [],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -81,7 +45,7 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
         if (this.step != null) {
             if (this.step.ItemSettings.hasPendingForms) {
                 if (this.step.AssignedUsers != null) {
-                    let completedForms: any[] = this.step.ItemFields.form.map((f) => f['@ResourceID']);
+                    const completedForms: any[] = this.step.ItemFields.form.map((f) => f['@ResourceID']);
 
                     this.pendingFormList = this.step.AssignedUsers
                         .filter((a) => completedForms.indexOf(a.ResourceID.toString()) == -1)

@@ -1,9 +1,17 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter, ChangeDetectorRef, ViewChild } from '@angular/core';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChange,
+    ViewChild
+} from '@angular/core';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
-import { ObjectDetail } from '../../models/object-detail.model';
+import { NymType, ObjectDetail } from '../../models/object-detail.model';
 import { BaseComponent } from '../shared/base.component';
-import { NymType } from '../../models/object-detail.model';
 import { FormMode } from '../../models/form.model';
 import { AssetService } from '../../services/asset.service';
 import { AssetEditorModel } from '../../models/asset.model';

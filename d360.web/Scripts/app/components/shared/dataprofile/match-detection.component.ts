@@ -1,9 +1,18 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { LazyLoadEvent } from 'primeng/api';
-import { Observable, ReplaySubject } from 'rxjs';
+import { forkJoin, Observable, ReplaySubject } from 'rxjs';
 import { FieldType } from '../../../models/fieldtype-api.model';
-import { forkJoin } from 'rxjs';
 import { AssetService } from '../../../services/asset.service';
 import { DataProfileService } from '../../../services/dataprofile.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -307,7 +316,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     }
 
     selectMatch(event: any, matchType: string) {
-        let selectedAssets = event;
+        const selectedAssets = event;
         this.multipleItemsSelected = false;
         if (selectedAssets && selectedAssets.length === 1) {
             //only reload side panel if selection has changed. 
@@ -456,7 +465,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
     private populateHeaderCheckBoxStyle(matchType: string) {
         if (matchType === this.duplicateStr) {
-            let checkBoxElement = this.duplicateCheckBox.boxViewChild.nativeElement;
+            const checkBoxElement = this.duplicateCheckBox.boxViewChild.nativeElement;
             if (this.duplicatesSelection && this.duplicatesSelection.length > 0 && this.duplicatesSelection.length !== this.duplicatesData.length) {
                 checkBoxElement.classList.add('p-highlight');
                 this.duplicateCheckBox.checked = true;
@@ -472,7 +481,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi-minus');
             }
         } else if (matchType === this.similarStr) {
-            let checkBoxElement = this.similarCheckBox.boxViewChild.nativeElement;
+            const checkBoxElement = this.similarCheckBox.boxViewChild.nativeElement;
             if (this.similarSelection && this.similarSelection.length > 0 && this.similarSelection.length !== this.similarData.length) {
                 checkBoxElement.classList.add('p-highlight');
                 this.similarCheckBox.checked = true;
@@ -493,8 +502,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     }
 
     private getAssetTypePaths(selectedUids: string[]) {
-        let assetTypePaths: string[] = [];
-        let uriParams: any = {};
+        const assetTypePaths: string[] = [];
+        const uriParams: any = {};
         this.isDrawerLoading = true;
         this.assetTypePathsforNonTagged = [];
         selectedUids.forEach((uid) => {
@@ -502,7 +511,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 .subscribe((res) => {
                     uriParams.assetTypeUid = res.AssetTypeUid;
                     this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
-                        let path = result[0].Path.replace(/\//g, '>');
+                        const path = result[0].Path.replace(/\//g, '>');
                         assetTypePaths.push(path);
                         if (this.assetTypePathsforNonTagged.indexOf(path) < 0) {
                             this.assetTypePathsforNonTagged.push(path);

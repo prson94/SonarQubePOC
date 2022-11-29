@@ -1,8 +1,18 @@
-﻿import { Component, OnChanges, Input, SimpleChanges, Output, EventEmitter, ChangeDetectorRef, ElementRef } from '@angular/core';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { ConnectorLabelService } from '../../../services/connectorLabel.service';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AsyncValidatorService } from '../../../services/async-validators.service';
 import { ConnectorLabel } from '../../../models/connectorLabel.model';
+
 @Component({
     selector: 'd3s-connector-label-form',
     templateUrl: './connector-label-form.component.html',
@@ -84,7 +94,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     }
 
     OnBlurTrim() {
-        let value: string = this.connectorLabelForm.controls['value'].value;
+        const value: string = this.connectorLabelForm.controls['value'].value;
         if (value)
             {this.connectorLabelForm.controls['value'].setValue(value.trim());}
     }

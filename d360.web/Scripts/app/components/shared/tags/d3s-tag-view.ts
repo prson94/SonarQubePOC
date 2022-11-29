@@ -1,6 +1,17 @@
-import { Input, Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output,
+    ViewChild
+} from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { TagType, TagApiModel } from '../../../models/tag.model';
+import { TagApiModel, TagType } from '../../../models/tag.model';
 import { TagService } from '../../../services/tag.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Router } from '@angular/router';
@@ -174,9 +185,9 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         this.tagInput.nativeElement.style.background = "white";
         target.style.background = "white";
         target.style.border = "1px solid #66A9D6";
-        let lineDims = target.getBoundingClientRect();
+        const lineDims = target.getBoundingClientRect();
         window.setTimeout(() => {
-            let dispPanel = searchPanel.el.nativeElement.children[0];
+            const dispPanel = searchPanel.el.nativeElement.children[0];
             dispPanel.style.maxWidth = (window.innerWidth - lineDims.left - 5) + "px";
         }, 150);
     }
@@ -242,13 +253,13 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         event.Value = event.Value.trim();
         if (this.assetUIDList) {
             this.assetUIDList.forEach((uid) => {
-                let tag = new TagApiModel();
+                const tag = new TagApiModel();
                 tag.AssetUID = uid;
                 tag.TagName = event.Value;
                 tags = tags.concat([tag]);
             });
         } else {
-            let tag = new TagApiModel();
+            const tag = new TagApiModel();
             tag.AssetUID = this.assetUID;
             tag.TagName = event.Value;
             tags = tags.concat([tag]);
@@ -407,7 +418,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     }
 
     private getTagsApiModel(selectedTag, assetUid) {
-        let tag = new TagApiModel();
+        const tag = new TagApiModel();
         tag.AssetUID = assetUid;
         tag.TagName = selectedTag.Value;
         tag.TagUID = selectedTag.uid;
@@ -594,7 +605,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         }
 
         if (this.container) {
-            let parent = this.getParentForResizing(this.container.nativeElement, 'TD,DIV');
+            const parent = this.getParentForResizing(this.container.nativeElement, 'TD,DIV');
 
             if (!parent) {
                 console.warn("No suitable parent found for tag resizing!");
@@ -606,10 +617,10 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 			let ofWidth = parent ? parent.offsetWidth - 10 : 500;
 
 			if (parent.tagName === "DIV" && parent.parentElement.tagName === "TD") {
-				let pTable = parent.closest("div.p-datatable-scrollable");
+				const pTable = parent.closest("div.p-datatable-scrollable");
 				if (pTable) {
-					let colIndex = parent.closest("td").cellIndex + 1;
-					let headerElement = pTable.querySelector(`thead tr th:nth-child(${colIndex})`) as HTMLElement;
+					const colIndex = parent.closest("td").cellIndex + 1;
+					const headerElement = pTable.querySelector(`thead tr th:nth-child(${colIndex})`) as HTMLElement;
 					ofWidth = headerElement.offsetWidth - 10;
 				}
 			}

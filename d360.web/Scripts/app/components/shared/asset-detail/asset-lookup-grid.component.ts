@@ -1,9 +1,17 @@
-﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, ViewChild } from "@angular/core";
-import { LookupGrid, GridFilterColumn, LookupGridField } from "../../../models/grid-definition.model";
-import { NavigationEnd, Router } from "@angular/router";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnDestroy,
+    OnInit,
+    ViewChild
+} from "@angular/core";
+import { GridFilterColumn, LookupGrid, LookupGridField } from "../../../models/grid-definition.model";
+import { Router } from "@angular/router";
 import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { BaseComponent } from "../base.component";
-import { ComplexLookupType, DetailField } from "../../../models/object-detail.model";
+import { DetailField } from "../../../models/object-detail.model";
 import { AssetService } from "../../../services/asset.service";
 import { Subscription } from "rxjs";
 import { Filters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
@@ -94,7 +102,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         if (this.isReferenceListFromRelationship) {
             this.lookupField = (this.data as any);
 
-            let show = localStorage.getItem(`lookup_description_${CurrentResourceID}_${this.lookupField.fieldTypeId}`);
+            const show = localStorage.getItem(`lookup_description_${CurrentResourceID}_${this.lookupField.fieldTypeId}`);
             if (show == null) {
                 this.showDescription = this.lookupField.showDescription;
             } else {
@@ -121,7 +129,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
         this.data.Columns.filter((c) => c.type === 'hidden')
             .forEach((c) => {
-                let i = this.data.Columns.find((i) => i.datafield === c.text);
+                const i = this.data.Columns.find((i) => i.datafield === c.text);
                 if (i) {
                     i.type = 'preview';
                 }
@@ -265,8 +273,8 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
             return '';
         }
 
-        let cleanValue: number = parseFloat(value.replace("%", ""));
-        let fieldTypeID: number = parseInt(colName.split("_")[1]);
+        const cleanValue: number = parseFloat(value.replace("%", ""));
+        const fieldTypeID: number = parseInt(colName.split("_")[1]);
         var className = "";
         if (this.data?.ScoringInfo) {
             className = "score-poor";

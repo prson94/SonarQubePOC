@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Output, Input, HostBinding, ChangeDetectionStrategy } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output } from '@angular/core';
 
 @Component({
     selector: 'd3s-tooltip',

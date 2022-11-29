@@ -1,13 +1,22 @@
-﻿import { Input, Component, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, NgModule, ViewEncapsulation } from "@angular/core";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    forwardRef,
+    Input,
+    NgModule,
+    OnChanges,
+    SimpleChange,
+    ViewEncapsulation
+} from "@angular/core";
 import * as _ from "lodash";
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from "@angular/forms";
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { SortOrder } from "../../models/enums.model";
 import { EditorField } from "../../models/editor-field.model";
 import { BaseComponent } from "./base.component";
 import { ResourcesService } from "../../services/resources.service";
 import { LazyLoadEvent, SharedModule } from "primeng/api";
 import { CommonModule } from "@angular/common";
-import { HttpClientModule, HTTP_INTERCEPTORS } from "@angular/common/http";
 import { RouterModule } from "@angular/router";
 import { MultiSelectModule } from "primeng/multiselect";
 import { InputSwitchModule } from "primeng/inputswitch";
@@ -139,7 +148,7 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
         this.sortField = this.sortField == null ? "" : this.sortField;
         this.globalfilter = this.globalfilter == null ? "" : this.globalfilter;
 
-        let url = `${this.field.TypeaheadUri}&pagenum=${this.currentPageNumber}&pagesize=${this.rowsPerPage}&sortdatafield=${this.sortField}&sortorder=${this.sortOrder === SortOrder.None ? "" : (this.sortOrder === SortOrder.Ascending ? "asc" : "desc")}&gbfilter=${this.globalfilter}`;
+        const url = `${this.field.TypeaheadUri}&pagenum=${this.currentPageNumber}&pagesize=${this.rowsPerPage}&sortdatafield=${this.sortField}&sortorder=${this.sortOrder === SortOrder.None ? "" : (this.sortOrder === SortOrder.Ascending ? "asc" : "desc")}&gbfilter=${this.globalfilter}`;
 
         this.resourceService.getResourceItems(url).
             subscribe((data) => {
@@ -162,8 +171,8 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
     handleItemSelection(event) {
         if (this.multiple) {
             this.selectedItems = event;
-            let seletions = [];
-            for (let item of event) {
+            const seletions = [];
+            for (const item of event) {
                 seletions.push(item.Value);
             }
             this.value = _.cloneDeep(seletions);

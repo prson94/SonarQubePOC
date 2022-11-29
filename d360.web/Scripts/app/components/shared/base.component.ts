@@ -1,6 +1,11 @@
 import { Title } from '@angular/platform-browser';
-import { SecondaryNavItem, SecondaryNavCurrentObject, SecondaryNavPostModel, SecondaryNavRequestModel } from '../../models/secondaryNav.model';
-import { PermissionsService, Permissions } from '../../services/permissions.service';
+import {
+    SecondaryNavCurrentObject,
+    SecondaryNavItem,
+    SecondaryNavPostModel,
+    SecondaryNavRequestModel
+} from '../../models/secondaryNav.model';
+import { Permissions, PermissionsService } from '../../services/permissions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 

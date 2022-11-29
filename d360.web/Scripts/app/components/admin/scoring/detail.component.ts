@@ -113,12 +113,12 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                 if (this.allocation.scoreType === 2 || res.scoreType.toString() === "DataQuality") {
                     this.metricsService.getRuleResultPathOptions(this.assetTypeUid, res.scoreType).subscribe((options) => {
                         options.forEach((p) => {
-                            let processedUids: string[] = [];
+                            const processedUids: string[] = [];
                             let html: string = p.Path;
                             p.Segments.forEach((s) => {
                                 // Keep track of Uids we already replaced the paths for, so we do not mess up the resulting HTML.
                                 if (processedUids.findIndex((x) => { return x === s.AssetTypeUid; }) === -1) {
-                                    let segmentPath = s.Path.split('->').join(' > ');
+                                    const segmentPath = s.Path.split('->').join(' > ');
                                     html = html.replace(new RegExp(s.Name, 'g'), `<b title="${segmentPath}">${s.Name}</b>`,);
                                     processedUids.push(s.AssetTypeUid);
                                 }
@@ -198,9 +198,9 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     }
 
     isTheSamePageRoot(): boolean {
-        let nextUrl = this.router.routerState.snapshot.url;
-        let nextUrlSlice = nextUrl.substring(0, nextUrl.lastIndexOf('/'));
-        let currentUrlSlice = this.currentUrl.substring(0, this.currentUrl.lastIndexOf('/'));
+        const nextUrl = this.router.routerState.snapshot.url;
+        const nextUrlSlice = nextUrl.substring(0, nextUrl.lastIndexOf('/'));
+        const currentUrlSlice = this.currentUrl.substring(0, this.currentUrl.lastIndexOf('/'));
         return nextUrlSlice === currentUrlSlice;
     }
 
@@ -242,12 +242,12 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                             this.metricsService.getMetricsScores(this.assetTypeUid, this.allocation.scoreType)
                                 .subscribe((f) => {
                                     if (f && f.items && f.items.length > 0) {
-                                        let maxDates: any[] = [];
+                                        const maxDates: any[] = [];
                                         f.items.forEach((x) => {
                                             if (x.Scores && x.Scores.length > 0) {
-                                                let scores = x.Scores.sort((x, y) => {
-                                                    let datex = new Date(x.EffectiveDate);
-                                                    let datey = new Date(y.EffectiveDate);
+                                                const scores = x.Scores.sort((x, y) => {
+                                                    const datex = new Date(x.EffectiveDate);
+                                                    const datey = new Date(y.EffectiveDate);
                                                     return datey.getTime() - datex.getTime();
                                                 });
                                                 maxDates.push(new Date(scores[0].EffectiveDate));

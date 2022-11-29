@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';

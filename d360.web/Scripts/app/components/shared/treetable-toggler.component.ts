@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, NgModule } from '@angular/core';
+﻿import { Component, Input } from '@angular/core';
 import { TreeTable } from 'primeng/treetable';
 
 @Component({

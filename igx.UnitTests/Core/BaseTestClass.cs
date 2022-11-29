@@ -653,6 +653,20 @@ namespace igx.UnitTests
             return mockRepo.Object;
         }
 
+		public IResourceSettingRepository GetResourceSettingRepository()
+		{
+			var mockRepo = new Mock<IResourceSettingRepository>();
+
+			mockRepo.Setup(x => x.GetSettings(It.IsAny<int>(), It.IsAny<Guid>()))
+				.ReturnsAsync(new Dictionary<string, string>());
+
+			mockRepo.Setup(x => x.UpsertSetting(It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()));
+
+			mockRepo.Setup(x => x.UpsertGlobalSetting(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()));
+
+			return mockRepo.Object;
+		}
+
 		public IDashboardRepository GetDashboardRepository()
 		{
 			var mockRepo = new Mock<IDashboardRepository>();

@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit } from "@angular/core";
+﻿import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { BaseComponent } from "../base.component";
 import { SocialService } from "../../../services/social.service";
 import { CommentApiPostModel, CommentDetail, CommentType, Emoji } from "../../../models/social.model";
@@ -53,7 +53,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     doVote(emojiString: string) {
-        let emoji: Emoji = Emoji[emojiString];
+        const emoji: Emoji = Emoji[emojiString];
 
         if (this.isLoading === true) {
             return;
@@ -69,7 +69,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
                             this.comment.Emojis.forEach((e) => e.Count = 0);
 
                             v.forEach((i) => {
-                                let emojis = this.comment.Emojis.find((e) => e.Emoji === i.emoji);
+                                const emojis = this.comment.Emojis.find((e) => e.Emoji === i.emoji);
                                 if (emojis) {
                                     emojis.Count++;
                                 } else {

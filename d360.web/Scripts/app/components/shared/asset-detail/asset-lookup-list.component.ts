@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from "@angular/core";
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { LookupGrid, LookupGridField } from "../../../models/grid-definition.model";
 import { BaseComponent } from "../base.component";
 import { DetailField } from "../../../models/object-detail.model";
@@ -79,7 +79,7 @@ export class AssetLookupListComponent extends BaseComponent implements OnDestroy
                 this.data = result;
                 this.resources = result.Values
                     .reduce((p, c, i) => {
-                        let idx = p.findIndex((x) => { return x.ResourceName === c.ResourceName; });
+                        const idx = p.findIndex((x) => { return x.ResourceName === c.ResourceName; });
                         if (idx === -1) {
                             p.push({
                                 ResourceName: c.ResourceName,

@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
-
 import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'primeng/api';
@@ -23,7 +22,6 @@ import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/sh
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { WhereUsedModule } from '../../shared/where-used/where-used.module';
-import { ConnectorLabelsFormComponent } from './connector-label-form.component';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ConnectorLabelFormModule } from './connector-label-form.module';

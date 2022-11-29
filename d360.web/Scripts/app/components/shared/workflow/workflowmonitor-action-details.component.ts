@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, OnChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnInit } from '@angular/core';
 import { ToolTipService } from '../../../services/tooltip.service';
 
 @Component({

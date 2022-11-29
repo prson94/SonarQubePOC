@@ -51,14 +51,14 @@ export class RulesService extends BaseObservableService {
         simpleFilter: string = "",
         advancedFilter: string = ""
     ): Observable<RuleResultPagedResults> {
-        let sortOrderText = sortOrder === SortOrder.None ? "desc" : (sortOrder === SortOrder.Descending ? "desc" : "asc");
+        const sortOrderText = sortOrder === SortOrder.None ? "desc" : (sortOrder === SortOrder.Descending ? "desc" : "asc");
         let uri = `api/v2/metrics/quality/results?_owningAssetUid=${uid}`;
 
         let fileName = " Rule Results";
 
         if (sortField) {
             uri += "&_order=" + sortField;
-            if (sortOrder && sortOrderText !== "") {
+            if (sortOrder) {
                 uri += "&_direction=" + sortOrderText;
             }
         }

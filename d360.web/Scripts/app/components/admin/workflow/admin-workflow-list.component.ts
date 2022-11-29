@@ -135,11 +135,11 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                 map(() =>
                     this.workflowService.getAdminTypes()
                         .subscribe((r) => {
-                            let workflowItems: WorkflowListItem[] = [];
+                            const workflowItems: WorkflowListItem[] = [];
 
 
                             r.filter((x) => x.State === 'Active' || x.State === 'InActive').forEach((x) => {
-                                let workflowItem: WorkflowListItem = new WorkflowListItem();
+                                const workflowItem: WorkflowListItem = new WorkflowListItem();
 
                                 workflowItem.Name = x.Name;
                                 workflowItem.TypeName = x.ActionTypeUid ? x.ActionType : x.AssetType ? x.AssetType : x.RelationshipType;

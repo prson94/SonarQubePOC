@@ -118,6 +118,9 @@ namespace d360.core.entities
 		public Guid uid { get; set; }
 
 		[DataMember]
+		public string PredicateInverse { get; set; }
+
+		[DataMember]
 		public string Name { get; set; }
 
 		private AssetTypeClass _ClassID;

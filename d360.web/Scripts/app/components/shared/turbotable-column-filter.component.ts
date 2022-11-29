@@ -1,7 +1,6 @@
-﻿import { Component, NgModule, Input, Output, OnInit } from "@angular/core";
+﻿import { Component, EventEmitter, Input, NgModule, Output } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Table } from 'primeng/table';
-import { EventEmitter } from '@angular/core';
 
 @Component({
     selector: 'd3s-column-filter',

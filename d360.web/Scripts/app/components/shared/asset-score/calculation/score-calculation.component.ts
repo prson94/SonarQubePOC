@@ -1,7 +1,7 @@
-﻿import { Component, Input, OnChanges, OnInit, SimpleChanges } from "@angular/core";
-import { MetricFieldTypeViewModel, ScoreType, MetricAssetDefinitionViewModel } from "../../../../models/metrics.model";
+﻿import { Component, Input, OnChanges, SimpleChanges } from "@angular/core";
+import { MetricAssetDefinitionViewModel, MetricFieldTypeViewModel, ScoreType } from "../../../../models/metrics.model";
 import { Operator } from "../../../../models/operator.model";
-import { PointBreakdown, PointBreakDownConditionItem} from "../../../../models/score.model";
+import { PointBreakdown, PointBreakDownConditionItem } from "../../../../models/score.model";
 import { CompanySettingsService } from "../../../../services/settings.service";
 import { BaseComponent } from "../../base.component";
 
@@ -86,7 +86,7 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
 
     isDate(item) {
         if (this.fields && this.fields.length > 0) {
-            let f = this.fields.find((x) => x.Name === item.FieldName);
+            const f = this.fields.find((x) => x.Name === item.FieldName);
             if (f) {
                 return (f.Type === "Date");
             }

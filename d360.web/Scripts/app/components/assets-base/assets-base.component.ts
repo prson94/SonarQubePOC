@@ -40,7 +40,7 @@ export class AssetsBaseComponent extends BaseComponent implements OnInit, OnDest
 			var uidToLoad = (params['assetTypeUid'] as string).split(",")[0];
 			this.assetTypeService.GetAssetTypeByUid(uidToLoad)
 				.subscribe((res) => {
-					let cs = res.Class.ID;
+					const cs = res.Class.ID;
                     this.assetType = res;
 					this.assetTypeUid = params['assetTypeUid'];
 					this.assetTypeClass = cs;

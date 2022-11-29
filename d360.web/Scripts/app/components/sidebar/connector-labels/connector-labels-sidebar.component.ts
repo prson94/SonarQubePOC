@@ -1,4 +1,4 @@
-﻿import { Component, ViewChild, ChangeDetectorRef, ElementRef } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { AdminBaseComponent } from '../../admin/admin-base.component';
 import { ConnectorLabel } from '../../../models/connectorLabel.model';
 import { Router } from '@angular/router';
@@ -9,6 +9,7 @@ import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { CompanySettingsService } from '../../../services/settings.service';
+
 @Component({
     selector: 'd3s-connector-labels',
     templateUrl: './connector-labels-sidebar.component.html',
@@ -139,7 +140,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     saveLabel(event) {
         this.isSaving = true;
         if (event.additionalOption && event.additionalOption.uid) {
-            let arr: string[] = [];
+            const arr: string[] = [];
             arr.push(event.item.uid);
             this.consolidateLabels(event.additionalOption.uid, arr);
             return;
@@ -308,7 +309,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
             }
 
         }
-        let target = (<any>(event.target));
+        const target = (<any>(event.target));
         if (element && target.nodeName !== "P-TABLECHECKBOX") {
             this.selected = [];
             this.selected.push(item);

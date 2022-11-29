@@ -1,4 +1,4 @@
-﻿import { Input, Component } from '@angular/core';
+﻿import { Component, Input } from '@angular/core';
 import { DetailField, DetailFieldType } from '../../../models/object-detail.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';

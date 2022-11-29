@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
-import { Subject, Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 import { EditorDropDownItem, EditorField } from '../../../models/editor-field.model';
 
@@ -148,7 +148,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             return items.filter((x) => x.Text != this.chooseText).map((x) => {
                 try {
 
-                    let colorobj = JSON.parse(x.Text);
+                    const colorobj = JSON.parse(x.Text);
                     if (colorobj)
                         {return { label: colorobj.name, value: x.Value, title: colorobj.color };}
                 } catch (ex) {
@@ -160,9 +160,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getColorItemsAsEditorItem(items: any[]): EditorDropDownItem[] {
         if (items.length > 0) {
-            let its = items.filter((x) => x.Text != this.chooseText).map((x) => {
+            const its = items.filter((x) => x.Text != this.chooseText).map((x) => {
                 try {
-                    let colorobj = JSON.parse(x.Text);
+                    const colorobj = JSON.parse(x.Text);
                     if (colorobj)
                         {return { Text: colorobj.name, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group: x.Group, Color: colorobj.color };}
                 } catch (ex) {
@@ -175,7 +175,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getLabelByID(id) {
         if (id && this.field.Items && this.field.Items.length > 0) {
-            let filterItems = this.field.Items.filter((x) => x.value == id);
+            const filterItems = this.field.Items.filter((x) => x.value == id);
             if (filterItems.length > 0) {
                 return filterItems[0].label;
             }
@@ -185,7 +185,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getColorByID(id) {
         if (id && this.field.Items && this.field.Items.length > 0) {
-            let filterItems = this.field.Items.filter((x) => x.value == id);
+            const filterItems = this.field.Items.filter((x) => x.value == id);
             if (filterItems.length > 0) {
                 return filterItems[0].title;
             }
@@ -204,13 +204,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             return;
         }
 
-        let quill = this.ed.getQuill();
+        const quill = this.ed.getQuill();
 
         if (e == null && quill != null) {
-            let contents = quill.getContents();
+            const contents = quill.getContents();
 
             if (contents != null && contents.ops != null) {
-                let content = contents.ops.find((i) => i.insert != null && i.insert != '\n');
+                const content = contents.ops.find((i) => i.insert != null && i.insert != '\n');
 
                 if (content != null) {
                     this.field.Value = quill.container.querySelector('.ql-editor').innerHTML;
@@ -301,7 +301,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
                     //When setting count we need to take into calculation items that are disregarded in cardinality check but still presend in already selected items
                     //Update page count only when filters changes
-                    let hasCardinalityOne: boolean = res.results["hasCardinalityOne"] ? res.results["hasCardinalityOne"] : false;
+                    const hasCardinalityOne: boolean = res.results["hasCardinalityOne"] ? res.results["hasCardinalityOne"] : false;
                     if (res.event.globalFilter !== this.currentRelationshipLoadedFilter) {
                         if (hasCardinalityOne) {
                             var selectedCount = this.relationItems ? this.relationItems.length : 0;
@@ -349,7 +349,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         }
 
         if (this.field && this.field.Validations) {
-            for (let validation of this.field.Validations) {
+            for (const validation of this.field.Validations) {
                 if (validation.regex) {
                     this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : $localize`Value does not match the required pattern.`;
                 } else if (validation.rule && validation.rule.startsWith('increment')) {
@@ -359,7 +359,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 } else if (validation.rule && validation.rule.startsWith('max')) {
                     this.Max = +validation.rule.split("maxLength=")[1];
                 } else if (validation.rule && validation.rule.startsWith('length')) {
-                    let vals = validation.rule.split("length=")[1];
+                    const vals = validation.rule.split("length=")[1];
 
                     this.Min = +vals.split(",")[0];
                     this.Max = +vals.split(",")[1];
@@ -408,7 +408,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         if (this.field.FieldType == 'Lookup' && this.field.UseTypeahead) {
             if (this.field.Items != null && this.field.Items.length > 0) {
-                let sel: EditorDropDownItem = this.field.Items.find((i) => i.Selected == true);
+                const sel: EditorDropDownItem = this.field.Items.find((i) => i.Selected == true);
 
                 this.loadTypeAheadValue = true;
                 this.typeAheadValue = sel;
@@ -437,7 +437,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.loadTypeAheadValue) {
             this.loadTypeAheadValue = false;
             if (this.field.UseTypeahead) {
-                let el: any = document.getElementById(this.field.FieldName + '_input_' + this.component_uid);
+                const el: any = document.getElementById(this.field.FieldName + '_input_' + this.component_uid);
                 if (el != null && this.typeAheadValue != null)
                     {el.value = this.typeAheadValue.Text;}
             }
@@ -514,7 +514,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         const numInputs = document.querySelectorAll('input[type=number]');
 
         for (let i = 0; i < numInputs.length; i++) {
-            let elem = numInputs[i] as HTMLInputElement;
+            const elem = numInputs[i] as HTMLInputElement;
 
             if (elem.validity.badInput && elem.validationMessage == $localize`Please enter a number.`) {
                 if (this.field.FieldType == 'Number' && this.field.FieldName == elem.name) {
@@ -576,7 +576,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     private fieldMessage(field: string) {
         let message = "";
-        let errors = this.form.controls[field].errors;
+        const errors = this.form.controls[field].errors;
 
         if (this.form.controls[field] == undefined) {
             return '';
@@ -652,9 +652,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private toDecimalPlaces(e: any, precision: number) {
-        let asString = '' + e.target.value;
-        let val = +e.target.value;
-        let newVal = +val.toFixed(precision);
+        const asString = '' + e.target.value;
+        const val = +e.target.value;
+        const newVal = +val.toFixed(precision);
 
         if (e == null || e.target == null || precision == null) {
             return;
@@ -671,8 +671,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private clamp(e: any, min: number, max: number, precision: number) {
-        let val = e.target.value;
-        let newVal = FormHelpers.clamp(val, min, max, precision);
+        const val = e.target.value;
+        const newVal = FormHelpers.clamp(val, min, max, precision);
 
         if (e == null || e.target == null || min == null || max == null) {
             return;
@@ -690,7 +690,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     OnBlurTrim() {
-        let value: string = this.form.controls[this.field.FieldName].value;
+        const value: string = this.form.controls[this.field.FieldName].value;
 
         this.form.controls[this.field.FieldName].setValue(value.trim());
     }
@@ -728,7 +728,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             }
 
             for (let i = 0; i < this.relationItems.length; i++) { //associate the selection with the item in the table
-                let x = this.field.Items.findIndex((f) => f.Value == this.relationItems[i].Value);
+                const x = this.field.Items.findIndex((f) => f.Value == this.relationItems[i].Value);
 
                 if (x > -1) {
                     this.relationItems[i] = this.field.Items[x];
@@ -777,7 +777,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (event == null || event.field == null)
             {return;}
 
-        let field = event.field;
+        const field = event.field;
 
 
         if (this.field.FieldType == 'Relationship') {
@@ -795,15 +795,15 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 if (field.Items == null)
                     {return;}
 
-                let selectedItems = field.Value.split(',');
+                const selectedItems = field.Value.split(',');
 
                 field.Items.forEach((i) => {
-                    let selected = selectedItems.findIndex((s) => s == i.Value) > -1;
+                    const selected = selectedItems.findIndex((s) => s == i.Value) > -1;
                     if (selected) {
-                        let ix = this.field.Items.findIndex((r) => r.Value == i.Value);
+                        const ix = this.field.Items.findIndex((r) => r.Value == i.Value);
 
                         if (ix > -1) {
-                            let item = this.field.Items.slice()[ix];
+                            const item = this.field.Items.slice()[ix];
                             this.field.Items.splice(ix, 1);
                             if (this.excludedRelationitems[field.FieldName] == null)
                                 {this.excludedRelationitems[field.FieldName] = [];}
@@ -813,9 +813,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     } else {
                         if (this.excludedRelationitems[field.FieldName] == null)
                             {return;}
-                        let ix = this.excludedRelationitems[field.FieldName].findIndex((r) => r.Value == i.Value);
+                        const ix = this.excludedRelationitems[field.FieldName].findIndex((r) => r.Value == i.Value);
                         if (ix > -1) {
-                            let item = this.excludedRelationitems[field.FieldName].slice()[ix];
+                            const item = this.excludedRelationitems[field.FieldName].slice()[ix];
                             this.excludedRelationitems[field.FieldName].splice(ix, 1);
                             this.field.Items.push(item);
                         }

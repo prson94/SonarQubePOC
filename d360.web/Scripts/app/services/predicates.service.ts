@@ -50,7 +50,7 @@ export class PredicatesService extends BaseObservableService {
     }
 
     savePredicate(predicate: Predicate): Observable<ApiResult[]> {
-        let model: any[] = [];
+        const model: any[] = [];
         model.push(predicate);
         return this.http.post(`/api/v2/relationships/predicates`, model).pipe(
             map((response) => response),

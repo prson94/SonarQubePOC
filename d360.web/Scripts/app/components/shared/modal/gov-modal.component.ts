@@ -1,4 +1,16 @@
-﻿import { Component, Input, Output, HostListener, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef, AfterContentInit, OnDestroy } from '@angular/core';
+﻿import {
+    AfterContentInit,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input,
+    OnChanges,
+    OnDestroy,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 
 
 @Component({
@@ -68,7 +80,7 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
 
     @HostListener('wheel', ['$event'])
     handleWheelEvent(event) {
-        let path: any[] = event.path;
+        const path: any[] = event.path;
 		//add scroll exceptions here
         if (this.display === true
             && !(path.filter((x) => x.tagName === 'D3S-TAG-USAGE').length > 0)

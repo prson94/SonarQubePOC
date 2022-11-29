@@ -1,6 +1,4 @@
-﻿
-import { HTTP_INTERCEPTORS, } from '@angular/common/http';
-import { NgModule } from '@angular/core';
+﻿import { NgModule } from '@angular/core';
 import { AssetDetailFieldComponent } from "./asset-detail-field.component";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";

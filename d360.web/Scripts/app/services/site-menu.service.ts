@@ -183,7 +183,7 @@ export class SiteMenuService extends BaseObservableService {
 
 
     removeSiteNavPermission(permission: SiteNavPermission) {
-        let options = {
+        const options = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json'
             }),
@@ -244,7 +244,7 @@ export class SiteMenuService extends BaseObservableService {
     }
 
     getSecondaryNav(data: SecondaryNavPostModel, preloadTreeData = false) {
-        let options = {
+        const options = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json'
             }),

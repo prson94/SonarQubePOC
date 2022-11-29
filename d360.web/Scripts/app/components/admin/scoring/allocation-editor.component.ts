@@ -71,7 +71,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
         private cdRef: ChangeDetectorRef) {
         super(settingsService);
 
-        let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+        const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
         this.scoringHelpPage = helpBaseUri + "Default.htm#d-admin/scoring.htm?Highlight=scoring";
         this.selection = new ScoreTypeAllocation();
         this.selection.isExternallyCalculated = false;

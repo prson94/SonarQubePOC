@@ -1,6 +1,6 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 
 import { RouterModule } from '@angular/router';
@@ -33,6 +33,9 @@ import { CoreModule } from "../../shared/core.module";
 import { ResourceApiKeyModule } from '../../resource/api-key/resource-api.module';
 import { HeaderBackButtonComponent } from './header-back-button.component';
 import { ThirdPartyLicensesModule } from '../controls/third-party-licenses/third-party-licenses.component';
+import { HeaderLanguageSettingComponent } from './header-language-setting.component';
+import { IgMessageBoxModule } from '../controls/message-box/message-box.module';
+import { DropdownModule } from 'primeng/dropdown';
 import { UseBreadcrumbsComponent } from './use-breadcrumbs.component';
 
 
@@ -56,9 +59,11 @@ import { UseBreadcrumbsComponent } from './use-breadcrumbs.component';
         TreeModule, 
         DialogModule,
         SiteModalModule,
-        ResourceApiKeyModule,
+		ResourceApiKeyModule,
+		DropdownModule,
 
-        TooltipModule
+		TooltipModule,
+		IgMessageBoxModule
     ],
     declarations: [
         HeaderActionsComponent,
@@ -73,7 +78,8 @@ import { UseBreadcrumbsComponent } from './use-breadcrumbs.component';
         HeaderHomePageComponent,
         HeaderProfileComponent,
         HeaderMiniMenuComponent,
-        HeaderBackButtonComponent,
+		HeaderBackButtonComponent,
+		HeaderLanguageSettingComponent,
         UseBreadcrumbsComponent
     ],
     exports: [

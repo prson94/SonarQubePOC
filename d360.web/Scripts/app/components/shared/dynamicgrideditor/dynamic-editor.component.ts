@@ -3,15 +3,14 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
+    ElementRef,
     EventEmitter,
     Input,
     OnChanges,
     OnInit,
     Output,
     SimpleChange,
-
-    ViewChild,
-    ElementRef
+    ViewChild
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
@@ -275,7 +274,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
 
                 if (this.categories.findIndex((dc) => dc.name == currentCategory) == -1) {
-                    let category = new EditorCategory();
+                    const category = new EditorCategory();
                     category.name = currentCategory;
                     category.rows = [];
                     if (currentCategory == "") {
@@ -298,13 +297,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     }
                 }
 
-                let curCategory = this.categories.find((dc) => dc.name == currentCategory);
+                const curCategory = this.categories.find((dc) => dc.name == currentCategory);
 
-                let r = curCategory.rows.find((r) => r.Row == (f.Row || 0));
+                const r = curCategory.rows.find((r) => r.Row == (f.Row || 0));
                 if (r) {
                     r.Fields.push(f);
                 } else {
-                    let n = new EditorRow();
+                    const n = new EditorRow();
 
                     n.Row = f.Row;
                     n.Fields.push(f);
@@ -352,12 +351,12 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
 
     toFormGroup(editorField: EditorField[]) {
-        let group: any = {};
+        const group: any = {};
 
         editorField.forEach((field) => {
             //if its a link we need to add two fields a link and name            
             if (field.FieldType == "Link") {
-                let parts = (field.Value ? field.Value.split("|") : []);
+                const parts = (field.Value ? field.Value.split("|") : []);
                 let url = "";
                 let name = "";
 
@@ -375,7 +374,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             }
             else if (field.FieldType == "DateTime" || field.FieldType == "Date") {
                 if (field.Value != null) {
-                    let date = new Date(field.Value);
+                    const date = new Date(field.Value);
                     field.Value = date;
                 }
 
@@ -390,11 +389,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                         field.Value = JSON.parse(field.Value);
                     }
                 } else if (field.FieldType == "Lookup" && !field.Value && this.selection) {
-                    let selected = field.Items.filter((x) => x.Selected);
+                    const selected = field.Items.filter((x) => x.Selected);
 
                     field.Value = [];
 
-                    for (let item of selected) {
+                    for (const item of selected) {
                         field.Value.push(item.Value);
                     }
 
@@ -436,7 +435,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         let maxLen = Number.MAX_SAFE_INTEGER;
 
         if (field.Validations) {
-            for (let validation of field.Validations) {
+            for (const validation of field.Validations) {
                 if (validation.rule && validation.rule.startsWith('length=')) {
                     var vals = validation.rule.split(',');
 
@@ -523,17 +522,17 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     onSubmit() {
         this.savingInProgress = true;
-        let action = (this.selection == null ? "new" : "edit");
-        let values: any = {};
+        const action = (this.selection == null ? "new" : "edit");
+        const values: any = {};
 
         //adjust any dates to utc
         for (var p in this.form.value) {
             if (this.form.value.hasOwnProperty(p)) {
-                let field = this.fields.find((f) => f.FieldName == p);
+                const field = this.fields.find((f) => f.FieldName == p);
 
                 if (this.form.value[p] instanceof Date) {
                     if (field != null && field.FieldType == 'Date' && this.isV2API) {
-                        let simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
+                        const simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
                         this.form.value[p] = simpleDate;
                     }
                     else if (field != null && field.FieldType == 'DateTime' && this.isV2API) {
@@ -569,12 +568,12 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         // if this is the v2 api we need to combine any link field types into the format stored in the db
         // tallyfy|https://tallyfy.com/what-is-compliance-management/
         if (this.isV2API || this.useV2ApiLink) {
-            let links = this.fields.filter((x) => x.FieldType == 'Link');
+            const links = this.fields.filter((x) => x.FieldType == 'Link');
             //need to get the link and url for each            
-            for (let link of links) {
-                let url = values[link.FieldName + '_Url'];
+            for (const link of links) {
+                const url = values[link.FieldName + '_Url'];
                 delete values[link.FieldName + '_Url'];
-                let name = values[link.FieldName + '_Name'];
+                const name = values[link.FieldName + '_Name'];
                 delete values[link.FieldName + '_Name'];
                 //No name and url, use empty string rather than '|'
                 values[link.FieldName] = (name == '' && url == '') ? `` : `${name}|${url}`;
@@ -619,8 +618,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     postToApiV2(event) {
         this.isLoading = true;
-        let values: any = {};
-        let asset: AssetEditorModel = new AssetEditorModel();
+        const values: any = {};
+        const asset: AssetEditorModel = new AssetEditorModel();
         asset.Fields = {};
 
         //takes the form and convert any array values to , separated string values
@@ -659,7 +658,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 event.Success = res.Success;
 
                 if (res.Success) {
-                    let msg = asset.Uid ? $localize`Successfully updated` : $localize`Successfully added`;
+                    const msg = asset.Uid ? $localize`Successfully updated` : $localize`Successfully added`;
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     if (res.uid) {
                         event.assetUid = res.uid;

@@ -5,8 +5,6 @@ import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../../shared/core.module';
 import { ResourceModule } from '../../resource/resource.module';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 import { TakeSurveyComponent } from './take-survey.component';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { RadioButtonModule } from 'primeng/radiobutton';

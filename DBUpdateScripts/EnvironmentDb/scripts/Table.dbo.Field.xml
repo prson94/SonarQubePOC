@@ -250,6 +250,25 @@ END
 		]]>
 	</rollback>
   </changeSet> 
+ 
+  <changeSet author="PuneetGupta" id="Index.dbo.Field-Drop-v1">
+   <comment>GOV-20274</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'IX_FieldTypeIdAssetID_Include')
+BEGIN
+	DROP INDEX [IX_FieldTypeIdAssetID_Include] ON [dbo].[field]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet> 
   
     <changeSet author="Tomislav Duric" id="Table.dbo.Field-Field_AfterUpsert-v17">
     <comment>GOV-20348</comment>

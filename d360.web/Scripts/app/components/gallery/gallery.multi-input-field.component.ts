@@ -70,7 +70,7 @@ export function NoDuplicate(): ValidatorFn {
     }
 
     return (control: AbstractControl): ValidationErrors | null => {
-        let val: string[] = control.value;
+        const val: string[] = control.value;
         if (hasDuplicates(val)) {
             return { "duplicates": true };
         }

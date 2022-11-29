@@ -1,4 +1,13 @@
-import { Component, ChangeDetectionStrategy, Input, DoCheck, ChangeDetectorRef, ElementRef, ViewChild, AfterViewChecked, OnChanges } from '@angular/core';
+import {
+    AfterViewChecked,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    DoCheck,
+    ElementRef,
+    Input,
+    ViewChild
+} from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -94,8 +103,8 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
 
     customSort(event: SortEvent) {
         event.data.sort((data1, data2) => {
-            let value1 = data1[event.field];
-            let value2 = data2[event.field];
+            const value1 = data1[event.field];
+            const value2 = data2[event.field];
             let result = null;
 
             if (value1 == null && value2 != null)

@@ -1,7 +1,17 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChange
+} from '@angular/core';
 import { SelectItem } from 'primeng/api';
-import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../../models/grid-definition.model';
-import { FilterField, FilterFieldType, FilterExpression } from '../../models/filter-field.model';
+import { GridFilterColumn, GridFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
+import { FilterExpression, FilterField, FilterFieldType } from '../../models/filter-field.model';
 import { FormHelpers } from '../../static/form-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
 
@@ -85,7 +95,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
 
         if (changes["fields"] && this.fields != null && this.fields.length > 0) {
             this.availableFilters = [];
-            for (let field of this.fields) {
+            for (const field of this.fields) {
                 this.availableFilters.push({
                     Data: field, Name: `${field.text}`, Type: FilterFieldType.Field
                 });
@@ -93,7 +103,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
             if (this.filters.length > 0) {
                 this.internalFilters = this.internalFilters.filter((x) => x.Type !== FilterFieldType.Field);
 
-                for (let filter of this.filters) {
+                for (const filter of this.filters) {
                     this.internalFilters.push({
                         Type: FilterFieldType.Field,
                         Data: filter,
@@ -106,7 +116,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
 
     onSubmit() {
         this.filters = [];
-        for (let internalFilter of this.internalFilters) {
+        for (const internalFilter of this.internalFilters) {
             if (internalFilter.Type === FilterFieldType.Field && internalFilter.Data.value) {
                 this.filters.push(internalFilter.Data);
             }
@@ -115,14 +125,14 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     }
 
     private onDateSelected($event, filter) {
-        let d = new Date(Date.parse($event));
+        const d = new Date(Date.parse($event));
         if (d.toString() !== "Invalid Date") {
             filter.Data.value = this.getUTCFormattedDateForSearch(d, false, false);
         }
     }
 
     private onDateBlur(filter) {
-        let d = new Date(Date.parse(filter.Data.value));
+        const d = new Date(Date.parse(filter.Data.value));
         if (d.toString() !== "Invalid Date")
             {filter.Data.value = this.getUTCFormattedDateForSearch(d, true, false);}
         else
@@ -130,7 +140,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     }
 
     private prepareDateValueForCalendar(filter): string {
-        let d = new Date(Date.parse(filter.Data.value));
+        const d = new Date(Date.parse(filter.Data.value));
         if (d.toString() !== "Invalid Date")
             {return this.getUTCFormattedDateForSearch(d, true, true);}
         else
@@ -185,7 +195,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
 
 
     private removeFilter(filter: FilterExpression) {
-        let index = this.internalFilters.indexOf(filter);
+        const index = this.internalFilters.indexOf(filter);
         this.internalFilters.splice(index, 1);
         setTimeout(() => {
             this.ref.markForCheck();

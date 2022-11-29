@@ -1,4 +1,13 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, ViewEncapsulation } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnChanges,
+    OnDestroy,
+    SimpleChange,
+    ViewEncapsulation
+} from '@angular/core';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetService } from '../../../services/asset.service';
@@ -48,7 +57,7 @@ export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
         private cdRef: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === 'uid') {
                 this.load();
             }

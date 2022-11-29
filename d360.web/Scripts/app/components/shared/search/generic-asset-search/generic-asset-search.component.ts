@@ -1,7 +1,29 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 import { AssetService } from '../../../../services/asset.service';
-import { AssetSearchFilter, CommonComponentAssetTypeFilterRelationshipSide, CommonComponentAssetSelection, CommonComponentSelectStyle, CommonComponentAssetResultExt, CommonComponentAssetResult, CommonComponentAssetTypeFilter, CommonComponentDisplayStyle } from '../../../../models/asset-search.model';
-import { PredicateType, Predicate } from '../../../../models/predicate.model';
+import {
+    AssetSearchFilter,
+    CommonComponentAssetResult,
+    CommonComponentAssetResultExt,
+    CommonComponentAssetSelection,
+    CommonComponentAssetTypeFilter,
+    CommonComponentAssetTypeFilterRelationshipSide,
+    CommonComponentDisplayStyle,
+    CommonComponentSelectStyle
+} from '../../../../models/asset-search.model';
+import { Predicate, PredicateType } from '../../../../models/predicate.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { ToolTipService } from '../../../../services/tooltip.service';
 
@@ -145,7 +167,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         this.selected.forEach((item) => {
             if (!item.Segments) {itemsToResolve.push({ uid: item.Uid, typeUid: item.AssetTypeUid });}
         });
-        let groups = itemsToResolve.reduce((r, a) => {
+        const groups = itemsToResolve.reduce((r, a) => {
             r[a.typeUid] = [...r[a.typeUid] || [], a];
             return r;
         }, {});
@@ -182,7 +204,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
             this.searchresults.forEach((item) => {
                 if (!item.Segments) {itemsToResolve.push({ uid: item.Uid, typeUid: item.AssetTypeUid });}
             });
-            let groups = itemsToResolve.reduce((r, a) => {
+            const groups = itemsToResolve.reduce((r, a) => {
                 r[a.typeUid] = [...r[a.typeUid] || [], a];
                 return r;
             }, {});
@@ -262,7 +284,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
                 this.searchresults = JSON.parse(JSON.stringify(result.items));
 
                 this.selected.forEach((s) => {
-                    let ix = this.searchresults.findIndex((x) => x.Uid === s.Uid);
+                    const ix = this.searchresults.findIndex((x) => x.Uid === s.Uid);
 
                     if (ix > -1) {
                         this.searchresults.splice(ix, 1);

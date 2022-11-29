@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -13,7 +13,7 @@ import { Subscription } from 'rxjs';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
-import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
+import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 

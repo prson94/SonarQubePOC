@@ -1,4 +1,14 @@
-﻿import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input, OnInit, HostBinding, ViewChild, ElementRef, Renderer2  } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostBinding,
+    Input,
+    OnInit,
+    Output,
+    Renderer2
+} from '@angular/core';
 import * as go from 'gojs';
 
 @Component({

@@ -660,7 +660,7 @@ namespace d360.extensions.search
                             AssetID = o.AssetID,
                             ItemUniqueID = o.ItemUniqueID,
                             AssetType = o.TypeName,
-                            RelativeUrl = $"asset/{o.Uid}",
+                            RelativeUrl = $"asset/{o.Uid.ToString().ToLower()}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
                             AssetPath = GetPathArrayFromSegments(o.Segments),
@@ -700,7 +700,7 @@ namespace d360.extensions.search
                             CompanyID = companyID,
                             ID = o.ID,
                             AssetType = "Reference List",
-                            RelativeUrl = $"reference/{o.ID}",
+                            RelativeUrl = $"assets/{o.AssetTypeUid.ToString().ToLower()}",
                             AssetTypeUid = o.AssetTypeUid,
                             AssetPath = o.Path.Split(new[] { pathSeperator }, StringSplitOptions.RemoveEmptyEntries),
                             Fields = new Dictionary<string, string>() {
@@ -758,7 +758,7 @@ namespace d360.extensions.search
                             AssetID = o.AssetID,
                             ItemUniqueID = o.ItemUniqueID,
                             AssetType = o.TypeName,
-                            RelativeUrl = $"resource/{o.ID}",
+                            RelativeUrl = $"users/{o.Uid.ToString().ToLower()}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
                             Fields = new Dictionary<string, string>() {
@@ -1018,8 +1018,8 @@ namespace d360.extensions.search
                             CompanyID = companyID,
                             ID = o.ID,
                             AssetType = "Reference List",
-                            RelativeUrl = $"reference/{o.ID}",
-                            AssetTypeUid = o.AssetTypeUid,
+                            RelativeUrl = $"assets/{o.AssetTypeUid.ToString().ToLower()}",
+							AssetTypeUid = o.AssetTypeUid,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Name },
                                 { "Description", o.Description }

@@ -299,16 +299,16 @@ namespace d360.core.entities
 			return this.joins.Distinct().Where(x => x.FieldIdentifier == id.ToString()).Select(x => x.SQLStatement).FirstOrDefault();
 		}
 
-		public void Add(string statement, string fieldIdentifier, string simpleStatement = null)
+		public void Add(string statement, string fieldIdentifier, string simpleStatement = null, AssetFieldFilter fieldFilter = null)
 		{
-			this.joins.Add(new DynamicQueryJoinData { SQLStatement = statement, FieldIdentifier = fieldIdentifier, SimpleStatement = simpleStatement });
+			this.joins.Add(new DynamicQueryJoinData { SQLStatement = statement, FieldIdentifier = fieldIdentifier, SimpleStatement = simpleStatement, FieldFilter = fieldFilter });
 		}
 
 		public void AddRange(IEnumerable<DynamicQueryJoinData> values)
 		{
 			foreach (var value in values)
 			{
-				this.joins.Add(new DynamicQueryJoinData { SQLStatement = value.SQLStatement, FieldIdentifier = value.FieldIdentifier, SimpleStatement = value.SimpleStatement });
+				this.joins.Add(new DynamicQueryJoinData { SQLStatement = value.SQLStatement, FieldIdentifier = value.FieldIdentifier, SimpleStatement = value.SimpleStatement, FieldFilter = value.FieldFilter });
 			}
 		}
 
@@ -375,6 +375,7 @@ namespace d360.core.entities
 		public string SQLStatement { get; set; }
 		public string FieldIdentifier { get; set; }
 		public string SimpleStatement { get; set; }
+		public AssetFieldFilter FieldFilter { get; set; }
 		public int Sort
 		{
 			get
@@ -389,6 +390,12 @@ namespace d360.core.entities
 				}
 			}
 		}
+	}
+
+	public class AssetFieldFilter
+	{
+		public string SimpleFilterTempTable { get; set; }
+		public string SimpleFilterStatement { get; set; }
 	}
 
 	public class DynamicQuerySelects

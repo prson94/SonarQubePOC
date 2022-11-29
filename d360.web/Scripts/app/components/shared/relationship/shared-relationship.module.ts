@@ -1,8 +1,7 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule }    from '@angular/router';
-
+import { RouterModule } from '@angular/router';
 
 
 import { ButtonModule } from 'primeng/button';
@@ -12,7 +11,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../core.module';
-import { TilesModule  } from '../tiles/tiles.module';
+import { TilesModule } from '../tiles/tiles.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';

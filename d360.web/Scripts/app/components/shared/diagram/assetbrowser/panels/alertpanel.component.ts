@@ -1,4 +1,15 @@
-import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { AssetBrowserAlert, AssetBrowserAlertRequest } from '../../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../../services/browser.service';
@@ -52,7 +63,7 @@ export class AssetBrowserAlertPanelComponent implements OnInit, AfterViewInit, O
         if (this.assets.length > 0) {
             this.loading = true;
 
-            let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
+            const model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
 
             this.assets.forEach((a) => {
                 model.assets.push({ uid: a });

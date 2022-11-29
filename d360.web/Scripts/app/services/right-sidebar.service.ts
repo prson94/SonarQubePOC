@@ -206,7 +206,7 @@ export class SecondaryNavService {
     }
 
     getItemState(url: string): NavState {
-        let current = this.getCurrentState();
+        const current = this.getCurrentState();
         return current.previousStates.find((state) => state.currentTab && state.currentTab.url === url);
     }
     

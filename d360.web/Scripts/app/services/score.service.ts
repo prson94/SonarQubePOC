@@ -50,7 +50,7 @@ export class ScoreService extends BaseObservableService {
     }
 
     getPointBreakdown(assetUid: string, type: ScoreType, date: string = null): Observable<PointBreakdown[]> {
-        let uri = `/api/v2/metrics/${type}/${assetUid}/pointbreakdown` + (date == null ? "" : `?effectiveDate=${date}`);
+        const uri = `/api/v2/metrics/${type}/${assetUid}/pointbreakdown` + (date == null ? "" : `?effectiveDate=${date}`);
         return this.http.get(uri)
             .pipe(
                 map((response) => <PointBreakdown[]>response),

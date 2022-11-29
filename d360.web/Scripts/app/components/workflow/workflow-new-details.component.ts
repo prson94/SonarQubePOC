@@ -1,14 +1,14 @@
-﻿import { Input, Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { Router, ActivatedRoute }       from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import {
-    WorkflowType,
+    BulkWorkflowFormModel,
+    BulkWorkflowReassignModel,
     WorkflowAssignmentDetail,
     WorkflowAssignmentSummary,
-    BulkWorkflowFormModel,
-    BulkWorkflowReassignModel
+    WorkflowType
 } from '../../models/workflow.model';
 import { Title } from '@angular/platform-browser';
 import { WorkflowService } from '../../services/workflow.service';
@@ -125,7 +125,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.bulkReassignModel.OriginalAssigneeResourceID = isNaN(this.resourceID) ? CurrentResourceID : this.resourceID;
             this.bulkReassignModel.StepName = this.assignmentSummary.StepName;
             this.bulkReassignModel.StepHasFormEmails = this.assignmentSummary.SendFormEmail;
-            let noOfItemsCanClearAssignments = this.selection.filter((x) => { return x.countAssigned > 1 && x.responseType.toLowerCase() === "firstresponse"; }).length;
+            const noOfItemsCanClearAssignments = this.selection.filter((x) => { return x.countAssigned > 1 && x.responseType.toLowerCase() === "firstresponse"; }).length;
             //only show option to bulk clear other assignments if all have the ability to clear assignments 
             this.bulkReassignModel.IsClearOtherAssignmentsAllowed = (noOfItemsCanClearAssignments === this.selection.length);
             this.showBulkReassignEditor = true;

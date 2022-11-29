@@ -1,9 +1,18 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { BaseComponent } from "../shared/base.component";
 import { WorkflowService } from "../../services/workflow.service";
 import { GridFilterColumn, GridFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
 import { WorkflowMonitorService } from '../../services/workflowmonitor.service';
-import * as _ from 'lodash';
 import { StringHelpers } from '../../static/string-helpers';
 import { State } from '../../models/asset.model';
 import { map } from 'rxjs/operators';
@@ -139,7 +148,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
     change(e: any) {
         if (this.usePredefinedFilters)
             {return;}
-        let data = new GridFilterExpression();
+        const data = new GridFilterExpression();
         data.field = "WorkflowId";
         data.condition = "IN";
         data.fieldtype = GridFilterFieldType.Normal;

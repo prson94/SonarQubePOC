@@ -11,8 +11,6 @@ import { TilesModule } from '../../shared/tiles/tiles.module';
 import { ActionsRoutingModule } from './actions.routes';
 import { ActionsComponent } from './actions.component';
 import { WorkflowModule } from '../../workflow/workflow.module';
-import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 @NgModule({
     imports: [
