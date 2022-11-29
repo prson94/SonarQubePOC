@@ -355,7 +355,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.configMenu.NavigationItems.push({ Name: $localize`Business Assets`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`, Items: null, IsLink: false, count: null });
         this.configMenu.NavigationItems.push({ Name: $localize`Technical Assets`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`, Items: null, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: $localize`Diagram Assets`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS}`, Items: null, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Diagram Assets`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_DIAGRAM}`, Items: null, IsLink: false, count: null });
         this.configMenu.NavigationItems.push({ Name: $localize`Models`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`, Items: null, IsLink: false, count: null });
         this.configMenu.NavigationItems.push({ Name: $localize`Policies`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`, Items: null, IsLink: false, count: null });
         this.configMenu.NavigationItems.push({ Name: $localize`Rules`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`, Items: null, IsLink: false, count: null });

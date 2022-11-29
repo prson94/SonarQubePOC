@@ -997,9 +997,6 @@ export class BaseComponent {
 			else if ((this.baseAssetTypeUid ?? "").toLowerCase() === this.resourceTypeUid.toLowerCase()) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES;
 			}
-			else if (r?.AssetTypeClass === AssetTypeClass.DiagramAsset) {
-				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS;
-			}
 			else if (r?.AssetTypeClass === AssetTypeClass.User) {
 				homeUrl = "users/" + this.uid;
 			}
