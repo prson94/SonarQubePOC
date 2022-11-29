@@ -22,22 +22,7 @@ declare var DataDogService;
     host: {
         '(window:resize)': 'setMaxHeight()'
     },
-    template: ` <header #header>
-                    <d3s-header></d3s-header>
-                    <d3s-site-menu (menuChanged)="handleMenuChange($event)" [menuOpen]="menuOpen"></d3s-site-menu>
-                </header>
-                <main>
-                    <d3s-right-sidebar #sidebar [menuOpen]="menuOpen" (changed)="setMaxHeight()"></d3s-right-sidebar>
-                    <div class="row d3s-content-pane" [ngStyle]="{'height.px': maxContentPaneHeight}">
-                        <div class="row">
-                            <div [ngClass]="{maincontent: !menuOpen, 'maincontent-open': menuOpen, 'maincontent-second': secondNavOpen}" [style.margin-left]="hideNav ? '0' : null">
-                                <router-outlet></router-outlet>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-                <p-toast [baseZIndex]="200001"></p-toast>
-              `,
+    templateUrl: 'app.component.html',
     providers: [MessageService]
 })
 

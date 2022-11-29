@@ -10,37 +10,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 @Component({
     selector: 'd3s-admin-nym-allocations',
     providers: [ObjectDetailService],
-    template: `
-        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <div *ngIf="!isLoading">
-            <table class="striped">
-                <thead>
-                <tr>
-                    <th class="permission-header"></th>
-                    <th style="width: 15%;"
-                        class="permission-header" i18n>Enabled</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr *ngFor="let nym of nyms" class="nym-row">
-                    <td>{{nym.Name}}</td>
-                    <td>
-                        <p-checkbox igCheckbox [(ngModel)]="nym.Enabled" [disabled]="readonly" [binary]="true"></p-checkbox>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-            <div *ngIf="!readonly"
-                 class="pull-right"
-                 style="padding:5px">
-                <button igButton
-						class="ig-button-primary"
-                        i18n-label
-                        label="Save Changes"
-                        (click)="save()"></button>
-            </div>
-        </div>
-    `
+    templateUrl: 'admin-nym-allocations.component.html'
 })
 
 export class AdminNymAllocationsComponent extends BaseComponent implements OnChanges {
