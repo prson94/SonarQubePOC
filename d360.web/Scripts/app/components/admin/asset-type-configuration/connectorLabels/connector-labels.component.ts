@@ -1,17 +1,19 @@
-﻿import { Component, ViewChild, ChangeDetectorRef, ElementRef } from '@angular/core';
-import { AdminBaseComponent } from '../../admin/admin-base.component';
-import { ConnectorLabel } from '../../../models/connectorLabel.model';
-import { Router } from '@angular/router';
-import { ConnectorLabelService } from '../../../services/connectorLabel.service';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { Title } from '@angular/platform-browser';
-import { SecondaryNavService } from '../../../services/right-sidebar.service';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { CompanySettingsService } from '../../../services/settings.service';
+﻿import { Component, ViewChild, ChangeDetectorRef, ElementRef } from "@angular/core";
+import { Title } from "@angular/platform-browser";
+import { Router } from "@angular/router";
+import { ConnectorLabel } from "../../../../models/connectorLabel.model";
+import { ConnectorLabelService } from "../../../../services/connectorLabel.service";
+import { HeaderBreadcrumbService } from "../../../../services/header-breadcrumb.service";
+import { MessagesObservableService } from "../../../../services/messages-observable.service";
+import { SecondaryNavService } from "../../../../services/right-sidebar.service";
+import { CompanySettingsService } from "../../../../services/settings.service";
+import { SiteUrlHelpers } from "../../../../static/site-url-helpers";
+import { AdminBaseComponent } from "../../admin-base.component";
+
 @Component({
     selector: 'd3s-connector-labels',
-    templateUrl: './connector-labels-sidebar.component.html',
+    templateUrl: './connector-labels.component.html',
+    styleUrls: ['./connector-labels.component.less'],
     providers: [ConnectorLabelService]
 })
 

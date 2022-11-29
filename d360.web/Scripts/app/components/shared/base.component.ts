@@ -78,8 +78,6 @@ export class BaseComponent {
 	itemOwnSidebar: SecondaryNavItem;
 	followingSidebar: SecondaryNavItem;
 
-	connectorLabels: SecondaryNavItem;
-
 	// tabs
 
 	lineageShowUsageOnly = false;
@@ -500,13 +498,6 @@ export class BaseComponent {
 					`/asset/${this.uid}/comments`, null, 33
 				);
 				this.secondaryNavService.showItem(this.commentsSidebar);
-			}
-
-			if (this.objectType === 'TaskType') {
-				this.connectorLabels = new SecondaryNavItem(
-					$localize`Connector Labels`, 'ConnectorLabels', null,
-					'/sidebar/connectorLabels', null, 4);
-				this.secondaryNavService.showItem(this.connectorLabels);
 			}
 
 			this.sidebarSubscription = this.secondaryNavService.rightSidebarClicked$.subscribe(
@@ -1192,7 +1183,6 @@ export class BaseComponent {
 		components.push(this.childSidebar);
 		components.push(this.fieldNav);
 		components.push(this.ruleResultSidebar);
-		components.push(this.connectorLabels);
 		components.push(this.groupsSidebar);
 		components.push(this.itemOwnSidebar);
 		components.push(this.followingSidebar);

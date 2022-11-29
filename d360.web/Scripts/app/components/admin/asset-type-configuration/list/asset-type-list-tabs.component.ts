@@ -44,6 +44,13 @@ export class ConfigurationAssetTypeListTabsComponent {
                 warningMessage: this.showGovernanceRolesWarning
                         ? 'GovRoleWarning'
                     : null
+            },
+            {
+                url: `${baseUrl}/connectorLabels`,
+                title: $localize`Connector Labels`,
+                isVisible: () => [
+                    AssetTypeClass.DiagramAsset
+                ].includes(this.assetTypeClass)
             }
         ];
     }

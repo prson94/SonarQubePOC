@@ -16,8 +16,6 @@ import { TilesModule } from '../../shared/tiles/tiles.module';
 import { EditorModule } from 'primeng/editor';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
-import { ConnectorLabelsRoutingModule } from './connector-labels-sidebar.routes';
-import { ConnectorLabelsComponent } from './connector-labels-sidebar.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';

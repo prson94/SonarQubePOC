@@ -39,8 +39,6 @@ export class SiteUrlHelpers {
 	static SITE_URL_ITEM_OWN_ROOT = 'sidebar/itemown';
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
     static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';
-    static SITE_URL_GOVERNANCE_ROLES_ROOT = 'sidebar/governanceRoles';
-    static SITE_URL_CONNECTOR_LABELS_ROOT = 'sidebar/connectorLabels';
     static SITE_URL_SEMANTICTYPES_ROOT = 'semantics';
     //asset child routes
     static SITE_URL_ASSET_RULE = 'Rule';

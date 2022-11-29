@@ -41,6 +41,8 @@ import { FormsModule } from '@angular/forms';
 import { EditorModule } from 'primeng/editor';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
+import { ConfigurationAssetTypeConnectorLabelsPageComponent } from './connectorLabels/configuration-asset-type-connector-labels-page.component';
+import { ConnectorLabelsModule } from './connectorLabels/connector-labels.module';
 
 @NgModule({
     imports: [
@@ -67,7 +69,8 @@ import { ButtonModule } from 'primeng/button';
         AdminModule,
         AdminRelationshipEditorModule,
         AuditModule,
-        HeaderModule
+        HeaderModule,
+        ConnectorLabelsModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
@@ -85,6 +88,7 @@ import { ButtonModule } from 'primeng/button';
         ConfigurationAssetTypeLogPageComponent,
         ConfigurationAssetTypeBreadcrumbsComponent,
         ConfigurationAssetTypeListTabsComponent,
+        ConfigurationAssetTypeConnectorLabelsPageComponent,
         GovernanceRolesComponent
     ],
     exports: [],

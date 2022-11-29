@@ -12,6 +12,7 @@ import { ConfigurationAssetTypeRelationshipsPageComponent } from './tabs/relatio
 import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration-asset-type-log-page.component';
 import { featuresToTypeClasses } from './shared/featuresToTypeClasses';
 import { GovernanceRolesComponent } from './governanceRoles/governance-roles.component';
+import { ConfigurationAssetTypeConnectorLabelsPageComponent } from './connectorLabels/configuration-asset-type-connector-labels-page.component';
 
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
@@ -84,6 +85,10 @@ export const assetTypeConfigurationRoutes: Routes = [
     {
         path: 'DiagramAsset/governanceRoles',
         component: GovernanceRolesComponent
+    },
+    {
+        path: 'DiagramAsset/connectorLabels',
+        component: ConfigurationAssetTypeConnectorLabelsPageComponent,
     },
     {
         path: ':typeClass/new',
