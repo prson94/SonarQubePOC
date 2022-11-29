@@ -33,6 +33,7 @@ using Microsoft.PowerBI.Api.V2;
 using d360.web.Extensions;
 using System.Net.Http.Formatting;
 using System.Collections.Specialized;
+using d360.web.Utilities;
 
 namespace d360.web.Controllers.V2
 {
@@ -2629,6 +2630,32 @@ namespace d360.web.Controllers.V2
 		}
 
 		#endregion
+
+		[HttpPost, AjaxValidateAntiForgeryToken, Route("me/language"), ApiExplorerSettings(IgnoreApi = true)]
+		public async Task<HttpResponseMessage> UpdateCurrentUserLanguage(UserLanguageModel model)
+		{
+			
+			if (model == null)
+			{
+				throw new ArgumentException(ApiMessages.InvalidModel);
+			}
+
+			if (model.LanguageCode != null && !InternationalizationUtilities.AllowedUILocales.Select(x=> x.ToLowerInvariant()).Contains(model.LanguageCode.ToLowerInvariant()))
+			{
+				throw new ArgumentException(String.Format(ApiMessages.InvalidLanguageCode, String.Join(", ", InternationalizationUtilities.AllowedUILocales)));
+			}
+
+			if (model.LanguageCode == null)
+			{
+				await this.ResourceSettingRepository.DeleteGlobalSetting(Company.CurrentResourceID, "ApplicationLanguage");
+			}
+			else
+			{
+				await this.ResourceSettingRepository.UpsertGlobalSetting(Company.CurrentResourceID, "ApplicationLanguage", model.LanguageCode);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK);
+		}
 		private bool IsDark(string htmlColor)
 		{
 			Color color = ColorTranslator.FromHtml(htmlColor);

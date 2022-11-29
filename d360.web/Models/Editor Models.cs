@@ -78,7 +78,12 @@ namespace d360.web.Models
         public CompanyRebuildJobToken Job { get; set; }
     }
 
-    public class CompanySettingsIpRestrictionEditorModel
+	public class UserLanguageModel
+	{
+		public string LanguageCode { get; set; }
+	}
+
+	public class CompanySettingsIpRestrictionEditorModel
     {
         public string Name { get; set; }
 

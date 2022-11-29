@@ -3,10 +3,12 @@ import { Injectable } from "@angular/core";
 import { Observable, throwError } from "rxjs";
 import { catchError } from "rxjs/operators";
 
+declare let ApplicationLanguageSetting;
+
 @Injectable()
 export class GovernRequestInterceptor implements HttpInterceptor {
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        let returnResult;
+		let returnResult;
 
         if (req.method === 'POST') {
             returnResult = req.clone(
@@ -19,7 +21,12 @@ export class GovernRequestInterceptor implements HttpInterceptor {
             );
         } else {
             returnResult = req;
-        }
+		}
+
+		if (ApplicationLanguageSetting) {
+			returnResult = returnResult.clone({ headers: req.headers.set('Accept-Language', ApplicationLanguageSetting) });
+		}
+
         return next.handle(returnResult).pipe(catchError((error: Response) => this.handleError(error)));
     }
 
