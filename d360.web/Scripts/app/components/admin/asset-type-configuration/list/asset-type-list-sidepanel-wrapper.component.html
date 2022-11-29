@@ -21,8 +21,8 @@
 			hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
 				<ng-container *ngIf="selectedItem">
-					<object-detail [objectType]="'ArtifactType'" [objectUID]="selectedItem.key">
-					</object-detail>
+					<ig-asset-type-detail-v2 [uid]="selectedItem.key">
+					</ig-asset-type-detail-v2>
 				</ng-container>
 			</ng-container>
 		</side-panel>

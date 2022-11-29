@@ -10,7 +10,6 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
 import { AngularSplitModule } from 'angular-split';
 import { AssetTypeListSidePanelWrapperComponent } from './list/asset-type-list-sidepanel-wrapper.component';
-import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
 import { D3SSortIconModule } from '../../shared/turbotable-sorticon.component';
 import { assetTypeConfigurationRoutes } from './asset-type-configuration.routes';
@@ -35,6 +34,7 @@ import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration
 import { AuditModule } from '../../sidebar/audit/audit.module';
 import { ConfigurationAssetTypeBreadcrumbsComponent } from './tabs/shared/configuration-asset-type-breadcrumbs/configuration-asset-type-breadcrumbs.component';
 import { HeaderModule } from '../../shared/header/header.module';
+import { AssetTypeDetailV2Module } from '../../shared/asset-type-detail-v2/asset-type-detail-v2.module';
 
 @NgModule({
     imports: [
@@ -45,7 +45,6 @@ import { HeaderModule } from '../../shared/header/header.module';
         PipesModule,
         SidePanelModule,
         AngularSplitModule,
-        SharedObjectDetailsModule,
         SearchFieldModule,
         D3SSortIconModule,
         SharedAssetTypeEditorModule,
@@ -57,7 +56,8 @@ import { HeaderModule } from '../../shared/header/header.module';
         AdminModule,
         AdminRelationshipEditorModule,
         AuditModule,
-        HeaderModule
+        HeaderModule,
+        AssetTypeDetailV2Module
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
