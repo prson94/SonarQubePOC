@@ -9,12 +9,12 @@
     Output,
     ViewChild
 } from '@angular/core';
-import {Router} from '@angular/router';
-import {ToolTipService} from '../../services/tooltip.service';
-import {TooltipInfo} from '../../models/tooltip-info.model';
-import {TooltipSingletonService} from '../../services/tooltip-singleton.service';
-import {Subject, Subscription} from "rxjs";
-import {debounceTime} from "rxjs/operators";
+import { Router } from '@angular/router';
+import { ToolTipService } from '../../services/tooltip.service';
+import { TooltipInfo } from '../../models/tooltip-info.model';
+import { TooltipSingletonService } from '../../services/tooltip-singleton.service';
+import { Subject, Subscription } from "rxjs";
+import { debounceTime } from "rxjs/operators";
 
 @Component({
     selector: 'd3s-preview-tooltip',

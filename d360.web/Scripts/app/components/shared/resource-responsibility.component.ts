@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
 import { ResourcesService } from '../../services/resources.service';
 import { CountObject } from '../../models/resource.model';
 

@@ -1,6 +1,5 @@
-﻿import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-
 import { BaseComponent } from '../../shared/base.component';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -12,7 +11,6 @@ import { forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { CompanySettingEnum, SettingsPutModel, StringSetting, GuidSetting } from '../../../models/settings.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-governance-roles',

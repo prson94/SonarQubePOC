@@ -1,9 +1,18 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { LazyLoadEvent } from 'primeng/api';
-import { Observable, ReplaySubject } from 'rxjs';
+import { forkJoin, Observable, ReplaySubject } from 'rxjs';
 import { FieldType } from '../../../models/fieldtype-api.model';
-import { forkJoin } from 'rxjs';
 import { AssetService } from '../../../services/asset.service';
 import { DataProfileService } from '../../../services/dataprofile.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';

@@ -1,4 +1,12 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnInit, HostListener } from "@angular/core";
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    HostListener,
+    OnInit,
+    ViewChild
+} from "@angular/core";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ResourcesService } from "../../../services/resources.service";
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';

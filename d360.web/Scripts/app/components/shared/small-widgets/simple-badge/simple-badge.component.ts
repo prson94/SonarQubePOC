@@ -1,7 +1,13 @@
-﻿
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnChanges, SimpleChange, OnInit } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnChanges,
+    OnInit,
+    SimpleChange
+} from '@angular/core';
 import { Router } from '@angular/router';
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-simple-badge',

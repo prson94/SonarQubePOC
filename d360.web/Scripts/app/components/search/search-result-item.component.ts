@@ -1,4 +1,14 @@
-﻿import { Component, Input, Output, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, ViewChild, ElementRef, EventEmitter } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnInit,
+    Output,
+    ViewChild
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SearchFullResult, SearchResultFieldDisplay, SearchSelection } from '../../models/search-result.model';

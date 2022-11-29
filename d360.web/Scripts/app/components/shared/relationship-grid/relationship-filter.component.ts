@@ -1,5 +1,9 @@
-﻿import { Input, Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { AdvancedFilteringService, AdvancedFilterUpdate } from '../../assets-grid/advanced-filtering/advanced-filtering.service';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import {
+    AdvancedFilteringService,
+    AdvancedFilterUpdate
+} from '../../assets-grid/advanced-filtering/advanced-filtering.service';
+
 @Component({
     selector: 'gov-relationship-filter',
     templateUrl: './relationship-filter.component.html',

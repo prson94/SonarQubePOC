@@ -1,5 +1,23 @@
-﻿import { Component, NgModule, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, EventEmitter, Output, ViewChild, OnInit } from "@angular/core";
-import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR, NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from "@angular/forms";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    forwardRef,
+    Input,
+    NgModule,
+    OnInit
+} from "@angular/core";
+import {
+    AbstractControl,
+    ControlValueAccessor,
+    FormsModule,
+    NG_VALIDATORS,
+    NG_VALUE_ACCESSOR,
+    ReactiveFormsModule,
+    ValidationErrors,
+    Validator
+} from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { PopupMenuModule } from "../popup-menu/popup-menu.component";
 import { TooltipModule } from "primeng/tooltip";

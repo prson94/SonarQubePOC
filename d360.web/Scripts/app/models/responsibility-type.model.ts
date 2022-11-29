@@ -88,7 +88,7 @@ export class ResponsibilityTypeAllocationPost {
     Permissions: number[];
 }
 
-export class ResponsibilityTypeRelation_FormData {
+export class ResponsibilityTypeRelationFormData {
     AllocationOptions: ResponsibilityTypeRelationAllocationOption[] = [];
     PermissionOptions: ResponsibilityTypeRelationPermission[] = [];
 }

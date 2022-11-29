@@ -1,17 +1,17 @@
-﻿import { Component, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild } from "@angular/core";
+﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild } from "@angular/core";
 import * as _ from "lodash";
 import { Editor } from "primeng/editor";
 
 import { BaseComponent } from "../../../shared/base.component";
 import {
+    EmailTaskRecipientType,
+    FormResponseType,
+    NodeFields,
     NodeModel,
+    NodeSettings,
+    WorkflowChangeType,
     WorkflowForm,
     WorkflowFormFieldType,
-    FormResponseType,
-    EmailTaskRecipientType,
-    NodeSettings,
-    NodeFields,
-    WorkflowChangeType,
 } from "../../../../models/workflow.model";
 import { WorkflowService } from "../../../../services/workflow.service";
 import { WorkflowFieldsService } from "../../../../services/workflow-fields.service";

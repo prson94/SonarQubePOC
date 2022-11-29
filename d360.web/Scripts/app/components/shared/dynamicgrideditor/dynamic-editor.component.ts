@@ -3,15 +3,14 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
+    ElementRef,
     EventEmitter,
     Input,
     OnChanges,
     OnInit,
     Output,
     SimpleChange,
-
-    ViewChild,
-    ElementRef
+    ViewChild
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 

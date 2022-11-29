@@ -1,11 +1,21 @@
-import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy, ElementRef, OnChanges, SimpleChanges, Output, EventEmitter, OnDestroy } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    Input,
+    NgModule,
+    OnChanges,
+    OnDestroy,
+    SimpleChanges
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormGroup, FormControl } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import * as _ from 'lodash';
 import { getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
 import { Subject } from 'rxjs';
-import { takeUntil, tap, startWith } from 'rxjs/operators';
+import { startWith, takeUntil, tap } from 'rxjs/operators';
 import { PropertyGroupsService } from '../property-group/property-groups.service';
 import { PropertyGroupInstanceIdAttributeName } from '../property-group/property-group.component';
 

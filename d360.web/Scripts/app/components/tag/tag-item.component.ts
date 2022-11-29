@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -7,11 +7,11 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { AssetAction, EditFormData, DeleteFormData } from '../../models/secondaryNav.model';
+import { AssetAction, DeleteFormData, EditFormData } from '../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { TagService } from '../../services/tag.service';
-import { TagType, TagDetail, TagItem, TagDetailResponse } from '../../models/tag.model';
+import { TagDetail, TagDetailResponse, TagItem, TagType } from '../../models/tag.model';
 import { Location } from '@angular/common';
 import { AuthenticationService } from '../../services/authentication.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
@@ -22,10 +22,15 @@ import { SelectAssetService } from '../../services/select-asset.service';
 import { Observable, of, Subscription } from 'rxjs';
 import { AssetDetailClickEvent, LinkClickInterceptor } from '../../services/href-click-service';
 import { tap } from 'rxjs/operators';
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
+import {
+    AdvancedFilterFieldType,
+    Filters,
+    LookupValuesAPIModel,
+    LookupValuesAPIParameters
+} from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../models/fieldtype-api.model';
 import { UiAdvancedFiltering } from '../../services/ui-advanced-filtering.service';
-import {uniqWith as _uniqWith, isEqual as _isEqual} from 'lodash';
+import { isEqual as _isEqual, uniqWith as _uniqWith } from 'lodash';
 import { Table } from 'primeng/table';
 import { SearchService } from '../../services/search.service';
 import { SidePanelService } from '../../services/side-panel.service';

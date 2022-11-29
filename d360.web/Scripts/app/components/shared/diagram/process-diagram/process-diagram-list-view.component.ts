@@ -1,4 +1,13 @@
-import { Component, ChangeDetectionStrategy, Input, DoCheck, ChangeDetectorRef, ElementRef, ViewChild, AfterViewChecked, OnChanges } from '@angular/core';
+import {
+    AfterViewChecked,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    DoCheck,
+    ElementRef,
+    Input,
+    ViewChild
+} from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';

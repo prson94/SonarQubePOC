@@ -1,11 +1,25 @@
-
 import { map } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-import { NgModule, Input, Output, Component, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    NgModule,
+    OnChanges,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormMessage } from '../../models/form.model';
 import { JsonResult } from '../../models/jsonresult.model';
 import { SharedFormMessageModule } from './form-message.part';
+import { ButtonModule } from 'primeng/button';
+import { SiteModalModule } from '../shared/modal/gov-modal.module';
+import { AssetTypeService } from '../../services/asset-type.service';
+import { FormsModule } from '@angular/forms';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DirectivesModule } from '../../directives/directives.module';
 
 @Component({
     selector: 'd3s-delete-form',
@@ -168,13 +182,6 @@ export class DeleteForm implements OnChanges {
     }
 }
 
-
-import { ButtonModule } from 'primeng/button';
-import { SiteModalModule } from '../shared/modal/gov-modal.module';
-import { AssetTypeService } from '../../services/asset-type.service';
-import { FormsModule } from '@angular/forms';
-import { CheckboxModule } from 'primeng/checkbox';
-import { DirectivesModule } from '../../directives/directives.module';
 
 @NgModule({
     declarations: [

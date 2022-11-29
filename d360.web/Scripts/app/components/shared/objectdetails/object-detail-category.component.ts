@@ -1,4 +1,4 @@
-﻿import { Input, Component } from '@angular/core';
+﻿import { Component, Input } from '@angular/core';
 import { Category } from '../../../models/object-detail.model';
 
 @Component({

@@ -1,6 +1,5 @@
 ﻿import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
 
 import { RouterModule } from "@angular/router";
 import { FormsModule } from "@angular/forms";
@@ -31,9 +30,13 @@ import { WorkflowMonitorStepFormDetailsComponent } from "./workflowmonitor-step-
 import { WorkflowMonitorStepEmailDetailsComponent } from "./workflowmonitor-step-email-details.component";
 import { WorkflowMonitorActionDetailsComponent } from "./workflowmonitor-action-details.component";
 import { WorkflowMonitorStepFieldChangeDetailsComponent } from "./workflowmonitor-step-field-change-details.component";
-import { WorkflowMonitorStepRelationshipChangeDetailsComponent } from "./workflowmonitor-step-relationship-change-details";
+import {
+    WorkflowMonitorStepRelationshipChangeDetailsComponent
+} from "./workflowmonitor-step-relationship-change-details";
 import { WorkflowMonitorStepHttpDetailsComponent } from "./workflowmonitor-step-http-details.component";
-import { WorkflowMonitorStepHttpResponseDetailsComponent } from "./workflowmonitor-step-http-response-details.component";
+import {
+    WorkflowMonitorStepHttpResponseDetailsComponent
+} from "./workflowmonitor-step-http-response-details.component";
 
 
 @NgModule({

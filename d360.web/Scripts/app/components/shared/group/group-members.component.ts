@@ -1,7 +1,12 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
-
-import * as _ from 'lodash';
-import { forkJoin } from 'rxjs';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnChanges,
+    SimpleChange,
+    ViewEncapsulation
+} from '@angular/core';
 import { EditorField } from '../../../models/editor-field.model';
 import { AddUserToGroup, Group, GroupResourceInfo } from '../../../models/group.model';
 import { GroupService } from '../../../services/group.service';

@@ -1,7 +1,13 @@
-﻿
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnChanges, SimpleChange, OnInit } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnChanges,
+    OnInit,
+    SimpleChange
+} from '@angular/core';
 import { Router } from '@angular/router';
-import * as _ from 'lodash';
 import { AssetScore } from '../../../../models/search-result.model';
 import { ScoreDisplayPipe } from '../../../../pipes/score-display.pipe';
 

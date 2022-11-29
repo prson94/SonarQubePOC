@@ -1,6 +1,15 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    ElementRef,
+    HostListener,
+    Input,
+    OnDestroy,
+    OnInit,
+    ViewChild
+} from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { HierarchyDiagramModel, Model } from '../../../models/model.model';
 import { DiagramBaseComponent } from './diagram-base.component';
@@ -8,7 +17,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { ModelsService } from '../../../services/models.service';
 import { Title } from '@angular/platform-browser';
-import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../../models/secondaryNav.model';
+import { SecondaryNavCurrentObject, SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AssetTypeClass } from '../../../models/asset.model';

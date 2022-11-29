@@ -1,17 +1,20 @@
-﻿import { Input, Component, SimpleChange, ViewChild, OnDestroy } from '@angular/core';
+﻿import { Component, Input, OnDestroy } from '@angular/core';
 import { RulesService } from '../../services/rules.service';
 import { BaseComponent } from '../shared/base.component';
 import { LazyLoadEvent } from 'primeng/api';
-import { Table } from 'primeng/table';
 import { RuleResultPagedResults } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';
-import { GridColumn, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../models/grid-definition.model';
-import { Subscription } from 'rxjs';
+import {
+    GridColumn,
+    GridFilterColumn,
+    GridFilterExpression,
+    GridRelationshipFilterExpression
+} from '../../models/grid-definition.model';
+import { Observable, of, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AdvancedFilterFieldType, Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { ActivatedRoute } from '@angular/router';
 import { FieldType } from "../../models/fieldtype-api.model";
-import { Observable, of } from "rxjs";
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 

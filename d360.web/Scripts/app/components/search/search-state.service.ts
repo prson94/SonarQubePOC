@@ -1,8 +1,16 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { SearchFullResult, SearchQuery, SearchAggregationFilter, SearchFieldFilter, SearchState, SearchCheckTreeVal, SearchConnector } from '../../models/search-result.model';
-import { tap, debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
-import { Observable, BehaviorSubject, Subscription, of } from 'rxjs';
+import {
+    SearchAggregationFilter,
+    SearchCheckTreeVal,
+    SearchConnector,
+    SearchFieldFilter,
+    SearchFullResult,
+    SearchQuery,
+    SearchState
+} from '../../models/search-result.model';
+import { catchError, debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
 import { BaseObservableService } from '../../services/baseObservable.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AuthenticationService } from '../../services/authentication.service';

@@ -1,5 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { DropdownBadgeOption } from '../types/dropdown-bage-option.type';
+
 /*
  * Transforms array of options by removing
  * selected option from it

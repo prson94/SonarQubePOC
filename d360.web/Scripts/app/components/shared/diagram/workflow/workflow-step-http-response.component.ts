@@ -1,4 +1,4 @@
-﻿import { Component, Output, EventEmitter, Input, OnInit } from "@angular/core";
+﻿import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { BaseComponent } from "../../../shared/base.component";
 import * as _ from "lodash";
 import { HTTPResponseOutput, NodeModel } from "../../../../models/workflow.model";

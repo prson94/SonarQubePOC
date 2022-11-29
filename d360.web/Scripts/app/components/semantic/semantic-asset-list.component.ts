@@ -1,5 +1,5 @@
-﻿import { ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';

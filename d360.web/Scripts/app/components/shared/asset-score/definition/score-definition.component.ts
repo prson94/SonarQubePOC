@@ -1,12 +1,26 @@
-﻿import { Component, Input, OnChanges, SimpleChanges, ViewEncapsulation, ViewChild, ElementRef, AfterViewChecked, ChangeDetectorRef, ɵbypassSanitizationTrustResourceUrl } from '@angular/core';
+﻿import {
+    AfterViewChecked,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    Input,
+    OnChanges,
+    SimpleChanges,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { BaseComponent } from '../../base.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { MetricsService } from '../../../../services/metrics.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 import { RelationshipsService } from '../../../../services/relationships.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetDefinitionGovernanceViewModel, MetricGovernanceCheckType, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel } from '../../../../models/metrics.model';
-import { OperatorModel, Operator } from '../../../../models/operator.model';
+import {
+    MetricAssetVersionConditionItemViewModel,
+    MetricAssetViewModel,
+    MetricFieldTypeViewModel
+} from '../../../../models/metrics.model';
+import { OperatorModel } from '../../../../models/operator.model';
 import { CommonScreenReferencesModel } from '../../../admin/scoring/common-screen-references-model';
 import { AdminMetricPassTestDetailsComponent } from '../../../admin/scoring/admin-metric-pass-test-details.component';
 

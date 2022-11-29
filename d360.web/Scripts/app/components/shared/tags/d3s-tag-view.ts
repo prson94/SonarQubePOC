@@ -1,6 +1,17 @@
-import { Input, Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output,
+    ViewChild
+} from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { TagType, TagApiModel } from '../../../models/tag.model';
+import { TagApiModel, TagType } from '../../../models/tag.model';
 import { TagService } from '../../../services/tag.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Router } from '@angular/router';

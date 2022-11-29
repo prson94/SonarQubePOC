@@ -1,8 +1,8 @@
-﻿import { Component, Output, EventEmitter, Input } from '@angular/core';
+﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
-import { SearchResults, SearchAggregation, SearchResult } from '../../models/search-result.model';
+import { SearchAggregation, SearchResults } from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Router } from '@angular/router';
 import { CompanySettingsService } from '../../services/settings.service';

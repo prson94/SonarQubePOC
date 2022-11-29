@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, ElementRef } from '@angular/core';
+﻿import { Component, ElementRef, Input, OnChanges, Output, SimpleChange } from '@angular/core';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipV2 } from '../../../models/relationship.model';

@@ -1,7 +1,6 @@
-﻿import { Component, Input, OnInit, OnDestroy, NgModule, Output } from "@angular/core";
+﻿import { Component, EventEmitter, Input, NgModule, OnDestroy, OnInit, Output } from "@angular/core";
 import { Table } from 'primeng/table';
 import { CommonModule } from "@angular/common";
-import { EventEmitter } from '@angular/core';
 
 
 @Component({

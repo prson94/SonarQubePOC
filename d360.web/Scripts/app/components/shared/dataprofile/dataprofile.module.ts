@@ -1,6 +1,5 @@
 ﻿import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
 import { DataProfileComponent } from "./dataprofile.component";
 
 import { PropertyGroupModule } from "../controls/property-group/property-group.component";

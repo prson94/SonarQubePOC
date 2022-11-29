@@ -1,5 +1,13 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    OnDestroy,
+    OnInit,
+    Output
+} from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
