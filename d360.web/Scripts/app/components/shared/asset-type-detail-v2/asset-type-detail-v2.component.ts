@@ -202,13 +202,6 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
                 break;
             case AssetTypeClass.Rule:
             case AssetTypeClass.DiagramAsset:
-                this.addFieldsToCategory($localize`System Fields`, [
-                    {
-                        name: 'ID',
-                        type: AssetTypeDetailFieldType.SYSTEM,
-                        value: assetTypeModel.ID
-                    }
-                ]);
                 this.addFieldsToCategory($localize`General`, [
                     {
                         name: 'Flow Object Type',
@@ -219,13 +212,6 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
                 break;
             case AssetTypeClass.Model:
             case AssetTypeClass.Policy:
-                this.addFieldsToCategory($localize`System Fields`, [
-                    {
-                        name: 'ID',
-                        type: AssetTypeDetailFieldType.SYSTEM,
-                        value: assetTypeModel.ID
-                    }
-                ]);
                 this.addFieldsToCategory($localize`General`, [
                     {
                         name: 'Predicate to Parent',
