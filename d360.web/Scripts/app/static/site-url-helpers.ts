@@ -56,7 +56,7 @@ export class SiteUrlHelpers {
 
     //admin child routes
     static SITE_URL_ADMIN_BULK_LOAD = `load`;
-    static SITE_URL_ADMIN_ASSET = `assets`;
+    static SITE_URL_ADMIN_ASSET = `configuration/assets`;
     static SITE_URL_ADMIN_ASSET_BUSINESS = `BusinessAsset`;
     static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
     static SITE_URL_ADMIN_CUSTOMIZATIONS = 'customizations';

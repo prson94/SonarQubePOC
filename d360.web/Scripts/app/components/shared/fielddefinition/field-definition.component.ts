@@ -20,6 +20,7 @@ import { RelationshipsService } from '../../../services/relationships.service';
 export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
 	@Input() title: string = $localize`Field Definition`;
 
+	@Input() showTitle = true;
 	@Input() actionTypeUid: string;
 	@Input() assetTypeUid: string;
 	@Input() relationshipTypeUid: string;
@@ -83,8 +84,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			}
 		}
 		if (this.assetTypeUid) {
+			this.isLoading = true;
 			this.assetService.getAssetTypeClassForAsset(this.assetTypeUid)
 				.subscribe((res) => {
+					this.isLoading = false;
 					this.assetTypeClass = res;
 					this.load();
 				});

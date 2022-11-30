@@ -25,6 +25,7 @@ import { ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
 import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import { AppConstants } from '../../static/constants';
 
 export class BaseComponent {
 	public isLoading = false;
@@ -102,7 +103,7 @@ export class BaseComponent {
 
 
 	// default paging options
-	defaultPagingOptions: number[] = [10, 25, 50, 100];
+	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
 	defaultInitialItemsPerPage = 10;
 
 	protected secondaryNavService: SecondaryNavService = null;
@@ -254,7 +255,6 @@ export class BaseComponent {
 					[allocation.icon],
 					`/${baseUrl}${allocation.uid}`, null, priority
 				);
-				navItem.active = (selectedAllocationUid === allocation.uid);
 				this.secondaryNavService.showItem(navItem);
 				priority += 10;
 			});
@@ -1213,16 +1213,6 @@ export class BaseComponent {
 		components.push(this.groupsSidebar);
 		components.push(this.itemOwnSidebar);
 		components.push(this.followingSidebar);
-
-		components.forEach((cmp) => {
-			if (cmp && currentComponentUrl.startsWith(cmp.url)) {
-				cmp.active = true;
-			}
-
-			if (cmp && cmp.subTabsUrl.some((x) => x === currentComponentUrl || currentComponentUrl.indexOf(x) === 0)) {
-				cmp.active = true;
-			}
-		});
 	}
 
 	private setArtifactBreadcrumbs(data) {
@@ -1311,9 +1301,6 @@ export class BaseComponent {
 									)
 									;
 							}
-
-							this.checkIfWorkflowActionIsSelected();
-
 						}
 					});
 				});
@@ -1385,8 +1372,6 @@ export class BaseComponent {
 								this.buildTreeNodeArrayBase(this.preloadedTreeData, selected.ParentID),
 								this.findSelectedTreeNodeBase(selected.ID)));
 					}
-					this.checkIfWorkflowActionIsSelected();
-
 				});
 			});
 	}
@@ -1422,17 +1407,9 @@ export class BaseComponent {
 						true,
 						'Rule',
 						data.ObjectId));
-					this.checkIfWorkflowActionIsSelected();
-
 				});
 			});
 
-	}
-
-	private checkIfWorkflowActionIsSelected() {
-		if (this.breadcrumbsService.getCurrentUrl().toLowerCase().indexOf('workflow/details') !== -1) {
-			this.actionsSidebar.active = true;
-		}
 	}
 
 	private GetIDFromUrl(url: string) {

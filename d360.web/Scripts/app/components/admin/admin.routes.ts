@@ -9,6 +9,7 @@ const routes: Routes = [
         component: AdminComponent,        
         canActivate: [AdminUserGuard],
         children: [                                                
+            { path: 'configuration/assets', loadChildren: () => import('./asset-type-configuration/asset-type-configuration.module').then((m) => m.AssetTypeConfigurationModule) }, 
             { path: 'relationships', loadChildren: () => import('./relationships/admin-relationships.module').then((m) => m.AdminRelationshipsModule) }, 
             { path: 'surveys', loadChildren: () => import('./surveys/admin-surveys.module').then((m) => m.AdminSurveysModule) },             
             { path: 'workflow', loadChildren: () => import('./workflow/admin-workflow.module').then((m) => m.AdminWorkflowModule) },
@@ -22,7 +23,6 @@ const routes: Routes = [
             { path: 'groups', loadChildren: () => import('./groups/admin-groups.module').then( (m) => m.AdminGroupsModule) },
             { path: 'policies', loadChildren: () => import('./hierarchies/admin-hierarchies.module').then((m) => m.AdminHierarchiesModule) },
             { path: 'taxonomies', loadChildren: () => import('./hierarchies/admin-hierarchies.module').then((m) => m.AdminHierarchiesModule) },            
-            { path: 'assets', loadChildren: () => import('./artifacts/admin-artifacts.module').then((m) => m.AdminArtifactsModule) },
             { path: 'issuetypes', loadChildren: () => import('./issuetypes/admin-issue-types.module').then((m) => m.AdminIssueTypesModule) },
             { path: 'predicates', loadChildren: () => import('./predicates/admin-predicates.module').then((m) => m.AdminPredicatesModule) },
             { path: 'customizations', loadChildren: () => import('./customizations/admin-customizations.module').then((m) => m.AdminCustomizationsModule) },

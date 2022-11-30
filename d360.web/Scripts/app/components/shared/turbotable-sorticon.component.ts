@@ -1,6 +1,7 @@
-﻿import { Component, EventEmitter, Input, NgModule, OnDestroy, OnInit, Output } from "@angular/core";
+﻿import { Component, EventEmitter, Input, NgModule, OnDestroy, OnInit, Output, Optional } from "@angular/core";
 import { Table } from 'primeng/table';
 import { CommonModule } from "@angular/common";
+import { TreeTable } from "primeng/treetable";
 
 
 @Component({
@@ -22,7 +23,14 @@ export class D3SSortIcon implements OnInit, OnDestroy {
 
     @Output() changeCallback = new EventEmitter();
 
-    constructor(public dt: Table) {
+    dt: Table | TreeTable;
+
+    constructor(@Optional() table: Table, @Optional() treeTable: TreeTable) {
+        if (table == null && treeTable == null) {
+            throw new Error('Failed to resolve primeng/Table or primeng/TreeTable');
+        }
+
+        this.dt = table ?? treeTable;
         this.subscription = this.dt.tableService.sortSource$.subscribe((sortMeta) => {
             this.updateSortState();
         });

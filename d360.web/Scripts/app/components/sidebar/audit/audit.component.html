@@ -1,91 +1,85 @@
-<div class="row">
-    <div class="col s12">
-        <div class="tile tile-detail main-panel">
-            <div class="grid-actions-header">
-                <advanced-filtering *ngIf="!isNullAudit" [loadIdentifier]="getLoadIdentifier()" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
-                <div class="grid-action-buttons" *ngIf="!isNullAudit">
-                    <div [pTooltip]="exportTooltip"
-                         tooltipPosition="left"
-                         tooltipStyleClass="ig-tooltip">
-                        <button igButton
-								class="ig-button-secondary"
-                                [disabled]="!canExportRecords() || isExportInProgress"
-                                icon="fa-download"
-                                [loading]="isExportInProgress"
-                                (click)="export()">
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="grid-table-wrapper">
-                <p-table #dt
-                         [loading]="isLoading"
-                         loadingIcon="fa fa-spinner"
-                         [sortField]="sortField"
-                         [sortOrder]="-1"
-                         [scrollable]="true"
-                         scrollHeight="flex"
-                         scrollDirection="both"
-                         scrollWidth="100%"
-                         [lazy]="true"
-                         (onLazyLoad)="loadAuditsLazy($event)"
-                         [totalRecords]="totalRecords"
-                         [value]="audits"
-                         selectionMode="single"
-                         [metaKeySelection]="true"
-                         [globalFilterFields]="getFieldNames()"
-                         [pageLinks]="3"
-                         [paginator]="true"
-                         [rows]="rowsPerPage"
-                         [rowsPerPageOptions]="defaultPagingOptions"
-                         [(selection)]="selected">
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th *ngFor="let column of columns" [pSortableColumn]="column.datafield" [style]="'flex: 0 0 '+ column.columnWidth + 'px'">
-                                {{column.text}}
-                                <d3s-sortIcon [field]="column.datafield"></d3s-sortIcon>
-                            </th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-item>
-                        <tr [pSelectableRow]="item">
-                            <td *ngFor="let column of columns" [style]="'flex: 0 0 ' + column.columnWidth + 'px'">
-                                <ng-container [ngSwitch]="column.datafield">
-                                    <span *ngSwitchCase="'date'">{{item.date | date: 'medium'}}</span>
-                                    <ng-container *ngSwitchDefault>{{item[column.datafield]}}</ng-container>
-                                    <ng-container *ngSwitchCase="'newValue'">
-                                        <ng-container *ngTemplateOutlet="valueDisplay"></ng-container>
-                                    </ng-container>
-                                    <ng-container *ngSwitchCase="'previousValue'">
-                                        <ng-container *ngTemplateOutlet="valueDisplay"></ng-container>
-                                    </ng-container>
-                                    <ng-template #valueDisplay>
-                                        <ng-container *ngIf="item[column.datafield]">
-                                            <span [ngSwitch]="(item.fieldType ? item.fieldType:'').toLowerCase()">
-                                                <div *ngSwitchCase="'date'" [innerHtml]="item[column.datafield] | date: 'shortDate'"></div>
-                                                <div *ngSwitchCase="'datetime'" [innerHtml]="item[column.datafield] | date: 'medium'"></div>
-                                                <div *ngSwitchDefault [innerHtml]="item[column.datafield]"></div>
-                                            </span>
-                                        </ng-container>
-                                    </ng-template>
-                                </ng-container>
-                            </td>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="summary">
-                        <d3s-grid-paging-info [first]="dt.first"
-                                              [rows]="dt.rows"
-                                              [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                    </ng-template>
-                    <ng-template pTemplate="emptymessage" let-columns>
-                        <tr>
-                            <td [attr.colspan]="11" i18n>
-                                No results match your search criteria
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-            </div>
+<div class="grid-actions-header">
+    <advanced-filtering *ngIf="!isNullAudit" [loadIdentifier]="getLoadIdentifier()" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+    <div class="grid-action-buttons" *ngIf="!isNullAudit">
+        <div [pTooltip]="exportTooltip"
+                tooltipPosition="left"
+                tooltipStyleClass="ig-tooltip">
+            <button igButton
+                    class="ig-button-secondary"
+                    [disabled]="!canExportRecords() || isExportInProgress"
+                    icon="fa-download"
+                    [loading]="isExportInProgress"
+                    (click)="export()">
+            </button>
         </div>
     </div>
+</div>
+<div class="grid-table-wrapper">
+    <p-table #dt
+                [loading]="isLoading"
+                loadingIcon="fa fa-spinner"
+                [sortField]="sortField"
+                [sortOrder]="-1"
+                [scrollable]="true"
+                scrollHeight="flex"
+                scrollDirection="both"
+                scrollWidth="100%"
+                [lazy]="true"
+                (onLazyLoad)="loadAuditsLazy($event)"
+                [totalRecords]="totalRecords"
+                [value]="audits"
+                selectionMode="single"
+                [metaKeySelection]="true"
+                [globalFilterFields]="getFieldNames()"
+                [pageLinks]="3"
+                [paginator]="true"
+                [rows]="rowsPerPage"
+                [rowsPerPageOptions]="defaultPagingOptions"
+                [(selection)]="selected">
+        <ng-template pTemplate="header">
+            <tr>
+                <th *ngFor="let column of columns" [pSortableColumn]="column.datafield" [style]="'flex: 0 0 '+ column.columnWidth + 'px'">
+                    {{column.text}}
+                    <d3s-sortIcon [field]="column.datafield"></d3s-sortIcon>
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr [pSelectableRow]="item">
+                <td *ngFor="let column of columns" [style]="'flex: 0 0 ' + column.columnWidth + 'px'">
+                    <ng-container [ngSwitch]="column.datafield">
+                        <span *ngSwitchCase="'date'">{{item.date | date: 'medium'}}</span>
+                        <ng-container *ngSwitchDefault>{{item[column.datafield]}}</ng-container>
+                        <ng-container *ngSwitchCase="'newValue'">
+                            <ng-container *ngTemplateOutlet="valueDisplay"></ng-container>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'previousValue'">
+                            <ng-container *ngTemplateOutlet="valueDisplay"></ng-container>
+                        </ng-container>
+                        <ng-template #valueDisplay>
+                            <ng-container *ngIf="item[column.datafield]">
+                                <span [ngSwitch]="(item.fieldType ? item.fieldType:'').toLowerCase()">
+                                    <div *ngSwitchCase="'date'" [innerHtml]="item[column.datafield] | date: 'shortDate'"></div>
+                                    <div *ngSwitchCase="'datetime'" [innerHtml]="item[column.datafield] | date: 'medium'"></div>
+                                    <div *ngSwitchDefault [innerHtml]="item[column.datafield]"></div>
+                                </span>
+                            </ng-container>
+                        </ng-template>
+                    </ng-container>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first"
+                                    [rows]="dt.rows"
+                                    [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+        <ng-template pTemplate="emptymessage" let-columns>
+            <tr>
+                <td [attr.colspan]="11" i18n>
+                    No results match your search criteria
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
 </div>

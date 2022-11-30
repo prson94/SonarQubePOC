@@ -8,6 +8,7 @@ import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SecondaryNavPostModel } from '../models/secondaryNav.model';
 import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
+import { AssetTypeClass } from '../models/asset.model';
 
 @Injectable({
     providedIn: 'root'
@@ -24,6 +25,14 @@ export class SiteMenuService extends BaseObservableService {
             )
             .pipe(
                 map((response) => <SiteMenuModel>response),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    getAdminConfigurationMenu(): Observable<{ Class: AssetTypeClass, Name: string, Uid: string, ParentUid: string }[]> {
+        return this.http.get('api/v2/navigation/adminConfiguration')
+            .pipe(
+                map((response) => response),
                 catchError((err) => this.handleError(err))
             );
     }

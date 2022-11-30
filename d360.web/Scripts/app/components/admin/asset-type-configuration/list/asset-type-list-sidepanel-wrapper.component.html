@@ -1,0 +1,30 @@
+<as-split [gutterSize]="sidePanelService.draggableAreaWidth"
+	[class.side-panel-close]="!sidePanelOpen"
+	(dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)"
+	unit="pixel"
+	direction="horizontal"
+	class="col s12 split"
+	style="display: flex">
+	<as-split-area class="tile tile-detail main-panel"> 
+		<ng-content></ng-content>
+	</as-split-area>
+	<as-split-area [size]="getSidePanelWidth()"
+		[minSize]="getSidePanelMinWidth()"
+		[maxSize]="getSidePanelMaxWidth()"
+		class="tile tile-detail side-panel">
+		<side-panel [selectedItem]="selectedItem"
+			[setMinMaxWidth]="false"
+			[storageKey]="sidePanelStorageKey"
+			[expanded]="true"
+			[showEmptyOverlay]="!selectedItem"
+			(expandedChange)="sidePanelOpen=$event"
+			hasDetail="true">
+			<ng-container *ngIf="sidePanelOpen">
+				<ng-container *ngIf="selectedItem">
+					<ig-asset-type-detail-v2 [uid]="selectedItem.key">
+					</ig-asset-type-detail-v2>
+				</ng-container>
+			</ng-container>
+		</side-panel>
+	</as-split-area>
+</as-split>

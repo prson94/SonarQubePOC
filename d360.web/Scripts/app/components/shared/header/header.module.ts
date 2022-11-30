@@ -36,6 +36,7 @@ import { ThirdPartyLicensesModule } from '../controls/third-party-licenses/third
 import { HeaderLanguageSettingComponent } from './header-language-setting.component';
 import { IgMessageBoxModule } from '../controls/message-box/message-box.module';
 import { DropdownModule } from 'primeng/dropdown';
+import { UseBreadcrumbsComponent } from './use-breadcrumbs.component';
 
 
 @NgModule({
@@ -78,10 +79,12 @@ import { DropdownModule } from 'primeng/dropdown';
         HeaderProfileComponent,
         HeaderMiniMenuComponent,
 		HeaderBackButtonComponent,
-		HeaderLanguageSettingComponent
+		HeaderLanguageSettingComponent,
+        UseBreadcrumbsComponent
     ],
     exports: [
-        HeaderComponent
+        HeaderComponent,
+        UseBreadcrumbsComponent
     ],
     providers: [
 

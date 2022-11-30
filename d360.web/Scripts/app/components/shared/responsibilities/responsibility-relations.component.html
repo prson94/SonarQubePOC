@@ -1,7 +1,7 @@
 ﻿<div *ngIf="uid">
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
         <header>
-            {{title}}            
+            <ng-container *ngIf="showTitle">{{title}}</ng-container>            
             <d3s-tile-actions *ngIf="!isLoading && !isEditing && !isDeleting" [hasAdd]="showAddButton" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
         </header>
     </div>
