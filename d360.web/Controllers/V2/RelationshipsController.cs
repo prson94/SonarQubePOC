@@ -661,42 +661,30 @@ namespace d360.web.Controllers.V2
 		public async Task<HttpResponseMessage> GetRelationshipAsync(Guid uid)
 		{
 			var prefix = "Relationships.GetRelationshipAsync => ";
-			string errorMessage;
 
-			try
+			var intersect = Company.Intersects.FirstOrDefault(x => x.uid == uid);
+				
+			if (intersect == null || uid == Guid.Empty)
 			{
-
-				var intersect = Company.Intersects.FirstOrDefault(x => x.uid == uid);
-				
-				if (intersect == null || uid == Guid.Empty)
-				{
-					return ReturnApiError(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.RelationShipUidNotFound, uid.ToString()));
-				}
-
-				var hasObjectReadPermission = Company.HasAssetPermission(intersect.ObjectAssetID ?? 0, Permission.ReadRelationships);
-				var hasSubjectReadPermission = Company.HasAssetPermission(intersect.SubjectAssetID ?? 0, Permission.ReadRelationships);
-				
-				if (!hasObjectReadPermission || !hasSubjectReadPermission)
-				{
-					return ReturnApiError(HttpStatusCode.Forbidden, RelationshipsApiMessages.ViewthisRelationNotAllowed);
-				}
-
-				var result = await RelationshipRepository.GetRelationship(uid);
-				
-				if (result == null)
-				{
-					return ReturnApiError(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidGuid, uid.ToString()));
-				}
-
-				return Request.CreateResponse(HttpStatusCode.OK, result);
+				throw new NotFoundBusinessLayerException(string.Format(RelationshipsApiMessages.RelationShipUidNotFound, uid.ToString()));
 			}
-			catch (Exception ex)
+
+			var hasObjectReadPermission = Company.HasAssetPermission(intersect.ObjectAssetID ?? 0, Permission.ReadRelationships);
+			var hasSubjectReadPermission = Company.HasAssetPermission(intersect.SubjectAssetID ?? 0, Permission.ReadRelationships);
+				
+			if (!hasObjectReadPermission || !hasSubjectReadPermission)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+				throw new ForbiddenBusinessLayerException(RelationshipsApiMessages.ViewthisRelationNotAllowed);
 			}
+
+			var result = await RelationshipRepository.GetRelationship(uid);
+				
+			if (result == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ApiMessages.InvalidGuid, uid.ToString()));
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, result);
 		}
 
 		/// <summary>
