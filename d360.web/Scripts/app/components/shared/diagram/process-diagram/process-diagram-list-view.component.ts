@@ -49,7 +49,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
 
     ngDoCheck() {
         if (this.nodeArray) {
-            if (this.nodeArray.length != this.nodeCount) {
+            if (this.nodeArray.length !== this.nodeCount) {
                 this.nodeArrayCountChanged();
                 this.nodeCount = this.nodeArray.length;
             }
@@ -61,7 +61,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
             this.selected = [];
             arr.forEach((x) => {
                 if (x.data && x.data.key) {
-                    this.selected.push(this.nodeArray.find((node) => node.key == x.data.key));
+                    this.selected.push(this.nodeArray.find((node) => node.key === x.data.key));
                 }
             });
         }
@@ -113,9 +113,9 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
                 {result = 1;}
             else if (value1 == null && value2 == null)
                 {result = 0;}
-            else if (typeof value1 === 'string' && typeof value2 === 'string' && event.field != 'StepNo')
+            else if (typeof value1 === 'string' && typeof value2 === 'string' && event.field !== 'StepNo')
                 {result = value1.localeCompare(value2);}
-            else if (event.field == 'StepNo') {
+            else if (event.field === 'StepNo') {
                 result = (+value1 < +value2) ? -1 : (+value1 > +value2) ? 1 : 0;
 
             }
@@ -131,7 +131,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
         let isCheckboxClicked = false;
         if (event && event.target) {
             var target = event.target as HTMLElement;
-            isCheckboxClicked = target.tagName == 'P-TABLECHECKBOX';
+            isCheckboxClicked = target.tagName === 'P-TABLECHECKBOX';
 
             if (!isCheckboxClicked) {
                 target.childNodes.forEach((cn) => {
@@ -178,7 +178,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
                     {this.selected.push(item);}
 
                 if (isCheckboxClicked && index !== -1) {
-                    this.selected = this.selected.filter((x) => x.key != item.key);
+                    this.selected = this.selected.filter((x) => x.key !== item.key);
                 }
 
             }

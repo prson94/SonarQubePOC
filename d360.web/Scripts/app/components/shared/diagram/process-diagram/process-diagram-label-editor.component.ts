@@ -43,7 +43,7 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.linkData && changes.linkData.currentValue != changes.linkData.previousValue) {
+        if (changes.linkData && changes.linkData.currentValue !== changes.linkData.previousValue) {
             if (this.linkData)
                 {this.load();}
         }
@@ -77,13 +77,13 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
         this.updateConnectorLabelToLink();
     }
     onKeyUp($event: KeyboardEvent) {
-        if ($event.key == 'Enter') {
+        if ($event.key === 'Enter') {
             var el = $event.target as HTMLElement;
             setTimeout(() => {
                 el.blur();
             }, 50);
         }
-        if (this.linkLabel == '')
+        if (this.linkLabel === '')
             {this.clearLabel();}
     }
     clearLabel() {

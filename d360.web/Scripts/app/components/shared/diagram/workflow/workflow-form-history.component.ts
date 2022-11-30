@@ -49,7 +49,7 @@ export class WorkflowFormHistoryComponent extends BaseComponent implements OnIni
 
                     this.fields.form.forEach((f) => {
                         if (f['@ResourceID'] != null) {
-                            const r = this.resources.find((r) => r.ID == +f['@ResourceID']);
+                            const r = this.resources.find((r) => r.ID === +f['@ResourceID']);
                             f.ResourceName = r ? r.FirstName + ' ' + r.LastName : '[unknown]';
                         }
 

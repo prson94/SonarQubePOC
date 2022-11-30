@@ -72,8 +72,8 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         this.isLoading = false;
 
         if (this.step != null && this.step.settings != null) {
-            if (this.step.activityType == WorkflowActivityType.EmailNotification || this.step.activityType == WorkflowActivityType.Form) {
-                if (this.step.settings['MessageRecipientType'] == 'Responsibility') {
+            if (this.step.activityType === WorkflowActivityType.EmailNotification || this.step.activityType === WorkflowActivityType.Form) {
+                if (this.step.settings['MessageRecipientType'] === 'Responsibility') {
                     if (this.step.settings.ResponsibilityTypeID != null) {
                         if (!_.isArray(this.step.settings.ResponsibilityTypeID)) {
                             const id = this.step.settings.ResponsibilityTypeID;
@@ -82,17 +82,17 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
                             this.step.settings.ResponsibilityTypeID.push(id);
                         }
                     }
-                } else if (this.step.settings['MessageRecipientType'] == 'Group') {
+                } else if (this.step.settings['MessageRecipientType'] === 'Group') {
                     this.groupService.getGroups().subscribe((GroupList) => {
                         this.groups = GroupList.items.map((g) => { return { value: g.Uid, label: g.Name }; });
-                        if (this.step.settings.MessageToGroup != undefined) {
-                            if (!this.groups.find((g) => g.value == this.step.settings.MessageToGroup)) {
+                        if (this.step.settings.MessageToGroup != null) {
+                            if (!this.groups.find((g) => g.value === this.step.settings.MessageToGroup)) {
                                 this.groups.push(<SelectItem>{ value: this.step.settings.MessageToGroup, label: '<invalid group>' });
                             }
                         }
                     });
                 }
-                if (this.step.activityType == WorkflowActivityType.Form) {
+                if (this.step.activityType === WorkflowActivityType.Form) {
                     this.getLookups();
                 }
             }
@@ -102,12 +102,12 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     }
 
     renderFieldChangeTableName(item: any): string {
-        if (this.issueObject == "") {return item['@FieldName'];}
-        if (typeof item['@ObjectType'] == 'undefined' || item['@ObjectType'] == 'Issue')
+        if (this.issueObject === "") {return item['@FieldName'];}
+        if (typeof item['@ObjectType'] === 'undefined' || item['@ObjectType'] === 'Issue')
             {return "Action Field::" + item['@FieldName'];}
         else {
-            const f = this.fields.find((f) => f.ID == +item['@FieldId']);
-            if (f == undefined)
+            const f = this.fields.find((f) => f.ID === +item['@FieldId']);
+            if (f == null)
                 {return "";}
             return $localize`Asset Field` + "::" + f.FriendlyName;
         }
@@ -118,7 +118,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         if (id == null || +id < 0)
             {return "";}
 
-        const r = this.responsibilities.find((r) => r.ID == +id);
+        const r = this.responsibilities.find((r) => r.ID === +id);
 
         if (r != null)
             {return r.Name;}
@@ -126,7 +126,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     }
 
     getGroupName(): string {
-        return (this.step.settings.MessageToGroup == null) ? '<none>' : this.groups.find((g) => g.value == this.step.settings.MessageToGroup).label;
+        return (this.step.settings.MessageToGroup == null) ? '<none>' : this.groups.find((g) => g.value === this.step.settings.MessageToGroup).label;
     }
 
     getLookups() {
@@ -144,9 +144,9 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     isHtml(i: any): boolean {
         //console.log('isHtml', i, this.fields);
         if (i == null) {return false;}
-        const f = this.fields.find((f) => f.ID == +i['@FieldId']);
+        const f = this.fields.find((f) => f.ID === +i['@FieldId']);
         if (f == null) {return false;}
-        return f.Type == 'Html';
+        return f.Type === 'Html';
     }
 
 
@@ -159,7 +159,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
                 {val = i['@Value'];}
         }
 
-        if (val == undefined || val == null)
+        if (val == null)
             {return '';}
 
         if (val.length > 50) {
@@ -174,12 +174,12 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
             case 'list':
                 if (this.lookups == null)
                     {return 'List';}
-                const list = this.lookups.find((l) => l.value.toString() == i['@referenceFieldId']);
+                const list = this.lookups.find((l) => l.value.toString() === i['@referenceFieldId']);
                 return 'List' + (list == null ? '' : ' :: ' + list.label);
             case 'relationshipType':
                 if (this.intersectTypes == null)
                     {return 'Relationship';}
-                const rel = this.intersectTypes.find((l) => l.IntersectTypeID.toString() == i['@intersectTypeId']);
+                const rel = this.intersectTypes.find((l) => l.IntersectTypeID.toString() === i['@intersectTypeId']);
                 return 'Relationship' + (rel == null ? '' : (' :: ' + ((rel.PredicateName != null && rel.PredicateName.length > 0) ? `[${rel.PredicateName}] ` : ' ') + rel.TargetName));
             default:
                 return (i['@type'].charAt(0).toUpperCase() + i['@type'].substr(1));

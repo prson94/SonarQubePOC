@@ -29,7 +29,7 @@ export class AssetBrowserViewChangeComponent implements AfterViewInit, OnChanges
     }
 
     public ngOnChanges(changes: SimpleChanges) {
-        if (changes != null && changes['items'] != null && (changes['items'].firstChange || changes['items'].currentValue != changes['items'].previousValue)) {
+        if (changes != null && changes['items'] != null && (changes['items'].firstChange || changes['items'].currentValue !== changes['items'].previousValue)) {
             this.cdRef.markForCheck();
         }
     }

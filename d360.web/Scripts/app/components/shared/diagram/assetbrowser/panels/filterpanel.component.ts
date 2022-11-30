@@ -126,7 +126,7 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     private getTreeNodeSelectionNodes(keys: number[], source: TreeNode[]) {
         let nodes: TreeNode[] = [];
         source.forEach((s) => {
-            if (keys.indexOf(s.data) != -1) {
+            if (keys.indexOf(s.data) !== -1) {
                 nodes.push(s);
             }
             if (s.children != null && s.children.length > 0) {
@@ -153,7 +153,7 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     private helper_GetTreeNodeSelectionNodes(keys: number[], source: TreeNode[]) {
         let nodes: TreeNode[] = [];
         source.forEach((s) => {
-            if (keys.indexOf(s.data) != -1) {
+            if (keys.indexOf(s.data) !== -1) {
                 nodes.push(s);
             }
             if (s.children != null && s.children.length > 0) {

@@ -44,7 +44,7 @@ export class AssetBrowserSearchComponent implements AfterViewInit, OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["numberOfResults"]) {
-            this.searchCurrentItem = (this.numberOfResults == 0) ? 0 : 1;
+            this.searchCurrentItem = (this.numberOfResults === 0) ? 0 : 1;
         }
     }
 
@@ -75,13 +75,13 @@ export class AssetBrowserSearchComponent implements AfterViewInit, OnChanges {
         }
         else {
             this.searchValue = event.target.value;
-            this.searchCurrentItem = (this.numberOfResults == 0 ? 0 : 1);
+            this.searchCurrentItem = (this.numberOfResults === 0 ? 0 : 1);
 
-            if (event.keyCode == 40) {
+            if (event.keyCode === 40) {
                 this.goToNext();
                 return;
             }
-            if (event.keyCode == 38) {
+            if (event.keyCode === 38) {
                 this.goToPrevious();
                 return;
             }
