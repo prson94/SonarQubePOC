@@ -2825,6 +2825,8 @@ namespace d360.web.Controllers.Services
 
 			var results = Company.Query<WorkflowItemStepDetail>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
 
+			List<WorkflowItemStepDetail> stepList = new List<WorkflowItemStepDetail>();
+
 			foreach (var result in results)
 			{
 				result.FieldsObject = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(result.Fields));
@@ -2834,10 +2836,15 @@ namespace d360.web.Controllers.Services
 					var assignmentIds = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == result.ID).Select(x => new { x.ResourceObject, x.ResourceObjectID });
 					var formattedUserList = Company.GlobalReportingResources.Where(x => assignmentIds.Any(a => a.ResourceObjectID == x.ResourceID)).ToList().Select(x => x.FullName);
 					result.Assignee = string.Join(", ", formattedUserList);
+					if (string.IsNullOrEmpty(result.Assignee))
+					{
+						continue;
+					}
 				}
+				stepList.Add(result);
 			}
 
-			return Request.CreateResponse(HttpStatusCode.OK, results);
+			return Request.CreateResponse(HttpStatusCode.OK, stepList);
 		}
 		private void SetWorkFlowStepRelationshipAssets(dynamic form)
 		{
