@@ -37,7 +37,7 @@ declare var CurrentResourceID;
     templateUrl: 'right-sidebar.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
-    host: { '(window:resize)': 'checkSize()' }
+    styleUrls: ['./right-sidebar.component.less'],
 })
 
 export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewInit {
@@ -51,14 +51,12 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     hideHeaderSub: Subscription;
     assetActionSub: Subscription;
     assetActionClearSub: Subscription;
-    homeUrlChangeSub: Subscription;
     statsSub: Subscription;
     updateSub: Subscription;
     paramsSub: Subscription;
 
     items: SecondaryNavItem[];
     buttons: DynamicButton[];
-    homeUrl: string;
     area: any = { icon: 'fa-folder', title: '' };
     @Input() menuOpen: boolean;
     @Output() changed = new EventEmitter();
@@ -66,7 +64,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     survey: Survey;
     @ViewChild('badge', { static: false }) badge: ElementRef;
     @ViewChild('noScore', { static: false }) noScore: ElementRef;
-    @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
     private statistics: ObjectStatistics;
     private searchDetails: SearchDetail;
     private actionsAssigned: boolean = false;
@@ -82,9 +79,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     showSurvey: boolean = false;
     showNav: boolean = true;
     showSurveyPopup: boolean = false;
-    showScrollButtons: boolean = false;
-    disableScrollLeft: boolean = false;
-    disableScrollRight: boolean = false;
     showCertifyModal: boolean = false;
     assetAction: AssetAction;
     dataClassification: string;
@@ -162,13 +156,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.load();
     }
 
-    filterScoringTabHasNoValue = (tab: SecondaryNavItem) => {
-        if (tab.title === "Scoring") {
-            return Boolean(this.searchDetails?.Scores.length);
-        }
-        return true;
-    };
-
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['menuOpen'])
             {return;}
@@ -177,53 +164,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         }
     }
 
-    checkSize() {
-        if (this.tabScroller && this.tabScroller.length > 0) {
-            const maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
-            const lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
-            this.showScrollButtons = lastTab > maxWidth;
-        }
-        this.checkScrollPos();
-    }
-
-    checkScrollPos() {
-        if (this.tabScroller && this.tabScroller.length > 0) {
-            const currentPosition = this.tabScroller.first.nativeElement.scrollLeft;
-            this.disableScrollLeft = currentPosition === 0;
-
-            const maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
-            const lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastElementChild);
-            this.disableScrollRight = lastTab <= maxWidth;
-
-            this.ref.markForCheck();
-        }
-    }
-
     getElementRightPosition(element) {
         if (element && element.getBoundingClientRect) {
             return element.getBoundingClientRect().right;
         }
         return NaN;
-    }
-
-    scroll(direction: string) {
-        let scrollAmount = 0;
-        const scrollDistance = 300;
-        const move = () => {
-            if (direction === 'L') {
-                this.tabScroller.first.nativeElement.scrollLeft -= 10;
-            } else {
-                this.tabScroller.first.nativeElement.scrollLeft += 10;
-            }
-            scrollAmount += 10;
-            if (scrollAmount >= scrollDistance) {
-                this.checkScrollPos();
-                window.clearInterval(id);
-            }
-            this.checkScrollPos();
-        };
-
-        const id = window.setInterval(move, 5);
     }
 
     getTitle(item: SecondaryNavItem) {
@@ -245,13 +190,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.searchDetails = null;
         this.items = [];
         this.buttons = [];
-        this.showScrollButtons = false;
         this.currentResouceID = +CurrentResourceID;
         this.subscription = this.secondaryNavService.rightSidebar$.subscribe(
             (item) => {
-                if (item.title === this.secondaryNavService.activeTabTitle) {
-                    item.active = true;
-                }
                 this.items.push(item);
                 this.items = _.sortBy(this.items, 'orderPriority'); this.emitChanges();
                 this.secondaryNavService.setLocalCurrentTabs([...this.items]);
@@ -343,12 +284,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     this.emitChanges();
                 }
             });
-
-        this.homeUrlChangeSub = this.secondaryNavService.homeUrlChange$.subscribe(
-            (item) => {
-                this.homeUrl = item;
-            }
-        );
 
         this.statsSub = this.secondaryNavService.refreshStats$.subscribe((res) => {
             if (this.currentObject && !this.currentObject.isType) {
@@ -493,60 +428,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         if (this.buttonSubscription) {
             this.buttonSubscription.unsubscribe();
         }
-        if (this.homeUrlChangeSub) {
-            this.homeUrlChangeSub.unsubscribe();
-        }
         if (this.statsSub) {
             this.statsSub.unsubscribe();
         }
         if (this.paramsSub) {
             this.paramsSub.unsubscribe();
-        }
-    }
-
-    trackById(index, item) {
-        return item.tag;
-    }
-
-    itemClicked(item: SecondaryNavItem) {
-        if (item.active === true)
-            {return;}
-
-        if (this.AllClosed()) {
-            this.secondaryNavService.setLocalHomeUrl(this.router.url);
-            this.homeUrl = this.router.url;
-        }
-        this.closeAll();
-        if (item.title === "homeClick") {
-            this.secondaryNavService.clearLocalActiveItem();
-            let home = this.homeUrl ? this.homeUrl : this.secondaryNavService.getLocalHomeUrl();
-            if (!home) {
-                home = `/artifact/${this.secondaryNavService.artifactTypeId}`;
-                this.secondaryNavService.activeTabTitle = null;
-                this.secondaryNavService.artifactTypeId = null;
-            }
-            this.router.navigateByUrl(home);
-            return;
-        }
-        item.active = true;
-        if (item.url) {this.router.navigateByUrl(item.url);}
-        this.secondaryNavService.itemClicked(item);
-        this.AllClosed();
-    }
-
-    AllClosed() {
-        const count = this.items.filter((x) => x.active === true).length;
-        if (count === 0)
-            {this.secondaryNavService.setLocalActiveItem(undefined);}
-        return count === 0;
-    }
-
-    closeAll() {
-        for (const ritem of this.items) {
-            if (ritem.active) {
-                ritem.active = false;
-                this.secondaryNavService.itemClicked(ritem);
-            }
         }
     }
 
@@ -618,6 +504,5 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     emitChanges() {
         this.ref.markForCheck();
         this.changed.emit();
-        this.checkSize();
     }
 }

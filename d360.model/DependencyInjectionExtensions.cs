@@ -47,6 +47,7 @@ namespace d360.model
 			builder.RegisterType<ResourceSettingRepository>().As<IResourceSettingRepository>().InstancePerRequest();
 
 			builder.RegisterType<AssetTypeDapperRepository>().As<IAssetTypeRepository>().InstancePerRequest();
+			builder.RegisterType<NavigationRepository>().AsImplementedInterfaces().InstancePerRequest();
         }
     }
 }

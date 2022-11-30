@@ -17,6 +17,7 @@ import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/adva
 import { AuditRoutingModule } from './audit.routes';
 
 import { AuditComponent } from './audit.component';
+import { AuditPageComponent } from './audit-page.component';
 
 @NgModule({
     imports: [
@@ -41,9 +42,13 @@ import { AuditComponent } from './audit.component';
     ],
     declarations: [
         AuditComponent,
+        AuditPageComponent
     ],
     providers: [
 
+    ],
+    exports: [
+        AuditComponent
     ]
 })
 export class AuditModule { }

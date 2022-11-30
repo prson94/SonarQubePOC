@@ -1,0 +1,49 @@
+// By this we guarantee that vertical scroll will be on <table>, not on <asset-grid /> parent
+// The overall approach is to force table height collapse if it doesn't fits to screen
+:host {
+    .tree-wrapper-wrapper {
+        overflow: hidden;
+        flex: 1;
+
+        // By this we guarantee that table will be visible even if screen height is too small
+        // In such case, double vertical scroll will be introduced 
+        min-height: 200px;
+
+        .tree-wrapper {
+            height: 100%;
+
+            p-treetable ::ng-deep {
+                .p-treetable {
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+
+                    .p-treetable-wrapper {
+                        overflow: auto;
+                    }
+                }
+            }
+        }
+    }
+}
+
+p-treetable ::ng-deep table {
+    th {
+        word-break: break-all;
+    }
+
+    th,
+    td {
+        &:not(:last-child) {
+            padding-right: 16px;
+        }
+
+        &:not(:first-child) {
+            padding-left: 16px;
+        }
+    }
+}
+
+.tree-wrapper-wrapper {
+    margin: 10px;
+}

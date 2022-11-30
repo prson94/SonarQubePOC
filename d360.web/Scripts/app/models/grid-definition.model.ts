@@ -25,9 +25,9 @@ export class GridRelationshipFilterExpression {
     relationshipType: ObjectRelationship;
 
     public getAsV2ApiFilter() {
-        let filters: string[] = [];
-        let condition: string = this.includeType === 'Any' ? ' or ' : ' and ';
-        let relUid: string = this.relationshipType.Uid;
+        const filters: string[] = [];
+        const condition: string = this.includeType === 'Any' ? ' or ' : ' and ';
+        const relUid: string = this.relationshipType.Uid;
         if (this.objectIds) {
             this.objectIds.forEach((opt) => {
 
@@ -46,7 +46,7 @@ export class GridOwnerFilter {
     ownerGroups: string[];
 
     public getAsV2ApiFilter() {
-        let filters: string[] = this.ownerGroups.concat(this.ownerUsers);
+        const filters: string[] = this.ownerGroups.concat(this.ownerUsers);
         return filters.join(',');
     }
 }
@@ -66,14 +66,14 @@ export class GridFilterExpression {
     public getAsV2ApiFilter(fieldColumns: GridFilterColumn[]): string {
         var f = fieldColumns.find((x) => x.datafield.toLowerCase() === this.field.toLowerCase());
         var cond = this.convertCondition(this.condition);
-        let multiValueDelimiter = '!~!';
+        const multiValueDelimiter = '!~!';
 
         if (this.fieldtype === 0 && this.field === 'Parent') {
             f = new GridFilterColumn();
             f.fieldType = 'Lookup';
             f.apiName = 'ParentDisplayName';
         }
-        let forceEqualFields: string[] = ['Boolean', 'Lookup', 'Decimal', 'Number'];
+        const forceEqualFields: string[] = ['Boolean', 'Lookup', 'Decimal', 'Number'];
 
         if (forceEqualFields.some((x) => x === f.fieldType)) {
             cond = 'eq';
@@ -81,7 +81,7 @@ export class GridFilterExpression {
 
         if (this.value) {
             var values = this.value.split(multiValueDelimiter);
-            let expressions: string[] = [];
+            const expressions: string[] = [];
 
             values.forEach((value) => {
                 var val = this.wrapValue(f.fieldType, value);

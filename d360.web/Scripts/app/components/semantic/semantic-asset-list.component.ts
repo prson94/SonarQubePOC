@@ -156,7 +156,7 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
 				this.secondaryNavService.setCurrentArea(this.semanticType.name, icon, $localize`Definition`, [disabledBadge]);
 				this.secondaryNavService.setLocalHomeUrl(`${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}`);
 				const assetstab = new SecondaryNavItem($localize`Assets`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount, 2);
-				assetstab.active = true;
+
 				this.secondaryNavService.showItem(assetstab);
 
 				this.secondaryNavService.showHeader(true);

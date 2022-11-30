@@ -3,7 +3,7 @@
 @Pipe({ name: 'selectItemTextToLabel' })
 export class SelectItemTextToLabelPipe implements PipeTransform {
     transform(items: any): any {
-        for (let item of items) {
+        for (const item of items) {
             if (item.label == undefined && item.Text != undefined) {
                 item.label = item.Text;
             }

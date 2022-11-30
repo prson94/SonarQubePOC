@@ -14,7 +14,7 @@ export class ApiKeyUsersGuard implements CanActivate {
         protected router: Router) { }
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-        let showApiKey = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
+        const showApiKey = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
         if (this.authenticationService.isAdmin || showApiKey)
         {
              return true;

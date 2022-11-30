@@ -25,6 +25,7 @@ import { ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
 import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import { AppConstants } from '../../static/constants';
 import { UsageAction, UsageBrowser } from '../../models/web-analytics-activity.model';
 
 export class BaseComponent {
@@ -103,7 +104,7 @@ export class BaseComponent {
 
 
 	// default paging options
-	defaultPagingOptions: number[] = [10, 25, 50, 100];
+	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
 	defaultInitialItemsPerPage = 10;
 
 	protected secondaryNavService: SecondaryNavService = null;
@@ -127,7 +128,7 @@ export class BaseComponent {
 		return this.settingsService.getSettingById(id).GuidSetting.Value;
 	}
 	getNumberSetting(id: CompanySettingEnum): number {
-		let setting = this.settingsService.getSettingById(id);
+		const setting = this.settingsService.getSettingById(id);
 		if (setting && setting.NumberSetting) {
 			return setting.NumberSetting.Value;
 		}
@@ -338,7 +339,6 @@ export class BaseComponent {
 					[allocation.icon],
 					`/${baseUrl}${allocation.uid}`, null, priority
 				);
-				navItem.active = (selectedAllocationUid === allocation.uid);
 				this.secondaryNavService.showItem(navItem);
 				priority += 10;
 			});
@@ -367,8 +367,8 @@ export class BaseComponent {
 			this.clearSidebar();
 			var isCommonAsset: boolean = this.objectType === 'Artifact' || this.objectType === 'Policy' || this.objectType === 'Taxonomy' || this.objectType === 'Rule';
 
-			let showLineage = opts.hasLineage && this.getBooleanSetting(CompanySettingEnum.ShowLineageSidebar);
-			let showImpact = opts.hasImpact && this.getBooleanSetting(CompanySettingEnum.ShowImpactSidebar);
+			const showLineage = opts.hasLineage && this.getBooleanSetting(CompanySettingEnum.ShowLineageSidebar);
+			const showImpact = opts.hasImpact && this.getBooleanSetting(CompanySettingEnum.ShowImpactSidebar);
 
 			if (showLineage || showImpact || opts.hasProcessDiagram) {
 				this.lineageSidebar = new SecondaryNavItem(
@@ -737,7 +737,7 @@ export class BaseComponent {
 		const nodes: TreeNode[] = [];
 
 		// add root nodes
-		for (let rNode of this.baseTreeNodeArray) {
+		for (const rNode of this.baseTreeNodeArray) {
 			nodes.push(rNode);
 		}
 
@@ -755,7 +755,7 @@ export class BaseComponent {
 
 			// push children
 			if (node.children) {
-				for (let cNode of node.children) {
+				for (const cNode of node.children) {
 					nodes.push(cNode);
 				}
 			}
@@ -774,11 +774,11 @@ export class BaseComponent {
 	//generic method used for objectName = Policy/Model
 	private checkParentBase(item: any, arr: any[], typeId: number, objectName: string) {
 		if (item.ParentID > 0 && arr) {
-			let parentAr = arr.filter((x) => x.ID === item.ParentID);
+			const parentAr = arr.filter((x) => x.ID === item.ParentID);
 			let parent: any;
 			if (parentAr.length > 0) {
 				parent = parentAr[0];
-				let crumb = new Breadcrumb(parent.DisplayValue,
+				const crumb = new Breadcrumb(parent.DisplayValue,
 					SiteUrlHelpers.getAssetUrl(parent.Uid),
 					true,
 					objectName,
@@ -799,7 +799,7 @@ export class BaseComponent {
 		includeChildren?: boolean
 	): TreeNode[] {
 		// find the root items then
-		let rootNodes = inputArr.filter((x) => (Parent != null ? x.ParentID === Parent : !x.ParentID));
+		const rootNodes = inputArr.filter((x) => (Parent != null ? x.ParentID === Parent : !x.ParentID));
 
 		if (rootNodes.length === 0) {
 			return null;
@@ -807,7 +807,7 @@ export class BaseComponent {
 
 		const res: TreeNode[] = [];
 
-		for (let root of rootNodes) {
+		for (const root of rootNodes) {
 			res.push({
 				label: root.DisplayValue,
 				expanded: true,
@@ -888,7 +888,7 @@ export class BaseComponent {
 		var failed = results.filter((x) => x.Success !== true);
 
 		if (succeeded.length > 0) {
-			let message = disableCountShow ? defaultMessage : succeeded.length + defaultMessage;
+			const message = disableCountShow ? defaultMessage : succeeded.length + defaultMessage;
 			messagesService.showInfoMessage($localize`Success`, message);
 		}
 
@@ -1086,7 +1086,7 @@ export class BaseComponent {
 					this.preloadedTreeData = r.PreloadData.Data;
 				}
 			}
-			let area = this.determineAreaForAdminPage(areaName);
+			const area = this.determineAreaForAdminPage(areaName);
 
 			let homeUrl: string = ``;
 
@@ -1297,16 +1297,6 @@ export class BaseComponent {
 		components.push(this.groupsSidebar);
 		components.push(this.itemOwnSidebar);
 		components.push(this.followingSidebar);
-
-		components.forEach((cmp) => {
-			if (cmp && currentComponentUrl.startsWith(cmp.url)) {
-				cmp.active = true;
-			}
-
-			if (cmp && cmp.subTabsUrl.some((x) => x === currentComponentUrl || currentComponentUrl.indexOf(x) === 0)) {
-				cmp.active = true;
-			}
-		});
 	}
 
 	private setArtifactBreadcrumbs(data) {
@@ -1328,12 +1318,12 @@ export class BaseComponent {
 				.getAreaName('ArtifactType', data.Artifact.Breadcrumbs[0] ? this.GetIDFromUrl(data.Artifact.Breadcrumbs[0].Url) : data.Artifact.AssetTypeID)
 				.subscribe((result) => {
 					var currentAreaName = result;
-					let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
+					const currentFolderName = currentAreaName ? currentAreaName : folderTitle;
 
 					this.breadcrumbsService.clearBreadcrumbs();
 					this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.ObjectTypeId, currentFolderName).subscribe((res) => {
 						this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, $localize`Definition`);
-						let areaName: string = currentAreaName ? currentAreaName : folderTitle;
+						const areaName: string = currentAreaName ? currentAreaName : folderTitle;
 						let areaLink: string = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}`;
 						if (area === "Technical Assets") {
 							areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
@@ -1341,14 +1331,14 @@ export class BaseComponent {
 						else {
 							areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 						}
-						let areaBreadcrumb = new Breadcrumb(
+						const areaBreadcrumb = new Breadcrumb(
 							areaName,
 							areaLink,
 							false
 						);
 						this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
 
-						for (let breadcrumb of data.Artifact.Breadcrumbs) {
+						for (const breadcrumb of data.Artifact.Breadcrumbs) {
 							index++;
 
 							if (index === data.Artifact.Breadcrumbs.length) {
@@ -1395,9 +1385,6 @@ export class BaseComponent {
 									)
 									;
 							}
-
-							this.checkIfWorkflowActionIsSelected();
-
 						}
 					});
 				});
@@ -1433,14 +1420,14 @@ export class BaseComponent {
 					this.breadcrumbsService.clearBreadcrumbs();
 
 					var folderTitle = res;
-					let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
+					const currentFolderName = currentAreaName ? currentAreaName : folderTitle;
 
 					this.breadcrumbsService.getAssetFolderIcon(objectTypeName, data.ObjectTypeId, currentFolderName).subscribe((res) => {
 						this.secondaryNavService.setCurrentArea(data.DisplayValue, res, $localize`Definition`);
 					});
 
-					let areaRootUriSegment: string = (objectName.toLowerCase() === 'policy') ? 'Policy' : 'Model';
-					let areaBreadcrumb = new Breadcrumb(
+					const areaRootUriSegment: string = (objectName.toLowerCase() === 'policy') ? 'Policy' : 'Model';
+					const areaBreadcrumb = new Breadcrumb(
 						currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${areaRootUriSegment}`
 					);
 					this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
@@ -1469,8 +1456,6 @@ export class BaseComponent {
 								this.buildTreeNodeArrayBase(this.preloadedTreeData, selected.ParentID),
 								this.findSelectedTreeNodeBase(selected.ID)));
 					}
-					this.checkIfWorkflowActionIsSelected();
-
 				});
 			});
 	}
@@ -1506,17 +1491,9 @@ export class BaseComponent {
 						true,
 						'Rule',
 						data.ObjectId));
-					this.checkIfWorkflowActionIsSelected();
-
 				});
 			});
 
-	}
-
-	private checkIfWorkflowActionIsSelected() {
-		if (this.breadcrumbsService.getCurrentUrl().toLowerCase().indexOf('workflow/details') !== -1) {
-			this.actionsSidebar.active = true;
-		}
 	}
 
 	private GetIDFromUrl(url: string) {
@@ -1534,7 +1511,7 @@ export class BaseComponent {
 		if (val >= 1)
 			{return '100%';}
 
-		let s = (val * 100).toFixed(decimals).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
+		const s = (val * 100).toFixed(decimals).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
 
 		return s;
 	}
@@ -1560,7 +1537,7 @@ export class BaseComponent {
 			return integerPart + res;
 		}
 
-		let s = (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
+		const s = (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
 
 		return s;
 	}
