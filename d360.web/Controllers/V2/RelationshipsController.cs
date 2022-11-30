@@ -1223,14 +1223,6 @@ namespace d360.web.Controllers.V2
 				throw new ArgumentException(ApiMessages.JSONValidMessage);
 			}
 
-			foreach (var relation in relationships)
-			{
-				if (relation.SubjectAssetUid == Guid.Empty)
-				{
-					throw new ArgumentException(AssetsApiMessages.InvalidSubjectAssetUid);
-				}
-			}
-
 			if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
 			{
 				throw new ArgumentException(string.Format(RelationshipsApiMessages.MaxRelationShipLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT));
