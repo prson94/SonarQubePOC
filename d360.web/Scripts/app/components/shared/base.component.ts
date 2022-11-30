@@ -25,6 +25,7 @@ import { ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
 import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import { UsageAction, UsageBrowser } from '../../models/web-analytics-activity.model';
 
 export class BaseComponent {
 	public isLoading = false;
@@ -144,15 +145,98 @@ export class BaseComponent {
 		tileService.setTitle(`${this.getStringSetting(CompanySettingEnum.BrowserTitlePrefix)} - ${area}`);
 	}
 
-	logAction(actionName: string, objectName: string, objectId: number | string) {
+	//#region Usage Logic
+
+	private determineBrowser(): UsageBrowser {
+		let browser: UsageBrowser = UsageBrowser.Other;
+
+		const agent = window.navigator.userAgent.toLowerCase();
+		switch (true) {
+			case agent.indexOf('edge') > -1:
+				browser = UsageBrowser.Edge;
+				break;
+			case agent.indexOf('opr') > -1 && !!(<any>window).opr:
+				browser = UsageBrowser.Opera;
+				break;
+			case agent.indexOf('chrome') > -1 && !!(<any>window).chrome:
+				browser = UsageBrowser.Chrome;
+				break;
+			case agent.indexOf('trident') > -1:
+				browser = UsageBrowser.InternetExplorer;
+				break;
+			case agent.indexOf('firefox') > -1:
+				browser = UsageBrowser.FireFox;
+				break;
+			case agent.indexOf('safari') > -1:
+				browser = UsageBrowser.Safari;
+				break;
+			default:
+				browser = UsageBrowser.Other;
+				break;
+		}
+
+		return browser;
+	}
+
+	private logUsage(action: UsageAction,
+		assetUid?: string, assetTypeUid?: string, dashboardUid?: string, issueUid?: string, semanticUid?: string, tagUid?: string,
+		sidebar?: string, tab?: string) {
+		
 		if (this.webAnalyticsService) {
+			let browser = this.determineBrowser();
+
+			let language = navigator.language || window.navigator.language;
+			if (language.length !== 2) {
+				language = language.substring(0, 2);
+			}
+			const languages = navigator.languages || window.navigator.languages;
+			let locale: string = languages.find(l => { return (l.length === 5); });
+			if (!locale) {
+				locale = `${language}-${language.toUpperCase()}`;
+			}
+
 			this.webAnalyticsService.logActivity({
-				Activity: actionName,
-				ObjectId: objectId,
-				ObjectName: objectName
+				action: action,
+				browser: browser,
+				language: language,
+				locale: locale,
+				assetUid: assetUid,
+				assetTypeUid: assetTypeUid,
+				dashboardUid: dashboardUid,
+				issueUid: issueUid,
+				semanticUid: semanticUid,
+				sidebar: sidebar,
+				tab: tab,
+				tagUid: tagUid
 			});
 		}
 	}
+
+	logAssetAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, uid, null, null, null, null, null, sidebar, tab);
+	}
+
+	logAssetTypeAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, uid, null, null, null, null, sidebar, tab);
+	}
+
+	logDashboardAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, null, uid, null, null, null, sidebar, tab);
+	}
+
+	logIssueAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, null, null, uid, null, null, sidebar, tab);
+	}
+
+	logSemanticAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, null, null, null, uid, null, sidebar, tab);
+	}
+
+	logTagAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, null, null, null, null, uid, sidebar, tab);
+	}
+
+	//#endregion
 
 	//#region permissions functionality
 

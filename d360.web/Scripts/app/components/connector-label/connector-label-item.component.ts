@@ -71,12 +71,8 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
     ngOnInit() {
         this.sub = this.route.params.subscribe((params) => {
             this.labelUid = params['labelUid'];
-
             this.secondaryNavService.clearCurrentObject();
-
-            this.logAction('open', 'ConnectorLabel', this.labelUid);
             this.isLoading = true;
-
             this.loadPermissions(this.permissionsService, "ConnectorLabel", this.labelUid)
                 .then((p) => {
                     if (this.hasModifyAssetPermissions() && this.hasDeleteAssetPermissions()) {
@@ -84,9 +80,6 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
                     }
                     this.load();
                 });
-
-
-
         });
     }
 

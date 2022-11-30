@@ -21,6 +21,7 @@ import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { AssetService } from '../../services/asset.service';
 import { ArtifactService } from '../../services/artifacts.service';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 @Component({
 	selector: 'd3s-hierarchy-item',
@@ -108,7 +109,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 					}
 				});
 
-		this.logAction("open", this.assetTypeClass.toString(), this.assetUid);
+		this.logAssetAction(UsageAction.View, this.assetUid);
 		this.baseAssetUid = this.assetUid;
 		forkJoin(this.artifactService.getArtifactByUid(this.assetUid)
 			, this.permissionsService.getAssetPermissions(this.assetUid)

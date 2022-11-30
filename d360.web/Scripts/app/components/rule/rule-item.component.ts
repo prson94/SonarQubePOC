@@ -16,6 +16,7 @@ import { CompanySettingEnum } from '../../models/settings.model';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 @Component({
 	selector: 'd3s-rule-item',
@@ -66,7 +67,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 	ngOnInit() {
 
 		this.isLoading = true;
-		this.logAction("open", "Rule", this.assetUid);
+		this.logAssetAction(UsageAction.View, this.assetUid);
 
 		this.permissionsService.getAssetPermissions(this.assetUid)
 			.subscribe((res) => {

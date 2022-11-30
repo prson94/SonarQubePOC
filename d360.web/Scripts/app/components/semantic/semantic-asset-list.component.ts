@@ -14,6 +14,7 @@ import { FeatureFlagsService } from '../../services/featureflags.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavItem } from '../../models/secondaryNav.model';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 declare var CurrentResourceID;
 
@@ -60,8 +61,8 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
             const uid = params['semanticTypeUid'];
 
             this.sidePanelStorageKey = 'SemanticTypes_' + uid + '_' + CurrentResourceID;
-            this.headerBreadcrumbService.setCurrentObjectInfo('SemanticType', uid);
-            this.logAction('open', 'SemanticType', uid);            
+			this.headerBreadcrumbService.setCurrentObjectInfo('SemanticType', uid);
+			this.logSemanticAction(UsageAction.View, uid);
             this.getData(uid);
         });
     }

@@ -45,6 +45,7 @@ import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.compon
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { LocalStorageKey } from "../../enums/localstorage.enum";
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 declare var CurrentResourceID;
 
@@ -235,13 +236,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			uriParams.objId = this.objectTypeId;
 			uriParams.includelevels = "true";
 			uriParams.includedashboardflag = "true";
-			this.logAction("open", this.objectType, this.objectTypeId);
 
 			this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
 				this.assetType = result[0];
 				this.assetTypeUid = result[0].uid;
 				this.baseAssetTypeUid = this.assetTypeUid;
 				this.uid = this.assetTypeUid;
+
+				this.logAssetTypeAction(UsageAction.View, this.assetTypeUid);
 
 				const descriptionVisibilitySavedState = localStorage.getItem(
 					`${LocalStorageKey.IsAssetTypeDescriptionVisible}_${this.assetTypeApiModel.uid}`

@@ -16,98 +16,12 @@
     </sql>
   </changeSet>
 
-  <changeSet author="tduric" id="Table.Deletions-v3">
+  <changeSet author="tduric" id="Table.Deletions-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-drop table if exists [dbo].Fusion_backup
-GO
-drop table if exists [dbo].FusionType_backup
-GO
-drop table if exists [dbo].FusionAttribute_backup
-GO
-drop table if exists [dbo].FusionAttributeType_backup
-GO
-drop table if exists [dbo].FusionAttributeTypeCustomQuery_bak
-GO
-drop table if exists [dbo].FusionOwner_backup
-GO
-drop table if exists [dbo].FusionProfile_backup
-GO
-drop table if exists [dbo].FusionQueryAttribute_backup
-GO
-drop table if exists [dbo].FusionQueryAttributeType_backup
-GO
-drop table if exists [dbo].FusionStatusLog_backup
-GO
-drop table if exists [fusion].AgentError
-GO
-drop table if exists [fusion].AgentErrorItem_backup
-GO
-drop table if exists [fusion].Error_backup
-GO
-drop table if exists [fusion].Execution_backup
-GO
-drop table if exists [fusion].MarkitLineageData_backup
-GO
-drop table if exists [fusion].MarkitLineageHistory_backup
-GO
-drop table if exists [fusion].MarkitLineageMapToBusinessItems_backup
-GO
-drop table if exists [fusion].MarkitLineageMapping_backup
-GO
-drop table if exists [fusion].MarkitLineageSetting_backup
-GO
-drop table if exists [fusion].Result_backup
-GO
-drop table if exists [fusion].StagingRelation_backup
-GO
-drop table if exists [fusion].StagingRelationUnresolved_backup
-GO
-drop table if exists [integration].AssetField_backup
-GO
-drop table if exists [integration].AssetFieldRelationship_backup
-GO
-drop table if exists [integration].AssetHash_backup
-GO
-drop table if exists [integration].ExecutionAssetField_backup
-GO
-drop table if exists [integration].ExecutionAssetType_backup
-GO
-drop table if exists [integration].ExecutionAssetTypeError_backup
-GO
-drop table if exists [integration].ExecutionAssetTypeLog_backup
-GO
-drop table if exists [integration].Setting_backup
-GO
-drop table if exists [integration].SynchedAssetType_backup
-GO
-drop table if exists [integration].SynchedAssetTypeFieldItem_backup
-GO
-drop table if exists [integration].SynchedAssetTypeRelationItem_backup
-GO
-drop table if exists [integration].SynchedAssetTypeRelationItemTarget_backup
-GO
-drop table if exists [integration].SynchedAssetTypeRoleItem_backup
-GO
-drop table if exists [integration].UnresolvedRelationships_backup
-GO
-drop table if exists [metrics].[Score_Backup]
-GO
-drop table if exists [metrics].[ScoreItem_Backup]
-GO
-drop table if exists [reporting].[Dates_backup]
-GO
-drop table if exists [dbo].[AssetResultEdge]
-GO
-drop table if exists [dbo].[AssetResultDepricated]
-GO
-drop table if exists [graph].[AssetEdge]
-GO
-drop table if exists [graph].[AssetNode]
-GO
 drop table if exists dbo.ContractAcceptance
 GO
 drop table if exists dbo.Contract

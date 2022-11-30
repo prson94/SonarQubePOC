@@ -1,0 +1,117 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.usage.Add-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [usage].[Add] 
+	@UserId int,
+	@Browser int,
+	@Action int,
+	@Timestamp datetime,
+	@Language char(2),
+	@Locale char(5),
+	@Ip varchar(250),
+
+	@AssetUid uniqueidentifier = null,
+	@AssetTypeUid uniqueidentifier = null,
+	@DashboardUid uniqueidentifier = null,
+	@IssueUid uniqueidentifier = null,
+	@SemanticUid uniqueidentifier = null,
+	@TagUid uniqueidentifier = null,
+
+	@Sidebar varchar(250) = null,
+	@Tab varchar(250) = null
+as
+begin
+	set nocount on;
+
+	declare @IpId bigint = null,
+			@AssetId bigint = null,
+			@AssetTypeId int = null,
+			@DashboardId int = null,
+			@IssueId bigint = null,
+			@SemanticId bigint = null,
+			@TagId int = null,
+			@SidebarId bigint = null,
+			@TabId bigint = null;
+
+	select	@IpId = Id from [usage].[Ip] where [Value] = @Ip
+	if @IpId is null 
+	begin
+		insert into [usage].[Ip] values (@Ip);
+		set @IpId = SCOPE_IDENTITY();
+	end;
+
+	if @AssetUid is not null
+	begin
+		select @AssetId = Id from Asset where Uid = @AssetUid;
+	end;
+
+	if @AssetTypeUid is not null
+	begin
+		select @AssetTypeId = Id from AssetType where Uid = @AssetTypeUid;
+	end;
+
+	if @DashboardUid is not null
+	begin
+		select @DashboardId = Id from Report where Uid = @DashboardUid;
+	end;
+
+	if @IssueUid is not null
+	begin
+		select @IssueId = Id from Issue where Uid = @IssueUid;
+	end;
+
+	if @SemanticUid is not null
+	begin
+		select @SemanticId = Id from Semantic where Uid = @SemanticUid;
+	end;
+
+	if @TagUid is not null
+	begin
+		select @TagId = Id from Tag where Uid = @TagUid;
+	end;
+
+	if @Sidebar is not null and @Sidebar <> ''
+	begin
+		select	@SidebarId = Id from [usage].[Sidebar] where [Value] = @Sidebar;
+		if @SidebarId is null 
+		begin
+			insert into [usage].[Sidebar] values (@Sidebar)
+			set @SidebarId = SCOPE_IDENTITY()
+		end;
+	end;
+
+	if @Tab is not null and @Tab <> ''
+	begin
+		select	@TabId = Id from [usage].[Tab] where [Value] = @Tab;
+		if @TabId is null 
+		begin
+			insert into [usage].[Tab] values (@Tab)
+			set @TabId = SCOPE_IDENTITY()
+		end;
+	end;
+
+	insert into [usage].[Analytic]
+		([UserId], [Timestamp], [IpId], [Browser], [Language], [Locale], [Action], [AssetId], [AssetTypeId], [DashboardId], [IssueId], [SemanticId], [TagId], [TabId], [SidebarId])
+     VALUES
+		(@UserId, @Timestamp, @IpId, @Browser, @Language, @Locale, @Action, @AssetId, @AssetTypeId, @DashboardId, @IssueId, @SemanticId, @TagId, @TabId, @SidebarId)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
