@@ -77,6 +77,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
         this.isLoading = true;
         this.subscription = this.assetTypeService.GetAssetTypeByUid(this.uid).subscribe((data) => {
             this.assetTypeModel = data;
+            this.categories = [];
             if (this.assetTypeModel) {
                 this.fillCategories(this.assetTypeModel);
                 this.loadState();
