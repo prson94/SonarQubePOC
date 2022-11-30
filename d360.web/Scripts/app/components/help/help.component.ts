@@ -12,23 +12,7 @@ import { CompanySettingsService } from '../../services/settings.service';
     selector: 'd3s-help-component',
     providers: [HeaderBreadcrumbService, ResourcesService],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `
-        <div class="row">
-            <div class="col s10 offset-s1">
-                <div class="tile tile-detail">
-                    <header i18n>Help</header>
-
-                    <div>
-                        <div class="row" *ngFor="let hr of (helpResources$ | async)">
-                            <div class="col s12">
-                                <h4><a [href]="hr.Url" target="help">{{hr.Name}}</a></h4>
-                                <div class="directions">{{hr.Description}}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>                
-            </div>
-        </div>`
+    templateUrl: 'help.component.html'
 })
 
 export class HelpComponent extends BaseComponent implements OnInit {
