@@ -78,17 +78,17 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
     set icon(val: string) {
         this._icon = val;
 
-        let iconElement = DomHandler.findSingle(this.el.nativeElement, '.ig-button-icon');
+        const iconElement = DomHandler.findSingle(this.el.nativeElement, '.ig-button-icon');
         if (iconElement) {
             this.el.nativeElement.removeChild(iconElement);
         }
 
         if (this._icon) {
-            let iconElement = document.createElement("span");
+            const iconElement = document.createElement("span");
             iconElement.setAttribute("aria-hidden", "true");
             iconElement.className = 'ig-button-icon fa ' + this._icon;
 
-            let labelElement = DomHandler.findSingle(this.el.nativeElement, '.ig-button-label');
+            const labelElement = DomHandler.findSingle(this.el.nativeElement, '.ig-button-label');
             if (labelElement) {
                 this.el.nativeElement.insertBefore(iconElement, labelElement);
             } else {
@@ -104,7 +104,7 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
     set loading(val: boolean) {
         this._loading = val;
 
-        let spinnerElement = DomHandler.findSingle(this.el.nativeElement, '.ig-button-spinner');
+        const spinnerElement = DomHandler.findSingle(this.el.nativeElement, '.ig-button-spinner');
         if (spinnerElement) {
             this.el.nativeElement.removeChild(spinnerElement);
         }
@@ -112,7 +112,7 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
         if (this._loading) {
             DomHandler.addClass(this.el.nativeElement, "ig-state-loading");
 
-            let spinnerElement = document.createElement("span");
+            const spinnerElement = document.createElement("span");
             spinnerElement.setAttribute("aria-hidden", "true");
             spinnerElement.className = 'ig-button-spinner';
             this.el.nativeElement.appendChild(spinnerElement);

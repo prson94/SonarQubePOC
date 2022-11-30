@@ -75,7 +75,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
 
         this.isLoading = true;
 
-        let type = (this.objectType.toLowerCase() === 'artifact') ? "1" : this.objectType;
+        const type = (this.objectType.toLowerCase() === 'artifact') ? "1" : this.objectType;
 
         this.objectDetailService.getObject(this.objectID, type).subscribe(
             (r) => {
@@ -111,8 +111,8 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
 
     saveV2(event): void {
 
-        let values: any = {};
-        let asset: AssetEditorModel = new AssetEditorModel();
+        const values: any = {};
+        const asset: AssetEditorModel = new AssetEditorModel();
         let assetTypeUid: string;
         asset.Fields = {};
 

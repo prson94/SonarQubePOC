@@ -397,7 +397,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     private saveFilters() {
 		if (this.enableFilterSaving) {
-			let storageValue = JSON.stringify(this.conditions);
+			const storageValue = JSON.stringify(this.conditions);
 			localStorage.setItem(this.getLocalStorageKey(), storageValue);
 
 			if (this.isAssetType) {

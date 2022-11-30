@@ -78,9 +78,9 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             });
 
         this.paramSub = this.route.queryParams.subscribe(() => {
-            let url = new URL(window.location.href);
-            let search = url.search;
-            let params = new URLSearchParams(search);
+            const url = new URL(window.location.href);
+            const search = url.search;
+            const params = new URLSearchParams(search);
             if (params.has('nonavigation')) {
                 this.hideNav = params.get('nonavigation').toLowerCase() === 'true';
             }
@@ -102,7 +102,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     ngAfterContentInit() {
         this.headerActionsService.emitFavoritesChange();//on first load when a non-default home page is defined, we need to update the action icons
 
-        let menuState = this.cookieService.get("MenuState");
+        const menuState = this.cookieService.get("MenuState");
         if ((menuState + "") == "") {
             this.cookieService.set("MenuState", "true");
             this.handleMenuChange(true);
