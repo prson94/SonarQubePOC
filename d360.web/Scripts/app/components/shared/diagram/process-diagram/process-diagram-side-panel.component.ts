@@ -69,7 +69,7 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.nodeData && changes.nodeData.currentValue != changes.nodeData.previousValue) {
+        if (changes.nodeData && changes.nodeData.currentValue !== changes.nodeData.previousValue) {
             if (this.nodeData) {
                 this.assetName = this.nodeData['Name'];
                 this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
@@ -107,20 +107,20 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
         }
 
         for (var prop in data) {
-            if (data[prop] == undefined) {
+            if (data[prop] == null) {
                 delete data[prop];
             }
-            if (prop == 'Uid' || prop == 'AssetTypeUid') {
+            if (prop === 'Uid' || prop === 'AssetTypeUid') {
                 delete data[prop];
             }
         }
         var fields = $event['fields'] as EditorField[];
         fields.filter((x) => x.FieldTypeID).forEach((f) => {
-            if (data[f.FieldName] == undefined) {
+            if (data[f.FieldName] == null) {
                 data[f.FieldName] = '';
             }
             else {
-                if (f.FieldType == 'DateTime') {
+                if (f.FieldType === 'DateTime') {
                     var dateTime = new Date(data[f.FieldName]);
                     dateTime.setMinutes(dateTime.getMinutes() - dateTime.getTimezoneOffset());
                     data[f.FieldName] = dateTime.toISOString();

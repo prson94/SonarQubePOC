@@ -114,25 +114,25 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 r.forEach((e) => {
                     if (e.ID < 1)
                         {return;}
-                    else if (e.ID == EmailTaskRecipientType.Followers) {
-                        if (this.objectType == 'IntersectType')
+                    else if (e.ID === EmailTaskRecipientType.Followers) {
+                        if (this.objectType === 'IntersectType')
                             {return false;}
 
-                        if (!(this.ChangeType == WorkflowChangeType.Add ||
-                            this.ChangeType == WorkflowChangeType.Update ||
-                            this.ChangeType == WorkflowChangeType.Schedule ||
-                            this.ChangeType == WorkflowChangeType.RequestCertification))
+                        if (!(this.ChangeType === WorkflowChangeType.Add ||
+                            this.ChangeType === WorkflowChangeType.Update ||
+                            this.ChangeType === WorkflowChangeType.Schedule ||
+                            this.ChangeType === WorkflowChangeType.RequestCertification))
                             {return;}
 
-                        if ((this.ChangeType == WorkflowChangeType.Update) &&
-                            !(this.objectType == 'ArtifactType' || this.objectType == 'PolicyType' || this.objectType == 'RuleType' || this.objectType == 'TaxonomyType'))
+                        if ((this.ChangeType === WorkflowChangeType.Update) &&
+                            !(this.objectType === 'ArtifactType' || this.objectType === 'PolicyType' || this.objectType === 'RuleType' || this.objectType === 'TaxonomyType'))
                             {return;}
 
-                        if ((this.ChangeType == WorkflowChangeType.Add) && !(this.objectType == 'IssueType'))
+                        if ((this.ChangeType === WorkflowChangeType.Add) && !(this.objectType === 'IssueType'))
                             {return;}
 
-                        if ((this.ChangeType == WorkflowChangeType.Add) && (this.objectType == 'IssueType')) {
-                            if (this.issueObject != null && this.issueObject != '') {
+                        if ((this.ChangeType === WorkflowChangeType.Add) && (this.objectType === 'IssueType')) {
+                            if (this.issueObject != null && this.issueObject !== '') {
                                 const objArr = this.issueObject.split("|", 1);
                                 let Issobj = "";
                                 if (objArr.length <= 0)
@@ -140,17 +140,17 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                                 else
                                     {Issobj = objArr[0];}
 
-                                if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
+                                if (!(Issobj === 'ArtifactType' || Issobj === 'PolicyType' || Issobj === 'RuleType' || Issobj === 'TaxonomyType'))
                                     {return;}
                             }
                         }
                     }
-                    else if (e.ID == EmailTaskRecipientType.Initiator) {
-                        if (this.ChangeType == WorkflowChangeType.ScoreUpdate)
+                    else if (e.ID === EmailTaskRecipientType.Initiator) {
+                        if (this.ChangeType === WorkflowChangeType.ScoreUpdate)
                             {return;}
                     }
 
-                    if (e.ID == EmailTaskRecipientType.Initiator && this.ChangeType == WorkflowChangeType.Schedule)
+                    if (e.ID === EmailTaskRecipientType.Initiator && this.ChangeType === WorkflowChangeType.Schedule)
                         {return;}
 
                     this.destination.push({
@@ -162,8 +162,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
         this.groupService.getGroups().subscribe((GroupList) => {
             this.groups = GroupList.items.map((g) => { return { value: g.Uid, label: g.Name }; });
-            if (this.step.settings.MessageToGroup != undefined) {
-                if (!this.groups.find((g) => g.value == this.step.settings.MessageToGroup)) {
+            if (this.step.settings.MessageToGroup != null) {
+                if (!this.groups.find((g) => g.value === this.step.settings.MessageToGroup)) {
                     this.groups.push(<SelectItem>{ value: this.step.settings.MessageToGroup, label: '<invalid group>' });
                 }
             }
@@ -176,18 +176,18 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         this.originalStep = _.cloneDeep(this.step);
 
 
-        if (this.step.activityType == WorkflowActivityType.EmailNotification) {
+        if (this.step.activityType === WorkflowActivityType.EmailNotification) {
             if (this.step.settings.SendToDefaultUsers == null) {
                 this.step.settings.SendToDefaultUsers = true;
             } else {
                 this.step.settings.SendToDefaultUsers = this.step.settings.SendToDefaultUsers.toString().toLowerCase() === 'true' ? true : false;
             }
-        } else if (this.step.activityType == WorkflowActivityType.Procedure) {
+        } else if (this.step.activityType === WorkflowActivityType.Procedure) {
             this.workflowService.getWorkflowProcedures()
                 .subscribe((r) => {
                     this.procedures = r;
                 });
-        } else if (this.step.activityType == WorkflowActivityType.FieldChange) {
+        } else if (this.step.activityType === WorkflowActivityType.FieldChange) {
             if (this.step.settings.FieldUpdate == null) {
                 this.step.settings.FieldUpdate = new FieldUpdateSettings();
             }
@@ -200,7 +200,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             this.filterOutputFields();
 
         }
-        else if (this.step.activityType == WorkflowActivityType.HTTPRequest) {
+        else if (this.step.activityType === WorkflowActivityType.HTTPRequest) {
             if (this.step.settings.HTTPRequest == null) {
                 this.step.settings.HTTPRequest = new HTTPRequestSettings();
             }
@@ -222,13 +222,13 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             this.filterHttpFields();
 
         }
-        else if (this.step.activityType == WorkflowActivityType.HTTPResponse) {
+        else if (this.step.activityType === WorkflowActivityType.HTTPResponse) {
             if (this.step.settings.HTTPResponse == null) {
                 this.step.settings.HTTPResponse = new HTTPResponseSettings();
             }
             this.filterOutputFields();
         }
-        else if (this.step.activityType == WorkflowActivityType.RelationshipUpdate) {
+        else if (this.step.activityType === WorkflowActivityType.RelationshipUpdate) {
             if (this.step.settings.RelationshipUpdate == null)
                 {this.step.settings.RelationshipUpdate = new RelationshipUpdateSettings();}
             if (this.step.settings.RelationshipUpdate.Relationship == null)
@@ -243,10 +243,10 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             }
 
             if (this.step.settings.RelationshipUpdate.Relationship['@AppendValue'] != null) {
-                this.step.settings.RelationshipUpdate.Relationship['@AppendValue'] = (this.step.settings.RelationshipUpdate.Relationship['@AppendValue'].toString().toLowerCase() == 'true');
+                this.step.settings.RelationshipUpdate.Relationship['@AppendValue'] = (this.step.settings.RelationshipUpdate.Relationship['@AppendValue'].toString().toLowerCase() === 'true');
             }
             if (this.step.settings.RelationshipUpdate.Relationship['@ClearValue'] != null) {
-                this.step.settings.RelationshipUpdate.Relationship['@ClearValue'] = (this.step.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() == 'true');
+                this.step.settings.RelationshipUpdate.Relationship['@ClearValue'] = (this.step.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() === 'true');
             }
 
         }
@@ -315,13 +315,13 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         const upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
         fields.forEach((f) => {
-            const k = upstreamSteps.filter((u) => u == f['@stepId']);
+            const k = upstreamSteps.filter((u) => u === f['@stepId']);
             if (k != null && k.length > 0) {
                 f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
                 f['@FormLabel'] = 'Form :: ' + f['@label'];
 
                 this.formFields.push(f);
-                if (f['@type'] == 'relationshipType') {
+                if (f['@type'] === 'relationshipType') {
                     this.formRelationshipFields.push(f);
                 }
             }
@@ -337,7 +337,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         this.traverseDiagram(this.step.key, upstreamSteps);
 
         fields.forEach((f) => {
-            const k = upstreamSteps.filter((u) => u == f['@stepId']);
+            const k = upstreamSteps.filter((u) => u === f['@stepId']);
             if (k != null && k.length > 0) {
 				f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
 				f['@FormLabel'] = this.step.name + ' :: ' + f['@label'];
@@ -355,7 +355,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         this.traverseDiagram(this.step.key, upstreamSteps);
 
         fields.forEach((f) => {
-            const k = upstreamSteps.filter((u) => u == f.StepId);
+            const k = upstreamSteps.filter((u) => u === f.StepId);
             if (k != null && k.length > 0) {
 				f['@FormFieldId'] = f.Id + '|' + f.StepId;
 				f['@FormLabel'] = this.step.name + ' :: ' + f.Name;
@@ -370,8 +370,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         const steps = <any[]>this.diagram.model.nodeDataArray;
         const links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
 
-        const step = steps.find((s) => s.key == key);
-        const toLinks = links.filter((l) => l.to == key);
+        const step = steps.find((s) => s.key === key);
+        const toLinks = links.filter((l) => l.to === key);
 
         if (_.includes(upstreamSteps, key)) {return;}
         upstreamSteps.push(step.key);
@@ -398,9 +398,9 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     changeValueType(e: any, field: string) {
         this.step.settings.RelationshipUpdate.Relationship[field] = e;
-        if (field == '@AppendValue' && e == true) {
+        if (field === '@AppendValue' && e === true) {
             this.step.settings.RelationshipUpdate.Relationship['@ClearValue'] = false;
-        } else if (field == '@ClearValue' && e == true) {
+        } else if (field === '@ClearValue' && e === true) {
             this.step.settings.RelationshipUpdate.Relationship['@AppendValue'] = false;
         }
         this.stepChange.emit(this.step);
@@ -409,11 +409,11 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     changeName(e: any) {
         this.step.name = e;
 		this.stepChange.emit(this.step);
-		if (this.step.activityType == WorkflowActivityType.HTTPRequest) {
+		if (this.step.activityType === WorkflowActivityType.HTTPRequest) {
 			this.workflowFieldsService.pushHttpFields(this.step);
 		}
 
-		if (this.step.activityType == WorkflowActivityType.HTTPResponse) {
+		if (this.step.activityType === WorkflowActivityType.HTTPResponse) {
 			this.step.settings.HTTPResponse.Outputs.forEach(o => {
 				o.StepName = this.step.name;
 				this.workflowFieldsService.updateOutputField(o);

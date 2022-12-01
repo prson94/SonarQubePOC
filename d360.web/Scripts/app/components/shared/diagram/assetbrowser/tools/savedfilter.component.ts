@@ -77,13 +77,13 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["diagramType"]) {
             this.selectedFilter = null;
-            this.savedFilters = this.allFilters.filter((f) => { return f.diagramType == this.diagramType; });
+            this.savedFilters = this.allFilters.filter((f) => { return f.diagramType === this.diagramType; });
         }
     }
 
     private numberOfHops() {
         let numberOfHops: number = this.filterModel.NumberOfImpactHops;
-        if (this.diagramType == DiagramType.Lineage) {
+        if (this.diagramType === DiagramType.Lineage) {
             numberOfHops = this.filterModel.NumberOfLineageHops;
         }
         return numberOfHops;
@@ -112,7 +112,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
     apply(e) {
 		this.selectedFilter = e.value;
         this.menuitems.forEach((x) => {
-            if (x.title == this.removeTitle || x.title == this.saveTitle) {
+            if (x.title === this.removeTitle || x.title === this.saveTitle) {
                 x.disabled = !this.hasSelectedUserFilter();
                 this.cdRef.markForCheck();
             }
@@ -124,15 +124,15 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         const model: AssetBrowserFilterModel = this.filterModel;
 
         const selectedAssetTypes = this.options.AssetTypeOptions
-            .filter((a) => this.selectedFilter.assetTypes.findIndex((f) => f.uid == a.Uid) > -1)
+            .filter((a) => this.selectedFilter.assetTypes.findIndex((f) => f.uid === a.Uid) > -1)
             .map((a) => a.AssetTypeId);
 
 		const selectedPredicates = this.options.PredicateOptions
-            .filter((p) => this.selectedFilter.predicates.findIndex((f) => f.uid == p.Uid) > -1)
+            .filter((p) => this.selectedFilter.predicates.findIndex((f) => f.uid === p.Uid) > -1)
             .map((p) => p.Id);
 
 		const selectedResponsibilityTypes = this.options.ResponsibilityTypeOptions
-            .filter((r) => this.selectedFilter.responsibilityTypes.findIndex((f) => f.uid == r.Uid) > -1)
+            .filter((r) => this.selectedFilter.responsibilityTypes.findIndex((f) => f.uid === r.Uid) > -1)
             .map((r) => r.Id);
 
         model.SelectedAssetTypes = selectedAssetTypes;
@@ -144,7 +144,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         }
 
         if (this.selectedFilter.numberOfHops) {
-            if (model.DiagramType == DiagramType.Impact) {
+            if (model.DiagramType === DiagramType.Impact) {
                 model.NumberOfImpactHops = this.selectedFilter.numberOfHops;
             }
             else {
@@ -176,11 +176,11 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                 this.saveFilterModalVisible = false;
                 this.saveFilterModalWorking = false;
                 this.allFilters.push(filter);
-                this.savedFilters = this.allFilters.filter((f) => { return f.diagramType == this.diagramType; });
+                this.savedFilters = this.allFilters.filter((f) => { return f.diagramType === this.diagramType; });
                 this.selectedFilter = filter;
 				this.dropdown.value = filter;
                 this.menuitems.forEach((x) => {
-                    if (x.title == this.removeTitle || x.title == this.saveTitle) {
+                    if (x.title === this.removeTitle || x.title === this.saveTitle) {
                         x.disabled = !this.hasSelectedUserFilter();
                         this.cdRef.markForCheck();
                     }
@@ -204,7 +204,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                         this.selectedFilter = undefined;
 						this.dropdown.value = null;
                         this.menuitems.forEach((x) => {
-                            if (x.title == this.removeTitle || x.title == this.saveTitle) {
+                            if (x.title === this.removeTitle || x.title === this.saveTitle) {
                                 x.disabled = !this.hasSelectedUserFilter();
                                 this.cdRef.markForCheck();
                             }
@@ -219,17 +219,17 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
     }
 
     private hasSelectedUserFilter(): boolean {
-        return (this.selectedFilter != undefined && this.selectedFilter != null);
+        return (this.selectedFilter != null);
     }
 
     private load() {
-        if (this.allFilters.length == 0) {
+        if (this.allFilters.length === 0) {
             this.browserService
                 .getUserFilters()
                 .subscribe((filters) => {
                     this.allFilters = filters;
-                    this.savedFilters = this.allFilters.filter((f) => { return f.diagramType == this.diagramType; });
-                    this.selectedFilter = this.savedFilters.find((f) => f.isDefault == true);
+                    this.savedFilters = this.allFilters.filter((f) => { return f.diagramType === this.diagramType; });
+                    this.selectedFilter = this.savedFilters.find((f) => f.isDefault === true);
 					this.dropdown.value = this.selectedFilter;
                 });
         }
@@ -269,7 +269,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                 this.selectedFilter = filter;
 				this.dropdown.value = filter;
 				this.menuitems.forEach((x) => {
-                    if (x.title == this.removeTitle || x.title == this.saveTitle) {
+                    if (x.title === this.removeTitle || x.title === this.saveTitle) {
                         x.disabled = !this.hasSelectedUserFilter();
                         this.cdRef.markForCheck();
                     }

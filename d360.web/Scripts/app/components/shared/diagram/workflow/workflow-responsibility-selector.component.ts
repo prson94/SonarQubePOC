@@ -56,7 +56,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
     }
 
     ngOnInit() {
-        if (this.objectType != 'IntersectType') {
+        if (this.objectType !== 'IntersectType') {
             this.responsibleObject = this.objectType;
             this.responsibleObjectId = this.objectId;
         }
@@ -67,8 +67,8 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
     }
 
     initFields() {
-        if (this.step.settings.MessageRecipientType != null && this.step.settings.MessageRecipientType == 'Responsibility') {
-            if (this.objectType == 'IntersectType') {
+        if (this.step.settings.MessageRecipientType != null && this.step.settings.MessageRecipientType === 'Responsibility') {
+            if (this.objectType === 'IntersectType') {
                 this.changeResponsibilitySide(this.step.settings.ResponsibilitySide || 'Subject');
             } else {
                 this.responsibleObject = this.objectType;
@@ -103,7 +103,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
 
     changeResponsibilitySide(e: any) {
         //if we switch sides, clear the current values
-        if (e != this.step.settings.ResponsibilitySide) {
+        if (e !== this.step.settings.ResponsibilitySide) {
             this.step.settings.ResponsibilityTypeID = [];
             this.addResponsibility();
         }
@@ -127,14 +127,14 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
 
         Promise.all(promises)
             .then(() => {
-                if (this.intersectType == null || (e != 'Object' && e != 'Subject')) {
+                if (this.intersectType == null || (e !== 'Object' && e !== 'Subject')) {
                     this.responsibleObjectId = null;
                     this.responsibleObject = null;
                     this.responsibilities = [];
-                } else if (e == 'Object') {
+                } else if (e === 'Object') {
                     this.responsibleObject = this.intersectType.Object;
                     this.responsibleObjectId = this.intersectType.ObjectID;
-                } else if (e == 'Subject') {
+                } else if (e === 'Subject') {
                     this.responsibleObject = this.intersectType.Subject;
                     this.responsibleObjectId = this.intersectType.SubjectID;
                 }
@@ -147,7 +147,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
 
     getResponsibilityTypes() {
         //console.log('getResTypes', this.responsibleObject, this.responsibleObjectId);
-        if (this.responsibleObject == null || this.responsibleObjectId == null || this.responsibleObjectId < 0 || this.objectType == 'IssueType') {
+        if (this.responsibleObject == null || this.responsibleObjectId == null || this.responsibleObjectId < 0 || this.objectType === 'IssueType') {
             this.responsibilities = [];
             return this.responsibilityService.getResponsibilityTypes()
                 .subscribe((r) => {

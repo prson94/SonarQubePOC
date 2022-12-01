@@ -193,9 +193,9 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     }
 
     public menuAction(e: MenuItem) {
-        if (e.icon == 'fa fa-refresh menu-icon') {
+        if (e.icon === 'fa fa-refresh menu-icon') {
             this.populateDiagram();
-        } else if (e.icon == 'fa fa-info-circle menu-icon') {
+        } else if (e.icon === 'fa fa-info-circle menu-icon') {
             this.isWindowVisible = !this.isWindowVisible;
         }
     }

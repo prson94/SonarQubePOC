@@ -167,7 +167,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.isEditMode && changes.isEditMode.currentValue != changes.isEditMode.previousValue) {
+        if (changes.isEditMode && changes.isEditMode.currentValue !== changes.isEditMode.previousValue) {
             if (this.listView) {
                 this.listView.clearSearchValue();
             }
@@ -195,18 +195,18 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 			this.colors = results[0];
 
 			this.assetTypeNodes = results[1];
-			this.events = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Event);
-			this.activities = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Activity);
-			this.gateways = this.assetTypeNodes.filter((x) => x.FlowObjectType == FlowObjectType.Gateway);
+			this.events = this.assetTypeNodes.filter((x) => x.FlowObjectType === FlowObjectType.Event);
+			this.activities = this.assetTypeNodes.filter((x) => x.FlowObjectType === FlowObjectType.Activity);
+			this.gateways = this.assetTypeNodes.filter((x) => x.FlowObjectType === FlowObjectType.Gateway);
 
 			var nodeHeight = 130;
-			var numberOfEventRows = this.events.length % 2 == 0 ? this.events.length / 2 : (this.events.length + 1) / 2;
+			var numberOfEventRows = this.events.length % 2 === 0 ? this.events.length / 2 : (this.events.length + 1) / 2;
 			this.eventPalleteHeight = numberOfEventRows * nodeHeight;
 
-			var numberOfActivityRows = this.activities.length % 2 == 0 ? this.activities.length / 2 : (this.activities.length + 1) / 2;
+			var numberOfActivityRows = this.activities.length % 2 === 0 ? this.activities.length / 2 : (this.activities.length + 1) / 2;
 			this.activityPalleteHeight = numberOfActivityRows * nodeHeight;
 
-			var numberOfGatewatRows = this.gateways.length % 2 == 0 ? this.gateways.length / 2 : (this.gateways.length + 1) / 2;
+			var numberOfGatewatRows = this.gateways.length % 2 === 0 ? this.gateways.length / 2 : (this.gateways.length + 1) / 2;
 			this.gatewayPalleteHeight = numberOfGatewatRows * nodeHeight;
 
 			this.isLoaded = true;
@@ -241,7 +241,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @HostListener('click', ['$event.target'])
     onClick(btn) {
         if (this.myDiagram) {
-            if (this.myDiagram.selection.count == 0) {
+            if (this.myDiagram.selection.count === 0) {
                 this.selectedNodeData = null;
             }
         }
@@ -257,11 +257,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.onResize(null);
         this.applyEditMode(this.isEditMode);
         if (this.myDiagram) {
-            if (this.getSelectedNodeCount() != 1) {
+            if (this.getSelectedNodeCount() !== 1) {
                 this.selectedNodeData = null;
             }
 
-            if (this.myDiagram.selection.count == 1) {
+            if (this.myDiagram.selection.count === 1) {
                 var link = this.myDiagram.selection.toArray()[0];
                 if (link.data && link.data.from && link.data.to) {
                     this.selectedLinkData = link.data;
@@ -278,7 +278,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
 
         if (this.selectedNodeData && this.selectedNodeData.key.indexOf('new_instance_') > -1) {
-            var newUid = this.newInstancesMap.find((x) => x.oldKey == this.selectedNodeData.key).newKey;
+            var newUid = this.newInstancesMap.find((x) => x.oldKey === this.selectedNodeData.key).newKey;
             this.newInstancesMap = [];
             var part = this.myDiagram.findPartForKey(newUid);
             if (part) {
@@ -325,7 +325,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.myDiagram.isReadOnly) {
             this.myDiagram.toolManager.textEditingTool.doCancel();
         }
-        if (this.viewType == 'diagram' && this.isEditMode && !this.isPalleteLoaded) {
+        if (this.viewType === 'diagram' && this.isEditMode && !this.isPalleteLoaded) {
             this.loadPallete();
         }
 
@@ -386,7 +386,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.myDiagram)
             {return 0;}
 
-        return this.myDiagram.selection.filter((x) => x.category == 'activity' || x.category == 'event' || x.category == 'gateway').count;
+        return this.myDiagram.selection.filter((x) => x.category === 'activity' || x.category === 'event' || x.category === 'gateway').count;
     }
 
     get deleteModelTitle(): string {
@@ -558,7 +558,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private returnUniqueName(name: string, iteration: number) {
         var tempName = name;
-        if (iteration != 1) {
+        if (iteration !== 1) {
             tempName = name + ` (${iteration})`;
         }
         if (this.isUnique(tempName)) {
@@ -573,7 +573,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.nodes.each(function (n) {
             if (n instanceof go.Node) {
-                if (n.data.Name.toString() == name) {
+                if (n.data.Name.toString() === name) {
                     exists = true;
                 }
             }
@@ -600,7 +600,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.cdRef.detectChanges();
     }
     private isEmpty() {
-        return this.myDiagram ? (this.myDiagram.nodes.count == 0 && this.myDiagram.links.count == 0) : true;
+        return this.myDiagram ? (this.myDiagram.nodes.count === 0 && this.myDiagram.links.count === 0) : true;
     }
 
     private isCurrentStateSaved(): boolean {
@@ -636,7 +636,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 if (res.hasError) {
                     this.isSaving = false;
                     this.validationErrors = res;
-                    this.areNamesUnique = this.validationErrors.errors.some((x) => x.ErrorType == 'CustomUniqueName');
+                    this.areNamesUnique = this.validationErrors.errors.some((x) => x.ErrorType === 'CustomUniqueName');
 
                     this.updateValidationData();
                     this.isErrorModalOpened = true;
@@ -769,7 +769,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
                         var bothEmpty = self.isObjectEmpty(currentPropValue) && self.isObjectEmpty(updatedPropValue);
 
-                        if (propertyName != 'key' && !bothEmpty) {
+                        if (propertyName !== 'key' && !bothEmpty) {
                             m.set(data, propertyName, formData[propertyName].toString());
                         }
                     }
@@ -801,21 +801,21 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private isObjectEmpty(obj: any): boolean {
-        if (obj == null || obj == undefined || obj.toString() == '') {return true;}
+        if (obj == null || obj.toString() === '') {return true;}
         return false;
     }
 
     private newGuid() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0,
-                v = c == 'x' ? r : (r & 0x3 | 0x8);
+                v = c === 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
     }
 
     private getNodeColor(data: any) {
         try {
-            var item = this.colors.find((x) => +x.ObjectID == +data.GovernanceRole);
+            var item = this.colors.find((x) => +x.ObjectID === +data.GovernanceRole);
             if (item && item.Value)
                 {return item.Value;}
         }
@@ -827,7 +827,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private getNodeRoleName(data: any) {
         try {
-            var item = this.colors.find((x) => +x.ObjectID == +data.GovernanceRole);
+            var item = this.colors.find((x) => +x.ObjectID === +data.GovernanceRole);
             if (item)
                 {return item.DisplayValue;}
         }
@@ -855,7 +855,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             try {
                 this.myDiagram.model.commit(function (m) {
                     m.nodeDataArray.forEach((data) => {
-                        if (errors.map((x) => x.AssetUid).some((x) => x == data.key)) {
+                        if (errors.map((x) => x.AssetUid).some((x) => x === data.key)) {
                             m.set(data, 'hasError', true);
                             if (!selectedKey) {
                                 selectedKey = data.key;
@@ -942,7 +942,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             });
         });
 
-        if (this.events.length == 1) {
+        if (this.events.length === 1) {
             eventArr.push({
                 category: 'blank-node'
             });
@@ -988,7 +988,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             });
         });
 
-        if (this.activities.length == 1) {
+        if (this.activities.length === 1) {
             activitiesArr.push({
                 category: 'blank-node'
             });
@@ -1033,7 +1033,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 relCount: "0"
             });
         });
-        if (this.gateways.length == 1) {
+        if (this.gateways.length === 1) {
             gatewaysArr.push({
                 category: 'blank-node'
             });
@@ -1159,7 +1159,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     public changeViewType(type: string) {
-        if (type == 'list') {
+        if (type === 'list') {
             this.viewType = 'list';
         }
         else {
@@ -1225,7 +1225,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.loadingRelationships = true;
         this.processService.getIgnoredRelationshipsForCopy(assetUid)
             .subscribe((res) => {
-                if (res && res.length == 0) {
+                if (res && res.length === 0) {
                     this.hasPassedRelationshipCheck = true;
                 }
                 this.loadingRelationships = false;
