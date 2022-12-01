@@ -15,25 +15,7 @@ import { UsageAction } from '../../models/web-analytics-activity.model';
 @Component({
     selector: 'd3s-group-item',
     providers: [GroupService],
-    template: `
-        <div class="row">
-            <div class="col s12">
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-group-responsibility [group]="model?.group"></d3s-group-responsibility>
-                        </div>
-                    </div>
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-group-members [groupUid]="model?.group?.Uid" [readOnly]="!model?.CurrentResourceIsAdmin"></d3s-group-members>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `
+    templateUrl: 'group-item.component.html'
 })
 
 export class GroupItemComponent extends BaseComponent implements OnInit {
