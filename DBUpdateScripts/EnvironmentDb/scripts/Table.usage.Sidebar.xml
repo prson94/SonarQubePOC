@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.usage.Sidebar-v1">
+  <changeSet author="Pappas" id="Table.usage.Sidebar-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -13,7 +13,7 @@
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'usage' AND TABLE_NAME = 'Sidebar')
 BEGIN
-	CREATE TABLE [usage].[Ip] (
+	CREATE TABLE [usage].[Sidebar] (
 		[Id] [bigint] IDENTITY(1,1) NOT NULL,
 		[Value] [varchar](250) NOT NULL,
 		CONSTRAINT [PK_Usage_Sidebar] PRIMARY KEY CLUSTERED ( [Id] ASC )
