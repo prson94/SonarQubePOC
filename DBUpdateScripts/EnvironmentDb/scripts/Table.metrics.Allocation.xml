@@ -201,6 +201,29 @@ end
 		]]>
 	</rollback>
   </changeSet>
+  
+     <changeSet author="Puneet Gupta" id="Index.metrics.Allocation-v5">
+	 <comment>GOV-20509</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.indexes where name = 'IX_MetricsAllocation_ID')
+begin
+	CREATE NONCLUSTERED INDEX [IX_MetricsAllocation_ID] ON [metrics].[Allocation] ( [ID] ASC )
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+if exists (select * from sys.indexes where name = 'IX_MetricsAllocation_ID')
+begin
+	DROP INDEX [IX_MetricsAllocation_ID] ON [metrics].[Allocation] WITH ( ONLINE = OFF )
+end
+		]]>
+	</rollback>
+  </changeSet>
 
   <changeSet author="sDooley" id="Table.metrics.Allocation-Allocation_AfterInsert-v2">
     <sql dbms="mssql"

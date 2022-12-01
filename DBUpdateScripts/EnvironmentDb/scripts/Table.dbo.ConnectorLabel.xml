@@ -45,5 +45,28 @@ DROP TABLE IF EXISTS [dbo].[ConnectorLabel]
 		]]>
 	</rollback>
   </changeSet>
-
+  
+  
+  <changeSet author="Puneet Gupta" id="index.dbo.ConnectorLabel-v1">
+    <comment>GOV-20509</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ConnectorLabel_Uid_ObjectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_ConnectorLabel_Uid_ObjectID ON [dbo].[ConnectorLabel] ([uid], [State])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_ConnectorLabel_Uid_ObjectID')
+BEGIN
+	DROP INDEX IX_ConnectorLabel_Uid_ObjectID ON [dbo].[ConnectorLabel]
+END
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
