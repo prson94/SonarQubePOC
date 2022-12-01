@@ -5652,7 +5652,7 @@ where	T.ExecutionID = @ExecutionID
 																				and ItemNumber between @beginItemNumber and @endItemNumber
 																				and Success is null	
 																) S
-														on      ( T.IntersectTypeID = @rtID and T.SubjectAssetID = S.SubjectAssetID and T.ObjectAssetID = S.ObjectAssetID )
+														on      ( T.IntersectTypeID = @rtID and T.SubjectAssetID = S.SubjectAssetID and T.ObjectAssetID = S.ObjectAssetID and T.SubjectAssetTypeID = S.SubjectAssetTypeID and T.ObjectAssetTypeID = S.ObjectAssetTypeID)
 														when matched then
 															update set
 																	T.UpdatedBy = @CurrentResourceID,
