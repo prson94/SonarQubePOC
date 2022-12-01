@@ -31,6 +31,7 @@
                 <ig-property-group [expanded]="category.active"
                                    (expandedChange)="category.active = $event; onStateSave()"
                                    [title]="category.name"
+                                   [shouldBePadded]="false"
                                    [showHeaderLine]="!first">
                     <div readonly>
                         <ig-asset-type-detail-category [category]="category"></ig-asset-type-detail-category>

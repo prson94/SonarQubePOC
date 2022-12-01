@@ -35,6 +35,8 @@ import { AuditModule } from '../../sidebar/audit/audit.module';
 import { ConfigurationAssetTypeBreadcrumbsComponent } from './tabs/shared/configuration-asset-type-breadcrumbs/configuration-asset-type-breadcrumbs.component';
 import { HeaderModule } from '../../shared/header/header.module';
 import { AssetTypeDetailV2Module } from '../../shared/asset-type-detail-v2/asset-type-detail-v2.module';
+import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.component";
+import { FormsModule } from "@angular/forms";
 
 @NgModule({
     imports: [
@@ -57,7 +59,9 @@ import { AssetTypeDetailV2Module } from '../../shared/asset-type-detail-v2/asset
         AdminRelationshipEditorModule,
         AuditModule,
         HeaderModule,
-        AssetTypeDetailV2Module
+        AssetTypeDetailV2Module,
+        SharedGridPagingInfoModule,
+        FormsModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
