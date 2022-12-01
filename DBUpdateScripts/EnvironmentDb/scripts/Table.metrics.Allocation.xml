@@ -209,17 +209,17 @@ end
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-if not exists (select * from sys.indexes where name = 'IX_MetricsAllocation_ID')
+if not exists (select * from sys.indexes where name = 'IX_metrics_Allocation_ID')
 begin
-	CREATE NONCLUSTERED INDEX [IX_MetricsAllocation_ID] ON [metrics].[Allocation] ( [ID] ASC )
+	CREATE NONCLUSTERED INDEX [IX_metrics_Allocation_ID] ON [metrics].[Allocation] ( [ID] ASC )
 end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[
-if exists (select * from sys.indexes where name = 'IX_MetricsAllocation_ID')
+if exists (select * from sys.indexes where name = 'IX_metrics_Allocation_ID')
 begin
-	DROP INDEX [IX_MetricsAllocation_ID] ON [metrics].[Allocation] WITH ( ONLINE = OFF )
+	DROP INDEX [IX_metrics_Allocation_ID] ON [metrics].[Allocation] WITH ( ONLINE = OFF )
 end
 		]]>
 	</rollback>

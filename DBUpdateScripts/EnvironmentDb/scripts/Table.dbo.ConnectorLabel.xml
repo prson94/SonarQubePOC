@@ -54,17 +54,17 @@ DROP TABLE IF EXISTS [dbo].[ConnectorLabel]
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_ConnectorLabel_Uid_ObjectID')
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ConnectorLabel_Uid_State')
 BEGIN
-	CREATE NONCLUSTERED INDEX IX_ConnectorLabel_Uid_ObjectID ON [dbo].[ConnectorLabel] ([uid], [State])
+	CREATE NONCLUSTERED INDEX IX_ConnectorLabel_Uid_State ON [dbo].[ConnectorLabel] ([uid], [State])
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_ConnectorLabel_Uid_ObjectID')
+IF EXISTS (select * from sys.indexes where name = 'IX_ConnectorLabel_Uid_State')
 BEGIN
-	DROP INDEX IX_ConnectorLabel_Uid_ObjectID ON [dbo].[ConnectorLabel]
+	DROP INDEX IX_ConnectorLabel_Uid_State ON [dbo].[ConnectorLabel]
 END
 		]]>
 	</rollback>
