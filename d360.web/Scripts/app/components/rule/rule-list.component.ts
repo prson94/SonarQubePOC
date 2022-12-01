@@ -27,6 +27,7 @@ import { SemanticType } from '../../models/semantic-type.model';
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 declare var CurrentResourceID;
 
@@ -95,9 +96,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 	}
 
 	ngOnInit() {
-
-		this.logAction("open", "RuleType", this.assetTypeUid);
-
+		this.logAssetTypeAction(UsageAction.View, this.assetTypeUid);
 
 		this.isLoading = true;
 		this.rulesService.getRuleType(this.assetTypeUid)

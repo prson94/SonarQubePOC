@@ -16,6 +16,7 @@ import { AuthenticationService } from '../../services/authentication.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { IOutputData } from 'angular-split';
 import { SidePanelService } from '../../services/side-panel.service';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 
 declare var CurrentResourceID;
@@ -69,8 +70,8 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
     ngOnInit() {
         this.sub = this.route.params.subscribe((params) => {
             const uid = params['semanticTypeUid'];
-            this.headerBreadcrumbService.setCurrentObjectInfo('SemanticType', uid);            
-            this.logAction('open', 'SemanticType', uid);            
+			this.headerBreadcrumbService.setCurrentObjectInfo('SemanticType', uid);
+			this.logSemanticAction(UsageAction.View, uid);
             this.getData(uid);
         });
     }

@@ -8,6 +8,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { GroupEditorModel } from '../../models/group.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -56,18 +57,17 @@ export class GroupItemComponent extends BaseComponent implements OnInit {
         this.sub = this.route.params.subscribe((params) => {
             this.groupId = +params['groupId']; // (+) converts string 'id' to a number
             this.headerBreadcrumbService.setCurrentObjectInfo('Group', this.groupId);
-            this.logAction('open', 'Group', this.groupId);
             this.isLoading = true;
 
             this.groupService.getGroup(this.groupId, "").subscribe(
                 (group) => {
                     this.model = group;
                     this.headerBreadcrumbService.clearBreadcrumbs();
-
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Groups`, SiteUrlHelpers.SITE_URL_GROUP_ROOT));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.group.Name));
 
                     this.setBrowserTitle(this.titleService, this.model.group.Name);
+					this.logAssetAction(UsageAction.View, this.model.group.Uid);
 
                     this.isLoading = false;
                 }

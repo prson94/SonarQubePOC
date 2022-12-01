@@ -61,7 +61,6 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
         this.isLoading = true;
         this.artifactTypeBreadcrumbElements = [];
         this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', this.artifactTypeId);
-        this.logAction('open', 'ArtifactType', this.artifactTypeId);
         return this.artifactTypeService.getArtifactTypeDetails(this.artifactTypeId, true);
       }),
       switchMap((artifactType: ArtifactType): Promise<string> => {

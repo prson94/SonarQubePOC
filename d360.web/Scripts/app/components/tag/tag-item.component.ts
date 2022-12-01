@@ -35,6 +35,7 @@ import { Table } from 'primeng/table';
 import { SearchService } from '../../services/search.service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 
 @Component({
@@ -196,8 +197,6 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             this.tagUid = params['tagUid'];
 
             this.secondaryNavService.clearCurrentObject();
-
-            this.logAction('open', 'Tag', this.tagUid);
             this.isLoading = true;
 
             this.loadPermissions(this.permissionsService, "Tag", this.tagUid)
@@ -232,6 +231,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                     this.setObjectInfo('Tag', this.tagUid);
                     this.buildBreadcrumb();
                     this.setBrowserTitle(this.titleService, this.tag.Value);
+
+					this.logTagAction(UsageAction.View, this.tagUid.toLocaleString());
 
                     this.setObjectInfo(
                         'Tag',

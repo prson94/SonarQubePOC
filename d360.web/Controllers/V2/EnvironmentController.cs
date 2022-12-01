@@ -34,6 +34,8 @@ using d360.web.Extensions;
 using System.Net.Http.Formatting;
 using System.Collections.Specialized;
 using d360.web.Utilities;
+using Newtonsoft.Json;
+using d360.web.Models.Usage;
 
 namespace d360.web.Controllers.V2
 {
@@ -621,6 +623,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpGet,
 			Route("usage"),
+			StringEnum,
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this information is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
@@ -669,17 +672,17 @@ namespace d360.web.Controllers.V2
 
 				string[] columns =
 				{
-					"action",
-					"user agent",
-					"host",
-					"browser language",
+					"resourceuid",
+					"firstname",
+					"lastname",
+					"email",
 					"timestamp" ,
-					"assettypename",
-					"assettypeuid",
-					"assetuid",
-					"assetdisplayvalue",
-					"class",
-					"assetTypeuid2"
+					"browser",
+					"language",
+					"locale",
+					"action",
+					"sidebar",
+					"tab"
 				};
 
 				#region handle queryparams
@@ -702,6 +705,8 @@ namespace d360.web.Controllers.V2
 
 				string errorMessage = null;
 				HttpStatusCode code = HttpStatusCode.OK;
+
+				var objectTablesThatRequireInnerJoin = new List<string>();
 
 				queryParams.ToList().ForEach(q =>
 				{
@@ -779,7 +784,7 @@ namespace d360.web.Controllers.V2
 							{
 								if (Company.GlobalReportingResources.Any(x => x.Uid == ruid) && ruid != Guid.Empty)
 								{
-									whereClauseItems.Add("gr.uid = @resourceUid");
+									whereClauseItems.Add("r.uid = @resourceUid");
 									dbArgs.Add("resourceUid", ruid);
 								}
 								else
@@ -801,8 +806,9 @@ namespace d360.web.Controllers.V2
 							{
 								if (Company.Assets.Any(x => x.uid == auid) && auid != Guid.Empty)
 								{
-									whereClauseItems.Add("a.uid = @assetuid");
+									whereClauseItems.Add("aid.uid = @assetuid");
 									dbArgs.Add("assetuid", auid);
+									objectTablesThatRequireInnerJoin.Add("aid");
 								}
 								else
 								{
@@ -823,8 +829,9 @@ namespace d360.web.Controllers.V2
 							{
 								if (Company.AssetTypes.Any(x => x.uid == atuid) && atuid != Guid.Empty)
 								{
-									whereClauseItems.Add("(att.uid = @assettypeuid or att2.uid = @assettypeuid )");
+									whereClauseItems.Add("(atid.uid = @assettypeuid )");
 									dbArgs.Add("assettypeuid", atuid);
+									objectTablesThatRequireInnerJoin.Add("atid");
 								}
 								else
 								{
@@ -836,6 +843,16 @@ namespace d360.web.Controllers.V2
 							{
 								code = HttpStatusCode.BadRequest;
 								errorMessage = string.Format(ActionApiMessages.AssetTypeNotFound, q.Value);
+							}
+						}
+						else if (key == "_semanticuid")
+						{
+							Guid suid = Guid.Empty;
+							if (Guid.TryParse(q.Value, out suid))
+							{
+								whereClauseItems.Add("(sid.uid = @semanticuid)");
+								dbArgs.Add("semanticuid", suid);
+								objectTablesThatRequireInnerJoin.Add("sid");
 							}
 						}
 					}
@@ -855,8 +872,6 @@ namespace d360.web.Controllers.V2
 
 				}
 
-
-
 				if (whereClauseItems.Count > 0)
 				{
 					whereClause = $" where {string.Join(" and ", whereClauseItems.ToArray()) } ";
@@ -864,62 +879,66 @@ namespace d360.web.Controllers.V2
 
 				#endregion
 
+				Func<string, string> contains = delegate(string p) {
+					return (objectTablesThatRequireInnerJoin.Contains(p) ? "inner" : "left");
+				};
+
+				string tableSql = $@"
+from	usage.Analytic stat
+		inner join reporting.Global_Resource r on r.ResourceID = stat.UserId
+		left join usage.Sidebar sidebar on sidebar.Id = stat.SidebarId
+		left join usage.Tab tab on tab.Id = stat.TabId
+		{contains("aid")} join Asset aid on aid.Id = stat.AssetId
+		{contains("atid")} join AssetType atid on atid.Id = stat.AssetTypeId
+		{contains("did")} join Report did on did.Id = stat.DashboardId
+		{contains("iid")} join Issue iid on iid.Id = stat.IssueId
+		{contains("sid")} join Semantic sid on sid.Id = stat.SemanticId
+		{contains("tid")} join Tag tid on tid.Id = stat.TagId ";
+
 				string sql = $@"
-                select 
-                    act.value as 'action', 
-                    ua.Value as 'userAgent',
-                    h.Value as 'host',
-                    bl.Value as 'language', 
-		            stat.Timestamp as 'eventDate', 
-                    COALESCE(att.Name, att2.Name) as 'assetTypeName', 
-                    COALESCE(att.uid,  att2.uid) as 'assetTypeUid', 
-                    a.uid as 'assetUid', 
-                    adv.DisplayValue as 'assetDisplayValue', 
-                    COALESCE(att.class,  att2.class) as 'assetClass',
-                    gr.uid as 'resourceUid'
-                from analytics.Statistic stat
-	                inner join reporting.global_resource gr on stat.resourceid = gr.resourceid
-	                inner join analytics.BrowserLanguage bl on bl.ID = stat.BrowserLanguageID
-	                inner join analytics.Host h on h.id = stat.HostID
-	                inner join analytics.UserAgent ua on ua.id = stat.UserAgentID
-	                inner join analytics.Object o on o.id = stat.Object
-	                inner join analytics.action act on act.id = stat.ActionID
-	                left join assettype att on att.ObjectID = stat.ObjectID and att.object = o.value
-	                left join asset a on a.Object = o.value and a.ObjectID = stat.ObjectID
-	                left join AssetDisplayValue adv on adv.AssetID = a.id
-	                left join assettype att2 on att2.id = a.AssetTypeID
-                    {whereClause}
-                    {orderBySql}
-                    {offsetSql}
-                ";
+select	r.uid as ResourceUid,
+		r.FirstName,
+		r.LastName,
+		r.Email,
+		stat.Timestamp,
+		stat.Browser,
+		stat.Language,
+		stat.Locale,
+		stat.[Action],
+		aid.Uid as AssetUid,
+		atid.Uid as AssetTypeUid,
+		did.Uid as DashboardUid,
+		iid.Uid as IssueUid,
+		sid.Uid as SemanticUid,
+		tid.Uid as TagUid,
+		sidebar.Value as Sidebar,
+		tab.Value as Tab
+{tableSql}
+{whereClause}
+{orderBySql}
+{offsetSql}";
 
-				string countSql = $@"
-                select count(*) from analytics.Statistic stat
-	                inner join reporting.global_resource gr on stat.resourceid = gr.resourceid
-	                inner join analytics.BrowserLanguage bl on bl.ID = stat.BrowserLanguageID
-	                inner join analytics.Host h on h.id = stat.HostID
-	                inner join analytics.UserAgent ua on ua.id = stat.UserAgentID
-	                inner join analytics.Object o on o.id = stat.Object
-	                inner join analytics.action act on act.id = stat.ActionID
-	                left join assettype att on att.ObjectID = stat.ObjectID and att.object = o.value
-	                left join asset a on a.Object = o.value and a.ObjectID = stat.ObjectID
-	                left join AssetDisplayValue adv on adv.AssetID = a.id
-	                left join assettype att2 on att2.id = a.AssetTypeID
-                    {whereClause}
-                ";
-
-				var response = await Company.QueryAsync<dynamic>(sql, dbArgs);
-
+				var response = await Company.QueryAsync<UsageEntryDetail>(sql, dbArgs);
 
 				if (includeTotal)
 				{
+					string countSql = $"select count(*) {tableSql} {whereClause}";
 					var count = await Company.QueryFirstOrDefaultAsync<int>(countSql, dbArgs);
-					var model = new { pageSize, pageNum, total = count, items = response };
+					var model = new { 
+						pageSize, 
+						pageNum, 
+						total = count, 
+						items = response 
+					};
 					return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 				}
 				else
 				{
-					var model = new { pageSize, pageNum, items = response };
+					var model = new { 
+						pageSize, 
+						pageNum, 
+						items = response 
+					};
 					return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 				}
 			}
@@ -929,6 +948,130 @@ namespace d360.web.Controllers.V2
 				SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.GetUsageDetails => " } });
 
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+			}
+		}
+
+		/// <summary>
+		/// Adds a usage analytic.
+		/// </summary>
+		[
+			HttpPost,
+			Route("usage"),
+			SwaggerResponse(HttpStatusCode.OK)
+		]
+		public async Task<HttpResponseMessage> PostUsage(UsageEntry value)
+		{
+			Func<string> getClientIp = () =>
+			{
+				string ip = "0.0.0.0";
+
+				if (Request.Properties.ContainsKey("MS_HttpContext"))
+				{
+					ip = ((HttpContextWrapper)Request.Properties["MS_HttpContext"]).Request.UserHostAddress;
+				}
+				else if (Request.Properties.ContainsKey(System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name))
+				{
+					var prop = (System.ServiceModel.Channels.RemoteEndpointMessageProperty)Request.Properties[System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name];
+					ip = prop.Address;
+				}
+				else if (HttpContext.Current != null)
+				{
+					ip = HttpContext.Current.Request.UserHostAddress;
+				}
+
+				return ip;
+			};
+
+			var ipAddress = getClientIp();
+
+			bool isValid = false;
+
+			if (value.Language.Length == 2 && value.Locale.Length == 5)
+			{
+				if (value.AssetUid.HasValue)
+				{
+					value.AssetTypeUid = null;
+					value.DashboardUid = null;
+					value.IssueUid = null;
+					value.SemanticUid = null;
+					value.TagUid = null;
+					isValid = true;
+				}
+				else if (value.AssetTypeUid.HasValue)
+				{
+					value.AssetUid = null;
+					value.DashboardUid = null;
+					value.IssueUid = null;
+					value.SemanticUid = null;
+					value.TagUid = null;
+					isValid = true;
+				}
+				else if (value.DashboardUid.HasValue)
+				{
+					value.AssetUid = null;
+					value.AssetTypeUid = null;
+					value.IssueUid = null;
+					value.SemanticUid = null;
+					value.TagUid = null;
+					isValid = true;
+				}
+				else if (value.IssueUid.HasValue)
+				{
+					value.AssetUid = null;
+					value.AssetTypeUid = null;
+					value.DashboardUid = null;
+					value.SemanticUid = null;
+					value.TagUid = null;
+					isValid = true;
+				}
+				else if (value.SemanticUid.HasValue)
+				{
+					value.AssetUid = null;
+					value.AssetTypeUid = null;
+					value.DashboardUid = null;
+					value.IssueUid = null;
+					value.TagUid = null;
+					isValid = true;
+				}
+				else if (value.TagUid.HasValue)
+				{
+					value.AssetUid = null;
+					value.AssetTypeUid = null;
+					value.DashboardUid = null;
+					value.IssueUid = null;
+					value.SemanticUid = null;
+					isValid = true;
+				}
+			}
+
+			if (isValid)
+			{
+				await Company.Connection.ExecuteAsync(
+					"exec [usage].[Add] @UserId, @Browser, @Action, @Timestamp, @Language, @Locale, @Ip, " +
+					"@AssetUid, @AssetTypeUid, @DashboardUid, @IssueUid, @SemanticUid, @TagUid, " +
+					"@Sidebar, @Tab", new
+					{
+						UserId = Company.CurrentResourceID,
+						Browser = (int)value.Browser,
+						Action = (int)value.Action,
+						Timestamp = DateTime.UtcNow,
+						value.Language,
+						value.Locale,
+						Ip = ipAddress,
+						value.AssetUid,
+						value.AssetTypeUid,
+						value.DashboardUid,
+						value.IssueUid,
+						value.SemanticUid,
+						value.TagUid,
+						value.Sidebar,
+						value.Tab
+					});
+				return Request.CreateResponse(HttpStatusCode.OK);
+			}
+			else
+			{ 
+				return Request.CreateResponse(HttpStatusCode.BadRequest);
 			}
 		}
 

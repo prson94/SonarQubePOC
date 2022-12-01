@@ -1072,7 +1072,6 @@
     <Compile Include="Controllers\V2\ConnectorLabelsController.cs" />
     <Compile Include="Controllers\V2\TagsController.cs" />
     <Compile Include="Controllers\V2\WorkflowController.cs" />
-    <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\ApiController.cs" />
     <Compile Include="Controllers\AuthenticationController.cs" />
@@ -1110,6 +1109,10 @@
     <Compile Include="Handlers\ChunkLocaleJSHandler.cs" />
     <Compile Include="Handlers\Exceptions\ForbiddenWebApi2ExceptionHandler.cs" />
     <Compile Include="Handlers\Exceptions\GenericExceptionWebApi2ExceptionHandler.cs" />
+    <Compile Include="Models\Usage\UsageAction.cs" />
+    <Compile Include="Models\Usage\UsageBrowser.cs" />
+    <Compile Include="Models\Usage\UsageEntry.cs" />
+    <Compile Include="Models\Usage\UsageEntryDetail.cs" />
     <Compile Include="Utilities\IRuntimeInfo.cs" />
     <Compile Include="Handlers\Exceptions\IWebApi2ExceptionHandler.cs" />
     <Compile Include="Handlers\Exceptions\NotFoundWebApi2ExceptionHandler.cs" />
