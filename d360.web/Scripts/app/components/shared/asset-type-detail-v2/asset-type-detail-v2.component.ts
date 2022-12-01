@@ -64,7 +64,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes.uid || changes.parentUid) {
+        if (changes.uid) {
             this.load();
         }
     }

@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import { Component, Input } from "@angular/core";
 import { TreeNode } from "primeng/api";
 import { Subject } from "rxjs";
@@ -51,6 +52,7 @@ export class ConfigurationAssetTypeListComponent {
             const items = await this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false).toPromise();
             const treeNodes = items.map(AssetCount.ConvertToTreeNode);
             this.artifactTypes = AssetCount.ListToTree(treeNodes);
+            this.selectedRow = _.first(this.artifactTypes);
         }
         finally {
             this.loadingCounter--;
@@ -70,11 +72,11 @@ export class ConfigurationAssetTypeListComponent {
         });
     }
 
-    add(uid: string | undefined) {
-        if (uid == null) {
-            this.router.navigateByUrl(`${this.baseUrl}/new`);
-        } else {
+    add(uid?: string) {
+        if (uid) {
             this.router.navigateByUrl(`${this.baseUrl}/${uid}/new`);
+        } else {
+            this.router.navigateByUrl(`${this.baseUrl}/new`);
         }
     }
 
