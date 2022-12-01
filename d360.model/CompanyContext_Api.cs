@@ -2556,18 +2556,24 @@ where	T.ExecutionID = @ExecutionID
                                 }
 
 								// Log the parent removals into Dependent Change table.
+								List<int> hierarchyPredicates = 
+									new List<int> { (int)PredicateType.InterTypeHierarchy, (int)PredicateType.IntraTypeHierarchy };
+
 								Connection.Execute(@"
+									drop table if exists #parent_relationship_types
+									select IT.ID 
+									into #parent_relationship_types
+									from [IntersectType] IT
+									inner join [Predicate] P on P.ID = IT.PredicateID
+									where P.Type in @hierarchyPredicates;
+
 									insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
-									select  ExecutionID, ItemNumber, 1, 2, '{""ParentAssetUid"": ""' + cast(Uid as varchar(50)) + '""}' 
-									from    (
-											select  S.ExecutionID, S.ItemNumber, P.Uid, ROW_NUMBER() OVER(PARTITION BY S.ExecutionID, S.ItemNumber ORDER BY P.Uid ASC) as RowNum
-											from	api.ExecutionDeletedAsset S 
-													inner join [Intersect] I on I.ObjectAssetId = S.AssetId 
-													inner join Asset P on P.Id = I.SubjectAssetId
-											where S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber
-											group by S.ExecutionID, S.ItemNumber, P.Uid 
-											) O where RowNum = 1",
-										new { execution.ExecutionID, beginItemNumber, endItemNumber }, commandTimeout: timeout);
+										select S.ExecutionID, S.ItemNumber, 1, 2,'{""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' from api.ExecutionDeletedAsset S 
+										inner join [Intersect] I on I.ObjectAssetId = S.AssetId 
+										inner join #parent_relationship_types IT on IT.ID = I.IntersectTypeID
+										inner join Asset P on P.Id = I.SubjectAssetId
+									where S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber and ([Level] is null or [Level] = 0)
+									", new { execution.ExecutionID, beginItemNumber, endItemNumber, hierarchyPredicates }, commandTimeout: timeout);
 
 								AddMeasurement(metrics, $"LogExecutionItemDependentChange >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 								sw.Restart();
