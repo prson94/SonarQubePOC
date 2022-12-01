@@ -35,6 +35,8 @@ export class HeaderLanguageSettingComponent {
 	@ViewChild("popupBox", { static: false }) popupBox: ElementRef;
 
 	defaultSelectionTooltip: string = $localize`Interface will be translated to the browser language if the language version is available. If the version is not available, interface will be displayed in English.`;
+	labelDiscardChanges = $localize`Discard Changes`;
+	labelCancel = $localize`Cancel`;
 
 	constructor(
 		private ref: ChangeDetectorRef,
@@ -88,8 +90,19 @@ export class HeaderLanguageSettingComponent {
 		});
 	}
 
+	cancelClick() {
+		if (this.isSaveDisabled) {
+			this.onClose.emit();
+		}
+		else {
+			this.selectedLanguage = _.cloneDeep(this.initialLanguage);
+		}
+	}
+
 	get isSaveDisabled() {
 		return this.initialLanguage.code === this.selectedLanguage.code;
 	}
+
+
 }
 
