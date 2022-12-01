@@ -2555,7 +2555,24 @@ where	T.ExecutionID = @ExecutionID
                                     continue;
                                 }
 
-                                for (int i = 0; i < numberOfChunkLoops; i++)
+								// Log the parent removals into Dependent Change table.
+								Connection.Execute(@"
+									insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
+									select  ExecutionID, ItemNumber, 1, 2, '{""ParentAssetUid"": ""' + cast(Uid as varchar(50)) + '""}' 
+									from    (
+											select  S.ExecutionID, S.ItemNumber, P.Uid, ROW_NUMBER() OVER(PARTITION BY S.ExecutionID, S.ItemNumber ORDER BY P.Uid ASC) as RowNum
+											from	api.ExecutionDeletedAsset S 
+													inner join [Intersect] I on I.ObjectAssetId = S.AssetId 
+													inner join Asset P on P.Id = I.SubjectAssetId
+											where S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber
+											group by S.ExecutionID, S.ItemNumber, P.Uid 
+											) O where RowNum = 1",
+										new { execution.ExecutionID, beginItemNumber, endItemNumber }, commandTimeout: timeout);
+
+								AddMeasurement(metrics, $"LogExecutionItemDependentChange >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+								sw.Restart();
+
+								for (int i = 0; i < numberOfChunkLoops; i++)
                                 {
                                     int chunkDeletionRetryCount = 0;
                                     bool isChunkDeletionCompleted = false;
@@ -2582,7 +2599,7 @@ where	T.ExecutionID = @ExecutionID
                                                       new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 
-                                                step = DeleteAssetsByChunk(execution, at, timeout, metrics, step, dt, canHaveProcess, sw, predicateType, beginItemNumber, endItemNumber, currentLoop, chunkDeletionRetryCount, chunksQueryString, trans);
+												step = DeleteAssetsByChunk(execution, at, timeout, metrics, step, dt, canHaveProcess, sw, predicateType, beginItemNumber, endItemNumber, currentLoop, chunkDeletionRetryCount, chunksQueryString, trans);
                                                 // Update success flag
                                                 Connection.Execute(
                                                     $"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{chunksQueryString} and S.AssetID is not null;",
@@ -2645,7 +2662,7 @@ where	T.ExecutionID = @ExecutionID
                                         }
                                     }
                                 }
-                                runCompleted = true;
+								runCompleted = true;
                             }
 
                             if (descendantsDeletionFailure)
@@ -2683,25 +2700,25 @@ where	T.ExecutionID = @ExecutionID
 
                         Connection.Close();
 
-                        if (sendWorkflowEvents)
-                        {
-                            SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
-                            AddMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
-                            sw.Restart();
-                        }
+						if (sendWorkflowEvents)
+						{
+							SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
+							AddMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
+							sw.Restart();
+						}
 
-                        // Data Quality Scoring - send to engine to determine what scores need to be recalculated.
-                        if (at.Class == AssetTypeClass.Rule)
-                        {
-                            CreateRulesRemovedExecution(execution.ExecutionID, at.ID);
-                        }
+						// Data Quality Scoring - send to engine to determine what scores need to be recalculated.
+						if (at.Class == AssetTypeClass.Rule)
+						{
+							CreateRulesRemovedExecution(execution.ExecutionID, at.ID);
+						}
 
-                        // Rescore changes to parents based on the items removed here - possibly children.
-                        if (predicateType.HasValue)
-                        {
-                            CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
-                        }
-                    }
+						// Rescore changes to parents based on the items removed here - possibly children.
+						if (predicateType.HasValue)
+						{
+							CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
+						}
+					}
                 }
             }
 
@@ -2917,19 +2934,6 @@ where	T.ExecutionID = @ExecutionID
 			#endregion
 
 			#region Asset table
-
-			// Log the parent removals into Dependent Change table.
-			Connection.Execute(@"
-				insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
-					select  ExecutionID, ItemNumber, 1, 2, '{""ParentAssetUid"": ""' + cast(Uid as varchar(50)) + '""}' 
-					from    (
-							select  S.ExecutionID, S.ItemNumber, P.Uid, ROW_NUMBER() OVER(PARTITION BY S.ExecutionID, S.ItemNumber ORDER BY P.Uid ASC) as RowNum
-							from	api.ExecutionDeletedAsset S 
-									inner join [Intersect] I on I.ObjectAssetId = S.AssetId 
-									inner join Asset P on P.Id = I.SubjectAssetId
-							where " + querySuffix + @" group by S.ExecutionID, S.ItemNumber, P.Uid 
-							) O where RowNum = 1", 
-					new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 			Connection.Execute(
                 $@"
@@ -4867,11 +4871,11 @@ where	T.ExecutionID = @ExecutionID
 
                     Connection.Close();
 
-				//TODO: Add event grid calls here.
+					//TODO: Add event grid calls here.
 
-                    if (sendWorkflowEvents)
-                    {
-                        sw.Restart();
+					if (sendWorkflowEvents)
+					{
+						sw.Restart();
 						AddMeasurement(metrics, $"SendWorkflowEvents > Begin", 0, ++step);
 						SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
 						AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
@@ -4905,9 +4909,9 @@ where	T.ExecutionID = @ExecutionID
 						AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
 					}
 
-                    #endregion
-                }
-            }
+					#endregion
+				}
+			}
 
             AddMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
 
