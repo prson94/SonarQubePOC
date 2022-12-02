@@ -1142,7 +1142,7 @@ namespace d360.model
 				inner join AssetDetail ad on AD.AssetTypeID = V.ITSUBJECTASSETTYPEID and {assetJoin} 
 				where isfound = 0;
 
-				if exists(Select 1 from #tempdata t where T.OBJECTCLASS = {(int)AssetTypeClass.ReferenceItemType}  and isfound = 0)
+				if exists(Select 1 from #tempdata t where T.OBJECTCLASS = {(int)AssetTypeClass.Reference}  and isfound = 0)
 				begin
 					update V
 					set [SubjectAssetID] = 0,
@@ -1150,12 +1150,11 @@ namespace d360.model
 						switchObject = 1,
 						isfound = 3
 					from #tempdata V
-					inner join AssetType att on att.ID = V.ITOBJECTASSETTYPEID AND V.OBJECTCLASS = 0 
-											 and att.[Object] = 'ReferenceItemType' and att.[ObjectID] <> 0 and {assetrefJoin} 
+					inner join AssetType att on att.[Object] = 'ReferenceItemType' and att.[ObjectID] <> 0 and {assetrefJoin} 
 					where isfound = 0;
 				end
 
-				if exists(Select 1 from #tempdata t where T.SUBJECTCLASS = {(int)AssetTypeClass.ReferenceItemType}  and isfound = 0)
+				if exists(Select 1 from #tempdata t where T.SUBJECTCLASS = {(int)AssetTypeClass.Reference}  and isfound = 0)
 				begin
 					update V
 					set [SubjectAssetID] = 0,
@@ -1163,8 +1162,7 @@ namespace d360.model
 						switchObject = 0,
 						isfound = 4
 					from #tempdata V
-					inner join AssetType att on att.ID = V.ITSUBJECTASSETTYPEID AND V.SUBJECTCLASS = 0
-											 and att.[Object] = 'ReferenceItemType' and att.[ObjectID] <> 0 and {assetrefJoin} 
+					inner join AssetType att on att.[Object] = 'ReferenceItemType' and att.[ObjectID] <> 0 and {assetrefJoin} 
 					where isfound = 0;
 				end
 
@@ -1199,7 +1197,30 @@ namespace d360.model
 				from	#Relationships R
 						inner join [Intersect] I on I.IntersectTypeID = R.IntersectTypeID 
 							and I.SubjectAssetID = R.SubjectAssetID 
-							and I.ObjectAssetID = R.ObjectAssetID;
+							and I.ObjectAssetID = R.ObjectAssetID
+				where R.ObjectAssetID <> 0 and R.SubjectAssetID <> 0;
+
+				if exists(Select 1 from #tempdata t where T.OBJECTCLASS = {(int)AssetTypeClass.Reference}  and isfound = 0)
+				begin
+					update	R
+					set		R.ID = I.ID,
+							R.[uid] = I.[uid]
+					from	#Relationships R
+							inner join [Intersect] I on I.IntersectTypeID = R.IntersectTypeID 
+								and I.SubjectAssetID = R.SubjectAssetID 
+								and I.ObjectAssetTypeID = R.ObjectAssetTypeID and I.ObjectAssetID = 0;
+				end
+
+				if exists(Select 1 from #tempdata t where T.SubjectAssetID = {(int)AssetTypeClass.Reference}  and isfound = 0)
+				begin
+					update	R
+					set		R.ID = I.ID,
+							R.[uid] = I.[uid]
+					from	#Relationships R
+							inner join [Intersect] I on I.IntersectTypeID = R.IntersectTypeID 
+							and I.SubjectAssetTypeID = R.SubjectAssetTypeID 
+							and I.ObjectAssetID = R.ObjectAssetID and I.SubjectAssetID = 0;
+				end
 
 				--check reverse if subject/object type are the same
 				update	R
