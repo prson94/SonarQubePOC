@@ -91,12 +91,8 @@ export class HeaderLanguageSettingComponent {
 	}
 
 	cancelClick() {
-		if (this.isSaveDisabled) {
-			this.onClose.emit();
-		}
-		else {
-			this.selectedLanguage = _.cloneDeep(this.initialLanguage);
-		}
+		this.selectedLanguage = _.cloneDeep(this.initialLanguage);
+		this.onClose.emit();
 	}
 
 	get isSaveDisabled() {
