@@ -9,24 +9,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-monitor',
-    template: ` 
-<div class="row">
-    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <div class="col s6">
-        <div class="tile tile-detail" *ngIf="!isLoading">
-            <d3s-workflowmonitor-list (selectionChange)="listChange($event)" [predefinedFilters]="predefinedFilters"></d3s-workflowmonitor-list>  
-        </div>
-    </div>
-    <div class="col s6">
-        <div class="tile tile-detail">
-            <d3s-workflow-monitor-step-list [itemId]="itemId" (selectionChange)="stepChange($event)"></d3s-workflow-monitor-step-list>
-        </div>
-        <div class="tile tile-detail" [hidden]="!detailVisible">
-            <d3s-workflow-monitor-step-details [itemStepId]="itemStepId" [(visible)]="detailVisible"></d3s-workflow-monitor-step-details>
-        </div>
-    </div>
-</div>
-              `,
+    templateUrl: 'workflowmonitor.component.html',
     providers: []
 })
 

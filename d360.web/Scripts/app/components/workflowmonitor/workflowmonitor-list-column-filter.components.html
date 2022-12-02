@@ -1,0 +1,52 @@
+﻿<form (ngSubmit)="onSubmit()" (keydown.enter)="$event.preventDefault()" #filterForm="ngForm">
+    <div *ngFor="let filter of internalFilters;let first=first;let last=last;let index=index" class="row filter">
+        <div class="col s2 FieldName" style="padding-left: 0px">Filter:</div>
+        <div class="col s4" style="padding-right: 0px">
+            <select [name]="'FilterField_' + index" required [ngModel]="filter.Field"
+                    (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)" style="width:100%;">
+                <option [value]=""></option>
+                <option *ngFor="let p of availableFilters" [ngValue]="p">{{p.Name}}</option>
+            </select>
+        </div>
+        <div [ngSwitch]="filter.Type" class="col s4">
+                           <span [ngSwitch]="filter.Field?.Data?.filtertype">
+                                    <span *ngSwitchCase="'list' || 'checkedlist'">
+                                        <select [name]="'FilterValue_' + index" [ngModel]="filter?.Data?.value"
+                                                (ngModelChange)="filter.Data.value = $event" required
+                                                style="width:100%;" placeholder="Choose a field">                                            
+                                            <option *ngFor="let p of filter.Field?.Data?.filteritems"
+                                                    [value]="p">{{p}}</option>
+                                        </select>
+                                    </span>
+                                    <p-calendar *ngSwitchCase="'date'" [name]="'FilterValue_' + index"
+                                                [ngModel]="prepareDateValueForCalendar(filter)"
+                                                [dateFormat]="getLocaleDateString()"
+                                                placeholder="{{getLocaleDateString()}}" [showIcon]="true"
+                                                (onBlur)="onDateBlur(filter)"
+                                                (onSelect)="onDateSelected($event,filter)"></p-calendar>
+                                    <input *ngSwitchDefault [name]="'FilterValue_' + index" type="text" required
+                                           [ngModel]="filter?.Data?.value" (ngModelChange)="filter.Data.value = $event"
+                                           placeholder="Enter a value" style="width:100%;"> 
+                                </span>
+        </div>
+        <div class="col s2">
+            <a (click)="addFilter()" class="fa-stack fa-lg overlayed-primary" i18n-pTooltip pTooltip="Add Filter">
+                <i class="fa fa-plus fa-stack-1x" style="color:darkgreen;"></i>
+            </a>
+            <a *ngIf="internalFilters.length > 1" (click)="removeFilter(filter)" class="fa-stack fa-lg" i18n-pTooltip
+               pTooltip="Remove Filter">
+                <i class="fa fa-minus fa-stack-1x" style="color:red;"></i>
+            </a>
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="col s12 buttons">
+            <button i18n-label igButton class="ig-button-primary" margin *ngIf="internalFilters.length > 0"
+                    type="submit" [disabled]="!filterForm.form.valid" label="Filter Results"></button>
+            <button i18n-label igButton class="ig-button-secondary" *ngIf="internalFilters.length" type="button"
+                    label="Clear all Filters" (click)="resetFilters()"></button>
+        </div>
+    </div>
+</form>
+                
