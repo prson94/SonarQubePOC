@@ -351,8 +351,7 @@ namespace d360.web.Controllers
                                 MaximumDepth = 1
                             },
                             IsDescriptionEnabled = true,
-                            IsDescriptionVisibleByDefault = true,
-                            DescriptionButtonName = "Information"
+                            IsDescriptionVisibleByDefault = false
                         },
                         Tokens = new List<PrimeSelectItem>() { new PrimeSelectItem { label = "Name", value = "{Name}" } }
                     };
