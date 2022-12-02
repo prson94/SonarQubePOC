@@ -16,7 +16,7 @@ export class ObjectDetailFieldComponent {
 
     constructor(private router: Router) { }
     ngOnInit() {
-        if ((this.field.DataType == 'date' || this.field.DataType == 'datetime') && isNaN(Date.parse(this.field.Value)))
+        if ((this.field.DataType === 'date' || this.field.DataType === 'datetime') && isNaN(Date.parse(this.field.Value)))
             {this.field.Value = null;}
 
 
@@ -46,8 +46,8 @@ export class ObjectDetailFieldComponent {
     get isEmail(): boolean {
         return this.field != null
             && this.field.Name != null
-            && this.field.Name.toLowerCase() == 'email'
-            && this.fieldDataType == 'text';
+            && this.field.Name.toLowerCase() === 'email'
+            && this.fieldDataType === 'text';
     }
 
     get isName(): boolean {

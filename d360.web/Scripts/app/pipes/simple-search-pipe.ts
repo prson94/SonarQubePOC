@@ -15,7 +15,7 @@ export class SimpleSearch implements PipeTransform {
         }
 
         const loop = (items) => {
-            if (isString(items.Name) && items.Name.toLowerCase().indexOf(filter.toLowerCase()) != -1)
+            if (isString(items.Name) && items.Name.toLowerCase().indexOf(filter.toLowerCase()) !== -1)
                 {return true;}
 
             if (isArray(items.Items)) {

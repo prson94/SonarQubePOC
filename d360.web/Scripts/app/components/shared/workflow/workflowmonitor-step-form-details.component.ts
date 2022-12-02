@@ -48,7 +48,7 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
                     const completedForms: any[] = this.step.ItemFields.form.map((f) => f['@ResourceID']);
 
                     this.pendingFormList = this.step.AssignedUsers
-                        .filter((a) => completedForms.indexOf(a.ResourceID.toString()) == -1)
+                        .filter((a) => completedForms.indexOf(a.ResourceID.toString()) === -1)
                         .map((a) => a.FirstName + ' ' + a.LastName)
                         .join(', ');
                 }
