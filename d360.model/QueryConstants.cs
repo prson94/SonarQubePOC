@@ -194,7 +194,7 @@ namespace d360.model
 				from		AssetDetail d		
 							inner join (
 										select	iif(IT.SubjectAssetTypeID = @assetTypeId, IT.ObjectAssetTypeID, IT.SubjectAssetTypeID) as AssetTypeID,
-												iif(IT.SubjectAssetTypeID = @assetTypeId, (0 as bit), (1 as bit)) as TargetingSubject
+												iif(IT.SubjectAssetTypeID = @assetTypeId, cast(0 as bit), cast(1 as bit)) as TargetingSubject
 										from	IntersectType IT
 												inner join Predicate P on   P.ID = IT.PredicateID 
 																			and P.ID = @predicateId
