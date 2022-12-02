@@ -1566,6 +1566,8 @@ namespace d360.model.DataAccessLayer
 		
 					IF((SELECT count(*) FROM #filtered_results)=0)
 					begin
+						declare @StartTime datetime = GETDATE(); 
+						
 						{advancedFilterTempTableInfos.TempTableSQL()}
 				
 						{simpleFiltersTempTablesQuery}
@@ -1573,7 +1575,9 @@ namespace d360.model.DataAccessLayer
 						insert into #filtered_results
 						{GetBaseQuery()}
 
-						exec CachedAssetFiltersProvider 'SET', @userId, @requesthash, @assetTypeId
+						declare @filteringDuration int = DATEDIFF(MS,@StartTime,GETDATE());
+
+						exec CachedAssetFiltersProvider 'SET', @userId, @requesthash, @assetTypeId, @filteringDuration
 					end";
 			}
 
