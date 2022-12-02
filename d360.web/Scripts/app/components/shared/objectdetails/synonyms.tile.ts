@@ -100,7 +100,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
 
                     this.showMessageForApiResults(this.messagesService, res, `${this.predicateName} successfully deleted.`);
 
-                    this.items = this.items.filter((x) => x.IntersectID != item.IntersectID);
+                    this.items = this.items.filter((x) => x.IntersectID !== item.IntersectID);
                     this.itemCount = this.items.length;
                     this.formMode = FormMode.Default;
                 }
@@ -113,7 +113,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
 
                     this.showMessageForResult(this.messagesService, res);
 
-                    this.items = this.items.filter((x) => x.CustomID != item.CustomID);
+                    this.items = this.items.filter((x) => x.CustomID !== item.CustomID);
                     this.itemCount = this.items.length;
                     this.formMode = FormMode.Default;
                 }
@@ -125,7 +125,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         this.selectedSynonym = null;
 
         //if we havent loaded synonym types already do so now
-        if (this.synonymTypes.length == 0) {
+        if (this.synonymTypes.length === 0) {
             this.objectDetailService.getSynonymTypes(this.objectID, this.objectType, this.predicateId).subscribe(
                 (d) => {
                     this.synonymTypes = d;
@@ -145,7 +145,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         this.isLoading = true;
 
         if (this.selectedSynonym && this.selectedSynonym.uid) {
-            const type = this.synonymTypes.find((t) => t.Value == this.selectedType);
+            const type = this.synonymTypes.find((t) => t.Value === this.selectedType);
             const relationships: Array<RelationshipV2> = [];
             const relationship = new RelationshipV2();
 
@@ -202,7 +202,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     protected search(e: any) {
         this.isLoadingItems = true;
 
-        const type = this.synonymTypes.find((t) => t.Value == this.selectedType);
+        const type = this.synonymTypes.find((t) => t.Value === this.selectedType);
 
         if (!type) {
             this.isLoadingItems = false;

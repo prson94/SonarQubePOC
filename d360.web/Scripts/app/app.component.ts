@@ -103,11 +103,11 @@ export class AppComponent implements AfterContentInit, OnDestroy {
         this.headerActionsService.emitFavoritesChange();//on first load when a non-default home page is defined, we need to update the action icons
 
         const menuState = this.cookieService.get("MenuState");
-        if ((menuState + "") == "") {
+        if ((menuState + "") === "") {
             this.cookieService.set("MenuState", "true");
             this.handleMenuChange(true);
         } else {
-            this.handleMenuChange(menuState.toLocaleLowerCase() == "true");
+            this.handleMenuChange(menuState.toLocaleLowerCase() === "true");
         }
         this.setMaxHeight();
     }

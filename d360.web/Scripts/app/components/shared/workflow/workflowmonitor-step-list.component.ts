@@ -62,8 +62,8 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if ((changes['itemId'] != null && changes['itemId'].currentValue != 0) &&
-            (changes['itemId'].isFirstChange || (changes['itemId'].currentValue != changes['itemId'].previousValue))) {
+        if ((changes['itemId'] != null && changes['itemId'].currentValue !== 0) &&
+            (changes['itemId'].isFirstChange || (changes['itemId'].currentValue !== changes['itemId'].previousValue))) {
             this.load();
         }
     }
@@ -74,7 +74,7 @@ export class WorkflowMonitorStepListComponent extends BaseComponent implements O
         this.objectId = 0;
         this.isIssueType = false;
         this.selection = null;
-        if (this.itemId != null && this.itemId != 0) {
+        if (this.itemId != null && this.itemId !== 0) {
             this.workflowService.getWorkflowItemSteps(this.itemId)
                 .subscribe((r) => {
                     this.itemSteps = r;

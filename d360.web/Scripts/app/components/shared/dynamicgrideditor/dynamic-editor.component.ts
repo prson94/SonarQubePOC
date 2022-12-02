@@ -123,27 +123,27 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['objectID']) {
-            if (!changes['objectID'].isFirstChange() && (changes['objectID'].previousValue != changes['objectID'].currentValue)) { // object has changed            
+            if (!changes['objectID'].isFirstChange() && (changes['objectID'].previousValue !== changes['objectID'].currentValue)) { // object has changed            
                 this.load();
             }
         }
         if (changes['objectUid']) {
-            if (!changes['objectUid'].isFirstChange() && (changes['objectUid'].previousValue != changes['objectUid'].currentValue)) { // object has changed            
+            if (!changes['objectUid'].isFirstChange() && (changes['objectUid'].previousValue !== changes['objectUid'].currentValue)) { // object has changed            
                 this.load();
             }
         }
         if (changes['objectTypeUid']) {
-            if (!changes['objectTypeUid'].isFirstChange() && (changes['objectTypeUid'].previousValue != changes['objectTypeUid'].currentValue)) { // object has changed            
+            if (!changes['objectTypeUid'].isFirstChange() && (changes['objectTypeUid'].previousValue !== changes['objectTypeUid'].currentValue)) { // object has changed            
                 this.load();
             }
         }
         if (changes['assetUid']) {
-            if (!changes['assetUid'].isFirstChange() && (changes['assetUid'].previousValue != changes['assetUid'].currentValue)) { // object has changed            
+            if (!changes['assetUid'].isFirstChange() && (changes['assetUid'].previousValue !== changes['assetUid'].currentValue)) { // object has changed            
                 this.load();
             }
         }
         if (changes['isModalVisible']) {
-            if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue != changes['isModalVisible'].currentValue)) { // visibility has changed            
+            if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue !== changes['isModalVisible'].currentValue)) { // visibility has changed            
                 this.savingInProgress = false;
                 this.consolidateToTag = null;
                 this.load();
@@ -151,9 +151,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
     }
     autoCompleteSelected(event) {
-        if (this.objectType == 'Tag' && !this.adding) {
+        if (this.objectType === 'Tag' && !this.adding) {
             this.consolidateToTag = event;
-        } else if (this.objectType == 'Tag' && this.adding) {
+        } else if (this.objectType === 'Tag' && this.adding) {
             if (event) {
                 this.consolidateToTag = null;
                 this.selectedTagID = event.ID;
@@ -172,7 +172,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     private load() {
         this.isInErrorMessage = '';
         this.isInError = false;
-        if (this.selection != undefined) {
+        if (this.selection != null) {
             this.editedItem = _.cloneDeep(this.selection);
         } else {
             this.editedItem = {};
@@ -185,7 +185,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         let id = (this.selection ? this.selection[this.rowID] : null);
 
         if (this.selection) {
-            if (this.objectType == 'IntersectType' || this.objectType == 'Predicate' || this.objectType == 'IssueType')
+            if (this.objectType === 'IntersectType' || this.objectType === 'Predicate' || this.objectType === 'IssueType')
                 {id = this.selection.Uid;}
 
             if (this.selection.uid)
@@ -242,13 +242,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         if (this.dataModel && !this.assetUid) {
             result.forEach((res) => {
-                if (res.Name == 'Name') {
+                if (res.Name === 'Name') {
                     res.Value = this.dataModel['Name'];
                 }
             });
         }
 
-        if ((result as any).type && (result as any).type == "error") {
+        if ((result as any).type && (result as any).type === "error") {
             this.isInErrorMessage = (result as any).message;
             this.isInError = true;
             this.isLoading = false;
@@ -273,11 +273,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
 
 
-                if (this.categories.findIndex((dc) => dc.name == currentCategory) == -1) {
+                if (this.categories.findIndex((dc) => dc.name === currentCategory) === -1) {
                     const category = new EditorCategory();
                     category.name = currentCategory;
                     category.rows = [];
-                    if (currentCategory == "") {
+                    if (currentCategory === "") {
                         this.categories.unshift(category);
                     }
                     else {
@@ -287,19 +287,19 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
 
 
-                if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN' && f.Value != null) {
+                if (f.FieldType && f.FieldType.toUpperCase() === 'BOOLEAN' && f.Value != null) {
                     if (f.Value) {
                         /* checkbox doesnt work binding to a string */
-                        f.Value = (f.Value.toUpperCase() == "TRUE" ? true : false);
+                        f.Value = (f.Value.toUpperCase() === "TRUE" ? true : false);
                     }
                     else {
                         f.Value = false;
                     }
                 }
 
-                const curCategory = this.categories.find((dc) => dc.name == currentCategory);
+                const curCategory = this.categories.find((dc) => dc.name === currentCategory);
 
-                const r = curCategory.rows.find((r) => r.Row == (f.Row || 0));
+                const r = curCategory.rows.find((r) => r.Row === (f.Row || 0));
                 if (r) {
                     r.Fields.push(f);
                 } else {
@@ -328,8 +328,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             });
 
 
-            this.fore = this.fields.find((f) => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
-            this.back = this.fields.find((f) => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');
+            this.fore = this.fields.find((f) => f.FieldType === 'Color' && f.FieldName === 'IconForeColor');
+            this.back = this.fields.find((f) => f.FieldType === 'Color' && f.FieldName === 'IconBackColor');
 
             if (this.fore != null && this.back != null) {
                 this.hasIconFields = true;
@@ -355,13 +355,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         editorField.forEach((field) => {
             //if its a link we need to add two fields a link and name            
-            if (field.FieldType == "Link") {
+            if (field.FieldType === "Link") {
                 const parts = (field.Value ? field.Value.split("|") : []);
                 let url = "";
                 let name = "";
 
 
-                if (parts.length == 2) {
+                if (parts.length === 2) {
                     name = parts[0];
                     url = parts[1];
                 } else if (field.Value) {
@@ -372,7 +372,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 group[field.FieldName + '_Name'] = new FormControl(name || '');
                 group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
             }
-            else if (field.FieldType == "DateTime" || field.FieldType == "Date") {
+            else if (field.FieldType === "DateTime" || field.FieldType === "Date") {
                 if (field.Value != null) {
                     const date = new Date(field.Value);
                     field.Value = date;
@@ -384,11 +384,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }, this.getFieldValidators(field));
             }
             else {
-                if (field.FieldType == "Relationship" && this.selection) {
+                if (field.FieldType === "Relationship" && this.selection) {
                     if (field.Value != null) {
                         field.Value = JSON.parse(field.Value);
                     }
-                } else if (field.FieldType == "Lookup" && !field.Value && this.selection) {
+                } else if (field.FieldType === "Lookup" && !field.Value && this.selection) {
                     const selected = field.Items.filter((x) => x.Selected);
 
                     field.Value = [];
@@ -397,24 +397,24 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                         field.Value.push(item.Value);
                     }
 
-                    if (field.Value.length == 0) {
+                    if (field.Value.length === 0) {
                         field.Value = null;
                     }
-                } else if (field.FieldType == "Lookup" && field.Value) {
+                } else if (field.FieldType === "Lookup" && field.Value) {
                     if (field.Value != null && field.MultiSelect && typeof field.Value === "string") {
                         field.Value = field.Value.split(',');
                     }
                 }
                 var setDisabled = field.ReadOnly;
-                if (field.FieldType == "Lookup" && !field.Value && field.DelayedLoadType == 'FieldFilter') {
+                if (field.FieldType === "Lookup" && !field.Value && field.DelayedLoadType === 'FieldFilter') {
                     setDisabled = true;
                 }
 
                 var fieldValue = field.Value;
-                if (field.FieldType != 'Boolean') {
+                if (field.FieldType !== 'Boolean') {
                     fieldValue = field.Value === null ? '' : field.Value;
                 }
-                else if (field.FieldType == 'Boolean' && field.Value == null) {
+                else if (field.FieldType === 'Boolean' && field.Value == null) {
                     fieldValue = undefined;
                 }
 
@@ -449,7 +449,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                         }
 
                         var minParts = vals[0].split('=');
-                        if (minParts.length == 2) {
+                        if (minParts.length === 2) {
                             minLen = +minParts[1];
 
                             if (minLen > 1) {
@@ -495,22 +495,22 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         if (field.FieldType === 'Number') {
             validators.push(FormHelpers.integerValidator);
 
-            if (validators.indexOf(Validators.min) == -1) {
+            if (validators.indexOf(Validators.min) === -1) {
                 validators.push(Validators.min(minLen));
             }
 
-            if (validators.indexOf(Validators.max) == -1) {
+            if (validators.indexOf(Validators.max) === -1) {
                 validators.push(Validators.max(maxLen));
             }
         }
         if (field.FieldType === 'Decimal') {
             validators.push(FormHelpers.numberValidator);
 
-            if (validators.indexOf(Validators.min) == -1) {
+            if (validators.indexOf(Validators.min) === -1) {
                 validators.push(Validators.min(minLen));
             }
 
-            if (validators.indexOf(Validators.max) == -1) {
+            if (validators.indexOf(Validators.max) === -1) {
                 validators.push(Validators.max(maxLen));
             }
         }
@@ -528,21 +528,21 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         //adjust any dates to utc
         for (var p in this.form.value) {
             if (this.form.value.hasOwnProperty(p)) {
-                const field = this.fields.find((f) => f.FieldName == p);
+                const field = this.fields.find((f) => f.FieldName === p);
 
                 if (this.form.value[p] instanceof Date) {
-                    if (field != null && field.FieldType == 'Date' && this.isV2API) {
+                    if (field != null && field.FieldType === 'Date' && this.isV2API) {
                         const simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
                         this.form.value[p] = simpleDate;
                     }
-                    else if (field != null && field.FieldType == 'DateTime' && this.isV2API) {
-                        if (this.form.value[p] != 'Invalid Date')
+                    else if (field != null && field.FieldType === 'DateTime' && this.isV2API) {
+                        if (this.form.value[p] !== 'Invalid Date')
                             {this.form.value[p] = new Date(this.form.value[p]).toISOString();}
                     }
                     else {
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
                     }
-                } else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
+                } else if (field != null && field.FieldType === 'Lookup' && field.UseTypeahead) {
                     if (this.form.value[p] != null && this.form.value[p].Value) {
                         this.form.value[p] = this.form.value[p].Value;
                     }
@@ -557,7 +557,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 if (Array.isArray(this.form.value[p])) {
                     values[p] = this.form.value[p].join();
                 } else {
-                    if (this.form.value[p] === undefined && this.fields.filter((x) => x.FieldName == p && x.FieldType == 'Boolean').length > 0)
+                    if (this.form.value[p] === undefined && this.fields.filter((x) => x.FieldName === p && x.FieldType === 'Boolean').length > 0)
                         {values[p] = null;}
                     else
                         {values[p] = this.form.value[p];}
@@ -568,7 +568,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         // if this is the v2 api we need to combine any link field types into the format stored in the db
         // tallyfy|https://tallyfy.com/what-is-compliance-management/
         if (this.isV2API || this.useV2ApiLink) {
-            const links = this.fields.filter((x) => x.FieldType == 'Link');
+            const links = this.fields.filter((x) => x.FieldType === 'Link');
             //need to get the link and url for each            
             for (const link of links) {
                 const url = values[link.FieldName + '_Url'];
@@ -576,7 +576,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 const name = values[link.FieldName + '_Name'];
                 delete values[link.FieldName + '_Name'];
                 //No name and url, use empty string rather than '|'
-                values[link.FieldName] = (name == '' && url == '') ? `` : `${name}|${url}`;
+                values[link.FieldName] = (name === '' && url === '') ? `` : `${name}|${url}`;
             }
 
         }
@@ -593,7 +593,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             return;
         }
 
-        if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
+        if ((this.createUri && action === "new") || (this.editUri && action === "edit")) {
             this.isLoading = true;
 
             this.uriBasedService.saveItem(this.createUri, this.editUri, values)
@@ -635,17 +635,17 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         //convert to an asset
         for (var p in values) {
-            if (p.toUpperCase() == "PARENTUID") {
+            if (p.toUpperCase() === "PARENTUID") {
                 asset.ParentUid = values[p];
             }
-            else if (p.toUpperCase() == "UID") {
+            else if (p.toUpperCase() === "UID") {
                 asset.Uid = values[p];
             }
-            else if (p.toUpperCase() == "ASSETTYPEUID") {
+            else if (p.toUpperCase() === "ASSETTYPEUID") {
                 //ignore
             }
             else {
-                if (values[p] == undefined) {
+                if (values[p] == null) {
                     asset.Fields[p] = null;
                 }
                 else {
@@ -690,27 +690,27 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             return;
         }
 
-        if (this.objectType == "ExportTemplate" && field.Name == "Asset Type") {
+        if (this.objectType === "ExportTemplate" && field.Name === "Asset Type") {
             var item = field.Items.filter((x) => {
-                return x.Value == field.Value;
+                return x.Value === field.Value;
             })[0];
             if (item && item.Text.startsWith("Rule")) {
-                this.fields.find((x) => x.FieldName == "IncludeParent").FieldType = "no-display";
-                this.fields.find((x) => x.FieldName == "IncludeParent").Value = false;
+                this.fields.find((x) => x.FieldName === "IncludeParent").FieldType = "no-display";
+                this.fields.find((x) => x.FieldName === "IncludeParent").Value = false;
                 for (var p in this.form.value) {
                     if (this.form.value.hasOwnProperty(p)) {
-                        if (p == "IncludeParent") {
+                        if (p === "IncludeParent") {
                             this.form.controls[p].setValue(false);
                         }
                     }
                 }
                 this.ref.detectChanges();
             } else {
-                this.fields.find((x) => x.FieldName == "IncludeParent").FieldType = "Boolean";
+                this.fields.find((x) => x.FieldName === "IncludeParent").FieldType = "Boolean";
                 this.ref.markForCheck();
             }
         }
-        if (field.FieldType == 'Relationship' && field.IsSemantic === true) {
+        if (field.FieldType === 'Relationship' && field.IsSemantic === true) {
             this.editorChange.next(event);
         }
 
@@ -719,7 +719,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
 
         this.fields.forEach((editorField) => {
-            if (editorField.ParentFieldTypeID == field.FieldTypeID) {
+            if (editorField.ParentFieldTypeID === field.FieldTypeID) {
                 this.cascadeService.cascadeEvent(editorField.FieldTypeID, value);
             }
         });
