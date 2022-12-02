@@ -17,12 +17,12 @@ export class ConfigurationAssetTypeTabsComponent {
         return [
             {
                 url: `${baseUrl}/fields`,
-                title: $localize`Fields`,
+                title: $localize`Field Definition`,
                 isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset].includes(this.assetTypeClass),
             },
             {
                 url: `${baseUrl}/owners`,
-                title: $localize`Responsibility Type Assignments`,
+                title: $localize`Responsibility Type Assignment`,
                 isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset].includes(this.assetTypeClass),
             },
             {
