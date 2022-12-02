@@ -1828,9 +1828,9 @@ namespace d360.web.Controllers
 				var url = isSubject ? intersect.ObjectUrl : intersect.SubjectUrl;
 				var obj = isSubject ? intersect.Object : intersect.Subject;
 				var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
-				var assetUid = isSubject ? intersect.ObjectUid : intersect.SubjectUid;
+				var uid = isSubject ? intersect.ObjectUid : intersect.SubjectUid;
 
-				var assetInfo = relationshipAssetInfo.Where(x => x.Uid == assetUid).FirstOrDefault();
+				var assetInfo = relationshipAssetInfo.Where(x => x.Uid == uid).FirstOrDefault();
 				var intersectDisplayValue = displayPath ? assetInfo?.DisplayPath : assetInfo?.DisplayValue;
 
 				if (objectsWithoutReadAccess != null && objectsWithoutReadAccess.Any(x => x.Object == obj && x.ObjectID == objID))
@@ -1851,9 +1851,10 @@ namespace d360.web.Controllers
 				}
 				else
 				{
-					var assetTypeUid = Company.AssetTypes.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
-					relVal.assetTypeUid = assetTypeUid;
-					relVal.TooltipUrl = "assets/" + relVal.assetTypeUid;
+					var referenceListName = Company.AssetTypes.Where(x => x.uid == uid).Select(x => x.Name).FirstOrDefault();
+					relVal.assetTypeUid = uid.Value;
+					relVal.TooltipUrl = "assets/" + uid;
+					relVal.Value = referenceListName;
 				}
 
 				values.Add(relVal);
