@@ -192,14 +192,22 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
                         name: 'Use as Transformation?',
                         type: AssetTypeDetailFieldType.BOOL,
                         value: assetTypeModel.UseAsTransformation
-                    },
-                    {
-                        name: 'Auto Display Owner/Parent?',
-                        type: AssetTypeDetailFieldType.BOOL,
-                        value: assetTypeModel.AutoDisplayParent
-                    },
-                    { name: 'Edit Parent?', type: AssetTypeDetailFieldType.BOOL, value: assetTypeModel.CanEditParent }
+                    }
                 ]);
+                if (assetTypeModel.PredicateInverse) {
+                    this.addFieldsToCategory($localize`Settings`, [
+                        {
+                            name: 'Auto Display Owner/Parent?',
+                            type: AssetTypeDetailFieldType.BOOL,
+                            value: assetTypeModel.AutoDisplayParent
+                        },
+                        {
+                            name: 'Edit Parent?',
+                            type: AssetTypeDetailFieldType.BOOL,
+                            value: assetTypeModel.CanEditParent
+                        }
+                    ]);
+                }
                 break;
             case AssetTypeClass.Rule:
             case AssetTypeClass.DiagramAsset:
