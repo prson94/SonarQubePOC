@@ -17,6 +17,7 @@ using d360.model.helpers.filters;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+using d360.web.Services;
 using d360.web.Utilities;
 
 using Dapper;
@@ -483,11 +484,20 @@ namespace d360.web.Controllers.V2
 		]
 		public dynamic GetFilterLists(Guid assetUid)
 		{
+			if (assetUid == Guid.Empty)
+			{
+				throw new ArgumentException(AssetsApiMessages.InvalidAssetTypeUid);
+			}
+
 			dynamic objectInfo = GetLegacyObjectDetails(assetUid);
 			dynamic result = new System.Dynamic.ExpandoObject();
 			string condition;
 
 			AssetType assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
+			if (assetType == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(AssetsApiMessages.AssetTypeNotFound, assetUid));
+			}
 
 			if (assetType?.Class == AssetTypeClass.Reference)
 			{
