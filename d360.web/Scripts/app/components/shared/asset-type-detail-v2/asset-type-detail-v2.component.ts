@@ -156,6 +156,21 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
                 name: $localize`Description`,
                 type: AssetTypeDetailFieldType.HTML,
                 value: assetTypeModel.Description
+            },
+            {
+                name: $localize`Is Description Enabled?`,
+                type: AssetTypeDetailFieldType.BOOL,
+                value: assetTypeModel.IsDescriptionEnabled
+            },
+            {
+                name: $localize`Show Description by Default?`,
+                type: AssetTypeDetailFieldType.BOOL,
+                value: assetTypeModel.IsDescriptionVisibleByDefault
+            },
+            {
+                name: $localize`Description Button Name`,
+                type: AssetTypeDetailFieldType.TEXT,
+                value: assetTypeModel.DescriptionButtonName
             }
         ]);
         this.addFieldsToCategory($localize`Styles`, [
