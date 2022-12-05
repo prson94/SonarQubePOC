@@ -34,7 +34,7 @@ export class SemanticStatusDetailComponent implements OnInit {
     }
 
     clickedOutside(event: any) {
-        if (!(event.path.filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
+		if (!(event.composedPath().filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
             this.close.emit();
         }
     }

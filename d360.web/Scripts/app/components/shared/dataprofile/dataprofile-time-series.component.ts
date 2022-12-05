@@ -65,7 +65,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
 
     @HostListener('document:click', ['$event'])
     documentClick(event: any) {
-        if (!(event.path.filter((f) => f?.classList?.contains("time-series-tile") || f?.classList?.contains("trendIcon") || f?.classList?.contains("sampleBarChart")).length > 0)) {
+		if (!(event.composedPath().filter((f) => f?.classList?.contains("time-series-tile") || f?.classList?.contains("trendIcon") || f?.classList?.contains("sampleBarChart")).length > 0)) {
             this.close.emit();
         }
     }
