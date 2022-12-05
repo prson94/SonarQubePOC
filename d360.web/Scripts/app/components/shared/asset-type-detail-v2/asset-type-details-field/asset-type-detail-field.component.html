@@ -4,7 +4,7 @@
     </label>
     <i *ngIf="field.type === fieldType.SYSTEM" class="fa fa-copy" [copy-clipboard]="field.value"></i>
 </div>
-<ng-container *ngIf="field.value; else emptyValue" [ngSwitch]="field.type">
+<ng-container *ngIf="field.value !== null && field.value !== undefined; else emptyValue" [ngSwitch]="field.type">
     <div class="ig-value" *ngSwitchCase="fieldType.HTML">
         <span [innerHTML]="field.value | safeHtml"></span>
     </div>
