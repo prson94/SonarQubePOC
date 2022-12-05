@@ -23,7 +23,8 @@
             },
             "rules": {
                 "no-undef": 2,
-                "eqeqeq": ["error", "always", {"null": "ignore"}]
+                "eqeqeq": ["error", "always", {"null": "ignore"}],
+                "@typescript-eslint/no-inferrable-types": "off"
             }
         }
     ],
