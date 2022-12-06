@@ -2609,7 +2609,7 @@ namespace d360.web.Controllers
 				}
 			}
 
-			if (LookupFieldHasColorItem(fieldType))
+			if (LookupFieldHasColorItem(fieldType) || fieldType?.LookupObjectType == SystemObjects.ReferenceItem.ToString())
 			{
 				string populateDefaultValueCheck = "";
 				if (!string.IsNullOrEmpty(fieldType.DefaultValue))
