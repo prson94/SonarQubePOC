@@ -124,7 +124,13 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
     }
 
     private sortCategories(categories: AssetTypeDetailCategory[]): AssetTypeDetailCategory[] {
-        const priority = [$localize`General`, $localize`Settings`, $localize`Styles`, $localize`System Fields`];
+        const priority = [
+            $localize`General`,
+            $localize`Asset Description`,
+            $localize`Settings`,
+            $localize`Styles`,
+            $localize`System Fields`
+        ];
         return categories.sort((a, b) => {
             return priority.indexOf(a.name) - priority.indexOf(b.name);
         });
@@ -156,21 +162,23 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
                 name: $localize`Description`,
                 type: AssetTypeDetailFieldType.HTML,
                 value: assetTypeModel.Description
+            }
+        ]);
+        this.addFieldsToCategory($localize`Asset Description`, [
+            {
+                name: $localize`Enable or Disable showing the description of the asset type`,
+                type: AssetTypeDetailFieldType.SWITCH,
+                value: assetTypeModel.IsDescriptionEnabled ? $localize`Enable` : $localize`Disable`
             },
             {
-                name: $localize`Is Description Enabled?`,
-                type: AssetTypeDetailFieldType.BOOL,
-                value: assetTypeModel.IsDescriptionEnabled
-            },
-            {
-                name: $localize`Show Description by Default?`,
-                type: AssetTypeDetailFieldType.BOOL,
-                value: assetTypeModel.IsDescriptionVisibleByDefault
+                name: $localize`Description Behavior`,
+                type: AssetTypeDetailFieldType.TEXT,
+                value: assetTypeModel.IsDescriptionVisibleByDefault ? $localize`Show` : $localize`Hide`
             },
             {
                 name: $localize`Description Button Name`,
                 type: AssetTypeDetailFieldType.TEXT,
-                value: assetTypeModel.DescriptionButtonName
+                value: assetTypeModel.DescriptionButtonName ?? $localize`Information`
             }
         ]);
         this.addFieldsToCategory($localize`Styles`, [

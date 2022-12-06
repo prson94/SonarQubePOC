@@ -27,5 +27,6 @@ export enum AssetTypeDetailFieldType {
     ICON = "ICON",
     SYSTEM = "SYSTEM",
     FLOW_OBJECT_TYPE = "FLOW_OBJECT_TYPE",
-    HTML = "HTML"
+    HTML = "HTML",
+    SWITCH = "SWITCH"
 }
