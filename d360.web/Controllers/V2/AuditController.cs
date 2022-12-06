@@ -494,10 +494,6 @@ namespace d360.web.Controllers.V2
 			string condition;
 
 			AssetType assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
-			if (assetType == null)
-			{
-				throw new NotFoundBusinessLayerException(string.Format(AssetsApiMessages.AssetTypeNotFound, assetUid));
-			}
 
 			if (assetType?.Class == AssetTypeClass.Reference)
 			{
