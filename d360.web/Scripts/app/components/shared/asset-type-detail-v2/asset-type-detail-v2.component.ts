@@ -24,6 +24,8 @@ import {
 } from './asset-type-detail-v2.model';
 import { AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
 
+/*global $localize*/
+
 declare const CurrentResourceID;
 
 @Component({
