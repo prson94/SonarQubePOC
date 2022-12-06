@@ -5,10 +5,7 @@ import { AssetTypeDetailField, AssetTypeDetailFieldType } from "../asset-type-de
     selector: 'ig-asset-type-detail-field',
     templateUrl: './asset-type-detail-field.component.html',
     providers: [],
-    styles: [
-        `.row-header { display: flex; align-items: center; }`,
-        `.fa-copy { color: #8A46E4; margin-left: 6px; cursor: pointer; }`
-    ],
+    styleUrls: ['asset-type-detail-field.component.less'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None
 })

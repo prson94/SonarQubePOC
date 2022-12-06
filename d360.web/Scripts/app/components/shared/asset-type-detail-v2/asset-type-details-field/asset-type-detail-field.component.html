@@ -6,14 +6,19 @@
 </div>
 <ng-container *ngIf="field.value !== null && field.value !== undefined; else emptyValue" [ngSwitch]="field.type">
     <div class="ig-value" *ngSwitchCase="fieldType.HTML">
-        <span [innerHTML]="field.value | safeHtml"></span>
+        <span *ngIf="field.value; else emptyHTML" [innerHTML]="field.value | safeHtml"></span>
+        <ng-template #emptyHTML>
+            <span> --- </span>
+        </ng-template>
     </div>
     <div class="ig-value" *ngSwitchCase="fieldType.BOOL">
         <ng-container *ngIf="field.value; else falseTemplate">
-            <i class="fa fa-check-circle enabled ig-bool" title="True"></i><ng-container i18n>True</ng-container>
+            <i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+            <ng-container i18n>True</ng-container>
         </ng-container>
         <ng-template #falseTemplate>
-            <i class="fa fa-times-circle disabled ig-bool" title="False"></i><ng-container i18n>False</ng-container>
+            <i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+            <ng-container i18n>False</ng-container>
         </ng-template>
     </div>
     <div class="ig-value" *ngSwitchCase="fieldType.FLOW_OBJECT_TYPE">
@@ -34,6 +39,11 @@
         <span>
             {{ field.value | iconName }}
         </span>
+    </div>
+    <div class="ig-value" *ngSwitchCase="fieldType.SWITCH">
+        <button class="ig-value__purple-button">
+            {{ field.value }}
+        </button>
     </div>
     <div class="ig-value" *ngSwitchDefault>
         <span>{{ field.value }}</span>

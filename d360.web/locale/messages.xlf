@@ -2258,23 +2258,23 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">127</context>
+          <context context-type="linenumber">127,129</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">148,149</context>
+          <context context-type="linenumber">154,155</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">198,200</context>
+          <context context-type="linenumber">206,208</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">221,223</context>
+          <context context-type="linenumber">237,239</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">231,233</context>
+          <context context-type="linenumber">247,249</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-editor.component.ts</context>
@@ -7540,7 +7540,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">149</context>
+          <context context-type="linenumber">155</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4964325726823401590" datatype="html">
@@ -8598,11 +8598,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">127</context>
+          <context context-type="linenumber">127,130</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">188,189</context>
+          <context context-type="linenumber">196,197</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/objectdetails/object-detail.component.ts</context>
@@ -8945,84 +8945,6 @@
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list-filter.component.ts</context>
           <context context-type="linenumber">48,49</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5357629346591026715" datatype="html">
-        <source>Export not available for over <x id="PH" equiv-text="this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${"/> rows</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/assets-grid/asset-grid.component.ts</context>
-          <context context-type="linenumber">155</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
-          <context context-type="linenumber">197</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/reference/reference-item-list.component.ts</context>
-          <context context-type="linenumber">74</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/semantic/semantic-asset-list-grid.component.ts</context>
-          <context context-type="linenumber">84</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/match-detection.component.ts</context>
-          <context context-type="linenumber">527</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/user/user-list.component.ts</context>
-          <context context-type="linenumber">97</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/sidebar/audit/audit.component.ts</context>
-          <context context-type="linenumber">88</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/sidebar/children/artifact-item-child-grid.component.ts</context>
-          <context context-type="linenumber">43</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list.component.ts</context>
-          <context context-type="linenumber">65</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5357629346591026715" datatype="html">
-        <source>Export not available for over <x id="PH" equiv-text="this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${"/> rows</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/assets-grid/asset-grid.component.ts</context>
-          <context context-type="linenumber">155</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
-          <context context-type="linenumber">197</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/reference/reference-item-list.component.ts</context>
-          <context context-type="linenumber">74</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/semantic/semantic-asset-list-grid.component.ts</context>
-          <context context-type="linenumber">84</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/match-detection.component.ts</context>
-          <context context-type="linenumber">527</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/user/user-list.component.ts</context>
-          <context context-type="linenumber">97</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/sidebar/audit/audit.component.ts</context>
-          <context context-type="linenumber">88</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/sidebar/children/artifact-item-child-grid.component.ts</context>
-          <context context-type="linenumber">43</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list.component.ts</context>
-          <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5357629346591026715" datatype="html">
@@ -11009,7 +10931,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">156,158</context>
+          <context context-type="linenumber">162,164</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5963653123239768443" datatype="html">
@@ -11058,6 +10980,10 @@ Please refine your search.</source>
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.ts</context>
           <context context-type="linenumber">475</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
+          <context context-type="linenumber">171,172</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="9187855490716817910" datatype="html">
         <source>Disable</source>
@@ -11076,6 +11002,10 @@ Please refine your search.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.ts</context>
           <context context-type="linenumber">475</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
+          <context context-type="linenumber">171,172</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8872443636266091102" datatype="html">
@@ -11128,7 +11058,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-details-field/asset-type-detail-field.component.html</context>
-          <context context-type="linenumber">13,16</context>
+          <context context-type="linenumber">17,20</context>
         </context-group>
       </trans-unit>
       <trans-unit id="50f035acd42dac7630f136d5d93ee2509f069718" datatype="html">
@@ -11139,7 +11069,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-details-field/asset-type-detail-field.component.html</context>
-          <context context-type="linenumber">16,20</context>
+          <context context-type="linenumber">21,25</context>
         </context-group>
       </trans-unit>
       <trans-unit id="80fa90ce67552f3f8a824f756a94327e41d3fc49" datatype="html">
@@ -11995,15 +11925,19 @@ Please refine your search.</source>
         <source>Settings</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">127</context>
+          <context context-type="linenumber">127,129</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">205,207</context>
+          <context context-type="linenumber">213,215</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">238,240</context>
+          <context context-type="linenumber">221,223</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
+          <context context-type="linenumber">254,256</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/menu/site-menu.component.ts</context>
@@ -12014,57 +11948,101 @@ Please refine your search.</source>
           <context context-type="linenumber">46,47</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="1330459634713859889" datatype="html">
+        <source>Asset Description</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
+          <context context-type="linenumber">127,130</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
+          <context context-type="linenumber">167,169</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="6977749640368501596" datatype="html">
         <source>Styles</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">127</context>
+          <context context-type="linenumber">127,129</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">176,178</context>
+          <context context-type="linenumber">184,186</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5851470115289701900" datatype="html">
         <source>Display Format</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">151,153</context>
+          <context context-type="linenumber">157,159</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="4161259233207488308" datatype="html">
-        <source>Is Description Enabled?</source>
+      <trans-unit id="6916912379559332257" datatype="html">
+        <source>Enable or Disable showing the description of the asset type</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">161,163</context>
+          <context context-type="linenumber">169,171</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="3906669341580324096" datatype="html">
-        <source>Show Description by Default?</source>
+      <trans-unit id="1383460871394019879" datatype="html">
+        <source>Description Behavior</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">166,168</context>
+          <context context-type="linenumber">174,176</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8461842260159597706" datatype="html">
+        <source>Show</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
+          <context context-type="linenumber">176</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8461609631969932886" datatype="html">
+        <source>Hide</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
+          <context context-type="linenumber">176</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6818732338554681640" datatype="html">
         <source>Description Button Name</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
+          <context context-type="linenumber">179,181</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5037437391296624618" datatype="html">
+        <source>Information</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
+          <context context-type="linenumber">181,183</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/assettypeeditor/asset-type-editor.component.ts</context>
+          <context context-type="linenumber">137,138</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/sidepanel/side-panel.component.ts</context>
           <context context-type="linenumber">171,173</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/sidepanel/side-panel.component.ts</context>
+          <context context-type="linenumber">172,174</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3468485835384597147" datatype="html">
         <source>Background Color</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">178,180</context>
+          <context context-type="linenumber">186,188</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3074987902485823708" datatype="html">
         <source>Icon</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">183,185</context>
+          <context context-type="linenumber">191,193</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ade74474370fb2ee8c76dce2717536f3636e973e" datatype="html">
@@ -12386,21 +12364,6 @@ Please refine your search.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/assettypeeditor/asset-type-editor.component.ts</context>
           <context context-type="linenumber">50,53</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5037437391296624618" datatype="html">
-        <source>Information</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/assettypeeditor/asset-type-editor.component.ts</context>
-          <context context-type="linenumber">137,138</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/sidepanel/side-panel.component.ts</context>
-          <context context-type="linenumber">171,173</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/sidepanel/side-panel.component.ts</context>
-          <context context-type="linenumber">172,174</context>
         </context-group>
       </trans-unit>
       <trans-unit id="64177876208f3e2e31eabf4a2fb63bb790ed9740" datatype="html">
