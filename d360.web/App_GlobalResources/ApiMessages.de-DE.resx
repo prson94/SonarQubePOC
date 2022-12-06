@@ -748,4 +748,7 @@
   <data name="YouAreNowWatching" xml:space="preserve">
     <value>Sie überwachen {0} jetzt.</value>
   </data>
+  <data name="InvalidLanguageCode" xml:space="preserve">
+    <value>[LanguageCode] ungültig. Unterstützte Werte sind {0}.</value>
+  </data>
 </root>
