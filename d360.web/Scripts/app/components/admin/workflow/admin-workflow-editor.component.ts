@@ -213,7 +213,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 .pipe(
                     map((r) => {
                         r.forEach((t) => {
-                            const c = this.conditions.filter((c) => c['@FieldTypeID'] === t.ID);
+                            const c = this.conditions.filter((c) => +c['@FieldTypeID'] === t.ID);
 							if (c != null)
 							{ c.forEach((f) => f['@FieldName'] = t.FriendlyName + (t.IssueTypeID != null ? ' (Action Field)' : '')); }
                         });
