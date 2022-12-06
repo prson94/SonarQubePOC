@@ -270,8 +270,8 @@ END
 	</rollback>
   </changeSet> 
   
-    <changeSet author="Tomislav Duric" id="Table.dbo.Field-Field_AfterUpsert-v17">
-    <comment>GOV-20348</comment>
+    <changeSet author="Tomislav Duric" id="Table.dbo.Field-Field_AfterUpsert-v18">
+    <comment>GOV-20545</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -293,7 +293,7 @@ AS
 				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
 				FROM	Field T 
 						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.AssetID IS NOT NULL AND F.AssetID = T.AssetID) 
-						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID and FT.Type in ('Link','Lookup');
+						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
 			end
 
 		if exists (select 1 from inserted where IntersectID IS NOT NULL)
@@ -302,7 +302,7 @@ AS
 				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
 				FROM	Field T 
 						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.IntersectID IS NOT NULL AND F.IntersectID = T.IntersectID) 
-						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID and FT.Type in ('Link','Lookup');
+						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
 			end
 
 		if exists (select 1 from inserted where IssueID IS NOT NULL)
@@ -311,7 +311,7 @@ AS
 				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
 				FROM	Field T 
 						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.IssueID IS NOT NULL AND F.IssueID = T.IssueID)
-						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID and FT.Type in ('Link','Lookup');
+						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
 			end
 
 		drop table if exists #insertedFields;
