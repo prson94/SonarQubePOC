@@ -1,6 +1,5 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, Input, NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { BaseComponent } from './base.component';
 import { CompanySettingsService } from '../../services/settings.service';
 
@@ -24,7 +23,7 @@ export class GridPagingInfoComponent extends BaseComponent {
     }
 
     get startValue() {
-        if (this.first != undefined) {
+        if (this.first != null) {
             return (this.first + 1).toLocaleString();
         }
         return '';

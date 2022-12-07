@@ -1,12 +1,10 @@
 ﻿import { AbstractControl } from "@angular/forms";
 
 
-
-
 export class FormHelpers {
 
     static numberValidator(f: AbstractControl) {
-        let valid = !isNaN(+f.value);
+        const valid = !isNaN(+f.value);
         if (valid) {
             return null;
         } else {
@@ -21,9 +19,9 @@ export class FormHelpers {
     }
 
     static integerValidator(f: AbstractControl) {
-        if (f.value == null || f.value == '')
+        if (f.value == null || f.value === '')
             {return null;}
-        let valid = !isNaN(+f.value) && String(f.value) == Number(+f.value).toString() && +f.value % 1 == 0;
+        const valid = !isNaN(+f.value) && String(f.value) === Number(+f.value).toString() && +f.value % 1 === 0;
         if (valid) {
             return null;
         } else {
@@ -39,7 +37,7 @@ export class FormHelpers {
         if (val == null)
             {return null;}
 
-        if (val.toString() == '.')
+        if (val.toString() === '.')
             {return "0.";}
         if (isNaN(+val))
             {return null;}
@@ -49,8 +47,8 @@ export class FormHelpers {
         if (val < min) {newVal = min;}
         if (val > max) {newVal = max;}
 
-        if (precision > 0 && newVal != null && newVal != 0) {
-            let mod = Math.pow(10, precision);
+        if (precision > 0 && newVal != null && newVal !== 0) {
+            const mod = Math.pow(10, precision);
             newVal = Math.round(newVal * mod) / mod;
         }
 

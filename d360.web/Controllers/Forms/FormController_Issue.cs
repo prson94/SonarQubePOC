@@ -158,7 +158,7 @@ namespace d360.web.Controllers
 
             list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
 
-			var fieldTypes = Company.Filter<FieldType>(i => i.IssueTypeID == issueTypeId).ToList();
+			var fieldTypes = Company.Filter<FieldType>(i => i.IssueTypeID == issueTypeId).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
             list = loadDynamicFields(list, fieldTypes, 2, false);
 
             return Json(list, JsonRequestBehavior.AllowGet);

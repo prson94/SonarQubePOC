@@ -1,5 +1,5 @@
 ﻿import { EventEmitter } from '@angular/core';
-import { TreeNode, MenuItem } from 'primeng/api';
+import { MenuItem, TreeNode } from 'primeng/api';
 import { ToolbarItem } from './object-detail.model';
 
 export class BaseEditorModel {
@@ -27,10 +27,10 @@ export module FormHelper {
     }
 
     export function getSelectList(items: any[], label: string = 'label', value: string = 'value'): SelectItem[] {
-        let list = new Array<SelectItem>();
+        const list = new Array<SelectItem>();
 
         items.forEach((i) => {
-            let l = new SelectItem();
+            const l = new SelectItem();
             l.label = i[label];
             l.Text = i[label];
             l.Value = i[value];
@@ -44,7 +44,7 @@ export module FormHelper {
     }
 
     export function getDataUrl(file: File): Promise<any> {
-        let reader = new FileReader();
+        const reader = new FileReader();
 
         return new Promise<any>((resolve, reject) => {
 
@@ -74,19 +74,19 @@ export module FormHelper {
     }
 
     export function formTreeR(node: TreeNode, data: any[], idField: string, parentField: string, expandAll: boolean = true) {
-        data.filter((d) => d[parentField] == node.data[idField]).forEach((d) => {
-            let child: TreeNode = { data: d, children: [], expanded: expandAll };
+        data.filter((d) => d[parentField] === node.data[idField]).forEach((d) => {
+            const child: TreeNode = { data: d, children: [], expanded: expandAll };
             node.children.push(child);
             FormHelper.formTreeR(child, data, idField, parentField, expandAll);
         });
      }
 
     export function flattenTree(data: any[], subDataField: string, idField: string = null, parentField: string = null): any[] {
-        let flattened = [];
+        const flattened = [];
         for (var i = 0; i < data.length; i++) {
             flattened.push(data[i]);
             if (data[i][subDataField] && data[i][subDataField].length > 0) {
-                let sub = flattenTree(data[i][subDataField], subDataField, idField, parentField);
+                const sub = flattenTree(data[i][subDataField], subDataField, idField, parentField);
                 sub.forEach((s) => {
                     if (idField && parentField)
                         {s[parentField] = data[i][idField];}
@@ -98,9 +98,9 @@ export module FormHelper {
     }
 
     export function convertToolBarToMenuItem(data: ToolbarItem[]): MenuItem[] {
-        let items = [];
+        const items = [];
         for (var i = 0; i < data.length; i++) {
-            let m: any = {};
+            const m: any = {};
             m.icon = 'fa-' + data[i].Icon;
             m.label = data[i].Title;
             m.url = data[i].Uri;
@@ -114,7 +114,7 @@ export module FormHelper {
     }
 
     export function convertToNgUrl(data: any[], field: string) {
-        for (let d of data) {
+        for (const d of data) {
             d[field] = (d[field]).replace('#', 'a');
             d[field] = (d[field]).replace('artifacts', 'artifact');
         }
@@ -155,19 +155,19 @@ export class FormMessage {
     }
 
     get isError(): boolean {
-        return this.MessageType == MessageType.Error;
+        return this.MessageType === MessageType.Error;
     }
 
     get isSuccess(): boolean {
-        return this.MessageType == MessageType.Success;
+        return this.MessageType === MessageType.Success;
     }
 
     get isInfo(): boolean {
-        return this.MessageType == MessageType.Info;
+        return this.MessageType === MessageType.Info;
     }
 
     get isWarning(): boolean {
-        return this.MessageType == MessageType.Warning;
+        return this.MessageType === MessageType.Warning;
     }
 
 }

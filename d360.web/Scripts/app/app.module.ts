@@ -1,4 +1,4 @@
-﻿import { NgModule, LOCALE_ID, APP_INITIALIZER } from '@angular/core';
+﻿import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core';
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule, Title } from '@angular/platform-browser';
@@ -26,7 +26,10 @@ import { FollowerService } from './services/follower.service';
 import { StateService } from './services/state.service';
 import { WebAnalyticsService } from './services/web-analytics.service';
 import { SearchService } from './services/search.service';
-import { NumberOfRowsByCategoryService, NumberOfRowsByCategoryServiceInitializer } from './services/number-of-rows-by-category.service';
+import {
+    NumberOfRowsByCategoryService,
+    NumberOfRowsByCategoryServiceInitializer
+} from './services/number-of-rows-by-category.service';
 import { TitleAndTabsService } from './services/title-and-tabs.service';
 
 import { TooltipSingletonService } from './services/tooltip-singleton.service';
@@ -35,10 +38,10 @@ import { PreviewpopupSingletonService } from './services/previewpopup-singleton.
 import { CookieService } from './services/cookie.service';
 import { SiteMenuService } from './services/site-menu.service';
 import { DialogModule } from 'primeng/dialog';
-import { D3SModal } from './components/shared/modal/gov-modal.component';
 import { AssetStyleService } from './services/asset-style.service';
 import { CompanySettingsService } from './services/settings.service';
 import { FeatureFlagsService } from './services/featureflags.service';
+import { UserSettingsService } from './services/usersettings.service';
 import { governHttpInterceptorProviders } from './http-interceptors';
 import { SelectAssetService } from './services/select-asset.service';
 import { ForceNoReuseStrategy } from './services/forceNoReuseStrategy';
@@ -60,7 +63,7 @@ export function settingsInitializer(provider: CompanySettingsService) {
 
 export function localeInitializer(localeId: string) {                  
     return (): Promise<any> => {
-        if (localeId && localeId.toLowerCase() != 'en-us') {
+        if (localeId && localeId.toLowerCase() !== 'en-us') {
             return new Promise((resolve, reject) => {
                 //Dynamic import of locales issue in Angular 13 https://github.com/angular/angular-cli/issues/22154
 				import(`/node_modules/@angular/common/locales/${localeId}.mjs`)
@@ -132,7 +135,8 @@ export function localeInitializer(localeId: string) {
         CookieService,
         TitleAndTabsService,
         SelectAssetService,
-        SiteMenuService,
+		SiteMenuService,
+		UserSettingsService,
         { provide: LOCALE_ID, useFactory: localeIdFactory },
         {
             provide: APP_INITIALIZER,

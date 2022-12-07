@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { ChildrenComponent } from './children.component';
 
 const routes: Routes = [

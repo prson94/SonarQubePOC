@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit } from "@angular/core";
+﻿import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { BaseComponent } from "../base.component";
 import { SocialService } from "../../../services/social.service";
 import { CommentApiPostModel, CommentDetail, CommentType, Emoji } from "../../../models/social.model";
@@ -46,14 +46,14 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.isDeletable = this.isAdmin || (this.comment.CreatedBy == CurrentResourceID);
-        this.isEditable = this.comment.CreatedBy == CurrentResourceID;
+        this.isDeletable = this.isAdmin || (this.comment.CreatedBy === CurrentResourceID);
+        this.isEditable = this.comment.CreatedBy === CurrentResourceID;
         this.isPostingDisabled = this.settingsService.getSettingById(CompanySettingEnum.DisableCommunityPosting).BooleanSetting.Value;
         this.calculateVotes();
     }
 
     doVote(emojiString: string) {
-        let emoji: Emoji = Emoji[emojiString];
+        const emoji: Emoji = Emoji[emojiString];
 
         if (this.isLoading === true) {
             return;
@@ -69,7 +69,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
                             this.comment.Emojis.forEach((e) => e.Count = 0);
 
                             v.forEach((i) => {
-                                let emojis = this.comment.Emojis.find((e) => e.Emoji === i.emoji);
+                                const emojis = this.comment.Emojis.find((e) => e.Emoji === i.emoji);
                                 if (emojis) {
                                     emojis.Count++;
                                 } else {
@@ -97,7 +97,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     isModified() {
-        return (this.comment.CreatedOn != this.comment.UpdatedOn);
+        return (this.comment.CreatedOn !== this.comment.UpdatedOn);
     }
 
     private commentTypeIcon() {
@@ -112,11 +112,11 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     isSocial(): boolean {
-        return this.comment.CommentType == CommentType.Social;
+        return this.comment.CommentType === CommentType.Social;
     }
 
     isIssue(): boolean {
-        return this.comment.CommentType == CommentType.Issue;
+        return this.comment.CommentType === CommentType.Issue;
     }
 
     canReply(): boolean {

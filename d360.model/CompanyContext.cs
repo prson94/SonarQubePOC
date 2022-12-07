@@ -153,6 +153,8 @@ namespace d360.model
 
 		public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
 
+		public DbSet<ResourceSetting> ResourceSettings { get; set; }
+
 		public DbSet<Semantic> Semantics { get; set; }
 
 		public DbSet<SiteNav> SiteNav { get; set; }
@@ -549,7 +551,7 @@ namespace d360.model
 								OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 
 						selectedSql = @"
-								select	case when i.SubjectAssetID = @assetId then i.ObjectAssetID else i.SubjectAssetID end as [Value], 
+								select	A.ObjectId as [Value], 
 										A.[Name] as [Text], 
 										1 as Selected 
 								from	[intersect] i
@@ -591,16 +593,16 @@ namespace d360.model
 
 					break;
 				case AssetTypeClass.User:
-					formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "'Resource'", "R.ResourceID");
-					formattedIntersectJoin = string.Format(intersectJoin, "'Resource'", "R.ResourceID");
+					formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.Id");
+					formattedIntersectJoin = string.Format(intersectJoin, "A.Id");
 
 					countSql = $@"
 							select	count(*) 
 							from	reporting.Global_Resource R 
+									inner join Asset A on A.Object = 'Resource' and A.ObjectId = R.ResourceId
 									inner join [IntersectType] IT on IT.Id = @intersectTypeID
 									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
 							where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
-									and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
 									{formattedCardinalityCheck}";
 
 					sql = $@"
@@ -608,10 +610,10 @@ namespace d360.model
 									R.LastName + ', ' + R.FirstName as Text, 
 									case when I.ID is not null then 1 else 0 end as Selected 
 							from	reporting.[Global_Resource] R
+									inner join Asset A on A.Object = 'Resource' and A.ObjectId = R.ResourceId
 									inner join [IntersectType] IT on IT.Id = @intersectTypeID
 									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
 							where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
-									and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
 									{formattedCardinalityCheck} 
 							order by 3 desc, R.LastName + ', ' + R.FirstName asc 
 							OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
@@ -1176,10 +1178,41 @@ from	IntersectType I
 			{
 				throw new NotFoundException(CompanyContextErrors.Relationship);
 			}
+			
+			var intersectDetail = IntersectDetails.Single(i => i.ID == id);
 
-			bool res = Database.ExecuteSqlCommand("DeleteIntersect {0}, {1}", id, CurrentResourceID) > 0;
+			Audits.AddRange(new List<Audit>
+			{
+				new Audit { 
+					Action = "Deleted", 
+					ActionDescription = "Relationship removed.", 
+					ActionObject = "Intersect", 
+					ActionObjectID = id, 
+					ActionObjectName = intersectDetail.ObjectName, 
+					ActionObjectTypeName = $"{intersectDetail.SubjectTypeName} [{intersectDetail.PredicateName}] {intersectDetail.ObjectTypeName}",
+					Date = DateTime.UtcNow,
+					Object = intersectDetail.Subject,
+					ObjectID = intersectDetail.SubjectID,
+					ObjectName = intersectDetail.SubjectName,
+					ResourceID = CurrentResourceID
+				},
+				new Audit {
+					Action = "Deleted",
+					ActionDescription = "Relationship removed.",
+					ActionObject = "Intersect",
+					ActionObjectID = id,
+					ActionObjectName = intersectDetail.SubjectName,
+					ActionObjectTypeName = $"{intersectDetail.SubjectTypeName} [{intersectDetail.PredicateName}] {intersectDetail.ObjectTypeName}",
+					Date = DateTime.UtcNow,
+					Object = intersectDetail.Object,
+					ObjectID = intersectDetail.ObjectID,
+					ObjectName = intersectDetail.ObjectName,
+					ResourceID = CurrentResourceID
+				}
+			});
+			Delete<Field>(f => f.IntersectID == id);
+			Delete(item);
 
-			// add record to queue indication of delete relationship
 			QueueSource.CreateTopicMessage(new EventInfo
 			{
 				CompanyID = CurrentCompanyID,
@@ -1195,7 +1228,7 @@ from	IntersectType I
 				DomainPrefix = CurrentCompanyDomain
 			});
 
-			return res;
+			return true;
 		}
 
 
@@ -1825,34 +1858,6 @@ from	IntersectType I
 						if (Any<ResponsibilityTypeRelationOverrideItem>(i => i.SecurityAsset == "G" && i.SecurityAssetID == o.ID))
 						{
 							throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ResponsibilitiesAssignedToGroup);
-						}
-					}
-				}
-
-				#endregion
-
-				#region Business logic : Intersect
-
-				if (entry.Entity is Intersect)
-				{
-					Intersect o = entry.Entity as Intersect;
-					string id = o.ID.ToString();
-					int intersectTypeID = o.IntersectTypeID;
-
-					if (entry.State == EntityState.Deleted)
-					{
-						bool any = Any<Field>(f => f.FieldType.LookupObjectType == "Intersect" && f.FieldType.LookupObjectID == intersectTypeID && f.Value == id);
-						
-						if (any)
-						{
-							throw new ConflictException(CompanyContextErrors.TitleRelationNotRemoved, CompanyContextErrors.MutliReferenceRelationNotAllowed);
-						}
-						
-						any = Any<Intersect>(i => (i.Subject == "Intersect" && i.SubjectID == o.ID) || (i.Object == "Intersect" && i.ObjectID == o.ID));
-						
-						if (any)
-						{
-							throw new ConflictException(CompanyContextErrors.TitleRelationNotRemoved, CompanyContextErrors.MultiRelationshipsReferRelationship);
 						}
 					}
 				}

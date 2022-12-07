@@ -1,7 +1,7 @@
-﻿import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {catchError, map} from 'rxjs/operators';
+﻿import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 import { ObjectStatistics } from '../models/object-statistics.model';
 import { SearchDetail } from '../models/search-result.model';

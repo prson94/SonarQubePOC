@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ViewChild, ChangeDetectionStrategy, ElementRef, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 
 
 @Component({
@@ -33,8 +33,8 @@ export class ScrollerWidgetComponent implements OnInit {
 
 	checkSize() {
 		if (this.fieldScroller) {
-			let maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
-			let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastElementChild);
+			const maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
+			const lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastElementChild);
 			this.showScrollButtons = lastTab > maxWidth;
 		}
 		this.checkScrollPos();
@@ -42,11 +42,11 @@ export class ScrollerWidgetComponent implements OnInit {
 
 	checkScrollPos() {
 		if (this.fieldScroller) {
-			let currentPosition = this.fieldScroller.nativeElement.scrollLeft;
-			this.disableScrollLeft = currentPosition == 0;
+			const currentPosition = this.fieldScroller.nativeElement.scrollLeft;
+			this.disableScrollLeft = currentPosition === 0;
 
-			let maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
-			let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastElementChild);
+			const maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
+			const lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastElementChild);
 			this.disableScrollRight = lastTab <= maxWidth;
 
 			this.ref.markForCheck();
@@ -68,11 +68,11 @@ export class ScrollerWidgetComponent implements OnInit {
 	}
 
 	scroll(direction: string) {
-		let el = this.fieldScroller.nativeElement;
+		const el = this.fieldScroller.nativeElement;
 		let scrollAmount = 0;
-		let scrollDistance = Math.floor(this.getElementWidth(el) * 0.95);
-		let move = () => {
-			if (direction == 'L') {
+		const scrollDistance = Math.floor(this.getElementWidth(el) * 0.95);
+		const move = () => {
+			if (direction === 'L') {
 				el.scrollLeft -= 10;
 			} else {
 				el.scrollLeft += 10;
@@ -85,6 +85,6 @@ export class ScrollerWidgetComponent implements OnInit {
 			this.checkScrollPos();
 		};
 
-		let id = window.setInterval(move, 5);
+		const id = window.setInterval(move, 5);
 	}
 }

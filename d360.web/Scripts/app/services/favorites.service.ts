@@ -1,4 +1,4 @@
-import { Observable, Subject, forkJoin } from "rxjs";
+import { forkJoin, Observable, Subject } from "rxjs";
 import { catchError, map, shareReplay, takeUntil, tap } from "rxjs/operators";
 import { HttpClient, HttpContext } from "@angular/common/http";
 import { Injectable } from '@angular/core';
@@ -96,10 +96,10 @@ export class FavoritesService extends BaseObservableService {
 
     //Private method that combines the Favorites and GetHomepage calls and pipes it into a shareReplay Observable
     private requestHomePageAndFavorites(): Observable<HomepageAndFavoritesModel> {
-        let favResponse = this.getFavorites();
-        let homeResponse = this.GetHomePage();
+        const favResponse = this.getFavorites();
+        const homeResponse = this.GetHomePage();
         return forkJoin([favResponse, homeResponse], (favRes, homeRes) => {
-            let res = new HomepageAndFavoritesModel();
+            const res = new HomepageAndFavoritesModel();
             res.Homepage = homeRes;
             res.Favorites = favRes;
             return res;
@@ -116,8 +116,8 @@ export class FavoritesService extends BaseObservableService {
         route: string,
         admin: boolean = false
     ) {
-        let m = {
-            route: route,
+        const m = {
+            route,
             moveUp: true
         };
 
@@ -134,8 +134,8 @@ export class FavoritesService extends BaseObservableService {
         route: string,
         admin: boolean = false
     ) {
-        let m = {
-            route: route,
+        const m = {
+            route,
             moveUp: false
         };
 

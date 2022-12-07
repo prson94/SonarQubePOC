@@ -4,7 +4,6 @@ import { SiteMessage } from '../models/site-message.model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { HeaderActionsService } from './header-actions.service';
 import { catchError, map } from "rxjs/operators";
-import { factories } from 'powerbi-client';
 
 @Injectable()
 export class MessagesObservableService {
@@ -41,8 +40,6 @@ export class MessagesObservableService {
 
     saveClientError(error: HttpErrorResponse, handleAsAPIV2Error: boolean = false): Observable<any> {
         let objError: Error;
-        let model: any;
-
 
         if (!handleAsAPIV2Error) {
             //Depending on where the error was thrown (http get/post/put method, inside the pipe/map using inbuild httpclient json parser or other runtime error)
@@ -67,7 +64,7 @@ export class MessagesObservableService {
             objError.name = error.error.title;
         }
 
-        model = { Name: objError.name, Message: objError.message, Stack: objError.stack };
+        const model = { Name: objError.name, Message: objError.message, Stack: objError.stack };
 
         return this.http.post('api/v2/errors/log/clienterror', model).pipe(
             map(() => {

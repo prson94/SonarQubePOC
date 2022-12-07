@@ -1,10 +1,10 @@
-﻿import { Input, Component, EventEmitter, Output, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { RelationshipsService } from '../../../services/relationships.service';
 import {
+    Cardinality,
     PredicateDropdown,
     RelationshipType,
-    Cardinality,
     RelationshipTypeEdge
 } from '../../../models/relationship.model';
 import { forkJoin } from 'rxjs';
@@ -71,7 +71,7 @@ export class AdminRelationshipsEditor {
             )
                 .subscribe((results) => {
                     let relationshipType = results[0];
-                    let relationships = results[1];
+                    const relationships = results[1];
 
                     if (relationshipType) {
                         relationshipType = relationshipType[0];
@@ -87,12 +87,12 @@ export class AdminRelationshipsEditor {
                             }
                         }
 
-                        let hasRelationships = (relationships != null && relationships.Results != null && relationships.Results.length > 0) ? true : false;
+                        const hasRelationships = (relationships != null && relationships.Results != null && relationships.Results.length > 0) ? true : false;
                         if (hasRelationships) {
                             this.limitedChangesOnly = true;
                         }
 
-                        if (this.relationshipType.Predicate.Uid != undefined && hasRelationships) {
+                        if (this.relationshipType.Predicate.Uid != null && hasRelationships) {
                             this.canChangePredicate = false;
                         }
                     }
@@ -115,11 +115,11 @@ export class AdminRelationshipsEditor {
 
     private predicateChanged(value) {
         if (!value) {return;}
-        let predicate = this.predicates.find((p) => p.value == value);
+        const predicate = this.predicates.find((p) => p.value === value);
         this.selectedPredicate = predicate;
         this.loadCardinalityOptions();
 
-        if (predicate != null && predicate.isSemantic == true) {
+        if (predicate != null && predicate.isSemantic === true) {
             this.canChangeObject = false;
             this.objectOptions = this.subjectOptions.slice();
 			this.cdRef.detectChanges();
@@ -144,7 +144,7 @@ export class AdminRelationshipsEditor {
             .getRelationshipPredicates(subjectUid, objectUid, predicateUid)
             .subscribe((result) => {
                 this.predicates = [];
-                for (let item of result) {
+                for (const item of result) {
                     this.predicates.push({
                         label: item.label,
                         value: item.value,
@@ -165,7 +165,7 @@ export class AdminRelationshipsEditor {
             .getSubjectOptions()
             .subscribe((result) => {
             this.subjectOptions = [];
-            for (let item of result) {
+            for (const item of result) {
                 this.subjectOptions.push({
                     value: item.value,
                     label: item.title
@@ -181,7 +181,7 @@ export class AdminRelationshipsEditor {
             .getObjectOptions(subjectUid, objectUid, predicateUid)
             .subscribe((result) => {
             this.objectOptions = [];
-            for (let item of result) {
+            for (const item of result) {
                 this.objectOptions.push({
                     value: item.value,
                     label: item.title
@@ -197,7 +197,7 @@ export class AdminRelationshipsEditor {
             .getCardinalityOptions()
             .subscribe((result) => {
             this.cardinalityOptions = [];
-            for (let item of result) {
+            for (const item of result) {
                 this.cardinalityOptions.push({
                     value: item.value.toString(),
                     label: item.title

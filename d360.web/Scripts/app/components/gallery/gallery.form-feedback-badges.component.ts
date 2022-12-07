@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, ViewChild, ElementRef } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 

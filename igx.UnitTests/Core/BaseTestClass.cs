@@ -539,9 +539,6 @@ namespace igx.UnitTests
             mock.Setup(x => x.BulkPostRelationships(It.IsAny<Guid>(), It.IsAny<RelationshipInserts>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
                 .Returns(Task.FromResult(new ApiExecutionInfo() { Action = ApiExecutionAction.PostRelationships, CompanyDomainPrefix = "", CompanyID = -1, ExecutionID = Guid.NewGuid(), ResourceID = 56 }));
 
-            mock.Setup(x => x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
-                .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>()));
-
             mock.Setup(x => x.GetBulkResults(It.IsAny<ApiExecutionInfo>()))
                 .Returns(Task.FromResult(new List<DatabaseBulkAssetResult>()));
 
@@ -655,6 +652,20 @@ namespace igx.UnitTests
 
             return mockRepo.Object;
         }
+
+		public IResourceSettingRepository GetResourceSettingRepository()
+		{
+			var mockRepo = new Mock<IResourceSettingRepository>();
+
+			mockRepo.Setup(x => x.GetSettings(It.IsAny<int>(), It.IsAny<Guid>()))
+				.ReturnsAsync(new Dictionary<string, string>());
+
+			mockRepo.Setup(x => x.UpsertSetting(It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()));
+
+			mockRepo.Setup(x => x.UpsertGlobalSetting(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()));
+
+			return mockRepo.Object;
+		}
 
 		public IDashboardRepository GetDashboardRepository()
 		{

@@ -1,6 +1,19 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, NgModule, ViewChild, ElementRef, forwardRef, ChangeDetectorRef, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    forwardRef,
+    Input,
+    NgModule,
+    OnInit,
+    Output,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 
 export const SWITCH_VALUE_ACCESSOR: any = {

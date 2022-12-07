@@ -40,7 +40,7 @@ export class ResponsibilityTypeRelationPermission {
 
     static hasPermission(permissions: ResponsibilityTypeRelationPermission[], p: Permission): boolean {
 
-        let index = permissions.findIndex((i) => i.Value === p);
+        const index = permissions.findIndex((i) => i.Value === p);
 
         if (index >= 0 && index < permissions.length) {
             return true;
@@ -88,7 +88,7 @@ export class ResponsibilityTypeAllocationPost {
     Permissions: number[];
 }
 
-export class ResponsibilityTypeRelation_FormData {
+export class ResponsibilityTypeRelationFormData {
     AllocationOptions: ResponsibilityTypeRelationAllocationOption[] = [];
     PermissionOptions: ResponsibilityTypeRelationPermission[] = [];
 }

@@ -1,9 +1,8 @@
-﻿import { Input, Output, Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Title } from '@angular/platform-browser';
 import { WorkflowService } from '../../services/workflow.service';
-import { EventEmitter } from '@angular/core';
 import { BulkWorkflowReassignModel } from '../../models/workflow.model';
 import { ResourcesService } from '../../services/resources.service';
 import { EditorField } from '../../models/editor-field.model';
@@ -78,7 +77,7 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
         this.workflowService.postWorkflowBulkReassign(this.model)
             .subscribe((response) => {
                 this.isLoading = false;
-                if (response.type != null && response.type == 'success') {
+                if (response.type != null && response.type === 'success') {
                     this.showMessageForResult(this.messagesService, response);
                     //console.log('submit complete', response);
                 }

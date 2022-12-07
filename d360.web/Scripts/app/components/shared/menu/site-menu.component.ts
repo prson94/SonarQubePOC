@@ -1,9 +1,25 @@
-﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, ViewChildren, QueryList, ViewEncapsulation, ViewChild, ElementRef, HostListener, AfterContentInit } from '@angular/core';
+﻿import {
+    AfterContentInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output,
+    QueryList,
+    ViewChild,
+    ViewChildren,
+    ViewEncapsulation
+} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
-import { SiteMenu, SiteMenuItem, NavigationState } from '../../../models/site-menu.model';
+import { NavigationState, SiteMenu, SiteMenuItem } from '../../../models/site-menu.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
@@ -82,9 +98,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.subParams = this.route.queryParams.subscribe(() => {
             let markForCheck = false;
-            let url = new URL(window.location.href);
-            let search = url.search;
-            let params = new URLSearchParams(search);
+            const url = new URL(window.location.href);
+            const search = url.search;
+            const params = new URLSearchParams(search);
             if (params.has('nonavigation')) {
                 this.hideNav = params.get('nonavigation').toLowerCase() === 'true';
                 markForCheck = true;
@@ -117,8 +133,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     doScroll() {
         if (this.menu && this.isScrollerVisable) {
-            let elem = this.menu.nativeElement;
-            let scrollDistance = (elem.offsetHeight - 120);
+            const elem = this.menu.nativeElement;
+            const scrollDistance = (elem.offsetHeight - 120);
             if (this.scrollingUp) {
                 elem.scrollTop -= scrollDistance;
             } else {
@@ -132,17 +148,17 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }, 50);
 
     checkScrollerPos() {
-        let elem = this.menu.nativeElement;
+        const elem = this.menu.nativeElement;
         let top = elem.scrollTop;
         let max = this.menuOpen ? (elem.scrollHeight - elem.offsetHeight) - 5 : (elem.scrollHeight - elem.offsetHeight) - 45;
-        if (this.scrollingUp == true) {
+        if (this.scrollingUp === true) {
             top = Math.ceil(top);
             max = Math.ceil(max);
         } else {
             top = Math.floor(top);
             max = Math.floor(max);
         }
-        if (top >= (max) && top != 0) {
+        if (top >= (max) && top !== 0) {
             this.scrollingUp = true;
             this.scrollTitle = $localize`Scroll up`;
             this.ref.markForCheck();
@@ -180,7 +196,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     loadMenu() {
 
-        let navigationState: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu")) ? JSON.parse(localStorage.getItem("NavigationMenu")) : [];
+        const navigationState: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu")) ? JSON.parse(localStorage.getItem("NavigationMenu")) : [];
 
         this.siteMenuService.getMenu().subscribe(
             (result) => {
@@ -189,12 +205,12 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.authenticationService.isAdmin = result.IsAdmin;
                 this.isAdmin = result.IsAdmin;
 
-                result.MenuItems = result.MenuItems.filter((x) => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
+                result.MenuItems = result.MenuItems.filter((x) => (x.MenuID !== '#Admin')); //remove admin menu it will get built later.
                 if (!this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
                     result.MenuItems = result.MenuItems.filter((x) => (x.MenuID !== '#SemanticTypes'));
                 }
                 // add properties we need to add to the burned in menus
-                for (let menu of result.MenuItems) {
+                for (const menu of result.MenuItems) {
                     menu.ShouldDisplay = true;
 
                     switch (menu.MenuID) {
@@ -257,13 +273,13 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
                     //add logic around the admin menus starting as expanded
                     //only add if it doesn't already exist.
-                    if (!navigationState.some((x) => x.SiteMenuID == this.adminMenu.MenuID)) {
+                    if (!navigationState.some((x) => x.SiteMenuID === this.adminMenu.MenuID)) {
                         navigationState.push(
                             {
                                 SiteMenuID: this.adminMenu.MenuID,
                                 DisplayElements: [
-                                    { ParentUrl: null, Url: this.adminMenu.NavigationItems.find((item) => item.Name == "Integration").Name },
-                                    { ParentUrl: null, Url: this.adminMenu.NavigationItems.find((item) => item.Name == "Security").Name }
+                                    { ParentUrl: null, Url: this.adminMenu.NavigationItems.find((item) => item.Name === "Integration").Name },
+                                    { ParentUrl: null, Url: this.adminMenu.NavigationItems.find((item) => item.Name === "Security").Name }
                                 ]
                             });
                     }
@@ -300,7 +316,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 			var id = _.findIndex(arr, function (o) {
                 let currentURL = items.Url.toLowerCase();
                 currentURL = items.Url.replace('model', 'taxonomy');
-                return o.Name == items.Name
+                return o.Name === items.Name
                     && _.includes(currentURL.toLowerCase(), o.Uid.toLowerCase());
             });
             if (id !== -1) {
@@ -326,7 +342,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     changeActiveMenu($event) {
         this.isMenuActive = false;
         [...Array.from(this.menuRefs), ...Array.from(this.favoritesMenuRefs)].forEach((item) => {
-            if ($event?.item?.title == item.title) {
+            if ($event?.item?.title === item.title) {
                 if (item.menu) {
                     item.menu.isActiveItem = true;
                     this.setIsMenuActive(item);
@@ -372,14 +388,14 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu.MenuID = '-Admin';
         this.adminMenu.NavigationItems = [];
 
-        let integrationMenu = new SiteMenuItem();
+        const integrationMenu = new SiteMenuItem();
         integrationMenu.Name = $localize`Integration`;
         integrationMenu.Items = [];
         integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, count: null });
         integrationMenu.Items.push({ Name: $localize`Bulk Loader`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, count: null });
         this.adminMenu.NavigationItems.push(integrationMenu);
 
-        let securityMenu = new SiteMenuItem();
+        const securityMenu = new SiteMenuItem();
         securityMenu.Name = $localize`Security`;
         securityMenu.Items = [];
 
@@ -409,7 +425,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private setNavState(currentNavState: NavigationState[], menuItems: SiteMenuItem[], siteMenuID: string, parentUrl: string) {
         menuItems.forEach((menuItem) => {
             if (!menuItem.ShowChildren) {
-                menuItem.ShowChildren = currentNavState.some((y) => y.SiteMenuID == siteMenuID && y.DisplayElements.findIndex((element) => (element.Url == menuItem.Url) || (!element.ParentUrl && element.Url == menuItem.Name)) >= 0);
+                menuItem.ShowChildren = currentNavState.some((y) => y.SiteMenuID === siteMenuID && y.DisplayElements.findIndex((element) => (element.Url === menuItem.Url) || (!element.ParentUrl && element.Url === menuItem.Name)) >= 0);
 
                 if (menuItem.Items && menuItem.Items.length > 0) {
                     this.setNavState(currentNavState, menuItem.Items, siteMenuID, menuItem.Url);

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input, SimpleChanges } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, SimpleChanges } from "@angular/core";
 
 @Component({
     selector: "ig-regexp-tester",

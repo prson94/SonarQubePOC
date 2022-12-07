@@ -1,5 +1,14 @@
-import * as _ from 'lodash';
-import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
+import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 
 import { BrowserService } from '../../../../../services/browser.service';
 import { PermissionsService } from '../../../../../services/permissions.service';
@@ -35,7 +44,7 @@ export class AssetBrowserSearchComponent implements AfterViewInit, OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["numberOfResults"]) {
-            this.searchCurrentItem = (this.numberOfResults == 0) ? 0 : 1;
+            this.searchCurrentItem = (this.numberOfResults === 0) ? 0 : 1;
         }
     }
 
@@ -66,13 +75,13 @@ export class AssetBrowserSearchComponent implements AfterViewInit, OnChanges {
         }
         else {
             this.searchValue = event.target.value;
-            this.searchCurrentItem = (this.numberOfResults == 0 ? 0 : 1);
+            this.searchCurrentItem = (this.numberOfResults === 0 ? 0 : 1);
 
-            if (event.keyCode == 40) {
+            if (event.keyCode === 40) {
                 this.goToNext();
                 return;
             }
-            if (event.keyCode == 38) {
+            if (event.keyCode === 38) {
                 this.goToPrevious();
                 return;
             }

@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
+﻿import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 
 
 @Component({
@@ -45,7 +45,7 @@ export class GalleryInputComponent implements OnInit {
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null)
                 {return {};}
-            if (control.value == null || wordsIDontLikeArr.indexOf(control.value) != -1)
+            if (control.value == null || wordsIDontLikeArr.indexOf(control.value) !== -1)
                 {return {
                     notNiceWord: { value: control.value }
                 };}

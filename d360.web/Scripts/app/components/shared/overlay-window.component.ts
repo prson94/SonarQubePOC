@@ -1,6 +1,5 @@
-﻿import { Component, Input, Output, EventEmitter, NgModule, OnChanges } from '@angular/core';
+﻿import { Component, EventEmitter, Input, NgModule, OnChanges, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HTTP_INTERCEPTORS } from '@angular/common/http'; 
 
 
 @Component({

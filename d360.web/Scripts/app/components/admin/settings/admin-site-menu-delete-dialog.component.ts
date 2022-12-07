@@ -1,13 +1,4 @@
-﻿import * as _ from 'lodash';
-import {
-	Component,
-	EventEmitter,
-	Input,
-	OnInit,
-	Output,
-	ElementRef,
-	QueryList
-} from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { StateService } from '../../../services/state.service';

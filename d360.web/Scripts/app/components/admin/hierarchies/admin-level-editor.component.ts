@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { LevelsService } from '../../../services/levels.service';
 import { HierarchyTypeLevel } from '../../../models/hierarchy-type-level.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -34,7 +34,7 @@ export class AdminLevelEditorComponent extends BaseComponent {
     }
 
     ngOnInit() {
-        if (this.level != undefined)
+        if (this.level != null)
             {this.editedLevel = _.cloneDeep(this.level);}
         else {
             this.editedLevel = new HierarchyTypeLevel();
@@ -55,7 +55,7 @@ export class AdminLevelEditorComponent extends BaseComponent {
 
                 for (var i = 0; i < result.length; i++) {
                     //remove the used level
-                    let index = this.levels.map((e) => e).indexOf(result[i].Level);
+                    const index = this.levels.map((e) => e).indexOf(result[i].Level);
 
                     this.levels.splice(index, 1);
                 }

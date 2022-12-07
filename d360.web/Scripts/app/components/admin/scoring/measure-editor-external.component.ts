@@ -1,4 +1,15 @@
-import { Input, Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation, ViewChild, ElementRef } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    Input,
+    OnChanges,
+    OnInit,
+    SimpleChanges,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetDefinitionViewModel } from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -48,7 +59,7 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
     ngOnChanges(changes: SimpleChanges): void {
         let requiredLoad = false;
 
-        if (changes['uid'] && (changes['uid'].currentValue != changes['uid'].previousValue && !changes['uid'].firstChange)) {
+        if (changes['uid'] && (changes['uid'].currentValue !== changes['uid'].previousValue && !changes['uid'].firstChange)) {
             this.isLoading = true;
             requiredLoad = true;
         }
@@ -124,9 +135,9 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
             && this.originalModel
             && (
                 this.model.Name &&
-                this.originalModel.Name != this.model.Name
-                || (this.originalModel.Description && this.originalModel.Description != this.model.Description)
-                || (!this.originalModel.Description && !(!this.model.Description || this.model.Description == null || this.model.Description.trim() == ""))
+                this.originalModel.Name !== this.model.Name
+                || (this.originalModel.Description && this.originalModel.Description !== this.model.Description)
+                || (!this.originalModel.Description && !(!this.model.Description || this.model.Description == null || this.model.Description.trim() === ""))
                 || (this.displayEffectiveDate && this.getFormattedEffectiveDate(this.originalEffectiveDate).getTime() !== this.getFormattedEffectiveDate(this.displayEffectiveDate).getTime())
             )
         ) {
@@ -135,7 +146,7 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
             this.hasModelChanged = false;
         }
 
-        if (this.verb == "Edit") {
+        if (this.verb === "Edit") {
             if (this.hasModelChanged) {
                 this.closeLabel = $localize`Discard Changes`;
             } else {

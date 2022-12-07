@@ -1,26 +1,12 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
-
-import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-workflow-delete',
     providers: [WorkflowService],
-    template: `
-<div class="row">
-    <div class="col s12" i18n>
-        Are you sure you want to delete this workflow?
-    </div>
-</div>
-<div class="row" style="padding-top:10px;">
-    <div class="col s12">
-        <button igButton class="ig-button-primary" margin i18n-label label="Delete" (click)="delete()" [disabled]="isLoading"></button>
-        <button igButton class="ig-button-secondary" i18n-label label="Cancel" (click)="onCancel.emit()"></button>
-    </div>
-</div>
-`
+    templateUrl: 'admin-workflow-delete.component.html'
 })
 
 export class AdminWorkflowDeleteComponent extends BaseComponent implements OnInit {

@@ -1,7 +1,7 @@
-﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { AssetTypeService } from '../../../services/asset-type.service';
-import { FlowObjectType, AssetTypeClass, AssetTypeEditorModel } from '../../../models/asset.model';
+import { AssetTypeClass, AssetTypeEditorModel, FlowObjectType } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -52,8 +52,8 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     ngOnChanges(changes: SimpleChanges): void {
         let triggerLoad = false;
-        for (let p in changes) {
-            if (p == 'id' || p == 'parentID' || p == 'topTypeID') {
+        for (const p in changes) {
+            if (p === 'id' || p === 'parentID' || p === 'topTypeID') {
                 triggerLoad = true;
             }
         }
@@ -105,7 +105,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             .getAssetTypeEditor(this.assetTypeClass, this.id, this.parentID)
             .subscribe((data) => {
                 this.model = data;
-                if (this.model.AssetType.Hierarchy.MaximumDepth == 0) {
+                if (this.model.AssetType.Hierarchy.MaximumDepth === 0) {
                     this.model.AssetType.Hierarchy.MaximumDepth = 1;
                 }
                 if (this.model.Predicates) {
@@ -117,10 +117,10 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 if (this.model.AssetType.ParentUid == null || this.model.Predicates == null || this.model.Predicates.length < 2) {
                     this.showParentPredicates = false;
                 }
-                if (this.assetTypeClass == AssetTypeClass.Reference || this.assetTypeClass == AssetTypeClass.Model || this.assetTypeClass == AssetTypeClass.Policy) {
+                if (this.assetTypeClass === AssetTypeClass.Reference || this.assetTypeClass === AssetTypeClass.Model || this.assetTypeClass === AssetTypeClass.Policy) {
                     this.showParentPredicates = true;
                 }
-                if ((this.assetTypeClass == AssetTypeClass.BusinessAsset || this.assetTypeClass == AssetTypeClass.TechnicalAsset)
+                if ((this.assetTypeClass === AssetTypeClass.BusinessAsset || this.assetTypeClass === AssetTypeClass.TechnicalAsset)
                     && this.model.AssetType.AutoDisplayParent === null && this.model.AssetType.ParentUid != null) {
                     this.model.AssetType.AutoDisplayParent = true;
                 }
@@ -132,6 +132,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 }
                 if (this.model.AssetType.ParentUid !== null) {
                     this.originalParentUid = this.model.AssetType.ParentUid;
+                }
+                if (this.model.AssetType.DescriptionButtonName === null) {
+                    this.model.AssetType.DescriptionButtonName = $localize `Information`;
                 }
                 this.isLoading = false;
             });
@@ -145,14 +148,14 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         this.isSaving = true;
         this.model.AssetType.Class = this.assetTypeClass;
 
-        if (this.model.AssetType.Class != AssetTypeClass.DiagramAsset) {
+        if (this.model.AssetType.Class !== AssetTypeClass.DiagramAsset) {
             delete this.model.AssetType.FlowObjectType;
         }
         else if (!this.model.AssetType.FlowObjectType) {
             this.model.AssetType.FlowObjectType = FlowObjectType.Event;
         }
 
-        if (this.model.AssetType.Uid != null && this.model.AssetType.Uid != '00000000-0000-0000-0000-000000000000') {
+        if (this.model.AssetType.Uid != null && this.model.AssetType.Uid !== '00000000-0000-0000-0000-000000000000') {
             this
                 .assetTypeService
                 .putAssetType(this.model.AssetType)
@@ -189,7 +192,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     ShowAutoDisplayOption() {
         if (this.showParentPredicates && this.model.AssetType.Hierarchy.PredicateUid) {
-            let selectedPredicate = this.model.Predicates.filter((x) => x.value.toLowerCase() == this.model.AssetType.Hierarchy.PredicateUid.toLowerCase());
+            const selectedPredicate = this.model.Predicates.filter((x) => x.value.toLowerCase() === this.model.AssetType.Hierarchy.PredicateUid.toLowerCase());
             if (selectedPredicate.length > 0) {
                 return true;
             }
@@ -200,9 +203,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         if (e == null)
             {return;}
 
-        let value = e.value;
+        const value = e.value;
 
-        if (e.value == null || e.value == '' || e.value == 'null')
+        if (e.value == null || e.value === '' || e.value === 'null')
             {return;}
 
         if (this.model.AssetType.DisplayFormat == null)
@@ -217,7 +220,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     }
 
     public updateParent(predicateUid: string) {
-        if (predicateUid == null || predicateUid.length == 0) {
+        if (predicateUid == null || predicateUid.length === 0) {
             this.model.AssetType.ParentUid = null;
         } else if (this.model.AssetType.ParentUid === null && this.originalParentUid !== null) {
             this.model.AssetType.ParentUid = this.originalParentUid;
@@ -225,7 +228,11 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     }
 
     get isPredicateRequired(): boolean {
-        return (this.assetTypeClass == AssetTypeClass.Model) || (this.assetTypeClass == AssetTypeClass.Policy) || this.parentID !== undefined;
+        return (this.assetTypeClass === AssetTypeClass.Model) || (this.assetTypeClass === AssetTypeClass.Policy) || this.parentID !== undefined;
+    }
+    
+    get isDescriptionSettingsApplicable(): boolean {
+        return this.assetTypeClass < AssetTypeClass.Reference || this.assetTypeClass === AssetTypeClass.DiagramAsset;
     }
 
     public selectFlowObject($event) {

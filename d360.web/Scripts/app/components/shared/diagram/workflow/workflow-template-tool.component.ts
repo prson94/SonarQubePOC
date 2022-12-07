@@ -1,4 +1,15 @@
-﻿import { Component, OnInit, Output, EventEmitter, Input, AfterViewChecked, ViewChild, SimpleChanges, OnDestroy, OnChanges } from "@angular/core";
+﻿import {
+    AfterViewChecked,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from "@angular/core";
 import * as _ from "lodash";
 import { WorkflowService } from "../../../../services/workflow.service";
 import { WorkflowFieldsService } from "../../../../services/workflow-fields.service";
@@ -71,9 +82,9 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        let objectTypeChanged = changes["objectType"] != null && changes["objectType"].currentValue !== changes["objectType"].previousValue && changes["objectType"].currentValue != null;
-        let objectIdChanged = changes["objectId"] != null && changes["objectId"].currentValue !== changes["objectId"].previousValue && changes["objectId"].currentValue != null;
-        let stepChanged = changes["step"] != null && changes["step"].currentValue !== changes["step"].previousValue && changes["step"].currentValue != null;
+        const objectTypeChanged = changes["objectType"] != null && changes["objectType"].currentValue !== changes["objectType"].previousValue && changes["objectType"].currentValue != null;
+        const objectIdChanged = changes["objectId"] != null && changes["objectId"].currentValue !== changes["objectId"].previousValue && changes["objectId"].currentValue != null;
+        const stepChanged = changes["step"] != null && changes["step"].currentValue !== changes["step"].previousValue && changes["step"].currentValue != null;
 
         if (objectTypeChanged || objectIdChanged || stepChanged) {
             this.filterHttpFields();
@@ -103,7 +114,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                 }
 
                 r.forEach((f) => {
-                    let fieldType = f.IssueTypeID ? "Action Field" : "Asset Field";
+                    const fieldType = f.IssueTypeID ? "Action Field" : "Asset Field";
 
                     this.fields.push({
                         value: (f.Type === "JsonElement" ? "[JSON" : "[FIELD") + f.ID + "]#[" + fieldType + " :: " + f.Name + "]",
@@ -112,7 +123,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                 });
 
                 this.httpFields.forEach((f) => {
-                    let label = "HTTP Request :: " + f["@label"];
+					const label = f["@stepName"] + " :: " + f["@label"];
                     this.fields.push({
                         value: "[HTTPREQUEST|" + f["@stepId"] + "|" + f["@id"] + "]",
                         label
@@ -120,7 +131,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                 });
 
                 this.outputFields.forEach((f) => {
-                    let label = "HTTP Response :: " + f.Name;
+					const label = f.StepName + " :: " + f.Name;
                     this.fields.push({
                         value: "[HTTPRESPONSE|" + f.StepId + "|" + f.Id + "]",
                         label
@@ -138,7 +149,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
 
         //remove auto-generated spans
         for (let i = 0; i < this.container.nativeElement.childNodes.length; i++) {
-            let node = this.container.nativeElement.childNodes[i];
+            const node = this.container.nativeElement.childNodes[i];
 
             if (node.tagName === "SPAN") {
                 this.container.nativeElement.removeChild(node);
@@ -153,15 +164,15 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
             return;
         }
 
-        let fields = this.workflowFieldsService.getHttpFields();
-        let upstreamSteps = [];
+        const fields = this.workflowFieldsService.getHttpFields();
+        const upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
 
         fields.forEach((f) => {
-            let k = upstreamSteps.filter((u) => u === f["@stepId"]);
+            const k = upstreamSteps.filter((u) => u === f["@stepId"]);
             if (k != null && k.length > 0) {
                 f["@FormFieldId"] = f["@id"] + "|" + f["@stepId"];
-                f["@FormLabel"] = "HTTP Request :: " + f["@label"];
+                f["@FormLabel"] = f["@stepName"] + " :: " + f["@label"];
                 this.httpFields.push(f);
             }
         });
@@ -174,26 +185,26 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
             return;
         }
 
-        let fields = this.workflowFieldsService.getOutputFields();
-        let upstreamSteps = [];
+        const fields = this.workflowFieldsService.getOutputFields();
+        const upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
 
         fields.forEach((f) => {
-            let k = upstreamSteps.filter((u) => u === f.StepId);
+            const k = upstreamSteps.filter((u) => u === f.StepId);
             if (k != null && k.length > 0) {
-                f["@FormFieldId"] = f.Id + "|" + f.StepId;
-                f["@FormLabel"] = "HTTP Response :: " + f.Name;
+				f["@FormFieldId"] = f.Id + "|" + f.StepId;
+				f["@FormLabel"] = f.StepName + " :: " + f.Name;
                 this.outputFields.push(f);
             }
         });
     }
 
     traverseDiagram(key: any, upstreamSteps: any[]) {
-        let steps = <any[]>this.diagram.model.nodeDataArray;
-        let links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
+        const steps = <any[]>this.diagram.model.nodeDataArray;
+        const links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
 
-        let step = steps.find((s) => s.key === key);
-        let toLinks = links.filter((l) => l.to === key);
+        const step = steps.find((s) => s.key === key);
+        const toLinks = links.filter((l) => l.to === key);
 
         if (_.includes(upstreamSteps, key)) {
             return;
@@ -213,7 +224,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
             return;
         }
 
-        let f = e.split('#');
+        const f = e.split('#');
         if (f.length === 2) {
             this.onItemClick.emit(f[1]);
         }

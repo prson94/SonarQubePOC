@@ -1515,9 +1515,22 @@ namespace d360.web.Controllers.Services
 
 		private List<FieldType> getFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
 		{
-			var assetTypeId = Company.AssetTypes.Where(a => a.Object == type && a.ObjectID == id).FirstOrDefault()?.ID;
-			var fields =  Company.FieldTypes.Where(f => (type == "IssueType") ? f.IssueTypeID == id : f.AssetTypeID == assetTypeId).ToList();
 			List<string> excludedTypes = DataType.Text.GetNonWorkflowConditionFields();
+			List<FieldType> fields;
+
+			if (type == SystemObjects.IssueType.ToString())
+			{
+				fields = Company.FieldTypes.Where(f => f.IssueTypeID == id).ToList();
+			}
+			else if (type == SystemObjects.IntersectType.ToString())
+			{
+				fields = Company.FieldTypes.Where(f => f.IntersectTypeID == id).ToList();
+			}
+			else
+			{
+				var assetTypeId = Company.AssetTypes.Where(a => a.Object == type && a.ObjectID == id).FirstOrDefault()?.ID;
+				fields = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeId).ToList();
+			}
 
 			if (!allowHtml)
 			{
@@ -1618,6 +1631,7 @@ namespace d360.web.Controllers.Services
 				var @event = new WorkflowEventRegistration
 				{
 					ID = 0,
+					AssetTypeID = omodel.Event.AssetTypeID,
 					Object = omodel.Event.Object,
 					ObjectID = omodel.Event.ObjectID,
 					TypeID = @type.ID,
@@ -2684,31 +2698,59 @@ namespace d360.web.Controllers.Services
 		[Route("versionstep/form/lookups/{objectType}/{objectId:int}"), HttpGet]
 		public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId, string issueObject = null, int? issueObjectId = null)
 		{
-			bool hasIssueObject = !string.IsNullOrEmpty(issueObject);
-
-			var sql = $@"select ft.ID as value, {(hasIssueObject ? " 'Action Field :: ' + " : "")} ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
-				 FieldType ft 
-				 inner join AssetType ast on FT.assetTypeID = ast.ID
-				 left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
-				 where ast.Object = @objectType and ast.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
-
+			bool hasIssueObject = !string.IsNullOrEmpty(issueObject);	
+			
+			var sql = BuildWorkflowVersionStepFormLookupSQL(objectType, objectId, hasIssueObject);
+			
 			if (hasIssueObject)
 			{
-				sql += @" union all
-				select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
-				 FieldType ft
-				 left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
-				 where ft.IssueTypeID = @issueObjectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
-				order by 2";
+				sql = $@"{sql}
+						union all
+						{BuildWorkflowVersionStepFormLookupSQL(issueObject, issueObjectId.Value)}
+						order by 2";
 			}
 			else
 			{
 				sql += " order by ft.FriendlyName";
 			}
 
-			var results = Company.Query<dynamic>(sql, new { objectType, objectId, issueObject, issueObjectId });
+			var results = Company.Query<dynamic>(sql);
 
 			return Request.CreateResponse(HttpStatusCode.OK, results);
+		}
+
+		private string BuildWorkflowVersionStepFormLookupSQL(string objectType, int objectId, bool hasIssueObject = false)
+		{
+			var joinConditions = $@"inner join AssetType ast on FT.assetTypeID = ast.ID
+				 left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
+				 where ast.Object = '{objectType}' and ast.ObjectID = {objectId} and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
+
+			var sql = $@"select ft.ID as value, {(hasIssueObject ? " 'Action Field :: ' + " : "")} ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
+				 FieldType ft 
+				 ";
+			if (objectType == SystemObjects.IssueType.ToString())
+			{
+				joinConditions = $@"left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
+									where 	
+										IssueTypeId = {objectId}
+										and
+										ft.Type = 'Lookup' 
+										and 
+										ft.LookupObjectId > 0 ";
+			}
+			else if (objectType == SystemObjects.IntersectType.ToString())
+			{
+				joinConditions = $@"left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
+									where 	
+										IntersectTypeId = {objectId}
+										and
+										ft.Type = 'Lookup' 
+										and 
+										ft.LookupObjectId > 0 ";
+			}
+
+			return  $@"{sql}
+					   {joinConditions}";
 		}
 
 		[Route("versionstep/events/{id:int}")]
@@ -2783,6 +2825,8 @@ namespace d360.web.Controllers.Services
 
 			var results = Company.Query<WorkflowItemStepDetail>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
 
+			List<WorkflowItemStepDetail> stepList = new List<WorkflowItemStepDetail>();
+
 			foreach (var result in results)
 			{
 				result.FieldsObject = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(result.Fields));
@@ -2792,10 +2836,15 @@ namespace d360.web.Controllers.Services
 					var assignmentIds = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == result.ID).Select(x => new { x.ResourceObject, x.ResourceObjectID });
 					var formattedUserList = Company.GlobalReportingResources.Where(x => assignmentIds.Any(a => a.ResourceObjectID == x.ResourceID)).ToList().Select(x => x.FullName);
 					result.Assignee = string.Join(", ", formattedUserList);
+					if (string.IsNullOrEmpty(result.Assignee))
+					{
+						continue;
+					}
 				}
+				stepList.Add(result);
 			}
 
-			return Request.CreateResponse(HttpStatusCode.OK, results);
+			return Request.CreateResponse(HttpStatusCode.OK, stepList);
 		}
 		private void SetWorkFlowStepRelationshipAssets(dynamic form)
 		{

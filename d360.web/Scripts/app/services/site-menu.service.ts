@@ -7,7 +7,8 @@ import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SecondaryNavPostModel } from '../models/secondaryNav.model';
-import { IS_QUERY, ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
+import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
+import { AssetTypeClass } from '../models/asset.model';
 
 @Injectable({
     providedIn: 'root'
@@ -24,6 +25,14 @@ export class SiteMenuService extends BaseObservableService {
             )
             .pipe(
                 map((response) => <SiteMenuModel>response),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    getAdminConfigurationMenu(): Observable<{ Class: AssetTypeClass, Name: string, Uid: string, ParentUid: string }[]> {
+        return this.http.get('api/v2/navigation/adminConfiguration')
+            .pipe(
+                map((response) => response),
                 catchError((err) => this.handleError(err))
             );
     }
@@ -123,7 +132,7 @@ export class SiteMenuService extends BaseObservableService {
                 map((response) => <SiteNav[]>response),
                 map((r) => {
                     r.forEach((s) => {
-                        s.IsCustom = (s.Name.indexOf('#') != 0);
+                        s.IsCustom = (s.Name.indexOf('#') !== 0);
                     });
                     return r;
                 }),
@@ -174,7 +183,7 @@ export class SiteMenuService extends BaseObservableService {
 
 
     removeSiteNavPermission(permission: SiteNavPermission) {
-        let options = {
+        const options = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json'
             }),
@@ -235,7 +244,7 @@ export class SiteMenuService extends BaseObservableService {
     }
 
     getSecondaryNav(data: SecondaryNavPostModel, preloadTreeData = false) {
-        let options = {
+        const options = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json'
             }),

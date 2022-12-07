@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 
 @Component({
@@ -67,8 +67,8 @@ All matches are case insensitive.
     }
 
     doneSearch(e, elem) {
-        let el = document.getElementById(elem);
-        let child = document.createElement('div');
+        const el = document.getElementById(elem);
+        const child = document.createElement('div');
         child.className = 'searchexpression';
         child.innerText = 'onSearch fired for "' + e + '"';
         el.appendChild(child);

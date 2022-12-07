@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';

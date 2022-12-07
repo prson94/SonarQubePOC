@@ -1,7 +1,7 @@
-import { map, first } from 'rxjs/operators';
-import { Injectable, ChangeDetectorRef } from '@angular/core';
+import { first, map } from 'rxjs/operators';
+import { ChangeDetectorRef, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AsyncValidatorFn, ValidationErrors, AbstractControl } from '@angular/forms';
+import { AbstractControl, AsyncValidatorFn, ValidationErrors } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class AsyncValidatorService {
 
     public labelUniqueValidator(): AsyncValidatorFn {
         return (control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> => {
-            let url = `/api/v2/connectorLabels/search?q=${encodeURIComponent(control.value)}&isExact=true`;
+            const url = `/api/v2/connectorLabels/search?q=${encodeURIComponent(control.value)}&isExact=true`;
             return this
                 .httpClient
                 .get(url)
@@ -29,13 +29,13 @@ export class AsyncValidatorService {
     public tagUniqueValidator(): AsyncValidatorFn {
 
         return (control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> => {
-            let url = `api/v2/tags/search?value=${control.value}&ignoreCounts=true`;
+            const url = `api/v2/tags/search?value=${control.value}&ignoreCounts=true`;
             return this.httpClient.get(url)
                 .pipe(map((response) => <any[]>response))
                 .pipe(map((res) => {
                     var doesExist = false;
                     res.forEach((s) => {
-                        if (s.name.toLowerCase() == control.value.toLowerCase()) {
+                        if (s.name.toLowerCase() === control.value.toLowerCase()) {
                             doesExist = true;
                         }
                     });

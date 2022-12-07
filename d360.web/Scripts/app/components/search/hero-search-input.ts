@@ -1,12 +1,10 @@
-﻿import { Component, Input, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+﻿import { AfterViewInit, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { AuthenticationService } from '../../services/authentication.service';
 import { CompanySettingsService } from '../../services/settings.service';
-import { ConnectedOverlayScrollHandler } from 'primeng/dom';
-import { interval } from 'rxjs';
 
 @Component({
     selector: 'd3s-hero-search-input',
@@ -55,14 +53,14 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
 	}
 
     setEventTypeLabel() {
-        let label = (document.getElementById('searchMultiSelect')
+        const label = (document.getElementById('searchMultiSelect')
             .getElementsByClassName('p-multiselect-label-container')[0]
             .getElementsByClassName('p-multiselect-label')[0]);
-        if (this.searchTypes.length == 0) {
+        if (this.searchTypes.length === 0) {
             label.textContent = $localize`Search All Categories`;
-        } else if (this.searchTypes.length == 1) {
+        } else if (this.searchTypes.length === 1) {
             label.textContent = $localize`Search` + ' ' + this.searchObjectTypes.filter((x) => this.searchTypes.indexOf(x.value) >= 0).map((x) => x.label).join(', ');
-        } else if (this.searchTypes.length == this.searchObjectTypes.length) {
+        } else if (this.searchTypes.length === this.searchObjectTypes.length) {
             label.textContent = $localize`Search All Categories`;
         } else {
             label.textContent = $localize`Search ${this.searchTypes.length} Categories`;

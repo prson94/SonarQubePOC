@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { LoadDetail, LoadFilePostModel, LoadColumn, LoadItemsModel } from '../models/load.model';
+import { LoadColumn, LoadDetail, LoadFilePostModel, LoadItemsModel } from '../models/load.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { GridColumn } from '../models/grid-definition.model';
 import { SelectItem } from 'primeng/api';
@@ -82,7 +82,7 @@ export class LoadService extends BaseObservableService {
         return this.http.get(`/form/Load_TypeOptions?act=${action}`)
             .pipe(
                 map((response) => {
-                    let i = [];
+                    const i = [];
 
                     response["forEach"]((r) => {
                         i.push({ label: r.title, value: r.value });

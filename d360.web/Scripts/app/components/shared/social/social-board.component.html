@@ -13,7 +13,7 @@
         </div>
 
         <div style="margin-top:10px;">
-            <button igButton type="button" class="ig-button-primary" margin [disabled]="!hasMore" (click)="loadComments();" i18n-label label="Load more comments..."></button>
+            <button igButton type="button" class="ig-button-primary" margin [disabled]="!hasMore || isLoading" [loading]="isLoading" (click)="loadComments();" i18n-label label="Load more comments..."></button>
             <button *ngIf="hasCloseButton" igButton class="ig-button-secondary" type="button" (click)="close.emit();" i18n-label label="Close"></button>
         </div>
     </div>

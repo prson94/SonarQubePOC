@@ -1,9 +1,29 @@
-import { Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation, ViewChild, ElementRef } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    OnChanges,
+    OnInit,
+    SimpleChanges,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceFieldViewModel, MetricAssetDefinitionGovernanceOwnerViewModel, MetricAssetDefinitionGovernanceRelationViewModel, MetricAssetDefinitionGovernancePredicateViewModel } from '../../../models/metrics.model';
+import {
+    MetricAssetDefinitionGovernanceExternalViewModel,
+    MetricAssetDefinitionGovernanceFieldViewModel,
+    MetricAssetDefinitionGovernanceOwnerViewModel,
+    MetricAssetDefinitionGovernancePredicateViewModel,
+    MetricAssetDefinitionGovernanceRelationViewModel,
+    MetricAssetDefinitionGovernanceViewModel,
+    MetricAssetDefinitionViewModel,
+    MetricGovernanceCheckType,
+    MetricUpdateFrequency
+} from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
-import { FormBuilder, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldCondition } from '../../../models/field-condition-grid.models';
 import * as _ from 'lodash';
@@ -31,6 +51,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 	public labelPredicate: string = $localize`Choose a predicate`;
 	public labelRelType: string = $localize`Choose a relationship type`;
 	public labelResType: string = $localize`Choose a responsibility type`;
+    public labelMatchAll: string = $localize`Match all conditions`;
+    public labelMatchAny: string = $localize`Match any condition`;
 
 	//#endregion
 
@@ -76,11 +98,11 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
     ngOnChanges(changes: SimpleChanges): void {
         let requiredLoad = false;
-        if (changes['uid'] && (changes['uid'].currentValue != changes['uid'].previousValue && !changes['uid'].firstChange)) {
+        if (changes['uid'] && (changes['uid'].currentValue !== changes['uid'].previousValue && !changes['uid'].firstChange)) {
             this.isLoading = true;
             requiredLoad = true;
         }
-        if (changes['parentUid'] && (changes['parentUid'].currentValue != changes['parentUid'].previousValue && !changes['parentUid'].firstChange)) {
+        if (changes['parentUid'] && (changes['parentUid'].currentValue !== changes['parentUid'].previousValue && !changes['parentUid'].firstChange)) {
             this.isLoading = true;
             requiredLoad = true;
         }
@@ -163,21 +185,21 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
         if (this.screenReferences.predicates && this.screenReferences.predicates.length) {
             this.predicateTypes = this.screenReferences.predicates
-                .filter((x) => this.restrictedPredicateTypes.indexOf(x.Type) == -1)
+                .filter((x) => this.restrictedPredicateTypes.indexOf(x.Type) === -1)
                 .map((x, idx, self) => {
-                    let label = x.Name + '/' + x.Inverse + ' (' + x.FriendlyTypeName + ')';
-                    return { label: label, value: x.Uid };
+                    const label = x.Name + '/' + x.Inverse + ' (' + x.FriendlyTypeName + ')';
+                    return { label, value: x.Uid };
                 });
             this.predicateTypes = this.predicateTypes
-                .filter((x, pos, self) => (pos == self.findIndex((t) => (t.value == x.value))));
+                .filter((x, pos, self) => (pos === self.findIndex((t) => (t.value === x.value))));
         }
 
         if (this.screenReferences.relationships && this.screenReferences.relationships.length) {
             this.relationshipTypes = this.screenReferences.relationships
-                .filter((x) => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) == -1)
+                .filter((x) => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) === -1)
                 .map((x) => {
-                    let isSubject = (x.Subject.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());
-                    let isObject = (x.Object.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());
+                    const isSubject = (x.Subject.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());
+                    const isObject = (x.Object.Uid.toLowerCase() === this.allocation.assetTypeUid.toLowerCase());
                     let label = "";
                     let assetLabel = "";
                     if (isSubject) {
@@ -188,7 +210,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                         assetLabel = x.Subject.Name;
                     }
                     label = label + " " + assetLabel;
-                    return { label: label, value: x.Uid };
+                    return { label, value: x.Uid };
                 });
         }
 
@@ -235,21 +257,21 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 }
                 break;
             case 1:
-                let condition = new FieldCondition();
+                const condition = new FieldCondition();
                 condition.field = `${this.allocation.assetTypeUid}.${this.model.Definition.Governance.Field.FieldTypeName}`;
                 condition.operator = this.model.Definition.Governance.Field.Operator;
                 condition.value = this.model.Definition.Governance.Field.Values[0];
                 condition.value2 = this.model.Definition.Governance.Field.Values.length > 1 ? this.model.Definition.Governance.Field.Values[1] : null;
 
-                let field = this.screenReferences.fields.filter((x) => x.ApiName === this.model.Definition.Governance.Field.FieldTypeName)[0];
+                const field = this.screenReferences.fields.filter((x) => x.ApiName === this.model.Definition.Governance.Field.FieldTypeName)[0];
 
-                if (field && (field.Type == "Date" || field.Type == "DateTime")) {
-                    let date = new Date(condition.value);
+                if (field && (field.Type === "Date" || field.Type === "DateTime")) {
+                    const date = new Date(condition.value);
                     var utc = this.getUtcDate(date);
                     condition.value = utc;
 
                     if (condition.value2) {
-                        let date = new Date(condition.value2);
+                        const date = new Date(condition.value2);
                         var utc = this.getUtcDate(date);
                         condition.value2 = utc;
                     }
@@ -366,13 +388,13 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency.None;
                 break;
             case 1:
-                if (this.testFieldConditions && this.testFieldConditions.length == 1) {
-                    let condition = this.testFieldConditions[0];
+                if (this.testFieldConditions && this.testFieldConditions.length === 1) {
+                    const condition = this.testFieldConditions[0];
                     this.model.Definition.Governance.Field.FieldTypeName = condition.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
                     this.model.Definition.Governance.Field.Operator = condition.operator;
 
                     let val2 = null;
-                    if (condition.operator == Operator.Between || <any>condition.operator == "Between")
+                    if (condition.operator === Operator.Between || <any>condition.operator === "Between")
                         {val2 = condition.value2;}
 
                     if (!this.doesSelectedOperatorAllowValues(<any>condition.operator)) {
@@ -408,11 +430,11 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             && this.originalModel
             && (
                 this.model.Name &&
-                this.originalModel.Name != this.model.Name
-                || this.originalModel.MatchConditionsOnly != this.model.MatchConditionsOnly
-                || (this.originalModel.Description && this.originalModel.Description != this.model.Description)
-                || (!this.originalModel.Description && !(!this.model.Description || this.model.Description == null || this.model.Description.trim() == ""))
-                || (this.displayWeight && (this.originalModel.Weight * 100) != this.displayWeight)
+                this.originalModel.Name !== this.model.Name
+                || this.originalModel.MatchConditionsOnly !== this.model.MatchConditionsOnly
+                || (this.originalModel.Description && this.originalModel.Description !== this.model.Description)
+                || (!this.originalModel.Description && !(!this.model.Description || this.model.Description == null || this.model.Description.trim() === ""))
+                || (this.displayWeight && (this.originalModel.Weight * 100) !== this.displayWeight)
                 || (this.displayEffectiveDate && this.getFormattedEffectiveDate(this.originalEffectiveDate).getTime() !== this.getFormattedEffectiveDate(this.displayEffectiveDate).getTime())
                 || (!(this.originalModel.IsGroup === this.model.IsGroup))
                 || (!(this.originalModel.MatchConditionsOnly === (this.matchConditionsOnly === "true")))
@@ -425,7 +447,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             this.hasModelChanged = false;
         }
 
-        if (this.verb == "Edit") {
+        if (this.verb === "Edit") {
             if (this.hasModelChanged) {
                 this.closeLabel = $localize`Discard Changes`;
             } else {
@@ -441,7 +463,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             return true;
         }
         if (updated.Governance) {
-            if (!(updated.Governance.Check == original.Governance.Check || MetricGovernanceCheckType[updated.Governance.Check] == <any>original.Governance.Check)) {
+            if (!(updated.Governance.Check === original.Governance.Check || MetricGovernanceCheckType[updated.Governance.Check] === <any>original.Governance.Check)) {
                 return true;
             }
 
@@ -452,9 +474,9 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             }
 
             if (updated.Governance.Field && this.testFieldConditions[0] &&
-                ((this.testFieldConditions[0].field != original.Governance.Field.FieldTypeName)
-                    || !(this.testFieldConditions[0].operator == original.Governance.Field.Operator || Operator[this.testFieldConditions[0].operator] == <any>original.Governance.Field.Operator)
-                    || original.Governance.Field.Values.length != [this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter((x) => { return x !== null && x !== undefined; }).length
+                ((this.testFieldConditions[0].field !== original.Governance.Field.FieldTypeName)
+                    || !(this.testFieldConditions[0].operator === original.Governance.Field.Operator || Operator[this.testFieldConditions[0].operator] === <any>original.Governance.Field.Operator)
+                    || original.Governance.Field.Values.length !== [this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter((x) => { return x !== null && x !== undefined; }).length
                     || (original.Governance.Field.Values.length > 0 && ![this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter((x) => { return x !== null && x !== undefined; }).every((v) => original.Governance.Field.Values.indexOf(v) > -1))
                 )
             ) {
@@ -471,8 +493,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
             if (updated.Governance.External &&
                 (
-                    (updated.Governance.External.Instructions != original.Governance.External.Instructions)
-                    || !(updated.Governance.External.UpdateFrequency == original.Governance.External.UpdateFrequency || MetricUpdateFrequency[updated.Governance.External.UpdateFrequency] == <any>original.Governance.External.UpdateFrequency.toString())
+                    (updated.Governance.External.Instructions !== original.Governance.External.Instructions)
+                    || !(updated.Governance.External.UpdateFrequency === original.Governance.External.UpdateFrequency || String(MetricUpdateFrequency[updated.Governance.External.UpdateFrequency]) === original.Governance.External.UpdateFrequency.toString())
                 )
             ) {
                 return true;
@@ -485,8 +507,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             }
             if (updated.Governance.Owner &&
                 (
-                    (updated.Governance.Owner.ResponsibilityTypeUid != original.Governance.Owner.ResponsibilityTypeUid)
-                    || !(updated.Governance.Owner.Operator == original.Governance.Owner.Operator || Operator[updated.Governance.Owner.Operator] == <any>original.Governance.Owner.Operator)
+                    (updated.Governance.Owner.ResponsibilityTypeUid !== original.Governance.Owner.ResponsibilityTypeUid)
+                    || !(updated.Governance.Owner.Operator === original.Governance.Owner.Operator || Number(Operator[updated.Governance.Owner.Operator]) === Number(original.Governance.Owner.Operator))
                 )
             ) {
                 return true;
@@ -499,8 +521,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             }
             if (updated.Governance.Predicate &&
                 (
-                    (updated.Governance.Predicate.PredicateUid != original.Governance.Predicate.PredicateUid)
-                    || !(updated.Governance.Predicate.Operator == original.Governance.Predicate.Operator || Operator[updated.Governance.Predicate.Operator] == <any>original.Governance.Predicate.Operator)
+                    (updated.Governance.Predicate.PredicateUid !== original.Governance.Predicate.PredicateUid)
+                    || !(updated.Governance.Predicate.Operator === original.Governance.Predicate.Operator || Number(Operator[updated.Governance.Predicate.Operator]) === Number(original.Governance.Predicate.Operator))
                 )
             ) {
                 return true;
@@ -514,8 +536,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             if (
                 updated.Governance.Relation &&
                 (
-                    (updated.Governance.Relation.IntersectTypeUid != original.Governance.Relation.IntersectTypeUid)
-                    || !(updated.Governance.Relation.Operator == original.Governance.Relation.Operator || Operator[updated.Governance.Relation.Operator] == <any>original.Governance.Relation.Operator)
+                    (updated.Governance.Relation.IntersectTypeUid !== original.Governance.Relation.IntersectTypeUid)
+                    || !(updated.Governance.Relation.Operator === original.Governance.Relation.Operator || Number(Operator[updated.Governance.Relation.Operator]) === Number(original.Governance.Relation.Operator))
                     || (
                         updated.Governance.Relation.Values &&
                         !updated.Governance.Relation.Values.every((v) => original.Governance.Relation.Values.indexOf(v) > -1)

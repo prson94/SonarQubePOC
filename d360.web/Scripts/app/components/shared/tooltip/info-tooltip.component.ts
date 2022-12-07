@@ -1,4 +1,5 @@
-﻿import { Component, EventEmitter, Output, Input, HostBinding, ChangeDetectionStrategy, OnInit } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, Input, NgModule, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'd3s-info-tooltip',
@@ -18,19 +19,16 @@ export class InfoTooltipComponent implements OnInit {
     @Input() style: string;
 
     ngOnInit() {
-        if (this.titleValue == '') {
-            if (!this.style || this.style == 'info') {
+        if (this.titleValue === '') {
+            if (!this.style || this.style === 'info') {
                 this.titleValue = `<i class='fa fa-question-circle'><i/>`;
             }
-            if (this.style == 'warning') {
+            if (this.style === 'warning') {
                 this.titleValue = `<i class='fa fa-exclamation-triangle'></i>`;
             }
         }
     }
 }
-
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 
 @NgModule({

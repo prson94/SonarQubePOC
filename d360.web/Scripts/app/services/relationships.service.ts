@@ -3,12 +3,18 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
-import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, PredicateDropdown, RelationshipCount } from '../models/relationship.model';
+import {
+    ObjectRelationship,
+    PredicateDropdown,
+    RelatedItem,
+    RelationshipCount,
+    RelationshipDetail,
+    RelationshipType
+} from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
-import { Observable, forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { ApiResult } from '../models/apiresult.model';
-import { Relation } from '../models/fieldtype-api.model';
 import * as _ from 'lodash';
 
 @Injectable({
@@ -213,7 +219,7 @@ export class RelationshipsService extends BaseObservableService {
     }
 
     saveRelationship(relationship: RelationshipDetail): Observable<JsonResult> {
-        if (relationship.ID == undefined || !relationship.ID) {
+        if (relationship.ID == null || !relationship.ID) {
             return this.postDynamic(this.http, 'intersecttype', relationship);
         }
         return this.putDynamic(this.http, 'intersecttype', relationship);
@@ -221,10 +227,10 @@ export class RelationshipsService extends BaseObservableService {
 
     getRelationshipPredicates(subjectUid: string, objectUid?: string, predicateUid?: string): Observable<PredicateDropdown[]> {
         let url = `form/IntersectType_PredicateOptions?subjectUid=${subjectUid}`;
-        if (objectUid != undefined) {
+        if (objectUid != null) {
             url = url += `&objectUid=${objectUid}`;
         }
-        if (predicateUid != undefined) {
+        if (predicateUid != null) {
             url = url += `&predicateUid=${predicateUid}`;
         }
         return this.http.get(url)
@@ -252,10 +258,10 @@ export class RelationshipsService extends BaseObservableService {
 
     getObjectOptions(subjectUid: string, objectUid?: string, predicateUid?: string): Observable<DropdownOption[]> {
         let url = `form/IntersectType_ObjectOptions?subjectUid=${subjectUid}`;
-        if (objectUid != undefined) {
+        if (objectUid != null) {
             url = url += `&objectUid=${objectUid}`;
         }
-        if (predicateUid != undefined) {
+        if (predicateUid != null) {
             url = url += `&predicateUid=${predicateUid}`;
         }
 
@@ -279,11 +285,11 @@ export class RelationshipsService extends BaseObservableService {
 
     getRelationshipsByAssetTypeUid(assetTypeUid: string): Observable<RelationshipType[]> {
 
-        var cachedItem = this.tagTooltipsCache.find((x) => x.assetTypeUid == assetTypeUid);
+        var cachedItem = this.tagTooltipsCache.find((x) => x.assetTypeUid === assetTypeUid);
         if (cachedItem)
             {return cachedItem.obs;}
 
-        let url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active&includeHasFieldTypes=true`;
+        const url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active&includeHasFieldTypes=true`;
 
         var obs = this.http.get(url)
             .pipe(map((response) => <RelationshipType[]>response),
@@ -291,7 +297,7 @@ export class RelationshipsService extends BaseObservableService {
                 refCount(),
                 catchError((err) => this.handleError(err)));
 
-        var data = { assetTypeUid: assetTypeUid, obs: obs };
+        var data = { assetTypeUid, obs };
         this.tagTooltipsCache.push(data);
 
         return obs;

@@ -9,18 +9,18 @@ export class SearchSession {
         if (sess == null) {
             sess = [];
         } else {
-            let limit = new Date().getTime() - (this.sessionAgeMinutes * 60000);
-            sess = sess.filter((q) => q.Term != term && new Date(q.Querytime).getTime() > limit);
+            const limit = new Date().getTime() - (this.sessionAgeMinutes * 60000);
+            sess = sess.filter((q) => q.Term !== term && new Date(q.Querytime).getTime() > limit);
         }
         sessionStorage.setItem(this.sessionKey, JSON.stringify(sess));
     }
 
     static getState(term: string): SearchState {
         let state: SearchState = undefined;
-        let sess: SearchState[] = JSON.parse(sessionStorage.getItem(this.sessionKey));
-        let limit = new Date().getTime() - (this.sessionAgeMinutes * 60000);
-        if (sess != null && sess.findIndex((q) => q.Term == term && new Date(q.Querytime).getTime() > limit) >= 0) {
-            state = sess.find((q) => q.Term == term);
+        const sess: SearchState[] = JSON.parse(sessionStorage.getItem(this.sessionKey));
+        const limit = new Date().getTime() - (this.sessionAgeMinutes * 60000);
+        if (sess != null && sess.findIndex((q) => q.Term === term && new Date(q.Querytime).getTime() > limit) >= 0) {
+            state = sess.find((q) => q.Term === term);
         }
         return state;
     }
@@ -30,8 +30,8 @@ export class SearchSession {
         if (sess == null) {
             sess = [];
         } else {
-            let limit = new Date().getTime() - (this.sessionAgeMinutes * 60000);
-            sess = sess.filter((q) => q.Term != state.Term && new Date(q.Querytime).getTime() > limit);
+            const limit = new Date().getTime() - (this.sessionAgeMinutes * 60000);
+            sess = sess.filter((q) => q.Term !== state.Term && new Date(q.Querytime).getTime() > limit);
         }
         sess.push(state);
         sessionStorage.setItem(this.sessionKey, JSON.stringify(sess));

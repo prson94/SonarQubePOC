@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -13,9 +13,10 @@ import { Subscription } from 'rxjs';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
-import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
+import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 @Component({
 	selector: 'd3s-rule-item',
@@ -66,7 +67,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 	ngOnInit() {
 
 		this.isLoading = true;
-		this.logAction("open", "Rule", this.assetUid);
+		this.logAssetAction(UsageAction.View, this.assetUid);
 
 		this.permissionsService.getAssetPermissions(this.assetUid)
 			.subscribe((res) => {

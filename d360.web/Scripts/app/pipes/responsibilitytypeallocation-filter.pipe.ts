@@ -1,4 +1,4 @@
-﻿import { Pipe, PipeTransform, Injectable } from '@angular/core';
+﻿import { Pipe, PipeTransform } from '@angular/core';
 import { ResponsibilityTypeRelationAllocationOption } from '../models/responsibility-type.model';
 
 @Pipe({ name: 'responsibilityallocationFilter' })

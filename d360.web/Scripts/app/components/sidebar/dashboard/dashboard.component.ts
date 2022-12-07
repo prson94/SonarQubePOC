@@ -9,7 +9,6 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
-import { Param } from '../../../enums/param.enum';
 
 @Component({
 	selector: 'd3s-dashboard',
@@ -78,7 +77,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 
 		this.headerBreadcrumbService.getFolderTitle('#Dashboards').then((res) => {
 			this.folderTitle = res;
-			let areaBreadcrumb = new Breadcrumb(
+			const areaBreadcrumb = new Breadcrumb(
 				this.folderTitle ? this.folderTitle : 'Dashboards',
 				'/dashboard',
 				false
@@ -86,7 +85,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 			this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
 
 			if (this.selected) {
-				let dashboardCrumb = new Breadcrumb(
+				const dashboardCrumb = new Breadcrumb(
 					this.selected.Name,
 					SiteUrlHelpers.getObjectUrl("Dashboard", this.selected.uid),
 					false
@@ -127,7 +126,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 						this.showError = true;
 					}
 
-					if (this.showSingle || this.objectType == undefined) {
+					if (this.showSingle || this.objectType == null) {
 						this.buildBreadcrumb(true);
 					} else {
 						this.buildBreadcrumb(false);
@@ -152,7 +151,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 						this.showSingle = true;
 					}
 
-					if (this.showSingle || this.objectType == undefined) {
+					if (this.showSingle || this.objectType == null) {
 						this.buildBreadcrumb(true);
 					} else {
 						this.buildBreadcrumb(false);

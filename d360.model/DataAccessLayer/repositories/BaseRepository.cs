@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using System.Xml;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
@@ -352,7 +352,7 @@ namespace d360.model.DataAccessLayer.repositories
 					 string assetIdBackwardQuery;
 					 string assetIdForwardQuery;
 					 string assetIdBothQuery;
-					 string temptablename;
+					 string temptablename = "";
 					 string temptableScript;
 
 					 if (IsCreateTempTable)
@@ -389,6 +389,9 @@ namespace d360.model.DataAccessLayer.repositories
 									) a;";
 								 break;
 						 }
+
+						 temptableScript += @$"
+								create index ix_TempGraphFwd on {temptablename} (SourceAssetID);";
 
 						 if (!TempTableNameList.Contains(temptablename))
 						 {
@@ -433,13 +436,29 @@ namespace d360.model.DataAccessLayer.repositories
 					 }
 					 else
 					 {
+						 var fieldFilter = new AssetFieldFilter();
+						 fieldFilter.SimpleFilterTempTable = @$"
+								drop table if exists #fieldFromRel_Assets_{f.ID}
+								select AssetId 
+								into #fieldFromRel_Assets_{f.ID}
+								from Field F{f.ID}
+								where F{f.ID}.FieldTypeID = {f.LookupObjectFieldTypeID} and F{f.ID}.FormattedValue like @simpleFilter";
+
+						 fieldFilter.SimpleFilterStatement = @$"
+								select  DISTINCT  A.ID
+								from    Asset A 
+								inner join {temptablename} S on S.SourceAssetID = A.Id
+								inner join #fieldFromRel_Assets_{f.ID} FA on FA.AssetID = S.TargetAssetId
+								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
+								where tfa.AssetId is null and A.AssetTypeID = @assettypeid";
+
 						 fieldJoins.Add($@"outer apply (
 							select  STRING_AGG(FormattedValue,'{RELATIONSHIP_DELIMITER}') as FormattedValue 
 							from    Field 
 							where   FieldTypeID = {f.LookupObjectFieldTypeID} and AssetID IN ({assetIdFinalQuery})
 									and FormattedValue is not null
 							having  string_agg(FormattedValue,'{RELATIONSHIP_DELIMITER}') is not null
-						) {tableAlias}", f.ID.ToString());
+						) {tableAlias}", f.ID.ToString(), fieldFilter: fieldFilter);
 					 }
 				 }
 				 else if (f.Type == "Relationship")
@@ -557,9 +576,9 @@ namespace d360.model.DataAccessLayer.repositories
 						 }
 						 
 						 assetIdFinalQuery = $@" outer apply (
-							select STRING_AGG(DisplayPath,'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetPath where ID in (
+							select STRING_AGG(TRY_CAST(DisplayPath as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetPath where ID in (
 							{assetIdQuery})
-							having string_agg(DisplayPath,'{RELATIONSHIP_DELIMITER}') is not null
+							having string_agg(TRY_CAST(DisplayPath as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') is not null
 							) {tableAlias} ";
 
 						 fieldJoins.Add(assetIdFinalQuery, f.ID.ToString());
@@ -596,13 +615,21 @@ namespace d360.model.DataAccessLayer.repositories
 				 }
 				 else if (f.Type == "Tag")
 				 {
+					 var filter = new AssetFieldFilter();
+					 filter.SimpleFilterStatement = @"
+									select AssetId
+										from [Tag] T
+										inner join [AssetTag] [AT] ON [AT].TagID = T.ID
+										inner join [Asset] A on [AT].AssetID = A.ID
+									where A.AssetTypeID = @assettypeid and T.[Value] like @simpleFilter";
+
 					 fieldJoins.Add($@"outer apply(
 						select FormattedValue = STUFF((
 							select '|' + T.Value from AssetTag AT
 								inner join Tag T on AT.TagID = T.ID
 								where AT.AssetID = A.ID
 							for xml path (''), TYPE).value('.','NVARCHAR(MAX)'), 1, 1, '')
-						 ){tableAlias}(FormattedValue) ", f.ID.ToString());
+						 ){tableAlias}(FormattedValue) ", f.ID.ToString(), fieldFilter: filter);
 				 }
 				 else if (f.Type == "Lookup")
 				 {
@@ -1112,7 +1139,7 @@ namespace d360.model.DataAccessLayer.repositories
 					break;
 				case "HTML":
 					var doc = new HtmlAgilityPack.HtmlDocument();
-					doc.LoadHtml(value + "");
+					doc.LoadHtml((value as string).GetSafeXLSColumnValue());
 					var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
 					if (txt.StartsWith("="))
 					{
@@ -1129,7 +1156,7 @@ namespace d360.model.DataAccessLayer.repositories
 							var ownerships = ((JArray)value).ToObject<List<dynamic>>();
 							owners = string.Join(" | ", ownerships.OrderBy(o => o.ResourceName).Select(o => $"{o.ResourceName} ({o.ResponsibilityTypes})"));
 						}
-						document.SetCellValue(rowIndex, colIndex, owners);
+						document.SetCellValue(rowIndex, colIndex, owners.GetSafeXLSColumnValue());
 					}
 					break;
 				default:
@@ -1137,7 +1164,7 @@ namespace d360.model.DataAccessLayer.repositories
 					{
 						valueString = "'" + valueString;
 					}
-					document.SetCellValue(rowIndex, colIndex, valueString);
+					document.SetCellValue(rowIndex, colIndex, valueString.GetSafeXLSColumnValue());
 					break;
 			}
 		}

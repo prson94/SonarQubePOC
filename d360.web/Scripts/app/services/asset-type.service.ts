@@ -4,13 +4,18 @@ import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 
 import { JsonResult } from '../models/jsonresult.model';
-import { AssetTypeEditorModel, AssetTypeClass, AssetType, AssetTypeApiModel, AssetTypeLevelApiModel } from "../models/asset.model";
+import {
+    AssetType,
+    AssetTypeApiModel,
+    AssetTypeClass,
+    AssetTypeEditorModel,
+    AssetTypeLevelApiModel
+} from "../models/asset.model";
 
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
-import { Response } from 'powerbi-router';
 
 @Injectable({
     providedIn: 'root'
@@ -72,7 +77,7 @@ export class AssetTypeService extends BaseObservableService {
 
         var qString = '';
         if (params) {
-            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+            qString = Object.keys(params).filter((key) => params[key]).map((key) => key + '=' + params[key]).join('&');
             if (qString) {
                 qString = '?' + qString;
             }

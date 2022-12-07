@@ -1,5 +1,5 @@
-﻿import { Component, Output, EventEmitter, ViewChild } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+﻿import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FavoritesService } from '../../../services/favorites.service';
@@ -76,15 +76,15 @@ export class HeaderActionsComponent {
         private router: Router) { }
 
     ngOnInit() {
-        let hideHeader = this.settingsService.getSettingById(CompanySettingEnum.HideHeaderBarControls).BooleanSetting.Value;
+        const hideHeader = this.settingsService.getSettingById(CompanySettingEnum.HideHeaderBarControls).BooleanSetting.Value;
         if (hideHeader) {
             this.enabled = false;
         }
 
         this.routerSub = this.router.events.subscribe((e) => {
             if (e instanceof NavigationEnd) {
-                let showFavorite = this.settingsService.getSettingById(CompanySettingEnum.ShowFavorites).BooleanSetting.Value;
-                let showFollow = this.settingsService.getSettingById(CompanySettingEnum.ShowImpactSidebar).BooleanSetting.Value;
+                const showFavorite = this.settingsService.getSettingById(CompanySettingEnum.ShowFavorites).BooleanSetting.Value;
+                const showFollow = this.settingsService.getSettingById(CompanySettingEnum.ShowImpactSidebar).BooleanSetting.Value;
 
                 this.headerActionsService.setActionsToDefaultValues(showFavorite, showFollow);
                 this.previousUrl = this.currentUrl;
@@ -93,19 +93,19 @@ export class HeaderActionsComponent {
                 this.uri = _.trimStart(e.urlAfterRedirects, '/');
                 
                 let isHomeUrl: boolean = false;
-                isHomeUrl = (this.uri && this.uri.toUpperCase() == SiteUrlHelpers.SITE_URL_HOME_ROOT.toUpperCase());
+                isHomeUrl = (this.uri && this.uri.toUpperCase() === SiteUrlHelpers.SITE_URL_HOME_ROOT.toUpperCase());
 
                 //dont show raise issue button on raise issue screen or any admin screens or user profile    
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
-                let isResourceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESOURCE_ROOT.toUpperCase());
-                let isSearchUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_SEARCH_ROOT.toUpperCase());
+                const isResourceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESOURCE_ROOT.toUpperCase());
+                const isSearchUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_SEARCH_ROOT.toUpperCase());
 
                 let isReferenceUrl = false;
                 isReferenceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_REFERENCE_ROOT.toUpperCase());
 
                 if (!isReferenceUrl)
                 {
-                    if ((this.currentObject != null && this.currentObjectId != null) && (this.currentObject == 'ReferenceItemType'))
+                    if ((this.currentObject != null && this.currentObjectId != null) && (this.currentObject === 'ReferenceItemType'))
                     {
                         if (((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_FIELDS_ROOT.toUpperCase()))
 							||
@@ -132,17 +132,17 @@ export class HeaderActionsComponent {
                 }
 
 
-                let isMonitorUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_MONITOR_ROOT.toUpperCase());
-                let isCommunityUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT.toUpperCase());
-				let isDashboardUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT.toUpperCase());
-				let isSemanticsUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT.toUpperCase());
+                const isMonitorUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_MONITOR_ROOT.toUpperCase());
+                const isCommunityUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT.toUpperCase());
+				const isDashboardUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT.toUpperCase());
+				const isSemanticsUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT.toUpperCase());
 
                 if (this.previousUrl) {
                     this.previousUrl = _.trimStart(this.previousUrl, '/');
                     this.isAdminSidebarUrl = (this.uri || '').toUpperCase().startsWith('sidebar'.toUpperCase()) && (this.previousUrl || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
                 }
 
-                let disableIssueManagement = this.settingsService.getSettingById(CompanySettingEnum.DisableIssueManagement).BooleanSetting.Value;
+                const disableIssueManagement = this.settingsService.getSettingById(CompanySettingEnum.DisableIssueManagement).BooleanSetting.Value;
 
                 this.hasRaiseIssueButton = (
                     !e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue')
@@ -164,7 +164,7 @@ export class HeaderActionsComponent {
         });
 		
 		this.subShowFollow = this.headerBreadcrumbService.currentObjectInfo$.subscribe((currentObject) => {
-			let headerActions = new HeaderActions();
+			const headerActions = new HeaderActions();
 			headerActions.showFollow = currentObject.AssetTypeUid?.length > 0 || currentObject.assetUId?.length > 0;
 			this.headerActionsService.setCurrentHeaderActions(headerActions);
 		});
@@ -215,7 +215,7 @@ export class HeaderActionsComponent {
     }
 
     private calculateControlWidth() {
-        let buffer = 100;
+        const buffer = 100;
         if (this.enabled === false) {
             this.controlWidth = buffer;
         } else {

@@ -1,4 +1,16 @@
-﻿import { Component, Input, Output, HostListener, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef, AfterContentInit, OnDestroy } from '@angular/core';
+﻿import {
+    AfterContentInit,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input,
+    OnChanges,
+    OnDestroy,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 
 
 @Component({
@@ -38,7 +50,7 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.isVisible !== undefined && (changes.isVisible.previousValue != changes.isVisible.currentValue)) {
+        if (changes.isVisible !== undefined && (changes.isVisible.previousValue !== changes.isVisible.currentValue)) {
             if (changes.isVisible.currentValue) {
                 this.showPopUp();
             }
@@ -68,12 +80,12 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
 
     @HostListener('wheel', ['$event'])
     handleWheelEvent(event) {
-        let path: any[] = event.path;
+        const path: any[] = event.path;
 		//add scroll exceptions here
-        if (this.display == true
-            && !(path.filter((x) => x.tagName == 'D3S-TAG-USAGE').length > 0)
-            && !(path.filter((x) => x.tagName == 'D3S-ASSET-TYPE-MODAL-EDITOR').length > 0)
-            && !(path.filter((x) => x.tagName == 'P-DROPDOWNITEM').length > 0)
+        if (this.display === true
+            && !(path.filter((x) => x.tagName === 'D3S-TAG-USAGE').length > 0)
+            && !(path.filter((x) => x.tagName === 'D3S-ASSET-TYPE-MODAL-EDITOR').length > 0)
+            && !(path.filter((x) => x.tagName === 'P-DROPDOWNITEM').length > 0)
 			&& !(path.filter((x) => x.tagName === 'IG-PROPERTY-GROUP').length > 0)
 			&& !(path.filter((x) => x.tagName === 'TABLE').length > 0) 
 		){

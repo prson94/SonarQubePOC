@@ -1,5 +1,12 @@
 ﻿import { Injectable } from "@angular/core";
-import { CommentApiPutModel, Emoji, CommentApiPostModel, CommentDetail, CommentDetails, CommentVoteDetail } from "../models/social.model";
+import {
+    CommentApiPostModel,
+    CommentApiPutModel,
+    CommentDetail,
+    CommentDetails,
+    CommentVoteDetail,
+    Emoji
+} from "../models/social.model";
 import { Count } from "../models/counts.model";
 import { HttpClient, HttpErrorResponse, HttpHeaders } from "@angular/common/http";
 import { catchError, map } from "rxjs/operators";
@@ -51,7 +58,7 @@ export class SocialService extends BaseObservableService  {
         return this.http
             .post(`api/v2/comments/${commentUid}/votes/${emoji}`, {}, { observe: "response" })
             .pipe(
-                map((res) => (res.status == 200 || res.status == 201)),
+                map((res) => (res.status === 200 || res.status === 201)),
                 catchError((err) => this.handleError(err))
             );
     }
@@ -61,13 +68,13 @@ export class SocialService extends BaseObservableService  {
         return this.http
             .delete(`api/v2/comments/${commentUid}/votes/${emoji}`, { observe: "response" })
             .pipe(
-                map((res) => (res.status == 200)),
+                map((res) => (res.status === 200)),
                 catchError((err) => this.handleError(err))
             );
     }
 
     addComment(comment: CommentApiPostModel): Observable<CommentDetail> {
-        let headers = new HttpHeaders();
+        const headers = new HttpHeaders();
 
         headers.append("Content-Type", "application/json");
         return this.http
@@ -86,7 +93,7 @@ export class SocialService extends BaseObservableService  {
         return this.http
             .put(`api/v2/comments/${comment.Uid}`, comment, {observe: "response"})//httpOptions)
             .pipe(
-                map((res) => (res.status == 200)),
+                map((res) => (res.status === 200)),
                 catchError((err) => this.handleError(err))
             );
     }
@@ -95,7 +102,7 @@ export class SocialService extends BaseObservableService  {
         return this.http
             .delete(`api/v2/comments/${commentUid}`, { observe: "response" })
             .pipe(
-                map((res) => (res.status == 200)),
+                map((res) => (res.status === 200)),
                 catchError((err) => this.handleError(err))
             );
     }

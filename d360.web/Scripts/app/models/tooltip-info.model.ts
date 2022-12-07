@@ -1,6 +1,4 @@
-﻿import { Field, FieldType } from './fields.model';
-import { ObjectDetail } from './object-detail.model';
-import { AssetTypeClass } from './asset.model';
+﻿import { AssetTypeClass } from './asset.model';
 
 export class TooltipFieldValue {
     Name: string;

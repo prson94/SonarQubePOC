@@ -1,4 +1,16 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
+﻿import {
+    AfterViewChecked,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { ScoreTypeAllocation } from '../../../models/metrics.model';
 import { AssetTypeClass } from '../../../models/asset.model';
@@ -7,7 +19,7 @@ import { AllocationService } from '../../../services/allocations.service';
 import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AppSettingsEnum } from '../../../models/settings.model';
-import {Dropdown} from "primeng/dropdown";
+import { Dropdown } from "primeng/dropdown";
 
 @Component({
     selector: 'allocation-editor',
@@ -59,7 +71,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
         private cdRef: ChangeDetectorRef) {
         super(settingsService);
 
-        let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+        const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
         this.scoringHelpPage = helpBaseUri + "Default.htm#d-admin/scoring.htm?Highlight=scoring";
         this.selection = new ScoreTypeAllocation();
         this.selection.isExternallyCalculated = false;
@@ -194,11 +206,11 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
             .subscribe((res) => {
                 let openItem = false;
                 this.savingInProgress = false;
-                if (!res || (res.type && res.type == "error"))
+                if (!res || (res.type && res.type === "error"))
                     {return;}
 
                 let msg: string = '';
-                if (this.selection.uid == undefined) {
+                if (this.selection.uid == null) {
                     msg = $localize`Your score has been added`;
                     openItem = true;
                 }
@@ -206,13 +218,13 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
                     msg = $localize`Your score has been updated`;
                 }
                 this.messagesService.showInfoMessage($localize`Success`, msg);
-                this.onSave.emit({ item: res, openItem: openItem });
+                this.onSave.emit({ item: res, openItem });
             });
     }
 
     handleChange(e) {
         this.selection.lowerThreshold = e.values[0];
-        if (this.selection.lowerThreshold == 100)
+        if (this.selection.lowerThreshold === 100)
             {this.selection.lowerThreshold = 99;}
         this.selection.upperThreshold = e.values[1];
 
@@ -293,7 +305,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 
         this.rangeValues.forEach((value: number, index) => {
             var tooltip = sliders[index].getElementsByClassName('slider-tooltip');
-            if (tooltip.length == 0) {
+            if (tooltip.length === 0) {
                 var el = document.createElement("span");
                 el.className = 'slider-tooltip';
                 el.innerHTML = value + '%';

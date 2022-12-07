@@ -1141,6 +1141,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid [LanguageCode]. Supported values are {0}..
+        /// </summary>
+        public static string InvalidLanguageCode {
+            get {
+                return ResourceManager.GetString("InvalidLanguageCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid [LoadUid] provided..
         /// </summary>
         public static string InvalidLoadUid {

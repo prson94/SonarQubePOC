@@ -1,8 +1,19 @@
-﻿import { Component, EventEmitter, Output, Input, HostBinding, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostBinding,
+    Input,
+    OnDestroy,
+    Output,
+    ViewChild
+} from '@angular/core';
+import { Router } from '@angular/router';
 import { ToolTipService } from '../../services/tooltip.service';
 import { TooltipSingletonService } from '../../services/tooltip-singleton.service';
-import { TooltipInfo, TooltipFieldValue, LookupTooltipInfo } from '../../models/tooltip-info.model';
+import { LookupTooltipInfo } from '../../models/tooltip-info.model';
 
 @Component({
     selector: 'd3s-lookup-tooltip',
@@ -45,7 +56,7 @@ export class LookupTooltipComponent implements OnDestroy  {
         private ref: ChangeDetectorRef) {
         this.toolTipSub = this.tooltipSingletonService.tooltipMessage$.subscribe(
             (info) => {                                
-                if (info.objectId == this.objectId && info.objectType == this.objectType) {return;}
+                if (info.objectId === this.objectId && info.objectType === this.objectType) {return;}
                 this.hide();
             });
     }

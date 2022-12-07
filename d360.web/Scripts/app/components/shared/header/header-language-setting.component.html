@@ -1,0 +1,42 @@
+﻿<d3s-modal #popupBox
+		   i18n-title
+		   title="Language Settings"
+		   additionalClasses="about medium-dialog"
+		   (onClose)="onClose.emit()"
+		   [isVisible]="isModalVisible"
+		   tabindex=-1>
+	<div class="content">
+		<div class="flex row">
+			<ig-message-box>
+				<strong i18n>Govern is now available in several language versions</strong><br />
+				<span i18n>
+					Note that the selected language will be applied to standard interface elements, while all user-generated informaton will remain in the original language and will not be translated
+				</span>
+			</ig-message-box>
+		</div>
+		<div class="language-picker-form">
+			<label><strong i18n>Interface Language</strong></label>
+			<p-dropdown igDropdown
+						required
+						igSize="medium"
+						[(ngModel)]="selectedLanguage"
+						optionLabel="name"
+						appendTo="body"
+						[options]="languages"></p-dropdown>
+		</div>
+	</div>
+	<div class="action-bar">
+		<button igButton focus-me="focusInput" (click)="cancelClick()" label="{{isSaveDisabled ? labelCancel : labelDiscardChanges}}"></button>
+		<span class="grow"></span>
+		<button igButton class="ig-button-primary"
+				focus-me="focusInput"
+				[disabled]="isSaveDisabled"
+				(click)="saveChanges()"
+				[loading]="savingInProgress"
+				i18n-label
+				label="Save Changes"
+				pTooltip="{{selectedLanguage.code == null ? defaultSelectionTooltip : ''}}"
+				tooltipPosition="top"
+				tooltipStyleClass="ig-tooltip"></button>
+	</div>
+</d3s-modal>

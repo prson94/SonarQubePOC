@@ -83,7 +83,7 @@ export class FollowerService extends BaseObservableService {
         this._followInfoCache.clear();
         return this
             .http
-			.post('resources/UpdateFollowStatus', { assetTypeUid: assetTypeUid, assetUid: assetUid, includeChildren: includeChildren })
+			.post('resources/UpdateFollowStatus', { assetTypeUid, assetUid, includeChildren })
             .pipe(
                 map((response) => <any>response),
                 catchError((err) => this.handleError(err))

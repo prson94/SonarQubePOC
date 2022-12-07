@@ -28,24 +28,6 @@ namespace d360.core.entities
 
         public int? UpdatedBy { get; set; }
 
-		#region LEGACY COLUMNS
-
-		[DataMember, Column(TypeName = "varchar"), StringLength(50)]
-        public string Subject { get; set; }
-
-        [DataMember]
-        public int SubjectID { get; set; }
-
-        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
-        public string Object { get; set; }
-
-        [DataMember]
-        public int ObjectID { get; set; }
-
-		#endregion LEGACY COLUMNS
-
-		#region NEW COLUMNS
-
 		[DataMember]
 		public long? SubjectAssetID { get; set; }
 
@@ -57,8 +39,6 @@ namespace d360.core.entities
 
 		[DataMember]
 		public int? ObjectAssetTypeID { get; set; }
-
-		#endregion NEW COLUMNS
 
 		[DataMember]
         public State State { get; set; } = State.Active;

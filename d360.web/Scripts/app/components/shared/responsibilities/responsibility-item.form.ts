@@ -1,6 +1,11 @@
-﻿import { Input, Output, Component, OnInit, OnChanges, EventEmitter, NgModule } from '@angular/core';
-import { ResponsibilityEditorModel, ResponsibilityItemDetailV2, ResponsibilityItemV2, ResponsibilityOverridePostModel } from '../../../models/responsibility.model';
-import { FormMessage, FormHelper } from '../../../models/form.model';
+﻿import { Component, EventEmitter, Input, NgModule, OnInit, Output } from '@angular/core';
+import {
+    ResponsibilityEditorModel,
+    ResponsibilityItemDetailV2,
+    ResponsibilityItemV2,
+    ResponsibilityOverridePostModel
+} from '../../../models/responsibility.model';
+import { FormMessage } from '../../../models/form.model';
 import { SelectItem, SharedModule } from 'primeng/api';
 import { ResponsibilityService } from '../../../services/responsibility.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -146,7 +151,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                     break;
             }
 
-            selectedResourceUid = this.model.resources.find((x) => x.Value.split('|')[0] == selectedResourceType && x.Value.split('|')[1] == selectedResourceID).Value.split('|')[2];
+            selectedResourceUid = this.model.resources.find((x) => x.Value.split('|')[0] === selectedResourceType && x.Value.split('|')[1] === selectedResourceID).Value.split('|')[2];
             this.itemToSave.ResourceUid = selectedResourceUid;
             this.itemToSave.Description = this.model.responsibility.Context;
         }
@@ -164,11 +169,11 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
                 //Delete existing record before creating new only when description changed
                 if (
-                    (this.item.ResponsibilityUid && this.item.ResponsibilityUid == this.itemToSave.ResponsibilityUid)
+                    (this.item.ResponsibilityUid && this.item.ResponsibilityUid === this.itemToSave.ResponsibilityUid)
                     &&
-                    (this.item.ResourceUid && this.item.ResourceUid == this.itemToSave.ResourceUid)
+                    (this.item.ResourceUid && this.item.ResourceUid === this.itemToSave.ResourceUid)
                 ) {
-                    if (this.item.Description != this.itemToSave.Description) {
+                    if (this.item.Description !== this.itemToSave.Description) {
                         this.responsibilityService.deleteResponsibility(this.assetUid, this.item.ResponsibilityUid, this.item.ResourceUid)
                             .subscribe(() => {
                                 this.postRequest();
@@ -179,8 +184,8 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                 } else {
 
                     for (var i = 0; i < this.checkD.length; i++) {
-                        if (this.checkD[i].ResourceUid == this.itemToSave.ResourceUid &&
-                            this.checkD[i].ResponsibilityUid == this.itemToSave.ResponsibilityUid) {
+                        if (this.checkD[i].ResourceUid === this.itemToSave.ResourceUid &&
+                            this.checkD[i].ResponsibilityUid === this.itemToSave.ResponsibilityUid) {
 
                             this.message.Error($localize`There is already a responsibility assigned for this role and ${this.checkD[i].ResourceType}.`);
                             this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.item });
@@ -189,9 +194,9 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
                     }
 
-                    if ((this.item.ResponsibilityUid && this.item.ResponsibilityUid != this.itemToSave.ResponsibilityUid)
+                    if ((this.item.ResponsibilityUid && this.item.ResponsibilityUid !== this.itemToSave.ResponsibilityUid)
                         ||
-                        (this.item.ResourceUid && this.item.ResourceUid != this.itemToSave.ResourceUid)) {
+                        (this.item.ResourceUid && this.item.ResourceUid !== this.itemToSave.ResourceUid)) {
                         this.responsibilityService.deleteResponsibility(this.assetUid, this.item.ResponsibilityUid, this.item.ResourceUid).subscribe(() => { this.postRequest(); });
                     } else {
                         this.postRequest();
@@ -224,8 +229,8 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         let resTypeUid;
         let securityAsset;
         let securityAssetId;
-        let selectedRespType = this.model == null ? "" : this.model.selectedResponsibilityType;
-        let selectedResource = this.model == null ? "" : this.model.selectedResource;
+        const selectedRespType = this.model == null ? "" : this.model.selectedResponsibilityType;
+        const selectedResource = this.model == null ? "" : this.model.selectedResource;
         if (StringHelpers.isNullOrEmpty(selectedRespType)) {
             resTypeId = 0;
         }
@@ -260,7 +265,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.field.Value = value;
 
         if (this.field.Value != null && this.field.Value.length > 0) {
-            let x = this.field.Value[0];
+            const x = this.field.Value[0];
             this.resouceAssigned = x.split('|')[2];
             this.resourceGrid = false;
             this.model.selectedResource = x;

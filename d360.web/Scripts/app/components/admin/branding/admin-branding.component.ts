@@ -1,16 +1,23 @@
 ﻿import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    OnInit,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { DomSanitizer, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
 import { forkJoin } from 'rxjs';
 import { BrandingService, Theme } from '../../../services/branding.service';
-import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
+import { FeatureFlagsService } from '../../../services/featureflags.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { AdminBaseComponent } from '../admin-base.component';
 
@@ -169,7 +176,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
 
     duplicateSelectedTheme() {
         var theme = _.cloneDeep(this.selectedRow._orig);
-        let uid = theme.uid;
+        const uid = theme.uid;
         theme.name = this.getUniqueName(this.selectedRow.name, 0);
         theme.isCurrent = false;
         theme.uid = "";
@@ -292,7 +299,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     onFileSelected(event) {
         this.themeToLoad = null;
         this.file = event.target.files[0];
-        let fileReader = new FileReader();
+        const fileReader = new FileReader();
         fileReader.onload = (e) => {
             try {
                 this.themeToLoad = JSON.parse(fileReader.result as string);

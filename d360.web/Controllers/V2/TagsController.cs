@@ -9,7 +9,6 @@ using System.Web.Http.Description;
 
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.exceptions;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.web.Filters;
@@ -241,7 +240,7 @@ namespace d360.web.Controllers.V2
 
             if (!tagRepository.IsAuthorizedToEditTag(tagId))
             {
-                throw new ForbiddenBusinessLayerException(ApiMessages.AccessDenied);
+                throw new ForbiddenBusinessLayerException(ApiMessages.ForbiddenUserNotAuthorizedMessage);
             }
 
             model.Value = model.Value.Trim();

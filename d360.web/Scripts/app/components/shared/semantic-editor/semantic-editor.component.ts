@@ -1,30 +1,23 @@
 ﻿import * as _ from 'lodash';
 import {
+    AfterViewChecked,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
+    ElementRef,
     EventEmitter,
+    HostListener,
     Input,
     OnChanges,
     OnInit,
     Output,
-    ElementRef,
-    ViewEncapsulation,
-    ViewChildren,
     QueryList,
-    HostListener,
-    AfterViewChecked,
     SimpleChanges,
-    ViewChild
+    ViewChild,
+    ViewChildren,
+    ViewEncapsulation
 } from '@angular/core';
-import {
-	AbstractControl,
-	FormBuilder,
-	FormGroup,
-	ValidationErrors,
-	ValidatorFn,
-	Validators
-} from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { SemanticMatchType, SemanticSource, SemanticType } from '../../../models/semantic-type.model';
 import { DataProfileService } from '../../../services/dataprofile.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -137,7 +130,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         this.populateTypeLists();
     }
     ngOnChanges(changes: SimpleChanges): void {
-		let c = changes;
+		const c = changes;
         if (this.semanticType) {
             this.model = _.cloneDeep(this.semanticType);
             this.isBuiltIn = this.semanticType.source.toString() === SemanticSource[SemanticSource.BuiltIn];
@@ -209,7 +202,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
 
     handleSaveComplete(res: any, addAnother: boolean = false) {
         if (!(res?.status)) {
-            let msg = this.isEdit ? $localize`Successfully updated` : $localize`Successfully created`;
+            const msg = this.isEdit ? $localize`Successfully updated` : $localize`Successfully created`;
             this.showMessageForResult(this.messagesService, res, msg);
             this.savingInProgress = false;
             this.savingInProgressWithAddNew = false;

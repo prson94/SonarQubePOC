@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Output, EventEmitter, Input, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { WorkflowService } from '../../../services/workflow.service';
 import { ResourcesService } from '../../../services/resources.service';
@@ -40,7 +40,7 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
 
     private load() {
         this.isLoading = true;
-        let loadResource = (this.resourceId != null && this.resourceId >= 0);
+        const loadResource = (this.resourceId != null && this.resourceId >= 0);
 
         this.workflowService.getMyCounts(this.daysToLookBack, (loadResource ? this.resourceId : null))
             .subscribe((res) => {

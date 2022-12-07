@@ -1,4 +1,4 @@
-import { Component, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, Input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, ViewChild } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { Subscription } from 'rxjs';
@@ -52,7 +52,7 @@ export class HeaderBreadcrumbComponent {
             (breadcrumb) => {
                 if (!_.isEqual(_.omit(this.breadcrumbs[this.breadcrumbs.length - 1], ['active']), _.omit(breadcrumb, ['active']))) {
 
-                    if (this.breadcrumbs.length != 0) {
+                    if (this.breadcrumbs.length !== 0) {
                         this.breadcrumbs[this.breadcrumbs.length - 1].active = true;
                         breadcrumb.active = false;
                     }
@@ -135,9 +135,9 @@ export class HeaderBreadcrumbComponent {
 
         this.breadcrumbs.forEach((x) => { x.show = false; });
 
-        let element = this.breadcrumbUIElement.nativeElement;
+        const element = this.breadcrumbUIElement.nativeElement;
         var controlsWidth = this.controlWidth ? this.controlWidth : 0; // only visible medium and up
-        let logo = this.showBackButton ? element.parentElement.previousElementSibling.previousElementSibling : element.parentElement.previousElementSibling;
+        const logo = this.showBackButton ? element.parentElement.previousElementSibling.previousElementSibling : element.parentElement.previousElementSibling;
         var logoWidth = logo.offsetWidth;
         var breadcrumbWidth = element.offsetWidth;
 
@@ -177,11 +177,11 @@ export class HeaderBreadcrumbComponent {
 
             this.breadcrumbUIElement.nativeElement.insertAdjacentHTML('beforeend', html);
 
-            let tempCrumb = this.breadcrumbUIElement.nativeElement.lastElementChild;
+            const tempCrumb = this.breadcrumbUIElement.nativeElement.lastElementChild;
 
             max += tempCrumb.offsetWidth;
 
-            var last = (this.breadcrumbs.length - 1) == i;
+            var last = (this.breadcrumbs.length - 1) === i;
             if (!last)
                 {max += 25;} // for the icon separator
 
@@ -197,16 +197,16 @@ export class HeaderBreadcrumbComponent {
     }
 
     showCrumb() {
-        if (this.showThisManyCrumbs == 0)
+        if (this.showThisManyCrumbs === 0)
             {return;}
 
-        if (this.breadcrumbs.length == this.showThisManyCrumbs) {
+        if (this.breadcrumbs.length === this.showThisManyCrumbs) {
             this.showLastOnly = false;
             this.breadcrumbs.forEach((x) => { x.show = true; });
             return;
         }
-        let maxIndex = this.breadcrumbs.length - 1;
-        let minIndex = this.breadcrumbs.length - this.showThisManyCrumbs;
+        const maxIndex = this.breadcrumbs.length - 1;
+        const minIndex = this.breadcrumbs.length - this.showThisManyCrumbs;
         for (var i = 0; i < this.breadcrumbs.length; i++) {
             if (i >= minIndex && i <= maxIndex) {this.breadcrumbs[i].show = true;}
             else {this.breadcrumbs[i].show = false;}

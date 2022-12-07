@@ -37,44 +37,51 @@ namespace d360.web
 
             int? companyID = request.Get<int?>("CompanyID");
 
-            if (companyID.HasValue)
-            {
-                var ctx = CreateOwinCompanyContext(companyID.Value);
-                string ancestor = ctx.GetSettingValue<string>(Setting.FramingDomains);
+			if (companyID.HasValue)
+			{
+				var ctx = CreateOwinCompanyContext(companyID.Value);
+				string ancestor = ctx.GetSettingValue<string>(Setting.FramingDomains);
 
-                //If company has a frame setting, a CSP header should be added to allow the frame ancestors
-                if (!string.IsNullOrEmpty(ancestor))
-                {
-                    //Get base permissive CSP
-                    Dictionary<string, List<string>> directives = Permissive.ToDictionary(d => d.Key, d => d.Value.ToList());
+				//If company has a frame setting, a CSP header should be added to allow the frame ancestors
+				if (!string.IsNullOrEmpty(ancestor))
+				{
+					//Get base permissive CSP
+					Dictionary<string, List<string>> directives = Permissive.ToDictionary(d => d.Key, d => d.Value.ToList());
 
-                    //Add the allowed ancestors from the setting
-                    if (!directives.ContainsKey("frame-ancestors"))
-                    {
-                        directives.Add("frame-ancestors", new List<string>());
-                    }
+					//Add the allowed ancestors from the setting
+					if (!directives.ContainsKey("frame-ancestors"))
+					{
+						directives.Add("frame-ancestors", new List<string>());
+					}
 
-                    List<string> frameAncestors = ancestor.Split(',').ToList().Select(a => a.Trim()).ToList();
-                    directives["frame-ancestors"].AddRange(frameAncestors);
+					List<string> frameAncestors = ancestor.Split(',').ToList().Select(a => a.Trim()).ToList();
+					directives["frame-ancestors"].AddRange(frameAncestors);
 
-                    // Set flag for Global.asax.cs to downgrade cookies as needed, if request is from a valid frame
-                    if (IsFrameSessionStart(request, frameAncestors))
-                    {
-                        request.Set("CompanyFrameRequestStart", true);
-                    }
+					// Set flag for Global.asax.cs to downgrade cookies as needed, if request is from a valid frame
+					if (IsFrameSessionStart(request, frameAncestors))
+					{
+						request.Set("CompanyFrameRequestStart", true);
+					}
+					response.OnSendingHeaders(s =>
+					{
+						var res = (IOwinResponse)s;
 
-                    response.OnSendingHeaders(s =>
-                    {
-                        var res = (IOwinResponse)s;
+						string directiveString = string.Join("; ", directives
+							.Where(d => d.Value.Any())
+							.Select(d => d.Key + " " + string.Join(" ", d.Value.ToArray())).ToArray());
 
-                        string directiveString = string.Join("; ", directives
-                            .Where(d => d.Value.Any())
-                            .Select(d => d.Key + " " + string.Join(" ", d.Value.ToArray())).ToArray());
+						res.Headers.Add("Content-Security-Policy", new[] { directiveString });
+					}, response);
+				}
 
-                        res.Headers.Add("Content-Security-Policy", new[] { directiveString });
-                    }, response);
-                }
-            }
+				int? resourceId = request.Get<int?>("ResourceID");
+				if (resourceId.HasValue)
+				{
+					var lang = ctx.ResourceSettings.FirstOrDefault(x=> x.ResourceID == resourceId.Value && x.Setting == "ApplicationLanguage" && x.AssetTypeID == 0);
+					context.Set<string>("ApplicationLanguageSetting", lang?.Value);
+				}
+
+			}
 
             await Next(environment).ConfigureAwait(false);
         }

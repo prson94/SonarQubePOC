@@ -49,13 +49,6 @@
 	<include file="scripts/Function.utility.GetObjectObjectIdByUID.xml"/>
 	
 	<!-- Tables (object-based naming) -->
-	<include file="scripts/Table.analytics.Action.xml"/>
-	<include file="scripts/Table.analytics.BrowserLanguage.xml"/>
-	<include file="scripts/Table.analytics.Host.xml"/>
-	<include file="scripts/Table.analytics.Ip.xml"/>
-	<include file="scripts/Table.analytics.Object.xml"/>
-	<include file="scripts/Table.analytics.Statistic.xml"/>
-	<include file="scripts/Table.analytics.UserAgent.xml"/>
 	<include file="scripts/Table.dbo.AssetType.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeLevel.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeStyle.xml"/>
@@ -64,6 +57,7 @@
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateField.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateStyle.xml"/>
 	<include file="scripts/Table.dbo.Asset.xml"/>
+	<include file="scripts/Table.dbo.AssetFilterCache.xml"/>
 	<include file="scripts/Table.dbo.AssetCrossReference.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfile.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfileSample.xml"/>
@@ -104,6 +98,7 @@
 	<include file="scripts/Table.dbo.ReportResponsibility.xml"/>
 	<include file="scripts/Table.dbo.ResourceGroup.xml"/>
 	<include file="scripts/Table.dbo.ResourcePasswordReset.xml"/>
+	<include file="scripts/Table.dbo.ResourceSetting.xml"/>
 	<include file="scripts/Table.dbo.ResponsibilityType.xml"/>
 	<include file="scripts/Table.dbo.IssueTypeRelationResponsibility.xml"/> <!-- needs to be after responsibility type table due to FK-->
 	<include file="scripts/Table.dbo.ResponsibilityTypeRelation.xml"/>
@@ -156,6 +151,12 @@
 	<include file="scripts/Table.reporting.Global_Audit.xml"/>
 	<include file="scripts/Table.reporting.Global_FieldAudit.xml"/>
 	<include file="scripts/Table.reporting.Global_Resource.xml"/>
+
+	<include file="scripts/Table.usage.Analytic.xml"/>
+	<include file="scripts/Table.usage.Ip.xml"/>
+	<include file="scripts/Table.usage.Sidebar.xml"/>
+	<include file="scripts/Table.usage.Tab.xml"/>
+
 	<include file="scripts/Table.workflow.Type.xml"/>
 	<include file="scripts/Table.workflow.Version.xml"/>
 	<include file="scripts/Table.workflow.Type.FK.xml"/>
@@ -205,7 +206,6 @@
 	<include file="scripts/Function.dbo.GetAssetDisplayValueById.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetUrlById.xml"/>					<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetTypeUrlById.xml"/>				<!--Function used for computed column-->
-	<include file="scripts/Function.dbo.GetIntersectNames.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetIntersectTypeNames.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetScoreById.xml"/>
 	<include file="scripts/View.dbo.ArtifactTypeDisplayFormatFieldTypes.xml"/>
@@ -231,7 +231,6 @@
 	<include file="scripts/View.dbo.ResponsibilityDetail.xml"/>
 	<include file="scripts/View.dbo.SiteNavAvailable.xml"/>
 	<include file="scripts/View.dbo.SiteNavFlat.xml"/>
-    <include file="scripts/View.utility.ArtifactAssetParent.xml"/>
     <include file="scripts/View.utility.FieldValue.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>
 	<include file="scripts/View.dbo.ProcessExpandedData.xml"/>
@@ -296,18 +295,15 @@
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.GetBackwardLineage.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
-    <include file="scripts/Function.utility.DeriveIntersectName.xml"/>
     <include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.FieldDetailsByAssetId.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
-	<include file="scripts/Function.utility.GetIntersectNames.xml"/>
 	<include file="scripts/Function.utility.GetIntersectTypesByType.xml"/>
 	<include file="scripts/Function.utility.GetObjectTypePath.xml"/>
 	<include file="scripts/Function.utility.GetPredicateFunctionalTypeValue.xml"/>
 	<include file="scripts/Function.utility.ObjectDetail.xml"/>
 
 	<!-- Procedures (object-based naming) -->
-	<include file="scripts/Procedure.analytics.AddStatistic.xml"/>
 	<include file="scripts/Procedure.api.DeleteAssetTypesByExecution.xml"/>
 	<include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>
 	<include file="scripts/Procedure.api.MergeAssetPaths.xml"/>
@@ -318,7 +314,6 @@
 	<include file="scripts/Procedure.dbo.AzureSQLMaintenance.xml"/>	
 	<include file="scripts/Procedure.dbo.CheckDisplayValues.xml"/>
 	<include file="scripts/Procedure.dbo.DeleteAssetDataProfileRecords.xml"/>
-	<include file="scripts/Procedure.dbo.DeleteIntersect.xml"/>
 	<include file="scripts/Procedure.dbo.DeleteObject.xml"/>
 	<include file="scripts/Procedure.dbo.FollowObject.xml"/>
 	<include file="scripts/Procedure.dbo.GenerateAllAssetTypeDisplayValues.xml"/>
@@ -355,7 +350,8 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
     <include file="scripts/Procedure.dbo.GetResponsibilityBreakdownByResource.xml"/>
-	<include file="scripts/Procedure.graph.PopulateForwardLineage.xml"/>
+	<include file="scripts/Procedure.dbo.CachedAssetFiltersProvider.xml"/>
+	<include file="scripts/Procedure.usage.Add.xml"/>
 
     <include file="scripts/Function.Deletions.xml"/>
 	<include file="scripts/Procedure.Deletions.xml"/>

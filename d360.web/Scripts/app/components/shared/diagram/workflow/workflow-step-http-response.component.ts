@@ -1,4 +1,4 @@
-﻿import { Component, Output, EventEmitter, Input, OnInit } from "@angular/core";
+﻿import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { BaseComponent } from "../../../shared/base.component";
 import * as _ from "lodash";
 import { HTTPResponseOutput, NodeModel } from "../../../../models/workflow.model";
@@ -58,7 +58,7 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
     }
 
     ngOnInit() {
-        this.filterHttpRequestFields();
+		this.filterHttpRequestFields();	
 
         this.workflowFieldsService.httpRequest$.subscribe(() => {
             this.filterHttpRequestFields();
@@ -92,9 +92,10 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
     showEdit() {
         this.cancel();
 
-        let selected = this.step.settings.HTTPResponse.Outputs[this.selectedIndex];
+        const selected = this.step.settings.HTTPResponse.Outputs[this.selectedIndex];
 
-        this.selectedRow = new HTTPResponseOutput();
+		this.selectedRow = new HTTPResponseOutput();
+		this.selectedRow.StepName = selected.StepName;
         this.selectedRow.Name = selected.Name;
         this.selectedRow.Path = selected.Path;
         this.selectedRow.StepId = selected.StepId;
@@ -120,8 +121,8 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
         this.isEditing = false;
         this.selectedRow = new HTTPResponseOutput();
 
-        let len = this.step.settings.HTTPResponse.Outputs.length;
-        let count = len === 0 ? 1 : this.step.settings.HTTPResponse.Outputs
+        const len = this.step.settings.HTTPResponse.Outputs.length;
+        const count = len === 0 ? 1 : this.step.settings.HTTPResponse.Outputs
             .map((f) => +(f.Id))
             .sort((a, b) => { return a - b; })[len - 1] + 1;
 
@@ -129,7 +130,8 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
         this.selectedRow.Id = count;
     }
 
-    addOutput() {
+	addOutput() {
+		this.selectedRow.StepName = this.step.name;
         this.step.settings.HTTPResponse.Outputs.push(this.selectedRow);
         this.workflowFieldsService.pushOutputField(this.selectedRow);
         this.stepChange.emit(this.step);
@@ -148,12 +150,12 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
             return;
         }
 
-        let fields = this.workflowFieldsService.getHttpRequestFields();
-        let upstreamSteps = [];
+        const fields = this.workflowFieldsService.getHttpRequestFields();
+        const upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
 
         fields.forEach((f) => {
-            let k = upstreamSteps.filter((u) => u === f.key);
+            const k = upstreamSteps.filter((u) => u === f.key);
             if (k != null && k.length > 0) {
                 this.httpRequests.push({
                     key: f.key,
@@ -164,11 +166,11 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
     }
 
     traverseDiagram(key: any, upstreamSteps: any[]) {
-        let steps = <any[]>this.diagram.model.nodeDataArray;
-        let links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
+        const steps = <any[]>this.diagram.model.nodeDataArray;
+        const links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
 
-        let step = steps.find((s) => s.key === key);
-        let toLinks = links.filter((l) => l.to === key);
+        const step = steps.find((s) => s.key === key);
+        const toLinks = links.filter((l) => l.to === key);
 
         if (_.includes(upstreamSteps, key)) {
             return;

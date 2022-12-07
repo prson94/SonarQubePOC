@@ -1,13 +1,12 @@
-﻿import { NgModule }       from '@angular/core';
+﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule }    from '@angular/forms';
-
+import { FormsModule } from '@angular/forms';
 
 
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
-import { TilesModule  } from '../shared/tiles/tiles.module';
+import { TilesModule } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedGridSelectionInfoModule } from '../shared/grid-selection-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';

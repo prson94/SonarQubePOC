@@ -37,7 +37,6 @@ export class SiteUrlHelpers {
     static SITE_URL_ITEM_FOLLOW_ROOT = 'sidebar/itemfollow';
 	static SITE_URL_COMMENTS_ROOT = 'sidebar/comments';
 	static SITE_URL_ITEM_OWN_ROOT = 'sidebar/itemown';
-    static SITE_URL_SCORE_ROOT = 'sidebar/score';
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
     static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';
     static SITE_URL_GOVERNANCE_ROLES_ROOT = 'sidebar/governanceRoles';
@@ -57,7 +56,7 @@ export class SiteUrlHelpers {
 
     //admin child routes
     static SITE_URL_ADMIN_BULK_LOAD = `load`;
-    static SITE_URL_ADMIN_ASSET = `assets`;
+    static SITE_URL_ADMIN_ASSET = `configuration/assets`;
     static SITE_URL_ADMIN_ASSET_BUSINESS = `BusinessAsset`;
     static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
     static SITE_URL_ADMIN_CUSTOMIZATIONS = 'customizations';
@@ -83,10 +82,10 @@ export class SiteUrlHelpers {
 
 
     static getDefaultRoute() {
-        if (ResourceHomePage != null && ResourceHomePage != "" && ResourceHomePage != '/') {
+        if (ResourceHomePage != null && ResourceHomePage !== "" && ResourceHomePage !== '/') {
             return ResourceHomePage;
         }
-        else if (CompanySettings != null && CompanySettings.DefaultRoute != null && CompanySettings.DefaultRoute != '' && CompanySettings.DefaultRoute != '/') {
+        else if (CompanySettings != null && CompanySettings.DefaultRoute != null && CompanySettings.DefaultRoute !== '' && CompanySettings.DefaultRoute !== '/') {
             return CompanySettings.DefaultRoute;
         } else {
             return this.SITE_URL_HOME_ROOT;
@@ -94,40 +93,40 @@ export class SiteUrlHelpers {
     }
 
     static getUrl(objectType: string, objectId: number, parentId: number, areaName: string, uid: string) {
-        if (objectType.toLowerCase() == "referenceitemtype") {
+        if (objectType.toLowerCase() === "referenceitemtype") {
             return "/reference;referenceListId=" + objectId;
         }
-        if (objectType.toLowerCase() == "artifacttype" && areaName == 'Business Assets') {
+        if (objectType.toLowerCase() === "artifacttype" && areaName === 'Business Assets') {
             return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
         }
-        if (objectType.toLowerCase() == "artifacttype" && areaName == 'Technical Assets') {
+        if (objectType.toLowerCase() === "artifacttype" && areaName === 'Technical Assets') {
             return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
         }
-        if (objectType.toLowerCase() == "taxonomytype") {
+        if (objectType.toLowerCase() === "taxonomytype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`;
         }
-        if (objectType.toLowerCase() == "policytype") {
+        if (objectType.toLowerCase() === "policytype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`;
         }
-        if (objectType.toLowerCase() == "intersecttype") {
+        if (objectType.toLowerCase() === "intersecttype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`;
         }
-        if (objectType.toLowerCase() == "issuetype") {
+        if (objectType.toLowerCase() === "issuetype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`;
         }
-        if (objectType.toLowerCase() == "responsibilitytype") {
+        if (objectType.toLowerCase() === "responsibilitytype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`;
         }
-        if (objectType.toLowerCase() == "report") {
+        if (objectType.toLowerCase() === "report") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`;
         }
-        if (objectType.toLowerCase() == "tag" && uid && uid != '00000000-0000-0000-0000-000000000000') {
+        if (objectType.toLowerCase() === "tag" && uid && uid !== '00000000-0000-0000-0000-000000000000') {
             return `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${uid}`;
         }
-        if (objectType.toLowerCase() == "tag" && !objectId) {
+        if (objectType.toLowerCase() === "tag" && !objectId) {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`;
         }
-        if (objectType.toLowerCase() == "ruletype") {
+        if (objectType.toLowerCase() === "ruletype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`;
         }
         if (objectType.toLowerCase() === "resourcetype") {
@@ -223,10 +222,10 @@ export class SiteUrlHelpers {
             {return url.replace('#/groups', SiteUrlHelpers.SITE_URL_GROUP_ROOT);}
         else if (url.startsWith('#/catalogs')) {
             var parts = url.split('/');
-            if (parts.length == 4) {
+            if (parts.length === 4) {
                 return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${parts[2]};hierarchyId=${parts[3]}`;
             }
-            else if (parts.length == 3) {
+            else if (parts.length === 3) {
                 return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${parts[2]}/structure`;
             }
             console.log('[ERROR] - INVALID FORMAT FOR MODEL URL', url);

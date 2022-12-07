@@ -1,6 +1,5 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ReferenceService } from '../../services/reference.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ReferenceItemType } from '../../models/reference.model';
@@ -47,7 +46,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     }
 
     set showEditor(value: boolean) {
-        if (value != this._showEditor && value) {
+        if (value !== this._showEditor && value) {
             this.formModeChange.emit(FormMode.Editing | FormMode.Adding);
         }
 
@@ -64,7 +63,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
 
     set showDelete(value: boolean) {
-        if (value != this._showDelete && value) {
+        if (value !== this._showDelete && value) {
             this.formModeChange.emit(FormMode.Deleting);
         }
 
@@ -113,7 +112,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                 this.referenceTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.referenceTypes.length > 0) {
                     if (this.initialSelectedListUid.length > 0) {
-                        let index = this.referenceTypes.findIndex((x) => x.uid == this.initialSelectedListUid);
+                        const index = this.referenceTypes.findIndex((x) => x.uid === this.initialSelectedListUid);
                         this.initialSelectedListUid = '';
                         if (index >= 0 && index < this.referenceTypes.length) {
                             this.selected = this.referenceTypes[index];
@@ -138,7 +137,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
     private deleteReferenceItemType(id: number) {
         this.isLoading = true;
-        var uid = this.referenceTypes.filter((x) => x.AssetTypeID == id)[0].uid;
+        var uid = this.referenceTypes.filter((x) => x.AssetTypeID === id)[0].uid;
         this
             .assetTypeService
             .deleteSingleAssetType(uid)
@@ -146,8 +145,8 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                 if (result) {
                     this.showMessageForResult(this.messagesService, result);
 
-                    if (result.type != 'error') {
-                        let index = this.referenceTypes.findIndex((x) => x.AssetTypeID == id);
+                    if (result.type !== 'error') {
+                        const index = this.referenceTypes.findIndex((x) => x.AssetTypeID === id);
                         if (index >= 0 && index < this.referenceTypes.length) {
                             this.referenceTypes.splice(index, 1);
                         }
@@ -174,32 +173,46 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     }
 
     private onSelect() {
-        this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+        this.assetTypeService.GetAssetTypeByUid(this.selected.uid)
             .subscribe((res) => {
-                this.selected.ID = +res.ObjectID;
-                this.selectedChange.emit(this.selected);
+             if (res) {
+                    this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+                        .subscribe((res) => {
+                            this.selected.ID = +res.ObjectID;
+                            this.selectedChange.emit(this.selected);
+                        });
+                  }
             });
     }
 
     private onEdit(item: ReferenceItemType) {
         this.selected = item;
-        this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+        this.assetTypeService.GetAssetTypeByUid(this.selected.uid)
             .subscribe((res) => {
-                this.selected.ID = +res.ObjectID;
-                this.selected.AssetTypeID = +res.Id;
-                this.showEditor = true;
+             if (res) {
+                    this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+                        .subscribe((res) => {
+                            this.selected.ID = +res.ObjectID;
+                            this.selected.AssetTypeID = +res.Id;
+                            this.showEditor = true;
+                            });
+                  }
             });
     }
 
     private onDelete(item: ReferenceItemType) {
         this.selected = item;
-        this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+        this.assetTypeService.GetAssetTypeByUid(this.selected.uid)
             .subscribe((res) => {
-                this.selected.ID = +res.ObjectID;
-                this.selected.AssetTypeID = +res.Id;
-                this.showDelete = true;
+             if (res) {
+                 this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+                     .subscribe((res) => {
+                          this.selected.ID = +res.ObjectID;
+                          this.selected.AssetTypeID = +res.Id;
+                          this.showDelete = true;
+                      });
+                  }
             });
-
     }
 
     ngOnDestroy() {

@@ -1,5 +1,5 @@
-﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -78,14 +78,14 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
         this.isLoading = true;
         this.workflowService.getWorkflowDetailsV2(this.workflowId)
             .subscribe((res) => {
-                for (let item of res.ItemSteps) {
+                for (const item of res.ItemSteps) {
                     if (!res.Steps) {
                         item.StepName = "";
                         continue;
                     }
-                    var step = res.Steps.filter((x) => x.ID == item.StepID);
+                    var step = res.Steps.filter((x) => x.ID === item.StepID);
 
-                    if (!step || step.length == 0) {
+                    if (!step || step.length === 0) {
                         item.StepName = "(unresolved)";
                         continue;
                     }
@@ -110,12 +110,12 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
     }
 
     private isUid(value: string) {
-        let regex = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
+        const regex = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
         return regex.test(value);
     }
 
     private showHideFollow(show: boolean) {
-        let headerActions: HeaderActions = new HeaderActions();
+        const headerActions: HeaderActions = new HeaderActions();
         headerActions.showFollow = show;
         this.headerActionsService.setCurrentHeaderActions(headerActions);
     }
@@ -129,9 +129,9 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
 
     private getStepName(itemStep: any): string {
         if (!this.details || !this.details.Steps) {return "";}
-        var step = this.details.Steps.filter((x) => x.ID == itemStep.StepID);
+        var step = this.details.Steps.filter((x) => x.ID === itemStep.StepID);
 
-        if (!step || step.length == 0) {return "";}
+        if (!step || step.length === 0) {return "";}
         return step[0].Name;
     }
 

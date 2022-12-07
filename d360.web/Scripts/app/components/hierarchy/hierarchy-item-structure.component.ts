@@ -1,6 +1,17 @@
-﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import {
+	ChangeDetectorRef,
+	Component,
+	ElementRef,
+	HostListener,
+	Input,
+	OnDestroy,
+	OnInit,
+	QueryList,
+	ViewChild,
+	ViewChildren
+} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { AssetTypeClass, AssetTypeLevelApiModel } from '../../models/asset.model';
+import { AssetTypeApiModel, AssetTypeClass, AssetTypeLevelApiModel } from '../../models/asset.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -23,7 +34,6 @@ import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.mo
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
-import { ChangeDetectorRef } from '@angular/core';
 import { AssetEditorComponent } from '../shared/asset-editor/asset-editor.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
@@ -34,6 +44,8 @@ import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { LocalStorageKey } from "../../enums/localstorage.enum";
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 declare var CurrentResourceID;
 
@@ -52,8 +64,25 @@ declare var CurrentResourceID;
 })
 
 export class HierarchyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
+	@Input() assetTypeApiModel: AssetTypeApiModel;
 	@Input() assetTypeClass: AssetTypeClass;
 	@Input() assetTypeUid: string;
+
+	@ViewChildren('tableRow') tableRows: QueryList<ElementRef>;
+
+	@HostListener('document:keydown.arrowup', ['$event'])
+	@HostListener('document:keydown.arrowdown', ['$event'])
+	onArrowKeysDownHandler($event: KeyboardEvent) {
+		$event.preventDefault();
+		const selectedRow = this.tableRows.toArray().find((elRef) => {
+			return elRef.nativeElement.classList.contains('p-highlight');
+		});
+		if (selectedRow && document.activeElement !== selectedRow.nativeElement) {
+			selectedRow.nativeElement.dispatchEvent(
+				new KeyboardEvent($event.type, { key: $event.key })
+			);
+		}
+	}
 
 	rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
 
@@ -128,7 +157,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		{ title: $localize`Open in New Tab` },
 	];
 	secondarySidePanel: string = "detail";
-
+	isDescriptionVisible: boolean = false;
 	resourceUid: string;
 
 	constructor(
@@ -188,7 +217,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 		this.sidePanelStorageKey = 'list_' + AssetTypeClass[this.assetTypeClass] + '_' + CurrentResourceID;
 
-		let uriParams: any = {};
+		const uriParams: any = {};
 
 		const obs = new Observable((observer) => {
 			if (this.assetTypeUid) {
@@ -207,13 +236,24 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			uriParams.objId = this.objectTypeId;
 			uriParams.includelevels = "true";
 			uriParams.includedashboardflag = "true";
-			this.logAction("open", this.objectType, this.objectTypeId);
 
 			this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
 				this.assetType = result[0];
 				this.assetTypeUid = result[0].uid;
 				this.baseAssetTypeUid = this.assetTypeUid;
 				this.uid = this.assetTypeUid;
+
+				this.logAssetTypeAction(UsageAction.View, this.assetTypeUid);
+
+				const descriptionVisibilitySavedState = localStorage.getItem(
+					`${LocalStorageKey.IsAssetTypeDescriptionVisible}_${this.assetTypeApiModel.uid}`
+				);
+				
+				if (descriptionVisibilitySavedState !== null) {
+					this.isDescriptionVisible = JSON.parse(descriptionVisibilitySavedState);
+				} else {
+					this.isDescriptionVisible = this.assetTypeApiModel.IsDescriptionVisibleByDefault;
+				}
 
 				this.levels = result[0].Levels;
 				this.maxLevelAllowed = result[0].HierarchyMaximumDepth;
@@ -224,6 +264,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 		this.setRowsPerPage();
 		this.numberOfRowsByCategoryService.defineNumberOfRows();
+	}
+
+	setDescriptionVisibility(state: boolean): void {
+		this.isDescriptionVisible = state;
+		localStorage.setItem(
+			`${LocalStorageKey.IsAssetTypeDescriptionVisible}_${this.assetTypeApiModel.uid}`,
+			state.toString()
+		);
 	}
 
 	setRowsPerPage(): void {
@@ -322,7 +370,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 
 	clickMenuItem(menuItem: any, item: any) {
-		let key = menuItem.value.toLowerCase();
+		const key = menuItem.value.toLowerCase();
 		const event = menuItem.event;
 		if (key === $localize`View Information`.toLowerCase()) {
 			event['from-context-method'] = 'info';
@@ -432,17 +480,17 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	}
 
 	private buildTreeNodeArray(hierarchies: any[], levelNumber: number, Parent?: string): TreeNode[] {
-		let rootNodes = hierarchies.filter((x) => (Parent !== undefined ? x.ParentAssetUid === Parent : !x.ParentAssetUid));
+		const rootNodes = hierarchies.filter((x) => (Parent !== undefined ? x.ParentAssetUid === Parent : !x.ParentAssetUid));
 
 		if (rootNodes.length === 0) {
 			return null;
 		}
 
-		let res: TreeNode[] = [];
+		const res: TreeNode[] = [];
 
 
-		for (let root of rootNodes) {
-			let isExpanded = this.expandedNodes.indexOf(root.AssetUid) !== -1 || this.areAllExpanded;
+		for (const root of rootNodes) {
+			const isExpanded = this.expandedNodes.indexOf(root.AssetUid) !== -1 || this.areAllExpanded;
 			root.Level = levelNumber;
 
 			root[this.menuKey] = [
@@ -459,7 +507,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				root[this.menuKey].push({ title: $localize`Edit` });
 			}
 
-			let children = (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.AssetUid));
+			const children = (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.AssetUid));
 
 			if (root.Permissions.DeleteAsset && (!children || children?.length === 0)) {
 				root[this.menuKey].push({ title: $localize`Delete` });
@@ -481,7 +529,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			if (this.hierarchy) {
 				this.hierarchy.forEach((i) => {
 					this.scoreAllocations.forEach((s) => {
-						var field = this.fields.find((f) => f.apiName == s.Name);
+						var field = this.fields.find((f) => f.apiName === s.Name);
 						if (field) {
 							i[field.apiName + '_threshold'] = this.getThreshold(i[field.apiName], s.LowerThreshold, s.UpperThreshold);
 						}
@@ -505,7 +553,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	}
 
 	private deleteSelectedTreeNode(id: number): TreeNode {
-		let nodes: TreeNode[] = [];
+		const nodes: TreeNode[] = [];
 
 		// add root nodes
 		for (let i = 0; i < this.treeNodeArray.length; i++) {
@@ -517,7 +565,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		}
 
 		//do a breadth first search for the given treenode
-		if (nodes.length == 0) {
+		if (nodes.length === 0) {
 			return;
 		}
 
@@ -531,7 +579,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			//push children
 			if (node.children) {
 				for (let i = 0; i < node.children.length; i++) {
-					if (node.children[i].data.AssetUid && node.children[i].data.AssetUid == id) {
+					if (node.children[i].data.AssetUid && node.children[i].data.AssetUid === id) {
 						node.children.splice(i, 1);
 						return;
 					}
@@ -542,7 +590,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			//remove this node
 			nodes.splice(0, 1);
 
-			if (nodes.length == 0) {
+			if (nodes.length === 0) {
 				return null;
 			}
 			node = nodes[0];
@@ -579,8 +627,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	private exportExcel(level: number) {
 		var params = new V2ApiFilters();
 		params._onlyListableFields = false;
-		params._direction = this.treeTable._sortOrder == 1 ? 'ASC' : 'DESC';
-		if (this.treeTable._sortField != undefined) {
+		params._direction = this.treeTable._sortOrder === 1 ? 'ASC' : 'DESC';
+		if (this.treeTable._sortField != null) {
 			var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
 			params._order = field["apiName"];
 		}
@@ -624,7 +672,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	setTreeNodeStyles(node) {
 		if (!node.data) {return null;}
 
-		let styles = {
+		const styles = {
 			'font-weight': node.data.hasRelations ? 'bold' : 'normal',
 		};
 		return styles;
@@ -636,7 +684,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		}
 
 		if (!this.selected) {
-			let thisLevel = this.levels.filter((x) => x.Level == this.selectedLevel + 1);
+			const thisLevel = this.levels.filter((x) => x.Level === this.selectedLevel + 1);
 
 			if (thisLevel && thisLevel.length > 0)
 				{return thisLevel[0].Name;}
@@ -644,7 +692,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				{return $localize`(Level ${this.selectedLevel + 1}) Item`;}
 		}
 
-		let thisLevel = this.levels.filter((x) => x.Level == this.selected.data.Level);
+		const thisLevel = this.levels.filter((x) => x.Level === this.selected.data.Level);
 
 		if (thisLevel && thisLevel.length > 0) {return thisLevel[0].Name;}
 		return $localize`(Level ${this.selected.data.Level}) Item`;
@@ -659,7 +707,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		if (isNaN(+value))
 			{return '';}
 
-		let v = +value;
+		const v = +value;
 
 		if (v <= lower)
 			{return 'poor';}
@@ -672,7 +720,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	showHierarchy($event, asset) {
 		this.assetService.getUIDetailsForAssetUID(asset.AssetUid)
 			.subscribe((res) => {
-				let url = SiteUrlHelpers.getAssetUrl(asset.AssetUid);
+				const url = SiteUrlHelpers.getAssetUrl(asset.AssetUid);
 				if ($event['from-context-method']) {
 					this.linkClickInterceptor.sendEvent($event, {
 						Values: [{
@@ -744,7 +792,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				this.loadNodesSub.unsubscribe();
 			}
 
-			let uriParams: any = {
+			const uriParams: any = {
 				_pageSize: 50000,
 				_includeParent: "true",
 				_pageNum: 1,

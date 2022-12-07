@@ -4,12 +4,12 @@ import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 import { JsonResult } from "../models/jsonresult.model";
 import {
-    Classification,
     AssetDetail,
+    Classification,
     NymType,
+    ObjectDetail,
     Synonym,
-    SynonymItem,
-    ObjectDetail
+    SynonymItem
 } from "../models/object-detail.model";
 
 import { BaseObservableService } from "./baseObservable.service";
@@ -156,7 +156,7 @@ export class ObjectDetailService extends BaseObservableService {
         object: string,
         nyms: NymType[]
     ): Observable<JsonResult> {
-        let model = {
+        const model = {
             Object: object,
             ObjectID: objectID,
             PredicateIDs: nyms.filter((x) => x.Enabled).map((a) => a.ID)
@@ -189,7 +189,7 @@ export class ObjectDetailService extends BaseObservableService {
         classification: Classification,
         objectType: string
     ): Observable<JsonResult> {
-        if (classification.ID == undefined || !classification.ID) {
+        if (classification.ID == null || !classification.ID) {
             return this.postDynamic(this.http, objectType, classification);
         }
 

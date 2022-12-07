@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Validators, ValidatorFn, AbstractControl, FormGroup, FormBuilder, FormControl } from '@angular/forms';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { AssetService } from '../../services/asset.service';
 
@@ -84,7 +84,7 @@ export class GalleryPropertyGroupComponent implements OnInit {
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null)
                 {return {};}
-            if (control.value == null || wordsIDontLikeArr.map((x) => { return x.toLowerCase(); }).indexOf(control.value.toLowerCase()) != -1)
+            if (control.value == null || wordsIDontLikeArr.map((x) => { return x.toLowerCase(); }).indexOf(control.value.toLowerCase()) !== -1)
                 {return {
                     notNiceWord: { value: control.value }
                 };}

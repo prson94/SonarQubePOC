@@ -13,7 +13,6 @@ import { FavoriteApiModel } from '../../../models/favorite.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import * as _ from 'lodash';
 
 
 @Component({
@@ -134,7 +133,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     isIssueUri() {
-        return (this.uri || '').toUpperCase() == `${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE}`.toUpperCase();
+        return (this.uri || '').toUpperCase() === `${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE}`.toUpperCase();
     }
 }
 

@@ -1,15 +1,15 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from "rxjs";
-import { catchError, map, debounceTime } from "rxjs/operators";
+import { catchError, debounceTime, map } from "rxjs/operators";
 
 import { JsonResult } from '../models/jsonresult.model';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
-import { AssetEditorModel, AssetTypeClass, AssetCount } from '../models/asset.model';
-import { AssetSearchFilter, AssetSearchApiResponse } from '../models/asset-search.model';
+import { AssetCount, AssetEditorModel, AssetTypeClass } from '../models/asset.model';
+import { AssetSearchApiResponse, AssetSearchFilter } from '../models/asset-search.model';
 import { SelectItem } from 'primeng/api';
 import { LookupGrid } from '../models/grid-definition.model';
 import * as _ from 'lodash';
@@ -74,7 +74,7 @@ export class AssetService extends BaseObservableService {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        let assetArray: AssetEditorModel[] = [];
+        const assetArray: AssetEditorModel[] = [];
         assetArray.push(asset);
 
         if (asset.Uid) {

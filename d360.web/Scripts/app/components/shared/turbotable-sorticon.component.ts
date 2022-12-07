@@ -1,7 +1,7 @@
-﻿import { Component, Input, OnInit, OnDestroy, NgModule, Output } from "@angular/core";
+﻿import { Component, EventEmitter, Input, NgModule, OnDestroy, OnInit, Output, Optional } from "@angular/core";
 import { Table } from 'primeng/table';
 import { CommonModule } from "@angular/common";
-import { EventEmitter } from '@angular/core';
+import { TreeTable } from "primeng/treetable";
 
 
 @Component({
@@ -23,7 +23,14 @@ export class D3SSortIcon implements OnInit, OnDestroy {
 
     @Output() changeCallback = new EventEmitter();
 
-    constructor(public dt: Table) {
+    dt: Table | TreeTable;
+
+    constructor(@Optional() table: Table, @Optional() treeTable: TreeTable) {
+        if (table == null && treeTable == null) {
+            throw new Error('Failed to resolve primeng/Table or primeng/TreeTable');
+        }
+
+        this.dt = table ?? treeTable;
         this.subscription = this.dt.tableService.sortSource$.subscribe((sortMeta) => {
             this.updateSortState();
         });
@@ -42,7 +49,7 @@ export class D3SSortIcon implements OnInit, OnDestroy {
             this.sortOrder = this.dt.isSorted(this.field) ? this.dt.sortOrder : 0;
         }
         else if (this.dt.sortMode === 'multiple') {
-            let sortMeta = this.dt.getSortMeta(this.field);
+            const sortMeta = this.dt.getSortMeta(this.field);
             this.sortOrder = sortMeta ? sortMeta.order : 0;
         }
         this.changeCallback.emit({ field: this.dt.sortField, order: this.dt.sortOrder });

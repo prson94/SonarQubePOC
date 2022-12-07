@@ -2,7 +2,7 @@ import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/c
 import { Injectable } from "@angular/core";
 import { Observable, Subject } from "rxjs";
 import { distinctUntilChanged, filter, map, takeUntil, tap } from "rxjs/operators";
-import { Router, NavigationEnd } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { isQueryRequest } from './isQuery';
 import { ROUTE_INDEPENDENT_QUERY } from "./routeIndependentQuery";
 import { takeUntilAndThrow } from "../static/rxjs";

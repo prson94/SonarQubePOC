@@ -1,4 +1,15 @@
-﻿import { Component, OnDestroy, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, Input, OnChanges, SimpleChanges, Output, EventEmitter } from "@angular/core";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    Output,
+    SimpleChanges
+} from "@angular/core";
 import { BaseComponent } from "../shared/base.component";
 import { LazyLoadEvent } from "primeng/api";
 import { WorkflowMonitorService } from "../../services/workflowmonitor.service";
@@ -87,7 +98,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
     }
 
     export() {
-        let filter: GridFilterExpression[] = this.getFilter();
+        const filter: GridFilterExpression[] = this.getFilter();
         if (filter == null || filter.length < 1) {
             return;
         }
@@ -95,7 +106,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
     }
 
     gridSelectionChange($event) {
-        if (Array.isArray($event) && $event.length == 1) {
+        if (Array.isArray($event) && $event.length === 1) {
             this.stateService.workflowItemFilters.itemId = $event[0].Id;
         } else {
             this.stateService.workflowItemFilters.itemId = 0;
@@ -132,7 +143,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
     }
 
     private loadData() {
-        let filter: GridFilterExpression[] = this.getFilter();
+        const filter: GridFilterExpression[] = this.getFilter();
         if (filter == null || filter.length < 1) {
             this.items = [];
             this.totalRecords = 0;
@@ -148,8 +159,8 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
                 this.totalRecords = +result.Total;
                 if (this.items != null && this.items.length > 0) {
                     let item: any;
-                    if (this.stateService.workflowItemFilters.itemId != 0) {
-                        item = this.items.find((x) => x.Id == this.stateService.workflowItemFilters.itemId);
+                    if (this.stateService.workflowItemFilters.itemId !== 0) {
+                        item = this.items.find((x) => x.Id === this.stateService.workflowItemFilters.itemId);
                     }
 
                     this.selection = item ? [item] : [this.items[0]];
@@ -194,8 +205,8 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
     loadWorkflowMonitorItems(event: LazyLoadEvent) {
 
         this.rowsPerPage = event.rows;
-        this.sortOrder = event.sortField == undefined ? SortOrder.Descending : event.sortOrder;
-        this.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.sortOrder = event.sortField == null ? SortOrder.Descending : event.sortOrder;
+        this.sortField = event.sortField == null ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.stateService.workflowItemFilters.currentPageNumber = event.first / event.rows;
         this.loadData();
@@ -211,7 +222,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
 
     selectAll() {
         if (this.selection) {
-            if (this.selection.length == this.items.length) {
+            if (this.selection.length === this.items.length) {
                 this.gridSelectionChange([this.items[0]]);
             } else {
                 this.gridSelectionChange(this.items);

@@ -1,12 +1,26 @@
-import { Component, Input, EventEmitter, Output, HostListener, ChangeDetectorRef, ViewChildren, QueryList } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    HostListener,
+    Input,
+    Output,
+    QueryList,
+    ViewChildren
+} from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricAssetVersionConditionViewModel, MetricAssetVersionConditionItemViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
+import {
+    MetricAssetVersionConditionItemViewModel,
+    MetricAssetVersionConditionViewModel,
+    MetricAssetViewModel,
+    ScoreTypeAllocation
+} from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
-import { FormGroup, ValidatorFn, AbstractControl, FormControl } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ValidatorFn } from '@angular/forms';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
 import * as _ from 'lodash';
@@ -107,16 +121,16 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         protected cdRef: ChangeDetectorRef
     ) {
         super(settingsService);
-        let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+        const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
         this.conditionGroupLink = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
         this.conditionAndWeightLink = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
-        let readMoreText = $localize`Read more about Asset Conditions and Weighting`;
-        let conditionWeightTooltipText = $localize`You can override the <b>Weight</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.`;
+        const readMoreText = $localize`Read more about Asset Conditions and Weighting`;
+        const conditionWeightTooltipText = $localize`You can override the <b>Weight</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.`;
 
         this.conditionWeightTootlip = `<div>${conditionWeightTooltipText}</div>
                 <div style=\"padding-top: 8px;\" ><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionGroupLink + "\"><i class=\"fa fa-external-link\"></i> ${readMoreText}</a></div>`;
 
-        let assetConditionsAndWeightingTooltipText = $localize`Asset Conditions and Weighting allows you to target specific subsets of your scoring asset type, 
+        const assetConditionsAndWeightingTooltipText = $localize`Asset Conditions and Weighting allows you to target specific subsets of your scoring asset type, 
                 either choosing to apply your measures to only those assets which match your conditions, or applying different weights to different matches.`;
 
         this.assetConditionsAndWeightingTooltip = `<div>${assetConditionsAndWeightingTooltipText}</div><div style=\"padding-top: 8px;\"><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionAndWeightLink + "\"><i class=\"fa fa-external-link\"></i> ${readMoreText}</a></div>`;
@@ -157,10 +171,10 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     delete(pos) {
-        this.conditionGroups = [...this.conditionGroups.filter((x) => x.Position != pos)];
+        this.conditionGroups = [...this.conditionGroups.filter((x) => x.Position !== pos)];
         this.removeConditionGroupFormControls(pos);
 
-        if (this.conditionGroups.length == 0)
+        if (this.conditionGroups.length === 0)
             {this.addNewGroup();}
         this.orderConditionGroups();
     }
@@ -179,8 +193,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     duplicate(pos) {
-        let itemToDupe = this.conditionGroups.find((x) => x.Position == pos);
-        let newGroup = _.cloneDeep(itemToDupe);
+        const itemToDupe = this.conditionGroups.find((x) => x.Position === pos);
+        const newGroup = _.cloneDeep(itemToDupe);
         newGroup.Position = this.getMaxPositionForGroups();
         newGroup.DisplayOrder = this.getMaxDisplayOrderForGroups();
         this.addConditionGroupFormControls(newGroup.Position);
@@ -188,9 +202,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     moveGroupItems(from, to) {
-        let temp = from;
-        let fromitem = this.conditionGroups.find((x) => x.DisplayOrder == from);
-        let toitem = this.conditionGroups.find((x) => x.DisplayOrder == to);
+        const temp = from;
+        const fromitem = this.conditionGroups.find((x) => x.DisplayOrder === from);
+        const toitem = this.conditionGroups.find((x) => x.DisplayOrder === to);
 
         fromitem.DisplayOrder = to;
         toitem.DisplayOrder = temp;
@@ -198,7 +212,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     addNewGroup() {
-        let newGroup = new MetricAssetVersionConditionViewModel();
+        const newGroup = new MetricAssetVersionConditionViewModel();
         newGroup.Position = this.getMaxPositionForGroups();
         newGroup.DisplayOrder = this.getMaxDisplayOrderForGroups();
         newGroup.MatchType = "All";
@@ -236,7 +250,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     orderConditionGroups() {
         this.conditionGroups.sort((a, b) => a.DisplayOrder - b.DisplayOrder);
         this.conditionGroups.forEach((x, i) => {
-            let pos = i + 1;
+            const pos = i + 1;
             this.removeConditionGroupFormControls(pos);
             this.addConditionGroupFormControls(pos);
             x.DisplayOrder = pos;
@@ -280,7 +294,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         } else if (this.model.ConditionGroups && this.model.ConditionGroups.length > 0) {
             this.conditionGroups = [];
             this.model.ConditionGroups.forEach((x) => {
-                let newGroup: MetricAssetVersionConditionViewModel = new MetricAssetVersionConditionViewModel();
+                const newGroup: MetricAssetVersionConditionViewModel = new MetricAssetVersionConditionViewModel();
                 newGroup.Uid = x.Uid;
                 newGroup.MatchType = x.MatchType;
                 newGroup.DisplayOrder = x.Position ?? this.getMaxPositionForGroups();
@@ -299,17 +313,17 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 if (conditions.length > 0) {
                     conditions.forEach((c) => {
                         const cond = new FieldCondition();
-                        c.FieldType = this.screenReferences.fields.find((x) => x.ApiName == c.ConditionFieldTypeName);
+                        c.FieldType = this.screenReferences.fields.find((x) => x.ApiName === c.ConditionFieldTypeName);
                         cond['uid'] = c.Uid;
                         cond.field = `${this.allocation.assetTypeUid}.${c.FieldType.ApiName}`;
                         cond.isValid = true;
                         cond.operator = c.Operator;
                         cond.value = c.Values[0];
 
-                        if (c.FieldType.Type == 'DateTime' || c.FieldType.Type == 'Date') {
+                        if (c.FieldType.Type === 'DateTime' || c.FieldType.Type === 'Date') {
                             cond.value = new Date(cond.value);
                         }
-                        if (c.FieldType.Type == 'Lookup') {
+                        if (c.FieldType.Type === 'Lookup') {
                             cond.value = cond.value.toString();
                         }
 
@@ -434,8 +448,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         switch (dataType) {
             case 'Date':
             case 'DateTime':
-                let d = new Date(rawValue);
-                let condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+                const d = new Date(rawValue);
+                const condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
                 condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
                 correctedValue = condate.toUTCString();
                 break;
@@ -466,7 +480,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         this.model.ConditionGroups = this.conditionGroups;
         this.isSaving = true;
         let prevDate: string | Date = null;
-        let previousConditions = [...this.model.ConditionGroups];
+        const previousConditions = [...this.model.ConditionGroups];
 
         if (this.allocation.isExternallyCalculated) {
             this.model.MatchConditionsOnly = false;
@@ -474,13 +488,13 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
         if (this.displayEffectiveDate !== null) {
             prevDate = this.displayEffectiveDate;
-            let d = new Date(this.displayEffectiveDate);
-            let condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+            const d = new Date(this.displayEffectiveDate);
+            const condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
             condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
             this.model.EffectiveDate = condate;
         }
 
-        this.matchType = (this.matchType == 'Any') ? 'Any' : 'All';
+        this.matchType = (this.matchType === 'Any') ? 'Any' : 'All';
 
         if (this.allocation.isExternallyCalculated) {
             this.model.ConditionGroups = [];
@@ -500,10 +514,10 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                     x.Threshold = null;
                 }
                 conditions.forEach((c) => {
-                    let fieldCondition = new MetricAssetVersionConditionItemViewModel();
+                    const fieldCondition = new MetricAssetVersionConditionItemViewModel();
                     fieldCondition.ConditionFieldTypeName = c.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
                     fieldCondition.Operator = c.operator;
-                    fieldCondition.FieldType = this.screenReferences.fields.filter((x) => x.ApiName == fieldCondition.ConditionFieldTypeName)[0];
+                    fieldCondition.FieldType = this.screenReferences.fields.filter((x) => x.ApiName === fieldCondition.ConditionFieldTypeName)[0];
 
                     if (!fieldCondition.Values) {
                         fieldCondition.Values = [];
@@ -526,20 +540,20 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             });
 
             if (this.model.HasThreshold) {
-                let threshold = +this.displayThreshold;
+                const threshold = +this.displayThreshold;
                 this.model.Threshold = +(threshold / 100).toFixed(5);
             }
             else {
                 this.model.Threshold = null;
             }
 
-            let weight = +this.displayWeight;
+            const weight = +this.displayWeight;
             this.model.Weight = +(weight / 100).toFixed(2);
         }
 
         this.metricsService.saveMetric(this.model)
             .subscribe((r) => {
-                if (r && r.type != 'error') {
+                if (r && r.type !== 'error') {
                     this.isSaving = false;
                     this.showMessageForResult(this.messagesService, r);
                     this.onSave.emit(this.model.Name);
@@ -579,7 +593,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null)
                 {return {};}
-            if ((control.value as string).trim() == '' && (control.value as string) != '')
+            if ((control.value as string).trim() === '' && (control.value as string) !== '')
                 {return {
                     empty: { value: control.value }
                 };}
@@ -589,7 +603,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     isThresholdGreaterThanDecimalLimit(threshold: any): boolean {
         let thresholdGreater: boolean = false;
-        let sThreshold: string = (threshold) ? threshold.toString() : "";
+        const sThreshold: string = (threshold) ? threshold.toString() : "";
         if (sThreshold.indexOf(".") > -1) {
             thresholdGreater = (sThreshold.split(".")[1].length || 0) > 3;
         }
@@ -600,7 +614,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     isValidThreshold(): ValidatorFn {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null || control.value == undefined)
+            if (control.value == null)
                 {return {};}
             if (this.isThresholdGreaterThanDecimalLimit(control.value))
                 {return {
@@ -617,7 +631,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     isValidThresholdOptional(): ValidatorFn {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null || control.value == undefined || control.value == "")
+            if (control.value == null || control.value === "")
                 {return {};}
             if (this.isThresholdGreaterThanDecimalLimit(control.value))
                 {return {
@@ -634,7 +648,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     isValidWeight(): ValidatorFn {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null || control.value == undefined)
+            if (control.value == null)
                 {return {};}
             if ((control.value as number) < 1 || (control.value as number) > 100)
                 {return {
@@ -647,7 +661,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     isValidWeightOptional(): ValidatorFn {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null || control.value == undefined || control.value == "")
+            if (control.value == null || control.value === "")
                 {return {};}
             if ((control.value as number) < 1 || (control.value as number) > 100)
                 {return {
@@ -658,8 +672,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     getFormattedEffectiveDate(effectiveDate: Date): Date {
-        let d = new Date(effectiveDate);
-        let condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+        const d = new Date(effectiveDate);
+        const condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
         condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
         return condate;
     }
@@ -671,9 +685,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         }
 
         if (updated && original) {
-            let changeFound = updated.length != original.length;
+            let changeFound = updated.length !== original.length;
             updated.forEach((x) => {
-                let originalMatch = original.find((y) => y.Uid == x.Uid);
+                const originalMatch = original.find((y) => y.Uid === x.Uid);
                 if (originalMatch) {
                     if (x.MatchType !== originalMatch.MatchType
                         || x.Position !== originalMatch.Position
@@ -686,9 +700,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                         || x.conditionItemFields.filter((x) => x.field).length !== originalMatch.conditionItemFields.filter((x) => x.field).length) {
                         changeFound = true;
                     } else if (!originalMatch.conditionItemFields.every((item) => {
-                        return x.conditionItemFields.findIndex((x) => x.field == item.field
-                            && (x.operator == item.operator || Operator[x.operator] == <any>item.operator)
-                            && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1;
+                        return x.conditionItemFields.findIndex((x) => x.field === item.field
+                            && (x.operator === item.operator || Operator[x.operator] === <any>item.operator)
+                            && (x.value ? x.value.toString() : "") === (item.value ? item.value.toString() : "")) > -1;
                     })) {
                         changeFound = true;
                     }
@@ -706,10 +720,10 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         }
 
         if (updated && original) {
-            if (updated.length != original.length || !original.every((item) => {
-                return updated.findIndex((x) => x.field == item.field
-                    && (x.operator == item.operator || Operator[x.operator] == <any>item.operator)
-                    && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1;
+            if (updated.length !== original.length || !original.every((item) => {
+                return updated.findIndex((x) => x.field === item.field
+                    && (x.operator === item.operator || Operator[x.operator] === <any>item.operator)
+                    && (x.value ? x.value.toString() : "") === (item.value ? item.value.toString() : "")) > -1;
             })) {
                 return true;
             }

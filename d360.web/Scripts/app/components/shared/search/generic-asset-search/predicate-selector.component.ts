@@ -1,7 +1,17 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ElementRef, OnInit } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input,
+    OnInit,
+    Output
+} from '@angular/core';
 import { AssetService } from '../../../../services/asset.service';
 import { CommonComponentAssetTypeFilterRelationshipSide } from '../../../../models/asset-search.model';
-import { PredicateType, Predicate } from '../../../../models/predicate.model';
+import { Predicate, PredicateType } from '../../../../models/predicate.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { PredicatesService } from '../../../../services/predicates.service';
 
@@ -59,13 +69,13 @@ export class PredicateSelectorComponent implements OnInit {
                 this.predicatesService.getPredicatesByType(this.predicateType)
                     .subscribe((res) => {
                         this.predicates = res;
-                        if (this.predicates.length == 0) {
+                        if (this.predicates.length === 0) {
                             this.noPredicates = true;
                         }
                         else {
                             this.noPredicates = false;
                         }
-                        if (this.predicates.length == 1) {
+                        if (this.predicates.length === 1) {
                             this.selected = this.predicates[0];
                             this.onChange.emit(this.selected);
                         }
@@ -79,21 +89,21 @@ export class PredicateSelectorComponent implements OnInit {
                         this.predicates = [];
                         result.forEach((rel) => {
 
-                            if (rel.Predicate.Type == this.predicateType.toString()) {
-                                if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Subject && this.assetTypeUid == rel.Subject.Uid)
+                            if (rel.Predicate.Type === this.predicateType.toString()) {
+                                if (this.relationshipSide === CommonComponentAssetTypeFilterRelationshipSide.Subject && this.assetTypeUid === rel.Subject.Uid)
                                     {this.predicates.push(rel.Predicate);}
-                                if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Object && this.assetTypeUid == rel.Object.Uid)
+                                if (this.relationshipSide === CommonComponentAssetTypeFilterRelationshipSide.Object && this.assetTypeUid === rel.Object.Uid)
                                     {this.predicates.push(rel.Predicate);}
                             }
                         });
 
-                        if (this.predicates.length == 0) {
+                        if (this.predicates.length === 0) {
                             this.noPredicates = true;
                         }
                         else {
                             this.noPredicates = false;
                         }
-                        if (this.predicates.length == 1) {
+                        if (this.predicates.length === 1) {
                             this.selected = this.predicates[0];
                             this.onChange.emit(this.selected);
                         }
@@ -113,7 +123,7 @@ export class PredicateSelectorComponent implements OnInit {
             return '#';
         }
 
-        if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Object)
+        if (this.relationshipSide === CommonComponentAssetTypeFilterRelationshipSide.Object)
             {return p.Name;}
         else {return p.Inverse;}
     }

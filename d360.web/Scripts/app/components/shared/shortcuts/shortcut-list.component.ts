@@ -1,9 +1,8 @@
-﻿import { Input, Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { Shortcut } from '../../../models/shortcuts.model';
 import { ShortcutService } from '../../../services/shortcuts.service';
 import { FormMode } from '../../../models/form.model';
-import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -42,12 +41,12 @@ export class ShortcutListComponent extends BaseComponent implements OnInit {
 
     edit(id: number) {
         this.formMode = FormMode.Editing;
-        this.selectedShortcut = this.shortcuts.find((s) => s.ID == id);
+        this.selectedShortcut = this.shortcuts.find((s) => s.ID === id);
     }
 
     delete(id: number) {
         this.formMode = FormMode.Deleting;
-        this.selectedShortcut = this.shortcuts.find((s) => s.ID == id);
+        this.selectedShortcut = this.shortcuts.find((s) => s.ID === id);
     }
 
     confirmDelete() {

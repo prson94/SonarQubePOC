@@ -1,17 +1,20 @@
-﻿import { Input, Component, SimpleChange, ViewChild, OnDestroy } from '@angular/core';
+﻿import { Component, Input, OnDestroy } from '@angular/core';
 import { RulesService } from '../../services/rules.service';
 import { BaseComponent } from '../shared/base.component';
 import { LazyLoadEvent } from 'primeng/api';
-import { Table } from 'primeng/table';
 import { RuleResultPagedResults } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';
-import { GridColumn, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../models/grid-definition.model';
-import { Subscription } from 'rxjs';
+import {
+    GridColumn,
+    GridFilterColumn,
+    GridFilterExpression,
+    GridRelationshipFilterExpression
+} from '../../models/grid-definition.model';
+import { Observable, of, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AdvancedFilterFieldType, Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { ActivatedRoute } from '@angular/router';
 import { FieldType } from "../../models/fieldtype-api.model";
-import { Observable, of } from "rxjs";
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 
@@ -89,7 +92,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
             }
         }
 
-        let exportSetting = this.settingsService.getSettingById(CompanySettingEnum.MaxExcelExportRows);
+        const exportSetting = this.settingsService.getSettingById(CompanySettingEnum.MaxExcelExportRows);
         this.ruleResultsExportLimit = <number>exportSetting.ScalarValue;
 
         this.isLoading = true;
@@ -133,7 +136,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value            
         this.sortOrder = event.sortOrder;
-        this.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.sortField = event.sortField == null ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;
 
@@ -179,13 +182,13 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
         fields.push({
             Name: "EffectiveDate", FriendlyName: "Effective Date", Type: new FieldType("Date"), Category: ""
         });
-        let passFraction = new FieldType("Decimal");
+        const passFraction = new FieldType("Decimal");
         passFraction.Decimal.Validation.MinimumValue = 0;
         passFraction.Decimal.Validation.MaximumValue = 1;
         fields.push({
             Name: "PassFraction", FriendlyName: "Pass Fraction", Type: passFraction, Category: ""
         });
-        let notNegativeNumber = new FieldType("Number");
+        const notNegativeNumber = new FieldType("Number");
         notNegativeNumber.Number.Validation.MinimumValue = 0;
         fields.push({
             Name: "PassCount", FriendlyName: "Rows Passed", Type: notNegativeNumber, Category: ""

@@ -166,6 +166,48 @@
                         </div>
                     </div>
                 </simple-accordion>
+				<simple-accordion *ngIf="isDescriptionSettingsApplicable" header="Asset Description" active="true">
+					<div>
+						<div class="FieldInstructions" style="margin-bottom: 8px" i18n>
+							Enable or Disable showing the description of the asset type
+						</div>
+						<div class="row">
+							<div class="col s12" style="padding: 0;">
+								<ig-switch [(ngModel)]="model.AssetType.IsDescriptionEnabled" required
+										   name="isDescriptionEnabled" trueLabel="Enable" i18n-trueLabel
+										   falseLabel="Disable" i18n-falseLabel>
+								</ig-switch>
+							</div>
+						</div>
+					</div>
+					<div>
+						<div class="FieldName" i18n>Description Behavior</div>
+                        <div class="FieldInstructions" style="margin-bottom: 8px" i18n>
+                            Show or Hide description text by default
+                        </div>
+						<div class="row">
+							<div class="col" style="padding: 0; margin-right: 16px;">
+								<p-radioButton igRadioButton [(ngModel)]="model.AssetType.IsDescriptionVisibleByDefault"
+											   name="descriptionBehavior" label="Show" i18n-label [value]="true">
+								</p-radioButton>
+							</div>
+							<div class="col" style="padding: 0;">
+								<p-radioButton igRadioButton [(ngModel)]="model.AssetType.IsDescriptionVisibleByDefault"
+											   name="descriptionBehavior" label="Hide" i18n-label [value]="false">
+								</p-radioButton>
+							</div>
+						</div>
+					</div>
+					<div>
+						<div class="FieldName" i18n>Description Button Name</div>
+						<div class="row">
+							<div class="col s12" style="padding: 0;">
+								<input style="width: 100%;" igInput type="text" name="descriptionButtonName"
+                                       maxlength="50" required [(ngModel)]="model.AssetType.DescriptionButtonName" />
+							</div>
+						</div>
+					</div>
+				</simple-accordion>
             </div>
         </div>
         <div class="row">
@@ -182,6 +224,7 @@
                             [disabled]="!form.form.valid || isSaving || (model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor)">
                     </button>
                     <button igButton
+                            type="button"
 							class="ig-button-secondary"
                             i18n-label
                             label="Cancel"

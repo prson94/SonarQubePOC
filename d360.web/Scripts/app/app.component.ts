@@ -1,10 +1,9 @@
-import { Component, OnDestroy, AfterContentInit, ViewChild, ElementRef, Inject, Renderer2 } from '@angular/core';
+import { AfterContentInit, Component, ElementRef, Inject, OnDestroy, Renderer2, ViewChild } from '@angular/core';
 import { HeaderActionsService } from './services/header-actions.service';
 import { Subscription } from 'rxjs';
-import { Message, PrimeNGConfig, Translation } from 'primeng/api';
+import { Message, MessageService, PrimeNGConfig, Translation } from 'primeng/api';
 import { CookieService } from './services/cookie.service';
 import { MessagesObservableService } from './services/messages-observable.service';
-import { MessageService } from 'primeng/api';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { datadogRum } from '@datadog/browser-rum';
 import { environment } from '../environments/environment';
@@ -23,22 +22,7 @@ declare var DataDogService;
     host: {
         '(window:resize)': 'setMaxHeight()'
     },
-    template: ` <header #header>
-                    <d3s-header></d3s-header>
-                    <d3s-site-menu (menuChanged)="handleMenuChange($event)" [menuOpen]="menuOpen"></d3s-site-menu>
-                </header>
-                <main>
-                    <d3s-right-sidebar #sidebar [menuOpen]="menuOpen" (changed)="setMaxHeight()"></d3s-right-sidebar>
-                    <div class="row d3s-content-pane" [ngStyle]="{'height.px': maxContentPaneHeight}">
-                        <div class="row">
-                            <div [ngClass]="{maincontent: !menuOpen, 'maincontent-open': menuOpen, 'maincontent-second': secondNavOpen}" [style.margin-left]="hideNav ? '0' : null">
-                                <router-outlet></router-outlet>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-                <p-toast [baseZIndex]="200001"></p-toast>
-              `,
+    templateUrl: 'app.component.html',
     providers: [MessageService]
 })
 
@@ -79,9 +63,9 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             });
 
         this.paramSub = this.route.queryParams.subscribe(() => {
-            let url = new URL(window.location.href);
-            let search = url.search;
-            let params = new URLSearchParams(search);
+            const url = new URL(window.location.href);
+            const search = url.search;
+            const params = new URLSearchParams(search);
             if (params.has('nonavigation')) {
                 this.hideNav = params.get('nonavigation').toLowerCase() === 'true';
             }
@@ -103,12 +87,12 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     ngAfterContentInit() {
         this.headerActionsService.emitFavoritesChange();//on first load when a non-default home page is defined, we need to update the action icons
 
-        let menuState = this.cookieService.get("MenuState");
-        if ((menuState + "") == "") {
+        const menuState = this.cookieService.get("MenuState");
+        if ((menuState + "") === "") {
             this.cookieService.set("MenuState", "true");
             this.handleMenuChange(true);
         } else {
-            this.handleMenuChange(menuState.toLocaleLowerCase() == "true");
+            this.handleMenuChange(menuState.toLocaleLowerCase() === "true");
         }
         this.setMaxHeight();
     }

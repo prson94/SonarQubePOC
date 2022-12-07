@@ -9,12 +9,12 @@
     Output,
     ViewChild
 } from '@angular/core';
-import {Router} from '@angular/router';
-import {ToolTipService} from '../../services/tooltip.service';
-import {TooltipInfo} from '../../models/tooltip-info.model';
-import {TooltipSingletonService} from '../../services/tooltip-singleton.service';
-import {Subject, Subscription} from "rxjs";
-import {debounceTime} from "rxjs/operators";
+import { Router } from '@angular/router';
+import { ToolTipService } from '../../services/tooltip.service';
+import { TooltipInfo } from '../../models/tooltip-info.model';
+import { TooltipSingletonService } from '../../services/tooltip-singleton.service';
+import { Subject, Subscription } from "rxjs";
+import { debounceTime } from "rxjs/operators";
 
 @Component({
     selector: 'd3s-preview-tooltip',
@@ -56,7 +56,7 @@ export class PreviewTooltipComponent {
     ) {
         this.tooltipSingletonService.tooltipMessage$.subscribe(
             (info) => {
-                if (info.objectId == this.objectId && info.objectType == this.objectType) {return;}
+                if (info.objectId === this.objectId && info.objectType === this.objectType) {return;}
                 this.hide();
             });
 
@@ -90,12 +90,12 @@ export class PreviewTooltipComponent {
                         }
 
                         this.data = res;
-                        if (tip.innerText != " " && tip.textContent != " ") {
+                        if (tip.innerText !== " " && tip.textContent !== " ") {
                             this.showPanel(tip, item);
                             this.ref.markForCheck();
                         }
-                        this.data.FieldValues.filter((x) => x.Type == "Color").length > 0 ?
-                            this.setColorHtml(this.data.FieldValues.filter((x) => x.Type == "Color")[0].Value) : null;
+                        this.data.FieldValues.filter((x) => x.Type === "Color").length > 0 ?
+                            this.setColorHtml(this.data.FieldValues.filter((x) => x.Type === "Color")[0].Value) : null;
                     });
             } else {
                 this.toolTipService.getTooltipInfo(this.objectType, this.objectId)
@@ -106,17 +106,17 @@ export class PreviewTooltipComponent {
                         }
 
                         this.data = res;
-                        this.data.FieldValues.filter((x) => x.Type == "Color").length > 0 ?
-                            this.setColorHtml(this.data.FieldValues.filter((x) => x.Type == "Color")[0].Value) : null;
+                        this.data.FieldValues.filter((x) => x.Type === "Color").length > 0 ?
+                            this.setColorHtml(this.data.FieldValues.filter((x) => x.Type === "Color")[0].Value) : null;
 
-                        if (tip.innerText != " " && tip.textContent != " ") {
+                        if (tip.innerText !== " " && tip.textContent !== " ") {
                             this.showPanel(tip, item);
                             this.ref.markForCheck();
                         }
                 });
             }
         } else {
-            if (tip.innerText != " " && tip.textContent != " ") {
+            if (tip.innerText !== " " && tip.textContent !== " ") {
                 this.showPanel(tip, item);
                 this.ref.markForCheck();
             }
@@ -177,8 +177,8 @@ export class PreviewTooltipComponent {
             panel.style.top = item.getBoundingClientRect().bottom + 'px';
 
             if (this.align) {
-                let minwidth = getComputedStyle(panel).minWidth;
-                let panelWidth = parseInt(minwidth.substr(0, minwidth.length - 2)) || 400;
+                const minwidth = getComputedStyle(panel).minWidth;
+                const panelWidth = parseInt(minwidth.substr(0, minwidth.length - 2)) || 400;
 
                 if (this.isRightAligned()) {
                     panel.style.left = xoffset + (item.getBoundingClientRect().right - panelWidth) + 'px';
@@ -206,7 +206,7 @@ export class PreviewTooltipComponent {
 
     setColorHtml(colorJSON: string) {
         try {
-            let colorObj = JSON.parse(colorJSON);
+            const colorObj = JSON.parse(colorJSON);
             this.colorHtml = "<div class=\"ig-colorfield-item-selected\"><span class=\"ig-colorfield-swatch tooltip-no-top\" style=\"background-color:" + colorObj.Value + "\"></span><span class=\"ig-colorfield-item-label tooltip-no-top\">" + colorObj.Name + "</span></div>";
             this.ref.markForCheck();
         } catch (err) {

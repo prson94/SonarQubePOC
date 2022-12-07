@@ -1,9 +1,18 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FollowerService } from '../../../services/follower.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { HeaderActionsService } from '../../../services/header-actions.service';
-import { MessageService } from 'primeng/api';//primeng/api
+import { MessageService } from 'primeng/api'; //primeng/api
 
 
 @Component({
@@ -65,7 +74,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         });
 
         //set values on initial load
-        let o = this.breadcrumbService.currentObject;
+        const o = this.breadcrumbService.currentObject;
         if (o != null) {
 			this.assetTypeUId = o.AssetTypeUid;
 			this.assetUId = o.AssetUid;
@@ -115,9 +124,9 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 
 		this.followerService.updateFollowStatus(this.assetUId, this.assetTypeUId, includeChildren).subscribe(
             (f) => {
-                if (f.type == 'notification') {
+                if (f.type === 'notification') {
                     this.active = !this.active;
-                    let crumbs = this.breadcrumbService.getBreadcrumbsFromStorage();
+                    const crumbs = this.breadcrumbService.getBreadcrumbsFromStorage();
                     let toastMessage = `You are now following '${crumbs[crumbs.length - 1].text}'`;
                     let toastTitle = "Followed";
                     if (this.active) {

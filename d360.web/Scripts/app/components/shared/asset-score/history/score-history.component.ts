@@ -1,4 +1,17 @@
-﻿import { Component, Input, OnChanges, ChangeDetectorRef, ViewChild, ElementRef, Output, SimpleChanges, EventEmitter, ViewEncapsulation, Inject, LOCALE_ID } from '@angular/core';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Inject,
+    Input,
+    LOCALE_ID,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 
 import * as Highcharts from 'highcharts';
 import { ObjectStatisticsService } from '../../../../services/object-statistics.service';
@@ -92,7 +105,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 measureAdjustmentRatio = this.selectedPoint._groupDisplayMaxWeight;
             }
             this.allLoadedPoints.forEach((dataSet) => {
-                if (dataSet['key'] == key) {
+                if (dataSet['key'] === key) {
                     (dataSet.data as []).forEach((pt) => {
                         var sp = new ScorePoint();
                         sp.EffectiveDate = pt['EffectiveDate'];
@@ -113,7 +126,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                         if (arr[i].Score < arr[i + 1].Score)
                             {arr[i].ScoreProgression = -1;}
 
-                        if (arr[i].Score == arr[i + 1].Score)
+                        if (arr[i].Score === arr[i + 1].Score)
                             {arr[i].ScoreProgression = 0;}
 
                     }
@@ -148,7 +161,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             currentGraphHash += '_' + this.selectedPoint.Uid;
         }
 
-        if (currentGraphHash == this.graphHash)
+        if (currentGraphHash === this.graphHash)
             {return;}
 
         this.graphHash = currentGraphHash;
@@ -177,7 +190,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         // Adds arbitrary last point for current date.
         let currentDate = new Date(Date.now());
         currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-        let currenDateMs = currentDate.getTime();
+        const currenDateMs = currentDate.getTime();
         if (currenDateMs > Date.parse(this.scoresPoints[0].EffectiveDate)) {
             this.historicalData.unshift(
                 [currenDateMs, this.scoresPoints[0].Score, this.getScoreType()]
@@ -256,9 +269,9 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 shared: true,
                 headerFormat: '',
                 footerFormat: '',
-                formatter: function () {
+                formatter () {
                     var tooltipString = '';
-                    var startIdx = historicalTempData.findIndex((x) => x.x == this.points[0].x);
+                    var startIdx = historicalTempData.findIndex((x) => x.x === this.points[0].x);
                     this.points.forEach((point) => {
                         tooltipString += `<div><span>${point.series.userOptions.name}<span style="padding-left: 4px;">${point.y}%</span></span></div>`;
                     });
@@ -267,7 +280,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
                     var startDate = datePipeRef.transform(new Date(historicalTempData[startIdx].x), 'shortDate', locale);
                     var endDate = '';
-                    if (startIdx == 0) {
+                    if (startIdx === 0) {
                         endDate = 'present';
                     }
                     else {
@@ -348,18 +361,18 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         var days = Math.floor(milliseconds / day);
         var months = Math.floor(days / 31);
         var years = Math.floor(months / 12);
-        let type = this.scoreType == ScoreType.Governance ? $localize`Governance` : $localize`Data Quality`;
+        const type = this.scoreType === ScoreType.Governance ? $localize`Governance` : $localize`Data Quality`;
         let latestScore = score;
-        let hasEndDate: boolean = false;
+        const hasEndDate: boolean = false;
 
         if (latestScore > 1) {
             latestScore /= 100;
         }
 
-        let scorePercentage = this.getAsPrecentage(latestScore);
+        const scorePercentage = this.getAsPrecentage(latestScore);
 
-        let verb: string = hasEndDate ? $localize`was` : $localize`has been`;
-        if (days == 0 || days == 1) {
+        const verb: string = hasEndDate ? $localize`was` : $localize`has been`;
+        if (days === 0 || days === 1) {
             this.calculatedScoreText = $localize`Your ${type} Score changed to <strong> ${scorePercentage} </strong> today</strong>`;
         }
         else if (days > 0 && days <= 90) {
@@ -380,8 +393,8 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
     getCurrentScoreDateText() {
         if (this.scoresPoints && this.scoresPoints.length > 0) {
-            let mostRecent = Date.parse(this.scoresPoints[0].EffectiveDate);
-            let milliseconds = new Date(Date.now()).getTime() - new Date(mostRecent).getTime();
+            const mostRecent = Date.parse(this.scoresPoints[0].EffectiveDate);
+            const milliseconds = new Date(Date.now()).getTime() - new Date(mostRecent).getTime();
             this.formatCalculatedScoreText(milliseconds, this.scoresPoints[0].Score);
         }
         else {
@@ -408,7 +421,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         if (date1 && date2) {
             var d1 = new Date(date1.toString());
             var d2 = new Date(date2.toString());
-            if (d2.getTime() == today.getTime() && d1.getTime() == this.lastScorePoint.getTime()) {
+            if (d2.getTime() === today.getTime() && d1.getTime() === this.lastScorePoint.getTime()) {
                 return true;
             }
 
@@ -424,9 +437,9 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 if (this.chartInstance.series.length > 0) {
 
                     var ms = new Date(this.scoreDate.toString()).getTime();
-                    var idx = this.chartInstance.series[0].data.findIndex((p) => { return p.x == ms; });
+                    var idx = this.chartInstance.series[0].data.findIndex((p) => { return p.x === ms; });
 
-                    if (idx == -1) {
+                    if (idx === -1) {
                         idx = 1;
                     }
 
@@ -480,7 +493,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 if (!selected)
                     {continue;}
 
-                if (selected && this.tableSelectedIDX != i) {
+                if (selected && this.tableSelectedIDX !== i) {
                     this.tableSelectedIDX = i;
                     var scrollFor = (tblBody.scrollTop + selected.getBoundingClientRect().top) - tblBody.getBoundingClientRect().top;
                     if (scrollFor < 0) {
@@ -503,9 +516,9 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     private getMeasurePoint(item: ScorePoint): ScorePoint {
         var point = null;
         if (this.measurePoints)
-            {point = this.measurePoints.filter((x) => x.EffectiveDate == item.EffectiveDate)[0];}
+            {point = this.measurePoints.filter((x) => x.EffectiveDate === item.EffectiveDate)[0];}
 
-        if (point == null || point == undefined) {
+        if (point == null) {
             return null;
         }
         else {return point;}

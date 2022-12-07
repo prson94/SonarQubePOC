@@ -29,9 +29,7 @@ namespace d360.model.DataAccessLayer
         IntersectType GetIntersectTypeByUid(Guid intersectTypeUid);
         
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
-        
-        Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type);
-        
+               
         Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, ApiExecution execution, bool sendWorkflow = false);
         
         Task<ApiExecutionInfo> BulkPutRelationships(Guid intersectTypeUid, RelationshipUpdates relationships, ApiExecution execution, bool triggerWorkflow = false);

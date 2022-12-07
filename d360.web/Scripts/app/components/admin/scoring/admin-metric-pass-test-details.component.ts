@@ -83,7 +83,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 
 					this.ruleResultOperation = this.resultOperationAsLocaleString(dq.ResultOperation);
 
-					const paths = this.screenReferences.paths.filter((x) => { return x.value == resultPathUid; });
+					const paths = this.screenReferences.paths.filter((x) => { return x.value === resultPathUid; });
 
 					if (paths.length > 0) {
 						this.ruleResultPathHtml = paths[0].label;
@@ -97,7 +97,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 									this.ruleResultFilters = [];
 
 									dq.Filters.forEach((f) => {
-										const matches = fields.filter((o) => { return o.AssetTypeUid == f.AssetTypeUid && o.ApiName == f.FieldTypeName; });
+										const matches = fields.filter((o) => { return o.AssetTypeUid === f.AssetTypeUid && o.ApiName === f.FieldTypeName; });
 										if (matches.length > 0) {
 											const o = matches[0];
 											const operatorText = this.screenReferences.operators.find((o) => o.ID === f.Operator).Name;
@@ -109,20 +109,20 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 											};
 
 											if (f.Values && f.Values.length > 0) {
-												if (o.Type == 'Lookup') {
+												if (o.Type === 'Lookup') {
 													f.Values.forEach((fv) => {
-														const theseFilterOptions = o.Values.filter((ov) => { return ov.Value == fv; });
+														const theseFilterOptions = o.Values.filter((ov) => { return ov.Value === fv; });
 														if (theseFilterOptions.length > 0) {
 															theseFilterOptions.forEach((tfo) => {
-																filterModel.value += (filterModel.value == '' ? '' : ', ') + tfo.Text;
+																filterModel.value += (filterModel.value === '' ? '' : ', ') + tfo.Text;
 															});
 														}
 													});
 												}
 												else {
-													if (o.Type == 'Date' || o.Type == 'DateTime') {
+													if (o.Type === 'Date' || o.Type === 'DateTime') {
 														f.Values.forEach((fv) => {
-															filterModel.value += (filterModel.value == '' ? '' : ', ') + new Date(fv).toLocaleDateString();
+															filterModel.value += (filterModel.value === '' ? '' : ', ') + new Date(fv).toLocaleDateString();
 														});
 													}
 													else {
@@ -140,7 +140,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 				}
 			}
 			else if (this.isGovernanceMeasure()) {
-				let gov = this.definition.Governance;
+				const gov = this.definition.Governance;
 				this.dateVal1 = null;
 				this.dateVal2 = null;
 				this.dateShowType = null;
@@ -149,18 +149,18 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 						this.formattedCheck = (gov.External.Instructions) ? ($localize`External: Instruction string` + `: ` + gov.External.Instructions) : $localize`External`;
 						break;
 					case 'Field':
-						let formattedoperator = this.screenReferences.operators.find((x) => x.ID == gov.Field.Operator);
-						let fieldType = this.screenReferences.fields.find((x) => x.ApiName == gov.Field.FieldTypeName);
+						const formattedoperator = this.screenReferences.operators.find((x) => x.ID === gov.Field.Operator);
+						const fieldType = this.screenReferences.fields.find((x) => x.ApiName === gov.Field.FieldTypeName);
 						let formattedValue = gov.Field.Values.join(", ");
 						if (fieldType) {
-							if (fieldType.Type == "Lookup") {
-								let fieldValue = gov.Field.Values[0] ?? -1;
+							if (fieldType.Type === "Lookup") {
+								const fieldValue = gov.Field.Values[0] ?? -1;
 
-								let lookupValues = fieldType.Values;
-								formattedValue = lookupValues.filter((x) => x.Value == fieldValue).length > 0
-									? lookupValues.filter((x) => x.Value == fieldValue)[0].Text : gov.Field.Values.join(", ");
+								const lookupValues = fieldType.Values;
+								formattedValue = lookupValues.filter((x) => x.Value === fieldValue).length > 0
+									? lookupValues.filter((x) => x.Value === fieldValue)[0].Text : gov.Field.Values.join(", ");
 							}
-							if (fieldType.Type == "Date") {
+							if (fieldType.Type === "Date") {
 								this.dateShowType = fieldType.Type;
 								this.dateVal1 = gov.Field.Values.length > 0 ? new Date(gov.Field.Values[0]) : null;
 								this.dateVal2 = gov.Field.Values.length > 1 ? new Date(gov.Field.Values[1]) : null;
@@ -175,9 +175,9 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 
 						break;
 					case 'Owner':
-						let responsibilitytype = this.screenReferences.responsibilities.find((responsibility: ResponsibilityType) => { return responsibility.uid.toLowerCase() === gov.Owner.ResponsibilityTypeUid.toLowerCase(); });
+						const responsibilitytype = this.screenReferences.responsibilities.find((responsibility: ResponsibilityType) => { return responsibility.uid.toLowerCase() === gov.Owner.ResponsibilityTypeUid.toLowerCase(); });
 						let operatorString = $localize`is assigned`;
-						if (gov.Owner.Operator == Operator.NotPopulated || <any>gov.Owner.Operator == "NotPopulated") {
+						if (gov.Owner.Operator === Operator.NotPopulated || <any>gov.Owner.Operator === "NotPopulated") {
 							operatorString = $localize`is not assigned`;
 						}
 						if (responsibilitytype) {
@@ -187,9 +187,9 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 						}
 						break;
 					case 'Predicate':
-						let predicate = this.screenReferences.predicates.find((predicate: Predicate) => { return predicate.Uid.toLowerCase() === gov.Predicate.PredicateUid.toLowerCase(); });
+						const predicate = this.screenReferences.predicates.find((predicate: Predicate) => { return predicate.Uid.toLowerCase() === gov.Predicate.PredicateUid.toLowerCase(); });
 						let existsOperatorP = $localize`exists`;
-						if (gov.Predicate.Operator == Operator.NotPopulated || <any>gov.Predicate.Operator == "NotPopulated") {
+						if (gov.Predicate.Operator === Operator.NotPopulated || <any>gov.Predicate.Operator === "NotPopulated") {
 							existsOperatorP = $localize`does not exist`;
 						}
 						if (predicate)
@@ -198,15 +198,15 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 							{this.formattedCheck = "";}
 						break;
 					case 'Relation':
-						let relationshipType = this.screenReferences.relationships.find((relationship: RelationshipType) => { return relationship.Uid.toLowerCase() === gov.Relation.IntersectTypeUid.toLowerCase(); });
+						const relationshipType = this.screenReferences.relationships.find((relationship: RelationshipType) => { return relationship.Uid.toLowerCase() === gov.Relation.IntersectTypeUid.toLowerCase(); });
 						let existsOperator = $localize`exists`;
-						if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
+						if (gov.Relation.Operator === Operator.NotPopulated || <any>gov.Relation.Operator === "NotPopulated") {
 							existsOperator = $localize`does not exist`;
 						}
 
 						if (relationshipType) {
-							let isSubject = (relationshipType.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
-							let isObject = (relationshipType.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
+							const isSubject = (relationshipType.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
+							const isObject = (relationshipType.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
 							let labelName = "";
 							let assetName = "";
 							let label = "";

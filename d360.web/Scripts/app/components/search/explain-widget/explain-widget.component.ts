@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input } from '@angular/core';
+﻿import { Component, Input, OnInit } from '@angular/core';
 
 export interface Detail {
     value: number;
@@ -61,7 +61,7 @@ export class ExplainWidgetComponent implements OnInit {
         }
 
         if (detail.description.substring(0, 4) === "idf,") {
-            let desc = this.parseIdf(detail);
+            const desc = this.parseIdf(detail);
             detail.description = desc;
             detail.details = [];
         } else if (detail.description.substring(0, 7) === "tfNorm,") {
@@ -76,7 +76,7 @@ export class ExplainWidgetComponent implements OnInit {
     private parseIdf(detail: Detail):string {
         let desc = detail.description.slice(0, -6);
         detail.details.forEach((d) => {
-            let r = new RegExp('\\b' + d.description + '\\b', 'g');
+            const r = new RegExp('\\b' + d.description + '\\b', 'g');
             desc = desc.replace(r, '<span class="parameter" title="' + d.value + '">' + d.description + '</span>');
         });
         return desc;
@@ -93,7 +93,7 @@ export class ExplainWidgetComponent implements OnInit {
             } else {
                 fld = d.description;
             }
-            let r = new RegExp('\\b' + fld + '\\b', 'g');
+            const r = new RegExp('\\b' + fld + '\\b', 'g');
             desc = desc.replace(r, '<span class="parameter" title="' + d.value + '">' + fld + '</span>');
         });
         return desc;

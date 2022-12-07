@@ -1,12 +1,12 @@
 ﻿import { Injectable } from '@angular/core';
-import { SearchResults, SearchQuery } from '../models/search-result.model';
+import { SearchQuery, SearchResults } from '../models/search-result.model';
 import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
-import { catchError, map, takeUntil, shareReplay, delay } from 'rxjs/operators';
-import { Observable, Subject, of, throwError } from 'rxjs';
+import { catchError, delay, map, shareReplay, takeUntil } from 'rxjs/operators';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
-import { SettingsHelper, SearchType } from '../models/settings.model';
-import { IndexableType, IndexableStatus, IndexPartialRebuild } from "../models/search-admin.model";
+import { SearchType, SettingsHelper } from '../models/settings.model';
+import { IndexableStatus, IndexableType, IndexPartialRebuild } from "../models/search-admin.model";
 import { FeatureFlags, FeatureFlagsService } from './featureflags.service';
 import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 import { Table } from 'primeng/table';
@@ -20,7 +20,7 @@ export class SearchService extends BaseObservableService  {
     constructor(private http: HttpClient, messagesService: MessagesObservableService, private featureFlagService: FeatureFlagsService) { super(messagesService); }
 
     public getEmptyResult(): SearchResults {
-        let result = new SearchResults();
+        const result = new SearchResults();
         result.Results = [];
         result.Aggregations = { category: []};
         result.Matches = 0;
@@ -80,7 +80,7 @@ export class SearchService extends BaseObservableService  {
     }
 
     public getSearchCategories(showUsers: boolean = true, keepNotVisible: boolean = false): Observable<SearchType[]> {
-        let exclude: string[] = [];
+        const exclude: string[] = [];
         if (!showUsers) {
             exclude.push('Group');
             exclude.push('User');
@@ -170,7 +170,7 @@ export class SearchService extends BaseObservableService  {
     }
 
 	public sendRebuildRequest(assets: IndexableStatus[]): Observable<any> {
-		let requests: IndexPartialRebuild[] = [];
+		const requests: IndexPartialRebuild[] = [];
 		assets.forEach((asset) => {
 			requests.push({
 				Class: asset.Class,

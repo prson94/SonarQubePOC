@@ -1,37 +1,35 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {
-    Issue,
-    IssueDetail,
-    WorkflowIssueType,
-    WorkflowDiagramModel,
-    ActivityTypeInfo,     
-    WorkflowForm,
-    WorkflowListItem,
-    WorkflowObjectType,
-    ChangeTypeInfo,
-    WorkflowEventRegistration,
-    TransitionTypeInfo,
-    WorkflowTaskProcedure,   
-    EmailTaskRecipientTypeInfo,
-    WorkflowChangeType,
-    BulkWorkflowFormModel,
-    WorkflowItemStep,
-    BulkWorkflowReassignModel,
-    WorkflowTypeItem,
     ActionEditorModel,
+    ActivityTypeInfo,
     AllocationAPIModel,
     AllocationRequestModel,
+    BulkWorkflowFormModel,
+    BulkWorkflowReassignModel,
+    ChangeTypeInfo,
+    EmailTaskRecipientTypeInfo,
+    Issue,
+    IssueDetail,
+    TransitionTypeInfo,
+    WorkflowChangeType,
+    WorkflowDiagramModel,
+    WorkflowForm,
+    WorkflowIssueType,
+    WorkflowItemStep,
+    WorkflowListItem,
+    WorkflowObjectType,
     WorkflowReassignmentAsset,
+    WorkflowTaskProcedure,
+    WorkflowTypeItem,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
-import { SelectItem, FormHelper } from '../models/form.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
-import { Observable,of } from 'rxjs';
-import { map, catchError, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { AssetTypeClass } from '../models/asset.model';
 
@@ -55,7 +53,7 @@ export class WorkflowService extends BaseObservableService {
     }
 
     getAllIssueDetails(all?: boolean): Observable<IssueDetail[]> {
-        let url = `services/workflow/${(all === undefined || all) ? 'all':'my'}/issues?$orderby=DateStarted%20desc,Issue`;
+        const url = `services/workflow/${(all === undefined || all) ? 'all':'my'}/issues?$orderby=DateStarted%20desc,Issue`;
                 
         return this.http.get(url)
             .pipe(
@@ -67,7 +65,7 @@ export class WorkflowService extends BaseObservableService {
     getIssues(objectID: number, objectType: string): Observable<Issue[]> {
         let url = 'services/workflow/issue/type/';
 
-        if (objectID > 0 && objectType != undefined) {
+        if (objectID > 0 && objectType != null) {
             url += `${objectID}/${objectType}`;
         }
 
@@ -79,7 +77,7 @@ export class WorkflowService extends BaseObservableService {
 	}
 
 	getIssuesByAssetUid(uid: string): Observable<Issue[]> {
-		let url = 'services/workflow/issue/type/' + uid;
+		const url = 'services/workflow/issue/type/' + uid;
 
 		return this.http.get(url)
 			.pipe(
@@ -89,11 +87,11 @@ export class WorkflowService extends BaseObservableService {
 	}
     
     updateIssue(issue: Issue, action: string, comment: string, assignTo?: string): Observable<JsonResult> {
-        let headers = new HttpHeaders({
+        const headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });
         return this.http
-            .post(`/services/workflow/tasks/${issue.WorkflowID}`, JSON.stringify({ WorkflowAction: action, AssignTo: assignTo, Comment: comment }), { headers: headers })
+            .post(`/services/workflow/tasks/${issue.WorkflowID}`, JSON.stringify({ WorkflowAction: action, AssignTo: assignTo, Comment: comment }), { headers })
             .pipe(
             map((response) => <JsonResult>response),
                 catchError((err) => this.handleError(err))
@@ -101,7 +99,7 @@ export class WorkflowService extends BaseObservableService {
     }
   
     raiseIssues(actionTypeUid: string, action: any): Observable<ApiResult & ErrorResponse> {
-        let actionArray: ActionEditorModel[] = [];
+        const actionArray: ActionEditorModel[] = [];
         actionArray.push(action);
 
         return this.http.post(`/api/v2/actions/${actionTypeUid}?lookupFieldsPassedByValue=true`, actionArray)
@@ -161,7 +159,7 @@ export class WorkflowService extends BaseObservableService {
 
     saveIssueType(issueType: WorkflowIssueType): Observable<ApiResult & ErrorResponse> {
         var model = { Uid: issueType.Uid, Name: issueType.Name, Description: issueType.Description };
-        if (issueType.Uid == undefined || !issueType.Uid) {            
+        if (issueType.Uid == null || !issueType.Uid) {            
             return this.http.post(`/api/v2/actions/type/`, model)
                 .pipe(
                     map((response) => <ApiResult & ErrorResponse>response),
@@ -327,7 +325,7 @@ export class WorkflowService extends BaseObservableService {
     }
 
     getWorkflowObjectTypes(changeType: WorkflowChangeType): Observable<WorkflowObjectType[]> {
-        if (changeType == null || <any>changeType == '')
+        if (changeType == null || <any>changeType === '')
             {return of([]);}
 
         return this.http.get(`services/workflow/objecttypes?changeType=${changeType}`)
@@ -399,7 +397,7 @@ export class WorkflowService extends BaseObservableService {
     }
 
     getWorkflowTypeModel(id: number,uid:string): Observable<WorkflowDiagramModel> {
-        if ((id == null || id < 1) && (uid==null  || uid == "00000000-0000-0000-0000-000000000000")) 
+        if ((id == null || id < 1) && (uid==null  || uid === "00000000-0000-0000-0000-000000000000")) 
             {return of(null);}
         return this.http.get(`services/workflow/type/${id}/${uid}`)
             .pipe(
@@ -585,7 +583,7 @@ export class WorkflowService extends BaseObservableService {
         return this.http.get(`api/v2/actions/allocations/${actionTypeUid}`)
             .pipe(
                 map((response) => {
-                    let r = <AllocationAPIModel[]>response;                    
+                    const r = <AllocationAPIModel[]>response;                    
                     r.forEach((x) => x.ClassName = AssetTypeClass[x.Class]);
                     return r;
                 }),

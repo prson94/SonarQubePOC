@@ -1,6 +1,4 @@
 import { Component } from '@angular/core';
-import * as _ from 'lodash';
-
 
 
 const upKeyCode = 38;
@@ -15,21 +13,21 @@ export class LinksKeyboardNavigationComponent {
     private currentButtonIndex: number = -1;
 
     checkKey(event, elem) {
-        if (event.keyCode == downKeycode || event.keyCode == enterKeyCode || event.keyCode == upKeyCode) {
+        if (event.keyCode === downKeycode || event.keyCode === enterKeyCode || event.keyCode === upKeyCode) {
 
-            let allAItems = elem.getElementsByTagName("a");
+            const allAItems = elem.getElementsByTagName("a");
             if (!allAItems.length)
                 {return;}
 
-            if (event.keyCode == enterKeyCode) {
+            if (event.keyCode === enterKeyCode) {
                 const item = allAItems[this.currentButtonIndex];
                 if (item) {
                     item.click();
                 }
             }
-            if (event.keyCode == downKeycode) {
+            if (event.keyCode === downKeycode) {
                 this.currentButtonIndex++;
-            } else if (event.keyCode == upKeyCode) {
+            } else if (event.keyCode === upKeyCode) {
                 this.currentButtonIndex--;
             }
 
@@ -37,8 +35,8 @@ export class LinksKeyboardNavigationComponent {
                 {this.currentButtonIndex = 0;}
 
             this.resetColor(allAItems);
-            let arr = allAItems[this.currentButtonIndex].className.split(" ");
-            if (arr.indexOf("highlight") == -1) {
+            const arr = allAItems[this.currentButtonIndex].className.split(" ");
+            if (arr.indexOf("highlight") === -1) {
                 allAItems[this.currentButtonIndex].className += " highlight";
             }
 

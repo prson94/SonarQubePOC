@@ -163,8 +163,8 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
             if (this.selected == null && this.exportTemplates != null && this.exportTemplates.length > 0)
                 {this.selected = this.exportTemplates[0];}
             else if (this.selected != null && this.exportTemplates != null && this.exportTemplates.length > 0) {
-                let item = this.exportTemplates.filter((x) => x.Uid == this.selected.Uid);
-                if (item != null && item.length != 0)
+                const item = this.exportTemplates.filter((x) => x.Uid === this.selected.Uid);
+                if (item != null && item.length !== 0)
                     {this.selected = item[0];}
             }
 
@@ -192,7 +192,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
         this.selected.IncludeFieldTypes = event.IncludeFieldTypes;
         this.exportTemplateService.saveExportTemplate(this.selected).subscribe((result) => {           
             for (let i = 0; i < this.exportTemplates.length; i++) {
-                if (this.exportTemplates[i].Uid == this.selected.Uid) {
+                if (this.exportTemplates[i].Uid === this.selected.Uid) {
                     this.exportTemplates[i].IncludeFieldTypes = this.selected.IncludeFieldTypes;
                     this.getSelectedTemplateID();
                 }

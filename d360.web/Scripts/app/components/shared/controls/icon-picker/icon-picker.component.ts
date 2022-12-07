@@ -1,9 +1,17 @@
-﻿import { ChangeDetectorRef, Component, Input, Output, EventEmitter, NgModule, forwardRef, ViewEncapsulation, } from '@angular/core';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    forwardRef,
+    Input,
+    NgModule,
+    Output,
+    ViewEncapsulation,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { IconService } from '../../../../services/icon.service';
 import { DropdownModule } from 'primeng/dropdown';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { DirectivesModule } from "../../../../directives/directives.module";
 
 export const ICON_VALUE_ACCESSOR: any = {
@@ -52,9 +60,9 @@ export class IconPickerComponent implements ControlValueAccessor {
                     {result = [...result, ...images];}
 
                 result.forEach((i) => {
-                    let index = this.categories.findIndex((x) => x.label == i.categories[0]);
+                    const index = this.categories.findIndex((x) => x.label === i.categories[0]);
                     if (!i.img) {
-                        if (index == -1) {
+                        if (index === -1) {
                             this.categories.push({
                                 label: i.categories[0],
                                 value: i.categories[0],
@@ -65,7 +73,7 @@ export class IconPickerComponent implements ControlValueAccessor {
                         }
                     }
                     else {
-                        if (index == -1) {
+                        if (index === -1) {
                             this.categories.push({
                                 label: i.categories[0],
                                 value: i.categories[0],

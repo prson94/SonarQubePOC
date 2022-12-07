@@ -1,7 +1,6 @@
-﻿import { Input, Output, Component, OnInit, EventEmitter, SimpleChange } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output, SimpleChange } from '@angular/core';
 import { ResponsibilityType, ResponsibilityTypeRelation } from '../../../models/responsibility-type.model';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-responsibility-type-form',
@@ -33,12 +32,12 @@ export class ResponsibilityTypeForm implements OnInit {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         let reloadRequired = false;
-        for (let p in changes) {
-            if (p == 'id') {
-                if (changes[p].currentValue == 0) {
+        for (const p in changes) {
+            if (p === 'id') {
+                if (changes[p].currentValue === 0) {
                     this.load();
                 }
-                if (changes[p].currentValue && (changes[p].currentValue != changes[p].previousValue)) {
+                if (changes[p].currentValue && (changes[p].currentValue !== changes[p].previousValue)) {
                     reloadRequired = true;
                 }
                 if (reloadRequired)
@@ -64,7 +63,7 @@ export class ResponsibilityTypeForm implements OnInit {
         //avoid sending this back to the server
         this.item.AllocationsList = null;
 
-        if (this.id == 0) {
+        if (this.id === 0) {
             this.responsibilityTypeService.postResponsibilityType(this.item)
                 .subscribe((d) => {
                     this.isLoading = false;
@@ -88,7 +87,7 @@ export class ResponsibilityTypeForm implements OnInit {
         this.item.ResponsibilityTypeRelations = [];
         if (this.selectedAllocations)
             {this.selectedAllocations.forEach((s) => {
-                let r = new ResponsibilityTypeRelation();
+                const r = new ResponsibilityTypeRelation();
                 r.ObjectID = parseInt(s.split('|')[1]);
                 r.ObjectType = s.split('|')[0];
                 r.ResponsibilityTypeID = this.item.ID;
@@ -100,7 +99,7 @@ export class ResponsibilityTypeForm implements OnInit {
         this.selectedAllocations = [];
         if (this.item.ResponsibilityTypeRelations)
             {this.item.ResponsibilityTypeRelations.forEach((r) => {
-                let s = r.ObjectID.toString();
+                const s = r.ObjectID.toString();
                 this.selectedAllocations.push(r.ObjectType + '|' + r.ObjectID.toString());
             });}
     }

@@ -1,16 +1,15 @@
-﻿import { NgModule }       from "@angular/core";
-import { CommonModule }       from "@angular/common";
-import { FormsModule }    from "@angular/forms";
-import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
+﻿import { NgModule } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 
 
 import { CoreModule } from "../../shared/core.module";
 import { PipesModule } from "../../../pipes/pipes.module";
-import { TilesModule  } from "../../shared/tiles/tiles.module";
+import { TilesModule } from "../../shared/tiles/tiles.module";
 import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.component";
 import { SharedDeleteFormModule } from "../../shared/delete.form";
 import { SharedObjectDetailsModule } from "../../shared/objectdetails/shared-object-details.module";
-import { SharedFieldDefinitionModule } from "../../shared/fielddefinition/shared-field-definition.module"; 
+import { SharedFieldDefinitionModule } from "../../shared/fielddefinition/shared-field-definition.module";
 import { SharedDynamicGridEditorModule } from "../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module";
 import { SharedResponsibilitiesModule } from "../../shared/responsibilities/shared-responsibilities.module";
 import { AdminModule } from "../admin.module";

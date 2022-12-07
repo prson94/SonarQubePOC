@@ -1,5 +1,5 @@
-﻿import { Component, Input, OnDestroy, OnInit, ViewChild, HostListener } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
 import { ArtifactTypeService } from '../../services/artifact-type.service';
@@ -8,9 +8,9 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
+import { SecondaryNavCurrentObject, SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { AssetTypeClass } from '../../models/asset.model';
+import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
 import { forkJoin, Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
@@ -23,6 +23,7 @@ import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.s
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 declare var CurrentResourceID;
 
@@ -33,6 +34,7 @@ declare var CurrentResourceID;
 })
 
 export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
+	@Input() assetTypeApiModel: AssetTypeApiModel;
 	@Input() assetTypeUid: string;
 
 	gridObject: AssetGridObject;
@@ -90,7 +92,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		this.isLoading = true;
 		this.artifactTypeHierarchy = [];
 		this.headerBreadcrumbService.setCurrentObjectInfo(null, -1, this.assetTypeUid);
-		this.logAction('open', 'AssetType', this.assetTypeUid);
+		this.logAssetTypeAction(UsageAction.View, this.assetTypeUid);
 		this
 			.artifactTypeService
 			.getArtifactTypeDetails(this.assetTypeUid, true)
@@ -98,7 +100,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 				let folderName: string = '#Business';
 				this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 
-				if (artifactType.Class == AssetTypeClass.TechnicalAsset) {
+				if (artifactType.Class === AssetTypeClass.TechnicalAsset) {
 					folderName = '#Technical';
 					this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
 				}

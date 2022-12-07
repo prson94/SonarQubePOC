@@ -83,7 +83,8 @@ namespace d360.model.DataAccessLayer
 							ResourceID int,
 							[Date] datetime,
 							[Action] varchar(15),
-							AuditId bigint null
+							AuditId bigint null,
+							index ix_OTitems(Qualifier)
 						)
 
 						declare @fields table (
@@ -95,6 +96,14 @@ namespace d360.model.DataAccessLayer
 							[PreviousValue] nvarchar(max),
 							AuditId bigint null
 						)
+
+						declare @QualifierAuditID table
+						(
+							Qualifier nvarchar(200),
+							FieldName nvarchar(250),
+							MaxVersion int,
+							index ix_OTQualifierAuditID(Qualifier,FieldName)
+							);
 
 						insert into @items
 							select	Qualifier,
@@ -217,15 +226,23 @@ namespace d360.model.DataAccessLayer
 						from	@fields T
 								inner join @items S on S.Qualifier = T.Qualifier
 
+						;with rs as (select distinct t.Qualifier,S.Id SemanticID
+									from @items t
+									inner join Semantic S on t.Qualifier = S.Qualifier)
+						insert into @QualifierAuditID
+						select rs.Qualifier,F.FieldName,max(F.[Version]) as [MaxVersion]
+						from rs
+						inner join [reporting].[Global_Audit] A on A.Object = 'Semantic'  and A.ObjectID = rs.SemanticID
+						inner join [reporting].[Global_FieldAudit] F on F.AuditID =  A.ID
+						group by rs.Qualifier,F.FieldName;
+
 						update	T
-						set		T.Version = S.[Count] + 1
+						set		T.Version = S.[MaxVersion] + 1
 						from	@fields T
 								cross apply (
-									select	count(1) as [Count]
-									from	[reporting].[Global_FieldAudit] F
-											inner join [reporting].[Global_Audit] A on A.ID = F.AuditID and A.Object = 'Semantic' 
-											and A.ObjectName = T.Qualifier 
-											and F.FieldName = T.FieldName
+									select	coalesce(A.MaxVersion,0) as [MaxVersion]
+									from	@QualifierAuditID A
+									where   A.Qualifier = T.Qualifier and A.FieldName = T.FieldName
 								) S
 
 						insert into [reporting].[Global_FieldAudit] (AuditID, FieldTypeID, FieldName, Version, Value, PreviousValue)

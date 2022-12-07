@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, OnChanges } from '@angular/core';
+﻿import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../../../shared/base.component';
 import { WorkflowActivityType } from '../../../../models/workflow.model';

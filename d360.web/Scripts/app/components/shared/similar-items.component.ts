@@ -1,9 +1,16 @@
-﻿import { Component, Input, OnChanges, OnInit, OnDestroy, SimpleChanges, NgModule, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    NgModule,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    SimpleChanges
+} from '@angular/core';
 import { UriBasedService } from '../../services/uri-based.service';
 import { CommonModule } from '@angular/common';
-
-import { HTTP_INTERCEPTORS } from '@angular/common/http';      
 
 
 import { CoreModule } from './core.module';
@@ -37,7 +44,7 @@ export class SimilarItemsComponent implements OnChanges, OnInit, OnDestroy {
     ngOnInit() {
         this.searchSub = this.uriBasedService.search(this.uri, this.queryStream$)
             .subscribe((res) => {
-                if (this.query == '')
+                if (this.query === '')
                     {this.items = [];}
                 else
                     {this.items = res;}
@@ -52,8 +59,8 @@ export class SimilarItemsComponent implements OnChanges, OnInit, OnDestroy {
             return;
         }
 
-        if ((changes['uri'] != null && changes['uri'].currentValue != changes['uri'].previousValue) ||
-            (changes['query'] != null && changes['query'].currentValue != changes['query'].previousValue)) {
+        if ((changes['uri'] != null && changes['uri'].currentValue !== changes['uri'].previousValue) ||
+            (changes['query'] != null && changes['query'].currentValue !== changes['query'].previousValue)) {
             this.queryStream$.next(changes['query'].currentValue);
         }
     }

@@ -1,8 +1,18 @@
-﻿import { Component, OnChanges, Input, SimpleChanges, Output, EventEmitter, ChangeDetectorRef, ElementRef } from '@angular/core';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { ConnectorLabelService } from '../../../services/connectorLabel.service';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AsyncValidatorService } from '../../../services/async-validators.service';
 import { ConnectorLabel } from '../../../models/connectorLabel.model';
+
 @Component({
     selector: 'd3s-connector-label-form',
     templateUrl: './connector-label-form.component.html',
@@ -42,10 +52,10 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes && changes.label && changes.label.currentValue != changes.label.previousValue) {
+        if (changes && changes.label && changes.label.currentValue !== changes.label.previousValue) {
             this.load();
         }
-        if (changes && changes.isVisible && changes.isVisible.currentValue != changes.isVisible.previousValue) {
+        if (changes && changes.isVisible && changes.isVisible.currentValue !== changes.isVisible.previousValue) {
             this.load();
             this.setValidators();
         }
@@ -84,7 +94,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     }
 
     OnBlurTrim() {
-        let value: string = this.connectorLabelForm.controls['value'].value;
+        const value: string = this.connectorLabelForm.controls['value'].value;
         if (value)
             {this.connectorLabelForm.controls['value'].setValue(value.trim());}
     }
@@ -97,7 +107,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
                 this.suggestionResultsArray.forEach((x) => this.suggestionResults.push(x.name));
 
                 this.suggestionResultsArray.forEach((s) => {
-                    if (s.name.toLowerCase() == this.connectorLabelForm.controls['value'].value.toLowerCase()) {
+                    if (s.name.toLowerCase() === this.connectorLabelForm.controls['value'].value.toLowerCase()) {
                         this.autoCompleteSelected(s);
                     }
                 });
@@ -107,7 +117,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     }
 
     onAutocompleteSelect(event) {
-        var obj = this.suggestionResultsArray.filter((x) => x.name.toLowerCase().trim() == event.toLowerCase().trim())[0];
+        var obj = this.suggestionResultsArray.filter((x) => x.name.toLowerCase().trim() === event.toLowerCase().trim())[0];
         this.autoCompleteSelected(obj);
     }
 

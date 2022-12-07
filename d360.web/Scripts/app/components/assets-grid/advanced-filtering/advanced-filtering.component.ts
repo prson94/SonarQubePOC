@@ -1,11 +1,32 @@
-﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter, AfterViewChecked, ViewChildren, ElementRef, HostBinding } from "@angular/core";
-import * as _ from "lodash";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostBinding,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    ViewChild,
+    ViewEncapsulation
+} from "@angular/core";
 import { OperatorModel } from "../../../models/operator.model";
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
+import { UserSettingsService } from "../../../services/usersettings.service";
 import { FieldTypeAPIModelField, FieldTypeHelper } from "../../../models/fieldtype-api.model";
 import { forkJoin, Observable, of } from "rxjs";
-import { AdvancedFilterFieldType, AdvancedFilterFieldCondition, AdvancedFilterFieldConditionCollection, ComplexFieldDefinition, FieldTypeAPIModelFieldAdvancedCondition, Filters, SystemFields } from "./advanced-filtering.models";
+import {
+    AdvancedFilterFieldCondition,
+    AdvancedFilterFieldConditionCollection,
+    AdvancedFilterFieldType,
+    ComplexFieldDefinition,
+    FieldTypeAPIModelFieldAdvancedCondition,
+    Filters,
+    SystemFields
+} from "./advanced-filtering.models";
 import { DatePipe } from "@angular/common";
 import { AllocationService } from "../../../services/allocations.service";
 import { ScoreTypeAllocation } from "../../../models/metrics.model";
@@ -114,7 +135,8 @@ export class AdvancedFilteringComponent implements OnChanges {
         private fieldsService: FieldsObservableService,
         protected settingsService: CompanySettingsService,
         private allocationService: AllocationService,
-        private relationshipService: RelationshipsService,
+		private relationshipService: RelationshipsService,
+		private usersettingsService: UserSettingsService,
         private datePipe: DatePipe,
         private router: Router
     ) {
@@ -175,7 +197,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             this.getRelationshipTypeObs()
         ).subscribe((response) => {
             this.operators = response[0];
-            let res = response[1] as AdvancedFilterFieldType[];
+            const res = response[1] as AdvancedFilterFieldType[];
             this.allocations = response[2];
             this.relationshipTypes = response[3];
 
@@ -207,8 +229,8 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     private loadFieldFromRelationshipData(res: FieldTypeAPIModelField[]) {
         try {
-            let toLoad: any[] = [];
-            let obsArr: Observable<FieldTypeAPIModelField[]>[] = [];
+            const toLoad: any[] = [];
+            const obsArr: Observable<FieldTypeAPIModelField[]>[] = [];
 
             res.filter((f) => f.Type.ComputedRelationshipField).forEach((f) => {
                 var intersectTypeUid = f.Type.ComputedRelationshipField.IntersectTypeUid;
@@ -297,7 +319,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         });
 
         res.filter((r) => r.RemovePopulatedOperator).forEach((r) => {
-            let ft = tempFields.find((t) => t.Name === r.Name);
+            const ft = tempFields.find((t) => t.Name === r.Name);
             ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
         });
 
@@ -374,8 +396,13 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     private saveFilters() {
-        if (this.enableFilterSaving) {
-            localStorage.setItem(this.getLocalStorageKey(), JSON.stringify(this.conditions));
+		if (this.enableFilterSaving) {
+			const storageValue = JSON.stringify(this.conditions);
+			localStorage.setItem(this.getLocalStorageKey(), storageValue);
+
+			if (this.isAssetType) {
+				this.usersettingsService.updateUserSetting(this.assetTypeUid, "AdvancedFilters", storageValue).subscribe();
+			}
         }
     }
 
@@ -402,7 +429,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         let state: AdvancedFilterFieldConditionCollection;
         try {
             if (this.externalStorage) {
-                let parsedState: AdvancedFilterFieldConditionCollection = JSON.parse(this.externalStorage);
+                const parsedState: AdvancedFilterFieldConditionCollection = JSON.parse(this.externalStorage);
                 if (parsedState !== null) {
                     parsedState.filters.forEach((f) => {
                         const field = this.fields.find((x) => x.Name === f.field);
@@ -426,7 +453,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     private loadFilters(): AdvancedFilterFieldCondition[] {
         try {
             this.conditions = new AdvancedFilterFieldConditionCollection();
-            let loadedFilters: AdvancedFilterFieldCondition[] = [];
+            const loadedFilters: AdvancedFilterFieldCondition[] = [];
             var savedState = this.isGlobalSearch ? this.getGlobalSearchFilters() : this.getStorageFilters();
             if (!savedState && !savedState.filters) {
                 return [];
@@ -524,7 +551,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     get complexFieldDefinition(): ComplexFieldDefinition {
-        let res = new ComplexFieldDefinition();
+        const res = new ComplexFieldDefinition();
         if (this.isComplexField) {
             var data = this.loadIdentifier.replace("ComplexField", "").replace("ComplexField", "").split("|");
             res.AssetUid = data[0];

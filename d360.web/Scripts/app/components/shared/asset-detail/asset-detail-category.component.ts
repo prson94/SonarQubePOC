@@ -1,4 +1,4 @@
-﻿import { Input, Component, ElementRef } from '@angular/core';
+﻿import { Component, ElementRef, Input } from '@angular/core';
 import { Category } from '../../../models/object-detail.model';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { ObjectIdService } from '../../../services/object-id.service';
@@ -42,7 +42,7 @@ export class AssetDetailCategoryComponent {
 
     getColumnWidth(data: any[]): string {
         if (this.showInColumn(data)) {
-            let columnWidth = this.settingsService.getSettingById(CompanySettingEnum.AssetDefinitionColumnWidth).NumberSetting.Value;
+            const columnWidth = this.settingsService.getSettingById(CompanySettingEnum.AssetDefinitionColumnWidth).NumberSetting.Value;
             return (columnWidth).toString();
         }
         return 'unset';

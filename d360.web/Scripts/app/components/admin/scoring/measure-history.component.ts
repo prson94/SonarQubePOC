@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { MetricAssetHistoryViewModel, MetricAssetViewModel } from '../../../models/metrics.model';
 import { MetricsService } from '../../../services/metrics.service';
@@ -48,7 +48,7 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
                     this.metricHistoryRecords = result;
                     if (this.metricHistoryRecords) {
                         this.metricHistoryRecords.forEach((g) => {
-                            let n = {
+                            const n = {
                                 data: g,
                                 children: [],
                                 expanded: true
@@ -85,11 +85,11 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
     }
 
     getAsPrecentage(val: number) {
-        if (val == 0)
+        if (val === 0)
             {return '0%';}
         if (!val)
             {return;}
-        if (val == 1)
+        if (val === 1)
             {return '100%';}
         let s = val + '0000';
         s = s.replace('0.', '');

@@ -1,12 +1,12 @@
 import { APP_INITIALIZER, Injectable } from '@angular/core';
-import { BehaviorSubject, interval } from 'rxjs';
-import { distinctUntilChanged, filter, map, shareReplay, take } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
+import { distinctUntilChanged, filter, map, shareReplay } from 'rxjs/operators';
 import { LocalStorageKey } from '../enums/localstorage.enum';
 import { Breadcrumb } from '../models/breadcrumb.model';
 import { AppConstants } from '../static/constants';
 import { LocalStorageHelper } from '../static/localstorage-helper';
 import { HeaderBreadcrumbService } from './header-breadcrumb.service';
-import { cloneDeep, isEqual, get, set } from "lodash";
+import { cloneDeep, isEqual } from "lodash";
 import { NavigationEnd, Router } from '@angular/router';
 
 export interface OnPageEvent {
@@ -187,7 +187,7 @@ export class NumberOfRowsByCategoryService {
   }
 
   private getPageCategoryFromBreadcrumbs(): string {
-    let breadcrumb: Breadcrumb[] = this.headerBreadcrumbService.getBreadcrumbsFromStorage();
+    const breadcrumb: Breadcrumb[] = this.headerBreadcrumbService.getBreadcrumbsFromStorage();
     if (breadcrumb && breadcrumb[0]) {
       return breadcrumb[0].text;
     } else {

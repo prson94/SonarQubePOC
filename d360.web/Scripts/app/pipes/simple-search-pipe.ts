@@ -1,5 +1,5 @@
 ﻿import { Pipe, PipeTransform } from '@angular/core';
-import { isString, isArray } from 'lodash';
+import { isArray, isString } from 'lodash';
 
 @Pipe({
     name: 'simpleSearch'
@@ -15,7 +15,7 @@ export class SimpleSearch implements PipeTransform {
         }
 
         const loop = (items) => {
-            if (isString(items.Name) && items.Name.toLowerCase().indexOf(filter.toLowerCase()) != -1)
+            if (isString(items.Name) && items.Name.toLowerCase().indexOf(filter.toLowerCase()) !== -1)
                 {return true;}
 
             if (isArray(items.Items)) {

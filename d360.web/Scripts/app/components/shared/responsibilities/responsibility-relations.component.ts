@@ -1,7 +1,11 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { IResponsibilityTypeService, ResponsibilityTypeAllocation, ResponsibilityTypeRelation_FormData, ResponsibilityTypeRelationAllocationOption } from '../../../models/responsibility-type.model';
-import { BaseComponent } from '../../shared/base.component';
+import {
+    ResponsibilityTypeAllocation,
+    ResponsibilityTypeRelationFormData,
+    ResponsibilityTypeRelationAllocationOption
+} from '../../../models/responsibility-type.model';
+import { BaseComponent } from '../base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -17,6 +21,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
     @Input() title: string = 'Asset Assignment';
 
+    @Input() showTitle = true;
     @Input() showAddButton: boolean = true;
     @Input() showEditButton: boolean = true;
     @Input() showDeleteButton: boolean = true;
@@ -36,7 +41,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
     private rows = new Array<ResponsibilityTypeAllocation>();
     private selectedRow = new ResponsibilityTypeAllocation();
-    private commonFormData = new ResponsibilityTypeRelation_FormData();
+    private commonFormData = new ResponsibilityTypeRelationFormData();
 
     private theDeleteCallback: Function;
 
@@ -51,7 +56,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === "uid") {
                 this.uid = changes["uid"].currentValue;
                 this.isEditing = false;
@@ -88,7 +93,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
                         //#region Remove the already-populated relations from the list of options.
                         this.rows.forEach((e) => {
-                            let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === e.AssetTypeUid);
+                            const ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === e.AssetTypeUid);
                             if (ix) {
                                 ix.IsUsed = true;
                             }
@@ -106,7 +111,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
                         //#region Remove the already-populated relations from the list of options.
                         this.rows.forEach((e) => {
-                            let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === e.AssetTypeUid);
+                            const ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === e.AssetTypeUid);
                             if (ix) {
                                 ix.IsUsed = true;
                             }

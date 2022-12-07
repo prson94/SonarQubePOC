@@ -15,12 +15,13 @@ import { SynonymPermission } from '../../models/artifacts.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
-import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
-import { Subscription, forkJoin } from 'rxjs';
+import { LinkClickInterceptor } from '../../services/href-click-service';
+import { forkJoin, Subscription } from 'rxjs';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { AssetService } from '../../services/asset.service';
 import { ArtifactService } from '../../services/artifacts.service';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 @Component({
 	selector: 'd3s-hierarchy-item',
@@ -108,7 +109,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 					}
 				});
 
-		this.logAction("open", this.assetTypeClass.toString(), this.assetUid);
+		this.logAssetAction(UsageAction.View, this.assetUid);
 		this.baseAssetUid = this.assetUid;
 		forkJoin(this.artifactService.getArtifactByUid(this.assetUid)
 			, this.permissionsService.getAssetPermissions(this.assetUid)
@@ -117,7 +118,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 			this.selected = res[0];
 			this.baseAssetTypeUid = this.selected["AssetTypeUid"];
 
-			let TempsynonymPermission = new SynonymPermission;
+			const TempsynonymPermission = new SynonymPermission;
 			if (this.hasAddRelationshipsPermissions() || this.hasModifyRelationshipsPermissions()) {
 				TempsynonymPermission.addModifySynonym = true;
 			}
@@ -128,7 +129,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 			this.synonymPermission = TempsynonymPermission;
 
 			this.load();
-		})
+		});
 
 		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this, ev);

@@ -1,12 +1,11 @@
-
-import {catchError, map} from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { Injectable } from "@angular/core";
 import { BaseObservableService } from './baseObservable.service';
 import { Observable } from "rxjs";
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MessagesObservableService } from './messages-observable.service';
-import {  WorkflowMonitorItems } from "../models/workflowmonitor.model";
-import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from "../models/grid-definition.model";
+import { WorkflowMonitorItems } from "../models/workflowmonitor.model";
+import { GridFilterColumn, GridFilterExpression, GridFilterFieldType } from "../models/grid-definition.model";
 import { SortOrder } from "../models/enums.model";
 
 
@@ -18,17 +17,17 @@ export class WorkflowMonitorService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getWorkFlowMonitorItems(pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[]): Observable<WorkflowMonitorItems> {
-        let uri = `internal/monitor/workflowmonitor/items?pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortorder=${sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Ascending ? "asc" : "desc")}`;
+        let uri = `internal/monitor/workflowmonitor/items?pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortorder=${sortorder === SortOrder.None ? "" : (sortorder === SortOrder.Ascending ? "asc" : "desc")}`;
 
-        if (filters != undefined) {
+        if (filters != null) {
 
             //#region regular fields
 
-            let normalFilters = filters.filter((f) => f.fieldtype == GridFilterFieldType.Normal);
+            const normalFilters = filters.filter((f) => f.fieldtype === GridFilterFieldType.Normal);
             let count = 0;
             uri += '&filterscount=' + normalFilters.length;
 
-            for (let filter of normalFilters) {
+            for (const filter of normalFilters) {
                 uri += `&filterdatafield${count}=${filter.field}&filtercondition${count}=${filter.condition}&filtervalue${count}=${encodeURIComponent(filter.value)}`;
                 count++;
             }
@@ -41,7 +40,7 @@ export class WorkflowMonitorService extends BaseObservableService {
     }
 
     getWorkFlowMonitorFilterColumnDefinition(): Observable<GridFilterColumn[]> {
-        let uri = `services/workflow/workflowmonitor/filter/definition`;
+        const uri = `services/workflow/workflowmonitor/filter/definition`;
         return this.http.get(uri)
             .pipe(
                 map((response) => <GridFilterColumn[]>response),
@@ -50,17 +49,17 @@ export class WorkflowMonitorService extends BaseObservableService {
     }
 
     exportToExcel(pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[]) {
-        let uri = `internal/monitor/workflowmonitor/items/download/excel.xls?pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortorder=${sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Ascending ? "asc" : "desc")}`;
+        let uri = `internal/monitor/workflowmonitor/items/download/excel.xls?pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortorder=${sortorder === SortOrder.None ? "" : (sortorder === SortOrder.Ascending ? "asc" : "desc")}`;
 
-        if (filters != undefined) {
+        if (filters != null) {
 
             //#region regular fields
 
-            let normalFilters = filters.filter((f) => f.fieldtype == GridFilterFieldType.Normal);
+            const normalFilters = filters.filter((f) => f.fieldtype === GridFilterFieldType.Normal);
             let count = 0;
             uri += '&filterscount=' + normalFilters.length;
 
-            for (let filter of normalFilters) {
+            for (const filter of normalFilters) {
                 uri += `&filterdatafield${count}=${filter.field}&filtercondition${count}=${filter.condition}&filtervalue${count}=${encodeURIComponent(filter.value)}`;
                 count++;
             }
@@ -82,7 +81,7 @@ export class WorkflowMonitorService extends BaseObservableService {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
             body: itemIds
         };
-        let uri = `services/workflow/deleteItems`;
+        const uri = `services/workflow/deleteItems`;
 
         return this.http.delete(uri, httpOptions).pipe(
             map((res) => res),

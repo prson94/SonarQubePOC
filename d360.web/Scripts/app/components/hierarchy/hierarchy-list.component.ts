@@ -10,12 +10,10 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 
 import * as _ from 'lodash';
 import { StringConstants } from '../../static/string-constants';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
 import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
-
 
 
 @Component({
@@ -50,7 +48,7 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
     }
 
 	ngOnInit() {
-		let assetTypeClassString: keyof typeof AssetTypeClass = this.route.snapshot.data.type;
+		const assetTypeClassString: keyof typeof AssetTypeClass = this.route.snapshot.data.type;
 		try {
 
 			this.assetTypeClass = AssetTypeClass[assetTypeClassString];

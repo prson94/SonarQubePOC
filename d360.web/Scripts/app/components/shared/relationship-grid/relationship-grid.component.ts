@@ -1,9 +1,21 @@
-﻿import { ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
-import { Input, Component, OnChanges, SimpleChange, OnDestroy, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    Output,
+    SimpleChange,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { Table } from 'primeng/table';
 import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { Param } from '../../../enums/param.enum';
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
@@ -14,11 +26,16 @@ import { GridDefinitionService } from '../../../services/grid-definition.service
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
-import { PermissionsService, Permissions } from '../../../services/permissions.service';
+import { Permissions, PermissionsService } from '../../../services/permissions.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import {
+    AdvancedFilterFieldType,
+    Filters,
+    LookupValuesAPIModel,
+    LookupValuesAPIParameters
+} from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { BaseComponent } from '../base.component';
 import { AddRelationshipComponent } from './add-relationship.component';
 import { FeatureFlags, FeatureFlagsService } from "../../../services/featureflags.service";
@@ -95,7 +112,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     @ViewChild('addRelationships', { static: false }) addRelationshipComponent: AddRelationshipComponent;
 
     public getRelationshipTypes(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
-        let data: LookupValuesAPIModel = new LookupValuesAPIModel();
+        const data: LookupValuesAPIModel = new LookupValuesAPIModel();
         data.count = this.relationshipTypesResolvedNames.length;
         data.items = [];
         this.relationshipTypesResolvedNames.forEach((item) => {
@@ -184,7 +201,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     }
 
     get getAdvancedFilterFields(): AdvancedFilterFieldType[] {
-        let filters: AdvancedFilterFieldType[] = [];
+        const filters: AdvancedFilterFieldType[] = [];
         this.filterFieldList.forEach((f) => filters.push(f));
         if (this.loadedFilterFields) {
             this.loadedFilterFields.forEach((f) => filters.push(f));
@@ -212,7 +229,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         });
     }
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
+        for (const p in changes) {
             if (p === 'assetUid' && this.assetUid) {
                 this.advFilterIdentifier = "Relationships_" + this.assetUid;
                 window.setTimeout(() => {
@@ -259,21 +276,20 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                     permissionObs = of(p);
                 }
 
-                this.loadTypesSub = forkJoin(
+                this.loadTypesSub = forkJoin([
                     this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid),
                     this.relationshipService.getRelationshipsCountsForAsset(this.assetUid),
                     permissionObs
-                )
-                    .subscribe((data) => {
-                        this.relationshipTypes = data[0];
-                        this.relationshipCounts = data[1];
-                        this.assetPermissions = data[2];
+                ]).subscribe((data) => {
+                    this.relationshipTypes = data[0];
+                    this.relationshipCounts = data[1];
+                    this.assetPermissions = data[2];
 
-                        this.processCountData();
+                    this.processCountData();
 
-                        this.areTypesLoaded = true;
-                        this.cdRef.detectChanges();
-                    });
+                    this.areTypesLoaded = true;
+                    this.cdRef.detectChanges();
+                });
             });
 
 
@@ -445,7 +461,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
         if (this.singleSelectedRelationship) {
             params["RelationshipTypeUid"] = this.singleSelectedRelationship.uid;
-            let sideUid = this.singleSelectedRelationship.perspective === "Subject" ? "SubjectUid" : "ObjectUid";
+            const sideUid = this.singleSelectedRelationship.perspective === "Subject" ? "SubjectUid" : "ObjectUid";
             params[sideUid] = this.assetUid;
         }
 
@@ -469,7 +485,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         var relFilter = this.advancedFilterData.filter((x) => x.field === "relationshiptype");
         if (relFilter && relFilter.length !== 0 && relFilter[0]["value"] && relFilter[0]["value"].length === 1) {
             var value = relFilter[0]["value"][0]["value"];
-            let splitValue = value.split("|");
+            const splitValue = value.split("|");
             return this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === splitValue[0].toLowerCase() && x.perspective === splitValue[1])[0];
         }
         return null;
@@ -512,7 +528,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 	}
 
     clickMenuItem(event: any, item: any) {
-        let key = event.value.toLowerCase();
+        const key = event.value.toLowerCase();
 
         if (key === $localize`Edit Relationship`.toLowerCase()) {
             this.showEditor = true;
@@ -538,7 +554,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                         if ((item.value as string).indexOf("undefined") > -1) {
                             item.value.replace("|undefined", "|Subject");
                         }
-                        let splitValue = item.value.split("|");
+                        const splitValue = item.value.split("|");
                         var names = this.relationshipTypesResolvedNames.filter((x) => x.uid.toLowerCase() === splitValue[0].toLowerCase() && x.perspective === splitValue[1]);
                         names.forEach((sel) => sel.isSelected = true);
                     });
@@ -603,7 +619,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         }
         this.relationshipService.deleteRelationshipV2(this.selectedRelationship.RelationshipTypeUid, [item])
             .subscribe((res) => {
-                let msg = $localize`Relationship Successfully deleted`;
+                const msg = $localize`Relationship Successfully deleted`;
                 this.showMessageForApiResult(this.messagesService, res[0], msg);
                 this.deleteInProgress = false;
                 this.showDelete = false;

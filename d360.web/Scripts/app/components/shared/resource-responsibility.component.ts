@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
 import { ResourcesService } from '../../services/resources.service';
 import { CountObject } from '../../models/resource.model';
 
@@ -59,7 +59,7 @@ export class ResourceResponsibilityComponent implements OnChanges {
     }
 
     isSelected(item: any) {
-        return (item == this.selected);
+        return (item === this.selected);
     }
 
     select(item: any) {
@@ -72,7 +72,7 @@ export class ResourceResponsibilityComponent implements OnChanges {
         if (this.resource != null)
             {this.resourceId = this.resource.ResourceID;}
 
-        this.isMe = (this.resourceId == CurrentResourceID);
+        this.isMe = (this.resourceId === CurrentResourceID);
 
         this.resourcesService.getResponsibilityBreakdownByResource(this.resourceId, this.responsibilityTypeUid)
             .subscribe((r) => {

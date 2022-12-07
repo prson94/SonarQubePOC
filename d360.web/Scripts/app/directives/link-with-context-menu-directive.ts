@@ -1,7 +1,15 @@
 ﻿import { DOCUMENT } from '@angular/common';
-import { AfterViewChecked, Input, OnDestroy } from '@angular/core';
-import { Inject, OnInit, Renderer2 } from '@angular/core';
-import { Directive, ElementRef, HostListener } from '@angular/core';
+import {
+    AfterViewChecked,
+    Directive,
+    ElementRef,
+    HostListener,
+    Inject,
+    Input,
+    OnDestroy,
+    OnInit,
+    Renderer2
+} from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CompanySettingEnum } from '../models/settings.model';
 import { AuthenticationService } from '../services/authentication.service';
@@ -151,7 +159,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
     }
 
     menuItemClicked($event, type) {
-        let event = new MouseEvent('click', { bubbles: true });
+        const event = new MouseEvent('click', { bubbles: true });
         event['from-context-method'] = type;
         this.el.nativeElement.dispatchEvent(event);
     }

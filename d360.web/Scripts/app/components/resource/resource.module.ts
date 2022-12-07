@@ -1,7 +1,6 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
-
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 
 import { RouterModule } from '@angular/router';
@@ -12,7 +11,7 @@ import { D3SSharedModule } from '../shared/shared.module';
 import { CoreModule } from '../shared/core.module';
 import { SocialModule } from '../shared/social/social.module';
 import { PipesModule } from '../../pipes/pipes.module';
-import { TilesModule  } from '../shared/tiles/tiles.module';
+import { TilesModule } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
@@ -20,7 +19,7 @@ import { SharedAssignmentsModule } from '../shared/assignments/shared-assignment
 import { ApiKeyUsersGuard } from '../../guards/api-key-users.gurard';
 
 import { ResourceComponent } from './resource.component';
-import { ResourceGroupsComponent} from './resource-groups.component';
+import { ResourceGroupsComponent } from './resource-groups.component';
 import { ResourceItemComponent } from './resource-item.component';
 import { ResourceFollowingGridTile } from './resource-following-grid.tile';
 import { ResourceFollowingTile } from './resource-following.tile';

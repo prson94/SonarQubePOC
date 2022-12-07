@@ -1,14 +1,12 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild, ViewEncapsulation, OnDestroy } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { CompanySettings, CompanyImage, AppSettingsEnum, } from '../../../models/settings.model';
+import { AppSettingsEnum, } from '../../../models/settings.model';
 import { SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
-
-import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FeatureFlagsService } from '../../../services/featureflags.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
@@ -49,7 +47,7 @@ export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent im
 		private assetTypeService: AssetTypeService
 	) {
 		super(headerBreadcrumbService, titleService, settingsService);
-		let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+		const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
 		this.addAssetTypeHelpLink = helpBaseUri + "Default.htm#d-admin/establishing-responsibilities.htm?TocPath=Administration%257CManaging%2520users%2520and%2520groups%257C_____3";
 	}
 
@@ -95,7 +93,7 @@ export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent im
 			return;
 		}
 		this.addAssetTypeFolderSaving = true;
-		let nav = new SiteNav();
+		const nav = new SiteNav();
 		nav.Name = "#ASSET_TYPE";
 		nav.Object = this.selectedAssetType.Object;
 		nav.ObjectID = this.selectedAssetType.ObjectID;

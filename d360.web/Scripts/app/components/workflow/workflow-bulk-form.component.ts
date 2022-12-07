@@ -1,9 +1,9 @@
-import { Input, Output, Component, OnInit, OnDestroy, EventEmitter, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { WorkflowService } from '../../services/workflow.service';
-import { WorkflowFormField, WorkflowFormFieldType, BulkWorkflowFormModel } from '../../models/workflow.model';
+import { BulkWorkflowFormModel, WorkflowFormField, WorkflowFormFieldType } from '../../models/workflow.model';
 import { WorkflowFormFieldsComponent } from "./workflow-form-fields.component";
 import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
 import { map } from 'rxjs/operators';

@@ -1,4 +1,4 @@
-﻿import { Pipe, PipeTransform, Injectable } from '@angular/core';
+﻿import { Pipe, PipeTransform } from '@angular/core';
 
 import { TreeNode } from 'primeng/api';
 import * as _ from 'lodash';
@@ -6,20 +6,20 @@ import * as _ from 'lodash';
 @Pipe({ name: 'treeSearch' })
 export class TreeSearchPipe implements PipeTransform {
     transform(tree: TreeNode[], searchTerm: string, field?: string): any {        
-        let newTree: TreeNode[] = [];
+        const newTree: TreeNode[] = [];
 
-        if (!searchTerm || searchTerm.length == 0) {
+        if (!searchTerm || searchTerm.length === 0) {
             return tree;
         }
 
         var dupTree = _.cloneDeep(tree); // dup tree so we dont mess with original
         
-        let search = searchTerm.toLowerCase();
+        const search = searchTerm.toLowerCase();
         
         for (let node of dupTree) {
             var nameField = field ? node.data[field] : node.label;
 
-            if (((nameField || '').toLowerCase().indexOf(search) != -1 || this.findSelectedTreeNode(node.children, search, field))) {
+            if (((nameField || '').toLowerCase().indexOf(search) !== -1 || this.findSelectedTreeNode(node.children, search, field))) {
                 node = this.removeChildren(node, search, field);
 
                 newTree.push(node);
@@ -39,7 +39,7 @@ export class TreeSearchPipe implements PipeTransform {
 
             if (!nameField) {continue;}
 
-            if (nameField.toLowerCase().indexOf(search) == -1 && !this.findSelectedTreeNode(cNode.children, search, field)) {
+            if (nameField.toLowerCase().indexOf(search) === -1 && !this.findSelectedTreeNode(cNode.children, search, field)) {
                 node.children.splice(i, 1);
             }
             else if (cNode.children) {
@@ -51,27 +51,27 @@ export class TreeSearchPipe implements PipeTransform {
     }
 
     private findSelectedTreeNode(tree: TreeNode[], search: string, field?:string): TreeNode {
-        let nodes: TreeNode[] = [];
+        const nodes: TreeNode[] = [];
 
         if (!tree) {return null;}
         // add root nodes
-        for (let rNode of tree) {
+        for (const rNode of tree) {
             nodes.push(rNode);
         }
 
         //do a breadth first search for the given treenode
-        if (!nodes || nodes.length == 0) {return null;}
+        if (!nodes || nodes.length === 0) {return null;}
 
         let node = nodes[0];
 
         while (node) {
             var nameField = field ? node.data[field] : node.label;
 
-            if (nameField && nameField.toLowerCase().indexOf(search) != -1) {return node;}
+            if (nameField && nameField.toLowerCase().indexOf(search) !== -1) {return node;}
 
             //push children
             if (node.children) {
-                for (let cNode of node.children) {
+                for (const cNode of node.children) {
                     nodes.push(cNode);
                 }
             }
@@ -79,7 +79,7 @@ export class TreeSearchPipe implements PipeTransform {
             //remove this node
             nodes.splice(0, 1);
 
-            if (!nodes || nodes.length == 0) {return null;}
+            if (!nodes || nodes.length === 0) {return null;}
             node = nodes[0];
         }
     }

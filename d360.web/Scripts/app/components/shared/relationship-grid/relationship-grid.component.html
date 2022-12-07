@@ -235,7 +235,8 @@
                   (closeClick)="showEditor=false"></asset-editor>
 </d3s-modal>
 
-<add-relationship-editor #addRelationships  *ngIf="areTypesLoaded"
+<add-relationship-editor #addRelationships
+                         *ngIf="areTypesLoaded"
                          [assetUid]="assetUid"
                          [assetTypeUid]="assetTypeUid"
                          [isVisible]="isAddVisible"

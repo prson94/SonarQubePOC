@@ -1,5 +1,5 @@
-﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from "@angular/core";
-import { LookupGrid, GridFilterColumn } from "../../../models/grid-definition.model";
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy } from "@angular/core";
+import { GridFilterColumn, LookupGrid } from "../../../models/grid-definition.model";
 import { Router } from "@angular/router";
 import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { BaseComponent } from "../base.component";
@@ -55,17 +55,17 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
             return;
         }
 
-        this.isComplex = (this.data.Fields.find((f) => f.name == 'Url') == null);
+        this.isComplex = (this.data.Fields.find((f) => f.name === 'Url') == null);
 
         //do this on init to avoid binding to function call
         this.data.Columns.forEach((c) => {
             c.type = this.columnDataType(c);
-            if (c.type == 'number') {
+            if (c.type === 'number') {
                 this.data.Values.forEach((v) => {
                     v[c.datafield] = this.formatAsNumber(v[c.datafield]);
                 });
             }
-            if (c.type == 'string' || c.type == 'preview' || c.type == 'lookup' || c.type == 'html') {
+            if (c.type === 'string' || c.type === 'preview' || c.type === 'lookup' || c.type === 'html') {
                 this.data.Values.forEach((v) => {
                     if (v[c.datafield] === null) {
                         v[c.datafield] = ''; //prevent IE from displaying 'null'
@@ -74,14 +74,14 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
             }
         });
 
-        this.data.Columns.filter((c) => c.type == 'hidden').forEach((c) => {
-            let i = this.data.Columns.find((i) => i.datafield == c.text);
+        this.data.Columns.filter((c) => c.type === 'hidden').forEach((c) => {
+            const i = this.data.Columns.find((i) => i.datafield === c.text);
             if (i) {
                 i.type = 'preview';
             }
         });
 
-        this.visibleColumns = this.data.Columns.filter((c) => c.type != 'hidden');
+        this.visibleColumns = this.data.Columns.filter((c) => c.type !== 'hidden');
 
         this.isColumnsLoaded = true;
 
@@ -92,11 +92,11 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
     }
 
     private columnDataType(column: GridFilterColumn): string {
-        var fields = this.data.Fields.filter((x) => x.name == column.datafield);
+        var fields = this.data.Fields.filter((x) => x.name === column.datafield);
 
-        if (column.type == 'preview')
+        if (column.type === 'preview')
             {return 'preview';}
-        if ((column.datafield == 'Name' || column.datafield == 'TextPath') && !this.isComplex)
+        if ((column.datafield === 'Name' || column.datafield === 'TextPath') && !this.isComplex)
             {return 'tooltip';}
         if (fields.length > 0)
             {return fields[0].type;}
@@ -134,7 +134,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
         params['useUidUrls'] = 'false';
 
         if (event.sortOrder) {
-            if (event.sortOrder == 1) {
+            if (event.sortOrder === 1) {
                 params['_direction'] = 'ASC';
             }
             else {
@@ -147,7 +147,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
                 params['simpleFilter'] = event.filters.global.value;
             }
 
-            var keys = Object.keys(event.filters).filter((x) => x != 'global');
+            var keys = Object.keys(event.filters).filter((x) => x !== 'global');
             var advFilters: string[] = [];
 
             keys.forEach((key) => {
@@ -184,12 +184,12 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
         var value = data[colName] as string;
         if (!value) {return '';}
 
-        let cleanValue: number = parseFloat(value.replace("%", ""));
-        let fieldTypeID: number = parseInt(colName.split("_")[1]);
+        const cleanValue: number = parseFloat(value.replace("%", ""));
+        const fieldTypeID: number = parseInt(colName.split("_")[1]);
         var className = "";
         if (this.data?.ScoringInfo) {
             className = "score-poor";
-            var allocInfo = this.data?.ScoringInfo?.filter((x) => x["FieldTypeId"] == fieldTypeID);
+            var allocInfo = this.data?.ScoringInfo?.filter((x) => x["FieldTypeId"] === fieldTypeID);
             if (allocInfo.length > 0) {
                 var alloc = allocInfo[0];
                 if (cleanValue > parseFloat(alloc.LowerThreshold)) {

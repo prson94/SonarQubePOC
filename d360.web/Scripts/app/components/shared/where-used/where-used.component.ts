@@ -1,4 +1,16 @@
-﻿import { Component, ChangeDetectionStrategy, Input, OnChanges, SimpleChanges, ChangeDetectorRef, Output, EventEmitter, ElementRef, AfterViewChecked, ViewChild } from '@angular/core';
+﻿import {
+    AfterViewChecked,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 import { ConnectorLabelService } from '../../../services/connectorLabel.service';
 
 @Component({
@@ -44,25 +56,25 @@ export class WhereUsedComponent implements OnChanges, AfterViewChecked {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes && changes.uid.currentValue != changes.uid.previousValue) {
+        if (changes && changes.uid.currentValue !== changes.uid.previousValue) {
             this.load();
         }
     }
     getFriendlyObjectType(): string {
-        if (this.objectType == "ConnectorLabel") {
+        if (this.objectType === "ConnectorLabel") {
             return "label";
         }
         return "";
     }
 
     load() {
-        if (this.objectType == "ConnectorLabel") {
+        if (this.objectType === "ConnectorLabel") {
             this.loadConnectorLabelUsage();
         }
     }
 
     export() {
-        if (this.objectType == "ConnectorLabel") {
+        if (this.objectType === "ConnectorLabel") {
             this.connectorLabelService.exportLabelUsage(this.uid, $localize`Where Used report for Connector Label "${this.displayValue}"`);
         }
     }

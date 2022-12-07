@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, EventEmitter, OnInit } from "@angular/core";
+﻿import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { ArtifactTypeService } from "../../../services/artifact-type.service";
 import { ArtifactService } from "../../../services/artifacts.service";
 import { BaseComponent } from "../../shared/base.component";
@@ -40,7 +40,7 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
         this.sub = this.route.params.subscribe((params) => {
             try {
                 if (!this.assetTypeClass) {
-                    let assetTypeClassString: keyof typeof AssetTypeClass = params["class"];
+                    const assetTypeClassString: keyof typeof AssetTypeClass = params["class"] ?? params["typeClass"];
                     this.assetTypeClass = AssetTypeClass[assetTypeClassString];
                     if (!this.assetTypeClass) {
                         this.assetTypeClass = AssetTypeClass.BusinessAsset;

@@ -6,20 +6,16 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-
 using d360.core.entities;
 using d360.core.enums;
 using d360.model;
-
 using Dapper;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using Resources;
 using d360.utils.excel;
-
 using SpreadsheetLight;
+using d360.core;
 
 namespace d360.web.Controllers.V2
 {
@@ -246,8 +242,8 @@ namespace d360.web.Controllers.V2
 					fieldJoins.Add(sql);
 				}
 				else
-				{					
-					fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {fieldJoinCondition}");										
+				{
+					fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {fieldJoinCondition}");
 				}
 			});
 		}
@@ -846,14 +842,16 @@ namespace d360.web.Controllers.V2
 		}
 		private string getRowFieldValue(dynamic row, int fieldId, string hardCodedName = null)
 		{
+			string rowFieldValue = "";
 			if (fieldId > 0 && string.IsNullOrEmpty(hardCodedName))
 			{
-				return (string)((row as IDictionary<string, object>)[$"Field{fieldId}"]);
+				rowFieldValue = (string)((row as IDictionary<string, object>)[$"Field{fieldId}"]);
 			}
 			else
 			{
-				return (((row as IDictionary<string, object>)[$"{hardCodedName}"]) ?? "").ToString();
+				rowFieldValue = (((row as IDictionary<string, object>)[$"{hardCodedName}"]) ?? "").ToString();
 			}
+			return rowFieldValue.GetSafeXLSColumnValue();
 		}
 
 		private void SetExcelColumnWidths(SLDocument document, List<FieldType> fields)

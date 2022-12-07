@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -7,7 +7,6 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { Location } from '@angular/common';
 import { ShoppingCart, ShoppingCartListItem } from '../../models/shopping-cart.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../services/settings.service';
@@ -57,7 +56,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
                 this.cart = r.Cart;
                 this.items = r.Items;
 
-                this.cartIsEmpty = (this.items == null || this.items.length == 0);
+                this.cartIsEmpty = (this.items == null || this.items.length === 0);
                 this.isLoading = false;
             });
     }

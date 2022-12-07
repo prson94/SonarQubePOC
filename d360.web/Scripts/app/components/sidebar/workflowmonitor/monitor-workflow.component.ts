@@ -1,12 +1,11 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
-import { Param } from '../../../enums/param.enum';
 
 @Component({
 	selector: 'd3s-workflow-monitor',
@@ -44,7 +43,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
 		this.sub = this.route.params.subscribe((params) => {
 			this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, $localize`Workflow`);
 
-			let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
+			const reloadNav = params['isAdminPage'] && params['isAdminPage'] === 'false' ? false : true;
 			this.baseAssetUid = params['assetUid'];
 			this.baseAssetTypeUid = params["assetTypeUid"];
 

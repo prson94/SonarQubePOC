@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { JsonResult } from '../models/jsonresult.model';
 import { Shortcut } from '../models/shortcuts.model';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';

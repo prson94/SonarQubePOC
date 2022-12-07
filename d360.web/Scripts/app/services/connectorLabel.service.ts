@@ -66,7 +66,7 @@ export class ConnectorLabelService extends BaseObservableService {
     }
 
     getLabelByUid(uid: string): Observable<ConnectorLabel> {
-        let url = `api/v2/connectorLabels/?uid=` + uid;
+        const url = `api/v2/connectorLabels/?uid=` + uid;
 
         return this.http.get(url)
             .pipe(map((response) => <any>response),
@@ -75,7 +75,7 @@ export class ConnectorLabelService extends BaseObservableService {
     }
 
     getLabelUsage(labelUid: string): Observable<ConnectorLabelUsage[]> {
-        let url = `api/v2/connectorLabels/` + labelUid + `/usage`;
+        const url = `api/v2/connectorLabels/` + labelUid + `/usage`;
 
         return this.http.get(url)
             .pipe(map((items) => <ConnectorLabelUsage[]>items),
@@ -106,7 +106,7 @@ export class ConnectorLabelService extends BaseObservableService {
 
 
     deleteLabels(labels: ConnectorLabel[]): Observable<any> {
-        let url = `api/v2/connectorLabels/`;
+        const url = `api/v2/connectorLabels/`;
         var model = [];
         labels.forEach((label) => {
             model.push({ uid: label.uid, cascade:true });
@@ -124,7 +124,7 @@ export class ConnectorLabelService extends BaseObservableService {
     saveLabel(label: ConnectorLabel): Observable<any> {
         let url = `api/v2/connectorLabels/`;
 
-        if (label.uid == undefined || !label.uid) {
+        if (label.uid == null || !label.uid) {
             return this.http.post(url, label)
                 .pipe(map((response) => <any>response),
                     catchError((err) => this.handleError(err, true)));
@@ -136,7 +136,7 @@ export class ConnectorLabelService extends BaseObservableService {
     }
 
     consolidateConnectorLabels(parentLabel: string, childrenLabels: string[]): Observable<any[]> {
-        let url = `api/v2/connectorLabels/consolidate/${parentLabel}`;
+        const url = `api/v2/connectorLabels/consolidate/${parentLabel}`;
         return this.http.post(url, childrenLabels)
             .pipe(map((response) => <any>response),
                 catchError((err) => this.handleError(err, true)));

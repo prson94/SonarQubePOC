@@ -5,40 +5,39 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.reporting.Policy_All-v1">
+  <changeSet author="Pappas" id="View.reporting.Policy_All-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
- CREATE OR ALTER VIEW [reporting].[Policy_All] AS
+CREATE OR ALTER VIEW [reporting].[Policy_All] AS
   with p as (
-	  select	T.ObjectID as ID,
-			  T.TypeID as PolicyTypeID,
-			  T.UpdatedOn,
-			  T.UpdatedBy,
-			  null as ParentID,
-			  T.DisplayValue,
-			  T.DisplayValue as TextPath,
-			  1 as [Level]
-	  from	AssetDetail T
-			  left join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ObjectID and I.PredicateType = 4
-	  where	I.IntersectID is null and T.Object = 'Policy'
+	  select	T.ID,
+				T.AssetTypeID as PolicyTypeID,
+				T.UpdatedOn,
+				T.UpdatedBy,
+				cast(null as bigint) as ParentID,
+				T.DisplayValue,
+				T.DisplayValue as TextPath,
+				1 as [Level]
+	  from		AssetDetail T
+				left join PredicateIntersect I on I.ObjectAssetID = T.ID and I.PredicateType = 4
+	  where		I.IntersectID is null and T.AssetTypeClass = 6 -- policy
 	  union all
-	  select	T.ObjectID as ID,
-			  T.TypeID as PolicyTypeID,
-			  T.UpdatedOn,
-			  T.UpdatedBy,
-			  p.ID as ParentID,
-			  T.DisplayValue,
-			  p.TextPath + '.' + T.DisplayValue as TextPath,
-			  p.[Level] + 1 as [Level]
-	  from	AssetDetail T
-			  inner join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ObjectID and I.PredicateType = 4
-			  inner join p on I.Subject = 'Policy' and I.SubjectID = p.ID
-	  where	T.Object = 'Policy'
+	  select	T.ID,
+				T.AssetTypeID as PolicyTypeID,
+				T.UpdatedOn,
+				T.UpdatedBy,
+				p.ID as ParentID,
+				T.DisplayValue,
+				p.TextPath + '.' + T.DisplayValue as TextPath,
+				p.[Level] + 1 as [Level]
+	  from		AssetDetail T
+				inner join PredicateIntersect I on I.ObjectAssetiD = T.ObjectID and I.PredicateType = 4
+				inner join p on I.SubjectAssetID = p.ID
   )
-  SELECT  A.ID as AssetID,
+  SELECT  p.ID as AssetID,
           p.[ID] as [PolicyID],
           p.[ParentID],
           p.DisplayValue,
@@ -51,16 +50,10 @@
           coalesce(ptl.Name, 'Level ' + cast(p.[Level] as nvarchar)) as [Policy Level Name],
           CONVERT(VARCHAR(10), p.UpdatedOn, 112) as UpdatedOnKey
   FROM    p
-		  inner join Asset A on A.Object = 'Policy' and A.ObjectID = p.ID
-		  inner join AssetType T on T.ID = A.AssetTypeID
+		  inner join AssetType T on T.ID = p.PolicyTypeID
           left Join AssetTypeLevel ptl on ptl.AssetTypeID = T.ID and ptl.[Level] = p.[level]
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
   </changeSet>
 
 </databaseChangeLog>

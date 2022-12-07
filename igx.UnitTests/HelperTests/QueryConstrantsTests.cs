@@ -22,11 +22,9 @@ namespace igx.UnitTests.HtmlHelperTests
             Assert.True(!string.IsNullOrEmpty(QueryConstants.InformationCatalogDiagramData));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.LookupAllocations));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.ObjectNymTypes));
-            Assert.True(!string.IsNullOrEmpty(QueryConstants.ObjectRelationshipAllCountsWithZero));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.ObjectRelationships));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.ObjectRelationshipTypeIDs));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.PolicySettingsItem));
-            Assert.True(!string.IsNullOrEmpty(QueryConstants.ReferenceListTypeRelationshipsAllCountsWithZero));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.RuleSettingsItem));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.ShoppingCartItemList));
             Assert.True(!string.IsNullOrEmpty(QueryConstants.SiteNavPermissions));

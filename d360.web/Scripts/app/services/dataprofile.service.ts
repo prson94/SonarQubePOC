@@ -1,17 +1,19 @@
 ﻿import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpClientJsonpModule, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of, throwError } from "rxjs";
-import { catchError, map, debounceTime } from "rxjs/operators";
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Observable, of } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
 import { JsonResult } from '../models/jsonresult.model';
-import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
 
-import { SemanticSource, SemanticType, SemanticTypeGetAssetsResponse, SemanticTypeGetResponse } from '../models/semantic-type.model';
-
-import * as _ from 'lodash';
+import {
+    SemanticSource,
+    SemanticType,
+    SemanticTypeGetAssetsResponse,
+    SemanticTypeGetResponse
+} from '../models/semantic-type.model';
 import { SortOrder } from '../models/enums.model';
 
 @Injectable()
@@ -87,8 +89,8 @@ export class DataProfileService extends BaseObservableService {
 
     public exportMatches(assetUid: string, matchType: string, simpleFilter: string = '', advancedFilter: string = "", assetName: string, sortField: string = "", sortOrder: number = SortOrder.Ascending, callback: Function = null) {
 
-        let pageNum: number = 1;
-        let pageSize: number = 200000;
+        const pageNum: number = 1;
+        const pageSize: number = 200000;
 
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': "application/octet-stream" }), responseType: 'blob'
@@ -115,7 +117,7 @@ export class DataProfileService extends BaseObservableService {
             http
             .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
             .subscribe((data) => {
-                let filename = `Filtered ${assetName} ${matchType.toLowerCase() === 'data' ? "Duplicate" : "Similiar"} Fields List`;
+                const filename = `Filtered ${assetName} ${matchType.toLowerCase() === 'data' ? "Duplicate" : "Similiar"} Fields List`;
                 this.downloadFile(data, filename);
                 if (callback) {
                     callback();
@@ -183,7 +185,7 @@ export class DataProfileService extends BaseObservableService {
                 http
                 .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
                 .subscribe((data) => {
-                    let filename = `Filtered Semantic Type List`;
+                    const filename = `Filtered Semantic Type List`;
                     this.downloadFile(data, filename);
                     if (callback) {
                         callback();
@@ -235,7 +237,7 @@ export class DataProfileService extends BaseObservableService {
                 http
                 .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
                 .subscribe((data) => {
-                    let filename = `Filtered Asset list for ${typeName}`;
+                    const filename = `Filtered Asset list for ${typeName}`;
                     this.downloadFile(data, filename);
                     if (callback) {
                         callback();
@@ -261,14 +263,14 @@ export class DataProfileService extends BaseObservableService {
 
     getSemanticLookupList(lookup: string, isExport: boolean = false, callback: Function = null, order: string = "name"): Observable<any> {
         
-        let url = `api/v2/dataprofiles/semantictypes/lookups/${lookup}?_orderby=${order}`;        
+        const url = `api/v2/dataprofiles/semantictypes/lookups/${lookup}?_orderby=${order}`;        
 
         if (isExport) {
             this.
                 http
                 .get(`${url}?`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
                 .subscribe((data) => {
-                    let filename = `Semantic Type Status List`;
+                    const filename = `Semantic Type Status List`;
                     this.downloadFile(data, filename);
                     if (callback) {
                         callback();
@@ -309,7 +311,7 @@ export class DataProfileService extends BaseObservableService {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        let semanticArray: SemanticType[] = [];
+        const semanticArray: SemanticType[] = [];
         semanticArray.push(semanticType);
 
         return this
@@ -336,7 +338,7 @@ export class DataProfileService extends BaseObservableService {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        let semanticArray: SemanticType[] = [];
+        const semanticArray: SemanticType[] = [];
         semanticArray.push(semanticType);
 
         return this
@@ -357,7 +359,7 @@ export class DataProfileService extends BaseObservableService {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        let semanticArray: any[] = [];
+        const semanticArray: any[] = [];
         
         if (semanticType.source.toString() === SemanticSource[SemanticSource.BuiltIn]) {
             semanticArray.push({ qualifier: semanticType.qualifier, description: semanticType.description, name: semanticType.name });
@@ -383,7 +385,7 @@ export class DataProfileService extends BaseObservableService {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        let dataprofileArray: any[] = [];
+        const dataprofileArray: any[] = [];
         dataprofileArray.push(dataprofile);
 
         return this
@@ -404,7 +406,7 @@ export class DataProfileService extends BaseObservableService {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
-        let semanticArray: any[] = [];
+        const semanticArray: any[] = [];
 
         semanticArray.push({ qualifier, isDisabled });
 

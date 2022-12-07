@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, OnInit, Input, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { ToolTipService } from '../../../../services/tooltip.service';
 import { AssetTypeClass } from '../../../../models/asset.model';
 

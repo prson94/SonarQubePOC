@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { State } from '../../models/asset.model';
@@ -58,7 +58,7 @@ export class MonitorFilterComponent extends BaseComponent implements OnInit {
                 this.items = r;
 
                 this.items.forEach((i) => {
-                    i.label = i.State == State.InActive ? i.Name + " ( " + $localize`Inactive` + " )" : i.Name;
+                    i.label = i.State === State.InActive ? i.Name + " ( " + $localize`Inactive` + " )" : i.Name;
                     i.value = i.ID.toString();
                 });
 

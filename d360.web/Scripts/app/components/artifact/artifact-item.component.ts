@@ -1,5 +1,5 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
 import { ArtifactService } from '../../services/artifacts.service';
@@ -9,7 +9,6 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { Artifact, SynonymPermission } from '../../models/artifacts.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
-import { StringConstants } from '../../static/string-constants';
 import { SiteUrlHelpers } from "../../static/site-url-helpers";
 import { finalize } from 'rxjs/operators';
 import { SiteMenuService } from '../../services/site-menu.service';
@@ -19,12 +18,13 @@ import { forkJoin, Subscription } from 'rxjs';
 import { AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
-import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
+import { LinkClickInterceptor } from '../../services/href-click-service';
 import { AssetService } from '../../services/asset.service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 declare var CurrentResourceID;
 
@@ -82,7 +82,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 
 		this.uid = this.baseAssetUid = this.assetUid;
 
-		this.logAction('open', 'Artifact', this.uid);
+		this.logAssetAction(UsageAction.View, this.uid);
 		this.isLoading = true;
 		this.messages = [];
 

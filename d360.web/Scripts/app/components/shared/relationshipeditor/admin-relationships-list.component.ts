@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -25,6 +25,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     @Input() objectType: string;
     @Input() objectID: number;
 
+    @Input() showTitle = true;
+
     @Input() selected: RelationshipType;
     @Output() selectedChange = new EventEmitter();
 
@@ -49,7 +51,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if ((changes['filterToName'] && changes['filterToName'].currentValue != changes['filterToName'].previousValue) || (changes['objectID'] && changes['objectID'].currentValue != changes['objectID'].previousValue)) {
+        if ((changes['filterToName'] && changes['filterToName'].currentValue !== changes['filterToName'].previousValue) || (changes['objectID'] && changes['objectID'].currentValue !== changes['objectID'].previousValue)) {
             this.getRelationships();
         }
     }
@@ -121,9 +123,9 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     private checkGridState() {
         if (sessionStorage.getItem(this.gridStorageKey)) {
-            let gridData = JSON.parse(sessionStorage.getItem(this.gridStorageKey));
+            const gridData = JSON.parse(sessionStorage.getItem(this.gridStorageKey));
 
-            if (gridData.filters && Object.keys(gridData.filters).filter((x) => x != "global").length > 0)
+            if (gridData.filters && Object.keys(gridData.filters).filter((x) => x !== "global").length > 0)
                 {this.showSimpleFilter = false;}
 
             this.cdRef.detectChanges();
@@ -134,7 +136,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         var index: number = -1;
         for (var relationship of this.relationships) {
             index++;
-            if (relationship.Uid == uid) {return index;}
+            if (relationship.Uid === uid) {return index;}
         }
     }
 

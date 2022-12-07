@@ -133,8 +133,10 @@ namespace d360.model
         DbSet<QuestionType> QuestionTypes { get; set; }
         
         DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
-        
-        DbSet<Report> Reports { get; set; }
+
+		DbSet<ResourceSetting> ResourceSettings { get; set; }
+		
+		DbSet<Report> Reports { get; set; }
         
         DbSet<ResourceGroup> ResourceGroups { get; set; }
         
@@ -223,8 +225,6 @@ namespace d360.model
         IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID);
         
         void AddOrUpdateFields(List<Field> items);
-        
-        int AddWebStatistic(SystemObjects @object, int objectID, string ip, string userAgent, string host, string browserLanguage, string action, int resourceID, DateTime timestamp);
         
         Issue AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object);
         

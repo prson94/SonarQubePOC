@@ -1,7 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { JsonResult } from '../models/jsonresult.model';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType, MetricAssetHistoryViewModel, MetricPathOptionViewModel, ScoreTypeAllocation } from '../models/metrics.model';
+import {
+    MetricAssetHistoryViewModel,
+    MetricAssetViewModel,
+    MetricFieldTypeViewModel,
+    MetricPathOptionViewModel,
+    ScoreType,
+    ScoreTypeAllocation
+} from '../models/metrics.model';
 import { Observable } from 'rxjs';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';

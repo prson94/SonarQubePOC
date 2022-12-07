@@ -5,107 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.Deletions-v2">
+  <changeSet author="Pappas" id="Procedure.Deletions-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
       <![CDATA[
-drop procedure if exists [api].[DeleteAssetType]
+drop procedure if exists [dbo].[DeleteIntersect]
 GO
-drop procedure if exists [bulkload].[UpdateFusionAttributeColumn]
-GO
-drop procedure if exists [bulkload].[UpdateFusionConfigurationColumn]
-GO
-drop procedure if exists [bulkload].[BusinessLineage]
-GO
-drop procedure if exists [bulkload].[UpdateFusionAttributeColumn]
-GO
-drop procedure if exists [dbo].[GetAllowedIntersectionTypesByIntersect]
-GO
-drop procedure if exists [dbo].[GetAverageScoreByObjectType]
-GO
-drop procedure if exists [dbo].[GetCommentCountByFollower]
-GO
-drop procedure if exists [dbo].[GetCommentCountByType]
-GO
-drop procedure if exists [dbo].[GetCommentDetailByID]
-GO
-drop procedure if exists [dbo].[GetCommentDetailsByFollower]
-GO
-drop procedure if exists [dbo].[GetCommentDetailsByType]
-GO
-drop procedure if exists [dbo].[GetDynamicAssets]
-GO
-drop procedure if exists [dbo].[GetLineage]
-GO
-drop procedure if exists [dbo].[VoteComment]
-GO
-drop procedure if exists [fusion].[GenerateEagleLineageData]
-GO
-drop procedure if exists [fusion].[GenerateFoundationLineage]
-GO
-drop procedure if exists [fusion].[GenerateMarkitMapLineage]
-GO
-drop procedure if exists [fusion].[GenerateMarkitMapLineageData]
-GO
-drop procedure if exists [fusion].[GetAttributesByFusion]
-GO
-drop procedure if exists [fusion].[LoadMarkitMapLineageData]
-GO
-drop procedure if exists [fusion].[ProcessFusionCacheInQueue]
-GO
-drop procedure if exists [fusion].[UpdateFusionTextPaths]
-GO
-drop procedure if exists [graph].[GetHop]
-GO
-drop procedure if exists [graph].[GetImpactHop]
-GO
-drop procedure if exists [graph].[Hop_GetBadgeCounts]
-GO
-drop procedure if exists [graph].[Hop_GetImpact]
-GO
-drop procedure if exists [graph].[Hop_GetLineage]
-GO
-drop procedure if exists [graph].[Hop_GetResults]
-GO
-drop procedure if exists [graph].[Hop_GetSelf]
-GO
-drop procedure if exists [graph].[Hop_LoadHopHierarchies]
-GO
-drop procedure if exists [graph].[Hop_LoadNextHopAssets]
-GO
-drop procedure if exists [graph].[Hop_LoadSingleParentHeirarchies]
-GO
-drop procedure if exists [integration].[CompleteExecution]
-GO
-drop procedure if exists [integration].[MergeAssetHashes]
-GO
-drop procedure if exists [integration].[ProcessExecutionAssets]
-GO
-drop procedure if exists [lineage].[GetByObject]
-GO
-drop procedure if exists [dbo].[GetComplexLookupByAsset]
-GO
-drop procedure if exists [graph].[AssetBrowser_ImpactHop]
-GO
-drop procedure if exists [graph].[AssetBrowser_Initial]
-GO
-drop procedure if exists [graph].[AssetBrowser_LineageHop]
-GO
-drop procedure if exists [graph].[AssetBrowser_OwnershipCounts]
-GO 
-drop procedure if exists [graph].[SynchronizeAssetExecution]
-GO
-drop procedure if exists [graph].[SynchronizeRelationshipExecution]
-GO
-drop procedure if exists [graph].[SynchronizeTables]
-GO
-drop procedure if exists [graph].[UpdateAssetEdge]
-GO
-drop procedure if exists [graph].[UpdateAssetNode]
-GO
-drop procedure if exists [graph].[UpdateGraphTableHierarchyBy]
+drop procedure if exists [analytics].[AddStatistic]
 		]]>
     </sql>
     <rollback>

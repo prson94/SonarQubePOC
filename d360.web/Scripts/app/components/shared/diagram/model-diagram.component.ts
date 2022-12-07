@@ -1,6 +1,15 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    ElementRef,
+    HostListener,
+    Input,
+    OnDestroy,
+    OnInit,
+    ViewChild
+} from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { HierarchyDiagramModel, Model } from '../../../models/model.model';
 import { DiagramBaseComponent } from './diagram-base.component';
@@ -8,7 +17,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { ModelsService } from '../../../services/models.service';
 import { Title } from '@angular/platform-browser';
-import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../../models/secondaryNav.model';
+import { SecondaryNavCurrentObject, SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AssetTypeClass } from '../../../models/asset.model';
@@ -97,7 +106,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 				var result = res[0];
 
 				this.assetType = result;
-				let root = data.find((x) => x.parent === null);
+				const root = data.find((x) => x.parent === null);
 				if (root) {
 					delete root.parent;
 				}
@@ -153,7 +162,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 			return;
 		}
         let offset = this.diagramRef.nativeElement.offsetTop;
-        let height = window.innerHeight;
+        const height = window.innerHeight;
 
         if (this.diagramRef.nativeElement.offsetParent) {
             offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
@@ -173,7 +182,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     }
 
     private ChangedSelection(e: any) {
-        let node = e.diagram.selection.first();
+        const node = e.diagram.selection.first();
 
         if (node == null) {
             this.selectedNode = null;
@@ -184,9 +193,9 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     }
 
     public menuAction(e: MenuItem) {
-        if (e.icon == 'fa fa-refresh menu-icon') {
+        if (e.icon === 'fa fa-refresh menu-icon') {
             this.populateDiagram();
-        } else if (e.icon == 'fa fa-info-circle menu-icon') {
+        } else if (e.icon === 'fa fa-info-circle menu-icon') {
             this.isWindowVisible = !this.isWindowVisible;
         }
     }
@@ -271,9 +280,8 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
                             this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, $localize`Model`);
                             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
 							this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
-							let diagramTab = new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/assets/${this.assetTypeUid}/diagrams`, null, 7);
+							const diagramTab = new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/assets/${this.assetTypeUid}/diagrams`, null, 7);
                             this.secondaryNavService.showItem(diagramTab);
-                            diagramTab.active = true;
 
 							if (this.auditSidebar) {
 								this.auditSidebar.url = `/assets/${this.assetTypeUid}/log`;

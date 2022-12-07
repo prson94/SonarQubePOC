@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.utility.ObjectDetail-v7">
+  <changeSet author="TDuric" id="Function.utility.ObjectDetail-v10">
     <comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -79,14 +79,13 @@ BEGIN
 			WHERE	Object = @type
 					and ObjectID = @id
 	end
-
+	
 	if @type = 'Intersect'
 	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName, [Class])
-			SELECT			O.ID,	IName.Name,	IName.Name,		'',				NULL,		@type,		null,	O.IntersectTypeID,	'IntersectType', ITN.Name, 0	
+		insert into @tbl (	ID,		[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName, [Class])
+			SELECT			O.ID,		'',				NULL,		@type,		null,	O.IntersectTypeID,	'IntersectType', ITN.Name, 0	
 			FROM	[Intersect] O
 					INNER JOIN IntersectType T ON O.IntersectTypeID = T.ID and O.ID = @id
-					CROSS APPLY dbo.GetIntersectNames(O.ID) IName	
 					CROSS APPLY dbo.GetIntersectTypeNames(T.ID) ITN
 	end
 
@@ -201,14 +200,11 @@ BEGIN
 	(
 		'Artifact',
 		'Attribute',
-		'Fusion',
-		'FusionAttribute',
 		'Policy',
 		'ReferenceItem',
 		'Rule',
 		'Taxonomy',
 		'Group',
-		'FusionQueryAttribute',
 		'Resource',
 		'Task'
 	)
@@ -224,9 +220,6 @@ BEGIN
 	(
 		'ArtifactType',
 		'AttributeType',
-		'FusionType',
-		'FusionAttributeType',
-		'FusionQueryAttributeType',
 		'PolicyType',
 		'ReferenceItemType',
 		'RuleType',
@@ -326,7 +319,6 @@ BEGIN
 
 	RETURN
 END
-
 		]]>
 	</rollback>
   </changeSet>

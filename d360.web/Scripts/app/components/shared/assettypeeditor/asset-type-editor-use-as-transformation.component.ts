@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from "@angular/core";
+﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
 import { BaseComponent } from "../base.component";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { RelationshipsService } from "../../../services/relationships.service";
@@ -53,7 +53,7 @@ export class AssetTypeEditorUseAsTransformationComponent extends BaseComponent i
     }
 
     IsTransformPredicateExists() {
-        if (this.assetTypeId != undefined && this.assetTypeId != 0) {
+        if (this.assetTypeId != null && this.assetTypeId !== 0) {
             this.relationshipsService.IsTransformPredicateExists(this.assetTypeId).subscribe((res) => {
                 if (res) {
                     setTimeout(() => {

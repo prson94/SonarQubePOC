@@ -1,6 +1,15 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewEncapsulation } from '@angular/core';
+﻿import {
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChange,
+    ViewEncapsulation
+} from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, ScoreTypeAllocation, ScoreType, MetricGovernanceCheckType } from '../../../models/metrics.model';
+import { MetricAssetViewModel, ScoreType, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { TreeNode } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
@@ -77,11 +86,11 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     todayAndEffectiveDateAreSame(item: MetricAssetViewModel): boolean {
         if (item) {
-            let today = new Date();
-            let todayMs = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
-            let effectiveDate = new Date(item.EffectiveDate);
-            let effectiveDateMs = effectiveDate.getTime();
-            return (effectiveDateMs == todayMs);
+            const today = new Date();
+            const todayMs = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+            const effectiveDate = new Date(item.EffectiveDate);
+            const effectiveDateMs = effectiveDate.getTime();
+            return (effectiveDateMs === todayMs);
         }
         else {
             return false;
@@ -98,7 +107,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
                 break;
         }
 
-        if ($event.value.toString().indexOf('Version History') != -1)
+        if ($event.value.toString().indexOf('Version History') !== -1)
             {this.showHistory(true);}
     }
 
@@ -142,7 +151,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         private scoreService: ScoreService) {
         super(settingsService);
 
-        let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+        const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
         this.helpUri = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
     }
 
@@ -160,7 +169,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         if (changes['allocation'] && this.allocation) {
             requiresLoad = true;
         }
-        if (changes['showDisabled'] != null || changes['showDisabled'] != undefined) {
+        if (changes['showDisabled'] != null) {
             requiresLoad = true;
         }
 
@@ -179,12 +188,12 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
                     this.metrics = r;
                     if (this.metrics) {
                         this.metrics.filter((g) => g.ParentUid == null).forEach((g) => {
-                            let n = {
+                            const n = {
                                 data: g,
                                 children: [],
                                 expanded: true
                             };
-                            if (this.metricTree.findIndex((o) => o.data.Uid === g.Uid) == -1) {
+                            if (this.metricTree.findIndex((o) => o.data.Uid === g.Uid) === -1) {
                                 this.metricTree.push(n);
                                 this.addChildren(n);
                             }
@@ -230,10 +239,10 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     addChildren(node: TreeNode) {
         if (this.metrics) {
-            let children = this.metrics.filter((g) => g.ParentUid === node.data.Uid);
+            const children = this.metrics.filter((g) => g.ParentUid === node.data.Uid);
             if (children.length > 0) {
                 children.forEach((c) => {
-                    let n = {
+                    const n = {
                         data: c,
                         children: [],
                         expanded: true
@@ -256,19 +265,19 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     updateSelectionMenuLabel() {
         if (this.groupMenuOptions && this.groupMenuOptions.length > 0) {
-            let versionMenuItem = this.groupMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
+            const versionMenuItem = this.groupMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
         if (this.itemMenuOptions && this.itemMenuOptions.length > 0) {
-            let versionMenuItem = this.itemMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
+            const versionMenuItem = this.itemMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
         if (this.disabledMenuOptions && this.disabledMenuOptions.length > 0) {
-            let versionMenuItem = this.disabledMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
+            const versionMenuItem = this.disabledMenuOptions.find((x) => x.title.indexOf("Version History") !== -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
@@ -332,11 +341,11 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     //#endregion
 
     getAsPrecentage(val: number) {
-        if (val == 0)
+        if (val === 0)
             {return '0%';}
         if (!val)
             {return;}
-        if (val == 1)
+        if (val === 1)
             {return '100%';}
         let s = val + '0000';
         s = s.replace('0.', '');
@@ -350,24 +359,24 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     isDataQualityScoreType() {
-        return (this.allocation.scoreType == ScoreType.DataQuality || ScoreType[this.allocation.scoreType.toString()] == ScoreType.DataQuality) && !this.allocation.isExternallyCalculated;
+        return (this.allocation.scoreType === ScoreType.DataQuality || ScoreType[this.allocation.scoreType.toString()] === ScoreType.DataQuality) && !this.allocation.isExternallyCalculated;
     }
     isExternalScoreType() {
         return this.allocation.isExternallyCalculated;
     }
     isGovernanceScoreType() {
-        return (this.allocation.scoreType == ScoreType.Governance || ScoreType[this.allocation.scoreType.toString()] == ScoreType.Governance) && !this.allocation.isExternallyCalculated;
+        return (this.allocation.scoreType === ScoreType.Governance || ScoreType[this.allocation.scoreType.toString()] === ScoreType.Governance) && !this.allocation.isExternallyCalculated;
     }
 
     showRulePathsError() {
-        return this.isDataQualityScoreType() && ((this.screenReferences.paths && this.screenReferences.paths.length == 0) || !this.screenReferences.paths);
+        return this.isDataQualityScoreType() && ((this.screenReferences.paths && this.screenReferences.paths.length === 0) || !this.screenReferences.paths);
     }
 
     getSelectedRuleResultPath() {
         let html = ';';
         const ruleResultPathUid = this.selection?.Definition.DataQuality.ResultPathUid;
         if (ruleResultPathUid && this.screenReferences && this.screenReferences.paths) {
-            const matches = this.screenReferences.paths.filter((p) => { return p.value == ruleResultPathUid; });
+            const matches = this.screenReferences.paths.filter((p) => { return p.value === ruleResultPathUid; });
             if (matches.length > 0) {
                 html = matches[0].label;
             }

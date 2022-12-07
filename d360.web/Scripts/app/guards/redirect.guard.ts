@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { CompanySettingEnum } from '../models/settings.model';
 import { CompanySettingsService } from '../services/settings.service';
@@ -15,7 +15,7 @@ export class RedirectGuard implements CanActivate {
     ) { }
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
-        let defaultRoute = this.settingsService.getSettingById(CompanySettingEnum.DefaultRoute).StringSetting.Value;
+        const defaultRoute = this.settingsService.getSettingById(CompanySettingEnum.DefaultRoute).StringSetting.Value;
         if (ResourceHomePage !== null && ResourceHomePage !== "" && ResourceHomePage !== '/') {
             this.router.navigate([ResourceHomePage]);
         }

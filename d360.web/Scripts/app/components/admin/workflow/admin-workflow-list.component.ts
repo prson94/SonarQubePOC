@@ -1,6 +1,6 @@
-﻿import { Component, NgZone, OnInit, Output, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { WorkflowListItem, ChangeTypeInfo, WorkflowChangeType } from '../../../models/workflow.model';
+import { ChangeTypeInfo, WorkflowChangeType, WorkflowListItem } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { Router } from '@angular/router';
 import { map } from 'rxjs/operators';
@@ -10,60 +10,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'd3s-admin-workflow-list',
     providers: [WorkflowService],
-    template: `
-
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div *ngIf="!isLoading">
-    <header>
-        <ng-container i18n>Workflow Types</ng-container>
-        <d3s-tile-actions hasAdd="true" (addClick)="onAddClick.emit()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
-    </header>
-
-    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
-    <p-table #dt [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selection" 
-        [globalFilterFields]="globalFilterFields">
-        <ng-template pTemplate="header">
-            <tr>
-                <th *ngFor="let col of columns" [pSortableColumn]="col.datafield">
-                    {{col.text}}
-                    <d3s-sortIcon [field]="col.datafield"></d3s-sortIcon>
-                </th>
-                <th style="width: 215px"></th>
-            </tr>
-            <tr [hidden]="showSimpleFilter">
-                <th *ngFor="let col of columns">
-                    <d3s-column-filter  [field]="col.datafield"></d3s-column-filter>
-                </th>
-                <th></th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-item >
-            <tr (dblclick)="onEditClick.emit({ uid: item.Uid, isClone: false })" [pSelectableRow]="item">
-                <td *ngFor="let col of columns" [ngSwitch]="col.type" class="break-wrap">
-                    <span *ngSwitchCase="'text'">{{item[col.datafield]}}</span>
-                    <span *ngSwitchCase="'date'">{{item[col.datafield] | date:'shortDate'}}</span>
-                     <span *ngSwitchCase="'State'">
-                        <i *ngIf="item[col.datafield] == 1" class="fa fa-check enabled" title="True"></i>
-                        <i *ngIf="item[col.datafield] == 4" class="fa fa-times disabled" title="False"></i>
-                    </span>
-                </td>
-                <td>
-                    <div class="RowTools">
-                        <a style="cursor:pointer;" (click)="onEditClick.emit({ uid: item.Uid, isClone: false })"><i class="fa fa-pencil"></i></a> 
-                        <a style="cursor:pointer;" (click)="cloneWorkflow(item.Uid)"><i class="fa fa-copy"></i></a> 
-                        <a style="cursor:pointer;" (click)="onDeleteClick.emit(item.Uid)"><i class="fa fa-trash-o"></i></a>    
-                        <a style="cursor:pointer;" (click)="onViewClick.emit(item.Uid)"><i class="fa fa-eye"></i></a>    
-                        <a style="cursor:pointer;" (click)="onNavigate(item.Uid)"><i class="fa fa-usb"></i></a>                                      
-                    </div>
-                </td>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="summary">
-            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords" ></d3s-grid-paging-info>
-        </ng-template>
-    </p-table>
-</div>
-`
+    templateUrl: 'admin-workflow-list.component.html'
 })
 
 export class AdminWorkflowListComponent extends BaseComponent implements OnInit {
@@ -135,11 +82,11 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                 map(() =>
                     this.workflowService.getAdminTypes()
                         .subscribe((r) => {
-                            let workflowItems: WorkflowListItem[] = [];
+                            const workflowItems: WorkflowListItem[] = [];
 
 
-                            r.filter((x) => x.State == 'Active' || x.State == 'InActive').forEach((x) => {
-                                let workflowItem: WorkflowListItem = new WorkflowListItem();
+                            r.filter((x) => x.State === 'Active' || x.State === 'InActive').forEach((x) => {
+                                const workflowItem: WorkflowListItem = new WorkflowListItem();
 
                                 workflowItem.Name = x.Name;
                                 workflowItem.TypeName = x.ActionTypeUid ? x.ActionType : x.AssetType ? x.AssetType : x.RelationshipType;
@@ -158,7 +105,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                                 this.selection = this.items[0];
                             }
                             this.items.forEach((i) => {
-                                var ChangeTypeDescription = this.changeTypes.find((c) => c.ID == i.ChangeType);
+                                var ChangeTypeDescription = this.changeTypes.find((c) => c.ID === i.ChangeType);
                                 if (ChangeTypeDescription) {
                                     i.ChangeTypeName = ChangeTypeDescription.Description;
                                 }

@@ -1,6 +1,15 @@
 import { Component } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { CompanySettings, CompanyImage, SearchType, SettingsHelper, CompanyRebuildJobStatusApiModel, CompanyRebuildJobStatusState, CompanySettingEnum, SettingsPutModel } from '../../../models/settings.model';
+import {
+    CompanyImage,
+    CompanyRebuildJobStatusApiModel,
+    CompanyRebuildJobStatusState,
+    CompanySettingEnum,
+    CompanySettings,
+    SearchType,
+    SettingsHelper,
+    SettingsPutModel
+} from '../../../models/settings.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { SearchService } from '../../../services/search.service';
@@ -46,7 +55,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     companyLogo: CompanyImage = new CompanyImage();
     companyIcon: CompanyImage = new CompanyImage();
     homePageImage: CompanyImage = new CompanyImage();
-    groups: SelectItem[];
+    groups: SelectItem[] = [];
     sub: any;
     routeValidationMessage = "";
     disableExcel: boolean = false;
@@ -132,19 +141,22 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.ShowHomeBoardTile = this.getBooleanSetting(CompanySettingEnum.ShowHomeBoardTile);
         this.companySettings.ShowHomePageTitle = this.getBooleanSetting(CompanySettingEnum.ShowHomePageTitle);
         this.companySettings.SiteNav.forEach((s) => {
-            s.IsCustom = (s.Name.indexOf('#') != 0);
-        });
-        this.companySettings.WorkflowCatchAllGroup = this.getNumberSetting(CompanySettingEnum.WorkflowCatchAllGroup);
+            s.IsCustom = (s.Name.indexOf('#') !== 0);
+		});
+		const workflowCatchAllGroup = this.getNumberSetting(CompanySettingEnum.WorkflowCatchAllGroup);
+		this.groups.push({ label: "", value: workflowCatchAllGroup });
+		this.companySettings.WorkflowCatchAllGroup = workflowCatchAllGroup;
         this.companySettings.WorkflowDigestEmailDays = this.getNumberSetting(CompanySettingEnum.WorkflowDigestEmailDays);
         this.companySettings.WriteActionDescription = this.getBooleanSetting(CompanySettingEnum.WriteActionDescription);
         this.companySettings.RequestCertificationDraft = this.getStringSetting(CompanySettingEnum.RequestCertificationDraft);
 
         this.settingsService.getGroups()
             .subscribe((x) => {
-                this.groups = x.map((x) => {
+                const groups = x.map((x) => {
                     return { label: x.label, value: +x.value };
                 });
-                this.groups.unshift({ label: $localize`[Administrators]`, value: 0 });
+				groups.unshift({ label: $localize`[Administrators]`, value: 0 });
+				this.groups = groups;
                 this.isLoading = false;
             });
         this.resetSaveButton();
@@ -186,7 +198,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
         //#region Translate to settings array for v2 API.
 
-        let settings: SettingsPutModel[] = [];
+        const settings: SettingsPutModel[] = [];
 
         settings.push({
             SettingID: CompanySettingEnum.AllowedOrigins,
@@ -242,7 +254,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             IpAddressSetting: null,
             NumberSetting: null
         });
-        let defaultSearchTypes = SettingsHelper.searchTypeListToString(this.searchTypes);
+        const defaultSearchTypes = SettingsHelper.searchTypeListToString(this.searchTypes);
         settings.push({
             SettingID: CompanySettingEnum.DefaultSearchTypes,
             StringSetting: { Value: defaultSearchTypes },
@@ -407,7 +419,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         if (this.companySettings.DefaultRoute === '' || this.companySettings.DefaultRoute === '/')
             {return;}
 
-        let r = new RegExp('^(?:[a-z]+:)?//', 'i');
+        const r = new RegExp('^(?:[a-z]+:)?//', 'i');
 
         if (r.test(this.companySettings.DefaultRoute))
             {this.routeValidationMessage = $localize`The value entered must be a relative url (ex: /artifact/1)`;}

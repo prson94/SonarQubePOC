@@ -1,20 +1,14 @@
-﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import {
-    Permission,
     ResponsibilityTypeAllocation,
     ResponsibilityTypeAllocationPost,
-    ResponsibilityTypeRelation,
-    ResponsibilityTypeRelationPermission,
-    IResponsibilityTypeService,
-
-    ResponsibilityTypeRelation_FormData,
-    ResponsibilityTypeRelationAllocationOption
+    ResponsibilityTypeRelationFormData,
+    ResponsibilityTypeRelationAllocationOption,
+    ResponsibilityTypeRelationPermission
 } from '../../../models/responsibility-type.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { BaseComponent } from '../../shared/base.component';
-
-import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -45,7 +39,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 
 export class ResponsibilityRelationForm extends BaseComponent implements OnInit {
     @Input() relation: ResponsibilityTypeAllocation;
-    @Input() commonFormData: ResponsibilityTypeRelation_FormData;
+    @Input() commonFormData: ResponsibilityTypeRelationFormData;
     @Output() onComplete = new EventEmitter();
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
@@ -79,7 +73,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
                 this.actionName = 'Edit';
 
                 //#region Mark the one in use as not used so it will show up in the edit list.
-                let ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === this.relation.AssetTypeUid);
+                const ix: ResponsibilityTypeRelationAllocationOption = this.commonFormData.AllocationOptions.find((ao) => ao.Uid === this.relation.AssetTypeUid);
                 if (ix) {
                     ix.IsUsed = false;
                     this.selectedAllocation = ix;
@@ -108,7 +102,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
         this.isLoading = true;
 
         if (this.validate()) {
-            let allocation = new ResponsibilityTypeAllocationPost();
+            const allocation = new ResponsibilityTypeAllocationPost();
             allocation.AssetTypeUid = this.relation.AssetTypeUid;
             allocation.Permissions = this.relation.Permissions.filter((p) => p.Selected).map((p) => parseInt(p.ID));
 
@@ -117,7 +111,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
                     .subscribe((r) => {
                         this.isLoading = false;
                         this.showMessageForResult(this.messagesService, r);
-                        if (r.type != 'error') {
+                        if (r.type !== 'error') {
                             this.onComplete.emit({ action: 'edit', field: this.relation });
                         }
                     });
@@ -126,7 +120,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
                     .subscribe((r) => {
                         this.showMessageForResult(this.messagesService, r);
                         this.isLoading = false;
-                        if (r.type != 'error') {
+                        if (r.type !== 'error') {
                             this.onComplete.emit({ action: 'add', field: this.relation });
                         }
                     });

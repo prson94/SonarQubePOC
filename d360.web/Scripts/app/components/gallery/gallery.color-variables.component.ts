@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 
 @Component({
@@ -46,13 +46,13 @@ export class GalleryColorVariablesComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        for (let base of this.nontintedbasecolors) {
-            let cls = this.getClassName(base, 'Base');
+        for (const base of this.nontintedbasecolors) {
+            const cls = this.getClassName(base, 'Base');
             this.hexcolors.set(cls, this.findColor(cls));
         }
-        for (let base of this.tintedbasecolors) {
-            for (let tint of this.tintsshaded) {
-                let cls = this.getClassName(base, tint);
+        for (const base of this.tintedbasecolors) {
+            for (const tint of this.tintsshaded) {
+                const cls = this.getClassName(base, tint);
                 this.hexcolors.set(cls, this.findColor(cls));
             }
         }
@@ -60,7 +60,7 @@ export class GalleryColorVariablesComponent implements OnInit, AfterViewInit {
     }
 
     getClassName(base: string, tint: string): string {
-        if (tint == 'Base')
+        if (tint === 'Base')
             {return 'ig-'+base;}
         return 'ig-'+base + '-' + tint;
     }
@@ -72,8 +72,8 @@ export class GalleryColorVariablesComponent implements OnInit, AfterViewInit {
     }
 
     private findColor(cls: string): string {
-        let el = document.querySelector('.' + cls);
-        let col = window.getComputedStyle(el).getPropertyValue('background-color');
+        const el = document.querySelector('.' + cls);
+        const col = window.getComputedStyle(el).getPropertyValue('background-color');
         return this.rgbToHex(col);
     }
 

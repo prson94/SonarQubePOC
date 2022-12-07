@@ -4,20 +4,20 @@ import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 import {
-    AssetBrowserTranslationNode,
-    AssetBrowserTranslationLink,
-    AssetBrowserApiHopDirection,
-    FilterAncestryMode,
-    FilterSelectionsModel,
-    StoredAssetBrowserFilterModel,
-    AssetBrowserOwnersModel,
     AssetBrowserAlert,
     AssetBrowserAlertRequest,
-    DiagramTypesModel,
-    AssetBrowserResponseModel,
     AssetBrowserApiHopAssetRequestModel,
+    AssetBrowserApiHopDirection,
+    AssetBrowserLineageRequest,
+    AssetBrowserOwnersModel,
+    AssetBrowserResponseModel,
+    AssetBrowserTranslationLink,
+    AssetBrowserTranslationNode,
+    DiagramTypesModel,
+    FilterAncestryMode,
     FilterDescendancyMode,
-    AssetBrowserLineageRequest
+    FilterSelectionsModel,
+    StoredAssetBrowserFilterModel
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -26,7 +26,6 @@ import { IconService } from './icon.service';
 import { AssetTypeClass } from '../models/asset.model';
 import { IconProperties } from '../models/icon-properties.model';
 import { ApiResult } from '../models/apiresult.model';
-import { Link } from '../models/fieldtype-api.model';
 
 @Injectable({
     providedIn: 'root'
@@ -67,6 +66,7 @@ export class BrowserService extends BaseObservableService {
 						temp = relationship.from;
 						relationship.from = relationship.to;
 						relationship.to = temp;
+						relationship.isReversed = true;
 
 						relationship.links.forEach((link) => {
 							temp = link.from;
@@ -78,6 +78,7 @@ export class BrowserService extends BaseObservableService {
 			}
 		}
 
+		response.highlightLinks = [];
 		if (response.links && response.links.length > 0) {
 			response.highlightLinks = JSON.parse(JSON.stringify(response.links));
 
@@ -85,18 +86,20 @@ export class BrowserService extends BaseObservableService {
 				//relationship id should be updated from format typeid|relationshipid|assetid
 				//when expanding relationship, from or to part hold relationship id value from previously expanded relationship
 				//we need to update new relationships data to hold correct id's
-				var fromRelIdx = l.from.split('|')[1];
-				var toRelIdx = l.to.split('|')[1];
-				l.links.forEach((link) => {
-					var partsFrom = link.from.split('|');
-					var partsTo = link.to.split('|');
+				if (l.from && l.to) {
+					var fromRelIdx = l.from.split('|')[1];
+					var toRelIdx = l.to.split('|')[1];
+					l.links.forEach((link) => {
+						var partsFrom = link.from.split('|');
+						var partsTo = link.to.split('|');
 
-					partsFrom[1] = fromRelIdx;
-					partsTo[1] = toRelIdx;
+						partsFrom[1] = fromRelIdx;
+						partsTo[1] = toRelIdx;
 
-					link.from = partsFrom.join('|');
-					link.to = partsTo.join('|');
-				});
+						link.from = partsFrom.join('|');
+						link.to = partsTo.join('|');
+					});
+				}
 			});
 		}
 
@@ -104,7 +107,7 @@ export class BrowserService extends BaseObservableService {
 
         response.hierarchy.forEach((h) => {
             try {
-                let rootNode = response.nodes.find((n) => { return n.hierarchyKey === h.hierarchyKey && !n.group; });
+                const rootNode = response.nodes.find((n) => { return n.hierarchyKey === h.hierarchyKey && !n.group; });
                 if (rootNode) {
                     rootNode.predictableId = h.predictableId;
                     rootNode.owners = h.owners;
@@ -118,7 +121,7 @@ export class BrowserService extends BaseObservableService {
 
                     // Handle initial expanded logic.
                     rootNode.relations.forEach((r, rix) => {
-                        let ix = response.links.findIndex((l) => { return l.predicateId == r.predicateId && l.from == rootNode.key && l.text == r.predicate; });
+                        const ix = response.links.findIndex((l) => { return l.predicateId === r.predicateId && l.from === rootNode.key && l.text === r.predicate; });
                         if (ix > -1) {
                             r.expanded = true;
                             response.links[ix].badgeIdentifier = rootNode.hierarchyKey + '|' + rix;
@@ -140,13 +143,13 @@ export class BrowserService extends BaseObservableService {
         response: AssetBrowserOwnersModel
     ): AssetBrowserResponseModel {
 
-        let newResponse = new AssetBrowserResponseModel();
+        const newResponse = new AssetBrowserResponseModel();
         newResponse.hierarchy = [];
         newResponse.nodes = [];
         newResponse.links = [];
         newResponse.reveals = null;
 
-        let rootKey = hierarchyKey + '|O|' + badgeIndex;
+        const rootKey = hierarchyKey + '|O|' + badgeIndex;
 
         newResponse.hierarchy.push({
             hierarchyKey: rootKey,
@@ -157,7 +160,7 @@ export class BrowserService extends BaseObservableService {
             predictableId: null
         });
 
-        let rootLink: AssetBrowserTranslationLink = {
+        const rootLink: AssetBrowserTranslationLink = {
             from: hierarchyKey,
             to: rootKey,
             text: "",
@@ -166,9 +169,10 @@ export class BrowserService extends BaseObservableService {
             predicateIds: [],
             predicateType: null,
             predicateUid: null,
-            responsibilityTypeId: responsibilityTypeId,
+            responsibilityTypeId,
             links: [],
-            badgeIdentifier: rootKey
+			badgeIdentifier: rootKey,
+			isReversed: false
         };
 
         response.ownerRelations.forEach((l) => {
@@ -182,7 +186,7 @@ export class BrowserService extends BaseObservableService {
         newResponse.links.push(rootLink);
 
         // Add root node.
-        let rootNode = new AssetBrowserTranslationNode();
+        const rootNode = new AssetBrowserTranslationNode();
         rootNode.hierarchyKey = rootKey;
         rootNode.key = rootKey;
         rootNode.text = responsibilityTypeName;
@@ -204,7 +208,7 @@ export class BrowserService extends BaseObservableService {
         newResponse.nodes.push(rootNode);
 
         response.owners.forEach((o) => {
-            let n = new AssetBrowserTranslationNode();
+            const n = new AssetBrowserTranslationNode();
             n.hierarchyKey = rootKey;
             n.key = o.key;
             n.group = rootKey;
@@ -239,9 +243,9 @@ export class BrowserService extends BaseObservableService {
 
         return this.http.post(url, {
             ancestry: +ancestry,
-            uid: uid,
+            uid,
             hopCount: numberOfHops,
-            includeNonLeaf: includeNonLeaf,
+            includeNonLeaf,
             descendancy
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
@@ -258,11 +262,13 @@ export class BrowserService extends BaseObservableService {
             {numberOfHops = 3;}
 
         return this.http.post(url, {
-            uid: uid,
+            uid,
             hopCount: numberOfHops
         }).pipe(
-            map((response: AssetBrowserResponseModel) => {
-                this.processResponse(response);
+			map((response: AssetBrowserResponseModel) => {
+				const hierarchyKey = response.nodes.find((x) => x.assetUid === uid)?.hierarchyKey;
+
+				this.processResponse(response, hierarchyKey);
                 return response;
             }),
             catchError((err) => this.handleError(err))
@@ -278,9 +284,9 @@ export class BrowserService extends BaseObservableService {
 		}
 
         return this.http.post(url, {
-            assets: assets,
-            direction: direction,
-            hierarchyKey: hierarchyKey,
+            assets,
+            direction,
+            hierarchyKey,
             includeHierarchyBadges,
             intersects,
 			predicateUid,
@@ -315,8 +321,8 @@ export class BrowserService extends BaseObservableService {
 
         return this.http.post(url,
             {
-                assets: assets,
-                hierarchyKey: hierarchyKey,
+                assets,
+                hierarchyKey,
                 responsibilityTypeId
             }).pipe(
             map((response: AssetBrowserOwnersModel) => {
@@ -371,7 +377,7 @@ export class BrowserService extends BaseObservableService {
     public saveUserFilter(model: StoredAssetBrowserFilterModel): Observable<StoredAssetBrowserFilterModel> {
         const url = `api/v2/browser/filters`;
 
-        if (model.uid != undefined)
+        if (model.uid != null)
             {return this.http.put(url + '/' + model.uid, model).pipe(
                 map((response: StoredAssetBrowserFilterModel) => response),
                 catchError((err) => this.handleError(err))
@@ -405,14 +411,14 @@ export class BrowserService extends BaseObservableService {
     private getIconUnicode(icon, assetClass): string {
         let id = this.iconService.removeIconPrefix(icon);
 
-        if (icon == null || icon.length == 0) {
+        if (icon == null || icon.length === 0) {
             if (assetClass == null)
                 {return null;}
             id = this.iconService.getIconIdByClass(assetClass);
         }
 
         if (id != null) {
-            let iconProperties = this.iconProperties.find((d) => d.id == id);
+            const iconProperties = this.iconProperties.find((d) => d.id === id);
             if (iconProperties != null) {
                 return String.fromCharCode(parseInt(iconProperties.unicodeValue, 16));
             }

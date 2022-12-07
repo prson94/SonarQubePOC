@@ -61,9 +61,9 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
         this.sub = this.route.params.subscribe((params) => {
             this.assetTypeClass = AssetTypeClass.DiagramAsset;
 
-            let className: string = $localize`Diagram Asset`;
+            const className: string = $localize`Diagram Asset`;
             this.addClassName = $localize`Add` + className;
-            let singularLabel: string = `${className} Type`;
+            const singularLabel: string = `${className} Type`;
 
             this.tabTitle = `${singularLabel}s`;
             this.formTitle = $localize`Edit` +` ${singularLabel}`;
@@ -93,7 +93,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
                     this.selectedRow = this.getAssetTypeByUid(uid);
                 }
                 this.selectedItemChange();
-                let setting = this.getGuidSetting(CompanySettingEnum.GovernanceRoleReferenceListUid);
+                const setting = this.getGuidSetting(CompanySettingEnum.GovernanceRoleReferenceListUid);
                 if (setting === '00000000-0000-0000-0000-000000000000') {
                     this.disableAdd = true;
                 }
@@ -170,10 +170,10 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     }
 
     private getAssetTypeByUid(uid: string): any {
-        return this.artifactTypes.filter((x) => x.uid == uid)[0];
+        return this.artifactTypes.filter((x) => x.uid === uid)[0];
     }
     private getAssetTypeById(id: number): any {
-        return this.artifactTypes.filter((x) => x.ID == id)[0];
+        return this.artifactTypes.filter((x) => x.ID === id)[0];
     }
 
     private loadDataAndExecuteAction(action: Function) {

@@ -1,19 +1,23 @@
 ﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { LazyLoadEvent } from 'primeng/api';
 
-import { BaseComponent } from '../../shared/base.component';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AuditService } from '../../../services/audit.service';
 import { Audit, AuditApiFilters, AuditFilterLists } from '../../../models/audit.model';
 import { SortOrder } from '../../../models/enums.model';
 import { GridColumn, GridFilterExpression } from '../../../models/grid-definition.model';
-import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FieldType } from "../../../models/fieldtype-api.model";
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIParameters, LookupValuesAPIModel } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
-import { Observable, ReplaySubject } from "rxjs";
+import {
+    AdvancedFilterFieldType,
+    Filters,
+    LookupValuesAPIModel,
+    LookupValuesAPIParameters
+} from "../../assets-grid/advanced-filtering/advanced-filtering.models";
+import { Observable, ReplaySubject, Subscription } from "rxjs";
 import { map, shareReplay } from "rxjs/operators";
 import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
+import { AppConstants } from '../../../static/constants';
 
 @Component({
     selector: 'd3s-audit',
@@ -23,14 +27,16 @@ import { CompanySettingsService } from '../../../services/settings.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
+export class AuditComponent implements OnInit, OnDestroy {
+    @Input() uid: string;
+
     totalRecords: number;
-    rowsPerPage: number = 10;
+    rowsPerPage = 10;
     audits: Audit[] = [];
-    private sub: any;
+    private sub?: Subscription;
 
     selected: Audit;
-    currentPageNumber: number = 0;
+    currentPageNumber = 0;
     sortField: string = undefined;
     sortOrder: SortOrder = SortOrder.None;
     filters: GridFilterExpression[] = [];
@@ -38,31 +44,33 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 
-    advancedFilter: string = "";
-    isFiltersReady: boolean = false;
+    advancedFilter = "";
+    isFiltersReady = false;
     columns: GridColumn[] = [];
     lookupColumns: string[] = ["resourceName", "action", "actionObject"];
-    isExportInProgress: boolean = false;
+    isExportInProgress = false;
 
-    exportTooltip: string = "";
+    exportTooltip = "";
 
     get isNullAudit(): boolean {
         return this.uid === "00000000-0000-0000-0000-000000000000";
     }
 
+    isLoading = false;
+
+    objectName?: string;
+    objectID?: number;
+    objectType?: string;
+    maxExportRows = 0; 
+	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
+
     constructor(
         private route: ActivatedRoute,
-        private router: Router,
         private auditService: AuditService,
         private changeDetectorRef: ChangeDetectorRef,
-        secondaryNavService: SecondaryNavService,
-        breadcrumbService: HeaderBreadcrumbService,
         protected settingsService: CompanySettingsService
-    ) {
-        super(settingsService);
-        this.secondaryNavService = secondaryNavService;
-        this.breadcrumbsService = breadcrumbService;
-
+    ) {       
+        
         this.columns = [];
         this.columns.push({ text: $localize`User`, datafield: "resourceName", columnWidth: 150, fieldType: "Text", type: "", cellsformat: "", description: "" });
         this.columns.push({ text: $localize`Date`, datafield: "date", columnWidth: 200, fieldType: "DateTime", type: "", cellsformat: "", description: "" });
@@ -76,9 +84,8 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         this.columns.push({ text: $localize`Audit Description`, datafield: "actionDescription", columnWidth: 250, fieldType: "Text", type: "", cellsformat: "", description: "" });
         this.columns.push({ text: $localize`Revision`, datafield: "version", columnWidth: 100, fieldType: "Number", type: "", cellsformat: "", description: "" });
 
+		this.maxExportRows = this.settingsService.getSettingById(CompanySettingEnum.MaxExcelExportRows)?.NumberSetting?.Value;
         this.exportTooltip = this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
-
-
         this.filterFields$ = this.filterFieldsSubject.asObservable();
     }
 
@@ -93,40 +100,22 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             .subscribe((params) => {
                 this.uid = params['uid'];
 
-                this.auditService.getLegacyDetails(this.uid).subscribe((res) => {
-                    this.objectName = res.DisplayValue;
-                    this.objectID = res.ObjectId;
-                    this.objectType = res.Object;
-
-                    if (this.objectName === "MetricAllocation") {
-                        this.objectName = "Score Definition";
-                    }
-                    let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
-
-                    //do not reload 2nd navigation for audit page as both grid pages and config pages share same URL
-                    if (["PolicyType", "TaxonomyType", "Report", "IntersectType", "ResponsibilityType", "ReferenceItemType"].indexOf(this.objectType) > -1) {
-                        reloadNav = false;
-                    }
-
-                    let objectID = this.objectType == 'Tag' ? params['uid'] : this.objectID;
-
-					if (this.uid === this.metricAllocationUid) {
-						this.buildSecondaryNavigation({ isScoringDefinitionPage:true });
-					}
-					else if (this.uid.toLowerCase() === this.groupTypeUid.toLowerCase()) {
-						this.buildSecondaryNavigationForAssetTypeUid(this.groupTypeUid);
-					}
-                    else if (reloadNav) {
-                        this.buildSecondaryNavigationForObject(objectID, this.objectType);
-                    }
-
-                    if (!this.objectName && this.objectType.toLocaleLowerCase() === 'semantic') {
-                        this.objectName = res.DisplayValue;
-                    }
-                });
-
                 this.setAdvancedFilters();
             });
+    }
+
+    ngOnChanges() {
+        this.auditService.getLegacyDetails(this.uid).subscribe((res) => {
+            this.objectName = res.DisplayValue;
+            this.objectID = res.ObjectId;
+            this.objectType = res.Object;
+
+            if (this.objectName === "MetricAllocation") {
+                this.objectName = "Score Definition";
+            }
+        });
+
+        this.setAdvancedFilters();
     }
 
     ngOnDestroy() {
@@ -156,14 +145,14 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
 
     public loadAuditsLazy(event: LazyLoadEvent) {
         this.sortOrder = event.sortOrder;
-        this.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.sortField = event.sortField == null ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;
         this.getData();
     }
 
     public export() {
-        var fileName = this.objectName;
+        let fileName = this.objectName;
         if (this.objectID === 0) {
             fileName = this.objectType;
         }
@@ -178,7 +167,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     private getParams() {
-        var params = new AuditApiFilters();
+        const params = new AuditApiFilters();
         params._pageSize = this.rowsPerPage;
         params._pageNum = this.currentPageNumber + 1;
 
@@ -189,8 +178,8 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             delete params['_order'];
         }
 
-        if (this.sortOrder != SortOrder.None)
-            {params._direction = this.sortOrder == SortOrder.Ascending ? "asc" : "desc";}
+        if (this.sortOrder !== SortOrder.None)
+            {params._direction = this.sortOrder === SortOrder.Ascending ? "asc" : "desc";}
         else {
             delete params['_direction'];
         }
@@ -245,10 +234,10 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     public setAdvancedFilters(): void {
-        let fields: AdvancedFilterFieldType[] = [];
+        const fields: AdvancedFilterFieldType[] = [];
 
         this.columns.forEach((c) => {
-            let field: AdvancedFilterFieldType = {
+            const field: AdvancedFilterFieldType = {
                 Name: c.datafield,
                 FriendlyName: c.text,
                 Type: this.lookupColumns.indexOf(c.datafield) !== -1 ? new FieldType("Lookup") : new FieldType(c.fieldType),

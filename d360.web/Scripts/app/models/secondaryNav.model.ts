@@ -1,19 +1,16 @@
-﻿import { Subject } from "rxjs";
-import { AssetTypeClass } from "./asset.model";
+﻿import { AssetTypeClass } from "./asset.model";
 
 export class SecondaryNavItem {
     constructor(title?: string, tag?: any, icons?: string[], url?: string, count?: number, priority?: number) {
         if (title) {this.title = title;}
         if (tag) {this.tag = tag;}
-        this.active = false;
         this.icons = icons ? icons : ["fa-share-alt"];
-        if (url != undefined) {this.url = url;}
-        if (count != undefined) {this.count = count;}
-        if (priority != undefined) {this.orderPriority = priority;}
+        if (url != null) {this.url = url;}
+        if (count != null) {this.count = count;}
+        if (priority != null) {this.orderPriority = priority;}
     }
     title: string;
     tag: any;
-    active: boolean;
     icons: string[];
     url: string;
     count: number;
@@ -50,9 +47,9 @@ export class SecondaryNavCurrentObject {
         this.objectName = objectName;
         this.objectID = objectID;
         this.isType = isType;
-        this.hasWorkFlow = hasWorkFlow == undefined ? false : hasWorkFlow;
+        this.hasWorkFlow = hasWorkFlow == null ? false : hasWorkFlow;
         this.hasRequestCertificationWorkflow = !hasRequestCertificationWorkflow ? false : hasRequestCertificationWorkflow;
-        this.Uid = Uid == undefined ? undefined : Uid;
+        this.Uid = Uid == null ? undefined : Uid;
     }
     objectType;
     objectTypeID;

@@ -1,4 +1,4 @@
-﻿import { ChangeDetectorRef, Component, EventEmitter, OnChanges, OnInit, Output, ViewChild } from '@angular/core';
+﻿import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { DataProfileService } from '../../services/dataprofile.service';
 
 @Component({

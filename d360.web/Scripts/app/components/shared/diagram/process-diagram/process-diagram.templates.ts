@@ -48,7 +48,7 @@ export class ProcessDiagramTemplates {
                     spacingBelow: 3,
                     maxSize: new go.Size(180, NaN),
                     wrap: go.TextBlock.WrapDesiredSize,
-                    textValidation: function (tb: go.TextBlock, oldVal, newVal) {
+                    textValidation (tb: go.TextBlock, oldVal, newVal) {
                         component.dynEditorService.updateForm({ assetUid: tb.part.data.key, fieldName: 'Name', fieldValue: newVal });
                         return true;
                     }
@@ -169,10 +169,10 @@ export class ProcessDiagramTemplates {
     private static getRelBadge(type: string, component: ProcessDiagramComponent): go.Panel {
         var $ = go.GraphObject.make;
         var RectangleMargin = new go.Margin(5, 5, 0, 0);
-        if (type == 'gateway') {
+        if (type === 'gateway') {
             var RectangleMargin = new go.Margin(28, 28, 0, 0);
         }
-        if (type == 'event') {
+        if (type === 'event') {
             var RectangleMargin = new go.Margin(24, 38, 0, 0);
         }
 
@@ -231,10 +231,10 @@ export class ProcessDiagramTemplates {
         var doesLinkExist: boolean = false;
         try {
             var links = fromnode.diagram.links.filter((x) => x.data);
-            doesLinkExist = links.any((x) => (x.data.from == fromnode.data.key && x.data.to == tonode.data.key)
-                || (x.data.from == tonode.data.key && x.data.to == fromnode.data.key));
+            doesLinkExist = links.any((x) => (x.data.from === fromnode.data.key && x.data.to === tonode.data.key)
+                || (x.data.from === tonode.data.key && x.data.to === fromnode.data.key));
 
-            if (doesLinkExist && fromport != toport) {
+            if (doesLinkExist && fromport !== toport) {
                 doesLinkExist = false;
             }
         }
@@ -269,8 +269,8 @@ export class ProcessDiagramTemplates {
             }
             ,
             {
-                mouseEnter: function (e, node) { showSmallPorts(node, true); },
-                mouseLeave: function (e, node) { showSmallPorts(node, false); }
+                mouseEnter (e, node) { showSmallPorts(node, true); },
+                mouseLeave (e, node) { showSmallPorts(node, false); }
             },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             $(go.Panel, "Vertical",
@@ -329,7 +329,7 @@ export class ProcessDiagramTemplates {
                         wrap: go.TextBlock.WrapDesiredSize,
                         editable: true,
                         stroke: 'black',
-                        textValidation: function (tb: go.TextBlock, oldVal, newVal) {
+                        textValidation (tb: go.TextBlock, oldVal, newVal) {
                             component.dynEditorService.updateForm({ assetUid: tb.part.data.key, fieldName: 'Name', fieldValue: newVal });
                             return true;
                         }
@@ -387,8 +387,8 @@ export class ProcessDiagramTemplates {
             this.makePort("R", go.Spot.Right),
             this.makePort("B", go.Spot.Bottom),
             {
-                mouseEnter: function (e, node) { showSmallPorts(node, true); },
-                mouseLeave: function (e, node) { showSmallPorts(node, false); }
+                mouseEnter (e, node) { showSmallPorts(node, true); },
+                mouseLeave (e, node) { showSmallPorts(node, false); }
             }
         );
     }
@@ -475,7 +475,7 @@ export class ProcessDiagramTemplates {
                         wrap: go.TextBlock.WrapDesiredSize,
                         editable: true,
                         stroke: 'black',
-                        textValidation: function (tb: go.TextBlock, oldVal, newVal) {
+                        textValidation (tb: go.TextBlock, oldVal, newVal) {
                             component.dynEditorService.updateForm({ assetUid: tb.part.data.key, fieldName: 'Name', fieldValue: newVal });
                             return true;
                         }
@@ -486,8 +486,8 @@ export class ProcessDiagramTemplates {
             this.getRelBadge('gateway', component)
             ,
             {
-                mouseEnter: function (e, node) { showSmallPorts(node, true); },
-                mouseLeave: function (e, node) { showSmallPorts(node, false); }
+                mouseEnter (e, node) { showSmallPorts(node, true); },
+                mouseLeave (e, node) { showSmallPorts(node, false); }
             },
         );
     }
@@ -584,11 +584,11 @@ export class ProcessDiagramTemplates {
         var $ = go.GraphObject.make;
 
         function isDirectLink(link: go.Link) {
-            let directLinks: string[] = ['BT', 'TB', 'LR', 'RL'];
+            const directLinks: string[] = ['BT', 'TB', 'LR', 'RL'];
 
             var dir = link.data.fromPort + link.data.toPort;
 
-            if (directLinks.indexOf(dir) != -1)
+            if (directLinks.indexOf(dir) !== -1)
                 {return true;}
 
             return false;
@@ -1002,7 +1002,7 @@ export class ProcessDiagramTemplates {
     private static newGuid() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0,
-                v = c == 'x' ? r : (r & 0x3 | 0x8);
+                v = c === 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
     }

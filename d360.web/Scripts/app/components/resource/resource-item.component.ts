@@ -1,5 +1,5 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -7,7 +7,6 @@ import { ResourcesService } from '../../services/resources.service';
 import { ObjectStatisticsService } from '../../services/object-statistics.service';
 import { UriBasedService } from '../../services/uri-based.service';
 import { SocialService } from '../../services/social.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ObjectStatistics } from '../../models/object-statistics.model';
 import { WorkflowType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -97,14 +96,14 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 					}
 					this.resourceId = this.resource["ResourceID"];
 
-                    if (!this.resource || this.resource.State != 'Active') {
+                    if (!this.resource || this.resource.State !== 'Active') {
                         this.isLoading = false;
                         this.pageMode = PageMode.NotFound;
                         return;
                     }
 
                     this.resourceUid = this.resource.uid;
-                    let showApi = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
+                    const showApi = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
                     this.showAllUsersAPIKey = (this.resource.IsAdministrator || showApi);
 
                     if (this.resourceId.toString() === CurrentResourceID.toString()) {
@@ -191,8 +190,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         user.Fields = new Object();
 
         // handle dynamic fields
-        for (let key in e.item) {
-            if (key != 'Email' && key != 'FirstName' && key != 'LastName' && key != 'IsAdministrator' && key != 'State' && key != 'ID' && key != 'Password' && key != 'uid' && key != 'ResourceID' && key != 'LastLoggedInOn') {
+        for (const key in e.item) {
+            if (key !== 'Email' && key !== 'FirstName' && key !== 'LastName' && key !== 'IsAdministrator' && key !== 'State' && key !== 'ID' && key !== 'Password' && key !== 'uid' && key !== 'ResourceID' && key !== 'LastLoggedInOn') {
                 user.Fields[key] = e.item[key];
             }
         }
@@ -203,7 +202,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                 (result) => {
                     this.isLoading = false;
                     this.isSavingProcess = false;
-                    if (result.Message == "" && result.Success) {
+                    if (result.Message === "" && result.Success) {
                         result.Message = $localize`Info successfully updated.`;
                     }
                     this.showMessageForApiResult(this.messagesService, result, $localize`Info successfully updated.`);

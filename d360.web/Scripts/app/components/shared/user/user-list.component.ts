@@ -11,16 +11,31 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../../shared/base.component';
 import { LazyLoadEvent } from 'primeng/api';
-import { forkJoin, Observable, ReplaySubject, Subject, SubscriptionLike as ISubscription } from 'rxjs';
+import { forkJoin, Observable, of, ReplaySubject, Subject, SubscriptionLike as ISubscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
-import { Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnChanges, SimpleChange, OnDestroy, ViewChild, OnInit } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output,
+    SimpleChange,
+    ViewChild
+} from '@angular/core';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { ResourceApiModel } from '../../../models/resource.model';
 import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
+import {
+    AdvancedFilterFieldType,
+    Filters,
+    LookupValuesAPIModel,
+    LookupValuesAPIParameters
+} from "../../assets-grid/advanced-filtering/advanced-filtering.models";
 import { isEqual } from "lodash";
-import { of } from 'rxjs';
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 
 @Component({
@@ -70,7 +85,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     private destroy = new Subject<void>();
 
     get globalFilterFields(): string[] {
-        let f = this.columns.map((c) => c.datafield);
+        const f = this.columns.map((c) => c.datafield);
         return f;
     }
 
@@ -154,7 +169,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.getFieldsDefinition();
 
         this.settingsService.getAuthenticationModel().subscribe((res) => {
-            if (res.model == 'forms') {
+            if (res.model === 'forms') {
                 this.allowPasswordReset = true;
             }
         });
@@ -165,7 +180,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     getFieldsDefinition() {
-        let params = { IsCommunityUserResposibility: this.IsCommunityUserResposibility };
+        const params = { IsCommunityUserResposibility: this.IsCommunityUserResposibility };
 
         forkJoin(
             this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType, null, null, params),
@@ -197,7 +212,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     setAdvancedFilterFields(columns: GridColumn[], customFields: FieldTypeAPIModelField[]) {
-        let output: AdvancedFilterFieldType[] = columns.map((c) => {
+        const output: AdvancedFilterFieldType[] = columns.map((c) => {
             const apiName = this.getApiName(c.datafield);
             if (c.datafield === "State") {
                 return {
@@ -265,9 +280,9 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
 
     public getParams() {
         var params = new V2ApiFilters();
-        let baseFilter = `(State eq 'Active' or State eq 'Inactive')`;
+        const baseFilter = `(State eq 'Active' or State eq 'Inactive')`;
 
-        params._direction = this.sortOrder == 1 ? 'asc' : 'desc';
+        params._direction = this.sortOrder === 1 ? 'asc' : 'desc';
         if (this.sortField) {
             params._order = this.getApiName(this.sortField);
         }
@@ -303,7 +318,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     getApiName(fieldName: string): string {
-        return this.fields.find((x) => x.name == fieldName).apiName;
+        return this.fields.find((x) => x.name === fieldName).apiName;
     }
 
     public lazyLoadUsers(event: LazyLoadEvent) {
@@ -319,7 +334,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value      
 
         this.sortOrder = event.sortOrder;
-        this.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.sortField = event.sortField == null ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;
         this.getData();
@@ -354,8 +369,8 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         user.Fields = new Object();
 
         // handle dynamic fields
-        for (let key in event.item) {
-            if (key != 'Email' && key != 'FirstName' && key != 'LastName' && key != 'IsAdministrator' && key != 'State' && key != 'ID' && key != 'Password') {
+        for (const key in event.item) {
+            if (key !== 'Email' && key !== 'FirstName' && key !== 'LastName' && key !== 'IsAdministrator' && key !== 'State' && key !== 'ID' && key !== 'Password') {
                 user.Fields[key] = event.item[key];
             }
         }

@@ -10,14 +10,19 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import {
+    AdvancedFilterFieldType,
+    Filters,
+    LookupValuesAPIModel,
+    LookupValuesAPIParameters
+} from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
 import { Observable, of } from 'rxjs';
 import { Table } from 'primeng/table';
 import { tap } from 'rxjs/operators';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 import { SearchService } from '../../../services/search.service';
-import {uniqWith as _uniqWith, isEqual as _isEqual} from 'lodash';
+import { isEqual as _isEqual, uniqWith as _uniqWith } from 'lodash';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -139,7 +144,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.sort = event;
     }
     onFilterChange(event) {
-        if (event != 'globalSearch')
+        if (event !== 'globalSearch')
             {this.filters.globalSearch = '';}
 
         this.filters[event.prop] = event.value;
@@ -197,8 +202,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
         if (event && element) {
             if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
-                if (this.selected.filter((x) => x.uid == item.uid).length > 0) {
-                    this.selected = this.selected.filter((x) => x.uid != item.uid);
+                if (this.selected.filter((x) => x.uid === item.uid).length > 0) {
+                    this.selected = this.selected.filter((x) => x.uid !== item.uid);
                     this.triggerRerenderOfSelection();
                 }
                 else {
@@ -211,7 +216,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
             }
             if (event.shiftKey) {
                 var lastIndex = this.tags.indexOf(this.lastSelectedElement);
-                if (lastIndex == -1 && this.selected.length == 1) {
+                if (lastIndex === -1 && this.selected.length === 1) {
                     lastIndex = this.tags.indexOf(this.selected[0]);
                 }
                 var currentIndex = this.tags.indexOf(item);
@@ -235,15 +240,15 @@ export class AdminTagsComponent extends AdminBaseComponent {
             }
 
         }
-        let target = (<any>(event.target));
+        const target = (<any>(event.target));
         if (element && target.nodeName !== "P-TABLECHECKBOX") {
             this.selected = [];
             this.selected.push(item);
             this.triggerRerenderOfSelection();
             this.lastSelectedElement = item;
         } else {
-            if (this.selected.filter((x) => x.uid == item.uid).length > 0) {
-                this.selected = this.selected.filter((x) => x.uid != item.uid);
+            if (this.selected.filter((x) => x.uid === item.uid).length > 0) {
+                this.selected = this.selected.filter((x) => x.uid !== item.uid);
                 this.triggerRerenderOfSelection();
             }
             else {
@@ -272,7 +277,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     saveTag(event) {
 
         if (event.additionalOption && event.additionalOption.code) {
-            let arr: string[] = [];
+            const arr: string[] = [];
             arr.push(event.item.uid);
             this.consolidateTags(event.additionalOption.code, arr);
             return;
@@ -281,14 +286,14 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.tagsService.saveTag(event.item)
             .subscribe((result) => {
                 let msg: string = '';
-                if (event.item.uid == undefined) {
+                if (event.item.uid == null) {
                     msg = $localize`${result.Value} succesfully created`;
                 }
                 else {
                     msg = $localize`${result.Value} succesfully updated`;
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
-                if (event.item.uid == undefined) {
+                if (event.item.uid == null) {
                     this.addCreatedByFieldToTag(result);
                     this.mutateTags((tags) => tags.push(result));
                 }
@@ -312,7 +317,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
             subscribe((result) => {
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
-                if (result.type != 'error') {
+                if (result.type !== 'error') {
                     this.selected.forEach((t) => {
                         this.mutateTags((tags) => tags.splice(this.findTagIndex(t.uid), 1));
                     });
@@ -324,7 +329,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     openDeleteModal() {
         window.setTimeout(() => {
-            this.deletePopupTitle = this.selected.length == 1 ? $localize`Delete Tag` : $localize`Delete Tags`;
+            this.deletePopupTitle = this.selected.length === 1 ? $localize`Delete Tag` : $localize`Delete Tags`;
             this.showDelete = true;
         }, 100);
 
@@ -343,10 +348,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
                     this.messagesService.showInfoMessage($localize`Success`, $localize`Tag consolidation succesfull`);
 
                     result.forEach((t) => {
-                        if (t.UseCount != 0)
+                        if (t.UseCount !== 0)
                             {this.tags[this.findTagIndex(t.uid)].UseCount = t.UseCount;}
-                        else if (t.uid != parentUid)
-                            {this.tags = this.tags.filter((x) => x.uid != t.uid);}
+                        else if (t.uid !== parentUid)
+                            {this.tags = this.tags.filter((x) => x.uid !== t.uid);}
                     });
                 }
                 this.selected = [];
@@ -365,7 +370,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         var index: number = -1;
         for (var tag of this.tags) {
             index++;
-            if (tag.uid == uid) {return index;}
+            if (tag.uid === uid) {return index;}
         }
     }
 

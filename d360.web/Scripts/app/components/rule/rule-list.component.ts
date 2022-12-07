@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, OnDestroy, ViewChild, Input } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -19,7 +19,7 @@ import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { forkJoin, Subscription } from 'rxjs';
-import { AssetTypeClass } from '../../models/asset.model';
+import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { AssetGridComponent } from '../assets-grid/asset-grid.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
@@ -27,6 +27,7 @@ import { SemanticType } from '../../models/semantic-type.model';
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 declare var CurrentResourceID;
 
@@ -37,6 +38,7 @@ declare var CurrentResourceID;
 })
 
 export class RuleListComponent extends BaseComponent implements OnInit, OnDestroy {
+	@Input() assetTypeApiModel: AssetTypeApiModel;
 	@Input() assetTypeUid: string;
 
 	routeParamsSubscription: any;
@@ -94,9 +96,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 	}
 
 	ngOnInit() {
-
-		this.logAction("open", "RuleType", this.assetTypeUid);
-
+		this.logAssetTypeAction(UsageAction.View, this.assetTypeUid);
 
 		this.isLoading = true;
 		this.rulesService.getRuleType(this.assetTypeUid)

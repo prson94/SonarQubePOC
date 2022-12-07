@@ -1,4 +1,3 @@
-
 import { Injectable, TemplateRef } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -80,7 +79,7 @@ export class PortalService {
                 + `Most probably, there are several instances of components with content providers`);
         }
 
-        if (!environment.production && registeredContent.get(name) != previousTemplate) {
+        if (!environment.production && registeredContent.get(name) !== previousTemplate) {
             throw new Error(
                 `Attempt to unregister content ${name} failed, ` +
                 + `because registered template doesn't matches previousTemplate. `

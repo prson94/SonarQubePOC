@@ -1,4 +1,14 @@
-﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
+﻿import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { SiteMenu, SiteMenuItem } from '../../../models/site-menu.model';
 import * as _ from 'lodash';

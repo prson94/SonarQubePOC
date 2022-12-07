@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject, Observable, forkJoin, from, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, Observable, Subject } from 'rxjs';
 import { Breadcrumb } from '../models/breadcrumb.model';
 import { HttpClient } from '@angular/common/http';
 import { catchError, filter, map } from 'rxjs/operators';
@@ -72,8 +72,8 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     }
 
 	setCurrentObjectInfo(type: string, id: number, AssetTypeUid: string = null, AssetUid: string = null) {
-		this.currentObject = { type: type, id: id, AssetTypeUid: AssetTypeUid, AssetUid: AssetUid };
-		this.currentObjectInfoSource.next({ type: type, id: id, AssetTypeUid: AssetTypeUid, AssetUid: AssetUid });
+		this.currentObject = { type, id, AssetTypeUid, AssetUid };
+		this.currentObjectInfoSource.next({ type, id, AssetTypeUid, AssetUid });
 	}
 
 	setCurrentObjectInfoByUid(uid: string) {
@@ -131,7 +131,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
 
     getFolderTitle(menuID: string): Promise<string> {
         let folderName = menuID;
-        let promise = new Promise<string>((resolve, reject) => {
+        const promise = new Promise<string>((resolve, reject) => {
             if (this.SiteNavItemsCache && this.SiteNavItemsCache.length > 0) {
                 this.SiteNavItemsCache.forEach((s) => {
                     if (s.Name.indexOf(menuID) !== -1) {
@@ -139,7 +139,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
                     }
                 });
 
-                if (folderName != menuID) {resolve(folderName);}
+                if (folderName !== menuID) {resolve(folderName);}
                 else {reject(menuID.substr(1, menuID.length));}
 
             } else {
@@ -152,7 +152,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
                         }
                     });
                 }).add(() => {
-                    if (folderName != menuID) {resolve(folderName);}
+                    if (folderName !== menuID) {resolve(folderName);}
                     else {reject(menuID.substr(1, menuID.length));}
                 });
             }
@@ -196,7 +196,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
 
     getFolderIcon(menuID: string): Observable<string> {
         let icon = "fa-folder";
-        let promise = new Promise<string>((resolve, reject) => {
+        const promise = new Promise<string>((resolve, reject) => {
             if (this.SiteNavItemsCache && this.SiteNavItemsCache.length > 0) {
                 const nav = this.SiteNavItemsCache.find((s) => s.Title === menuID);
                 icon = this.iconFromSiteNav(nav);

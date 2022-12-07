@@ -1,6 +1,5 @@
 import { ElementRef } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
-import * as _ from 'lodash';
+import { FormControl, FormGroup } from '@angular/forms';
 
 export function getFormControlDomElement({ formContainer, controlName }: { formContainer: ElementRef; controlName: string; }) {
     if (formContainer == null) {
@@ -19,8 +18,8 @@ export function getRequiredCount({ formGroup, formContainer }: { formGroup: Form
 
     let reqCount = 0;
     Object.keys(formGroup.controls).forEach((x) => {
-        let control = <FormControl>formGroup.get(x);
-        let elem = getFormControlDomElement({ formContainer, controlName: x });
+        const control = <FormControl>formGroup.get(x);
+        const elem = getFormControlDomElement({ formContainer, controlName: x });
 
         if (elem && control && control.errors && control.errors["required"] === true) {
             reqCount++;
@@ -37,8 +36,8 @@ export function getInvalidCount({ formGroup, formContainer }: { formGroup: FormG
 
     let invCount = 0;
     Object.keys(formGroup.controls).forEach((x) => {
-        let control = <FormControl>formGroup.get(x);
-        let elem = getFormControlDomElement({ formContainer, controlName: x });
+        const control = <FormControl>formGroup.get(x);
+        const elem = getFormControlDomElement({ formContainer, controlName: x });
         if (elem && control && control.errors) {
             invCount += Object.keys(control.errors).filter((x) => x !== "required").length > 0 ? 1 : 0;
         }

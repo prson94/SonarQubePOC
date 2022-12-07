@@ -1,7 +1,6 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
-
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 
 import { RightSidebarComponent } from './right-sidebar.component';
@@ -17,6 +16,7 @@ import { SimpleBadgeModule } from '../small-widgets/simple-badge/simple-badge.mo
 import { PortalsModule } from '../portals/portals.module';
 import { DataCyModule } from '../../../directives/ig-data-cy.directive';
 import { DirectivesModule } from "../../../directives/directives.module";
+import { TabsModule } from '../tabs/tabs.module';
 
 @NgModule({
     imports: [
@@ -34,7 +34,8 @@ import { DirectivesModule } from "../../../directives/directives.module";
         InfoTooltipModule,
         SimpleBadgeModule,
         PortalsModule,
-        DirectivesModule
+        DirectivesModule,
+        TabsModule
     ],
     declarations: [
         RightSidebarComponent

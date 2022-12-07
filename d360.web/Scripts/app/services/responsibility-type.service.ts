@@ -1,18 +1,18 @@
 ﻿import { Injectable } from '@angular/core';
 import {
     IResponsibilityTypeService,
-    ResponsibilityType,
-    ResponsibilityTypeRelation,
-    ResponsibilityTypeCount,
     ResourceResponsibilityTypeCount,
-    ResponsibilityTypeRelationRule,
-    ResponsibilityTypeRelationRuleSummary,
-    ResponsibilityTypeRelationRuleFormData,
-    ResponsibilityTypeRelation_FormData,
+    ResponsibilityRuleTestResponseModel,
+    ResponsibilityType,
     ResponsibilityTypeAllocation,
     ResponsibilityTypeAllocationPost,
-    ResponsibilityTypeRelationRuleV2,
-    ResponsibilityRuleTestResponseModel
+    ResponsibilityTypeCount,
+    ResponsibilityTypeRelation,
+    ResponsibilityTypeRelationRule,
+    ResponsibilityTypeRelationRuleFormData,
+    ResponsibilityTypeRelationFormData,
+    ResponsibilityTypeRelationRuleSummary,
+    ResponsibilityTypeRelationRuleV2
 } from '../models/responsibility-type.model';
 import { SelectItem } from "primeng/api";
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -132,16 +132,16 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
-    getRelationFormData(): Observable<ResponsibilityTypeRelation_FormData> {
+    getRelationFormData(): Observable<ResponsibilityTypeRelationFormData> {
         return this.http.get(`form/ResponsibilityTypeRelation_FormData`)
             .pipe(
-                map((response) => <ResponsibilityTypeRelation_FormData>response),
+                map((response) => <ResponsibilityTypeRelationFormData>response),
                 catchError((err) => this.handleError(err))
             );
     }
 
     getResponsibilityTypesByObject(type: string, id: number): Observable<any> {
-        let uri = `api/ownership/${type}/${id}/responsibilitytypes`;
+        const uri = `api/ownership/${type}/${id}/responsibilitytypes`;
         return this.http.get(uri)
             .pipe(
                 map((response) => <any>response),

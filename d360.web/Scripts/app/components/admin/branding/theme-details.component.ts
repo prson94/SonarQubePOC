@@ -1,5 +1,13 @@
-﻿import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { head } from 'lodash';
+﻿import {
+    ChangeDetectionStrategy,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    ViewEncapsulation
+} from '@angular/core';
 import { Category } from '../../../models/object-detail.model';
 
 import { BrandingService, Theme } from '../../../services/branding.service';

@@ -1,11 +1,10 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from "rxjs";
-import { catchError, map, throwIfEmpty } from "rxjs/operators";
+import { catchError, map } from "rxjs/operators";
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
-import * as _ from 'lodash';
 
 export class CreatedBy {
     uid: string;
@@ -148,7 +147,7 @@ export class BrandingService extends BaseObservableService {
     }
 
     public getThemes(): Observable<Theme[] | number> {
-        let url: string = '/api/v2/environment/themes';
+        const url = '/api/v2/environment/themes';
 
         return this
             .http
@@ -188,7 +187,7 @@ export class BrandingService extends BaseObservableService {
     }
 
     public validateTheme(theme: Theme): Observable<any> {
-        let url: string = '/api/v2/environment/themes?validationOnly=true';
+        const url: string = '/api/v2/environment/themes?validationOnly=true';
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
@@ -275,7 +274,7 @@ export class BrandingService extends BaseObservableService {
     }
 
     public deleteTheme(uid: string): Observable<any> {
-        let url: string = '/api/v2/environment/themes/' + uid;
+        const url: string = '/api/v2/environment/themes/' + uid;
         return this
             .http
             .delete(url)
@@ -288,7 +287,7 @@ export class BrandingService extends BaseObservableService {
     }
 
     public setAsCurrentTheme(uid: string): Observable<any> {
-        let url: string = '/api/v2/environment/themes/' + uid + '/current';
+        const url: string = '/api/v2/environment/themes/' + uid + '/current';
         return this
             .http
             .patch(url, null)
@@ -301,7 +300,7 @@ export class BrandingService extends BaseObservableService {
     }
 
     public getBase64Data(uid: string): Observable<any> {
-        let url: string = '/api/v2/environment/themes/' + uid + '/base64data';
+        const url: string = '/api/v2/environment/themes/' + uid + '/base64data';
         return this
             .http
             .get(url)
@@ -317,7 +316,7 @@ export class BrandingService extends BaseObservableService {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'text/css' }),
         };
-        let url: string = '/api/v2/environment/themes/conversion/base64';
+        const url: string = '/api/v2/environment/themes/conversion/base64';
         return this
             .http
             .put(url, data, httpOptions)

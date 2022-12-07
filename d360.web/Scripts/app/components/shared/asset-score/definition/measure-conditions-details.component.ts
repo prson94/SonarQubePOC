@@ -1,9 +1,11 @@
 ﻿import { Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from "@angular/core";
-import { MetricAssetVersionConditionItemFieldValueViewModel, MetricAssetVersionConditionViewModel } from "../../../../models/metrics.model";
+import {
+    MetricAssetVersionConditionItemFieldValueViewModel,
+    MetricAssetVersionConditionViewModel
+} from "../../../../models/metrics.model";
 import { CompanySettingsService } from "../../../../services/settings.service";
 import { CommonScreenReferencesModel } from "../../../admin/scoring/common-screen-references-model";
 import { BaseComponent } from "../../base.component";
-
 
 
 @Component({
@@ -31,7 +33,7 @@ export class MeasureConditionsDetailsComponent extends BaseComponent implements 
             return;
         }
         this.conditionGroups.forEach((cg) => {
-            let conditions = cg.ConditionItems;
+            const conditions = cg.ConditionItems;
             cg.DisplayWeight = (cg.Weight * 100);
             conditions.forEach((c) => {
                 const field = this.screenReferences.fields.find((f) => f.ApiName === c.ConditionFieldTypeName);

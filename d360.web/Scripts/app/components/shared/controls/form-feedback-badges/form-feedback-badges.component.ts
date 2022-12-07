@@ -1,11 +1,21 @@
-import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy, ElementRef, OnChanges, SimpleChanges, Output, EventEmitter, OnDestroy } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    Input,
+    NgModule,
+    OnChanges,
+    OnDestroy,
+    SimpleChanges
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormGroup, FormControl } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import * as _ from 'lodash';
 import { getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
 import { Subject } from 'rxjs';
-import { takeUntil, tap, startWith } from 'rxjs/operators';
+import { startWith, takeUntil, tap } from 'rxjs/operators';
 import { PropertyGroupsService } from '../property-group/property-groups.service';
 import { PropertyGroupInstanceIdAttributeName } from '../property-group/property-group.component';
 
@@ -69,7 +79,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         let idx = 0;
         for (const { control, element } of this.getOrderedControls()) {
             if (control.errors && !found) {
-                let invFound = Object.keys(control.errors).filter((x) => x !== "required").length > 0;
+                const invFound = Object.keys(control.errors).filter((x) => x !== "required").length > 0;
                 if (invFound) {
                     idx++;
                     if ((idx > this.invalidPos)) {
@@ -90,7 +100,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     focusRequired(event) {
         event.stopPropagation();
         let found = false;
-        let fcCount = this.getFormControlCount("required");
+        const fcCount = this.getFormControlCount("required");
         let idx = 0;
         for (const { control, element } of this.getOrderedControls()) {
             if (control.errors && control.errors["required"] === true && !found) {
@@ -119,7 +129,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
             .filter((x) => x.control != null)
             .filter((x) => x.element != null)
             .sort((a, b) => {
-                let position =  a.element.compareDocumentPosition(b.element);
+                const position =  a.element.compareDocumentPosition(b.element);
                 if (position === Node.DOCUMENT_POSITION_PRECEDING) {
                     return 1;
                 }
@@ -187,11 +197,11 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     getFormControlCount(type: string): number {
         let count = 0;
         Object.keys(this.igformGroup.controls).forEach((x) => {
-            let control = <FormControl>this.igformGroup.get(x);
+            const control = <FormControl>this.igformGroup.get(x);
             if (control) {
                 if (type === "required") {
                     if (control.errors && control.errors["required"] === true) {
-                        let elem = <HTMLElement>this.getFormControlDomElement(x);
+                        const elem = <HTMLElement>this.getFormControlDomElement(x);
                         if (elem) {
                             count++;
                         }
@@ -200,7 +210,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
                 if (type === "errors") {
                     if (control.errors) {
                         if (Object.keys(control.errors).filter((x) => x !== "required").length > 0) {
-                            let elem = <HTMLElement>this.getFormControlDomElement(x);
+                            const elem = <HTMLElement>this.getFormControlDomElement(x);
                             if (elem) {
                                 count++;
                             }

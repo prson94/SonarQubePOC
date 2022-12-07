@@ -1,6 +1,11 @@
 import { Title } from '@angular/platform-browser';
-import { SecondaryNavItem, SecondaryNavCurrentObject, SecondaryNavPostModel, SecondaryNavRequestModel } from '../../models/secondaryNav.model';
-import { PermissionsService, Permissions } from '../../services/permissions.service';
+import {
+    SecondaryNavCurrentObject,
+    SecondaryNavItem,
+    SecondaryNavPostModel,
+    SecondaryNavRequestModel
+} from '../../models/secondaryNav.model';
+import { Permissions, PermissionsService } from '../../services/permissions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 
@@ -20,6 +25,8 @@ import { ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
 import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import { AppConstants } from '../../static/constants';
+import { UsageAction, UsageBrowser } from '../../models/web-analytics-activity.model';
 
 export class BaseComponent {
 	public isLoading = false;
@@ -97,7 +104,7 @@ export class BaseComponent {
 
 
 	// default paging options
-	defaultPagingOptions: number[] = [10, 25, 50, 100];
+	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
 	defaultInitialItemsPerPage = 10;
 
 	protected secondaryNavService: SecondaryNavService = null;
@@ -121,7 +128,7 @@ export class BaseComponent {
 		return this.settingsService.getSettingById(id).GuidSetting.Value;
 	}
 	getNumberSetting(id: CompanySettingEnum): number {
-		let setting = this.settingsService.getSettingById(id);
+		const setting = this.settingsService.getSettingById(id);
 		if (setting && setting.NumberSetting) {
 			return setting.NumberSetting.Value;
 		}
@@ -139,15 +146,98 @@ export class BaseComponent {
 		tileService.setTitle(`${this.getStringSetting(CompanySettingEnum.BrowserTitlePrefix)} - ${area}`);
 	}
 
-	logAction(actionName: string, objectName: string, objectId: number | string) {
+	//#region Usage Logic
+
+	private determineBrowser(): UsageBrowser {
+		let browser: UsageBrowser = UsageBrowser.Other;
+
+		const agent = window.navigator.userAgent.toLowerCase();
+		switch (true) {
+			case agent.indexOf('edge') > -1:
+				browser = UsageBrowser.Edge;
+				break;
+			case agent.indexOf('opr') > -1 && !!(<any>window).opr:
+				browser = UsageBrowser.Opera;
+				break;
+			case agent.indexOf('chrome') > -1 && !!(<any>window).chrome:
+				browser = UsageBrowser.Chrome;
+				break;
+			case agent.indexOf('trident') > -1:
+				browser = UsageBrowser.InternetExplorer;
+				break;
+			case agent.indexOf('firefox') > -1:
+				browser = UsageBrowser.FireFox;
+				break;
+			case agent.indexOf('safari') > -1:
+				browser = UsageBrowser.Safari;
+				break;
+			default:
+				browser = UsageBrowser.Other;
+				break;
+		}
+
+		return browser;
+	}
+
+	private logUsage(action: UsageAction,
+		assetUid?: string, assetTypeUid?: string, dashboardUid?: string, issueUid?: string, semanticUid?: string, tagUid?: string,
+		sidebar?: string, tab?: string) {
+		
 		if (this.webAnalyticsService) {
+			let browser = this.determineBrowser();
+
+			let language = navigator.language || window.navigator.language;
+			if (language.length !== 2) {
+				language = language.substring(0, 2);
+			}
+			const languages = navigator.languages || window.navigator.languages;
+			let locale: string = languages.find(l => { return (l.length === 5); });
+			if (!locale) {
+				locale = `${language}-${language.toUpperCase()}`;
+			}
+
 			this.webAnalyticsService.logActivity({
-				Activity: actionName,
-				ObjectId: objectId,
-				ObjectName: objectName
+				action: action,
+				browser: browser,
+				language: language,
+				locale: locale,
+				assetUid: assetUid,
+				assetTypeUid: assetTypeUid,
+				dashboardUid: dashboardUid,
+				issueUid: issueUid,
+				semanticUid: semanticUid,
+				sidebar: sidebar,
+				tab: tab,
+				tagUid: tagUid
 			});
 		}
 	}
+
+	logAssetAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, uid, null, null, null, null, null, sidebar, tab);
+	}
+
+	logAssetTypeAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, uid, null, null, null, null, sidebar, tab);
+	}
+
+	logDashboardAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, null, uid, null, null, null, sidebar, tab);
+	}
+
+	logIssueAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, null, null, uid, null, null, sidebar, tab);
+	}
+
+	logSemanticAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, null, null, null, uid, null, sidebar, tab);
+	}
+
+	logTagAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, null, null, null, null, uid, sidebar, tab);
+	}
+
+	//#endregion
 
 	//#region permissions functionality
 
@@ -249,7 +339,6 @@ export class BaseComponent {
 					[allocation.icon],
 					`/${baseUrl}${allocation.uid}`, null, priority
 				);
-				navItem.active = (selectedAllocationUid === allocation.uid);
 				this.secondaryNavService.showItem(navItem);
 				priority += 10;
 			});
@@ -276,10 +365,10 @@ export class BaseComponent {
 	}) {
 		if (this.secondaryNavService && this.objectType) {
 			this.clearSidebar();
-			var isCommonAsset: boolean = this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule';
+			var isCommonAsset: boolean = this.objectType === 'Artifact' || this.objectType === 'Policy' || this.objectType === 'Taxonomy' || this.objectType === 'Rule';
 
-			let showLineage = opts.hasLineage && this.getBooleanSetting(CompanySettingEnum.ShowLineageSidebar);
-			let showImpact = opts.hasImpact && this.getBooleanSetting(CompanySettingEnum.ShowImpactSidebar);
+			const showLineage = opts.hasLineage && this.getBooleanSetting(CompanySettingEnum.ShowLineageSidebar);
+			const showImpact = opts.hasImpact && this.getBooleanSetting(CompanySettingEnum.ShowImpactSidebar);
 
 			if (showLineage || showImpact || opts.hasProcessDiagram) {
 				this.lineageSidebar = new SecondaryNavItem(
@@ -504,7 +593,7 @@ export class BaseComponent {
 				this.secondaryNavService.showItem(this.commentsSidebar);
 			}
 
-			if (this.objectType == 'TaskType') {
+			if (this.objectType === 'TaskType') {
 				this.governanceRolesSidebar = new SecondaryNavItem(
 					$localize`Governance Roles`, 'GovernanceRoles', null,
 					'/sidebar/governanceRoles', null, 3);
@@ -541,7 +630,7 @@ export class BaseComponent {
 		this.objectID = objectID;
 		this.uid = uid;
 
-		if (objectName != undefined) {
+		if (objectName != null) {
 			this.objectName = objectName;
 		}
 	}
@@ -559,8 +648,8 @@ export class BaseComponent {
 	objectContextUrl(): string {
 		const url = '';
 
-		if (this.objectType == 'Tag') {
-			if (this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
+		if (this.objectType === 'Tag') {
+			if (this.uid && this.uid !== '00000000-0000-0000-0000-000000000000') {
 				return `/${this.objectType}/${this.uid}`;
 			}
 			else if (!this.objectID) {
@@ -596,8 +685,8 @@ export class BaseComponent {
 		}
 
 		//Tag needs to be part of the URL for the header to behave
-		if (this.objectType == 'Tag') {
-			if (this.uid && this.uid != blankUid) {
+		if (this.objectType === 'Tag') {
+			if (this.uid && this.uid !== blankUid) {
 				return `/${this.objectType}/${this.uid}`;
 			}
 		}
@@ -606,7 +695,7 @@ export class BaseComponent {
 		 * Extract UID value for AssetTypes, IssueTypes, Referrence lists etc to use with audit component
 		 * Minimizer obfuscates this.constructor.name, so we'll have to look for specifi properties
 		 */
-		if (this.uid == undefined || this.uid == blankUid) {
+		if (this.uid == null || this.uid === blankUid) {
 			if (this['selectedRow']) {
 				if (this['selectedRow']['id']) { //AdminArtifactsComponent
 					uid = this['selectedRow']['id'];
@@ -648,25 +737,25 @@ export class BaseComponent {
 		const nodes: TreeNode[] = [];
 
 		// add root nodes
-		for (let rNode of this.baseTreeNodeArray) {
+		for (const rNode of this.baseTreeNodeArray) {
 			nodes.push(rNode);
 		}
 
 		// do a breadth first search for the given treenode
-		if (nodes.length == 0) {
+		if (nodes.length === 0) {
 			return;
 		}
 
 		let node = nodes[0];
 
 		while (node) {
-			if (node.data.id && node.data.id == id) {
+			if (node.data.id && node.data.id === id) {
 				return node;
 			}
 
 			// push children
 			if (node.children) {
-				for (let cNode of node.children) {
+				for (const cNode of node.children) {
 					nodes.push(cNode);
 				}
 			}
@@ -674,7 +763,7 @@ export class BaseComponent {
 			// remove this node
 			nodes.splice(0, 1);
 
-			if (nodes.length == 0) {
+			if (nodes.length === 0) {
 				return null;
 			}
 
@@ -685,11 +774,11 @@ export class BaseComponent {
 	//generic method used for objectName = Policy/Model
 	private checkParentBase(item: any, arr: any[], typeId: number, objectName: string) {
 		if (item.ParentID > 0 && arr) {
-			let parentAr = arr.filter((x) => x.ID == item.ParentID);
+			const parentAr = arr.filter((x) => x.ID === item.ParentID);
 			let parent: any;
 			if (parentAr.length > 0) {
 				parent = parentAr[0];
-				let crumb = new Breadcrumb(parent.DisplayValue,
+				const crumb = new Breadcrumb(parent.DisplayValue,
 					SiteUrlHelpers.getAssetUrl(parent.Uid),
 					true,
 					objectName,
@@ -710,15 +799,15 @@ export class BaseComponent {
 		includeChildren?: boolean
 	): TreeNode[] {
 		// find the root items then
-		let rootNodes = inputArr.filter((x) => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
+		const rootNodes = inputArr.filter((x) => (Parent != null ? x.ParentID === Parent : !x.ParentID));
 
-		if (rootNodes.length == 0) {
+		if (rootNodes.length === 0) {
 			return null;
 		}
 
 		const res: TreeNode[] = [];
 
-		for (let root of rootNodes) {
+		for (const root of rootNodes) {
 			res.push({
 				label: root.DisplayValue,
 				expanded: true,
@@ -743,18 +832,18 @@ export class BaseComponent {
 				this.secondaryNavService.clearButtons();
 			}
 
-			if (this.sidebarSubscription && (unsubscribe || unsubscribe == undefined)) {
+			if (this.sidebarSubscription && (unsubscribe || unsubscribe == null)) {
 				this.sidebarSubscription.unsubscribe();
 			}
 		}
 	}
 
 	showMessageForResult(messagesService: MessagesObservableService, result: JsonResult, defaultMessage?: string) {
-		if (defaultMessage == undefined) {
+		if (defaultMessage == null) {
 			defaultMessage = $localize`Success`;
 		}
 
-		if (result.type == 'error') {
+		if (result.type === 'error') {
 			messagesService.showError(result.title, result.message);
 		} else {
 			messagesService.showInfoMessage(
@@ -765,7 +854,7 @@ export class BaseComponent {
 	}
 
 	showMessageForApiResponse(messagesService: MessagesObservableService, result: ApiResult & ErrorResponse, defaultMessage?: string) {
-		if (defaultMessage == undefined) {
+		if (defaultMessage == null) {
 			defaultMessage = $localize`Success`;
 		}
 
@@ -780,7 +869,7 @@ export class BaseComponent {
 	}
 
 	showMessageForApiResult(messagesService: MessagesObservableService, result: ApiResult, defaultMessage?: string) {
-		if (defaultMessage == undefined) {
+		if (defaultMessage == null) {
 			defaultMessage = $localize`Success`;
 		}
 
@@ -795,11 +884,11 @@ export class BaseComponent {
 	}
 
 	showMessageForApiResults(messagesService: MessagesObservableService, results: ApiResult[], defaultMessage: string, disableCountShow: boolean = false) {
-		var succeeded = results.filter((x) => x.Success == true);
-		var failed = results.filter((x) => x.Success != true);
+		var succeeded = results.filter((x) => x.Success === true);
+		var failed = results.filter((x) => x.Success !== true);
 
 		if (succeeded.length > 0) {
-			let message = disableCountShow ? defaultMessage : succeeded.length + defaultMessage;
+			const message = disableCountShow ? defaultMessage : succeeded.length + defaultMessage;
 			messagesService.showInfoMessage($localize`Success`, message);
 		}
 
@@ -828,7 +917,7 @@ export class BaseComponent {
 	buildSecondaryNavigationByAssetUid(uid: string, buildBreadcrumbOverride: Function = null) {
 		const reqModel: SecondaryNavRequestModel = {
 			assetUid: uid,
-			buildBreadcrumbOverride: buildBreadcrumbOverride
+			buildBreadcrumbOverride
 		};
 		this.buildSecondaryNavigation(reqModel);
 	}
@@ -836,26 +925,26 @@ export class BaseComponent {
 	buildSecondaryNavigationForAssetID(assetId: number, object: string, buildBreadcrumbOverride: Function = null) {
 		const reqModel: SecondaryNavRequestModel = {
 			objectType: object,
-			assetId: assetId,
-			buildBreadcrumbOverride: buildBreadcrumbOverride
+			assetId,
+			buildBreadcrumbOverride
 		};
 		this.buildSecondaryNavigation(reqModel);
 	}
 
 	buildSecondaryNavigationForAssetTypeUid(assetTypeUid: string, buildBreadcrumbOverride: Function = null) {
 		const reqModel: SecondaryNavRequestModel = {
-			assetTypeUid: assetTypeUid,
-			buildBreadcrumbOverride: buildBreadcrumbOverride
+			assetTypeUid,
+			buildBreadcrumbOverride
 		};
 		this.buildSecondaryNavigation(reqModel);
 	}
 
 	buildSecondaryNavigationForObject(objectId: number, object: string, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null) {
 		const reqModel: SecondaryNavRequestModel = {
-			objectId: objectId,
+			objectId,
 			objectType: object,
-			assetClass: assetClass,
-			buildBreadcrumbOverride: buildBreadcrumbOverride
+			assetClass,
+			buildBreadcrumbOverride
 		};
 		this.buildSecondaryNavigation(reqModel);
 	}
@@ -875,19 +964,19 @@ export class BaseComponent {
 			checkdisplayvalue = true;
 		}
 
-		if (loadData.ObjectType == currentData.Object && loadData.ObjectId == currentData.ObjectId)
+		if (loadData.ObjectType === currentData.Object && loadData.ObjectId === currentData.ObjectId)
 			{return true;}
 
 		if (checkdisplayvalue) {
-			if (loadData.AssetUid == currentData.Uid && currentData.DisplayValue == loadData.DisplayValue)
+			if (loadData.AssetUid === currentData.Uid && currentData.DisplayValue === loadData.DisplayValue)
 				{return true;}
 		}
 		else {
-			if (loadData.AssetUid == currentData.Uid)
+			if (loadData.AssetUid === currentData.Uid)
 				{return true;}
 		}
 
-		if (loadData.AssetId == currentData.AssetId)
+		if (loadData.AssetId === currentData.AssetId)
 			{return true;}
 
 		return false;
@@ -930,7 +1019,7 @@ export class BaseComponent {
 
 		if (requestModel.objectId) {
 			data.ObjectId = requestModel.objectId;
-			if (requestModel.objectId.toString().length == 36) {
+			if (requestModel.objectId.toString().length === 36) {
 				data.AssetUid = requestModel.objectId.toString();
 			}
 		}
@@ -944,12 +1033,12 @@ export class BaseComponent {
 		if (requestModel.assetTypeUid)
 			{data.AssetTypeUid = requestModel.assetTypeUid;}
 
-		if (!this.preloadedTreeData || this.preloadedTreeData.length == 0) {
+		if (!this.preloadedTreeData || this.preloadedTreeData.length === 0) {
 			//This will have effect only on pages that need populate tree to create breadcrumbs (model, policy)
 			data.PreloadData = true;
 		}
 
-		if (!requestModel.responsibilityTypeUid && !requestModel.isScoringDefinitionPage && requestModel.assetUid == null && !requestModel.intersectTypeUid && !requestModel.assetId && !requestModel.assetTypeUid && !(requestModel.objectId != null && requestModel.objectId != undefined) && !requestModel.forceRefresh) {
+		if (!requestModel.responsibilityTypeUid && !requestModel.isScoringDefinitionPage && requestModel.assetUid == null && !requestModel.intersectTypeUid && !requestModel.assetId && !requestModel.assetTypeUid && !(requestModel.objectId != null) && !requestModel.forceRefresh) {
 			return;
 		}
 
@@ -997,7 +1086,7 @@ export class BaseComponent {
 					this.preloadedTreeData = r.PreloadData.Data;
 				}
 			}
-			let area = this.determineAreaForAdminPage(areaName);
+			const area = this.determineAreaForAdminPage(areaName);
 
 			let homeUrl: string = ``;
 
@@ -1017,7 +1106,7 @@ export class BaseComponent {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES;
 			}
 			else if (r?.AssetTypeClass === AssetTypeClass.DiagramAsset) {
-				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS
+				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS;
 			}
 			else if (r?.AssetTypeClass === AssetTypeClass.User) {
 				homeUrl = "users/" + this.uid;
@@ -1055,25 +1144,25 @@ export class BaseComponent {
 			this.secondaryNavService.setLocalHomeUrl(homeUrl);
 			this.breadcrumbsService.setCurrentObjectInfo(r.Object, r.ObjectID, r.Artifact?.AssetTypeUid, r.Uid);
 			if (requestModel.buildBreadcrumbOverride == null) {
-				if (this.objectType.toLowerCase() == 'artifact') {
+				if (this.objectType.toLowerCase() === 'artifact') {
 					this.setArtifactBreadcrumbs(r);
 				}
-				else if (this.objectType.toLowerCase() == 'policy') {
+				else if (this.objectType.toLowerCase() === 'policy') {
 					this.setTreeBreadcrumbs(r, 'Policy');
 				}
-				else if (this.objectType.toLowerCase() == 'taxonomy') {
+				else if (this.objectType.toLowerCase() === 'taxonomy') {
 					this.setTreeBreadcrumbs(r, 'Taxonomy');
 				}
-				else if (this.objectType.toLowerCase() == 'rule') {
+				else if (this.objectType.toLowerCase() === 'rule') {
 					this.setRuleBreadcrumbs(r);
 				}
-				else if (this.objectType.toLowerCase() == 'referenceitemtype') {
+				else if (this.objectType.toLowerCase() === 'referenceitemtype') {
 					this.breadcrumbsService.clearBreadcrumbs();
 
 					this.breadcrumbsService.showBreadcrumb(new Breadcrumb($localize`Reference Lists`, homeUrl));
 					this.setBrowserTitle(this.breadcrumbsService.getTitleService(), $localize`Reference Lists`);
 				}
-				else if (this.objectType.toLowerCase() == 'resource') {
+				else if (this.objectType.toLowerCase() === 'resource') {
 					this.setResourceBreadcrumbs(r);
 				}
 				else {
@@ -1088,7 +1177,7 @@ export class BaseComponent {
 			this.secondaryNavService.clearButtons();
 
 			var areaIcon = area === $localize`Configuration` ? 'fa-sliders' : "fa-cog";
-			if (r.Object == 'Tag')
+			if (r.Object === 'Tag')
 				{areaIcon = 'fa-tag';}
 			this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
 
@@ -1103,7 +1192,7 @@ export class BaseComponent {
 				hasMonitor: r.Items.HasWorkflow,
 				hasField: r.Items.HasField,
 				hasChild: r.Items.HasChild,
-				hasRuleResult: this.objectType == 'Rule',
+				hasRuleResult: this.objectType === 'Rule',
 				hasGovernanceRoleSet: r.Items.HasGovernanceRoleUidSet,
 				hasProcessDiagram: r.Items.HasProcessDiagram,
 				hasGroups: r.Items.HasGroups,
@@ -1137,7 +1226,7 @@ export class BaseComponent {
 			StringConstants.Section_Workflows]
 			.indexOf(areaName) !== -1 ? StringConstants.Area_Configuration : StringConstants.Area_Administration;
 
-		if (this.objectType == 'Tag' && this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
+		if (this.objectType === 'Tag' && this.uid && this.uid !== '00000000-0000-0000-0000-000000000000') {
 			area = 'Tags';
 		}
 
@@ -1145,16 +1234,16 @@ export class BaseComponent {
 	}
 
 	private IsType(objectName: string): boolean {
-		if (objectName == 'Tag')
+		if (objectName === 'Tag')
 			{return true;}
 
-		if (objectName == 'MetricAllocation' || objectName == 'Predicate') {
+		if (objectName === 'MetricAllocation' || objectName === 'Predicate') {
 			return true;
 		}
 
 		if (objectName.length <= 4)
 			{return false;}
-		if (objectName.substr(objectName.length - 4).toLowerCase() == "type") {
+		if (objectName.substr(objectName.length - 4).toLowerCase() === "type") {
 			return true;
 		}
 		return false;
@@ -1163,7 +1252,7 @@ export class BaseComponent {
 	private SetCommonBreadcrumbs(data, area, url) {
 		var adminHeading = '';
 
-		if (data.DisplayValue == 'Responsibilities') {
+		if (data.DisplayValue === 'Responsibilities') {
 			adminHeading = $localize`Security`;
 		}
 
@@ -1208,16 +1297,6 @@ export class BaseComponent {
 		components.push(this.groupsSidebar);
 		components.push(this.itemOwnSidebar);
 		components.push(this.followingSidebar);
-
-		components.forEach((cmp) => {
-			if (cmp && currentComponentUrl.startsWith(cmp.url)) {
-				cmp.active = true;
-			}
-
-			if (cmp && cmp.subTabsUrl.some((x) => x == currentComponentUrl || currentComponentUrl.indexOf(x) == 0)) {
-				cmp.active = true;
-			}
-		});
 	}
 
 	private setArtifactBreadcrumbs(data) {
@@ -1225,7 +1304,7 @@ export class BaseComponent {
 
 		let folderName: string = '#Business';
 
-		if (artifact.Class == AssetTypeClass.TechnicalAsset) {
+		if (artifact.Class === AssetTypeClass.TechnicalAsset) {
 			folderName = '#Technical';
 		}
 		this.breadcrumbsService.getFolderTitle(folderName).then((res) => {
@@ -1239,30 +1318,30 @@ export class BaseComponent {
 				.getAreaName('ArtifactType', data.Artifact.Breadcrumbs[0] ? this.GetIDFromUrl(data.Artifact.Breadcrumbs[0].Url) : data.Artifact.AssetTypeID)
 				.subscribe((result) => {
 					var currentAreaName = result;
-					let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
+					const currentFolderName = currentAreaName ? currentAreaName : folderTitle;
 
 					this.breadcrumbsService.clearBreadcrumbs();
 					this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.ObjectTypeId, currentFolderName).subscribe((res) => {
 						this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, $localize`Definition`);
-						let areaName: string = currentAreaName ? currentAreaName : folderTitle;
+						const areaName: string = currentAreaName ? currentAreaName : folderTitle;
 						let areaLink: string = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}`;
-						if (area == "Technical Assets") {
+						if (area === "Technical Assets") {
 							areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
 						}
 						else {
 							areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 						}
-						let areaBreadcrumb = new Breadcrumb(
+						const areaBreadcrumb = new Breadcrumb(
 							areaName,
 							areaLink,
 							false
 						);
 						this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
 
-						for (let breadcrumb of data.Artifact.Breadcrumbs) {
+						for (const breadcrumb of data.Artifact.Breadcrumbs) {
 							index++;
 
-							if (index == data.Artifact.Breadcrumbs.length) {
+							if (index === data.Artifact.Breadcrumbs.length) {
 								//last item in the breadcrumb
 								this
 									.breadcrumbsService
@@ -1306,9 +1385,6 @@ export class BaseComponent {
 									)
 									;
 							}
-
-							this.checkIfWorkflowActionIsSelected();
-
 						}
 					});
 				});
@@ -1319,16 +1395,16 @@ export class BaseComponent {
 
 	//used for policy/model
 	private setTreeBreadcrumbs(data, objectName: string) {
-		var selected = this.preloadedTreeData.find((x) => x.ID == data.AssetId);
+		var selected = this.preloadedTreeData.find((x) => x.ID === data.AssetId);
 		var objectTypeName = objectName + "Type";
 		this.breadcrumbsService.clearBreadcrumbs();
 
 		this.breadcrumbsService.breadcrumbTreeSource$.subscribe(
 			(id) => {
-				if (objectName.toLowerCase() == 'policy') {
+				if (objectName.toLowerCase() === 'policy') {
 					this.breadcrumbsService.reRouteFromBreadcrumbs(`/${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
 				}
-				if (objectName.toLowerCase() == 'taxonomy') {
+				if (objectName.toLowerCase() === 'taxonomy') {
 					this.breadcrumbsService.reRouteFromBreadcrumbs(`/${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
 				}
 			}
@@ -1340,18 +1416,18 @@ export class BaseComponent {
 				this.baseCrumbs = [];
 				var currentAreaName = result;
 
-				this.breadcrumbsService.getFolderTitle('#' + (objectName == 'Taxonomy' ? 'Models' : objectName)).then((res) => {
+				this.breadcrumbsService.getFolderTitle('#' + (objectName === 'Taxonomy' ? 'Models' : objectName)).then((res) => {
 					this.breadcrumbsService.clearBreadcrumbs();
 
 					var folderTitle = res;
-					let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
+					const currentFolderName = currentAreaName ? currentAreaName : folderTitle;
 
 					this.breadcrumbsService.getAssetFolderIcon(objectTypeName, data.ObjectTypeId, currentFolderName).subscribe((res) => {
 						this.secondaryNavService.setCurrentArea(data.DisplayValue, res, $localize`Definition`);
 					});
 
-					let areaRootUriSegment: string = (objectName.toLowerCase() == 'policy') ? 'Policy' : 'Model';
-					let areaBreadcrumb = new Breadcrumb(
+					const areaRootUriSegment: string = (objectName.toLowerCase() === 'policy') ? 'Policy' : 'Model';
+					const areaBreadcrumb = new Breadcrumb(
 						currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${areaRootUriSegment}`
 					);
 					this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
@@ -1380,8 +1456,6 @@ export class BaseComponent {
 								this.buildTreeNodeArrayBase(this.preloadedTreeData, selected.ParentID),
 								this.findSelectedTreeNodeBase(selected.ID)));
 					}
-					this.checkIfWorkflowActionIsSelected();
-
 				});
 			});
 	}
@@ -1417,17 +1491,9 @@ export class BaseComponent {
 						true,
 						'Rule',
 						data.ObjectId));
-					this.checkIfWorkflowActionIsSelected();
-
 				});
 			});
 
-	}
-
-	private checkIfWorkflowActionIsSelected() {
-		if (this.breadcrumbsService.getCurrentUrl().toLowerCase().indexOf('workflow/details') != -1) {
-			this.actionsSidebar.active = true;
-		}
 	}
 
 	private GetIDFromUrl(url: string) {
@@ -1435,26 +1501,26 @@ export class BaseComponent {
 	}
 
 	public getAsRawPrecentage(val: number, decimals: number): string {
-		if (val == undefined || val == null)
+		if (val == null)
 			{return 'undefined';}
 
-		if (val == 0)
+		if (val === 0)
 			{return '0%';}
 		if (!val)
 			{return;}
 		if (val >= 1)
 			{return '100%';}
 
-		let s = (val * 100).toFixed(decimals).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
+		const s = (val * 100).toFixed(decimals).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
 
 		return s;
 	}
 
 	public getAsPrecentage(val: number): string {
-		if (val == undefined || val == null)
+		if (val == null)
 			{return 'undefined';}
 
-		if (val == 0)
+		if (val === 0)
 			{return '0%';}
 		if (!val)
 			{return;}
@@ -1465,13 +1531,13 @@ export class BaseComponent {
 			var integerPart = Math.floor(val);
 			var fraction = val - integerPart;
 			var res = this.getAsPrecentage(fraction);
-			if (res.length == 2) {
+			if (res.length === 2) {
 				return integerPart + '0' + res;
 			}
 			return integerPart + res;
 		}
 
-		let s = (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
+		const s = (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
 
 		return s;
 	}

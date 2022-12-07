@@ -1,9 +1,9 @@
 ﻿import { Injectable } from '@angular/core';
-import { HttpClient, HttpRequest, HttpResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { ReferenceItemType } from '../models/reference.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 
@@ -22,7 +22,7 @@ export class ReferenceService extends BaseObservableService {
     }
 
     saveReferenceItemType(item: ReferenceItemType) {
-        if (item.ID == undefined || !item.ID) {
+        if (item.ID == null || !item.ID) {
             return this.postDynamic(this.http, 'referenceItemType', item);
         }
         return this.postDynamic(this.http, 'referenceItemType', item);

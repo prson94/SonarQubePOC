@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpErrorResponse, HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
@@ -53,7 +53,7 @@ export class BaseObservableService {
                             }
                         }
 
-                        if (errorMessage == null || errorMessage == '') {
+                        if (errorMessage == null || errorMessage === '') {
                             errorMessage = 'An error has occurred.';
                         }
 
@@ -71,8 +71,8 @@ export class BaseObservableService {
         if (!filename.endsWith(".xlsx")) {
             filename += ` ${new Date().toDateString()}.xlsx`;
         }
-        let url = window.URL.createObjectURL(data);
-        let anchor = document.createElement("a");
+        const url = window.URL.createObjectURL(data);
+        const anchor = document.createElement("a");
         anchor.setAttribute("style", "display:none;");
         document.body.appendChild(anchor);
         anchor.setAttribute("download", filename);
@@ -117,13 +117,13 @@ export class BaseObservableService {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
 
-        if (file != undefined) {
-            let form = new FormData();
+        if (file != null) {
+            const form = new FormData();
 
             form.append('json', JSON.stringify(item));
             form.append('file', file);
 
-            let method = (isCopy !== undefined) ? 'create' : 'copy';
+            const method = (isCopy !== undefined) ? 'create' : 'copy';
 
             return http
                 .post(`form/dynamicedit/${method}/${type}`, form)
@@ -159,8 +159,8 @@ export class BaseObservableService {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
 
-        if (file != undefined) {
-            let form = new FormData();
+        if (file != null) {
+            const form = new FormData();
 
             form.append('json', JSON.stringify(item));
             form.append('file', file);
@@ -193,6 +193,6 @@ export class BaseObservableService {
     }
 
     public isErrorFromFilterExpression(err: any) {
-        return err && err.error && err.error.message && err.error.message.indexOf('Invalid filter expression') != -1;
+        return err && err.error && err.error.message && err.error.message.indexOf('Invalid filter expression') !== -1;
     }
 }

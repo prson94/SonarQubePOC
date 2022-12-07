@@ -1,5 +1,5 @@
-﻿import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -16,6 +16,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 
 export class BrowserComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
+    public isSaved: boolean = null;
 
     constructor(
         private route: ActivatedRoute,
@@ -43,8 +44,7 @@ export class BrowserComponent extends BaseComponent implements OnInit, OnDestroy
         }
     }
 
-    public isSaved: boolean = null;
-    saveStateChanged($event) {
+    saveStateChanged($event: boolean) {
         this.isSaved = $event;
     }
 }

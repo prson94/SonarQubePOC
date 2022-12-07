@@ -1,0 +1,117 @@
+<d3s-loading [isLoading]="loadingCounter != 0"></d3s-loading>
+<div *ngIf="loadingCounter === 0">
+	<div class="row">
+		<d3s-asset-type-list-sidepanel-wrapper [sidePanelStorageKey]="sidePanelStorageKey"
+			[selectedItem]="selectedRow">
+			<div class="grid-actions-header column-layout">
+				<div class="grid-actions-header-row">
+					<div class="simple-search">
+						<ig-search-field [debounce]="600"
+							[(ngModel)]="simpleFilterValue"
+							(onSearch)="dt.filterGlobal($event, 'contains')"
+							mode="Keypress">
+						</ig-search-field>
+					</div>
+					<div class="grid-action-buttons">
+						<button [igDataCy]="'Assets_Add'"
+							(click)="add()"
+							igButton
+							pTooltip="Add new asset"
+							i18n-pTooltip
+							tooltipPosition="top"
+							tooltipStyleClass="ig-tooltip"
+							class="ig-button-primary"
+							icon="fa-plus">
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="tree-wrapper-wrapper">
+				<div class="tree-wrapper">
+					<p-treeTable #dt
+						[value]="artifactTypes"
+						[globalFilterFields]="['name']"
+						[paginator]="true"
+						[rows]="rowsPerPage"
+						[rowsPerPageOptions]="defaultPagingOptions"
+						[pageLinks]="3"
+						[(selection)]="selectedRow"
+						(onPage)="numberOfRowsByCategoryService.onPage($event)"
+						filterMode="strict"
+						selectionMode="single">
+						<ng-template pTemplate="header">
+							<tr>
+								<th [ttSortableColumn]="'name'">
+									<ng-container i18n>Name</ng-container>
+									<d3s-sortIcon [field]="'name'"></d3s-sortIcon>
+								</th>
+								<th style="width: 30px"></th>
+								<th style="width: 30px"></th>
+								<th style="width: 30px"></th>
+							</tr>
+						</ng-template>
+						<ng-template pTemplate="body"
+							let-rowNode
+							let-item="rowData">
+							<tr #treetableRows
+								[ttSelectableRow]="rowNode"
+								[igDataCy]="(tabTitle | replaceString : ' ' : '_') + '_Row_' + item.uid">
+								<td>
+									<p-treeTableToggler [rowNode]="rowNode"
+										[igDataCy]="dataCyPrefix + item.AssetUid + '_Toggler'"
+										style="margin-right: 8px;"></p-treeTableToggler>
+									<a [igDataCy]="dataCyPrefix + item.uid + '_Button_View'"
+										(click)="open(item.uid)"
+										style="cursor:pointer;">
+										{{item.name}}
+									</a>
+								</td>
+								<td>
+									<div class="RowTools">
+										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Add'"
+											(click)="add(item.uid)"
+											style="cursor:pointer;">
+											<i class="fa fa-plus"></i>
+										</a>
+									</div>
+								</td>
+								<td>
+									<div class="RowTools">
+										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Edit'"
+											(click)="edit(item.uid)"
+											style="cursor:pointer;">
+											<i class="fa fa-pencil"></i>
+										</a>
+									</div>
+								</td>
+								<td>
+									<div class="RowTools">
+										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Remove'"
+											(click)="remove(item.uid)"
+											style="cursor:pointer;">
+											<i class="fa fa-trash-o"></i>
+										</a>
+									</div>
+								</td>
+							</tr>
+						</ng-template>
+						<ng-template pTemplate="summary">
+							<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords">
+							</d3s-grid-paging-info>
+						</ng-template>
+						<ng-template pTemplate="emptymessage"
+							let-columns>
+							<tr>
+								<td colspan="5">
+									<ng-container i18n>
+										No asset types found.
+									</ng-container>
+								</td>
+							</tr>
+						</ng-template>
+					</p-treeTable>
+				</div>
+			</div>
+		</d3s-asset-type-list-sidepanel-wrapper>
+	</div>
+</div>

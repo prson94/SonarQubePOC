@@ -5,13 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.reporting.Relationship_Asset-v1">
+  <changeSet author="Pappas" id="View.reporting.Relationship_Asset-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER VIEW [reporting].[Relationship_Asset] AS
+create or alter view [reporting].[Relationship_Asset] as
     select  i.ID as IntersectID,
             st.ID as SubjectAssetTypeID,
             st.Name as SubjectAssetTypeName, 
@@ -21,9 +21,9 @@ CREATE OR ALTER VIEW [reporting].[Relationship_Asset] AS
             o.ID as ObjectAssetID, 
             i.IntersectTypeID 
     from    [intersect] i 
-            inner join asset s on (i.[subject] = s.[object] and i.[subjectid] = s.objectid) 
+            inner join asset s on s.ID = i.SubjectAssetID
             inner join assettype st on s.assettypeid = st.id
-            inner join asset o on (i.[object] = o.[object] and i.[objectid] = o.objectid)
+            inner join asset o on o.ID = i.ObjectAssetID
             inner join assettype ot on o.assettypeid = ot.id
 		]]>
     </sql>

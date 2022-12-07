@@ -1,6 +1,4 @@
-﻿import {
-    Component, Input, OnInit, Inject, forwardRef
-} from '@angular/core';
+﻿import { Component, forwardRef, Inject, Input, OnInit } from '@angular/core';
 import { CheckTreeNode } from './checktreenode';
 import { CheckTree } from './check-tree.component';
 
@@ -85,7 +83,7 @@ export class UICheckTreeNode implements OnInit {
                         this.focusNode(nextNodeElement);
                     }
                     else {
-                        let nextSiblingAncestor = this.findNextSiblingOfAncestor(nodeElement);
+                        const nextSiblingAncestor = this.findNextSiblingOfAncestor(nodeElement);
                         if (nextSiblingAncestor) {
                             this.focusNode(nextSiblingAncestor);
                         }
@@ -101,7 +99,7 @@ export class UICheckTreeNode implements OnInit {
                     this.focusNode(this.findLastVisibleDescendant(nodeElement.previousElementSibling));
                 }
                 else {
-                    let parentNodeElement = this.getParentNodeElement(nodeElement);
+                    const parentNodeElement = this.getParentNodeElement(nodeElement);
                     if (parentNodeElement) {
                         this.focusNode(parentNodeElement);
                     }
@@ -125,7 +123,7 @@ export class UICheckTreeNode implements OnInit {
                     this.collapse(event);
                 }
                 else {
-                    let parentNodeElement = this.getParentNodeElement(nodeElement);
+                    const parentNodeElement = this.getParentNodeElement(nodeElement);
                     if (parentNodeElement) {
                         this.focusNode(parentNodeElement);
                     }
@@ -149,7 +147,7 @@ export class UICheckTreeNode implements OnInit {
     }
 
     findNextSiblingOfAncestor(nodeElement) {
-        let parentNodeElement = this.getParentNodeElement(nodeElement);
+        const parentNodeElement = this.getParentNodeElement(nodeElement);
         if (parentNodeElement) {
             if (parentNodeElement.nextElementSibling)
                 {return parentNodeElement.nextElementSibling;}

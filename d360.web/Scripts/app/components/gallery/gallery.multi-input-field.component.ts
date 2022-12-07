@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from "@angular/core";
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn } from "@angular/forms";
 
 @Component({
@@ -70,7 +70,7 @@ export function NoDuplicate(): ValidatorFn {
     }
 
     return (control: AbstractControl): ValidationErrors | null => {
-        let val: string[] = control.value;
+        const val: string[] = control.value;
         if (hasDuplicates(val)) {
             return { "duplicates": true };
         }

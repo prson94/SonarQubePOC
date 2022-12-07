@@ -1,12 +1,26 @@
-﻿import { Component, Input, OnChanges, SimpleChanges, ViewEncapsulation, ViewChild, ElementRef, AfterViewChecked, ChangeDetectorRef, ɵbypassSanitizationTrustResourceUrl } from '@angular/core';
+﻿import {
+    AfterViewChecked,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    Input,
+    OnChanges,
+    SimpleChanges,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { BaseComponent } from '../../base.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { MetricsService } from '../../../../services/metrics.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 import { RelationshipsService } from '../../../../services/relationships.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetDefinitionGovernanceViewModel, MetricGovernanceCheckType, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel } from '../../../../models/metrics.model';
-import { OperatorModel, Operator } from '../../../../models/operator.model';
+import {
+    MetricAssetVersionConditionItemViewModel,
+    MetricAssetViewModel,
+    MetricFieldTypeViewModel
+} from '../../../../models/metrics.model';
+import { OperatorModel } from '../../../../models/operator.model';
 import { CommonScreenReferencesModel } from '../../../admin/scoring/common-screen-references-model';
 import { AdminMetricPassTestDetailsComponent } from '../../../admin/scoring/admin-metric-pass-test-details.component';
 
@@ -87,15 +101,15 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
             }
 
             if (alloc) {
-                if (alloc.scoreType.toString() == "DataQuality") {
+                if (alloc.scoreType.toString() === "DataQuality") {
                     this.metricsService.getRuleResultPathOptions(this.assetTypeUid, alloc.scoreType).subscribe((options) => {
                         options.forEach((p) => {
-                            let processedUids: string[] = [];
+                            const processedUids: string[] = [];
                             let html: string = p.Path;
                             p.Segments.forEach((s) => {
                                 // Keep track of Uids we already replaced the paths for, so we do not mess up the resulting HTML.
-                                if (processedUids.findIndex((x) => { return x == s.AssetTypeUid; }) == -1) {
-                                    let segmentPath = s.Path.split('->').join(' > ');
+                                if (processedUids.findIndex((x) => { return x === s.AssetTypeUid; }) === -1) {
+                                    const segmentPath = s.Path.split('->').join(' > ');
                                     html = html.replace(new RegExp(s.Name, 'g'), `<b title="${segmentPath}">${s.Name}</b>`,);
                                     processedUids.push(s.AssetTypeUid);
                                 }

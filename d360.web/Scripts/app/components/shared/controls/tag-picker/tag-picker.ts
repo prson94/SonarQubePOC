@@ -1,12 +1,25 @@
-﻿import { Input, Component, Output, EventEmitter, NgModule, ViewChild, ElementRef, forwardRef, ChangeDetectorRef, ViewEncapsulation, OnDestroy, ChangeDetectionStrategy, OnInit } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    forwardRef,
+    Input,
+    NgModule,
+    OnDestroy,
+    Output,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from '@angular/forms';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { TagService } from '../../../../services/tag.service';
 import { Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
-import { TagType, TagPermissionItem } from '../../../../models/tag.model';
+import { TagPermissionItem, TagType } from '../../../../models/tag.model';
 import { BaseComponent } from '../../base.component';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../../services/settings.service';
@@ -88,7 +101,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
             if (this.value)
                 {newValue = this.value;}
 
-            if (this.value && this.value.some((x) => x.title.trim().toLowerCase() == val.title.trim().toLowerCase()))
+            if (this.value && this.value.some((x) => x.title.trim().toLowerCase() === val.title.trim().toLowerCase()))
                 {return;}
 
             newValue.push(val);
@@ -121,7 +134,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     }
 
     removeItem(tag: SelectItem) {
-        var newValue = this.value.filter((x) => x.title != tag.title);
+        var newValue = this.value.filter((x) => x.title !== tag.title);
         this.tryChangeValue(newValue);
         this.onUnselect.emit(tag);
     }
@@ -145,8 +158,8 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     }
 
     checkKey(event, value) {
-        if (event.key == "Enter" && !this.savingTag) {
-            if (typeof value == 'string') {
+        if (event.key === "Enter" && !this.savingTag) {
+            if (typeof value === 'string') {
                 this.saveTag({ title: value, value: '' });
             }
             else {
@@ -159,7 +172,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
         var isAssigned = false;
         if (this.value) {
             this.value.forEach((x) => {
-                if (x.title.trim().toLowerCase() == item.title.trim().toLowerCase()) {
+                if (x.title.trim().toLowerCase() === item.title.trim().toLowerCase()) {
                     this.messagesService.showError('Error', 'Tag already assigned');
                     isAssigned = true;
                 }
@@ -197,7 +210,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                             this.searchResults.push({ value: tag.code, title: tag.name });
                         });
                     }
-                    else if (res && res.length == 0) {
+                    else if (res && res.length === 0) {
                         this.searchResults = [];
                     }
                     this.changeDetectorRef.markForCheck();
@@ -217,18 +230,18 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
         tagType.Value = event.title;
         this.tagService.doesTagExist(tagType)
             .subscribe((result) => {
-                if (result == 200) {
+                if (result === 200) {
                     this.tryAddValue(event);
                     this.onSelect.emit(event);
                     this.tagAutocompleteValue = '';
                 }
             },
                 (error) => {
-                    if (error.status == 404) {
+                    if (error.status === 404) {
                         this.tagService.saveTag(tagType)
                             .subscribe((result) => {
-                                let msg: string = '';
-                                if (result.Value != undefined) {
+                                const msg: string = '';
+                                if (result.Value != null) {
                                     result.message = `${result.Value} succesfully created`;
                                 }
                                 this.showMessageForResult(this.messagesService, result, msg);
@@ -307,7 +320,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     canDeleteTag(tagValue: string) {
         if (!this.arePermissionsLoaded) {return false;}
-        return this.tagPermissions.some((x) => x.Value == tagValue && x.CanDelete == true);
+        return this.tagPermissions.some((x) => x.Value === tagValue && x.CanDelete === true);
     }
 
     get getStyleClasses(): string {

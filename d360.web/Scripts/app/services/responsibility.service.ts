@@ -1,6 +1,13 @@
 ﻿import { Injectable } from '@angular/core';
-import { FormHelper, SelectItem } from '../models/form.model';
-import { ResponsibilityEditorModel, ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService, ResponsibilityItemDetailV2, ResponsibilityOverrideDeleteModel, ResponsibilityOverridePostModel } from '../models/responsibility.model';
+import { FormHelper } from '../models/form.model';
+import {
+    IResponsibilityService,
+    ResponsibilityEditorModel,
+    ResponsibilityItem,
+    ResponsibilityItemDetailV2,
+    ResponsibilityOverrideDeleteModel,
+    ResponsibilityOverridePostModel
+} from '../models/responsibility.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';

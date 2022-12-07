@@ -1,9 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { TreeNode } from 'primeng/api';
-import {
-    ArtifactTypeEditorModel,
-    ArtifactType
-} from '../models/artifact-type.model';
+import { ArtifactType, ArtifactTypeEditorModel } from '../models/artifact-type.model';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { HttpClient } from '@angular/common/http';
@@ -54,7 +51,7 @@ export class ArtifactTypeService extends BaseObservableService {
     ): TreeNode {
         for (var i = 0; i < tree.length; i++) {
             var n;
-            if (tree[i].data.uid == uid)
+            if (tree[i].data.uid === uid)
                 {return tree[i];}
             if (tree[i].children && tree[i].children.length > 0) {
                 n = this.findArtifactTypeByUid(tree[i].children, uid);
@@ -69,7 +66,7 @@ export class ArtifactTypeService extends BaseObservableService {
     ): TreeNode {
         for (var i = 0; i < tree.length; i++) {
             var n;
-            if (tree[i].data.ID == id)
+            if (tree[i].data.ID === id)
                 {return tree[i];}
             if (tree[i].children && tree[i].children.length > 0) {
                 n = this.findArtifactTypeById(tree[i].children, id);
@@ -96,8 +93,8 @@ export class ArtifactTypeService extends BaseObservableService {
         node: TreeNode,
         data
     ) {
-        data.filter((d) => d.ParentID == node.data.ID).forEach((d) => {
-            let child: TreeNode = { data: d, children: [] };
+        data.filter((d) => d.ParentID === node.data.ID).forEach((d) => {
+            const child: TreeNode = { data: d, children: [] };
             node.children.push(child);
             this.formTreeR(child, data);
         });

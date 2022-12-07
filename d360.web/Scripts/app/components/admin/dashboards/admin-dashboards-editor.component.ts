@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { DropdownOption } from '../../../models/dropdown.model';
 import * as _ from 'lodash';
@@ -41,11 +41,11 @@ export class AdminDashboardsEditor {
 	}
 
 	ngOnInit() {
-		let enableDqPlus = this.settingsService.getSettingById(CompanySettingEnum.EnableSagacity).BooleanSetting.Value;
+		const enableDqPlus = this.settingsService.getSettingById(CompanySettingEnum.EnableSagacity).BooleanSetting.Value;
 		if (enableDqPlus) {
 			this.reportTypes.push({ value: "DqPlus", title: "Data360 DQ+" });
 		}
-		if (this.report != undefined) {
+		if (this.report != null) {
 			this.editedReport = _.cloneDeep(this.report);
 			if (this.editedReport.AssetTypeUid) {
 				this.editedReport.SelectedObjectData = this.editedReport.AssetTypeUid.toLowerCase();

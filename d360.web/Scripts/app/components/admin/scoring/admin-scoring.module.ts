@@ -1,7 +1,6 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { CoreModule } from '../../shared/core.module';
 import { PipesModule } from '../../../pipes/pipes.module';

@@ -1,4 +1,4 @@
-﻿import { StepType, WorkflowActivityType, WorkflowChangeType, EmailTaskRecipientType, FormResponseType } from "../models/workflow.model";
+﻿import { StepType, WorkflowActivityType, WorkflowChangeType } from "../models/workflow.model";
 
 export class WorkflowHelpers {
     static activityTypeName(workflowActivityType: WorkflowActivityType): string {

@@ -1,4 +1,4 @@
-﻿import { Component, ViewChild, ChangeDetectorRef, ElementRef } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { AdminBaseComponent } from '../../admin/admin-base.component';
 import { ConnectorLabel } from '../../../models/connectorLabel.model';
 import { Router } from '@angular/router';
@@ -9,6 +9,7 @@ import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { CompanySettingsService } from '../../../services/settings.service';
+
 @Component({
     selector: 'd3s-connector-labels',
     templateUrl: './connector-labels-sidebar.component.html',
@@ -86,7 +87,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         this.sort = event;
     }
     onFilterChange(event) {
-        if (event != 'globalSearch')
+        if (event !== 'globalSearch')
             {this.filters.globalSearch = '';}
 
         this.filters[event.prop] = event.value;
@@ -122,14 +123,14 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     consolidateClick() {
-        if (!this.consolidateValue || this.consolidateValue.trim() == "") {
+        if (!this.consolidateValue || this.consolidateValue.trim() === "") {
             console.error("Cannot consolidate connectors without selecting a connector to keep.");
             return;
         }
         this.isSaving = true;
         var children = [];
         this.selected.forEach((label) => {
-            if (label.uid != this.consolidateValue) {
+            if (label.uid !== this.consolidateValue) {
                 children.push(label.uid);
             }
         });
@@ -139,7 +140,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     saveLabel(event) {
         this.isSaving = true;
         if (event.additionalOption && event.additionalOption.uid) {
-            let arr: string[] = [];
+            const arr: string[] = [];
             arr.push(event.item.uid);
             this.consolidateLabels(event.additionalOption.uid, arr);
             return;
@@ -148,7 +149,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         this.connectorLabelService.saveLabel(event.item)
             .subscribe((result) => {
                 let msg: string = '';
-                if (event.item.uid == undefined) {
+                if (event.item.uid == null) {
                     msg = $localize`Connector label succesfully created`;
                 }
                 else {
@@ -191,7 +192,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
             subscribe((result) => {
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
-                if (result.type != 'error') {
+                if (result.type !== 'error') {
                     this.selected = [];
                 }
                 this.getLabels();
@@ -204,7 +205,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
     onRowSelected() {
 
-        if (this.lastLoadedUid != this.selected[0].uid) {
+        if (this.lastLoadedUid !== this.selected[0].uid) {
             this.isUsageLoading = true;
             this.lastLoadedUid = this.selected[0].uid;
             this.cdRef.markForCheck();
@@ -214,7 +215,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     openDeleteModal(label: ConnectorLabel) {
         this.selected = [label];
 
-        if (this.lastLoadedUid != label.uid) {
+        if (this.lastLoadedUid !== label.uid) {
             this.cdRef.markForCheck();
             this.isUsageLoading = true;
         }
@@ -243,7 +244,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         var index: number = -1;
         for (var label of this.labels) {
             index++;
-            if (label.uid == uid) {return index;}
+            if (label.uid === uid) {return index;}
         }
     }
 
@@ -268,8 +269,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
         if (event && element) {
             if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
-                if (this.selected.filter((x) => x.uid == item.uid).length > 0) {
-                    this.selected = this.selected.filter((x) => x.uid != item.uid);
+                if (this.selected.filter((x) => x.uid === item.uid).length > 0) {
+                    this.selected = this.selected.filter((x) => x.uid !== item.uid);
                     this.triggerRerenderOfSelection();
                 }
                 else {
@@ -283,7 +284,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
             }
             if (event.shiftKey) {
                 var lastIndex = this.labels.indexOf(this.lastSelectedElement);
-                if (lastIndex == -1 && this.selected.length == 1) {
+                if (lastIndex === -1 && this.selected.length === 1) {
                     lastIndex = this.labels.indexOf(this.selected[0]);
                 }
                 var currentIndex = this.labels.indexOf(item);
@@ -308,14 +309,14 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
             }
 
         }
-        let target = (<any>(event.target));
+        const target = (<any>(event.target));
         if (element && target.nodeName !== "P-TABLECHECKBOX") {
             this.selected = [];
             this.selected.push(item);
             this.lastSelectedElement = item;
         } else {
-            if (this.selected.filter((x) => x.uid == item.uid).length > 0) {
-                this.selected = this.selected.filter((x) => x.uid != item.uid);
+            if (this.selected.filter((x) => x.uid === item.uid).length > 0) {
+                this.selected = this.selected.filter((x) => x.uid !== item.uid);
                 this.triggerRerenderOfSelection();
             }
             else {

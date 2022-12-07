@@ -5,7 +5,7 @@ import { SecondaryNavService } from "../../../services/right-sidebar.service";
 import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
 import { Title } from "@angular/platform-browser";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
-import { IndexableType, IndexableStatus } from "../../../models/search-admin.model";
+import { IndexableStatus, IndexableType } from "../../../models/search-admin.model";
 import { TreeNode } from "primeng/api";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ReuseInterceptor } from '../../../http-interceptors/reuse.interceptor';
@@ -67,7 +67,7 @@ export class AdminSearchComponent extends AdminBaseComponent {
                 types
                     .filter((t) => t.AssetTypeUid === this.emptyUid)
                     .forEach((t) => {
-                        let elem: IndexableStatus = this.convertTypeToStatus(t);
+                        const elem: IndexableStatus = this.convertTypeToStatus(t);
                         this.indexableHash[this.getIndexableStatusId(elem)] = { data: elem, children: [] };
 
                         this.indexableNodes.push(this.indexableHash[this.getIndexableStatusId(elem)]);
@@ -77,7 +77,7 @@ export class AdminSearchComponent extends AdminBaseComponent {
                     .filter((t) => t.AssetTypeUid !== this.emptyUid)
                     .sort((a, b) => 0 - (a.Name > b.Name ? -1 : 1))
                     .forEach((t) => {
-                        let elem: IndexableStatus = this.convertTypeToStatus(t);
+                        const elem: IndexableStatus = this.convertTypeToStatus(t);
                         this.indexableHash[this.getIndexableStatusId(elem)] = { data: elem, children: [] };
 
                         if (this.indexableHash[`${elem.Class}-${this.emptyUid}`]) {
@@ -103,7 +103,7 @@ export class AdminSearchComponent extends AdminBaseComponent {
     }
 
     private convertTypeToStatus(t: IndexableType): IndexableStatus {
-        let elem: IndexableStatus = new IndexableStatus();
+        const elem: IndexableStatus = new IndexableStatus();
         elem.AssetTypeUid = t.AssetTypeUid;
         elem.Class = t.Class;
         elem.ClassName = t.ClassName;
@@ -120,7 +120,7 @@ export class AdminSearchComponent extends AdminBaseComponent {
             .subscribe((statuses) => {
                 statuses.forEach((s) => {
                     if (this.indexableHash[this.getIndexableStatusId(s)]) {
-                        let elem: IndexableStatus = this.indexableHash[this.getIndexableStatusId(s)].data;
+                        const elem: IndexableStatus = this.indexableHash[this.getIndexableStatusId(s)].data;
                         elem.TargetCount = s.TargetCount;
 						elem.CurrentCount = s.CurrentCount;
 						elem.DatabaseCount = s.DatabaseCount;
@@ -192,7 +192,7 @@ export class AdminSearchComponent extends AdminBaseComponent {
 	}
 	
 	onKebabMenuClick(menuItem: any, node: TreeNode<IndexableStatus>): void {
-		let key = menuItem.value.toLowerCase();
+		const key = menuItem.value.toLowerCase();
 		if (key === $localize`Refresh View`.toLowerCase()) {
 			this.updateStatus();
 		} else {

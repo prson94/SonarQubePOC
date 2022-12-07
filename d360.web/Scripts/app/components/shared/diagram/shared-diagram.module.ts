@@ -1,7 +1,6 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
-
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 
 import { RouterModule } from '@angular/router';
@@ -44,7 +43,7 @@ import { ModelDiagramComponent } from './model-diagram.component';
 import { D3SOverlayWindowModule } from '../overlay-window.component';
 
 import { CoreModule } from '../core.module';
-import { TilesModule  } from '../tiles/tiles.module';
+import { TilesModule } from '../tiles/tiles.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part';
@@ -73,11 +72,11 @@ import { SharedResponsibilitiesModule } from '../responsibilities/shared-respons
 import { AssetDetailModule } from '../asset-detail/asset-detail.module';
 import { SidePanelModule } from '../sidepanel/side-panel.module';
 import { AssetEditorModule } from '../asset-editor/asset-editor.module';
-import { AssetTypeDetailModule } from '../asset-type-detail/asset-type-detail.module';
 import { TaggedAssetDetailModule } from '../tagged-assets/tagged-assets-detail.module';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { AddRelationshipModule } from "../relationship-grid/add-relationship.module";
 import { AngularSplitModule } from 'angular-split';
+import { AssetTypeDetailModule } from "../asset-type-detail/asset-type-detail.module";
 
 
 @NgModule({

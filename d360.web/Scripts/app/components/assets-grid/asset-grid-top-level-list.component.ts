@@ -1,14 +1,11 @@
-﻿import { Input, Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { TreeNode } from 'primeng/api';
-
-import { ArtifactTypeService } from '../../services/artifact-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
-import { AssetTypeClass, AssetCount } from '../../models/asset.model';
+import { AssetCount, AssetTypeClass } from '../../models/asset.model';
 import { AssetService } from '../../services/asset.service';
 import { AssetGridBaseComponent } from './asset-grid-base.component';
 import { CompanySettingsService } from '../../services/settings.service';
@@ -42,7 +39,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 	}
 
 	ngOnInit() {
-		let assetTypeClassString: keyof typeof AssetTypeClass = this.route.snapshot.data.type;
+		const assetTypeClassString: keyof typeof AssetTypeClass = this.route.snapshot.data.type;
 		try {
 
 			this.assetTypeClass = AssetTypeClass[assetTypeClassString];
@@ -81,7 +78,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 				this.area = assetType;
 				break;
 			default:
-				let className: string = AssetTypeClass[this.assetTypeClass];
+				const className: string = AssetTypeClass[this.assetTypeClass];
 				this.folderTitle = `${className} Assets`;
 				this.setBrowserTitle(this.titleService, this.folderTitle);
 				this.area = this.folderTitle;
@@ -97,7 +94,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 			.assetService
 			.getAssetCountsByAssetType(this.assetTypeClass)
 			.subscribe((data) => {
-				let dataNodes: TreeNode[] = [];
+				const dataNodes: TreeNode[] = [];
 
 				for (let i = 0; i < data.length; i++) {
 					if (data[i].description != null)

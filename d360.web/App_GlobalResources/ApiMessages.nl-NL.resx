@@ -748,4 +748,7 @@
   <data name="YouAreNowWatching" xml:space="preserve">
     <value>U kijkt nu naar {0}.</value>
   </data>
+  <data name="InvalidLanguageCode" xml:space="preserve">
+    <value>Ongeldige [LanguageCode]. Ondersteunde waarden zijn {0}.</value>
+  </data>
 </root>

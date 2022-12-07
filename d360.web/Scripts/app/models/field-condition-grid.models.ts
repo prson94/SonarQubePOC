@@ -1,4 +1,4 @@
-﻿import { SelectItem, SelectItemGroup } from "primeng/api";
+﻿import { SelectItem } from "primeng/api";
 import { FieldTypeAPIModelField } from "./fieldtype-api.model";
 import { Operator } from "./operator.model";
 

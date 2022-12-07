@@ -1,12 +1,23 @@
-﻿import { Component, Input, Output, EventEmitter, NgModule, forwardRef, ViewEncapsulation, ViewChild, ElementRef, ChangeDetectorRef, HostListener, OnInit, OnDestroy } from '@angular/core';
-import { BaseComponent } from '../../base.component';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    forwardRef,
+    HostListener,
+    Input,
+    NgModule,
+    OnDestroy,
+    OnInit,
+    Output,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { DirectivesModule } from '../../../../directives/directives.module';
 import { TooltipModule } from 'primeng/tooltip';
-
-import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
 import { Subject } from "rxjs";
 import { debounceTime, distinctUntilChanged } from "rxjs/operators";
@@ -57,7 +68,7 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
     }
 
     writeValue(obj: any): void {
-        this.value = (obj != undefined && obj != null) ? obj : '';
+        this.value = (obj != null) ? obj : '';
         this.hasValue = this.value !== '';
 
         this.onModelChange(this.value);
@@ -78,7 +89,7 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
     }
 
     isKeypress(): boolean {
-        return (this.mode == 'Keypress');
+        return (this.mode === 'Keypress');
     }
     isEnter(): boolean {
         return !this.isKeypress();
@@ -97,14 +108,14 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
         this.onSearch.emit(this.value);
     }
     onInputKey(event: KeyboardEvent) {
-        if (event.which == 13 && this.isEnter()) {
+        if (event.which === 13 && this.isEnter()) {
             event.preventDefault();
             event.stopImmediatePropagation();
-            if (event.type == 'keydown') {
+            if (event.type === 'keydown') {
                 this.performsearch();
             }
             return false;
-        } else if (event.type == 'keyup' && this.isKeypress()) {
+        } else if (event.type === 'keyup' && this.isKeypress()) {
             this.valueChanged.next(this.value);
         }
     }

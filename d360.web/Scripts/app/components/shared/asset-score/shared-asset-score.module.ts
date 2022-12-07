@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 
-
 import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/api';
 import { TreeTableModule } from 'primeng/treetable';
@@ -26,7 +25,6 @@ import { ScoreCalculationModule } from './calculation/score-calculation.module';
 import { ScoreDefinitionModule } from './definition/score-definition.module';
 import { ScoreHistoryModule } from './history/score-history.module';
 import { AngularSplitModule } from 'angular-split';
-
 
 
 @NgModule({

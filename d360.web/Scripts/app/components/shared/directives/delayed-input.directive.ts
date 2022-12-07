@@ -1,7 +1,4 @@
-﻿import {
-    Directive, ElementRef, EventEmitter, Input,
-    OnDestroy, OnInit, Output
-} from '@angular/core';
+﻿import { Directive, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { fromEvent, Subject, timer } from 'rxjs';
 import { debounce, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 

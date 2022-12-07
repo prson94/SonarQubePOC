@@ -1,11 +1,6 @@
-﻿import { Component, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
-import {
-    LinkModel,
-    TransitionType,
-    TransitionTypeInfo,
-    WorkflowChangeType,
-} from '../../../../models/workflow.model';
+import { LinkModel, TransitionType, TransitionTypeInfo, WorkflowChangeType, } from '../../../../models/workflow.model';
 import { FormMode } from '../../../../models/form.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
@@ -78,7 +73,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (!changes['transition'].isFirstChange() && changes['transition'].currentValue.key != changes['transition'].previousValue.key) {
+        if (!changes['transition'].isFirstChange() && changes['transition'].currentValue.key !== changes['transition'].previousValue.key) {
             this.formMode = FormMode.Default;
             this.filterFormFields();
             this.filterHttpFields();
@@ -112,7 +107,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     }
 
     remove(e: any) {
-        let i = this.transition.condition.findIndex((c) => c == e);
+        const i = this.transition.condition.findIndex((c) => c === e);
 
         if (e["@FormInputID"] != null) {
             this.workflowFieldsService.deleteUsedField(this.transition.condition[i]["@FormInputID"], this.transition.condition[i]["@VersionStepID"], this.transition.key);
@@ -129,7 +124,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     }
 
     saveCondition(e: any) {
-        if (this.formMode == FormMode.Adding) {
+        if (this.formMode === FormMode.Adding) {
             if (e["@FormInputID"] != null) {
                 this.workflowFieldsService.pushUsedField(e["@FormInputID"], e["@VersionStepID"], this.transition.key, this.transition.name);
             }
@@ -138,7 +133,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
             this.transition.condition = this.transition.condition.slice();
             this.transitionChange.emit(this.transition);
 
-        } else if (this.formMode == FormMode.Editing) {
+        } else if (this.formMode === FormMode.Editing) {
             this.transition.condition = e;
         }
 

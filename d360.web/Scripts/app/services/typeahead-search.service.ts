@@ -1,4 +1,4 @@
-import { catchError, map, debounceTime, distinctUntilChanged, switchMap } from "rxjs/operators";
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap } from "rxjs/operators";
 import { Injectable } from '@angular/core';
 import { SearchResult } from '../models/search-result.model';
 import { Observable, of } from "rxjs";
@@ -22,7 +22,7 @@ export class TypeaheadSearchService extends BaseObservableService {
                 if (term === "") {
                     return of(<SearchResult[]>[]);
                 }
-                let uri = `api/v2/search/typeahead?query=${encodeURIComponent(term.substring(0, 255))}&num=${size}&categories=${typeof types !== "undefined" ? types.join(',') : ''}`;
+                const uri = `api/v2/search/typeahead?query=${encodeURIComponent(term.substring(0, 255))}&num=${size}&categories=${typeof types !== "undefined" ? types.join(',') : ''}`;
                 return this.http.get(
                     uri,
                     { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }

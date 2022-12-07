@@ -1,4 +1,4 @@
-import { switchMap, distinctUntilChanged, debounceTime, map, catchError } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable } from 'rxjs';
@@ -22,7 +22,7 @@ export class UriBasedService extends BaseObservableService {
     }
 
     deleteItemWithResult(uri: string, id: number): Observable<JsonResult> {
-        let headers = new HttpHeaders();
+        const headers = new HttpHeaders();
         headers.append('Content-Type', 'application/json');
 
         return this.http
@@ -34,19 +34,19 @@ export class UriBasedService extends BaseObservableService {
     }
 
     saveItem(createUri: string, editUri: string, item: any): Observable<JsonResult> {
-        if (createUri && (item.ID == undefined || !item.ID)) {
+        if (createUri && (item.ID == null || !item.ID)) {
             return this.post(createUri, item);
         }
         return this.put(editUri, item);
     }
 
     private post(uri: string, item: any): Observable<JsonResult> {
-        let headers = new HttpHeaders({
+        const headers = new HttpHeaders({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
 
         return this.http
-            .post(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
+            .post(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers })
             .pipe(
                 map((res) => <JsonResult>res),
                 catchError((err) => this.handleError(err))
@@ -54,12 +54,12 @@ export class UriBasedService extends BaseObservableService {
     }
 
     private put(uri: string, item: any): Observable<JsonResult> {
-        let headers = new HttpHeaders({
+        const headers = new HttpHeaders({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
 
         return this.http
-            .put(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
+            .put(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers })
             .pipe(
                 map((res) => <JsonResult>res),
                 catchError((err) => this.handleError(err))

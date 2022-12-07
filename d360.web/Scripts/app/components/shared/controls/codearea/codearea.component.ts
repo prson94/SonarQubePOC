@@ -1,8 +1,21 @@
-﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, EventEmitter, Output, ViewChild, OnInit } from "@angular/core";
-import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    forwardRef,
+    Input,
+    NgModule,
+    OnInit,
+    Output,
+    ViewChild,
+    ViewEncapsulation
+} from "@angular/core";
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { EditorModule } from 'primeng/editor';
-import { CodemirrorComponent, CodemirrorModule } from '@ctrl/ngx-codemirror';
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/css/css';
 import 'codemirror/addon/display/placeholder';
@@ -101,10 +114,10 @@ export class CodeArea implements ControlValueAccessor, OnInit {
     get isCodeValid() {
         let valid = true;
         if (this.codeType.toLocaleLowerCase() === "json") {
-            let json = this.value;
+            const json = this.value;
             try {
                 if (json && json.trim() !== "") {
-                    let j = JSON.parse(json);
+                    const j = JSON.parse(json);
                 } else if (this.required) {
                     valid = false;
                 }

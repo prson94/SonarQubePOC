@@ -2096,6 +2096,7 @@ namespace d360.web.Controllers.V2
 								from asset a
 								inner join AssetPath Node on Node.ID = a.ID 
 								where a.AssetTypeID = @parentAssetTypeId
+								option(recompile);
 
 								select 
 								cast(uid as nvarchar(36)) as value,
@@ -2139,7 +2140,7 @@ namespace d360.web.Controllers.V2
 								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
 								order by P.DisplayPath 
 								{pagingQuery}
-								option (maxrecursion 100)
+								option (maxrecursion 100, RECOMPILE)
 
 								select * from #results where (value != @assetUid or @assetUid is null)
 
@@ -2149,7 +2150,7 @@ namespace d360.web.Controllers.V2
 										inner join AssetPath P on P.ID = A.ID
 										cross apply dbo.GetAssetLevelById(A.ID) LV
 								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
-								option (maxrecursion 100)";
+								option (maxrecursion 100, RECOMPILE)";
 
 						if(skip != null && skip > 0)
 						{
@@ -2219,19 +2220,33 @@ namespace d360.web.Controllers.V2
 								inner join [IntersectType] IT on IT.ID = ft.LookupObjectID
 								where ft.id = @fieldtypeid
 
-								declare @assetTypeId int = (select top 1 id from assettype where id = @targetassettypeid)
+								if @targetassettypeid = 0
+								begin
+									select AT.ObjectID as value, AT.Name as text 
+									from AssetType AT
+									where AT.Class = {(int)AssetTypeClass.Reference} and (AT.Name like @filter or @filter is null)
+									order by AT.Name
+									{pagingQuery}
 
-								select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
-								 inner join AssetPath Node on Node.id = a.id
-								where a.AssetTypeID = @assetTypeId {whereQuery}
-								order by node.displaypath
-								{pagingQuery}
-								OPTION(RECOMPILE);
+									select COUNT(*) from AssetType AT where AT.Class = {(int)AssetTypeClass.Reference}  and (AT.Name like @filter or @filter is null)
+								end
+								else
+								begin
+									declare @assetTypeId int = (select top 1 id from assettype where id = @targetassettypeid)
 
-								select count(*) from Asset A
-								 inner join AssetPath Node on Node.id = a.id
-								where a.AssetTypeID = @assetTypeId {whereQuery}
-								OPTION(RECOMPILE);";
+									select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
+									 inner join AssetPath Node on Node.id = a.id
+									where a.AssetTypeID = @assetTypeId {whereQuery}
+									order by node.displaypath
+									{pagingQuery}
+									OPTION(RECOMPILE);
+
+									select count(*) from Asset A
+									 inner join AssetPath Node on Node.id = a.id
+									where a.AssetTypeID = @assetTypeId {whereQuery}
+									OPTION(RECOMPILE);
+								end
+";
 
 					var resultsAssets = Company.Connection.QueryMultiple(sql, new { fieldTypeId, skip, take, filter });
 

@@ -1,4 +1,12 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnInit, HostListener } from "@angular/core";
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    HostListener,
+    OnInit,
+    ViewChild
+} from "@angular/core";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ResourcesService } from "../../../services/resources.service";
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
@@ -87,7 +95,7 @@ export class HeaderHelpComponent implements OnInit {
     }
 
     show(item) {
-        let panel = item.children[0].nextElementSibling;
+        const panel = item.children[0].nextElementSibling;
         if (panel) {
             this.active = true;
 
@@ -120,7 +128,7 @@ export class HeaderHelpComponent implements OnInit {
 
     @HostListener('wheel', ['$event'])
     handleWheelEvent(event) {
-        if (this.display == true) {
+        if (this.display === true) {
             event.preventDefault();
         }
     }
@@ -132,7 +140,7 @@ export class HeaderHelpComponent implements OnInit {
 
     checkKey(event) {
         if (event.keyCode) {
-            if (event.keyCode == 27 || event.keyCode == 13)
+            if (event.keyCode === 27 || event.keyCode === 13)
                 {this.closeAbout();}
         }
     }

@@ -1,5 +1,5 @@
 import { debounceTime } from 'rxjs/operators';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -10,7 +10,7 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { TagService } from '../../services/tag.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { WorkflowIssueType, ActionEditorModel } from '../../models/workflow.model';
+import { ActionEditorModel, WorkflowIssueType } from '../../models/workflow.model';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 import { ObjectDetail } from '../../models/object-detail.model';
 import { Tag } from '../../models/tag.model';
@@ -18,7 +18,6 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { HeaderActions } from '../../models/header.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
-import { StringConstants } from '../../static/string-constants';
 import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
@@ -133,7 +132,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     private showHideFollow(show: boolean) {
-        let headerActions: HeaderActions = new HeaderActions();
+        const headerActions: HeaderActions = new HeaderActions();
         headerActions.showFollow = show;
         this.headerActionsService.setCurrentHeaderActions(headerActions);
     }
@@ -161,7 +160,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
     private loadIssueTypes() {
         this.isLoading = true;
-        let params = { _assetUid: "", _assetTypeUid: "", _resourceUid: "", _limitToActiveWorkflows: "true" };
+        const params = { _assetUid: "", _assetTypeUid: "", _resourceUid: "", _limitToActiveWorkflows: "true" };
         if (this.baseAssetUid) {
             params._assetUid = this.baseAssetUid;
             params._resourceUid = this.resourceUid;
@@ -183,8 +182,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
     private save(data) {
         this.isLoading = true;
-        let values: any = {};
-        let action: ActionEditorModel = new ActionEditorModel();
+        const values: any = {};
+        const action: ActionEditorModel = new ActionEditorModel();
         action.Fields = {};
 
         if (this.baseAssetUid) {
@@ -206,7 +205,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
         //populate field collection
         for (var p in values) {
-            if (p.toUpperCase() == "ISSUETYPEID") {
+            if (p.toUpperCase() === "ISSUETYPEID") {
                 //ignore
             }
             else {

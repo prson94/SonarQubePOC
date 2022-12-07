@@ -1,8 +1,8 @@
 ﻿import { Injectable } from "@angular/core";
-import { PointBreakdown, ScorePoint, AverageScore, DataQualityEvidenceModel } from "../models/score.model";
+import { AverageScore, DataQualityEvidenceModel, PointBreakdown, ScorePoint } from "../models/score.model";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { catchError, map } from "rxjs/operators";
-import { Observable, Subject, of } from "rxjs";
+import { Observable } from "rxjs";
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 import { ScoreType } from "../models/metrics.model";
@@ -50,7 +50,7 @@ export class ScoreService extends BaseObservableService {
     }
 
     getPointBreakdown(assetUid: string, type: ScoreType, date: string = null): Observable<PointBreakdown[]> {
-        let uri = `/api/v2/metrics/${type}/${assetUid}/pointbreakdown` + (date == null ? "" : `?effectiveDate=${date}`);
+        const uri = `/api/v2/metrics/${type}/${assetUid}/pointbreakdown` + (date == null ? "" : `?effectiveDate=${date}`);
         return this.http.get(uri)
             .pipe(
                 map((response) => <PointBreakdown[]>response),

@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
-import { Shortcut, LinkTarget } from '../../../models/shortcuts.model';
+import { LinkTarget, Shortcut } from '../../../models/shortcuts.model';
 import { ShortcutService } from '../../../services/shortcuts.service';
 import { Observable } from 'rxjs';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -44,13 +44,13 @@ export class ShortcutDisplayComponent extends BaseComponent implements OnInit {
     }
 
     navigate(shortcut: Shortcut) {
-        if (shortcut.LinkTarget == LinkTarget.NewWindow) {
+        if (shortcut.LinkTarget === LinkTarget.NewWindow) {
             window.open(shortcut.Url, "_blank");
         }
-        else if (shortcut.LinkTarget == LinkTarget.Self) {
+        else if (shortcut.LinkTarget === LinkTarget.Self) {
             window.open(shortcut.Url, "_self");
         }
-        else if (shortcut.LinkTarget == LinkTarget.RouterLink) {
+        else if (shortcut.LinkTarget === LinkTarget.RouterLink) {
             this.router.navigateByUrl(shortcut.Url);
         }
     }

@@ -1,0 +1,12 @@
+<d3s-asset-type-list-header [assetTypeClass]="assetTypeClass"></d3s-asset-type-list-header>
+<div class="row">
+	<div class="tile tile-detail">
+		<d3s-loading [isLoading]="loadingCounter !== 0"></d3s-loading>
+		<d3s-asset-type-delete 
+			[callback]="delete"
+			[artifactTypeUid]="uid"
+			[count]="assetsCount"
+			[assetTypeName]="assetType.Name"
+			(onCancel)="cancel()"></d3s-asset-type-delete>
+	</div>
+</div>

@@ -1,12 +1,12 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { CoreModule } from '../shared/core.module';
-import { TilesModule  } from '../shared/tiles/tiles.module';
+import { TilesModule } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
 import { MonitorRoutingModule } from './monitor.routes';

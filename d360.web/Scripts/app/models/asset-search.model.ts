@@ -94,6 +94,7 @@ export class V2ApiFilters {
     _isHierachyItem: boolean;
     _includeProfilingCheck: boolean;
 	_includeTotal: boolean;
+	usecachedfilters: boolean;
 
 	public countUpdateFilters(): any{
 		return JSON.stringify({

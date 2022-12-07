@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { DropdownBadgeOption } from '../shared/controls/dropdown-badge/types/dropdown-bage-option.type';
 
 

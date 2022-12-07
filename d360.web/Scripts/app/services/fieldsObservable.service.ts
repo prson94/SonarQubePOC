@@ -3,13 +3,13 @@ import { catchError, distinctUntilChanged, map, switchMap } from 'rxjs/operators
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { SelectItem } from 'primeng/api';
-import { FieldDefinition, Lookups, IFieldsService, FieldTypeEditorModel } from '../models/fields.model';
+import { FieldDefinition, FieldTypeEditorModel, IFieldsService, Lookups } from '../models/fields.model';
 import { EditorDropDownItem } from '../models/editor-field.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
-import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from '../models/fieldtype-api.model';
+import { FieldTypeAPIModel, FieldTypeAPIModelField } from '../models/fieldtype-api.model';
 import { LookupValuesAPIModel } from '../components/assets-grid/advanced-filtering/advanced-filtering.models';
 
 @Injectable({
@@ -205,8 +205,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
                 map((response) => <any>response),
                 map(
                     (r) => {
-                        let l = new Lookups();
-                        let i = this.ftItemToSelectItem(r.IntersectTypes);
+                        const l = new Lookups();
+                        const i = this.ftItemToSelectItem(r.IntersectTypes);
 
                         l.DataTypes = this.ftItemToSelectItem(r.DataTypes);
                         l.IntersectTypes = [];
@@ -281,7 +281,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
 
     private ftItemToSelectItem(items: FtItem[]): SelectItem[] {
-        let s = new Array<SelectItem>();
+        const s = new Array<SelectItem>();
 
         /* Empty value at beginning of list */
         items.forEach((i) => {
@@ -295,7 +295,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
     getChildRelations(assetTypeUid: string): Observable<any> {
-        let url = `AssetTypeUid=${assetTypeUid}`;
+        const url = `AssetTypeUid=${assetTypeUid}`;
         return this
             .http
             .get(`api/v2/fields/GetChildRelations?${url}`)
@@ -306,7 +306,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
     getParentRelations(assetTypeUid: string): Observable<any> {
-        let url = `AssetTypeUid=${assetTypeUid}`;
+        const url = `AssetTypeUid=${assetTypeUid}`;
         return this
             .http
             .get(`api/v2/fields/GetParentRelations?${url}`)
@@ -317,7 +317,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
     getStandardRelations(assetTypeUid: string): Observable<any> {
-        let url = `AssetTypeUid=${assetTypeUid}`;
+        const url = `AssetTypeUid=${assetTypeUid}`;
         return this
             .http
             .get(`api/v2/fields/GetStandardRelations?${url}`)
@@ -328,7 +328,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
     moveUp(typeUid: string, fieldTypeName: string) {
-        let model = {
+        const model = {
             TypeUid: typeUid,
             FieldTypename: fieldTypeName,
             Direction: "up"
@@ -343,7 +343,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
     moveDown(typeUid: string, fieldTypeName: string) {
-        let model = {
+        const model = {
             TypeUid: typeUid,
             FieldTypename: fieldTypeName,
             Direction: "down"
@@ -362,8 +362,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
         parentItemId?: string,
         parentValues?: string
     ): Observable<EditorDropDownItem[]> {
-        parentItemId = (parentItemId != undefined) ? parentItemId : '';
-        parentValues = (parentValues != undefined) ? encodeURIComponent(parentValues) : '';
+        parentItemId = (parentItemId != null) ? parentItemId : '';
+        parentValues = (parentValues != null) ? encodeURIComponent(parentValues) : '';
 
         return this
             .http
@@ -498,7 +498,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                 {qString = '?' + qString;}
         }
 
-        let url = `api/v2/fields/${assetTypeUid}/lookupvalues/${fieldName}` + qString;
+        const url = `api/v2/fields/${assetTypeUid}/lookupvalues/${fieldName}` + qString;
 
         return this
             .http
@@ -517,7 +517,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                 {qString = '?' + qString;}
         }
 
-        let url = `api/v2/fields/${assetUid}/complexLookupvalues/${fieldName}/filter/${filterName}` + qString;
+        const url = `api/v2/fields/${assetUid}/complexLookupvalues/${fieldName}/filter/${filterName}` + qString;
 
         return this
             .http
@@ -530,7 +530,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
     getComplexFieldFieldTypes(assetUid: string, fieldName: string): Observable<FieldTypeAPIModelField[]> {
-        let url = `api/v2/fields/${assetUid}/complexlookupfields/${fieldName}`;
+        const url = `api/v2/fields/${assetUid}/complexlookupfields/${fieldName}`;
 
         return this
             .http
