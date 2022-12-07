@@ -490,6 +490,11 @@ namespace d360.web.Controllers.V2
 			}
 
 			dynamic objectInfo = GetLegacyObjectDetails(assetUid);
+			if (objectInfo == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(AssetsApiMessages.AssetAssetTypeNotFound, assetUid));
+			}
+
 			dynamic result = new System.Dynamic.ExpandoObject();
 			string condition;
 
