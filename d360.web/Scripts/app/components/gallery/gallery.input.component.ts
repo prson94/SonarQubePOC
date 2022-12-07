@@ -35,7 +35,7 @@ export class GalleryInputComponent implements OnInit {
         });
 
 
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "igSize", Type: "string", Description: "Size of the input. Options are small(150px), medium(308px), large(624px) and full(100%).", Default: "full" });
     }
 

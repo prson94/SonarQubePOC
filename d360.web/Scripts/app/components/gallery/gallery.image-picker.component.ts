@@ -32,7 +32,7 @@ export class GalleryImagePickerComponent implements OnInit {
     modelBinding: string = '';
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "imageType", Type: "string", Description: "Allowed values: 'ICO','LOGO' or empty string", Default: "" });
         this.properties.push({ Name: "allowedExtensions", Type: "string", Description: "Comma separated values of allowed file types", Default: "image/png,image/gif,image/jpg,image/jpeg" });
         this.properties.push({ Name: "maxHeight", Type: "number", Description: "Max image height", Default: "" });

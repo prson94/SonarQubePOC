@@ -34,7 +34,7 @@ export class GalleryTagPickerComponent implements OnInit {
 
     ngOnInit(): void {
         
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "ngModel", Type: "string", Description: "Model representing the value of the tag picker control. Tag values are separated by '|'.", Default: "null" });
         this.properties.push({ Name: "tabindex", Type: "string", Description: "Index of the element in tabbing order.", Default: "null" });
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Used to set the control to disabled state where the user cannot interact with it", Default: "false" });
@@ -42,7 +42,7 @@ export class GalleryTagPickerComponent implements OnInit {
         this.properties.push({ Name: "style", Type: "string", Description: "Inline style of the component.", Default: "" });
         this.properties.push({ Name: "assetUid", Type: "guid/string", Description: "Asset UID needed to resolve tag permissions", Default: "00000000-0000-0000-0000-000000000000" });
 
-        this.events = new Array();
+        this.events = [];
         this.events.push({ Name: "ngModelChange", Description: "Fired when the selection changes" });
         this.events.push({ Name: "onSelect", Description: "Callback to invoke when a tag suggestion is selected or new tag is added." });
         this.events.push({ Name: "onUnselect", Description: "Callback to invoke when a tag is removed from selection." });

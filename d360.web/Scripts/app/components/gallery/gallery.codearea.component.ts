@@ -58,7 +58,7 @@ export class GalleryCodeAreaComponent implements OnInit {
 }`;
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Whether or not the codearea control is disabled", Default: "false" });
         this.properties.push({ Name: "required", Type: "boolean", Description: "Whether or not the codearea control is required", Default: "false" });
         this.properties.push({ Name: "readonly", Type: "boolean", Description: "Whether or not the codearea control is readonly", Default: "false" });
@@ -66,7 +66,7 @@ export class GalleryCodeAreaComponent implements OnInit {
         this.properties.push({ Name: "codeType", Type: "string", Description: "Type of code the field is populated with. Allowed values are json and css", Default: "json" });
         this.properties.push({ Name: "igSize", Type: "string", Description: "Size of the input. Options are large(624px) and full(100%).", Default: "full" });
         
-        this.events = new Array();
+        this.events = [];
         this.events.push({ Name: "isValid", Type: "boolean", Description: "Outputs the current validation state of the field when changed.", Default: "" });
     }
 }
