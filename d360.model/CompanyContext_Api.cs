@@ -5540,7 +5540,7 @@ where	T.ExecutionID = @ExecutionID
                     #region Permissions Validation
 
                     sw.Restart();
-                    Connection.Execute(@"
+                    Connection.Execute($@"
 										declare @IsAdministrator bit = 0
 										select	@IsAdministrator = IsAdministrator
 										from	reporting.Global_Resource
@@ -5549,46 +5549,46 @@ where	T.ExecutionID = @ExecutionID
 										if @IsAdministrator = 0
 										begin
 										update	T
-										set		T.Message = coalesce(T.Message + '; ', '') + 'You do not have permission to modify relationships on the subject asset.',
+										set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.NotPermissionModifyRelationSubjectAsset}',
 												T.Success = 0
-										from	api.ExecutionRelationship T
-												inner join	(
-															select	R.ExecutionID, R.ItemNumber
-															from	api.ExecutionRelationship R
-																	inner join Asset A on A.Uid = R.SubjectUid and R.ExecutionID = @ExecutionID
+										from	
+												api.ExecutionRelationship T
+										where 
+												T.ExecutionID = @ExecutionID and not exists (
+															select 1
+															from	Asset A
 																	outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
-															where	(
-																	(P.AssetID = A.ID) 
+																	where	
+																	A.Uid = T.SubjectUid 
+																	and
+																	(
+																	(P.AssetID = A.ID)
 																	or P.AssetTypeID is null
 																	)
-																	and (
-																		(P.PermissionsBitMask is not null and P.PermissionsBitMask & @p <> @p) 
-																		or 
-																		P.PermissionsBitMask is null
-																		)
-															group by R.ExecutionID, R.ItemNumber
-															) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+																	and 
+																	P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p	
+															)  ;
 
 										update	T
-										set		T.Message = coalesce(T.Message + '; ', '') + 'You do not have permission to modify relationships on the object asset.',
+										set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.NotPermissionModifyRelationobjectAsset}',
 												T.Success = 0
-										from	api.ExecutionRelationship T
-												inner join	(
-															select	R.ExecutionID, R.ItemNumber
-															from	api.ExecutionRelationship R
-																	inner join Asset A on A.Uid = R.ObjectUid and R.ExecutionID = @ExecutionID
+										from	
+												api.ExecutionRelationship T
+										where 
+												T.ExecutionID = @ExecutionID and not exists (
+															select 1
+															from	Asset A
 																	outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
-															where	(
-																	(P.AssetID = A.ID) 
+																	where	
+																	A.Uid = T.ObjectUid 
+																	and
+																	(
+																	(P.AssetID = A.ID)
 																	or P.AssetTypeID is null
 																	)
-																	and (
-																		(P.PermissionsBitMask is not null and P.PermissionsBitMask & @p <> @p) 
-																		or 
-																		P.PermissionsBitMask is null
-																		)
-															group by R.ExecutionID, R.ItemNumber
-															) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+																	and 
+																	P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p	
+															);
 										end",
                                         new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.EditRelationships }, commandTimeout: timeout);
                     AddMeasurement(metrics, "Permissions Validation", sw.ElapsedMilliseconds, ++step);
