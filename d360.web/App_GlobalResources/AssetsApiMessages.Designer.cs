@@ -61,7 +61,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No Asset or AsssetType found for Guid [{0}].
+        ///   Looks up a localized string similar to No Asset or AssetType found for Guid [{0}].
         /// </summary>
         public static string AssetAssetTypeNotFound {
             get {
