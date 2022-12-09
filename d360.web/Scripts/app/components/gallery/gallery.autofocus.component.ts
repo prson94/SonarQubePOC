@@ -23,6 +23,6 @@ export class GalleryAutoFocusComponent implements OnInit {
     showModal = false;
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
     }
 }

@@ -36,7 +36,7 @@ export class GalleryDatePickerComponent implements OnInit {
         this.form = new FormGroup({}, []);
         this.form.addControl('myDate', new FormControl(null, [Validators.required, this.startDateValidator(new Date())]));
 
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Whether or not the textarea control is disabled", Default: "" });
         this.properties.push({ Name: "required", Type: "Boolean", Description: "Whether or not the textarea control is required", Default: "" });
         this.properties.push({ Name: "ngModel", Type: "Date", Description: "Model binding for the selected date object", Default: "" });
@@ -52,7 +52,7 @@ export class GalleryDatePickerComponent implements OnInit {
         this.properties.push({ Name: "name", Type: "string", Description: "Name of the input element or form control", Default: "" });
         this.properties.push({ Name: "form", Type: "FormGroup", Description: "The FormGroup this control is a part of when using Reactive Forms", Default: "" });
 
-        this.events = new Array();
+        this.events = [];
         this.events.push({ Name: "ngModelChange", Type: "", Description: "", Default: "" });
     }
 

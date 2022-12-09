@@ -31,7 +31,7 @@ export class GalleryDropDownComponent implements OnInit {
                                 [options]="optionsVar"></p-dropdown>`;
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "igSize", Type: "string", Description: "Size of the input. Options are small(150px), medium(308px), large(624px) and full(100%).", Default: "full" });
         this.properties.push({ Name: "ellipsisDirection", Type: "string", Description: "Direction of ellipsis. Options are ltr(left to right) or rtl(right to left)", Default: "ltr" });
         this.properties.push({ Name: "pDropdown", Type: "", Description: "All properties exposed by Prime NG Dropdown component", Default: "" });

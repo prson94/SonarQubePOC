@@ -68,7 +68,7 @@ export class GalleryModalDrawerComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "isVisible", Type: "boolean", Description: "Is dialog visible?", Default: "false" });
         this.properties.push({ Name: "appendToBody", Type: "boolean", Description: "Attach the dialog to the body element", Default: "true" });
         this.properties.push({ Name: "additionalClasses", Type: "string", Description: "Additional styling classes", Default: "" });

@@ -22,7 +22,7 @@ export class GalleryAccordionComponent implements OnInit {
     sampleUsage: string = '<simple-accordion header="Section 1"><p>Lorem ipsum...</p></simple-accordion>';
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "header", Type: "string", Description: "Title of the expandable section", Default: "" });
         this.properties.push({ Name: "active", Type: "boolean", Description: "Whether or not the accordion is expanded", Default: "" });
         this.properties.push({ Name: "tooltip", Type: "string", Description: "Text for optional tooltip", Default: "" });

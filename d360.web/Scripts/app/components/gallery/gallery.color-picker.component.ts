@@ -49,7 +49,7 @@ export class GalleryColorPickerComponent implements OnInit {
     ngOnInit(): void {
         this.assetService.getAllColors().subscribe((x) => { this.defaultColors = x; });
 
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "colors", Type: "array", Description: "An array of select list items that have label, title and value properties. title is used for the color value, label for display and value for the desired value from the select list.", Default: "" });
         this.properties.push({ Name: "placeholder", Type: "string", Description: "shows in the dropdown unitl an item is selected .", Default: "Optional" });
         this.properties.push({ Name: "selectedColor", Type: "string", Description: "The value of the desired item to be selected in the list.", Default: "" });
@@ -60,7 +60,7 @@ export class GalleryColorPickerComponent implements OnInit {
         this.properties.push({ Name: "tabindex", Type: "number", Description: "Index of the element in tabbing order.", Default: "0" });
         this.properties.push({ Name: "igSize", Type: "string", Description: "Size of the input. Options are small(150px), medium(308px), large(624px) and full(100%).", Default: "full" });
 
-        this.events = new Array();
+        this.events = [];
         this.events.push({ Name: "selectedColorChange", Type: "string", Description: "Function that outputs the selected value from the lsit of colors.", Default: "false" });
     }
 

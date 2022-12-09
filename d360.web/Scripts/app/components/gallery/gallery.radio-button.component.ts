@@ -36,6 +36,6 @@ export class GalleryRadioButtonComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
     }
 }

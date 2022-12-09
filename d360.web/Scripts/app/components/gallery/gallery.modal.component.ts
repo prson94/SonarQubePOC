@@ -75,7 +75,7 @@ export class GalleryModalComponent implements OnInit {
 
     ngOnInit(): void {
 
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "title", Type: "string", Description: "Header title for dialog", Default: "Default Title" });
         this.properties.push({ Name: "subtitle", Type: "string", Description: "Subtitle for dialog", Default: "" });
         this.properties.push({ Name: "showTitle", Type: "boolean", Description: "Show dialog header with title/subtitle", Default: "true" });
@@ -84,7 +84,7 @@ export class GalleryModalComponent implements OnInit {
         this.properties.push({ Name: "appendToBody", Type: "boolean", Description: "Attach the dialog to the body element", Default: "false" });
         this.properties.push({ Name: "additionalClasses", Type: "string", Description: "Additional styling classes", Default: "" });
 
-        this.events = new Array();
+        this.events = [];
         this.events.push({ Name: "onConfirm", Description: "Fired when confirm action button is pressed. The event will also close the dialog, which will also fire the onClose event" });
         this.events.push({ Name: "onClose", Description: "Fired when the dialog closes" });
 
