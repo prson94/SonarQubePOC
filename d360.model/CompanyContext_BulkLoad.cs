@@ -808,7 +808,7 @@ namespace d360.model
 							", new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name }, transaction: trans, commandTimeout: timeout);
 					}
 
-					CalculateProposedKeyHashes(assetType, executionID, timeout, intersectTypeId, trans, "#BulkExecutionAsset", "#BulkExecutionField");
+					CalculateProposedKeyHashesBulkLoad(assetType, executionID, timeout, intersectTypeId, trans, "#BulkExecutionAsset", "#BulkExecutionField");
 
 					if (assetType.Class == AssetTypeClass.Reference)
 					{
