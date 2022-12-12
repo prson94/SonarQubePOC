@@ -764,7 +764,8 @@ namespace d360.model.DataAccessLayer
 							  ,[SecurityAssetId]
 							  ,[SecurityAssetUid]
 						FROM [dbo].[ResponsibilityDetail] rd
-						where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id;
+						where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id
+						option(recompile);
 
 					insert into #OwnershipLookupAssets
 						select a.[ID] as AssetID
@@ -780,7 +781,8 @@ namespace d360.model.DataAccessLayer
 							 ,rd.[SecurityAssetUid]
 						from ResponsibilityDetail rd
 						inner join asset a on rd.assettypeid = a.assettypeid
-						where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id;
+						where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id
+						option(recompile);
 
 					insert into #OwnershipLookupAssets
 						select a.[ID] as AssetID
@@ -796,7 +798,8 @@ namespace d360.model.DataAccessLayer
 							 ,rd.[SecurityAssetUid]
 						from ResponsibilityDetail rd
 						inner join asset a on rd.assetid = a.id
-						where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @id;
+						where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @id
+						option(recompile);
 
 					create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
 					";
