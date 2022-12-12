@@ -1,9 +1,18 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { BaseComponent } from "../shared/base.component";
 import { WorkflowService } from "../../services/workflow.service";
 import { GridFilterColumn, GridFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
 import { WorkflowMonitorService } from '../../services/workflowmonitor.service';
-import * as _ from 'lodash';
 import { StringHelpers } from '../../static/string-helpers';
 import { State } from '../../models/asset.model';
 import { map } from 'rxjs/operators';
@@ -11,44 +20,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflowmonitor-list-filter',
-    template: ` 
-
-                <ng-container *ngIf="!usePredefinedFilters; else exportOnly">
-                    <div class="row">
-                        <div class="col s2 FieldName" style="padding-left: 0px" i18n>Workflow Types</div>
-                        <div class="col s10" style="padding-right: 0px">
-                           <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
-                            <div *ngIf="!isLoading">
-                                <table style="table-layout: fixed">
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)" selectedItemsLabel="{0} items selected"></p-multiSelect>
-                                            </td>
-                                            <td [ngClass]="{'actions-disabled':isExportDisabled}" *ngIf="showExport" style="width:32px">
-                                                <a class="Action" style="font-size:1.1em" (click)="isExportDisabled ? return : exportClick.emit()" [pTooltip]="exportTooltip"><i class="fa fa-download fa-fw"></i></a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>        
-                        </div>
-                    </div>
-                    <div class="row">
-                        <d3s-workflowmonitor-list-column-filter (exportToExcel)="exportToExcel.emit()" [fields]="filtercolumns" [(filters)]="columnFilters" (filtersChange)="columFilterChanged($event)" ></d3s-workflowmonitor-list-column-filter>
-                    </div>
-                </ng-container>                  
-                <ng-template #exportOnly>
-                    <div class="row">
-                        <div class="col s12" style="padding-right: 0px">
-                            <div [ngClass]="{'actions-disabled':isExportDisabled}" *ngIf="showExport" style="width: 32px; float: right">
-                                <a class="Action" style="font-size:1.1em" (click)="isExportDisabled ? return : exportClick.emit()" [pTooltip]="exportTooltip"><i class="fa fa-download fa-fw"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </ng-template>
-
-                `,
+    templateUrl: 'workflowmonitor-list-filter.component.html',
     providers: [WorkflowService, WorkflowMonitorService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -139,7 +111,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
     change(e: any) {
         if (this.usePredefinedFilters)
             {return;}
-        let data = new GridFilterExpression();
+        const data = new GridFilterExpression();
         data.field = "WorkflowId";
         data.condition = "IN";
         data.fieldtype = GridFilterFieldType.Normal;

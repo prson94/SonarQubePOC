@@ -1,12 +1,11 @@
-﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SemanticType } from '../../models/semantic-type.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { DataProfileService } from '../../services/dataprofile.service';
-import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Subscription } from 'rxjs';
@@ -17,6 +16,7 @@ import { AuthenticationService } from '../../services/authentication.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { IOutputData } from 'angular-split';
 import { SidePanelService } from '../../services/side-panel.service';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 
 declare var CurrentResourceID;
@@ -69,9 +69,9 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
 
     ngOnInit() {
         this.sub = this.route.params.subscribe((params) => {
-            let uid = params['semanticTypeUid'];
-            this.headerBreadcrumbService.setCurrentObjectInfo('SemanticType', uid);            
-            this.logAction('open', 'SemanticType', uid);            
+            const uid = params['semanticTypeUid'];
+			this.headerBreadcrumbService.setCurrentObjectInfo('SemanticType', uid);
+			this.logSemanticAction(UsageAction.View, uid);
             this.getData(uid);
         });
     }
@@ -121,9 +121,9 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
             var breadCrumbsSub = this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
                 this.secondaryNavService.clearItems();
                 this.secondaryNavService.clearCurrentObject();
-                let disabledBadge = this.isDisabled() ? "[{\"name\":\"Disabled\", \"color\":\"#D7D8DC\"}]" : "";
+                const disabledBadge = this.isDisabled() ? "[{\"name\":\"Disabled\", \"color\":\"#D7D8DC\"}]" : "";
                 this.secondaryNavService.setCurrentArea(this.semanticType.name, icon, $localize`Definition`, [disabledBadge]);
-                let assetstab = new SecondaryNavItem($localize`Assets`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount, 2);
+                const assetstab = new SecondaryNavItem($localize`Assets`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount, 2);
 
                 this.secondaryNavService.showItem(assetstab);
 

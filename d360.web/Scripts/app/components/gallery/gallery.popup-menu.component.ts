@@ -47,7 +47,7 @@ export class GalleryPopupMenuComponent implements OnInit {
 
     cleanJsonExamples: any = {};
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "items", Type: "Array<PopupMenuItem>", Description: "Array of menu items", Default: "Empty []" });
         this.properties.push({ Name: "items[i].title", Type: "string", Description: "Title of menu item", Default: "" });
         this.properties.push({ Name: "items[i].icon", Type: "string", Description: "Icon that will appear near title (font awesome class definition)", Default: "" });

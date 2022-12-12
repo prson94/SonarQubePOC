@@ -49,7 +49,6 @@ import { PredicatesService } from '../../../../services/predicates.service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 import { ProcessDiagramComponent } from '../process-diagram/process-diagram.component';
 import { ProcessService } from '../../../../services/process.service';
 import { AssetBrowserOverviewComponent } from './tools/overview.component';
@@ -292,7 +291,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         let diagramTypeParameterValue: string = params['diagramType'];
 
                         this.isDiagramTypeSpecifiedInPath = (diagramTypeParameterValue in DiagramType);
-                        if (!this.isDiagramTypeSpecifiedInPath || !this.diagramTypes.items.some((x) => x.value == DiagramType[diagramTypeParameterValue])) {
+                        if (!this.isDiagramTypeSpecifiedInPath || !this.diagramTypes.items.some((x) => x.value === DiagramType[diagramTypeParameterValue])) {
                             diagramTypeParameterValue = DiagramType[this.diagramTypes.initial];
                         }
 
@@ -306,7 +305,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                     if (this.diagram) {this.diagram.div = null;}
 
-                    if (this.displayConfiguration.DiagramType != DiagramType.Process)
+                    if (this.displayConfiguration.DiagramType !== DiagramType.Process)
                         {this.helper_InitializeDiagram();}
 
                 });
@@ -315,7 +314,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     public ngAfterViewInit() {
-        if (this.displayConfiguration.DiagramType == DiagramType.Process)
+        if (this.displayConfiguration.DiagramType === DiagramType.Process)
             {return;}
 
         this.helper_ResizeDiagram();
@@ -323,7 +322,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     public ngAfterViewChecked() {
-        if (this.displayConfiguration.DiagramType == DiagramType.Process)
+        if (this.displayConfiguration.DiagramType === DiagramType.Process)
             {return;}
 
         const panelHeaderElement: HTMLElement = this.myElement.nativeElement.querySelectorAll('.asset-browser-window-header')[0];
@@ -370,8 +369,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     public canEditProcessDiagram() {
-        return this.displayConfiguration.DiagramType == DiagramType.Process
-            && (this.diagramTypes && this.diagramTypes.items && this.diagramTypes.items.some((x) => x.value == DiagramType.Process && x.canEdit));
+        return this.displayConfiguration.DiagramType === DiagramType.Process
+            && (this.diagramTypes && this.diagramTypes.items && this.diagramTypes.items.some((x) => x.value === DiagramType.Process && x.canEdit));
     }
 
     //#endregion
@@ -427,7 +426,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //Core events
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
-        if (this.diagramTypeSpecifiedInPath == DiagramType.Process)
+        if (this.diagramTypeSpecifiedInPath === DiagramType.Process)
             {return;}
 
         this.helper_ResizeDiagram();
@@ -473,22 +472,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private badge_RemoveDependentNodes(badgeIdentifier: string, direction: AssetBrowserApiHopDirection) {
-        let links = this.diagramModelAsGraph().linkDataArray;
-        let badgeLinks = links.filter((l) => { return l.badgeIdentifier === badgeIdentifier; });
+        const links = this.diagramModelAsGraph().linkDataArray;
+        const badgeLinks = links.filter((l) => { return l.badgeIdentifier === badgeIdentifier; });
         badgeLinks.forEach((badgeLink) => {
 			if (badgeLink) {
                 // Line below would only be used IF impacts were to go in both directions. As it is now, we hard-code them to only go in one direction (forward).
-				let impactNodeKey = direction == AssetBrowserApiHopDirection.Backward ? badgeLink.from : badgeLink.to;
+				let impactNodeKey = direction === AssetBrowserApiHopDirection.Backward ? badgeLink.from : badgeLink.to;
 
 				//if we reveresed link to always show impact showing arrows out of the nodes, we need to apply reversed logic here
 				if (badgeLink["isReversed"]) {
-					impactNodeKey = direction == AssetBrowserApiHopDirection.Backward ? badgeLink.to : badgeLink.from;
+					impactNodeKey = direction === AssetBrowserApiHopDirection.Backward ? badgeLink.to : badgeLink.from;
 				}
 
                 //let impactNodeKey = badgeLink.to;
-                let impactNode = this.diagram.findNodeForKey(impactNodeKey);
+                const impactNode = this.diagram.findNodeForKey(impactNodeKey);
                 if (impactNode) {
-					let impactData = impactNode.data as AssetBrowserTranslationNode;
+					const impactData = impactNode.data as AssetBrowserTranslationNode;
                     if (impactData) {
                         // First, remove this node from the hierarchy collection, which represents all root nodes currently in the diagram.
                         let ixToDelete = this.diagramData.hierarchy.findIndex((o) => { return o.hierarchyKey === impactNodeKey; });
@@ -497,11 +496,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             ixToDelete = -1;
                         }
                         // Next, remove this and all descendant nodes from the nodes collection, which is a flat list of nodes currently in the diagram.
-                        let nodesToDelete = this.diagramData.nodes.filter((o) => { return o.hierarchyKey === impactNodeKey; });
+                        const nodesToDelete = this.diagramData.nodes.filter((o) => { return o.hierarchyKey === impactNodeKey; });
                         nodesToDelete.forEach((nodeToDelete) => {
                             ixToDelete = this.diagramData.nodes.findIndex((o) => { return o.key === nodeToDelete.key; });
                             if (ixToDelete > -1) {
-                                let dn = this.diagram.findNodeForKey(nodeToDelete.key);
+                                const dn = this.diagram.findNodeForKey(nodeToDelete.key);
                                 if (dn) {
                                     this.diagram.remove(dn);
                                 }
@@ -511,7 +510,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         });
                         // Last, remove the dependent impact nodes attached to the one we are currently trying to remove.
                         impactData.relations.forEach((r, rix) => {
-							let innerBadgeIdentifier: string = impactData.hierarchyKey + '|' + rix;
+							const innerBadgeIdentifier: string = impactData.hierarchyKey + '|' + rix;
                             this.badge_RemoveDependentNodes(innerBadgeIdentifier, r.direction);
                         });
                     }
@@ -547,13 +546,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (!isNaN(overrideItemIndex)) {
                 ix = overrideItemIndex;
             }
-            let node: AssetBrowserTranslationNode = obj.part.data;
-            let relation: AssetBrowserTranslationRelationCount = node.relations[ix];
-            let badgeIdentifier: string = node.hierarchyKey + "|" + ix;
+            const node: AssetBrowserTranslationNode = obj.part.data;
+            const relation: AssetBrowserTranslationRelationCount = node.relations[ix];
+            const badgeIdentifier: string = node.hierarchyKey + "|" + ix;
 
             this.diagram.model.setDataProperty(relation, 'showLoading', true);
 
-            let lastHighlightedPart = this.highlightedPart;
+            const lastHighlightedPart = this.highlightedPart;
             if (!relation.disabled) {
 				if (relation.expanded) {
                     this.badge_RemoveDependentNodes(badgeIdentifier, relation.direction);
@@ -572,8 +571,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 else {
                     relation.disabled = true;
 
-                    let assets: AssetBrowserApiHopAssetRequestModel[] = [];
-                    let hierarchyNodes = this.diagramData.nodes.filter((n) => { return n.hierarchyKey === node.hierarchyKey; });
+                    const assets: AssetBrowserApiHopAssetRequestModel[] = [];
+                    const hierarchyNodes = this.diagramData.nodes.filter((n) => { return n.hierarchyKey === node.hierarchyKey; });
                     hierarchyNodes.forEach((n) => {
                         if (!n.key.endsWith("_Reveal") && n.assetUid !== this.emptyUid && assets.findIndex((a) => { return a.Uid === n.assetUid; }) === -1) {
                             if (this.displayConfiguration.IncludeNonLeaf || n.leaf) {
@@ -585,10 +584,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
                     });
 
-                    let preloadedIntersects = this.helper_GetDiagramIntersectIds(relation.predicateId);
-                    let direction = relation.direction;
+                    const preloadedIntersects = this.helper_GetDiagramIntersectIds(relation.predicateId);
+                    const direction = relation.direction;
 
-                    let includeHierarchyBadges = (this.displayConfiguration.DiagramType == DiagramType.Impact);
+                    const includeHierarchyBadges = (this.displayConfiguration.DiagramType === DiagramType.Impact);
                     this.browserService.getImpactHop(node.hierarchyKey, relation.predicateUid, direction, includeHierarchyBadges, assets, preloadedIntersects)
                         .subscribe((response: AssetBrowserResponseModel) => {
 
@@ -641,12 +640,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 ix = overrideItemIndex;
             }
 
-            let node: AssetBrowserTranslationNode = obj.part.data;
-            let owner: AssetBrowserTranslationOwnerCount = node.owners[ix];
-            let badgeIdentifier: string = node.hierarchyKey + "|O|" + ix;
+            const node: AssetBrowserTranslationNode = obj.part.data;
+            const owner: AssetBrowserTranslationOwnerCount = node.owners[ix];
+            const badgeIdentifier: string = node.hierarchyKey + "|O|" + ix;
 
             this.diagram.model.setDataProperty(owner, 'showLoading', true);
-            let lastHighlightedPart = this.highlightedPart;
+            const lastHighlightedPart = this.highlightedPart;
 
             if (owner.expanded) {
                 this.badge_RemoveDependentNodes(badgeIdentifier, AssetBrowserApiHopDirection.Forward);
@@ -663,9 +662,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
             else {
 
-                let assets: AssetBrowserApiHopAssetRequestModel[] = [];
+                const assets: AssetBrowserApiHopAssetRequestModel[] = [];
 
-                let n = node;
+                const n = node;
                 if (n.isGroup) {
                     // Add the root node's asset information.
                     if (this.displayConfiguration.IncludeNonLeaf && node.assetUid !== this.emptyUid) {
@@ -673,9 +672,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }
 
                     (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each((g) => {
-                        let shouldInclude: boolean = this.displayConfiguration.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
+                        const shouldInclude: boolean = this.displayConfiguration.IncludeNonLeaf ? true : (g.data.isGroup == null || g.data.isGroup === false);
                         if (shouldInclude && g.data.assetUid !== this.emptyUid) {
-                            let asset = new AssetBrowserApiHopAssetRequestModel();
+                            const asset = new AssetBrowserApiHopAssetRequestModel();
                             asset.Uid = g.data.assetUid;
                             asset.Key = g.data.key;
                             assets.push(asset);
@@ -727,22 +726,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private context_Hide(e, obj, direction: AssetBrowserApiHopDirection = null) {
         if (obj != null && obj.part != null && obj.part.data != null) {
-            let node: AssetBrowserTranslationNode = obj.part.data;
-            let rootNode = this.diagram.findNodeForKey(node.hierarchyKey) as go.Group;
-            let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
+            const node: AssetBrowserTranslationNode = obj.part.data;
+            const rootNode = this.diagram.findNodeForKey(node.hierarchyKey) as go.Group;
+            const rootNodeData = rootNode.data as AssetBrowserTranslationNode;
 
             this.diagram.startTransaction("context_hide_node");
 
             // Now determine if we need to hide backward or forward direction.
             if (direction) {
-                let links = (direction == AssetBrowserApiHopDirection.Backward) ? rootNode.findLinksInto() : rootNode.findLinksOutOf();
-                let propertyName = (direction == AssetBrowserApiHopDirection.Backward) ? "upstreamHidden" : "downstreamHidden";
+                const links = (direction === AssetBrowserApiHopDirection.Backward) ? rootNode.findLinksInto() : rootNode.findLinksOutOf();
+                const propertyName = (direction === AssetBrowserApiHopDirection.Backward) ? "upstreamHidden" : "downstreamHidden";
                 this.diagram.model.setDataProperty(rootNodeData, propertyName, true);
                 this.helper_HideDirection(rootNodeData, links, direction);
             }
             else {
                 this.diagram.model.setDataProperty(rootNodeData, 'template', "HiddenNode");
-                let hierarchyNodes = rootNode.findSubGraphParts();
+                const hierarchyNodes = rootNode.findSubGraphParts();
                 hierarchyNodes.each((c) => {
                     this.diagram.model.setDataProperty(c.data, 'visible', false);
                     this.diagram.model.setDataProperty(c.data, 'opacity', 0);
@@ -756,15 +755,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private context_UnhideDirection(e, obj) {
         if (obj != null && obj.part != null && obj.part.data != null) {
-            let node: any = obj.part.data;
-            let streamKey = node.key as string;
-            let streamNode = this.diagram.findNodeForKey(streamKey);
-            let hideMode = node.hideMode as AssetBrowserApiHopDirection;
-            let heirarchyNodeKey = node.hidingKey as string;
-            let hierarchyNode = this.diagram.findNodeForKey(heirarchyNodeKey);
-            let links = (hideMode == AssetBrowserApiHopDirection.Backward) ? hierarchyNode.findLinksInto() : hierarchyNode.findLinksOutOf();
+            const node: any = obj.part.data;
+            const streamKey = node.key as string;
+            const streamNode = this.diagram.findNodeForKey(streamKey);
+            const hideMode = node.hideMode as AssetBrowserApiHopDirection;
+            const heirarchyNodeKey = node.hidingKey as string;
+            const hierarchyNode = this.diagram.findNodeForKey(heirarchyNodeKey);
+            const links = (hideMode === AssetBrowserApiHopDirection.Backward) ? hierarchyNode.findLinksInto() : hierarchyNode.findLinksOutOf();
 
-            let propertyName = (hideMode == AssetBrowserApiHopDirection.Backward) ? "upstreamHidden" : "downstreamHidden";
+            const propertyName = (hideMode === AssetBrowserApiHopDirection.Backward) ? "upstreamHidden" : "downstreamHidden";
             this.diagram.model.setDataProperty(hierarchyNode.data, propertyName, null);
 
             if (streamNode) {
@@ -776,7 +775,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private context_UnhideNode(e, obj) {
         if (obj != null && obj.part != null && obj.part.data != null) {
-            let node: AssetBrowserTranslationNode = obj.part.data;
+            const node: AssetBrowserTranslationNode = obj.part.data;
             this.helper_UnhideNode(node);
         }
     }
@@ -784,7 +783,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_HideDirection(startingHierarchyNode: AssetBrowserTranslationNode, links: go.Iterator<go.Link>, direction: AssetBrowserApiHopDirection) {
         let streamKey: string;
 
-        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
+        const dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
         dm.startTransaction("hide_next_hop");
 
         if (startingHierarchyNode) {
@@ -802,15 +801,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         links.each((l) => {
 
             if (startingHierarchyNode) {
-                let fromKey: string = (direction == AssetBrowserApiHopDirection.Backward) ? streamKey : l.fromNode.key.toString();
-                let toKey: string = (direction == AssetBrowserApiHopDirection.Backward) ? l.toNode.key.toString() : streamKey;
-                let linkData = {
+                const fromKey: string = (direction === AssetBrowserApiHopDirection.Backward) ? streamKey : l.fromNode.key.toString();
+                const toKey: string = (direction === AssetBrowserApiHopDirection.Backward) ? l.toNode.key.toString() : streamKey;
+                const linkData = {
                     from: fromKey,
                     to: toKey
                 };
                 dm.addLinkData(linkData);
 
-                if (direction == AssetBrowserApiHopDirection.Forward) {
+                if (direction === AssetBrowserApiHopDirection.Forward) {
                     // We could have other branches that WERE going into this same path we are hiding. Need to connect to the new node above.
                     l.toNode.findLinksInto().each((nl) => {
                         if (nl.fromNode.key !== l.fromNode.key) {
@@ -823,13 +822,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
 
-            let rootNode = ((direction == AssetBrowserApiHopDirection.Backward) ? l.fromNode : l.toNode) as go.Group;
-            let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
+            const rootNode = ((direction === AssetBrowserApiHopDirection.Backward) ? l.fromNode : l.toNode) as go.Group;
+            const rootNodeData = rootNode.data as AssetBrowserTranslationNode;
 
-            if (rootNodeData.template == "MoreData") {
+            if (rootNodeData.template === "MoreData") {
                 this.diagram.model.setDataProperty(rootNodeData, 'opacity', 0);
             }
-            else if (rootNodeData.template == "HiddenStreamNode") {
+            else if (rootNodeData.template === "HiddenStreamNode") {
                 this.diagram.model.setDataProperty(rootNodeData, 'opacity', 0);
             }
             else {
@@ -837,7 +836,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.model.setDataProperty(rootNodeData, 'visible', false);
                 this.diagram.model.setDataProperty(rootNodeData, 'opacity', 0);
 
-                let hierarchyNodes = rootNode.findSubGraphParts();
+                const hierarchyNodes = rootNode.findSubGraphParts();
                 hierarchyNodes.each((c) => {
                     this.diagram.model.setDataProperty(c.data, 'opacity', 0);
                     this.diagram.model.setDataProperty(c.data, 'visible', false);
@@ -846,7 +845,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 this.helper_HideDirection(
                     null,
-                    (direction == AssetBrowserApiHopDirection.Backward) ? rootNode.findLinksInto() : rootNode.findLinksOutOf(),
+                    (direction === AssetBrowserApiHopDirection.Backward) ? rootNode.findLinksInto() : rootNode.findLinksOutOf(),
                     direction
                 );
             }
@@ -857,16 +856,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_UnhideDirection(links: go.Iterator<go.Link>, direction: AssetBrowserApiHopDirection) {
-        let hiddenStreamKeysToRemove: string[] = [];
+        const hiddenStreamKeysToRemove: string[] = [];
 
         links.each((l) => {
-            let rootNode = ((direction == AssetBrowserApiHopDirection.Backward) ? l.fromNode : l.toNode) as go.Group;
-            let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
+            const rootNode = ((direction === AssetBrowserApiHopDirection.Backward) ? l.fromNode : l.toNode) as go.Group;
+            const rootNodeData = rootNode.data as AssetBrowserTranslationNode;
 
-            if (rootNodeData.template == "MoreData") {
+            if (rootNodeData.template === "MoreData") {
                 this.diagram.model.setDataProperty(rootNodeData, 'opacity', 1);
             }
-            else if (rootNodeData.template == "HiddenStreamNode") {
+            else if (rootNodeData.template === "HiddenStreamNode") {
                 hiddenStreamKeysToRemove.push(rootNodeData.key);
             }
             else {
@@ -874,10 +873,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.model.setDataProperty(rootNodeData, 'visible', true);
                 this.diagram.model.setDataProperty(rootNodeData, 'opacity', 1);
 
-                let propertyName = (direction == AssetBrowserApiHopDirection.Backward) ? "upstreamHidden" : "downstreamHidden";
+                const propertyName = (direction === AssetBrowserApiHopDirection.Backward) ? "upstreamHidden" : "downstreamHidden";
                 this.diagram.model.setDataProperty(rootNodeData, propertyName, null);
 
-                let hierarchyNodes = rootNode.findSubGraphParts();
+                const hierarchyNodes = rootNode.findSubGraphParts();
                 hierarchyNodes.each((c) => {
                     this.diagram.model.setDataProperty(c.data, 'opacity', 1);
                     this.diagram.model.setDataProperty(c.data, 'visible', true);
@@ -885,7 +884,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 });
 
                 this.helper_UnhideDirection(
-                    (direction == AssetBrowserApiHopDirection.Backward) ? rootNode.findLinksInto() : rootNode.findLinksOutOf(),
+                    (direction === AssetBrowserApiHopDirection.Backward) ? rootNode.findLinksInto() : rootNode.findLinksOutOf(),
                     direction
                 );
             }
@@ -893,7 +892,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         //Have to do this after we loop through links above, otherwise we get an exception.
         hiddenStreamKeysToRemove.forEach((k) => {
-            let n = this.diagram.findNodeForKey(k);
+            const n = this.diagram.findNodeForKey(k);
             if (n) {
                 this.diagram.remove(n);
             }
@@ -903,14 +902,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private helper_UnhideNode(node: AssetBrowserTranslationNode) {
 
-        let rootNode = this.diagram.findNodeForKey(node.hierarchyKey) as go.Group;
-        let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
+        const rootNode = this.diagram.findNodeForKey(node.hierarchyKey) as go.Group;
+        const rootNodeData = rootNode.data as AssetBrowserTranslationNode;
 
         this.diagram.startTransaction("context_unhide_node");
 
         this.diagram.model.setDataProperty(rootNodeData, 'template', rootNodeData.nonHiddenTemplate);
 
-        let hierarchyNodes = rootNode.findSubGraphParts();
+        const hierarchyNodes = rootNode.findSubGraphParts();
         hierarchyNodes.each((c) => {
             this.diagram.model.setDataProperty(c.data, 'visible', "true");
             this.diagram.model.setDataProperty(c.data, 'template', c.data.nonHiddenTemplate);
@@ -925,22 +924,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.selectedAsset = this.selectedTag = this.selectedReferenceItem = null;
         if (e != null && e.subject != null) {
             if (e.subject instanceof go.Set) {
-                let parts = (e.subject as go.Set<go.Part>);
+                const parts = (e.subject as go.Set<go.Part>);
 
-                if (parts.count == 1) {
-                    let data = parts.first().data;
+                if (parts.count === 1) {
+                    const data = parts.first().data;
                     let uid: string = '';
 
-                    if (data.assetUid != null && data.assetUid != this.emptyUid) {
+                    if (data.assetUid != null && data.assetUid !== this.emptyUid) {
                         // selected item is an asset
                         uid = data.assetUid;
                     }
 
-                    if (uid !== '' && uid != this.emptyUid) {
+                    if (uid !== '' && uid !== this.emptyUid) {
                         this.panel_InformationDisabled = false;
                         this.panel_InformationHasReadAccess = data.hasAssetReadAccess;
 
-                        if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
+                        if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid !== uid) {
                             if (this.panelModel.AlertVisible) {
                                 this.selectedAssetsWithAlerts = [uid];
                                 this.cdRef.markForCheck();
@@ -974,7 +973,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         this.cdRef.markForCheck();
                     }
 
-                } else if (parts.count == 0) {
+                } else if (parts.count === 0) {
                     this.diagram.nodes.each((n) => {
                         n.isHighlighted = false;
                     });
@@ -1031,7 +1030,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (n.data) {
                 if (n.data.actionCount) {
                     // Below condition checks to see if the assetUid has already been accounted for in alert count, so as not to double-count [GOV-9970].
-                    if (this.assetsWithAlerts.findIndex((a) => { return a == n.data.assetUid; }) == -1) {
+                    if (this.assetsWithAlerts.findIndex((a) => { return a === n.data.assetUid; }) === -1) {
                         this.totalAlertCount += n.data.actionCount;
                         this.assetsWithAlerts.push(n.data.assetUid);
                     }
@@ -1041,26 +1040,26 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_DetermineLoadedFilterOptions(): LoadedFilterTypesModel {
-        let model: LoadedFilterTypesModel = new LoadedFilterTypesModel();
+        const model: LoadedFilterTypesModel = new LoadedFilterTypesModel();
 
         // Loop through nodes and figure out what is visible.
         this.diagram.model.nodeDataArray.forEach((tn: AssetBrowserTranslationNode) => {
             if (tn.assetTypeId) {
-                let isRoot: boolean = tn.group == "" || tn.group == undefined;
+                const isRoot: boolean = tn.group === "" || tn.group == null;
 
-                if (model.AssetTypes.findIndex((o) => { return o == tn.assetTypeId; }) == -1 && isRoot) {
+                if (model.AssetTypes.findIndex((o) => { return o === tn.assetTypeId; }) === -1 && isRoot) {
                     model.AssetTypes.push(tn.assetTypeId);
                 }
                 if (tn.owners) {
                     tn.owners.forEach((r) => {
-                        if (model.ResponsibilityTypes.findIndex((o) => { return o == r.id; }) == -1) {
+                        if (model.ResponsibilityTypes.findIndex((o) => { return o === r.id; }) === -1) {
                             model.ResponsibilityTypes.push(r.id);
                         }
                     });
                 }
                 if (tn.relations) {
                     tn.relations.forEach((r) => {
-                        if (model.Predicates.findIndex((o) => { return o == r.predicateId; }) == -1) {
+                        if (model.Predicates.findIndex((o) => { return o === r.predicateId; }) === -1) {
                             model.Predicates.push(r.predicateId);
                         }
                     });
@@ -1068,7 +1067,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
 
             if (tn.responsibilityTypeId) {
-                if (model.ResponsibilityTypes.findIndex((o) => { return o == tn.responsibilityTypeId; }) == -1) {
+                if (model.ResponsibilityTypes.findIndex((o) => { return o === tn.responsibilityTypeId; }) === -1) {
                     model.ResponsibilityTypes.push(tn.responsibilityTypeId);
                 }
             }
@@ -1076,11 +1075,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         // Now check the links for the predicates that are currently displayed.
         this.diagram.links.each((link) => {
-            let linkData: AssetBrowserTranslationLink = link.data as AssetBrowserTranslationLink;
+            const linkData: AssetBrowserTranslationLink = link.data as AssetBrowserTranslationLink;
 
             if (linkData.predicateIds) {
                 linkData.predicateIds.forEach((r) => {
-                    if (model.Predicates.findIndex((o) => { return o == r; }) == -1) {
+                    if (model.Predicates.findIndex((o) => { return o === r; }) === -1) {
                         model.Predicates.push(r);
                     }
                 });
@@ -1091,18 +1090,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_DisableDragging() {
-        let unlockedKeys: string[] = [];
+        const unlockedKeys: string[] = [];
 
         if (this.diagram == null)
             {return;}
 
         this.diagram.links.each(function (l) {
             if (l.fromNode && l.fromNode.data) {
-                if (!unlockedKeys.some((x) => x == l.fromNode.data.key))
+                if (!unlockedKeys.some((x) => x === l.fromNode.data.key))
                     {unlockedKeys.push(l.fromNode.data.key);}
             }
             if (l.toNode && l.toNode.data) {
-                if (!unlockedKeys.some((x) => x == l.toNode.data.key))
+                if (!unlockedKeys.some((x) => x === l.toNode.data.key))
                     {unlockedKeys.push(l.toNode.data.key);}
             }
         });
@@ -1111,14 +1110,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (!n.data.isGroup) {
                 n.movable = false;
             }
-            else if (!unlockedKeys.some((x) => x == n.data.key)) {
+            else if (!unlockedKeys.some((x) => x === n.data.key)) {
                 n.movable = false;
             }
         });
     }
 
     private helper_GetDiagramIntersectIds(predicateId: number): number[] {
-        let preloadedIntersects: number[] = [];
+        const preloadedIntersects: number[] = [];
         if (this.diagramData.links) {
             this.diagramData.links.forEach((i) => {
                 if (i.links) {
@@ -1138,7 +1137,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.model.setDataProperty(node.data, 'hideMode', 0);
         this.diagram.model.setDataProperty(node.data, 'template', "HiddenDisabledNode");
 
-        let hierarchyNodes = node.findSubGraphParts();
+        const hierarchyNodes = node.findSubGraphParts();
         hierarchyNodes.each((c) => {
             this.diagram.model.setDataProperty(c.data, 'visible', false);
             this.diagram.model.setDataProperty(c.data, 'opacity', 0);
@@ -1155,7 +1154,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.model.setDataProperty(node.data, 'hideMode', null);
         this.diagram.model.setDataProperty(node.data, 'template', node.data.nonHiddenTemplate);
 
-        let hierarchyNodes = node.findSubGraphParts();
+        const hierarchyNodes = node.findSubGraphParts();
         hierarchyNodes.each((c) => {
             this.diagram.model.setDataProperty(c.data, 'visible', true);
             this.diagram.model.setDataProperty(c.data, 'opacity', 1);
@@ -1166,15 +1165,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_HideDeselectedAssetTypes() {
-        let hiddenIds = this.displayConfiguration.SelectedAssetTypes;
+        const hiddenIds = this.displayConfiguration.SelectedAssetTypes;
         this.diagram.findTopLevelGroups().each((g) => {
-            let groupAssetTypeId = (g.data && g.data.assetTypeId) ? g.data.assetTypeId : -1;
+            const groupAssetTypeId = (g.data && g.data.assetTypeId) ? g.data.assetTypeId : -1;
             if (groupAssetTypeId > -1) {
-                if (hiddenIds.findIndex((id) => { return id == groupAssetTypeId; }) > -1) {
+                if (hiddenIds.findIndex((id) => { return id === groupAssetTypeId; }) > -1) {
                     this.helper_HideAndDisableSingleGroup(g, "a");
                 }
                 else {
-                    if (g.data.isGroup && (g.data.filterHiddenBy == "a" || !g.data.filterHiddenBy) && g.data.template !== "HiddenNode") {
+                    if (g.data.isGroup && (g.data.filterHiddenBy === "a" || !g.data.filterHiddenBy) && g.data.template !== "HiddenNode") {
                         this.helper_ShowAndEnableSingleGroup(g);
                     }
                 }
@@ -1183,23 +1182,23 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_HideDeselectedPredicates() {
-        let hiddenIds = this.displayConfiguration.SelectedPredicates;
+        const hiddenIds = this.displayConfiguration.SelectedPredicates;
         this.diagram.startTransaction('HideDeselectedPredicates');
 
         this.diagram.findTopLevelGroups().each((g) => {
-            let gData = g.data as AssetBrowserTranslationNode;
+            const gData = g.data as AssetBrowserTranslationNode;
 
             if (gData.relations) {
                 // Hide Badges
                 gData.relations.forEach((rC) => {
-                    let showBadge: boolean = (hiddenIds.findIndex((v) => { return v == rC.predicateId; }) == -1);
+                    const showBadge: boolean = (hiddenIds.findIndex((v) => { return v === rC.predicateId; }) === -1);
                     this.diagram.model.setDataProperty(rC, "showBadge", showBadge);
                 });
             }
 
             g.findLinksOutOf().each((l) => {
-                if (hiddenIds.findIndex((id) => { return l.data.predicateId == id; }) == -1) {
-                    if (l.toNode && l.toNode.data && l.toNode.data.isGroup && (l.toNode.data.filterHiddenBy == "p" || !l.toNode.data.filterHiddenBy) && l.toNode.data.template !== "HiddenNode") {
+                if (hiddenIds.findIndex((id) => { return l.data.predicateId === id; }) === -1) {
+                    if (l.toNode && l.toNode.data && l.toNode.data.isGroup && (l.toNode.data.filterHiddenBy === "p" || !l.toNode.data.filterHiddenBy) && l.toNode.data.template !== "HiddenNode") {
                         this.helper_ShowAndEnableSingleGroup(l.toNode as go.Group);
                     }
                 }
@@ -1215,24 +1214,24 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_HideDeselectedResponsibilityTypes() {
-        let hiddenIds = this.displayConfiguration.SelectedResponsibilityTypes;
+        const hiddenIds = this.displayConfiguration.SelectedResponsibilityTypes;
 
         this.diagram.startTransaction('HideDeselectedResponsibilityTypes');
 
         this.diagram.findTopLevelGroups().each((g) => {
-            let gData = g.data as AssetBrowserTranslationNode;
+            const gData = g.data as AssetBrowserTranslationNode;
 
             if (gData.owners) {
                 // Hide Badges
                 gData.owners.forEach((rC) => {
-                    let showBadge: boolean = (hiddenIds.findIndex((v) => { return v == rC.id; }) == -1);
+                    const showBadge: boolean = (hiddenIds.findIndex((v) => { return v === rC.id; }) === -1);
                     this.diagram.model.setDataProperty(rC, "showBadge", showBadge);
                 });
             }
 
             g.findLinksOutOf().each((l) => {
-                if (hiddenIds.findIndex((id) => { return l.data.responsibilityTypeId == id; }) == -1) {
-                    if (l.toNode && l.toNode.data && l.toNode.data.isGroup && (l.toNode.data.filterHiddenBy == "r" || !l.toNode.data.filterHiddenBy) && l.toNode.data.template !== "HiddenNode") {
+                if (hiddenIds.findIndex((id) => { return l.data.responsibilityTypeId === id; }) === -1) {
+                    if (l.toNode && l.toNode.data && l.toNode.data.isGroup && (l.toNode.data.filterHiddenBy === "r" || !l.toNode.data.filterHiddenBy) && l.toNode.data.template !== "HiddenNode") {
                         this.helper_ShowAndEnableSingleGroup(l.toNode as go.Group);
                     }
                 }
@@ -1276,13 +1275,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             });
 		}
 
-		let nodesToHiglightParams = [];
-		let visitedRelationships = [];
+		const nodesToHiglightParams = [];
+		const visitedRelationships = [];
         allRelations.forEach((l) => {
             // Loop through the links to find ones where this node is subject, then traverse each one and do the same thing, recursively.
       
-            if (l.from == key) {
-				let oNode = this.diagram.findNodeForKey(l.to);
+            if (l.from === key) {
+				const oNode = this.diagram.findNodeForKey(l.to);
 				visitedRelationships.push(l.rel);
 				if (oNode) {
 					oNode.isHighlighted = true;
@@ -1292,9 +1291,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
 
             // Loop through the links to find ones where this node is object, then traverse each one and do the same thing, recursively.
-            if (l.to == key) {
+            if (l.to === key) {
 				visitedRelationships.push(l.rel);
-                let sNode = this.diagram.findNodeForKey(l.from);
+                const sNode = this.diagram.findNodeForKey(l.from);
 				if (sNode) {
 					sNode.isHighlighted = true;
 					nodesToHiglightParams.push({ node: l.from });
@@ -1340,9 +1339,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 // You are clicking on a link instead.                
                 if (obj.data) {
                     if (obj.data.impacts) {
-                        let keysToHighlight: string[] = obj.data.impacts;
+                        const keysToHighlight: string[] = obj.data.impacts;
                         keysToHighlight.forEach((k) => {
-                            let node: go.Node = obj.diagram.findNodeForKey(k);
+                            const node: go.Node = obj.diagram.findNodeForKey(k);
                             if (node) {
                                 node.isHighlighted = true;
                             }
@@ -1361,7 +1360,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram = this.template_Diagram();
 
 
-        let forelayer = this.diagram.findLayer("Foreground");
+        const forelayer = this.diagram.findLayer("Foreground");
         this.diagram.addLayerBefore(this.g(go.Layer, { name: "Links" }), forelayer);
 
         this.diagram.groupTemplateMap.add("FocalPortGroup", this.template_FocalRootNode());
@@ -1423,13 +1422,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns A boolean value on whether the lineage view is selected.
     */
     private helper_NumberOfHops(): number {
-        let isLineage: boolean = this.helper_LineageDiagramApplies();
+        const isLineage: boolean = this.helper_LineageDiagramApplies();
         return isLineage ? this.displayConfiguration.NumberOfLineageHops : this.displayConfiguration.NumberOfImpactHops;
     }
 
     private helper_ParseTranslatedData(trans: AssetBrowserResponseModel, append: boolean = false, badgeIdentifier: string = null) {//(trans: AssetBrowserTranslation, append: boolean = false) {
         this.diagram.startTransaction("load_all_data");
-        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
+        const dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
 
         //#region add data to diagram model
 
@@ -1458,7 +1457,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (trans.reveals) {
             trans.reveals.forEach((reveal) => {
 
-                let linkedHeirarchyNode = dm.findNodeDataForKey(reveal.hierarchyKey);
+                const linkedHeirarchyNode = dm.findNodeDataForKey(reveal.hierarchyKey);
 
                 dm.addNodeData({
                     template: 'MoreData',
@@ -1493,21 +1492,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_PopulateDiagram(): Observable<boolean> {
-        let dgmObs: Observable<boolean>;
-
         this.errorText = "";
         this.isError = false;
         this.cdRef.markForCheck();
 
-        dgmObs = new Observable((obs) => {
-            let isLineage: boolean = this.helper_LineageDiagramApplies();
+        const dgmObs: Observable<boolean> = new Observable((obs) => {
+            const isLineage: boolean = this.helper_LineageDiagramApplies();
 
             this.isLoading = true;
             this.loadingText = $localize`Retrieving ${isLineage ? 'lineage' : 'impacts'} from Govern..`;
 
             this.helper_ResetDiagramData();
 
-            let subscriber = (data: AssetBrowserResponseModel) => {
+            const subscriber = (data: AssetBrowserResponseModel) => {
                 if (data) {
                     this.diagramData = data;
                     this.loadingText = $localize`Determining links and meaning...`;
@@ -1601,7 +1598,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_RemoveRevealNode(data: AssetBrowserTranslationNode, direction: AssetBrowserApiHopDirection) {
         this.diagram.startTransaction('reveal');
 
-        let selectedRevealNode = this.diagram.findNodeForKey(data.key);
+        const selectedRevealNode = this.diagram.findNodeForKey(data.key);
         if (selectedRevealNode) {
             selectedRevealNode.findLinksInto().each((l) => {
                 this.diagramModelAsGraph().removeLinkData(l.data);
@@ -1616,7 +1613,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_ResetDiagramData() {
-        let dm = this.diagramModelAsGraph();
+        const dm = this.diagramModelAsGraph();
         this.diagram.nodes.each((n) => { this.diagram.remove(n); });
         this.diagram.links.each((l) => { this.diagram.remove(l); });
         this.diagramData = new AssetBrowserResponseModel();
@@ -1631,10 +1628,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns Nothing
     */
     private helper_ResizeDiagram() {
-        if (this.displayConfiguration.DiagramType == 3)
+        if (this.displayConfiguration.DiagramType === 3)
             {return;}
 
-        let height = window.innerHeight;
+        const height = window.innerHeight;
         if (this.isFullScreen)
             {this.diagramRef.nativeElement.style.height = (height - 55) + 'px';}
         else
@@ -1655,12 +1652,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_RevealLineageHop(e: go.InputEvent, obj: go.GraphObject) {
 
         if (obj != null && obj.part != null && obj.part.data != null) {
-            let data = obj.part.data;
-            let currentHighlightedNode = this.highlightedPart;
+            const data = obj.part.data;
+            const currentHighlightedNode = this.highlightedPart;
             // Get relations to ignore.
-            let assets: AssetBrowserApiHopAssetRequestModel[] = [];
+            const assets: AssetBrowserApiHopAssetRequestModel[] = [];
 
-            let isBackward: boolean = (data.direction === "Backward");
+            const isBackward: boolean = (data.direction === "Backward");
 
             let hierarchyKey: string = "";
             this.diagram.links.each(function (l: go.Link) {
@@ -1674,7 +1671,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             });
             this.diagramData.nodes.forEach((o) => {
-                if (o.hierarchyKey == hierarchyKey && o.assetUid !== this.emptyUid && o.assetUid) {
+                if (o.hierarchyKey === hierarchyKey && o.assetUid !== this.emptyUid && o.assetUid) {
                     //if (this.displayConfiguration.IncludeNonLeaf || n.leaf) {
                     assets.push({
                         Key: "",
@@ -1684,12 +1681,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             });
 
-            let intersects = this.helper_GetDiagramIntersectIds(null);
+            const intersects = this.helper_GetDiagramIntersectIds(null);
 
-            let direction: AssetBrowserApiHopDirection = isBackward ? AssetBrowserApiHopDirection.Backward : AssetBrowserApiHopDirection.Forward;
+            const direction: AssetBrowserApiHopDirection = isBackward ? AssetBrowserApiHopDirection.Backward : AssetBrowserApiHopDirection.Forward;
 
-            let currentHop: number = +hierarchyKey.substring(hierarchyKey.indexOf("|") + 1, hierarchyKey.lastIndexOf("|"));
-            let requestModel: AssetBrowserLineageRequest = {
+            const currentHop: number = +hierarchyKey.substring(hierarchyKey.indexOf("|") + 1, hierarchyKey.lastIndexOf("|"));
+            const requestModel: AssetBrowserLineageRequest = {
                 ancestry: this.displayConfiguration.AncestryMode,
                 descendancy: this.displayConfiguration.Descendancy,
                 direction,
@@ -1748,7 +1745,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_SetFilterWindow() {
-        let loadedTypes: LoadedFilterTypesModel = this.helper_DetermineLoadedFilterOptions();
+        const loadedTypes: LoadedFilterTypesModel = this.helper_DetermineLoadedFilterOptions();
 
         this.filter_AvailableOptions = new FilterSelectionsModel([], [], []);
         this.filter_AvailableOptions.AncestryOptions = this.filter_AllOptions.AncestryOptions;
@@ -1761,7 +1758,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.filter_AvailableOptions.FilterAssetTypes = [];
         this.filter_AvailableOptions.AssetTypeOptions.forEach((at) => {
-            let inLoadedAssetTypes: boolean = loadedTypes.AssetTypes.findIndex((ix) => { return ix == at.AssetTypeId; }) > -1;
+            const inLoadedAssetTypes: boolean = loadedTypes.AssetTypes.findIndex((ix) => { return ix === at.AssetTypeId; }) > -1;
             if (inLoadedAssetTypes) {
                 this.filter_AvailableOptions.FilterAssetTypes.push({
                     label: at.Path,
@@ -1777,7 +1774,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.filter_AvailableOptions.FilterPredicates = [];
         this.filter_AvailableOptions.PredicateOptions.forEach((p) => {
-            let inLoadedPredicates: boolean = loadedTypes.Predicates.findIndex((ix) => { return ix == p.Id; }) > -1;
+            const inLoadedPredicates: boolean = loadedTypes.Predicates.findIndex((ix) => { return ix === p.Id; }) > -1;
             if (inLoadedPredicates) {
                 this.filter_AvailableOptions.FilterPredicates.push({
                     label: p.Name.substring(0, 50) + ' / ' + p.Inverse.substring(0, 50),
@@ -1794,9 +1791,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.filter_AvailableOptions.FilterResponsibilityTypes = [];
         this.filter_AvailableOptions.ResponsibilityTypeOptions.forEach((p) => {
 
-            let inLoadedResponsibilityTypes: boolean = loadedTypes.ResponsibilityTypes.findIndex((ix) => { return ix == p.Id; }) > -1;
+            const inLoadedResponsibilityTypes: boolean = loadedTypes.ResponsibilityTypes.findIndex((ix) => { return ix === p.Id; }) > -1;
             if (inLoadedResponsibilityTypes) {
-                let thisResponsibilityTypeNode: TreeNode = {
+                const thisResponsibilityTypeNode: TreeNode = {
                     label: p.Name,
                     data: p.Id,
                     children: []
@@ -1815,18 +1812,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_SetVisiblePanel(command: AssetBrowserPanelCommand, overrideCloseCheck: boolean = false) {
 
         if (!overrideCloseCheck) {
-            if (this.panelModel.selectedCommand == command) {
+            if (this.panelModel.selectedCommand === command) {
                 command = AssetBrowserPanelCommand.None;
             }
         }
 
         this.panelModel = {
             selectedCommand: command,
-            AddVisible: (command == AssetBrowserPanelCommand.Add),
-            AlertVisible: (command == AssetBrowserPanelCommand.Alerts),
-            FiltersVisible: (command == AssetBrowserPanelCommand.Filters),
-            InformationVisible: (command == AssetBrowserPanelCommand.Information),
-            SettingsVisible: (command == AssetBrowserPanelCommand.Settings)
+            AddVisible: (command === AssetBrowserPanelCommand.Add),
+            AlertVisible: (command === AssetBrowserPanelCommand.Alerts),
+            FiltersVisible: (command === AssetBrowserPanelCommand.Filters),
+            InformationVisible: (command === AssetBrowserPanelCommand.Information),
+            SettingsVisible: (command === AssetBrowserPanelCommand.Settings)
         };
     }
 
@@ -1840,7 +1837,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.panel_Loading = true;
 
-        let diagramAsset = new AssetBrowserDiagramAsset();
+        const diagramAsset = new AssetBrowserDiagramAsset();
         this.objectStatisticsService.getSearchDetails(assetUid)
             .subscribe((asset) => {
                 diagramAsset.Url = "/asset/" + assetUid;
@@ -1890,11 +1887,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (a == null || b == null || a.data == null || b.data == null)
             {return 0;}
 
-        let al = a.data.text ? a.data.text.toLowerCase() : '';
-        let bl = b.data.text ? b.data.text.toLowerCase() : '';
+        const al = a.data.text ? a.data.text.toLowerCase() : '';
+        const bl = b.data.text ? b.data.text.toLowerCase() : '';
 
-        let aAssetUid = a.data.assetUid;
-        let bAssetUid = b.data.assetUid;
+        const aAssetUid = a.data.assetUid;
+        const bAssetUid = b.data.assetUid;
 
         if (al > bl) {
             return 1;
@@ -1919,7 +1916,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_UpdateDiagramType(dt: DiagramType) {
-        let model: AssetBrowserFilterModel = _.cloneDeep(this.displayConfiguration);
+        const model: AssetBrowserFilterModel = _.cloneDeep(this.displayConfiguration);
         model.DiagramType = dt;
 		this.displayConfiguration = model;
 		this.currentDiagramType = dt;
@@ -1943,7 +1940,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 break;
             case AssetBrowserPanelCommand.Download:
                 this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
-                let image_data = this.diagram.makeImageData({
+                const image_data = this.diagram.makeImageData({
                     scale: 1,
                     returnType: "blob",
                     background: "#fff",
@@ -2011,7 +2008,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
 	applySavedFilter(e: AssetBrowserFilterModel) {
-        let diagramTypeChanged: boolean = (this.displayConfiguration.DiagramType !== e.DiagramType);
+        const diagramTypeChanged: boolean = (this.displayConfiguration.DiagramType !== e.DiagramType);
         this.displayConfiguration = new AssetBrowserFilterModel();
         this.displayConfiguration = e;
 
@@ -2052,7 +2049,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 });
 
                 this.searchText = phrase;
-                let foundResults: go.Node[] = [];
+                const foundResults: go.Node[] = [];
                 this.searchResults = [];
 
                 this.helper_ScaleDiagram(1);//this.diagram.zoomToFit();
@@ -2062,9 +2059,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     if (node instanceof go.Node) {
                         var nodeData = node.data;
                         node.isHighlighted = false;
-                        if (phrase != '') {
+                        if (phrase !== '') {
                             self.searchableProps.forEach((prop) => {
-                                if (node.data[prop] && node.data[prop].toLowerCase().indexOf(phrase.toLowerCase()) == 0) {
+                                if (node.data[prop] && node.data[prop].toLowerCase().indexOf(phrase.toLowerCase()) === 0) {
                                     foundResults.push(node);
                                     self.search_AddHighlightToNode(m, node, phrase);
                                     self.search_ExpandGroups(node.data.group);
@@ -2124,7 +2121,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (n instanceof go.Node) {
                     var data = m.findNodeDataForKey(n.key);
 
-                    if (n.key == node.key) {
+                    if (n.key === node.key) {
                         m.set(data, 'highlight_background', self.searchHighlightColourFocused);
                     }
                     else {
@@ -2167,7 +2164,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region Templates
 
     private template_GetContrast(back: string, backAmount: number): string {
-        let brush = new go.Brush();
+        const brush = new go.Brush();
         brush.color = back;
         brush.lightenBy(backAmount);
         return brush.isDark() ? '#ffffff' : '#000000';
@@ -2401,7 +2398,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
             p1 = Math.min(p1, w / 2);
             p1 = Math.min(p1, h / 2);
-            let geo = new go.Geometry();
+            const geo = new go.Geometry();
 
             geo.add(new go.PathFigure(0, p1)
                 .add(new go.PathSegment(go.PathSegment.Arc, 180, 90, p1, p1, p1, p1))
@@ -2423,7 +2420,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
             p1 = Math.min(p1, w / 2);
             p1 = Math.min(p1, h / 2);
-            let geo = new go.Geometry();
+            const geo = new go.Geometry();
 
 
             geo.add(new go.PathFigure(0, 0)
@@ -2451,10 +2448,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     click: (e, obj) => {
                         let assetUidRedirect: string = '';
                         assetUidRedirect = obj.part.data.assetUid;
-                        if (assetUidRedirect == this.assetUid)
+                        if (assetUidRedirect === this.assetUid)
                             {return;}
 
-                        if (obj.part.data.class && obj.part.data.class.toString() == 'DiagramAsset') {
+                        if (obj.part.data.class && obj.part.data.class.toString() === 'DiagramAsset') {
 
                             this.processService.getProcessUrlByDiagramAssetUid(obj.part.data.assetUid).subscribe((res) => {
                                 this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
@@ -2470,8 +2467,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }
                 },
                 new go.Binding("visible", "", (o) => (
-                    !(o.part.data.template && o.part.data.template == 'Owner') &&
-                    o.part.data.assetUid != this.assetUid &&
+                    !(o.part.data.template && o.part.data.template === 'Owner') &&
+                    o.part.data.assetUid !== this.assetUid &&
                     (o.part.data.assetUid !== this.emptyUid && o.part.data.hasAssetReadAccess)
                 )).ofObject()
             ),
@@ -2482,10 +2479,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     click: (e, obj) => {
                         let assetUidRedirect: string = '';
                         assetUidRedirect = obj.part.data.assetUid;
-                        if (assetUidRedirect == this.assetUid)
+                        if (assetUidRedirect === this.assetUid)
                             {return;}
 
-                        if (obj.part.data.class && obj.part.data.class.toString() == 'DiagramAsset') {
+                        if (obj.part.data.class && obj.part.data.class.toString() === 'DiagramAsset') {
 
                             this.processService.getProcessUrlByDiagramAssetUid(obj.part.data.assetUid).subscribe((res) => {
                                 window.open(res, '_blank');
@@ -2498,8 +2495,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }
                 },
                 new go.Binding("visible", "", (o) => (
-                    !(o.part.data.template && o.part.data.template == 'Owner') &&
-                    (o.part.data.assetUid !== this.emptyUid && o.part.data.assetUid != this.assetUid && o.part.data.hasAssetReadAccess)
+                    !(o.part.data.template && o.part.data.template === 'Owner') &&
+                    (o.part.data.assetUid !== this.emptyUid && o.part.data.assetUid !== this.assetUid && o.part.data.hasAssetReadAccess)
                 )).ofObject()
             ),
             this.g(
@@ -2507,7 +2504,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenuhelper_ShowDetails }),
                 {
                     click: (e, obj) => {
-                        if (obj.part.data.assetUid != null && obj.part.data.assetUid != this.emptyUid) {
+                        if (obj.part.data.assetUid != null && obj.part.data.assetUid !== this.emptyUid) {
                             this.helper_SetVisiblePanel(AssetBrowserPanelCommand.Information, true);
                             this.helper_ShowDetail(obj.part.data.assetUid);
                         }
@@ -2577,7 +2574,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             });
         }
 
-        let dg = this.g(go.Diagram, 'LineageDiagram', {
+        const dg = this.g(go.Diagram, 'LineageDiagram', {
             initialContentAlignment: go.Spot.Center,
             initialDocumentSpot: go.Spot.Center,
             allowDrop: true,
@@ -2589,7 +2586,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             "animationManager.isEnabled": false
         });
 
-        let model = (dg.model as go.GraphLinksModel);
+        const model = (dg.model as go.GraphLinksModel);
 
         model.nodeCategoryProperty = "template";
         model.nodeDataArray = [];
@@ -3544,7 +3541,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
                 var arrData = (obj.part.data[propertyName] as Array<any>)
-                    .filter((x) => x["showBadge"] != false);
+                    .filter((x) => x["showBadge"] !== false);
                 return arrData.length < this.autoCollapseRelationshipCount;
             }).ofObject(),
             new go.Binding("itemArray", propertyName),
@@ -3560,7 +3557,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
                 var arrData = (obj.part.data[propertyName] as Array<any>)
-                    .filter((x) => x["showBadge"] != false);
+                    .filter((x) => x["showBadge"] !== false);
                 return arrData.length < this.autoCollapseRelationshipCount;
             }).ofObject(),
             new go.Binding("itemArray", propertyName),
@@ -3587,7 +3584,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         margin: new go.Margin(0, 0, -1, 0)
                     },
                     new go.Binding("fill", "", (obj) => {
-                        return obj.data['expanded'] == true ? "#f1f1f3" : "white";
+                        return obj.data['expanded'] === true ? "#f1f1f3" : "white";
                     }).ofObject()
                 ),
                 new go.Binding("visible", "", function (part: go.Part) {
@@ -3646,7 +3643,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 fill: this.badgeTextColor
                             },
                             new go.Binding("fill", "", (obj) => {
-                                return obj.data['expanded'] == true ? "#7690a9" : this.badgeTextColor;
+                                return obj.data['expanded'] === true ? "#7690a9" : this.badgeTextColor;
                             }).ofObject()
                         ),
                         this.g(
@@ -3685,7 +3682,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         margin: new go.Margin(0, 0, -1, 0)
                     },
                     new go.Binding("fill", "", (obj) => {
-                        return obj.data['expanded'] == true ? "#f1f1f3" : "white";
+                        return obj.data['expanded'] === true ? "#f1f1f3" : "white";
                     }).ofObject()
                 ),
                 new go.Binding("visible", "", function (part: go.Part) {
@@ -3744,7 +3741,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 fill: this.badgeTextColor
                             },
                             new go.Binding("fill", "", (obj) => {
-                                return obj.data['expanded'] == true ? "#7690a9" : this.badgeTextColor;
+                                return obj.data['expanded'] === true ? "#7690a9" : this.badgeTextColor;
                             }).ofObject()
                         ),
                         this.g(
@@ -3778,7 +3775,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private setRelationshipBadgeHoverState(goObj: go.GraphObject, ev: go.InputEvent, data: go.ObjectData, isHover: boolean, self: AssetBrowserComponent) {
         try {
             self.isRelationshipBadgeTooltipVisible = isHover;
-            let hierarchyKey: string = goObj.part.data["hierarchyKey"];
+            const hierarchyKey: string = goObj.part.data["hierarchyKey"];
             var refHtmlElement = self.relationshipBadgesTooltipRef.nativeElement as HTMLElement;
             if (!refHtmlElement) {return;}
             if (isHover) {
@@ -3846,7 +3843,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
 
-            if (showOnSide == "left") {
+            if (showOnSide === "left") {
                 refHtmlElement.style.left = (posX - refHtmlElement.offsetWidth - correctionX - 2) + "px";
                 refHtmlElement.style.top = (position.y - correctionY) + "px";
                 this.transformOrigin = "100% 0%";
@@ -3859,12 +3856,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
     private groupedBadgeClick(obj: go.GraphObject, propName: string) {
-        let lastHighlightedPart = this.highlightedPart;
+        const lastHighlightedPart = this.highlightedPart;
         setTimeout(() => {
             this.followPart = obj.part;
             this.isRelationshipSelectorAvailable = obj.part.data["relExpanded" + propName];
             this.relationshipData = (obj.part.data[propName] as Array<any>)
-                .filter((x) => x["showBadge"] != false);
+                .filter((x) => x["showBadge"] !== false);
             this.relationshipSelectorType = propName;
             if (propName === "relations") {
                 this.relationshipData.forEach((rel) => {
@@ -3898,10 +3895,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     alignment: new go.Spot(0.5, 0.5)
                 },
                 new go.Binding("text", "", function (obj: go.Part) {
-                    if (obj.data['showLoading'] == true)
+                    if (obj.data['showLoading'] === true)
                         {return FontAwesomeHelper.GetHtmlCode("fa-spinner");}
 
-                    if (obj.data['expanded'] == true)
+                    if (obj.data['expanded'] === true)
                         {return FontAwesomeHelper.GetHtmlCode("fa-minus-square");}
                     else
                         {return FontAwesomeHelper.GetHtmlCode("fa-plus-square");}
@@ -3922,7 +3919,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
                 var arrData = (obj.part.data[propertyName] as Array<any>)
-                    .filter((x) => x["showBadge"] != false);
+                    .filter((x) => x["showBadge"] !== false);
                 return arrData.length >= this.autoCollapseRelationshipCount;
             }).ofObject(),
             this.g(go.Panel, "Auto",
@@ -3963,7 +3960,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 alignment: new go.Spot(0.5, 0.5)
                             },
                             new go.Binding("text", "", function (obj: go.Part) {
-                                if (obj.data['relExpanded' + propertyName] == true)
+                                if (obj.data['relExpanded' + propertyName] === true)
                                     {return FontAwesomeHelper.GetHtmlCode("fa-minus-square");}
                                 else
                                     {return FontAwesomeHelper.GetHtmlCode("fa-plus-square");}
@@ -4027,7 +4024,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             new go.Binding("", "", (obj: go.GraphObject, target: go.TextBlock) => {
                                 let totalCount: number = 0;
 
-                                (obj.part.data[propertyName] as Array<any>).filter((x) => x["showBadge"] != false).forEach((d) => totalCount += d.count);
+                                (obj.part.data[propertyName] as Array<any>).filter((x) => x["showBadge"] !== false).forEach((d) => totalCount += d.count);
                                 if (isNaN(totalCount)) {
                                     target.text = '-';
                                     return;
@@ -4095,7 +4092,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
 
-            var data = part.diagram.nodes.filter((x) => x.data['hierarchyKey'] == part.data['hierarchyKey']);
+            var data = part.diagram.nodes.filter((x) => x.data['hierarchyKey'] === part.data['hierarchyKey']);
             var maxCharCount = 0;
             data.each((d) => {
                 if (d.data && d.data["text"]) {
@@ -4121,7 +4118,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (maxWidth > 260)
                 {maxWidth = 260;}
 
-            if (object != part) {
+            if (object !== part) {
                 var depth = object.findSubGraphLevel();
                 maxWidth = maxWidth - depth * 6;
             }
@@ -4164,7 +4161,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         var title = "";
 
         var dataCount = this.diagram.nodes.filter((x) =>
-            x.data['hierarchyKey'] == hierarchyKey
+            x.data['hierarchyKey'] === hierarchyKey
         ).count - 1;
 
         if (rel.text) {

@@ -18,8 +18,8 @@ export class CopyClipboardDirective {
         if (!this.payload)
             {return;}
 
-        let listener = (e: ClipboardEvent) => {
-            let clipboard = e.clipboardData || window["clipboardData"];
+        const listener = (e: ClipboardEvent) => {
+            const clipboard = e.clipboardData || window["clipboardData"];
             clipboard.setData("text", this.payload.toString());
             e.preventDefault();
             this.copied.emit(this.payload);

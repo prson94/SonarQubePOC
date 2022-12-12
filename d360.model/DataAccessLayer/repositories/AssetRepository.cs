@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -85,12 +84,11 @@ namespace d360.model.DataAccessLayer
 			List<string> whereStatements = new List<string>();
 			if (queryParams != null)
 			{
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "useastransformation"))
+				if (queryParams.Any(q => q.Key.ToLower() == "useastransformation"))
 				{
-					var useAsTransformationString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "useastransformation").Value;
+					var useAsTransformationString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "useastransformation").Value;
 					if (bool.TryParse(useAsTransformationString, out bool useAsTransformation))
 					{
-
 						condition += " and A.UseAsTransformation=@useAsTransformation ";
 						dbArgs.Add("useAsTransformation", useAsTransformation);
 					}
@@ -100,12 +98,11 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "hierarchical"))
+				if (queryParams.Any(q => q.Key.ToLower() == "hierarchical"))
 				{
-					var hierarchicalString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "hierarchical").Value;
+					var hierarchicalString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "hierarchical").Value;
 					if (bool.TryParse(hierarchicalString, out bool hierarchical))
 					{
-
 						condition += " and HA.Hierarchical=@hierarchical ";
 						dbArgs.Add("hierarchical", hierarchical);
 					}
@@ -115,12 +112,11 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplayparent"))
+				if (queryParams.Any(q => q.Key.ToLower() == "autodisplayparent"))
 				{
-					var autoDisplayParentString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "autodisplayparent").Value;
+					var autoDisplayParentString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "autodisplayparent").Value;
 					if (bool.TryParse(autoDisplayParentString, out bool autoDisplayParent))
 					{
-
 						condition += " and A.AutoDisplayParent=@autoDisplayParent ";
 						dbArgs.Add("autoDisplayParent", autoDisplayParent);
 					}
@@ -130,10 +126,10 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "obj") && queryParams.ToList().Any(q => q.Key.ToLower() == "objid"))
+				if (queryParams.Any(q => q.Key.ToLower() == "obj") && queryParams.ToList().Any(q => q.Key.ToLower() == "objid"))
 				{
-					var obj = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "obj").Value;
-					var objId = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "objid").Value;
+					var obj = queryParams.FirstOrDefault(q => q.Key.ToLower() == "obj").Value;
+					var objId = queryParams.FirstOrDefault(q => q.Key.ToLower() == "objid").Value;
 					if (Enum.TryParse(obj, out SystemObjects ot))
 					{
 						condition += " and A.Object=@obj ";
@@ -154,9 +150,9 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includedashboardflag"))
+				if (queryParams.Any(q => q.Key.ToLower() == "includedashboardflag"))
 				{
-					var includeString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includedashboardflag").Value;
+					var includeString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "includedashboardflag").Value;
 					if (bool.TryParse(includeString, out bool include))
 					{
 						extraJoins += @$" cross apply (select count(1) as [Count] from Report where AssetTypeId = A.ID and Location = {(int)DashboardLocation.List}) D ";
@@ -168,9 +164,9 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includelevels"))
+				if (queryParams.Any(q => q.Key.ToLower() == "includelevels"))
 				{
-					var includeLevelsString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includelevels").Value;
+					var includeLevelsString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "includelevels").Value;
 					if (bool.TryParse(includeLevelsString, out bool includeLevels))
 					{
 						extraColumns += @", (select Level, Name, Description from AssetTypeLevel where AssetTypeID = A.ID order by Level for json path) as LevelsJson";
@@ -189,10 +185,20 @@ namespace d360.model.DataAccessLayer
 				dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
 			}
 
-			if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
+			if (assetTypeUid != null && assetTypeUid.Value != Guid.Empty)
 			{
 				condition += " and A.uid=@assetTypeUid ";
 				dbArgs.Add("assetTypeUid", assetTypeUid.Value);
+
+				extraColumns += @", PredicateInverse";
+
+				extraJoins += @$" outer apply (
+											select ITD.PredicateInverse from IntersectTypeDetail ITD
+											inner join [Predicate] P on ITD.ObjectAssetTypeID = A.ID 
+											and P.ID = ITD.PredicateID 
+											and P.Type = {(int)PredicateType.InterTypeHierarchy}
+											  ) PredicateInverse ";
+				
 			}
 
 			//in case of Reference List items, check if there is parent to calculate if it is Hierarchical
@@ -205,7 +211,7 @@ namespace d360.model.DataAccessLayer
 												where A.Class = {(int)AssetTypeClass.Reference} and P.Type in (3,4) and IT.ObjectAssetTypeID = A.ID)
 												then 1 
 										else A.Hierarchical
-										end as Hierarchical)HA ";
+										end as Hierarchical) HA ";
 
 			var sql = $@"
 						SELECT     A.[Name]
@@ -279,6 +285,7 @@ namespace d360.model.DataAccessLayer
 			string profilingCheckFields = "";
 			bool includeProfilingCheck = false;
 			bool useCachedFilters = false;
+			var simpleFilterTempTables = new StringBuilder();
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -1103,10 +1110,16 @@ namespace d360.model.DataAccessLayer
 						if (select != null && join != null)
 						{
 							var selectField = select.StatementWithoutColumnName;
-
 							var joinStatement = !string.IsNullOrEmpty(join.SimpleStatement) ? join.SimpleStatement : join.SQLStatement;
 
-							simpleFilters.Add($@"
+							if (join.FieldFilter != null)
+							{
+								simpleFilterTempTables.AppendLine(join.FieldFilter.SimpleFilterTempTable);
+								simpleFilters.Add(join.FieldFilter.SimpleFilterStatement);
+							}
+							else
+							{
+								simpleFilters.Add($@"
 								select  A.ID
 								from    Asset A 
 								{advancedFilterTempTableInfos.JoinFilter()}
@@ -1115,6 +1128,7 @@ namespace d360.model.DataAccessLayer
 								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
 								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and {selectField} like @simpleFilter
 								option(recompile)");
+							}
 						}
 					}
 
@@ -1484,20 +1498,19 @@ namespace d360.model.DataAccessLayer
 			string simpleFiltersTempTablesQuery = "";
 			if (dbArgs.ParameterNames.Contains("simpleFilter"))
 			{
-				var sb = new StringBuilder();
-				sb.AppendLine("drop table if exists #TempFilteredAssets");
-				sb.AppendLine("create table #TempFilteredAssets(AssetId bigint)");
-				sb.AppendLine("create index ix_TempFilteredAssets on #TempFilteredAssets (AssetId)");
+				simpleFilterTempTables.AppendLine("drop table if exists #TempFilteredAssets");
+				simpleFilterTempTables.AppendLine("create table #TempFilteredAssets(AssetId bigint)");
+				simpleFilterTempTables.AppendLine("create index ix_TempFilteredAssets on #TempFilteredAssets (AssetId)");
 
 				for (int i = 0; i < simpleFilters.Count; i++)
 				{
-					sb.AppendLine("insert into #TempFilteredAssets");
-					sb.AppendLine(simpleFilters[i]);
+					simpleFilterTempTables.AppendLine("insert into #TempFilteredAssets");
+					simpleFilterTempTables.AppendLine(simpleFilters[i]);
 				}
 
-				sb.Remove(sb.Length - 1, 1);
-				sb.AppendLine(pathSegmentsSimpleFilterTempTables);
-				simpleFiltersTempTablesQuery = sb.ToString();
+				simpleFilterTempTables.Remove(simpleFilterTempTables.Length - 1, 1);
+				simpleFilterTempTables.AppendLine(pathSegmentsSimpleFilterTempTables);
+				simpleFiltersTempTablesQuery = simpleFilterTempTables.ToString();
 			}
 
 			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
@@ -1535,7 +1548,7 @@ namespace d360.model.DataAccessLayer
 
 				if (useCachedFilters)
 				{
-					string[] ignoreQueryKeys = new string[] { "_pagesize", "_pagenum", "_order", "_direction" };
+					string[] ignoreQueryKeys = new string[] { "_pagesize", "_pagenum", "_order", "_direction", "_includetotal" };
 
 					requestHash = assetType.uid + JsonConvert.SerializeObject(
 						queryParams.Where(x => !ignoreQueryKeys.Contains(x.Key.ToLowerInvariant())).OrderBy(x => x.Key))
@@ -1553,6 +1566,8 @@ namespace d360.model.DataAccessLayer
 		
 					IF((SELECT count(*) FROM #filtered_results)=0)
 					begin
+						declare @StartTime datetime = GETDATE(); 
+						
 						{advancedFilterTempTableInfos.TempTableSQL()}
 				
 						{simpleFiltersTempTablesQuery}
@@ -1560,7 +1575,9 @@ namespace d360.model.DataAccessLayer
 						insert into #filtered_results
 						{GetBaseQuery()}
 
-						exec CachedAssetFiltersProvider 'SET', @userId, @requesthash, @assetTypeId
+						declare @filteringDuration int = DATEDIFF(MS,@StartTime,GETDATE());
+
+						exec CachedAssetFiltersProvider 'SET', @userId, @requesthash, @assetTypeId, @filteringDuration
 					end";
 			}
 
@@ -1857,8 +1874,16 @@ namespace d360.model.DataAccessLayer
 							//If dynamic object for property orderBy does not implement IComparable (i.e. JObject,JArray), use string comparison
 							results.Sort((x, y) =>
 							{
-								var value1 = ((IDictionary<string, object>)x)[orderBy].ToString();
-								var value2 = ((IDictionary<string, object>)y)[orderBy].ToString();
+								var obj1 = ((IDictionary<string, object>)x);
+								var obj2 = ((IDictionary<string, object>)y);
+								string value1 = "", value2 = "";
+
+								if (obj1.ContainsKey(orderBy) && obj2.ContainsKey(orderBy))
+								{
+									value1 = obj1[orderBy].ToString();
+									value2 = obj2[orderBy].ToString();
+								}
+
 								return value1.CompareTo(value2);
 							});
 						}

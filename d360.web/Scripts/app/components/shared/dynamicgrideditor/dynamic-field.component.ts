@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
-import { Subject, Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 import { EditorDropDownItem, EditorField } from '../../../models/editor-field.model';
 
@@ -118,7 +118,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.suggestionResultsArray.forEach((x) => this.suggestionResults.push(x.name));
 
                 this.suggestionResultsArray.forEach((s) => {
-                    if (s.name.toLowerCase() == this.field.Value.toLowerCase()) {
+                    if (s.name.toLowerCase() === this.field.Value.toLowerCase()) {
                         this.autoCompleteSelected.emit(s);
                     }
                 });
@@ -134,7 +134,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             .subscribe((response) => {
 
                 response.forEach((s) => {
-                    if (s.name.toLowerCase() == this.field.Value.toLowerCase()) {
+                    if (s.name.toLowerCase() === this.field.Value.toLowerCase()) {
                         this.doesAssetExists = true;
                     }
                 });
@@ -145,10 +145,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getColorItemsAsSelectItem(items: any[]): SelectItem[] {
         if (items.length > 0) {
-            return items.filter((x) => x.Text != this.chooseText).map((x) => {
+            return items.filter((x) => x.Text !== this.chooseText).map((x) => {
                 try {
 
-                    let colorobj = JSON.parse(x.Text);
+                    const colorobj = JSON.parse(x.Text);
                     if (colorobj)
                         {return { label: colorobj.name, value: x.Value, title: colorobj.color };}
                 } catch (ex) {
@@ -160,9 +160,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getColorItemsAsEditorItem(items: any[]): EditorDropDownItem[] {
         if (items.length > 0) {
-            let its = items.filter((x) => x.Text != this.chooseText).map((x) => {
+            const its = items.filter((x) => x.Text !== this.chooseText).map((x) => {
                 try {
-                    let colorobj = JSON.parse(x.Text);
+                    const colorobj = JSON.parse(x.Text);
                     if (colorobj)
                         {return { Text: colorobj.name, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group: x.Group, Color: colorobj.color };}
                 } catch (ex) {
@@ -175,7 +175,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getLabelByID(id) {
         if (id && this.field.Items && this.field.Items.length > 0) {
-            let filterItems = this.field.Items.filter((x) => x.value == id);
+            const filterItems = this.field.Items.filter((x) => x.value === id);
             if (filterItems.length > 0) {
                 return filterItems[0].label;
             }
@@ -185,7 +185,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getColorByID(id) {
         if (id && this.field.Items && this.field.Items.length > 0) {
-            let filterItems = this.field.Items.filter((x) => x.value == id);
+            const filterItems = this.field.Items.filter((x) => x.value === id);
             if (filterItems.length > 0) {
                 return filterItems[0].title;
             }
@@ -193,7 +193,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         return "";
     }
     selectTag(event) {
-        var obj = this.suggestionResultsArray.filter((x) => x.name == event)[0];
+        var obj = this.suggestionResultsArray.filter((x) => x.name === event)[0];
         this.autoCompleteSelected.emit(obj);
     }
 
@@ -204,13 +204,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             return;
         }
 
-        let quill = this.ed.getQuill();
+        const quill = this.ed.getQuill();
 
         if (e == null && quill != null) {
-            let contents = quill.getContents();
+            const contents = quill.getContents();
 
             if (contents != null && contents.ops != null) {
-                let content = contents.ops.find((i) => i.insert != null && i.insert != '\n');
+                const content = contents.ops.find((i) => i.insert != null && i.insert !== '\n');
 
                 if (content != null) {
                     this.field.Value = quill.container.querySelector('.ql-editor').innerHTML;
@@ -224,7 +224,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     ngOnInit() {
-        if (this.field.FieldType != 'Link') {
+        if (this.field.FieldType !== 'Link') {
             this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe((data) => {
                 this.onFieldChanges(data);
             });
@@ -236,7 +236,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         this.cascadeSub = this.cascadeService.cascadeMessage$.subscribe(
             (casc) => {
-                if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId == this.field.FieldTypeID) {
+                if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId === this.field.FieldTypeID) {
                     if (casc.parentListItemId != null && casc.parentListItemId.length > 0) {
                         //load the values for the list that is a child                    
                         this.field.Items = [];
@@ -248,12 +248,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                                 else
                                     {this.field.Items = res;}
 
-                                if (((this.field.Items == null || this.field.Items.length == 0) && this.field.Value != null) || this.hasCascadeLoaded) {
+                                if (((this.field.Items == null || this.field.Items.length === 0) && this.field.Value != null) || this.hasCascadeLoaded) {
                                     this.field.Value = null;
                                 }
 
-                                if (this.field.DelayedLoadType == 'FieldFilter') {
-                                    if (this.field.Items == null || this.field.Items.length == 0) {
+                                if (this.field.DelayedLoadType === 'FieldFilter') {
+                                    if (this.field.Items == null || this.field.Items.length === 0) {
                                         this.form.controls[this.field.FieldName].disable();
                                     } else if (!this.field.ReadOnly) {
                                         this.form.controls[this.field.FieldName].enable();
@@ -276,7 +276,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                         this.field.Value = null;
                         this.field.Items = [];
 
-                        if (this.field.DelayedLoadType == 'FieldFilter') {
+                        if (this.field.DelayedLoadType === 'FieldFilter') {
                             this.form.controls[this.field.FieldName].disable();
                         }
 
@@ -295,13 +295,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         this.relationSub = this.fieldsService.getRelationshipFieldItems(this.relationSource$)
             .subscribe((res) => {
                 this.relationItemsLoading = false;
-                if (res != undefined) {
+                if (res != null) {
                     this.field.Items = res.results["items"];
                     this.selectRelationItems(this.relationItems);
 
                     //When setting count we need to take into calculation items that are disregarded in cardinality check but still presend in already selected items
                     //Update page count only when filters changes
-                    let hasCardinalityOne: boolean = res.results["hasCardinalityOne"] ? res.results["hasCardinalityOne"] : false;
+                    const hasCardinalityOne: boolean = res.results["hasCardinalityOne"] ? res.results["hasCardinalityOne"] : false;
                     if (res.event.globalFilter !== this.currentRelationshipLoadedFilter) {
                         if (hasCardinalityOne) {
                             var selectedCount = this.relationItems ? this.relationItems.length : 0;
@@ -318,7 +318,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.ref.markForCheck();
             });
 
-        this.typeAheadSub = (this.field.DelayedLoadType == 'Predicate') ?
+        this.typeAheadSub = (this.field.DelayedLoadType === 'Predicate') ?
             this.fieldsService.getTypeaheadFilteredByPredicateItems(this.typeAheadSource$, this.selectedObject, this.selectedObjectID)
                 .subscribe((res) => {
                     this.field.Items = <any[]>res;
@@ -333,7 +333,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     this.ref.markForCheck();
                 });
 
-        if (this.field.DelayedLoadType == 'Predicate') {
+        if (this.field.DelayedLoadType === 'Predicate') {
             this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).subscribe(
                 (res) => {
                     this.field.Items = res.items;
@@ -349,7 +349,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         }
 
         if (this.field && this.field.Validations) {
-            for (let validation of this.field.Validations) {
+            for (const validation of this.field.Validations) {
                 if (validation.regex) {
                     this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : $localize`Value does not match the required pattern.`;
                 } else if (validation.rule && validation.rule.startsWith('increment')) {
@@ -359,7 +359,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 } else if (validation.rule && validation.rule.startsWith('max')) {
                     this.Max = +validation.rule.split("maxLength=")[1];
                 } else if (validation.rule && validation.rule.startsWith('length')) {
-                    let vals = validation.rule.split("length=")[1];
+                    const vals = validation.rule.split("length=")[1];
 
                     this.Min = +vals.split(",")[0];
                     this.Max = +vals.split(",")[1];
@@ -369,7 +369,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             }
         }
 
-        if (this.field.FieldType == 'Color') {
+        if (this.field.FieldType === 'Color') {
             this.assetService.getAllColors().subscribe((x) => {
                 this.defaultColorOptions = x;
                 this.ref.markForCheck();
@@ -378,22 +378,22 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         }
 
-        if (this.field.FieldType == 'Relationship') {
+        if (this.field.FieldType === 'Relationship') {
             this.selectRelationItems(this.field.Value);
         }
 
-        if ((this.field.FieldType == 'Date' || this.field.FieldType == 'DateTime') && isNaN(Date.parse(this.field.Value))) {
+        if ((this.field.FieldType === 'Date' || this.field.FieldType === 'DateTime') && isNaN(Date.parse(this.field.Value))) {
             this.field.Value = null;
             this.form.controls[this.field.FieldName].setValue(this.field.Value);
         }
 
 
-        if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
-            if (this.field.Value == null && this.field.Items.some((x) => x.Selected == true)) {
-                this.field.Value = this.field.Items.filter((x) => x.Selected == true).map((x) => x.Value);
+        if (this.field.FieldType === 'Lookup' && this.field.ParentFieldTypeID <= 0) {
+            if (this.field.Value == null && this.field.Items.some((x) => x.Selected === true)) {
+                this.field.Value = this.field.Items.filter((x) => x.Selected === true).map((x) => x.Value);
             }
 
-            if (this.field.FieldType == 'Lookup' && this.field.Value == null) {
+            if (this.field.FieldType === 'Lookup' && this.field.Value == null) {
                 setTimeout(() => {
                     this.form.controls[this.field.FieldName].setValue(null);
                 });
@@ -406,9 +406,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             }, 250);
         }
 
-        if (this.field.FieldType == 'Lookup' && this.field.UseTypeahead) {
+        if (this.field.FieldType === 'Lookup' && this.field.UseTypeahead) {
             if (this.field.Items != null && this.field.Items.length > 0) {
-                let sel: EditorDropDownItem = this.field.Items.find((i) => i.Selected == true);
+                const sel: EditorDropDownItem = this.field.Items.find((i) => i.Selected === true);
 
                 this.loadTypeAheadValue = true;
                 this.typeAheadValue = sel;
@@ -437,7 +437,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.loadTypeAheadValue) {
             this.loadTypeAheadValue = false;
             if (this.field.UseTypeahead) {
-                let el: any = document.getElementById(this.field.FieldName + '_input_' + this.component_uid);
+                const el: any = document.getElementById(this.field.FieldName + '_input_' + this.component_uid);
                 if (el != null && this.typeAheadValue != null)
                     {el.value = this.typeAheadValue.Text;}
             }
@@ -460,7 +460,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     onFieldChanges(data: any) {
         this.isDirty = true;
-        if (this.field.FieldType == 'Lookup') {
+        if (this.field.FieldType === 'Lookup') {
             if (this.field.UseTypeahead) {
                 if (this.typeAheadValue != null)
                     {this.field.Value = this.typeAheadValue.Value;}
@@ -471,17 +471,17 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             }
             this.listItemChange.emit({ field: this.field, value: data });
         }
-        else if (this.field.FieldType == 'Relationship') {
+        else if (this.field.FieldType === 'Relationship') {
             this.listItemChange.emit({ field: this.field, value: data });
 
-        } else if (this.field.FieldType == 'Html') {
+        } else if (this.field.FieldType === 'Html') {
             this.setEditorContent(data);
             this.field.Value = data;
         } else {
             this.field.Value = data;
         }
 
-        if (this.object == 'Tag' && !this.objectID) {
+        if (this.object === 'Tag' && !this.objectID) {
             this.checkAssetExistance();
         }
     }
@@ -492,17 +492,17 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             return false;
         }
 
-        if (this.object == 'Tag' && this.field.Value) {
+        if (this.object === 'Tag' && this.field.Value) {
             if (this.field.Value.includes('|')) {
                 this.form.controls[this.field.FieldName].setErrors({ hasPipe: true });
                 return false;
             }
         }
 
-        if (this.field.FieldType == "Link") {
-            if (this.form.controls[this.field.FieldName + '_Name'] == undefined
+        if (this.field.FieldType === "Link") {
+            if (this.form.controls[this.field.FieldName + '_Name'] == null
                 || this.form.controls[this.field.FieldName + '_Name'].disabled
-                || this.form.controls[this.field.FieldName + '_Url'] == undefined
+                || this.form.controls[this.field.FieldName + '_Url'] == null
                 || this.form.controls[this.field.FieldName + '_Url'].disabled
             ) {
                 return true;
@@ -514,40 +514,40 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         const numInputs = document.querySelectorAll('input[type=number]');
 
         for (let i = 0; i < numInputs.length; i++) {
-            let elem = numInputs[i] as HTMLInputElement;
+            const elem = numInputs[i] as HTMLInputElement;
 
-            if (elem.validity.badInput && elem.validationMessage == $localize`Please enter a number.`) {
-                if (this.field.FieldType == 'Number' && this.field.FieldName == elem.name) {
+            if (elem.validity.badInput && elem.validationMessage === $localize`Please enter a number.`) {
+                if (this.field.FieldType === 'Number' && this.field.FieldName === elem.name) {
                     this.form.controls[this.field.FieldName].setErrors({ integer: true });
                 }
-                if (this.field.FieldType == 'Decimal' && this.field.FieldName == elem.name) {
+                if (this.field.FieldType === 'Decimal' && this.field.FieldName === elem.name) {
                     this.form.controls[this.field.FieldName].setErrors({ number: true });
                 }
             }
 
-            if (this.field.FieldType == 'Number') {
+            if (this.field.FieldType === 'Number') {
                 if (elem.value.split('.').length > 1
                     || elem.value.split('+').length > 1
-                    || (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1)
+                    || (elem.value.indexOf('-') !== 0 && elem.value.split('-').length > 1)
                     || elem.value.split('e').length > 1
                     || elem.value.split('E').length > 1
                 ) {
-                    if (this.field.FieldName == elem.name) {
+                    if (this.field.FieldName === elem.name) {
                         this.form.controls[this.field.FieldName].setErrors({ integer: true });
                     }
                 }
-                else if (elem.name == "ValidForDays") {
+                else if (elem.name === "ValidForDays") {
                     if (+elem.value < 1 || +elem.value > 365)
                         {this.form.controls[this.field.FieldName].setErrors({ validDay: true });}
                 }
-            } else if (this.field.FieldType == 'Decimal') {
+            } else if (this.field.FieldType === 'Decimal') {
                 if (elem.value.split('.').length > 2
                     || elem.value.split('+').length > 1
-                    || (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1)
+                    || (elem.value.indexOf('-') !== 0 && elem.value.split('-').length > 1)
                     || elem.value.split('e').length > 1
                     || elem.value.split('E').length > 1
                 ) {
-                    if (this.field.FieldName == elem.name) {
+                    if (this.field.FieldName === elem.name) {
                         this.form.controls[this.field.FieldName].setErrors({ number: true });
                     }
                 }
@@ -576,9 +576,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     private fieldMessage(field: string) {
         let message = "";
-        let errors = this.form.controls[field].errors;
+        const errors = this.form.controls[field].errors;
 
-        if (this.form.controls[field] == undefined) {
+        if (this.form.controls[field] == null) {
             return '';
         }
 
@@ -652,9 +652,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private toDecimalPlaces(e: any, precision: number) {
-        let asString = '' + e.target.value;
-        let val = +e.target.value;
-        let newVal = +val.toFixed(precision);
+        const asString = '' + e.target.value;
+        const val = +e.target.value;
+        const newVal = +val.toFixed(precision);
 
         if (e == null || e.target == null || precision == null) {
             return;
@@ -664,33 +664,33 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             return;
         }
 
-        if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
+        if (newVal != null && (newVal !== 0 || newVal !== +val) && !isNaN(newVal)) {
             this.form.controls[this.field.FieldName].setValue(newVal);
             this.field.Value = newVal;
         }
     }
 
     private clamp(e: any, min: number, max: number, precision: number) {
-        let val = e.target.value;
-        let newVal = FormHelpers.clamp(val, min, max, precision);
+        const val = e.target.value;
+        const newVal = FormHelpers.clamp(val, min, max, precision);
 
         if (e == null || e.target == null || min == null || max == null) {
             return;
         }
-        if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
+        if (newVal != null && (newVal !== 0 || newVal !== +val) && !isNaN(newVal)) {
             this.form.controls[this.field.FieldName].setValue(newVal);
             this.field.Value = newVal;
         }
     }
 
     multiselectLabel(): string {
-        if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0 && (this.field.Items == null || this.field.Items.length == 0))
+        if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0 && (this.field.Items == null || this.field.Items.length === 0))
             {return $localize`Select a ${this.field.ParentFieldTypeName}`;}
         return $localize`Choose`;
     }
 
     OnBlurTrim() {
-        let value: string = this.form.controls[this.field.FieldName].value;
+        const value: string = this.form.controls[this.field.FieldName].value;
 
         this.form.controls[this.field.FieldName].setValue(value.trim());
     }
@@ -728,7 +728,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             }
 
             for (let i = 0; i < this.relationItems.length; i++) { //associate the selection with the item in the table
-                let x = this.field.Items.findIndex((f) => f.Value == this.relationItems[i].Value);
+                const x = this.field.Items.findIndex((f) => f.Value === this.relationItems[i].Value);
 
                 if (x > -1) {
                     this.relationItems[i] = this.field.Items[x];
@@ -777,33 +777,33 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (event == null || event.field == null)
             {return;}
 
-        let field = event.field;
+        const field = event.field;
 
 
-        if (this.field.FieldType == 'Relationship') {
+        if (this.field.FieldType === 'Relationship') {
             this.filterSemanticRelationItems(field);
         }
     }
 
     private filterSemanticRelationItems(field: any) {
 
-        if (field.FieldName == this.field.FieldName)
+        if (field.FieldName === this.field.FieldName)
             {return;}
 
-        if (this.field.FieldType == 'Relationship' && this.field.IsSemantic === true) {
-            if (field.FieldType == 'Relationship' && field.IsSemantic === true) {
+        if (this.field.FieldType === 'Relationship' && this.field.IsSemantic === true) {
+            if (field.FieldType === 'Relationship' && field.IsSemantic === true) {
                 if (field.Items == null)
                     {return;}
 
-                let selectedItems = field.Value.split(',');
+                const selectedItems = field.Value.split(',');
 
                 field.Items.forEach((i) => {
-                    let selected = selectedItems.findIndex((s) => s == i.Value) > -1;
+                    const selected = selectedItems.findIndex((s) => s === i.Value) > -1;
                     if (selected) {
-                        let ix = this.field.Items.findIndex((r) => r.Value == i.Value);
+                        const ix = this.field.Items.findIndex((r) => r.Value === i.Value);
 
                         if (ix > -1) {
-                            let item = this.field.Items.slice()[ix];
+                            const item = this.field.Items.slice()[ix];
                             this.field.Items.splice(ix, 1);
                             if (this.excludedRelationitems[field.FieldName] == null)
                                 {this.excludedRelationitems[field.FieldName] = [];}
@@ -813,9 +813,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     } else {
                         if (this.excludedRelationitems[field.FieldName] == null)
                             {return;}
-                        let ix = this.excludedRelationitems[field.FieldName].findIndex((r) => r.Value == i.Value);
+                        const ix = this.excludedRelationitems[field.FieldName].findIndex((r) => r.Value === i.Value);
                         if (ix > -1) {
-                            let item = this.excludedRelationitems[field.FieldName].slice()[ix];
+                            const item = this.excludedRelationitems[field.FieldName].slice()[ix];
                             this.excludedRelationitems[field.FieldName].splice(ix, 1);
                             this.field.Items.push(item);
                         }
@@ -826,7 +826,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         }
     }
     isRequired() {
-        return (this.field.Validations && this.field.Validations.some((x) => x.rule == 'required') == true) || this.field.Required;
+        return (this.field.Validations && this.field.Validations.some((x) => x.rule === 'required') === true) || this.field.Required;
     }
 
     getName(item: string) {

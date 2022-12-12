@@ -17,6 +17,7 @@ using d360.model.helpers.filters;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+using d360.web.Services;
 using d360.web.Utilities;
 
 using Dapper;
@@ -352,10 +353,10 @@ namespace d360.web.Controllers.V2
 
 				sql += " " + orderBySql + " " + offsetSql;
 
-				var query = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout).ToList();
+				var items = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout).ToList();
 
 				//Translate actionObject values
-				query.ForEach(r =>
+				items.ForEach(r =>
 				{
 					if (new[] { "Artifact", "ArtifactType" }.Contains(r.actionObject))
 					{
@@ -374,11 +375,19 @@ namespace d360.web.Controllers.V2
 					{
 						r.actionObject = ActionObjectDictionary[r.actionObject];
 					}
+
+					//this logic is moved from procedure due to performance issues 
+					//https://github.com/Infogix/govern/pull/9091/files
+					//although, Relationship was created, from perspective of an asset, its relationship property was Updated
+					if (r.actionObject == "Relationship")
+					{
+						r.action = "Updated";
+					}
 				});
 
 				if (isStreamResponse)
 				{
-					return Excel(GetExcelDocumentFromQuery(query), $"{assetUid} Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
+					return Excel(GetExcelDocumentFromQuery(items), $"{assetUid} Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
 				}
 				else
 				{
@@ -387,7 +396,7 @@ namespace d360.web.Controllers.V2
 						total = Company.Query<int>(countSql, dbArgs, ApiTimeout).First(),
 						pageNum = pageNum,
 						pageSize = pageSize,
-						items = query
+						items = items
 					};
 
 					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
@@ -475,7 +484,17 @@ namespace d360.web.Controllers.V2
 		]
 		public dynamic GetFilterLists(Guid assetUid)
 		{
+			if (assetUid == Guid.Empty)
+			{
+				throw new ArgumentException(AssetsApiMessages.InvalidAssetTypeUid);
+			}
+
 			dynamic objectInfo = GetLegacyObjectDetails(assetUid);
+			if (objectInfo == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(AssetsApiMessages.AssetAssetTypeNotFound, assetUid));
+			}
+
 			dynamic result = new System.Dynamic.ExpandoObject();
 			string condition;
 
@@ -832,7 +851,7 @@ namespace d360.web.Controllers.V2
 						then 'Relationship Type' 
 					else coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, ga.ActionObjectTypeName) 
 				end as actionObjectTypeName,
-				ga.actionObjectName as actionObjectName,
+				coalesce (ObjectName.Name, ga.actionObjectName) as actionObjectName,
 				case when O.ID > 0
 					then coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, ga.ActionObjectTypeName)  + ' ' + R.Action
 					else ga.ActionDescription
@@ -840,6 +859,12 @@ namespace d360.web.Controllers.V2
 				from reporting.global_audit r
 					left join [Intersect] O on R.ActionObject = 'Intersect' and O.ID = r.ActionObjectID
 					left join IntersectTypeDetail T on T.ID = O.IntersectTypeID
+					outer apply (SELECT  COALESCE(S_A.DisplayValue, 'Map') + ' / ' + COALESCE(O_A.DisplayValue,O_AT.Name, 'Map') as Name
+								FROM  [Intersecttype] IT
+								left outer join AssetDisplayValue S_A On S_A.AssetID = O.SubjectAssetID
+								left outer join AssetDisplayValue O_A On O_A.AssetID = O.ObjectAssetID
+								left outer join AssetType O_AT On O_AT.ID = O.ObjectAssetTypeID  and IT.ObjectAssetTypeID = 0 and IT.ObjectClass = {(int)AssetTypeClass.ReferenceItemType}
+								WHERE  	IT.ID = O.IntersecttypeID ) ObjectName
 				where r.ID = ga.ID
 			)ActionData
 			inner join  (

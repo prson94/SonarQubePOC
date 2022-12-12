@@ -264,7 +264,12 @@ namespace d360.model
 			{
 				Asset asset = Assets.Single(a => a.ID == assetId);
 
-				return HasUserReadPermission(asset.Object, asset.ObjectID, assetTypeId, CurrentResourceID);
+				if (permission == Permission.ReadAsset)
+				{
+					return HasUserReadPermission(asset.Object, asset.ObjectID, assetTypeId, CurrentResourceID);
+				}
+
+				return HasPermission(asset.Object, asset.ObjectID, assetTypeId, permission);
 			}
 			else
 			{

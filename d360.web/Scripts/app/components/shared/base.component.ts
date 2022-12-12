@@ -1,6 +1,11 @@
 import { Title } from '@angular/platform-browser';
-import { SecondaryNavItem, SecondaryNavCurrentObject, SecondaryNavPostModel, SecondaryNavRequestModel } from '../../models/secondaryNav.model';
-import { PermissionsService, Permissions } from '../../services/permissions.service';
+import {
+    SecondaryNavCurrentObject,
+    SecondaryNavItem,
+    SecondaryNavPostModel,
+    SecondaryNavRequestModel
+} from '../../models/secondaryNav.model';
+import { Permissions, PermissionsService } from '../../services/permissions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 
@@ -21,6 +26,7 @@ import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { AppConstants } from '../../static/constants';
+import { UsageAction, UsageBrowser } from '../../models/web-analytics-activity.model';
 
 export class BaseComponent {
 	public isLoading = false;
@@ -119,7 +125,7 @@ export class BaseComponent {
 		return this.settingsService.getSettingById(id).GuidSetting.Value;
 	}
 	getNumberSetting(id: CompanySettingEnum): number {
-		let setting = this.settingsService.getSettingById(id);
+		const setting = this.settingsService.getSettingById(id);
 		if (setting && setting.NumberSetting) {
 			return setting.NumberSetting.Value;
 		}
@@ -137,15 +143,98 @@ export class BaseComponent {
 		tileService.setTitle(`${this.getStringSetting(CompanySettingEnum.BrowserTitlePrefix)} - ${area}`);
 	}
 
-	logAction(actionName: string, objectName: string, objectId: number | string) {
+	//#region Usage Logic
+
+	private determineBrowser(): UsageBrowser {
+		let browser: UsageBrowser = UsageBrowser.Other;
+
+		const agent = window.navigator.userAgent.toLowerCase();
+		switch (true) {
+			case agent.indexOf('edge') > -1:
+				browser = UsageBrowser.Edge;
+				break;
+			case agent.indexOf('opr') > -1 && !!(<any>window).opr:
+				browser = UsageBrowser.Opera;
+				break;
+			case agent.indexOf('chrome') > -1 && !!(<any>window).chrome:
+				browser = UsageBrowser.Chrome;
+				break;
+			case agent.indexOf('trident') > -1:
+				browser = UsageBrowser.InternetExplorer;
+				break;
+			case agent.indexOf('firefox') > -1:
+				browser = UsageBrowser.FireFox;
+				break;
+			case agent.indexOf('safari') > -1:
+				browser = UsageBrowser.Safari;
+				break;
+			default:
+				browser = UsageBrowser.Other;
+				break;
+		}
+
+		return browser;
+	}
+
+	private logUsage(action: UsageAction,
+		assetUid?: string, assetTypeUid?: string, dashboardUid?: string, issueUid?: string, semanticUid?: string, tagUid?: string,
+		sidebar?: string, tab?: string) {
+		
 		if (this.webAnalyticsService) {
+			let browser = this.determineBrowser();
+
+			let language = navigator.language || window.navigator.language;
+			if (language.length !== 2) {
+				language = language.substring(0, 2);
+			}
+			const languages = navigator.languages || window.navigator.languages;
+			let locale: string = languages.find(l => { return (l.length === 5); });
+			if (!locale) {
+				locale = `${language}-${language.toUpperCase()}`;
+			}
+
 			this.webAnalyticsService.logActivity({
-				Activity: actionName,
-				ObjectId: objectId,
-				ObjectName: objectName
+				action: action,
+				browser: browser,
+				language: language,
+				locale: locale,
+				assetUid: assetUid,
+				assetTypeUid: assetTypeUid,
+				dashboardUid: dashboardUid,
+				issueUid: issueUid,
+				semanticUid: semanticUid,
+				sidebar: sidebar,
+				tab: tab,
+				tagUid: tagUid
 			});
 		}
 	}
+
+	logAssetAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, uid, null, null, null, null, null, sidebar, tab);
+	}
+
+	logAssetTypeAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, uid, null, null, null, null, sidebar, tab);
+	}
+
+	logDashboardAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, null, uid, null, null, null, sidebar, tab);
+	}
+
+	logIssueAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, null, null, uid, null, null, sidebar, tab);
+	}
+
+	logSemanticAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, null, null, null, uid, null, sidebar, tab);
+	}
+
+	logTagAction(action: UsageAction, uid: string, sidebar?: string, tab?: string) {
+		this.logUsage(action, null, null, null, null, null, uid, sidebar, tab);
+	}
+
+	//#endregion
 
 	//#region permissions functionality
 
@@ -274,8 +363,8 @@ export class BaseComponent {
 			this.clearSidebar();
 			var isCommonAsset: boolean = this.objectType === 'Artifact' || this.objectType === 'Policy' || this.objectType === 'Taxonomy' || this.objectType === 'Rule';
 
-			let showLineage = opts.hasLineage && this.getBooleanSetting(CompanySettingEnum.ShowLineageSidebar);
-			let showImpact = opts.hasImpact && this.getBooleanSetting(CompanySettingEnum.ShowImpactSidebar);
+			const showLineage = opts.hasLineage && this.getBooleanSetting(CompanySettingEnum.ShowLineageSidebar);
+			const showImpact = opts.hasImpact && this.getBooleanSetting(CompanySettingEnum.ShowImpactSidebar);
 
 			if (showLineage || showImpact || opts.hasProcessDiagram) {
 				this.lineageSidebar = new SecondaryNavItem(
@@ -629,7 +718,7 @@ export class BaseComponent {
 		const nodes: TreeNode[] = [];
 
 		// add root nodes
-		for (let rNode of this.baseTreeNodeArray) {
+		for (const rNode of this.baseTreeNodeArray) {
 			nodes.push(rNode);
 		}
 
@@ -647,7 +736,7 @@ export class BaseComponent {
 
 			// push children
 			if (node.children) {
-				for (let cNode of node.children) {
+				for (const cNode of node.children) {
 					nodes.push(cNode);
 				}
 			}
@@ -666,11 +755,11 @@ export class BaseComponent {
 	//generic method used for objectName = Policy/Model
 	private checkParentBase(item: any, arr: any[], typeId: number, objectName: string) {
 		if (item.ParentID > 0 && arr) {
-			let parentAr = arr.filter((x) => x.ID === item.ParentID);
+			const parentAr = arr.filter((x) => x.ID === item.ParentID);
 			let parent: any;
 			if (parentAr.length > 0) {
 				parent = parentAr[0];
-				let crumb = new Breadcrumb(parent.DisplayValue,
+				const crumb = new Breadcrumb(parent.DisplayValue,
 					SiteUrlHelpers.getAssetUrl(parent.Uid),
 					true,
 					objectName,
@@ -691,7 +780,7 @@ export class BaseComponent {
 		includeChildren?: boolean
 	): TreeNode[] {
 		// find the root items then
-		let rootNodes = inputArr.filter((x) => (Parent != null ? x.ParentID === Parent : !x.ParentID));
+		const rootNodes = inputArr.filter((x) => (Parent != null ? x.ParentID === Parent : !x.ParentID));
 
 		if (rootNodes.length === 0) {
 			return null;
@@ -699,7 +788,7 @@ export class BaseComponent {
 
 		const res: TreeNode[] = [];
 
-		for (let root of rootNodes) {
+		for (const root of rootNodes) {
 			res.push({
 				label: root.DisplayValue,
 				expanded: true,
@@ -780,7 +869,7 @@ export class BaseComponent {
 		var failed = results.filter((x) => x.Success !== true);
 
 		if (succeeded.length > 0) {
-			let message = disableCountShow ? defaultMessage : succeeded.length + defaultMessage;
+			const message = disableCountShow ? defaultMessage : succeeded.length + defaultMessage;
 			messagesService.showInfoMessage($localize`Success`, message);
 		}
 
@@ -978,7 +1067,7 @@ export class BaseComponent {
 					this.preloadedTreeData = r.PreloadData.Data;
 				}
 			}
-			let area = this.determineAreaForAdminPage(areaName);
+			const area = this.determineAreaForAdminPage(areaName);
 
 			let homeUrl: string = ``;
 
@@ -1204,12 +1293,12 @@ export class BaseComponent {
 				.getAreaName('ArtifactType', data.Artifact.Breadcrumbs[0] ? this.GetIDFromUrl(data.Artifact.Breadcrumbs[0].Url) : data.Artifact.AssetTypeID)
 				.subscribe((result) => {
 					var currentAreaName = result;
-					let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
+					const currentFolderName = currentAreaName ? currentAreaName : folderTitle;
 
 					this.breadcrumbsService.clearBreadcrumbs();
 					this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.ObjectTypeId, currentFolderName).subscribe((res) => {
 						this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, $localize`Definition`);
-						let areaName: string = currentAreaName ? currentAreaName : folderTitle;
+						const areaName: string = currentAreaName ? currentAreaName : folderTitle;
 						let areaLink: string = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}`;
 						if (area === "Technical Assets") {
 							areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
@@ -1217,14 +1306,14 @@ export class BaseComponent {
 						else {
 							areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 						}
-						let areaBreadcrumb = new Breadcrumb(
+						const areaBreadcrumb = new Breadcrumb(
 							areaName,
 							areaLink,
 							false
 						);
 						this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
 
-						for (let breadcrumb of data.Artifact.Breadcrumbs) {
+						for (const breadcrumb of data.Artifact.Breadcrumbs) {
 							index++;
 
 							if (index === data.Artifact.Breadcrumbs.length) {
@@ -1306,14 +1395,14 @@ export class BaseComponent {
 					this.breadcrumbsService.clearBreadcrumbs();
 
 					var folderTitle = res;
-					let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
+					const currentFolderName = currentAreaName ? currentAreaName : folderTitle;
 
 					this.breadcrumbsService.getAssetFolderIcon(objectTypeName, data.ObjectTypeId, currentFolderName).subscribe((res) => {
 						this.secondaryNavService.setCurrentArea(data.DisplayValue, res, $localize`Definition`);
 					});
 
-					let areaRootUriSegment: string = (objectName.toLowerCase() === 'policy') ? 'Policy' : 'Model';
-					let areaBreadcrumb = new Breadcrumb(
+					const areaRootUriSegment: string = (objectName.toLowerCase() === 'policy') ? 'Policy' : 'Model';
+					const areaBreadcrumb = new Breadcrumb(
 						currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${areaRootUriSegment}`
 					);
 					this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
@@ -1397,7 +1486,7 @@ export class BaseComponent {
 		if (val >= 1)
 			{return '100%';}
 
-		let s = (val * 100).toFixed(decimals).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
+		const s = (val * 100).toFixed(decimals).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
 
 		return s;
 	}
@@ -1423,7 +1512,7 @@ export class BaseComponent {
 			return integerPart + res;
 		}
 
-		let s = (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
+		const s = (val * 100).toFixed(2).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
 
 		return s;
 	}

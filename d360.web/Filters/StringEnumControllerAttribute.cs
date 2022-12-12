@@ -1,10 +1,29 @@
 ﻿using System;
+using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Web.Http.Controllers;
+using System.Web.Http.Filters;
 
 namespace d360.web.Filters
 {
-    public class StringEnumControllerAttribute : Attribute, IControllerConfiguration
+	public class StringEnumAttribute : ActionFilterAttribute
+	{
+		public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext)
+		{
+			if (actionExecutedContext?.Response == null) return;
+
+			var content = actionExecutedContext.Response.Content as ObjectContent;
+
+			if (content?.Formatter is JsonMediaTypeFormatter)
+			{
+				var formatter = new JsonMediaTypeFormatter();
+				formatter.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+				actionExecutedContext.Response.Content = new ObjectContent(content.ObjectType, content.Value, formatter);
+			}
+		}
+	}
+
+	public class StringEnumControllerAttribute : Attribute, IControllerConfiguration
     {
         public void Initialize(HttpControllerSettings controllerSettings, HttpControllerDescriptor controllerDescriptor)
         {

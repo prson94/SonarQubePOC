@@ -18,7 +18,7 @@ export class SidePanelService {
   readonly panelWidthStorageKeyPrefix: string = 'side_panel_width_';
   
   constructor(private messagesService: MessagesObservableService) {
-    let windowSize$ = new BehaviorSubject(this.getWindowSize());
+    const windowSize$ = new BehaviorSubject(this.getWindowSize());
     fromEvent(window, 'resize').pipe(map(this.getWindowSize)).subscribe(windowSize$);
     windowSize$.pipe(
       map((windowSize) => windowSize.width),
@@ -71,7 +71,7 @@ export class SidePanelService {
 
   saveNewSidePanelWidthToStorage(sidePanelStorageKey: string, sidePanelWidth: number) {
     if (sidePanelStorageKey != null && sidePanelStorageKey.length > 0) {
-      let state: any = {};
+      const state: any = {};
       if (sidePanelWidth) {
         state.panelWidth = sidePanelWidth;
       }

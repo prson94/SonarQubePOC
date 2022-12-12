@@ -135,6 +135,13 @@ namespace d360.web.Controllers.V2
 						IsCurrentUser = true;
 					}
 				}
+				else if (Uid != null)
+				{
+					if (Company.GlobalReportingResources.Any(r => r.Uid == Uid && r.ResourceID == Company.CurrentResourceID))
+					{
+						IsCurrentUser = true;
+					}
+				}
 
 				if (!Company.CurrentResourceIsAdmin && !showResources && IsCurrentUser == false)
 				{

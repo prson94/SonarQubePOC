@@ -7,7 +7,12 @@ import { Audit, AuditApiFilters, AuditFilterLists } from '../../../models/audit.
 import { SortOrder } from '../../../models/enums.model';
 import { GridColumn, GridFilterExpression } from '../../../models/grid-definition.model';
 import { FieldType } from "../../../models/fieldtype-api.model";
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIParameters, LookupValuesAPIModel } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
+import {
+    AdvancedFilterFieldType,
+    Filters,
+    LookupValuesAPIModel,
+    LookupValuesAPIParameters
+} from "../../assets-grid/advanced-filtering/advanced-filtering.models";
 import { Observable, ReplaySubject, Subscription } from "rxjs";
 import { map, shareReplay } from "rxjs/operators";
 import { CompanySettingsService } from '../../../services/settings.service';

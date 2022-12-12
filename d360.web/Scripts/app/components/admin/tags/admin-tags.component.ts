@@ -240,7 +240,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
             }
 
         }
-        let target = (<any>(event.target));
+        const target = (<any>(event.target));
         if (element && target.nodeName !== "P-TABLECHECKBOX") {
             this.selected = [];
             this.selected.push(item);
@@ -277,7 +277,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     saveTag(event) {
 
         if (event.additionalOption && event.additionalOption.code) {
-            let arr: string[] = [];
+            const arr: string[] = [];
             arr.push(event.item.uid);
             this.consolidateTags(event.additionalOption.code, arr);
             return;

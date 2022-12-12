@@ -25,7 +25,7 @@ export class GalleryColorSelectorComponent implements OnInit {
 
     ngOnInit(): void {
 
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "ngModel", Type: "Date", Description: "Model binding for the selected date object", Default: "" });
         this.properties.push({ Name: "appendTo", Type: "any", Description: "Target element to attach the overlay, valid values are 'body' or a local ng-template variable of another element", Default: "" });
 

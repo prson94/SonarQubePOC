@@ -1,9 +1,19 @@
-import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 import {
-    AssetBrowserFilterModel,
-    FilterSelectionsModel,
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges
+} from '@angular/core';
+import {
     AssetBrowserFilterChangeEvent,
-    AssetBrowserFilterChangeEventType
+    AssetBrowserFilterChangeEventType,
+    AssetBrowserFilterModel,
+    FilterSelectionsModel
 } from '../../../../../models/lineage.model';
 
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
@@ -116,11 +126,11 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     private getTreeNodeSelectionNodes(keys: number[], source: TreeNode[]) {
         let nodes: TreeNode[] = [];
         source.forEach((s) => {
-            if (keys.indexOf(s.data) != -1) {
+            if (keys.indexOf(s.data) !== -1) {
                 nodes.push(s);
             }
             if (s.children != null && s.children.length > 0) {
-                let childNodes = this.getTreeNodeSelectionNodes(keys, s.children);
+                const childNodes = this.getTreeNodeSelectionNodes(keys, s.children);
                 if (childNodes != null && childNodes.length > 0) {
                     nodes = nodes.concat(childNodes);
                 }
@@ -131,7 +141,7 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     }
 
     private getTreeNodeSelectionKeys(selection: TreeNode[]): number[] {
-        let keys: number[] = [];
+        const keys: number[] = [];
 
         selection.forEach((s) => {
             keys.push(+s.data);
@@ -143,11 +153,11 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     private helper_GetTreeNodeSelectionNodes(keys: number[], source: TreeNode[]) {
         let nodes: TreeNode[] = [];
         source.forEach((s) => {
-            if (keys.indexOf(s.data) != -1) {
+            if (keys.indexOf(s.data) !== -1) {
                 nodes.push(s);
             }
             if (s.children != null && s.children.length > 0) {
-                let childNodes = this.helper_GetTreeNodeSelectionNodes(keys, s.children);
+                const childNodes = this.helper_GetTreeNodeSelectionNodes(keys, s.children);
                 if (childNodes != null && childNodes.length > 0) {
                     nodes = nodes.concat(childNodes);
                 }

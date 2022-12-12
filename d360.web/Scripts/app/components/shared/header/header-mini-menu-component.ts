@@ -1,5 +1,13 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    OnDestroy,
+    OnInit,
+    Output
+} from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -88,7 +96,7 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
 
                 //dont show raise issue button on raise issue screen or any admin screens or user profile           
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
-                let isResourceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESOURCE_ROOT.toUpperCase());
+                const isResourceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESOURCE_ROOT.toUpperCase());
                 this.hasRaiseIssueButton =
                     !e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue')
                     && !this.isAdminUrl
@@ -162,7 +170,7 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
             window.clearTimeout(this.hideHandle);
             this.hideHandle = 0;
         }
-        let panel = item.children[0].nextElementSibling;
+        const panel = item.children[0].nextElementSibling;
         if (panel) {
             this.active = true;
 

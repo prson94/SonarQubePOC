@@ -85,7 +85,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.assetTypeUid && changes.assetTypeUid.currentValue != changes.assetTypeUid.previousValue) {
+        if (changes.assetTypeUid && changes.assetTypeUid.currentValue !== changes.assetTypeUid.previousValue) {
             this.load();
             this.loadParams._order = 'Code';
             this.loadParams._direction = 'ASC';
@@ -146,7 +146,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
 
 			this.items.forEach((asset) => {
 				if (asset.DisplayPath) {
-					let pathSegments = (asset.DisplayPath as string).split('>').map((item) => item.trim());
+					const pathSegments = (asset.DisplayPath as string).split('>').map((item) => item.trim());
 					for (let i = 0; i < pathSegments.length; i++) {
 						asset["PATH_SEGMENT_IDX_" + i] = pathSegments[i];
 					}
@@ -193,11 +193,11 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     private loadAssets(event) {
         if (event) {
             let sort = event.sortField;
-            var field = this.fields.filter((x) => x.name.toLowerCase() == event.sortField.toLowerCase())[0];
+            var field = this.fields.filter((x) => x.name.toLowerCase() === event.sortField.toLowerCase())[0];
             if (field)
                 {sort = field.apiName;}
 
-            if (event.sortField == 'Color')
+            if (event.sortField === 'Color')
                 {sort = 'Color';}
 
             if (event.globalFilter && event.globalFilter.length > 0) {
@@ -216,7 +216,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
             }
 
             this.loadParams._order = sort ? sort : this.sortField;
-            this.loadParams._direction = event.sortOrder == 1 ? 'ASC' : 'DESC';
+            this.loadParams._direction = event.sortOrder === 1 ? 'ASC' : 'DESC';
 
             this.loadParams._pageSize = +event.rows;
             this.loadParams._pageNum = (+event.first / +event.rows) + 1;
@@ -232,7 +232,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     }
 
     public onDeleted() {
-        this.items = this.items.filter((x) => x.AssetUid != this.selected.AssetUid);
+        this.items = this.items.filter((x) => x.AssetUid !== this.selected.AssetUid);
         this.selected = null;
         this.showDelete = false;
     }

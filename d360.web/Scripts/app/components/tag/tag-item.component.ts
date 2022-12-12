@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -7,11 +7,11 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { AssetAction, EditFormData, DeleteFormData } from '../../models/secondaryNav.model';
+import { AssetAction, DeleteFormData, EditFormData } from '../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { TagService } from '../../services/tag.service';
-import { TagType, TagDetail, TagItem, TagDetailResponse } from '../../models/tag.model';
+import { TagDetail, TagDetailResponse, TagItem, TagType } from '../../models/tag.model';
 import { Location } from '@angular/common';
 import { AuthenticationService } from '../../services/authentication.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
@@ -22,14 +22,20 @@ import { SelectAssetService } from '../../services/select-asset.service';
 import { Observable, of, Subscription } from 'rxjs';
 import { AssetDetailClickEvent, LinkClickInterceptor } from '../../services/href-click-service';
 import { tap } from 'rxjs/operators';
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
+import {
+    AdvancedFilterFieldType,
+    Filters,
+    LookupValuesAPIModel,
+    LookupValuesAPIParameters
+} from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../models/fieldtype-api.model';
 import { UiAdvancedFiltering } from '../../services/ui-advanced-filtering.service';
-import {uniqWith as _uniqWith, isEqual as _isEqual} from 'lodash';
+import { isEqual as _isEqual, uniqWith as _uniqWith } from 'lodash';
 import { Table } from 'primeng/table';
 import { SearchService } from '../../services/search.service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 
 @Component({
@@ -191,8 +197,6 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             this.tagUid = params['tagUid'];
 
             this.secondaryNavService.clearCurrentObject();
-
-            this.logAction('open', 'Tag', this.tagUid);
             this.isLoading = true;
 
             this.loadPermissions(this.permissionsService, "Tag", this.tagUid)
@@ -227,6 +231,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                     this.setObjectInfo('Tag', this.tagUid);
                     this.buildBreadcrumb();
                     this.setBrowserTitle(this.titleService, this.tag.Value);
+
+					this.logTagAction(UsageAction.View, this.tagUid.toLocaleString());
 
                     this.setObjectInfo(
                         'Tag',
@@ -273,12 +279,12 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.currentAreaName = $localize`Tags`;
-                    let areaBreadcrumb = new Breadcrumb(
+                    const areaBreadcrumb = new Breadcrumb(
                         this.currentAreaName,
                         `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`
                     );
 
-                    let itemBreadcrumb = new Breadcrumb(
+                    const itemBreadcrumb = new Breadcrumb(
                         this.tag.Value,
                         `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${this.tag.uid}`
                     );
@@ -352,7 +358,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         if (this.isAdmin) {
             this.actions.showEdit = true;
             this.actions.editCallback = this.onActionEditClick.bind(this);
-            let editAction: EditFormData = new EditFormData();
+            const editAction: EditFormData = new EditFormData();
             editAction.title = $localize`Edit Tag`;
             editAction.closeClick = this.onActionEditCloseClick.bind(this);
             editAction.selected = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
@@ -365,7 +371,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             this.actions.edit = editAction;
 
             this.actions.showDelete = true;
-            let deleteAction: DeleteFormData = new DeleteFormData();
+            const deleteAction: DeleteFormData = new DeleteFormData();
             deleteAction.callback = this.deleteCallback.bind(this);
             deleteAction.item = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
             deleteAction.modalTitle = $localize`Delete Tag`;
@@ -409,7 +415,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     deleteCallback() {
-        let tagForDelete: TagType[] = [];
+        const tagForDelete: TagType[] = [];
         tagForDelete.push(this.tag);
         this.tagsService.deleteTags(tagForDelete).
             subscribe((result) => {
@@ -438,7 +444,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     saveTag(event) {
 
         if (event.additionalOption && event.additionalOption.code) {
-            let arr: string[] = [];
+            const arr: string[] = [];
             arr.push(event.item.uid);
             this.consolidateTags(event.additionalOption.code, arr);
             return;

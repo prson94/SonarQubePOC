@@ -59,7 +59,7 @@ export class WorkflowFieldsService {
 
         if (this.changeType === WorkflowChangeType.ScoreUpdate) {
 
-            let ix = this.conditionOperators.findIndex((c) => c.value === 'C');
+            const ix = this.conditionOperators.findIndex((c) => c.value === 'C');
             if (ix > -1) {
                 this.conditionOperators.splice(ix, 1);
             }
@@ -130,7 +130,7 @@ export class WorkflowFieldsService {
     }
 
     deleteFormField(field: any) {
-        let i = this.formFields.findIndex((f) => f['@stepId'] === field['@stepId'] && f['@id'] === field['@id']);
+        const i = this.formFields.findIndex((f) => f['@stepId'] === field['@stepId'] && f['@id'] === field['@id']);
         if (i > -1) {
             this.formFields.splice(i, 1);
             this.formFieldsSource.next(this.formFields);
@@ -146,7 +146,7 @@ export class WorkflowFieldsService {
     }
 
     deleteUsedField(fieldId: string, stepId: string, transitionId: string) {
-        let i = this.usedFields.findIndex((u) => u.fieldId === fieldId && u.stepId === stepId && u.transitionId === transitionId);
+        const i = this.usedFields.findIndex((u) => u.fieldId === fieldId && u.stepId === stepId && u.transitionId === transitionId);
 
         if (i > -1) {
             this.usedFields.splice(i, 1);
@@ -220,7 +220,7 @@ export class WorkflowFieldsService {
     }
 
     deleteHttpField(field: any) {
-        let i = this.httpFields.findIndex((f) => f['@stepId'] === field['@stepId'] && f['@id'] === field['@id']);
+        const i = this.httpFields.findIndex((f) => f['@stepId'] === field['@stepId'] && f['@id'] === field['@id']);
         if (i > -1) {
             this.httpFields.splice(i, 1);
             this.httpFieldsSource.next(this.httpFields);
@@ -238,7 +238,7 @@ export class WorkflowFieldsService {
     }
 
     pushHttpRequestField(field: any) {
-        let i = this.httpRequestFields.findIndex((f) => f.key === field.key);
+        const i = this.httpRequestFields.findIndex((f) => f.key === field.key);
         if (i > -1) {
             this.httpRequestFields[i].name = field.name;
         } else {
@@ -249,7 +249,7 @@ export class WorkflowFieldsService {
     }
 
     deleteHttpRequestField(key: string) {
-        let i = this.httpRequestFields.findIndex((f) => f.key === key);
+        const i = this.httpRequestFields.findIndex((f) => f.key === key);
         if (i > -1) {
             this.httpRequestFields.splice(i, 1);
             this.httpRequestSource.next(this.httpRequestFields);
@@ -278,7 +278,7 @@ export class WorkflowFieldsService {
     }
 
     pushOutputField(field: HTTPResponseOutput) {
-        let i = this.outputFields.findIndex((o) => o.StepId === field.StepId && o.Id === field.Id);
+        const i = this.outputFields.findIndex((o) => o.StepId === field.StepId && o.Id === field.Id);
         if (i === -1) {
             this.outputFields.push(field);
         }
@@ -288,7 +288,7 @@ export class WorkflowFieldsService {
     }
 
     updateOutputField(field: HTTPResponseOutput) {
-        let i = this.outputFields.findIndex((f) => f.Id === field.Id);
+		const i = this.outputFields.findIndex((f) => f.Id === field.Id && f.StepId === field.StepId);
 		if (i > -1) {
 			this.outputFields[i].StepName = field.StepName;
             this.outputFields[i].Name = field.Name;
@@ -299,7 +299,7 @@ export class WorkflowFieldsService {
     }
 
     deleteOutputField(stepId: string, id: string) {
-        let i = this.outputFields.findIndex((f) => f.Id === id && f.StepId === stepId);
+        const i = this.outputFields.findIndex((f) => f.Id === id && f.StepId === stepId);
         if (i > -1) {
             this.outputFields.splice(i, 1);
             this.outputFieldsSource.next(this.outputFields);

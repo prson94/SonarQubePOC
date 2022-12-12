@@ -1,6 +1,25 @@
-﻿import { NgModule, ElementRef, ChangeDetectorRef, forwardRef, Component, ViewEncapsulation, Input, ViewChild, OnInit, EventEmitter, Output, OnChanges, SimpleChanges, HostListener, DoCheck } from '@angular/core';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    forwardRef,
+    HostListener,
+    Input,
+    NgModule,
+    OnInit,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, NG_VALIDATORS, Validator, ValidationErrors, AbstractControl, FormsModule } from '@angular/forms';
+import {
+    AbstractControl,
+    ControlValueAccessor,
+    FormsModule,
+    NG_VALIDATORS,
+    NG_VALUE_ACCESSOR,
+    ValidationErrors,
+    Validator
+} from '@angular/forms';
 
 
 export const NUMBER_INPUT_ACCESSOR: any = {
@@ -175,7 +194,7 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
         return 'ig-number-field ' + this.styleClass;
     }
     getElementClass() {
-        let classes: string[] = ["ig-number-input"];
+        const classes: string[] = ["ig-number-input"];
         if (["small", "medium", "large", "full"].indexOf(this._size) !== -1) {
             classes.push("ig-input-" + this._size);
         }

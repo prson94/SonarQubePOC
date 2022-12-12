@@ -50,7 +50,7 @@ export class GalleryFieldConditionGridComponent implements OnInit {
     private cleanJsonExamples = {};
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "fields", Type: "Array<FieldTypeAPIModelFieldCondition>", Description: "Array of field items. Field values are limited to 150 characters or less.", Default: "Empty []" });
         this.properties.push({ Name: "conditions", Type: "Array<any>", Description: "Selection Value", Default: "Empty []" });
         this.properties.push({ Name: "onChange", Type: "Event Array<any>", Description: "Triggers on every change in grid condition form. Returns value.", Default: "initial value" });
@@ -304,9 +304,9 @@ export class GalleryFieldConditionGridComponent implements OnInit {
     ];
 
     private getFormattedDate(date) {
-        let year = date.getFullYear();
-        let month = (1 + date.getMonth()).toString().padStart(2, '0');
-        let day = date.getDate().toString().padStart(2, '0');
+        const year = date.getFullYear();
+        const month = (1 + date.getMonth()).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
 
         return month + '/' + day + '/' + year;
     }

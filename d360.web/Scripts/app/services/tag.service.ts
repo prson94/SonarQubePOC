@@ -14,7 +14,7 @@ export class TagService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getTags(phrase: string, excludeObjects: string = ''): Observable<Tag[]> {
-        let url = `api/tagsuggestions?phrase=${phrase}&excludeObjects=${excludeObjects}`;
+        const url = `api/tagsuggestions?phrase=${phrase}&excludeObjects=${excludeObjects}`;
 
         return this.http.get(url).pipe(
             map((response) => {
@@ -39,19 +39,19 @@ export class TagService extends BaseObservableService {
     }
 
     deleteTagByUid(uid: string, cascade: boolean = true): Observable<any> {
-        let url = `api/v2/tags/${uid}?cascade=${cascade}`;
+        const url = `api/v2/tags/${uid}?cascade=${cascade}`;
         return this.http.delete(url)
             .pipe(map((response) => <any>response),
                 catchError((err) => this.handleError(err, true)));
     }
 
     deleteTags(tags: TagType[]): Observable<any> {
-        let url = `api/v2/tags/`;
+        const url = `api/v2/tags/`;
 
         if (tags.length === 1)
             {return this.deleteTagByUid(tags[0].uid);}
 
-        let body: any[] = [];
+        const body: any[] = [];
         tags.forEach((t) => {
             body.push({ 'uid': t.uid, cascade: true });
         });
@@ -78,20 +78,20 @@ export class TagService extends BaseObservableService {
                 catchError((err) => this.handleError(err, true)));
     }
     createAssetTag(tags: TagApiModel[]): Observable<any> {
-        let url = `api/v2/assets/tags`;
+        const url = `api/v2/assets/tags`;
         return this.http.post(url, tags)
             .pipe(map((response) => <any>response),
                 catchError((err) => this.handleError(err, true)));
     }
     getAssetTagDetails(tagID: number, assetUID: string): Observable<any> {
-        let url = `api/v2/tags/AssetTagDetails?tagID=${tagID}&assetUID=${assetUID}`;
+        const url = `api/v2/tags/AssetTagDetails?tagID=${tagID}&assetUID=${assetUID}`;
         return this.http.get(url)
             .pipe(map((response) => <any>response),
                 catchError((err) => this.handleError(err, true)));
     }
 
     getAssetTagOwnerByName(tagName: string, assetUid: string): Observable<any> {
-        let url = `api/v2/tags/AssetTagOwnerByName?tagName=${tagName}&assetUID=${assetUid}`;
+        const url = `api/v2/tags/AssetTagOwnerByName?tagName=${tagName}&assetUID=${assetUid}`;
         return this.http.get(url)
             .pipe(map((response) => <any>response),
                 catchError((err) => this.handleError(err, true)));
@@ -102,14 +102,14 @@ export class TagService extends BaseObservableService {
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: tags
         };
-        let url = `api/v2/assets/tags`;
+        const url = `api/v2/assets/tags`;
         return this.http.delete(url, httpHeaders)
             .pipe(map((response) => <any>response),
                 catchError((err) => this.handleError(err, true)));
     }
 
     doesTagExist(tag: TagType): Observable<any> {
-        let url = 'api/v2/tags/exists?value=' + encodeURIComponent(tag.Value);
+        const url = 'api/v2/tags/exists?value=' + encodeURIComponent(tag.Value);
         return this.http.get(url, { observe: "response" })
             .pipe(map((data) => {
                 return data.status;
@@ -117,28 +117,28 @@ export class TagService extends BaseObservableService {
     }
 
     consolidateTags(parentTag: string, childrenTags: string[]): Observable<any[]> {
-        let url = `api/v2/tags/consolidate/${parentTag}`;
+        const url = `api/v2/tags/consolidate/${parentTag}`;
         return this.http.post(url, childrenTags)
             .pipe(map((response) => <any>response),
                 catchError((err) => this.handleError(err, true)));
     }
 
     getAssetPathsForTag(tagUid: string): Observable<any[]> {
-        let url = `api/v2/tags/${tagUid}/assetpath`;
+        const url = `api/v2/tags/${tagUid}/assetpath`;
         return this.http.get(url)
             .pipe(map((response) => <any[]>response),
                 catchError((err) => this.handleError(err, true)));
     }
 
     searchTags(q: string, exceptId, ignoreCounts: boolean = false): Observable<any[]> {
-        let url = `api/v2/tags/search?value=${q}&exceptuid=${exceptId}&ignoreCounts=${ignoreCounts}`;
+        const url = `api/v2/tags/search?value=${q}&exceptuid=${exceptId}&ignoreCounts=${ignoreCounts}`;
         return this.http.get(url)
             .pipe(map((response) => <any[]>response),
                 catchError((err) => this.handleError(err, true)));
     }
 
     searchTagsTypeAhead(q: string, maxNumberOfResults: number = 200): Observable<any[]> {
-        let url = `api/v2/tags/search?value=${encodeURIComponent(q)}&maxNumberOfResults=${maxNumberOfResults}`;
+        const url = `api/v2/tags/search?value=${encodeURIComponent(q)}&maxNumberOfResults=${maxNumberOfResults}`;
         return this.http.get(url)
             .pipe(map((response) => <any[]>response),
                 catchError((err) => this.handleError(err, true)));
@@ -186,7 +186,7 @@ export class TagService extends BaseObservableService {
     }
 
     getTagByUid(uid: string): Observable<TagType> {
-        let url = `api/v2/tags?uid=${uid}`;
+        const url = `api/v2/tags?uid=${uid}`;
 
         return this.http.get(url)
             .pipe(map((response) => <any>response),
@@ -196,7 +196,7 @@ export class TagService extends BaseObservableService {
     }
 
     getTagDetails(uid: string): Observable<any> {
-        let url = `api/v2/tags/${uid}/details?_pagesize=1000000`;
+        const url = `api/v2/tags/${uid}/details?_pagesize=1000000`;
         return this.http.get(url)
             .pipe(map((response) => {
                 var data = <any>response;
@@ -242,7 +242,7 @@ export class TagService extends BaseObservableService {
     }
 
     getTagPermissions(assetUid: string): Observable<TagPermissionItem[]> {
-        let url = `api/v2/tags/permissions/${assetUid}`;
+        const url = `api/v2/tags/permissions/${assetUid}`;
 
         return this.http.get(url)
             .pipe(map((response) => <TagPermissionItem[]>response),

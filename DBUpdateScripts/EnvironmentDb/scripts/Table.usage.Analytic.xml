@@ -1,0 +1,75 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.usage.Analytic-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'usage' AND TABLE_NAME = 'Analytic')
+BEGIN
+	CREATE TABLE [usage].[Analytic](
+		[Id] [bigint] IDENTITY(1,1) NOT NULL,
+		[UserId] [int] NOT NULL,
+		[Timestamp] [datetime] NULL,
+		[IpId] [bigint] NULL,
+		[Browser] [int] NOT NULL,
+		[Language] [char](2) NOT NULL,
+		[Locale] [char](5) NOT NULL,
+		[Action] [int] NOT NULL,
+		[AssetId] [bigint] SPARSE  NULL,
+		[AssetTypeId] [int] SPARSE  NULL,
+		[DashboardId] [int] SPARSE  NULL,
+		[IssueId] [bigint] SPARSE  NULL,
+		[SemanticId] [bigint] SPARSE  NULL,
+		[TagId] [int] SPARSE  NULL,
+		[TabId] [int] SPARSE  NULL,
+		[SidebarId] [int] SPARSE  NULL,
+		CONSTRAINT [PK_Usage_Analytic] PRIMARY KEY CLUSTERED ( [Id] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Usage_Analytic_AssetId')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Usage_Analytic_AssetId] ON [usage].[Analytic] ( [AssetId] ASC ) include (UserId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Usage_Analytic_AssetTypeId')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Usage_Analytic_AssetTypeId] ON [usage].[Analytic] ( [AssetTypeId] ASC ) include (UserId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Usage_Analytic_DashboardId')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Usage_Analytic_DashboardId] ON [usage].[Analytic] ( [DashboardId] ASC ) include (UserId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Usage_Analytic_IssueId')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Usage_Analytic_IssueId] ON [usage].[Analytic] ( [IssueId] ASC ) include (UserId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Usage_Analytic_SemanticId')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Usage_Analytic_SemanticId] ON [usage].[Analytic] ( [SemanticId] ASC ) include (UserId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Usage_Analytic_TagId')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Usage_Analytic_TagId] ON [usage].[Analytic] ( [TagId] ASC ) include (UserId)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

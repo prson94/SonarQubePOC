@@ -1,4 +1,15 @@
-﻿import { Input, Component, ViewEncapsulation, ChangeDetectionStrategy, Output, EventEmitter, OnChanges, SimpleChange, ChangeDetectorRef, OnInit } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChange,
+    ViewEncapsulation
+} from '@angular/core';
 import { forkJoin, Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { RelationshipCount, RelationshipType, RelationshipV2 } from '../../../models/relationship.model';
@@ -90,7 +101,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-		for (let p in changes) {
+		for (const p in changes) {
 			if ((p === 'isVisible') || (p === 'assetUid' || p === 'assetTypeUid') && this.assetUid && this.assetTypeUid) {
                 this.initialLoad();
                 break;
@@ -165,7 +176,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                 let name: string = "";
                 let thisCardinality: string = "";
                 let targetCardinality: string = "";
-                let rc = this.relationshipCounts.filter((item) => type.Uid.toLocaleLowerCase() === item.IntersectTypeUid.toLocaleLowerCase());
+                const rc = this.relationshipCounts.filter((item) => type.Uid.toLocaleLowerCase() === item.IntersectTypeUid.toLocaleLowerCase());
                 if (rc.length > 0) {
                     count = rc[0].Count;
                 }
@@ -266,7 +277,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     saveRelationships() {
         this.previewAssetUid = '';
         this.savingInProgress = true;
-        let relationships: RelationshipV2[] = [];
+        const relationships: RelationshipV2[] = [];
 
         this.selectedAssets.forEach((asset) => {
             var relationship = new RelationshipV2();
@@ -292,7 +303,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
             .subscribe((result) => {
                 var res = result[0];
                 if (res.Success) {
-                    let msg = $localize`Successfully updated`;
+                    const msg = $localize`Successfully updated`;
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     this.savingInProgress = false;
                     this.previewAssetUid = this.previewAssetType = "";

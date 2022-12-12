@@ -10,36 +10,8 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-community-component',
-    styles: [`
-      chart {
-        display: block;
-      }
-    `],
-    template: `
-        <div class="row">
-            <div class="col l6 m12 s12">
-                <div class="tile tile-detail">   
-                    <header i18n>User's Responsibilities</header>
-                    <div *ngIf="isLoading">
-                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    </div>
-                    <div [hidden]="isLoading">
-                        <div id="responsibilitiesPie"></div>                        
-                    </div>
-                </div>
-            </div>
-            <div class="col l6 m12 s12" *ngIf="selectedResponsibilityUid">
-                <div class="tile tile-detail">  
-                    <d3s-user-list [UserListHeading] = "GetHeadingLabel()" [ResponsibilityTypeUid]="selectedResponsibilityUid" [IsCommunityUserResposibility]="true" [(selected)]="selectedResource"></d3s-user-list>                    
-                </div>
-            </div>
-            <div class="col s12" *ngIf="selectedResource">
-                <div class="tile tile-detail">   
-                   <d3s-resource-responsibility-tile [responsibilityTypeUid]="selectedResponsibilityUid" [resourceId]="selectedResource.ResourceID"></d3s-resource-responsibility-tile>
-                </div>
-            </div>
-        </div>
-         `,
+    styleUrls: ['community.component.less'],
+    templateUrl: 'community.component.html',
     providers: [ResponsibilityTypeService],
 })
 
@@ -82,7 +54,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
         this.isLoading = true;
         this.responsibilityTypeService.getResponsibilityTypeBreakdown().
             subscribe((result) => {
-                let options: any = {
+                const options: any = {
                     chart: {
                         plotBackgroundColor: null,
                         plotBorderWidth: null,

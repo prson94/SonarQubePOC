@@ -48,7 +48,7 @@ export class GalleryNumberFieldComponent implements OnInit {
         });
 
 
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Whether or not the number field control is disabled", Default: "" });
         this.properties.push({ Name: "required", Type: "Boolean", Description: "Whether or not the number field control is required", Default: "" });
         this.properties.push({ Name: "ngModel", Type: "Date", Description: "Model binding for the selected number field object", Default: "" });

@@ -1,5 +1,5 @@
-import {debounceTime} from 'rxjs/operators';
-import { Component, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { debounceTime } from 'rxjs/operators';
+import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
 import { Tag } from '../../../models/tag.model';

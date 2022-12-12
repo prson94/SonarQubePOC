@@ -1,6 +1,19 @@
 import { debounceTime } from 'rxjs/operators';
-import { Component, Input, ElementRef, OnChanges, SimpleChange, Output, EventEmitter, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
-import { Router }       from '@angular/router';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    Output,
+    SimpleChange,
+    ViewChild
+} from '@angular/core';
+import { Router } from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { SearchResult } from '../../../models/search-result.model';
@@ -105,8 +118,8 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
 
     in(panel, searchPanel, event) {
-        let parent = this.hoverTarget.nativeElement.parentNode;
-        let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
+        const parent = this.hoverTarget.nativeElement.parentNode;
+        const lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
 
         if (this.isChangableItem() && !this.isTreeItem()) {
             searchPanel.style.display = "block";
@@ -139,7 +152,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
 
     checkIsToofarRight(panel) {
-        let dims = panel.getBoundingClientRect();
+        const dims = panel.getBoundingClientRect();
         if (dims.right > window.innerWidth) {
             panel.style.right = "0px";
             panel.style.left = "unset";
@@ -149,7 +162,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     search(event) {
 
-        let q: string = event.query ? event.query : event;
+        const q: string = event.query ? event.query : event;
         this.searchingTypeahed = true;
         if (this.breadcrumb.hasPreLoadedTypeAhead()) {
             this.results = this.breadcrumb.preLoadedTypeAhead.filter((x) => x.Name.toLowerCase().indexOf(q.toLowerCase()) !== -1);
@@ -201,7 +214,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
         console.log(node);
         if (!node.data) {return null;}
 
-        let styles = {            
+        const styles = {            
             'font-weight': node.data.hasRelations ? 'bold' : 'normal',            
         };
         return styles;

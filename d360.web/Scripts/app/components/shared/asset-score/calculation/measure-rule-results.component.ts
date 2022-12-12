@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnDestroy, EventEmitter, Output, OnChanges, SimpleChanges } from "@angular/core";
+﻿import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from "@angular/core";
 import * as _ from "lodash";
 import { LazyLoadEvent } from "primeng/api";
 import { MetricAssetDefinitionViewModel, MetricRuleResultOperation, ScoreType } from "../../../../models/metrics.model";
@@ -141,7 +141,7 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     getMissingRuleResultMessage() {
         let message = "";
         if (this.selected && !this.selected.EffectiveDate) {
-            let operation = MetricRuleResultOperation[this.definition?.DataQuality?.ResultOperation + ""];
+            const operation = MetricRuleResultOperation[this.definition?.DataQuality?.ResultOperation + ""];
             if (operation) {
                 let messagePart = ``;
                 if (operation === MetricRuleResultOperation.Maximum) {

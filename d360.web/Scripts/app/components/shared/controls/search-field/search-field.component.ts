@@ -1,12 +1,23 @@
-﻿import { Component, Input, Output, EventEmitter, NgModule, forwardRef, ViewEncapsulation, ViewChild, ElementRef, ChangeDetectorRef, HostListener, OnInit, OnDestroy } from '@angular/core';
-import { BaseComponent } from '../../base.component';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    forwardRef,
+    HostListener,
+    Input,
+    NgModule,
+    OnDestroy,
+    OnInit,
+    Output,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { DirectivesModule } from '../../../../directives/directives.module';
 import { TooltipModule } from 'primeng/tooltip';
-
-import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
 import { Subject } from "rxjs";
 import { debounceTime, distinctUntilChanged } from "rxjs/operators";

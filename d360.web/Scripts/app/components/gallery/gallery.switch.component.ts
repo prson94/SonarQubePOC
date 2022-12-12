@@ -15,7 +15,7 @@ export class GallerySwitchComponent implements OnInit {
     formVal: boolean = undefined;
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "ngModel", Type: "boolean", Description: "Value for the switch control true/false/undefined", Default: "false" });
         this.properties.push({ Name: "trueLabel", Type: "string", Description: "Text to show for the true side of the switch", Default: "True" });
         this.properties.push({ Name: "falseLabel", Type: "string", Description: "Text to show for the false side of the switch", Default: "False" });
@@ -27,7 +27,7 @@ export class GallerySwitchComponent implements OnInit {
         this.properties.push({ Name: "tabindex", Type: "number", Description: "Index of the element in tabbing order.", Default: "0" });
         
 
-        this.events = new Array();
+        this.events = [];
         this.events.push({ Name: "onChange", Description: "Fired when the selection changes" });
     }
 }

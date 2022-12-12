@@ -125,6 +125,34 @@ END
   </changeSet>  
   
 
+
+   <changeSet author="Puneet Gupta" id="Index.dbo.Semantic-v3">
+  <comment>GOV-20509</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Semantic]') AND name = N'IX_Semantic_TransactionId')
+begin
+	CREATE NONCLUSTERED INDEX [IX_Semantic_TransactionId] ON [dbo].[Semantic]
+	(
+		[TransactionId] ASC
+	)
+end
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Semantic]') AND name = N'IX_Semantic_TransactionId')
+BEGIN
+	DROP INDEX [IX_Semantic_TransactionId] ON [dbo].[Semantic]
+END
+		]]>
+	</rollback>
+  </changeSet> 
+  
   <changeSet author="Pappas" id="Data.dbo.Semantic-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

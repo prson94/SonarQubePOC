@@ -1,4 +1,15 @@
-﻿import { Component, OnDestroy, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, Input, OnChanges, SimpleChanges, Output, EventEmitter } from "@angular/core";
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    Output,
+    SimpleChanges
+} from "@angular/core";
 import { BaseComponent } from "../shared/base.component";
 import { LazyLoadEvent } from "primeng/api";
 import { WorkflowMonitorService } from "../../services/workflowmonitor.service";
@@ -87,7 +98,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
     }
 
     export() {
-        let filter: GridFilterExpression[] = this.getFilter();
+        const filter: GridFilterExpression[] = this.getFilter();
         if (filter == null || filter.length < 1) {
             return;
         }
@@ -132,7 +143,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
     }
 
     private loadData() {
-        let filter: GridFilterExpression[] = this.getFilter();
+        const filter: GridFilterExpression[] = this.getFilter();
         if (filter == null || filter.length < 1) {
             this.items = [];
             this.totalRecords = 0;

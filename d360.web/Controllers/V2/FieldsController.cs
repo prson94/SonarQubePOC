@@ -2220,19 +2220,33 @@ namespace d360.web.Controllers.V2
 								inner join [IntersectType] IT on IT.ID = ft.LookupObjectID
 								where ft.id = @fieldtypeid
 
-								declare @assetTypeId int = (select top 1 id from assettype where id = @targetassettypeid)
+								if @targetassettypeid = 0
+								begin
+									select AT.ObjectID as value, AT.Name as text 
+									from AssetType AT
+									where AT.Class = {(int)AssetTypeClass.Reference} and (AT.Name like @filter or @filter is null)
+									order by AT.Name
+									{pagingQuery}
 
-								select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
-								 inner join AssetPath Node on Node.id = a.id
-								where a.AssetTypeID = @assetTypeId {whereQuery}
-								order by node.displaypath
-								{pagingQuery}
-								OPTION(RECOMPILE);
+									select COUNT(*) from AssetType AT where AT.Class = {(int)AssetTypeClass.Reference}  and (AT.Name like @filter or @filter is null)
+								end
+								else
+								begin
+									declare @assetTypeId int = (select top 1 id from assettype where id = @targetassettypeid)
 
-								select count(*) from Asset A
-								 inner join AssetPath Node on Node.id = a.id
-								where a.AssetTypeID = @assetTypeId {whereQuery}
-								OPTION(RECOMPILE);";
+									select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
+									 inner join AssetPath Node on Node.id = a.id
+									where a.AssetTypeID = @assetTypeId {whereQuery}
+									order by node.displaypath
+									{pagingQuery}
+									OPTION(RECOMPILE);
+
+									select count(*) from Asset A
+									 inner join AssetPath Node on Node.id = a.id
+									where a.AssetTypeID = @assetTypeId {whereQuery}
+									OPTION(RECOMPILE);
+								end
+";
 
 					var resultsAssets = Company.Connection.QueryMultiple(sql, new { fieldTypeId, skip, take, filter });
 

@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -123,7 +123,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     private checkGridState() {
         if (sessionStorage.getItem(this.gridStorageKey)) {
-            let gridData = JSON.parse(sessionStorage.getItem(this.gridStorageKey));
+            const gridData = JSON.parse(sessionStorage.getItem(this.gridStorageKey));
 
             if (gridData.filters && Object.keys(gridData.filters).filter((x) => x !== "global").length > 0)
                 {this.showSimpleFilter = false;}

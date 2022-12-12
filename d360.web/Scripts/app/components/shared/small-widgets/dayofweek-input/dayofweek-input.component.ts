@@ -1,45 +1,13 @@
-﻿import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+﻿import { Component, forwardRef, Input, NgModule } from '@angular/core';
+import { CommonModule, getLocaleFirstDayOfWeek, WeekDay } from '@angular/common';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DirectivesModule } from '../../../../directives/directives.module';
 
-import { Component, forwardRef, Input } from '@angular/core';
-import { WeekDay, getLocaleFirstDayOfWeek } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-
 @Component({
     selector: 'd3s-dayofweek-input',
-    template: `
-                <div class="dayofweek-input">
-                    <div *ngIf="label.length > 0" class="dayofweek-label">{{label}}</div>
-                    <ul class="dayofweek-days">
-                        <li *ngFor="let i of week"><p-checkbox
-                            igCheckbox
-                            [disabled]="disabled"
-                            [(ngModel)]="days[i]"
-                            (click)="recalc()"
-                            [binary]="true"
-                            [label]="displayDayName(i)">
-                        </p-checkbox></li>
-                    </ul>
-                </div>
-              `,
-    styles: [`
-        .dayofweek-label {
-            margin-right: 2em;
-            float: left;
-        }
-        ul.dayofweek-days {
-            column-width: 6em;
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-        ul.dayofweek-days li p-checkbox {
-            height: 21px;
-        }
-    `],
+    templateUrl: 'dayofweek-input.component.html',
+    styleUrls: ['dayofweek-input.component.less'],
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,

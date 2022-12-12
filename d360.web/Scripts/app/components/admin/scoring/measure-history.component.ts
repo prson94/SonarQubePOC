@@ -48,7 +48,7 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
                     this.metricHistoryRecords = result;
                     if (this.metricHistoryRecords) {
                         this.metricHistoryRecords.forEach((g) => {
-                            let n = {
+                            const n = {
                                 data: g,
                                 children: [],
                                 expanded: true

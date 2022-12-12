@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AuthenticationService } from '../../../services/authentication.service';
@@ -27,7 +27,9 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
     public userName: string = ResourceName;
     public userEmail: string = ResourceEmail;
     showAllUsersAPIKey: boolean = false;
-    isApiKeysPopupVisible: boolean = false;
+	isApiKeysPopupVisible: boolean = false;
+	isLanguageSettingModalVisible = false;
+
     private isAdminSub: Subscription;
     constructor(
         private router: Router,
@@ -37,10 +39,10 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit() {
-        let showApiKey = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
+        const showApiKey = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
 
         this.isAdminSub = this.authenticationService.isAdmin$.subscribe((x) => {
-            let isAdmin: boolean = x;
+            const isAdmin: boolean = x;
             this.showAllUsersAPIKey = isAdmin || showApiKey;
         });
 
@@ -64,9 +66,9 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
     }
 
     show(item) {
-        let menuPanel = item.children[1].nextElementSibling;
-        let minimizedMenuItem = item.children[0].nextElementSibling;
-        let dims = minimizedMenuItem.getBoundingClientRect();
+        const menuPanel = item.children[1].nextElementSibling;
+        const minimizedMenuItem = item.children[0].nextElementSibling;
+        const dims = minimizedMenuItem.getBoundingClientRect();
         if (menuPanel) {
             this.active = true;
 

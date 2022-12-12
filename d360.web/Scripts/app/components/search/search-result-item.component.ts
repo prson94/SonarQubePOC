@@ -1,4 +1,14 @@
-﻿import { Component, Input, Output, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, ViewChild, ElementRef, EventEmitter } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnInit,
+    Output,
+    ViewChild
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SearchFullResult, SearchResultFieldDisplay, SearchSelection } from '../../models/search-result.model';
@@ -42,7 +52,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        let showCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
+        const showCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
         if (showCart) {
             this.menuitems.push({ title: $localize`Add to Cart` });
         }
@@ -98,7 +108,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     private navigateVisualization() {
-        let url = (this.result.Group === 'Diagram Asset') ? this.result.Url : `/asset/${this.result.Uid}/diagrams`;
+        const url = (this.result.Group === 'Diagram Asset') ? this.result.Url : `/asset/${this.result.Uid}/diagrams`;
         this.router.navigateByUrl(url);
     }
 
@@ -136,7 +146,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             switch (field.Type.toLowerCase()) {
                 case 'link':
                     if (field.Value.length > 2 && field.Value.indexOf('|') > 0) {
-                        let link: string[] = field.Value.split('|', 2);
+                        const link: string[] = field.Value.split('|', 2);
                         val = forTitle ? link[1] : '<a href="' + link[0] + '" target="_blank">' + link[1] + '</a>';
                     }
                     break;
@@ -157,7 +167,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
                     break;
                 case 'datetime':
                     //Date is UTC
-                    let utc = Date.parse(val + ' UTC');
+                    const utc = Date.parse(val + ' UTC');
                     val = this.datePipe.transform(utc, 'medium');
                     break;
             }

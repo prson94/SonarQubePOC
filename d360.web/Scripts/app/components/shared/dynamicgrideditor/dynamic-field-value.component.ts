@@ -1,9 +1,9 @@
-﻿import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../../models/grid-definition.model';
+import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
@@ -36,14 +36,14 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     ngOnInit() {
         this.fieldType = this.columnDataType(this.column);
         
-        if (this.fieldType == 'date' && this.column.cellsformat && this.column.cellsformat == 'MM/dd/yyyy HH:mm:ss') {
+        if (this.fieldType === 'date' && this.column.cellsformat && this.column.cellsformat === 'MM/dd/yyyy HH:mm:ss') {
             this.fieldType = 'datetime';
         }
 
 
         let colKey: string = null;
         if (this.useApiName && this.item && this.column && this.column.datafield) {
-            var field = this.fields.filter((x) => x.name.toLowerCase() == this.column.datafield.toLowerCase())[0];
+            var field = this.fields.filter((x) => x.name.toLowerCase() === this.column.datafield.toLowerCase())[0];
             if (field && field.apiName) {
                 colKey = field.apiName;
             }
@@ -60,18 +60,18 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
             this.fieldValue = this.item[colKey];
         }
 
-        if ((this.fieldType == 'bool') && (typeof this.fieldValue === 'boolean')) {
+        if ((this.fieldType === 'bool') && (typeof this.fieldValue === 'boolean')) {
             this.fieldValue = this.fieldValue ? "True" : "False"; // fix for bools as bools.        
         }
 
-        if (this.fieldType == 'bool' && this.fieldValue) {
+        if (this.fieldType === 'bool' && this.fieldValue) {
             this.fieldValue = this.fieldValue.toUpperCase(); //fix for miXeD CaSe booleans!
         }
 
-        if ((this.fieldType == 'date' || this.fieldType == 'datetime') && isNaN(Date.parse(this.fieldValue)))
+        if ((this.fieldType === 'date' || this.fieldType === 'datetime') && isNaN(Date.parse(this.fieldValue)))
             {this.fieldValue = null;}
 
-        if (this.useApiName && this.column['fieldType'] == 'Link' && this.fieldValue) {
+        if (this.useApiName && this.column['fieldType'] === 'Link' && this.fieldValue) {
             var delimiterIdx = (this.fieldValue as string).indexOf('|');
             if (delimiterIdx > -1) {
                 var name = (this.fieldValue as string).substring(0, delimiterIdx);
@@ -83,15 +83,15 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
             }
         }
 
-        if (this.column['fieldType'] == 'Score' && this.fieldValue) {
-            let thresholdKey = colKey + '_threshold';
+        if (this.column['fieldType'] === 'Score' && this.fieldValue) {
+            const thresholdKey = colKey + '_threshold';
             this.fieldValue = `<div class="score-pill-small score-${this.item[thresholdKey]}"></div><span>${this.fieldValue}</span>`;
         }
 
-        if (this.fieldType == 'Color') {
-            let hasValue = this.item[colKey] ? true : false;
+        if (this.fieldType === 'Color') {
+            const hasValue = this.item[colKey] ? true : false;
             if (hasValue) {
-                let parsedJSON = JSON.parse(this.item[colKey]);
+                const parsedJSON = JSON.parse(this.item[colKey]);
                 if (parsedJSON) {
                     this.hasColor = true;
                     this.fieldValue = parsedJSON.Value;
@@ -109,17 +109,17 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     }
 
     private formatAsPath(): string {
-        let replacement = (this.fieldValue !== '' && this.fieldValue !== null ? this.fieldValue.split(" > ").join(" <i class='fa fa-angle-right'></i> ") : ""); 
+        const replacement = (this.fieldValue !== '' && this.fieldValue !== null ? this.fieldValue.split(" > ").join(" <i class='fa fa-angle-right'></i> ") : ""); 
         return replacement;
     }
 
 
     private columnDataType(column: GridColumn): string {
-        var fields = this.fields.filter((x) => x.name == column.datafield);
+        var fields = this.fields.filter((x) => x.name === column.datafield);
 
-        if (column.type == 'preview')
+        if (column.type === 'preview')
             {return 'preview';}
-        if ((column.datafield == 'Name' || column.datafield == 'TextPath') && !this.isComplex) {
+        if ((column.datafield === 'Name' || column.datafield === 'TextPath') && !this.isComplex) {
             if (column['objectfield'] != null && column['objectidfield'] != null)
                 {return 'preview';}
             else

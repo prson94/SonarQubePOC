@@ -58,7 +58,7 @@ namespace igx.jobs.databaseindexrebuilder
                         using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID))
                         {
                             companyConnection.Open();
-                            var res = companyConnection.Execute("EXEC [dbo].[AzureSQLMaintenance]", new { Operation = "reindex", From = 30, To = 100, MinNumberOfPages = 10 }, null, commandTimeout);
+                            var res = companyConnection.Execute("EXEC [dbo].[AzureSQLMaintenance]", new { Operation = "reindex", From = 15, To = 100, MinNumberOfPages = 10 }, null, commandTimeout);
                         }
                         TimeSpan end = DateTime.Now - start;
                         properties.Add("Time Taken", end.TotalMilliseconds.ToString());

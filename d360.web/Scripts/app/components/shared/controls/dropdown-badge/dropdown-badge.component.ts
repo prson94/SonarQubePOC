@@ -1,15 +1,19 @@
-import { ContentChild, forwardRef, NgModule, TemplateRef, ViewEncapsulation } from '@angular/core';
-import { FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { ControlValueAccessor } from '@angular/forms';
+import {
+    ChangeDetectorRef,
+    Component,
+    ContentChild,
+    ElementRef,
+    forwardRef,
+    HostListener,
+    Input,
+    NgModule,
+    TemplateRef,
+    ViewEncapsulation
+} from '@angular/core';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { DropdownBadgeOption } from './types/dropdown-bage-option.type';
 import { CommonModule } from '@angular/common';
 import { FilterDropdownBadgeOptionsPipe } from './pipes/filter-dropdown-bage-options.pipe';
-import {
-  ChangeDetectorRef,
-  Component,
-  ElementRef, HostListener,
-  Input
-} from '@angular/core';
 
 export const DROPDOWNBADGE_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,

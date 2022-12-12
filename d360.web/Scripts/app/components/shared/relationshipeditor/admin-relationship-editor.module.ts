@@ -1,11 +1,10 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
-
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 
 import { CoreModule } from '../../shared/core.module';
-import { TilesModule  } from '../../shared/tiles/tiles.module';
+import { TilesModule } from '../../shared/tiles/tiles.module';
 
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';

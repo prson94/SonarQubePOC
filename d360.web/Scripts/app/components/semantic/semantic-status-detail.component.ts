@@ -1,4 +1,4 @@
-﻿import { ChangeDetectorRef, Component, EventEmitter, OnChanges, OnInit, Output, ViewChild } from '@angular/core';
+﻿import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { DataProfileService } from '../../services/dataprofile.service';
 
 @Component({
@@ -34,7 +34,7 @@ export class SemanticStatusDetailComponent implements OnInit {
     }
 
     clickedOutside(event: any) {
-        if (!(event.path.filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
+		if (!(event.composedPath().filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
             this.close.emit();
         }
     }

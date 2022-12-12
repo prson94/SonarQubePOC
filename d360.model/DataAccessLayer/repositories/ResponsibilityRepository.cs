@@ -786,6 +786,7 @@ namespace d360.model.DataAccessLayer
 					INNER JOIN [dbo].[fieldTypeLookup] ftl on ft.id = ftl.FieldTypeId
 					WHERE ft.Type = '{DataType.OwnershipLookup}'
 					AND at.id = @assetTypeId
+					AND ISJSON(FTL.Definition) > 0
 					AND TRY_CAST(JSON_VALUE(FTL.Definition, '$.ResponsibilityType') AS int) = @responsibilityTypeId", new { responsibilityTypeId = responsibility.ID, assetTypeId = assetType.ID }).ToList();
 
 			if (usedByOwnershipFields.Any())

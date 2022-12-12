@@ -1,8 +1,19 @@
-﻿
-import { Component, OnInit, EventEmitter, Output, Input, forwardRef, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation, AfterViewInit, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
-import * as _ from 'lodash';
+﻿import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    forwardRef,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges,
+    ViewChild,
+    ViewEncapsulation
+} from '@angular/core';
 import { SelectItem } from 'primeng/api';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Dropdown } from 'primeng/dropdown';
 
 export const COLORPICKER_VALUE_ACCESSOR: any = {
@@ -13,24 +24,7 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
 
 @Component({
     selector: 'ig-color-picker',
-    template: `
-                <div [ngStyle]="style" [class]="'d3s-color-picker ' + styleClass" tabindex="-1">
-                    <p-dropdown [class]="'p-dropdown-wrapper'" #dd [tabIndex]="tabindex" [appendTo]="'body'" [options]="colors" [panelStyleClass]="'igx-blue'" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="{{filterplaceholder}}" [disabled]="disabled" (focus)="focus($event)">
-                        <ng-template let-item pTemplate="selectedItem">
-                            <div class="ig-colorfield-item-selected">
-                                <span class="ig-colorfield-swatch" [style.background-color]="item?.title"></span>
-                                <span class="ig-colorfield-item-label">{{item?.label}}</span>
-                            </div>
-                        </ng-template>
-                        <ng-template let-color pTemplate="item">
-                            <div class="ig-colorfield-item">
-                                <span class="ig-colorfield-swatch" [style.background-color]="color.title"></span>
-                                <span class="ig-colorfield-item-label">{{color.label}}</span>
-                            </div>
-                        </ng-template>
-                    </p-dropdown>
-                </div>
-              `,
+    templateUrl: 'color-picker.component.html',
     providers: [COLORPICKER_VALUE_ACCESSOR],
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./color-picker.less'],

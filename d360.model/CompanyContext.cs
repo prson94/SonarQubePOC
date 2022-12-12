@@ -153,6 +153,8 @@ namespace d360.model
 
 		public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
 
+		public DbSet<ResourceSetting> ResourceSettings { get; set; }
+
 		public DbSet<Semantic> Semantics { get; set; }
 
 		public DbSet<SiteNav> SiteNav { get; set; }
@@ -549,7 +551,7 @@ namespace d360.model
 								OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 
 						selectedSql = @"
-								select	case when i.SubjectAssetID = @assetId then i.ObjectAssetID else i.SubjectAssetID end as [Value], 
+								select	A.ObjectId as [Value], 
 										A.[Name] as [Text], 
 										1 as Selected 
 								from	[intersect] i

@@ -822,10 +822,12 @@ namespace d360.model
 
             if (sendWorkflowEvents)
             {
-                string changedFieldsSql = $@"select  EA.Object, 
-							EA.ObjectID, 
+                string changedFieldsSql = $@"select  
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.Object" : "EA.Object")}, 
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.ObjectID" : "EA.ObjectID")}, 
 							EF.FieldTypeID AS Id 
 					from    {tableName} EA 
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "inner join Asset a on a.id = EA.ObjectAssetID" : " ")}
 							inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
 											and EF.ItemNumber = EA.ItemNumber 
 											and EF.FieldTypeID is not null
@@ -838,10 +840,12 @@ namespace d360.model
 
 					union all
 
-					select  EA.Object, 
-							EA.ObjectID, 
+					select  
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.Object" : "EA.Object")}, 
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.ObjectID" : "EA.ObjectID")}, 
 							EF.FieldTypeID AS Id 
 					from    {tableName} EA 
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "inner join Asset a on a.id = EA.ObjectAssetID" : " ")}
 							inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
 											and EF.ItemNumber = EA.ItemNumber 
 											and EF.FieldTypeID is not null
@@ -1138,7 +1142,7 @@ namespace d360.model
 				inner join AssetDetail ad on AD.AssetTypeID = V.ITSUBJECTASSETTYPEID and {assetJoin} 
 				where isfound = 0;
 
-				if exists(Select 1 from #tempdata t where T.OBJECTCLASS = {(int)AssetTypeClass.ReferenceItemType}  and isfound = 0)
+				if exists(Select 1 from #tempdata t where T.OBJECTCLASS = {(int)AssetTypeClass.Reference}  and isfound = 0)
 				begin
 					update V
 					set [SubjectAssetID] = 0,
@@ -1146,12 +1150,11 @@ namespace d360.model
 						switchObject = 1,
 						isfound = 3
 					from #tempdata V
-					inner join AssetType att on att.ID = V.ITOBJECTASSETTYPEID AND V.OBJECTCLASS = 0 
-											 and att.[Object] = 'ReferenceItemType' and att.[ObjectID] <> 0 and {assetrefJoin} 
+					inner join AssetType att on att.[Object] = 'ReferenceItemType' and att.[ObjectID] <> 0 and {assetrefJoin} 
 					where isfound = 0;
 				end
 
-				if exists(Select 1 from #tempdata t where T.SUBJECTCLASS = {(int)AssetTypeClass.ReferenceItemType}  and isfound = 0)
+				if exists(Select 1 from #tempdata t where T.SUBJECTCLASS = {(int)AssetTypeClass.Reference}  and isfound = 0)
 				begin
 					update V
 					set [SubjectAssetID] = 0,
@@ -1159,8 +1162,7 @@ namespace d360.model
 						switchObject = 0,
 						isfound = 4
 					from #tempdata V
-					inner join AssetType att on att.ID = V.ITSUBJECTASSETTYPEID AND V.SUBJECTCLASS = 0
-											 and att.[Object] = 'ReferenceItemType' and att.[ObjectID] <> 0 and {assetrefJoin} 
+					inner join AssetType att on att.[Object] = 'ReferenceItemType' and att.[ObjectID] <> 0 and {assetrefJoin} 
 					where isfound = 0;
 				end
 
@@ -1195,7 +1197,30 @@ namespace d360.model
 				from	#Relationships R
 						inner join [Intersect] I on I.IntersectTypeID = R.IntersectTypeID 
 							and I.SubjectAssetID = R.SubjectAssetID 
-							and I.ObjectAssetID = R.ObjectAssetID;
+							and I.ObjectAssetID = R.ObjectAssetID
+				where R.ObjectAssetID <> 0 and R.SubjectAssetID <> 0;
+
+				if exists(Select 1 from #tempdata t where T.OBJECTCLASS = {(int)AssetTypeClass.Reference}  and isfound = 0)
+				begin
+					update	R
+					set		R.ID = I.ID,
+							R.[uid] = I.[uid]
+					from	#Relationships R
+							inner join [Intersect] I on I.IntersectTypeID = R.IntersectTypeID 
+								and I.SubjectAssetID = R.SubjectAssetID 
+								and I.ObjectAssetTypeID = R.ObjectAssetTypeID and I.ObjectAssetID = 0;
+				end
+
+				if exists(Select 1 from #tempdata t where T.SubjectAssetID = {(int)AssetTypeClass.Reference}  and isfound = 0)
+				begin
+					update	R
+					set		R.ID = I.ID,
+							R.[uid] = I.[uid]
+					from	#Relationships R
+							inner join [Intersect] I on I.IntersectTypeID = R.IntersectTypeID 
+							and I.SubjectAssetTypeID = R.SubjectAssetTypeID 
+							and I.ObjectAssetID = R.ObjectAssetID and I.SubjectAssetID = 0;
+				end
 
 				--check reverse if subject/object type are the same
 				update	R
@@ -2551,7 +2576,30 @@ where	T.ExecutionID = @ExecutionID
                                     continue;
                                 }
 
-                                for (int i = 0; i < numberOfChunkLoops; i++)
+								// Log the parent removals into Dependent Change table.
+								List<int> hierarchyPredicates = 
+									new List<int> { (int)PredicateType.InterTypeHierarchy, (int)PredicateType.IntraTypeHierarchy };
+
+								Connection.Execute(@"
+									drop table if exists #parent_relationship_types
+									select IT.ID 
+									into #parent_relationship_types
+									from [IntersectType] IT
+									inner join [Predicate] P on P.ID = IT.PredicateID
+									where P.Type in @hierarchyPredicates;
+
+									insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
+										select S.ExecutionID, S.ItemNumber, 1, 2,'{""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' from api.ExecutionDeletedAsset S 
+										inner join [Intersect] I on I.ObjectAssetId = S.AssetId 
+										inner join #parent_relationship_types IT on IT.ID = I.IntersectTypeID
+										inner join Asset P on P.Id = I.SubjectAssetId
+									where S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber and ([Level] is null or [Level] = 0)
+									", new { execution.ExecutionID, beginItemNumber, endItemNumber, hierarchyPredicates }, commandTimeout: timeout);
+
+								AddMeasurement(metrics, $"LogExecutionItemDependentChange >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+								sw.Restart();
+
+								for (int i = 0; i < numberOfChunkLoops; i++)
                                 {
                                     int chunkDeletionRetryCount = 0;
                                     bool isChunkDeletionCompleted = false;
@@ -2578,7 +2626,7 @@ where	T.ExecutionID = @ExecutionID
                                                       new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 
-                                                step = DeleteAssetsByChunk(execution, at, timeout, metrics, step, dt, canHaveProcess, sw, predicateType, beginItemNumber, endItemNumber, currentLoop, chunkDeletionRetryCount, chunksQueryString, trans);
+												step = DeleteAssetsByChunk(execution, at, timeout, metrics, step, dt, canHaveProcess, sw, predicateType, beginItemNumber, endItemNumber, currentLoop, chunkDeletionRetryCount, chunksQueryString, trans);
                                                 // Update success flag
                                                 Connection.Execute(
                                                     $"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{chunksQueryString} and S.AssetID is not null;",
@@ -2641,7 +2689,7 @@ where	T.ExecutionID = @ExecutionID
                                         }
                                     }
                                 }
-                                runCompleted = true;
+								runCompleted = true;
                             }
 
                             if (descendantsDeletionFailure)
@@ -2679,25 +2727,25 @@ where	T.ExecutionID = @ExecutionID
 
                         Connection.Close();
 
-                        if (sendWorkflowEvents)
-                        {
-                            SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
-                            AddMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
-                            sw.Restart();
-                        }
+						if (sendWorkflowEvents)
+						{
+							SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
+							AddMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
+							sw.Restart();
+						}
 
-                        // Data Quality Scoring - send to engine to determine what scores need to be recalculated.
-                        if (at.Class == AssetTypeClass.Rule)
-                        {
-                            CreateRulesRemovedExecution(execution.ExecutionID, at.ID);
-                        }
+						// Data Quality Scoring - send to engine to determine what scores need to be recalculated.
+						if (at.Class == AssetTypeClass.Rule)
+						{
+							CreateRulesRemovedExecution(execution.ExecutionID, at.ID);
+						}
 
-                        // Rescore changes to parents based on the items removed here - possibly children.
-                        if (predicateType.HasValue)
-                        {
-                            CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
-                        }
-                    }
+						// Rescore changes to parents based on the items removed here - possibly children.
+						if (predicateType.HasValue)
+						{
+							CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
+						}
+					}
                 }
             }
 
@@ -2913,19 +2961,6 @@ where	T.ExecutionID = @ExecutionID
 			#endregion
 
 			#region Asset table
-
-			// Log the parent removals into Dependent Change table.
-			Connection.Execute(@"
-				insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
-					select  ExecutionID, ItemNumber, 1, 2, '{""ParentAssetUid"": ""' + cast(Uid as varchar(50)) + '""}' 
-					from    (
-							select  S.ExecutionID, S.ItemNumber, P.Uid, ROW_NUMBER() OVER(PARTITION BY S.ExecutionID, S.ItemNumber ORDER BY P.Uid ASC) as RowNum
-							from	api.ExecutionDeletedAsset S 
-									inner join [Intersect] I on I.ObjectAssetId = S.AssetId 
-									inner join Asset P on P.Id = I.SubjectAssetId
-							where " + querySuffix + @" group by S.ExecutionID, S.ItemNumber, P.Uid 
-							) O where RowNum = 1", 
-					new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 			Connection.Execute(
                 $@"
@@ -4728,8 +4763,8 @@ where	T.ExecutionID = @ExecutionID
 										AddMeasurement(metrics, $"MergeAssetPaths >> {currentLoop} > Begin", 0, ++step);
 
 										Connection.Execute(
-											"exec api.MergeAssetPaths @executionId, @class, @begin, @end",
-											new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber },
+											"exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, @isInsert",
+											new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber, isInsert },
 											transaction: trans, timeout);
 										AddMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
 										sw.Restart();
@@ -4755,14 +4790,15 @@ where	T.ExecutionID = @ExecutionID
                                         AddMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
+									AddMeasurement(metrics, $"CheckKeyHashes >> {currentLoop} > Begin", sw.ElapsedMilliseconds, ++step);
 									#region Generate proposed key hash and compare against existing data.
-									var invalidHashState = Connection.Query<int>(@"
+									var invalidHashState = Connection.Query<dynamic>(@"
 										declare @assetTypeId int =  (select top 1 a.AssetTypeID from api.ExecutionAsset ea
 										inner join Asset a on a.ID = ea.AssetID
 										where ExecutionId = @executionid and ea.AssetID is not null and  ItemNumber between @beginItemNumber and @endItemNumber )
 
 										drop table if exists #HashData
-										select AssetID, Ap.KeyPathHash 
+										select AssetID, Ap.KeyPathHash, A.CreatedOn, ea.ItemNumber
 											into #HashData
 										from api.ExecutionAsset ea
 											inner join Asset A on a.ID = ea.AssetID
@@ -4770,21 +4806,22 @@ where	T.ExecutionID = @ExecutionID
 										where ea.ExecutionID = @executionid 
 										and ItemNumber between @beginItemNumber and @endItemNumber 
 
-										select count(1) from Asset A WITH (NOLOCK)
+										select hd.ItemNumber, a.id as AssetId, datediff(second,a.CreatedOn, hd.CreatedOn) as CreatedBefore from Asset A WITH (NOLOCK)
 										inner join AssetPath ap WITH (NOLOCK) on ap.ID = a.ID
 										inner join #HashData hd on hd.assetid != a.ID and hd.KeyPathHash = ap.KeyPathHash
 										where a.AssetTypeID = @assetTypeId
 										option(recompile)
 										", new { executionID = execution.ExecutionID, beginItemNumber, endItemNumber },
-										transaction: trans, commandTimeout: timeout).FirstOrDefault();
+										transaction: trans, commandTimeout: timeout).ToList();
 
-									if (invalidHashState > 0)
-									{
-										throw new DuplicateHashException("Key values match another asset under a different set of key fields or 2 or more concurrent requests contains same key field values.");
-									}
-
-									AddMeasurement(metrics, "CheckKeyHashes", sw.ElapsedMilliseconds, ++step);
+									AddMeasurement(metrics, $"CheckKeyHashes >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 									sw.Restart();
+
+									if (invalidHashState.Count > 0)
+									{
+										string duplicates = string.Join(",", invalidHashState.Select(x => $"[ItemNumber:{x.ItemNumber},ID:{x.AssetId},CreatedBefore:{x.CreatedBefore}s]"));
+										throw new DuplicateHashException("Key values match another asset under a different set of key fields or 2 or more concurrent requests contains same key field values."+ duplicates);
+									}
 
 									#endregion
 
@@ -4861,47 +4898,47 @@ where	T.ExecutionID = @ExecutionID
 
                     Connection.Close();
 
-					// TODO: Add event grid calls here.
+					//TODO: Add event grid calls here.
 
-                    if (sendWorkflowEvents)
-                    {
-                        sw.Restart();
+					if (sendWorkflowEvents)
+					{
+						sw.Restart();
 						AddMeasurement(metrics, $"SendWorkflowEvents > Begin", 0, ++step);
 						SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
-                        AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
-                    }
+						AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
+					}
 
 					try
 					{
 						SendBatchApiCompletedEvent(execution);
 						AddMeasurement(metrics, $"SendCompletedEvent", sw.ElapsedMilliseconds, ++step);
 					}
-					catch 
+					catch
 					{
 
 					}
-					
+
 					#region Send score recalculation notifications.
 
 					if (intersectTypeID.HasValue)
-                    {
+					{
 						sw.Restart();
 						AddMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution > Begin", 0, ++step);
 						CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
 						AddMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution", 0, ++step);
-                    }
+					}
 
-                    if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
-                    {
-                        sw.Restart();
+					if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
+					{
+						sw.Restart();
 						AddMeasurement(metrics, $"SendScoreEventWithPayload > Begin", 0, ++step);
 						CreateImportAssetsExecution(execution.ExecutionID, at.uid);
-                        AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
-                    }
+						AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
+					}
 
-                    #endregion
-                }
-            }
+					#endregion
+				}
+			}
 
             AddMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
 
@@ -5372,7 +5409,7 @@ where	T.ExecutionID = @ExecutionID
 										set		T.SubjectAssetID = 0,
 												T.SubjectAssetTypeID = S.ID
 										from	api.ExecutionRelationship T
-												inner join AssetType S on S.[uid] = T.SubjectUid and T.SubjectAssetID is null and S.[Class] = @sc
+												inner join AssetType S on S.[uid] = T.SubjectUid and S.[Class] = @sc and T.SubjectAssetTypeID = 0 
 												where T.ExecutionID = @ExecutionID;
 										end
 
@@ -5382,9 +5419,21 @@ where	T.ExecutionID = @ExecutionID
 										set		T.ObjectAssetID = 0,
 												T.ObjectAssetTypeID = O.ID
 										from	api.ExecutionRelationship T
-												inner join AssetType O on O.[uid] = T.ObjectUid and T.ObjectAssetID is null and O.[Class] = @oc
+												inner join AssetType O on O.[uid] = T.ObjectUid and O.[Class] = @oc  and T.ObjectAssetTypeID = 0
 												where T.ExecutionID = @ExecutionID;
-										end",
+										end
+
+										if ((@sc = 9 and @stid = 0) or (@oc = 9 and @otid = 0))
+										begin
+										update	T
+										set		T.IsNew = 0
+										from	api.ExecutionRelationship T
+												inner join [Intersect] I on  I.IntersectTypeId = @it 
+												and I.SubjectAssetId= T.SubjectAssetID and I.SubjectAssetTypeId= T.SubjectAssetTypeID 
+												and I.ObjectAssetId = T.ObjectAssetId and I.ObjectAssetTypeID = T.ObjectAssetTypeID
+										where T.ExecutionID = @ExecutionID and T.IsNew = 1;
+										end
+											",
                                         new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
                     AddMeasurement(metrics, "Validate subjects/objects", sw.ElapsedMilliseconds, ++step);
 
@@ -5397,12 +5446,12 @@ where	T.ExecutionID = @ExecutionID
 										update	api.ExecutionRelationship
 										set		Success = 0,
 											[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve subject of this relationship to a valid asset.'
-										where	ExecutionID = @ExecutionID and (SubjectAssetID is null or SubjectAssetTypeID is null);
+										where	ExecutionID = @ExecutionID and (SubjectAssetID = 0 and SubjectAssetTypeID = 0);
 	
 										update	api.ExecutionRelationship
 										set		Success = 0,
 											[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve object of this relationship to a valid asset.'
-										where	ExecutionID = @ExecutionID and (ObjectAssetID is null or ObjectAssetTypeID is null);
+										where	ExecutionID = @ExecutionID and (ObjectAssetID = 0 and ObjectAssetTypeID = 0);
 
 										update	api.ExecutionRelationship
 										set		Success = 0,
@@ -5491,7 +5540,7 @@ where	T.ExecutionID = @ExecutionID
                     #region Permissions Validation
 
                     sw.Restart();
-                    Connection.Execute(@"
+                    Connection.Execute($@"
 										declare @IsAdministrator bit = 0
 										select	@IsAdministrator = IsAdministrator
 										from	reporting.Global_Resource
@@ -5500,46 +5549,46 @@ where	T.ExecutionID = @ExecutionID
 										if @IsAdministrator = 0
 										begin
 										update	T
-										set		T.Message = coalesce(T.Message + '; ', '') + 'You do not have permission to modify relationships on the subject asset.',
+										set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.NotPermissionModifyRelationSubjectAsset}',
 												T.Success = 0
-										from	api.ExecutionRelationship T
-												inner join	(
-															select	R.ExecutionID, R.ItemNumber
-															from	api.ExecutionRelationship R
-																	inner join Asset A on A.Uid = R.SubjectUid and R.ExecutionID = @ExecutionID
+										from	
+												api.ExecutionRelationship T
+										where 
+												T.ExecutionID = @ExecutionID and not exists (
+															select 1
+															from	Asset A
 																	outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
-															where	(
-																	(P.AssetID = A.ID) 
+																	where	
+																	A.Uid = T.SubjectUid 
+																	and
+																	(
+																	(P.AssetID = A.ID)
 																	or P.AssetTypeID is null
 																	)
-																	and (
-																		(P.PermissionsBitMask is not null and P.PermissionsBitMask & @p <> @p) 
-																		or 
-																		P.PermissionsBitMask is null
-																		)
-															group by R.ExecutionID, R.ItemNumber
-															) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+																	and 
+																	P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p	
+															)  ;
 
 										update	T
-										set		T.Message = coalesce(T.Message + '; ', '') + 'You do not have permission to modify relationships on the object asset.',
+										set		T.Message = coalesce(T.Message + '; ', '') + '{CompanyContextApiError.NotPermissionModifyRelationobjectAsset}',
 												T.Success = 0
-										from	api.ExecutionRelationship T
-												inner join	(
-															select	R.ExecutionID, R.ItemNumber
-															from	api.ExecutionRelationship R
-																	inner join Asset A on A.Uid = R.ObjectUid and R.ExecutionID = @ExecutionID
+										from	
+												api.ExecutionRelationship T
+										where 
+												T.ExecutionID = @ExecutionID and not exists (
+															select 1
+															from	Asset A
 																	outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
-															where	(
-																	(P.AssetID = A.ID) 
+																	where	
+																	A.Uid = T.ObjectUid 
+																	and
+																	(
+																	(P.AssetID = A.ID)
 																	or P.AssetTypeID is null
 																	)
-																	and (
-																		(P.PermissionsBitMask is not null and P.PermissionsBitMask & @p <> @p) 
-																		or 
-																		P.PermissionsBitMask is null
-																		)
-															group by R.ExecutionID, R.ItemNumber
-															) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+																	and 
+																	P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p	
+															);
 										end",
                                         new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.EditRelationships }, commandTimeout: timeout);
                     AddMeasurement(metrics, "Permissions Validation", sw.ElapsedMilliseconds, ++step);
@@ -5630,7 +5679,7 @@ where	T.ExecutionID = @ExecutionID
 																				and ItemNumber between @beginItemNumber and @endItemNumber
 																				and Success is null	
 																) S
-														on      ( T.IntersectTypeID = @rtID and T.SubjectAssetID = S.SubjectAssetID and T.ObjectAssetID = S.ObjectAssetID )
+														on      ( T.IntersectTypeID = @rtID and T.SubjectAssetID = S.SubjectAssetID and T.ObjectAssetID = S.ObjectAssetID and T.SubjectAssetTypeID = S.SubjectAssetTypeID and T.ObjectAssetTypeID = S.ObjectAssetTypeID)
 														when matched then
 															update set
 																	T.UpdatedBy = @CurrentResourceID,
@@ -6090,7 +6139,6 @@ where	T.ExecutionID = @ExecutionID
                     Connection.Execute(@"
 										declare @it int
 
-
 										select	@it = ID
 										from	IntersectType
 										where	[uid] = @uid
@@ -6111,14 +6159,14 @@ where	T.ExecutionID = @ExecutionID
 												T.SubjectAssetTypeID = A.AssetTypeID
 										from	api.ExecutionRelationship T
 												inner join [Asset] A on A.Uid = T.SubjectUid 
-										where	T.ExecutionID = @ExecutionID and T.Subject Is not null;
+										where	T.ExecutionID = @ExecutionID;
 
 										update	T
 										set		T.ObjectAssetID = A.ID,
 												T.ObjectAssetTypeID = A.AssetTypeID
 										from	api.ExecutionRelationship T
 												inner join [Asset] A on A.Uid = T.ObjectUid 
-										where	T.ExecutionID = @ExecutionID and T.Object Is not null;
+										where	T.ExecutionID = @ExecutionID;
 										",
                                         new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
                     AddMeasurement(metrics, "Validate subjects/objects", sw.ElapsedMilliseconds, ++step);
@@ -6142,7 +6190,7 @@ where	T.ExecutionID = @ExecutionID
 										select	R.ExecutionID, R.ItemNumber
 										into #temppremissionSub
 										from	api.ExecutionRelationship R
-												inner join Asset A on A.Uid = R.SubjectUid and R.ExecutionID = @ExecutionID
+												inner join Asset A on A.ID = R.SubjectAssetID and R.ExecutionID = @ExecutionID
 												outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
 										where	(
 												(P.AssetID = A.ID) 
@@ -6170,7 +6218,7 @@ where	T.ExecutionID = @ExecutionID
 										select	R.ExecutionID, R.ItemNumber
 										into #temppremissionObj
 										from	api.ExecutionRelationship R
-												inner join Asset A on A.Uid = R.ObjectUid and R.ExecutionID = @ExecutionID
+												inner join Asset A on A.ID = R.ObjectAssetID and R.ExecutionID = @ExecutionID
 												outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
 										where	(
 												(P.AssetID = A.ID) 

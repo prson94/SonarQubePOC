@@ -61,7 +61,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No Asset or AsssetType found for Guid [{0}].
+        ///   Looks up a localized string similar to No Asset or AssetType found for Guid [{0}].
         /// </summary>
         public static string AssetAssetTypeNotFound {
             get {
@@ -417,15 +417,6 @@ namespace Resources {
         public static string InvalidResourceUID {
             get {
                 return ResourceManager.GetString("InvalidResourceUID", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid guid value for parameter [SubjectAssetUid].
-        /// </summary>
-        public static string InvalidSubjectAssetUid {
-            get {
-                return ResourceManager.GetString("InvalidSubjectAssetUid", resourceCulture);
             }
         }
         

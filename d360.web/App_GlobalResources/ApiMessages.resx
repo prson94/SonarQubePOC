@@ -750,4 +750,7 @@
   <data name="YouAreNowWatching" xml:space="preserve">
     <value>You are now watching {0}.</value>
   </data>
+  <data name="InvalidLanguageCode" xml:space="preserve">
+    <value>Invalid [LanguageCode]. Supported values are {0}.</value>
+  </data>
 </root>

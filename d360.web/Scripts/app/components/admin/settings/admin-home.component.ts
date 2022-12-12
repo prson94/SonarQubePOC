@@ -29,8 +29,8 @@ export class AdminHomeComponent  {
             this.companySettingsChange.emit(this.companySettings);
         }
 
-        let target = event.target || event.srcElement;
-        let files = target.files;
+        const target = event.target || event.srcElement;
+        const files = target.files;
 
         if (files[0] != null) {
             if (files[0].size > (1024 * 1000)) {

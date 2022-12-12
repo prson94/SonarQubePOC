@@ -1,5 +1,5 @@
-﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from "@angular/core";
-import { LookupGrid, GridFilterColumn } from "../../../models/grid-definition.model";
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy } from "@angular/core";
+import { GridFilterColumn, LookupGrid } from "../../../models/grid-definition.model";
 import { Router } from "@angular/router";
 import { SiteUrlHelpers } from "../../../static/site-url-helpers";
 import { BaseComponent } from "../base.component";
@@ -75,7 +75,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
         });
 
         this.data.Columns.filter((c) => c.type === 'hidden').forEach((c) => {
-            let i = this.data.Columns.find((i) => i.datafield === c.text);
+            const i = this.data.Columns.find((i) => i.datafield === c.text);
             if (i) {
                 i.type = 'preview';
             }
@@ -184,8 +184,8 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
         var value = data[colName] as string;
         if (!value) {return '';}
 
-        let cleanValue: number = parseFloat(value.replace("%", ""));
-        let fieldTypeID: number = parseInt(colName.split("_")[1]);
+        const cleanValue: number = parseFloat(value.replace("%", ""));
+        const fieldTypeID: number = parseInt(colName.split("_")[1]);
         var className = "";
         if (this.data?.ScoringInfo) {
             className = "score-poor";

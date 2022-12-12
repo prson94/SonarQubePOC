@@ -1,12 +1,12 @@
-﻿import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, ChangeDetectorRef } from "@angular/core";
-import { Subscription } from "@datadog/browser-core";
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, ChangeDetectorRef } from "@angular/core";
+import { Subscription } from "rxjs";
+import { finalize } from "rxjs/operators";
 import { AssetTypeClass } from "../../../../models/asset.model";
 import { GovernanceRole } from "../../../../models/governance-role.model";
-import { CompanySettingEnum, GuidSetting, SettingsPutModel } from "../../../../models/settings.model";
+import { CompanySettingEnum, SettingsPutModel, GuidSetting } from "../../../../models/settings.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { MessagesObservableService } from "../../../../services/messages-observable.service";
 import { CompanySettingsService } from "../../../../services/settings.service";
-
 
 @Component({
     selector: 'd3s-governance-roles',
@@ -37,6 +37,11 @@ export class GovernanceRolesComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.isLoading = true;
         this.refListSub = this.assetsService.getAssetTypesByClass(AssetTypeClass.Reference)
+            .pipe(
+                finalize(() => {
+                    this.isLoading = false;
+                })
+            )
             .subscribe((res) => {
                 this.refListDDL = [];
                 this.refListDDL.push({ value: '', label: $localize`Select Reference List...` });
@@ -44,19 +49,17 @@ export class GovernanceRolesComponent implements OnInit, OnDestroy {
                     this.refListDDL.push({ value: x.uid, label: x.Name });
                 });
 
+                const setting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);;
+                this.originalModel = new GovernanceRole();
+                if (setting.ScalarValue && setting.ScalarValue !== "00000000-0000-0000-0000-000000000000") {
+                    this.originalModel.RefListUid = setting.ScalarValue;
+                }
+
+                this.model = this.getInitialData();
+                this.isLoading = false;
                 this.cdRef.detectChanges();
 
             });
-
-        const setting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);
-        this.originalModel = new GovernanceRole();
-        if (setting.ScalarValue && setting.ScalarValue !== "00000000-0000-0000-0000-000000000000") {
-            this.originalModel.RefListUid = setting.ScalarValue;
-        }
-
-        this.model = this.getInitialData();
-        this.isLoading = false;
-        this.cdRef.detectChanges();
     }
 
     discard() {
@@ -81,7 +84,8 @@ export class GovernanceRolesComponent implements OnInit, OnDestroy {
                 (res) => {
                     this.isSaving = false;
                     this.originalModel = this.model;
-                    this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
+					this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
+					this.settingsService.loadSettings();
                     this.cdRef.detectChanges();
                 },
                 (err) => {

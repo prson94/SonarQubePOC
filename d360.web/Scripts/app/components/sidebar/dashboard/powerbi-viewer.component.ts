@@ -1,6 +1,7 @@
 ﻿import { Component, ElementRef, Input, OnChanges, SimpleChange } from "@angular/core";
 import * as pbi from "powerbi-client";
 import { DashboardModel, DashboardTokens } from "../../../models/dashboard.model";
+import { UsageAction } from "../../../models/web-analytics-activity.model";
 import { DashboardService } from "../../../services/dashboard.service";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { WebAnalyticsService } from "../../../services/web-analytics.service";
@@ -60,8 +61,8 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
             const reportContainer = document.getElementById("biContainer") as HTMLElement;
 
             const powerbi = new pbi.service.Service(pbi.factories.hpmFactory, pbi.factories.wpmpFactory, pbi.factories.routerFactory);
-            this.report = powerbi.embed(reportContainer, config) as pbi.Report;            
-			this.logAction("open", "Report", this.dashboard.uid);
+			this.report = powerbi.embed(reportContainer, config) as pbi.Report;
+			this.logDashboardAction(UsageAction.View, this.dashboard.uid);
         }
     }
 

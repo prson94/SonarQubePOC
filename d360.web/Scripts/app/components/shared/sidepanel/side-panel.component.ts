@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+﻿import { Component, EventEmitter, Input, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { SidePanelButton } from '../../../models/side-panel.model';
 import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { BaseComponent } from '../base.component';
@@ -106,7 +106,7 @@ export class SidePanelComponent extends BaseComponent {
 
     private loadState() {
         if (this.storageKey != null && this.storageKey.length > 0) {
-            let stateString = localStorage.getItem(this.storageKeyPrefix + this.storageKey);
+            const stateString = localStorage.getItem(this.storageKeyPrefix + this.storageKey);
             if (stateString != null && stateString.length > 0) {
                 let state;
                 try {
@@ -122,7 +122,7 @@ export class SidePanelComponent extends BaseComponent {
                     }
 
                     if (state.selectedPanel != null && state.selectedPanel.length > 0) {
-                        let b = this.buttons.find((b) => b.key === state.selectedPanel);
+                        const b = this.buttons.find((b) => b.key === state.selectedPanel);
 
                         if (b || this.storageKey === "relationship-detail") {
                             this.selectedPanel = state.selectedPanel;
@@ -139,7 +139,7 @@ export class SidePanelComponent extends BaseComponent {
 
     private saveState() {
         if (this.storageKey != null && this.storageKey.length > 0) {
-            let state: any = {};
+            const state: any = {};
             state.expanded = this.expanded;
             state.selectedPanel = this.selectedPanel;
 
@@ -238,7 +238,7 @@ export class SidePanelComponent extends BaseComponent {
 
     get panelLabel(): string {
         if (this.selectedPanel.length > 0) {
-            let ix = this.buttons.findIndex((b) => b.key === this.selectedPanel);
+            const ix = this.buttons.findIndex((b) => b.key === this.selectedPanel);
             if (ix > -1) {
                 return this.buttons[ix].label;
             } else {
@@ -251,7 +251,7 @@ export class SidePanelComponent extends BaseComponent {
 
     get panelButton(): SidePanelButton {
         if (this.selectedPanel.length > 0) {
-            let ix = this.buttons.findIndex((b) => b.key === this.selectedPanel);
+            const ix = this.buttons.findIndex((b) => b.key === this.selectedPanel);
             if (ix > -1) {
                 return this.buttons[ix];
             } else {

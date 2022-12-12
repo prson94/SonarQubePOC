@@ -10,7 +10,6 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
 import { AngularSplitModule } from 'angular-split';
 import { AssetTypeListSidePanelWrapperComponent } from './list/asset-type-list-sidepanel-wrapper.component';
-import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
 import { D3SSortIconModule } from '../../shared/turbotable-sorticon.component';
 import { assetTypeConfigurationRoutes } from './asset-type-configuration.routes';
@@ -43,6 +42,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
 import { ConfigurationAssetTypeConnectorLabelsPageComponent } from './connectorLabels/configuration-asset-type-connector-labels-page.component';
 import { ConnectorLabelsModule } from './connectorLabels/connector-labels.module';
+import { AssetTypeDetailV2Module } from '../../shared/asset-type-detail-v2/asset-type-detail-v2.module';
+import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.component";
 
 @NgModule({
     imports: [
@@ -57,7 +58,6 @@ import { ConnectorLabelsModule } from './connectorLabels/connector-labels.module
         PipesModule,
         SidePanelModule,
         AngularSplitModule,
-        SharedObjectDetailsModule,
         SearchFieldModule,
         D3SSortIconModule,
         SharedAssetTypeEditorModule,
@@ -70,7 +70,9 @@ import { ConnectorLabelsModule } from './connectorLabels/connector-labels.module
         AdminRelationshipEditorModule,
         AuditModule,
         HeaderModule,
-        ConnectorLabelsModule
+        ConnectorLabelsModule,
+        AssetTypeDetailV2Module,
+        SharedGridPagingInfoModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,

@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, Input, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -9,24 +9,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-workflow-monitor',
-    template: ` 
-<div class="row">
-    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <div class="col s6">
-        <div class="tile tile-detail" *ngIf="!isLoading">
-            <d3s-workflowmonitor-list (selectionChange)="listChange($event)" [predefinedFilters]="predefinedFilters"></d3s-workflowmonitor-list>  
-        </div>
-    </div>
-    <div class="col s6">
-        <div class="tile tile-detail">
-            <d3s-workflow-monitor-step-list [itemId]="itemId" (selectionChange)="stepChange($event)"></d3s-workflow-monitor-step-list>
-        </div>
-        <div class="tile tile-detail" [hidden]="!detailVisible">
-            <d3s-workflow-monitor-step-details [itemStepId]="itemStepId" [(visible)]="detailVisible"></d3s-workflow-monitor-step-details>
-        </div>
-    </div>
-</div>
-              `,
+    templateUrl: 'workflowmonitor.component.html',
     providers: []
 })
 

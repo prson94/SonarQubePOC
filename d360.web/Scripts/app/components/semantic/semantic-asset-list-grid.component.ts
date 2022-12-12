@@ -1,6 +1,5 @@
-﻿import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChange, SimpleChanges } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
+﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
@@ -135,7 +134,7 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     }
 
     selectSemanticTypeAsset(asset: SemanticTypeAsset, newTab: boolean = false) {
-        let url = `${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${asset.uid}`;
+        const url = `${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${asset.uid}`;
         if (url) {
             if (newTab) {
                 window.open(url, '_blank');
@@ -151,7 +150,7 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
 
 
     clickMenuItem(event: any, item: SemanticTypeAsset) {
-        let key = event.value.toLowerCase();
+        const key = event.value.toLowerCase();
 
         if (key === $localize`Open`.toLowerCase()) {
             this.selectSemanticTypeAsset(item);
@@ -170,9 +169,9 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     }
 
 	isOutOfDate(profileDate) {		
-		let effectiveDate = (new Date(this.semanticType.effectiveDate)).getTime();
-		let profileDateTime = (new Date(profileDate)).getTime();
-		let updatedDate = (new Date(this.semanticType.updatedOn)).getTime();
+		const effectiveDate = (new Date(this.semanticType.effectiveDate)).getTime();
+		const profileDateTime = (new Date(profileDate)).getTime();
+		const updatedDate = (new Date(this.semanticType.updatedOn)).getTime();
 
 		return effectiveDate > profileDateTime || (updatedDate !== effectiveDate && profileDateTime > updatedDate);
     }

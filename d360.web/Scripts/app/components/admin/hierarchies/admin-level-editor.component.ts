@@ -55,7 +55,7 @@ export class AdminLevelEditorComponent extends BaseComponent {
 
                 for (var i = 0; i < result.length; i++) {
                     //remove the used level
-                    let index = this.levels.map((e) => e).indexOf(result[i].Level);
+                    const index = this.levels.map((e) => e).indexOf(result[i].Level);
 
                     this.levels.splice(index, 1);
                 }

@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../base.component';
 
 import * as Highcharts from 'highcharts';
@@ -109,7 +109,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             this.assetName = this.assetData.AssetName;
             this.assetTypeName = this.assetData.AssetTypeName;
         } else {
-            let uriParams: any = {};
+            const uriParams: any = {};
             this.isLoading = true;
             this.assetService.getAsset(this.dataProfile.assetUid)
                 .subscribe((res) => {
@@ -130,14 +130,14 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     }
 
     initialize() {
-        let startDate = new Date();
+        const startDate = new Date();
         startDate.setFullYear(startDate.getUTCFullYear() - 100);
         if (this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
             this.dataProfileService.getDataProfiles(this.dataProfile.assetUid, startDate, null, false, false, false).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 1) {
                         this.dataProfileList = r.items;
-                        let maxProfileDate = new Date();
+                        const maxProfileDate = new Date();
                         maxProfileDate.setFullYear(maxProfileDate.getFullYear() - 1);
                         this.timeSeriesProfileList = this.dataProfileList.filter((p) => new Date(p.profileSetDate) >= maxProfileDate);
                         this.cdRef.markForCheck();
@@ -211,7 +211,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         if (this.dataProfile.cardinalityDetail) {
             if (this.dataProfile.topK) {
                 this.dataProfile.topK.forEach((t) => {
-                    let value = this.dataProfile.cardinalityDetail.find((cd) => cd.key === t);
+                    const value = this.dataProfile.cardinalityDetail.find((cd) => cd.key === t);
                     if (value) {
                         this.topSamples.push(value);
                     }
@@ -222,7 +222,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             }
             if (this.dataProfile.bottomK) {
                 this.dataProfile.bottomK.forEach((b) => {
-                    let value = this.dataProfile.cardinalityDetail.find((cd) => cd.key === b);
+                    const value = this.dataProfile.cardinalityDetail.find((cd) => cd.key === b);
                     if (value) {
                         this.bottomSamples.push(value);
                     }
@@ -358,9 +358,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     }
 
 	getMatchTooltip(type: string, count: number): string {
-		let isDuplicates = type === $localize`duplicates`;
-		let isPlural = count > 1;
-		let tagText = $localize`Click to investigate and add tags.`;
+		const isDuplicates = type === $localize`duplicates`;
+		const isPlural = count > 1;
+		const tagText = $localize`Click to investigate and add tags.`;
 		let message = ``;
 		if (isDuplicates) {
 			if (isPlural) {
@@ -408,16 +408,16 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         var validColor: string = '#2e9b61';
         var invalidColor: string = '#d73961';
 
-        let dataProfileType: string = this.dataProfile.type?.toLowerCase();
-        let categories: string[] = [];
-        let data: any[] = [];
-        let colors: string[] = [];
+        const dataProfileType: string = this.dataProfile.type?.toLowerCase();
+        const categories: string[] = [];
+        const data: any[] = [];
+        const colors: string[] = [];
 
         var blankNullLabel: string = $localize`Blank/Null`;
         var invalidOutlierLabel: string = $localize`Invalid/Outliers`;
 
-        let maxSampleCount: number = 24;
-        let maxNumberCount: number = 6;
+        const maxSampleCount: number = 24;
+        const maxNumberCount: number = 6;
         let showXAxisLabel: boolean = true;
         let pointPadding: number = 0.1;
         let maxPointWidth: number = null;
@@ -432,7 +432,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         var meanPercentInterval = 0;
         var interval = 0;
 
-        let testCardinality: string = this.dataProfile.cardinalityDetail[0].key;
+        const testCardinality: string = this.dataProfile.cardinalityDetail[0].key;
 
         this.sampleChartXLabel = '';
 
@@ -485,11 +485,11 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
             //calculate buckets based on data
             //range of numbers available based on min/max
-            let range = +this.dataProfile.max - +this.dataProfile.min;
-            let fixedLen = range < 10 ? 1 : 0;
+            const range = +this.dataProfile.max - +this.dataProfile.min;
+            const fixedLen = range < 10 ? 1 : 0;
             let current = +this.dataProfile.min;
             let lower = current;
-            let sampleCount = Math.min(maxNumberCount, this.dataProfile.cardinalityDetail.length);
+            const sampleCount = Math.min(maxNumberCount, this.dataProfile.cardinalityDetail.length);
 
             //number interval for each bar
             interval = range / sampleCount;
@@ -497,7 +497,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             //fill interval buckets and keep track of index where mean widget will be drawn
             while (current < this.dataProfile.max) {
                 current += interval;
-                let upper = current;
+                const upper = current;
 
                 if (this.dataProfile.mean != null) {
                     if (+this.dataProfile.mean >= lower && +this.dataProfile.mean < upper) {
@@ -507,7 +507,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                 }
 
                 categories.push(`${lower.toFixed(fixedLen)} - ${upper.toFixed(fixedLen)}`);
-                let count = this.dataProfile.cardinalityDetail
+                const count = this.dataProfile.cardinalityDetail
                     .filter((c) => +c.key >= lower && +c.key < upper)
                     .reduce((count, r) => count += r.count, 0);
 
@@ -526,10 +526,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             pointPadding = 0.1;
             leftPadding = 22;
 
-            let minDate = new Date(this.dataProfile.min);
-            let maxDate = new Date(this.dataProfile.max);
-            let difference = maxDate.getTime() - minDate.getTime();
-            let sampleCount = Math.min(maxSampleCount, this.dataProfile.cardinalityDetail.length);
+            const minDate = new Date(this.dataProfile.min);
+            const maxDate = new Date(this.dataProfile.max);
+            const difference = maxDate.getTime() - minDate.getTime();
+            const sampleCount = Math.min(maxSampleCount, this.dataProfile.cardinalityDetail.length);
 
             interval = difference / sampleCount;
 
@@ -544,13 +544,13 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
             while (lower < maxDate) {
                 current = new Date(current.getTime() + interval);
-                let upper = current;
-                let count = this.dataProfile.cardinalityDetail
+                const upper = current;
+                const count = this.dataProfile.cardinalityDetail
                     .filter((c) => new Date(c.key) >= lower && new Date(c.key) < upper)
                     .reduce((count, r) => count += r.count, 0);
 
-                let opts: Intl.DateTimeFormatOptions = { month: 'short', year: '2-digit' };
-                let dateString = new Intl.DateTimeFormat(navigator.language, opts).format(lower);
+                const opts: Intl.DateTimeFormatOptions = { month: 'short', year: '2-digit' };
+                const dateString = new Intl.DateTimeFormat(navigator.language, opts).format(lower);
 
                 categories.push(dateString);
                 data.push(count);
@@ -570,8 +570,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             this.sampleChartXLabel = this.distinctCount.toLocaleString() + ' distinct values';
 
             let i = 0;
-            let max = Math.min(maxSampleCount, this.dataProfile.cardinalityDetail.length);
-            let c = this.dataProfile.cardinalityDetail;
+            const max = Math.min(maxSampleCount, this.dataProfile.cardinalityDetail.length);
+            const c = this.dataProfile.cardinalityDetail;
             while (i < max) {
                 categories.push(c[i].key);
                 data.push(c[i].count);
@@ -586,7 +586,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         }
 
 
-        let tooltipFormatter = function () {
+        const tooltipFormatter = function () {
             let formatString = '';
 
             if (this.x === blankNullLabel) {
@@ -599,18 +599,18 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             return formatString;
         };
 
-        let renderStatsWidget = function (chart) {
-            let strokeColor = '#bdbfc6';
+        const renderStatsWidget = function (chart) {
+            const strokeColor = '#bdbfc6';
             //include Std Dev bar if available
-            let drawStd = dataProfile.standardDeviation != null && !isNaN(+dataProfile.standardDeviation);
+            const drawStd = dataProfile.standardDeviation != null && !isNaN(+dataProfile.standardDeviation);
 
             //get X position of bars surrounding the mean value and interval between them in pixels
-            let lowerX = chart.series[0].data[meanIndex].plotX;
-            let upperX = (meanIndex === chart.series[0].data.length - 1) ? 0 : chart.series[0].data[meanIndex + 1].plotX;
-            let pixelInterval = upperX - lowerX;
+            const lowerX = chart.series[0].data[meanIndex].plotX;
+            const upperX = (meanIndex === chart.series[0].data.length - 1) ? 0 : chart.series[0].data[meanIndex + 1].plotX;
+            const pixelInterval = upperX - lowerX;
 
             //calculate position of mean line
-            let xPos = chart.plotLeft + lowerX + (pixelInterval * meanPercentInterval);
+            const xPos = chart.plotLeft + lowerX + (pixelInterval * meanPercentInterval);
 
             chart.renderer.path([
                 'M', xPos, chart.plotTop + chart.plotHeight,
@@ -642,7 +642,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
             if (drawStd) {
                 //calculate length of horizonal std dev line
-                let stdLen = (+dataProfile.standardDeviation / interval) * pixelInterval;
+                const stdLen = (+dataProfile.standardDeviation / interval) * pixelInterval;
                 let drawLeft = false;
                 //figure out if we need to draw on the left
                 if (Math.abs((xPos + stdLen) - (chart.plotLeft + chart.plotWidth)) < 50) {
@@ -696,7 +696,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             }
         };
 
-        let chartOptions: any = {
+        const chartOptions: any = {
             chart: {
                 type: 'column',
                 height: 200,
@@ -821,9 +821,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     }
 
 	isOutOfDate() {
-		let profileDate = new Date(this.dataProfile.profileSetDate).getTime();
-		let updatedDate = new Date(this.semanticType.updatedOn).getTime();
-		let effectiveDate = new Date(this.semanticType.effectiveDate).getTime();
+		const profileDate = new Date(this.dataProfile.profileSetDate).getTime();
+		const updatedDate = new Date(this.semanticType.updatedOn).getTime();
+		const effectiveDate = new Date(this.semanticType.effectiveDate).getTime();
 		return effectiveDate > profileDate || (updatedDate !== effectiveDate && profileDate > updatedDate);
     }
 }

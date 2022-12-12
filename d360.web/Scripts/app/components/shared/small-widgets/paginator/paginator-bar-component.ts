@@ -1,7 +1,15 @@
-﻿
-import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, AfterViewInit, OnChanges, SimpleChange, Output, EventEmitter, OnInit } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChange
+} from '@angular/core';
 import { Router } from '@angular/router';
-import * as _ from 'lodash';
 
 export enum LABEL_STYLE {
     ANGLE = "angle",
@@ -134,14 +142,14 @@ export class PaginatorComponent implements OnChanges, OnInit {
 
     CheckVisableNumbers() {
         this.pageOptions = [];
-        let currentPage = this.page + 1, totalPages = this.getPageCount();
-        let step = 2; // Current page +- step
-        let paging = [];      
+        const currentPage = this.page + 1, totalPages = this.getPageCount();
+        const step = 2; // Current page +- step
+        const paging = [];      
 
         //end pagination at CurrentPage+2 or total pages, whichever is smallest, but up to step*2 + 1 options
-        let end = Math.min(Math.max(currentPage + step, 1 + 2 * step), totalPages);
+        const end = Math.min(Math.max(currentPage + step, 1 + 2 * step), totalPages);
         //start pagination at CurrentPage-2 or end-4, whichever is smallest, but no lower than 1
-        let start = Math.max(Math.min(currentPage - step, end - 2 * step), 1);
+        const start = Math.max(Math.min(currentPage - step, end - 2 * step), 1);
 
         for (let i = start; i <= end; i++) {
             paging.push(i); 

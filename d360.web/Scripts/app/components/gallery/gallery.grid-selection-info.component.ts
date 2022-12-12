@@ -33,12 +33,12 @@ export class GalleryGridSelectionInfoComponent implements OnInit {
     selection = [];
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "includeSelectLinks", Type: "boolean", Description: "When true the select all/none buttons will be displayed", Default: "true" });
         this.properties.push({ Name: "model", Type: "any[]", Description: "Array of items representing the entire set of data", Default: "[]" });
         this.properties.push({ Name: "selection", Type: "any[]", Description: "Array of items representing the seleected data", Default: "[]" });
 
-        this.events = new Array();
+        this.events = [];
         this.events.push({ Name: "onSelectAllClick", Description: "Fires when select all is clicked" });
         this.events.push({ Name: "onSelectNoneClick", Description: "Fires when select none is clicked" });
     }

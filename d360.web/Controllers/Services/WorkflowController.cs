@@ -2698,31 +2698,59 @@ namespace d360.web.Controllers.Services
 		[Route("versionstep/form/lookups/{objectType}/{objectId:int}"), HttpGet]
 		public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId, string issueObject = null, int? issueObjectId = null)
 		{
-			bool hasIssueObject = !string.IsNullOrEmpty(issueObject);
-
-			var sql = $@"select ft.ID as value, {(hasIssueObject ? " 'Action Field :: ' + " : "")} ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
-				 FieldType ft 
-				 inner join AssetType ast on FT.assetTypeID = ast.ID
-				 left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
-				 where ast.Object = @objectType and ast.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
-
+			bool hasIssueObject = !string.IsNullOrEmpty(issueObject);	
+			
+			var sql = BuildWorkflowVersionStepFormLookupSQL(objectType, objectId, hasIssueObject);
+			
 			if (hasIssueObject)
 			{
-				sql += @" union all
-				select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
-				 FieldType ft
-				 left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
-				 where ft.IssueTypeID = @issueObjectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
-				order by 2";
+				sql = $@"{sql}
+						union all
+						{BuildWorkflowVersionStepFormLookupSQL(issueObject, issueObjectId.Value)}
+						order by 2";
 			}
 			else
 			{
 				sql += " order by ft.FriendlyName";
 			}
 
-			var results = Company.Query<dynamic>(sql, new { objectType, objectId, issueObject, issueObjectId });
+			var results = Company.Query<dynamic>(sql);
 
 			return Request.CreateResponse(HttpStatusCode.OK, results);
+		}
+
+		private string BuildWorkflowVersionStepFormLookupSQL(string objectType, int objectId, bool hasIssueObject = false)
+		{
+			var joinConditions = $@"inner join AssetType ast on FT.assetTypeID = ast.ID
+				 left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
+				 where ast.Object = '{objectType}' and ast.ObjectID = {objectId} and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
+
+			var sql = $@"select ft.ID as value, {(hasIssueObject ? " 'Action Field :: ' + " : "")} ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
+				 FieldType ft 
+				 ";
+			if (objectType == SystemObjects.IssueType.ToString())
+			{
+				joinConditions = $@"left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
+									where 	
+										IssueTypeId = {objectId}
+										and
+										ft.Type = 'Lookup' 
+										and 
+										ft.LookupObjectId > 0 ";
+			}
+			else if (objectType == SystemObjects.IntersectType.ToString())
+			{
+				joinConditions = $@"left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
+									where 	
+										IntersectTypeId = {objectId}
+										and
+										ft.Type = 'Lookup' 
+										and 
+										ft.LookupObjectId > 0 ";
+			}
+
+			return  $@"{sql}
+					   {joinConditions}";
 		}
 
 		[Route("versionstep/events/{id:int}")]
@@ -2797,6 +2825,8 @@ namespace d360.web.Controllers.Services
 
 			var results = Company.Query<WorkflowItemStepDetail>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
 
+			List<WorkflowItemStepDetail> stepList = new List<WorkflowItemStepDetail>();
+
 			foreach (var result in results)
 			{
 				result.FieldsObject = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(result.Fields));
@@ -2806,10 +2836,15 @@ namespace d360.web.Controllers.Services
 					var assignmentIds = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == result.ID).Select(x => new { x.ResourceObject, x.ResourceObjectID });
 					var formattedUserList = Company.GlobalReportingResources.Where(x => assignmentIds.Any(a => a.ResourceObjectID == x.ResourceID)).ToList().Select(x => x.FullName);
 					result.Assignee = string.Join(", ", formattedUserList);
+					if (string.IsNullOrEmpty(result.Assignee))
+					{
+						continue;
+					}
 				}
+				stepList.Add(result);
 			}
 
-			return Request.CreateResponse(HttpStatusCode.OK, results);
+			return Request.CreateResponse(HttpStatusCode.OK, stepList);
 		}
 		private void SetWorkFlowStepRelationshipAssets(dynamic form)
 		{

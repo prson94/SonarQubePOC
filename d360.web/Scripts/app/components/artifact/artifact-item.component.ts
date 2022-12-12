@@ -24,6 +24,7 @@ import { SemanticType } from '../../models/semantic-type.model';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 declare var CurrentResourceID;
 
@@ -81,7 +82,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 
 		this.uid = this.baseAssetUid = this.assetUid;
 
-		this.logAction('open', 'Artifact', this.uid);
+		this.logAssetAction(UsageAction.View, this.uid);
 		this.isLoading = true;
 		this.messages = [];
 

@@ -1,7 +1,16 @@
-﻿import { Input, Component, ChangeDetectionStrategy, Output, EventEmitter, ViewChild, HostListener, ElementRef, ContentChildren, QueryList, TemplateRef } from '@angular/core';
+﻿import {
+    ChangeDetectionStrategy,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input,
+    Output,
+    TemplateRef,
+    ViewChild
+} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { SiteMenu, SiteNav } from '../../../models/site-menu.model';
-import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { Router } from '@angular/router';
 
@@ -33,6 +42,8 @@ export class SiteMenuCategoryComponent extends BaseComponent {
             this.activeItemChanged.emit(undefined);
         }
     }
+    
+    isCaretHovered = false;
 
     constructor(
         protected settingsService: CompanySettingsService,
@@ -52,7 +63,8 @@ export class SiteMenuCategoryComponent extends BaseComponent {
         }
     }
 
-    onCategoryExpand() {
+    onCategoryExpand($event: MouseEvent) {
+        $event.stopPropagation();
         if (this.menu && this.menu.isActiveItem) {
             this.activeItemChanged.emit(undefined);
         } else {

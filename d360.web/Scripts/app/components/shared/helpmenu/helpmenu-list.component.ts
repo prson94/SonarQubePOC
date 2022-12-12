@@ -1,9 +1,8 @@
-﻿import { Input, Component, OnInit, Output, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
 import { HelpMenu } from '../../../models/helpmenu.model';
 import { FormMode } from '../../../models/form.model';
-import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -134,7 +133,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     addNew(name: string, url: string, description: string) {
-        let newItem = new HelpMenu();
+        const newItem = new HelpMenu();
         newItem.ID = this.newID;
         newItem.Name = name;
         newItem.Url = url;
@@ -167,9 +166,9 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     moveUp(id: number) {
-        let option = this.items.find((r) => r.ID === id);
+        const option = this.items.find((r) => r.ID === id);
         var num = option.order - 1;
-        let newOption = this.items.find((o) => o.order === num);
+        const newOption = this.items.find((o) => o.order === num);
 
         this.items.forEach((i) => {
             if (i.ID === option.ID) {
@@ -184,9 +183,9 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     }
 
     moveDown(id: number) {
-        let option = this.items.find((r) => r.ID === id);
+        const option = this.items.find((r) => r.ID === id);
         var num = option.order + 1;
-        let newOption = this.items.find((o) => o.order === num);
+        const newOption = this.items.find((o) => o.order === num);
 
         this.items.forEach((i) => {
             if (i.ID === option.ID) {

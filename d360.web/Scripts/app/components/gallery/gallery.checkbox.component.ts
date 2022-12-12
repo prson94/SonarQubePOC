@@ -32,6 +32,6 @@ export class GalleryCheckboxComponent implements OnInit {
     constructor(private cdRef: ChangeDetectorRef) {}
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
     }
 }

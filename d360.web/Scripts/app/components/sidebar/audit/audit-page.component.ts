@@ -45,7 +45,7 @@ export class AuditPageComponent extends BaseComponent implements OnInit, OnDestr
                     if (this.objectName === "MetricAllocation") {
                         this.objectName = "Score Definition";
                     }
-                    let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
+                    let reloadNav = params['isAdminPage'] && params['isAdminPage'] === 'false' ? false : true;
 
                     //do not reload 2nd navigation for audit page as both grid pages and config pages share same URL
                     if (["PolicyType", "TaxonomyType", "Report", "IntersectType", "ResponsibilityType", "ReferenceItemType"].indexOf(this.objectType) > -1) {

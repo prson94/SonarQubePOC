@@ -6,9 +6,9 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
-import { TilesModule  } from '../shared/tiles/tiles.module';
+import { TilesModule } from '../shared/tiles/tiles.module';
 
-import { HomeSearchComponent} from './home-search.component';
+import { HomeSearchComponent } from './home-search.component';
 import { HeroSearchInputComponent } from './hero-search-input';
 import { SearchResultItemComponent } from './search-result-item.component';
 import { SearchComponent } from './search.component';

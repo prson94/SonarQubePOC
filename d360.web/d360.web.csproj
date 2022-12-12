@@ -25,8 +25,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
-    <IISExpressSSLPort>
-    </IISExpressSSLPort>
+    <IISExpressSSLPort>443</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
@@ -1072,7 +1071,6 @@
     <Compile Include="Controllers\V2\ConnectorLabelsController.cs" />
     <Compile Include="Controllers\V2\TagsController.cs" />
     <Compile Include="Controllers\V2\WorkflowController.cs" />
-    <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\ApiController.cs" />
     <Compile Include="Controllers\AuthenticationController.cs" />
@@ -1110,6 +1108,10 @@
     <Compile Include="Handlers\ChunkLocaleJSHandler.cs" />
     <Compile Include="Handlers\Exceptions\ForbiddenWebApi2ExceptionHandler.cs" />
     <Compile Include="Handlers\Exceptions\GenericExceptionWebApi2ExceptionHandler.cs" />
+    <Compile Include="Models\Usage\UsageAction.cs" />
+    <Compile Include="Models\Usage\UsageBrowser.cs" />
+    <Compile Include="Models\Usage\UsageEntry.cs" />
+    <Compile Include="Models\Usage\UsageEntryDetail.cs" />
     <Compile Include="Utilities\IRuntimeInfo.cs" />
     <Compile Include="Handlers\Exceptions\IWebApi2ExceptionHandler.cs" />
     <Compile Include="Handlers\Exceptions\NotFoundWebApi2ExceptionHandler.cs" />
@@ -2107,9 +2109,6 @@
       <Project>{82FAA62E-0A4F-4D1A-BA72-6689705A59A0}</Project>
       <Name>d360.utils.excel</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\Core.resx">

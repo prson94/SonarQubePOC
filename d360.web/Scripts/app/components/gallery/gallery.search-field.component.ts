@@ -49,7 +49,7 @@ All matches are case insensitive.
     constructor(private ref: ChangeDetectorRef) { }
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "maxLength", Type: "number", Description: "The maximum number of charatcers allowed.", Default: "2500" });
         this.properties.push({ Name: "mode", Type: "string", Description: "Mode that determines when search takes place. Valid values: Keypress, Enter", Default: "Enter" });
         this.properties.push({ Name: "placeholder", Type: "string", Description: "Placeholder text, shown when there is no input", Default: "Search" });
@@ -61,14 +61,14 @@ All matches are case insensitive.
 
 
         
-        this.events = new Array();
+        this.events = [];
         this.events.push({ Name: "onSearch", Description: "Fired when a search is invoked according to the set mode" });
 
     }
 
     doneSearch(e, elem) {
-        let el = document.getElementById(elem);
-        let child = document.createElement('div');
+        const el = document.getElementById(elem);
+        const child = document.createElement('div');
         child.className = 'searchexpression';
         child.innerText = 'onSearch fired for "' + e + '"';
         el.appendChild(child);

@@ -294,7 +294,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     }
 
     clickMenuItem(event: any, item: any) {
-        let key = event.value.toLowerCase();
+        const key = event.value.toLowerCase();
         if (key === $localize`Edit`.toLowerCase()) {
             this.edit(item);
         } else if (key === $localize`Delete`.toLowerCase()) {

@@ -1,10 +1,10 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
 
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { FieldTypeAPIModelField, FieldDisplayModel, FieldType } from '../../../models/fieldtype-api.model';
+import { FieldDisplayModel, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
@@ -76,7 +76,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-		for (let p in changes) {
+		for (const p in changes) {
 			if (p === 'actionTypeUid' || p === 'assetTypeUid' || p === 'relationshipTypeUid') {
 				this.isEditing = false;
 				this.isAdding = false;
@@ -130,8 +130,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				this.fieldDisplayModel = [];
 				if (data) {
 					this.fieldDisplayModel = data.map((field) => {
-						let displayField = new FieldDisplayModel();
-						let type = this.currentFieldType(field);
+						const displayField = new FieldDisplayModel();
+						const type = this.currentFieldType(field);
 						displayField.Name = field.Name;
 						displayField.FriendlyName = field.FriendlyName;
 						displayField.Category = field.Category;
@@ -185,7 +185,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				AssetTypeClass.TechnicalAsset,
 				AssetTypeClass.Policy,
 				AssetTypeClass.Model,
-				AssetTypeClass.Rule].indexOf(this.assetTypeClass) != -1;
+				AssetTypeClass.Rule].indexOf(this.assetTypeClass) !== -1;
 		}
 	}
 	getDisplayTypeName(name: string): string {
@@ -217,7 +217,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		}
 	}
 	edit(name: string): void {
-		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name == name);
+		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name === name);
 		this.isEditing = true;
 		this.isDeleting = false;
 		this.isAdding = false;
@@ -232,7 +232,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	delete(name: string): void {
-		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name == name);
+		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name === name);
 		this.isEditing = false;
 		this.isDeleting = true;
 		this.isAdding = false;
@@ -252,12 +252,12 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			(res) => {
 				if (res != null && res.Success === true) {
 					this.messagesService.showInfoMessage($localize`Success`, $localize`Field definition successfully removed.`);
-					let index = this.fieldDisplayModel.findIndex((f) => f.Name == this.selectedRow.Name);
+					const index = this.fieldDisplayModel.findIndex((f) => f.Name === this.selectedRow.Name);
 
 					this.isDeleting = false;
 
 					if (this.fieldDefinitions != null && this.fieldDefinitions.length > 0) {
-						let ix = this.fieldDefinitions.findIndex((f) => f.Name == this.selectedRow.Name);
+						const ix = this.fieldDefinitions.findIndex((f) => f.Name === this.selectedRow.Name);
 						if (ix > -1) {
 							this.fieldDefinitions.splice(ix, 1);
 							this.fieldDefinitions = this.fieldDefinitions.slice();
@@ -282,9 +282,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 		this.fieldsService.moveUp(this.currentUid, field.Name).subscribe(
 			(r) => {
-				let items = this.fieldDisplayModel.filter((x) => x.Name == field.Name);
-				if (items.length == 1) {
-					let index = this.fieldDisplayModel.indexOf(items[0]);
+				const items = this.fieldDisplayModel.filter((x) => x.Name === field.Name);
+				if (items.length === 1) {
+					const index = this.fieldDisplayModel.indexOf(items[0]);
 					if (index > 0 && index < this.fieldDisplayModel.length)
 						{[this.fieldDisplayModel[index], this.fieldDisplayModel[index - 1]] = [this.fieldDisplayModel[index - 1], this.fieldDisplayModel[index]];}
 				}
@@ -296,9 +296,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 		this.fieldsService.moveDown(this.currentUid, field.Name).subscribe(
 			(r) => {
-				let items = this.fieldDisplayModel.filter((x) => x.Name == field.Name);
-				if (items.length == 1) {
-					let index = this.fieldDisplayModel.indexOf(items[0]);
+				const items = this.fieldDisplayModel.filter((x) => x.Name === field.Name);
+				if (items.length === 1) {
+					const index = this.fieldDisplayModel.indexOf(items[0]);
 					if (index >= 0 && index < this.fieldDisplayModel.length - 1)
 						{[this.fieldDisplayModel[index], this.fieldDisplayModel[index + 1]] = [this.fieldDisplayModel[index + 1], this.fieldDisplayModel[index]];}
 				}
@@ -313,7 +313,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 	showDeleteButtonByFieldType(fdm: FieldDisplayModel) {
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
-			if (fdm.Name == 'Name' || fdm.Name == 'StepNo' || fdm.Name == 'GovernanceRole')
+			if (fdm.Name === 'Name' || fdm.Name === 'StepNo' || fdm.Name === 'GovernanceRole')
 				{return false;}
 		}
 		return true;

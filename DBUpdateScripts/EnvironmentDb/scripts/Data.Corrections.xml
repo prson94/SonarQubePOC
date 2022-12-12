@@ -480,4 +480,92 @@ from	workflow.EventRegistration T
 	</sql>
   </changeSet>
 
+  <changeSet author="TKlok" id="Data.Corrections.GOV-20459">
+	<comment>GOV-20459 - Queue reindexing of Users and Reference Lists to update URL</comment>	
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
+		SELECT 'QueueRebuild', 'SearchIndex', DATEADD(hour, 3, getdate()), 'User', 0;
+		
+		INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
+		SELECT 'QueueRebuild', 'SearchIndex', DATEADD(hour, 3, getdate()), 'ReferenceItemType', 0;
+	]]>
+	</sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-20474-MigrateIps-v1.2">
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'analytics' AND TABLE_NAME = 'Ip')
+BEGIN
+	set identity_insert usage.[Ip] on
+
+	MERGE usage.[Ip] AS t
+	USING analytics.[Ip] AS s
+	ON s.Value = t.Value
+	WHEN NOT MATCHED BY target THEN
+		INSERT (Id,Value) 
+		VALUES (s.ID,s.Value);
+
+	set identity_insert usage.[Ip] off
+END
+	]]>
+	</sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-20474-MigrateAnalytics-v1.2">
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'analytics' AND TABLE_NAME = 'Statistic')
+BEGIN
+	declare @newTableCount int = 0;
+	select @newTableCount = count(1) from usage.Analytic;
+	if @newTableCount = 0
+	begin
+		insert into usage.Analytic ([UserId], [Timestamp], [IpId], [Browser], [Language], [Locale], [Action], [AssetId], [AssetTypeId], [DashboardId])
+			select	S.ResourceID,
+					S.Timestamp,
+					S.IpID,
+					case 
+						when ua.Value like '%edge%' then 2
+						when ua.Value like '%firefox%' then 3
+						when ua.Value like '%trident%' then 8
+						when ua.Value like '%opr%' then 4
+						when ua.Value like '%safari%' and ua.Value not like '%chrome%' then 5
+						when ua.Value like '%chrome%' then 1
+						else 9
+					end as DeterminedBrowser,
+					substring(bl.Value,1,2) as [Language],
+					iif(bl.Value like '%en-US;%', 'en-US', substring(bl.Value,1,5)) as [Locale],	
+					1 as [Action],
+					coalesce(O_A.Id, O_AC.ID) as AssetId,
+					coalesce(O_AT.ID, O_ACT.AssetTypeID) as assetTypeId,
+					O_R.Id as DashboardId
+			from	analytics.Statistic S
+					inner join analytics.[Object] O on O.ID = S.Object
+					left join AssetType O_AT on O_AT.Object = O.Value and O_AT.ObjectID = S.ObjectID
+					left join Asset O_A on O_A.Object = O.Value and O_A.ObjectID = S.ObjectID
+					left join AssetWithType O_AC on O_AC.AssetTypeClass = try_cast(O.Value as int) and O_AC.ObjectID = S.ObjectID 
+					left join AssetWithType O_ACT on O_ACT.AssetTypeClass = try_cast(O.Value as int) and O_ACT.TypeID = S.ObjectID 
+					left join Report O_R on O.Value = 'Report' and O_R.ID = S.ObjectID
+					inner join analytics.BrowserLanguage bl on bl.ID = S.BrowserLanguageID
+					inner join analytics.UserAgent ua on ua.ID = S.UserAgentID
+			where	coalesce(O_A.Id, O_AC.ID) is not null 
+					or coalesce(O_AT.ID, O_ACT.AssetTypeID) is not null
+					or O_R.Id is not null
+	end
+END
+	]]>
+	</sql>
+  </changeSet>
+
 </databaseChangeLog>

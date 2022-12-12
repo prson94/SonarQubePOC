@@ -1,5 +1,13 @@
-
-import { Component, Input, OnInit, ChangeDetectionStrategy, AfterViewChecked, OnChanges, SimpleChange, SimpleChanges, ChangeDetectorRef, EventEmitter, Output, HostListener } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -7,6 +15,7 @@ import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.
 import { ConnectorLabelService } from '../../../../services/connectorLabel.service';
 import { Subscription } from 'rxjs';
 import { CompanySettingsService } from '../../../../services/settings.service';
+
 @Component({
     selector: 'd3s-process-diagram-label-editor',
     templateUrl: './process-diagram-label-editor.component.html',
@@ -34,7 +43,7 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.linkData && changes.linkData.currentValue != changes.linkData.previousValue) {
+        if (changes.linkData && changes.linkData.currentValue !== changes.linkData.previousValue) {
             if (this.linkData)
                 {this.load();}
         }
@@ -68,13 +77,13 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
         this.updateConnectorLabelToLink();
     }
     onKeyUp($event: KeyboardEvent) {
-        if ($event.key == 'Enter') {
+        if ($event.key === 'Enter') {
             var el = $event.target as HTMLElement;
             setTimeout(() => {
                 el.blur();
             }, 50);
         }
-        if (this.linkLabel == '')
+        if (this.linkLabel === '')
             {this.clearLabel();}
     }
     clearLabel() {

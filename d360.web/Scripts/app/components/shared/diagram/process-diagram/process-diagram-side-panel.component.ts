@@ -1,5 +1,14 @@
-
-import { Component, Input, OnInit, ChangeDetectionStrategy, AfterViewChecked, OnChanges, SimpleChange, SimpleChanges, ChangeDetectorRef, EventEmitter, Output, OnDestroy } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -8,6 +17,7 @@ import { EditorField } from '../../../../models/editor-field.model';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
 import { Subscription } from 'rxjs';
+
 @Component({
     selector: 'd3s-process-diagram-side-panel',
     templateUrl: './process-diagram-side-panel.component.html',
@@ -47,7 +57,7 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
         this.breadcrumbsService = breadcrumbService;
 
         this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-            if (ev.originalEvent && ev.originalEvent.path && ev.originalEvent.path.some((el) => el.tagName === 'ASSET-PREVIEW')) {
+			if (ev.originalEvent && ev.originalEvent.composedPath() && ev.originalEvent.composedPath().some((el) => el.tagName === 'ASSET-PREVIEW')) {
                 //ignore event as it came from relationship side panel
                 //avoid updating both side panels
                 return;
@@ -59,7 +69,7 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.nodeData && changes.nodeData.currentValue != changes.nodeData.previousValue) {
+        if (changes.nodeData && changes.nodeData.currentValue !== changes.nodeData.previousValue) {
             if (this.nodeData) {
                 this.assetName = this.nodeData['Name'];
                 this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
@@ -97,20 +107,20 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
         }
 
         for (var prop in data) {
-            if (data[prop] == undefined) {
+            if (data[prop] == null) {
                 delete data[prop];
             }
-            if (prop == 'Uid' || prop == 'AssetTypeUid') {
+            if (prop === 'Uid' || prop === 'AssetTypeUid') {
                 delete data[prop];
             }
         }
         var fields = $event['fields'] as EditorField[];
         fields.filter((x) => x.FieldTypeID).forEach((f) => {
-            if (data[f.FieldName] == undefined) {
+            if (data[f.FieldName] == null) {
                 data[f.FieldName] = '';
             }
             else {
-                if (f.FieldType == 'DateTime') {
+                if (f.FieldType === 'DateTime') {
                     var dateTime = new Date(data[f.FieldName]);
                     dateTime.setMinutes(dateTime.getMinutes() - dateTime.getTimezoneOffset());
                     data[f.FieldName] = dateTime.toISOString();

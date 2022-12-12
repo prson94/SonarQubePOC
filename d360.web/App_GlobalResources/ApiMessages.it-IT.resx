@@ -748,4 +748,7 @@
   <data name="YouAreNowWatching" xml:space="preserve">
     <value>È in corso il controllo di {0}.</value>
   </data>
+  <data name="InvalidLanguageCode" xml:space="preserve">
+    <value>[LanguageCode] non valido. I valori supportati sono {0}.</value>
+  </data>
 </root>

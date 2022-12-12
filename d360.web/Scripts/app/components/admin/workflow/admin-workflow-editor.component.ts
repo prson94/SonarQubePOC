@@ -151,7 +151,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         this.workflowFieldsService.setWorkflow(this.model.Event.Object, this.model.Event.ObjectID, this.model.Event.ChangeType);
 
                         if ((this.model.Event.ConditionObject == null || _.isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
-                            let conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
+                            const conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
                             this.conditions = [];
                             conditions.forEach((c) => this.conditions.push(c));
                         }
@@ -175,8 +175,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         if (this.objectType === 'IssueType') {
                             this.issueObjectTypes = this.workflowObjectTypes.slice().filter((w) => w.type !== 'IssueType' && w.type !== 'ReferenceItemType');
 
-                            let objectIndex = this.conditions.findIndex((c) => c['@ContextualFieldID'] === 'IssueObject');
-                            let objectIdIndex = this.conditions.findIndex((c) => c['@ContextualFieldID'] === 'IssueObjectID');
+                            const objectIndex = this.conditions.findIndex((c) => c['@ContextualFieldID'] === 'IssueObject');
+                            const objectIdIndex = this.conditions.findIndex((c) => c['@ContextualFieldID'] === 'IssueObjectID');
 
                             if (objectIndex > -1 && objectIdIndex > -1) {
                                 this.model.Event.IssueObject = this.conditions[objectIndex]['@Value'] + '|' + this.conditions[objectIdIndex]['@Value'];
@@ -200,7 +200,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                                 .subscribe((res) => {
                                     this.scoreTypes = res;
                                     this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
-                                    let scoreIndex = this.conditions.findIndex((c) => c['@ContextualFieldID'] === 'ScoreType');
+                                    const scoreIndex = this.conditions.findIndex((c) => c['@ContextualFieldID'] === 'ScoreType');
 
                                     if (scoreIndex > -1) {
                                         this.model.Event.ScoreType = +this.conditions[scoreIndex]['@Value'];
@@ -213,7 +213,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 .pipe(
                     map((r) => {
                         r.forEach((t) => {
-                            let c = this.conditions.filter((c) => c['@FieldTypeID'] === t.ID);
+                            const c = this.conditions.filter((c) => +c['@FieldTypeID'] === t.ID);
 							if (c != null)
 							{ c.forEach((f) => f['@FieldName'] = t.FriendlyName + (t.IssueTypeID != null ? ' (Action Field)' : '')); }
                         });
@@ -221,7 +221,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             .pipe(concatMap(() => of(
                 //apply names to contextual fields
                 this.conditions.filter((c) => c['@ContextualFieldID'] != null).forEach((c) => {
-                    let cx = this.workflowFieldsService
+                    const cx = this.workflowFieldsService
                         .getContextualFieldsForType()
                         .find((x) => x.value === 'Contextual|' + c['@ContextualFieldID']);
                     if (cx != null)
@@ -391,7 +391,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     remove(item: any) {
-        let i = this.conditions.findIndex((c) => c === item);
+        const i = this.conditions.findIndex((c) => c === item);
         this.conditions.splice(i, 1);
         this.conditions = this.conditions.slice();
         this.validate();
@@ -418,7 +418,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
 
         //add/remove hidden contextual field conditions for actions and scores
-        let contextualFields = [
+        const contextualFields = [
             { key: 'IssueObject', value: obj, type: 'T', applies: (this.objectType === 'IssueType' && objid != null) },
             { key: 'IssueObjectID', value: objid, type: 'D', applies: (this.objectType === 'IssueType' && objid != null) },
             { key: 'ScoreType', value: this.model.Event.ScoreType, type: 'D', applies: (this.model.Event.ChangeType === WorkflowChangeType.ScoreUpdate) },
@@ -426,7 +426,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         ];
 
         contextualFields.forEach((field) => {
-            let ix = this.conditions.findIndex((c) => c['@ContextualFieldID'] === field.key);
+            const ix = this.conditions.findIndex((c) => c['@ContextualFieldID'] === field.key);
             if (field.applies) {
                 if (ix === -1) {
                     this.conditions.push({
@@ -533,7 +533,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 return;
             }
 
-            let t = this.workflowObjectTypes.find((t) => t.value === this.selectedObjectType);
+            const t = this.workflowObjectTypes.find((t) => t.value === this.selectedObjectType);
 
             if (t != null && t.count > this.SCHEDULE_OBJECT_LIMIT) {
                 this.errorMessage = $localize`The chosen object type has more than ${this.SCHEDULE_OBJECT_LIMIT} items, which exceeds the limit for change type Schedule.`;
@@ -601,8 +601,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             {this.quill = this.ed.quill;}
 
         if (this.quill != null) {
-            let pos = this.quill.getSelection(true);
-            let len = pos.index || this.quill.getLength();
+            const pos = this.quill.getSelection(true);
+            const len = pos.index || this.quill.getLength();
             this.quill.insertText(len < 1 ? 0 : len - 1, e, 'api');
         } else { //fallback in case quill API is null for whatever reason
             this.model.Event.SettingsObject.Settings.MessageBodyTemplate =

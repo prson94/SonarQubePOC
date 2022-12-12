@@ -26,7 +26,7 @@ export class GalleryGridPagingInfoComponent implements OnInit {
     items: any[] = [];
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "first", Type: "number", Description: "Number of the first item", Default: "" });
         this.properties.push({ Name: "rows", Type: "number", Description: "Number of rows in the page", Default: "" });
         this.properties.push({ Name: "totalRecords", Type: "number", Description: "Total number of rows", Default: "" });

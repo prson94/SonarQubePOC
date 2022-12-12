@@ -1805,25 +1805,33 @@ namespace d360.web.Controllers
 
 				var obj = isSubject ? intersect.Object : intersect.Subject;
 				var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+				var assetUid = isSubject ? intersect.ObjectUid : intersect.SubjectUid;
 
-				objectsToCheckAccesFor.Add(new BasicAsset { ObjectID = objID, ObjectName = obj });
+				objectsToCheckAccesFor.Add(new BasicAsset { ObjectID = objID, ObjectName = obj, Uid = assetUid });
 			}
 
 			var objectsWithoutReadAccess = await GetObjectsWithoutReadAccess(objectsToCheckAccesFor);
 
+			var relationshipAssetInfo = Company.Query<BasicAsset>(@"select 
+					A.Uid,AT.uid as 'AssetTypeUid',AP.DisplayPath, adv.DisplayValue
+					from Asset A
+					inner join AssetType AT on AT.Id = A.AssetTypeID
+					left join AssetPath AP ON AP.ID = A.ID
+					left join AssetDisplayValue adv on adv.AssetID = a.ID
+					where a.uid in @assets", new { assets = objectsToCheckAccesFor.Select(x=> x.Uid).ToList() }).ToList();
+
+			bool displayPath = relationshipAssetInfo.GroupBy(x => x.DisplayValue).Any(x => x.Count() > 1);
+
 			foreach (var intersect in intersects)
 			{
 				var isSubject = intersect.Subject == sType && intersect.SubjectID == id;
-				var intersectDisplayValue = isSubject ? intersect.ObjectName : intersect.SubjectName;
 				var url = isSubject ? intersect.ObjectUrl : intersect.SubjectUrl;
 				var obj = isSubject ? intersect.Object : intersect.Subject;
 				var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+				var uid = isSubject ? intersect.ObjectUid : intersect.SubjectUid;
 
-				if (obj == "Taxonomy")
-				{
-					var det = await Company.QueryFirstOrDefaultAsync<string>("select tp.DisplayPath from Asset a inner join AssetPath tp on tp.ID = a.ID where a.[Object] = 'Taxonomy' and a.ObjectID = @id", new { id = objID }).ConfigureAwait(false);
-					intersectDisplayValue = det;
-				}
+				var assetInfo = relationshipAssetInfo.Where(x => x.Uid == uid).FirstOrDefault();
+				var intersectDisplayValue = displayPath ? assetInfo?.DisplayPath : assetInfo?.DisplayValue;
 
 				if (objectsWithoutReadAccess != null && objectsWithoutReadAccess.Any(x => x.Object == obj && x.ObjectID == objID))
 				{
@@ -1832,11 +1840,10 @@ namespace d360.web.Controllers
 
 				var relVal = new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url };
 
-				var data = Company.Query<dynamic>("select a.uid, at.uid as assetTypeUid from asset a inner join assettype at on at.id = a.assettypeid where a.object = @obj and a.objectid = @objid", new { obj, objID }).FirstOrDefault();
-				if (data != null && data.uid != null && data.uid != Guid.Empty)
+				if (assetInfo != null && assetInfo.Uid != null && assetInfo.Uid != Guid.Empty)
 				{
-					relVal.uid = data.uid;
-					relVal.assetTypeUid = data.assetTypeUid;
+					relVal.uid = assetInfo.Uid.Value;
+					relVal.assetTypeUid = assetInfo.AssetTypeUid.Value;
 					if (relVal.TooltipType.ToLower().IndexOf("referenceitem") > -1)
 					{
 						relVal.TooltipUrl += "," + relVal.uid.ToString();
@@ -1844,15 +1851,16 @@ namespace d360.web.Controllers
 				}
 				else
 				{
-					var assetTypeUid = Company.AssetTypes.Where(x => x.Object == obj && x.ObjectID == objID).Select(x => x.uid).FirstOrDefault();
-					relVal.assetTypeUid = assetTypeUid;
-					relVal.TooltipUrl = "assets/" + relVal.assetTypeUid;
+					var referenceListName = Company.AssetTypes.Where(x => x.uid == uid).Select(x => x.Name).FirstOrDefault();
+					relVal.assetTypeUid = uid.Value;
+					relVal.TooltipUrl = "assets/" + uid;
+					relVal.Value = referenceListName;
 				}
 
 				values.Add(relVal);
 			}
 
-			values = values.Distinct(new ReadOnlyFieldValueComparer()).OrderBy(x => x.Value).ToList();
+			values = values.Distinct().OrderBy(x => x.Value).ToList();
 
 			var ro = new ReadOnlyField
 			{
@@ -2591,10 +2599,17 @@ namespace d360.web.Controllers
 
 			if (string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(fieldType.DefaultFormattedValue))
 			{
-				value = $@"[{{""name"":""{fieldType.DefaultFormattedValue}""}}]";
+				if (!LookupFieldHasColorItem(fieldType))
+				{
+					value = $@"[{{""name"":""{fieldType.DefaultFormattedValue}"", ""color"":""transparent""}}]";
+				}
+				else
+				{
+					value = $@"[{{""name"":""{fieldType.DefaultFormattedValue}""}}]";
+				}
 			}
 
-			if (LookupFieldHasColorItem(fieldType))
+			if (LookupFieldHasColorItem(fieldType) || fieldType?.LookupObjectType == SystemObjects.ReferenceItem.ToString())
 			{
 				string populateDefaultValueCheck = "";
 				if (!string.IsNullOrEmpty(fieldType.DefaultValue))
@@ -5171,7 +5186,11 @@ where v.id = {0}", id)).FirstOrDefault();
 		public HttpResponseMessage GetObjectandId(Guid uid)
 		{
 			var sql = $@"SELECT top 1 Object, ObjectID, Id from AssetType WHERE Uid = @uid";
-			var details = Company.Query<dynamic>(sql, new { uid }).Single();
+			var details = Company.Query<dynamic>(sql, new { uid }).SingleOrDefault();
+			if (details == null)
+			{
+				return Request.CreateResponse(HttpStatusCode.NotFound, AssetTypeErrors.NotFoundBasedOnUid);
+			}
 
 			return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID, details.Id });
 		}

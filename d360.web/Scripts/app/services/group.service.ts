@@ -42,7 +42,7 @@ export class GroupService extends BaseObservableService implements IGroupService
     }
 
 	getGroupsLazy(params: any): Observable<any> {
-		let url = 'api/v2/membership/groups?_listColorsAsJSON=true';
+		const url = 'api/v2/membership/groups?_listColorsAsJSON=true';
 
 		var qString = '';
 		if (params) {

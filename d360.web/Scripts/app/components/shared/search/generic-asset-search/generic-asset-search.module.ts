@@ -14,7 +14,6 @@ import { AssetSearchComponent } from './generic-asset-search.component';
 import { PaginatorModule } from 'primeng/paginator';
 import { PredicateSelectorComponent } from './predicate-selector.component';
 import { PipesModule } from '../../../../pipes/pipes.module';
-import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-request.interceptor';
 import { SegmentsTooltipComponent } from './segments-tooltip.component';
 
 import { DirectivesModule } from '../../directives/directives.module';

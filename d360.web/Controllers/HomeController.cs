@@ -49,7 +49,7 @@ namespace d360.web.Controllers
             ViewData.Add("ResourceID", Company.CurrentResourceID);
             ViewData.Add("ResourceHomePage", Company.GetUserHomePage());
 
-            await this.AppendSettingsToViewData();
+            await this.AppendSettingsToViewData(httpContext: System.Web.HttpContext.Current);
 
             ViewData.Add("EnvironmentSettings", new Dictionary<string, string> { { "HelpBaseUri", System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString() } });
             ViewData.Add("SingleSignOn", await IsSingleSignOn());

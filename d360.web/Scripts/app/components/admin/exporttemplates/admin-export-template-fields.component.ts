@@ -10,86 +10,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-export-template-fields-component',
-    template: `
-        <header i18n>Fields</header>
-        <div class="row">
-            <div class="col s12">
-                <p-table #dt
-                         [scrollable]="true"
-                         sortField="ExtOrder"
-                         [sortOrder]="1"
-                         scrollHeight="400px"
-                         [loading]="isLoading"
-                         loadingIcon="fa fa-spinner"
-                         [value]="availableFields"
-                         selectionMode="multiple"
-                         [globalFilterFields]="['Name']"
-                         [paginator]="false"
-                         [(selection)]="selectedFields">
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th style="width: 30px">
-                                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                            </th>
-                            <th i18n>Name</th>
-                            <th style="width: 30px"></th>
-                            <th style="width: 30px"></th>
-                            <th style="width: 30px"></th>
-                            <th style="width: 30px"></th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body"
-                                 let-item>
-                        <tr [pSelectableRow]="item">
-                            <td style="width: 30px">
-                                <p-tableCheckbox [value]="item"></p-tableCheckbox>
-                            </td>
-                            <td>{{item.FriendlyName}}</td>
-                            <td style="width: 30px">
-                                <div class="RowTools">
-                                    <a (click)="top($event,item)"
-                                       style="cursor:pointer;"><i class="fa fa-angle-double-up"></i></a>
-                                </div>
-                            </td>
-                            <td style="width: 30px">
-                                <div class="RowTools">
-                                    <a (click)="up($event,item)"
-                                       style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
-                                </div>
-                            </td>
-                            <td style="width: 30px">
-                                <div class="RowTools">
-                                    <a (click)="down($event,item)"
-                                       style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
-                                </div>
-                            </td>
-                            <td style="width: 30px">
-                                <div class="RowTools">
-                                    <a (click)="bottom($event,item)"
-                                       style="cursor:pointer;"><i class="fa fa-angle-double-down"></i></a>
-                                </div>
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-            </div>
-            <div>
-                <div class="row">
-                    <div class="col s12">
-                        <button igButton
-								class="ig-button-primary"
-                                label="{{labelSave}}"
-								margin
-                                (click)="save()"></button>
-                        <button igButton
-								class="ig-button-secondary"
-                                type="button"
-                                (click)="reset()"
-                                label="{{labelRevert}}"></button>
-                    </div>
-                </div>
-
-    `,
+    templateUrl: 'admin-export-template-fields.component.html',
     providers: [ExportTemplateService, FieldsObservableService],
 })
 
@@ -144,7 +65,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
         this.selectedFields = [];        
 
         if (this.exportTemplate.IncludeFieldTypes) {
-            let selectedFieldNames = this.exportTemplate.IncludeFieldTypes;
+            const selectedFieldNames = this.exportTemplate.IncludeFieldTypes;
             for (let j = 0; j < selectedFieldNames.length; j++) {
                 for (let k = 0; k < available.length; k++) {
                     if (selectedFieldNames[j] === available[k].Name) {
@@ -163,7 +84,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
     }
 
     public save() {
-        let fields = "";
+        const fields = "";
         let fieldTypes = [];
         fieldTypes = this.selectedFields.sort((a, b) => a.ExtOrder - b.ExtOrder).map((a) => a.Name);
 
@@ -207,7 +128,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
 
         for (let i = 0; i < this.availableFields.length; i++) {
             if (this.availableFields[i].ID === field.ID && i > 0) {
-                let order = this.availableFields[i].ExtOrder;
+                const order = this.availableFields[i].ExtOrder;
                 this.availableFields[i].ExtOrder = this.availableFields[i - 1].ExtOrder;
                 this.availableFields[i - 1].ExtOrder = order;
 
@@ -223,7 +144,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
 
         for (let i = 0; i < this.availableFields.length; i++) {
             if (this.availableFields[i].ID === field.ID && i < this.availableFields.length - 1) {
-                let order = this.availableFields[i].ExtOrder;
+                const order = this.availableFields[i].ExtOrder;
                 this.availableFields[i].ExtOrder = this.availableFields[i + 1].ExtOrder;
                 this.availableFields[i + 1].ExtOrder = order;
             }

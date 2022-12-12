@@ -97,7 +97,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 		refListIdString = this.assetTypeUid;
 
-		let headerActions: HeaderActions = new HeaderActions();
+		const headerActions: HeaderActions = new HeaderActions();
 		headerActions.showRaiseIssue = false;
 		this.headerActionsService.setCurrentHeaderActions(headerActions);
 
@@ -112,14 +112,14 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
 		if (refListIdString) {
 
-			if (refListIdString.toString().length == 36) {
+			if (refListIdString.toString().length === 36) {
 				this.baseAssetTypeUid = this.selectedReferenceListUid = refListIdString;
 				if (this.loadObjectDataSub) {
 					this.loadObjectDataSub.unsubscribe();
 				}
 				this.loadObjectDataSub = this.assetTypeService.getAssetTypeObjectAndID(refListIdString).subscribe((res) => {
 					this.load();
-					if (this.selectedReferenceItemType && this.selectedReferenceItemType.uid != this.selectedReferenceListUid) {
+					if (this.selectedReferenceItemType && this.selectedReferenceItemType.uid !== this.selectedReferenceListUid) {
 						var referenceItemType: ReferenceItemType = new ReferenceItemType();
 						referenceItemType.uid = this.selectedReferenceListUid;
 						this.changeType(referenceItemType, true);
@@ -179,7 +179,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 	}
 
 	private changeFormMode(formMode: FormMode) {
-		if (formMode == FormMode.Default)
+		if (formMode === FormMode.Default)
 			{this.showDefault = true;}
 		else
 			{this.showDefault = false;}

@@ -1,5 +1,15 @@
 ﻿import { CommonModule } from "@angular/common";
-import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, OnChanges, SimpleChanges } from "@angular/core";
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    NgModule,
+    OnChanges,
+    OnInit,
+    SimpleChanges,
+    ViewEncapsulation
+} from "@angular/core";
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CoreModule } from "../../core.module";
 import { ThirdPartyLibraryListModule } from "@precisely/prism-ng/third-party-library-list";

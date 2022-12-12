@@ -20,10 +20,10 @@ export class AssetsComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.sub = this.route.params.subscribe((params) => {
-            let assetTypeUid = params['assetTypeUid'];
+            const assetTypeUid = params['assetTypeUid'];
 
             this.assetTypeService.getAssetTypeLegacyUri(assetTypeUid).subscribe((uri) => {
-                let behavior = { replaceUrl: true };
+                const behavior = { replaceUrl: true };
                 if (uri !== '') {
                     this.router.navigate([uri], behavior);
                 }

@@ -23,6 +23,7 @@ import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.s
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { UsageAction } from '../../models/web-analytics-activity.model';
 
 declare var CurrentResourceID;
 
@@ -91,7 +92,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		this.isLoading = true;
 		this.artifactTypeHierarchy = [];
 		this.headerBreadcrumbService.setCurrentObjectInfo(null, -1, this.assetTypeUid);
-		this.logAction('open', 'AssetType', this.assetTypeUid);
+		this.logAssetTypeAction(UsageAction.View, this.assetTypeUid);
 		this
 			.artifactTypeService
 			.getArtifactTypeDetails(this.assetTypeUid, true)

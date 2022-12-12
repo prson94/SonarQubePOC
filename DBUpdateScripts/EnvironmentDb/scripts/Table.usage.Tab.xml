@@ -5,24 +5,19 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.analytics.UserAgent-v1">
+  <changeSet author="Pappas" id="Table.usage.Tab-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'analytics' AND TABLE_NAME = 'UserAgent')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'usage' AND TABLE_NAME = 'Tab')
 BEGIN
-	CREATE TABLE [analytics].[UserAgent](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[Value] [nvarchar](250) NULL,
-		CONSTRAINT [PK_Analytics_UserAgent] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	CREATE TABLE [usage].[Tab] (
+		[Id] [bigint] IDENTITY(1,1) NOT NULL,
+		[Value] [varchar](250) NOT NULL,
+		CONSTRAINT [PK_Usage_Tab] PRIMARY KEY CLUSTERED ( [Id] ASC )
 	)
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'CIX_Analytics_UserAgent')
-BEGIN
-	CREATE CLUSTERED INDEX [CIX_Analytics_UserAgent] ON [analytics].[UserAgent] ( [Value] ASC )
 END
 		]]>
     </sql>

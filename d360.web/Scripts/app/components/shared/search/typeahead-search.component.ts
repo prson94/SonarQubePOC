@@ -1,12 +1,35 @@
-import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    NgModule,
+    OnDestroy,
+    OnInit,
+    SimpleChange
+} from '@angular/core';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { SearchService } from '../../../services/search.service';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { SearchResult } from '../../../models/search-result.model';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SearchSession } from '../../search/search-session';
-import { SubscriptionLike as ISubscription, Subject } from 'rxjs';
+import { Subject, SubscriptionLike as ISubscription } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { TreeModule } from 'primeng/tree';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { DialogModule } from 'primeng/dialog';
+import { SharedModule } from 'primeng/api';
+import { AssetPathWidgetModule } from '../../search/asset-path-widget/asset-path-widget.module';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
+import { DataCyModule } from '../../../directives/ig-data-cy.directive';
+import { PipesModule } from '../../../pipes/pipes.module';
+import { DirectivesModule } from "../../../directives/directives.module";
 
 @Component({
     selector: 'd3s-header-typeahead-search',
@@ -123,7 +146,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     }
 
     private navigateQuery(q: string) {
-        let url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}${(this.keepFilter) ? '&f=1' : ''}&types=${this.options ? this.options.join(',') : ''}`;
+        const url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}${(this.keepFilter) ? '&f=1' : ''}&types=${this.options ? this.options.join(',') : ''}`;
         if (!this.keepFilter) {
             SearchSession.removeState(q);
         }
@@ -189,26 +212,6 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         return (typeof result.Type !== "undefined");
     }
 }
-
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-
-
-import { RouterModule } from '@angular/router';
-
-import { AutoCompleteModule } from 'primeng/autocomplete';
-import { TreeModule } from 'primeng/tree';
-import { OverlayPanelModule } from 'primeng/overlaypanel';
-import { DialogModule } from 'primeng/dialog';
-import { SharedModule } from 'primeng/api';
-import { AssetPathWidgetModule } from '../../search/asset-path-widget/asset-path-widget.module';
-import { CompanySettingsService } from '../../../services/settings.service';
-import { CompanySettingEnum } from '../../../models/settings.model';
-import { DataCyModule } from '../../../directives/ig-data-cy.directive';
-import { PipesModule } from '../../../pipes/pipes.module';
-import { DirectivesModule } from "../../../directives/directives.module";
-
 
 
 @NgModule({

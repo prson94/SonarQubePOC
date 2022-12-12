@@ -1,4 +1,4 @@
-﻿import { Component, Output, EventEmitter, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { BaseComponent } from '../../../shared/base.component';
 
@@ -79,11 +79,11 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
     ];
 
     ngOnInit() {
-        this.satisfyAll = this.conditions.every((c) => c["@Connector"] == "AND");
+        this.satisfyAll = this.conditions.every((c) => c["@Connector"] === "AND");
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.filteredConditions = this.conditions.filter((c) => c['@ContextualFieldID'] == null || this.excludedContextualFields.indexOf(c['@ContextualFieldID']) == -1);
+        this.filteredConditions = this.conditions.filter((c) => c['@ContextualFieldID'] == null || this.excludedContextualFields.indexOf(c['@ContextualFieldID']) === -1);
     }
 
     isAllAnyVisible() {

@@ -34,7 +34,7 @@ export class GalleryAutocompleteComponent implements OnInit {
     constructor(private cdRef: ChangeDetectorRef) {}
 
     ngOnInit(): void {
-        this.properties = new Array();
+        this.properties = [];
         this.properties.push({ Name: "label", Type: "string", Description: "Text of the button. Buttons without a label must always provide a tooltip.", Default: "" });
         this.properties.push({ Name: "icon", Type: "string", Description: "Name of the icon.", Default: "" });
         this.properties.push({ Name: "tooltip", Type: "string", Description: "Tooltip for button. Must be provided if there is no label. Will also be used as ARIA label.", Default: "" });

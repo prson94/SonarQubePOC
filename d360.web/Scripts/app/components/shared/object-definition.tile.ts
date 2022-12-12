@@ -1,9 +1,17 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter, ChangeDetectorRef, ViewChild } from '@angular/core';
+﻿import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChange,
+    ViewChild
+} from '@angular/core';
 import { ObjectDetailService } from '../../services/object-detail.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
-import { ObjectDetail } from '../../models/object-detail.model';
+import { NymType, ObjectDetail } from '../../models/object-detail.model';
 import { BaseComponent } from '../shared/base.component';
-import { NymType } from '../../models/object-detail.model';
 import { FormMode } from '../../models/form.model';
 import { AssetService } from '../../services/asset.service';
 import { AssetEditorModel } from '../../models/asset.model';
@@ -67,7 +75,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
 
         this.isLoading = true;
 
-        let type = (this.objectType.toLowerCase() === 'artifact') ? "1" : this.objectType;
+        const type = (this.objectType.toLowerCase() === 'artifact') ? "1" : this.objectType;
 
         this.objectDetailService.getObject(this.objectID, type).subscribe(
             (r) => {
@@ -103,8 +111,8 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
 
     saveV2(event): void {
 
-        let values: any = {};
-        let asset: AssetEditorModel = new AssetEditorModel();
+        const values: any = {};
+        const asset: AssetEditorModel = new AssetEditorModel();
         let assetTypeUid: string;
         asset.Fields = {};
 

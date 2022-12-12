@@ -33,6 +33,9 @@ using Microsoft.PowerBI.Api.V2;
 using d360.web.Extensions;
 using System.Net.Http.Formatting;
 using System.Collections.Specialized;
+using d360.web.Utilities;
+using Newtonsoft.Json;
+using d360.web.Models.Usage;
 
 namespace d360.web.Controllers.V2
 {
@@ -48,6 +51,7 @@ namespace d360.web.Controllers.V2
 	{
 		readonly IThemeRepository ThemeRepository;
 		readonly IDashboardRepository DashboardRepository;
+		readonly IResourceSettingRepository ResourceSettingRepository;
 		readonly IStorageProvider _storage;
 
 		//power bi report settings
@@ -58,10 +62,11 @@ namespace d360.web.Controllers.V2
 		private static readonly string pbiUrl = "https://api.powerbi.com";
 
 
-		public EnvironmentController(ICoreComponentSet set, IThemeRepository themeRepository, IDashboardRepository dashboardRepository, IStorageProvider storage) : base(set)
+		public EnvironmentController(ICoreComponentSet set, IThemeRepository themeRepository, IDashboardRepository dashboardRepository, IStorageProvider storage, IResourceSettingRepository resourceSettingRepository) : base(set)
 		{
 			ThemeRepository = themeRepository;
 			DashboardRepository = dashboardRepository;
+			ResourceSettingRepository = resourceSettingRepository;
 			_storage = storage;
 		}
 
@@ -618,6 +623,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpGet,
 			Route("usage"),
+			StringEnum,
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this information is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
@@ -666,17 +672,17 @@ namespace d360.web.Controllers.V2
 
 				string[] columns =
 				{
-					"action",
-					"user agent",
-					"host",
-					"browser language",
+					"resourceuid",
+					"firstname",
+					"lastname",
+					"email",
 					"timestamp" ,
-					"assettypename",
-					"assettypeuid",
-					"assetuid",
-					"assetdisplayvalue",
-					"class",
-					"assetTypeuid2"
+					"browser",
+					"language",
+					"locale",
+					"action",
+					"sidebar",
+					"tab"
 				};
 
 				#region handle queryparams
@@ -699,6 +705,8 @@ namespace d360.web.Controllers.V2
 
 				string errorMessage = null;
 				HttpStatusCode code = HttpStatusCode.OK;
+
+				var objectTablesThatRequireInnerJoin = new List<string>();
 
 				queryParams.ToList().ForEach(q =>
 				{
@@ -776,7 +784,7 @@ namespace d360.web.Controllers.V2
 							{
 								if (Company.GlobalReportingResources.Any(x => x.Uid == ruid) && ruid != Guid.Empty)
 								{
-									whereClauseItems.Add("gr.uid = @resourceUid");
+									whereClauseItems.Add("r.uid = @resourceUid");
 									dbArgs.Add("resourceUid", ruid);
 								}
 								else
@@ -798,8 +806,9 @@ namespace d360.web.Controllers.V2
 							{
 								if (Company.Assets.Any(x => x.uid == auid) && auid != Guid.Empty)
 								{
-									whereClauseItems.Add("a.uid = @assetuid");
+									whereClauseItems.Add("aid.uid = @assetuid");
 									dbArgs.Add("assetuid", auid);
+									objectTablesThatRequireInnerJoin.Add("aid");
 								}
 								else
 								{
@@ -820,8 +829,9 @@ namespace d360.web.Controllers.V2
 							{
 								if (Company.AssetTypes.Any(x => x.uid == atuid) && atuid != Guid.Empty)
 								{
-									whereClauseItems.Add("(att.uid = @assettypeuid or att2.uid = @assettypeuid )");
+									whereClauseItems.Add("(atid.uid = @assettypeuid )");
 									dbArgs.Add("assettypeuid", atuid);
+									objectTablesThatRequireInnerJoin.Add("atid");
 								}
 								else
 								{
@@ -833,6 +843,16 @@ namespace d360.web.Controllers.V2
 							{
 								code = HttpStatusCode.BadRequest;
 								errorMessage = string.Format(ActionApiMessages.AssetTypeNotFound, q.Value);
+							}
+						}
+						else if (key == "_semanticuid")
+						{
+							Guid suid = Guid.Empty;
+							if (Guid.TryParse(q.Value, out suid))
+							{
+								whereClauseItems.Add("(sid.uid = @semanticuid)");
+								dbArgs.Add("semanticuid", suid);
+								objectTablesThatRequireInnerJoin.Add("sid");
 							}
 						}
 					}
@@ -852,8 +872,6 @@ namespace d360.web.Controllers.V2
 
 				}
 
-
-
 				if (whereClauseItems.Count > 0)
 				{
 					whereClause = $" where {string.Join(" and ", whereClauseItems.ToArray()) } ";
@@ -861,62 +879,66 @@ namespace d360.web.Controllers.V2
 
 				#endregion
 
+				Func<string, string> contains = delegate(string p) {
+					return (objectTablesThatRequireInnerJoin.Contains(p) ? "inner" : "left");
+				};
+
+				string tableSql = $@"
+from	usage.Analytic stat
+		inner join reporting.Global_Resource r on r.ResourceID = stat.UserId
+		left join usage.Sidebar sidebar on sidebar.Id = stat.SidebarId
+		left join usage.Tab tab on tab.Id = stat.TabId
+		{contains("aid")} join Asset aid on aid.Id = stat.AssetId
+		{contains("atid")} join AssetType atid on atid.Id = stat.AssetTypeId
+		{contains("did")} join Report did on did.Id = stat.DashboardId
+		{contains("iid")} join Issue iid on iid.Id = stat.IssueId
+		{contains("sid")} join Semantic sid on sid.Id = stat.SemanticId
+		{contains("tid")} join Tag tid on tid.Id = stat.TagId ";
+
 				string sql = $@"
-                select 
-                    act.value as 'action', 
-                    ua.Value as 'userAgent',
-                    h.Value as 'host',
-                    bl.Value as 'language', 
-		            stat.Timestamp as 'eventDate', 
-                    COALESCE(att.Name, att2.Name) as 'assetTypeName', 
-                    COALESCE(att.uid,  att2.uid) as 'assetTypeUid', 
-                    a.uid as 'assetUid', 
-                    adv.DisplayValue as 'assetDisplayValue', 
-                    COALESCE(att.class,  att2.class) as 'assetClass',
-                    gr.uid as 'resourceUid'
-                from analytics.Statistic stat
-	                inner join reporting.global_resource gr on stat.resourceid = gr.resourceid
-	                inner join analytics.BrowserLanguage bl on bl.ID = stat.BrowserLanguageID
-	                inner join analytics.Host h on h.id = stat.HostID
-	                inner join analytics.UserAgent ua on ua.id = stat.UserAgentID
-	                inner join analytics.Object o on o.id = stat.Object
-	                inner join analytics.action act on act.id = stat.ActionID
-	                left join assettype att on att.ObjectID = stat.ObjectID and att.object = o.value
-	                left join asset a on a.Object = o.value and a.ObjectID = stat.ObjectID
-	                left join AssetDisplayValue adv on adv.AssetID = a.id
-	                left join assettype att2 on att2.id = a.AssetTypeID
-                    {whereClause}
-                    {orderBySql}
-                    {offsetSql}
-                ";
+select	r.uid as ResourceUid,
+		r.FirstName,
+		r.LastName,
+		r.Email,
+		stat.Timestamp,
+		stat.Browser,
+		stat.Language,
+		stat.Locale,
+		stat.[Action],
+		aid.Uid as AssetUid,
+		atid.Uid as AssetTypeUid,
+		did.Uid as DashboardUid,
+		iid.Uid as IssueUid,
+		sid.Uid as SemanticUid,
+		tid.Uid as TagUid,
+		sidebar.Value as Sidebar,
+		tab.Value as Tab
+{tableSql}
+{whereClause}
+{orderBySql}
+{offsetSql}";
 
-				string countSql = $@"
-                select count(*) from analytics.Statistic stat
-	                inner join reporting.global_resource gr on stat.resourceid = gr.resourceid
-	                inner join analytics.BrowserLanguage bl on bl.ID = stat.BrowserLanguageID
-	                inner join analytics.Host h on h.id = stat.HostID
-	                inner join analytics.UserAgent ua on ua.id = stat.UserAgentID
-	                inner join analytics.Object o on o.id = stat.Object
-	                inner join analytics.action act on act.id = stat.ActionID
-	                left join assettype att on att.ObjectID = stat.ObjectID and att.object = o.value
-	                left join asset a on a.Object = o.value and a.ObjectID = stat.ObjectID
-	                left join AssetDisplayValue adv on adv.AssetID = a.id
-	                left join assettype att2 on att2.id = a.AssetTypeID
-                    {whereClause}
-                ";
-
-				var response = await Company.QueryAsync<dynamic>(sql, dbArgs);
-
+				var response = await Company.QueryAsync<UsageEntryDetail>(sql, dbArgs);
 
 				if (includeTotal)
 				{
+					string countSql = $"select count(*) {tableSql} {whereClause}";
 					var count = await Company.QueryFirstOrDefaultAsync<int>(countSql, dbArgs);
-					var model = new { pageSize, pageNum, total = count, items = response };
+					var model = new { 
+						pageSize, 
+						pageNum, 
+						total = count, 
+						items = response 
+					};
 					return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 				}
 				else
 				{
-					var model = new { pageSize, pageNum, items = response };
+					var model = new { 
+						pageSize, 
+						pageNum, 
+						items = response 
+					};
 					return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 				}
 			}
@@ -926,6 +948,130 @@ namespace d360.web.Controllers.V2
 				SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.GetUsageDetails => " } });
 
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+			}
+		}
+
+		/// <summary>
+		/// Adds a usage analytic.
+		/// </summary>
+		[
+			HttpPost,
+			Route("usage"),
+			SwaggerResponse(HttpStatusCode.OK)
+		]
+		public async Task<HttpResponseMessage> PostUsage(UsageEntry value)
+		{
+			Func<string> getClientIp = () =>
+			{
+				string ip = "0.0.0.0";
+
+				if (Request.Properties.ContainsKey("MS_HttpContext"))
+				{
+					ip = ((HttpContextWrapper)Request.Properties["MS_HttpContext"]).Request.UserHostAddress;
+				}
+				else if (Request.Properties.ContainsKey(System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name))
+				{
+					var prop = (System.ServiceModel.Channels.RemoteEndpointMessageProperty)Request.Properties[System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name];
+					ip = prop.Address;
+				}
+				else if (HttpContext.Current != null)
+				{
+					ip = HttpContext.Current.Request.UserHostAddress;
+				}
+
+				return ip;
+			};
+
+			var ipAddress = getClientIp();
+
+			bool isValid = false;
+
+			if (value.Language.Length == 2 && value.Locale.Length == 5)
+			{
+				if (value.AssetUid.HasValue)
+				{
+					value.AssetTypeUid = null;
+					value.DashboardUid = null;
+					value.IssueUid = null;
+					value.SemanticUid = null;
+					value.TagUid = null;
+					isValid = true;
+				}
+				else if (value.AssetTypeUid.HasValue)
+				{
+					value.AssetUid = null;
+					value.DashboardUid = null;
+					value.IssueUid = null;
+					value.SemanticUid = null;
+					value.TagUid = null;
+					isValid = true;
+				}
+				else if (value.DashboardUid.HasValue)
+				{
+					value.AssetUid = null;
+					value.AssetTypeUid = null;
+					value.IssueUid = null;
+					value.SemanticUid = null;
+					value.TagUid = null;
+					isValid = true;
+				}
+				else if (value.IssueUid.HasValue)
+				{
+					value.AssetUid = null;
+					value.AssetTypeUid = null;
+					value.DashboardUid = null;
+					value.SemanticUid = null;
+					value.TagUid = null;
+					isValid = true;
+				}
+				else if (value.SemanticUid.HasValue)
+				{
+					value.AssetUid = null;
+					value.AssetTypeUid = null;
+					value.DashboardUid = null;
+					value.IssueUid = null;
+					value.TagUid = null;
+					isValid = true;
+				}
+				else if (value.TagUid.HasValue)
+				{
+					value.AssetUid = null;
+					value.AssetTypeUid = null;
+					value.DashboardUid = null;
+					value.IssueUid = null;
+					value.SemanticUid = null;
+					isValid = true;
+				}
+			}
+
+			if (isValid)
+			{
+				await Company.Connection.ExecuteAsync(
+					"exec [usage].[Add] @UserId, @Browser, @Action, @Timestamp, @Language, @Locale, @Ip, " +
+					"@AssetUid, @AssetTypeUid, @DashboardUid, @IssueUid, @SemanticUid, @TagUid, " +
+					"@Sidebar, @Tab", new
+					{
+						UserId = Company.CurrentResourceID,
+						Browser = (int)value.Browser,
+						Action = (int)value.Action,
+						Timestamp = DateTime.UtcNow,
+						value.Language,
+						value.Locale,
+						Ip = ipAddress,
+						value.AssetUid,
+						value.AssetTypeUid,
+						value.DashboardUid,
+						value.IssueUid,
+						value.SemanticUid,
+						value.TagUid,
+						value.Sidebar,
+						value.Tab
+					});
+				return Request.CreateResponse(HttpStatusCode.OK);
+			}
+			else
+			{ 
+				return Request.CreateResponse(HttpStatusCode.BadRequest);
 			}
 		}
 
@@ -2627,6 +2773,32 @@ namespace d360.web.Controllers.V2
 		}
 
 		#endregion
+
+		[HttpPost, AjaxValidateAntiForgeryToken, Route("me/language"), ApiExplorerSettings(IgnoreApi = true)]
+		public async Task<HttpResponseMessage> UpdateCurrentUserLanguage(UserLanguageModel model)
+		{
+			
+			if (model == null)
+			{
+				throw new ArgumentException(ApiMessages.InvalidModel);
+			}
+
+			if (model.LanguageCode != null && !InternationalizationUtilities.AllowedUILocales.Select(x=> x.ToLowerInvariant()).Contains(model.LanguageCode.ToLowerInvariant()))
+			{
+				throw new ArgumentException(String.Format(ApiMessages.InvalidLanguageCode, String.Join(", ", InternationalizationUtilities.AllowedUILocales)));
+			}
+
+			if (model.LanguageCode == null)
+			{
+				await this.ResourceSettingRepository.DeleteGlobalSetting(Company.CurrentResourceID, "ApplicationLanguage");
+			}
+			else
+			{
+				await this.ResourceSettingRepository.UpsertGlobalSetting(Company.CurrentResourceID, "ApplicationLanguage", model.LanguageCode);
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK);
+		}
 		private bool IsDark(string htmlColor)
 		{
 			Color color = ColorTranslator.FromHtml(htmlColor);
@@ -2697,5 +2869,141 @@ namespace d360.web.Controllers.V2
 
 			return await PowerBI.ImportPbix(pbiUsername, pbiPassword, clientId, groupId, name, file.InputStream);
 		}
+
+		#region User Settings endpoints
+
+		const string USER_SETTING_UID_FILTER = "An optional Asset Type UID, to get user settings for that asset type.";
+		const string USER_SETTING_VALUE = "The setting value";
+
+		/// <summary>
+		/// Gets User Settings
+		/// If no UID is provided, the user's global settings are returned.
+		/// </summary>
+		/// <returns>A list of settings for the current user.</returns>
+		[
+			HttpGet,
+			Route("usersettings"),
+			ApiExplorerSettings(IgnoreApi = true),
+			SwaggerProduces("application/json"),
+			SwaggerParameter("assetTypeUid", USER_SETTING_UID_FILTER, DataType = "string", ParameterType = "query", Required = false),
+			SwaggerResponse(HttpStatusCode.OK, "Returns the list of settings.", typeof(List<GetTheme>)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetUserSettings(CancellationToken cancellationToken)
+		{
+			try
+			{
+				var queryParams = Request.GetQueryNameValuePairs();
+				Guid AssetTypeUID = Guid.Empty;
+
+				if (queryParams.ToList().Any(x => x.Key.ToLower() == "assetTypeUid"))
+				{
+					if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetTypeUid").Value, out AssetTypeUID))
+					{
+						AssetTypeUID = Guid.Empty;
+						throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.Error, OthersError.InvalidAssetTypeUid);
+					}
+				}
+
+				var settings = await ResourceSettingRepository.GetSettings(Company.CurrentResourceID, AssetTypeUID);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, settings));
+			}
+			catch (GenericException)
+			{
+				throw;
+			}
+			catch
+			{
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, ApiMessages.UnknownErrorInvestigatingMessage);
+			}
+		}
+
+		/// <summary>
+		/// Creates/updates a user setting.
+		/// </summary>
+		/// <param name="assetTypeUid">The Asset Type UID for which this user setting applies.</param>
+		/// <param name="setting">The name of the setting.</param>
+		/// <param name="value">The name of the setting.</param>
+		[
+			HttpPut,
+			Route("usersetting/{assetTypeUid:Guid}/{setting}"),
+			ApiExplorerSettings(IgnoreApi = true),
+			SwaggerConsumes("text/plain"),
+			SwaggerProduces("application/json"),
+			SwaggerParameter("value", USER_SETTING_VALUE, DataType = "string", ParameterType = "body", Required = true),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Request to update the setting is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> PutUserSetting(Guid assetTypeUid, string setting)
+		{
+			try
+			{
+				string value = await Request.Content.ReadAsStringAsync();
+
+				if (string.IsNullOrEmpty(value))
+				{
+					{
+						throw new GenericException(HttpStatusCode.Conflict, ApiMessages.UnknownError, ApiMessages.UnknownError);
+					}
+				}
+
+				await ResourceSettingRepository.UpsertSetting(Company.CurrentResourceID, assetTypeUid, setting, value);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+			}
+			catch (GenericException ex)
+			{
+				throw ex;
+			}
+			catch
+			{
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.Error, ApiMessages.UnknownErrorInvestigatingMessage);
+			}
+		}
+
+		/// <summary>
+		/// Creates/updates a global user setting.
+		/// </summary>
+		/// <param name="setting">The name of the setting.</param>
+		/// <param name="value">The value of the setting.</param>
+		[
+			HttpPut,
+			Route("usersetting/{setting}"),
+			ApiExplorerSettings(IgnoreApi = true),
+			SwaggerConsumes("text/plain"),
+			SwaggerProduces("application/json"),
+			SwaggerParameter("value", USER_SETTING_VALUE, DataType = "string", ParameterType = "body", Required = true),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Request to update the setting is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> PutUserGlobalSetting(string setting)
+		{
+			try
+			{
+				string value = await Request.Content.ReadAsStringAsync();
+
+				if (string.IsNullOrEmpty(value))
+				{
+					{
+						throw new GenericException(HttpStatusCode.Conflict, ApiMessages.UnknownError, ApiMessages.UnknownError);
+					}
+				}
+
+				await ResourceSettingRepository.UpsertGlobalSetting(Company.CurrentResourceID, setting, value);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+			}
+			catch (GenericException ex)
+			{
+				throw ex;
+			}
+			catch
+			{
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.Error, ApiMessages.UnknownErrorInvestigatingMessage);
+			}
+		}
+		#endregion
 	}
 }

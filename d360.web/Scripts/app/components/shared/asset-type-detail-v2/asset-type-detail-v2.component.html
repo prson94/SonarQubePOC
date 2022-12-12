@@ -1,0 +1,43 @@
+﻿<div *ngIf="uid" class="asset-detail">
+    <ng-template #loading>
+        <div style="width:100%; text-align:center;">
+            <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+        </div>
+    </ng-template>
+    <div *ngIf="!isLoading; else loading">
+        <div class="asset-detail-header">
+            <div class="asset-name">
+                {{ assetTypeModel.Name }}
+            </div>
+            <div class="class-name">
+                {{ assetTypeModel.Class.Name | assetTypeClassDisplay }}
+            </div>
+            <div>
+                <a (click)="onAssetTypeOpen(false)" i18n>
+                    Open
+                </a>
+                <span *ngIf="controlsOptions.showOpen > 0" class="grey-delimiter">|</span>
+                <a *ngIf="controlsOptions.showOpen > 0" (click)="onAssetTypeOpen(true)" i18n>
+                    Open in New Tab
+                </a>
+                <ng-container *ngIf="isAdmin && controlsOptions.showEdit">
+                    |
+                    <a (click)="onEditClick.emit(uid)" i18n>Edit</a>
+                </ng-container>
+            </div>
+        </div>
+        <div class="asset-detail-tabs" *ngIf="categories">
+            <div *ngFor="let category of categories; let first = first">
+                <ig-property-group [expanded]="category.active"
+                                   (expandedChange)="category.active = $event; onStateSave()"
+                                   [title]="category.name"
+                                   [shouldBePadded]="false"
+                                   [showHeaderLine]="!first">
+                    <div readonly>
+                        <ig-asset-type-detail-category [category]="category"></ig-asset-type-detail-category>
+                    </div>
+                </ig-property-group>
+            </div>
+        </div>
+    </div>
+</div>

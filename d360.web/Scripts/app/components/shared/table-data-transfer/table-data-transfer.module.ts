@@ -8,7 +8,6 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from '../../../directives/ig-button-directive';
 
 
-
 @NgModule({
   declarations: [
     TableDataTransferComponent,
