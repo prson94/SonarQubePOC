@@ -8159,7 +8159,7 @@ where   ER.ExecutionID = @ExecutionID
                 new { startedOn = DateTime.UtcNow, ExecutionId }).FirstOrDefault();
         }
 
-        public void CalculateProposedKeyHashes(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField")
+        public void CalculateProposedKeyHashesBulkLoad(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField")
         {
             string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
             string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
@@ -8292,7 +8292,8 @@ where   ER.ExecutionID = @ExecutionID
 
 														CREATE NONCLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
 
-                    string SqlStmt = $@"
+
+					string keyHashCalulationScript = $@"
 										Declare @fieldtypeid int =-1;
 										declare @DefaultValue nvarchar(max);
 
@@ -8307,7 +8308,46 @@ where   ER.ExecutionID = @ExecutionID
 																	inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
 														where		A.ExecutionID = @ExecutionID
 														group by	A.ItemNumber, A.ParentUid
-														) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
+														) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;";
+
+					if (at.Class == AssetTypeClass.Model)
+					{
+						//models with more levels comes with multiple name fields with same FieldTypeId
+						//we are using BulkExecutionFieldUnique temp table with unique field values, where only Name of asset is used to build hash values
+						keyHashCalulationScript = $@"
+										drop table if exists #BulkExecutionFieldUnique
+
+										;with unique_item_field as (
+											select distinct ItemNumber, FieldTypeID 
+											from #BulkExecutionField)
+										select Field.* 
+										into #BulkExecutionFieldUnique
+										from unique_item_field BEF
+										outer apply (
+											select top 1 * from {fieldTable} BEF2 
+											where FieldValue is not null and BEF2.ItemNumber = BEF.ItemNumber and BEF2.FieldTypeID = BEF.FieldTypeID
+											order by ColumnIndex desc
+											)Field
+
+										Declare @fieldtypeid int =-1;
+										declare @DefaultValue nvarchar(max);
+
+										update  T
+										set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
+										from    {assetTable} T
+											inner join	(
+														select		A.ItemNumber,
+																	COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+														from		{assetTable} A
+																	inner join #BulkExecutionFieldUnique F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+																	inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
+														where		A.ExecutionID = @ExecutionID
+														group by	A.ItemNumber, A.ParentUid
+														) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;";
+					}
+
+                    string SqlStmt = $@"
+										{keyHashCalulationScript}
 
 										{CreateFieldTempData}
 
