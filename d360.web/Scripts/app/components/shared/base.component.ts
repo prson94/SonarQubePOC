@@ -197,18 +197,18 @@ export class BaseComponent {
 			}
 
 			this.webAnalyticsService.logActivity({
-				action: action,
-				browser: browser,
-				language: language,
-				locale: locale,
-				assetUid: assetUid,
-				assetTypeUid: assetTypeUid,
-				dashboardUid: dashboardUid,
-				issueUid: issueUid,
-				semanticUid: semanticUid,
-				sidebar: sidebar,
-				tab: tab,
-				tagUid: tagUid
+				action,
+				browser,
+				language,
+				locale,
+				assetUid,
+				assetTypeUid,
+				dashboardUid,
+				issueUid,
+				semanticUid,
+				sidebar,
+				tab,
+				tagUid
 			});
 		}
 	}
