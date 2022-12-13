@@ -79,6 +79,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Action Type was deleted.
+        /// </summary>
+        public static string ActionTypeDeleted {
+            get {
+                return ResourceManager.GetString("ActionTypeDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Action Type Not Found.
         /// </summary>
         public static string ActionTypeNotFound {
@@ -97,7 +106,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Action Type updated..
+        ///   Looks up a localized string similar to Action Type was updated..
         /// </summary>
         public static string ActionTypeUpdated {
             get {

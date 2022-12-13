@@ -661,21 +661,18 @@ namespace d360.web.Controllers.V2
 		[
 			Route("type/{actionTypeUid:Guid}"),
 			HttpDelete,
+			RequireAdminPermissions,
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "Action Type was deleted.", typeof(AddIssueTypeApiModel)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Action Type Not Found", typeof(ErrorResponse))
 		]
 		public async Task<IHttpActionResult> DeleteWorkflowActionType(Guid actionTypeUid, DeleteIssueTypeAPIModel model)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
-			}
-
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.InvalidActionTypeUid)).ConfigureAwait(false);
+				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
 			}
 
 			var queryParams = Request.GetQueryNameValuePairs();
@@ -699,18 +696,18 @@ namespace d360.web.Controllers.V2
 
 			if (issueType == null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ActionApiMessages.InvalidActionTypeUid, actionTypeUid.ToString()))).ConfigureAwait(false);
+				throw new NotFoundBusinessLayerException(ActionApiMessages.ActionTypeNotFound);
 			}
 
 			if (!model.cascade && Company.Issues.Any(x => x.IssueTypeID == issueType.ID))
 			{
 				if (IsFromUI)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ActionApiMessages.ChildRecordExistsIssueType, issueType.Name))).ConfigureAwait(false);
+					throw new ArgumentException(string.Format(ActionApiMessages.ChildRecordExistsIssueType, issueType.Name));
 				}
 				else
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.CascadeDeleteActionType)).ConfigureAwait(false);
+					throw new ArgumentException(ActionApiMessages.CascadeDeleteActionType);
 				}
 			}
 
@@ -725,7 +722,12 @@ namespace d360.web.Controllers.V2
 			var res = await Company.Database.Connection.ExecuteAsync(deleteSQL,
 				new { uid = actionTypeUid, issueTypeId = issueType.ID });
 
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new AddIssueTypeApiModel() { Uid = actionTypeUid, Message = "Action Type was deleted", Success = true }))).ConfigureAwait(false);
+			return Ok(new AddIssueTypeApiModel()
+			{
+				Uid = actionTypeUid,
+				Message = ActionApiMessages.ActionTypeDeleted,
+				Success = true
+			});
 		}
 
 		/// <summary>

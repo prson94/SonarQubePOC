@@ -123,6 +123,9 @@
   <data name="ActionCreatedMsg" xml:space="preserve">
     <value>Action Created</value>
   </data>
+  <data name="ActionTypeDeleted" xml:space="preserve">
+    <value>Action Type was deleted</value>
+  </data>
   <data name="ActionTypeNotFound" xml:space="preserve">
     <value>Action Type Not Found</value>
   </data>
@@ -130,7 +133,7 @@
     <value>Action Type with Uid {0} could not be found.</value>
   </data>
   <data name="ActionTypeUpdated" xml:space="preserve">
-    <value>Action Type updated.</value>
+    <value>Action Type was updated.</value>
   </data>
   <data name="ActionUidNotFound" xml:space="preserve">
     <value>Action with Uid {0} could not be found.</value>
