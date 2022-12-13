@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Web.Http;
 
 using Xunit;
+using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -28,7 +29,7 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void GetIssueTypesTest()
+        public async void GetIssueTypes_MustReturnSuccessfulResult()
         {
 			//Act
             var actionResult = await actionsController.GetIssueTypes();
@@ -38,18 +39,21 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void GetAllocationByAssetTypeAsyncTest()
+        public async void GetAllocationByAssetTypeAsync_ValidAssetTypeUid_MustReturnSuccessfulResult()
         {
+			//Arrange
             var testGuid = Guid.Parse(DataConstants.ValidGUID);
+
+			//Act
             var actionResult = await actionsController.GetAllocationByAssetTypeAsync(testGuid);
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<JArray>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-            Assert.True(data != null, XMsg.InvalidJSON);
-
+			//Assert
+			actionResult.ShouldBeOKContent<IEnumerable<IssueTypeApiModel>>();
+			data.Should().NotBeNull();
         }
 
         [Fact]

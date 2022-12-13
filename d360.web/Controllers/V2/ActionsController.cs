@@ -482,40 +482,25 @@ namespace d360.web.Controllers.V2
 		/// </summary>
 		/// <param name="AssetTypeUid">Asset Type Uid</param>
 		/// <returns>A list of actions types</returns>
-		[HttpGet,
+		[
+			HttpGet,
 			Route("types/{AssetTypeUid}"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(IssueTypeApiModel)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type with Uid {uid} not found."),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
-			]
+		]
 		public async Task<IHttpActionResult> GetAllocationByAssetTypeAsync(Guid AssetTypeUid)
 		{
-			var prefix = "Issues.GetAllocationByAssetTypeAsync => ";
-			string errorMessage;
-
-			try
+			AssetType assetType = assetRepository.GetAssetTypeByUID(AssetTypeUid);
+			if (assetType == null)
 			{
-				AssetType assetType = assetRepository.GetAssetTypeByUID(AssetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()))).ConfigureAwait(false);
-				}
-
-				var allocations = await issueRepository.GetAllocationByAssetType(AssetTypeUid);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocations))).ConfigureAwait(false);
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()));
 			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", prefix  }
-				});
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			var allocations = await issueRepository.GetAllocationByAssetType(AssetTypeUid);
+
+			return Ok(allocations);
 		}
 
 		/// <summary>
