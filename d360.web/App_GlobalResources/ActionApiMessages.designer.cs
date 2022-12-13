@@ -97,6 +97,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Action Type updated..
+        /// </summary>
+        public static string ActionTypeUpdated {
+            get {
+                return ResourceManager.GetString("ActionTypeUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Action with Uid {0} could not be found..
         /// </summary>
         public static string ActionUidNotFound {

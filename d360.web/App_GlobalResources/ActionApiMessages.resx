@@ -129,6 +129,9 @@
   <data name="ActionTypeUidIsNotValid" xml:space="preserve">
     <value>Action Type with Uid {0} could not be found.</value>
   </data>
+  <data name="ActionTypeUpdated" xml:space="preserve">
+    <value>Action Type updated.</value>
+  </data>
   <data name="ActionUidNotFound" xml:space="preserve">
     <value>Action with Uid {0} could not be found.</value>
   </data>

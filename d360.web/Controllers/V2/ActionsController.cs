@@ -580,7 +580,6 @@ namespace d360.web.Controllers.V2
 			return Ok(result);
 		}
 
-
 		/// <summary>
 		/// Updates a workflow action type
 		/// </summary>
@@ -588,6 +587,7 @@ namespace d360.web.Controllers.V2
 		[
 			Route("type"),
 			HttpPut,
+			RequireAdminPermissions,
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "Workflow Action Type successfully Updated.", typeof(AddIssueTypeApiModel)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -596,77 +596,61 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> UpdateWorkflowActionType(AddWorkFlowAction model)
 		{
-			var prefix = "Issues.AddWorkflowActionType => ";
-			AddIssueTypeApiModel result = new AddIssueTypeApiModel();
-			try
+			if (model.Uid == null || model.Uid == Guid.Empty)
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
-				}
+				throw new ArgumentException(ActionApiMessages.UidNotEmptyAndRequired);
+			}
 
-				if (model.Uid == null || model.Uid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.UidNotEmptyAndRequired)).ConfigureAwait(false);
-				}
+			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == model.Uid);
 
-				var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == model.Uid);
+			if (issueType == null)
+			{
+				throw new ArgumentException(ActionApiMessages.UidNotValid);
+			}
 
-				if (issueType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.UidNotValid)).ConfigureAwait(false);
-				}
+			if (model.Name == null)
+			{
+				throw new ArgumentException(ActionApiMessages.NameNotNull);
+			}
 
-				if (model.Name == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameNotNull)).ConfigureAwait(false);
-				}
+			if (string.IsNullOrEmpty(model.Name.Trim()))
+			{
+				throw new ArgumentException(ActionApiMessages.NameNotEmptyAndRequired);
+			}
 
-				if (string.IsNullOrEmpty(model.Name.Trim()))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameNotEmptyAndRequired)).ConfigureAwait(false);
-				}
+			if (model.Name.Trim().Length > 250)
+			{
+				throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
+			}
 
-				if (model.Name.Trim().Length > 250)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameMaxLength250Char)).ConfigureAwait(false);
-				}
+			var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower() && i.uid != model.Uid);
 
-				var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower() && i.uid != model.Uid);
+			if (validName)
+			{
+				throw new ArgumentException(ActionApiMessages.UniqueNameWorkflowAction);
+			}
 
-				if (validName)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.UniqueNameWorkflowAction)).ConfigureAwait(false);
-				}
+			if (model.Description == null)
+			{
+				model.Description = issueType.Description;
+			}
 
-				if (model.Description == null)
-				{
-					model.Description = issueType.Description;
-				}
-
-				var updateSQL = $@"Update [dbo].[IssueType]
+			var updateSQL = $@"Update [dbo].[IssueType]
 										set [Name]= @name, [Description]=@desc, [UpdatedOn] = @date ,[UpdatedBy] = @user
 								   Where uid = @uid";
 
 
-				var res = await Company.Database.Connection.ExecuteAsync(updateSQL,
-				new { name = model.Name.Trim(), desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid, date = DateTime.UtcNow });
+			var res = await Company.Database.Connection.ExecuteAsync(updateSQL,
+			new { name = model.Name.Trim(), desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid, date = DateTime.UtcNow });
 
-				result.Uid = (Guid)model.Uid;
-				result.Message = "Action Type updated";
-				result.Success = true;
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
+			AddIssueTypeApiModel result = new AddIssueTypeApiModel()
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", prefix }
-				});
+				Uid = (Guid)model.Uid,
+				Message = ActionApiMessages.ActionTypeUpdated,
+				Success = true
+			};
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
-			}
+			return Ok(result);
 		}
 
 		/// <summary>
