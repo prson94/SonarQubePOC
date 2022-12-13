@@ -357,7 +357,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_name", "Filter by provided name value.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_limitToActiveWorkflows", "Set to true to only return actions associated with an active workflow.", DataType = "boolean", ParameterType = "query", Required = false),
 		]
-		public async Task<HttpResponseMessage> GetIssueTypes()
+		public async Task<IHttpActionResult> GetIssueTypes()
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
 
@@ -367,18 +367,15 @@ namespace d360.web.Controllers.V2
 
 			if (actionTypeUidParam.Key != null)
 			{
-				if (Guid.TryParse(actionTypeUidParam.Value, out Guid actionTypeUid))
+				if (!Guid.TryParse(actionTypeUidParam.Value, out Guid actionTypeUid) || actionTypeUid == Guid.Empty)
 				{
-					var validUid = Company.IssueTypes.Any(i => i.uid == actionTypeUid);
-
-					if (!validUid)
-					{
-						return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()))).ConfigureAwait(false);
-					}
+					throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
 				}
-				else
+
+				var validUid = Company.IssueTypes.Any(i => i.uid == actionTypeUid);
+				if (!validUid)
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidActionTypeUid)).ConfigureAwait(false);
+					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()));
 				}
 			}
 
@@ -386,23 +383,19 @@ namespace d360.web.Controllers.V2
 
 			if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
 			{
-				if (Guid.TryParse(assetTypeUidParam.Value.Trim(), out Guid assetTypeUid))
+				if (!Guid.TryParse(assetTypeUidParam.Value.Trim(), out Guid assetTypeUid) || assetTypeUid == Guid.Empty)
 				{
-					var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
-
-					if (assetType == null)
-					{
-						return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()))).ConfigureAwait(false);
-					}
-					else if (assetType.Class == AssetTypeClass.Diagram)
-					{
-						return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetTypeUid)).ConfigureAwait(false);
-					}
-
+					throw new ArgumentException(ActionApiMessages.InvalidAssetTypeUid);
 				}
-				else
+
+				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
+				if (assetType == null)
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetTypeUid)).ConfigureAwait(false);
+					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()));
+				}
+				else if (assetType.Class == AssetTypeClass.Diagram)
+				{
+					throw new ArgumentException(ActionApiMessages.InvalidAssetTypeUid);
 				}
 			}
 
@@ -410,32 +403,29 @@ namespace d360.web.Controllers.V2
 
 			if (assetUidParam.Key != null && assetUidParam.Value != null && !string.IsNullOrWhiteSpace(assetUidParam.Value))
 			{
-				if (Guid.TryParse(assetUidParam.Value.Trim(), out Guid assetUid))
+				if (!Guid.TryParse(assetUidParam.Value.Trim(), out Guid assetUid) || assetUid == Guid.Empty)
 				{
-					var asset = Company.Assets.FirstOrDefault(i => i.uid == assetUid);
-
-					if (asset == null)
-					{
-						return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()))).ConfigureAwait(false);
-					}
-					else if (asset.AssetType.Class == AssetTypeClass.Diagram)
-					{
-						return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
-					}
-
-					if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
-					{
-						var assetTypeuUid = Guid.Parse(assetTypeUidParam.Value);
-
-						if (!Company.AssetTypes.Any(i => i.uid == assetTypeuUid && i.ID == asset.AssetTypeID))
-						{
-							return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.AssetValidateWithAssetType)).ConfigureAwait(false);
-						}
-					}
+					throw new ArgumentException(ActionApiMessages.InvalidAssetUid);
 				}
-				else
+
+				var asset = Company.Assets.FirstOrDefault(i => i.uid == assetUid);
+				if (asset == null)
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
+					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+				}
+				else if (asset.AssetType.Class == AssetTypeClass.Diagram)
+				{
+					throw new ArgumentException(ActionApiMessages.InvalidAssetUid);
+				}
+
+				if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
+					{
+					var assetTypeuUid = Guid.Parse(assetTypeUidParam.Value);
+
+					if (!Company.AssetTypes.Any(i => i.uid == assetTypeuUid && i.ID == asset.AssetTypeID))
+					{
+						throw new ArgumentException(ApiMessages.AssetValidateWithAssetType);
+					}
 				}
 			}
 
@@ -445,12 +435,12 @@ namespace d360.web.Controllers.V2
 			{
 				if (string.IsNullOrEmpty(nameParam.Value.Trim()))
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.NameNotEmptyAndRequired)).ConfigureAwait(false);
+					throw new ArgumentException(ActionApiMessages.NameNotEmptyAndRequired);
 				}
 
 				if (nameParam.Value.Trim().Length > 250)
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.NameMaxLength250Char)).ConfigureAwait(false);
+					throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
 				}
 			}
 
@@ -458,18 +448,15 @@ namespace d360.web.Controllers.V2
 
 			if (resourceUidParam.Key != null && !string.IsNullOrWhiteSpace(resourceUidParam.Value))
 			{
-				if (Guid.TryParse(resourceUidParam.Value, out Guid resourceUid))
+				if (Guid.TryParse(resourceUidParam.Value, out Guid resourceUid) || resourceUid == Guid.Empty)
 				{
-					var validUid = Company.GlobalReportingResources.Any(r => r.Uid == resourceUid);
-
-					if (!validUid)
-					{
-						return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, ActionApiMessages.ResourceUidNotFound)).ConfigureAwait(false);
-					}
+					throw new ArgumentException(ActionApiMessages.ResourceUidNotValid);
 				}
-				else
+
+				var validUid = Company.GlobalReportingResources.Any(r => r.Uid == resourceUid);
+				if (!validUid)
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.ResourceUidNotValid)).ConfigureAwait(false);
+					throw new NotFoundBusinessLayerException(ActionApiMessages.ResourceUidNotFound);
 				}
 			}
 
@@ -479,7 +466,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!bool.TryParse(limitToActiveWorkflowsParam.Value, out _))
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidLimitActiveWorkflow)).ConfigureAwait(false);
+					throw new ArgumentException(ActionApiMessages.InvalidLimitActiveWorkflow);
 				}
 			}
 
@@ -487,7 +474,7 @@ namespace d360.web.Controllers.V2
 
 			var issueTypes = await issueRepository.GetIssueTypes(queryParams);
 
-			return Request.CreateResponse(HttpStatusCode.OK, issueTypes);
+			return Ok(issueTypes);
 		}
 
 		/// <summary>

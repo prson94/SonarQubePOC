@@ -1,24 +1,26 @@
-﻿using d360.web.Controllers.V2;
-using igx.UnitTests.Core;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web.Http;
+
 using Xunit;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+using d360.web.Controllers.V2;
+using d360.core.entities;
+using igx.UnitTests.Core;
 
 namespace igx.UnitTests.V2ControllerTests
 {
     [Trait("Unit tests", "Asset controller")]
     public class ActionsControllerTest : BaseTest
     {
-
-        internal ActionsController actionsController;
+        private readonly ActionsController actionsController;
         
         public ActionsControllerTest()
         {
-            this.actionsController = new ActionsController(GetCoreComponentSet(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository(), GetResponsibilityRepositoryMock().Object)
+            actionsController = new ActionsController(GetCoreComponentSet(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository(), GetResponsibilityRepositoryMock().Object)
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -28,8 +30,11 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetIssueTypesTest()
         {
+			//Act
             var actionResult = await actionsController.GetIssueTypes();
-            Assert.True(actionResult.IsSuccessStatusCode, XMsg.BadResponseCode);
+
+			//Assert
+			actionResult.ShouldBeOKContent<IEnumerable<IssueTypeApiModel>>();
         }
 
         [Fact]
