@@ -1778,7 +1778,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">232,234</context>
+          <context context-type="linenumber">241,243</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-asset-type.component.html</context>
@@ -2258,23 +2258,23 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">127,129</context>
+          <context context-type="linenumber">129,131</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">154,155</context>
+          <context context-type="linenumber">156,157</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">206,208</context>
+          <context context-type="linenumber">208,210</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">237,239</context>
+          <context context-type="linenumber">239,241</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">247,249</context>
+          <context context-type="linenumber">249,251</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/dynamic-editor.component.ts</context>
@@ -2490,18 +2490,18 @@
           <context context-type="linenumber">203,206</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="57349bad79fc03db7e07e2aa7a2ddea9b8273d9f" datatype="html">
-        <source>You can write CSS overrides to customize the branding of Data360 Govern. You should write the minimal number of rules and CSS properties necessary to achieve your desired results. Software updates are released every month, which could potentially break your CSS overrides. In some cases, CSS overrides could break updates or new features added to Govern. If you use a lot of CSS overrides, you will need to perform UI regression testing every time an update is released to your environments. Because of this, we strongly recommend that you reach out to Infogix to raise enhancement requests, instead of using CSS to remove or alter features and screen layouts.</source>
+      <trans-unit id="3d85ae05bcc749926abd81bb24dc3785e3128059" datatype="html">
+        <source> You can write CSS overrides to customize the branding of Data360 Govern. You should write the minimal number of rules and CSS properties necessary to achieve your desired results. Software updates are released every month, which could potentially break your CSS overrides. In some cases, CSS overrides could break updates or new features added to Govern. If you use a lot of CSS overrides, you will need to perform UI regression testing every time an update is released to your environments. Because of this, we strongly recommend that you reach out to Precisely to raise enhancement requests, instead of using CSS to remove or alter features and screen layouts. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">207,210</context>
+          <context context-type="linenumber">208,215</context>
         </context-group>
       </trans-unit>
       <trans-unit id="314b1d95f11287c16d4cfc444c967229313b27cc" datatype="html">
         <source> Are you sure you want to make changes to the current theme, which will cause the app to look different the next time users refresh or log in? </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">229,232</context>
+          <context context-type="linenumber">238,241</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3924199801748884105" datatype="html">
@@ -7540,7 +7540,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">155</context>
+          <context context-type="linenumber">157</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4964325726823401590" datatype="html">
@@ -8598,11 +8598,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">127,130</context>
+          <context context-type="linenumber">129,132</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">196,197</context>
+          <context context-type="linenumber">198,199</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/objectdetails/object-detail.component.ts</context>
@@ -10931,7 +10931,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">162,164</context>
+          <context context-type="linenumber">164,166</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5963653123239768443" datatype="html">
@@ -10982,7 +10982,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">171,172</context>
+          <context context-type="linenumber">173,174</context>
         </context-group>
       </trans-unit>
       <trans-unit id="9187855490716817910" datatype="html">
@@ -11005,7 +11005,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">171,172</context>
+          <context context-type="linenumber">173,174</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8872443636266091102" datatype="html">
@@ -11925,19 +11925,19 @@ Please refine your search.</source>
         <source>Settings</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">127,129</context>
+          <context context-type="linenumber">129,131</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">213,215</context>
+          <context context-type="linenumber">215,217</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">221,223</context>
+          <context context-type="linenumber">223,225</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">254,256</context>
+          <context context-type="linenumber">256,258</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/menu/site-menu.component.ts</context>
@@ -11952,71 +11952,71 @@ Please refine your search.</source>
         <source>Asset Description</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">127,130</context>
+          <context context-type="linenumber">129,132</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">167,169</context>
+          <context context-type="linenumber">169,171</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6977749640368501596" datatype="html">
         <source>Styles</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">127,129</context>
+          <context context-type="linenumber">129,131</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">184,186</context>
+          <context context-type="linenumber">186,188</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5851470115289701900" datatype="html">
         <source>Display Format</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">157,159</context>
+          <context context-type="linenumber">159,161</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6916912379559332257" datatype="html">
         <source>Enable or Disable showing the description of the asset type</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">169,171</context>
+          <context context-type="linenumber">171,173</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1383460871394019879" datatype="html">
         <source>Description Behavior</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">174,176</context>
+          <context context-type="linenumber">176,178</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8461842260159597706" datatype="html">
         <source>Show</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">176</context>
+          <context context-type="linenumber">178</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8461609631969932886" datatype="html">
         <source>Hide</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">176</context>
+          <context context-type="linenumber">178</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6818732338554681640" datatype="html">
         <source>Description Button Name</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">179,181</context>
+          <context context-type="linenumber">181,183</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5037437391296624618" datatype="html">
         <source>Information</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">181,183</context>
+          <context context-type="linenumber">183,185</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/assettypeeditor/asset-type-editor.component.ts</context>
@@ -12035,14 +12035,14 @@ Please refine your search.</source>
         <source>Background Color</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">186,188</context>
+          <context context-type="linenumber">188,190</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3074987902485823708" datatype="html">
         <source>Icon</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-type-detail-v2/asset-type-detail-v2.component.ts</context>
-          <context context-type="linenumber">191,193</context>
+          <context context-type="linenumber">193,195</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ade74474370fb2ee8c76dce2717536f3636e973e" datatype="html">
