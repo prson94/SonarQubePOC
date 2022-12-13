@@ -1165,25 +1165,24 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "List of allocations.", typeof(List<IssueTypeAllocationsResponse>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Uid provided is not valid.", typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.NotFound, "Uid provided is not valid.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
 		]
 		public async Task<IHttpActionResult> GetActionTypeAllocations(Guid actionTypeUid)
 		{
-			try
+			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				if (actionTypeUid == null || actionTypeUid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid)).ConfigureAwait(false);
-				}
+				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
+			}
 
-				var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
+			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
-				if (issueType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));
-				}
+			if (issueType == null)
+			{
+				throw new NotFoundBusinessLayerException(ActionApiMessages.InvalidActionTypeUid);
+			}
 
-				string allocationsSQL = @"
+			string allocationsSQL = @"
 										SELECT 
 											T.Uid as AssetTypeUid, 
 											T.Name, 
@@ -1209,16 +1208,9 @@ namespace d360.web.Controllers.V2
 										WHERE 
 											R.IssueTypeID = @issueTypeID";
 
-				var allocations = await Company.QueryAsync<IssueTypeAllocationsResponse>(allocationsSQL, new { issueTypeID = issueType.ID });
+			var allocations = await Company.QueryAsync<IssueTypeAllocationsResponse>(allocationsSQL, new { issueTypeID = issueType.ID });
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocations))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			return Ok(allocations);
 		}
 
 		/// <summary>
