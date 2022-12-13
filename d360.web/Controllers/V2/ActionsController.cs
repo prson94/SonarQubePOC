@@ -297,9 +297,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> RetrieveAlertsForAssets(AssetBrowserAlertRequest model)
 		{
-			try
-			{
-				var sql = @"
+			var sql = @"
 							select	I.uid as 'uid', 
 									A.uid as 'asset.uid',
 									coalesce(A.icon, 'fa-book') as 'asset.icon',
@@ -316,42 +314,30 @@ namespace d360.web.Controllers.V2
 									and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
 							for json path";
 
-				if (model == null)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.EmptyInvalidParameterSet);
-				}
-				else if (model.assets.Count == 0)
-				{
-					AssetBrowserAlert[] alerts = new AssetBrowserAlert[0];
-
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.NoContent, alerts))).ConfigureAwait(false);
-				}
-
-				var reader = await Company.QueryAsync<string>(sql,
-					new
-					{
-						uids = model.assets.Select(i => i.uid).Distinct().AsTableValuedParameter(
-							"dbo.UidTable",
-							new List<string>() { "Uid" }
-							)
-					}, timeout: 100);
-				var json = string.Join("", reader);
-
-				var returnModel = JsonConvert.DeserializeObject<AssetBrowserAlert[]>(json);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, returnModel))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
+			if (model == null)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", "BrowserController.GetDiagramAlerts" },
-					{ "model", JsonConvert.SerializeObject(model) }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				throw new ArgumentException(ApiMessages.EmptyInvalidParameterSet);
 			}
+
+			if (model.assets.Count == 0)
+			{
+				AssetBrowserAlert[] alerts = new AssetBrowserAlert[0];
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.NoContent, alerts));
+			}
+
+			var reader = await Company.QueryAsync<string>(sql, new
+				{
+					uids = model.assets.Select(i => i.uid).Distinct().AsTableValuedParameter(
+						"dbo.UidTable",
+						new List<string>() { "Uid" }
+						)
+				}, timeout: 100);
+			var json = string.Join("", reader);
+
+			var returnModel = JsonConvert.DeserializeObject<AssetBrowserAlert[]>(json);
+
+			return Ok(returnModel);
 		}
 
 		/// <summary>
