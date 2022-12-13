@@ -1272,6 +1272,7 @@ namespace d360.web.Controllers.V2
 		[
 			Route("allocation/{actionTypeUid:Guid}"),
 			HttpPost,
+			RequireAdminPermissions,
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "Allocations Added Successfully.", typeof(ApiStatusResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -1280,80 +1281,65 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> AddActionTypeAllocationWithResponsibility(Guid actionTypeUid, IssueTypeAllocationRequest model)
 		{
-			try
+			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				if (!Company.CurrentResourceIsAdmin)
+				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
+			}
+
+			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
+
+			if (issueType == null)
+			{
+				throw new NotFoundBusinessLayerException(ActionApiMessages.ActionTypeNotFound);
+			}
+
+			List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
+
+			if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
+			{
+				throw new ArgumentException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid));
+			}
+
+			var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == model.assetTypeUid);
+
+			if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
+			{
+				throw new ArgumentException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid));
+			}
+
+			if (Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
+			{
+				throw new ArgumentException(ActionApiMessages.UniqueAllocation);
+			}
+
+			if (model.responsibilityTypeUid.Count() > 0)
+			{
+				IEnumerable<ResponsibilityTypeViewModel> responsibilityTypes = await responsibilityRepository.GetResponsibilityTypesByAssetUid(model.assetTypeUid);
+
+				foreach (var uid in model.responsibilityTypeUid)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
-				}
-
-				if (actionTypeUid == null || actionTypeUid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidActionTypeUid));
-				}
-
-				var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
-
-				if (issueType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidActionTypeUid));
-				}
-
-				List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
-
-				if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid)));
-				}
-
-				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == model.assetTypeUid);
-
-				if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid)));
-				}
-
-				if (Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.UniqueAllocation)).ConfigureAwait(false);
-				}
-
-				if (model.responsibilityTypeUid.Count() > 0)
-				{
-					IEnumerable<ResponsibilityTypeViewModel> responsibilityTypes = await responsibilityRepository.GetResponsibilityTypesByAssetUid(model.assetTypeUid);
-
-					foreach (var uid in model.responsibilityTypeUid)
+					if (!responsibilityTypes.Any(rt => rt.uid == uid))
 					{
-						if (!responsibilityTypes.Any(rt => rt.uid == uid))
-						{
-							return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.InvalidReponsibilityTypeUid, uid.ToString(), assetType.Name))).ConfigureAwait(false);
-						}
+						throw new ArgumentException(string.Format(ActionApiMessages.InvalidReponsibilityTypeUid, uid.ToString(), assetType.Name));
 					}
 				}
+			}
 
-				string allocationSQL = $@"INSERT INTO IssueTypeRelation (AssetTypeID, IssueTypeID) 
+			string allocationSQL = $@"INSERT INTO IssueTypeRelation (AssetTypeID, IssueTypeID) 
 											OUTPUT INSERTED.ID
 											VALUES (@assetTypeID, @issueTypeID)";
 
-				var allocationId = await Company.Database.Connection.QueryFirstAsync<int>(allocationSQL, new { assetTypeID = assetType.ID, issueTypeID = issueType.ID });
+			var allocationId = await Company.Database.Connection.QueryFirstAsync<int>(allocationSQL, new { assetTypeID = assetType.ID, issueTypeID = issueType.ID });
 
-				foreach (var rUid in model.responsibilityTypeUid)
-				{
-					var temp = new { allocationId, rUid };
-					string allocationResponsibilitySQL = $@"INSERT INTO IssueTypeRelationResponsibility (IssueTypeRelationID, ResponsibilityTypeId) 
+			foreach (var rUid in model.responsibilityTypeUid)
+			{
+				string allocationResponsibilitySQL = $@"INSERT INTO IssueTypeRelationResponsibility (IssueTypeRelationID, ResponsibilityTypeId) 
 															SELECT @allocationId, ID FROM ResponsibilityType where Uid = @responsibilityTypeUid";
 
-					var res = await Company.Database.Connection.ExecuteAsync(allocationResponsibilitySQL, new { allocationId, responsibilityTypeUid = rUid });
-				}
-
-				return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.AddSingleAllocationSuccessful));
+				var res = await Company.Database.Connection.ExecuteAsync(allocationResponsibilitySQL, new { allocationId, responsibilityTypeUid = rUid });
 			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
-			}
+			return Ok(ActionApiMessages.AddSingleAllocationSuccessful);
 		}
 	}
 }
