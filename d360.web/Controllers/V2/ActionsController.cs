@@ -531,7 +531,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				var allocations = await issueRepository.GetAllocationByAssetType(AssetTypeUid);
-				
+
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocations))).ConfigureAwait(false);
 			}
 			catch (Exception ex)
@@ -823,7 +823,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType, lookupFieldsPassedByValue);
-				
+
 			if (validationStatus.StatusCode != HttpStatusCode.OK)
 			{
 				throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
@@ -838,7 +838,7 @@ namespace d360.web.Controllers.V2
 
 				if (isWriteActionDescriptionEnabled && issueModel.Issue.AssetID != null)
 				{
-  					var comment = new CommentApiPostModel
+					var comment = new CommentApiPostModel
 					{
 						AssetUid = issueModel.AssetUid,
 						Body = issueModel.Comment ?? string.Format(ActionApiMessages.ActionAssetCommentBody, issueType.Name),
