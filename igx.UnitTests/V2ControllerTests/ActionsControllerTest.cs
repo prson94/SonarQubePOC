@@ -57,81 +57,99 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public void CheckMaxPageSize()
+        public void isPageSizeAndNumValid_TooLargePageSize_MustReturnCorrespondStringError()
         {
-            string pageSize = "500000";
-            string pageNum = "1";
+			//Arrange
+			var pageSize = "500000";
+			var pageNum = "1";
+			var expectedErrorMessage = "Invalid pageSize value provided. Number is too large";
+			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
+			//Act
+			var actionResult = actionsController.isPageSizeAndNumValid(pageParams);
 
-            Assert.Matches("Invalid pageSize value provided. Number is too large",result);
-
+			//Assert
+			actionResult.Should().BeEquivalentTo(expectedErrorMessage);
         }
 
         [Fact]
-        public void CheckNegPageSize()
+        public void isPageSizeAndNumValid_LessThanZeroPageSize_MustReturnCorrespondStringError()
         {
-            string pageSize = "-1";
-            string pageNum = "1";
+			//Arrange
+			var pageSize = "-1";
+			var pageNum = "1";
+			var expectedErrorMessage = "Invalid pageSize value provided. Value must be greater than 0";
+			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
+			//Act
+			var actionResult = actionsController.isPageSizeAndNumValid(pageParams);
 
-            Assert.Matches("Invalid pageSize value provided. Value must be greater than 0",result);
+			//Assert
+			actionResult.Should().BeEquivalentTo(expectedErrorMessage);
+		}
 
+		[Fact]
+        public void isPageSizeAndNumValid_LessThanZeroPageNumber_MustReturnCorrespondStringError()
+        {
+			//Arrange
+			var pageSize = "5";
+			var pageNum = "-1";
+			var expectedErrorMessage = "Invalid pageNum value provided. Value must be greater than 0";
+			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+
+			//Act
+			var actionResult = actionsController.isPageSizeAndNumValid(pageParams);
+
+			//Assert
+			actionResult.Should().BeEquivalentTo(expectedErrorMessage);
+		}
+
+		[Fact]
+        public void isPageSizeAndNumValid_NonNumericPageSize_MustReturnCorrespondStringError()
+        {
+			//Arrange
+			var pageSize = "abcdef";
+			var pageNum = "-1";
+			var expectedErrorMessage = "Invalid pageSize value provided. Must be a numeric value";
+			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+
+			//Act
+			var actionResult = actionsController.isPageSizeAndNumValid(pageParams);
+
+			//Assert
+			actionResult.Should().BeEquivalentTo(expectedErrorMessage);
         }
 
         [Fact]
-        public void CheckNegPageNum()
+        public void isPageSizeAndNumValid_InvalidPageSize_MustReturnCorrespondStringError()
         {
-            string pageSize = "5";
-            string pageNum = "-1";
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+			//Arrange
+            var pageSize = "12345678901";
+            var pageNum = "1";
+			var expectedErrorMessage = "Invalid pageSize value provided.";
+			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
+			//Act
+            var actionResult = actionsController.isPageSizeAndNumValid(pageParams);
 
-            Assert.Matches("Invalid pageNum value provided. Value must be greater than 0",result);
-
+			//Assert
+            actionResult.Should().BeEquivalentTo(expectedErrorMessage);
         }
 
         [Fact]
-        public void CheckNonNumericValue()
-        {
-            string pageSize = "abcdef";
-            string pageNum = "-1";
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+        public void isPageSizeAndNumValid_InvalidPageNumber_MustReturnCorrespondStringError()
+		{
+			//Arrange
+			var pageNum = "12345678901";
+			var pageSize = "1";
+			var expectedErrorMessage = "Invalid pageNum value provided.";
+			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
+			//Act
+			var actionResult = actionsController.isPageSizeAndNumValid(pageParams);
 
-            Assert.Matches("Invalid pageSize value provided. Must be a numeric value", result);
-
-        }
-
-        [Fact]
-        public void CheckMaxLengthOfPageSize()
-        {
-            string pageSize = "12345678901";
-            string pageNum = "1";
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
-
-            Assert.Matches("Invalid pageSize value provided.", result);
-
-        }
-
-        [Fact]
-        public void CheckMaxLengthOfPageNum()
-        {
-            string pageNum = "12345678901";
-            string pageSize = "1";
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
-
-            Assert.Matches("Invalid pageNum value provided.", result);
-
-        }
+			//Assert
+			actionResult.Should().BeEquivalentTo(expectedErrorMessage);
+		}
     }
 }
