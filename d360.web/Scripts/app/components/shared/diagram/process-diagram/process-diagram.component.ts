@@ -45,14 +45,14 @@ export class BigObjectNodeData {
 }
 
 export class ProcessNodeDataHelper {
-	private bigObjectCharacterThreshold: number = 4000;
+	private bigObjectCharacterThreshold = 4000;
 	private nodeDataBigObjectStorage: BigObjectNodeData[] = [];
 
 	public processBigObjects(node: go.ObjectData) {
 		Object.keys(node).forEach((prop) => {
 			const value = node[prop] as string;
 			if (value.length > this.bigObjectCharacterThreshold) {
-				this.nodeDataBigObjectStorage.push({ key: node.key, prop, value: value });
+				this.nodeDataBigObjectStorage.push({ key: node.key, prop, value });
 				node[prop] = this.getValueHash(value);
 			}
 		});
@@ -60,7 +60,7 @@ export class ProcessNodeDataHelper {
 
 	public restoreBigObjects(node: go.ObjectData) {
 		Object.keys(node).forEach((prop) => {
-			var item = this.nodeDataBigObjectStorage.find((x) => x.key === node["key"] && x.prop === prop);
+			let item = this.nodeDataBigObjectStorage.find((x) => x.key === node["key"] && x.prop === prop);
 			if (item) {
 				node[prop] = item.value;
 			}
@@ -71,13 +71,13 @@ export class ProcessNodeDataHelper {
 		var currentPropValue = data[propertyName];
 		var updatedPropValue = formData[propertyName];
 
-		var bothEmpty = this.isObjectEmpty(currentPropValue) && this.isObjectEmpty(updatedPropValue);
+		let bothEmpty = this.isObjectEmpty(currentPropValue) && this.isObjectEmpty(updatedPropValue);
 
 		if (propertyName !== 'key' && !bothEmpty) {
-			let fieldValue = formData[propertyName].toString();
+			const fieldValue = formData[propertyName].toString();
 			if (fieldValue.length > this.bigObjectCharacterThreshold) {
 				//handle big objects
-				var bigData = this.nodeDataBigObjectStorage.find((x) => x.key === formData.key && x.prop === propertyName);
+				let bigData = this.nodeDataBigObjectStorage.find((x) => x.key === formData.key && x.prop === propertyName);
 				if (bigData) {
 					bigData.value = fieldValue;
 				}
@@ -694,7 +694,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 			maxSize: new go.Size(Infinity, Infinity)
 		}).toString();
 
-		var processData = JSON.parse(this.myDiagram.model.toJson());
+		let processData = JSON.parse(this.myDiagram.model.toJson());
 
 
 		if (processData.nodeDataArray) {
