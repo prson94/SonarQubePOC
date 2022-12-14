@@ -196,7 +196,7 @@ namespace d360.model.DataAccessLayer
 											select ITD.PredicateInverse from IntersectTypeDetail ITD
 											inner join [Predicate] P on ITD.ObjectAssetTypeID = A.ID 
 											and P.ID = ITD.PredicateID 
-											and P.Type = {(int)PredicateType.InterTypeHierarchy}
+											and P.Type in ({(int)PredicateType.InterTypeHierarchy},{(int)PredicateType.IntraTypeHierarchy})
 											  ) PredicateInverse ";
 				
 			}
