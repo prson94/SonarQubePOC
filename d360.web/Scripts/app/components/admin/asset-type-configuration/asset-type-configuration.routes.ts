@@ -10,6 +10,7 @@ import { ConfigurationAssetTypeOwnersPageComponent } from './tabs/owners/configu
 import { ConfigurationAssetTypeAllocationsPageComponent } from './tabs/allocations/configuration-asset-type-allocations-page.component';
 import { ConfigurationAssetTypeRelationshipsPageComponent } from './tabs/relationships/configuration-asset-type-relationships-page.component';
 import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration-asset-type-log-page.component';
+import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configuration-asset-type-levels-page.component';
 
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
@@ -91,6 +92,14 @@ class WhenCanSeeLogGuard extends CanActivateOnlyForAvailableTypeClasses {
     ]
 }
 
+@Injectable({ providedIn: 'root' })
+class WhenCanSeeLevelsGuard extends CanActivateOnlyForAvailableTypeClasses {
+	protected typeClasses: AssetTypeClass[] = [
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy
+	]
+}
+
 export const assetTypeConfigurationRoutes: Routes = [
     {
         path: ':typeClass/new',
@@ -136,7 +145,12 @@ export const assetTypeConfigurationRoutes: Routes = [
         path: ':typeClass/:uid/log',
         component: ConfigurationAssetTypeLogPageComponent,
         canActivate: [WhenCanSeeLogGuard]
-    },
+	},
+	{
+		path: ':typeClass/:uid/levels',
+		component: ConfigurationAssetTypeLevelsPageComponent,
+		canActivate: [WhenCanSeeLevelsGuard]
+	},
     {
         path: ':typeClass',
         component: ConfigurationAssetTypeListPageComponent,

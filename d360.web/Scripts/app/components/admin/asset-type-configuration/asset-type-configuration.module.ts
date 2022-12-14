@@ -37,6 +37,8 @@ import { HeaderModule } from '../../shared/header/header.module';
 import { AssetTypeDetailV2Module } from '../../shared/asset-type-detail-v2/asset-type-detail-v2.module';
 import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.component";
 import { FormsModule } from "@angular/forms";
+import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configuration-asset-type-levels-page.component';
+import { AdminHierarchiesModule } from '../hierarchies/admin-hierarchies.module';
 
 @NgModule({
     imports: [
@@ -60,14 +62,15 @@ import { FormsModule } from "@angular/forms";
         AuditModule,
         HeaderModule,
         AssetTypeDetailV2Module,
-        SharedGridPagingInfoModule,
+		SharedGridPagingInfoModule,
+		AdminHierarchiesModule,
         FormsModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
         ConfigurationAssetTypeListComponent,
         AssetTypeListSidePanelWrapperComponent,
-        AssetTypeListHeaderComponent,
+		AssetTypeListHeaderComponent,
         ConfigurationAssetTypeEditorPageComponent,
         ConfigurationAssetTypeDeletePageComponent,
         ConfigurationAssetTypeFieldsPageComponent,
@@ -77,7 +80,8 @@ import { FormsModule } from "@angular/forms";
         ConfigurationAssetTypeAllocationsPageComponent,
         ConfigurationAssetTypeRelationshipsPageComponent,
         ConfigurationAssetTypeLogPageComponent,
-        ConfigurationAssetTypeBreadcrumbsComponent
+		ConfigurationAssetTypeBreadcrumbsComponent,
+		ConfigurationAssetTypeLevelsPageComponent
     ],
     exports: [],
 })

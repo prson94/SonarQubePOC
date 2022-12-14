@@ -17,28 +17,33 @@ export class ConfigurationAssetTypeTabsComponent {
         return [
             {
                 url: `${baseUrl}/fields`,
-                title: $localize`Field Definition`,
-                isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset].includes(this.assetTypeClass),
+				title: $localize`Field Definition`,
+				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy].includes(this.assetTypeClass),
             },
             {
                 url: `${baseUrl}/owners`,
                 title: $localize`Responsibility Type Assignment`,
-                isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset].includes(this.assetTypeClass),
+				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy].includes(this.assetTypeClass),
             },
             {
                 url: `${baseUrl}/allocations`,
                 title: $localize`Allocations`,
-                isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset].includes(this.assetTypeClass),
+				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy].includes(this.assetTypeClass),
             },
             {
                 url: `${baseUrl}/relationships`,
                 title: $localize`Relationship Types`,
-                isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset].includes(this.assetTypeClass),
-            },
+				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy].includes(this.assetTypeClass),
+			},
+			{
+				url: `${baseUrl}/levels`,
+				title: $localize`Levels`,
+				isVisible: () => [AssetTypeClass.Model, AssetTypeClass.Policy].includes(this.assetTypeClass),
+			},
             {
                 url: `${baseUrl}/log`,
                 title: $localize`Change Log`,
-                isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset].includes(this.assetTypeClass),
+				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy].includes(this.assetTypeClass),
             }
         ];
     }

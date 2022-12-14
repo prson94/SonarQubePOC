@@ -68,7 +68,11 @@ import { TableModule } from 'primeng/table';
         AdminHierarchiesComponent,        
         AdminLevelListComponent,
         AdminLevelEditorComponent,
-    ],
+	],
+	exports: [
+		AdminLevelListComponent,
+		AdminLevelEditorComponent
+	],
     providers: [
     ]
 })
