@@ -59,29 +59,12 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         private cdRef: ChangeDetectorRef
     ) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
-        this.areaName = $localize`Diagram Assets`;
-        this.setCommonItems();
-        this.tabTitle = $localize`Diagram Assets`;
-        this.secondaryNavService.setCurrentArea(this.areaName, 'fa-sliders', this.tabTitle);
-
-        this.buildSecondaryNavigationForObject(0, "ConnectorLabel");
-
-
     }
 
     ngOnInit() {
-        this.setCommonSecondaryNavTabs({ hasAudit: true });
-
-        if (this.auditSidebar) {
-            this.auditSidebar.url = `/sidebar/audit/connectorLabels`;
-        }
         this.getLabels();
 
         this.theDeleteCallback = this.deleteLabel.bind(this);
-    }
-
-    ngOnDestroy() {
-        this.clearSidebar();
     }
 
     updateSort(event) {
