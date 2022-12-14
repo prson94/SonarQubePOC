@@ -17,6 +17,7 @@ import { StringHelpers } from '../../static/string-helpers';
 import { State } from '../../models/asset.model';
 import { map } from 'rxjs/operators';
 import { CompanySettingsService } from '../../services/settings.service';
+import { WorkflowTypeModel } from '../../models/workflow.model';
 
 @Component({
     selector: 'd3s-workflowmonitor-list-filter',
@@ -27,13 +28,10 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 
 export class WorkflowMonitorListFilterComponent extends BaseComponent implements OnInit, OnChanges {
-
     @Input() selectAll: boolean = false;
     @Input() selection: any[];
     @Output() filterChange = new EventEmitter();
-    items: any[];
     @Output() exportToExcel = new EventEmitter();
-    filtercolumns: GridFilterColumn[] = [];
     @Input() columnFilters: GridFilterExpression[] = [];
     @Output() columnFiltersChange = new EventEmitter();
     @Input() workflowTypeFilters: GridFilterExpression;
@@ -43,6 +41,9 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
     @Output() exportClick = new EventEmitter();
     @Input() isExportDisabled: boolean = false;
     @Input() exportDisabledMessage: string = $localize`Export Disabled`;
+
+    items: WorkflowTypeModel[];
+    filtercolumns: GridFilterColumn[] = [];
 
     get exportTooltip(): string {
         return this.isExportDisabled ? this.exportDisabledMessage : $localize`Export to Excel`;
