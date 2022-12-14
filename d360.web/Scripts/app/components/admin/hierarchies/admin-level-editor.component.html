@@ -60,7 +60,7 @@
     </div>
     <div class="row"
          *ngIf="!isLoading && !level && levels.length == 0">
-        <div class="center" i18n>
+        <div class="left" i18n>
             The maximum number of levels available for this item have already been allocated. In
             order to define new levels you can either increase the maximum available levels for this item or
             delete an existing level for this item.
@@ -68,6 +68,7 @@
         <div class="col s12">&nbsp;</div>
         <div class="col s12">
             <button igButton
+                    class="ig-button-primary"
                     type="button"
                     (click)="close()"
                     label="{{labelClose}}"></button>
