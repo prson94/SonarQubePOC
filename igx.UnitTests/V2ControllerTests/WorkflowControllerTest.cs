@@ -1,21 +1,24 @@
-﻿using d360.core.entities.Workflow;
-using d360.web.Controllers.V2;
-using igx.UnitTests.Core;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web.Http;
-using d360.web.Utilities;
+
 using Moq;
 using Xunit;
+using Newtonsoft.Json;
+
+using d360.core.entities.Workflow;
+using d360.web.Controllers.V2;
+using d360.web.Utilities;
+using igx.UnitTests.Core;
+using FluentAssertions;
 
 namespace igx.UnitTests.V2ControllerTests
 {
     [Trait("Unit tests", "Workflow controller")]
     public class WorkflowControllerTest : BaseTest
     {
-        internal WorkflowController workflowController;
+		private readonly WorkflowController WorkflowController;
         private readonly TestDependencyResolver DependencyResolver;
         private readonly Mock<IRuntimeInfo> RuntimeInfoMock;
 
@@ -29,7 +32,7 @@ namespace igx.UnitTests.V2ControllerTests
 	        DependencyResolver.AddService(RuntimeInfoMock.Object);
 	        System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
 
-	        this.workflowController = new WorkflowController(GetCoreComponentSet(), GetWorkflowRepository(), GetWorkflowApiModelValidator())
+	        WorkflowController = new WorkflowController(GetCoreComponentSet(), GetWorkflowRepository(), GetWorkflowApiModelValidator())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -37,25 +40,25 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void GetWorkflowTypesAsync()
+        public async void GetWorkflowTypesAsync_MustReturnsSuccessfullResult()
         {
-
-            var actionResult = await workflowController.GetWorkflowTypeAsync();
+			//Act
+            var actionResult = await WorkflowController.GetWorkflowTypeAsync();
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode);
-            Assert.True(data != null);
-
+			//Assert
+			actionResult.ShouldBeOKContent<IEnumerable<WorkflowTypeApiViewModel>>();
+			data.Should().NotBeNull();
         }
 
         [Fact]
         public async void GetWorkflowVersionSteps()
         {
 
-            var actionResult = await workflowController.GetWorkflowVersionStepsAsync(Guid.Parse(DataConstants.ValidGUID));
+            var actionResult = await WorkflowController.GetWorkflowVersionStepsAsync(Guid.Parse(DataConstants.ValidGUID));
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
@@ -64,7 +67,7 @@ namespace igx.UnitTests.V2ControllerTests
             Assert.True(res.Result.IsSuccessStatusCode);
             Assert.True(data != null);
 
-            actionResult = await workflowController.GetWorkflowVersionStepsAsync(Guid.Parse(DataConstants.InvalidGUID));
+            actionResult = await WorkflowController.GetWorkflowVersionStepsAsync(Guid.Parse(DataConstants.InvalidGUID));
             res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             str = res.Result.Content.ReadAsStringAsync().Result;
@@ -76,7 +79,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetWorkflowVersions()
         {
-            var actionResult = await workflowController.GetWorkflowVersionAsync();
+            var actionResult = await WorkflowController.GetWorkflowVersionAsync();
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
@@ -89,7 +92,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetWorkflows()
         {
-            var actionResult = await workflowController.GetWorkflowsAsync();
+            var actionResult = await WorkflowController.GetWorkflowsAsync();
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
