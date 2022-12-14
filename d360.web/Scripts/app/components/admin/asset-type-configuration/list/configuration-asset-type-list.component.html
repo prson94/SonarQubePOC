@@ -49,7 +49,7 @@
 									<ng-container i18n>Maximum Depth</ng-container>
 									<d3s-sortIcon [field]="'maxDepth'"></d3s-sortIcon>
 								</th>
-								<th style="width: 30px"></th>
+								<th *ngIf="!hasMaxDepthColumn" style="width: 30px"></th>
 								<th style="width: 30px"></th>
 								<th style="width: 30px"></th>
 							</tr>
@@ -73,7 +73,7 @@
 								<td *ngIf="hasMaxDepthColumn">
 									{{item.maxDepth}}
 								</td>
-								<td>
+								<td *ngIf="!hasMaxDepthColumn">
 									<div class="RowTools">
 										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Add'"
 										   (click)="add(item.uid)"
