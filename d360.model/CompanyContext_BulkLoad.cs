@@ -706,20 +706,16 @@ namespace d360.model
 							insert into #PathFields
 							select		A.ItemNumber,
 										D.ColumnIndex,
-										string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+										string_agg(coalesce(D.FormattedValue, D.LookupValue), '') as DisplayValue
 							from		#BulkExecutionAsset A
 										inner join AssetType T on T.ID = @atID
-										outer apply (
-													select	TL.value,
+										outer apply (select F.LookupValue,
 															F.FieldValue as FormattedValue,
 															F.ColumnIndex,
 															F.ItemNumber
-													from	string_split(replace(T.DisplayFormat, '{{', ' | '), '|') TF
-															cross apply string_split(replace(TF.[value], '}}', '|'), '|') TL
-															left join FieldType FT on FT.AssetTypeID = T.ID and FT.Name like TRIM(TL.Value)
-															left join #BulkExecutionField F on F.FieldTypeID = FT.ID
-													where	RTRIM(TF.value) <> ''
-															and RTRIM(TL.value) <> ''
+													from	#BulkExecutionField F 
+															left join FieldType FT on FT.AssetTypeID = T.ID and FT.IsPartOfKey = 1
+															WHERE F.FieldTypeID = FT.ID
 													) D
 							where		A.ItemNumber = D.ItemNumber
 							group by	A.ItemNumber,
@@ -727,7 +723,7 @@ namespace d360.model
 
 							insert into #PathValues
 							select		F.ItemNumber, 
-										string_agg(F.DisplayValue,'/')  within group (order by F.ColumnIndex asc) as FullPath,
+										string_agg(F.DisplayValue,' > ')  within group (order by F.ColumnIndex asc) as FullPath,
 										null as ParentPath,
 										null as [Uid],
 										null as [ParentUid]
@@ -740,9 +736,9 @@ namespace d360.model
 							from #PathValues V
 							cross apply (
 								select	F.ItemNumber, 
-										string_agg(F.DisplayValue,'/') within group (order by F.ColumnIndex asc) as ParentPath
+										string_agg(F.DisplayValue,' > ') within group (order by F.ColumnIndex asc) as ParentPath
 								from	#PathFields F
-								where	F.ColumnIndex < (select max(ColumnIndex) from #PathFields)
+								where	F.ColumnIndex < (select max(ColumnIndex) from #PathFields where ItemNumber = F.ItemNumber and DisplayValue is not null)
 								group by F.ItemNumber
 							) P
 							where P.ItemNumber = V.ItemNumber;
@@ -752,14 +748,14 @@ namespace d360.model
 							from	#PathValues V 
 									inner join Asset A on A.AssetTypeID = @atID
 									inner join AssetPath P on P.ID = A.ID
-							where	V.FullPath = P.DisplayPath;
+							where	V.FullPath = P.DisplayPath COLLATE Latin1_General_CS_AS;
 
 							update	V
 							set		V.ParentUid = A.Uid
 							from	#PathValues V 
 									inner join Asset A on A.AssetTypeID = @atID
 									inner join AssetPath P on P.ID = A.ID
-							where	V.ParentPath = P.DisplayPath;
+							where	V.ParentPath = P.DisplayPath COLLATE Latin1_General_CS_AS;
 
 							update A
 							set A.AssetUid = P.Uid,
