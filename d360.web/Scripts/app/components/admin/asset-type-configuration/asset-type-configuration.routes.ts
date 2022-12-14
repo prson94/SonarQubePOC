@@ -25,7 +25,9 @@ abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
 class WhenCanAccessBasicFeaturesGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy
     ]
 }
 
@@ -33,7 +35,9 @@ class WhenCanAccessBasicFeaturesGuard extends CanActivateOnlyForAvailableTypeCla
 class WhenCanCreateNewAssetTypeChildGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy
     ]
 }
 
@@ -41,7 +45,9 @@ class WhenCanCreateNewAssetTypeChildGuard extends CanActivateOnlyForAvailableTyp
 class WhenCanSeeFieldDefinitionsGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy
     ]
 }
 
@@ -49,7 +55,9 @@ class WhenCanSeeFieldDefinitionsGuard extends CanActivateOnlyForAvailableTypeCla
 class WhenCanSeeOwnersGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy
     ]
 }
 
@@ -57,7 +65,9 @@ class WhenCanSeeOwnersGuard extends CanActivateOnlyForAvailableTypeClasses {
 class WhenCanSeeAllocationsGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy
     ]
 }
 
@@ -65,7 +75,9 @@ class WhenCanSeeAllocationsGuard extends CanActivateOnlyForAvailableTypeClasses 
 class WhenCanSeeRelationshipsGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy
     ]
 }
 
@@ -73,7 +85,9 @@ class WhenCanSeeRelationshipsGuard extends CanActivateOnlyForAvailableTypeClasse
 class WhenCanSeeLogGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy
     ]
 }
 

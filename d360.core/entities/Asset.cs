@@ -259,6 +259,8 @@ namespace d360.core.entities
 		public string description { get; set; }
 
 		public int? count { get; set; }
+
+		public int? maxDepth { get; set; }
 	}
 
 	public class UserGetAPIRestrictionModel

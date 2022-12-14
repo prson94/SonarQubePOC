@@ -30,7 +30,7 @@ export class ConfigurationAssetTypeListComponent {
     dataCyPrefix = 'AssetType_';
     destroy = new Subject<void>();
     simpleFilterValue = '';
-    public tabTitle: string = $localize`Admin`;
+	public tabTitle: string = $localize`Admin`;
 
     constructor(
         private assetsService: AssetService,
@@ -50,8 +50,8 @@ export class ConfigurationAssetTypeListComponent {
         this.loadingCounter++;
         try {
             const items = await this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false).toPromise();
-            const treeNodes = items.map(AssetCount.ConvertToTreeNode);
-            this.artifactTypes = AssetCount.ListToTree(treeNodes);
+			const treeNodes = items.map(AssetCount.ConvertToTreeNode);
+			this.artifactTypes = AssetCount.ListToTree(treeNodes);
             this.selectedRow = _.first(this.artifactTypes);
         }
         finally {
@@ -94,5 +94,9 @@ export class ConfigurationAssetTypeListComponent {
 
     get baseUrl() {
         return `/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`;
-    }
+	}
+
+	get hasMaxDepthColumn() {
+		return this.assetTypeClass === AssetTypeClass.Model || this.assetTypeClass === AssetTypeClass.Policy;
+	}
 }

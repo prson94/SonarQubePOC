@@ -58,11 +58,12 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_BULK_LOAD = `load`;
     static SITE_URL_ADMIN_ASSET = `configuration/assets`;
     static SITE_URL_ADMIN_ASSET_BUSINESS = `BusinessAsset`;
-    static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
+	static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
+	static SITE_URL_ADMIN_ASSET_MODELS = 'Model';
+	static SITE_URL_ADMIN_ASSET_POLICIES = 'Policy';
+
     static SITE_URL_ADMIN_CUSTOMIZATIONS = 'customizations';
     static SITE_URL_ADMIN_BRANDING = 'branding';
-    static SITE_URL_ADMIN_MODELS = 'taxonomies';
-    static SITE_URL_ADMIN_POLICIES = 'policies';
     static SITE_URL_ADMIN_RELATIONSHIPS = 'relationships';
     static SITE_URL_ADMIN_RULES = 'rules';
     static SITE_URL_ADMIN_SURVEYS = 'surveys';
@@ -103,10 +104,10 @@ export class SiteUrlHelpers {
             return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
         }
         if (objectType.toLowerCase() === "taxonomytype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`;
+			return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_MODELS}`;
         }
         if (objectType.toLowerCase() === "policytype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`;
+			return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_POLICIES}`;
         }
         if (objectType.toLowerCase() === "intersecttype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`;

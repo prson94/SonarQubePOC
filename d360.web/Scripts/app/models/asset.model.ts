@@ -169,7 +169,8 @@ export class AssetCount {
     }
 
 
-    public static ListToTree(arr: TreeNode[]): TreeNode[] {
+	public static ListToTree(arr: TreeNode[]): TreeNode[] {
+		debugger;
         var tree = [],
             mappedArr = {},
             arrElem,

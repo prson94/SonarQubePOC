@@ -4006,15 +4006,18 @@ where an.Uid = fam.uid)
 							end as class,
 							att.name,
 							att.description
-							{(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")}
+							{(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")},
+							Levels.depth as maxDepth
 						 from AssetType att
 						 outer apply (
 							select	ATParent.uid 
 							from	IntersectType IT
 									inner join [Predicate] P on P.ID = it.PredicateID and P.Type in (3,4)
 									inner join [AssetType] ATParent on ATParent.ID = IT.SubjectAssetTypeID and IT.ObjectAssetTypeID = att.ID
+							where att.Class not in ({(int)AssetTypeClass.Model},{(int)AssetTypeClass.Policy})
 						 ) ATParent
 						 {(isReturnCount ? " left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID " : "")}
+						outer apply (select MAX(level) as depth from AssetTypeLevel where AssetTypeID = att.id)Levels
 						where att.Class in @filterClasses
 						 {assetTypePermissionWhere}
 					order by att.name";

@@ -45,6 +45,10 @@
 									<ng-container i18n>Name</ng-container>
 									<d3s-sortIcon [field]="'name'"></d3s-sortIcon>
 								</th>
+								<th *ngIf="hasMaxDepthColumn" [ttSortableColumn]="'maxDepth'">
+									<ng-container i18n>Maximum Depth</ng-container>
+									<d3s-sortIcon [field]="'maxDepth'"></d3s-sortIcon>
+								</th>
 								<th style="width: 30px"></th>
 								<th style="width: 30px"></th>
 								<th style="width: 30px"></th>
@@ -58,19 +62,22 @@
 								[igDataCy]="(tabTitle | replaceString : ' ' : '_') + '_Row_' + item.uid">
 								<td>
 									<p-treeTableToggler [rowNode]="rowNode"
-										[igDataCy]="dataCyPrefix + item.AssetUid + '_Toggler'"
-										style="margin-right: 8px;"></p-treeTableToggler>
+														[igDataCy]="dataCyPrefix + item.AssetUid + '_Toggler'"
+														style="margin-right: 8px;"></p-treeTableToggler>
 									<a [igDataCy]="dataCyPrefix + item.uid + '_Button_View'"
-										(click)="open(item.uid)"
-										style="cursor:pointer;">
+									   (click)="open(item.uid)"
+									   style="cursor:pointer;">
 										{{item.name}}
 									</a>
+								</td>
+								<td *ngIf="hasMaxDepthColumn">
+									{{item.maxDepth}}
 								</td>
 								<td>
 									<div class="RowTools">
 										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Add'"
-											(click)="add(item.uid)"
-											style="cursor:pointer;">
+										   (click)="add(item.uid)"
+										   style="cursor:pointer;">
 											<i class="fa fa-plus"></i>
 										</a>
 									</div>
@@ -78,8 +85,8 @@
 								<td>
 									<div class="RowTools">
 										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Edit'"
-											(click)="edit(item.uid)"
-											style="cursor:pointer;">
+										   (click)="edit(item.uid)"
+										   style="cursor:pointer;">
 											<i class="fa fa-pencil"></i>
 										</a>
 									</div>
@@ -87,8 +94,8 @@
 								<td>
 									<div class="RowTools">
 										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Remove'"
-											(click)="remove(item.uid)"
-											style="cursor:pointer;">
+										   (click)="remove(item.uid)"
+										   style="cursor:pointer;">
 											<i class="fa fa-trash-o"></i>
 										</a>
 									</div>
