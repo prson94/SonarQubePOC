@@ -56,7 +56,7 @@ export class TabsComponent implements OnDestroy {
             return [];
         }
 
-        return this.items.filter(item => {
+        return this.items.filter((item) => {
             if (item.isVisible) {
                 return item.isVisible();
             }
@@ -159,7 +159,7 @@ export class TabsComponent implements OnDestroy {
             return true;
         }
 
-        return this.routerUrl == tab.url
+        return this.routerUrl === tab.url
             || (tab.subTabsUrl ?? []).some((subTabUrl) => this.routerUrl.startsWith(subTabUrl));
     }
 
