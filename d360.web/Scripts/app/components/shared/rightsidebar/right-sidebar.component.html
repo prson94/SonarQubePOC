@@ -1,4 +1,4 @@
-<div *ngIf="showHeader" class="title-bar" [ngClass]="{'menu-open': menuOpen}" [style.margin-left]="showNav ? null : '0'">
+<div *ngIf="showDefaultHeader" class="title-bar" [ngClass]="{'menu-open': menuOpen}" [style.margin-left]="showNav ? null : '0'">
     <div class="title">
         <span *ngIf="!IsIcon(area.icon)" class="d3s-icon asset-icon"><img [src]="GetURL(area.icon)" /></span>
         <span *ngIf="IsIcon(area.icon)" class="d3s-icon asset-icon">
@@ -81,6 +81,10 @@
         [statistics]="statistics"
         [emitSecondaryNav]="true">
     </d3s-tabs>
+</div>
+<div *ngIf="!showDefaultHeader" class="title-bar" [ngClass]="{'menu-open': menuOpen}" [style.margin-left]="showNav ? null : '0'">
+	<ig-portal-renderer name="page-header"></ig-portal-renderer>
+	<ig-portal-renderer name="page-tabs"></ig-portal-renderer>
 </div>
 <d3s-modal [showTitle]="false" additionalClasses="request-cert small-dialog" (onClose)="closeCertifyModal()" [isVisible]="showCertifyModal">
     <div class="content">

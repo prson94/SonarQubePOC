@@ -44,6 +44,7 @@ import { ConfigurationAssetTypeConnectorLabelsPageComponent } from './connectorL
 import { ConnectorLabelsModule } from './connectorLabels/connector-labels.module';
 import { AssetTypeDetailV2Module } from '../../shared/asset-type-detail-v2/asset-type-detail-v2.module';
 import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.component";
+import { PortalsModule } from '../../shared/portals/portals.module';
 
 @NgModule({
     imports: [
@@ -72,7 +73,8 @@ import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.compon
         HeaderModule,
         ConnectorLabelsModule,
         AssetTypeDetailV2Module,
-        SharedGridPagingInfoModule
+        SharedGridPagingInfoModule,
+        PortalsModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,

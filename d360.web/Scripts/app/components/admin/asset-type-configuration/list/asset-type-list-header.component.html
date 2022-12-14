@@ -1,2 +1,7 @@
-<d3s-page-header [icon]="icon" [header]="header"></d3s-page-header>
+<ig-portal-content-provider name="page-header" [template]="template">
+	<ng-template #template>
+        <d3s-page-header [icon]="icon" [header]="header"></d3s-page-header>
+	</ng-template>
+</ig-portal-content-provider>
+
 <d3s-configuration-asset-type-breadcrumbs [assetTypeClass]="assetTypeClass"></d3s-configuration-asset-type-breadcrumbs>

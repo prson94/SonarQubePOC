@@ -75,7 +75,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     status: string;
     showStatus = false;
     showCertify = false;
-    showHeader: boolean = false;
+    showDefaultHeader: boolean = false;
     showSurvey: boolean = false;
     showNav: boolean = true;
     showSurveyPopup: boolean = false;
@@ -185,7 +185,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.showDataClassification = false;
         this.statistics = null;
         this.showCertify = false;
-        this.showHeader = false;
+        this.showDefaultHeader = false;
         this.showSurvey = false;
         this.searchDetails = null;
         this.items = [];
@@ -236,7 +236,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             }
         );
         this.hideHeaderSub = this.secondaryNavService.hideHeader$.subscribe((result) => {
-            this.showHeader = result;
+            this.showDefaultHeader = result;
             this.emitChanges();
         });
 
