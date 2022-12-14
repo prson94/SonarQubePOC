@@ -128,7 +128,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
         this.selectedAssetsDetail = [];
     }
 
-    setDisabledClassOnConditions(count: number, thisCardinality: string, targetCardinality: string, type: RelationshipType): string {
+	setDisabledClassOnConditions(count: number, thisCardinality: string, targetCardinality: string, type: RelationshipType, disableType: boolean): string {
         let disabledClass: string = "";
 
         if (count > 0 && thisCardinality === "One" && targetCardinality === "Many") {
@@ -142,7 +142,11 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
             || type.Predicate.Type === "IntraTypeHierarchy"
         ) {
             disabledClass = 'disabled-predicate';
-        }
+		}
+
+		if (disableType) {
+			disabledClass = 'disabled-Type';
+		}
 
         return disabledClass;
     }
@@ -179,15 +183,25 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                 const rc = this.relationshipCounts.filter((item) => type.Uid.toLocaleLowerCase() === item.IntersectTypeUid.toLocaleLowerCase());
                 if (rc.length > 0) {
                     count = rc[0].Count;
-                }
+				}
+
+				let disableType = false;
+				if (this.isReference) {
+					if (!((this.isReference && type.Subject.Name.toLowerCase() === "reference list" && type.Subject.Class.toLowerCase() === "reference") ||
+						(this.isReference && type.Object.Name.toLowerCase() === "reference list" && type.Object.Class.toLowerCase() === "reference"))) {
+						disableType = true;
+					}
+				}
 
                 if ((type.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase())
                     || (this.isReference && type.Subject.Name.toLowerCase() === "reference list" && type.Subject.Class.toLowerCase() === "reference")) {
                     name = type.Predicate.Name + " " + type.Object.Name;
                     targetCardinality = type.Subject.Cardinality;
                     thisCardinality = type.Object.Cardinality;
-                    disabledClass = this.setDisabledClassOnConditions(count, thisCardinality, targetCardinality, type);
-                    this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass, perspective: "Subject" });
+					disabledClass = this.setDisabledClassOnConditions(count, thisCardinality, targetCardinality, type, disableType);
+					if (!disabledClass) {
+						this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass, perspective: "Subject" });
+					}
                 }
 
                 if ((type.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase())
@@ -195,8 +209,10 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                     name = type.Predicate.Inverse + " " + type.Subject.Name;
                     targetCardinality = type.Object.Cardinality;
                     thisCardinality = type.Subject.Cardinality;
-                    disabledClass = this.setDisabledClassOnConditions(count, thisCardinality, targetCardinality, type);
-                    this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass, perspective: "Object" });
+					disabledClass = this.setDisabledClassOnConditions(count, thisCardinality, targetCardinality, type, disableType);
+					if (!disabledClass) {
+						this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass, perspective: "Object" });
+					}
                 }
 
             });
