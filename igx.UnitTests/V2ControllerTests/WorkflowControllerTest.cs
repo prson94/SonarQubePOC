@@ -77,17 +77,19 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void GetWorkflowVersions()
+        public async void GetWorkflowVersions_MustReturnsSuccessfullResult()
         {
+			//Act
             var actionResult = await WorkflowController.GetWorkflowVersionAsync();
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode);
-            Assert.True(data != null);
-        }
+			//Assert
+			actionResult.ShouldBeOKContent<WorkflowVersionsApiViewModel>();
+			data.Should().NotBeNull();
+		}
 
         [Fact]
         public async void GetWorkflows()

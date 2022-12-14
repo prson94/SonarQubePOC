@@ -24,7 +24,6 @@ using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
-
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/workflow"),
@@ -126,67 +125,52 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetWorkflowVersionAsync(State? State = null)
         {
-            var prefix = "Workflow.GetWorkflowVersionAsync => ";
-            string errorMessage;
+            var queryParams = Request.GetQueryNameValuePairs();
+            var isValid = isPageSizeAndNumValid(queryParams);
 
-            try
+            if (!string.IsNullOrEmpty(isValid))
             {
-                var queryParams = Request.GetQueryNameValuePairs();
-                string isValid = isPageSizeAndNumValid(queryParams);
-
-                if (!string.IsNullOrEmpty(isValid))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
-                }
-
-                if (!validator.IsValidGuidCountForWorkflowGetVersionModel(queryParams))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, WorkflowApiMessages.MoreThanOneTypeUidPassedInclWorkflow)).ConfigureAwait(false);
-                }
-
-                if (!validator.IsValidOrderByFieldForWorkflowGetVersionModel(queryParams))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, WorkflowApiMessages.InvalidParameterWorkflowVersion)).ConfigureAwait(false);
-                }
-
-                if (!validator.IsValidGuidForWorkflowGetVersionModel(queryParams))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, WorkflowApiMessages.InvalidTypeWorkflowVersionRequestIncWF)).ConfigureAwait(false);
-                }
-
-                if (!validator.IsValidAssetType(queryParams))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, GetUidFromQueryParams(queryParams, "AssetTypeUid")))).ConfigureAwait(false);
-                }
-
-                if (!validator.IsValidActionType(queryParams))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, GetUidFromQueryParams(queryParams, "ActionTypeUid")))).ConfigureAwait(false);
-                }
-
-                if (!validator.IsValidRelationshipType(queryParams))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, GetUidFromQueryParams(queryParams, "RelationshipTypeUid")))).ConfigureAwait(false);
-                }
-
-                if (!validator.IsValidWorkflowType(queryParams))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(WorkflowApiMessages.WorkflowtypeUIDNotFound, GetUidFromQueryParams(queryParams, "WorkflowTypeUid")))).ConfigureAwait(false);
-                }
-
-                var workflowVersions = await workflowRepository.GetWorkflowVersions(queryParams);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, workflowVersions))).ConfigureAwait(false);
+				throw new ArgumentException(isValid);
             }
-            catch (Exception ex)
+
+            if (!validator.IsValidGuidCountForWorkflowGetVersionModel(queryParams))
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix  }
-                });
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				throw new ArgumentException(WorkflowApiMessages.MoreThanOneTypeUidPassedInclWorkflow);
             }
+
+            if (!validator.IsValidOrderByFieldForWorkflowGetVersionModel(queryParams))
+            {
+				throw new ArgumentException(WorkflowApiMessages.InvalidParameterWorkflowVersion);
+            }
+
+            if (!validator.IsValidGuidForWorkflowGetVersionModel(queryParams))
+            {
+				throw new ArgumentException(WorkflowApiMessages.InvalidTypeWorkflowVersionRequestIncWF);
+            }
+
+            if (!validator.IsValidAssetType(queryParams))
+            {
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeNotFound, GetUidFromQueryParams(queryParams, "AssetTypeUid")));
+            }
+
+            if (!validator.IsValidActionType(queryParams))
+            {
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeNotFound, GetUidFromQueryParams(queryParams, "ActionTypeUid")));
+            }
+
+            if (!validator.IsValidRelationshipType(queryParams))
+            {
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.RelationShipTypeUidNotFound, GetUidFromQueryParams(queryParams, "RelationshipTypeUid")));
+            }
+
+            if (!validator.IsValidWorkflowType(queryParams))
+            {
+				throw new NotFoundBusinessLayerException(string.Format(WorkflowApiMessages.WorkflowtypeUIDNotFound, GetUidFromQueryParams(queryParams, "WorkflowTypeUid")));
+            }
+
+            var workflowVersions = await workflowRepository.GetWorkflowVersions(queryParams);
+
+			return Ok(workflowVersions);
         }
 
         /// <summary>
