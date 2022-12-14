@@ -52,7 +52,7 @@ export class ProcessNodeDataHelper {
 		Object.keys(node).forEach((prop) => {
 			const value = node[prop] as string;
 			if (value.length > this.bigObjectCharacterThreshold) {
-				this.nodeDataBigObjectStorage.push({ key: node.key, prop: prop, value: value });
+				this.nodeDataBigObjectStorage.push({ key: node.key, prop, value: value });
 				node[prop] = this.getValueHash(value);
 			}
 		});
@@ -101,7 +101,7 @@ export class ProcessNodeDataHelper {
 	private getValueHash(value: string) {
 		var hash = 0,
 			i, chr;
-		if (value.length === 0) return hash;
+		if (value.length === 0) {return hash;}
 		for (i = 0; i < value.length; i++) {
 			chr = value.charCodeAt(i);
 			hash = ((hash << 5) - hash) + chr;
@@ -698,7 +698,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
 
 		if (processData.nodeDataArray) {
-			(processData.nodeDataArray as any[]).forEach(x => this.processDataHelper.restoreBigObjects(x));
+			(processData.nodeDataArray as any[]).forEach((x) => this.processDataHelper.restoreBigObjects(x));
 		}
 
 		this.processService.putProcessDiagram(this.assetUid, processData)
