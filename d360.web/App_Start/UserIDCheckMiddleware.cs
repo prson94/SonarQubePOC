@@ -313,22 +313,19 @@ namespace d360.web
 
 			if (disco == null)
 			{
-				telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery response is null.", SeverityLevel = SeverityLevel.Verbose });
-				
+				telemetry.TrackTrace($"Discovery response is null.", SeverityLevel.Error, new Dictionary<string, string> { { "Authority", authority }, { "DiscoverUri", discoveryUri } });				
 				return null;
 			}
 
 			if (disco.IsError)
 			{
-				telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery response indicated error(s). {disco.Error}", SeverityLevel = SeverityLevel.Verbose });
-				
+				telemetry.TrackTrace($"Discovery response indicated error(s). {disco.Error}", SeverityLevel.Error, new Dictionary<string, string> { { "Authority", authority }, { "DiscoverUri", discoveryUri } });
 				return null;
 			}
 
 			if (disco.KeySet == null)
 			{
-				telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery response included no keys.", SeverityLevel = SeverityLevel.Verbose });
-				
+				telemetry.TrackTrace($"Discovery response included no keys.", SeverityLevel.Error, new Dictionary<string, string> { { "Authority", authority }, { "DiscoverUri", discoveryUri } });
 				return null;
 			}
 
