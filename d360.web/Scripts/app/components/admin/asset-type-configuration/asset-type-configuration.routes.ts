@@ -28,7 +28,9 @@ class WhenCanAccessBasicFeaturesGuard extends CanActivateOnlyForAvailableTypeCla
         AssetTypeClass.BusinessAsset,
 		AssetTypeClass.TechnicalAsset,
 		AssetTypeClass.Model,
-		AssetTypeClass.Policy
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -38,7 +40,9 @@ class WhenCanCreateNewAssetTypeChildGuard extends CanActivateOnlyForAvailableTyp
         AssetTypeClass.BusinessAsset,
 		AssetTypeClass.TechnicalAsset,
 		AssetTypeClass.Model,
-		AssetTypeClass.Policy
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -48,7 +52,9 @@ class WhenCanSeeFieldDefinitionsGuard extends CanActivateOnlyForAvailableTypeCla
         AssetTypeClass.BusinessAsset,
 		AssetTypeClass.TechnicalAsset,
 		AssetTypeClass.Model,
-		AssetTypeClass.Policy
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -58,7 +64,9 @@ class WhenCanSeeOwnersGuard extends CanActivateOnlyForAvailableTypeClasses {
         AssetTypeClass.BusinessAsset,
 		AssetTypeClass.TechnicalAsset,
 		AssetTypeClass.Model,
-		AssetTypeClass.Policy
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -68,7 +76,9 @@ class WhenCanSeeAllocationsGuard extends CanActivateOnlyForAvailableTypeClasses 
         AssetTypeClass.BusinessAsset,
 		AssetTypeClass.TechnicalAsset,
 		AssetTypeClass.Model,
-		AssetTypeClass.Policy
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -78,7 +88,9 @@ class WhenCanSeeRelationshipsGuard extends CanActivateOnlyForAvailableTypeClasse
         AssetTypeClass.BusinessAsset,
 		AssetTypeClass.TechnicalAsset,
 		AssetTypeClass.Model,
-		AssetTypeClass.Policy
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -88,7 +100,9 @@ class WhenCanSeeLogGuard extends CanActivateOnlyForAvailableTypeClasses {
         AssetTypeClass.BusinessAsset,
 		AssetTypeClass.TechnicalAsset,
 		AssetTypeClass.Model,
-		AssetTypeClass.Policy
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
 }
 

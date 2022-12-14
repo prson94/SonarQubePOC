@@ -61,11 +61,12 @@ export class SiteUrlHelpers {
 	static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
 	static SITE_URL_ADMIN_ASSET_MODELS = 'Model';
 	static SITE_URL_ADMIN_ASSET_POLICIES = 'Policy';
+	static SITE_URL_ADMIN_ASSET_RULES = 'Rule';
+	static SITE_URL_ADMIN_ASSET_DIAGRAM_ASSETS = 'DiagramAsset';
 
     static SITE_URL_ADMIN_CUSTOMIZATIONS = 'customizations';
     static SITE_URL_ADMIN_BRANDING = 'branding';
     static SITE_URL_ADMIN_RELATIONSHIPS = 'relationships';
-    static SITE_URL_ADMIN_RULES = 'rules';
     static SITE_URL_ADMIN_SURVEYS = 'surveys';
     static SITE_URL_ADMIN_TAGS = 'tags';
     static SITE_URL_ADMIN_SCORING = 'scoring';
@@ -78,7 +79,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ISSUE_TYPES = 'issuetypes';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
     static SITE_URL_ADMIN_EXPORT_TEMPLATES = 'exporttemplates';
-    static SITE_URL_ADMIN_DIAGRAM_ASSETS = 'diagrams';
+    static SITE_URL_ADMIN_DIAGRAM_ASSETS: any;
 
 
 
@@ -108,7 +109,13 @@ export class SiteUrlHelpers {
         }
         if (objectType.toLowerCase() === "policytype") {
 			return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_POLICIES}`;
-        }
+		}
+		if (objectType.toLowerCase() === "ruletype") {
+			return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_RULES}`;
+		}
+		if (objectType.toLowerCase() === "tasktype") {
+			return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_DIAGRAM_ASSETS}`;
+		}
         if (objectType.toLowerCase() === "intersecttype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`;
         }
@@ -126,9 +133,6 @@ export class SiteUrlHelpers {
         }
         if (objectType.toLowerCase() === "tag" && !objectId) {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`;
-        }
-        if (objectType.toLowerCase() === "ruletype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`;
         }
         if (objectType.toLowerCase() === "resourcetype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`;
@@ -172,8 +176,6 @@ export class SiteUrlHelpers {
                 return `${SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT}/${objectId}`;
             case 'TAG':
                 return `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${objectId}`;
-            case 'TASKTYPE':
-                return `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS}`;
             default:
                 console.log('Unable to generate object link', objectType, objectId);
         }

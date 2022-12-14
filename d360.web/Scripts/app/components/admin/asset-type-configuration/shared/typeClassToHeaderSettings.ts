@@ -24,5 +24,17 @@ export const typeClassToHeaderSettings = new Map([
 			icon: 'fa-sliders',
 			title: $localize`Policies`
 		}
+	],
+	[
+		AssetTypeClass.Rule, {
+			icon: 'fa-sliders',
+			title: $localize`Rules`
+		}
+	],
+	[
+		AssetTypeClass.DiagramAsset, {
+			icon: 'fa-sliders',
+			title: $localize`Diagram`
+		}
 	]
 ]);

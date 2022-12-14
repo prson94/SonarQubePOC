@@ -99,4 +99,8 @@ export class ConfigurationAssetTypeListComponent {
 	get hasMaxDepthColumn() {
 		return this.assetTypeClass === AssetTypeClass.Model || this.assetTypeClass === AssetTypeClass.Policy;
 	}
+
+	get canAddHierarchy() {
+		return this.assetTypeClass === AssetTypeClass.BusinessAsset || this.assetTypeClass === AssetTypeClass.TechnicalAsset;
+	}
 }

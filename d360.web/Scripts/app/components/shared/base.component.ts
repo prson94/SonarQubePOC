@@ -1106,7 +1106,7 @@ export class BaseComponent {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES;
 			}
 			else if (r?.AssetTypeClass === AssetTypeClass.DiagramAsset) {
-				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS;
+				homeUrl = "admin/assets/" + SiteUrlHelpers.SITE_URL_ADMIN_ASSET_DIAGRAM_ASSETS;
 			}
 			else if (r?.AssetTypeClass === AssetTypeClass.User) {
 				homeUrl = "users/" + this.uid;
