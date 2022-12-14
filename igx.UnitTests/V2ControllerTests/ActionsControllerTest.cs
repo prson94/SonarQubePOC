@@ -1,24 +1,27 @@
-﻿using d360.web.Controllers.V2;
-using igx.UnitTests.Core;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web.Http;
+
 using Xunit;
+using FluentAssertions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+using d360.web.Controllers.V2;
+using d360.core.entities;
+using igx.UnitTests.Core;
 
 namespace igx.UnitTests.V2ControllerTests
 {
     [Trait("Unit tests", "Asset controller")]
     public class ActionsControllerTest : BaseTest
     {
-
-        internal ActionsController actionsController;
+        private readonly ActionsController actionsController;
         
         public ActionsControllerTest()
         {
-            this.actionsController = new ActionsController(GetCoreComponentSet(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository(), GetResponsibilityRepositoryMock().Object)
+            actionsController = new ActionsController(GetCoreComponentSet(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository(), GetResponsibilityRepositoryMock().Object)
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -26,103 +29,127 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void GetIssueTypesTest()
+        public async void GetIssueTypes_MustReturnSuccessfulResult()
         {
+			//Act
             var actionResult = await actionsController.GetIssueTypes();
-            Assert.True(actionResult.IsSuccessStatusCode, XMsg.BadResponseCode);
+
+			//Assert
+			actionResult.ShouldBeOKContent<IEnumerable<IssueTypeApiModel>>();
         }
 
         [Fact]
-        public async void GetAllocationByAssetTypeAsyncTest()
+        public async void GetAllocationByAssetTypeAsync_ValidAssetTypeUid_MustReturnSuccessfulResult()
         {
+			//Arrange
             var testGuid = Guid.Parse(DataConstants.ValidGUID);
+
+			//Act
             var actionResult = await actionsController.GetAllocationByAssetTypeAsync(testGuid);
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<JArray>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-            Assert.True(data != null, XMsg.InvalidJSON);
-
+			//Assert
+			actionResult.ShouldBeOKContent<IEnumerable<IssueTypeApiModel>>();
+			data.Should().NotBeNull();
         }
 
         [Fact]
-        public void CheckMaxPageSize()
+        public void isPageSizeAndNumValid_TooLargePageSize_MustReturnCorrespondStringError()
         {
-            string pageSize = "500000";
-            string pageNum = "1";
+			//Arrange
+			var pageSize = "500000";
+			var pageNum = "1";
+			var expectedErrorMessage = "Invalid pageSize value provided. Number is too large";
+			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
+			//Act
+			var actionResult = actionsController.isPageSizeAndNumValid(pageParams);
 
-            Assert.Matches("Invalid pageSize value provided. Number is too large",result);
-
+			//Assert
+			actionResult.Should().BeEquivalentTo(expectedErrorMessage);
         }
 
         [Fact]
-        public void CheckNegPageSize()
+        public void isPageSizeAndNumValid_LessThanZeroPageSize_MustReturnCorrespondStringError()
         {
-            string pageSize = "-1";
-            string pageNum = "1";
+			//Arrange
+			var pageSize = "-1";
+			var pageNum = "1";
+			var expectedErrorMessage = "Invalid pageSize value provided. Value must be greater than 0";
+			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
+			//Act
+			var actionResult = actionsController.isPageSizeAndNumValid(pageParams);
 
-            Assert.Matches("Invalid pageSize value provided. Value must be greater than 0",result);
+			//Assert
+			actionResult.Should().BeEquivalentTo(expectedErrorMessage);
+		}
 
+		[Fact]
+        public void isPageSizeAndNumValid_LessThanZeroPageNumber_MustReturnCorrespondStringError()
+        {
+			//Arrange
+			var pageSize = "5";
+			var pageNum = "-1";
+			var expectedErrorMessage = "Invalid pageNum value provided. Value must be greater than 0";
+			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+
+			//Act
+			var actionResult = actionsController.isPageSizeAndNumValid(pageParams);
+
+			//Assert
+			actionResult.Should().BeEquivalentTo(expectedErrorMessage);
+		}
+
+		[Fact]
+        public void isPageSizeAndNumValid_NonNumericPageSize_MustReturnCorrespondStringError()
+        {
+			//Arrange
+			var pageSize = "abcdef";
+			var pageNum = "-1";
+			var expectedErrorMessage = "Invalid pageSize value provided. Must be a numeric value";
+			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+
+			//Act
+			var actionResult = actionsController.isPageSizeAndNumValid(pageParams);
+
+			//Assert
+			actionResult.Should().BeEquivalentTo(expectedErrorMessage);
         }
 
         [Fact]
-        public void CheckNegPageNum()
+        public void isPageSizeAndNumValid_InvalidPageSize_MustReturnCorrespondStringError()
         {
-            string pageSize = "5";
-            string pageNum = "-1";
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+			//Arrange
+            var pageSize = "12345678901";
+            var pageNum = "1";
+			var expectedErrorMessage = "Invalid pageSize value provided.";
+			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
+			//Act
+            var actionResult = actionsController.isPageSizeAndNumValid(pageParams);
 
-            Assert.Matches("Invalid pageNum value provided. Value must be greater than 0",result);
-
+			//Assert
+            actionResult.Should().BeEquivalentTo(expectedErrorMessage);
         }
 
         [Fact]
-        public void CheckNonNumericValue()
-        {
-            string pageSize = "abcdef";
-            string pageNum = "-1";
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+        public void isPageSizeAndNumValid_InvalidPageNumber_MustReturnCorrespondStringError()
+		{
+			//Arrange
+			var pageNum = "12345678901";
+			var pageSize = "1";
+			var expectedErrorMessage = "Invalid pageNum value provided.";
+			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
+			//Act
+			var actionResult = actionsController.isPageSizeAndNumValid(pageParams);
 
-            Assert.Matches("Invalid pageSize value provided. Must be a numeric value", result);
-
-        }
-
-        [Fact]
-        public void CheckMaxLengthOfPageSize()
-        {
-            string pageSize = "12345678901";
-            string pageNum = "1";
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
-
-            Assert.Matches("Invalid pageSize value provided.", result);
-
-        }
-
-        [Fact]
-        public void CheckMaxLengthOfPageNum()
-        {
-            string pageNum = "12345678901";
-            string pageSize = "1";
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
-
-            Assert.Matches("Invalid pageNum value provided.", result);
-
-        }
+			//Assert
+			actionResult.Should().BeEquivalentTo(expectedErrorMessage);
+		}
     }
 }
