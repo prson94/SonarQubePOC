@@ -18,12 +18,12 @@ export class ConfigurationAssetTypeTabsComponent {
             {
                 url: `${baseUrl}/fields`,
 				title: $localize`Field Definition`,
-				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy].includes(this.assetTypeClass),
+				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.DiagramAsset].includes(this.assetTypeClass),
             },
             {
                 url: `${baseUrl}/owners`,
                 title: $localize`Responsibility Type Assignment`,
-				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy].includes(this.assetTypeClass),
+				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule].includes(this.assetTypeClass),
             },
             {
                 url: `${baseUrl}/allocations`,
@@ -33,7 +33,7 @@ export class ConfigurationAssetTypeTabsComponent {
             {
                 url: `${baseUrl}/relationships`,
                 title: $localize`Relationship Types`,
-				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy].includes(this.assetTypeClass),
+				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.DiagramAsset].includes(this.assetTypeClass),
 			},
 			{
 				url: `${baseUrl}/levels`,
@@ -43,7 +43,7 @@ export class ConfigurationAssetTypeTabsComponent {
             {
                 url: `${baseUrl}/log`,
                 title: $localize`Change Log`,
-				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy].includes(this.assetTypeClass),
+				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.DiagramAsset].includes(this.assetTypeClass),
             }
         ];
     }

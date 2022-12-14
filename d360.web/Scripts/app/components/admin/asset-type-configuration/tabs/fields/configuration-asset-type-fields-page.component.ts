@@ -86,6 +86,23 @@ export class ConfigurationAssetTypeFieldsPageComponent {
 				showDisplayInColumn: true,
 				allowSingleSegmentPath: true
 			}
+		],
+		[
+			AssetTypeClass.Rule,
+			{
+				supportsPrimaryFilterOption: true,
+				showDisplayInColumn: true,
+				allowSingleSegmentPath: true
+			}
+		]
+		,
+		[
+			AssetTypeClass.DiagramAsset,
+			{
+				supportsPrimaryFilterOption: false,
+				showDisplayInColumn: false,
+				allowSingleSegmentPath: false
+			}
 		]
     ])
 }
