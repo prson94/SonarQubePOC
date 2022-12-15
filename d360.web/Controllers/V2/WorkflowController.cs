@@ -349,24 +349,9 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult GetWorkflowtypeId(Guid uid)
         {
-            var prefix = "Workflow.GetWorkflowtypeId => ";
-            string errorMessage;
+            var result = workflowRepository.GetWorkflowTypeByUID(uid);
 
-            try
-            {
-                var result = workflowRepository.GetWorkflowTypeByUID(uid);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result.ID));
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix  }
-                });
-
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
-            }
+            return Ok(result.ID);
         }
 
         [
