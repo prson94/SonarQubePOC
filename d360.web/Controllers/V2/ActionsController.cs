@@ -1262,7 +1262,7 @@ namespace d360.web.Controllers.V2
 				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.NoMatchingAllocation, assetType.Name, issueType.Name));
 			}
 
-			return Ok(ActionApiMessages.DeleteAllocationSuccessful);
+			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.DeleteAllocationSuccessful);
 		}
 
 		/// <summary>
@@ -1339,7 +1339,7 @@ namespace d360.web.Controllers.V2
 				var res = await Company.Database.Connection.ExecuteAsync(allocationResponsibilitySQL, new { allocationId, responsibilityTypeUid = rUid });
 			}
 
-			return Ok(ActionApiMessages.AddSingleAllocationSuccessful);
+			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.AddSingleAllocationSuccessful);
 		}
 	}
 }
