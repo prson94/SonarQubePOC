@@ -10,6 +10,9 @@ import { ConfigurationAssetTypeOwnersPageComponent } from './tabs/owners/configu
 import { ConfigurationAssetTypeAllocationsPageComponent } from './tabs/allocations/configuration-asset-type-allocations-page.component';
 import { ConfigurationAssetTypeRelationshipsPageComponent } from './tabs/relationships/configuration-asset-type-relationships-page.component';
 import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration-asset-type-log-page.component';
+import { featuresToTypeClasses } from './shared/featuresToTypeClasses';
+import { GovernanceRolesComponent } from './governanceRoles/governance-roles.component';
+import { ConfigurationAssetTypeConnectorLabelsPageComponent } from './connectorLabels/configuration-asset-type-connector-labels-page.component';
 
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
@@ -25,23 +28,22 @@ abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
 class WhenCanAccessBasicFeaturesGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+        AssetTypeClass.TechnicalAsset,
+        AssetTypeClass.DiagramAsset
     ]
 }
 
 @Injectable({ providedIn: 'root' })
 class WhenCanCreateNewAssetTypeChildGuard extends CanActivateOnlyForAvailableTypeClasses {
-    protected typeClasses: AssetTypeClass[] = [
-        AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
-    ]
+    protected typeClasses: AssetTypeClass[] = featuresToTypeClasses.assetTypeChilds;
 }
 
 @Injectable({ providedIn: 'root' })
 class WhenCanSeeFieldDefinitionsGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+        AssetTypeClass.TechnicalAsset,
+        AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -65,7 +67,8 @@ class WhenCanSeeAllocationsGuard extends CanActivateOnlyForAvailableTypeClasses 
 class WhenCanSeeRelationshipsGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+        AssetTypeClass.TechnicalAsset,
+        AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -73,11 +76,20 @@ class WhenCanSeeRelationshipsGuard extends CanActivateOnlyForAvailableTypeClasse
 class WhenCanSeeLogGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+        AssetTypeClass.TechnicalAsset,
+        AssetTypeClass.DiagramAsset
     ]
 }
 
 export const assetTypeConfigurationRoutes: Routes = [
+    {
+        path: 'DiagramAsset/governanceRoles',
+        component: GovernanceRolesComponent
+    },
+    {
+        path: 'DiagramAsset/connectorLabels',
+        component: ConfigurationAssetTypeConnectorLabelsPageComponent,
+    },
     {
         path: ':typeClass/new',
         component: ConfigurationAssetTypeEditorPageComponent,

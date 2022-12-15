@@ -4,6 +4,9 @@
 		<d3s-asset-type-list-sidepanel-wrapper [sidePanelStorageKey]="sidePanelStorageKey"
 			[selectedItem]="selectedRow">
 			<div class="grid-actions-header column-layout">
+				<div *ngIf="addNewAssetTypeWarning != null" class="warningMessage">
+					{{addNewAssetTypeWarning}}
+				</div>
 				<div class="grid-actions-header-row">
 					<div class="simple-search">
 						<ig-search-field [debounce]="600"
@@ -13,7 +16,8 @@
 						</ig-search-field>
 					</div>
 					<div class="grid-action-buttons">
-						<button [igDataCy]="'Assets_Add'"
+						<button *ngIf="addNewAssetTypeWarning == null"
+							[igDataCy]="'Assets_Add'"
 							(click)="add()"
 							igButton
 							pTooltip="Add new asset"
@@ -45,7 +49,7 @@
 									<ng-container i18n>Name</ng-container>
 									<d3s-sortIcon [field]="'name'"></d3s-sortIcon>
 								</th>
-								<th style="width: 30px"></th>
+								<th *ngIf="hasAssetTypeChildsFeature" style="width: 30px"></th>
 								<th style="width: 30px"></th>
 								<th style="width: 30px"></th>
 							</tr>
@@ -57,7 +61,8 @@
 								[ttSelectableRow]="rowNode"
 								[igDataCy]="(tabTitle | replaceString : ' ' : '_') + '_Row_' + item.uid">
 								<td>
-									<p-treeTableToggler [rowNode]="rowNode"
+									<p-treeTableToggler *ngIf="hasAssetTypeChildsFeature"
+										[rowNode]="rowNode"
 										[igDataCy]="dataCyPrefix + item.AssetUid + '_Toggler'"
 										style="margin-right: 8px;"></p-treeTableToggler>
 									<a [igDataCy]="dataCyPrefix + item.uid + '_Button_View'"
@@ -66,7 +71,7 @@
 										{{item.name}}
 									</a>
 								</td>
-								<td>
+								<td *ngIf="hasAssetTypeChildsFeature">
 									<div class="RowTools">
 										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Add'"
 											(click)="add(item.uid)"

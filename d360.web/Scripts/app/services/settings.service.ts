@@ -134,6 +134,7 @@ export class CompanySettingsService extends BaseObservableService {
 
 		if (currentSetting.GuidSetting && setting.GuidSetting && currentSetting.GuidSetting.Value !== setting.GuidSetting.Value) {
 			currentSetting.GuidSetting.Value = setting.GuidSetting.Value;
+			currentSetting.ScalarValue = setting.GuidSetting.Value;
 			return setting;
 		}
 

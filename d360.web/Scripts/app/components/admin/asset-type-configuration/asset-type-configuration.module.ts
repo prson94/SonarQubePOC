@@ -34,16 +34,28 @@ import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration
 import { AuditModule } from '../../sidebar/audit/audit.module';
 import { ConfigurationAssetTypeBreadcrumbsComponent } from './tabs/shared/configuration-asset-type-breadcrumbs/configuration-asset-type-breadcrumbs.component';
 import { HeaderModule } from '../../shared/header/header.module';
+import { ConfigurationAssetTypeListTabsComponent } from './list/asset-type-list-tabs.component';
+import { GovernanceRolesComponent } from './governanceRoles/governance-roles.component';
+import { FormsModule } from '@angular/forms';
+import { EditorModule } from 'primeng/editor';
+import { DropdownModule } from 'primeng/dropdown';
+import { ButtonModule } from 'primeng/button';
+import { ConfigurationAssetTypeConnectorLabelsPageComponent } from './connectorLabels/configuration-asset-type-connector-labels-page.component';
+import { ConnectorLabelsModule } from './connectorLabels/connector-labels.module';
 import { AssetTypeDetailV2Module } from '../../shared/asset-type-detail-v2/asset-type-detail-v2.module';
 import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.component";
-import { FormsModule } from "@angular/forms";
+import { PortalsModule } from '../../shared/portals/portals.module';
 
 @NgModule({
     imports: [
         RouterModule.forChild(assetTypeConfigurationRoutes),
         CommonModule,
+        FormsModule,
         CoreModule,
         TreeTableModule,
+        EditorModule,
+        DropdownModule,
+        ButtonModule,
         PipesModule,
         SidePanelModule,
         AngularSplitModule,
@@ -59,9 +71,10 @@ import { FormsModule } from "@angular/forms";
         AdminRelationshipEditorModule,
         AuditModule,
         HeaderModule,
+        ConnectorLabelsModule,
         AssetTypeDetailV2Module,
         SharedGridPagingInfoModule,
-        FormsModule
+        PortalsModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
@@ -77,7 +90,10 @@ import { FormsModule } from "@angular/forms";
         ConfigurationAssetTypeAllocationsPageComponent,
         ConfigurationAssetTypeRelationshipsPageComponent,
         ConfigurationAssetTypeLogPageComponent,
-        ConfigurationAssetTypeBreadcrumbsComponent
+        ConfigurationAssetTypeBreadcrumbsComponent,
+        ConfigurationAssetTypeListTabsComponent,
+        ConfigurationAssetTypeConnectorLabelsPageComponent,
+        GovernanceRolesComponent
     ],
     exports: [],
 })
