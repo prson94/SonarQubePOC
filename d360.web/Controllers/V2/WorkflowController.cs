@@ -232,29 +232,14 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetWorkflowInstances(Guid workflowUid)
         {
-            var prefix = "Workflow.GetWorkflowInstances => ";
-            string errorMessage;
-
-            try
+            if (!validator.IsValidWorkflowInstance(workflowUid))
             {
-                if (!validator.IsValidWorkflowInstance(workflowUid))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(WorkflowApiMessages.WorkflowUIDNotFound, workflowUid.ToString()))).ConfigureAwait(false);
-                }
-
-                var workflowInstances = await workflowRepository.GetWorkflowInstances(workflowUid);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, workflowInstances))).ConfigureAwait(false);
+				throw new NotFoundBusinessLayerException(string.Format(WorkflowApiMessages.WorkflowUIDNotFound, workflowUid.ToString()));
             }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix  }
-                });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
+            var workflowInstances = await workflowRepository.GetWorkflowInstances(workflowUid);
+
+			return Ok(workflowInstances);
         }
 
         /// <summary>
