@@ -410,29 +410,14 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetWorkflowReassignmentAssets(int id, string query, CancellationToken cancellationToken)
         {
-            var prefix = "Workflow.GetWorkflowReassignmentAssets => ";
-            string errorMessage;
+            var result = Company.WorkflowItems.FirstOrDefault(i => i.ID == id);
 
-            try
+            if (result == null)
             {
-                var result = Company.WorkflowItems.FirstOrDefault(i => i.ID == id);
-
-                if (result == null)
-                {
-                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowInstanceNotFound));
-                }
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, await workflowRepository.GetWorkflowReassignmentAssets(id, query, cancellationToken: cancellationToken)));
+				throw new NotFoundBusinessLayerException(WorkflowApiMessages.WorkflowInstanceNotFound);
             }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix  }
-                });
 
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
-            }
+			return Ok(await workflowRepository.GetWorkflowReassignmentAssets(id, query, cancellationToken: cancellationToken));
         }
     }
 }
