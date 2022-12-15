@@ -297,9 +297,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> RetrieveAlertsForAssets(AssetBrowserAlertRequest model)
 		{
-			try
-			{
-				var sql = @"
+			var sql = @"
 							select	I.uid as 'uid', 
 									A.uid as 'asset.uid',
 									coalesce(A.icon, 'fa-book') as 'asset.icon',
@@ -316,42 +314,30 @@ namespace d360.web.Controllers.V2
 									and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
 							for json path";
 
-				if (model == null)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.EmptyInvalidParameterSet);
-				}
-				else if (model.assets.Count == 0)
-				{
-					AssetBrowserAlert[] alerts = new AssetBrowserAlert[0];
-
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.NoContent, alerts))).ConfigureAwait(false);
-				}
-
-				var reader = await Company.QueryAsync<string>(sql,
-					new
-					{
-						uids = model.assets.Select(i => i.uid).Distinct().AsTableValuedParameter(
-							"dbo.UidTable",
-							new List<string>() { "Uid" }
-							)
-					}, timeout: 100);
-				var json = string.Join("", reader);
-
-				var returnModel = JsonConvert.DeserializeObject<AssetBrowserAlert[]>(json);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, returnModel))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
+			if (model == null)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", "BrowserController.GetDiagramAlerts" },
-					{ "model", JsonConvert.SerializeObject(model) }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				throw new ArgumentException(ApiMessages.EmptyInvalidParameterSet);
 			}
+
+			if (model.assets.Count == 0)
+			{
+				AssetBrowserAlert[] alerts = new AssetBrowserAlert[0];
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.NoContent, alerts));
+			}
+
+			var reader = await Company.QueryAsync<string>(sql, new
+				{
+					uids = model.assets.Select(i => i.uid).Distinct().AsTableValuedParameter(
+						"dbo.UidTable",
+						new List<string>() { "Uid" }
+						)
+				}, timeout: 100);
+			var json = string.Join("", reader);
+
+			var returnModel = JsonConvert.DeserializeObject<AssetBrowserAlert[]>(json);
+
+			return Ok(returnModel);
 		}
 
 		/// <summary>
@@ -371,7 +357,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_name", "Filter by provided name value.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_limitToActiveWorkflows", "Set to true to only return actions associated with an active workflow.", DataType = "boolean", ParameterType = "query", Required = false),
 		]
-		public async Task<HttpResponseMessage> GetIssueTypes()
+		public async Task<IHttpActionResult> GetIssueTypes()
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
 
@@ -381,18 +367,15 @@ namespace d360.web.Controllers.V2
 
 			if (actionTypeUidParam.Key != null)
 			{
-				if (Guid.TryParse(actionTypeUidParam.Value, out Guid actionTypeUid))
+				if (!Guid.TryParse(actionTypeUidParam.Value, out Guid actionTypeUid) || actionTypeUid == Guid.Empty)
 				{
-					var validUid = Company.IssueTypes.Any(i => i.uid == actionTypeUid);
-
-					if (!validUid)
-					{
-						return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()))).ConfigureAwait(false);
-					}
+					throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
 				}
-				else
+
+				var validUid = Company.IssueTypes.Any(i => i.uid == actionTypeUid);
+				if (!validUid)
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidActionTypeUid)).ConfigureAwait(false);
+					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid.ToString()));
 				}
 			}
 
@@ -400,23 +383,19 @@ namespace d360.web.Controllers.V2
 
 			if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
 			{
-				if (Guid.TryParse(assetTypeUidParam.Value.Trim(), out Guid assetTypeUid))
+				if (!Guid.TryParse(assetTypeUidParam.Value.Trim(), out Guid assetTypeUid) || assetTypeUid == Guid.Empty)
 				{
-					var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
-
-					if (assetType == null)
-					{
-						return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()))).ConfigureAwait(false);
-					}
-					else if (assetType.Class == AssetTypeClass.Diagram)
-					{
-						return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetTypeUid)).ConfigureAwait(false);
-					}
-
+					throw new ArgumentException(ActionApiMessages.InvalidAssetTypeUid);
 				}
-				else
+
+				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
+				if (assetType == null)
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetTypeUid)).ConfigureAwait(false);
+					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()));
+				}
+				else if (assetType.Class == AssetTypeClass.Diagram)
+				{
+					throw new ArgumentException(ActionApiMessages.InvalidAssetTypeUid);
 				}
 			}
 
@@ -424,32 +403,29 @@ namespace d360.web.Controllers.V2
 
 			if (assetUidParam.Key != null && assetUidParam.Value != null && !string.IsNullOrWhiteSpace(assetUidParam.Value))
 			{
-				if (Guid.TryParse(assetUidParam.Value.Trim(), out Guid assetUid))
+				if (!Guid.TryParse(assetUidParam.Value.Trim(), out Guid assetUid) || assetUid == Guid.Empty)
 				{
-					var asset = Company.Assets.FirstOrDefault(i => i.uid == assetUid);
-
-					if (asset == null)
-					{
-						return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()))).ConfigureAwait(false);
-					}
-					else if (asset.AssetType.Class == AssetTypeClass.Diagram)
-					{
-						return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
-					}
-
-					if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
-					{
-						var assetTypeuUid = Guid.Parse(assetTypeUidParam.Value);
-
-						if (!Company.AssetTypes.Any(i => i.uid == assetTypeuUid && i.ID == asset.AssetTypeID))
-						{
-							return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.AssetValidateWithAssetType)).ConfigureAwait(false);
-						}
-					}
+					throw new ArgumentException(ActionApiMessages.InvalidAssetUid);
 				}
-				else
+
+				var asset = Company.Assets.FirstOrDefault(i => i.uid == assetUid);
+				if (asset == null)
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
+					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+				}
+				else if (asset.AssetType.Class == AssetTypeClass.Diagram)
+				{
+					throw new ArgumentException(ActionApiMessages.InvalidAssetUid);
+				}
+
+				if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
+					{
+					var assetTypeuUid = Guid.Parse(assetTypeUidParam.Value);
+
+					if (!Company.AssetTypes.Any(i => i.uid == assetTypeuUid && i.ID == asset.AssetTypeID))
+					{
+						throw new ArgumentException(ApiMessages.AssetValidateWithAssetType);
+					}
 				}
 			}
 
@@ -459,12 +435,12 @@ namespace d360.web.Controllers.V2
 			{
 				if (string.IsNullOrEmpty(nameParam.Value.Trim()))
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.NameNotEmptyAndRequired)).ConfigureAwait(false);
+					throw new ArgumentException(ActionApiMessages.NameNotEmptyAndRequired);
 				}
 
 				if (nameParam.Value.Trim().Length > 250)
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.NameMaxLength250Char)).ConfigureAwait(false);
+					throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
 				}
 			}
 
@@ -472,18 +448,15 @@ namespace d360.web.Controllers.V2
 
 			if (resourceUidParam.Key != null && !string.IsNullOrWhiteSpace(resourceUidParam.Value))
 			{
-				if (Guid.TryParse(resourceUidParam.Value, out Guid resourceUid))
+				if (Guid.TryParse(resourceUidParam.Value, out Guid resourceUid) || resourceUid == Guid.Empty)
 				{
-					var validUid = Company.GlobalReportingResources.Any(r => r.Uid == resourceUid);
-
-					if (!validUid)
-					{
-						return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, ActionApiMessages.ResourceUidNotFound)).ConfigureAwait(false);
-					}
+					throw new ArgumentException(ActionApiMessages.ResourceUidNotValid);
 				}
-				else
+
+				var validUid = Company.GlobalReportingResources.Any(r => r.Uid == resourceUid);
+				if (!validUid)
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.ResourceUidNotValid)).ConfigureAwait(false);
+					throw new NotFoundBusinessLayerException(ActionApiMessages.ResourceUidNotFound);
 				}
 			}
 
@@ -493,7 +466,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!bool.TryParse(limitToActiveWorkflowsParam.Value, out _))
 				{
-					return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.InvalidLimitActiveWorkflow)).ConfigureAwait(false);
+					throw new ArgumentException(ActionApiMessages.InvalidLimitActiveWorkflow);
 				}
 			}
 
@@ -501,7 +474,7 @@ namespace d360.web.Controllers.V2
 
 			var issueTypes = await issueRepository.GetIssueTypes(queryParams);
 
-			return Request.CreateResponse(HttpStatusCode.OK, issueTypes);
+			return Ok(issueTypes);
 		}
 
 		/// <summary>
@@ -509,40 +482,25 @@ namespace d360.web.Controllers.V2
 		/// </summary>
 		/// <param name="AssetTypeUid">Asset Type Uid</param>
 		/// <returns>A list of actions types</returns>
-		[HttpGet,
+		[
+			HttpGet,
 			Route("types/{AssetTypeUid}"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(IssueTypeApiModel)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type with Uid {uid} not found."),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
-			]
+		]
 		public async Task<IHttpActionResult> GetAllocationByAssetTypeAsync(Guid AssetTypeUid)
 		{
-			var prefix = "Issues.GetAllocationByAssetTypeAsync => ";
-			string errorMessage;
-
-			try
+			AssetType assetType = assetRepository.GetAssetTypeByUID(AssetTypeUid);
+			if (assetType == null)
 			{
-				AssetType assetType = assetRepository.GetAssetTypeByUID(AssetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()))).ConfigureAwait(false);
-				}
-
-				var allocations = await issueRepository.GetAllocationByAssetType(AssetTypeUid);
-				
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocations))).ConfigureAwait(false);
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()));
 			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", prefix  }
-				});
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			var allocations = await issueRepository.GetAllocationByAssetType(AssetTypeUid);
+
+			return Ok(allocations);
 		}
 
 		/// <summary>
@@ -622,7 +580,6 @@ namespace d360.web.Controllers.V2
 			return Ok(result);
 		}
 
-
 		/// <summary>
 		/// Updates a workflow action type
 		/// </summary>
@@ -630,6 +587,7 @@ namespace d360.web.Controllers.V2
 		[
 			Route("type"),
 			HttpPut,
+			RequireAdminPermissions,
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "Workflow Action Type successfully Updated.", typeof(AddIssueTypeApiModel)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -638,77 +596,61 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> UpdateWorkflowActionType(AddWorkFlowAction model)
 		{
-			var prefix = "Issues.AddWorkflowActionType => ";
-			AddIssueTypeApiModel result = new AddIssueTypeApiModel();
-			try
+			if (model.Uid == null || model.Uid == Guid.Empty)
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
-				}
+				throw new ArgumentException(ActionApiMessages.UidNotEmptyAndRequired);
+			}
 
-				if (model.Uid == null || model.Uid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.UidNotEmptyAndRequired)).ConfigureAwait(false);
-				}
+			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == model.Uid);
 
-				var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == model.Uid);
+			if (issueType == null)
+			{
+				throw new ArgumentException(ActionApiMessages.UidNotValid);
+			}
 
-				if (issueType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.UidNotValid)).ConfigureAwait(false);
-				}
+			if (model.Name == null)
+			{
+				throw new ArgumentException(ActionApiMessages.NameNotNull);
+			}
 
-				if (model.Name == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameNotNull)).ConfigureAwait(false);
-				}
+			if (string.IsNullOrEmpty(model.Name.Trim()))
+			{
+				throw new ArgumentException(ActionApiMessages.NameNotEmptyAndRequired);
+			}
 
-				if (string.IsNullOrEmpty(model.Name.Trim()))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameNotEmptyAndRequired)).ConfigureAwait(false);
-				}
+			if (model.Name.Trim().Length > 250)
+			{
+				throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
+			}
 
-				if (model.Name.Trim().Length > 250)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.NameMaxLength250Char)).ConfigureAwait(false);
-				}
+			var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower() && i.uid != model.Uid);
 
-				var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower() && i.uid != model.Uid);
+			if (validName)
+			{
+				throw new ArgumentException(ActionApiMessages.UniqueNameWorkflowAction);
+			}
 
-				if (validName)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.UniqueNameWorkflowAction)).ConfigureAwait(false);
-				}
+			if (model.Description == null)
+			{
+				model.Description = issueType.Description;
+			}
 
-				if (model.Description == null)
-				{
-					model.Description = issueType.Description;
-				}
-
-				var updateSQL = $@"Update [dbo].[IssueType]
+			var updateSQL = $@"Update [dbo].[IssueType]
 										set [Name]= @name, [Description]=@desc, [UpdatedOn] = @date ,[UpdatedBy] = @user
 								   Where uid = @uid";
 
 
-				var res = await Company.Database.Connection.ExecuteAsync(updateSQL,
-				new { name = model.Name.Trim(), desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid, date = DateTime.UtcNow });
+			var res = await Company.Database.Connection.ExecuteAsync(updateSQL,
+			new { name = model.Name.Trim(), desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid, date = DateTime.UtcNow });
 
-				result.Uid = (Guid)model.Uid;
-				result.Message = "Action Type updated";
-				result.Success = true;
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
+			AddIssueTypeApiModel result = new AddIssueTypeApiModel()
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", prefix }
-				});
+				Uid = (Guid)model.Uid,
+				Message = ActionApiMessages.ActionTypeUpdated,
+				Success = true
+			};
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
-			}
+			return Ok(result);
 		}
 
 		/// <summary>
@@ -719,21 +661,18 @@ namespace d360.web.Controllers.V2
 		[
 			Route("type/{actionTypeUid:Guid}"),
 			HttpDelete,
+			RequireAdminPermissions,
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "Action Type was deleted.", typeof(AddIssueTypeApiModel)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Action Type Not Found", typeof(ErrorResponse))
 		]
 		public async Task<IHttpActionResult> DeleteWorkflowActionType(Guid actionTypeUid, DeleteIssueTypeAPIModel model)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
-			}
-
 			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.InvalidActionTypeUid)).ConfigureAwait(false);
+				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
 			}
 
 			var queryParams = Request.GetQueryNameValuePairs();
@@ -757,18 +696,18 @@ namespace d360.web.Controllers.V2
 
 			if (issueType == null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ActionApiMessages.InvalidActionTypeUid, actionTypeUid.ToString()))).ConfigureAwait(false);
+				throw new NotFoundBusinessLayerException(ActionApiMessages.ActionTypeNotFound);
 			}
 
 			if (!model.cascade && Company.Issues.Any(x => x.IssueTypeID == issueType.ID))
 			{
 				if (IsFromUI)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ActionApiMessages.ChildRecordExistsIssueType, issueType.Name))).ConfigureAwait(false);
+					throw new ArgumentException(string.Format(ActionApiMessages.ChildRecordExistsIssueType, issueType.Name));
 				}
 				else
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.CascadeDeleteActionType)).ConfigureAwait(false);
+					throw new ArgumentException(ActionApiMessages.CascadeDeleteActionType);
 				}
 			}
 
@@ -783,7 +722,12 @@ namespace d360.web.Controllers.V2
 			var res = await Company.Database.Connection.ExecuteAsync(deleteSQL,
 				new { uid = actionTypeUid, issueTypeId = issueType.ID });
 
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new AddIssueTypeApiModel() { Uid = actionTypeUid, Message = "Action Type was deleted", Success = true }))).ConfigureAwait(false);
+			return Ok(new AddIssueTypeApiModel()
+			{
+				Uid = actionTypeUid,
+				Message = ActionApiMessages.ActionTypeDeleted,
+				Success = true
+			});
 		}
 
 		/// <summary>
@@ -823,7 +767,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType, lookupFieldsPassedByValue);
-				
+
 			if (validationStatus.StatusCode != HttpStatusCode.OK)
 			{
 				throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
@@ -838,7 +782,7 @@ namespace d360.web.Controllers.V2
 
 				if (isWriteActionDescriptionEnabled && issueModel.Issue.AssetID != null)
 				{
-  					var comment = new CommentApiPostModel
+					var comment = new CommentApiPostModel
 					{
 						AssetUid = issueModel.AssetUid,
 						Body = issueModel.Comment ?? string.Format(ActionApiMessages.ActionAssetCommentBody, issueType.Name),
@@ -1153,6 +1097,7 @@ namespace d360.web.Controllers.V2
 		[
 			Route("allocations/{actionTypeUid:Guid}"),
 			HttpPost,
+			RequireAdminPermissions,
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "Allocations Added Successfully.", typeof(ApiStatusResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -1161,65 +1106,53 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> AddActionTypeAllocations(Guid actionTypeUid, List<string> assetTypeUids)
 		{
-			try
+			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
-				}
-
-				if (actionTypeUid == null || actionTypeUid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));
-				}
-
-				var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
-
-				if (issueType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));
-				}
-
-				if (assetTypeUids.Count == 0)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.EmptyAllocationRequest)).ConfigureAwait(false);
-				}
-
-				List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
-
-				foreach (var assetTypeUid in assetTypeUids.Distinct())
-				{
-					if (!Guid.TryParse(assetTypeUid, out Guid uid))
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid))).ConfigureAwait(false);
-					}
-
-					var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == uid);
-
-					if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid)));
-					}
-
-					if (!Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
-					{
-						var allocation = new IssueTypeRelation() { AssetTypeID = assetType.ID, IssueTypeID = issueType.ID };
-
-						allocations.Add(allocation);
-					}
-				}
-
-				string allocationsSQL = "INSERT INTO IssueTypeRelation (AssetTypeID, IssueTypeID) VALUES (@AssetTypeID, @IssueTypeID)";
-				var res = await Company.Database.Connection.ExecuteAsync(allocationsSQL, allocations);
-
-				return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, allocations?.Count == 1 ? ActionApiMessages.AddSingleAllocationSuccessful : ActionApiMessages.AddAllocationsSuccessful)).ConfigureAwait(false);
+				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
 			}
-			catch (Exception ex)
+
+			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
+
+			if (issueType == null)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+				throw new NotFoundBusinessLayerException(ActionApiMessages.InvalidActionTypeUid);
 			}
+
+			if (assetTypeUids.Count == 0)
+			{
+				throw new ArgumentException(ActionApiMessages.EmptyAllocationRequest);
+			}
+
+			List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
+
+			foreach (var assetTypeUid in assetTypeUids.Distinct())
+			{
+				if (!Guid.TryParse(assetTypeUid, out Guid uid))
+				{
+					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
+				}
+
+				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == uid);
+
+				if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
+				{
+					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
+				}
+
+				if (!Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
+				{
+					var allocation = new IssueTypeRelation() { AssetTypeID = assetType.ID, IssueTypeID = issueType.ID };
+
+					allocations.Add(allocation);
+				}
+			}
+
+			string allocationsSQL = "INSERT INTO IssueTypeRelation (AssetTypeID, IssueTypeID) VALUES (@AssetTypeID, @IssueTypeID)";
+			var res = await Company.Database.Connection.ExecuteAsync(allocationsSQL, allocations);
+
+			var resultMessage = allocations?.Count == 1 ? ActionApiMessages.AddSingleAllocationSuccessful : ActionApiMessages.AddAllocationsSuccessful;
+
+			return Ok(resultMessage);
 		}
 
 		/// <summary>
@@ -1232,25 +1165,24 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "List of allocations.", typeof(List<IssueTypeAllocationsResponse>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Uid provided is not valid.", typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.NotFound, "Uid provided is not valid.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
 		]
 		public async Task<IHttpActionResult> GetActionTypeAllocations(Guid actionTypeUid)
 		{
-			try
+			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				if (actionTypeUid == null || actionTypeUid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid)).ConfigureAwait(false);
-				}
+				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
+			}
 
-				var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
+			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
-				if (issueType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));
-				}
+			if (issueType == null)
+			{
+				throw new NotFoundBusinessLayerException(ActionApiMessages.InvalidActionTypeUid);
+			}
 
-				string allocationsSQL = @"
+			string allocationsSQL = @"
 										SELECT 
 											T.Uid as AssetTypeUid, 
 											T.Name, 
@@ -1276,16 +1208,9 @@ namespace d360.web.Controllers.V2
 										WHERE 
 											R.IssueTypeID = @issueTypeID";
 
-				var allocations = await Company.QueryAsync<IssueTypeAllocationsResponse>(allocationsSQL, new { issueTypeID = issueType.ID });
+			var allocations = await Company.QueryAsync<IssueTypeAllocationsResponse>(allocationsSQL, new { issueTypeID = issueType.ID });
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocations))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			return Ok(allocations);
 		}
 
 		/// <summary>
@@ -1296,6 +1221,7 @@ namespace d360.web.Controllers.V2
 		[
 			Route("allocations/{actionTypeUid:Guid}/{assetTypeUid:Guid}"),
 			HttpDelete,
+			RequireAdminPermissions,
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "Allocation Deleted Successfully.", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -1304,53 +1230,39 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeleteActionTypeAllocations(Guid actionTypeUid, Guid assetTypeUid)
 		{
-			try
+			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
-				}
-
-				if (actionTypeUid == null || actionTypeUid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));
-				}
-
-				if (assetTypeUid == null || assetTypeUid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.AssetTypeUidIsNotValid)).ConfigureAwait(false);
-				}
-
-				var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
-
-				if (issueType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));
-				}
-
-				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
-
-				if (assetType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid)));
-				}
-
-				string allocationsSQL = @"DELETE FROM IssueTypeRelation WHERE AssetTypeID = @AssetTypeID and IssueTypeID = @IssueTypeID";
-				var res = await Company.Database.Connection.ExecuteAsync(allocationsSQL, new { AssetTypeID = assetType.ID, IssueTypeID = issueType.ID });
-
-				if (res == 0)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.NoMatchingAllocation, assetType.Name, issueType.Name))).ConfigureAwait(false);
-				}
-
-				return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.DeleteAllocationSuccessful)).ConfigureAwait(false);
+				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
 			}
-			catch (Exception ex)
+
+			if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+				throw new ArgumentException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
 			}
+
+			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
+
+			if (issueType == null)
+			{
+				throw new NotFoundBusinessLayerException(ActionApiMessages.InvalidActionTypeUid);
+			}
+
+			var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
+
+			if (assetType == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid));
+			}
+
+			string allocationsSQL = @"DELETE FROM IssueTypeRelation WHERE AssetTypeID = @AssetTypeID and IssueTypeID = @IssueTypeID";
+			var res = await Company.Database.Connection.ExecuteAsync(allocationsSQL, new { AssetTypeID = assetType.ID, IssueTypeID = issueType.ID });
+
+			if (res == 0)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.NoMatchingAllocation, assetType.Name, issueType.Name));
+			}
+
+			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.DeleteAllocationSuccessful);
 		}
 
 		/// <summary>
@@ -1360,6 +1272,7 @@ namespace d360.web.Controllers.V2
 		[
 			Route("allocation/{actionTypeUid:Guid}"),
 			HttpPost,
+			RequireAdminPermissions,
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "Allocations Added Successfully.", typeof(ApiStatusResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -1368,80 +1281,65 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> AddActionTypeAllocationWithResponsibility(Guid actionTypeUid, IssueTypeAllocationRequest model)
 		{
-			try
+			if (actionTypeUid == null || actionTypeUid == Guid.Empty)
 			{
-				if (!Company.CurrentResourceIsAdmin)
+				throw new ArgumentException(ActionApiMessages.InvalidActionTypeUid);
+			}
+
+			var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
+
+			if (issueType == null)
+			{
+				throw new NotFoundBusinessLayerException(ActionApiMessages.ActionTypeNotFound);
+			}
+
+			List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
+
+			if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
+			{
+				throw new ArgumentException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid));
+			}
+
+			var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == model.assetTypeUid);
+
+			if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
+			{
+				throw new ArgumentException(string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid));
+			}
+
+			if (Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
+			{
+				throw new ArgumentException(ActionApiMessages.UniqueAllocation);
+			}
+
+			if (model.responsibilityTypeUid.Count() > 0)
+			{
+				IEnumerable<ResponsibilityTypeViewModel> responsibilityTypes = await responsibilityRepository.GetResponsibilityTypesByAssetUid(model.assetTypeUid);
+
+				foreach (var uid in model.responsibilityTypeUid)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
-				}
-
-				if (actionTypeUid == null || actionTypeUid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidActionTypeUid));
-				}
-
-				var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
-
-				if (issueType == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidActionTypeUid));
-				}
-
-				List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
-
-				if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid)));
-				}
-
-				var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == model.assetTypeUid);
-
-				if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.assetTypeUid)));
-				}
-
-				if (Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.UniqueAllocation)).ConfigureAwait(false);
-				}
-
-				if (model.responsibilityTypeUid.Count() > 0)
-				{
-					IEnumerable<ResponsibilityTypeViewModel> responsibilityTypes = await responsibilityRepository.GetResponsibilityTypesByAssetUid(model.assetTypeUid);
-
-					foreach (var uid in model.responsibilityTypeUid)
+					if (!responsibilityTypes.Any(rt => rt.uid == uid))
 					{
-						if (!responsibilityTypes.Any(rt => rt.uid == uid))
-						{
-							return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.InvalidReponsibilityTypeUid, uid.ToString(), assetType.Name))).ConfigureAwait(false);
-						}
+						throw new ArgumentException(string.Format(ActionApiMessages.InvalidReponsibilityTypeUid, uid.ToString(), assetType.Name));
 					}
 				}
+			}
 
-				string allocationSQL = $@"INSERT INTO IssueTypeRelation (AssetTypeID, IssueTypeID) 
+			string allocationSQL = $@"INSERT INTO IssueTypeRelation (AssetTypeID, IssueTypeID) 
 											OUTPUT INSERTED.ID
 											VALUES (@assetTypeID, @issueTypeID)";
 
-				var allocationId = await Company.Database.Connection.QueryFirstAsync<int>(allocationSQL, new { assetTypeID = assetType.ID, issueTypeID = issueType.ID });
+			var allocationId = await Company.Database.Connection.QueryFirstAsync<int>(allocationSQL, new { assetTypeID = assetType.ID, issueTypeID = issueType.ID });
 
-				foreach (var rUid in model.responsibilityTypeUid)
-				{
-					var temp = new { allocationId, rUid };
-					string allocationResponsibilitySQL = $@"INSERT INTO IssueTypeRelationResponsibility (IssueTypeRelationID, ResponsibilityTypeId) 
+			foreach (var rUid in model.responsibilityTypeUid)
+			{
+				string allocationResponsibilitySQL = $@"INSERT INTO IssueTypeRelationResponsibility (IssueTypeRelationID, ResponsibilityTypeId) 
 															SELECT @allocationId, ID FROM ResponsibilityType where Uid = @responsibilityTypeUid";
 
-					var res = await Company.Database.Connection.ExecuteAsync(allocationResponsibilitySQL, new { allocationId, responsibilityTypeUid = rUid });
-				}
-
-				return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.AddSingleAllocationSuccessful));
+				var res = await Company.Database.Connection.ExecuteAsync(allocationResponsibilitySQL, new { allocationId, responsibilityTypeUid = rUid });
 			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
-			}
+			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.AddSingleAllocationSuccessful);
 		}
 	}
 }

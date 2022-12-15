@@ -84,9 +84,6 @@ export class BaseComponent {
 	itemOwnSidebar: SecondaryNavItem;
 	followingSidebar: SecondaryNavItem;
 
-	governanceRolesSidebar: SecondaryNavItem;
-	connectorLabels: SecondaryNavItem;
-
 	// tabs
 
 	lineageShowUsageOnly = false;
@@ -357,7 +354,6 @@ export class BaseComponent {
 		hasField?: boolean,
 		hasChild?: boolean,
 		hasRuleResult?: boolean,
-		hasGovernanceRoleSet?: boolean,
 		hasProcessDiagram?: boolean,
 		hasGroups?: boolean,
 		hasFollowing?: boolean,
@@ -591,21 +587,6 @@ export class BaseComponent {
 					`/asset/${this.uid}/comments`, null, 33
 				);
 				this.secondaryNavService.showItem(this.commentsSidebar);
-			}
-
-			if (this.objectType === 'TaskType') {
-				this.governanceRolesSidebar = new SecondaryNavItem(
-					$localize`Governance Roles`, 'GovernanceRoles', null,
-					'/sidebar/governanceRoles', null, 3);
-				if (!opts.hasGovernanceRoleSet) {
-					this.governanceRolesSidebar.warningMessage = 'GovRoleWarning';
-				}
-				this.secondaryNavService.showItem(this.governanceRolesSidebar);
-
-				this.connectorLabels = new SecondaryNavItem(
-					$localize`Connector Labels`, 'ConnectorLabels', null,
-					'/sidebar/connectorLabels', null, 4);
-				this.secondaryNavService.showItem(this.connectorLabels);
 			}
 
 			this.sidebarSubscription = this.secondaryNavService.rightSidebarClicked$.subscribe(
@@ -1105,9 +1086,6 @@ export class BaseComponent {
 			else if ((this.baseAssetTypeUid ?? "").toLowerCase() === this.resourceTypeUid.toLowerCase()) {
 				homeUrl = "admin/" + SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES;
 			}
-			else if (r?.AssetTypeClass === AssetTypeClass.DiagramAsset) {
-				homeUrl = "admin/assets/" + SiteUrlHelpers.SITE_URL_ADMIN_ASSET_DIAGRAM_ASSETS;
-			}
 			else if (r?.AssetTypeClass === AssetTypeClass.User) {
 				homeUrl = "users/" + this.uid;
 			}
@@ -1193,7 +1171,6 @@ export class BaseComponent {
 				hasField: r.Items.HasField,
 				hasChild: r.Items.HasChild,
 				hasRuleResult: this.objectType === 'Rule',
-				hasGovernanceRoleSet: r.Items.HasGovernanceRoleUidSet,
 				hasProcessDiagram: r.Items.HasProcessDiagram,
 				hasGroups: r.Items.HasGroups,
 				hasFollowing: r.Items.HasFollowing,
@@ -1292,8 +1269,6 @@ export class BaseComponent {
 		components.push(this.childSidebar);
 		components.push(this.fieldNav);
 		components.push(this.ruleResultSidebar);
-		components.push(this.governanceRolesSidebar);
-		components.push(this.connectorLabels);
 		components.push(this.groupsSidebar);
 		components.push(this.itemOwnSidebar);
 		components.push(this.followingSidebar);

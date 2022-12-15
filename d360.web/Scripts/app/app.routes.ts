@@ -30,8 +30,6 @@ const routes: Routes = [
     { path: "dashboard", loadChildren: () => import("./components/sidebar/dashboard/dashboard.module").then((m) => m.DashboardModule) },
     { path: "cart", loadChildren: () => import("./components/shoppingcart/shopping-cart.module").then((m) => m.ShoppingCartModule) },
     { path: "sidebar/itemfollow", loadChildren: () => import("./components/sidebar/itemfollow/itemfollow.module").then((m) => m.ItemFollowModule) },
-    { path: "sidebar/governanceRoles", loadChildren: () => import("./components/sidebar/governance-roles/governance-roles-sidebar.module").then((m) => m.GovernanceRolesModule) },
-    { path: "sidebar/connectorLabels", loadChildren: () => import("./components/sidebar/connector-labels/connector-labels-sidebar.module").then((m) => m.ConnectorLabelsModule) },
 	{ path: "sidebar/itemown", loadChildren: () => import("./components/sidebar/itemown/itemown.module").then((m) => m.ItemOwnModule) },
 	{ path: "semantics", loadChildren: () => import("./components/semantic/semantics.module").then((m) => m.SemanticsModule) },   
     { path: "users", loadChildren: () => import("./components/resource/resource.module").then((m) => m.ResourceModule) },

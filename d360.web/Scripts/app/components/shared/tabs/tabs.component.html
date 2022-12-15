@@ -1,4 +1,4 @@
-<div *ngIf="(items && items.length > 0) || (showOnlyMainTab && !hideMainTab)"
+<div *ngIf="(visibleItems.length > 0) || (showOnlyMainTab && !hideMainTab)"
 	class="tab-view">
 	<div class="tab-bar-outer">
 		<button *ngIf="showScrollButtons"

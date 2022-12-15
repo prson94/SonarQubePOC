@@ -38,12 +38,9 @@ export class ConfigurationAssetTypeBreadcrumbsComponent {
                 currentUid = item.ParentUid;
             }
         }
-
+        
         breadcrumbs.push(
-            new Breadcrumb(
-                typeClassToHeaderSettings.get(this.assetTypeClass).title,
-                `/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`
-            ),
+            new Breadcrumb(typeClassToHeaderSettings.get(this.assetTypeClass).title, `/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`),
             new Breadcrumb('Configuration'),
         );
 

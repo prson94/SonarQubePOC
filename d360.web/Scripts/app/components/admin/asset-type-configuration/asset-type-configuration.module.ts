@@ -34,8 +34,17 @@ import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration
 import { AuditModule } from '../../sidebar/audit/audit.module';
 import { ConfigurationAssetTypeBreadcrumbsComponent } from './tabs/shared/configuration-asset-type-breadcrumbs/configuration-asset-type-breadcrumbs.component';
 import { HeaderModule } from '../../shared/header/header.module';
+import { ConfigurationAssetTypeListTabsComponent } from './list/asset-type-list-tabs.component';
+import { GovernanceRolesComponent } from './governanceRoles/governance-roles.component';
+import { FormsModule } from '@angular/forms';
+import { EditorModule } from 'primeng/editor';
+import { DropdownModule } from 'primeng/dropdown';
+import { ButtonModule } from 'primeng/button';
+import { ConfigurationAssetTypeConnectorLabelsPageComponent } from './connectorLabels/configuration-asset-type-connector-labels-page.component';
+import { ConnectorLabelsModule } from './connectorLabels/connector-labels.module';
 import { AssetTypeDetailV2Module } from '../../shared/asset-type-detail-v2/asset-type-detail-v2.module';
 import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.component";
+import { PortalsModule } from '../../shared/portals/portals.module';
 import { FormsModule } from "@angular/forms";
 import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configuration-asset-type-levels-page.component';
 import { AdminHierarchiesModule } from '../hierarchies/admin-hierarchies.module';
@@ -44,8 +53,12 @@ import { AdminHierarchiesModule } from '../hierarchies/admin-hierarchies.module'
     imports: [
         RouterModule.forChild(assetTypeConfigurationRoutes),
         CommonModule,
+        FormsModule,
         CoreModule,
         TreeTableModule,
+        EditorModule,
+        DropdownModule,
+        ButtonModule,
         PipesModule,
         SidePanelModule,
         AngularSplitModule,
@@ -61,7 +74,10 @@ import { AdminHierarchiesModule } from '../hierarchies/admin-hierarchies.module'
         AdminRelationshipEditorModule,
         AuditModule,
         HeaderModule,
+        ConnectorLabelsModule,
         AssetTypeDetailV2Module,
+        SharedGridPagingInfoModule,
+        PortalsModule
 		SharedGridPagingInfoModule,
 		AdminHierarchiesModule,
         FormsModule
@@ -80,6 +96,10 @@ import { AdminHierarchiesModule } from '../hierarchies/admin-hierarchies.module'
         ConfigurationAssetTypeAllocationsPageComponent,
         ConfigurationAssetTypeRelationshipsPageComponent,
         ConfigurationAssetTypeLogPageComponent,
+        ConfigurationAssetTypeBreadcrumbsComponent,
+        ConfigurationAssetTypeListTabsComponent,
+        ConfigurationAssetTypeConnectorLabelsPageComponent,
+        GovernanceRolesComponent
 		ConfigurationAssetTypeBreadcrumbsComponent,
 		ConfigurationAssetTypeLevelsPageComponent
     ],

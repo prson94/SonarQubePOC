@@ -39,8 +39,6 @@ export class SiteUrlHelpers {
 	static SITE_URL_ITEM_OWN_ROOT = 'sidebar/itemown';
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
     static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';
-    static SITE_URL_GOVERNANCE_ROLES_ROOT = 'sidebar/governanceRoles';
-    static SITE_URL_CONNECTOR_LABELS_ROOT = 'sidebar/connectorLabels';
     static SITE_URL_SEMANTICTYPES_ROOT = 'semantics';
     //asset child routes
     static SITE_URL_ASSET_RULE = 'Rule';
@@ -58,11 +56,12 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_BULK_LOAD = `load`;
     static SITE_URL_ADMIN_ASSET = `configuration/assets`;
     static SITE_URL_ADMIN_ASSET_BUSINESS = `BusinessAsset`;
+    static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
+    static SITE_URL_ADMIN_ASSET_DIAGRAM = `DiagramAsset`;
 	static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
 	static SITE_URL_ADMIN_ASSET_MODELS = 'Model';
 	static SITE_URL_ADMIN_ASSET_POLICIES = 'Policy';
 	static SITE_URL_ADMIN_ASSET_RULES = 'Rule';
-	static SITE_URL_ADMIN_ASSET_DIAGRAM_ASSETS = 'DiagramAsset';
 
     static SITE_URL_ADMIN_CUSTOMIZATIONS = 'customizations';
     static SITE_URL_ADMIN_BRANDING = 'branding';
@@ -79,8 +78,6 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ISSUE_TYPES = 'issuetypes';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
     static SITE_URL_ADMIN_EXPORT_TEMPLATES = 'exporttemplates';
-    static SITE_URL_ADMIN_DIAGRAM_ASSETS: any;
-
 
 
     static getDefaultRoute() {

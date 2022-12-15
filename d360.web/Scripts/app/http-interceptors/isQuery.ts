@@ -1,4 +1,5 @@
 import { HttpContextToken, HttpRequest } from "@angular/common/http";
+import { ROUTE_INDEPENDENT_QUERY } from "./routeIndependentQuery";
 
 
 /**
@@ -13,5 +14,6 @@ export const IS_QUERY = new HttpContextToken<boolean>(() => false);
  *  i.e. it's safe for cancellation/sharing etc
  */
 export function isQueryRequest(req: HttpRequest<any>) {
-    return (req.method === 'GET') || (req.context.get(IS_QUERY) === true);
+    return (req.method === 'GET') || (req.context.get(IS_QUERY) === true) 
+        || (req.context.get(ROUTE_INDEPENDENT_QUERY) === true);
 }
