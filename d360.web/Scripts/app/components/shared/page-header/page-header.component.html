@@ -1,6 +1,11 @@
-<div class="title">
-    <span class="d3s-icon asset-icon">
-        <i class="fa {{icon}}"></i>
-    </span>
-    <h1 title="{{header}}">{{header}}</h1>
-</div>
+<ig-portal-content-provider [template]="template"
+	name="page-header">
+	<ng-template #template>
+		<div class="title">
+			<span class="d3s-icon asset-icon">
+				<i class="fa {{icon}}"></i>
+			</span>
+			<h1 title="{{header}}">{{header}}</h1>
+		</div>
+	</ng-template>
+</ig-portal-content-provider>
