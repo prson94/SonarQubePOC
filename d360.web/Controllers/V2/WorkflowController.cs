@@ -377,29 +377,14 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult GetWorkflowId(Guid uid)
         {
-            var prefix = "Workflow.GetWorkflowId => ";
-            string errorMessage;
+            var result = workflowRepository.GetWorkflowItemByUID(uid);
 
-            try
+            if (result == null)
             {
-                var result = workflowRepository.GetWorkflowItemByUID(uid);
-
-                if (result == null)
-                {
-                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowInstanceNotFound));
-                }
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result.ID));
+				throw new NotFoundBusinessLayerException(WorkflowApiMessages.WorkflowInstanceNotFound);
             }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix  }
-                });
 
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
-            }
+			return Ok(result.ID);
         }
 
         [
