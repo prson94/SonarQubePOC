@@ -189,29 +189,14 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetWorkflowVersionStepsAsync(Guid workflowVersionUid)
         {
-            var prefix = "Workflow.GetWorkflowVersionStepsAsync => ";
-            string errorMessage;
-
-            try
+            if (!validator.IsValidWorkflowVersion(workflowVersionUid))
             {
-                if (!validator.IsValidWorkflowVersion(workflowVersionUid))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(WorkflowApiMessages.WorkflowVersionUIDNotFound, workflowVersionUid.ToString()))).ConfigureAwait(false);
-                }
-
-                var workflowVersionSteps = await workflowRepository.GetWorkflowVersionSteps(workflowVersionUid);
-                
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, workflowVersionSteps))).ConfigureAwait(false);
+				throw new NotFoundBusinessLayerException(string.Format(WorkflowApiMessages.WorkflowVersionUIDNotFound, workflowVersionUid.ToString()));
             }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix  }
-                });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
+            var workflowVersionSteps = await workflowRepository.GetWorkflowVersionSteps(workflowVersionUid);
+            
+			return Ok(workflowVersionSteps);
         }
 
         private Guid GetUidFromQueryParams(IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName)
