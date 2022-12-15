@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Net.Http;
 using System.Web.Http;
 
 using Moq;
 using Xunit;
+using FluentAssertions;
 using Newtonsoft.Json;
 
 using d360.core.entities.Workflow;
 using d360.web.Controllers.V2;
 using d360.web.Utilities;
-using igx.UnitTests.Core;
-using FluentAssertions;
-using System.Net;
 using d360.web.Services;
+using igx.UnitTests.Core;
+
 using Resources;
-using System.Threading.Tasks;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -102,18 +102,18 @@ namespace igx.UnitTests.V2ControllerTests
 		}
 
         [Fact]
-        public async void GetWorkflows()
+        public async void GetWorkflowsAsync_MustReturnsSuccessfullResult()
         {
+			//Act
             var actionResult = await WorkflowController.GetWorkflowsAsync();
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
-
             var data = JsonConvert.DeserializeObject<WorkflowsApiViewModel>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode);
-            Assert.True(data != null);
-        }
-
+			//Assert
+			actionResult.ShouldBeOKContent<WorkflowsApiViewModel>();
+			data.Should().NotBeNull();
+		}
     }
 }
