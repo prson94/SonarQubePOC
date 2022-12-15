@@ -114,7 +114,6 @@ export class ConfigurationAssetTypeListComponent {
 
         return null;
     }
-	}
 
 	get hasMaxDepthColumn() {
 		return this.assetTypeClass === AssetTypeClass.Model || this.assetTypeClass === AssetTypeClass.Policy;

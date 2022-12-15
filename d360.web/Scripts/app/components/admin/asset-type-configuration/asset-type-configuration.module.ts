@@ -36,7 +36,6 @@ import { ConfigurationAssetTypeBreadcrumbsComponent } from './tabs/shared/config
 import { HeaderModule } from '../../shared/header/header.module';
 import { ConfigurationAssetTypeListTabsComponent } from './list/asset-type-list-tabs.component';
 import { GovernanceRolesComponent } from './governanceRoles/governance-roles.component';
-import { FormsModule } from '@angular/forms';
 import { EditorModule } from 'primeng/editor';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
@@ -77,8 +76,7 @@ import { AdminHierarchiesModule } from '../hierarchies/admin-hierarchies.module'
         ConnectorLabelsModule,
         AssetTypeDetailV2Module,
         SharedGridPagingInfoModule,
-        PortalsModule
-		SharedGridPagingInfoModule,
+        PortalsModule,
 		AdminHierarchiesModule,
         FormsModule
     ],
@@ -99,8 +97,7 @@ import { AdminHierarchiesModule } from '../hierarchies/admin-hierarchies.module'
         ConfigurationAssetTypeBreadcrumbsComponent,
         ConfigurationAssetTypeListTabsComponent,
         ConfigurationAssetTypeConnectorLabelsPageComponent,
-        GovernanceRolesComponent
-		ConfigurationAssetTypeBreadcrumbsComponent,
+        GovernanceRolesComponent,
 		ConfigurationAssetTypeLevelsPageComponent
     ],
     exports: [],

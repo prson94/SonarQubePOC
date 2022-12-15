@@ -58,7 +58,6 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ASSET_BUSINESS = `BusinessAsset`;
     static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
     static SITE_URL_ADMIN_ASSET_DIAGRAM = `DiagramAsset`;
-	static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
 	static SITE_URL_ADMIN_ASSET_MODELS = 'Model';
 	static SITE_URL_ADMIN_ASSET_POLICIES = 'Policy';
 	static SITE_URL_ADMIN_ASSET_RULES = 'Rule';
@@ -111,7 +110,7 @@ export class SiteUrlHelpers {
 			return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_RULES}`;
 		}
 		if (objectType.toLowerCase() === "tasktype") {
-			return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_DIAGRAM_ASSETS}`;
+			return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_DIAGRAM}`;
 		}
         if (objectType.toLowerCase() === "intersecttype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`;

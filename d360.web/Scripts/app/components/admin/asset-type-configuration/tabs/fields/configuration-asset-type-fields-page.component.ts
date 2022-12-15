@@ -78,8 +78,7 @@ export class ConfigurationAssetTypeFieldsPageComponent {
                 showDisplayInColumn: false,
                 allowSingleSegmentPath: true
             }
-        ]
-		],
+        ],
 		[
 			AssetTypeClass.Model,
 			{
