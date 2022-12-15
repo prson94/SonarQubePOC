@@ -60,7 +60,7 @@ export class ProcessNodeDataHelper {
 
 	public restoreBigObjects(node: go.ObjectData) {
 		Object.keys(node).forEach((prop) => {
-			let item = this.nodeDataBigObjectStorage.find((x) => x.key === node["key"] && x.prop === prop);
+			const item = this.nodeDataBigObjectStorage.find((x) => x.key === node["key"] && x.prop === prop);
 			if (item) {
 				node[`${prop}`] = item.value;
 			}
@@ -71,13 +71,13 @@ export class ProcessNodeDataHelper {
 		var currentPropValue = data[propertyName];
 		var updatedPropValue = formData[propertyName];
 
-		let bothEmpty = this.isObjectEmpty(currentPropValue) && this.isObjectEmpty(updatedPropValue);
+		const bothEmpty = this.isObjectEmpty(currentPropValue) && this.isObjectEmpty(updatedPropValue);
 
 		if (propertyName !== 'key' && !bothEmpty) {
 			const fieldValue = formData[`${propertyName}`].toString();
 			if (fieldValue.length > this.bigObjectCharacterThreshold) {
 				//handle big objects
-				let bigData = this.nodeDataBigObjectStorage.find((x) => x.key === formData.key && x.prop === propertyName);
+				const bigData = this.nodeDataBigObjectStorage.find((x) => x.key === formData.key && x.prop === propertyName);
 				if (bigData) {
 					bigData.value = fieldValue;
 				}
@@ -694,7 +694,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 			maxSize: new go.Size(Infinity, Infinity)
 		}).toString();
 
-		let processData = JSON.parse(this.myDiagram.model.toJson());
+		const processData = JSON.parse(this.myDiagram.model.toJson());
 
 
 		if (processData.nodeDataArray) {
