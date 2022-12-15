@@ -50,10 +50,10 @@ export class ProcessNodeDataHelper {
 
 	public processBigObjects(node: go.ObjectData) {
 		Object.keys(node).forEach((prop) => {
-			const value = node[prop] as string;
+			const value = node[`${prop}`] as string;
 			if (value.length > this.bigObjectCharacterThreshold) {
 				this.nodeDataBigObjectStorage.push({ key: node.key, prop, value });
-				node[prop] = this.getValueHash(value);
+				node[`${prop}`] = this.getValueHash(value);
 			}
 		});
 	}
@@ -62,7 +62,7 @@ export class ProcessNodeDataHelper {
 		Object.keys(node).forEach((prop) => {
 			let item = this.nodeDataBigObjectStorage.find((x) => x.key === node["key"] && x.prop === prop);
 			if (item) {
-				node[prop] = item.value;
+				node[`${prop}`] = item.value;
 			}
 		});
 	}
@@ -74,7 +74,7 @@ export class ProcessNodeDataHelper {
 		let bothEmpty = this.isObjectEmpty(currentPropValue) && this.isObjectEmpty(updatedPropValue);
 
 		if (propertyName !== 'key' && !bothEmpty) {
-			const fieldValue = formData[propertyName].toString();
+			const fieldValue = formData[`${propertyName}`].toString();
 			if (fieldValue.length > this.bigObjectCharacterThreshold) {
 				//handle big objects
 				let bigData = this.nodeDataBigObjectStorage.find((x) => x.key === formData.key && x.prop === propertyName);
@@ -99,7 +99,7 @@ export class ProcessNodeDataHelper {
 	}
 
 	private getValueHash(value: string) {
-		var hash = 0,
+		let hash = 0,
 			i, chr;
 		if (value.length === 0) {return hash;}
 		for (i = 0; i < value.length; i++) {
@@ -698,7 +698,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
 
 		if (processData.nodeDataArray) {
-			(processData.nodeDataArray as any[]).forEach((x) => this.processDataHelper.restoreBigObjects(x));
+			(processData.nodeDataArray as go.ObjectData[]).forEach((x) => this.processDataHelper.restoreBigObjects(x));
 		}
 
 		this.processService.putProcessDiagram(this.assetUid, processData)
