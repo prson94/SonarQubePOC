@@ -46,7 +46,9 @@ import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.compon
 import { PortalsModule } from '../../shared/portals/portals.module';
 import { FormsModule } from "@angular/forms";
 import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configuration-asset-type-levels-page.component';
-import { AdminHierarchiesModule } from '../hierarchies/admin-hierarchies.module';
+import { AdminLevelListComponent } from './levels/admin-level-list.component';
+import { AdminLevelEditorComponent } from './levels/admin-level-editor.component';
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [
@@ -77,8 +79,8 @@ import { AdminHierarchiesModule } from '../hierarchies/admin-hierarchies.module'
         AssetTypeDetailV2Module,
         SharedGridPagingInfoModule,
         PortalsModule,
-		AdminHierarchiesModule,
-        FormsModule
+		FormsModule,
+		TableModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
@@ -98,7 +100,9 @@ import { AdminHierarchiesModule } from '../hierarchies/admin-hierarchies.module'
         ConfigurationAssetTypeListTabsComponent,
         ConfigurationAssetTypeConnectorLabelsPageComponent,
         GovernanceRolesComponent,
-		ConfigurationAssetTypeLevelsPageComponent
+		ConfigurationAssetTypeLevelsPageComponent,
+		AdminLevelListComponent,
+		AdminLevelEditorComponent
     ],
     exports: [],
 })

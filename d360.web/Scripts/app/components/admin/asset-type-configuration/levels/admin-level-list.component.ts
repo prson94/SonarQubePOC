@@ -1,9 +1,10 @@
 ﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
-import { HierarchyTypeLevel } from '../../../models/hierarchy-type-level.model';
-import { LevelsService } from '../../../services/levels.service';
-import { BaseComponent } from '../../shared/base.component';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { CompanySettingsService } from '../../../services/settings.service';
+import { HierarchyTypeLevel } from '../../../../models/hierarchy-type-level.model';
+import { LevelsService } from '../../../../services/levels.service';
+import { MessagesObservableService } from '../../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../../services/settings.service';
+import { BaseComponent } from '../../../shared/base.component';
+
 
 @Component({
     selector: 'd3s-admin-level-grid',
@@ -42,8 +43,7 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
 
         this.levelsService.getObjectLevels(this.objectId, this.objectType).subscribe(
             (levels) => {
-                this.levels = levels;
-
+				this.levels = levels;
                 this.isLoading = false;
             }
         );
