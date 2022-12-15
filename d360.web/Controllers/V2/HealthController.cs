@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -45,28 +43,15 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "API call was successful and connect to the database"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "API call was not successful and cannot connect to the database"),
         ]
-        public async Task<IHttpActionResult> GetHealth()
+        public IHttpActionResult GetHealth()
         {
-            var prefix = "Health.GetHealth => ";
-
-            try
+            if (Company.Connection.State != System.Data.ConnectionState.Open)
             {
-                if (Company.Connection.State != System.Data.ConnectionState.Open)
-                {
-                    Company.Connection.Open();
-                    Company.Connection.Close();
-                }
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK))).ConfigureAwait(false);
+                Company.Connection.Open();
+                Company.Connection.Close();
             }
-            catch (Exception ex)
-            {
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.InternalServerError))).ConfigureAwait(false);
-            }
+			return Ok();
         }
 
         [HttpGet]
