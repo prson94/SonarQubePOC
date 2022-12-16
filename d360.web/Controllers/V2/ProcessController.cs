@@ -564,24 +564,24 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "Url of diagram asset", typeof(string)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<IHttpActionResult> GetProcessDiagramUrl(Guid assetUid)
+		public IHttpActionResult GetProcessDiagramUrl(Guid assetUid)
 		{
-			if (assetUid == null)
+			if (assetUid == null || assetUid == Guid.Empty)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetUidMustSpecified));
+				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetUid));
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetuidDoesnotExists));
+				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
 			}
 
 			Guid baseAssetUid = Company.Query<Guid>(@"select top 1 diagramassetuid from processexpandeddata where fromuid = @assetUid or touid = @assetUid", new { assetUid }).FirstOrDefault();
 			string url = $"asset/{baseAssetUid.ToString()}/diagrams/Process/{assetUid}";
 
-			return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, url))).ConfigureAwait(false);
+			return Ok(url);
 		}
 
 		/// <summary>
@@ -616,7 +616,7 @@ namespace d360.web.Controllers.V2
 						order by an.DisplayPath",
 						new { currentAssetUid = asset.uid, assetTypeId = asset.AssetTypeID });
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -667,7 +667,7 @@ namespace d360.web.Controllers.V2
 					where it.objectcardinality = 1 or it.SubjectCardinality = 1
 					", new { targetAssetUid });
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+			return Ok(results);
 		}
 	}
 }
