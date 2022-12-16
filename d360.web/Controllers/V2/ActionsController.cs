@@ -1152,7 +1152,7 @@ namespace d360.web.Controllers.V2
 
 			var resultMessage = allocations?.Count == 1 ? ActionApiMessages.AddSingleAllocationSuccessful : ActionApiMessages.AddAllocationsSuccessful;
 
-			return Ok(resultMessage);
+			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, resultMessage);
 		}
 
 		/// <summary>
