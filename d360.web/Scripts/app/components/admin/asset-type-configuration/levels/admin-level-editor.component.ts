@@ -1,9 +1,9 @@
 ﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { LevelsService } from '../../../services/levels.service';
-import { HierarchyTypeLevel } from '../../../models/hierarchy-type-level.model';
-import { BaseComponent } from '../../shared/base.component';
+import { HierarchyTypeLevel } from '../../../../models/hierarchy-type-level.model';
+import { LevelsService } from '../../../../services/levels.service';
+import { CompanySettingsService } from '../../../../services/settings.service';
+import { BaseComponent } from '../../../shared/base.component';
 import * as _ from 'lodash';
-import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-level-editor',

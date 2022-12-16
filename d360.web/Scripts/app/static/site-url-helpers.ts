@@ -58,12 +58,13 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ASSET_BUSINESS = `BusinessAsset`;
     static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
     static SITE_URL_ADMIN_ASSET_DIAGRAM = `DiagramAsset`;
+	static SITE_URL_ADMIN_ASSET_MODELS = 'Model';
+	static SITE_URL_ADMIN_ASSET_POLICIES = 'Policy';
+	static SITE_URL_ADMIN_ASSET_RULES = 'Rule';
+
     static SITE_URL_ADMIN_CUSTOMIZATIONS = 'customizations';
     static SITE_URL_ADMIN_BRANDING = 'branding';
-    static SITE_URL_ADMIN_MODELS = 'taxonomies';
-    static SITE_URL_ADMIN_POLICIES = 'policies';
     static SITE_URL_ADMIN_RELATIONSHIPS = 'relationships';
-    static SITE_URL_ADMIN_RULES = 'rules';
     static SITE_URL_ADMIN_SURVEYS = 'surveys';
     static SITE_URL_ADMIN_TAGS = 'tags';
     static SITE_URL_ADMIN_SCORING = 'scoring';
@@ -100,11 +101,17 @@ export class SiteUrlHelpers {
             return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
         }
         if (objectType.toLowerCase() === "taxonomytype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`;
+			return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_MODELS}`;
         }
         if (objectType.toLowerCase() === "policytype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`;
-        }
+			return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_POLICIES}`;
+		}
+		if (objectType.toLowerCase() === "ruletype") {
+			return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_RULES}`;
+		}
+		if (objectType.toLowerCase() === "tasktype") {
+			return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_DIAGRAM}`;
+		}
         if (objectType.toLowerCase() === "intersecttype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`;
         }
@@ -122,9 +129,6 @@ export class SiteUrlHelpers {
         }
         if (objectType.toLowerCase() === "tag" && !objectId) {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`;
-        }
-        if (objectType.toLowerCase() === "ruletype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`;
         }
         if (objectType.toLowerCase() === "resourcetype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`;
