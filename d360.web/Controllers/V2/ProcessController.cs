@@ -112,9 +112,9 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> AvailableDiagramNodesForAsset(Guid assetUid)
 		{
-			if (assetUid == null)
+			if (assetUid == null || assetUid == Guid.Empty)
 			{
-				throw new ArgumentException(OthersMessages.AssetUidMustSpecified);
+				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetUid));
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
@@ -494,16 +494,16 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetProcessDiagramExport(Guid assetUid)
 		{
-			if (assetUid == null)
+			if (assetUid == null || assetUid == Guid.Empty)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetUidMustSpecified));
+				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetUid));
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetuidDoesnotExists));
+				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
 			}
 
 			string result = await Request.Content.ReadAsStringAsync();
@@ -514,7 +514,7 @@ namespace d360.web.Controllers.V2
 			var detail = Company.GetAssetDetail(asset.ID);
 			var response = createFileResponseMessage(HttpStatusCode.OK, $"{detail.DisplayValue} {DateTime.Now:MMM dd yyyy}.xlsx", bytes);
 
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
+			return ResponseMessage(response);
 		}
 
 		/// <summary>
