@@ -142,12 +142,12 @@ export class SiteUrlHelpers {
     }
 
     // getObjectUrl - Generates the url for an object based on its type
-	static getObjectUrl(objectType: string, objectId: number | string, parentId?: number, objectName?: string): string {
+	static getObjectUrl(objectType: string, objectId: number | string, parentId?: number, objectName?: string, objectUid?: string): string {
 		switch (objectType.toUpperCase()) {
 			case 'ARTIFACTTYPE':
 				return this.getObjectUrlByUid(objectType, objectId as string);
             case 'ARTIFACT':
-                return `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${parentId}/${objectId}`;
+				return this.getObjectUrlByUid(objectType, objectUid ?? objectId as string);//`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${parentId}/${objectId}`;
             case 'COMMENTS':
                 return `${SiteUrlHelpers.SITE_URL_COMMENTS_ROOT}/${objectId}/${objectName}`;
             case 'GROUP':
@@ -179,6 +179,8 @@ export class SiteUrlHelpers {
 		switch (objectType.toUpperCase()) {
 			case 'ARTIFACTTYPE':
 				return `${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${uid}`;
+			case 'ARTIFACT':
+				return `${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${uid}`;
 			default:
 				console.log('Unable to generate getObjectUrlByUid');
 		}

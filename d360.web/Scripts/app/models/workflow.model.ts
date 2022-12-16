@@ -266,7 +266,8 @@ export class WorkflowForm {
     TypeName: string;
     AllowReassignObject: boolean;
     AllowReassignResource: boolean;
-    IsClearAssignementsAllowed: boolean;
+	IsClearAssignementsAllowed: boolean;
+	ObjectUid: string;
 }
 
 export class WorkflowTypeItem {
