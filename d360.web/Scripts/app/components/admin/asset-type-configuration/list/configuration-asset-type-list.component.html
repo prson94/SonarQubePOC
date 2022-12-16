@@ -18,7 +18,7 @@
 					<div class="grid-action-buttons">
 						<button *ngIf="addNewAssetTypeWarning == null"
 							[igDataCy]="'Assets_Add'"
-							(click)="add()"
+							(click)="isModalVisible = true"
 							igButton
 							pTooltip="Add new asset"
 							i18n-pTooltip
@@ -120,3 +120,6 @@
 		</d3s-asset-type-list-sidepanel-wrapper>
 	</div>
 </div>
+
+
+<asset-type-modal-form [isModalVisible]="isModalVisible"></asset-type-modal-form>

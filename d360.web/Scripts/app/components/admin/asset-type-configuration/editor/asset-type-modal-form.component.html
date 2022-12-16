@@ -1,0 +1,46 @@
+<d3s-modal additionalClasses="modal-dyn-editor asset-editor large-dialog"
+		   [showTitle]="false"
+		   [isVisible]="isModalVisible">
+	<div class="asset-editor-container">
+		<div class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
+			<div class="form-header-wrapper">
+				<div class="form-header">
+					{{title}}
+					<h2 *ngIf="subTitle" [innerHTML]="subTitle"></h2>
+				</div>
+				<ig-form-feedback-badges class="ig-form-feedback-badges"
+										 [igformGroup]="assetTypeForm"
+										 [inputContainer]="formElement">
+				</ig-form-feedback-badges>
+			</div>
+
+			<form #form
+				  [formGroup]="assetTypeForm">
+				<ig-property-group [igformGroup]="assetTypeForm" title="General" i18n-title>
+					<div inputs>
+						<div class="form-group">
+							<div class="row">
+								<label for="name" class="ig-label" i18n>Name</label>
+								<input igInput
+									   igSize="full"
+									   name="name"
+									   formControlName="name"
+									   [igDataCy]="'Asset_Type_Modal_Field_Name'"
+									   type="text"
+									   required/>
+							</div>
+						</div>
+					</div>
+				</ig-property-group>
+
+			</form>
+
+
+		</div>
+	</div>
+	<div class="action-bar">
+		<button igButton igAutoFocus i18n-label label="Cancel"></button>
+		<span class="grow"></span>
+		<button igButton class="ig-button-primary" i18n-label label="Add Asset Tyoe"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+	</div>
+</d3s-modal>

@@ -33,7 +33,9 @@ export class ConfigurationAssetTypeListComponent {
     dataCyPrefix = 'AssetType_';
     destroy = new Subject<void>();
     simpleFilterValue = '';
-    public tabTitle: string = $localize`Admin`;
+	public tabTitle: string = $localize`Admin`;
+
+	isModalVisible: boolean = false;
 
     constructor(
         private assetsService: AssetService,
