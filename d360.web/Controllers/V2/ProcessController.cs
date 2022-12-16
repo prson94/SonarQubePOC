@@ -185,61 +185,59 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<IHttpActionResult> UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model, Guid? sourceAssetUid = null)
+		public IHttpActionResult UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model, Guid? sourceAssetUid = null)
 		{
-			try
+			Asset targetAsset;
+			Asset sourceAsset = null;
+			List<ProcessDiagramCopyRelationshipModel> copyRelationshipModel = null;
+			List<ProcessDiagramCopyRelationshipModel> rejectedRelationsipsCopy = null;
+			List<ProcessDiagramCopyMapper> pdCopyMapper = null;
+
+			bool isDiagramReplace = false;
+			bool validateFields = true;
+
+			if (sourceAssetUid.HasValue)
 			{
-				Asset targetAsset;
-				Asset sourceAsset = null;
-				List<ProcessDiagramCopyRelationshipModel> copyRelationshipModel = null;
-				List<ProcessDiagramCopyRelationshipModel> rejectedRelationsipsCopy = null;
-				List<ProcessDiagramCopyMapper> pdCopyMapper = null;
+				validateFields = false;
+			}
 
-				bool isDiagramReplace = false;
-				bool validateFields = true;
+			bool isModelEmpty = model.linkDataArray == null && model.linkFromPortIdProperty == null && model.linkToPortIdProperty == null && model.nodeDataArray == null;
 
-				if (sourceAssetUid.HasValue)
+			if (!sourceAssetUid.HasValue && isModelEmpty)
+			{
+				throw new ArgumentNullException(OthersMessages.ModelNotEmpty);
+			}
+
+			if (sourceAssetUid.HasValue && !isModelEmpty)
+			{
+				throw new ArgumentNullException(OthersMessages.SourceAssetUidModelNotEmpty);
+			}
+
+			targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+
+			if (sourceAssetUid.HasValue)
+			{
+				isDiagramReplace = true;
+
+				sourceAsset = Company.Assets.FirstOrDefault(x => x.uid == sourceAssetUid);
+				if (sourceAsset == null)
 				{
-					validateFields = false;
+					throw new ArgumentNullException(OthersMessages.SourceUidNotExists);
 				}
 
-				bool isModelEmpty = model.linkDataArray == null && model.linkFromPortIdProperty == null && model.linkToPortIdProperty == null && model.nodeDataArray == null;
-				
-				if (!sourceAssetUid.HasValue && isModelEmpty)
+				if (sourceAsset.ID == targetAsset.ID)
 				{
-					throw new ArgumentNullException(OthersMessages.ModelNotEmpty);
+					throw new ArgumentNullException(OthersMessages.SourceTargetNotSame);
 				}
 
-				if (sourceAssetUid.HasValue && !isModelEmpty)
+				if (sourceAsset.AssetTypeID != targetAsset.AssetTypeID)
 				{
-					throw new ArgumentNullException(OthersMessages.SourceAssetUidModelNotEmpty);
+					throw new ArgumentNullException(OthersMessages.SourceTargetTypeMustSame);
 				}
 
-				targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+				model = ProcessRepository.GetAssetsProcessDiagram(sourceAssetUid.Value);
 
-				if (sourceAssetUid.HasValue)
-				{
-					isDiagramReplace = true;
-
-					sourceAsset = Company.Assets.FirstOrDefault(x => x.uid == sourceAssetUid);
-					if (sourceAsset == null)
-					{
-						throw new ArgumentNullException(OthersMessages.SourceUidNotExists);
-					}
-
-					if (sourceAsset.ID == targetAsset.ID)
-					{
-						throw new ArgumentNullException(OthersMessages.SourceTargetNotSame);
-					}
-
-					if (sourceAsset.AssetTypeID != targetAsset.AssetTypeID)
-					{
-						throw new ArgumentNullException(OthersMessages.SourceTargetTypeMustSame);
-					}
-
-					model = ProcessRepository.GetAssetsProcessDiagram(sourceAssetUid.Value);
-
-					copyRelationshipModel = Company.Query<ProcessDiagramCopyRelationshipModel>(@"
+				copyRelationshipModel = Company.Query<ProcessDiagramCopyRelationshipModel>(@"
 															drop table if exists #assets
 															create table #assets(assetUid uniqueidentifier)
 
@@ -262,234 +260,220 @@ namespace d360.web.Controllers.V2
 																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
 															", new { assetUid = sourceAsset.uid }).ToList();
 
-					rejectedRelationsipsCopy = copyRelationshipModel.Where(x => x.ObjectCardinality == 1 || x.SubjectCardinality == 1).ToList();
-					copyRelationshipModel = copyRelationshipModel.Where(x => x.ObjectCardinality == 2 && x.SubjectCardinality == 2).ToList();
+				rejectedRelationsipsCopy = copyRelationshipModel.Where(x => x.ObjectCardinality == 1 || x.SubjectCardinality == 1).ToList();
+				copyRelationshipModel = copyRelationshipModel.Where(x => x.ObjectCardinality == 2 && x.SubjectCardinality == 2).ToList();
 
-					pdCopyMapper = new List<ProcessDiagramCopyMapper>();
+				pdCopyMapper = new List<ProcessDiagramCopyMapper>();
 
-					//Invalidate all previous keys
-					foreach (var node in model.nodeDataArray)
-					{
-						var newKey = Guid.NewGuid();
-						var currentKey = node.AssetUid;
-						pdCopyMapper.Add(new ProcessDiagramCopyMapper { oldUid = node.AssetUid, keyUid = newKey });
-
-						foreach (var rel in copyRelationshipModel.Where(x => x.keyUid == currentKey))
-						{
-							rel.keyUid = newKey;
-						}
-
-						foreach (var link in model.linkDataArray)
-						{
-							if (link.from == currentKey)
-							{
-								link.from = newKey;
-							}
-
-							if (link.to == currentKey)
-							{
-								link.to = newKey;
-							}
-						}
-
-						node["key"] = newKey.ToString();
-					}
-				}
-
-				if (!Company.HasAssetPermission(targetAsset.ID, core.enums.Permission.EditAsset))
-				{
-					var err = new List<ValidationError>
-					{
-						new ValidationError { Error = OthersMessages.NotAuthorizedToEditDiagram }
-					};
-
-					return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new
-					{
-						hasError = true,
-						errors = err
-					}))).ConfigureAwait(false);
-				}
-
-				ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
-				foreach (var item in model.linkDataArray)
-				{
-					if (item.from == Guid.Empty || item.to == Guid.Empty)
-					{
-						throw new ArgumentNullException(OthersMessages.LinkWithoutFromToDetected);
-					}
-				}
-
-				//clear label values, we need to save only uids
-				foreach (var link in model.linkDataArray)
-				{
-					link.label = null;
-				}
-
+				//Invalidate all previous keys
 				foreach (var node in model.nodeDataArray)
 				{
-					if (!model.linkDataArray.Any(x => x.from == node.AssetUid || x.to == node.AssetUid))
+					var newKey = Guid.NewGuid();
+					var currentKey = node.AssetUid;
+					pdCopyMapper.Add(new ProcessDiagramCopyMapper { oldUid = node.AssetUid, keyUid = newKey });
+
+					foreach (var rel in copyRelationshipModel.Where(x => x.keyUid == currentKey))
 					{
-						return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new
+						rel.keyUid = newKey;
+					}
+
+					foreach (var link in model.linkDataArray)
+					{
+						if (link.from == currentKey)
 						{
-							hasError = true,
-							errors = new List<ValidationError>
+							link.from = newKey;
+						}
+
+						if (link.to == currentKey)
+						{
+							link.to = newKey;
+						}
+					}
+
+					node["key"] = newKey.ToString();
+				}
+			}
+
+			if (!Company.HasAssetPermission(targetAsset.ID, Permission.EditAsset))
+			{
+				var err = new List<ValidationError>
+				{
+					new ValidationError { Error = OthersMessages.NotAuthorizedToEditDiagram }
+				};
+
+				return Ok(new
+				{
+					hasError = true,
+					errors = err
+				});
+			}
+
+			ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
+			foreach (var item in model.linkDataArray)
+			{
+				if (item.from == Guid.Empty || item.to == Guid.Empty)
+				{
+					throw new ArgumentNullException(OthersMessages.LinkWithoutFromToDetected);
+				}
+			}
+
+			//clear label values, we need to save only uids
+			foreach (var link in model.linkDataArray)
+			{
+				link.label = null;
+			}
+
+			foreach (var node in model.nodeDataArray)
+			{
+				if (!model.linkDataArray.Any(x => x.from == node.AssetUid || x.to == node.AssetUid))
+				{
+					return Ok(new
+					{
+						hasError = true,
+						errors = new List<ValidationError>
+						{
+							new ValidationError()
 							{
-								new ValidationError(){
 								AssetTypeUid = Guid.Empty,
 								AssetUid = Guid.Empty,
 								ErrorType = OthersMessages.CustomConstant,
 								Error = OthersMessages.AllNodeMustLink
-								}
 							}
-						})));
-					}
-				}
-
-				var duplicates = model.nodeDataArray.GroupBy(x => x["Name"].ToLower()).Select(x => new { x.Key, Items = x }).Where(x => x.Items.Count() > 1).ToList();
-
-				if (duplicates.Count > 0)
-				{
-					List<ValidationError> err = new List<ValidationError>();
-					foreach (var item in duplicates)
-					{
-						var data = item.Items.FirstOrDefault();
-						err.Add(new ValidationError { ErrorType = "CustomUniqueName", AssetTypeUid = data.AssetTypeUid, AssetUid = data.AssetUid, Error = item.Items.Count() + " items have the same name '" + data["Name"] + "'" });
-					}
-					return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = err }))).ConfigureAwait(false);
-
-				}
-
-				List<NodeData> toAdd = new List<NodeData>();
-				List<NodeData> toUpdate = new List<NodeData>();
-				List<NodeData> toDelete = new List<NodeData>();
-
-				foreach (var exNode in existingProcess.nodeDataArray)
-				{
-					if (!model.nodeDataArray.Any(x => x.AssetUid == exNode.AssetUid) && exNode.IsNodeValid)
-					{
-						toDelete.Add(exNode);
-					}
-				}
-
-				foreach (var node in model.nodeDataArray)
-				{
-					var existsingNode = existingProcess.nodeDataArray.FirstOrDefault(x => x.AssetUid == node.AssetUid);
-					
-					if (existsingNode == null)
-					{
-						toAdd.Add(node);
-					}
-					else
-					{
-						if (existsingNode.GetHash() != node.GetHash())
-						{
-							toUpdate.Add(node);
 						}
-					}
+					});
 				}
-
-				List<UpsertModel> upsertModels = new List<UpsertModel>();
-
-				//Check for asset type, if asset type is deleted dont copy nodes and links
-				if (isDiagramReplace)
-				{
-					if (toAdd.Any(n => !n.HasAssetType))
-					{
-						toAdd.ForEach(node =>
-						{
-							if (!node.HasAssetType)
-							{
-								model.linkDataArray = model.linkDataArray.Where(x => x.from != node.AssetUid && x.to != node.AssetUid).ToList();
-								model.nodeDataArray = model.nodeDataArray.Where(x => x.AssetUid != node.AssetUid).ToList();
-							}
-						});
-
-						toAdd = toAdd.Where(x => x.HasAssetType).ToList();
-					}
-				}
-
-				foreach (var item in toAdd.GroupBy(x => x.AssetTypeUid))
-				{
-					var umItem = new UpsertModel
-					{
-						AssetTypeUid = item.Key,
-						Assets = new List<UpsertAsset>()
-					};
-					foreach (var a in item.Select(x => x))
-					{
-						umItem.Assets.Add(new UpsertAsset
-						{
-							ExternalKey = a.AssetUid,
-							Uid = null,
-							Fields = a.CustomFields
-						});
-					}
-					upsertModels.Add(umItem);
-				}
-
-				foreach (var item in toUpdate.GroupBy(x => x.AssetTypeUid))
-				{
-					var umItem = new UpsertModel
-					{
-						AssetTypeUid = item.Key,
-						Assets = new List<UpsertAsset>()
-					};
-
-					foreach (var a in item.Select(x => x))
-					{
-						umItem.Assets.Add(new UpsertAsset()
-						{
-							ExternalKey = a.AssetUid,
-							Uid = a.AssetUid,
-							Fields = a.CustomFields
-						});
-					}
-
-					upsertModels.Add(umItem);
-				}
-
-				var validationRes = AssetRepository.ValidateAssetUpsertModel(upsertModels, validateFields, true);
-				
-				if (validationRes.Count > 0)
-				{
-					return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes }))).ConfigureAwait(false);
-				}
-
-				var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
-				var execution = getApiExecution(totalCount);
-
-				if (sourceAsset != null)
-				{
-					execution.Fields = JsonConvert.SerializeObject(new { SourceAssetUid = sourceAsset.uid });
-				}
-
-				validationRes = ProcessRepository.UpdateProcessDiagram(execution, model,
-					toAdd, toUpdate, toDelete,
-					targetAsset.ID, isDiagramReplace,
-					copyRelationshipModel, pdCopyMapper);
-
-				if (validationRes.Count > 0)
-				{
-					return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes })));
-				}
-
-				var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count, warnings = rejectedRelationsipsCopy != null ? rejectedRelationsipsCopy : null };
-				
-				return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
 			}
-			catch (Exception ex)
+
+			var duplicates = model.nodeDataArray.GroupBy(x => x["Name"].ToLower()).Select(x => new { x.Key, Items = x }).Where(x => x.Items.Count() > 1).ToList();
+
+			if (duplicates.Count > 0)
 			{
-				var err = new List<ValidationError>
+				List<ValidationError> err = new List<ValidationError>();
+				foreach (var item in duplicates)
 				{
-					new ValidationError { Error = ex.Message }
+					var data = item.Items.FirstOrDefault();
+					err.Add(new ValidationError { ErrorType = "CustomUniqueName", AssetTypeUid = data.AssetTypeUid, AssetUid = data.AssetUid, Error = item.Items.Count() + " items have the same name '" + data["Name"] + "'" });
+				}
+				return Ok(new { hasError = true, errors = err });
+			}
+
+			List<NodeData> toAdd = new List<NodeData>();
+			List<NodeData> toUpdate = new List<NodeData>();
+			List<NodeData> toDelete = new List<NodeData>();
+
+			foreach (var exNode in existingProcess.nodeDataArray)
+			{
+				if (!model.nodeDataArray.Any(x => x.AssetUid == exNode.AssetUid) && exNode.IsNodeValid)
+				{
+					toDelete.Add(exNode);
+				}
+			}
+
+			foreach (var node in model.nodeDataArray)
+			{
+				var existsingNode = existingProcess.nodeDataArray.FirstOrDefault(x => x.AssetUid == node.AssetUid);
+
+				if (existsingNode == null)
+				{
+					toAdd.Add(node);
+				}
+				else
+				{
+					if (existsingNode.GetHash() != node.GetHash())
+					{
+						toUpdate.Add(node);
+					}
+				}
+			}
+
+			List<UpsertModel> upsertModels = new List<UpsertModel>();
+
+			//Check for asset type, if asset type is deleted dont copy nodes and links
+			if (isDiagramReplace)
+			{
+				if (toAdd.Any(n => !n.HasAssetType))
+				{
+					toAdd.ForEach(node =>
+					{
+						if (!node.HasAssetType)
+						{
+							model.linkDataArray = model.linkDataArray.Where(x => x.from != node.AssetUid && x.to != node.AssetUid).ToList();
+							model.nodeDataArray = model.nodeDataArray.Where(x => x.AssetUid != node.AssetUid).ToList();
+						}
+					});
+
+					toAdd = toAdd.Where(x => x.HasAssetType).ToList();
+				}
+			}
+
+			foreach (var item in toAdd.GroupBy(x => x.AssetTypeUid))
+			{
+				var umItem = new UpsertModel
+				{
+					AssetTypeUid = item.Key,
+					Assets = new List<UpsertAsset>()
+				};
+				foreach (var a in item.Select(x => x))
+				{
+					umItem.Assets.Add(new UpsertAsset
+					{
+						ExternalKey = a.AssetUid,
+						Uid = null,
+						Fields = a.CustomFields
+					});
+				}
+				upsertModels.Add(umItem);
+			}
+
+			foreach (var item in toUpdate.GroupBy(x => x.AssetTypeUid))
+			{
+				var umItem = new UpsertModel
+				{
+					AssetTypeUid = item.Key,
+					Assets = new List<UpsertAsset>()
 				};
 
-				return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new
+				foreach (var a in item.Select(x => x))
 				{
-					hasError = true,
-					errors = err
-				})));
+					umItem.Assets.Add(new UpsertAsset()
+					{
+						ExternalKey = a.AssetUid,
+						Uid = a.AssetUid,
+						Fields = a.CustomFields
+					});
+				}
+
+				upsertModels.Add(umItem);
 			}
+
+			var validationRes = AssetRepository.ValidateAssetUpsertModel(upsertModels, validateFields, true);
+
+			if (validationRes.Count > 0)
+			{
+				return Ok(new { hasError = true, errors = validationRes });
+			}
+
+			var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
+			var execution = getApiExecution(totalCount);
+
+			if (sourceAsset != null)
+			{
+				execution.Fields = JsonConvert.SerializeObject(new { SourceAssetUid = sourceAsset.uid });
+			}
+
+			validationRes = ProcessRepository.UpdateProcessDiagram(execution, model,
+				toAdd, toUpdate, toDelete,
+				targetAsset.ID, isDiagramReplace,
+				copyRelationshipModel, pdCopyMapper);
+
+			if (validationRes.Count > 0)
+			{
+				return Ok(new { hasError = true, errors = validationRes });
+			}
+
+			var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count, warnings = rejectedRelationsipsCopy != null ? rejectedRelationsipsCopy : null };
+
+			return Ok(result);
 		}
 
 		/// <summary>
@@ -516,7 +500,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
-			
+
 			if (asset == null)
 			{
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetuidDoesnotExists));
@@ -529,7 +513,7 @@ namespace d360.web.Controllers.V2
 			byte[] bytes = await ProcessRepository.GetDiagramExcel(asset, image);
 			var detail = Company.GetAssetDetail(asset.ID);
 			var response = createFileResponseMessage(HttpStatusCode.OK, $"{detail.DisplayValue} {DateTime.Now:MMM dd yyyy}.xlsx", bytes);
-			
+
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
 		}
 
@@ -596,7 +580,7 @@ namespace d360.web.Controllers.V2
 
 			Guid baseAssetUid = Company.Query<Guid>(@"select top 1 diagramassetuid from processexpandeddata where fromuid = @assetUid or touid = @assetUid", new { assetUid }).FirstOrDefault();
 			string url = $"asset/{baseAssetUid.ToString()}/diagrams/Process/{assetUid}";
-			
+
 			return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, url))).ConfigureAwait(false);
 		}
 
@@ -629,7 +613,7 @@ namespace d360.web.Controllers.V2
 							inner join AssetPath an on an.ID = a.ID
 							cross apply dbo.GetAssetTypeTextPathById(a.AssetTypeID, ' > ') P
 						where a.AssetTypeID = @assetTypeId and apd.Diagram is not null and a.uid <> @currentAssetuid
-						order by an.DisplayPath", 
+						order by an.DisplayPath",
 						new { currentAssetUid = asset.uid, assetTypeId = asset.AssetTypeID });
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
