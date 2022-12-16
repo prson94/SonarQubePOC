@@ -91,7 +91,7 @@ namespace d360.web.Controllers.V2
 					", new { governanceRoleUid, assetUid }
 					 , ApiTimeout);
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -147,23 +147,23 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult GetProcessDiagram(Guid assetUid)
 		{
-			if (assetUid == null)
+			if (assetUid == null || assetUid == Guid.Empty)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetUidMustSpecified));
+				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetUid));
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetuidDoesnotExists));
+				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
 			}
 
 			ProcessDiagramModel model = ProcessRepository.GetAssetsProcessDiagram(assetUid);
 			var assetDetail = Company.GetAssetDetail(asset.ID);
 			var result = new { model, assetDetail };
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+			return Ok(result);
 		}
 
 		/// <returns></returns>
