@@ -4,6 +4,26 @@
   padding: 24px;
   width: 800px;
 
+  .field-col {
+    margin-bottom: 16px;
+
+    label {
+      margin-bottom: 4px;
+    }
+
+    .flex {
+      width: 100%;
+
+      .flex-col {
+        width: 50%;
+      }
+
+      .center-block {
+        margin: 25px 0px 0px 16px;
+      }
+    }
+  }
+
   .form-header-wrapper {
     display: flex;
 
@@ -203,7 +223,6 @@
       }
     }
   }
-
   //we do not want key fields error to disable submit button so we are just enforcing invalid field colour instead of marking field as invalid
   .has-key-field-error {
     input {
@@ -291,5 +310,20 @@
     border-left: 1px solid @d3s-gray-6;
     background: unset;
   }
+}
 
+.display-format-picker {
+  position: relative;
+
+  .token-popup-menu {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+
+    button {
+      width: 24px;
+      height: 24px;
+      margin: 4px;
+    }
+  }
 }

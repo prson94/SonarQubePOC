@@ -61,7 +61,7 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
     constructor(private ref: ChangeDetectorRef) {
     }
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes["colors"]) {
+		if (changes["colors"]) {
             this.colors.forEach((x) => {
                 if (this.invalidOptions.indexOf(x.value) !== -1) {
                     x.disabled = true;
@@ -92,7 +92,7 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
     }
 
     writeValue(obj: string): void {
-        this.selectedColor = obj;
+		this.selectedColor = obj;
         this.value = obj;
         this.onModelChange(this.selectedColor);
         this.selectedColorChange.emit(this.selectedColor);

@@ -98,7 +98,8 @@ export class AssetType {
     IconStyle: IconStyle = new IconStyle();
     Hierarchy: Hierarchy = new Hierarchy();
     AutoDisplayParent: boolean;
-    CanEditParent: boolean;
+	CanEditParent: boolean;
+	BackgroundColor: string;
 }
 
 export class AssetTypeClassApiModel {

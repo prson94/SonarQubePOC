@@ -20,14 +20,120 @@
 					<div inputs>
 						<div class="form-group">
 							<div class="row">
-								<label for="name" class="ig-label" i18n>Name</label>
-								<input igInput
-									   igSize="full"
-									   name="name"
-									   formControlName="name"
-									   [igDataCy]="'Asset_Type_Modal_Field_Name'"
-									   type="text"
-									   required/>
+								<div class="field-col">
+									<label for="name" class="ig-label" i18n>Name</label>
+									<input igInput
+										   igSize="full"
+										   name="name"
+										   formControlName="name"
+										   [igDataCy]="'Asset_Type_Modal_Field_Name'"
+										   type="text"
+										   required />
+								</div>
+								<div class="field-col">
+									<label for="displayFormat" class="ig-label" i18n>Display Format</label>
+									<div class="display-format-picker">
+										<input igInput
+											   igSize="full"
+											   name="displayFormat"
+											   formControlName="displayFormat"
+											   [igDataCy]="'Asset_Type_Modal_Field_displayFormat'"
+											   type="text"
+											   required />
+										<div class="token-popup-menu">
+											<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+											<ig-popup-menu (onSelect)="updateDisplayFormat($event)"
+														   [items]="fieldTokens"
+														   #tokenMenu
+														   [tabIndex]="1"></ig-popup-menu>
+										</div>
+									</div>
+								</div>
+								<div class="field-col">
+									<label for="description" class="ig-label" i18n>Description</label>
+									<p-editor formControlName="description"
+											  [igDataCy]="'Asset_Modal_Field_description'"
+											  attr.name="description"
+											  [style]="{'height':'150px'}"
+											  ngDefaultControl #ed>
+										<p-header>
+											<span class="ql-formats with-border">
+												<select class="ql-header">
+													<option value="1">Heading</option>
+													<option value="2">Subheading</option>
+													<option selected>Normal</option>
+												</select>
+											</span>
+											<span class="ql-formats with-border">
+												<button class="ql-bold"></button>
+												<button class="ql-italic"></button>
+												<button class="ql-underline"></button>
+											</span>
+										</p-header>
+									</p-editor>
+								</div>
+								<div class="field-col">
+									<label for="isDescriptionEnabled" class="ig-label" i18n>Show Description on List Page</label>
+									<ig-switch [attr.name]="'isDescriptionEnabled'"
+											   [formControlName]="'isDescriptionEnabled'"
+											   i18n-trueLabel
+											   i18n-falseLabel
+											   trueLabel="True"
+											   falseLabel="False"
+											   (onChange)="assetTypeForm.controls['isDescriptionEnabled'].setValue($event)"></ig-switch>
+
+
+								</div>
+								<div *ngIf="assetTypeForm.get('isDescriptionEnabled').value === true"
+									 class="field-col">
+									<div class="flex">
+										<div class="flex-col">
+											<label for="descriptionButtonName" class="ig-label" i18n>Description Button Name</label>
+											<input igInput
+												   igSize="full"
+												   name="descriptionButtonName"
+												   formControlName="descriptionButtonName"
+												   [igDataCy]="'Asset_Type_Modal_Field_descriptionButtonName'"
+												   type="text"
+												   required />
+										</div>
+										<div class="flex-col center-block">
+											<p-checkbox igCheckbox
+														binary="true"
+														label="Collapsed by default"
+														name="isDescriptionVisibleByDefault"
+														formControlName="isDescriptionVisibleByDefault"
+														[igDataCy]="'Asset_Type_Modal_Field_isDescriptionVisibleByDefault'"></p-checkbox>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</ig-property-group>
+				<ig-property-group [igformGroup]="assetTypeForm" title="Styles" i18n-title>
+					<div inputs>
+						<div class="form-group">
+							<div class="row">
+								<div class="field-col">
+									<label for="backgroundColor" class="ig-label" i18n>Background Color</label>
+									<div class="flex">
+										<div class="flex-col">
+											<ig-color-picker [colors]="defaultColors"
+															 igSize="full"
+															 [selectedColor]="chosenColor"
+															 (selectedColorChange)="onColorSelect($event)"
+															 required></ig-color-picker>
+										</div>
+										<div class="flex-col" [hidden]="chosenColor !== 'Custom'" style="margin-left:8px;">
+											<color-selector name="backgroundColor"
+															formControlName="backgroundColor"
+															(onChange)="assetTypeForm.controls['backgroundColor'].setValue($event)"
+															[igDataCy]="'Asset_Type_Modal_Field_backgroundColor'"
+															[appendTo]="'body'"></color-selector>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -41,6 +147,6 @@
 	<div class="action-bar">
 		<button igButton igAutoFocus i18n-label label="Cancel"></button>
 		<span class="grow"></span>
-		<button igButton class="ig-button-primary" i18n-label label="Add Asset Tyoe"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+		<button igButton class="ig-button-primary" i18n-label label="Add Asset Tyoe" (click)="save()"></button>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>
 </d3s-modal>
