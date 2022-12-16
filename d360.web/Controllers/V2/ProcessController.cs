@@ -533,23 +533,23 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<IHttpActionResult> GetProcessDiagramBadges(Guid assetUid)
+		public IHttpActionResult GetProcessDiagramBadges(Guid assetUid)
 		{
-			if (assetUid == null)
+			if (assetUid == null || assetUid == Guid.Empty)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetUidMustSpecified));
+				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetUid));
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetuidDoesnotExists));
+				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
 			}
 
 			IEnumerable<dynamic> response = ProcessRepository.GetDiagramAssetBadges(assetUid);
 
-			return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
+			return Ok(response);
 		}
 
 		/// <summary>
