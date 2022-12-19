@@ -1,7 +1,7 @@
 import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { SelectItem } from "primeng/api";
-import { AssetType, AssetTypeClass, AssetTypeEditorModel, IconStyle } from "../../../../models/asset.model";
+import { AssetType, AssetTypeApiModel, AssetTypeClass, AssetTypeEditorModel, IconStyle } from "../../../../models/asset.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { AssetService } from "../../../../services/asset.service";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
@@ -16,12 +16,13 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	@Input() assetTypeClass: AssetTypeClass;
 	@Input() uid: string;
 	@Output() onClose = new EventEmitter();
-
+	@Output() onUpdated = new EventEmitter();
 	assetTypeForm: FormGroup = null;
 
 	title = 'Add Asset Type';
 	subTitle = 'Business Assets';
 
+	isLoading = false;
 	savingInProgress = false;
 	defaultColors: SelectItem[] = [];
 	chosenColor: string;
@@ -63,19 +64,50 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	setForm() {
 		this.assetTypeForm = this.fb.group({
 			name: [null, { validators: [Validators.required], updateOn: "blur" }],
-			displayFormat: ['{Name}', { validators: [Validators.required], updateOn: "blur" }],
+			displayFormat: [null, { validators: [Validators.required], updateOn: "blur" }],
 			description: [null, { updateOn: "blur" }],
 			isDescriptionEnabled: [false, { updateOn: "blur" }],
-			descriptionButtonName: [$localize`Information`, { updateOn: "blur" }],
+			descriptionButtonName: [null, { updateOn: "blur" }],
 			isDescriptionVisibleByDefault: [false, { updateOn: "blur" }],
-			backgroundColor: ['#202020', { updateOn: "blur" }],
+			backgroundColor: [null, { updateOn: "blur" }],
 			icon: [null, { updateOn: "blur" }],
 			useAsTransformation: [null, { updateOn: "blur" }],
 		});
+
+		this.setDefaultFormValues();
+	}
+
+	setDefaultFormValues() {
+		this.assetTypeForm.reset();
+		this.assetTypeForm.controls["displayFormat"].setValue('{Name}');
+		this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Information`);
+		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
 	}
 
 	updateForm() {
-		console.log("updateing form");
+		if (this.uid) {
+			this.isLoading = true;
+			this.assetTypeService.GetAssetTypeByUid(this.uid)
+				.subscribe((assetType: AssetTypeApiModel) => {
+					this.assetTypeForm.controls["name"].setValue(assetType.Name);
+					this.assetTypeForm.controls["displayFormat"].setValue(assetType.DisplayFormat);
+					this.assetTypeForm.controls["description"].setValue(assetType.Description);
+					this.assetTypeForm.controls["isDescriptionEnabled"].setValue(assetType.IsDescriptionEnabled);
+					this.assetTypeForm.controls["descriptionButtonName"].setValue(assetType.DescriptionButtonName);
+					this.assetTypeForm.controls["isDescriptionVisibleByDefault"].setValue(assetType.IsDescriptionVisibleByDefault);
+					this.assetTypeForm.controls["backgroundColor"].setValue(assetType.IconStyle.BackColor);
+					this.assetTypeForm.controls["icon"].setValue(assetType.IconStyle.Icon);
+					this.assetTypeForm.controls["useAsTransformation"].setValue(assetType.UseAsTransformation);
+
+					this.title = $localize`Edit Asset Type`;
+					this.subTitle = assetType.Name;
+
+					this.isLoading = false;
+				});
+		}
+		else {
+			this.setDefaultFormValues();
+		}
 	}
 
 	updateDisplayFormat($event) {
@@ -84,6 +116,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	save() {
+		this.savingInProgress = true;
 		let model = new AssetType();
 		model.Class = this.assetTypeClass;
 		model.Name = this.assetTypeForm.get("name").value;
@@ -99,10 +132,22 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		model.IconStyle.ForeColor = "#FFF";
 		model.UseAsTransformation = this.assetTypeForm.get("useAsTransformation").value;
 
-		this.assetTypeService.postAssetType(model)
-			.subscribe((res) => {
+		if (!this.uid) {
+			this.assetTypeService.postAssetType(model)
+				.subscribe((res) => {
+					this.onUpdated.emit(res);
+					this.savingInProgress = false;
+				});
+		}
+		else {
+			model.Uid = this.uid;
+			this.assetTypeService.putAssetType(model)
+				.subscribe((res) => {
+					this.onUpdated.emit(res);
+					this.savingInProgress = false;
+				});
+		}
 
-			});
 	}
 
 	onColorSelect($event) {
@@ -116,6 +161,15 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	get hasUseAsTransformation(): boolean {
 		return this.assetTypeClass === AssetTypeClass.BusinessAsset || this.assetTypeClass === AssetTypeClass.TechnicalAsset;
+	}
+
+	get isFormDisabled(): boolean {
+		return this.savingInProgress || this.assetTypeForm.invalid;
+	}
+
+	get saveButtonLabel(): string {
+		return this.uid ? $localize`Save Changes` : $localize`Add Asset Type`;
+
 	}
 
 	@HostListener('window:resize', ['$event'])

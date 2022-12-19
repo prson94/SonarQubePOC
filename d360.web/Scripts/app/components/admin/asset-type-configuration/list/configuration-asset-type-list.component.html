@@ -121,4 +121,4 @@
 	</div>
 </div>
 
-<asset-type-modal-form [assetTypeClass]="assetTypeClass" [uid]="formAssetUid" [isModalVisible]="isModalVisible" (onClose)="isModalVisible = false"></asset-type-modal-form>
+<asset-type-modal-form [assetTypeClass]="assetTypeClass" [uid]="formAssetUid" [isModalVisible]="isModalVisible" (onClose)="isModalVisible = false" (onUpdated)="onEditSaveFinished($event)"></asset-type-modal-form>

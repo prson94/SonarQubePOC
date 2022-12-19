@@ -2,7 +2,9 @@
 		   [showTitle]="false"
 		   [isVisible]="isModalVisible">
 	<div class="asset-editor-container">
-		<div class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
+		<d3s-loading [isLoading]="isLoading"></d3s-loading>
+
+		<div *ngIf="!isLoading" class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
 			<div class="form-header-wrapper">
 				<div class="form-header">
 					{{title}}
@@ -179,8 +181,8 @@
 		</div>
 	</div>
 	<div class="action-bar">
-		<button igButton igAutoFocus i18n-label label="Cancel" (click)="onClose.emit();"></button>
+		<button igButton igAutoFocus i18n-label label="Cancel" (click)="setDefaultFormValues();onClose.emit();"></button>
 		<span class="grow"></span>
-		<button igButton class="ig-button-primary" i18n-label label="Add Asset Tyoe" (click)="save()"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+		<button igButton class="ig-button-primary" label="{{saveButtonLabel}}" (click)="save()" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>
 </d3s-modal>
