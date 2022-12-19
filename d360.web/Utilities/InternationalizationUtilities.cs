@@ -7,7 +7,7 @@ namespace d360.web.Utilities
 	public static class InternationalizationUtilities
 	{
 		private const string DefaultLocale = "en";
-		public static readonly string[] AllowedUILocales = new[] { "en", "nl-NL", "de-DE", "fr-FR", "it-IT", "es-ES", "ar-AR", "ja-JP" };
+		public static readonly string[] AllowedUILocales = new[] { "en", "nl-NL", "de-DE", "fr-FR", "it-IT", "es-ES", "ar-AR", "ja-JP", "hi-IN" };
 
 		/// <summary>
 		/// Sets the culture and UI culture to a specific culture. Allows overriding of currency

@@ -43,6 +43,10 @@
 			"ja-JP": {
 				"translation": "locale/messages.ja-JP.xlf",
 				"baseHref": ""
+			},
+			"hi-IN": {
+				"translation": "locale/messages.hi-IN.xlf",
+				"baseHref": ""
 			}
 		}
       },
@@ -125,6 +129,11 @@
 				"ja-JP": {
 					"localize": [
 						"ja-JP"
+					]
+				},
+				"hi-IN": {
+					"localize": [
+						"hi-IN"
 					]
 				}
 			},
