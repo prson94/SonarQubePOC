@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -450,13 +451,18 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of a relationship. Filtering is done using 'Contains' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
 		]
-		public async Task<HttpResponseMessage> GetRelationshipsAsync(State? State = null)
+		public async Task<HttpResponseMessage> GetRelationshipsAsync(CancellationToken cancellationToken, State? State = null)
 		{
 			var prefix = "Relationships.GetRelationshipsAsync => ";
 			string errorMessage;
 
 			try
 			{
+				if (cancellationToken == null)
+				{
+					cancellationToken = CancellationToken.None;
+				}
+
 				#region Validation
 
 				var queryParams = Request.GetQueryNameValuePairs().ToList();
@@ -621,7 +627,7 @@ namespace d360.web.Controllers.V2
 
 				else
 				{
-					var results = await RelationshipRepository.GetRelationships(queryParams);
+					var results = await RelationshipRepository.GetRelationships(queryParams, cancellationToken: cancellationToken);
 					response = Request.CreateResponse(HttpStatusCode.OK, results);
 					
 					return response;

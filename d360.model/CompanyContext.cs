@@ -1573,6 +1573,20 @@ from	IntersectType I
 			return JsonConvert.DeserializeObject<T>(json);
 		}
 
+		public async Task<T> ExecuteGetRelationshipQuery<T>(string query, CancellationToken cancellationToken, DynamicParameters dbArgs, int timeout = 90)
+		{
+
+			IEnumerable<string> jsonStrings = await Database.Connection.QueryAsync<string>(
+			  new CommandDefinition(query,
+			  cancellationToken: cancellationToken,
+			  parameters: dbArgs,
+			  commandTimeout: ApiTimeout
+			));
+			string json = string.Join("", jsonStrings);
+
+			return JsonConvert.DeserializeObject<T>(json);
+		}
+
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
 		{
 			modelBuilder.Entity<FieldTypeLookup>().HasRequired(t => t.FieldType).WithOptional(t => t.FieldTypeLookup).WillCascadeOnDelete(true);
