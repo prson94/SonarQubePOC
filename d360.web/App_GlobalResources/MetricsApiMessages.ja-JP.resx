@@ -1,0 +1,241 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AssetIdentifierNotFound" xml:space="preserve">
+    <value>{0} の識別子に対応するアセットは見つかりませんでした。</value>
+  </data>
+  <data name="ConditionFieldTypeNameNotEmpty" xml:space="preserve">
+    <value>[ConditionFieldTypeName] 空にしないでください</value>
+  </data>
+  <data name="ConditionIntersectTypeUidNotValid" xml:space="preserve">
+    <value>[ConditionIntersectTypeUid] 有効である必要があります</value>
+  </data>
+  <data name="ConditionNotEmpty" xml:space="preserve">
+    <value>条件内に [ConditionFieldTypeName] または [ConditionIntersectTypeUid ] を使用する必要があります。</value>
+  </data>
+  <data name="ConditionValueMaxChar250" xml:space="preserve">
+    <value>条件値は250文字以上でなければなりません。</value>
+  </data>
+  <data name="CustomAtLeastOneProvided" xml:space="preserve">
+    <value>{0}。</value>
+  </data>
+  <data name="CustomNotValid" xml:space="preserve">
+    <value>{0} {1} 有効ではありません。</value>
+  </data>
+  <data name="CustomOrderMessage" xml:space="preserve">
+    <value>{0} 値 '{1}' は有効ではありません。値は次のいずれかである必要があります: {2}。</value>
+  </data>
+  <data name="CustomRequiredParameter" xml:space="preserve">
+    <value>{0} 必要なパラメーターです</value>
+  </data>
+  <data name="CustomStartEndDateMessage" xml:space="preserve">
+    <value>{0} は {1} の後にある必要があります。</value>
+  </data>
+  <data name="CustomUidNotFound" xml:space="preserve">
+    <value>{0} と Uid {1} は見つかりませんでした。</value>
+  </data>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} {1} 有効なUidではありません</value>
+  </data>
+  <data name="DescriptionLengthValidation" xml:space="preserve">
+    <value>[Description] length({0} 文字) は長すぎる。最大4000文字以下の長さでなければなりません。</value>
+  </data>
+  <data name="Errorlocatingmetric" xml:space="preserve">
+    <value>メトリックのロケーションに関するエラー</value>
+  </data>
+  <data name="ErrorRemoveMetric" xml:space="preserve">
+    <value>メトリックを削除する際のエラー</value>
+  </data>
+  <data name="ErrorRuleResult" xml:space="preserve">
+    <value>ルール結果を削除するエラー</value>
+  </data>
+  <data name="EvalAssetInvalid" xml:space="preserve">
+    <value>評価済みアセットは無効</value>
+  </data>
+  <data name="EvalAssetNotFound" xml:space="preserve">
+    <value>評価資産が見つかりませんでした</value>
+  </data>
+  <data name="GroupConditionNotFound" xml:space="preserve">
+    <value>グループには条件を設定するべきではありません。</value>
+  </data>
+  <data name="GroupNotHaveCondition" xml:space="preserve">
+    <value>グループには条件を設定するべきではありません。</value>
+  </data>
+  <data name="InvalidDate" xml:space="preserve">
+    <value>値 {0} は有効な日付ではありません。</value>
+  </data>
+  <data name="InvalidDateYear" xml:space="preserve">
+    <value>値 {0} は有効な日付ではありません。この年は1900年から現在の年の間にある必要があります。</value>
+  </data>
+  <data name="InvalidEffectiveDate" xml:space="preserve">
+    <value>無効 [EffectiveDate] 提供!</value>
+  </data>
+  <data name="IsGroupTrueParentMetric" xml:space="preserve">
+    <value>親メトリックは、[IsGroup] 値を True に設定する必要があります。</value>
+  </data>
+  <data name="MetricAdded" xml:space="preserve">
+    <value>メトリック追加</value>
+  </data>
+  <data name="MetricAddedSuccessfully" xml:space="preserve">
+    <value>指定されたメトリックが追加されました</value>
+  </data>
+  <data name="MetricNotFound" xml:space="preserve">
+    <value>メトリックは見つかりません。</value>
+  </data>
+  <data name="MetricRemoved" xml:space="preserve">
+    <value>メトリックは削除された。</value>
+  </data>
+  <data name="MetricRemoveMessage" xml:space="preserve">
+    <value>メトリックは正常に削除されました。</value>
+  </data>
+  <data name="MetricRemoveNotAllowed" xml:space="preserve">
+    <value>このメトリックを削除することはできません。</value>
+  </data>
+  <data name="MetricUidNotFound" xml:space="preserve">
+    <value>{0} の Uid を持つメトリックが見つかりません。</value>
+  </data>
+  <data name="MetricUpdated" xml:space="preserve">
+    <value>メトリック・アップデート</value>
+  </data>
+  <data name="MetricUpdatedSuccessfully" xml:space="preserve">
+    <value>指定されたメトリックは正常に更新されました</value>
+  </data>
+  <data name="NameNotEmpty" xml:space="preserve">
+    <value>名前は空でなければなりません。</value>
+  </data>
+  <data name="NoAllocationAssetTypeScoreType" xml:space="preserve">
+    <value>指定された Asset Type UID と Score Type には割り当てはありません。</value>
+  </data>
+  <data name="NoAllocationForUid" xml:space="preserve">
+    <value>指定された割り当て Uid には割り当てはありません。</value>
+  </data>
+  <data name="NotAllowUpdateMetric" xml:space="preserve">
+    <value>このメトリックを更新することはできません。</value>
+  </data>
+  <data name="ParentMetricNotFound" xml:space="preserve">
+    <value>親メトリックは見つかりません。</value>
+  </data>
+  <data name="ScoreAllocationCorrespondingAssetNotFound" xml:space="preserve">
+    <value>{0} の識別子を持つアセットに対応するスコア割り当ては見つかりませんでした。</value>
+  </data>
+  <data name="UseSingleCondition" xml:space="preserve">
+    <value>[ConditionFieldTypeName] と [ConditionIntersectTypeUid] を 1 つの条件内で使用することはできません</value>
+  </data>
+  <data name="WeightDecimalValidation" xml:space="preserve">
+    <value>重量は 0 より大きい十進数、または 1 に等しい</value>
+  </data>
+</root>

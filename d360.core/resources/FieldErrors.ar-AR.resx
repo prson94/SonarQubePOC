@@ -1,0 +1,535 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ActionNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
+    <value>لا يمكن لأعمال الأفعال أن يكون لديها خاصية الحقل [IsPartOfKey] مكتوبة على صحيح.</value>
+  </data>
+  <data name="ActionNotAllowedScoreFieldType" xml:space="preserve">
+    <value>لا يمكن للحركات أن تملك قيمة [Type.Score]</value>
+  </data>
+  <data name="ActionNotAllowedTagFieldType" xml:space="preserve">
+    <value>لا يمكن للحركات أن تملك قيمة [Type.Tag]</value>
+  </data>
+  <data name="ActionNotSupportPath" xml:space="preserve">
+    <value>لا يمكن للحركات أن تملك قيمة [Type.Path]</value>
+  </data>
+  <data name="ActionTypeUidNotFound" xml:space="preserve">
+    <value>لم نجد نوعاً من الأفعال بناء على Uid المتوفر [⁦{0}⁩].</value>
+  </data>
+  <data name="AllowMultipleValues" xml:space="preserve">
+    <value>السماح بالعديد منValues</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="AssetTypeError" xml:space="preserve">
+    <value>خطأ نوع الممتلكات</value>
+  </data>
+  <data name="AssetTypeNotFoundField" xml:space="preserve">
+    <value>لم نجد نوع الممتلكات في الحقل [⁦{0}⁩].</value>
+  </data>
+  <data name="AssetTypeNotHaveKeyField" xml:space="preserve">
+    <value>هذا النوع من الأصول قد لا يكون له حقول مفاتيح محددة!</value>
+  </data>
+  <data name="AssetTypeNotHaveScoreField" xml:space="preserve">
+    <value>هذا النوع من الأصول قد لا يكون له قيمة [Type.Score]</value>
+  </data>
+  <data name="AssetTypeUidNotFound" xml:space="preserve">
+    <value>لم نجد نوعًا من الأصول بناءً على Uid المتوفر [⁦{0}⁩].</value>
+  </data>
+  <data name="AssetTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
+    <value>لا يمكنك توفير [AssetTypeUid] لأنك قدمت بالفعل [ActionTypeUid].</value>
+  </data>
+  <data name="ComputedOwnershipLookupNotSupported" xml:space="preserve">
+    <value>[ComputedOwnershipLookup] الحقول غير مسموح بها لنموذج الأصول الحالي!</value>
+  </data>
+  <data name="ComputedRelationshipFieldNotSupported" xml:space="preserve">
+    <value>[ComputedRelationshipField] الحقول غير مسموح بها لنموذج الأصول الحالي!</value>
+  </data>
+  <data name="ComputedRelationshipLookupNotSupported" xml:space="preserve">
+    <value>[ComputedRelationshipLookup] الحقول غير مسموح بها لنموذج الأصول الحالي!</value>
+  </data>
+  <data name="ComputedRelationshipReferenceListNotSupported" xml:space="preserve">
+    <value>[ComputedRelationshipReferenceList] الحقول غير مسموح بها لنموذج الأصول الحالي!</value>
+  </data>
+  <data name="Constantfalse" xml:space="preserve">
+    <value>خطأ</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantIncrement" xml:space="preserve">
+    <value>التضخم</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMaximumLength" xml:space="preserve">
+    <value>الطول الاقصى</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMaximumValue" xml:space="preserve">
+    <value>أقصى قدر</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMinimumLength" xml:space="preserve">
+    <value>أقصى طول</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMinimumValue" xml:space="preserve">
+    <value>الحد الأدنى من القيمة</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="Constanttrue" xml:space="preserve">
+    <value>صحيح</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="CounterFieldNotSupportedThisAssetType" xml:space="preserve">
+    <value>هذا النوع من الأصول قد لا يكون له قيمة [Type.Counter]</value>
+  </data>
+  <data name="CounterPrefixMax10Char" xml:space="preserve">
+    <value>[CounterPrefix] لا يمكن أن يكون أطول من 10 شخصيات.</value>
+  </data>
+  <data name="CounterPrefixRule" xml:space="preserve">
+    <value>[CounterPrefix] يجب أن تتألف من حروف الفلم و/أو الرموز _ أو -.</value>
+  </data>
+  <data name="CounterPrefixStartWithAlpha" xml:space="preserve">
+    <value>[CounterPrefix] يجب أن يبدأ بحرف.</value>
+  </data>
+  <data name="CounterRange" xml:space="preserve">
+    <value>[CounterInitialIndex] يجب أن تكون بين 1 و 9999999.</value>
+  </data>
+  <data name="DefaultValueError" xml:space="preserve">
+    <value>يجب أن يكون [DefaultValue] بين ⁦{0}⁩ و ⁦{1}⁩</value>
+  </data>
+  <data name="DiagramATCustomError" xml:space="preserve">
+    <value>لا يمكن أن تكون الحقول غير الثابتة في نوع شتماع الرسم أن تضع '⁦{0}⁩' على ⁦{1}⁩!</value>
+  </data>
+  <data name="DisplayInColumnMustFlaseOnComputedWonerShipLookup" xml:space="preserve">
+    <value>[DisplayInColumn] على [ComputedOwnershipLookup] يمكن أن يتم ضبطها على True فقط إذا كان [DisplayAsList] يتم ضبطها على True.</value>
+  </data>
+  <data name="DuplicateFieldNames" xml:space="preserve">
+    <value>تقليد أسماء الحقول</value>
+  </data>
+  <data name="DuplicateRelationship" xml:space="preserve">
+    <value>العلاقة المكررة على نفس نوع الممتلكات</value>
+  </data>
+  <data name="ExistItemInSystem" xml:space="preserve">
+    <value>الاشياء الموجودة في النظام</value>
+  </data>
+  <data name="FailRemoveFieldNotExistsType" xml:space="preserve">
+    <value>أنت تحاول أن تزيل حقل واحد أو أكثر لا توجد في هذا النوع.</value>
+  </data>
+  <data name="FieldConversionError" xml:space="preserve">
+    <value>خطأ في تحويل الحقل</value>
+  </data>
+  <data name="FieldNameMustUnique" xml:space="preserve">
+    <value>تستعمل أسماء الحقول التالية أكثر من مرة: ⁦{0}⁩. أسماء الحقول يجب أن تكون فريدة.</value>
+  </data>
+  <data name="FieldPropertyError" xml:space="preserve">
+    <value>خطأ في خصائص الحقل</value>
+  </data>
+  <data name="FieldsContainErrors" xml:space="preserve">
+    <value>تحتوي الحقول على أخطاء</value>
+  </data>
+  <data name="FieldTypeConversionError" xml:space="preserve">
+    <value>لا يمكنك تحويل الحقل ⁦{0}⁩ من ⁦{1}⁩ إلى ⁦{2}⁩ أو قد يكون هناك حقل بنفس الاسم و نوع مختلف.</value>
+  </data>
+  <data name="FieldTypeError" xml:space="preserve">
+    <value>خطأ نوع الحقل</value>
+  </data>
+  <data name="FieldTypeListNotSpecified" xml:space="preserve">
+    <value>[Lookup.List] يجب أن يتم تحديدها</value>
+  </data>
+  <data name="FieldTypeNotFound" xml:space="preserve">
+    <value>لم نجد نوع الحقل</value>
+  </data>
+  <data name="FieldTypeNotFoundByName" xml:space="preserve">
+    <value>لم نجد نوع الحقل بناء على [Name] المتوفر [⁦{0}⁩].</value>
+  </data>
+  <data name="FormDescriptionMustBeEmptyForRelationship" xml:space="preserve">
+    <value>الحقل ⁦{0}⁩. [Description.Form] يجب أن يكون فارغاً في حقل العلاقات عندما تضع [IsEditable] على خطأ.</value>
+  </data>
+  <data name="FriendNameCannotBe" xml:space="preserve">
+    <value>لا يمكن أن يكون [[FriendlyName]].{0}</value>
+  </data>
+  <data name="GreaterThanError" xml:space="preserve">
+    <value>⁦{0}⁩ يجب أن يكون أكبر من ⁦{1}⁩</value>
+  </data>
+  <data name="GroupInvalidFieldType" xml:space="preserve">
+    <value>لا يمكن للمجموعات أن يكون لها نوع الحقل ⁦{0}⁩!</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>نوع شتماع غير صحيح Uid متوفر [⁦{0}⁩].</value>
+  </data>
+  <data name="InvalidField" xml:space="preserve">
+    <value>ساحة غير صالحة ⁦{0}⁩</value>
+  </data>
+  <data name="InvalidFieldFriendlyName" xml:space="preserve">
+    <value>ساحة غير صالحة [FriendlyName]</value>
+  </data>
+  <data name="InvalidFieldName" xml:space="preserve">
+    <value>ساحة غير صالحة [Name]</value>
+  </data>
+  <data name="InvalidFields" xml:space="preserve">
+    <value>حقول غير صالحة</value>
+  </data>
+  <data name="InvalidJsonFieldType" xml:space="preserve">
+    <value>atribut Json غير صحيح [DataType]. القيم المسموح بها هي ⁦{0}⁩!"</value>
+  </data>
+  <data name="InvalidLookupDisplayFormat" xml:space="preserve">
+    <value>غير صحيح [Lookup.Format] قيمة</value>
+  </data>
+  <data name="InvalidModel" xml:space="preserve">
+    <value>لم تقدم نموذجاً صالحاً. أرجو أن تتحقق من طلبك وتحاول مرة أخرى.</value>
+  </data>
+  <data name="InvalidparentField" xml:space="preserve">
+    <value>غير صحيح [ParentFieldTypeName] قيمة</value>
+  </data>
+  <data name="InvalidRemoveKeyFields" xml:space="preserve">
+    <value>لا يمكنك أن تزيل حقول المفاتيح لأن هناك عناصر موجودة في بيئتك. لا يمكنك إجراء عملية حذف حتى يتم إزالة هذه الأشياء، أو تغيير حقول المفاتيح المعرفة على هذا النوع.</value>
+  </data>
+  <data name="IsDisplayable" xml:space="preserve">
+    <value>يمكن تشغيله</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsDisplayAbleTrueReferenceItemListForRelationship" xml:space="preserve">
+    <value>الحقل ⁦{0}⁩. [IsDisplayable] يجب أن تكون قيمة الប៉ារ៉ាម៉ែត្រ صحيحة بالنسبة للصفة "List of Reference Items from Relationship".</value>
+  </data>
+  <data name="IsDisplayAbleTrueRelationshipLookup" xml:space="preserve">
+    <value>الحقل ⁦{0}⁩. [IsDisplayable] يجب أن تكون قيمة الប៉ារ៉ាម៉ែត្រ صحيحة بالنسبة لطريقة بحث العلاقات.</value>
+  </data>
+  <data name="IsEditable" xml:space="preserve">
+    <value>يمكن កែសម្រួលه</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsEditableCanotTrue" xml:space="preserve">
+    <value>[IsEditable] لا يمكن أن يكون صحيحاً لهذا النوع من الحقل.</value>
+  </data>
+  <data name="IsListable" xml:space="preserve">
+    <value>من الممكن سماعه</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsListableParameterMustBeFalseForBooleanType" xml:space="preserve">
+    <value>الحقل ⁦{0}⁩. [IsListable] يجب أن تكون قيمة الប៉ារ៉ាម៉ែត្រ خاطئة بالنسبة للصفوف البوليان للصفوف الفعلي!</value>
+  </data>
+  <data name="IsPartOfKey" xml:space="preserve">
+    <value>IsPartOfKey</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsPrimaryFilter" xml:space="preserve">
+    <value>IsPrimaryFilter</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsPrimaryFilterMustBefalseForBooleanType" xml:space="preserve">
+    <value>الحقل ⁦{0}⁩. [IsPrimaryFilter] (أظهر كمصفر أعلى مستوى) يجب أن تكون قيمة الប៉ារ៉ាម៉ែត្រ خاطئة بالنسبة لصفر بوليان محدد بالنسبة لصفر التفاعل!</value>
+  </data>
+  <data name="IsRequired" xml:space="preserve">
+    <value>هو مطلوب</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="JsonElementFieldTypeNotenabled" xml:space="preserve">
+    <value>[JsonElement] لا يتم تشغيل أنواع الحقول في هذا البيئة.  من أجل استخدام نموذج الحقل [JsonElement] يجب أن ت有効 وضعية 75.</value>
+  </data>
+  <data name="JsonElementNotSupported" xml:space="preserve">
+    <value>[JsonElement] الحقول غير مسموح بها لنموذج الأصول الحالي!</value>
+  </data>
+  <data name="JsonFiledNotPartAssetType" xml:space="preserve">
+    <value>لا يوجد حقل JSON ⁦{0}⁩ أو ليس جزءاً من هذا النوع من الأصول!</value>
+  </data>
+  <data name="JsonNotSupported" xml:space="preserve">
+    <value>[Type.Json] ليس مسموحاً لنموذج الممتلكات الحالي!</value>
+  </data>
+  <data name="JSONTypeNotSupportIsRequiredTrue" xml:space="preserve">
+    <value>[IsRequired] خاصية لا يمكن أن تكون صحيحة بالنسبة ل[Type.Json] محدد على هذا النوع من الأصول!</value>
+  </data>
+  <data name="KeyFieldNotDefined" xml:space="preserve">
+    <value>لقد اخترتم أن تبدلوا كل الحقول الحالية، لكنكم لم تحددوا مفتاح. يجب أن تحدد على الأقل حقل واحد كمفتاح، أو أن تختار "دمج" كفعل.</value>
+  </data>
+  <data name="LessThanError" xml:space="preserve">
+    <value>⁦{0}⁩ يجب أن يكون أقل من ⁦{1}⁩</value>
+  </data>
+  <data name="LinkTypeNotSupportIsPartOfKeyTrue" xml:space="preserve">
+    <value>لا يمكن أن يكون ل [Type.Link] خاصية الحقل [IsPartOfKey] على حقل ⁦{0}⁩ أن تكون صحيحة.</value>
+  </data>
+  <data name="ListAssetTypeNotFound" xml:space="preserve">
+    <value>[Lookup.List] لم نجد نوع الممتلكات</value>
+  </data>
+  <data name="LookupFieldTypeIsIncomplete" xml:space="preserve">
+    <value>[Type.Lookup.List] غير مكتمل لأنه لا يحتوي على [Class] صحيح محدد.</value>
+  </data>
+  <data name="LookupNotSpecifiedList" xml:space="preserve">
+    <value>[Type.Lookup.List] غير مكتمل لأنه لا يحتوي على [List] محدد.</value>
+  </data>
+  <data name="MaxDecimalFieldValue" xml:space="preserve">
+    <value>10000000000</value>
+  </data>
+  <data name="MissingJsonAttribute" xml:space="preserve">
+    <value>نفتقد تعريف [JsonAttribute] !</value>
+  </data>
+  <data name="MissingListDisplayFormat" xml:space="preserve">
+    <value>[Lookup.Format] هو مطلوب ل[Type.Lookup].</value>
+  </data>
+  <data name="MustProvideLinkTextValue" xml:space="preserve">
+    <value>يجب أن توفر قيمة [DefaultValue.Text] إذا قمت بإعداد قيمة تلقائية ل⁦{0}⁩.</value>
+  </data>
+  <data name="MustProvideLinkUrlValue" xml:space="preserve">
+    <value>يجب أن توفر قيمة [DefaultValue.Url] إذا قمت بإعداد قيمة تلقائية ل⁦{0}⁩.</value>
+  </data>
+  <data name="NameCannotBe" xml:space="preserve">
+    <value>لا يمكن أن يكون [[Name]].{0}</value>
+  </data>
+  <data name="NameReservedword" xml:space="preserve">
+    <value>لا يمكنك استخدام {f.Name} كاسم الحقل الخاص بك لأنها كلمة محفوظة.</value>
+  </data>
+  <data name="NoModelFound" xml:space="preserve">
+    <value>لم نجد أي نموذج</value>
+  </data>
+  <data name="NoPrimaryKeyDefined" xml:space="preserve">
+    <value>لا توجد حقول مع [IsPartOfKey] مكتوبة على صحيح</value>
+  </data>
+  <data name="NotIncludedValidTypeFieldType" xml:space="preserve">
+    <value>لم تضمنتم نوعاً صالحاً للنموذج [⁦{0}⁩].</value>
+  </data>
+  <data name="NotUseComputedRelationshipLookuptypeField" xml:space="preserve">
+    <value>لا يمكنك استخدام نموذج [Type.ComputedRelationshipLookup] على شئ من النوع ⁦{0}⁩ في الحقل ⁦{1}⁩.</value>
+  </data>
+  <data name="NotUseJSONonActionType" xml:space="preserve">
+    <value>لا يمكنك استخدام [Type.Json] في نوع الحركة أو نوع العلاقة في الحقل ⁦{0}⁩.</value>
+  </data>
+  <data name="NotUseReferenceListItemList" xml:space="preserve">
+    <value>لا يمكنك استخدام قائمة العناصر المرجعية من نوع العلاقات على نوع الفعل أو نوع العلاقات في الحقل ⁦{0}⁩.</value>
+  </data>
+  <data name="NotUseRelationshipLookupField" xml:space="preserve">
+    <value>لا يمكنك استخدام [Type.ComputedRelationshipReferenceList] في نوع الحركة أو نوع العلاقة في الحقل ⁦{0}⁩.</value>
+  </data>
+  <data name="NotUserOwnershipLookup" xml:space="preserve">
+    <value>لا يمكنك استخدام [Type.ComputedOwnershipLookup] في نوع الحركة أو نوع العلاقة في الحقل ⁦{0}⁩.</value>
+  </data>
+  <data name="NotUseSCoreTypeAssetForField" xml:space="preserve">
+    <value>لا يمكنك استخدام [Type.Score] على شئ من النوع ⁦{0}⁩ في الحقل ⁦{1}⁩.</value>
+  </data>
+  <data name="NotUseScoreTypeOnActionAndRelationshipType" xml:space="preserve">
+    <value>لا يمكنك استخدام [Type.Score] في نوع الحركة أو نوع العلاقة في الحقل ⁦{0}⁩.</value>
+  </data>
+  <data name="NotValidRegex" xml:space="preserve">
+    <value>[Text.Validation.Pattern] ليس تعبير Regex صحيح !</value>
+  </data>
+  <data name="NoUidFound" xml:space="preserve">
+    <value>لم نجد أي Uid</value>
+  </data>
+  <data name="NoValidTypeDefined" xml:space="preserve">
+    <value>لا يوجد نوع صحيح محدد</value>
+  </data>
+  <data name="OneThanOneTypeDefined" xml:space="preserve">
+    <value>الحقول التالية لها أكثر من نوع واحد محدد: ⁦{0}⁩.</value>
+  </data>
+  <data name="OnlyOneTagFieldAllowed" xml:space="preserve">
+    <value>يمكن أن يكون هناك واحد فقط من نوع الحقل [Type.Tag]!</value>
+  </data>
+  <data name="ParameterError" xml:space="preserve">
+    <value>خطأ الប៉ារ៉ាម៉ែត្រ</value>
+  </data>
+  <data name="ParentFieldRefernceItemNotfound" xml:space="preserve">
+    <value>الحقل الأصلي [⁦{0}⁩] من النوع لم نجد مرجعاً على هذه الأصول.</value>
+  </data>
+  <data name="ProvideComputedRealtionshipLookupField" xml:space="preserve">
+    <value>يجب أن توفر تعريف للـ [Type.ComputedRelationshipLookup] في الحقل ⁦{0}⁩.</value>
+  </data>
+  <data name="ProvideOneValueActionAssetRelationship" xml:space="preserve">
+    <value>يجب أن توفر واحدا فقط من خصائص Uid الثلاثة: [ActionTypeUid]، [AssetTypeUid]، أو [RelationshipTypeUid].</value>
+  </data>
+  <data name="ReferenceItemIsPartOfKeyNotAllowedTrue" xml:space="preserve">
+    <value>الأنواع المرجعية لا يمكن أن تتوفر على خصائص الحقل [IsPartOfKey] مسبقاً.</value>
+  </data>
+  <data name="ReferenceItemNotSupportJsonElement" xml:space="preserve">
+    <value>[Type.JsonElement] لا يدعم نوع الأداة المرجعية !</value>
+  </data>
+  <data name="ReferenceListNotSupportJson" xml:space="preserve">
+    <value>[Type.Json] لا يدعم نوع الأداة المرجعية !</value>
+  </data>
+  <data name="ReferenceListNotSupportTag" xml:space="preserve">
+    <value>[Type.Tag] لا يدعم نوع الأداة المرجعية</value>
+  </data>
+  <data name="RelationNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
+    <value>أنواع العلاقات لا يمكن أن يكون لديها خاصية الحقل [IsPartOfKey] مكتوبة على صحيح.</value>
+  </data>
+  <data name="RelationshipIDUsedMoreThanOnce" xml:space="preserve">
+    <value>الروابط التالية تستخدم أكثر من مرة: ⁦{0}⁩. [Type.Relationship] يجب أن تكون فريدة على نفس نوع الأصول</value>
+  </data>
+  <data name="RelationshipNotAllowedScoreFieldType" xml:space="preserve">
+    <value>[Type.Score] ليس مدعماً على العلاقات</value>
+  </data>
+  <data name="RelationshipNotSupported" xml:space="preserve">
+    <value>[Type.Relationship] ليس مسموحاً لنموذج الممتلكات الحالي!</value>
+  </data>
+  <data name="RelationshipNotSupportPath" xml:space="preserve">
+    <value>[Type.Path] ليس مدعماً على العلاقات</value>
+  </data>
+  <data name="RelationshipsNotAllowedTagFieldType" xml:space="preserve">
+    <value>[Type.Tag] ليس مدعماً على العلاقات</value>
+  </data>
+  <data name="RelationshipTypeFieldNotFound" xml:space="preserve">
+    <value>لا يوجد نوع علاقة/سلعة</value>
+  </data>
+  <data name="RelationshipTypeNotFound" xml:space="preserve">
+    <value>لم نجد نوع العلاقات</value>
+  </data>
+  <data name="RelationshipTypeNotFoundBasedOnUid" xml:space="preserve">
+    <value>لم نجد نوع العلاقات أو نوع الحقل بناء على Uid المتوفر [⁦{0}⁩].</value>
+  </data>
+  <data name="RelationshipTypeOrFieldTypeNotFound" xml:space="preserve">
+    <value>لم نجد نوع العلاقات أو نوع الحقل بناء على Uid المتوفر [⁦{0}⁩].</value>
+  </data>
+  <data name="RelationshipTypeUIdNotFound" xml:space="preserve">
+    <value>لم نجد نوع العلاقات بناء على Uid المتوفر [⁦{0}⁩].</value>
+  </data>
+  <data name="RelationShipTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
+    <value>لا يمكنك توفير [RelationshipTypeUid] لأنك قدمت بالفعل [ActionTypeUid].</value>
+  </data>
+  <data name="RelationShipTypeUidNotRequiredIfAssetTypeUidProvided" xml:space="preserve">
+    <value>لا يمكنك أن تقدم رابطة نوعاً ما لأنك قدمت بالفعل AssetTypeUid.</value>
+  </data>
+  <data name="RelationshipUidMustUniqueWithinAssetType" xml:space="preserve">
+    <value>الروابط التالية UID تستخدم أكثر من مرة: ⁦{0}⁩. [Type.Relationship] يجب أن تكون فريدة على نفس نوع الأصول</value>
+  </data>
+  <data name="ScoreNotSupported" xml:space="preserve">
+    <value>[Type.Score] ليس مدعماً بالنسبة لنموذج الممتلكات الحالية</value>
+  </data>
+  <data name="ScoreTypeCannotAllocateAssetType" xml:space="preserve">
+    <value>لا يمكن تخصيص [Score.ScoreType] ⁦{0}⁩ لهذا النوع من الأصول في الحقل ⁦{1}⁩.</value>
+  </data>
+  <data name="ShowIfEmpty" xml:space="preserve">
+    <value>إظهار لو كانت فارغة</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="SpecificHaveTagFieldType" xml:space="preserve">
+    <value>[Type.Tag] فقط على ممتلكات الأعمال، الممتلكات التقنية، السياسة، النماذج والقواعد</value>
+  </data>
+  <data name="TaskTypeGovernanceRoleCustomError" xml:space="preserve">
+    <value>لا يمكن لأصناف المهمات أن يكون لديها خاصية الحقل '⁦{0}⁩' في الحقل [GovernanceRole] محددة على ⁦{1}⁩.</value>
+  </data>
+  <data name="TaskTypeNameCustomError" xml:space="preserve">
+    <value>لا يمكن لأصناف المهمات أن يكون لديها خاصية الحقل '⁦{0}⁩' في الحقل [Name] محددة على ⁦{1}⁩.</value>
+  </data>
+  <data name="TaskTypeStepNoCustomError" xml:space="preserve">
+    <value>لا يمكن لأصناف المهمات أن يكون لديها خاصية الحقل '⁦{0}⁩' في الحقل [StepNo] محددة على ⁦{1}⁩.</value>
+  </data>
+  <data name="ThisAssetTypeNotSupportPath" xml:space="preserve">
+    <value>[Type.Path] ليس مدعماً بالنسبة لنموذج الممتلكات الحالية</value>
+  </data>
+  <data name="TypeObjectMissing" xml:space="preserve">
+    <value>الشيء [Type] مفقود من تعريف واحد أو أكثر من نوع الحقل.</value>
+  </data>
+  <data name="WholeNumberError" xml:space="preserve">
+    <value>⁦{0}⁩ يجب أن تكون رقما كاملا</value>
+  </data>
+</root>

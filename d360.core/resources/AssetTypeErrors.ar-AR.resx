@@ -1,0 +1,361 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AssetsWithAssignedParents" xml:space="preserve">
+    <value>الممتلكات موجودة بالفعل مع الوالدين المخصصين. لا يمكنك تغيير الوالد لهذا النوع من الأصول.</value>
+  </data>
+  <data name="AssetTypeExistsTitle" xml:space="preserve">
+    <value>نوع الممتلكات موجود بالفعل</value>
+  </data>
+  <data name="AssetTypeWithUidExists" xml:space="preserve">
+    <value>يوجد نوع من الأصول مع الـ [Uid] مسبقاً.</value>
+  </data>
+  <data name="CheckRequest" xml:space="preserve">
+    <value>أرجو أن تتحقق من طلبك وتحاول مرة أخرى.</value>
+  </data>
+  <data name="ImproperPredicate" xml:space="preserve">
+    <value>لم تكن قد قدمت مبدأاً صحيحاً مبنياً على فئة نوع الممتلكات.</value>
+  </data>
+  <data name="InvalidDisplayFormat" xml:space="preserve">
+    <value>[DisplayFormat] غير صالحة.</value>
+  </data>
+  <data name="InvalidModelDepth" xml:space="preserve">
+    <value>عمق كبير غير صالح. درجة النموذج المحددة يجب أن تكون قيمة بين 1 و 10.</value>
+  </data>
+  <data name="InvalidPolicyDepth" xml:space="preserve">
+    <value>عمق كبير غير صالح. يجب أن يكون مستوى السياسة المحدد قيمة ما بين 1 و 10.</value>
+  </data>
+  <data name="InvalidParentUid" xml:space="preserve">
+    <value>غير صحيح [ParentUid] متوفر.</value>
+  </data>
+  <data name="InvalidRequestHttpErrorTitle" xml:space="preserve">
+    <value>طلب غير صحيح</value>
+  </data>
+  <data name="InvalidStyle" xml:space="preserve">
+    <value>لا يوجد قيمة [IconStyle] غير صحيحة.</value>
+  </data>
+  <data name="NotFoundBasedOnClass" xml:space="preserve">
+    <value>لم نجد نوعًا من الأصول بناءًا على [Class] المتوفرة.</value>
+  </data>
+  <data name="ErrorNameTaken" xml:space="preserve">
+    <value>لقد أخذت الاسم. أرجو أن تحاولوا إسم آخر.</value>
+  </data>
+  <data name="NotFoundBasedOnUid" xml:space="preserve">
+    <value>لم نجد نوعًا من الأصول بناءًا على [Uid] المتوفرة.</value>
+  </data>
+  <data name="NotFoundGeneric" xml:space="preserve">
+    <value>لم نجد نوع الممتلكات.</value>
+  </data>
+  <data name="RelationshipExistsForAssetType" xml:space="preserve">
+    <value>علاقة أو نوع علاقة موجود مع هذا نوع الممتلكات أو أي ممتلكات تحت هذا النوع تشارك في العلاقة.</value>
+  </data>
+  <data name="TransformationClassRestriction" xml:space="preserve">
+    <value>[UseAsTransformation] يمكن أن يحدد فقط أنواع الممتلكات التي هي طبقة الأعمال أو التقنية.</value>
+  </data>
+  <data name="TransformationLimitExceeded" xml:space="preserve">
+    <value>العدد الكلي من أنواع الأصول يتجاوز حدود التحويل.</value>
+  </data>
+  <data name="UnsupportedAssetClass" xml:space="preserve">
+    <value>طبقة ممتلكات غير مدعمة.</value>
+  </data>
+  <data name="MatchingIconStyle" xml:space="preserve">
+    <value>[IconStyle.BackColor] و[IconStyle.ForeColor] لا يمكن أن تكون نفس القيمة.</value>
+  </data>
+  <data name="AutoDisplayParentRestriction" xml:space="preserve">
+    <value>[AutoDisplayParent] يمكن أن تحدد فقط أنواع الأصول التي هي طبقة الأعمال أو التقنية و هي أبناء نوع آخر من الأصول.</value>
+  </data>
+  <data name="MissingFlowObjectType" xml:space="preserve">
+    <value>[FlowObjectType] هو حقل مطلوب لنموذج الممتلكات مع مخطط الفئة.</value>
+  </data>
+  <data name="UnsupportedFlowObjectType" xml:space="preserve">
+    <value>[FlowObjectType] لا يدعم الصنف ⁦{0}⁩.</value>
+  </data>
+  <data name="GovernanceRoleNotSet" xml:space="preserve">
+    <value>لا يمكن إضافة نوع الممتلكات للصف الرسم البياني. دور الحوكمة مرجع الـ UID غير محدد.</value>
+  </data>
+  <data name="GroupEndPoint" xml:space="preserve">
+    <value>/api/v2/membership/groups</value>
+  </data>
+  <data name="UserEndPoint" xml:space="preserve">
+    <value>/api/v2/membership/users</value>
+  </data>
+  <data name="InvalidParameterProvided" xml:space="preserve">
+    <value>غير صحيح ⁦{0}⁩ متوفر</value>
+  </data>
+  <data name="CanEditParentClassRestriction" xml:space="preserve">
+    <value>[CanEditParent] يمكن أن تحدد فقط أنواع الأصول التي هي طبقة الأعمال أو التقنية و هي أبناء نوع آخر من الأصول.</value>
+  </data>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>اتجاه الترتيب غير صحيح تم تسليمه في الطلب.</value>
+  </data>
+  <data name="InvalidOrderPassed" xml:space="preserve">
+    <value>ترتيب غير صحيح تم تسليمه في الطلب.</value>
+  </data>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>⁦{0}⁩ لا يمكن العثور عليها.</value>
+  </data>
+  <data name="PredicateHttpErrorTitle" xml:space="preserve">
+    <value>الفرضية</value>
+  </data>
+  <data name="InvalidAssetType" xml:space="preserve">
+    <value>غير صحيح [assetType] محدد</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>شئ غير صالح Uid في العوامل!</value>
+  </data>
+  <data name="InvalidMaximumDepthTitle" xml:space="preserve">
+    <value>غير صحيح [HierarchyMaximumDepth] قيمة</value>
+  </data>
+  <data name="InvalidOwnerUid" xml:space="preserve">
+    <value>شفر المالك غير صالح في الប៉ារ៉ាម៉ែត្រ!</value>
+  </data>
+  <data name="InvalidValueAutoDisplayParent" xml:space="preserve">
+    <value>قيمة غير صالحة للប៉ារ៉ាម៉ែត្រ [autoDisplayParent]</value>
+  </data>
+  <data name="InvalidValueForuseastransformation" xml:space="preserve">
+    <value>قيمة غير صالحة للប៉ារ៉ាម៉ែត្រ [useastransformation]</value>
+  </data>
+  <data name="InvalidValueHierachical" xml:space="preserve">
+    <value>قيمة غير صالحة للប៉ារ៉ាម៉ែត្រ [hierarchical]</value>
+  </data>
+  <data name="InvalidValueincludeLevels" xml:space="preserve">
+    <value>قيمة غير صالحة للប៉ារ៉ាម៉ែត្រ [includeLevels]</value>
+  </data>
+  <data name="InvalidValueObj" xml:space="preserve">
+    <value>قيمة غير صالحة للប៉ារ៉ាម៉ែត្រ [obj]</value>
+  </data>
+  <data name="InvalidValueObjID" xml:space="preserve">
+    <value>قيمة غير صالحة للប៉ារ៉ាម៉ែត្រ [objID]</value>
+  </data>
+  <data name="InvalueValue_includeFields" xml:space="preserve">
+    <value>قيمة غير صحيحة ⁦{0}⁩ في متغير [_includeFields]، لم نجد حقل بهذا الاسم.</value>
+  </data>
+  <data name="UnableParse_IncludeFields" xml:space="preserve">
+    <value>لم يستطع تحليل قيمة [_includeFields]</value>
+  </data>
+  <data name="UseAsAdminUseWithAssetUid" xml:space="preserve">
+    <value>يمكن استخدام متغير [UseAsAdmin] فقط مع تحديد [_assetUid]!</value>
+  </data>
+  <data name="WrongNameHttpErrorTitle" xml:space="preserve">
+    <value>إسم خاطئ</value>
+  </data>
+  <data name="DuplicateFound" xml:space="preserve">
+    <value>وجدت نسخة مكررة</value>
+  </data>
+  <data name="DuplicateNameFound" xml:space="preserve">
+    <value>وجد إسم تقليدي</value>
+  </data>
+  <data name="ExecutionUIDNotFound" xml:space="preserve">
+    <value>لم نجد محدد فريد للتنفيذ.</value>
+  </data>
+  <data name="InvalidClass" xml:space="preserve">
+    <value>غير صحيح ⁦{0}⁩ متوفر.</value>
+  </data>
+  <data name="InvalidParentSelected" xml:space="preserve">
+    <value>مورّة غير صالحة قد اخترت</value>
+  </data>
+  <data name="ItemConflicit" xml:space="preserve">
+    <value>⁦{0}⁩ لم يستطع أن يُضيف أو يتم تحديثه لأن مسألة موجودة وجدت بالفعل.</value>
+  </data>
+  <data name="MaxNumberAllowedAssetType" xml:space="preserve">
+    <value>أكبر عدد من أنواع الأصول لهذه الطريقة هو 1.</value>
+  </data>
+  <data name="NameConflicit" xml:space="preserve">
+    <value>⁦{0}⁩ لم يكن بإمكانه أن يُضيف أو يتم تحديثه لأن العنصر بنفس الاسم موجود بالفعل.</value>
+  </data>
+  <data name="ParentChildRelationExists" xml:space="preserve">
+    <value>هناك علاقات بين الآباء والطفل لتلك الأنواع. لا يمكنك تغيير النوع الأصلي حتى يتم إزالة هذه العلاقات.</value>
+  </data>
+  <data name="WrongClass" xml:space="preserve">
+    <value>خطأ ⁦{0}⁩</value>
+  </data>
+  <data name="_parentuidNotValidAsset" xml:space="preserve">
+    <value>[_parentUid] مع قيمة ⁦{0}⁩ لا تتوافق مع شتماع صالح!</value>
+  </data>
+  <data name="_parentUidNotValidUid" xml:space="preserve">
+    <value>[_parentUid] Parameter must be a valid Guid, be set to null, or not be present!</value>
+  </data>
+  <data name="BadRequest" xml:space="preserve">
+    <value>طلب سيء</value>
+  </data>
+  <data name="Forbidden" xml:space="preserve">
+    <value>ممنوع</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>خطأ في الحاسب الداخلي</value>
+  </data>
+  <data name="InvalidFieldEntry" xml:space="preserve">
+    <value>مدخل ساحوي غير صالح</value>
+  </data>
+  <data name="InvalidFieldMessage" xml:space="preserve">
+    <value>لا يمكن تحديث ⁦{0}⁩ لأنه ⁦{1}⁩.</value>
+  </data>
+  <data name="MissingPropertyMessage" xml:space="preserve">
+    <value>⁦{0}⁩ هو مفقود عن الخصائص الضرورية للطلب للتقدم.</value>
+  </data>
+  <data name="MissingPropertyTitle" xml:space="preserve">
+    <value>عنصر يفتقد خصائص</value>
+  </data>
+  <data name="NoFormDataMessage" xml:space="preserve">
+    <value>لا توجد بيانات نموذجية موجودة لصنع ⁦{0}⁩.</value>
+  </data>
+  <data name="NoFormDataTitle" xml:space="preserve">
+    <value>لا بيانات للنموذج</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>لم يتم العثور عليه</value>
+  </data>
+  <data name="ScoreAlreadyProcessed" xml:space="preserve">
+    <value>تقييم رسالة يتم معالجتها بالفعل</value>
+  </data>
+  <data name="InvalidValueReturnCount" xml:space="preserve">
+    <value>قيمة غير صالحة للប៉ារ៉ាម៉ែត្រ [ReturnCount]</value>
+  </data>
+  <data name="FieldIsEmpty" xml:space="preserve">
+    <value>⁦{0}⁩ لا ينبغي أن تكون فارغة.</value>
+  </data>
+  <data name="FieldIsInvalid" xml:space="preserve">
+    <value>⁦{0}⁩ غير صالح.</value>
+  </data>
+  <data name="FieldProvideCorrectValue" xml:space="preserve">
+    <value>رجاءً قدموا قيمة صالحة.</value>
+  </data>
+  <data name="InvalidRelationshipFieldType" xml:space="preserve">
+    <value>نوع العلاقة غير صحيح أو تم حذفه وجد في حقل العلاقات باسم صديق "{FriendlyName}".</value>
+  </data>
+  <data name="InvalidValueincludedashboardflag" xml:space="preserve">
+    <value>قيمة غير صالحة للប៉ារ៉ាម៉ែត្រ [includedashboardflag]</value>
+  </data>
+  <data name="UnhandledError" xml:space="preserve">
+    <value>حدث خطأ لم يتم معالجته. رجاء حاولوا طلبكم مرة أخرى.</value>
+  </data>
+  <data name="TypeNotFound" xml:space="preserve">
+    <value>لم تعثر على الكتابة.</value>
+  </data>
+  <data name="InvalidUser" xml:space="preserve">
+    <value>مستخدم غير صالح</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>النجاح</value>
+  </data>
+  <data name="DuplicateItem" xml:space="preserve">
+    <value>عثرت على أشياء مكررة في طلب</value>
+  </data>
+  <data name="MaxLengthExceeded" xml:space="preserve">
+    <value>⁦{0}⁩ لا يمكن أن يتجاوز ⁦{1}⁩ الحروف.</value>
+  </data>
+</root>
