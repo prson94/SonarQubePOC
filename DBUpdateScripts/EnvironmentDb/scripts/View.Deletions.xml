@@ -18,5 +18,19 @@ drop view if exists [utility].[ArtifactAssetParent]
     </sql>
 	<rollback></rollback>
   </changeSet>
-
+  
+  <changeSet author="Punet Gupta" id="View.Deletions.v6">
+  <comment>GOV-12938</comment>
+  <comment></comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+drop view if exists [reporting].[RuleImplementations_Results];
+		]]>
+    </sql>
+	<rollback></rollback>
+  </changeSet>
+  
 </databaseChangeLog>
