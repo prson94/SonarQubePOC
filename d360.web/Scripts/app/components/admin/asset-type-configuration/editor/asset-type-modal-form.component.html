@@ -15,7 +15,9 @@
 			</div>
 
 			<form #form
-				  [formGroup]="assetTypeForm">
+				  [formGroup]="assetTypeForm"
+				  [style.height.px]="modalFormMaxHeight"
+				  [style.overflow]="'auto'">
 				<ig-property-group [igformGroup]="assetTypeForm" title="General" i18n-title>
 					<div inputs>
 						<div class="form-group">
@@ -72,15 +74,27 @@
 										</p-header>
 									</p-editor>
 								</div>
+								<div class="field-col" *ngIf="hasUseAsTransformation">
+									<label for="useAsTransformation" class="ig-label" i18n>Use As Transformation</label>
+									<ig-switch [attr.name]="'useAsTransformation'"
+											   [formControlName]="'useAsTransformation'"
+											   [formControl]="assetTypeForm.controls['useAsTransformation']"
+											   i18n-trueLabel
+											   i18n-falseLabel
+											   trueLabel="True"
+											   falseLabel="False"></ig-switch>
+
+
+								</div>
 								<div class="field-col">
 									<label for="isDescriptionEnabled" class="ig-label" i18n>Show Description on List Page</label>
 									<ig-switch [attr.name]="'isDescriptionEnabled'"
 											   [formControlName]="'isDescriptionEnabled'"
+											   [formControl]="assetTypeForm.controls['isDescriptionEnabled']"
 											   i18n-trueLabel
 											   i18n-falseLabel
 											   trueLabel="True"
-											   falseLabel="False"
-											   (onChange)="assetTypeForm.controls['isDescriptionEnabled'].setValue($event)"></ig-switch>
+											   falseLabel="False"></ig-switch>
 
 
 								</div>
@@ -134,6 +148,26 @@
 										</div>
 									</div>
 								</div>
+
+								<div class="field-col">
+									<div class="flex">
+										<div class="flex-col">
+											<label for="icon" class="ig-label" i18n>Icon</label>
+
+											<!--<div>
+												<input #imageUpload id="imageUpload" type="file" (change)="onFileChange($event)" (click)="clearIcon()" accept="image/gif,image/jpeg,image/png" />
+												<ng-container i18n>Use a predefined icon or</ng-container>&nbsp;<a [routerLink]="" (click)="imageUploadClick($event)" id="imageUpload_link" i18n>Browse</a>
+											</div>-->
+											<ig-icon-picker [showGovIcons]="true"
+															name="icon"
+															formControlName="icon"
+															[formControl]="assetTypeForm.controls['icon']"
+															[igDataCy]="'Asset_Type_Modal_Field_icon'"
+															ngDefaultControl></ig-icon-picker>
+
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -145,7 +179,7 @@
 		</div>
 	</div>
 	<div class="action-bar">
-		<button igButton igAutoFocus i18n-label label="Cancel"></button>
+		<button igButton igAutoFocus i18n-label label="Cancel" (click)="onClose.emit();"></button>
 		<span class="grow"></span>
 		<button igButton class="ig-button-primary" i18n-label label="Add Asset Tyoe" (click)="save()"></button>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>

@@ -115,5 +115,14 @@ export class ConfigurationAssetTypeListComponent {
         }
 
         return null;
-    }
+	}
+
+	formAssetUid: string;
+	formParentUid: string;
+	openEditForm(assetUid: string, parentUid: string) {
+		this.formAssetUid = assetUid;
+		this.formParentUid = parentUid;
+		console.log(this.formAssetUid);
+		this.isModalVisible = true;
+	}
 }

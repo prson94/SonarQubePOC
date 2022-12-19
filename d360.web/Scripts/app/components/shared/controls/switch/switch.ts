@@ -1,135 +1,140 @@
 ﻿import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    ElementRef,
-    EventEmitter,
-    forwardRef,
-    Input,
-    NgModule,
-    OnInit,
-    Output,
-    ViewChild,
-    ViewEncapsulation
+	ChangeDetectionStrategy,
+	ChangeDetectorRef,
+	Component,
+	ElementRef,
+	EventEmitter,
+	forwardRef,
+	Input,
+	NgModule,
+	OnInit,
+	Output,
+	ViewChild,
+	ViewEncapsulation
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 
 export const SWITCH_VALUE_ACCESSOR: any = {
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => Switch),
-    multi: true
+	provide: NG_VALUE_ACCESSOR,
+	useExisting: forwardRef(() => Switch),
+	multi: true
 };
 
 
 @Component({
-    selector: 'ig-switch',
-    templateUrl: 'switch.html',
-    providers: [SWITCH_VALUE_ACCESSOR],
-    encapsulation: ViewEncapsulation.None,
-    styleUrls: ['./switch.less'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    host: {
-        "(click)": "focus($event)",
-        '(focus)': 'focus($event)',
-    }
+	selector: 'ig-switch',
+	templateUrl: 'switch.html',
+	providers: [SWITCH_VALUE_ACCESSOR],
+	encapsulation: ViewEncapsulation.None,
+	styleUrls: ['./switch.less'],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	host: {
+		"(click)": "focus($event)",
+		'(focus)': 'focus($event)',
+	}
 })
 export class Switch implements ControlValueAccessor, OnInit {
-    @Input() trueLabel = $localize`Yes`;
+	@Input() trueLabel = $localize`Yes`;
 
-    @Input() falseLabel = $localize`No`;
+	@Input() falseLabel = $localize`No`;
 
-    @Input() optional: boolean = false;
+	@Input() optional: boolean = false;
 
-    @Input() disabled = false;
+	@Input() disabled = false;
 
-    @Input() styleClass: string;
+	@Input() styleClass: string;
 
-    @Input() style: any;
+	@Input() style: any;
 
-    @Input() tabindex: number = 0;
+	@Input() tabindex: number = 0;
 
-    @Input() inputId: string;
+	@Input() inputId: string;
 
-    @Input() ariaLabelledBy: string;
+	@Input() ariaLabelledBy: string;
 
-    @Output() onChange: EventEmitter<any> = new EventEmitter();
+	@Output() onChange: EventEmitter<any> = new EventEmitter();
 
-    value = false;  // this is intentionally NOT an input you should be using ngModel..
+	@Input() formControl: FormControl;
 
-    onModelChange: Function = () => { };
+	value = false;  // this is intentionally NOT an input you should be using ngModel..
 
-    onModelTouched: Function = () => { };
+	onModelChange: Function = () => { };
 
-    private isInitialValueSet: boolean = false;
+	onModelTouched: Function = () => { };
 
-    constructor(
-        protected changeDetectorRef: ChangeDetectorRef
-    ) {
-    }
+	private isInitialValueSet: boolean = false;
 
-    ngOnInit(): void {
-        if (!this.trueLabel || this.trueLabel.length > 5) {
-            console.error("Invalid use of switch component true label should be 5 or less characters and not null");
-        }
-        if (!this.falseLabel || this.falseLabel.length > 5) {
-            console.error("Invalid use of switch component true label should be 5 or less characters and not null");
-        }
-    }
+	constructor(
+		protected changeDetectorRef: ChangeDetectorRef
+	) {
+	}
 
-    @ViewChild("switch", { static: false }) _el: ElementRef;
+	ngOnInit(): void {
+		if (!this.trueLabel || this.trueLabel.length > 5) {
+			console.error("Invalid use of switch component true label should be 5 or less characters and not null");
+		}
+		if (!this.falseLabel || this.falseLabel.length > 5) {
+			console.error("Invalid use of switch component true label should be 5 or less characters and not null");
+		}
+	}
 
-    toggle(e: Event) {
-        this.tryChangeValue(this.value === undefined ? true : !this.value);
-        e.preventDefault();
-    }
+	@ViewChild("switch", { static: false }) _el: ElementRef;
 
-    tryChangeValue(val: boolean) {
-        if (!this.disabled) {
-            this.writeValue(val);
-        }
-    }
+	toggle(e: Event) {
+		this.tryChangeValue(this.value === undefined ? true : !this.value);
+		e.preventDefault();
+	}
 
-    writeValue(obj: boolean): void {
-        if (this._el) {this._el.nativeElement.focus();}
+	tryChangeValue(val: boolean) {
+		if (!this.disabled) {
+			this.writeValue(val);
+		}
+	}
 
-        if (!this.optional && (obj === this.value)) {     // not optional and current value = previous   
-            return;
-        }
-        else if (this.optional && (obj === this.value) && this.isInitialValueSet) {      // optional and current value = previous  
-            this.value = undefined;
-        }
-        else {
-            this.value = obj;
-        }
+	writeValue(obj: boolean): void {
+		if (this._el) { this._el.nativeElement.focus(); }
 
-        this.onModelChange(this.value);
-        this.onChange.emit(this.value);
-        this.isInitialValueSet = true;
-        this.changeDetectorRef.markForCheck();
-    }
+		if (!this.optional && (obj === this.value)) {     // not optional and current value = previous   
+			return;
+		}
+		else if (this.optional && (obj === this.value) && this.isInitialValueSet) {      // optional and current value = previous  
+			this.value = undefined;
+		}
+		else {
+			this.value = obj;
+		}
 
-    registerOnChange(fn: any): void {
-        this.onModelChange = fn;
-    }
+		if (this.formControl) {
+			this.formControl.setValue(this.value, { emitEvent: false });
+		}
+		this.onModelChange(this.value);
+		this.onChange.emit(this.value);
+		this.isInitialValueSet = true;
+		this.changeDetectorRef.markForCheck();
+	}
 
-    registerOnTouched(fn: any): void {
-        this.onModelTouched = fn;
-    }
+	registerOnChange(fn: any): void {
+		this.onModelChange = fn;
+	}
 
-    setDisabledState?(isDisabled: boolean): void {
-        this.disabled = isDisabled;
-    }
-    public focus(evt) {
-        if (this._el) {this._el.nativeElement.focus();}
-    }
+	registerOnTouched(fn: any): void {
+		this.onModelTouched = fn;
+	}
+
+	setDisabledState?(isDisabled: boolean): void {
+		this.disabled = isDisabled;
+	}
+	public focus(evt) {
+		if (this._el) { this._el.nativeElement.focus(); }
+	}
 }
 
 @NgModule({
-    imports: [CommonModule],
-    declarations: [Switch],
-    exports: [Switch]
+	imports: [CommonModule],
+	declarations: [Switch],
+	exports: [Switch]
 })
 
 export class SwitchModule { }
