@@ -1,9 +1,13 @@
 import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
+import { result } from "lodash";
 import { SelectItem } from "primeng/api";
+import { forkJoin } from "rxjs";
 import { AssetType, AssetTypeApiModel, AssetTypeClass, AssetTypeEditorModel, IconStyle } from "../../../../models/asset.model";
+import { Predicate } from "../../../../models/predicate.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { AssetService } from "../../../../services/asset.service";
+import { RelationshipsService } from "../../../../services/relationships.service";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 
 @Component({
@@ -28,12 +32,15 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	chosenColor: string;
 	defaultColorItem: SelectItem = { label: $localize`Custom`, value: 'Custom', title: 'Custom' };
 
+	synonyms: Predicate[] = [];
+
 	@ViewChild('form', { static: false }) formElement: ElementRef;
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
 	constructor(private fb: FormBuilder,
 		private assetService: AssetService,
 		private assetTypeService: AssetTypeService,
+		private relationshipService: RelationshipsService,
 		private elRef: ElementRef,
 		private cdRef: ChangeDetectorRef
 	) {
@@ -47,10 +54,20 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	ngOnInit() {
 		this.setForm();
-		this.assetService.getAllColors().subscribe((x) => {
-			this.defaultColors = x;
+		forkJoin(
+			this.assetService.getAllColors(),
+			this.relationshipService.getSynonyms()
+		).subscribe((results) => {
+			this.synonyms = results[1];
+			this.defaultColors = results[0];
 			this.defaultColors.unshift(this.defaultColorItem);
 			this.chosenColor = "Ebony";
+
+			if (this.synonyms && this.synonyms.length > 0) {
+				this.synonyms.forEach((syn) => {
+					this.assetTypeForm.addControl(`syn_${syn.Uid}`, new FormControl(''));
+				});
+			}
 		});
 	}
 
@@ -131,11 +148,22 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		model.IconStyle.BackColor = "#000";
 		model.IconStyle.ForeColor = "#FFF";
 		model.UseAsTransformation = this.assetTypeForm.get("useAsTransformation").value;
+		model.SynonymAllocations = [];
+
+		if (this.synonyms && this.synonyms.length > 0) {
+			this.synonyms.forEach((syn) => {
+				this.assetTypeForm.get(`syn_${syn.Uid}`).value;
+				if (this.assetTypeForm.get(`syn_${syn.Uid}`).value) {
+					model.SynonymAllocations.push(syn.Uid);
+				}
+			});
+		}
 
 		if (!this.uid) {
 			this.assetTypeService.postAssetType(model)
 				.subscribe((res) => {
 					this.onUpdated.emit(res);
+					this.close();
 					this.savingInProgress = false;
 				});
 		}
@@ -144,6 +172,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			this.assetTypeService.putAssetType(model)
 				.subscribe((res) => {
 					this.onUpdated.emit(res);
+					this.close();
 					this.savingInProgress = false;
 				});
 		}
@@ -204,5 +233,10 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 		this.modalFormMaxHeight = groupsHeight > maxHeight ? maxHeight : groupsHeight;
 		this.cdRef.markForCheck();
+	}
+
+	close() {
+		this.setDefaultFormValues();
+		this.onClose.emit();
 	}
 }

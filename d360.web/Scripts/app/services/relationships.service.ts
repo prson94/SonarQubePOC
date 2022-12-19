@@ -16,6 +16,7 @@ import { DropdownOption } from '../models/dropdown.model';
 import { forkJoin, Observable } from 'rxjs';
 import { ApiResult } from '../models/apiresult.model';
 import * as _ from 'lodash';
+import { Predicate } from '../models/predicate.model';
 
 @Injectable({
     providedIn: 'root'
@@ -387,6 +388,16 @@ export class RelationshipsService extends BaseObservableService {
                     callback();
                 }
             });
-    }
+	}
+
+	getSynonyms(): Observable<Predicate[]> {
+		var url = '/api/v2/relationships/predicates?Type=Grammar';
+
+		return this.http.get(url)
+			.pipe(
+				map((response) => <Predicate>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
 }

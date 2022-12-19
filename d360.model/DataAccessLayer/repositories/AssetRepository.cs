@@ -198,7 +198,7 @@ namespace d360.model.DataAccessLayer
 											and P.ID = ITD.PredicateID 
 											and P.Type = {(int)PredicateType.InterTypeHierarchy}
 											  ) PredicateInverse ";
-				
+
 			}
 
 			//in case of Reference List items, check if there is parent to calculate if it is Hierarchical
@@ -2968,6 +2968,8 @@ where an.Uid = fam.uid)
 					break;
 			}
 
+			UpdateAssetTypeSynonymAllocations(model, at);
+
 			if (predicate != null)
 			{
 				var intersectType = new IntersectType
@@ -2985,6 +2987,37 @@ where an.Uid = fam.uid)
 			}
 
 			return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
+		}
+
+		private void UpdateAssetTypeSynonymAllocations(AssetTypeUpsert model, AssetType at)
+		{
+			//add synonym allocation
+			if (model.SynonymAllocations.Count > 0)
+			{
+				// delete any existing allocations
+				var rels = CompanyContext.Filter<NymRelation>(x => x.Object == at.Object.ToString() && x.ObjectID == at.ObjectID).ToList();
+
+				foreach (var rel in rels)
+				{
+					CompanyContext.Delete(rel);
+				}
+
+
+				foreach (var pUid in model.SynonymAllocations)
+				{
+					int predicateId = CompanyContext.Predicates.FirstOrDefault(x => x.UID == pUid).ID;
+					NymRelation rel = new NymRelation
+					{
+						PredicateID = predicateId,
+						Object = at.Object.ToString(),
+						ObjectID = at.ObjectID,
+						UpdatedBy = CompanyContext.CurrentResourceID,
+						UpdatedOn = DateTime.UtcNow
+					};
+
+					CompanyContext.Add<NymRelation>(rel);
+				}
+			}
 		}
 
 		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
@@ -3183,6 +3216,7 @@ where an.Uid = fam.uid)
 			try
 			{
 				CompanyContext.Update(assetType);
+				UpdateAssetTypeSynonymAllocations(model, assetType);
 			}
 			catch (Exception ex)
 			{
@@ -3961,8 +3995,7 @@ where an.Uid = fam.uid)
 							from assettype att
 							cross apply dbo.userassetpermissions(@resourceId, att.id) up
 							 where att.class in @filterClasses and((up.permissionsbitmask & @p)) = 0
-							{assetTypePermissionWhere
-								};
+							{assetTypePermissionWhere};
 
 								IF EXISTS(SELECT 1 FROM #TempAssetpremission)
 														BEGIN
@@ -3972,8 +4005,7 @@ where an.Uid = fam.uid)
 															 from AssetType Att
 															inner join Asset A on Att.ID = A.AssetTypeID
 															where att.class in @filterClasses
-															{assetTypePermissionWhere
-							}
+															{assetTypePermissionWhere}
 							and NOT EXISTS (select 1 from #TempAssetpremission U
 															where U.ASSETTYPEID = Att.ID and U.AssetID = A.ID)	
 															GROUP BY Att.ID
@@ -3985,7 +4017,7 @@ where an.Uid = fam.uid)
 															from AssetType Att
 															inner join Asset A on Att.ID = A.AssetTypeID
 															where att.class in @filterClasses
-							{ assetTypePermissionWhere}
+							{assetTypePermissionWhere}
 							group by Att.ID
 							END ";
 

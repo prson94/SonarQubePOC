@@ -100,6 +100,7 @@ export class AssetType {
     AutoDisplayParent: boolean;
 	CanEditParent: boolean;
 	BackgroundColor: string;
+	SynonymAllocations: string[];
 }
 
 export class AssetTypeClassApiModel {

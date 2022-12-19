@@ -155,11 +155,6 @@
 									<div class="flex">
 										<div class="flex-col">
 											<label for="icon" class="ig-label" i18n>Icon</label>
-
-											<!--<div>
-												<input #imageUpload id="imageUpload" type="file" (change)="onFileChange($event)" (click)="clearIcon()" accept="image/gif,image/jpeg,image/png" />
-												<ng-container i18n>Use a predefined icon or</ng-container>&nbsp;<a [routerLink]="" (click)="imageUploadClick($event)" id="imageUpload_link" i18n>Browse</a>
-											</div>-->
 											<ig-icon-picker [showGovIcons]="true"
 															name="icon"
 															formControlName="icon"
@@ -175,13 +170,32 @@
 					</div>
 				</ig-property-group>
 
+				<ig-property-group *ngIf="synonyms.length > 0" [igformGroup]="assetTypeForm" title="Grammatic Type Allocation" i18n-title>
+					<div inputs>
+						<div class="form-group">
+							<div class="row" *ngFor="let syn of synonyms;">
+								<div class="field-col">
+									<label for="'syn_'{{syn.Uid}}" class="ig-label">{{syn.Name}}</label>
+									<ig-switch [attr.name]="'syn_'+syn.Uid"
+											   [formControlName]="'syn_'+syn.Uid"
+											   [formControl]="assetTypeForm.controls['syn_'+syn.Uid]"
+											   i18n-trueLabel
+											   i18n-falseLabel
+											   trueLabel="True"
+											   falseLabel="False"></ig-switch>
+								</div>
+							</div>
+						</div>
+					</div>
+				</ig-property-group>
+
 			</form>
 
 
 		</div>
 	</div>
 	<div class="action-bar">
-		<button igButton igAutoFocus i18n-label label="Cancel" (click)="setDefaultFormValues();onClose.emit();"></button>
+		<button igButton igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
 		<span class="grow"></span>
 		<button igButton class="ig-button-primary" label="{{saveButtonLabel}}" (click)="save()" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>
