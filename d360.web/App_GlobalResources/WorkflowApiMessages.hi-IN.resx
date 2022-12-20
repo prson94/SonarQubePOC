@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="InvalidFormSetting" xml:space="preserve">
+    <value>फ़ॉर्म सेटिंग अनुपस्थित या अवैध है</value>
+  </data>
+  <data name="InvalidModelNoFieldPassed" xml:space="preserve">
+    <value>अवैध मॉडल कोई क्षेत्र पास नहीं किया गया</value>
+  </data>
+  <data name="InvalidOrderParameterPassed" xml:space="preserve">
+    <value>अनुरोध में अमान्य क्रम पारित किया गया. वैध मान हैंः StartedOn और CompletedOn</value>
+  </data>
+  <data name="InvalidParameterWorkflowVersion" xml:space="preserve">
+    <value>अनुरोध में अमान्य क्रम पारित किया गया. वैध मान हैंः संस्करण संख्या, स्थिति, CreatedOn, और UpdatedOn</value>
+  </data>
+  <data name="InvalidResourceID" xml:space="preserve">
+    <value>अवैध संसाधन आईडी</value>
+  </data>
+  <data name="InvalidSpecificID" xml:space="preserve">
+    <value>अमान्य कार्यवाही आइटम आईडी, निर्दिष्ट आईडी के साथ कार्यवाही आइटम स्टैप नहीं ढूँढ सकते.</value>
+  </data>
+  <data name="InvalidTypeWorkflowVersionRequest" xml:space="preserve">
+    <value>इस कार्यप्रवाह संस्करण को पुनःप्राप्त करने के लिए आपका अनुरोध अवैध है, संभवतः एक गलत प्रारूपित पहचानकर्ता के कारण ActionTypeUid/AssetTypeUid/RelationshipTypeUid</value>
+  </data>
+  <data name="InvalidTypeWorkflowVersionRequestIncWF" xml:space="preserve">
+    <value>इस कार्यप्रवाह संस्करण को पुनःप्राप्त करने के लिए आपका अनुरोध अवैध है, संभवतः एक गलत प्रारूपित पहचानकर्ता के कारण ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid</value>
+  </data>
+  <data name="InvalidUidWorkflowVersionRequest" xml:space="preserve">
+    <value>इस कार्यप्रवाह संस्करण को पुनःप्राप्त करने के लिए आपका अनुरोध अवैध है, संभवतः एक गलत प्रारूपित पहचानकर्ता ActionUid/AssetUid/RelationshipUid/WorkflowTypeUid/WorkflowVerionUid के कारण</value>
+  </data>
+  <data name="InvalidWorkflowID" xml:space="preserve">
+    <value>अवैध कार्यप्रवाह मद आईडी.</value>
+  </data>
+  <data name="InvalidWorkflowRegistration" xml:space="preserve">
+    <value>कार्यप्रवाह पंजीकरण अनुपस्थित है या अवैध है</value>
+  </data>
+  <data name="InvalidWorkflowStepID" xml:space="preserve">
+    <value>अवैध कार्यप्रवाह मद चरण आईडी.</value>
+  </data>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>वस्तु नहीं मिली</value>
+  </data>
+  <data name="ItemStepNotFound" xml:space="preserve">
+    <value>निर्दिष्ट पैरामीटरों के लिए वस्तु चरण नहीं मिला</value>
+  </data>
+  <data name="ItemStepUnableFound" xml:space="preserve">
+    <value>वस्तु चरण ढूंढने में अक्षम</value>
+  </data>
+  <data name="MoreThanOneTypeUidPassed" xml:space="preserve">
+    <value>अनुरोध में एक से अधिक यूआईडी पास किया जाता है, या तो ActionTypeUid या AssetTypeUid या RelationshipTypeUid</value>
+  </data>
+  <data name="MoreThanOneTypeUidPassedInclWorkflow" xml:space="preserve">
+    <value>अनुरोध में एक से अधिक यूआईडी पास किया जाता है, या ActionTypeUid या AssetTypeUid या RelationshipTypeUid या WorkflowTypeUid</value>
+  </data>
+  <data name="MoreThanOneUidPassed" xml:space="preserve">
+    <value>अनुरोध में एक से अधिक यूआईडी पास किया जाता है, या ActionUid या AssetUid या RelationshipUid</value>
+  </data>
+  <data name="MultiVersionFound" xml:space="preserve">
+    <value>अनेक चरण निर्दिष्ट</value>
+  </data>
+  <data name="NoPermissionBulkReassign" xml:space="preserve">
+    <value>आपके पास बल्क पुनर्निर्देशन करने की अनुमति नहीं है.</value>
+  </data>
+  <data name="NoValidItemStep" xml:space="preserve">
+    <value>कोई वैध वस्तु चरण नहीं मिला</value>
+  </data>
+  <data name="RelationNotFoundIntersectType" xml:space="preserve">
+    <value>"संबद्धता इनपुट विनिर्दिष्ट अंतरिक्ष प्रकार नहीं ढूँढ़ सकता</value>
+  </data>
+  <data name="RelationNotFoundIssueObject" xml:space="preserve">
+    <value>रिलेशनशिप इनपुट चिह्नित समस्या वस्तु नहीं है</value>
+  </data>
+  <data name="RelationNotFoundRegistration" xml:space="preserve">
+    <value>रिलेशनशिप इनपुट का पता लगाने वाला कार्य प्रवाह घटना पंजीकरण नहीं होगा</value>
+  </data>
+  <data name="RelatioshipInvalid" xml:space="preserve">
+    <value>रिलेशनशिप इनपुट का एक अमान्य इंटरसेक्टाइप आईडी मान है</value>
+  </data>
+  <data name="StepNotFound" xml:space="preserve">
+    <value>चरण नहीं मिला</value>
+  </data>
+  <data name="VersionStepIDNotFound" xml:space="preserve">
+    <value>निर्दिष्ट संस्करण चरण आईडी के साथ कार्यप्रवाह नहीं मिला</value>
+  </data>
+  <data name="WofkFlowXMLNull" xml:space="preserve">
+    <value>अवैध कार्य प्रवाह फ़ॉर्म परिभाषा, फ़ॉर्म XML रिक्त है.</value>
+  </data>
+  <data name="WorkflowIDAlreadyDeleted" xml:space="preserve">
+    <value>कार्यप्रवाह प्रकार आईडी {0} पहले से ही मिटाया गया है</value>
+  </data>
+  <data name="WorkflowInstanceNotFound" xml:space="preserve">
+    <value>निर्दिष्ट कार्यप्रवाह दृष्टांत नहीं पा सका.</value>
+  </data>
+  <data name="WorkflowItemDeleted" xml:space="preserve">
+    <value>कार्यप्रवाह मद मिटा दिया गया है.</value>
+  </data>
+  <data name="WorkflowReassignSuccess" xml:space="preserve">
+    <value>कार्यप्रवाह फ़ॉर्म सफलतापूर्वक पुनः माना गया</value>
+  </data>
+  <data name="WorkflowtypeidNotFound" xml:space="preserve">
+    <value>कार्यप्रवाह प्रकार id {0} नहीं मिला</value>
+  </data>
+  <data name="WorkflowtypeUIDNotFound" xml:space="preserve">
+    <value>कार्यप्रवाह क़िस्म Uid {0} नहीं मिला</value>
+  </data>
+  <data name="WorkflowUIDNotFound" xml:space="preserve">
+    <value>कार्यप्रवाह यूआईडी {0} नहीं मिला.</value>
+  </data>
+  <data name="WorkflowVersionUIDNotFound" xml:space="preserve">
+    <value>यूआईडी के साथ कार्यप्रवाह संस्करण {0} नहीं मिला.</value>
+  </data>
+</root>

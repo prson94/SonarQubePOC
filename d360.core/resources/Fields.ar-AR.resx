@@ -1,0 +1,395 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Code_Name" xml:space="preserve">
+    <value>البرمجة</value>
+  </data>
+  <data name="LastLoggedInOn_Description" xml:space="preserve">
+    <value>التاريخ الذي دخلت فيه هذه الموارد فيه آخر مرة.</value>
+  </data>
+  <data name="LastLoggedInOn_Name" xml:space="preserve">
+    <value>آخر مرة دخلت فيها</value>
+  </data>
+  <data name="Description_Description" xml:space="preserve">
+    <value>الوصف لهذا العنصر.</value>
+  </data>
+  <data name="Description_ErrorRequired" xml:space="preserve">
+    <value>الوصف هو حقل مطلوب.</value>
+  </data>
+  <data name="Description_Name" xml:space="preserve">
+    <value>التوضيح</value>
+  </data>
+  <data name="Email_Description" xml:space="preserve">
+    <value>البريد الإلكتروني لهذه الموارد.</value>
+  </data>
+  <data name="Email_ErrorRegex" xml:space="preserve">
+    <value>البريد الإلكتروني يحتوي على شخصيات غير مسموح بها.</value>
+  </data>
+  <data name="Email_ErrorRequired" xml:space="preserve">
+    <value>البريد الإلكتروني هو حقل ضروري.</value>
+  </data>
+  <data name="Email_Name" xml:space="preserve">
+    <value>البريد الإلكتروني</value>
+  </data>
+  <data name="FirstName_Description" xml:space="preserve">
+    <value>إسم الأول لهذه الموارد.</value>
+  </data>
+  <data name="FirstName_ErrorRegex" xml:space="preserve">
+    <value>إسم الأول يحتوي على شخصيات غير مسموح بها.</value>
+  </data>
+  <data name="FirstName_ErrorRequired" xml:space="preserve">
+    <value>إسم الأول هو مجال مطلوب.</value>
+  </data>
+  <data name="FirstName_Name" xml:space="preserve">
+    <value>إسم أولي</value>
+  </data>
+  <data name="FriendlyName_Description" xml:space="preserve">
+    <value>الاسم الذي يستخدم عند عرض هذه القيمة في هذا الحقل لجمهورك.</value>
+  </data>
+  <data name="FriendlyName_ErrorRequired" xml:space="preserve">
+    <value>إسم صديق هو مطلوب.</value>
+  </data>
+  <data name="FriendlyName_Name" xml:space="preserve">
+    <value>إسم صديق</value>
+  </data>
+  <data name="ID_Description" xml:space="preserve">
+    <value>التعرف الوحيد لهذا العنصر.</value>
+  </data>
+  <data name="ID_Name" xml:space="preserve">
+    <value>الـ ID</value>
+    <comment>u</comment>
+  </data>
+  <data name="LastName_Description" xml:space="preserve">
+    <value>الاسم الاخير لهذه الموارد.</value>
+  </data>
+  <data name="LastName_ErrorRegex" xml:space="preserve">
+    <value>الاسم الاخير يحتوي على شخصيات غير مسموح بها.</value>
+  </data>
+  <data name="LastName_ErrorRequired" xml:space="preserve">
+    <value>إسم العائلة هو مجال مطلوب.</value>
+  </data>
+  <data name="LastName_Name" xml:space="preserve">
+    <value>إسم آخر</value>
+  </data>
+  <data name="Length_Description" xml:space="preserve">
+    <value>الطول الفعلي الذي يتطلبه هذا الحقل من أجل قيمة.</value>
+  </data>
+  <data name="Length_Name" xml:space="preserve">
+    <value>الطول</value>
+  </data>
+  <data name="LookupObjectID_Description" xml:space="preserve">
+    <value/>
+  </data>
+  <data name="LookupObjectID_Name" xml:space="preserve">
+    <value>ID أداة البحث</value>
+  </data>
+  <data name="LookupObjectType_Description" xml:space="preserve">
+    <value>نوع البحث الذي يستخدمه هذا الحقل.</value>
+  </data>
+  <data name="LookupObjectType_Name" xml:space="preserve">
+    <value>التعرف على نوع الجسم</value>
+  </data>
+  <data name="MaximumLength_Description" xml:space="preserve">
+    <value>أقصى طول مسموح له لقيمة هذا الحقل.</value>
+  </data>
+  <data name="MaximumLength_Name" xml:space="preserve">
+    <value>أقصى طول</value>
+  </data>
+  <data name="MinimumLength_Description" xml:space="preserve">
+    <value>الحد الأدنى للطول المسموح لقيمة هذا الحقل.</value>
+  </data>
+  <data name="MinimumLength_Name" xml:space="preserve">
+    <value>أقصى طول</value>
+  </data>
+  <data name="Name_Description" xml:space="preserve">
+    <value>إسم هذه المادة.</value>
+  </data>
+  <data name="Name_ErrorRegex" xml:space="preserve">
+    <value>يحتوي الاسم على شخصيات غير مسموح بها.</value>
+  </data>
+  <data name="Name_ErrorRequired" xml:space="preserve">
+    <value>إسم هو حقل مطلوب.</value>
+  </data>
+  <data name="Name_Name" xml:space="preserve">
+    <value>إسم</value>
+  </data>
+  <data name="Path_Description" xml:space="preserve">
+    <value>الطريق داخل التسلسل الهرمي</value>
+  </data>
+  <data name="Path_Name" xml:space="preserve">
+    <value>المسار</value>
+  </data>
+  <data name="Pattern_Description" xml:space="preserve">
+    <value>نمط التحقق من الدقة المستخدم عند تقديم قيمة لهذا الحقل.</value>
+  </data>
+  <data name="Pattern_Name" xml:space="preserve">
+    <value>نمط الاختبار</value>
+  </data>
+  <data name="Status_Name" xml:space="preserve">
+    <value>الوضع</value>
+  </data>
+  <data name="Type_Description" xml:space="preserve">
+    <value>النوع لهذه المادة.</value>
+  </data>
+  <data name="Type_ErrorRequired" xml:space="preserve">
+    <value>النوع هو حقل مطلوب.</value>
+  </data>
+  <data name="Type_Name" xml:space="preserve">
+    <value>نوع</value>
+  </data>
+  <data name="Username_Description" xml:space="preserve">
+    <value>إسم المستخدم لهذه الموارد.</value>
+  </data>
+  <data name="Username_ErrorRegex" xml:space="preserve">
+    <value>اسم المستخدم يحتوي على شخصيات غير مسموح بها.</value>
+  </data>
+  <data name="Username_ErrorRequired" xml:space="preserve">
+    <value>اسم المستخدم هو حقل مطلوب.</value>
+  </data>
+  <data name="Username_Name" xml:space="preserve">
+    <value>إسم المستخدم</value>
+  </data>
+  <data name="Level_Description" xml:space="preserve">
+    <value>مستوى هذا النموذج المعلوماتي داخل شجرة التصنيف الكلي.</value>
+  </data>
+  <data name="Level_Name" xml:space="preserve">
+    <value>المستوى</value>
+  </data>
+  <data name="DisplayDescription_Description" xml:space="preserve">
+    <value>الوصف الذي سيكون مرئياً عندما يقرأ المستخدم المعلومات في هذا الحقل.</value>
+  </data>
+  <data name="DisplayDescription_Name" xml:space="preserve">
+    <value>توضيح العرض</value>
+  </data>
+  <data name="FormDescription_Description" xml:space="preserve">
+    <value>الوصف الذي سيكون مرئياً عندما يقوم المستخدم ب تحديث المعلومات في هذا الحقل.</value>
+  </data>
+  <data name="FormDescription_Name" xml:space="preserve">
+    <value>وصف النموذج</value>
+  </data>
+  <data name="MaximumDepth_Description" xml:space="preserve">
+    <value>أقصى عمق نموذج المعلومات.</value>
+  </data>
+  <data name="MaximumDepth_Name" xml:space="preserve">
+    <value>أقصى عمق</value>
+  </data>
+  <data name="GroupPrimaryOwner_Description" xml:space="preserve">
+    <value>المالك الرئيسي للمجموعة.  هذا الشخص هو المسؤول عن إدارة مجموعة يوميًا، بما في ذلك تخصيص أي مهام لأعضاءها.</value>
+  </data>
+  <data name="GroupPrimaryOwner_Name" xml:space="preserve">
+    <value>المالك الرئيسي</value>
+  </data>
+  <data name="GroupSecondaryOwner_Description" xml:space="preserve">
+    <value>المالك السفيني للمجموعة.  هذا الشخص هو مالك احتياطي للمجموعة إذا لم يكن المالك الأساسي متاحا.</value>
+  </data>
+  <data name="GroupSecondaryOwner_Name" xml:space="preserve">
+    <value>مالك ثانوي</value>
+  </data>
+  <data name="ReportDescription_Description" xml:space="preserve">
+    <value>توضيح معنى هذا التقرير؛ ما يحاول شرحه هذا التقرير.</value>
+  </data>
+  <data name="ValidationDescription_Description" xml:space="preserve">
+    <value>هذه الرسالة ستظهر للمستخدم إذا قدموا معلومات غير صحيحة أو مفقودة في هذا الحقل.  يجب أن ت有効 بعض أشكال نموذج التعبير العادي في هذا الحقل من أجل أن يظهر الرسالة.</value>
+  </data>
+  <data name="ValidationDescription_Name" xml:space="preserve">
+    <value>رسالة الاختبار</value>
+  </data>
+  <data name="DisplayFormat_Description" xml:space="preserve">
+    <value>صيغة قيمة العرض.</value>
+  </data>
+  <data name="DisplayFormat_Name" xml:space="preserve">
+    <value>شكل العرض</value>
+  </data>
+  <data name="ReportName_Description" xml:space="preserve">
+    <value>إسم هذا التقرير.  هذا الاسم سيتم استخدامه في كل مكان يكون فيه التقرير متاحا للعرض.</value>
+  </data>
+  <data name="ReportObjectType_Description" xml:space="preserve">
+    <value>نوع الجسم حيث سيكون هذا التقرير متاحاً.</value>
+  </data>
+  <data name="ReportObjectType_Name" xml:space="preserve">
+    <value>النوع المستهدف</value>
+  </data>
+  <data name="SourceNotes_Description" xml:space="preserve">
+    <value>يحدد المعلومات المتعلقة بالمصدر أو المبتكر لهذه القائمة.</value>
+  </data>
+  <data name="SourceNotes_Name" xml:space="preserve">
+    <value>مذكرات المصدر</value>
+  </data>
+  <data name="GroupIsActiveDirectory_Description" xml:space="preserve">
+    <value>ما إذا كان يجب أن يتم إدارة هذه المجموعة تلقائياً من خلال مطالب مجموعة SAML</value>
+  </data>
+  <data name="GroupIsActiveDirectory_Name" xml:space="preserve">
+    <value>هل هو دليل فعال؟</value>
+  </data>
+  <data name="Parent_Name" xml:space="preserve">
+    <value>المالك/الصاحب</value>
+  </data>
+  <data name="RegexPatternChoose" xml:space="preserve">
+    <value>إختيار العينة...</value>
+  </data>
+  <data name="RegexPatternEmail" xml:space="preserve">
+    <value>البريد الإلكتروني</value>
+  </data>
+  <data name="RegexPatternInternalUrl" xml:space="preserve">
+    <value>Url داخلي</value>
+  </data>
+  <data name="RegexPatternIP" xml:space="preserve">
+    <value>عنوان IP</value>
+  </data>
+  <data name="RegexPatternNorthAmericanPhone" xml:space="preserve">
+    <value>الهاتف الأمريكي الشمالي</value>
+  </data>
+  <data name="RegexPatternPublicUrl" xml:space="preserve">
+    <value>Url العامة</value>
+  </data>
+  <data name="RegexPatternUSZipCode" xml:space="preserve">
+    <value>رمز بريد الولايات المتحدة</value>
+  </data>
+  <data name="Administrator_Name" xml:space="preserve">
+    <value>المدير؟</value>
+  </data>
+  <data name="AssetPath_Name" xml:space="preserve">
+    <value>طريق ممتلكات</value>
+  </data>
+  <data name="AssignedUserGroup_Name" xml:space="preserve">
+    <value>المستخدم/المجموعة المخصصة</value>
+  </data>
+  <data name="Color_Name" xml:space="preserve">
+    <value>اللون</value>
+  </data>
+  <data name="Context_Name" xml:space="preserve">
+    <value>السياق</value>
+  </data>
+  <data name="OwnedItems_Name" xml:space="preserve">
+    <value>أشياء مملوكة</value>
+  </data>
+  <data name="Responsibility_Name" xml:space="preserve">
+    <value>المسؤولية</value>
+  </data>
+  <data name="Via_Name" xml:space="preserve">
+    <value>من خلال</value>
+  </data>
+  <data name="LastSeen_Name" xml:space="preserve">
+    <value>رأيت آخر مرة</value>
+  </data>
+  <data name="FieldsRemoved" xml:space="preserve">
+    <value>أزيلت الحقول بنجاح.</value>
+  </data>
+  <data name="FieldsUpdated" xml:space="preserve">
+    <value>الحقول تم تحديثها بنجاح.</value>
+  </data>
+</root>

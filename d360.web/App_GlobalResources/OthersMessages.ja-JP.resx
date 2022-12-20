@@ -1,0 +1,274 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AllNodeMustLink" xml:space="preserve">
+    <value>図内のすべてのノードがリンクされている必要があります。</value>
+  </data>
+  <data name="AllocationIdentifierDoesnotValidAllocation" xml:space="preserve">
+    <value>{0} の値を持つ割り当て識別子は、有効な割り当てに対応しません。</value>
+  </data>
+  <data name="AllocationUidNotCorrectlyFormatted" xml:space="preserve">
+    <value>[allocationUid] {0} 正しくフォーマットされた識別子ではありません。</value>
+  </data>
+  <data name="AssetIdentifierDoesnotValidAsset" xml:space="preserve">
+    <value>{0} の値を持つアセット識別子は、有効なアセットに対応しません。</value>
+  </data>
+  <data name="AssetuidDoesnotExists" xml:space="preserve">
+    <value>uid が指定されたアセットは存在しません。</value>
+  </data>
+  <data name="AssetUidMustSpecified" xml:space="preserve">
+    <value>アセットuidは指定する必要があります。</value>
+  </data>
+  <data name="AssetuidNotCorrectlyFormatted" xml:space="preserve">
+    <value>[assetUid] {0} 正しくフォーマットされた識別子ではありません。</value>
+  </data>
+  <data name="BadRequestSubmitted" xml:space="preserve">
+    <value>不良のリクエストが送信されました</value>
+  </data>
+  <data name="CriticalException" xml:space="preserve">
+    <value>クリティカル・エクスセプション</value>
+  </data>
+  <data name="CustomConstant" xml:space="preserve">
+    <value>カスタム</value>
+  </data>
+  <data name="DatasourceNotReachable" xml:space="preserve">
+    <value>基盤となるデータソースには到達できません。</value>
+  </data>
+  <data name="EndPointNotFound" xml:space="preserve">
+    <value>エンドポイントが見つかりません。</value>
+  </data>
+  <data name="FailedToVerifySignature" xml:space="preserve">
+    <value>AssertionConsumerService =&gt; IDP が提供した CER ファイルが格納された署名を確認できなかった</value>
+  </data>
+  <data name="FailedToVerifySignatureNoIDP" xml:space="preserve">
+    <value>AssertionConsumerService =&gt; IDP が提供した CER ファイルが格納されていない署名を確認できなかった</value>
+  </data>
+  <data name="FilterExpressionErrors" xml:space="preserve">
+    <value>フィルタ式には以下のエラーが含まれていました。 {0}</value>
+  </data>
+  <data name="GovernEnvironmentInactive" xml:space="preserve">
+    <value>要求した Govern 環境は現在無効です。詳細については、正確なサポートまでお問い合わせください。</value>
+  </data>
+  <data name="IncorrectPassword" xml:space="preserve">
+    <value>提供されたユーザー名またはパスワードが間違っています。</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>このメールは有効に見えません。</value>
+  </data>
+  <data name="InvalidFieldFilterParameter" xml:space="preserve">
+    <value>[filter] クエリ パラメータに無効なフィールドがあります。{0}</value>
+  </data>
+  <data name="InvalidFieldSelectQueryParameter" xml:space="preserve">
+    <value>[select] クエリ パラメータに無効なフィールドがあります。{0}</value>
+  </data>
+  <data name="InvalidField_OrderParameter" xml:space="preserve">
+    <value>[_order] クエリ パラメータに無効なフィールドがあります。</value>
+  </data>
+  <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
+    <value>無効なリレーションシップフィールド 無効または削除されたリレーションタイプが見つかりました。</value>
+  </data>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>項目が見つかりませんでした。</value>
+  </data>
+  <data name="LinkWithoutFromToDetected" xml:space="preserve">
+    <value>ノードからノードへのリンクは検出されません。</value>
+  </data>
+  <data name="ModelNotEmpty" xml:space="preserve">
+    <value>モデルは空にできません。</value>
+  </data>
+  <data name="MustAcceptTermsOfUse" xml:space="preserve">
+    <value>お客様は利用規約に同意するものとします。</value>
+  </data>
+  <data name="NeedAdministratorHelp" xml:space="preserve">
+    <value>エラーが発生し、もう一度試してみてください、または管理者に連絡してください</value>
+  </data>
+  <data name="NoAssertionsInResponse" xml:space="preserve">
+    <value>応答には主張はありません</value>
+  </data>
+  <data name="NoEmailDomainResolved" xml:space="preserve">
+    <value>メールドメインは解決できませんでした。</value>
+  </data>
+  <data name="NoPremissiontoviewScoreHistory" xml:space="preserve">
+    <value>このアセットのスコア履歴を表示する権限はありません。</value>
+  </data>
+  <data name="NoRegistrationFound" xml:space="preserve">
+    <value>登録は見つかりません。</value>
+  </data>
+  <data name="NoRelationshipTypeFoundToLookup" xml:space="preserve">
+    <value>無効なリレーションシップフィールドには、定義で検索するリレーションタイプが見つかりませんでした。</value>
+  </data>
+  <data name="NoResourceAccount" xml:space="preserve">
+    <value>リソースアカウントが見つかりませんでした。</value>
+  </data>
+  <data name="NotAuthorizedToEditDiagram" xml:space="preserve">
+    <value>このプロセスダイアグラムを編集する権限はありません</value>
+  </data>
+  <data name="NoTermOfAgreementFound" xml:space="preserve">
+    <value>利用規約が見つかりません。</value>
+  </data>
+  <data name="NotMeetPasswordRule" xml:space="preserve">
+    <value>パスワードは以下の複雑性要件を満たしていません: {0}.</value>
+  </data>
+  <data name="OrganisationNotYetRegistered" xml:space="preserve">
+    <value>組織はまだマーケットビジネス用語集に登録されていないか、またはあなたの詳細は無効です。&lt;a href='mailto:datasupport@londonmarketgroup.co.uk'&gt;datasupport@londonmarketgroup.co.uk&lt;/a&gt;までお問い合わせください。</value>
+  </data>
+  <data name="OwnershipConfirmationMail" xml:space="preserve">
+    <value>このメールアドレスの所有権を確認し、登録を継続するために、間もなくメールを受信します。</value>
+  </data>
+  <data name="PasswordNotMatch" xml:space="preserve">
+    <value>パスワードは一致しません。</value>
+  </data>
+  <data name="RequestURINotExceed16Kchar" xml:space="preserve">
+    <value>リクエスト URI は 16,000 文字を超えない必要があります。</value>
+  </data>
+  <data name="ResoourceAccountNotAllocatedToCompany" xml:space="preserve">
+    <value>この会社にはリソースアカウントがまだ割り当てられていません。</value>
+  </data>
+  <data name="ResourceNotSetOrgResource" xml:space="preserve">
+    <value>組織的なリソースとしてまだ設定されていないリソースアカウント。</value>
+  </data>
+  <data name="ResourceNotThisUser" xml:space="preserve">
+    <value>このユーザーにはリソースがありません。</value>
+  </data>
+  <data name="SearchFilterInvalid" xml:space="preserve">
+    <value>検索フィルターは、フィルタークエリパラメータ: [last_modified] で無効です。</value>
+  </data>
+  <data name="ServerErrorOccurred" xml:space="preserve">
+    <value>サーバーエラーが発生しました。後でリクエストをもう一度お試しください</value>
+  </data>
+  <data name="SourceAssetUidModelNotEmpty" xml:space="preserve">
+    <value>[sourceAssetUid] でコピー/置き換えオプションを使用する場合、モデルは空でなければなりません。</value>
+  </data>
+  <data name="SourceTargetNotSame" xml:space="preserve">
+    <value>ソースとターゲットアセットは同じではありません。</value>
+  </data>
+  <data name="SourceTargetTypeMustSame" xml:space="preserve">
+    <value>ソースとターゲットアセットのタイプは同じである必要があります。</value>
+  </data>
+  <data name="SourceUidNotExists" xml:space="preserve">
+    <value>[sourceAssetUid] 無効またはアセットが存在しません。</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>無許可</value>
+  </data>
+  <data name="_PageNumGT0" xml:space="preserve">
+    <value>[_pageNum] パラメーターは 0 より大きい必要があります</value>
+  </data>
+  <data name="_PageSizeMax200" xml:space="preserve">
+    <value>[_pageSize] パラメータのサポート値は最大200です。</value>
+  </data>
+</root>
