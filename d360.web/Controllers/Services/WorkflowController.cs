@@ -958,6 +958,12 @@ namespace d360.web.Controllers.Services
 
 			//replace any tokens in the description            
 			desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), Company.CurrentCompanyDomain, itemStep, true, false, false);
+			Guid? ObjectUid = null;
+
+			if(itemStep.Item.Object == SystemObjects.Artifact.ToString())
+			{
+				ObjectUid = Company.Assets.Where(a => a.Object == SystemObjects.Artifact.ToString() && a.ObjectID == itemStep.Item.ObjectID).FirstOrDefault().uid;
+			}
 
 			//parse the xml to get the form info
 			return Request.CreateResponse<dynamic>(HttpStatusCode.OK, new
@@ -971,6 +977,7 @@ namespace d360.web.Controllers.Services
 				ObjectName = details == null ? "(unknown)" : details.Name,
 				ObjectType = itemStep.Item.Object,
 				itemStep.Item.ObjectID,
+				ObjectUid,
 				ObjectTypeID = details?.TypeID ?? 0,
 				TypeName = typeName,
 				IsUserAllowedToComplete,

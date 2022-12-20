@@ -1,21 +1,28 @@
-﻿using d360.core.entities.Workflow;
-using d360.web.Controllers.V2;
-using igx.UnitTests.Core;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Net.Http;
 using System.Web.Http;
-using d360.web.Utilities;
+
 using Moq;
 using Xunit;
+using FluentAssertions;
+using Newtonsoft.Json;
+
+using d360.core.entities.Workflow;
+using d360.web.Controllers.V2;
+using d360.web.Utilities;
+using d360.web.Services;
+using igx.UnitTests.Core;
+
+using Resources;
 
 namespace igx.UnitTests.V2ControllerTests
 {
     [Trait("Unit tests", "Workflow controller")]
     public class WorkflowControllerTest : BaseTest
     {
-        internal WorkflowController workflowController;
+		private readonly WorkflowController WorkflowController;
         private readonly TestDependencyResolver DependencyResolver;
         private readonly Mock<IRuntimeInfo> RuntimeInfoMock;
 
@@ -29,7 +36,7 @@ namespace igx.UnitTests.V2ControllerTests
 	        DependencyResolver.AddService(RuntimeInfoMock.Object);
 	        System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
 
-	        this.workflowController = new WorkflowController(GetCoreComponentSet(), GetWorkflowRepository(), GetWorkflowApiModelValidator())
+	        WorkflowController = new WorkflowController(GetCoreComponentSet(), GetWorkflowRepository(), GetWorkflowApiModelValidator())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -37,68 +44,76 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void GetWorkflowTypesAsync()
+        public async void GetWorkflowTypesAsync_MustReturnsSuccessfullResult()
         {
-
-            var actionResult = await workflowController.GetWorkflowTypeAsync();
+			//Act
+            var actionResult = await WorkflowController.GetWorkflowTypeAsync();
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode);
-            Assert.True(data != null);
-
+			//Assert
+			actionResult.ShouldBeOKContent<IEnumerable<WorkflowTypeApiViewModel>>();
+			data.Should().NotBeNull();
         }
 
         [Fact]
-        public async void GetWorkflowVersionSteps()
+        public async void GetWorkflowVersionStepsAsync_ValidWorkflowVersionUid_MustReturnsSuccessfullResult()
         {
-
-            var actionResult = await workflowController.GetWorkflowVersionStepsAsync(Guid.Parse(DataConstants.ValidGUID));
+			//Act
+            var actionResult = await WorkflowController.GetWorkflowVersionStepsAsync(Guid.Parse(DataConstants.ValidGUID));
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<List<WorkflowVersionsApiViewModel>>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode);
-            Assert.True(data != null);
-
-            actionResult = await workflowController.GetWorkflowVersionStepsAsync(Guid.Parse(DataConstants.InvalidGUID));
-            res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-
-            str = res.Result.Content.ReadAsStringAsync().Result;
-            Assert.Equal(System.Net.HttpStatusCode.NotFound, res.Result.StatusCode);
-
-
+			//Assert
+			actionResult.ShouldBeOKContent<IEnumerable<WorkflowVersionStepsApiViewModel>>();
+			data.Should().NotBeNull();
         }
 
-        [Fact]
-        public async void GetWorkflowVersions()
+		[Fact]
+		public void GetWorkflowVersionStepsAsync_InvalidWorkflowVersionUid_MustThrowsNotFoundException()
+		{
+			//Act
+			var workflowVersionUid = Guid.Parse(DataConstants.InvalidGUID);
+			Func<Task> actionResult = async () => { await WorkflowController.GetWorkflowVersionStepsAsync(workflowVersionUid); };
+
+			//Assert
+			actionResult.Invoking(x => x.Should()
+										.ThrowAsync<NotFoundBusinessLayerException>()
+										.WithMessage(string.Format(WorkflowApiMessages.WorkflowVersionUIDNotFound, workflowVersionUid.ToString())));
+		}
+
+		[Fact]
+        public async void GetWorkflowVersions_MustReturnsSuccessfullResult()
         {
-            var actionResult = await workflowController.GetWorkflowVersionAsync();
+			//Act
+            var actionResult = await WorkflowController.GetWorkflowVersionAsync();
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode);
-            Assert.True(data != null);
-        }
+			//Assert
+			actionResult.ShouldBeOKContent<WorkflowVersionsApiViewModel>();
+			data.Should().NotBeNull();
+		}
 
         [Fact]
-        public async void GetWorkflows()
+        public async void GetWorkflowsAsync_MustReturnsSuccessfullResult()
         {
-            var actionResult = await workflowController.GetWorkflowsAsync();
+			//Act
+            var actionResult = await WorkflowController.GetWorkflowsAsync();
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
-
             var data = JsonConvert.DeserializeObject<WorkflowsApiViewModel>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode);
-            Assert.True(data != null);
-        }
-
+			//Assert
+			actionResult.ShouldBeOKContent<WorkflowsApiViewModel>();
+			data.Should().NotBeNull();
+		}
     }
 }

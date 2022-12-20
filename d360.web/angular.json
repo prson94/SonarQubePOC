@@ -35,6 +35,18 @@
 			"it-IT": {
 				"translation": "locale/messages.it-IT.xlf",
 				"baseHref": ""
+			},
+			"ar-AR": {
+				"translation": "locale/messages.ar-AR.xlf",
+				"baseHref": ""
+			},
+			"ja-JP": {
+				"translation": "locale/messages.ja-JP.xlf",
+				"baseHref": ""
+			},
+			"hi-IN": {
+				"translation": "locale/messages.hi-IN.xlf",
+				"baseHref": ""
 			}
 		}
       },
@@ -61,55 +73,70 @@
             "sourceMap": true,
             "optimization": false
           },
-          "configurations": {
-            "production": {
-              "fileReplacements": [
-                {
-                  "replace": "Scripts/environments/environment.ts",
-                  "with": "Scripts/environments/environment.prod.ts"
-                }
-              ],
-              "optimization": true,
-              "outputHashing": "all", // all will hash files
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": true,
-              "buildOptimizer": true,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "4mb",
-                  "maximumError": "6mb"
-                }
-              ]
-            },
-			"nl-NL": {
-				"localize": [
-					"nl-NL"
-				]
+			"configurations": {
+				"production": {
+					"fileReplacements": [
+						{
+							"replace": "Scripts/environments/environment.ts",
+							"with": "Scripts/environments/environment.prod.ts"
+						}
+					],
+					"optimization": true,
+					"outputHashing": "all", // all will hash files
+					"sourceMap": false,
+					"namedChunks": false,
+					"extractLicenses": true,
+					"vendorChunk": true,
+					"buildOptimizer": true,
+					"budgets": [
+						{
+							"type": "initial",
+							"maximumWarning": "4mb",
+							"maximumError": "6mb"
+						}
+					]
+				},
+				"nl-NL": {
+					"localize": [
+						"nl-NL"
+					]
+				},
+				"de-DE": {
+					"localize": [
+						"de-DE"
+					]
+				},
+				"es-ES": {
+					"localize": [
+						"es-ES"
+					]
+				},
+				"fr-FR": {
+					"localize": [
+						"fr-FR"
+					]
+				},
+				"it-IT": {
+					"localize": [
+						"it-IT"
+					]
+				},
+				"ar-AR": {
+					"localize": [
+						"ar-AR"
+					]
+				},
+				"ja-JP": {
+					"localize": [
+						"ja-JP"
+					]
+				},
+				"hi-IN": {
+					"localize": [
+						"hi-IN"
+					]
+				}
 			},
-			"de-DE": {
-				"localize": [
-					"de-DE"
-				]
-			},
-			"es-ES": {
-				"localize": [
-					"es-ES"
-				]
-			},
-			"fr-FR": {
-				"localize": [
-					"fr-FR"
-				]
-			},
-			"it-IT": {
-				"localize": [
-					"it-IT"
-				]
-			}
-          },
           "defaultConfiguration": ""
         },
         "serve": {

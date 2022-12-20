@@ -1,4 +1,5 @@
 ﻿import { State } from './asset.model';
+import { UID } from './shared.model';
 
 
 export class Issue {
@@ -266,7 +267,8 @@ export class WorkflowForm {
     TypeName: string;
     AllowReassignObject: boolean;
     AllowReassignResource: boolean;
-    IsClearAssignementsAllowed: boolean;
+	IsClearAssignementsAllowed: boolean;
+	ObjectUid: string;
 }
 
 export class WorkflowTypeItem {
@@ -691,4 +693,28 @@ export class WorkflowReassignmentAsset {
     Name: string;
     Object: string;
     ObjectID: number;
+}
+
+export interface WorkflowTypeModel {
+    WorkflowTypeUid: UID;
+    ActionTypeUid: UID;
+    ActionType: string;
+    AssetTypeUid: UID;
+    AssetType: string;
+    RelationshipTypeUid: UID;
+    RelationshipType: string;
+    Name: string;
+    State: State;
+    ChangeType: WorkflowChangeType;
+    Description: string;
+    Type: string;
+    PublishedVersionUid: UID;
+    PublishedVersion: number;
+    CreatedOn: string;
+    UpdatedOn: string;
+    CreatedBy: string;
+    UpdatedBy: string;
+    label?: any;
+    value?: any;
+    ID?: any;
 }

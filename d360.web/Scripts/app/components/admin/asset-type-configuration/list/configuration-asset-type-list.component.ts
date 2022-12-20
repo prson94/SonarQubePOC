@@ -28,11 +28,11 @@ export class ConfigurationAssetTypeListComponent {
 
 	selectedRow: TreeNode;
 
-	artifactTypes = [];
-	loadingCounter = 0;
-	dataCyPrefix = 'AssetType_';
-	destroy = new Subject<void>();
-	simpleFilterValue = '';
+    artifactTypes = [];
+    loadingCounter = 0;
+    dataCyPrefix = 'AssetType_';
+    destroy = new Subject<void>();
+    simpleFilterValue = '';
 	public tabTitle: string = $localize`Admin`;
 
 	isModalVisible: boolean = false;

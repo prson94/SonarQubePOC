@@ -49,7 +49,12 @@
 									<ng-container i18n>Name</ng-container>
 									<d3s-sortIcon [field]="'name'"></d3s-sortIcon>
 								</th>
-								<th style="width: 40px"></th>
+								<th *ngIf="hasMaxDepthColumn" [ttSortableColumn]="'maxDepth'">
+									<ng-container i18n>Maximum Depth</ng-container>
+									<d3s-sortIcon [field]="'maxDepth'"></d3s-sortIcon>
+								</th>
+								<th *ngIf="canAddHierarchy" style="width: 30px"></th>
+								<th style="width: 30px"></th>
 							</tr>
 						</ng-template>
 						<ng-template pTemplate="body"
@@ -69,7 +74,14 @@
 										{{item.name}}
 									</a>
 								</td>
+								<td *ngIf="hasMaxDepthColumn">
+									{{item.maxDepth}}
+								</td>
+								
+								
+							
 								<td>
+									
 									<div class="token-popup-menu" *ngIf="item.MenuItems">
 										<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
 										<ig-popup-menu (onSelect)="onPopupMenuClick($event)"

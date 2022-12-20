@@ -1,0 +1,286 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AssetAssetTypeNotFound" xml:space="preserve">
+    <value>لا يوجد شتماع أو نوع شتماع وجد لمساعد [⁦{0}⁩]</value>
+  </data>
+  <data name="AssetCount" xml:space="preserve">
+    <value>حساب الممتلكات</value>
+  </data>
+  <data name="AssetTagAssociationFailed" xml:space="preserve">
+    <value>فشلت جمعية الممتلكات/علامة. حقل العلامة لا يمكن تخصيصه إلى Asset.</value>
+  </data>
+  <data name="AssetTypeAddAssetPermissionsDenied" xml:space="preserve">
+    <value>ليس مسموح لك بإضافة ممتلكات من هذا النوع.</value>
+  </data>
+  <data name="AssetTypeCreatedMessage" xml:space="preserve">
+    <value>تم إنشاء نوع الممتلكات</value>
+  </data>
+  <data name="AssetTypeInProcessNotDelete" xml:space="preserve">
+    <value>حذف نموذج الممتلكات بـ UID ⁦{0}⁩ بالفعل في تقدم.</value>
+  </data>
+  <data name="AssetTypeNotFound" xml:space="preserve">
+    <value>لم نجد أي نوع من الأصول لمساعدتي المتوفرة [⁦{0}⁩]</value>
+  </data>
+  <data name="AssetTypeUid" xml:space="preserve">
+    <value>AssetTypeUid</value>
+  </data>
+  <data name="AutoDisplayParent" xml:space="preserve">
+    <value>الـ "أبدار" يعرض تلقائياً</value>
+  </data>
+  <data name="CanEditParent" xml:space="preserve">
+    <value>يمكن កែសម្រួល الوالدين</value>
+  </data>
+  <data name="ClassNotSupport" xml:space="preserve">
+    <value>الصنف '⁦{0}⁩' غير مدعم. القيم المسموح بها هي BusinessAsset, TechnicalAsset, Model, Policy, Rule.</value>
+  </data>
+  <data name="CorrectEndpoint" xml:space="preserve">
+    <value>النقطة النهائية الصحيحة ل "x id="x1"/&gt;s هي "x id="x2"/&gt;://⁦{0}⁩{1}{2}{3}</value>
+  </data>
+  <data name="EnvironmentLevelAssetCountNotAllowed" xml:space="preserve">
+    <value>ليس لديكم الحق في تحميل حسابات مستوى البيئة.</value>
+  </data>
+  <data name="ExecutionID" xml:space="preserve">
+    <value>ExecutionID</value>
+  </data>
+  <data name="ExecutionUid" xml:space="preserve">
+    <value>ExecutionUid</value>
+  </data>
+  <data name="ExportTemplateMessage" xml:space="preserve">
+    <value>[_exportTemplateUid] Parameter يجب أن يستخدم مع "Accept" header set to 'application/octet-stream'.</value>
+  </data>
+  <data name="ExportTemplateUidNotExist" xml:space="preserve">
+    <value>لا يوجد نموذج निर्यात بـ UID '⁦{0}⁩'.</value>
+  </data>
+  <data name="FieldTypeAssetNotFound" xml:space="preserve">
+    <value>نوع الحقل '⁦{0}⁩' لم يتم إيجاده بالنسبة للأصول.</value>
+  </data>
+  <data name="FieldTypeNotSupport" xml:space="preserve">
+    <value>نوع الحقل '⁦{0}⁩' غير مدعم. أنواع الحقول المسموح بها هي ComplexRelationLookup, RefListRelationship and OwnershipLookup</value>
+  </data>
+  <data name="FilterResrictPredicateUid" xml:space="preserve">
+    <value>فلتر باستخدام [_relationFilter] لا يمكن استخدامه بប៉ារ៉ាម៉ែត្រ [_predicateUid]</value>
+  </data>
+  <data name="GovernRoleReferListNotExists" xml:space="preserve">
+    <value>لست قائمة مرجعية لدور الحوكمة بـ UID '⁦{0}⁩'</value>
+  </data>
+  <data name="InvalidAsset" xml:space="preserve">
+    <value>شتماع غير صالح</value>
+  </data>
+  <data name="InvalidAssetTypeClass" xml:space="preserve">
+    <value>نوع شتماع غير صحيح '⁦{0}⁩'</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>لم تكن قد قدمت نوعاً صالحاً من شئ uid لهذا الطلب.</value>
+  </data>
+  <data name="InvalidExportTemplateCurrent" xml:space="preserve">
+    <value>نموذج تصدير غير صالح لنموذج الممتلكات الحالي.</value>
+  </data>
+  <data name="InvalidExportTemplatedUid" xml:space="preserve">
+    <value>قيمة الـ exportTemplateUID غير صحيحة</value>
+  </data>
+  <data name="InvalidExportViewType" xml:space="preserve">
+    <value>نموذج محدد لرؤية التصدير غير صالح</value>
+  </data>
+  <data name="InvalidOrder" xml:space="preserve">
+    <value>"x id="x1"/&gt; ليس حقل "x id="x2"/&gt; صالح⁦{0}⁩[_order]</value>
+  </data>
+  <data name="InvalidPageNumber" xml:space="preserve">
+    <value>رقم الصفحة ليس رقماً صالحاً.</value>
+  </data>
+  <data name="InvalidPageNumberGT0" xml:space="preserve">
+    <value>رقم الصفحة غير صالح، يجب أن يكون أكبر من 0.</value>
+  </data>
+  <data name="InvalidParameteforUI" xml:space="preserve">
+    <value>قيمة بوليان غير صحيحة للប៉ារ៉ាម៉ែត្រ [forUI]</value>
+  </data>
+  <data name="InvalidParameterIncludeTotal" xml:space="preserve">
+    <value>تضمين المجموع ليس بولينا صالحا.</value>
+  </data>
+  <data name="InvalidParameteruseUidUrls" xml:space="preserve">
+    <value>قيمة بوليان غير صحيحة للប៉ារ៉ាម៉ែត្រ [useUidUrls]</value>
+  </data>
+  <data name="InvalidParameteruseUnflattedStructure" xml:space="preserve">
+    <value>قيمة بوليان غير صحيحة للប៉ារ៉ាម៉ែត្រ [useUnflattedStructure]</value>
+  </data>
+  <data name="InvalidParameteruseuseFriendlyNames" xml:space="preserve">
+    <value>قيمة بوليان غير صحيحة للប៉ារ៉ាម៉ែត្រ [useFriendlyNames]</value>
+  </data>
+  <data name="InvalidParameter_order" xml:space="preserve">
+    <value>قيمة الحقل غير صحيحة للប៉ារ៉ាម៉ែត្រ [_order].</value>
+  </data>
+  <data name="InvalidParameter_pageNum" xml:space="preserve">
+    <value>قيمة العدد الكاملة غير صحيحة للប៉ារ៉ាម៉ែត្រ [_pageNum]</value>
+  </data>
+  <data name="InvalidParameter_pageSize" xml:space="preserve">
+    <value>قيمة العدد الكاملة غير صحيحة للប៉ារ៉ាម៉ែត្រ [_pageSize]</value>
+  </data>
+  <data name="InvalidParentAssetUid" xml:space="preserve">
+    <value>[ParentAssetUid] ⁦{0}⁩ غير صالح</value>
+  </data>
+  <data name="InvalidResourceUID" xml:space="preserve">
+    <value>غير صحيح [resourceUid] متوفر</value>
+  </data>
+  <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
+    <value>مستخدم غير صالح أو مجموعة Uid غير مملوك تم تسليمها في الطلب</value>
+  </data>
+  <data name="InvalidUserGroupRequestAsOwner" xml:space="preserve">
+    <value>مستخدم غير صالح أو مجموعة Uid غير صالحة كملك تم تسليمها في الطلب</value>
+  </data>
+  <data name="model" xml:space="preserve">
+    <value>النموذج</value>
+  </data>
+  <data name="PageSizeNotNumber" xml:space="preserve">
+    <value>حجم الصفحة ليس رقماً صالحاً.</value>
+  </data>
+  <data name="PageSizeRange" xml:space="preserve">
+    <value>حجم الصفحة يجب أن يكون بين 1 و 100,000.</value>
+  </data>
+  <data name="ProvidePreFilterCriteria" xml:space="preserve">
+    <value>لقد قدمتم معايير مرشحة مسبقاً، لكن لا شيء يبدو صالحاً. يجب أن توفر على الأقل شرطا واحدا.</value>
+  </data>
+  <data name="ProvideSearchPhrase" xml:space="preserve">
+    <value>يجب أن توفر عبارة بحث.</value>
+  </data>
+  <data name="ReachedTransformationlimit" xml:space="preserve">
+    <value>وصلت إلى حد التحول</value>
+  </data>
+  <data name="ReferenceUIDConfigureAsGovernRole" xml:space="preserve">
+    <value>UID ⁦{0}⁩ هو قائمة مرجعية و هو مكون كدور الحكم و لا يمكن حذفه.</value>
+  </data>
+  <data name="RemoveAssetTypeNotAllowed" xml:space="preserve">
+    <value>ليس مسموح لكم بإزالة أنواع الأصول.</value>
+  </data>
+  <data name="RequestCreatedMsg" xml:space="preserve">
+    <value>تم إنشاء الطلب بنجاح</value>
+  </data>
+  <data name="RequestMaxAsset" xml:space="preserve">
+    <value>يمكنك فقط تقديم أكبر قدر من ⁦{0}⁩ الأصول في هذا الطلب. رجاء اتصلوا ببرنامج BATCH API لإرسال أكثر من أشياء ⁦{1}⁩.</value>
+  </data>
+  <data name="RestrictReadAssettype" xml:space="preserve">
+    <value>ليس لديكم الحق في قراءة نوع الممتلكات المحدد.</value>
+  </data>
+  <data name="TagUIDAssetUIDNotExists" xml:space="preserve">
+    <value>لا يوجد صلة TagUID ⁦{0}⁩ و AssetUID {1}</value>
+  </data>
+  <data name="TransormationReationExists" xml:space="preserve">
+    <value>علاقة التحول موجودة بالنسبة إلى نوع الممتلكات</value>
+  </data>
+  <data name="UseAsTransformation" xml:space="preserve">
+    <value>استخدامها كتحول</value>
+  </data>
+</root>

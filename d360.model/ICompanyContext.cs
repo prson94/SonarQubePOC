@@ -286,7 +286,9 @@ namespace d360.model
         string GetAssetTypeNoReadSqlStatement(Permission permission, string identifier = null);
         
         Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs, int timeout = 90);
-        
+
+        Task<T> ExecuteGetRelationshipQuery<T>(string query, CancellationToken cancellationToken, DynamicParameters dbArgs, int timeout = 90);
+
         Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id);
         
         IQueryable<FieldType> GetFieldTypesByObject(SystemObjects type, int id);

@@ -141,7 +141,7 @@ namespace d360.model.DataAccessLayer.repositories
 				 var fieldJoinIdSQL = "";
 				 if (objectType == SystemObjects.Intersect)
 				 {
-					 fieldJoinIdSQL = $"{tableAlias}.[IntersectID] = {idSql}";
+					 fieldJoinIdSQL = $"{tableAlias}.[IntersectID] = {idSql} and {tableAlias}.[IntersectID] is not null ";
 				 }
 				 else if (objectType == SystemObjects.Issue)
 				 {

@@ -36,7 +36,6 @@ import { ConfigurationAssetTypeBreadcrumbsComponent } from './tabs/shared/config
 import { HeaderModule } from '../../shared/header/header.module';
 import { ConfigurationAssetTypeListTabsComponent } from './list/asset-type-list-tabs.component';
 import { GovernanceRolesComponent } from './governanceRoles/governance-roles.component';
-import { FormsModule } from '@angular/forms';
 import { EditorModule } from 'primeng/editor';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
@@ -49,6 +48,11 @@ import { AssetTypeModalFormModule } from './editor/asset-type-modal-form.module'
 import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { CheckboxModule } from 'primeng/checkbox';
+import { FormsModule } from "@angular/forms";
+import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configuration-asset-type-levels-page.component';
+import { AdminLevelListComponent } from './levels/admin-level-list.component';
+import { AdminLevelEditorComponent } from './levels/admin-level-editor.component';
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [
@@ -83,12 +87,15 @@ import { CheckboxModule } from 'primeng/checkbox';
 		PopupMenuModule,
 		SiteModalModule,
 		CheckboxModule
+        PortalsModule,
+		FormsModule,
+		TableModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
         ConfigurationAssetTypeListComponent,
         AssetTypeListSidePanelWrapperComponent,
-        AssetTypeListHeaderComponent,
+		AssetTypeListHeaderComponent,
         ConfigurationAssetTypeEditorPageComponent,
         ConfigurationAssetTypeDeletePageComponent,
         ConfigurationAssetTypeFieldsPageComponent,
@@ -101,7 +108,10 @@ import { CheckboxModule } from 'primeng/checkbox';
         ConfigurationAssetTypeBreadcrumbsComponent,
         ConfigurationAssetTypeListTabsComponent,
         ConfigurationAssetTypeConnectorLabelsPageComponent,
-        GovernanceRolesComponent
+        GovernanceRolesComponent,
+		ConfigurationAssetTypeLevelsPageComponent,
+		AdminLevelListComponent,
+		AdminLevelEditorComponent
     ],
     exports: [],
 })

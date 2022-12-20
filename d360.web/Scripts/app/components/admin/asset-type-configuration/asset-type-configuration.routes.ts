@@ -13,6 +13,7 @@ import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration
 import { featuresToTypeClasses } from './shared/featuresToTypeClasses';
 import { GovernanceRolesComponent } from './governanceRoles/governance-roles.component';
 import { ConfigurationAssetTypeConnectorLabelsPageComponent } from './connectorLabels/configuration-asset-type-connector-labels-page.component';
+import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configuration-asset-type-levels-page.component';
 
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
@@ -28,8 +29,11 @@ abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
 class WhenCanAccessBasicFeaturesGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset,
-        AssetTypeClass.DiagramAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -42,8 +46,11 @@ class WhenCanCreateNewAssetTypeChildGuard extends CanActivateOnlyForAvailableTyp
 class WhenCanSeeFieldDefinitionsGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset,
-        AssetTypeClass.DiagramAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -51,7 +58,11 @@ class WhenCanSeeFieldDefinitionsGuard extends CanActivateOnlyForAvailableTypeCla
 class WhenCanSeeOwnersGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -59,7 +70,11 @@ class WhenCanSeeOwnersGuard extends CanActivateOnlyForAvailableTypeClasses {
 class WhenCanSeeAllocationsGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -67,8 +82,11 @@ class WhenCanSeeAllocationsGuard extends CanActivateOnlyForAvailableTypeClasses 
 class WhenCanSeeRelationshipsGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset,
-        AssetTypeClass.DiagramAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
 }
 
@@ -76,9 +94,20 @@ class WhenCanSeeRelationshipsGuard extends CanActivateOnlyForAvailableTypeClasse
 class WhenCanSeeLogGuard extends CanActivateOnlyForAvailableTypeClasses {
     protected typeClasses: AssetTypeClass[] = [
         AssetTypeClass.BusinessAsset,
-        AssetTypeClass.TechnicalAsset,
-        AssetTypeClass.DiagramAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule,
+		AssetTypeClass.DiagramAsset
     ]
+}
+
+@Injectable({ providedIn: 'root' })
+class WhenCanSeeLevelsGuard extends CanActivateOnlyForAvailableTypeClasses {
+	protected typeClasses: AssetTypeClass[] = [
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy
+	]
 }
 
 export const assetTypeConfigurationRoutes: Routes = [
@@ -114,7 +143,12 @@ export const assetTypeConfigurationRoutes: Routes = [
         path: ':typeClass/:uid/log',
         component: ConfigurationAssetTypeLogPageComponent,
         canActivate: [WhenCanSeeLogGuard]
-    },
+	},
+	{
+		path: ':typeClass/:uid/levels',
+		component: ConfigurationAssetTypeLevelsPageComponent,
+		canActivate: [WhenCanSeeLevelsGuard]
+	},
     {
         path: ':typeClass',
         component: ConfigurationAssetTypeListPageComponent,

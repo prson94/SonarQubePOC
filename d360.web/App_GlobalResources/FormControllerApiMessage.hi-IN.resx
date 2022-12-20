@@ -1,0 +1,553 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AnErrorOccurMorethan1OpenCart" xml:space="preserve">
+    <value>एक त्रुटि हुई-इस उपयोक्ता के लिए 1 से अधिक खुले गाड़ी हैं</value>
+  </data>
+  <data name="ApiEndPointUriRemoved" xml:space="preserve">
+    <value>एपी अंतबिंदु यूआरआई सफलतापूर्वक हटाया गया.</value>
+  </data>
+  <data name="ApiEndPointVersionRemoved" xml:space="preserve">
+    <value>एपी अंतबिंदु संस्करण सफलतापूर्वक हटाया गया.</value>
+  </data>
+  <data name="ApiField" xml:space="preserve">
+    <value>एपी क्षेत्र</value>
+  </data>
+  <data name="ApiFieldRemoved" xml:space="preserve">
+    <value>एपी क्षेत्र सफलतापूर्वक हटाया गया.</value>
+  </data>
+  <data name="ApiFieldUpdated" xml:space="preserve">
+    <value>एपी क्षेत्र सफलतापूर्वक अद्यतन किया गया.</value>
+  </data>
+  <data name="APINamespaceNameNull" xml:space="preserve">
+    <value>API नेमस्पेस नाम शून्य है</value>
+  </data>
+  <data name="APINamespaceNull" xml:space="preserve">
+    <value>API नामस्थान शून्य है</value>
+  </data>
+  <data name="ApiService" xml:space="preserve">
+    <value>एपी सेवा</value>
+  </data>
+  <data name="ApiServiceEndpoint" xml:space="preserve">
+    <value>एपी सेवा अंतबिंदु</value>
+  </data>
+  <data name="APIServiceEndpointNameNull" xml:space="preserve">
+    <value>API सेवा अंतिम बिंदु नाम शून्य है</value>
+  </data>
+  <data name="APIServiceEndpointPrefixNull" xml:space="preserve">
+    <value>API सेवा अंतबिंदु उपसर्ग शून्य है</value>
+  </data>
+  <data name="APIServiceEndpointVersionPrefixNull" xml:space="preserve">
+    <value>API सेवा अंत बिंदु संस्करण उपसर्ग शून्य है</value>
+  </data>
+  <data name="APIServiceNameNull" xml:space="preserve">
+    <value>API सेवा नाम शून्य है</value>
+  </data>
+  <data name="APIServicePrefixNull" xml:space="preserve">
+    <value>API सेवा उपसर्ग शून्य है</value>
+  </data>
+  <data name="ApiServiceRemoved" xml:space="preserve">
+    <value>एपी सेवा सफलतापूर्वक हटा दी गई.</value>
+  </data>
+  <data name="ApiServiceUriFormatIsNull" xml:space="preserve">
+    <value>API सेवा अंत बिंदु संस्करण URI प्रारूप शून्य है</value>
+  </data>
+  <data name="apiserviceversion" xml:space="preserve">
+    <value>एपी सेवा संस्करण</value>
+  </data>
+  <data name="ApiServiceVersionEntity" xml:space="preserve">
+    <value>एपी सेवा संस्करण अस्तित्व</value>
+  </data>
+  <data name="ApiServiceVersionUri" xml:space="preserve">
+    <value>एपी सेवा संस्करण यूआरआई</value>
+  </data>
+  <data name="AssetType" xml:space="preserve">
+    <value>परिसंपत्ति क़िस्म</value>
+  </data>
+  <data name="AssetTypeNotFound" xml:space="preserve">
+    <value>दिए गए गाइड के लिए कोई परिसंपत्ति प्रकार नहीं मिला</value>
+  </data>
+  <data name="AuthenticationFailed" xml:space="preserve">
+    <value>प्रमाणीकरण असफल</value>
+  </data>
+  <data name="Contract" xml:space="preserve">
+    <value>संविदा</value>
+  </data>
+  <data name="CoultNotFindPermission" xml:space="preserve">
+    <value>मौजूदा अनुमति नहीं पा सका</value>
+  </data>
+  <data name="CustomSynonym" xml:space="preserve">
+    <value>मनपसंद पर्यायवाची</value>
+  </data>
+  <data name="CustomSynonymNotFound" xml:space="preserve">
+    <value>मनपसंद पर्यायवाची नहीं मिला</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>डैशबोर्ड</value>
+  </data>
+  <data name="emailNotValid" xml:space="preserve">
+    <value>जो ईमेल आपने भरा है वह वैध नहीं है</value>
+  </data>
+  <data name="endpoint" xml:space="preserve">
+    <value>अंतबिंदु</value>
+  </data>
+  <data name="EndPointRemoved" xml:space="preserve">
+    <value>अंत बिंदु सफलतापूर्वक हटाया गया.</value>
+  </data>
+  <data name="FailedGenerateToken" xml:space="preserve">
+    <value>एम्बेड टोकन बनाने में विफल.</value>
+  </data>
+  <data name="FailedToLoadPowerBI" xml:space="preserve">
+    <value>कार्यस्थान में पावर BI कार्यपास्ति लोड करने में विफल!</value>
+  </data>
+  <data name="FavoriteMoved" xml:space="preserve">
+    <value>पसंदीदा सफलतापूर्वक खिसका.</value>
+  </data>
+  <data name="field" xml:space="preserve">
+    <value>क्षेत्र</value>
+  </data>
+  <data name="FieldCreated" xml:space="preserve">
+    <value>क्षेत्र सफलतापूर्वक बनाया गया.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>फ़ाइल जरूरी है</value>
+  </data>
+  <data name="FileUploadedAndQueueProcessing" xml:space="preserve">
+    <value>फ़ाइल अपलोड किया गया और प्रक्रिया के लिए कतार में रखा गया.</value>
+  </data>
+  <data name="FolderAdded" xml:space="preserve">
+    <value>फ़ोल्डर सफलतापूर्वक जोड़ा गया</value>
+  </data>
+  <data name="FolderAlreadySortedToBottom" xml:space="preserve">
+    <value>यह फ़ोल्डर पहले से ही नीचे क्रमबद्ध है.</value>
+  </data>
+  <data name="FolderAlreadySortedToTop" xml:space="preserve">
+    <value>यह फ़ोल्डर पहले से ही शीर्ष पर क्रमबद्ध है</value>
+  </data>
+  <data name="FolderIdNotFound" xml:space="preserve">
+    <value>फ़ोल्डर आईडी ${id} नहीं मिला</value>
+  </data>
+  <data name="FolderItemRemoved" xml:space="preserve">
+    <value>फ़ोल्डर मद सफलतापूर्वक हटाया गया.</value>
+  </data>
+  <data name="FolderMoved" xml:space="preserve">
+    <value>फ़ोल्डर {0} सफलतापूर्वक खिसकाया गया.</value>
+  </data>
+  <data name="FolderMovedDown" xml:space="preserve">
+    <value>फ़ोल्डर {0} सफलतापूर्वक नीचे ले जाया गया.</value>
+  </data>
+  <data name="FolderMovedToBottom" xml:space="preserve">
+    <value>फ़ोल्डर {0} सफलतापूर्वक नीचे ले जाया गया.</value>
+  </data>
+  <data name="FolderMovedToTop" xml:space="preserve">
+    <value>फ़ोल्डर {0} सफलतापूर्वक ऊपर ले जाया गया.</value>
+  </data>
+  <data name="FolderMovedUp" xml:space="preserve">
+    <value>फ़ोल्डर {0} सफलतापूर्वक ऊपर ले जाया गया.</value>
+  </data>
+  <data name="FolderNameAlreadyExists" xml:space="preserve">
+    <value>{0} नाम के साथ फ़ोल्डर पहले से ही मौजूद है.</value>
+  </data>
+  <data name="FolderNameNotEmpty" xml:space="preserve">
+    <value>फ़ोल्डर नाम रिक्त नहीं हो सकता है.</value>
+  </data>
+  <data name="FolderRemoved" xml:space="preserve">
+    <value>फ़ोल्डर सफलतापूर्वक हटाया गया.</value>
+  </data>
+  <data name="FolderUpdated" xml:space="preserve">
+    <value>फ़ोल्डर सफलतापूर्वक अद्यतन किया गया.</value>
+  </data>
+  <data name="GrammarAllocationModified" xml:space="preserve">
+    <value>व्याकरण आबंटन सफलतापूर्वक परिवर्धित.</value>
+  </data>
+  <data name="InvalidCreateType" xml:space="preserve">
+    <value>अवैध/समर्थित बनाएँ प्रकार</value>
+  </data>
+  <data name="InvalidDeleteType" xml:space="preserve">
+    <value>अवैध/असमर्थित मिटाई क़िस्म</value>
+  </data>
+  <data name="InvalidEditorType" xml:space="preserve">
+    <value>अवैध या अimplemented संपादक प्रकार</value>
+  </data>
+  <data name="InvalidEditType" xml:space="preserve">
+    <value>अवैध/असमर्थित संपादन प्रकार</value>
+  </data>
+  <data name="InvalidFolder" xml:space="preserve">
+    <value>अवैध फ़ोल्डर.</value>
+  </data>
+  <data name="InvalidIntersectTypeAndTargetUID" xml:space="preserve">
+    <value>वैध नहीं प्रतिच्छेदन प्रकार Uid या लक्ष्य प्रकार Uid</value>
+  </data>
+  <data name="invalidObjectPassed" xml:space="preserve">
+    <value>अवैध वस्तु पास</value>
+  </data>
+  <data name="InvalidrelationshipCardinality" xml:space="preserve">
+    <value>बहुविध मदों के लिए अवैध संबंध मूलता.</value>
+  </data>
+  <data name="InvalidRelationshipType" xml:space="preserve">
+    <value>अवैध संबंध प्रकार या स्रोत मद.</value>
+  </data>
+  <data name="IssueType" xml:space="preserve">
+    <value>निर्गम क़िस्म</value>
+  </data>
+  <data name="IssueTypeNotFound" xml:space="preserve">
+    <value>दिए गए गाइड के लिए कोई मुद्दे प्रकार नहीं मिला</value>
+  </data>
+  <data name="Item" xml:space="preserve">
+    <value>वस्तु</value>
+  </data>
+  <data name="ItemAddedCart" xml:space="preserve">
+    <value>यह वस्तु आपकेカート में जोड़ी गई है</value>
+  </data>
+  <data name="ItemAlreadyInCart" xml:space="preserve">
+    <value>इस मद को पहले से ही अपनी गाड़ी में है</value>
+  </data>
+  <data name="ItemCannotRelateItself" xml:space="preserve">
+    <value>मद अपने से संबंधित नहीं हो सकता है.</value>
+  </data>
+  <data name="ItemCreatedProcessed" xml:space="preserve">
+    <value>वस्तु सफलतापूर्वक बनाई गई और प्रक्रमित की गई.</value>
+  </data>
+  <data name="ItemDate" xml:space="preserve">
+    <value>वस्तु तिथि</value>
+  </data>
+  <data name="ItemRemoved" xml:space="preserve">
+    <value>मद सफलतापूर्वक हटाया गया.</value>
+  </data>
+  <data name="ItemUpdatedProcessed" xml:space="preserve">
+    <value>वस्तु सफलतापूर्वक अद्यतन और प्रक्रमित किया गया.</value>
+  </data>
+  <data name="LoadAction" xml:space="preserve">
+    <value>लोड करना</value>
+  </data>
+  <data name="ModelPassedToMethodInvalid" xml:space="preserve">
+    <value>विधि में पारित मॉडल अवैध था</value>
+  </data>
+  <data name="NamespaceCreated" xml:space="preserve">
+    <value>नामस्थान सफलतापूर्वक बनाया गया.</value>
+  </data>
+  <data name="NamespaceRemoved" xml:space="preserve">
+    <value>एपी नेमस्पेस सफलतापूर्वक हटाया गया.</value>
+  </data>
+  <data name="NamespaceUpdated" xml:space="preserve">
+    <value>नामस्थान सफलतापूर्वक अद्यतन किया गया.</value>
+  </data>
+  <data name="NoAssetTypeFound" xml:space="preserve">
+    <value>आईडी के लिए कोई आस्ति प्रकार नहीं मिला {0}</value>
+  </data>
+  <data name="NoAssetTypeIDProvided" xml:space="preserve">
+    <value>कोई आस्ति प्रकार आईडी नहीं दी गई है (आईडी पैरामीटर).</value>
+  </data>
+  <data name="NoFavoriteAbove" xml:space="preserve">
+    <value>ऊपर कोई पसंदीदा नहीं</value>
+  </data>
+  <data name="NoFavoriteBelow" xml:space="preserve">
+    <value>नीचे कोई पसंदीदा नहीं</value>
+  </data>
+  <data name="NoFavoriteRoute" xml:space="preserve">
+    <value>आपूर्ति मार्ग के साथ कोई पसंदीदा नहीं</value>
+  </data>
+  <data name="NoFoundSericeEndpointVersionEntityToEdit" xml:space="preserve">
+    <value>संपादित करने के लिए निर्दिष्ट सेवा अंत बिंदु संस्करण अस्तित्व नहीं पा सकता है</value>
+  </data>
+  <data name="NoFoundSericeEndpointVersionToEdit" xml:space="preserve">
+    <value>संपादित करने के लिए निर्दिष्ट सेवा अंतबिंदु संस्करण नहीं मिला</value>
+  </data>
+  <data name="NoPermissionToDoThis" xml:space="preserve">
+    <value>आपको यह करने की अनुमति नहीं है</value>
+  </data>
+  <data name="NoPremissionAddItemInCart" xml:space="preserve">
+    <value>आपके पास इस गाड़ी में वस्तुओं को जोड़ने की अनुमति नहीं है</value>
+  </data>
+  <data name="NoPremissionClearCart" xml:space="preserve">
+    <value>इस गाड़ी को साफ करने के लिए आपके पास अनुमति नहीं है.</value>
+  </data>
+  <data name="NoPremissionEditShortCuts" xml:space="preserve">
+    <value>आपको शॉर्टकट संपादित करने की अनुमति नहीं है.</value>
+  </data>
+  <data name="NoPremissionRemoveItem" xml:space="preserve">
+    <value>इस मद को हटाने के लिए आपके पास अनुमति नहीं है</value>
+  </data>
+  <data name="NoPremissionRequestCart" xml:space="preserve">
+    <value>आपके पास इस खरीदारी गाड़ी के लिए अनुरोध करने की अनुमति नहीं है.</value>
+  </data>
+  <data name="NoSelectedItems" xml:space="preserve">
+    <value>कोई चयनित मद नहीं</value>
+  </data>
+  <data name="NoSuchReport" xml:space="preserve">
+    <value>कोई डैशबोर्ड नहीं मिला</value>
+  </data>
+  <data name="NotAllowedUpdateRelationship" xml:space="preserve">
+    <value>आपको इस संबंध प्रकार को अद्यतन करने की अनुमति नहीं है क्योंकि वहाँ मौजूदा क्षेत्र प्रकार हैं जो उस पर निर्भर हैं.</value>
+  </data>
+  <data name="NotFoundServiceEdit" xml:space="preserve">
+    <value>संपादन के लिए निर्दिष्ट सेवा नहीं पा सका</value>
+  </data>
+  <data name="NotFoundShoppingCart" xml:space="preserve">
+    <value>निर्दिष्ट खरीदारी गाड़ी नहीं पा सका.</value>
+  </data>
+  <data name="PleaseSpecifyUserNamePassword" xml:space="preserve">
+    <value>कृपया एक वैध उपयोक्ता नाम और पासवर्ड निर्दिष्ट करें.</value>
+  </data>
+  <data name="PolicyType" xml:space="preserve">
+    <value>नीति प्रकार</value>
+  </data>
+  <data name="PolicyTypeLevel" xml:space="preserve">
+    <value>नीति प्रकार स्तर</value>
+  </data>
+  <data name="PowerBICredentials" xml:space="preserve">
+    <value>पावर बीआई प्रमाण पत्र</value>
+  </data>
+  <data name="PowerBINotSetupOnGovernEnvironment" xml:space="preserve">
+    <value>इस गवर्नमेंट वातावरण पर पावरबी स्थापित नहीं किया गया है।  आप शायद रिपोर्ट देख रहे हैं क्योंकि परिवेश अन्य क्षेत्र से प्रतिलिपि किया गया था.  कृपया इस समस्या को हल करने के लिए अपने PowerBI फ़ाइलों को पुनः अपलोड करें.</value>
+  </data>
+  <data name="Relationship" xml:space="preserve">
+    <value>संबंध</value>
+  </data>
+  <data name="RelationshipNotFound" xml:space="preserve">
+    <value>संबंध नहीं मिला.</value>
+  </data>
+  <data name="RelationshipType" xml:space="preserve">
+    <value>संबंध प्रकार</value>
+  </data>
+  <data name="Report" xml:space="preserve">
+    <value>रिपोर्ट</value>
+  </data>
+  <data name="RequestSubmitted" xml:space="preserve">
+    <value>आपका अनुरोध प्रस्तुत किया गया है</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>उपयोक्ता पासवर्ड सफलतापूर्वक अद्यतन किया गया है!</value>
+  </data>
+  <data name="Resource" xml:space="preserve">
+    <value>संसाधन</value>
+  </data>
+  <data name="Responsibility" xml:space="preserve">
+    <value>उत्तरदायित्व</value>
+  </data>
+  <data name="ResponsibilityNameMax250" xml:space="preserve">
+    <value>दिए गए नाम की लंबाई 250 अक्षर से कम होनी चाहिए।</value>
+  </data>
+  <data name="ResponsibilityType" xml:space="preserve">
+    <value>उत्तरदायित्व प्रकार</value>
+  </data>
+  <data name="ResponsibilityTypeRule" xml:space="preserve">
+    <value>उत्तरदायित्व प्रकार नियम</value>
+  </data>
+  <data name="SelectPredicate" xml:space="preserve">
+    <value>कृपया इस संबंध के लिए एक उपसर्ग चुनें.</value>
+  </data>
+  <data name="serviceConstant" xml:space="preserve">
+    <value>सेवा</value>
+  </data>
+  <data name="ServiceCreated" xml:space="preserve">
+    <value>सेवा सफलतापूर्वक बनाई गई.</value>
+  </data>
+  <data name="ServiceEndpointCreated" xml:space="preserve">
+    <value>सेवा अंतबिंदु सफलतापूर्वक बनाया गया.</value>
+  </data>
+  <data name="ShoppingCartCleared" xml:space="preserve">
+    <value>शॉपिंग कार सफलतापूर्वक खाली किया गया</value>
+  </data>
+  <data name="ShoppingCartNotFound" xml:space="preserve">
+    <value>खरीदारी की गाड़ी की वस्तु नहीं मिली</value>
+  </data>
+  <data name="ShoppingCartRemoved" xml:space="preserve">
+    <value>खरीदारी का सामान सफलतापूर्वक हटाया गया</value>
+  </data>
+  <data name="ShortcutAdded" xml:space="preserve">
+    <value>शॉर्टकट सफलतापूर्वक जोड़ा गया</value>
+  </data>
+  <data name="ShortcutAlreadySortedBottom" xml:space="preserve">
+    <value>शॉर्टकट पहले से ही नीचे छांट दिया गया है.</value>
+  </data>
+  <data name="ShortcutAlreadySortedTop" xml:space="preserve">
+    <value>शॉर्टकट पहले से ही शीर्ष पर क्रमबद्ध है.</value>
+  </data>
+  <data name="ShortcutDeleted" xml:space="preserve">
+    <value>शॉर्टकट सफलतापूर्वक मिटाया गया.</value>
+  </data>
+  <data name="ShortcutIDNotFound" xml:space="preserve">
+    <value>शॉर्टकट आईडी {0} नहीं मिला</value>
+  </data>
+  <data name="ShortcutMissingAnIcon" xml:space="preserve">
+    <value>इस शॉर्टकट में एक प्रतीक नहीं है</value>
+  </data>
+  <data name="ShortcutModified" xml:space="preserve">
+    <value>शॉर्टकट सफलतापूर्वक परिवर्धित किया गया</value>
+  </data>
+  <data name="ShortcutMoved" xml:space="preserve">
+    <value>शॉर्टकट {0}{1} सफलतापूर्वक खिसकाया गया.</value>
+  </data>
+  <data name="ShortCutNotFound" xml:space="preserve">
+    <value>id {0} के साथ शॉर्टकट नहीं मिला.</value>
+  </data>
+  <data name="ShortCutRequireName" xml:space="preserve">
+    <value>इस शॉर्टकट को एक नाम की आवश्यकता है</value>
+  </data>
+  <data name="SiteNavNotFound" xml:space="preserve">
+    <value>विनिर्दिष्ट साइट नेवि नहीं मिला</value>
+  </data>
+  <data name="SpecificCartNotFound" xml:space="preserve">
+    <value>निर्दिष्ट गाड़ी नहीं मिली</value>
+  </data>
+  <data name="Synonym" xml:space="preserve">
+    <value>पर्यायवाची</value>
+  </data>
+  <data name="SynonymCreated" xml:space="preserve">
+    <value>सहनाम {0} सफलतापूर्वक बनाया गया.</value>
+  </data>
+  <data name="SynRemoved" xml:space="preserve">
+    <value>सहनाम सफलतापूर्वक हटाया गया</value>
+  </data>
+  <data name="TaxonomyType" xml:space="preserve">
+    <value>वर्गीकरण प्रकार</value>
+  </data>
+  <data name="TaxonomyTypeLevel" xml:space="preserve">
+    <value>वर्गीकरण प्रकार स्तर</value>
+  </data>
+  <data name="TypeConstant" xml:space="preserve">
+    <value>क़िस्म</value>
+  </data>
+  <data name="UnableToFindPowerBISettings" xml:space="preserve">
+    <value>त्रुटिः सभी पॉवर बी कम्युनिटी सेटिंगों को ढूंढने में असमर्थ.</value>
+  </data>
+  <data name="UnsupportedHierarchyAssetTypeAddField" xml:space="preserve">
+    <value>असमर्थित रैखिक आस्ति प्रकार रैखिक जोड़ें फ़ाइलों में निर्दिष्ट है.  समर्थित प्रकार वर्गीकरण प्रकार और नीति प्रकार हैं।</value>
+  </data>
+  <data name="UnsupportedHierarchyTypeEditField" xml:space="preserve">
+    <value>असमर्थित रैखिक प्रकार रैखिक-संपादन क्षेत्रों में निर्दिष्ट है.  समर्थित प्रकार वर्गीकरण और नीति हैं।</value>
+  </data>
+  <data name="uriConstant" xml:space="preserve">
+    <value>ऊरी</value>
+  </data>
+  <data name="UriCreated" xml:space="preserve">
+    <value>उरी सफलतापूर्वक बनाया गया।</value>
+  </data>
+  <data name="UserDoesnotAdmin" xml:space="preserve">
+    <value>उपयोक्ता को प्रशासन विशेषाधिकार नहीं हैं.</value>
+  </data>
+  <data name="version" xml:space="preserve">
+    <value>संस्करण</value>
+  </data>
+  <data name="VersionCreated" xml:space="preserve">
+    <value>संस्करण सफलतापूर्वक बनाया गया.</value>
+  </data>
+  <data name="VersionUpdated" xml:space="preserve">
+    <value>संस्करण सफलतापूर्वक अद्यतन किया गया.</value>
+  </data>
+</root>

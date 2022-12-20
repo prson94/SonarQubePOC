@@ -448,7 +448,7 @@ namespace d360.web.Controllers.V2
 
 			if (resourceUidParam.Key != null && !string.IsNullOrWhiteSpace(resourceUidParam.Value))
 			{
-				if (Guid.TryParse(resourceUidParam.Value, out Guid resourceUid) || resourceUid == Guid.Empty)
+				if (!Guid.TryParse(resourceUidParam.Value, out Guid resourceUid) || resourceUid == Guid.Empty)
 				{
 					throw new ArgumentException(ActionApiMessages.ResourceUidNotValid);
 				}
@@ -1152,7 +1152,7 @@ namespace d360.web.Controllers.V2
 
 			var resultMessage = allocations?.Count == 1 ? ActionApiMessages.AddSingleAllocationSuccessful : ActionApiMessages.AddAllocationsSuccessful;
 
-			return Ok(resultMessage);
+			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, resultMessage);
 		}
 
 		/// <summary>

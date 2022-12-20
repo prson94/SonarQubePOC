@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using System.Web.Http;
 
 using d360.core.entities;
@@ -13,7 +11,7 @@ using d360.core.resources;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
-
+using d360.web.Services;
 using Microsoft.Web.Http;
 
 using Swashbuckle.Swagger.Annotations;
@@ -56,32 +54,28 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of asset permissions.", typeof(PermissionsResponseModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetPermissionsByUid(Guid assetUid)
+        public IHttpActionResult GetAssetPermissionsByUid(Guid assetUid)
         {
             Asset asset = AssetRepository.GetAssetByUID(assetUid);
 
-            if (asset != null)
-            {
-                if (SupportsPermissions(asset.AssetType.Class))
-                {
-                    List<PermissionInfo> permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
-                    if (!Company.CurrentResourceIsAdmin && permissions.Count == 0)
-                    {
-                        //If there are no set responsibilities, non admin by default has ReadAccess rights to an asset
-                        permissions.Add(Permission.ReadAsset.GetPermissionInfo());
-                    }
+			if (asset == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(Permissions.UID_not_Found, "Asset"));
+			}
 
-                    return await Task.FromResult(Request.CreateResponse(HttpStatusCode.OK, CreatePermissionsResponse(permissions))).ConfigureAwait(false);
-                }
-                else
-                {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Permissions.Permissions_Not_Supported))).ConfigureAwait(false);
-                }
-            }
-            else
+			if (!SupportsPermissions(asset.AssetType.Class))
+			{
+				throw new ArgumentException(string.Format(Permissions.Permissions_Not_Supported));
+			}
+
+            List<PermissionInfo> permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
+            if (!Company.CurrentResourceIsAdmin && permissions.Count == 0)
             {
-                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Permissions.UID_not_Found, "Asset"))).ConfigureAwait(false);
+                //If there are no set responsibilities, non admin by default has ReadAccess rights to an asset
+                permissions.Add(Permission.ReadAsset.GetPermissionInfo());
             }
+
+			return Ok(CreatePermissionsResponse(permissions));
         }
 
         /// <summary>
@@ -98,28 +92,23 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of assettype permissions.", typeof(PermissionsResponseModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetTypePermissionsByUid(Guid assetTypeUid)
+        public IHttpActionResult GetAssetTypePermissionsByUid(Guid assetTypeUid)
         {
             AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
-            if (assetType != null)
-            {
-                if (SupportsPermissions(assetType.Class))
-                {
-                    List<PermissionInfo> permissions = Company.GetTypePermissions(assetType.Object, assetType.ObjectID);
+			if (assetType == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(Permissions.UID_not_Found, "AssetType"));
+			}
 
-                    return await Task.FromResult(Request.CreateResponse(HttpStatusCode.OK, CreatePermissionsResponse(permissions))).ConfigureAwait(false);
-                }
-                else
-                {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Permissions.AssetType_Permissions_Not_Supported, assetType.Name))).ConfigureAwait(false);
-                }
+			if (!SupportsPermissions(assetType.Class))
+			{
+				throw new ArgumentException(string.Format(Permissions.AssetType_Permissions_Not_Supported, assetType.Name));
+			}
 
-            }
-            else
-            {
-                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Permissions.UID_not_Found, "AssetType"))).ConfigureAwait(false);
-            }
+            List<PermissionInfo> permissions = Company.GetTypePermissions(assetType.Object, assetType.ObjectID);
+
+			return Ok(CreatePermissionsResponse(permissions));
         }
 
         /// <summary>
