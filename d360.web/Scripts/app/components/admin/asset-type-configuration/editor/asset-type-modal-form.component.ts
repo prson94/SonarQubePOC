@@ -23,8 +23,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	@Output() onUpdated = new EventEmitter();
 	assetTypeForm: FormGroup = null;
 
-	title = 'Add Asset Type';
-	subTitle = 'Business Assets';
+	title = 'unset';
+	subTitle = 'unset';
 
 	isLoading = false;
 	savingInProgress = false;
@@ -72,8 +72,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-		if (changes['uid']) {
-			if (changes['uid'].previousValue !== changes['uid'].currentValue) { // object has changed            
+		if (changes['isModalVisible']) {
+			if (changes['isModalVisible'].previousValue !== changes['isModalVisible'].currentValue) { // object has changed            
 				this.updateForm();
 			}
 		}
@@ -119,10 +119,19 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 					this.title = $localize`Edit Asset Type`;
 					this.subTitle = assetType.Name;
 
+					if (assetType.SynonymAllocations && assetType.SynonymAllocations.length > 0) {
+						assetType.SynonymAllocations.forEach((syn) => {
+							this.assetTypeForm.controls[`syn_${syn}`].setValue(true);
+						});
+					}
+
 					this.isLoading = false;
 				});
 		}
 		else {
+			this.title = $localize`Add Asset Type`;
+			this.subTitle = this.assetTypeClass.toString();
+
 			this.setDefaultFormValues();
 		}
 	}

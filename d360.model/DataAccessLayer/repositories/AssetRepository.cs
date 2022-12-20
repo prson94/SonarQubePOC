@@ -176,6 +176,17 @@ namespace d360.model.DataAccessLayer
 						throw new ArgumentException(AssetTypeErrors.InvalidValueincludeLevels, includeLevelsString);
 					}
 				}
+
+				if (queryParams.Any(q => q.Key.ToLower() == "includesynonymallocation"))
+				{
+					var includesynonymallocationString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "includesynonymallocation").Value;
+					if (bool.TryParse(includesynonymallocationString, out bool includeLevels))
+					{
+						extraColumns += @", (select string_agg(CAST(P.UID as nvarchar(max)),',') from NymRelation NR
+inner join [Predicate] P on P.ID = NR.PredicateID
+WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationString";
+					}
+				}
 			}
 
 			if (!CompanyContext.CurrentResourceIsAdmin)
@@ -243,6 +254,7 @@ namespace d360.model.DataAccessLayer
 						{condition}
 						order by    P.[Path]
 						";
+			
 
 			// If you change the order of the select columns please pay attention to the dapper multimap split on parameter where it is splitting out the icon class.
 			return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param: dbArgs, map: (a, i) => { a.IconStyle = i; return a; }, splitOn: "Path,BackColor", timeout: ApiTimeout);
@@ -2992,7 +3004,7 @@ where an.Uid = fam.uid)
 		private void UpdateAssetTypeSynonymAllocations(AssetTypeUpsert model, AssetType at)
 		{
 			//add synonym allocation
-			if (model.SynonymAllocations.Count > 0)
+			if (model.SynonymAllocations is not null)
 			{
 				// delete any existing allocations
 				var rels = CompanyContext.Filter<NymRelation>(x => x.Object == at.Object.ToString() && x.ObjectID == at.ObjectID).ToList();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using d360.core.enums;
@@ -205,7 +206,21 @@ namespace d360.core.entities
 		public bool IsDescriptionVisibleByDefault { get; set; }
 		
 		[DataMember]
-		public string DescriptionButtonName { get; set; }
+		public string DescriptionButtonName { get; set; }		
+		
+		[IgnoreDataMember]
+		public string SynonymAllocationString { get; set; }
+
+		[DataMember]
+		public List<Guid> SynonymAllocations 
+		{
+			get
+			{
+				return string.IsNullOrEmpty(SynonymAllocationString)
+					? null
+					: SynonymAllocationString.Split(',').Select(x=> Guid.Parse(x)).ToList();
+			}
+		}
 	}
 
 	public class AssetTypeSelectApiModel

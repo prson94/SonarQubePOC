@@ -139,7 +139,8 @@ export class AssetTypeApiModel {
     IconStyle: IconStyle;
     PredicateInverse: string;
     AutoDisplayParent: boolean;
-    CanEditParent: boolean;
+	CanEditParent: boolean;
+	SynonymAllocations: string[];
 }
 
 export class IconStyle {
