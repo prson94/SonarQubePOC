@@ -714,7 +714,7 @@ export interface WorkflowTypeModel {
     UpdatedOn: string;
     CreatedBy: string;
     UpdatedBy: string;
-    label?: any;
-    value?: any;
-    ID?: any;
+    label?: string;
+    value?: string;
+    ID?: number;
 }
