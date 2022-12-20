@@ -2807,10 +2807,13 @@ namespace d360.model
 
 				result = result.Replace("[ACTION_DETAILS]", issueInfo.ToString());
 			}
+			
 
-			if (result.Contains("[WORKFLOW_INITIATOR]"))
+			if (result.Contains("[WORKFLOW_INITIATOR_UID]") || result.Contains("[WORKFLOW_INITIATOR_EMAIL]") || result.Contains("[WORKFLOW_INITIATOR]"))
 			{
-				string initiator = "unknown user";
+				Guid initiatorUid = Guid.Empty;
+				string initiatorEmail = "";
+				string initiatorName = "unknown user";
 
 				if (itemStep.Item != null && itemStep.Item.StartedBy > 0)
 				{
@@ -2818,28 +2821,15 @@ namespace d360.model
 
 					if (user != null)
 					{
-						initiator = user.FullName;
+						initiatorUid = user.Uid;
+						initiatorEmail = user.Email;
+						initiatorName = user.FullName;
 					}
 				}
 
-				result = result.Replace("[WORKFLOW_INITIATOR]", initiator);
-			}
-
-			if (result.Contains("[WORKFLOW_INITIATOR_UID]"))
-			{
-				Guid initiator = Guid.Empty;
-
-				if (itemStep.Item != null && itemStep.Item.StartedBy > 0)
-				{
-					GlobalReportingResource user = GlobalReportingResources.Where(x => x.ResourceID == itemStep.Item.StartedBy).FirstOrDefault();
-
-					if (user != null)
-					{
-						initiator = user.Uid;
-					}
-				}
-
-				result = result.Replace("[WORKFLOW_INITIATOR_UID]", initiator.ToString());
+				result = result.Replace("[WORKFLOW_INITIATOR_UID]", initiatorUid.ToString());
+				result = result.Replace("[WORKFLOW_INITIATOR_EMAIL]", initiatorEmail);
+				result = result.Replace("[WORKFLOW_INITIATOR]", initiatorName);
 			}
 
 			//need to keep both options for existing workflows, remove [SCORE] once no workflow use it in any ENV
