@@ -118,10 +118,6 @@ export class ConfigurationAssetTypeListComponent {
 		this.router.navigateByUrl(`${this.baseUrl}/${uid}/edit`);
 	}
 
-	remove(uid: string) {
-		this.router.navigateByUrl(`${this.baseUrl}/${uid}/delete`);
-	}
-
 	open(uid: string, newTab: boolean = false) {
 		const url = `${this.baseUrl}/${uid}/fields`;
 		if (newTab) {
