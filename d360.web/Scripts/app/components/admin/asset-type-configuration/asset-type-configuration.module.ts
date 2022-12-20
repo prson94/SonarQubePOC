@@ -86,7 +86,7 @@ import { TableModule } from 'primeng/table';
 		AssetTypeModalFormModule,
 		PopupMenuModule,
 		SiteModalModule,
-		CheckboxModule
+		CheckboxModule,
         PortalsModule,
 		FormsModule,
 		TableModule
