@@ -101,6 +101,6 @@
 	</div>
 </div>
 
-<asset-type-modal-form [assetTypeClass]="assetTypeClass" [uid]="formAssetUid" [isModalVisible]="isModalVisible" (onClose)="isModalVisible = false" (onUpdated)="onEditSaveFinished($event)"></asset-type-modal-form>
+<asset-type-modal-form [assetTypeClass]="assetTypeClass" [uid]="formAssetUid" [parentUid]="formParentUid" [isModalVisible]="isModalVisible" (onClose)="onEditFormClose()" (onUpdated)="onEditSaveFinished($event)"></asset-type-modal-form>
 
 <d3s-configuration-asset-type-delete-page [uid]="assetTypeToDelete?.data?.uid" (onClose)="onDeleteClose($event)"></d3s-configuration-asset-type-delete-page>

@@ -3,7 +3,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms"
 import { result } from "lodash";
 import { SelectItem } from "primeng/api";
 import { forkJoin } from "rxjs";
-import { AssetType, AssetTypeApiModel, AssetTypeClass, AssetTypeEditorModel, IconStyle } from "../../../../models/asset.model";
+import { AssetType, AssetTypeApiModel, AssetTypeClass, AssetTypeEditorModel, Hierarchy, IconStyle } from "../../../../models/asset.model";
 import { Predicate } from "../../../../models/predicate.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { AssetService } from "../../../../services/asset.service";
@@ -20,6 +20,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	@Input() isModalVisible: boolean = false;
 	@Input() assetTypeClass: AssetTypeClass;
 	@Input() uid: string;
+	@Input() parentUid: string;
+
 	@Output() onClose = new EventEmitter();
 	@Output() onUpdated = new EventEmitter();
 	assetTypeForm: FormGroup = null;
@@ -34,6 +36,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	defaultColorItem: SelectItem = { label: $localize`Custom`, value: 'Custom', title: 'Custom' };
 
 	synonyms: Predicate[] = [];
+	hierarchyPredicates: Predicate[] = [];
+	hierarchyPredicatesSelectItem: SelectItem[] = [];
 
 	@ViewChild('form', { static: false }) formElement: ElementRef;
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
@@ -58,7 +62,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		this.setForm();
 		forkJoin(
 			this.assetService.getAllColors(),
-			this.relationshipService.getSynonyms()
+			this.relationshipService.getSynonyms(),
+			this.relationshipService.getInterTypeHierarchyPredicates()
 		).subscribe((results) => {
 			this.synonyms = results[1];
 			this.defaultColors = results[0];
@@ -70,6 +75,12 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 					this.assetTypeForm.addControl(`syn_${syn.Uid}`, new FormControl(''));
 				});
 			}
+
+			this.hierarchyPredicates = results[2];
+			this.hierarchyPredicatesSelectItem = [];
+			this.hierarchyPredicates.forEach((p) => {
+				this.hierarchyPredicatesSelectItem.push({ value: p.Uid, title: p.Inverse, label: p.Inverse });
+			});
 		});
 	}
 
@@ -91,12 +102,18 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			backgroundColor: [null, { updateOn: "blur" }],
 			icon: [null, { updateOn: "blur" }],
 			useAsTransformation: [null, { updateOn: "blur" }],
+			predicateUid: [null, { updateOn: "blur" }],
+			autoDisplayParent: [null, { updateOn: "blur" }],
+			canEditParent: [null, { updateOn: "blur" }]
 		});
-
+		
 		this.setDefaultFormValues();
 	}
 
 	setDefaultFormValues() {
+		if (!this.assetTypeForm) {
+			return;
+		}
 		this.assetTypeForm.reset();
 		this.assetTypeForm.controls["displayFormat"].setValue('{Name}');
 		this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Information`);
@@ -111,35 +128,43 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.assetTypeService.GetAssetTypeByUid(this.uid),
 				this.fieldsService.getAssetTypeFields(this.uid)
 			).subscribe((results) => {
-					const assetType = results[0];
-					this.fieldTokens = [];
-					if (results[1] && results[1].length) {
-						results[1].forEach((field) => {
-							this.fieldTokens.push({ title: field.Name });
-						});
-					}
+				const assetType = results[0];
+				this.fieldTokens = [];
+				if (results[1] && results[1].length) {
+					results[1].forEach((field) => {
+						this.fieldTokens.push({ title: field.Name });
+					});
+				}
 
-					this.assetTypeForm.controls["name"].setValue(assetType.Name);
-					this.assetTypeForm.controls["displayFormat"].setValue(assetType.DisplayFormat);
-					this.assetTypeForm.controls["description"].setValue(assetType.Description);
-					this.assetTypeForm.controls["isDescriptionEnabled"].setValue(assetType.IsDescriptionEnabled);
-					this.assetTypeForm.controls["descriptionButtonName"].setValue(assetType.DescriptionButtonName);
-					this.assetTypeForm.controls["isDescriptionVisibleByDefault"].setValue(assetType.IsDescriptionVisibleByDefault);
-					this.assetTypeForm.controls["backgroundColor"].setValue(assetType.IconStyle.BackColor);
-					this.assetTypeForm.controls["icon"].setValue(assetType.IconStyle.Icon);
-					this.assetTypeForm.controls["useAsTransformation"].setValue(assetType.UseAsTransformation);
+				this.assetTypeForm.controls["name"].setValue(assetType.Name);
+				this.assetTypeForm.controls["displayFormat"].setValue(assetType.DisplayFormat);
+				this.assetTypeForm.controls["description"].setValue(assetType.Description);
+				this.assetTypeForm.controls["isDescriptionEnabled"].setValue(assetType.IsDescriptionEnabled);
+				this.assetTypeForm.controls["descriptionButtonName"].setValue(assetType.DescriptionButtonName);
+				this.assetTypeForm.controls["isDescriptionVisibleByDefault"].setValue(assetType.IsDescriptionVisibleByDefault);
+				this.assetTypeForm.controls["backgroundColor"].setValue(assetType.IconStyle.BackColor);
+				this.assetTypeForm.controls["icon"].setValue(assetType.IconStyle.Icon);
+				this.assetTypeForm.controls["useAsTransformation"].setValue(assetType.UseAsTransformation);
+				this.assetTypeForm.controls["autoDisplayParent"].setValue(assetType.AutoDisplayParent);
+				this.assetTypeForm.controls["canEditParent"].setValue(assetType.CanEditParent);
 
-					this.title = $localize`Edit Asset Type`;
-					this.subTitle = assetType.Name;
+				let predicateUid = null;
+				if (assetType.PredicateInverse) {
+					predicateUid = this.hierarchyPredicates.find((x) => x.Inverse.toLowerCase() === assetType.PredicateInverse.toLowerCase())?.Uid;
+				}
+					this.assetTypeForm.controls["predicateUid"].setValue(predicateUid);
 
-					if (assetType.SynonymAllocations && assetType.SynonymAllocations.length > 0) {
-						assetType.SynonymAllocations.forEach((syn) => {
-							this.assetTypeForm.controls[`syn_${syn}`].setValue(true);
-						});
-					}
+				this.title = $localize`Edit Asset Type`;
+				this.subTitle = assetType.Name;
 
-					this.isLoading = false;
-				});
+				if (assetType.SynonymAllocations && assetType.SynonymAllocations.length > 0) {
+					assetType.SynonymAllocations.forEach((syn) => {
+						this.assetTypeForm.controls[`syn_${syn}`].setValue(true);
+					});
+				}
+
+				this.isLoading = false;
+			});
 		}
 		else {
 			this.title = $localize`Add Asset Type`;
@@ -189,8 +214,20 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		model.IconStyle.BackColor = "#000";
 		model.IconStyle.ForeColor = "#FFF";
 		model.UseAsTransformation = this.assetTypeForm.get("useAsTransformation").value;
-		model.SynonymAllocations = [];
 
+		model.AutoDisplayParent = this.assetTypeForm.get("autoDisplayParent").value;
+		model.CanEditParent = this.assetTypeForm.get("canEditParent").value;
+
+		if (this.hasPredicateUid) {
+			model.Hierarchy = new Hierarchy();
+			model.Hierarchy.PredicateUid = this.assetTypeForm.get("predicateUid").value;
+		}
+
+		if (this.parentUid) {
+			model.ParentUid = this.parentUid;
+		}
+
+		model.SynonymAllocations = [];
 		if (this.synonyms && this.synonyms.length > 0) {
 			this.synonyms.forEach((syn) => {
 				this.assetTypeForm.get(`syn_${syn.Uid}`).value;
@@ -233,13 +270,16 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		return this.assetTypeClass === AssetTypeClass.BusinessAsset || this.assetTypeClass === AssetTypeClass.TechnicalAsset;
 	}
 
+	get hasPredicateUid(): boolean {
+		return this.parentUid != null || this.assetTypeClass === AssetTypeClass.Model || this.assetTypeClass === AssetTypeClass.Policy;
+	}
+
 	get isFormDisabled(): boolean {
 		return this.savingInProgress || this.assetTypeForm.invalid;
 	}
 
 	get saveButtonLabel(): string {
 		return this.uid ? $localize`Save Changes` : $localize`Add Asset Type`;
-
 	}
 
 	@HostListener('window:resize', ['$event'])

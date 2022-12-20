@@ -86,7 +86,7 @@ export class ConfigurationAssetTypeListComponent {
 		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
 		menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(type.data.uid, true) });
 		if (this.hasAssetTypeChildsFeature) {
-			menuItems.push({ "title": $localize`Add Child Asset Type` });
+			menuItems.push({ "title": $localize`Add Child Asset Type`, callback: () => this.openEditForm(null, type.data.uid) });
 		}
 		menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.data.uid, type.data.parentUid) });
 		menuItems.push({ "title": $localize`Delete`, callback: () => { this.assetTypeToDelete = type } });
@@ -104,18 +104,6 @@ export class ConfigurationAssetTypeListComponent {
 		).subscribe((rowsPerPage) => {
 			this.rowsPerPage = rowsPerPage['Main'];
 		});
-	}
-
-	add(uid?: string) {
-		if (uid) {
-			this.router.navigateByUrl(`${this.baseUrl}/${uid}/new`);
-		} else {
-			this.router.navigateByUrl(`${this.baseUrl}/new`);
-		}
-	}
-
-	edit(uid: string) {
-		this.router.navigateByUrl(`${this.baseUrl}/${uid}/edit`);
 	}
 
 	open(uid: string, newTab: boolean = false) {
@@ -167,5 +155,11 @@ export class ConfigurationAssetTypeListComponent {
 		if ($event) {
 			this.load();
 		}
+	}
+
+	onEditFormClose() {
+		this.isModalVisible = false;
+		this.formAssetUid = null;
+		this.formParentUid = null;
 	}
 }

@@ -1,5 +1,6 @@
 <d3s-modal additionalClasses="modal-dyn-editor asset-editor large-dialog"
 		   [showTitle]="false"
+		   (onClose)="close()"
 		   [isVisible]="isModalVisible">
 	<div class="asset-editor-container">
 		<d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -34,6 +35,7 @@
 										   type="text"
 										   required />
 								</div>
+
 								<div class="field-col">
 									<label for="displayFormat" class="ig-label" i18n>Display Format</label>
 									<div class="display-format-picker">
@@ -53,6 +55,45 @@
 										</div>
 									</div>
 								</div>
+
+								<div class="field-col" *ngIf="hasPredicateUid">
+									<label for="predicateUid" class="ig-label" i18n>Predicate to Parent</label>
+									<p-dropdown name="predicateUid"
+												formControlName="predicateUid"
+												[igDataCy]="'Asset_Type_Modal_Field_predicateUid'"
+												igDropdown
+												required
+												igSize="full"
+												[appendTo]="'body'"
+												[options]="hierarchyPredicatesSelectItem"></p-dropdown>
+
+								</div>
+
+								<div class="field-col" *ngIf="assetTypeForm.get('predicateUid').value">
+									<label for="autoDisplayParent" class="ig-label" i18n>Auto Display Owner/Parent</label>
+									<ig-switch [attr.name]="'autoDisplayParent'"
+											   [formControlName]="'autoDisplayParent'"
+											   [formControl]="assetTypeForm.controls['autoDisplayParent']"
+											   i18n-trueLabel
+											   i18n-falseLabel
+											   trueLabel="True"
+											   falseLabel="False"></ig-switch>
+
+
+								</div>
+								<div class="field-col" *ngIf="assetTypeForm.get('predicateUid').value">
+									<label for="canEditParent" class="ig-label" i18n>Edit Parent</label>
+									<ig-switch [attr.name]="'canEditParent'"
+											   [formControlName]="'canEditParent'"
+											   [formControl]="assetTypeForm.controls['canEditParent']"
+											   i18n-trueLabel
+											   i18n-falseLabel
+											   trueLabel="True"
+											   falseLabel="False"></ig-switch>
+
+
+								</div>
+
 								<div class="field-col">
 									<label for="description" class="ig-label" i18n>Description</label>
 									<p-editor formControlName="description"

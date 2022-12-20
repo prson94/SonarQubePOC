@@ -400,4 +400,13 @@ export class RelationshipsService extends BaseObservableService {
 			);
 	}
 
+	getInterTypeHierarchyPredicates(): Observable<Predicate[]> {
+		var url = '/api/v2/relationships/predicates?Type=InterTypeHierarchy';
+
+		return this.http.get(url)
+			.pipe(
+				map((response) => <Predicate>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 }
