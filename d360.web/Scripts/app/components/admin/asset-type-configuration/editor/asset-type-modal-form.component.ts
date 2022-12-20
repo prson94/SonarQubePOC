@@ -7,6 +7,7 @@ import { AssetType, AssetTypeApiModel, AssetTypeClass, AssetTypeEditorModel, Ico
 import { Predicate } from "../../../../models/predicate.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { AssetService } from "../../../../services/asset.service";
+import { FieldsObservableService } from "../../../../services/fieldsObservable.service";
 import { RelationshipsService } from "../../../../services/relationships.service";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 
@@ -40,6 +41,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	constructor(private fb: FormBuilder,
 		private assetService: AssetService,
 		private assetTypeService: AssetTypeService,
+		private fieldsService: FieldsObservableService,
 		private relationshipService: RelationshipsService,
 		private elRef: ElementRef,
 		private cdRef: ChangeDetectorRef
@@ -104,8 +106,20 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	updateForm() {
 		if (this.uid) {
 			this.isLoading = true;
-			this.assetTypeService.GetAssetTypeByUid(this.uid)
-				.subscribe((assetType: AssetTypeApiModel) => {
+
+			forkJoin(
+				this.assetTypeService.GetAssetTypeByUid(this.uid),
+				this.fieldsService.getAssetTypeFields(this.uid)
+			)
+				.subscribe((results) => {
+					const assetType = results[0];
+					this.fieldTokens = [];
+					if (results[1] && results[1].length) {
+						results[1].forEach((field) => {
+							this.fieldTokens.push({ title: field.Name });
+						});
+					}
+
 					this.assetTypeForm.controls["name"].setValue(assetType.Name);
 					this.assetTypeForm.controls["displayFormat"].setValue(assetType.DisplayFormat);
 					this.assetTypeForm.controls["description"].setValue(assetType.Description);
@@ -130,7 +144,26 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		}
 		else {
 			this.title = $localize`Add Asset Type`;
-			this.subTitle = this.assetTypeClass.toString();
+
+			switch (this.assetTypeClass) {
+				case AssetTypeClass.BusinessAsset:
+					this.subTitle = $localize`Business Assets`;
+					break;
+				case AssetTypeClass.TechnicalAsset:
+					this.subTitle = $localize`Technical Assets`;
+					break;
+				case AssetTypeClass.Rule:
+					this.subTitle = $localize`Rules`;
+					break;
+				case AssetTypeClass.Policy:
+					this.subTitle = $localize`Policies`;
+					break;
+				case AssetTypeClass.Model:
+					this.subTitle = $localize`Models`;
+					break;
+				default:
+					this.subTitle = `unset`;
+			}
 
 			this.setDefaultFormValues();
 		}
