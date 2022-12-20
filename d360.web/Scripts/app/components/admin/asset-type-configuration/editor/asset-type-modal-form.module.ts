@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DropdownModule } from 'primeng/dropdown';
 import { EditorModule } from 'primeng/editor';
+import { TooltipModule } from 'primeng/tooltip';
 import { TreeTableModule } from 'primeng/treetable';
 import { DirectivesModule } from '../../../../directives/directives.module';
 import { IgColorPickerModule } from '../../../shared/controls/color-picker/color-picker.module';
@@ -29,6 +30,7 @@ import { ConfigurationAssetTypeModalForm } from './asset-type-modal-form.compone
 		ButtonModule,
 		DirectivesModule,
 		CoreModule,
+		TooltipModule,
 
 		SiteModalModule,
 		PropertyGroupModule,

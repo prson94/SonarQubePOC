@@ -37,7 +37,15 @@
 								</div>
 
 								<div class="field-col">
-									<label for="displayFormat" class="ig-label" i18n>Display Format</label>
+									<div class="flex">
+										<label for="displayFormat" class="ig-label" i18n>Display Format</label>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="The value of this field token is used to reference the asset throughout the application, for example when you open an asset details page, the value of this field token is displayed in the breadcrumb"
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+
 									<div class="display-format-picker">
 										<input igInput
 											   igSize="full"
@@ -70,7 +78,14 @@
 								</div>
 
 								<div class="field-col" *ngIf="assetTypeForm.get('predicateUid').value">
-									<label for="autoDisplayParent" class="ig-label" i18n>Auto Display Owner/Parent</label>
+									<div class="flex">
+										<label for="autoDisplayParent" class="ig-label" i18n>Auto Display Owner/Parent</label>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="If enabled, the Owner/Parent asset type display format will be included on the list page for this asset type if the asset type has a Predicate to Parent of 'child type of'"
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
 									<ig-switch [attr.name]="'autoDisplayParent'"
 											   [formControlName]="'autoDisplayParent'"
 											   [formControl]="assetTypeForm.controls['autoDisplayParent']"
@@ -82,7 +97,14 @@
 
 								</div>
 								<div class="field-col" *ngIf="assetTypeForm.get('predicateUid').value">
-									<label for="canEditParent" class="ig-label" i18n>Edit Parent</label>
+									<div class="flex">
+										<label for="canEditParent" class="ig-label" i18n>Edit Parent</label>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="If Enabled, the Parent can be edited on the asset definition page."
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
 									<ig-switch [attr.name]="'canEditParent'"
 											   [formControlName]="'canEditParent'"
 											   [formControl]="assetTypeForm.controls['canEditParent']"
@@ -173,7 +195,14 @@
 						<div class="form-group">
 							<div class="row">
 								<div class="field-col">
-									<label for="backgroundColor" class="ig-label" i18n>Background Color</label>
+									<div class="flex">
+										<label for="backgroundColor" class="ig-label" i18n>Background Color</label>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="Sets the background color of icons representing items of this type within diagrams."
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
 									<div class="flex">
 										<div class="flex-col">
 											<ig-color-picker [colors]="defaultColors"
@@ -195,7 +224,14 @@
 								<div class="field-col">
 									<div class="flex">
 										<div class="flex-col">
-											<label for="icon" class="ig-label" i18n>Icon</label>
+											<div class="flex">
+												<label for="icon" class="ig-label" i18n>Icon</label>
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Sets the icon representing items of this type within the summary page/search results."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</div>
 											<ig-icon-picker [showGovIcons]="true"
 															name="icon"
 															formControlName="icon"
