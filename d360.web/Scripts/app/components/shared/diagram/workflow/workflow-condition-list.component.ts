@@ -4,58 +4,7 @@ import { BaseComponent } from '../../../shared/base.component';
 
 @Component({
     selector: 'd3s-workflow-condition-list',
-    template: `
-    <header>
-                <div class="row" *ngIf="!isLoading && isAllAnyVisible()">
-                        <input type="radio" name="isAll"
-                               [(ngModel)]="satisfyAll"
-                               (ngModelChange)="connectorChange.emit($event)"
-                               [value]="true"
-                               style="width: 15px;height:20px;" />
-                        <div class="FieldName" style="display:inline-block;">
-                            <ng-container>Satisfy all</ng-container>&nbsp;&nbsp;&nbsp;&nbsp;
-                        </div>
-                        <input type="radio" name="isAll"
-                               [(ngModel)]="satisfyAll"
-                               (ngModelChange)="connectorChange.emit($event)"
-                               [value]="false"
-                               style="width: 15px;height:20px;" />
-                        <div class="FieldName" style="display:inline-block;" i18n>
-                            Satisfy any
-                        </div>
-                    </div>
-        <d3s-tile-actions hideTooltip="true" [hasAdd]="!readonly" (addClick)="addClick.emit()"></d3s-tile-actions>
-</header>
-    <p-table #dt [value]="filteredConditions" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10" [rowsPerPageOptions]="defaultPagingOptions">
-        <ng-template pTemplate="header">
-            <tr>
-                <th i18n>Field Name</th>
-                <th i18n>Operator</th>
-                <th i18n>Value</th>
-                <th *ngIf="!readonly"></th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-item>
-            <tr [pSelectableRow]="item">
-                <td>{{item['@FieldName'] ? item['@FieldName'] :  item['@FieldLabel']}}</td>
-                <td>
-                    {{operatorLabel(item)}}
-                </td>
-                <td>
-                    {{valueLabel(item)}}
-                </td>
-                <td *ngIf="!readonly">
-                    <div class="RowTools">
-                        <a style="cursor:pointer;" (click)="removeClick.emit(item)"><i class="fa fa-trash"></i></a>
-                    </div>
-                </td>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="summary">
-            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-        </ng-template>
-    </p-table>
-`
+    templateUrl: './workflow-condition-list.component.html'
 })
 
 export class WorkflowConditionListComponent extends BaseComponent implements OnChanges, OnInit {

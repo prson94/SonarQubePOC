@@ -9,69 +9,7 @@ import { Subject } from 'rxjs';
 
 @Component({
     selector: 'd3s-monitor-list',
-    template: ` 
-<div>
-    <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
-    <div *ngIf="!isLoading">
-        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
-        <p-table #dt
-                 [value]="workflowItems"
-                 selectionMode="single"
-                 [metaKeySelection]="true"
-                 [globalFilterFields]="['Name','ObjectTypeName','Status','Version']"
-                 [pageLinks]="3"
-                 [paginator]="true"
-                 [rows]="rowsPerPage"
-                 [rowsPerPageOptions]="defaultPagingOptions"
-                 [selection]="selection"
-                 (selectionChange)="selection = $event; selectionChange.emit($event)"
-                 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th [pSortableColumn]="'Name'">
-                        <ng-container i18n>Workflow Name</ng-container>
-                        <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
-                    </th>
-                    <th [pSortableColumn]="'ObjectTypeName'">
-                        <ng-container i18n>Type Name</ng-container>
-                        <d3s-sortIcon [field]="'ObjectTypeName'"></d3s-sortIcon>
-                    </th>
-                    <th [pSortableColumn]="'Status'">
-                        <ng-container i18n>Status</ng-container>
-                        <d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
-                    </th>
-                    <th [pSortableColumn]="'Version'">
-                        <ng-container i18n>Version</ng-container>
-                        <d3s-sortIcon [field]="'Version'"></d3s-sortIcon>
-                    </th>
-                     <th style="width: 30px"></th>
-                </tr>
-                <tr [hidden]="showSimpleFilter">
-                    <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
-                    <th><d3s-column-filter [field]="'ObjectTypeName'" [datatype]="'text'"></d3s-column-filter></th>
-                    <th><d3s-column-filter [field]="'Status'" [datatype]="'text'"></d3s-column-filter></th>
-                    <th><d3s-column-filter [field]="'Version'" [datatype]="'text'"></d3s-column-filter></th>
-                    <th></th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-item>
-                <tr [pSelectableRow]="item">
-                    <td>{{item.Name}}</td>
-                    <td>{{item.ObjectTypeName}}</td>
-                    <td>{{item.Status}}</td>
-                    <td>{{item.Version}}</td>
-                    <td>
-                        <d3s-preview-tooltip objectType="WorkflowVersion" [objectId]="item.VersionID" icon="info"></d3s-preview-tooltip>
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-            </ng-template>
-        </p-table>
-    </div>     
-</div>
-              `,
+    templateUrl: './monitor-list.component.html',
     providers: [WorkflowService],
 })
 
