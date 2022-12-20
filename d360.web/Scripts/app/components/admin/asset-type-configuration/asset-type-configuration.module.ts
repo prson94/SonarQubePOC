@@ -46,6 +46,9 @@ import { AssetTypeDetailV2Module } from '../../shared/asset-type-detail-v2/asset
 import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.component";
 import { PortalsModule } from '../../shared/portals/portals.module';
 import { AssetTypeModalFormModule } from './editor/asset-type-modal-form.module';
+import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
+import { SiteModalModule } from '../../shared/modal/gov-modal.module';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @NgModule({
     imports: [
@@ -76,7 +79,10 @@ import { AssetTypeModalFormModule } from './editor/asset-type-modal-form.module'
         AssetTypeDetailV2Module,
         SharedGridPagingInfoModule,
 		PortalsModule,
-		AssetTypeModalFormModule
+		AssetTypeModalFormModule,
+		PopupMenuModule,
+		SiteModalModule,
+		CheckboxModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,

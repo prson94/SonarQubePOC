@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AssetTypeClass } from "../../../../models/asset.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
@@ -9,75 +9,112 @@ import { StateService } from "../../../../services/state.service";
 import { BaseComponent } from "../../../shared/base.component";
 
 @Component({
-    selector: "d3s-configuration-asset-type-delete-page",
-    templateUrl: './configuration-asset-type-delete-page.component.html'
+	selector: "d3s-configuration-asset-type-delete-page",
+	templateUrl: './configuration-asset-type-delete-page.component.html',
+	styleUrls: ['configuration-asset-type-delete-page.component.less']
 })
-export class ConfigurationAssetTypeDeletePageComponent extends BaseComponent {
-    assetTypeClass: AssetTypeClass;
-    uid: string;
+export class ConfigurationAssetTypeDeletePageComponent extends BaseComponent implements OnChanges {
+	@Input() uid: string;
+	@Output() onClose = new EventEmitter();
 
-    assetType: { Name: string };
-    assetsCount?: number;
+	assetType: { Name: string };
+	assetsCount?: number;
 
-    loadingCounter = 0;
+	loadingCounter = 0;
+	isModalVisible: boolean = false;
+	isConfirmed: boolean = false;
+	message: string = "";
 
-    constructor(
-        private route: ActivatedRoute,
-        private stateService: StateService,
-        private assetTypeService: AssetTypeService,
-        private assetsService: AssetService,
-        protected messagesService: MessagesObservableService,
-        settingsService: CompanySettingsService,
-        private router: Router) {
-        super(settingsService);
-    }
+	constructor(
+		private route: ActivatedRoute,
+		private stateService: StateService,
+		private assetTypeService: AssetTypeService,
+		private assetsService: AssetService,
+		protected messagesService: MessagesObservableService,
+		settingsService: CompanySettingsService,
+		private router: Router) {
+		super(settingsService);
+	}
 
-    ngOnInit() {
-        this.route.params.subscribe((params) => {
-            this.assetTypeClass = AssetTypeClass[params["typeClass"] as string];
-            this.uid = params["uid"];
-            this.loadAssetType(this.uid);
-            this.loadCount(this.uid);
-        });
-    }
+	ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+		if (changes['uid']) {
+			if (changes['uid'].previousValue !== changes['uid'].currentValue) {
+				// object has changed
+				this.isConfirmed = false;
+				if (this.uid) {
+					this.loadAssetType(this.uid);
+					this.loadCount(this.uid);
+					this.isModalVisible = true;
+				}
+				else {
 
-    cancel() {
-        this.goBack();
-    }
+					this.isModalVisible = false;
+				}
+			}
+		}
+	}
 
-    async loadAssetType(uid: string) {
-        this.loadingCounter++;
-        try {
-            const assetType = await this.assetTypeService.GetAssetTypeByUid(uid).toPromise();
-            if (uid === this.uid) {
-                this.assetType = assetType;
-            }
-        } finally {
-            this.loadingCounter--;
-        }
-    }
+	cancel(reloadList: boolean = false) {
+		this.isConfirmed = false;
+		this.onClose.emit(reloadList);
+	}
 
-    async loadCount(uid: string) {
-        this.loadingCounter++;
-        try {
-            const assetsCount = (await this.assetsService.getAssetCountOfArtifactTypeUid(uid).toPromise()).count;
-            if (uid === this.uid) {
-                this.assetsCount = assetsCount;
-            }
-        } finally {
-            this.loadingCounter--;
-        }
-    }
+	async loadAssetType(uid: string) {
+		this.loadingCounter++;
+		try {
+			const assetType = await this.assetTypeService.GetAssetTypeByUid(uid).toPromise();
+			if (uid === this.uid) {
+				this.assetType = assetType;
+				this.formatMessage();
+			}
+		} finally {
+			this.loadingCounter--;
+		}
+	}
 
-    delete = async (uid: string) => {
-        const result = await this.assetTypeService.deleteSingleAssetType(uid).toPromise();
-        result.title = $localize`Success` + "!";
-        this.showMessageForResult(this.messagesService, result, $localize`Item successfully removed` + ".");
-        this.stateService.reloadLeftNavMenu();
-        this.goBack();
-    }
+	async loadCount(uid: string) {
+		this.loadingCounter++;
+		try {
+			const assetsCount = (await this.assetsService.getAssetCountOfArtifactTypeUid(uid).toPromise()).count;
+			if (uid === this.uid) {
+				this.assetsCount = assetsCount;
+				this.formatMessage();
+			}
+		} finally {
+			this.loadingCounter--;
+		}
+	}
 
-    goBack() {
-        this.router.navigateByUrl(`/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`);
-    }
+	formatMessage() {
+		const name = this.assetType.Name;
+		const undoneMsg = $localize`Please note that this operaion cannot be undone.`;
+		const checkBoxMsg = $localize`Please check this box if you would like to continue.`;
+		this.isConfirmed = false;
+		if (this.assetsCount === 0) {
+			this.message = `"${name}" contains 0 assets.`
+			this.isConfirmed = true;
+			return;
+		}
+		else if (this.assetsCount > 1) {
+			this.message = `"${name}" contains ${this.assetsCount} assets that will also be deleted.`;
+		}
+		else {
+			this.message = `"${name}" contains ${this.assetsCount} asset that will also be deleted.`;
+		}
+		this.message += " " + undoneMsg;
+		this.message += " " + checkBoxMsg;
+	}
+
+	deleteInProgress: boolean = false;
+
+	delete() {
+		this.deleteInProgress = true;
+		this.assetTypeService.deleteSingleAssetType(this.uid).subscribe((result) => {
+			this.deleteInProgress = false;
+			result.title = $localize`Success` + "!";
+			this.showMessageForResult(this.messagesService, result, $localize`Item successfully removed` + ".");
+			this.cancel(true);
+		});
+
+	}
 }

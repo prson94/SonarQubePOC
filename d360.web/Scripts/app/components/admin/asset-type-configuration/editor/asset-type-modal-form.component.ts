@@ -110,8 +110,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			forkJoin(
 				this.assetTypeService.GetAssetTypeByUid(this.uid),
 				this.fieldsService.getAssetTypeFields(this.uid)
-			)
-				.subscribe((results) => {
+			).subscribe((results) => {
 					const assetType = results[0];
 					this.fieldTokens = [];
 					if (results[1] && results[1].length) {

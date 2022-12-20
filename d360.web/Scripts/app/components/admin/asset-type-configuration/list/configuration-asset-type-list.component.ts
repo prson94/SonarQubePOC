@@ -2,7 +2,7 @@ import * as _ from "lodash";
 import { Component, Input } from "@angular/core";
 import { TreeNode } from "primeng/api";
 import { Subject } from "rxjs";
-import { AssetCount, AssetTypeApiModel, AssetTypeClass } from "../../../../models/asset.model";
+import { AssetCount, AssetTypeClass } from "../../../../models/asset.model";
 import { AssetService } from "../../../../services/asset.service";
 import { NumberOfRowsByCategoryService } from "../../../../services/number-of-rows-by-category.service";
 import { AppConstants } from "../../../../static/constants";
@@ -36,6 +36,7 @@ export class ConfigurationAssetTypeListComponent {
 	public tabTitle: string = $localize`Admin`;
 
 	isModalVisible: boolean = false;
+	assetTypeToDelete: any;
 
 	constructor(
 		private assetsService: AssetService,
@@ -58,6 +59,15 @@ export class ConfigurationAssetTypeListComponent {
 			const items = await this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false).toPromise();
 			const treeNodes = items.map(AssetCount.ConvertToTreeNode);
 			this.artifactTypes = AssetCount.ListToTree(treeNodes);
+			this.artifactTypes.forEach((type) => {
+				this.setMenuItems(type);
+				if (type.children) {
+					type.children.forEach((childType) => {
+						this.setMenuItems(childType);
+					});
+				}
+			});
+
 			if (preselectedUid) {
 				this.selectedRow = this.artifactTypes.find((x) => x.id === preselectedUid);
 			}
@@ -68,6 +78,19 @@ export class ConfigurationAssetTypeListComponent {
 		finally {
 			this.loadingCounter--;
 		}
+	}
+
+	setMenuItems(type) {
+		let menuItems = [];
+		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedRow = type; } });
+		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
+		menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(type.data.uid, true) });
+		if (this.hasAssetTypeChildsFeature) {
+			menuItems.push({ "title": $localize`Add Child Asset Type` });
+		}
+		menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.data.uid, type.data.parentUid) });
+		menuItems.push({ "title": $localize`Delete`, callback: () => { this.assetTypeToDelete = type } });
+		type["data"]["MenuItems"] = menuItems;
 	}
 
 	ngOnInit() {
@@ -99,8 +122,14 @@ export class ConfigurationAssetTypeListComponent {
 		this.router.navigateByUrl(`${this.baseUrl}/${uid}/delete`);
 	}
 
-	open(uid: string) {
-		this.router.navigateByUrl(`${this.baseUrl}/${uid}/fields`);
+	open(uid: string, newTab: boolean = false) {
+		const url = `${this.baseUrl}/${uid}/fields`;
+		if (newTab) {
+			window.open(url, "_blank");
+		}
+		else {
+			this.router.navigateByUrl(url);
+		}
 	}
 
 	get baseUrl() {
@@ -133,5 +162,14 @@ export class ConfigurationAssetTypeListComponent {
 	onEditSaveFinished($event: any) {
 		this.isModalVisible = false;
 		this.load(($event.Uid as string).toLowerCase());
+	}
+
+	onPopupMenuClick($event) { }
+
+	onDeleteClose($event) {
+		this.assetTypeToDelete = null;
+		if ($event) {
+			this.load();
+		}
 	}
 }

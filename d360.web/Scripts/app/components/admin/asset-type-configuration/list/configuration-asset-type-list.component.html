@@ -49,9 +49,7 @@
 									<ng-container i18n>Name</ng-container>
 									<d3s-sortIcon [field]="'name'"></d3s-sortIcon>
 								</th>
-								<th *ngIf="hasAssetTypeChildsFeature" style="width: 30px"></th>
-								<th style="width: 30px"></th>
-								<th style="width: 30px"></th>
+								<th style="width: 40px"></th>
 							</tr>
 						</ng-template>
 						<ng-template pTemplate="body"
@@ -71,31 +69,13 @@
 										{{item.name}}
 									</a>
 								</td>
-								<td *ngIf="hasAssetTypeChildsFeature">
-									<div class="RowTools">
-										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Add'"
-										   (click)="add(item.uid)"
-										   style="cursor:pointer;">
-											<i class="fa fa-plus"></i>
-										</a>
-									</div>
-								</td>
 								<td>
-									<div class="RowTools">
-										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Edit'"
-										   (click)="openEditForm(item.uid,null)"
-										   style="cursor:pointer;">
-											<i class="fa fa-pencil"></i>
-										</a>
-									</div>
-								</td>
-								<td>
-									<div class="RowTools">
-										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Remove'"
-										   (click)="remove(item.uid)"
-										   style="cursor:pointer;">
-											<i class="fa fa-trash-o"></i>
-										</a>
+									<div class="token-popup-menu" *ngIf="item.MenuItems">
+										<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+										<ig-popup-menu (onSelect)="onPopupMenuClick($event)"
+													   [items]="item.MenuItems"
+													   #tokenMenu
+													   [tabIndex]="1"></ig-popup-menu>
 									</div>
 								</td>
 							</tr>
@@ -122,3 +102,5 @@
 </div>
 
 <asset-type-modal-form [assetTypeClass]="assetTypeClass" [uid]="formAssetUid" [isModalVisible]="isModalVisible" (onClose)="isModalVisible = false" (onUpdated)="onEditSaveFinished($event)"></asset-type-modal-form>
+
+<d3s-configuration-asset-type-delete-page [uid]="assetTypeToDelete?.data?.uid" (onClose)="onDeleteClose($event)"></d3s-configuration-asset-type-delete-page>
