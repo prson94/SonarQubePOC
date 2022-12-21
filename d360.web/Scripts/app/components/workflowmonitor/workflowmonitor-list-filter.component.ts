@@ -3,21 +3,18 @@
     ChangeDetectorRef,
     Component,
     EventEmitter,
-    Input,
-    OnChanges,
-    OnInit,
-    Output,
-    SimpleChanges
+    Input, OnInit,
+    Output
 } from '@angular/core';
-import { BaseComponent } from "../shared/base.component";
-import { WorkflowService } from "../../services/workflow.service";
+import { map } from 'rxjs/operators';
+import { State } from '../../models/asset.model';
 import { GridFilterColumn, GridFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
+import { WorkflowTypeModel } from '../../models/workflow.model';
+import { CompanySettingsService } from '../../services/settings.service';
+import { WorkflowService } from "../../services/workflow.service";
 import { WorkflowMonitorService } from '../../services/workflowmonitor.service';
 import { StringHelpers } from '../../static/string-helpers';
-import { State } from '../../models/asset.model';
-import { map } from 'rxjs/operators';
-import { CompanySettingsService } from '../../services/settings.service';
-import { WorkflowTypeModel } from '../../models/workflow.model';
+import { BaseComponent } from "../shared/base.component";
 
 @Component({
     selector: 'd3s-workflowmonitor-list-filter',
@@ -27,9 +24,9 @@ import { WorkflowTypeModel } from '../../models/workflow.model';
 })
 
 
-export class WorkflowMonitorListFilterComponent extends BaseComponent implements OnInit, OnChanges {
+export class WorkflowMonitorListFilterComponent extends BaseComponent implements OnInit {
     @Input() selectAll: boolean = false;
-    @Input() selection: any[];
+    @Input() selection: string[];
     @Output() filterChange = new EventEmitter();
     @Output() exportToExcel = new EventEmitter();
     @Input() columnFilters: GridFilterExpression[] = [];
@@ -60,9 +57,6 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
         this.load();
     }
 
-    ngOnChanges(changes: SimpleChanges): void {
-
-    }
     private load() {
         this.isLoading = true;
         this.workflowService.getTypes()
@@ -103,13 +97,13 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
     }
 
 
-    columFilterChanged(e) {
+    columFilterChanged(e: GridFilterExpression[]) {
         this.columnFilters = e;
         this.columnFiltersChange.emit(this.columnFilters);
         this.filterChange.emit();
     }
 
-    change(e: any) {
+    change(e: string[]) {
         if (this.usePredefinedFilters)
             {return;}
         const data = new GridFilterExpression();
@@ -124,5 +118,4 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent implements
         this.workflowTypeFiltersChange.emit(this.workflowTypeFilters);
         this.filterChange.emit();
     }
-
 }
