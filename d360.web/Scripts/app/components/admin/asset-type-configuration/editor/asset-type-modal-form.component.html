@@ -212,6 +212,7 @@
 													  tooltipStyleClass="ig-tooltip"></span>
 											</div>
 											<ig-icon-picker [showGovIcons]="true"
+															[(ngModel)]="selectedIcon"
 															name="icon"
 															formControlName="icon"
 															[formControl]="assetTypeForm.controls['icon']"

@@ -88,7 +88,7 @@ export class IconPickerComponent implements ControlValueAccessor {
 
                 this.categories.forEach((c) => c.items.sort((a, b) => this.sortByName(a, b)));
                 this.categories.sort((a, b) => this.sortByName(a, b));
-                this.isLoading = false;
+				this.isLoading = false;
                 this.cdRef.markForCheck();
             });
         });

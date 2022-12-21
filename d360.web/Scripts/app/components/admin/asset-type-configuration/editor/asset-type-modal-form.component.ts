@@ -44,6 +44,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	@ViewChild('form', { static: false }) formElement: ElementRef;
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
+	selectedIcon: any;
+
 	constructor(private fb: FormBuilder,
 		private assetService: AssetService,
 		private assetTypeService: AssetTypeService,
@@ -85,9 +87,9 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			});
 
 			this.flowObjectTypes = [];
-			this.flowObjectTypes.push({ value: FlowObjectType.Event, label: $localize`Event` });
-			this.flowObjectTypes.push({ value: FlowObjectType.Activity, label: $localize`Activity` });
-			this.flowObjectTypes.push({ value: FlowObjectType.Gateway, label: $localize`Gateway` });
+			this.flowObjectTypes.push({ value: 'Event', label: $localize`Event` });
+			this.flowObjectTypes.push({ value: 'Activity', label: $localize`Activity` });
+			this.flowObjectTypes.push({ value: 'Gateway', label: $localize`Gateway` });
 		});
 	}
 
@@ -152,6 +154,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.assetTypeForm.controls["isDescriptionVisibleByDefault"].setValue(assetType.IsDescriptionVisibleByDefault);
 				this.assetTypeForm.controls["backgroundColor"].setValue(assetType.IconStyle.BackColor);
 				this.assetTypeForm.controls["icon"].setValue(assetType.IconStyle.Icon);
+				this.selectedIcon = assetType.IconStyle.Icon;
 				this.assetTypeForm.controls["useAsTransformation"].setValue(assetType.UseAsTransformation);
 				this.assetTypeForm.controls["autoDisplayParent"].setValue(assetType.AutoDisplayParent);
 				this.assetTypeForm.controls["canEditParent"].setValue(assetType.CanEditParent);
