@@ -245,7 +245,7 @@ namespace d360.model.DataAccessLayer.repositories
 						 {
 							 if (fieldDataType == "bit")
 							 {
-								 fieldColumns.Add($"try_cast(case when coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]", f.ID.ToString());
+								 fieldColumns.Add($"try_cast(case when coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]", f.ID.ToString(), $"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias})");
 							 }
 							 else
 							 {
