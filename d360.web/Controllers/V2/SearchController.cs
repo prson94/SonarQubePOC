@@ -374,7 +374,11 @@ namespace d360.web.Controllers.V2
 
 			List<IndexableCount> dbCounts = GetDatabaseCounts();
 			List<IndexableCount> esStatus = SearchSource.GetStatusList(Company.CurrentCompanyID);
-			List<IndexableStatus> queueStatus = Company.Query<IndexableStatus>("SELECT Class, AssetTypeUid, Status, TargetCount, Start, LastUpdate FROM [queue].[Search] WHERE Active = 1").ToList();
+			List<IndexableStatus> queueStatus = Company.Query<IndexableStatus>(@"
+				SELECT Class, AssetTypeUid, Status, TargetCount, Start, LastUpdate
+				FROM [queue].[Search]
+				WHERE Active = 1
+				AND DATEDIFF(day, LastUpdate, GETDATE()) <= 7").ToList();
 
 			IEnumerable<IndexableStatus> status = dbCounts.Select(db => {
 				var res = new IndexableStatus
