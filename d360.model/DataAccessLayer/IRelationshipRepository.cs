@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using d360.core;
@@ -22,7 +23,7 @@ namespace d360.model.DataAccessLayer
         
         Task<IEnumerable<PredicateApiViewModel>> GetPredicates(Guid? PredicateUid, PredicateType? Type, string Name, string Inverse, bool? IsUsed);
         
-        Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", bool isExport = false);
+        Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", bool isExport = false, CancellationToken? cancellationToken = null);
         
         IQueryable<IntersectType> GetIntersectTypeById(int id);
         

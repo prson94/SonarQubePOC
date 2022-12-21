@@ -121,8 +121,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         }
     }
 
-    get objectUrl() {
-        const path = SiteUrlHelpers.getObjectUrl(this.objectType, this.objectID, this.objectTypeID);
+	get objectUrl() {
+		const path = SiteUrlHelpers.getObjectUrl(this.objectType, this.objectID, this.objectTypeID, '', this.uid);
         return path == null ? null : '/' + path;
     }
 
@@ -161,7 +161,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                     this.issueTypeName = res.IssueTypeName;
                     this.objectTypeID = res.ObjectTypeID;
                     this.typeName = res.TypeName;
-                    this.IsClearAssignementsAllowed = res.IsClearAssignementsAllowed;
+					this.IsClearAssignementsAllowed = res.IsClearAssignementsAllowed;
+					this.uid = res.ObjectUid;
+					
                     if (res.AllowReassignObject) {
                         this.reassignAvailableTypes.push({ value: 'object', text: 'Object' });
                     }

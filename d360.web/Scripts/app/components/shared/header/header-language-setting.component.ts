@@ -68,6 +68,18 @@ export class HeaderLanguageSettingComponent {
 				code: 'nl-NL'
 			},
 			{
+				name: 'Arabic [TEST]',
+				code: 'ar-AR'
+			},
+			{
+				name: 'Japanese [TEST]',
+				code: 'ja-JP'
+			},
+			{
+				name: 'Hindi (India) [TEST]',
+				code: 'hi-IN'
+			},
+			{
 				name: $localize`Browser Language`,
 				code: null
 			}

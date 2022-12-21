@@ -1,0 +1,754 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="BadRequest" xml:space="preserve">
+    <value>طلب سيء</value>
+  </data>
+  <data name="EndpointGettingMeasureHistoryHeading" xml:space="preserve">
+    <value>خطأ في الحصول على تاريخ القياس</value>
+  </data>
+  <data name="EndpointNotAuthorizedHeading" xml:space="preserve">
+    <value>ليس مسموحاً</value>
+  </data>
+  <data name="EndpointNotAuthorizedMessage" xml:space="preserve">
+    <value>ليس لديك الحق في تنفيذ هذه الحركة.</value>
+  </data>
+  <data name="EndpointRecalculatingMeasureScoreItemsHeading" xml:space="preserve">
+    <value>خطأ في إعادة حساب نقاط نقاط التقييم</value>
+  </data>
+  <data name="ErrorAddingScoreResultsHeading" xml:space="preserve">
+    <value>خطأ في إضافة نتائج الدرجات</value>
+  </data>
+  <data name="ErrorDeletingDefaultHelpItem" xml:space="preserve">
+    <value>لا يمكن مسح مدخل مساعدة تلقائي</value>
+  </data>
+  <data name="ErrorInvalidDatasetMessage" xml:space="preserve">
+    <value>لقد قدمتم مجموعة بيانات غير صالحة أو فارغة. أرجو أن تتحقق من طلبك وترسل مرة أخرى.</value>
+  </data>
+  <data name="Forbidden" xml:space="preserve">
+    <value>ممنوع</value>
+  </data>
+  <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
+    <value>المستخدم الحالي ليس مديراً.</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>AssetUid ⁦{0}⁩ غير صالح</value>
+  </data>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>قيمة غير صحيحة للប៉ារ៉ាម៉ែត្រ [_direction]. القيم المسموح بها هي "desc" و "asc".</value>
+  </data>
+  <data name="InvalidIncludeTotal" xml:space="preserve">
+    <value>غير صحيح [_includeTotal] متوفر</value>
+  </data>
+  <data name="InvalidHelpName" xml:space="preserve">
+    <value>لا يمكن أن يكون الاسم فارغاً.</value>
+  </data>
+  <data name="InvalidHelpNameLength" xml:space="preserve">
+    <value>لا يمكن للاسم أن يكون أكثر من 500 حرف.</value>
+  </data>
+  <data name="InvalidHelpUrl" xml:space="preserve">
+    <value>Url لا يمكن أن يكون فارغا.</value>
+  </data>
+  <data name="InvalidHelpUrlLength" xml:space="preserve">
+    <value>Url لا يمكن أن يكون أكثر من 2000 حرف</value>
+  </data>
+  <data name="InvalidRequest" xml:space="preserve">
+    <value>طلب غير صالح</value>
+  </data>
+  <data name="InvalidScoreType" xml:space="preserve">
+    <value>غير صحيح [scoreType] متوفر، رجاءً أعطي نمط جيد.</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>لم يتم العثور عليه</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>النجاح</value>
+  </data>
+  <data name="UnknownError" xml:space="preserve">
+    <value>خطأ غير معلوم</value>
+  </data>
+  <data name="InvalidFilterExpression" xml:space="preserve">
+    <value>تعبير فلتر غير صحيح:</value>
+  </data>
+  <data name="InvalidFilterExpressionUsed" xml:space="preserve">
+    <value>تعبير فلتر غير صحيح استخدم.</value>
+  </data>
+  <data name="InvalidFilterExpressionUsedMessage" xml:space="preserve">
+    <value>تعبير فلتر غير صحيح استخدم. رجاءً تأكدوا من قيم فلتركم وأشكال البيانات الخاصة بهم.</value>
+  </data>
+  <data name="AssetNotfound" xml:space="preserve">
+    <value>لم تعثر على الممتلكات</value>
+  </data>
+  <data name="AssetTypeNotFoundForAsset" xml:space="preserve">
+    <value>لم يتمكنوا من العثور على نوع هذه الأصول</value>
+  </data>
+  <data name="AssetValidateWithAssetType" xml:space="preserve">
+    <value>لا تطابق مدخل الأصول نوع الأصول المتوفر.</value>
+  </data>
+  <data name="EmptyInvalidParameterSet" xml:space="preserve">
+    <value>لقد مررت بمجموعة فارغة أو غير صالحة من المعايير.</value>
+  </data>
+  <data name="FilterNotFound" xml:space="preserve">
+    <value>فلتر لم يجد.</value>
+  </data>
+  <data name="FilterNotOwned" xml:space="preserve">
+    <value>فلتر لا يملكه المستخدم.</value>
+  </data>
+  <data name="FilterRemove" xml:space="preserve">
+    <value>تم إزالة الترشيح.</value>
+  </data>
+  <data name="InvalidGuid" xml:space="preserve">
+    <value>GUID غير صحيح ⁦{0}⁩.</value>
+  </data>
+  <data name="InvalidNumberTooLarge" xml:space="preserve">
+    <value>لا يوجد قيمة ⁦{0}⁩ غير صحيحة. الرقم كبير جداً.</value>
+  </data>
+  <data name="InvalidValueMessage" xml:space="preserve">
+    <value>لا يوجد قيمة ⁦{0}⁩ غير صحيحة.</value>
+  </data>
+  <data name="MinLengthCheckGTZero" xml:space="preserve">
+    <value>لا يوجد قيمة ⁦{0}⁩ غير صحيحة. القيمة يجب أن تكون أكبر من 0.</value>
+  </data>
+  <data name="NumberValueMessage" xml:space="preserve">
+    <value>لا يوجد قيمة ⁦{0}⁩ غير صحيحة. يجب أن تكون قيمة رقمية.</value>
+  </data>
+  <data name="PageNumString" xml:space="preserve">
+    <value>PageNum</value>
+  </data>
+  <data name="PageSizeString" xml:space="preserve">
+    <value>حجم الصفحة</value>
+  </data>
+  <data name="SaveFailedMessage" xml:space="preserve">
+    <value>فشلت في الحفظ</value>
+  </data>
+  <data name="UIDNotFoundObjectAndObjectType" xml:space="preserve">
+    <value>شتماع، نوع شتماع، بطاقة، نوع تدفق العمل، نوع العلاقات أو نوع المسؤولية لم تعثر على UID</value>
+  </data>
+  <data name="ApiEntryNotFound" xml:space="preserve">
+    <value>لم نجد كيان API</value>
+  </data>
+  <data name="ExecutionIDNotFound" xml:space="preserve">
+    <value>لم نجد محدد فريد للتنفيذ.</value>
+  </data>
+  <data name="ExecutionIDStatus" xml:space="preserve">
+    <value>الآن نعالج الطلب. أرجو أن تتحقق من الوضع مع هذا الExecutionID.</value>
+  </data>
+  <data name="FieldTypeNotFound" xml:space="preserve">
+    <value>لم نجد نوع الحقل</value>
+  </data>
+  <data name="RuleIDNotFound" xml:space="preserve">
+    <value>لا يوجد ID للقواعد</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>خطأ في الحاسب الداخلي</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>تم رفض الوصول</value>
+  </data>
+  <data name="AssetNotFoundForAssetType" xml:space="preserve">
+    <value>لا يوجد ما توصلنا إليه من نوع ما ⁦{0}⁩</value>
+  </data>
+  <data name="AssetTypeNotSupportExport" xml:space="preserve">
+    <value>AssetType لا يدعم نموذج निर्यात.</value>
+  </data>
+  <data name="ChangeFieldNotAllowed" xml:space="preserve">
+    <value>ليس لديكم សិទ្ធិ لتغيير الحقول على هذا النوع.</value>
+  </data>
+  <data name="ComponentMaxSize250" xml:space="preserve">
+    <value>المكون لا يمكن أن يتجاوز 250 حرف.</value>
+  </data>
+  <data name="ComponentNotValid" xml:space="preserve">
+    <value>المكون غير صالح.</value>
+  </data>
+  <data name="Conflict" xml:space="preserve">
+    <value>الصراع</value>
+  </data>
+  <data name="ConnectorStatusNotFound" xml:space="preserve">
+    <value>لم يتم العثور على حالة الموصل مع [externalId] {0}.</value>
+  </data>
+  <data name="CounterInitialValueHigherCurrentValue" xml:space="preserve">
+    <value>[CounterInitialIndex] يجب أن يكون أعلى عدد الأصول (⁦{0}⁩)</value>
+  </data>
+  <data name="DataTypeValueNotMatched" xml:space="preserve">
+    <value>القيمة المقدمة لا تطابق النوع المتوقع من البيانات لهذا الإعداد</value>
+  </data>
+  <data name="DiagramAssetTypeSystemFieldValidation" xml:space="preserve">
+    <value>لا يمكن حذف الحقول [Name]، [GovernanceRole] و [StepNo] من نوع شتماع الرسم.</value>
+  </data>
+  <data name="DuplicateUserUidProvided" xml:space="preserve">
+    <value>نفس ID المستخدم يظهر عدة مرات.</value>
+  </data>
+  <data name="EndIPAddressNotValid" xml:space="preserve">
+    <value>القيمة النهائية ⁦{0}⁩ ليست عنوان IP صالح</value>
+  </data>
+  <data name="ErrorConnectorStatus" xml:space="preserve">
+    <value>واجهة خطأ أثناء إضافة حالة نقطة النهاية للوصل</value>
+  </data>
+  <data name="ErrorCreateTemplate" xml:space="preserve">
+    <value>خطأ في إنشاء نموذج</value>
+  </data>
+  <data name="ErrorFileOpen" xml:space="preserve">
+    <value>خطأ أثناء فتح الملف.</value>
+  </data>
+  <data name="ErrorFilterExpressionParse" xml:space="preserve">
+    <value>خطأ في تحليل تعبير التصفية</value>
+  </data>
+  <data name="ErrorScoreCasting" xml:space="preserve">
+    <value>لم يستطع إلقاء قيمة نموذج التقييم ⁦{0}⁩ إلى نموذج التقييم الصحيح</value>
+  </data>
+  <data name="ErrorUpdateTemplate" xml:space="preserve">
+    <value>خطأ في تحديث النموذج</value>
+  </data>
+  <data name="ExecutionCancel" xml:space="preserve">
+    <value>تنفيذ بـ UID ⁦{0}⁩ تم إلغاءه بنجاح.</value>
+  </data>
+  <data name="ExecutionCancelByUser" xml:space="preserve">
+    <value>وظيفة التنفيذ تم إلغاءها من قبل المستخدم.</value>
+  </data>
+  <data name="ExecutionUIDCancelled" xml:space="preserve">
+    <value>تنفيذ بـ UID ⁦{0}⁩ قد تم إلغاءه بالفعل.</value>
+  </data>
+  <data name="ExecutionUIDFinishedCanNotCancel" xml:space="preserve">
+    <value>تنفيذ بـ UID ⁦{0}⁩ قد انتهى ولا يمكن إلغاءه.</value>
+  </data>
+  <data name="ExecutionUIDNotBatchJobCanNotCancel" xml:space="preserve">
+    <value>تنفيذ بـ UID ⁦{0}⁩ ليس وظيفة كتلة ولا يمكن إلغاءها.</value>
+  </data>
+  <data name="ExecutionUIDNotExist" xml:space="preserve">
+    <value>لا يوجد تنفيذ بـ UID {0}.</value>
+  </data>
+  <data name="ExecutionUIDNotFound" xml:space="preserve">
+    <value>لم نجد محدد فريد للتنفيذ.</value>
+  </data>
+  <data name="ExecutionUIDStartedCanNotCancel" xml:space="preserve">
+    <value>تنفيذ بـ UID ⁦{0}⁩ قد بدأ ولا يمكن إلغاءه.</value>
+  </data>
+  <data name="ExecutionWrongWhenCancel" xml:space="preserve">
+    <value>حدث شيء خاطئ أثناء إلغاء تنفيذ.</value>
+  </data>
+  <data name="ExistItemInSystem" xml:space="preserve">
+    <value>الاشياء الموجودة في النظام</value>
+  </data>
+  <data name="ExportViewMessage" xml:space="preserve">
+    <value>يجب أن يكون هناك [ExportViewType] صحيح.</value>
+  </data>
+  <data name="FieldMovedSuccessfully" xml:space="preserve">
+    <value>تحرك الحقل بنجاح.</value>
+  </data>
+  <data name="FieldTypeError" xml:space="preserve">
+    <value>خطأ نوع الحقل</value>
+  </data>
+  <data name="FieldUseInResponsibilityRule" xml:space="preserve">
+    <value>هذا النوع من الحقل يستخدم في قاعدة المسؤولية ويجب أن تحذف القاعدة أولاً.</value>
+  </data>
+  <data name="FieldValidateWithAssetType" xml:space="preserve">
+    <value>لم يكن الحقل '⁦{0}⁩' صالحاً لنموذج الأصول المحدد.</value>
+  </data>
+  <data name="FileUploadMessage" xml:space="preserve">
+    <value>تم تحميل الملف بنجاح</value>
+  </data>
+  <data name="GroupUidNotExists" xml:space="preserve">
+    <value>مجموعة UID المقدمة ليست مجموعة UID صالحة. لا توجد مجموعة.</value>
+  </data>
+  <data name="InvalidAssetTypeID" xml:space="preserve">
+    <value>شفرة نوعية الاصول غير صحيحة. قدم شفرة نوعية الاصول الصحيحة.</value>
+  </data>
+  <data name="InvalidBoolean" xml:space="preserve">
+    <value>القيمة المقدمة ليست بولية صالحة</value>
+  </data>
+  <data name="InvalidExternalID" xml:space="preserve">
+    <value>[externalId] ⁦{0}⁩ ليست Uid صالحة</value>
+  </data>
+  <data name="InvalidNumber" xml:space="preserve">
+    <value>القيمة المقدمة ليست رقماً صالحاً</value>
+  </data>
+  <data name="InvalidParameter" xml:space="preserve">
+    <value>مقياس غير صحيح</value>
+  </data>
+  <data name="InvalidResourceuid" xml:space="preserve">
+    <value>لا يوجد [_resourceuid] غير صحيح !</value>
+  </data>
+  <data name="InvalidUserUids" xml:space="preserve">
+    <value>واحد أو أكثر من الـ UIDs المستخدمة التي تم تسليمها ليست مستخدماً.</value>
+  </data>
+  <data name="Invalid_Order" xml:space="preserve">
+    <value>لا يوجد [_order] غير صحيح !</value>
+  </data>
+  <data name="ItemExistsNotReplaceMessage" xml:space="preserve">
+    <value>هناك عناصر موجودة في بيئتك. لا يمكنك إجراء عملية 'إستبدال' حتى يتم إزالة هذه الأشياء.</value>
+  </data>
+  <data name="JSONValidMessage" xml:space="preserve">
+    <value>لم تكن قد قدمت بنية JSON صالحة لهذا الطلب.</value>
+  </data>
+  <data name="MissingIPAddressValue" xml:space="preserve">
+    <value>واحد أو أكثر من عناوين IP تفقد قيمة</value>
+  </data>
+  <data name="ModelExportTemplateStyleNotFound" xml:space="preserve">
+    <value>النموذج لا يحتوي على نمط نموذج قيادي موجود.</value>
+  </data>
+  <data name="NotValidAssetActionRelationTypeProvided" xml:space="preserve">
+    <value>لا يوجد [assetTypeUid] أو [actionTypeUid] أو [relationshipTypeUid]</value>
+  </data>
+  <data name="NoUserUIDProvided" xml:space="preserve">
+    <value>لا يوجد UID للمستخدم.</value>
+  </data>
+  <data name="RemoveFieldNotAllowed" xml:space="preserve">
+    <value>ليس لديكم الإذنات لإزالة الحقول على هذا النوع.</value>
+  </data>
+  <data name="SettingIDNotFound" xml:space="preserve">
+    <value>لم نجد ضبطاً مع هذا الرمز</value>
+  </data>
+  <data name="SettingIDNotValid" xml:space="preserve">
+    <value>القيمة التي تم تسليمها لأجل [_settingId] ليست صالحة</value>
+  </data>
+  <data name="SettingLocked" xml:space="preserve">
+    <value>هذه الإعداد مغلقة ولا يمكن تحديثها</value>
+  </data>
+  <data name="SettingValueProvided" xml:space="preserve">
+    <value>يجب أن يكون هناك قيمة واحدة بالضبط بناء على نوع البيانات للإعداد</value>
+  </data>
+  <data name="StartIPAddressNotValid" xml:space="preserve">
+    <value>قيمة البداية ⁦{0}⁩ ليست عنوانا IP صالحا</value>
+  </data>
+  <data name="StatusInvalid" xml:space="preserve">
+    <value>قيمة غير صحيحة ل[Status]. القيم المسموح بها هي: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION</value>
+  </data>
+  <data name="StatusRequied" xml:space="preserve">
+    <value>وتحتاج إلى قيمة متغيرات الوضعية.</value>
+  </data>
+  <data name="StyleUpdated" xml:space="preserve">
+    <value>تم تحديث Syles بنجاح.</value>
+  </data>
+  <data name="SuccessfullyAdded" xml:space="preserve">
+    <value>⁦{0}⁩ تم إضافةها بنجاح.</value>
+  </data>
+  <data name="SucessfullyUpdated" xml:space="preserve">
+    <value>⁦{0}⁩ تم تحديثها بنجاح.</value>
+  </data>
+  <data name="TemplateCreatingError" xml:space="preserve">
+    <value>خطأ في إنشاء نموذج</value>
+  </data>
+  <data name="TemplateDeleted" xml:space="preserve">
+    <value>أزيلت النموذج.</value>
+  </data>
+  <data name="TemplateDeletedError" xml:space="preserve">
+    <value>خطأ في លុប النموذج</value>
+  </data>
+  <data name="TemplateDeletedMessage" xml:space="preserve">
+    <value>أزيلت النموذج بنجاح.</value>
+  </data>
+  <data name="TemplateFileTypeValidate" xml:space="preserve">
+    <value>يجب أن تكون .xls أو .xlsx.</value>
+  </data>
+  <data name="TemplateNameDuplicate" xml:space="preserve">
+    <value>نموذج يسمى '⁦{0}⁩' موجود بالفعل لنموذج شتماع '⁦{1}⁩'.</value>
+  </data>
+  <data name="TemplateNotFound" xml:space="preserve">
+    <value>لم نجد نموذجاً.</value>
+  </data>
+  <data name="TemplateNotFoundMessage" xml:space="preserve">
+    <value>لم نجد أي نموذج لمقدمة الـ UID.</value>
+  </data>
+  <data name="TemplateNotFoundUpdate" xml:space="preserve">
+    <value>لم نجد أسلوب निर्यात نموذج لم يتم تحديثه.</value>
+  </data>
+  <data name="UsedinResponsibilityRules" xml:space="preserve">
+    <value>تستخدم في قواعد المسؤولية</value>
+  </data>
+  <data name="UserAlreadyMemberOfGroup" xml:space="preserve">
+    <value>المستخدم ⁦{0}⁩ هو بالفعل عضو في هذه المجموعة</value>
+  </data>
+  <data name="AlreadyWatch" xml:space="preserve">
+    <value>أنتم تشاهدون بالفعل ⁦{0}⁩</value>
+  </data>
+  <data name="CurrentWatch" xml:space="preserve">
+    <value>أنت الآن تشاهد '⁦{0}⁩' من خلال والده، '⁦{1}⁩'.</value>
+  </data>
+  <data name="CurrentWatchNotUnwatchIndividually" xml:space="preserve">
+    <value>فأنت تشاهد حالياً والد هذه المادة، '⁦{0}⁩'.  لا يمكنك إيقاف مشاهدة هذا العنصر منفرداً.</value>
+  </data>
+  <data name="ImageSize2048" xml:space="preserve">
+    <value>طلب غير صحيح، حجم غير صحيح محدد للصورة. القيمة يجب أن تكون أقل من 2048 أو أكبر من 0</value>
+  </data>
+  <data name="InvalidApiKeyOrApiSecret" xml:space="preserve">
+    <value>غير صحيح [apiKey] أو [apiSecret] للمستخدم الحالي</value>
+  </data>
+  <data name="InvalidUser" xml:space="preserve">
+    <value>معلومات غير صحيحة عن المستخدم</value>
+  </data>
+  <data name="IsChangePwdReqAuthOtherThanForm" xml:space="preserve">
+    <value>[IsChangePasswordReqeust] وضعت على صحيح، ليس مسموحا لنموذج التحقق من المصداقية غير النموذج</value>
+  </data>
+  <data name="IsChangePwdReqCurrentUser" xml:space="preserve">
+    <value>[IsChangePasswordReqeust] أضعها على "حق" فقط للمستخدم الحالي</value>
+  </data>
+  <data name="IsChangePwdReqOneReq" xml:space="preserve">
+    <value>طلب واحد فقط تم قبوله لـ "x id="x1"/&gt; مضبطاً على "حق".[IsChangePasswordReqeust]</value>
+  </data>
+  <data name="NameMissingInGroupPayload" xml:space="preserve">
+    <value>اسم ينقص في واحدة أو أكثر من المجموعات في محمولة الدفع. يجب أن يكون هناك إسم.</value>
+  </data>
+  <data name="NoGroupRequest" xml:space="preserve">
+    <value>لا توجد مجموعات متوفرة في الطلب</value>
+  </data>
+  <data name="NotCurrentWatch" xml:space="preserve">
+    <value>أنت لا تشاهد حاليا '⁦{0}⁩'.</value>
+  </data>
+  <data name="NoUserRequest" xml:space="preserve">
+    <value>لا يوجد مستخدم يقدم في طلب.</value>
+  </data>
+  <data name="OneMoreUidExists" xml:space="preserve">
+    <value>واحد أو أكثر من Uids المحددة موجودة بالفعل.</value>
+  </data>
+  <data name="PrimayOwnerOfGroupNotDelete" xml:space="preserve">
+    <value>لا يمكن مسح مالك رئيسي للمجموعة.</value>
+  </data>
+  <data name="RequiredFieldError" xml:space="preserve">
+    <value>⁦{0}⁩ هو الحقل المطلوب.</value>
+  </data>
+  <data name="ResourceGroupNotExists" xml:space="preserve">
+    <value>الموارد/المجموعة غير موجودة</value>
+  </data>
+  <data name="Userremoved" xml:space="preserve">
+    <value>لقد أزيل المستخدم.</value>
+  </data>
+  <data name="UserremovedMessage" xml:space="preserve">
+    <value>لقد أزيل المستخدم من المجموعة.</value>
+  </data>
+  <data name="YouAreWatching" xml:space="preserve">
+    <value>أنت تشاهد ⁦{0}⁩{1}</value>
+  </data>
+  <data name="FieldNotAllowedForAssetType" xml:space="preserve">
+    <value>ليس مسموح لكم استعادة الحقول لهذا النوع من الأصول.</value>
+  </data>
+  <data name="UnknownErrorInvestigatingMessage" xml:space="preserve">
+    <value>حدث خطأ غير معلوم وتم تسجيله لإجراء تحقيقات إضافية. من فضلكم حاولوا طلبكم مرة أخرى لاحقاً.</value>
+  </data>
+  <data name="InvalidEndDate" xml:space="preserve">
+    <value>غير صحيح [_endDate] متوفر</value>
+  </data>
+  <data name="InvalidStartDate" xml:space="preserve">
+    <value>غير صحيح [_startDate] متوفر</value>
+  </data>
+  <data name="StartEndDateValidation" xml:space="preserve">
+    <value>يجب أن يكون تاريخ البداية قبل تاريخ النهاية</value>
+  </data>
+  <data name="FilterExpressionParseError" xml:space="preserve">
+    <value>خطأ في تحليل تعبير التصفية</value>
+  </data>
+  <data name="Invalid_PageNum" xml:space="preserve">
+    <value>پارامتر غير صحيح [_pageNum] تم تسليمه في الطلب</value>
+  </data>
+  <data name="Invalid_PageSize" xml:space="preserve">
+    <value>پارامتر غير صحيح [_pageSize] تم تسليمه في الطلب</value>
+  </data>
+  <data name="_PageSizeLimit" xml:space="preserve">
+    <value>Parameter [_pageSize] غير صحيح تمر به في قيمة الطلب أكبر من الـ 100,000.</value>
+  </data>
+  <data name="_PageSizePassedZeroLess" xml:space="preserve">
+    <value>متغير [_pageSize] غير صحيح تمر به في قيمة الطلب هو أقل من أو يساوي الصفر.</value>
+  </data>
+  <data name="EndpointMethod" xml:space="preserve">
+    <value>طريقة نقطة النهاية</value>
+  </data>
+  <data name="Invalid" xml:space="preserve">
+    <value>غير صالحة</value>
+  </data>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>⁦{0}⁩ ليس Uid صالحاً!</value>
+  </data>
+  <data name="UidConstant" xml:space="preserve">
+    <value>Uid</value>
+  </data>
+  <data name="InvalidOrderRequese" xml:space="preserve">
+    <value>ترتيب غير صحيح تم تسليمه في الطلب</value>
+  </data>
+  <data name="InvalidType" xml:space="preserve">
+    <value>نوع غير صالح</value>
+  </data>
+  <data name="FailedAuthentication" xml:space="preserve">
+    <value>فشل في التحقق من المصداقية. ليس هناك حالة Oidc في .</value>
+  </data>
+  <data name="FailedAuthenticationNonces" xml:space="preserve">
+    <value>فشل في التحقق من المصداقية. لا تطابق مع غيرها.</value>
+  </data>
+  <data name="InvalidSortField" xml:space="preserve">
+    <value>سُمْحَلَ حقل التّقسيم غير صحيح.</value>
+  </data>
+  <data name="InvalidSortOrder" xml:space="preserve">
+    <value>ترتيب الانتقاء غير صحيح محدد</value>
+  </data>
+  <data name="MissingConfigInfo" xml:space="preserve">
+    <value>لا توجد معلومات عن الإعدادات المتعلقة بID OpenID، مثل ClientID و/أو Authority.</value>
+  </data>
+  <data name="LookupFieldTypeInUse" xml:space="preserve">
+    <value>هناك ممتلكات موجودة في بيئتك مع قيم على الحقل '⁦{0}⁩'. لا يمكنك تغيير خصائص [Type.Lookup.List] حتى يتم إزالة هذه القيم من الحقل.</value>
+  </data>
+  <data name="InvalidIntersecttypeid" xml:space="preserve">
+    <value>لا يوجد مدخل قاطع غير صحيح</value>
+  </data>
+  <data name="InvalidModel" xml:space="preserve">
+    <value>نموذج غير صالح</value>
+  </data>
+  <data name="TargetAssetType" xml:space="preserve">
+    <value>نوع الميزانية المستهدفة</value>
+  </data>
+  <data name="AssetCorssRefAlreadyExists" xml:space="preserve">
+    <value>المرجع المتقاطع للأصول موجود بالفعل.</value>
+  </data>
+  <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
+    <value>نموذج المرجع المتقاطع للأصول لا يحتوي على الحقول الضرورية.</value>
+  </data>
+  <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
+    <value>غير صحيح [_includeChildAssets] متوفر</value>
+  </data>
+  <data name="ModelNotContainFields" xml:space="preserve">
+    <value>النموذج لا يحتوي على الحقول الضرورية</value>
+  </data>
+  <data name="RequestMissingDatasource" xml:space="preserve">
+    <value>الطلب لا يحتوي على العوامل المطلوبة DataSource.</value>
+  </data>
+  <data name="RequestMissingDatasourceType" xml:space="preserve">
+    <value>الطلب لا يحتوي على العوامل المطلوبة مصدر البيانات والطريقة.</value>
+  </data>
+  <data name="RequestMissingType" xml:space="preserve">
+    <value>الطلب لا يحتوي على نوع الប៉ារ៉ាម៉ែត្រ المطلوب</value>
+  </data>
+  <data name="add" xml:space="preserve">
+    <value>إضافة</value>
+  </data>
+  <data name="confirm" xml:space="preserve">
+    <value>التأكد</value>
+  </data>
+  <data name="RebuildRequest" xml:space="preserve">
+    <value>استلمت وقبلت طلب إعادة البناء.</value>
+  </data>
+  <data name="CompanyInactive" xml:space="preserve">
+    <value>الشركة غير نشطة</value>
+  </data>
+  <data name="InvalidEnumValueInJson" xml:space="preserve">
+    <value>Valeur Enumeration Invalid في JSON</value>
+  </data>
+  <data name="InvalidJson" xml:space="preserve">
+    <value>رسالة JSON غير صحيحة</value>
+  </data>
+  <data name="FavoritesEmptyRoute" xml:space="preserve">
+    <value>لا يمكن للصفحة أن يكون لها مسار فارغ.</value>
+  </data>
+  <data name="SucessfullyCreated" xml:space="preserve">
+    <value>⁦{0}⁩ بنيت بنجاح.</value>
+  </data>
+  <data name="SucessfullyRemoved" xml:space="preserve">
+    <value>⁦{0}⁩ أزيلت بنجاح.</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>الخطأ</value>
+  </data>
+  <data name="OwnershipType" xml:space="preserve">
+    <value>نوع الملكية</value>
+  </data>
+  <data name="Predicate" xml:space="preserve">
+    <value>الفرضية</value>
+  </data>
+  <data name="SucessfullyDeleted" xml:space="preserve">
+    <value>⁦{0}⁩ تم مسحها بنجاح.</value>
+  </data>
+  <data name="SucessfullyEdited" xml:space="preserve">
+    <value>⁦{0}⁩ تم تحريرها بنجاح.</value>
+  </data>
+  <data name="HelpMenuSuccess" xml:space="preserve">
+    <value>لقد تم تحديث मद ម៉ឺនុយ المساعدة بنجاح.</value>
+  </data>
+  <data name="HelpMenuItemsUpdated" xml:space="preserve">
+    <value>أتم تحديث ធាតុ ម៉ឺនុយ المساعدة.</value>
+  </data>
+  <data name="HelpMenuVisibilityError" xml:space="preserve">
+    <value>يجب أن يكون مرئية الشىء إلى 1، 2 أو 3.</value>
+  </data>
+  <data name="ExecutionStatusInvalid" xml:space="preserve">
+    <value>قيمة غير صالحة للحالة. القيم الصحيحة هي "منتظرة"، "منفذة" و "تم إنجازها".</value>
+  </data>
+  <data name="HelpItemsAdded" xml:space="preserve">
+    <value>لقد تم إنشاء عناصر ម៉ឺនុយ المساعدة بنجاح.</value>
+  </data>
+  <data name="HelpItemsDeleted" xml:space="preserve">
+    <value>لقد تم إزالة मद ម៉ឺនុយ المساعدة بنجاح.</value>
+  </data>
+  <data name="HelpMenuItemsCreated" xml:space="preserve">
+    <value>ابتكرت عناصر ម៉ឺនុយ المساعدة.</value>
+  </data>
+  <data name="HelpMenuItemsDeleted" xml:space="preserve">
+    <value>أزيلت ធាតុ ម៉ឺនុយ المساعدة.</value>
+  </data>
+  <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
+    <value>[ApplicationId] طولها لا يمكن أن يتجاوز 200 حرف</value>
+  </data>
+  <data name="FavoritesSuccessfullyDeleted" xml:space="preserve">
+    <value>تم حذف المفضلات المحددة بنجاح</value>
+  </data>
+  <data name="FavoritesListCleared" xml:space="preserve">
+    <value>أزيلت قائمة المفضلات.</value>
+  </data>
+  <data name="InvalidHelpDeleteUid" xml:space="preserve">
+    <value>لا يوجد Uid صالح متوفر ليتم مسحه.</value>
+  </data>
+  <data name="InvalidHelpUpdateUid" xml:space="preserve">
+    <value>لا يوجد Uid صالح متوفر ليتم تحديثه.</value>
+  </data>
+  <data name="HelpMenuOrderError" xml:space="preserve">
+    <value>الترتيب لا يمكن أن يكون رقما سلبيا.</value>
+  </data>
+  <data name="InvalidLoadUid" xml:space="preserve">
+    <value>غير صحيح [LoadUid] متوفر.</value>
+  </data>
+  <data name="ArtifactNotFound" xml:space="preserve">
+    <value>لم نجد أي شيء.</value>
+  </data>
+  <data name="OpenIdCodeOrStateIsNotPresent" xml:space="preserve">
+    <value>استجابة مزود الـ OpenID هي مفقودة عن البرمجة أو الحالة. ربما قام مديرك بتنظيم خطأ بإعدادات مقدم الهوية الخاص بك.</value>
+  </data>
+  <data name="InvalidParameterMessage" xml:space="preserve">
+    <value>'⁦{0}⁩' هو قيمة غير صالحة ل⁦{1}⁩</value>
+  </data>
+  <data name="FavoriteUnknownObject" xml:space="preserve">
+    <value>الطريق {Route} يشير إلى شيء غير معروف</value>
+  </data>
+  <data name="FavoriteUnknownRoute" xml:space="preserve">
+    <value>الطريق {Route} غير معروف أو غير مرغوب فيه</value>
+  </data>
+  <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
+    <value>لم نجد أي نوع من الأصول مع توفر [assetTypeUid].</value>
+  </data>
+  <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
+    <value>لم نجد أي نوع من التقاطع مع توفر intersectTypeUid.</value>
+  </data>
+  <data name="InvalidProfileIdentifier" xml:space="preserve">
+    <value>متعرف على ملف غير صالح.</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>النوع</value>
+  </data>
+  <data name="YouAreNoLongerWatching" xml:space="preserve">
+    <value>لم تعد تشاهدون ⁦{0}⁩.</value>
+  </data>
+  <data name="YouAreNowWatching" xml:space="preserve">
+    <value>أنت الآن تشاهدون ⁦{0}⁩.</value>
+  </data>
+  <data name="InvalidLanguageCode" xml:space="preserve">
+    <value>غير صحيح [LanguageCode]. القيم المدعمة هي ⁦{0}⁩.</value>
+  </data>
+</root>

@@ -22,6 +22,7 @@ import {
     WorkflowReassignmentAsset,
     WorkflowTaskProcedure,
     WorkflowTypeItem,
+    WorkflowTypeModel,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { MessagesObservableService } from './messages-observable.service';
@@ -300,7 +301,7 @@ export class WorkflowService extends BaseObservableService {
     }
 
 
-    getTypes(): Observable<any> {
+    getTypes(): Observable<WorkflowTypeModel[]> {
         return this.http.get('services/workflow/types')
             .pipe(
                 map((response) => response),

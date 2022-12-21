@@ -19,31 +19,7 @@ import { HeaderActions } from '../../models/header.model';
 
 @Component({
 	selector: 'd3s-reference-list',
-
-	template: `                 
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading">
-                    <div [ngClass]="showDefault ? 'col s12 l3' : 'col s12 l8'">
-                        <d3s-reference-item-type-list [initialSelectedListUid]="selectedReferenceListUid" [selected]="selectedReferenceItemType" (formModeChange)="changeFormMode($event)"  (selectedChange)="changeType($event, replaceUrl)"></d3s-reference-item-type-list>
-                    </div>
-                    <div class="col s12 l9" *ngIf="selectedReferenceItemType && showDefault">
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">                                              
-                                    <object-detail [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID"></object-detail>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">           
-                                    <d3s-reference-item-list [hasAdd]="canAddReferenceItem" [assetTypeUid]="selectedReferenceItemType?.uid" [typeName]="selectedReferenceItemType?.Name" [highlightUid]="highlightUid"></d3s-reference-item-list>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-               `,
+	templateUrl: './reference-list.component.html',
 	providers: [PermissionsService, ReferenceService, AssetTypeService],
 })
 

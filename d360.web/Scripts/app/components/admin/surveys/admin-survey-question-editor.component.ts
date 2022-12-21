@@ -7,54 +7,7 @@ import { FormGroup, NgForm } from '@angular/forms';
 
 @Component({
     selector: 'd3s-admin-survey-question-editor',
-    template: ` 
-               <header>{{action}} <ng-container i18n>Question</ng-container></header>
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" [hidden]="isLoading">
-                    <form (ngSubmit)="onSubmit()" #questionEditorForm="ngForm">
-                        <div class="col s6">
-                            <div class="FieldName" i18n>Name</div>
-                            <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="editedQuestion.Name" #name="ngModel" maxlength="250"></div>
-                            <div [hidden]="name.valid || name.pristine" i18n>Name is required</div>
-                        </div>
-                        <div class="col s6">
-                            <div class="FieldName" i18n>Display Style</div>
-                            <div>
-                                <select required [(ngModel)]="editedQuestion.DisplayStyle" name="DisplayStyle" #displayStyle="ngModel" style="width:100%;">
-                                    <option *ngFor="let p of displayStyles" [value]="p.value">{{p.title}}</option>
-                                </select>
-                            </div>
-                            <div [hidden]="displayStyle.valid || displayStyle.pristine" i18n>Display style is required</div>
-                        </div>
-                        <div class="col l12 s12">
-                            <div class="FieldName" i18n>Description</div>
-                            <div><p-editor name="Description" [style]="{'height':'150px'}" [ngModel]="editedQuestion?.Description" (ngModelChange)="editedQuestion.Description=$event"></p-editor></div>
-                        </div>
-                        <div class="row">
-                            <span class="FieldName col l11 s11" i18n>Question Options</span>
-                            <span class="right-align col l1 s1" (click)="addItem();"><i class="fa fa-plus" aria-hidden="true"></i></span>
-                        </div>
-                        <div *ngFor="let option of editedQuestion?.Options; let i = index">
-                            <div class="row">
-                                <div class="col s6">
-                                    <input style="width: 100%;margin-bottom:5px;" required [name]="'item_' + i" type="text" [(ngModel)]="option.Name" maxlength="250">
-                                    <div *ngIf="questionEditorForm.form.errors && questionEditorForm.form.errors.duplicate_option && questionEditorForm.form.errors.duplicate_option == option.Name" class="error-message">Please enter unique option value</div>
-                                </div>
-                                <div class="col s6">
-                                    <input style="width: 100%;" required [name]="'value_' + i" type="number" [(ngModel)]="option.Value">
-                                    <div *ngIf="questionEditorForm.form.errors && questionEditorForm.form.errors.duplicate_identifiers && questionEditorForm.form.errors.duplicate_identifiers.toString() === option.Value.toString()" class="error-message">Please enter unique option identifier</div>
-                                </div>
-                            </div>
-                            <div class="spacer"></div>
-                        </div>
-                        <div class="col l12 s12">&nbsp;</div>
-                        <div class="col s12">
-                            <button igButton class="ig-button-primary" margin i18n-label type="submit" [disabled]="!questionEditorForm.form.valid" label="Save"></button>
-                            <button igButton class="ig-button-secondary" i18n-label type="button" (click)="closeClick.emit();" label="Close"></button>
-                        </div>
-                    </form>
-                </div> 
-                `,
+    templateUrl: './admin-survey-question-editor.component.html',
     providers: [SurveysService],
 })
 

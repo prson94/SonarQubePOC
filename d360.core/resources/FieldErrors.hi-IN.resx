@@ -1,0 +1,535 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ActionNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
+    <value>क्रिया प्रकार क्षेत्र गुण [IsPartOfKey] को सही पर सेट नहीं कर सकते हैं.</value>
+  </data>
+  <data name="ActionNotAllowedScoreFieldType" xml:space="preserve">
+    <value>क्रियाओं का [Type.Score] मान नहीं हो सकता है</value>
+  </data>
+  <data name="ActionNotAllowedTagFieldType" xml:space="preserve">
+    <value>क्रियाओं का [Type.Tag] मान नहीं हो सकता है</value>
+  </data>
+  <data name="ActionNotSupportPath" xml:space="preserve">
+    <value>क्रियाओं का [Type.Path] मान नहीं हो सकता है</value>
+  </data>
+  <data name="ActionTypeUidNotFound" xml:space="preserve">
+    <value>दिए गए यूआईडी पर आधारित क्रिया प्रकार नहीं मिला [{0}].</value>
+  </data>
+  <data name="AllowMultipleValues" xml:space="preserve">
+    <value>कई गुणों को अनुमति दें</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="AssetTypeError" xml:space="preserve">
+    <value>परिसंपत्ति प्रकार त्रुटि</value>
+  </data>
+  <data name="AssetTypeNotFoundField" xml:space="preserve">
+    <value>क्षेत्र [{0}] के लिए परिसंपत्ति प्रकार नहीं मिला.</value>
+  </data>
+  <data name="AssetTypeNotHaveKeyField" xml:space="preserve">
+    <value>इस आस्ति प्रकार में एक कुंजी क्षेत्र परिभाषित नहीं हो सकता है!</value>
+  </data>
+  <data name="AssetTypeNotHaveScoreField" xml:space="preserve">
+    <value>इस आस्ति प्रकार में [Type.Score] मूल्य नहीं हो सकता है</value>
+  </data>
+  <data name="AssetTypeUidNotFound" xml:space="preserve">
+    <value>उपबंधित यूआईडी पर आधारित परिसंपत्ति प्रकार नहीं मिला [{0}].</value>
+  </data>
+  <data name="AssetTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
+    <value>आप एक [AssetTypeUid] प्रदान नहीं कर सकते क्योंकि आप पहले से ही एक [ActionTypeUid] प्रदान किया है.</value>
+  </data>
+  <data name="ComputedOwnershipLookupNotSupported" xml:space="preserve">
+    <value>[ComputedOwnershipLookup] वर्तमान परिसंपत्ति क़िस्म के लिए क्षेत्र स्वीकार्य नहीं हैं!</value>
+  </data>
+  <data name="ComputedRelationshipFieldNotSupported" xml:space="preserve">
+    <value>[ComputedRelationshipField] वर्तमान परिसंपत्ति क़िस्म के लिए क्षेत्र स्वीकार्य नहीं हैं!</value>
+  </data>
+  <data name="ComputedRelationshipLookupNotSupported" xml:space="preserve">
+    <value>[ComputedRelationshipLookup] वर्तमान परिसंपत्ति क़िस्म के लिए क्षेत्र स्वीकार्य नहीं हैं!</value>
+  </data>
+  <data name="ComputedRelationshipReferenceListNotSupported" xml:space="preserve">
+    <value>[ComputedRelationshipReferenceList] वर्तमान परिसंपत्ति क़िस्म के लिए क्षेत्र स्वीकार्य नहीं हैं!</value>
+  </data>
+  <data name="Constantfalse" xml:space="preserve">
+    <value>मिथ्या</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantIncrement" xml:space="preserve">
+    <value>वृद्धि</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMaximumLength" xml:space="preserve">
+    <value>अधिकतम लम्बाई</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMaximumValue" xml:space="preserve">
+    <value>अधिकतम मूल्य</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMinimumLength" xml:space="preserve">
+    <value>न्यूनतम लम्बाई</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMinimumValue" xml:space="preserve">
+    <value>न्यूनतम मान</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="Constanttrue" xml:space="preserve">
+    <value>सच्चा</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="CounterFieldNotSupportedThisAssetType" xml:space="preserve">
+    <value>इस आस्ति प्रकार में [Type.Counter] मूल्य नहीं हो सकता है</value>
+  </data>
+  <data name="CounterPrefixMax10Char" xml:space="preserve">
+    <value>[CounterPrefix] 10 से अधिक अक्षर नहीं हो सकता है।</value>
+  </data>
+  <data name="CounterPrefixRule" xml:space="preserve">
+    <value>[CounterPrefix] अक्षरों और/या प्रतीकों से होना चाहिए _ या -.</value>
+  </data>
+  <data name="CounterPrefixStartWithAlpha" xml:space="preserve">
+    <value>[CounterPrefix] एक अक्षर से शुरू होना चाहिए।</value>
+  </data>
+  <data name="CounterRange" xml:space="preserve">
+    <value>[CounterInitialIndex] 1 और 9999999 के बीच होना चाहिए.</value>
+  </data>
+  <data name="DefaultValueError" xml:space="preserve">
+    <value>[DefaultValue]{0} और {1} के बीच होना चाहिए</value>
+  </data>
+  <data name="DiagramATCustomError" xml:space="preserve">
+    <value>चित्र परिसंपत्ति प्रकार पर अस्थिर क्षेत्र '{0}' को {1} पर सेट नहीं कर सकता है!</value>
+  </data>
+  <data name="DisplayInColumnMustFlaseOnComputedWonerShipLookup" xml:space="preserve">
+    <value>[DisplayInColumn] पर [ComputedOwnershipLookup] सही पर तभी सेट किया जा सकता है यदि [DisplayAsList] सही पर सेट किया जाता है.</value>
+  </data>
+  <data name="DuplicateFieldNames" xml:space="preserve">
+    <value>क्षेत्र नाम नक़ल करें</value>
+  </data>
+  <data name="DuplicateRelationship" xml:space="preserve">
+    <value>समान आस्ति प्रकार पर नक़ल संबंध</value>
+  </data>
+  <data name="ExistItemInSystem" xml:space="preserve">
+    <value>तंत्र में मौजूदा वस्तुएँ</value>
+  </data>
+  <data name="FailRemoveFieldNotExistsType" xml:space="preserve">
+    <value>आप एक या अधिक क्षेत्रों को हटाने की कोशिश कर रहे हैं जो इस प्रकार पर मौजूद नहीं हैं.</value>
+  </data>
+  <data name="FieldConversionError" xml:space="preserve">
+    <value>क्षेत्र रूपांतरण त्रुटि</value>
+  </data>
+  <data name="FieldNameMustUnique" xml:space="preserve">
+    <value>निम्नलिखित क्षेत्र नाम एक से अधिक बार इस्तेमाल किए जाते हैंः {0}. क्षेत्र नाम अद्वितीय होना चाहिए.</value>
+  </data>
+  <data name="FieldPropertyError" xml:space="preserve">
+    <value>क्षेत्र गुण त्रुटि</value>
+  </data>
+  <data name="FieldsContainErrors" xml:space="preserve">
+    <value>क्षेत्र में त्रुटियां हैं</value>
+  </data>
+  <data name="FieldTypeConversionError" xml:space="preserve">
+    <value>आप क्षेत्र {0} को {1} से {2} में परिवर्तित नहीं कर सकते हैं या उसी नाम और भिन्न प्रकार का क्षेत्र पहले से ही मौजूद हो सकता है.</value>
+  </data>
+  <data name="FieldTypeError" xml:space="preserve">
+    <value>क्षेत्र क़िस्म त्रुटि</value>
+  </data>
+  <data name="FieldTypeListNotSpecified" xml:space="preserve">
+    <value>[Lookup.List] निर्दिष्ट होना चाहिए</value>
+  </data>
+  <data name="FieldTypeNotFound" xml:space="preserve">
+    <value>क्षेत्र क़िस्म नहीं मिला</value>
+  </data>
+  <data name="FieldTypeNotFoundByName" xml:space="preserve">
+    <value>दिए गए [[Name]] पर आधारित क्षेत्र प्रकार नहीं मिला.{0}</value>
+  </data>
+  <data name="FormDescriptionMustBeEmptyForRelationship" xml:space="preserve">
+    <value>क्षेत्र {0}. [Description.Form] संबंध क्षेत्र के लिए रिक्त होना चाहिए जब [IsEditable] गलत पर सेट किया जाए.</value>
+  </data>
+  <data name="FriendNameCannotBe" xml:space="preserve">
+    <value>[FriendlyName] [{0}] नहीं हो सकता।</value>
+  </data>
+  <data name="GreaterThanError" xml:space="preserve">
+    <value>{0} से बड़ा होना चाहिए {1}</value>
+  </data>
+  <data name="GroupInvalidFieldType" xml:space="preserve">
+    <value>समूहों के पास {0} क्षेत्र प्रकार नहीं हो सकता है!</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>अवैध परिसंपत्ति प्रकार यूआईडी प्रदान किया गया [{0}].</value>
+  </data>
+  <data name="InvalidField" xml:space="preserve">
+    <value>अवैध क्षेत्र {0}</value>
+  </data>
+  <data name="InvalidFieldFriendlyName" xml:space="preserve">
+    <value>अवैध क्षेत्र [FriendlyName]</value>
+  </data>
+  <data name="InvalidFieldName" xml:space="preserve">
+    <value>अवैध क्षेत्र [Name]</value>
+  </data>
+  <data name="InvalidFields" xml:space="preserve">
+    <value>अवैध क्षेत्र</value>
+  </data>
+  <data name="InvalidJsonFieldType" xml:space="preserve">
+    <value>अवैध Json विशेषता [DataType]. अनुमति प्राप्त मान हैं {0}!"</value>
+  </data>
+  <data name="InvalidLookupDisplayFormat" xml:space="preserve">
+    <value>अवैध [Lookup.Format] मूल्य</value>
+  </data>
+  <data name="InvalidModel" xml:space="preserve">
+    <value>आपने वैध मॉडल नहीं दिया. कृपया अपने अनुरोध की जाँच करें और पुनः प्रयास करें.</value>
+  </data>
+  <data name="InvalidparentField" xml:space="preserve">
+    <value>अवैध [ParentFieldTypeName] मूल्य</value>
+  </data>
+  <data name="InvalidRemoveKeyFields" xml:space="preserve">
+    <value>आप कुंजी क्षेत्र को हटा नहीं सकते क्योंकि आपके परिवेश में मौजूदा मद हैं. आप एक मिटाएँ क्रिया तब तक नहीं कर सकते जब तक कि उन मदों को हटाया नहीं जाता है, या आप इस प्रकार पर परिभाषित कुंजी क्षेत्रों को बदलते हैं.</value>
+  </data>
+  <data name="IsDisplayable" xml:space="preserve">
+    <value>प्रदर्शित है</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsDisplayAbleTrueReferenceItemListForRelationship" xml:space="preserve">
+    <value>क्षेत्र {0}. [IsDisplayable] पैरामीटर मान संबंध से संदर्भ वस्तु सूची प्रकार के लिए सही होना चाहिए.</value>
+  </data>
+  <data name="IsDisplayAbleTrueRelationshipLookup" xml:space="preserve">
+    <value>क्षेत्र {0}. [IsDisplayable] पैरामीटर मान प्रकार संबंध खोज के लिए सही होना चाहिए.</value>
+  </data>
+  <data name="IsEditable" xml:space="preserve">
+    <value>संपादन योग्य है</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsEditableCanotTrue" xml:space="preserve">
+    <value>[IsEditable] इस क्षेत्र प्रकार के लिए सही नहीं हो सकता है.</value>
+  </data>
+  <data name="IsListable" xml:space="preserve">
+    <value>सुनने योग्य</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsListableParameterMustBeFalseForBooleanType" xml:space="preserve">
+    <value>क्षेत्र {0}. [IsListable] पैरामीटर मान बूलियन प्रकार के लिए गलत होना चाहिए जो क्रिया प्रकार के लिए परिभाषित है!</value>
+  </data>
+  <data name="IsPartOfKey" xml:space="preserve">
+    <value>आइसपार्टऑफकी</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsPrimaryFilter" xml:space="preserve">
+    <value>इस प्राथमिक फिल्टर</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsPrimaryFilterMustBefalseForBooleanType" xml:space="preserve">
+    <value>क्षेत्र {0}. [IsPrimaryFilter] ( शीर्ष स्तर फ़िल्टर के रूप में दिखाएँ) पैरामीटर मान गलत होना चाहिए बूलियन प्रकार के लिए फाँट क्रिया प्रकार के लिए परिभाषित!</value>
+  </data>
+  <data name="IsRequired" xml:space="preserve">
+    <value>आवश्यक है</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="JsonElementFieldTypeNotenabled" xml:space="preserve">
+    <value>[JsonElement] क्षेत्र प्रकार इस परिवेश में सक्षम नहीं हैं.  [JsonElement] फ़ील्ड प्रकार का उपयोग करने के लिए आपको तंत्र सेटिंग 75 सक्षम करना होगा.</value>
+  </data>
+  <data name="JsonElementNotSupported" xml:space="preserve">
+    <value>[JsonElement] वर्तमान परिसंपत्ति क़िस्म के लिए क्षेत्र स्वीकार्य नहीं हैं!</value>
+  </data>
+  <data name="JsonFiledNotPartAssetType" xml:space="preserve">
+    <value>JSON क्षेत्र {0} मौजूद नहीं है या इस आस्ति प्रकार का हिस्सा नहीं है!</value>
+  </data>
+  <data name="JsonNotSupported" xml:space="preserve">
+    <value>[Type.Json] वर्तमान आस्ति क़िस्म के लिए अनुमति नहीं है!</value>
+  </data>
+  <data name="JSONTypeNotSupportIsRequiredTrue" xml:space="preserve">
+    <value>इस आस्ति प्रकार पर परिभाषित [IsRequired] गुण सत्य नहीं हो सकता है![Type.Json]</value>
+  </data>
+  <data name="KeyFieldNotDefined" xml:space="preserve">
+    <value>आपने सभी वर्तमान क्षेत्रों को बदलने का चयन किया है, फिर भी आपने कोई कुंजी परिभाषित नहीं किया है. आपको कम से कम एक क्षेत्र को कुंजी के रूप में परिभाषित करना होगा, या एक क्रिया के रूप में 'मेर्ज' चुनना होगा.</value>
+  </data>
+  <data name="LessThanError" xml:space="preserve">
+    <value>{0} से कम होना चाहिए {1}</value>
+  </data>
+  <data name="LinkTypeNotSupportIsPartOfKeyTrue" xml:space="preserve">
+    <value>[Type.Link] क्षेत्र गुण [IsPartOfKey] पर {0} सही पर सेट नहीं कर सकता है.</value>
+  </data>
+  <data name="ListAssetTypeNotFound" xml:space="preserve">
+    <value>[Lookup.List] परिसंपत्ति प्रकार नहीं मिला</value>
+  </data>
+  <data name="LookupFieldTypeIsIncomplete" xml:space="preserve">
+    <value>[Type.Lookup.List] अपूर्ण है क्योंकि इसमें एक वैध [Class] निर्दिष्ट नहीं है.</value>
+  </data>
+  <data name="LookupNotSpecifiedList" xml:space="preserve">
+    <value>[Type.Lookup.List] अपूर्ण है क्योंकि इसमें [List] निर्दिष्ट नहीं है.</value>
+  </data>
+  <data name="MaxDecimalFieldValue" xml:space="preserve">
+    <value>10000000000</value>
+  </data>
+  <data name="MissingJsonAttribute" xml:space="preserve">
+    <value>[JsonAttribute] परिभाषा गुम है!</value>
+  </data>
+  <data name="MissingListDisplayFormat" xml:space="preserve">
+    <value>[Lookup.Format] के लिए [Type.Lookup] आवश्यक है।</value>
+  </data>
+  <data name="MustProvideLinkTextValue" xml:space="preserve">
+    <value>यदि आप [DefaultValue.Text] के लिए डिफ़ॉल्ट मान सेट करते हैं तो आपको एक {0} मान प्रदान करना होगा.</value>
+  </data>
+  <data name="MustProvideLinkUrlValue" xml:space="preserve">
+    <value>यदि आप [DefaultValue.Url] के लिए डिफ़ॉल्ट मान सेट करते हैं तो आपको एक {0} मान प्रदान करना होगा.</value>
+  </data>
+  <data name="NameCannotBe" xml:space="preserve">
+    <value>[Name] [{0}] नहीं हो सकता।</value>
+  </data>
+  <data name="NameReservedword" xml:space="preserve">
+    <value>आप अपने क्षेत्र के नाम के रूप में {f.Name} का उपयोग नहीं कर सकते क्योंकि यह एक आरक्षित शब्द है.</value>
+  </data>
+  <data name="NoModelFound" xml:space="preserve">
+    <value>कोई मॉडल नहीं मिला</value>
+  </data>
+  <data name="NoPrimaryKeyDefined" xml:space="preserve">
+    <value>कोई क्षेत्र नहीं जिनके साथ [IsPartOfKey] सही पर सेट है</value>
+  </data>
+  <data name="NotIncludedValidTypeFieldType" xml:space="preserve">
+    <value>आपने क्षेत्र प्रकार [{0}] के लिए वैध प्रकार शामिल नहीं किया है.</value>
+  </data>
+  <data name="NotUseComputedRelationshipLookuptypeField" xml:space="preserve">
+    <value>आप क्षेत्र {1} के लिए {0} प्रकार के आस्ति पर [Type.ComputedRelationshipLookup] प्रकार का उपयोग नहीं कर सकते।</value>
+  </data>
+  <data name="NotUseJSONonActionType" xml:space="preserve">
+    <value>आप [Type.Json] क्षेत्र के लिए किसी क्रिया प्रकार या संबंध प्रकार पर {0} का उपयोग नहीं कर सकते हैं.</value>
+  </data>
+  <data name="NotUseReferenceListItemList" xml:space="preserve">
+    <value>आप किसी क्रिया प्रकार या संबंध प्रकार पर {0} क्षेत्र के लिए संबंध प्रकार से संदर्भ वस्तु सूची का उपयोग नहीं कर सकते हैं.</value>
+  </data>
+  <data name="NotUseRelationshipLookupField" xml:space="preserve">
+    <value>आप [Type.ComputedRelationshipReferenceList] क्षेत्र के लिए किसी क्रिया प्रकार या संबंध प्रकार पर {0} का उपयोग नहीं कर सकते हैं.</value>
+  </data>
+  <data name="NotUserOwnershipLookup" xml:space="preserve">
+    <value>आप [Type.ComputedOwnershipLookup] क्षेत्र के लिए किसी क्रिया प्रकार या संबंध प्रकार पर {0} का उपयोग नहीं कर सकते हैं.</value>
+  </data>
+  <data name="NotUseSCoreTypeAssetForField" xml:space="preserve">
+    <value>आप क्षेत्र {1} के लिए {0} क़िस्म के आस्ति पर [Type.Score] का उपयोग नहीं कर सकते.</value>
+  </data>
+  <data name="NotUseScoreTypeOnActionAndRelationshipType" xml:space="preserve">
+    <value>आप [Type.Score] क्षेत्र के लिए किसी क्रिया प्रकार या संबंध प्रकार पर {0} का उपयोग नहीं कर सकते हैं.</value>
+  </data>
+  <data name="NotValidRegex" xml:space="preserve">
+    <value>[Text.Validation.Pattern] Regex अभिव्यक्ति वैध नहीं है!</value>
+  </data>
+  <data name="NoUidFound" xml:space="preserve">
+    <value>कोई यूआईडी नहीं मिला</value>
+  </data>
+  <data name="NoValidTypeDefined" xml:space="preserve">
+    <value>कोई वैध प्रकार परिभाषित नहीं</value>
+  </data>
+  <data name="OneThanOneTypeDefined" xml:space="preserve">
+    <value>निम्नलिखित क्षेत्रों में एक से अधिक प्रकार परिभाषित हैंः {0}.</value>
+  </data>
+  <data name="OnlyOneTagFieldAllowed" xml:space="preserve">
+    <value>परिसंपत्ति प्रकार में केवल एक [Type.Tag] क्षेत्र प्रकार हो सकता है!</value>
+  </data>
+  <data name="ParameterError" xml:space="preserve">
+    <value>परिमिति त्रुटि</value>
+  </data>
+  <data name="ParentFieldRefernceItemNotfound" xml:space="preserve">
+    <value>प्रकार का प्रमूल क्षेत्र [{0}] इस आस्ति पर संदर्भ नहीं मिला.</value>
+  </data>
+  <data name="ProvideComputedRealtionshipLookupField" xml:space="preserve">
+    <value>आपको क्षेत्र {0} पर [Type.ComputedRelationshipLookup] के लिए परिभाषा प्रदान करनी चाहिए.</value>
+  </data>
+  <data name="ProvideOneValueActionAssetRelationship" xml:space="preserve">
+    <value>आपको तीन Uid गुणों में से केवल एक ही उपलब्ध कराना होगाः [ActionTypeUid], [AssetTypeUid], या [RelationshipTypeUid].</value>
+  </data>
+  <data name="ReferenceItemIsPartOfKeyNotAllowedTrue" xml:space="preserve">
+    <value>संदर्भ प्रकार क्षेत्र गुण [IsPartOfKey] को सही पर सेट नहीं कर सकते हैं.</value>
+  </data>
+  <data name="ReferenceItemNotSupportJsonElement" xml:space="preserve">
+    <value>[Type.JsonElement] संदर्भ वस्तु क़िस्म के लिए समर्थन नहीं!</value>
+  </data>
+  <data name="ReferenceListNotSupportJson" xml:space="preserve">
+    <value>[Type.Json] संदर्भ वस्तु क़िस्म के लिए समर्थन नहीं!</value>
+  </data>
+  <data name="ReferenceListNotSupportTag" xml:space="preserve">
+    <value>[Type.Tag] संदर्भ वस्तु क़िस्म के लिए समर्थन नहीं</value>
+  </data>
+  <data name="RelationNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
+    <value>संबंध प्रकार क्षेत्र गुण [IsPartOfKey] को सही पर सेट नहीं कर सकते हैं.</value>
+  </data>
+  <data name="RelationshipIDUsedMoreThanOnce" xml:space="preserve">
+    <value>निम्न संबंध आईडी एक बार से अधिक प्रयोग किया जाता हैः {0}. [Type.Relationship] एक ही आस्ति प्रकार पर एकल होना चाहिए</value>
+  </data>
+  <data name="RelationshipNotAllowedScoreFieldType" xml:space="preserve">
+    <value>[Type.Score] संबंधों पर समर्थित नहीं है</value>
+  </data>
+  <data name="RelationshipNotSupported" xml:space="preserve">
+    <value>[Type.Relationship] वर्तमान आस्ति क़िस्म के लिए अनुमति नहीं है!</value>
+  </data>
+  <data name="RelationshipNotSupportPath" xml:space="preserve">
+    <value>[Type.Path] संबंधों पर समर्थित नहीं है</value>
+  </data>
+  <data name="RelationshipsNotAllowedTagFieldType" xml:space="preserve">
+    <value>[Type.Tag] संबंधों पर समर्थित नहीं है</value>
+  </data>
+  <data name="RelationshipTypeFieldNotFound" xml:space="preserve">
+    <value>संबंध प्रकार/क्षेत्र नहीं मिला</value>
+  </data>
+  <data name="RelationshipTypeNotFound" xml:space="preserve">
+    <value>संबंध प्रकार नहीं मिला</value>
+  </data>
+  <data name="RelationshipTypeNotFoundBasedOnUid" xml:space="preserve">
+    <value>उपबंधित यूआईडी पर आधारित संबंध प्रकार या क्षेत्र प्रकार नहीं मिला [{0}].</value>
+  </data>
+  <data name="RelationshipTypeOrFieldTypeNotFound" xml:space="preserve">
+    <value>उपबंधित यूआईडी पर आधारित संबंध प्रकार या क्षेत्र प्रकार नहीं मिला [{0}].</value>
+  </data>
+  <data name="RelationshipTypeUIdNotFound" xml:space="preserve">
+    <value>उपबंधित यूआईडी पर आधारित संबंध प्रकार नहीं मिला [{0}].</value>
+  </data>
+  <data name="RelationShipTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
+    <value>आप एक [RelationshipTypeUid] प्रदान नहीं कर सकते क्योंकि आप पहले से ही एक [ActionTypeUid] प्रदान किया है.</value>
+  </data>
+  <data name="RelationShipTypeUidNotRequiredIfAssetTypeUidProvided" xml:space="preserve">
+    <value>आप एक रिलेशनाइपाइप यूआईडी प्रदान नहीं कर सकते क्योंकि आप पहले से ही एक आस्तिाइपाइप यूआईडी प्रदान किया है.</value>
+  </data>
+  <data name="RelationshipUidMustUniqueWithinAssetType" xml:space="preserve">
+    <value>निम्न संबंध यूआईडी एक बार से अधिक प्रयोग किया जाता हैः {0}. [Type.Relationship] एक ही आस्ति प्रकार पर एकल होना चाहिए</value>
+  </data>
+  <data name="ScoreNotSupported" xml:space="preserve">
+    <value>[Type.Score] चालू आस्ति प्रकार के लिए समर्थित नहीं है</value>
+  </data>
+  <data name="ScoreTypeCannotAllocateAssetType" xml:space="preserve">
+    <value>क्षेत्र के लिए [Score.ScoreType] {0} इस आस्ति प्रकार को आबंटित नहीं किया जा सकता है {1}.</value>
+  </data>
+  <data name="ShowIfEmpty" xml:space="preserve">
+    <value>ShowIfEmpty</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="SpecificHaveTagFieldType" xml:space="preserve">
+    <value>[Type.Tag] केवल व्यापार आस्तियों, तकनीकी आस्तियों, नीतियों, मॉडलों और नियमों पर अनुमति है</value>
+  </data>
+  <data name="TaskTypeGovernanceRoleCustomError" xml:space="preserve">
+    <value>कार्य प्रकार के क्षेत्र गुण '{0}' को [GovernanceRole] पर {1} पर सेट नहीं कर सकते हैं.</value>
+  </data>
+  <data name="TaskTypeNameCustomError" xml:space="preserve">
+    <value>कार्य प्रकार के क्षेत्र गुण '{0}' को [Name] पर {1} पर सेट नहीं कर सकते हैं.</value>
+  </data>
+  <data name="TaskTypeStepNoCustomError" xml:space="preserve">
+    <value>कार्य प्रकार के क्षेत्र गुण '{0}' को [StepNo] पर {1} पर सेट नहीं कर सकते हैं.</value>
+  </data>
+  <data name="ThisAssetTypeNotSupportPath" xml:space="preserve">
+    <value>[Type.Path] चालू आस्ति प्रकार के लिए समर्थित नहीं है</value>
+  </data>
+  <data name="TypeObjectMissing" xml:space="preserve">
+    <value>[Type] वस्तु एक या अधिक क्षेत्र प्रकार परिभाषाओं से गायब है.</value>
+  </data>
+  <data name="WholeNumberError" xml:space="preserve">
+    <value>{0} एक पूर्ण संख्या होना चाहिए</value>
+  </data>
+</root>

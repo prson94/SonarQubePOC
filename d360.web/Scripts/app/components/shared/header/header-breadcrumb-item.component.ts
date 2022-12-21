@@ -26,40 +26,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
     host: {
         '(window:resize)': 'setMaxHeight()'
     },  
-    template: ` <div #hovertarget class="hover-container" (mouseenter)="in(treePanel,searchPanel,$event)" (mouseleave)="out(treePanel,searchPanel,$event)" >
-                    <a (click)="navigateToLink(breadcrumb.link)" 
-                            class="breadcrumb" 
-                            [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}"
-                            [ngStyle]="{'max-width.px': setLastBreadcrumbWidth()}">
-                            <span class="breadcrumb-text" [ngClass]="{'highlight' : breadcrumb.isType, 'breadcrumb-link' : hasLink(breadcrumb.link)}">{{breadcrumb.text}} </span>
-                            <span class="parent"  [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}" *ngIf="breadcrumb.parentTypeName"   
-                                  (click)="stopParentNav($event);navigateToLink(breadcrumb.parentUrl)">{{breadcrumb.parentTypeName}}</span>
-                            <div *ngIf="!isChangableItem()" class="gutter"></div>
-                            <i *ngIf="isChangableItem()" class="fa fa-caret-right crumb-arrow right"></i>
-                    </a>
-                    <div [ngClass]="'search-results'" #searchPanel>  
-                        <div class="breadcrumb-search">
-                            <span class="header-search-input"><input #standardInput type="text" [(ngModel)]="searchValue" i18n-placeholder placeholder="Search" (keyup)="search(searchValue)"> <span *ngIf="searchingTypeahed" class="spinner"></span><i *ngIf="!searchingTypeahed" class="fa fa-search"></i></span> 
-                            <div *ngFor="let result of results;" class="breadcrumb-search-results">
-                                <div class="breadcrumb-search-result" [ngClass]="{'current-crumb': breadcrumb.text === result.Name}" (click)="navigateToLink(result.Url,result)">{{result.Name}}</div>
-                            </div>
-                        </div>
-                    </div>                
-                    <div *ngIf="!isLastItem && showSeperator" class="sep breadcrumb"><i class="fa fa-angle-right"></i></div>                
-                    <div [ngClass]="'search-results'" #treePanel>  
-                        <div class="breadcrumb-search tree-breadcrumb-panel">    
-                            <span class="header-search-input"><input #treeInput type="text" [(ngModel)]="searchTreeValue" i18n-placeholder placeholder="Search"> <i class="fa fa-search"></i></span> 
-                            <p-tree [value]="treeItems | treeSearch: searchTreeValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}"
-                                (onNodeSelect)="nodeSelect($event,treePanel)">
-                                <ng-template let-node pTemplate type="default">
-                                    <span class="breadcrumb-search-result" [ngClass]="{'current-crumb': breadcrumb.text === node.label}" [ngStyle]="setTreeNodeStyles(node)">{{node.label}}  <i *ngIf="node.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></span>
-                                </ng-template>
-                            </p-tree>
-                        </div>
-                    </div>
-                </div>
-          `,
-
+    templateUrl: './header-breadcrumb-item.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -105,7 +72,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
         if (this.searchSub)  {this.searchSub.unsubscribe();}
     }
 
-    private setMaxHeight() {
+    setMaxHeight() {
         this.maxOverlayHeight = (window.innerHeight > 100) ? ((window.innerHeight - 120) + 'px') : '100px';
     }
 

@@ -1,0 +1,754 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="BadRequest" xml:space="preserve">
+    <value>खराब निवेदन</value>
+  </data>
+  <data name="EndpointGettingMeasureHistoryHeading" xml:space="preserve">
+    <value>माप इतिहास प्राप्त करने में त्रुटि</value>
+  </data>
+  <data name="EndpointNotAuthorizedHeading" xml:space="preserve">
+    <value>प्राधिकृत नहीं</value>
+  </data>
+  <data name="EndpointNotAuthorizedMessage" xml:space="preserve">
+    <value>आप इस क्रिया को करने के लिए प्राधिकृत नहीं हैं.</value>
+  </data>
+  <data name="EndpointRecalculatingMeasureScoreItemsHeading" xml:space="preserve">
+    <value>माप स्कोर मदों को पुनः गणना करने में त्रुटि</value>
+  </data>
+  <data name="ErrorAddingScoreResultsHeading" xml:space="preserve">
+    <value>अंक परिणाम जोड़ने में त्रुटि</value>
+  </data>
+  <data name="ErrorDeletingDefaultHelpItem" xml:space="preserve">
+    <value>डिफ़ॉल्ट मदद प्रविष्टि मिट नहीं सकता है</value>
+  </data>
+  <data name="ErrorInvalidDatasetMessage" xml:space="preserve">
+    <value>आपने एक अवैध या खाली डेटा सेट प्रस्तुत किया है. कृपया अपने अनुरोध की जाँच करें और फिर से भेजें।</value>
+  </data>
+  <data name="Forbidden" xml:space="preserve">
+    <value>निषेधित</value>
+  </data>
+  <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
+    <value>वर्तमान उपयोक्ता एक प्रशासक नहीं है.</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>AssetUid {0} अवैध है</value>
+  </data>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>पैरामीटर के लिए अवैध मान [_direction]. स्वीकार्य मान हैं 'desc' और 'asc'.</value>
+  </data>
+  <data name="InvalidIncludeTotal" xml:space="preserve">
+    <value>अवैध [_includeTotal] प्रदान किया गया</value>
+  </data>
+  <data name="InvalidHelpName" xml:space="preserve">
+    <value>नाम रिक्त नहीं हो सकता.</value>
+  </data>
+  <data name="InvalidHelpNameLength" xml:space="preserve">
+    <value>नाम 500 से अधिक अक्षर नहीं हो सकता है.</value>
+  </data>
+  <data name="InvalidHelpUrl" xml:space="preserve">
+    <value>यूआरल खाली नहीं हो सकता है.</value>
+  </data>
+  <data name="InvalidHelpUrlLength" xml:space="preserve">
+    <value>Url 2000 से अधिक अक्षर नहीं हो सकता है</value>
+  </data>
+  <data name="InvalidRequest" xml:space="preserve">
+    <value>अवैध निवेदन</value>
+  </data>
+  <data name="InvalidScoreType" xml:space="preserve">
+    <value>अमान्य [scoreType] प्रदान किया गया है, कृपया एक वैध स्कोर प्रकार प्रदान करें.</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>नहीं मिला</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>सफलता</value>
+  </data>
+  <data name="UnknownError" xml:space="preserve">
+    <value>अज्ञात त्रुटि</value>
+  </data>
+  <data name="InvalidFilterExpression" xml:space="preserve">
+    <value>अवैध फ़िल्टर एक्सप्रेशनः</value>
+  </data>
+  <data name="InvalidFilterExpressionUsed" xml:space="preserve">
+    <value>अवैध फ़िल्टर एक्सप्रेशन इस्तेमाल किया गया.</value>
+  </data>
+  <data name="InvalidFilterExpressionUsedMessage" xml:space="preserve">
+    <value>अवैध फ़िल्टर एक्सप्रेशन इस्तेमाल किया गया. कृपया अपने फ़िल्टर मूल्यों और उनके डेटा प्रकार की जाँच करें.</value>
+  </data>
+  <data name="AssetNotfound" xml:space="preserve">
+    <value>परिसंपत्ति नहीं मिली</value>
+  </data>
+  <data name="AssetTypeNotFoundForAsset" xml:space="preserve">
+    <value>इस आस्ति के लिए आस्ति प्रकार नहीं मिला</value>
+  </data>
+  <data name="AssetValidateWithAssetType" xml:space="preserve">
+    <value>आस्ति यूआईडी उपलब्ध आस्ति प्रकार से मेल नहीं खाता है.</value>
+  </data>
+  <data name="EmptyInvalidParameterSet" xml:space="preserve">
+    <value>आपने एक रिक्त या अवैध मापदण्ड पारित किया है.</value>
+  </data>
+  <data name="FilterNotFound" xml:space="preserve">
+    <value>फ़िल्टर नहीं मिला.</value>
+  </data>
+  <data name="FilterNotOwned" xml:space="preserve">
+    <value>फ़िल्टर उपयोक्ता के स्वामित्व में नहीं है.</value>
+  </data>
+  <data name="FilterRemove" xml:space="preserve">
+    <value>फ़िल्टर हटाया गया.</value>
+  </data>
+  <data name="InvalidGuid" xml:space="preserve">
+    <value>अवैध GUID {0}.</value>
+  </data>
+  <data name="InvalidNumberTooLarge" xml:space="preserve">
+    <value>अमान्य {0} मान प्रदान किया गया. संख्या बहुत बड़ी है.</value>
+  </data>
+  <data name="InvalidValueMessage" xml:space="preserve">
+    <value>अमान्य {0} मान प्रदान किया गया.</value>
+  </data>
+  <data name="MinLengthCheckGTZero" xml:space="preserve">
+    <value>अमान्य {0} मान प्रदान किया गया. मूल्य 0 से अधिक होना चाहिए.</value>
+  </data>
+  <data name="NumberValueMessage" xml:space="preserve">
+    <value>अमान्य {0} मान प्रदान किया गया. संख्यात्मक मान होना चाहिए.</value>
+  </data>
+  <data name="PageNumString" xml:space="preserve">
+    <value>पृष्ठनाम</value>
+  </data>
+  <data name="PageSizeString" xml:space="preserve">
+    <value>पृष्ठ आकार</value>
+  </data>
+  <data name="SaveFailedMessage" xml:space="preserve">
+    <value>सहेजना असफल</value>
+  </data>
+  <data name="UIDNotFoundObjectAndObjectType" xml:space="preserve">
+    <value>Asset, Asset Type, Tag, Workflow Type, RelationshipType or Responsibility Type UID के लिए नहीं मिला</value>
+  </data>
+  <data name="ApiEntryNotFound" xml:space="preserve">
+    <value>API अस्तित्व नहीं मिला</value>
+  </data>
+  <data name="ExecutionIDNotFound" xml:space="preserve">
+    <value>निष्पादन एकल पहचानकर्ता नहीं मिला.</value>
+  </data>
+  <data name="ExecutionIDStatus" xml:space="preserve">
+    <value>अब अनुरोध को प्रोसेस कर रहा है. कृपया स्थिति के लिए इस ExecutionID के साथ वापस जाँचें.</value>
+  </data>
+  <data name="FieldTypeNotFound" xml:space="preserve">
+    <value>क्षेत्र क़िस्म नहीं मिला</value>
+  </data>
+  <data name="RuleIDNotFound" xml:space="preserve">
+    <value>नियम आईडी नहीं मिला</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>आंतरिक सर्वर त्रुटि</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>अभिगम अस्वीकृत</value>
+  </data>
+  <data name="AssetNotFoundForAssetType" xml:space="preserve">
+    <value>आस्ति प्रकार के लिए कोई आस्ति नहीं मिली {0}</value>
+  </data>
+  <data name="AssetTypeNotSupportExport" xml:space="preserve">
+    <value>AssetType निर्यात टैम्प्लेट का समर्थन नहीं करता है.</value>
+  </data>
+  <data name="ChangeFieldNotAllowed" xml:space="preserve">
+    <value>इस प्रकार के क्षेत्रों को बदलने के लिए आपके पास अनुमतियाँ नहीं हैं.</value>
+  </data>
+  <data name="ComponentMaxSize250" xml:space="preserve">
+    <value>अवयव 250 अक्षरों से अधिक नहीं हो सकता है.</value>
+  </data>
+  <data name="ComponentNotValid" xml:space="preserve">
+    <value>अवयव वैध नहीं है.</value>
+  </data>
+  <data name="Conflict" xml:space="preserve">
+    <value>टकराव</value>
+  </data>
+  <data name="ConnectorStatusNotFound" xml:space="preserve">
+    <value>कनेटर स्थिति [externalId] {0} के साथ नहीं मिला.</value>
+  </data>
+  <data name="CounterInitialValueHigherCurrentValue" xml:space="preserve">
+    <value>आस्ति गणना से अधिक होना चाहिए ([CounterInitialIndex]){0}</value>
+  </data>
+  <data name="DataTypeValueNotMatched" xml:space="preserve">
+    <value>प्रदत्त मूल्य इस सेटिंग के लिए अपेक्षित डेटा प्रकार से मेल नहीं खाता</value>
+  </data>
+  <data name="DiagramAssetTypeSystemFieldValidation" xml:space="preserve">
+    <value>चित्र परिसंपत्ति प्रकार से क्षेत्र [Name], [GovernanceRole] और [StepNo] को मिटाया नहीं जा सकता है।</value>
+  </data>
+  <data name="DuplicateUserUidProvided" xml:space="preserve">
+    <value>समान उपयोक्ता यूआईडी कई बार दिखाई देती है.</value>
+  </data>
+  <data name="EndIPAddressNotValid" xml:space="preserve">
+    <value>अंत मान {0} एक वैध आईपी पता नहीं है</value>
+  </data>
+  <data name="ErrorConnectorStatus" xml:space="preserve">
+    <value>कनेक्टर अंतबिंदु की स्थिति जोड़ने के दौरान त्रुटि</value>
+  </data>
+  <data name="ErrorCreateTemplate" xml:space="preserve">
+    <value>टेम्प्लेट बनाने में त्रुटि</value>
+  </data>
+  <data name="ErrorFileOpen" xml:space="preserve">
+    <value>फ़ाइल खोलने के दौरान त्रुटि.</value>
+  </data>
+  <data name="ErrorFilterExpressionParse" xml:space="preserve">
+    <value>फ़िल्टर एक्सप्रेशन पदवर्णन त्रुटि</value>
+  </data>
+  <data name="ErrorScoreCasting" xml:space="preserve">
+    <value>एक वैध स्कोर प्रकार में स्कोर प्रकार मान {0} डाल नहीं सका</value>
+  </data>
+  <data name="ErrorUpdateTemplate" xml:space="preserve">
+    <value>टेम्प्लेट अद्यतन करने में त्रुटि</value>
+  </data>
+  <data name="ExecutionCancel" xml:space="preserve">
+    <value>UID {0} के साथ निष्पादन सफलतापूर्वक रद्द कर दिया गया है.</value>
+  </data>
+  <data name="ExecutionCancelByUser" xml:space="preserve">
+    <value>उपयोगकर्ता द्वारा निष्पादन कार्य रद्द कर दिया गया.</value>
+  </data>
+  <data name="ExecutionUIDCancelled" xml:space="preserve">
+    <value>UID {0} के साथ निष्पादन पहले से ही रद्द कर दिया गया है.</value>
+  </data>
+  <data name="ExecutionUIDFinishedCanNotCancel" xml:space="preserve">
+    <value>UID {0} के साथ निष्पादन समाप्त हो गया है और रद्द नहीं किया जा सकता है.</value>
+  </data>
+  <data name="ExecutionUIDNotBatchJobCanNotCancel" xml:space="preserve">
+    <value>UID {0} के साथ निष्पादन एक बैच कार्य नहीं है और रद्द नहीं किया जा सकता है.</value>
+  </data>
+  <data name="ExecutionUIDNotExist" xml:space="preserve">
+    <value>UID {0} के साथ निष्पादन मौजूद नहीं है.</value>
+  </data>
+  <data name="ExecutionUIDNotFound" xml:space="preserve">
+    <value>निष्पादन एकल पहचानकर्ता नहीं मिला.</value>
+  </data>
+  <data name="ExecutionUIDStartedCanNotCancel" xml:space="preserve">
+    <value>UID {0} के साथ निष्पादन प्रारंभ हो गया है और रद्द नहीं किया जा सकता है.</value>
+  </data>
+  <data name="ExecutionWrongWhenCancel" xml:space="preserve">
+    <value>निष्पादन को रद्द करते समय कुछ गलत हो गया.</value>
+  </data>
+  <data name="ExistItemInSystem" xml:space="preserve">
+    <value>तंत्र में मौजूदा वस्तुएँ</value>
+  </data>
+  <data name="ExportViewMessage" xml:space="preserve">
+    <value>एक वैध [ExportViewType] आवश्यक है.</value>
+  </data>
+  <data name="FieldMovedSuccessfully" xml:space="preserve">
+    <value>क्षेत्र सफलतापूर्वक खिसका.</value>
+  </data>
+  <data name="FieldTypeError" xml:space="preserve">
+    <value>क्षेत्र क़िस्म त्रुटि</value>
+  </data>
+  <data name="FieldUseInResponsibilityRule" xml:space="preserve">
+    <value>यह क्षेत्र प्रकार उत्तरदायित्व नियम में प्रयोग में है और नियम पहले मिटाया जाना चाहिए.</value>
+  </data>
+  <data name="FieldValidateWithAssetType" xml:space="preserve">
+    <value>क्षेत्र '{0}' निर्दिष्ट परिसंपत्ति प्रकार के लिए वैध नहीं है.</value>
+  </data>
+  <data name="FileUploadMessage" xml:space="preserve">
+    <value>फ़ाइल सफलतापूर्वक अपलोड किया गया</value>
+  </data>
+  <data name="GroupUidNotExists" xml:space="preserve">
+    <value>प्रदत्त समूह यूआईडी वैध समूह यूआईडी नहीं है. समूह मौजूद नहीं है.</value>
+  </data>
+  <data name="InvalidAssetTypeID" xml:space="preserve">
+    <value>अवैध परिसंपत्ति प्रकार आईडी. वैध परिसंपत्ति प्रकार आईडी प्रस्तुत करें.</value>
+  </data>
+  <data name="InvalidBoolean" xml:space="preserve">
+    <value>प्रदत्त मूल्य एक वैध बूलियन नहीं है</value>
+  </data>
+  <data name="InvalidExternalID" xml:space="preserve">
+    <value>[externalId] {0} वैध यूआईडी नहीं है</value>
+  </data>
+  <data name="InvalidNumber" xml:space="preserve">
+    <value>प्रदत्त मूल्य एक वैध संख्या नहीं है</value>
+  </data>
+  <data name="InvalidParameter" xml:space="preserve">
+    <value>अवैध पैरामीटर</value>
+  </data>
+  <data name="InvalidResourceuid" xml:space="preserve">
+    <value>अवैध [_resourceuid] प्रदान किया गया!</value>
+  </data>
+  <data name="InvalidUserUids" xml:space="preserve">
+    <value>एक या अधिक उपयोक्ता यूआईडी पास एक उपयोक्ता नहीं हैं.</value>
+  </data>
+  <data name="Invalid_Order" xml:space="preserve">
+    <value>अवैध [_order] प्रदान किया गया!</value>
+  </data>
+  <data name="ItemExistsNotReplaceMessage" xml:space="preserve">
+    <value>आपके परिवेश में मौजूद वस्तुएं हैं. जब तक इन मदों को हटाया नहीं जाता, आप 'बदलें' क्रिया नहीं कर सकते.</value>
+  </data>
+  <data name="JSONValidMessage" xml:space="preserve">
+    <value>आपने इस अनुरोध के लिए वैध JSON संरचना प्रदान नहीं की है.</value>
+  </data>
+  <data name="MissingIPAddressValue" xml:space="preserve">
+    <value>एक या अधिक आईपी पता में मूल्य नहीं है</value>
+  </data>
+  <data name="ModelExportTemplateStyleNotFound" xml:space="preserve">
+    <value>मॉडल में एक वैध मौजूदा निर्यात टेम्पलेट शैली नहीं है.</value>
+  </data>
+  <data name="NotValidAssetActionRelationTypeProvided" xml:space="preserve">
+    <value>कोई [assetTypeUid] या [actionTypeUid] या [relationshipTypeUid] उपलब्ध नहीं</value>
+  </data>
+  <data name="NoUserUIDProvided" xml:space="preserve">
+    <value>कोई उपयोक्ता यूआईडी नहीं दी गई.</value>
+  </data>
+  <data name="RemoveFieldNotAllowed" xml:space="preserve">
+    <value>इस प्रकार के क्षेत्रों को हटाने के लिए आपके पास अनुमतियाँ नहीं हैं.</value>
+  </data>
+  <data name="SettingIDNotFound" xml:space="preserve">
+    <value>इस आईडी के साथ सेटिंग नहीं मिला</value>
+  </data>
+  <data name="SettingIDNotValid" xml:space="preserve">
+    <value>मान [_settingId] के लिए पारित वैध नहीं है</value>
+  </data>
+  <data name="SettingLocked" xml:space="preserve">
+    <value>यह सेटिंग बंद है और अद्यतन नहीं किया जा सकता है</value>
+  </data>
+  <data name="SettingValueProvided" xml:space="preserve">
+    <value>सेटिंग के डेटा प्रकार के आधार पर ठीक एक मान प्रदान किया जाना चाहिए</value>
+  </data>
+  <data name="StartIPAddressNotValid" xml:space="preserve">
+    <value>प्रारंभ मान {0} एक वैध आईपी पता नहीं है</value>
+  </data>
+  <data name="StatusInvalid" xml:space="preserve">
+    <value>[Status] के लिए अवैध मान. अनुमति प्राप्त मान हैंः START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION</value>
+  </data>
+  <data name="StatusRequied" xml:space="preserve">
+    <value>स्थिति पैरामीटर मान आवश्यक है.</value>
+  </data>
+  <data name="StyleUpdated" xml:space="preserve">
+    <value>सील्स सफलतापूर्वक अद्यतन किया गया.</value>
+  </data>
+  <data name="SuccessfullyAdded" xml:space="preserve">
+    <value>{0} सफलतापूर्वक जोड़ा.</value>
+  </data>
+  <data name="SucessfullyUpdated" xml:space="preserve">
+    <value>{0} सफलतापूर्वक अद्यतन किया गया.</value>
+  </data>
+  <data name="TemplateCreatingError" xml:space="preserve">
+    <value>टेम्प्लेट बनाने में त्रुटि</value>
+  </data>
+  <data name="TemplateDeleted" xml:space="preserve">
+    <value>टेम्प्लेट मिटा दिया गया.</value>
+  </data>
+  <data name="TemplateDeletedError" xml:space="preserve">
+    <value>टेम्प्लेट मिटाने में त्रुटि</value>
+  </data>
+  <data name="TemplateDeletedMessage" xml:space="preserve">
+    <value>टैम्प्लेट सफलतापूर्वक मिटाया गया.</value>
+  </data>
+  <data name="TemplateFileTypeValidate" xml:space="preserve">
+    <value>टेम्पलेट फ़ाइल प्रकार .xls या .xlsx होना चाहिए.</value>
+  </data>
+  <data name="TemplateNameDuplicate" xml:space="preserve">
+    <value>'{0}' नाम का टेम्प्लेट पहले से ही '{1}' परिसंपत्ति प्रकार के लिए मौजूद है.</value>
+  </data>
+  <data name="TemplateNotFound" xml:space="preserve">
+    <value>टेम्पलेट नहीं मिला.</value>
+  </data>
+  <data name="TemplateNotFoundMessage" xml:space="preserve">
+    <value>उपदत्त यूआईडी के लिए कोई टेम्प्लेट नहीं मिला.</value>
+  </data>
+  <data name="TemplateNotFoundUpdate" xml:space="preserve">
+    <value>निर्यात टेम्प्लेट शैली अद्यतन करने के लिए नहीं मिला.</value>
+  </data>
+  <data name="UsedinResponsibilityRules" xml:space="preserve">
+    <value>उत्तरदायित्व नियमों में प्रयुक्त</value>
+  </data>
+  <data name="UserAlreadyMemberOfGroup" xml:space="preserve">
+    <value>उपयोक्ता {0} पहले से ही इस समूह का सदस्य है</value>
+  </data>
+  <data name="AlreadyWatch" xml:space="preserve">
+    <value>आप पहले से ही देख रहे हैं {0}</value>
+  </data>
+  <data name="CurrentWatch" xml:space="preserve">
+    <value>आप वर्तमान में '{0}' को इसके प्रमूल, '{1}' के माध्यम से देख रहे हैं.</value>
+  </data>
+  <data name="CurrentWatchNotUnwatchIndividually" xml:space="preserve">
+    <value>आप वर्तमान में इस मद का प्रमूल, '{0}' देख रहे हैं.  आप इस मद को व्यक्तिगत रूप से अनदेखा नहीं कर सकते हैं.</value>
+  </data>
+  <data name="ImageSize2048" xml:space="preserve">
+    <value>अवैध निवेदन, छवि के लिए अवैध आकार निर्दिष्ट. मूल्य 2048 से कम या 0 से अधिक होना चाहिए</value>
+  </data>
+  <data name="InvalidApiKeyOrApiSecret" xml:space="preserve">
+    <value>चालू उपयोक्ता के लिए अवैध [apiKey] या [apiSecret]</value>
+  </data>
+  <data name="InvalidUser" xml:space="preserve">
+    <value>अवैध उपयोक्ता जानकारी</value>
+  </data>
+  <data name="IsChangePwdReqAuthOtherThanForm" xml:space="preserve">
+    <value>[IsChangePasswordReqeust] सही पर सेट करें, प्रारूपों से भिन्न प्रमाणीकरण प्रकार के लिए अनुमति नहीं है</value>
+  </data>
+  <data name="IsChangePwdReqCurrentUser" xml:space="preserve">
+    <value>[IsChangePasswordReqeust] सिर्फ मौजूदा उपयोक्ता के लिए सही पर सेट करें</value>
+  </data>
+  <data name="IsChangePwdReqOneReq" xml:space="preserve">
+    <value>केवल एक अनुरोध स्वीकार किया गया [IsChangePasswordReqeust] सत्य पर सेट करने के लिए.</value>
+  </data>
+  <data name="NameMissingInGroupPayload" xml:space="preserve">
+    <value>पैलोड में एक या अधिक समूहों में नाम नहीं है. नाम दिया जाना चाहिए।</value>
+  </data>
+  <data name="NoGroupRequest" xml:space="preserve">
+    <value>अनुरोध में कोई समूह नहीं दिया गया</value>
+  </data>
+  <data name="NotCurrentWatch" xml:space="preserve">
+    <value>आप अभी '{0}' नहीं देख रहे हैं.</value>
+  </data>
+  <data name="NoUserRequest" xml:space="preserve">
+    <value>कोई उपयोगकर्ता अनुरोध में प्रदान नहीं किया गया.</value>
+  </data>
+  <data name="OneMoreUidExists" xml:space="preserve">
+    <value>एक या अधिक निर्दिष्ट यूआईडी पहले से ही मौजूद है.</value>
+  </data>
+  <data name="PrimayOwnerOfGroupNotDelete" xml:space="preserve">
+    <value>समूह का प्राथमिक मालिक मिटाया नहीं जा सकता है.</value>
+  </data>
+  <data name="RequiredFieldError" xml:space="preserve">
+    <value>{0} एक आवश्यक क्षेत्र है।</value>
+  </data>
+  <data name="ResourceGroupNotExists" xml:space="preserve">
+    <value>संसाधन/समूह मौजूद नहीं है</value>
+  </data>
+  <data name="Userremoved" xml:space="preserve">
+    <value>उपयोक्ता हटाया गया.</value>
+  </data>
+  <data name="UserremovedMessage" xml:space="preserve">
+    <value>उपयोक्ता को समूह से हटाया गया.</value>
+  </data>
+  <data name="YouAreWatching" xml:space="preserve">
+    <value>आप {0} देख रहे हैं {1}.</value>
+  </data>
+  <data name="FieldNotAllowedForAssetType" xml:space="preserve">
+    <value>आपको इस आस्ति क़िस्म के लिए क्षेत्र पुनः प्राप्त करने की अनुमति नहीं है.</value>
+  </data>
+  <data name="UnknownErrorInvestigatingMessage" xml:space="preserve">
+    <value>एक अज्ञात त्रुटि हुई और आगे की जांच के लिए लॉग किया गया है. कृपया बाद में अपना अनुरोध पुनः प्रयास करें।</value>
+  </data>
+  <data name="InvalidEndDate" xml:space="preserve">
+    <value>अवैध [_endDate] प्रदान किया गया</value>
+  </data>
+  <data name="InvalidStartDate" xml:space="preserve">
+    <value>अवैध [_startDate] प्रदान किया गया</value>
+  </data>
+  <data name="StartEndDateValidation" xml:space="preserve">
+    <value>प्रारंभ तिथि समाप्ति तिथि से पहले होनी चाहिए</value>
+  </data>
+  <data name="FilterExpressionParseError" xml:space="preserve">
+    <value>फ़िल्टर एक्सप्रेशन पदवर्णन त्रुटि</value>
+  </data>
+  <data name="Invalid_PageNum" xml:space="preserve">
+    <value>अनुरोध में पारित अवैध [_pageNum] पैरामीटर</value>
+  </data>
+  <data name="Invalid_PageSize" xml:space="preserve">
+    <value>अनुरोध में पारित अवैध [_pageSize] पैरामीटर</value>
+  </data>
+  <data name="_PageSizeLimit" xml:space="preserve">
+    <value>अनुरोध मूल्य में पारित अवैध [_pageSize] पैरामीटर अधिकतम समर्थित मूल्य 100,000 से अधिक है.</value>
+  </data>
+  <data name="_PageSizePassedZeroLess" xml:space="preserve">
+    <value>अनुरोध मूल्य में पारित अवैध [_pageSize] पैरामीटर शून्य से कम या बराबर है.</value>
+  </data>
+  <data name="EndpointMethod" xml:space="preserve">
+    <value>अंतबिंदु विधि</value>
+  </data>
+  <data name="Invalid" xml:space="preserve">
+    <value>अवैध</value>
+  </data>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} वैध यूआईडी नहीं है!</value>
+  </data>
+  <data name="UidConstant" xml:space="preserve">
+    <value>यूआईडी</value>
+  </data>
+  <data name="InvalidOrderRequese" xml:space="preserve">
+    <value>अनुरोध में अमान्य क्रम पारित किया गया</value>
+  </data>
+  <data name="InvalidType" xml:space="preserve">
+    <value>अवैध प्रकार</value>
+  </data>
+  <data name="FailedAuthentication" xml:space="preserve">
+    <value>सत्यापित करने में विफल. Oidc राज्य में नहीं मिला है।</value>
+  </data>
+  <data name="FailedAuthenticationNonces" xml:space="preserve">
+    <value>सत्यापित करने में विफल. न्यून्स मेल नहीं खाते.</value>
+  </data>
+  <data name="InvalidSortField" xml:space="preserve">
+    <value>अवैध छँटाई क्षेत्र निर्दिष्ट किया गया</value>
+  </data>
+  <data name="InvalidSortOrder" xml:space="preserve">
+    <value>अवैध छँटाई क्रम निर्दिष्ट</value>
+  </data>
+  <data name="MissingConfigInfo" xml:space="preserve">
+    <value>गवर्न में OpenID IdP से संबंधित कॉन्फ़िगरेशन जानकारी नहीं है, जैसे क्लाइंट आईडी और/या प्राधिकरण.</value>
+  </data>
+  <data name="LookupFieldTypeInUse" xml:space="preserve">
+    <value>आपके परिवेश में '{0}' क्षेत्र में मूल्यों के साथ मौजूद आस्तियां हैं. आप [Type.Lookup.List] गुण को तब तक नहीं बदल सकते जब तक कि उन क्षेत्र मानों को हटाया नहीं जाता है.</value>
+  </data>
+  <data name="InvalidIntersecttypeid" xml:space="preserve">
+    <value>अवैध प्रतिच्छेदन प्रकार आईडी</value>
+  </data>
+  <data name="InvalidModel" xml:space="preserve">
+    <value>अवैध मॉडल</value>
+  </data>
+  <data name="TargetAssetType" xml:space="preserve">
+    <value>लक्ष्य आस्ति प्रकार</value>
+  </data>
+  <data name="AssetCorssRefAlreadyExists" xml:space="preserve">
+    <value>परिसंपत्ति क्रॉस रेफरेंस पहले से ही मौजूद है।</value>
+  </data>
+  <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
+    <value>आस्ति क्रॉस संदर्भ मॉडल में अपेक्षित क्षेत्र नहीं हैं।</value>
+  </data>
+  <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
+    <value>अवैध [_includeChildAssets] प्रदान किया गया</value>
+  </data>
+  <data name="ModelNotContainFields" xml:space="preserve">
+    <value>मॉडल में आवश्यक क्षेत्र नहीं हैं</value>
+  </data>
+  <data name="RequestMissingDatasource" xml:space="preserve">
+    <value>निवेदन में आवश्यक पैरामीटर डाटास्रोत नहीं है.</value>
+  </data>
+  <data name="RequestMissingDatasourceType" xml:space="preserve">
+    <value>अनुरोध में अपेक्षित पैरामीटर डाटा स्रोत और प्रकार नहीं है.</value>
+  </data>
+  <data name="RequestMissingType" xml:space="preserve">
+    <value>निवेदन में आवश्यक पैरामीटर क़िस्म नहीं है</value>
+  </data>
+  <data name="add" xml:space="preserve">
+    <value>जोड़ना</value>
+  </data>
+  <data name="confirm" xml:space="preserve">
+    <value>पुष्टि करना</value>
+  </data>
+  <data name="RebuildRequest" xml:space="preserve">
+    <value>पुनः निर्माण निवेदन प्राप्त और स्वीकार किया गया.</value>
+  </data>
+  <data name="CompanyInactive" xml:space="preserve">
+    <value>कंपनी निष्क्रिय</value>
+  </data>
+  <data name="InvalidEnumValueInJson" xml:space="preserve">
+    <value>JSON में अवैध इन्यूमेरेशन मान</value>
+  </data>
+  <data name="InvalidJson" xml:space="preserve">
+    <value>अवैध JSON संदेश</value>
+  </data>
+  <data name="FavoritesEmptyRoute" xml:space="preserve">
+    <value>पसंदीदा प्रकार पृष्ठ का एक खाली मार्ग नहीं हो सकता है.</value>
+  </data>
+  <data name="SucessfullyCreated" xml:space="preserve">
+    <value>{0} सफलतापूर्वक बनाया गया.</value>
+  </data>
+  <data name="SucessfullyRemoved" xml:space="preserve">
+    <value>{0} सफलतापूर्वक हटाया गया.</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>त्रुटि</value>
+  </data>
+  <data name="OwnershipType" xml:space="preserve">
+    <value>स्वामित्व प्रकार</value>
+  </data>
+  <data name="Predicate" xml:space="preserve">
+    <value>भविष्यवाणी</value>
+  </data>
+  <data name="SucessfullyDeleted" xml:space="preserve">
+    <value>{0} सफलतापूर्वक मिटाया गया.</value>
+  </data>
+  <data name="SucessfullyEdited" xml:space="preserve">
+    <value>{0} सफलतापूर्वक संपादित.</value>
+  </data>
+  <data name="HelpMenuSuccess" xml:space="preserve">
+    <value>मदद मेन्यू मद सफलतापूर्वक अद्यतन किया गया है.</value>
+  </data>
+  <data name="HelpMenuItemsUpdated" xml:space="preserve">
+    <value>मदद मेन्यू मद अद्यतन किया गया.</value>
+  </data>
+  <data name="HelpMenuVisibilityError" xml:space="preserve">
+    <value>वस्तु दृश्यता को 1, 2 या 3 पर सेट किया जाना चाहिए.</value>
+  </data>
+  <data name="ExecutionStatusInvalid" xml:space="preserve">
+    <value>स्थिति के लिए अवैध मान. वैध मान लंबित, चल रहा है और पूर्ण है.</value>
+  </data>
+  <data name="HelpItemsAdded" xml:space="preserve">
+    <value>मदद मेन्यू मद सफलतापूर्वक बनाया गया है.</value>
+  </data>
+  <data name="HelpItemsDeleted" xml:space="preserve">
+    <value>मदद मेन्यू मद सफलतापूर्वक हटाया गया है.</value>
+  </data>
+  <data name="HelpMenuItemsCreated" xml:space="preserve">
+    <value>मदद मेन्यू मद बनाए गए.</value>
+  </data>
+  <data name="HelpMenuItemsDeleted" xml:space="preserve">
+    <value>मदद मेन्यू वस्तुएँ मिटा दी गई हैं.</value>
+  </data>
+  <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
+    <value>[ApplicationId] लंबाई 200 अक्षरों से अधिक नहीं हो सकता है</value>
+  </data>
+  <data name="FavoritesSuccessfullyDeleted" xml:space="preserve">
+    <value>निर्दिष्ट पसंद को सफलतापूर्वक मिटाया गया</value>
+  </data>
+  <data name="FavoritesListCleared" xml:space="preserve">
+    <value>पसंदीदा सूची मिटा दी गई है.</value>
+  </data>
+  <data name="InvalidHelpDeleteUid" xml:space="preserve">
+    <value>कोई वैध यूआईडी नहीं दी गई जिसे मिटाया जाना है.</value>
+  </data>
+  <data name="InvalidHelpUpdateUid" xml:space="preserve">
+    <value>अद्यतन किए जाने के लिए कोई वैध यूआईडी उपलब्ध नहीं है.</value>
+  </data>
+  <data name="HelpMenuOrderError" xml:space="preserve">
+    <value>आदेश नकारात्मक संख्या नहीं हो सकता है।</value>
+  </data>
+  <data name="InvalidLoadUid" xml:space="preserve">
+    <value>अमान्य [LoadUid] प्रदान किया गया.</value>
+  </data>
+  <data name="ArtifactNotFound" xml:space="preserve">
+    <value>कलाकृति नहीं मिली.</value>
+  </data>
+  <data name="OpenIdCodeOrStateIsNotPresent" xml:space="preserve">
+    <value>OpenID प्रदाता प्रतिक्रिया में कूट और/या स्थिति नहीं है. आपका प्रबंधक आपके पहचान प्रदाता सेटिंग को गलत कॉन्फ़िगर कर सकता है.</value>
+  </data>
+  <data name="InvalidParameterMessage" xml:space="preserve">
+    <value>'{0}' {1} के लिए अवैध मान है</value>
+  </data>
+  <data name="FavoriteUnknownObject" xml:space="preserve">
+    <value>मार्ग {Route} अज्ञात वस्तु को बिंदु देता है</value>
+  </data>
+  <data name="FavoriteUnknownRoute" xml:space="preserve">
+    <value>मार्ग {Route} अज्ञात है या उपेक्षित है</value>
+  </data>
+  <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
+    <value>[assetTypeUid] के साथ कोई आस्ति प्रकार नहीं मिला.</value>
+  </data>
+  <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
+    <value>intersectTypeUid प्रदान के साथ कोई प्रतिच्छेदन प्रकार नहीं मिला.</value>
+  </data>
+  <data name="InvalidProfileIdentifier" xml:space="preserve">
+    <value>अवैध प्रोफ़ाइल पहचानकर्ता.</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>प्रकार</value>
+  </data>
+  <data name="YouAreNoLongerWatching" xml:space="preserve">
+    <value>आप अब {0} नहीं देख रहे हैं.</value>
+  </data>
+  <data name="YouAreNowWatching" xml:space="preserve">
+    <value>आप अब देख रहे हैं {0}.</value>
+  </data>
+  <data name="InvalidLanguageCode" xml:space="preserve">
+    <value>अवैध [LanguageCode]. समर्थित मान हैं {0}.</value>
+  </data>
+</root>

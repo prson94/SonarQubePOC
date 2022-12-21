@@ -1,0 +1,472 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ActionMessage_Desc" xml:space="preserve">
+    <value>アクションページでユーザに表示するメッセージです。</value>
+  </data>
+  <data name="ActionMessage_Name" xml:space="preserve">
+    <value>アクションメッセージ</value>
+  </data>
+  <data name="AllowedOrigins_Desc" xml:space="preserve">
+    <value>コンマで区切られた CORS 原産地の許可リスト。</value>
+  </data>
+  <data name="AllowedOrigins_Name" xml:space="preserve">
+    <value>許可された起源</value>
+  </data>
+  <data name="ApiTimeout_Desc" xml:space="preserve">
+    <value>この設定は、値に基づいてすべての v2 API GET コールのタイムアウトを秒単位で変更します。</value>
+  </data>
+  <data name="ApiTimeout_Name" xml:space="preserve">
+    <value>APIタイムアウト</value>
+  </data>
+  <data name="AssetDataProfileLifespan_Desc" xml:space="preserve">
+    <value>Asset Data Profile データが保存される日数。</value>
+  </data>
+  <data name="AssetDataProfileLifespan_Name" xml:space="preserve">
+    <value>資産データ プロフィール 寿命</value>
+  </data>
+  <data name="AssetDefinitionColumnWidth_Desc" xml:space="preserve">
+    <value>アセット定義パネルにフィールドをレイアウトするために使用される列の幅(ピクセル単位)。</value>
+  </data>
+  <data name="AssetDefinitionColumnWidth_Name" xml:space="preserve">
+    <value>アセット定義 列の幅</value>
+  </data>
+  <data name="AzureADTenant_Desc" xml:space="preserve">
+    <value>Azure Activeディレクトリテナントの名前。</value>
+  </data>
+  <data name="AzureADTenant_Name" xml:space="preserve">
+    <value>Azure ADテナント名</value>
+  </data>
+  <data name="AzureApplicationId_Desc" xml:space="preserve">
+    <value>Azure AD ポータルから Data3Sixty ウェブサイトのアプリケーション ID</value>
+  </data>
+  <data name="AzureApplicationId_Name" xml:space="preserve">
+    <value>Azure AD アプリケーション ID</value>
+  </data>
+  <data name="AzureGraphAPIKey_Desc" xml:space="preserve">
+    <value>Azure Active ディレクトリ グラフ API のキー。</value>
+  </data>
+  <data name="AzureGraphAPIKey_Name" xml:space="preserve">
+    <value>Azure Graph API キー</value>
+  </data>
+  <data name="BrowserTitlePrefix_Desc" xml:space="preserve">
+    <value>ブラウザタイトルバーに使用するプレフィックス。</value>
+  </data>
+  <data name="BrowserTitlePrefix_Name" xml:space="preserve">
+    <value>ブラウザー タイトル プレフィックス</value>
+  </data>
+  <data name="CompanyIcon_Desc" xml:space="preserve">
+    <value>会社のアイコンをアップロードします。</value>
+  </data>
+  <data name="CompanyIcon_Name" xml:space="preserve">
+    <value>会社アイコン</value>
+  </data>
+  <data name="CompanyLogo_Desc" xml:space="preserve">
+    <value>会社のロゴをアップロードします。</value>
+  </data>
+  <data name="CompanyLogo_Name" xml:space="preserve">
+    <value>会社ロゴ</value>
+  </data>
+  <data name="CustomCSSLocation_Desc" xml:space="preserve">
+    <value>カスタムスタイルシートの場所。</value>
+  </data>
+  <data name="CustomCSSLocation_Name" xml:space="preserve">
+    <value>カスタムスタイルシートの場所</value>
+  </data>
+  <data name="DefaultRoute_Desc" xml:space="preserve">
+    <value>Data3Sixtyにログインすると、デフォルトのページが表示されます。</value>
+  </data>
+  <data name="DefaultRoute_Name" xml:space="preserve">
+    <value>デフォルトルート</value>
+  </data>
+  <data name="DefaultSearchTypes_Desc" xml:space="preserve">
+    <value>この設定は、検索機能のために使用するデフォルトのタイプを制御します。</value>
+  </data>
+  <data name="DefaultSearchTypes_Name" xml:space="preserve">
+    <value>検索に使用するデフォルトのタイプ</value>
+  </data>
+  <data name="DiagramMaxAvoidNodesLinkCount_Desc" xml:space="preserve">
+    <value>「AvoidNodes」レンダリング設定を使用するライン図上のリンクの最大数。より高い場合、リンクは2つのノードの間の角のない直線としてレンダリングされます。これにより、より多くのデータを持つダイアグラムのレンダリングパフォーマンスが向上します。</value>
+  </data>
+  <data name="DiagramMaxAvoidNodesLinkCount_Name" xml:space="preserve">
+    <value>'AvoidNodes'レンダリングテンプレートのダイアグラムリンクの最大数</value>
+  </data>
+  <data name="DisableCommunityPosting_Desc" xml:space="preserve">
+    <value>これにより、システム全体のコミュニティボードにコメントと回答を投稿することはできません。ユーザーはコミュニティボードとシステムレベルのコメントを引き続き参照できます。</value>
+  </data>
+  <data name="DisableCommunityPosting_Name" xml:space="preserve">
+    <value>コミュニティの投稿を無効にする</value>
+  </data>
+  <data name="DisableIssueManagement_Desc" xml:space="preserve">
+    <value>これにより、UI から take action ボタンとモニターページを非表示にすることができます。</value>
+  </data>
+  <data name="DisableIssueManagement_Name" xml:space="preserve">
+    <value>アクションを無効にする</value>
+  </data>
+  <data name="EmailDomainWhitelist_Desc" xml:space="preserve">
+    <value>この設定には、許可されたドメインのカンマ区切りリストが含まれます。存在する場合、指定されたドメインからの電子メールを持つユーザのみがGovernにログインできます。</value>
+  </data>
+  <data name="EmailDomainWhitelist_Name" xml:space="preserve">
+    <value>許可されたメールドメイン</value>
+  </data>
+  <data name="EnableJsonAttribute_Desc" xml:space="preserve">
+    <value>JSON 属性 フィールド タイプのサポートを有効にします。この機能を有効にすると、 govern 環境内のすべての JSON フィールドのすべてのプロパティが格納されます。また、このフィールドタイプを有効にします。デフォルトはfalse。この値を変更するには、json プロパティを解析するために影響を受けるデータを再ロードする必要があります。</value>
+  </data>
+  <data name="EnableJsonAttribute_Name" xml:space="preserve">
+    <value>Json 属性を有効にする</value>
+  </data>
+  <data name="EnableSagacity_Desc" xml:space="preserve">
+    <value>DQ+ダッシュボードの使用を可能にします</value>
+  </data>
+  <data name="EnableSagacity_Name" xml:space="preserve">
+    <value>DQ+ダッシュボードを有効にする</value>
+  </data>
+  <data name="EnableShoppingCart_Desc" xml:space="preserve">
+    <value>ショッピングカート機能の使用を可能にします。</value>
+  </data>
+  <data name="EnableShoppingCart_Name" xml:space="preserve">
+    <value>ショッピングカートを有効にする</value>
+  </data>
+  <data name="FramingDomains_Desc" xml:space="preserve">
+    <value>許可されたドメインのカンマ区切りリストを指定します</value>
+  </data>
+  <data name="FramingDomains_Name" xml:space="preserve">
+    <value>フレーム</value>
+  </data>
+  <data name="GovernanceRoleReferenceListUid_Desc" xml:space="preserve">
+    <value>図形デザイナーが依存するガバナンスロールを含む参照リストの Uid 。</value>
+  </data>
+  <data name="GovernanceRoleReferenceListUid_Name" xml:space="preserve">
+    <value>ガバナンス・ロール・リファレンス・リスト Uid</value>
+  </data>
+  <data name="HasRegisterLink_Desc" xml:space="preserve">
+    <value>ログインページに登録リンクがあります。</value>
+  </data>
+  <data name="HasRegisterLink_Name" xml:space="preserve">
+    <value>ログイン登録リンク</value>
+  </data>
+  <data name="HideData3SixtyUsers_Desc" xml:space="preserve">
+    <value>これにより、Data3Sixty ユーザを環境から非表示にするため、これらのアカウントを編集可能にすることはできません。</value>
+  </data>
+  <data name="HideData3SixtyUsers_Name" xml:space="preserve">
+    <value>Data3Sixtyユーザを非表示にする</value>
+  </data>
+  <data name="HideHeaderBarControls_Desc" xml:space="preserve">
+    <value>この設定は、ヘッダーバーの右側にあるコントロールを非表示にします。</value>
+  </data>
+  <data name="HideHeaderBarControls_Name" xml:space="preserve">
+    <value>ヘッダーバーコントロールを非表示にする</value>
+  </data>
+  <data name="HomePageBackgroundImage_Desc" xml:space="preserve">
+    <value>この設定を設定すると、ホームページにカスタム画像が表示されます。</value>
+  </data>
+  <data name="HomePageBackgroundImage_Name" xml:space="preserve">
+    <value>ホームページ 背景画像</value>
+  </data>
+  <data name="HomePageTitleColor_Desc" xml:space="preserve">
+    <value>この設定は、ホームページタイトルの色を設定するために使用されます。</value>
+  </data>
+  <data name="HomePageTitleColor_Name" xml:space="preserve">
+    <value>ホームページ タイトルカラー</value>
+  </data>
+  <data name="HomePageTitleSize_Desc" xml:space="preserve">
+    <value>この設定は、ホームページタイトルのサイズを設定するために使用されます。</value>
+  </data>
+  <data name="HomePageTitleSize_Name" xml:space="preserve">
+    <value>ホームページ タイトルサイズ</value>
+  </data>
+  <data name="IpRestriction_Desc" xml:space="preserve">
+    <value>この環境へのアクセスを IP 範囲で制限することもできます。</value>
+  </data>
+  <data name="IpRestriction_Name" xml:space="preserve">
+    <value>IP範囲制限</value>
+  </data>
+  <data name="JwtAuthority_Desc" xml:space="preserve">
+    <value>JWTトークンの権限 Uri。</value>
+  </data>
+  <data name="JwtAuthority_Name" xml:space="preserve">
+    <value>JWTの権限 Uri</value>
+  </data>
+  <data name="MaxDropdownItems_Desc" xml:space="preserve">
+    <value>これは、タイプアヘッドに切り替える前にドロップダウンで表示する項目の最大数です。</value>
+  </data>
+  <data name="MaxDropdownItems_Name" xml:space="preserve">
+    <value>最大ドロップダウン項目</value>
+  </data>
+  <data name="MaxExcelExportRows_Desc" xml:space="preserve">
+    <value>これはExcelスプレッドシートにエクスポートできる項目の最大数です。</value>
+  </data>
+  <data name="MaxExcelExportRows_Name" xml:space="preserve">
+    <value>最大エクスポート行</value>
+  </data>
+  <data name="PowerBIClientId_Desc" xml:space="preserve">
+    <value>クライアント powerbi が埋め込まれたクライアント ID 。</value>
+  </data>
+  <data name="PowerBIClientId_Name" xml:space="preserve">
+    <value>Power BI 組込みクライアント ID</value>
+  </data>
+  <data name="PowerBIGroupId_Desc" xml:space="preserve">
+    <value>このクライアントワークスペースの Id は power bi に設定されています。</value>
+  </data>
+  <data name="PowerBIGroupId_Name" xml:space="preserve">
+    <value>Power BI 組込みワークスペース/グループID</value>
+  </data>
+  <data name="RequestCertificationDraft_Desc" xml:space="preserve">
+    <value>この設定は、リクエスト認証ボタンが govern で利用可能であるか、ドラフトのステータスが何であるかを制御するために使用されます。</value>
+  </data>
+  <data name="RequestCertificationDraft_Name" xml:space="preserve">
+    <value>リクエスト認証ボタンが利用可能かどうかを決定するステータス値</value>
+  </data>
+  <data name="SessionTimeout_Desc" xml:space="preserve">
+    <value>ユーザのセッションが終了する前の分数。</value>
+  </data>
+  <data name="SessionTimeout_Name" xml:space="preserve">
+    <value>セッションタイムアウト(分)</value>
+  </data>
+  <data name="ShowAllUsersAPIKey_Desc" xml:space="preserve">
+    <value>この設定は、ユーザーAPIキーをUIに表示/非表示に使用します。</value>
+  </data>
+  <data name="ShowAllUsersAPIKey_Name" xml:space="preserve">
+    <value>ユーザー API キーを表示</value>
+  </data>
+  <data name="ShowChangeLogTab_Desc" xml:space="preserve">
+    <value>偽に設定すると、[変更ログ]タブがUIに隠されます。</value>
+  </data>
+  <data name="ShowChangeLogTab_Name" xml:space="preserve">
+    <value>ログタブの変更を表示する</value>
+  </data>
+  <data name="ShowCommentsTab_Desc" xml:space="preserve">
+    <value>falseに設定すると、コメントタブはUIに隠されます。</value>
+  </data>
+  <data name="ShowCommentsTab_Name" xml:space="preserve">
+    <value>[コメント] タブを表示</value>
+  </data>
+  <data name="ShowCustomAPIAdmin_Desc" xml:space="preserve">
+    <value>この設定は、カスタムAPI管理ページが表示されるか表示されないかを制御します。</value>
+  </data>
+  <data name="ShowCustomAPIAdmin_Name" xml:space="preserve">
+    <value>カスタムAPI管理者ページの表示</value>
+  </data>
+  <data name="ShowFavorites_Desc" xml:space="preserve">
+    <value>この設定は、お気に入りの機能を無効にするために使用されます。</value>
+  </data>
+  <data name="ShowFavorites_Name" xml:space="preserve">
+    <value>お気に入りを表示</value>
+  </data>
+  <data name="ShowFollowersSidebar_Desc" xml:space="preserve">
+    <value>この設定は、フォロワーサイドバーを無効にするために使用されます。</value>
+  </data>
+  <data name="ShowFollowersSidebar_Name" xml:space="preserve">
+    <value>フォロワーのサイドバーを表示</value>
+  </data>
+  <data name="ShowHomeActivityTile_Desc" xml:space="preserve">
+    <value>この設定は、ホームページのアクティビティタイルを表示/非表示に使用します。</value>
+  </data>
+  <data name="ShowHomeActivityTile_Name" xml:space="preserve">
+    <value>ホームアクティビティタイルを表示</value>
+  </data>
+  <data name="ShowHomeAssignmentTile_Desc" xml:space="preserve">
+    <value>この設定は、ホームページの割り当てタイルを表示/非表示に使用します。</value>
+  </data>
+  <data name="ShowHomeAssignmentTile_Name" xml:space="preserve">
+    <value>ホーム割り当てタイルを表示</value>
+  </data>
+  <data name="ShowHomeBoardTile_Desc" xml:space="preserve">
+    <value>この設定は、ホームページのボードタイルを表示/非表示に使用します。</value>
+  </data>
+  <data name="ShowHomeBoardTile_Name" xml:space="preserve">
+    <value>ホーム ボード タイル</value>
+  </data>
+  <data name="ShowHomePageTitle_Desc" xml:space="preserve">
+    <value>この設定は、ホームページのタイトルを表示/非表示に使用します。</value>
+  </data>
+  <data name="ShowHomePageTitle_Name" xml:space="preserve">
+    <value>ホームページのタイトルを表示</value>
+  </data>
+  <data name="ShowImpactSidebar_Desc" xml:space="preserve">
+    <value>この設定は、衝撃サイドバーを無効にするために使用されます。</value>
+  </data>
+  <data name="ShowImpactSidebar_Name" xml:space="preserve">
+    <value>インパクトサイドバーを表示</value>
+  </data>
+  <data name="ShowLineageSidebar_Desc" xml:space="preserve">
+    <value>この設定は、ラインサイドバーを無効にするために使用されます。</value>
+  </data>
+  <data name="ShowLineageSidebar_Name" xml:space="preserve">
+    <value>線形サイドバーを表示</value>
+  </data>
+  <data name="ShowNavigationChildren_Desc" xml:space="preserve">
+    <value>チャイルドナビゲーションメニュー項目を表示します。</value>
+  </data>
+  <data name="ShowNavigationChildren_Name" xml:space="preserve">
+    <value>メニューナビゲーションの子を表示する</value>
+  </data>
+  <data name="ShowOwnersSidebar_Desc" xml:space="preserve">
+    <value>この設定は、オーナーシップサイドバーを無効にするために使用されます。</value>
+  </data>
+  <data name="ShowOwnersSidebar_Name" xml:space="preserve">
+    <value>オーナーシップ サイドバーを表示</value>
+  </data>
+  <data name="ShowResources_Desc" xml:space="preserve">
+    <value>他のユーザを管理者ユーザ以外のユーザに表示します。</value>
+  </data>
+  <data name="ShowResources_Name" xml:space="preserve">
+    <value>リソースを表示</value>
+  </data>
+  <data name="ShowSocialScoreBar_Desc" xml:space="preserve">
+    <value>この設定により、管理者は詳細ページの上部に表示されるソーシャルバーをオフにすることができます。この設定はデフォルトでオンです。</value>
+  </data>
+  <data name="ShowSocialScoreBar_Name" xml:space="preserve">
+    <value>ソーシャル/スコアバーを表示</value>
+  </data>
+  <data name="UseAsTransformationLimit_Desc" xml:space="preserve">
+    <value>変換アセット タイプとしてマークできるアセット タイプの最大数。</value>
+  </data>
+  <data name="UseAsTransformationLimit_Name" xml:space="preserve">
+    <value>変換限界として使用</value>
+  </data>
+  <data name="WorkflowCatchAllGroup_Desc" xml:space="preserve">
+    <value>この設定は、ワークフロー内の責任が結果としてワークフローのアシグメントを取得しない場合、どのユーザグループがメールを受け取るべきかを制御します。0 または未定義の場合、地域内のすべての管理者が割り当てを取得します。</value>
+  </data>
+  <data name="WorkflowCatchAllGroup_Name" xml:space="preserve">
+    <value>ワークフロー デフォルトユーザグループ</value>
+  </data>
+  <data name="WorkflowDigestEmailDays_Desc" xml:space="preserve">
+    <value>この設定は、ワークフローのダイジェストメールが送信される日数を制御します。</value>
+  </data>
+  <data name="WorkflowDigestEmailDays_Name" xml:space="preserve">
+    <value>ワークフローダイジェストメール日</value>
+  </data>
+  <data name="WorkflowFromEmail_Desc" xml:space="preserve">
+    <value>このメールアドレスは、ワークフローからのメールがFromメールアドレスとして持っているメールアドレスです。</value>
+  </data>
+  <data name="WorkflowFromEmail_Name" xml:space="preserve">
+    <value>ワークフロー メールアドレスから</value>
+  </data>
+  <data name="WorkflowFromName_Desc" xml:space="preserve">
+    <value>この名前は、ワークフローからメールが送信されるときに表示されます。</value>
+  </data>
+  <data name="WorkflowFromName_Name" xml:space="preserve">
+    <value>ワークフロー メール名から</value>
+  </data>
+  <data name="WriteActionDescription_Desc" xml:space="preserve">
+    <value>コメントにアクション説明を書き込みます。</value>
+  </data>
+  <data name="WriteActionDescription_Name" xml:space="preserve">
+    <value>書き込みアクションの説明</value>
+  </data>
+</root>

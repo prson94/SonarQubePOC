@@ -1,0 +1,754 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="BadRequest" xml:space="preserve">
+    <value>バッドリクエスト</value>
+  </data>
+  <data name="EndpointGettingMeasureHistoryHeading" xml:space="preserve">
+    <value>測定履歴の取得にエラー</value>
+  </data>
+  <data name="EndpointNotAuthorizedHeading" xml:space="preserve">
+    <value>認可されていない</value>
+  </data>
+  <data name="EndpointNotAuthorizedMessage" xml:space="preserve">
+    <value>この操作を実行する権限はありません。</value>
+  </data>
+  <data name="EndpointRecalculatingMeasureScoreItemsHeading" xml:space="preserve">
+    <value>計測スコア項目の再計算にエラー</value>
+  </data>
+  <data name="ErrorAddingScoreResultsHeading" xml:space="preserve">
+    <value>スコア結果の追加にエラー</value>
+  </data>
+  <data name="ErrorDeletingDefaultHelpItem" xml:space="preserve">
+    <value>デフォルトのヘルプエントリを削除することはできません</value>
+  </data>
+  <data name="ErrorInvalidDatasetMessage" xml:space="preserve">
+    <value>無効または空のデータセットを送信しました。リクエストを確認して再度提出してください。</value>
+  </data>
+  <data name="Forbidden" xml:space="preserve">
+    <value>禁止</value>
+  </data>
+  <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
+    <value>現在のユーザーは管理者ではありません。</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>AssetUid {0} は無効です</value>
+  </data>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>パラメーター [_direction] の値は無効です。許容値は 'desc' と 'asc' です。</value>
+  </data>
+  <data name="InvalidIncludeTotal" xml:space="preserve">
+    <value>無効 [_includeTotal] 提供</value>
+  </data>
+  <data name="InvalidHelpName" xml:space="preserve">
+    <value>名前は空にできません。</value>
+  </data>
+  <data name="InvalidHelpNameLength" xml:space="preserve">
+    <value>名前は500文字を超えることはできません。</value>
+  </data>
+  <data name="InvalidHelpUrl" xml:space="preserve">
+    <value>Url は空にできません。</value>
+  </data>
+  <data name="InvalidHelpUrlLength" xml:space="preserve">
+    <value>Url は 2000 文字を超えることはできません。</value>
+  </data>
+  <data name="InvalidRequest" xml:space="preserve">
+    <value>無効な要求</value>
+  </data>
+  <data name="InvalidScoreType" xml:space="preserve">
+    <value>無効な [scoreType] が提供されており、有効なスコアタイプを指定してください。</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>見つからない</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="UnknownError" xml:space="preserve">
+    <value>未知のエラー</value>
+  </data>
+  <data name="InvalidFilterExpression" xml:space="preserve">
+    <value>無効なフィルタ式:</value>
+  </data>
+  <data name="InvalidFilterExpressionUsed" xml:space="preserve">
+    <value>無効なフィルタ式が使用されます。</value>
+  </data>
+  <data name="InvalidFilterExpressionUsedMessage" xml:space="preserve">
+    <value>無効なフィルタ式が使用されます。フィルターの値とそのデータタイプを確認してください。</value>
+  </data>
+  <data name="AssetNotfound" xml:space="preserve">
+    <value>アセットが見つかりませんでした</value>
+  </data>
+  <data name="AssetTypeNotFoundForAsset" xml:space="preserve">
+    <value>このアセットのアセットタイプは見つかりませんでした</value>
+  </data>
+  <data name="AssetValidateWithAssetType" xml:space="preserve">
+    <value>Asset Uid は提供された Asset Type と一致しません。</value>
+  </data>
+  <data name="EmptyInvalidParameterSet" xml:space="preserve">
+    <value>空または無効な基準を渡しました。</value>
+  </data>
+  <data name="FilterNotFound" xml:space="preserve">
+    <value>フィルターが見つかりません。</value>
+  </data>
+  <data name="FilterNotOwned" xml:space="preserve">
+    <value>ユーザが所有していないフィルター。</value>
+  </data>
+  <data name="FilterRemove" xml:space="preserve">
+    <value>フィルターが削除されました。</value>
+  </data>
+  <data name="InvalidGuid" xml:space="preserve">
+    <value>無効な GUID {0}。</value>
+  </data>
+  <data name="InvalidNumberTooLarge" xml:space="preserve">
+    <value>無効な {0} 値が提供されます。数字は大きすぎる。</value>
+  </data>
+  <data name="InvalidValueMessage" xml:space="preserve">
+    <value>無効な {0} 値が提供されます。</value>
+  </data>
+  <data name="MinLengthCheckGTZero" xml:space="preserve">
+    <value>無効な {0} 値が提供されます。値は0より大きい必要があります。</value>
+  </data>
+  <data name="NumberValueMessage" xml:space="preserve">
+    <value>無効な {0} 値が提供されます。数値である必要があります。</value>
+  </data>
+  <data name="PageNumString" xml:space="preserve">
+    <value>ページナム</value>
+  </data>
+  <data name="PageSizeString" xml:space="preserve">
+    <value>ページサイズ</value>
+  </data>
+  <data name="SaveFailedMessage" xml:space="preserve">
+    <value>保存は失敗しました</value>
+  </data>
+  <data name="UIDNotFoundObjectAndObjectType" xml:space="preserve">
+    <value>Asset, Asset Type, Tag, Workflow Type, RelationshipType or Responsibility Type UID には表示されません</value>
+  </data>
+  <data name="ApiEntryNotFound" xml:space="preserve">
+    <value>API エンティティが見つかりませんでした</value>
+  </data>
+  <data name="ExecutionIDNotFound" xml:space="preserve">
+    <value>実行ユニークな識別子が見つかりません。</value>
+  </data>
+  <data name="ExecutionIDStatus" xml:space="preserve">
+    <value>現在、リクエストを処理しています。このExecutionIDでステータスを確認してください。</value>
+  </data>
+  <data name="FieldTypeNotFound" xml:space="preserve">
+    <value>フィールドタイプが見つかりませんでした</value>
+  </data>
+  <data name="RuleIDNotFound" xml:space="preserve">
+    <value>ルールIDが見つかりません</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>内部サーバエラー</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>アクセスが拒否されました</value>
+  </data>
+  <data name="AssetNotFoundForAssetType" xml:space="preserve">
+    <value>アセットタイプにアセットが見つかりません {0}</value>
+  </data>
+  <data name="AssetTypeNotSupportExport" xml:space="preserve">
+    <value>AssetType はエクスポート テンプレートをサポートしません。</value>
+  </data>
+  <data name="ChangeFieldNotAllowed" xml:space="preserve">
+    <value>このタイプのフィールドを変更する権限はありません。</value>
+  </data>
+  <data name="ComponentMaxSize250" xml:space="preserve">
+    <value>コンポーネントは250文字を超えることはできません。</value>
+  </data>
+  <data name="ComponentNotValid" xml:space="preserve">
+    <value>コンポーネントは有効ではありません。</value>
+  </data>
+  <data name="Conflict" xml:space="preserve">
+    <value>コンフィルト</value>
+  </data>
+  <data name="ConnectorStatusNotFound" xml:space="preserve">
+    <value>[externalId] {0} のコンネータのステータスが見つかりませんでした。</value>
+  </data>
+  <data name="CounterInitialValueHigherCurrentValue" xml:space="preserve">
+    <value>[CounterInitialIndex] はアセット数より高い必要があります ({0})</value>
+  </data>
+  <data name="DataTypeValueNotMatched" xml:space="preserve">
+    <value>提供された値は、この設定の期待されるデータタイプと一致しません</value>
+  </data>
+  <data name="DiagramAssetTypeSystemFieldValidation" xml:space="preserve">
+    <value>ダイアグラム アセット タイプからフィールド [Name]、 [GovernanceRole]、 [StepNo] を削除することはできません。</value>
+  </data>
+  <data name="DuplicateUserUidProvided" xml:space="preserve">
+    <value>同じユーザー UID が複数回表示されます。</value>
+  </data>
+  <data name="EndIPAddressNotValid" xml:space="preserve">
+    <value>エンド値 {0} は有効な IP アドレスではありません</value>
+  </data>
+  <data name="ErrorConnectorStatus" xml:space="preserve">
+    <value>コネクタエンドポイントのステータスを追加する際のエラー</value>
+  </data>
+  <data name="ErrorCreateTemplate" xml:space="preserve">
+    <value>テンプレートの作成にエラー</value>
+  </data>
+  <data name="ErrorFileOpen" xml:space="preserve">
+    <value>ファイルを開く際にエラーが発生しました。</value>
+  </data>
+  <data name="ErrorFilterExpressionParse" xml:space="preserve">
+    <value>フィルター式の解析エラー</value>
+  </data>
+  <data name="ErrorScoreCasting" xml:space="preserve">
+    <value>有効なスコアタイプにスコアタイプ値 {0} をキャストできません</value>
+  </data>
+  <data name="ErrorUpdateTemplate" xml:space="preserve">
+    <value>テンプレートの更新にエラー</value>
+  </data>
+  <data name="ExecutionCancel" xml:space="preserve">
+    <value>UID {0} での実行は成功しました。</value>
+  </data>
+  <data name="ExecutionCancelByUser" xml:space="preserve">
+    <value>実行ジョブはユーザーによってキャンセルされました。</value>
+  </data>
+  <data name="ExecutionUIDCancelled" xml:space="preserve">
+    <value>UID {0} での実行はすでにキャンセルされています。</value>
+  </data>
+  <data name="ExecutionUIDFinishedCanNotCancel" xml:space="preserve">
+    <value>UID {0} での実行は終了し、キャンセルできません。</value>
+  </data>
+  <data name="ExecutionUIDNotBatchJobCanNotCancel" xml:space="preserve">
+    <value>UID {0} での実行はバッチジョブではなく、キャンセルできません。</value>
+  </data>
+  <data name="ExecutionUIDNotExist" xml:space="preserve">
+    <value>UID {0} で実行することはできません。</value>
+  </data>
+  <data name="ExecutionUIDNotFound" xml:space="preserve">
+    <value>実行ユニークな識別子が見つかりません。</value>
+  </data>
+  <data name="ExecutionUIDStartedCanNotCancel" xml:space="preserve">
+    <value>UID {0} で実行が開始され、キャンセルできません。</value>
+  </data>
+  <data name="ExecutionWrongWhenCancel" xml:space="preserve">
+    <value>実行をキャンセルする間に何かが間違っていました。</value>
+  </data>
+  <data name="ExistItemInSystem" xml:space="preserve">
+    <value>システム内の既存項目</value>
+  </data>
+  <data name="ExportViewMessage" xml:space="preserve">
+    <value>有効な [ExportViewType] が必要です。</value>
+  </data>
+  <data name="FieldMovedSuccessfully" xml:space="preserve">
+    <value>フィールドは正常に移動しました。</value>
+  </data>
+  <data name="FieldTypeError" xml:space="preserve">
+    <value>フィールド型エラー</value>
+  </data>
+  <data name="FieldUseInResponsibilityRule" xml:space="preserve">
+    <value>このフィールドタイプは、責任ルールで使用されており、ルールは最初に削除する必要があります。</value>
+  </data>
+  <data name="FieldValidateWithAssetType" xml:space="preserve">
+    <value>フィールド '{0}' は、指定したアセットタイプには有効ではありません。</value>
+  </data>
+  <data name="FileUploadMessage" xml:space="preserve">
+    <value>ファイルが正常にアップロードされました</value>
+  </data>
+  <data name="GroupUidNotExists" xml:space="preserve">
+    <value>提供されたグループ UID は有効なグループ UID ではありません。グループは存在しません。</value>
+  </data>
+  <data name="InvalidAssetTypeID" xml:space="preserve">
+    <value>無効なアセット タイプ ID 無効なアセット タイプ ID を提出します。</value>
+  </data>
+  <data name="InvalidBoolean" xml:space="preserve">
+    <value>提供された値は有効なブーリアンではありません</value>
+  </data>
+  <data name="InvalidExternalID" xml:space="preserve">
+    <value>[externalId] {0} 有効なUidではありません</value>
+  </data>
+  <data name="InvalidNumber" xml:space="preserve">
+    <value>提供された値は有効な番号ではありません</value>
+  </data>
+  <data name="InvalidParameter" xml:space="preserve">
+    <value>無効なパラメーター</value>
+  </data>
+  <data name="InvalidResourceuid" xml:space="preserve">
+    <value>無効 [_resourceuid] 提供!</value>
+  </data>
+  <data name="InvalidUserUids" xml:space="preserve">
+    <value>1 つ以上のユーザ UID が渡された場合、ユーザではありません。</value>
+  </data>
+  <data name="Invalid_Order" xml:space="preserve">
+    <value>無効 [_order] 提供!</value>
+  </data>
+  <data name="ItemExistsNotReplaceMessage" xml:space="preserve">
+    <value>環境に存在する項目があります。これらの項目が削除されるまで、'Replace' アクションを実行することはできません。</value>
+  </data>
+  <data name="JSONValidMessage" xml:space="preserve">
+    <value>このリクエストに有効な JSON 構造を提供していません。</value>
+  </data>
+  <data name="MissingIPAddressValue" xml:space="preserve">
+    <value>1つ以上のIPアドレスに値が欠けています</value>
+  </data>
+  <data name="ModelExportTemplateStyleNotFound" xml:space="preserve">
+    <value>モデルには有効な既存のエクスポートテンプレートスタイルが含まれません。</value>
+  </data>
+  <data name="NotValidAssetActionRelationTypeProvided" xml:space="preserve">
+    <value>[assetTypeUid] または [actionTypeUid] または [relationshipTypeUid] は提供されません</value>
+  </data>
+  <data name="NoUserUIDProvided" xml:space="preserve">
+    <value>ユーザ UID は提供されません。</value>
+  </data>
+  <data name="RemoveFieldNotAllowed" xml:space="preserve">
+    <value>このタイプのフィールドを削除する権限はありません。</value>
+  </data>
+  <data name="SettingIDNotFound" xml:space="preserve">
+    <value>このidで設定が見つかりませんでした</value>
+  </data>
+  <data name="SettingIDNotValid" xml:space="preserve">
+    <value>[_settingId] に渡された値は有効ではありません</value>
+  </data>
+  <data name="SettingLocked" xml:space="preserve">
+    <value>この設定はロックされ、更新できません</value>
+  </data>
+  <data name="SettingValueProvided" xml:space="preserve">
+    <value>設定のデータタイプに基づいて正確に1つの値を指定する必要があります</value>
+  </data>
+  <data name="StartIPAddressNotValid" xml:space="preserve">
+    <value>開始値 {0} は有効な IP アドレスではありません</value>
+  </data>
+  <data name="StatusInvalid" xml:space="preserve">
+    <value>[Status] の値は無効です。許容値は: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION</value>
+  </data>
+  <data name="StatusRequied" xml:space="preserve">
+    <value>ステータスパラメータ値が必要です。</value>
+  </data>
+  <data name="StyleUpdated" xml:space="preserve">
+    <value>Syles は正常に更新されました。</value>
+  </data>
+  <data name="SuccessfullyAdded" xml:space="preserve">
+    <value>{0} 成功しました</value>
+  </data>
+  <data name="SucessfullyUpdated" xml:space="preserve">
+    <value>{0} 更新されました。</value>
+  </data>
+  <data name="TemplateCreatingError" xml:space="preserve">
+    <value>テンプレートの作成にエラー</value>
+  </data>
+  <data name="TemplateDeleted" xml:space="preserve">
+    <value>テンプレートは削除。</value>
+  </data>
+  <data name="TemplateDeletedError" xml:space="preserve">
+    <value>テンプレートの削除にエラー</value>
+  </data>
+  <data name="TemplateDeletedMessage" xml:space="preserve">
+    <value>テンプレートは正常に削除されました。</value>
+  </data>
+  <data name="TemplateFileTypeValidate" xml:space="preserve">
+    <value>テンプレートファイルのタイプは .xls または .xlsx である必要があります。</value>
+  </data>
+  <data name="TemplateNameDuplicate" xml:space="preserve">
+    <value>Asset Type '{1}' には '{0}' というテンプレートがすでに存在しています。</value>
+  </data>
+  <data name="TemplateNotFound" xml:space="preserve">
+    <value>テンプレートは見つかりません。</value>
+  </data>
+  <data name="TemplateNotFoundMessage" xml:space="preserve">
+    <value>UID が提供されたテンプレートは見つかりませんでした。</value>
+  </data>
+  <data name="TemplateNotFoundUpdate" xml:space="preserve">
+    <value>テンプレートスタイルのエクスポートを更新することはできません。</value>
+  </data>
+  <data name="UsedinResponsibilityRules" xml:space="preserve">
+    <value>責任ルールで使用される</value>
+  </data>
+  <data name="UserAlreadyMemberOfGroup" xml:space="preserve">
+    <value>ユーザー {0} はすでにこのグループのメンバーです</value>
+  </data>
+  <data name="AlreadyWatch" xml:space="preserve">
+    <value>すでに見ています {0}</value>
+  </data>
+  <data name="CurrentWatch" xml:space="preserve">
+    <value>あなたは現在、'{0}' の親 '{1}' 経由で '{0}' を見ています。</value>
+  </data>
+  <data name="CurrentWatchNotUnwatchIndividually" xml:space="preserve">
+    <value>現在、この項目の親 '{0}' を見ている。この項目を個別にアンウォッチすることはできません。</value>
+  </data>
+  <data name="ImageSize2048" xml:space="preserve">
+    <value>無効なリクエスト、画像に無効なサイズが指定されています。値は2048より小さいか、0より大きい必要があります</value>
+  </data>
+  <data name="InvalidApiKeyOrApiSecret" xml:space="preserve">
+    <value>現在のユーザの [apiKey] または [apiSecret] は無効です</value>
+  </data>
+  <data name="InvalidUser" xml:space="preserve">
+    <value>無効なユーザ情報</value>
+  </data>
+  <data name="IsChangePwdReqAuthOtherThanForm" xml:space="preserve">
+    <value>[IsChangePasswordReqeust] 真に設定します, フォーム以外の認証タイプには許可されません</value>
+  </data>
+  <data name="IsChangePwdReqCurrentUser" xml:space="preserve">
+    <value>[IsChangePasswordReqeust] 現在のユーザに対してのみ true に設定</value>
+  </data>
+  <data name="IsChangePwdReqOneReq" xml:space="preserve">
+    <value>[IsChangePasswordReqeust] が true に設定された場合に 1 つのリクエストのみが受け入れられました。</value>
+  </data>
+  <data name="NameMissingInGroupPayload" xml:space="preserve">
+    <value>名前は、ペイロード内のグループの1つまたは複数のグループに欠けています。名前が記載されている。</value>
+  </data>
+  <data name="NoGroupRequest" xml:space="preserve">
+    <value>リクエストにグループが提供されていません</value>
+  </data>
+  <data name="NotCurrentWatch" xml:space="preserve">
+    <value>あなたは現在 '{0}' を見ていません。</value>
+  </data>
+  <data name="NoUserRequest" xml:space="preserve">
+    <value>ユーザーはリクエストに提供されません。</value>
+  </data>
+  <data name="OneMoreUidExists" xml:space="preserve">
+    <value>指定された Uids の 1 つまたは複数の Uids がすでに存在します。</value>
+  </data>
+  <data name="PrimayOwnerOfGroupNotDelete" xml:space="preserve">
+    <value>グループのプライマリーオーナーを削除することはできません。</value>
+  </data>
+  <data name="RequiredFieldError" xml:space="preserve">
+    <value>{0} 必要なフィールドです。</value>
+  </data>
+  <data name="ResourceGroupNotExists" xml:space="preserve">
+    <value>リソース/グループは存在しません</value>
+  </data>
+  <data name="Userremoved" xml:space="preserve">
+    <value>ユーザーは削除された。</value>
+  </data>
+  <data name="UserremovedMessage" xml:space="preserve">
+    <value>ユーザーはグループから削除されました。</value>
+  </data>
+  <data name="YouAreWatching" xml:space="preserve">
+    <value>あなたは {0}{1} を見ています。</value>
+  </data>
+  <data name="FieldNotAllowedForAssetType" xml:space="preserve">
+    <value>このアセットタイプのフィールドを取得することはできません。</value>
+  </data>
+  <data name="UnknownErrorInvestigatingMessage" xml:space="preserve">
+    <value>不明なエラーが発生し、さらなる調査のために記録されました。後でリクエストをもう一度お試しください。</value>
+  </data>
+  <data name="InvalidEndDate" xml:space="preserve">
+    <value>無効 [_endDate] 提供</value>
+  </data>
+  <data name="InvalidStartDate" xml:space="preserve">
+    <value>無効 [_startDate] 提供</value>
+  </data>
+  <data name="StartEndDateValidation" xml:space="preserve">
+    <value>開始日は終了日より前になければなりません</value>
+  </data>
+  <data name="FilterExpressionParseError" xml:space="preserve">
+    <value>フィルター式の解析エラー</value>
+  </data>
+  <data name="Invalid_PageNum" xml:space="preserve">
+    <value>リクエストに渡された無効な [_pageNum] パラメータ</value>
+  </data>
+  <data name="Invalid_PageSize" xml:space="preserve">
+    <value>リクエストに渡された無効な [_pageSize] パラメータ</value>
+  </data>
+  <data name="_PageSizeLimit" xml:space="preserve">
+    <value>リクエスト値に渡された無効な [_pageSize] パラメータは、サポートされる最大値である 100,000 を超える。</value>
+  </data>
+  <data name="_PageSizePassedZeroLess" xml:space="preserve">
+    <value>リクエスト値に渡された無効な [_pageSize] パラメータは 0 以下または 0 に等しい。</value>
+  </data>
+  <data name="EndpointMethod" xml:space="preserve">
+    <value>エンドポイントメソッド</value>
+  </data>
+  <data name="Invalid" xml:space="preserve">
+    <value>無効</value>
+  </data>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} 有効なUidではありません!</value>
+  </data>
+  <data name="UidConstant" xml:space="preserve">
+    <value>ウイド</value>
+  </data>
+  <data name="InvalidOrderRequese" xml:space="preserve">
+    <value>リクエストに渡された無効な順序</value>
+  </data>
+  <data name="InvalidType" xml:space="preserve">
+    <value>無効なタイプ</value>
+  </data>
+  <data name="FailedAuthentication" xml:space="preserve">
+    <value>認証に失敗しました。Oidc State は に見つかりません。</value>
+  </data>
+  <data name="FailedAuthenticationNonces" xml:space="preserve">
+    <value>認証に失敗しました。Nonces は一致しません。</value>
+  </data>
+  <data name="InvalidSortField" xml:space="preserve">
+    <value>指定された無効なソートフィールド</value>
+  </data>
+  <data name="InvalidSortOrder" xml:space="preserve">
+    <value>指定された無効なソート順序</value>
+  </data>
+  <data name="MissingConfigInfo" xml:space="preserve">
+    <value>Govern には、ClientID や/または Authority などの OpenID IDP に関連する設定情報がありません。</value>
+  </data>
+  <data name="LookupFieldTypeInUse" xml:space="preserve">
+    <value>フィールド '{0}' に値を持つ既存のアセットがあります。これらのフィールド値が削除されるまで [Type.Lookup.List] プロパティを変更することはできません。</value>
+  </data>
+  <data name="InvalidIntersecttypeid" xml:space="preserve">
+    <value>不正な交差型id</value>
+  </data>
+  <data name="InvalidModel" xml:space="preserve">
+    <value>無効なモデル</value>
+  </data>
+  <data name="TargetAssetType" xml:space="preserve">
+    <value>ターゲットアセットタイプ</value>
+  </data>
+  <data name="AssetCorssRefAlreadyExists" xml:space="preserve">
+    <value>資産クロスリファレンスはすでに存在します。</value>
+  </data>
+  <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
+    <value>アセットクロスリファレンスモデルには必要フィールドが含まれません。</value>
+  </data>
+  <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
+    <value>無効 [_includeChildAssets] 提供</value>
+  </data>
+  <data name="ModelNotContainFields" xml:space="preserve">
+    <value>モデルには必要フィールドが含まれません</value>
+  </data>
+  <data name="RequestMissingDatasource" xml:space="preserve">
+    <value>リクエストには、必要なパラメータデータソースが含まれません。</value>
+  </data>
+  <data name="RequestMissingDatasourceType" xml:space="preserve">
+    <value>リクエストには、必要なパラメータのデータソースとタイプが含まれません。</value>
+  </data>
+  <data name="RequestMissingType" xml:space="preserve">
+    <value>リクエストには必須パラメータタイプが含まれません</value>
+  </data>
+  <data name="add" xml:space="preserve">
+    <value>追加する</value>
+  </data>
+  <data name="confirm" xml:space="preserve">
+    <value>確認する</value>
+  </data>
+  <data name="RebuildRequest" xml:space="preserve">
+    <value>リクエストを再構築し、受信しました。</value>
+  </data>
+  <data name="CompanyInactive" xml:space="preserve">
+    <value>会社活動中</value>
+  </data>
+  <data name="InvalidEnumValueInJson" xml:space="preserve">
+    <value>JSON における無効なエンミュレーション値</value>
+  </data>
+  <data name="InvalidJson" xml:space="preserve">
+    <value>無効な JSON メッセージ</value>
+  </data>
+  <data name="FavoritesEmptyRoute" xml:space="preserve">
+    <value>お気に入りのタイプ ページには空のルートがありません。</value>
+  </data>
+  <data name="SucessfullyCreated" xml:space="preserve">
+    <value>{0} 成功しました</value>
+  </data>
+  <data name="SucessfullyRemoved" xml:space="preserve">
+    <value>{0} 成功して削除されました</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>エラー</value>
+  </data>
+  <data name="OwnershipType" xml:space="preserve">
+    <value>オーナーシップタイプ</value>
+  </data>
+  <data name="Predicate" xml:space="preserve">
+    <value>推論</value>
+  </data>
+  <data name="SucessfullyDeleted" xml:space="preserve">
+    <value>{0} 削除されました。</value>
+  </data>
+  <data name="SucessfullyEdited" xml:space="preserve">
+    <value>{0} 成功しました。</value>
+  </data>
+  <data name="HelpMenuSuccess" xml:space="preserve">
+    <value>ヘルプ メニュー アイテムが正常に更新されました。</value>
+  </data>
+  <data name="HelpMenuItemsUpdated" xml:space="preserve">
+    <value>ヘルプ メニュー アイテムの更新。</value>
+  </data>
+  <data name="HelpMenuVisibilityError" xml:space="preserve">
+    <value>項目の可視性は1、2、または3に設定する必要があります。</value>
+  </data>
+  <data name="ExecutionStatusInvalid" xml:space="preserve">
+    <value>ステータスの値は無効です。有効な値は 待機、実行、完了です。</value>
+  </data>
+  <data name="HelpItemsAdded" xml:space="preserve">
+    <value>ヘルプ メニュー アイテムが正常に作成されました。</value>
+  </data>
+  <data name="HelpItemsDeleted" xml:space="preserve">
+    <value>ヘルプメニュー項目が削除されました。</value>
+  </data>
+  <data name="HelpMenuItemsCreated" xml:space="preserve">
+    <value>ヘルプ メニュー アイテムの作成。</value>
+  </data>
+  <data name="HelpMenuItemsDeleted" xml:space="preserve">
+    <value>ヘルプ メニュー アイテムを削除します。</value>
+  </data>
+  <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
+    <value>[ApplicationId] 長さは200文字を超えることはできません</value>
+  </data>
+  <data name="FavoritesSuccessfullyDeleted" xml:space="preserve">
+    <value>指定したお気に入りを正常に削除</value>
+  </data>
+  <data name="FavoritesListCleared" xml:space="preserve">
+    <value>お気に入りリストをクリア。</value>
+  </data>
+  <data name="InvalidHelpDeleteUid" xml:space="preserve">
+    <value>削除する有効なUidは提供されません。</value>
+  </data>
+  <data name="InvalidHelpUpdateUid" xml:space="preserve">
+    <value>更新する有効な uid は提供されません。</value>
+  </data>
+  <data name="HelpMenuOrderError" xml:space="preserve">
+    <value>順序は負の数ではありません。</value>
+  </data>
+  <data name="InvalidLoadUid" xml:space="preserve">
+    <value>無効 [LoadUid] 提供。</value>
+  </data>
+  <data name="ArtifactNotFound" xml:space="preserve">
+    <value>アーティファクトは見つかりません。</value>
+  </data>
+  <data name="OpenIdCodeOrStateIsNotPresent" xml:space="preserve">
+    <value>OpenID プロバイダの応答にはコードと/または状態が欠けています。管理者がアイデンティティプロバイダの設定を誤って設定している可能性があります。</value>
+  </data>
+  <data name="InvalidParameterMessage" xml:space="preserve">
+    <value>'{0}' は {1} の無効値です。</value>
+  </data>
+  <data name="FavoriteUnknownObject" xml:space="preserve">
+    <value>ルート {Route} は未知のオブジェクトにポイントします</value>
+  </data>
+  <data name="FavoriteUnknownRoute" xml:space="preserve">
+    <value>ルート {Route} は不明または非推奨</value>
+  </data>
+  <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
+    <value>[assetTypeUid] でアセットタイプが見つからない。</value>
+  </data>
+  <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
+    <value>intersectTypeUid でインターセクトタイプが見つかりませんでした。</value>
+  </data>
+  <data name="InvalidProfileIdentifier" xml:space="preserve">
+    <value>プロファイル識別子が無効です。</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>タイプ</value>
+  </data>
+  <data name="YouAreNoLongerWatching" xml:space="preserve">
+    <value>{0} はもう表示されません。</value>
+  </data>
+  <data name="YouAreNowWatching" xml:space="preserve">
+    <value>あなたは今 {0} を見ています。</value>
+  </data>
+  <data name="InvalidLanguageCode" xml:space="preserve">
+    <value>無効 [LanguageCode]. サポートされる値は {0} です。</value>
+  </data>
+</root>

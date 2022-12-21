@@ -96,13 +96,19 @@ export class ConfigurationAssetTypeEditorPageComponent {
     
     typeClassToConfigurationAddTitle = new Map([
         [AssetTypeClass.BusinessAsset, $localize`Business Asset`],
-        [AssetTypeClass.TechnicalAsset, $localize`Technical Asset`],
-        [AssetTypeClass.DiagramAsset, $localize`Diagram Asset`]
+		[AssetTypeClass.TechnicalAsset, $localize`Technical Asset`],
+		[AssetTypeClass.Model, $localize`Model`],
+		[AssetTypeClass.Policy, $localize`Policy`],
+		[AssetTypeClass.Rule, $localize`Rule`],
+		[AssetTypeClass.DiagramAsset, $localize`Diagram Asset`]
     ])
     
     typeClassToConfigurationEditTitle = new Map([
         [AssetTypeClass.BusinessAsset, $localize`Business Asset Type`],
-        [AssetTypeClass.TechnicalAsset, $localize`Technical Asset Type`],
-        [AssetTypeClass.DiagramAsset, $localize`Diagram Asset Type`]
+		[AssetTypeClass.TechnicalAsset, $localize`Technical Asset Type`],
+		[AssetTypeClass.Model, $localize`Model Type`],
+		[AssetTypeClass.Policy, $localize`Policy Type`],
+		[AssetTypeClass.Rule, $localize`Rule Type`],
+		[AssetTypeClass.DiagramAsset, $localize`Diagram Asset Type`]
     ])
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using d360.core;
@@ -116,7 +118,7 @@ namespace d360.model.DataAccessLayer
 			return allPredicates;
 		}
 
-		public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", bool isExport = false)
+		public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", bool isExport = false, CancellationToken? cancellationToken = null)
 		{
 			var dbArgs = new DynamicParameters();
 			bool includeTotal = true;
@@ -127,11 +129,15 @@ namespace d360.model.DataAccessLayer
 
 			string _orderBy = "I.IntersectTypeID,I.ID";
 			string _orderDirection = "asc";
+			string populateNoReadSQL = " ";
+
+			List<string> TempTableScriptList = new List<string>();
+			string TempTableScriptStr = " ";
 
 			var fieldColumns = new DynamicQuerySelects();
 			var fieldJoins = new DynamicQueryJoins();
 
-			string filteredIntersectsTempTable = "";
+			string filteredIntersectAssets = "";
 			string prefilteredIntersectTypesTempTable = "";
 
 			//if filtered by asset uid we will include relationship type name and asset name
@@ -144,19 +150,90 @@ namespace d360.model.DataAccessLayer
 			Guid relationshipTypeUid;
 			bool isSubject = false;
 
-			var baseTableSql = @"from [Intersect] I 
-								inner join IntersectType T on T.ID = I.IntersectTypeID 
-								left join [Predicate] P on P.ID = T.PredicateID 
-								left join Asset S on S.ID = I.SubjectAssetID 
-								left join AssetType ST1 on S.ID is not null and ST1.ID = S.AssetTypeID
-								left join AssetType ST2 on S.ID is null and ST2.ID = I.SubjectAssetTypeID and I.SubjectAssetID = 0
-								left join Asset O on O.ID = I.ObjectAssetID 
-								left join AssetType OT1 on O.ID is not null and OT1.ID = O.AssetTypeID
-								left join AssetType OT2 on O.ID is null and OT2.ID = I.ObjectAssetTypeID and I.ObjectAssetID = 0
-								";
-			whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + " coalesce(ISNULL(ST1.ID, ST2.ID),S.ID) is not null and coalesce(ISNULL(OT1.ID,OT2.ID),O.ID) is not null ";
+			var includedJoins = new DynamicQueryJoins();
+			var filterJoins = new DynamicQueryJoins();
+			List<string> whereStatements = new List<string>();
 
-			var countSql = baseTableSql;
+
+			List<string> simpleFilters = new List<string>();
+			var simpleFilterTempTables = new StringBuilder();
+			List<string> dynamicFilters = new List<string>();
+			var dynamicFilterTempTables = new StringBuilder();
+			var IntersectTypeTempTables = new StringBuilder();
+			var IntersectTempTables = new StringBuilder();
+
+			List<string> fiterIntersectType = new List<string>();
+			var applyfilteredIntersectTypes = false;
+
+			List<string> fiterIntersect = new List<string>();
+			var AddInnerIntersectType = false;
+			var AddInnerIntersect = false;
+
+			List<string> fieldsUsedInMainQuery = new List<string>();
+			List<string> filterfieldsUsedInMainQuery = new List<string>();
+
+			//Helping Query Subjectuid/ObjectUid Paramer
+			string AssetQuery = $@"Select A.Id as AssetId,A.AssetTypeId, 0 IsReference
+									   From Asset A
+									   WHERE  [Uid]= @AssetUid
+									   union all
+									   Select 0 as AssetId,A.ID AssetTypeId, 1 IsReference
+									   From AssetType A
+									   WHERE  [Uid]= @AssetUid";
+
+
+			if (!string.IsNullOrEmpty(whereClause))
+			{
+				whereStatements.Add(whereClause);
+			}
+
+			//Check Record Exist for No Read Asset
+			//1: Add Condition, 0: Not Add Condition
+			var responsibilitySQL = @$"select count(1) from (select top 1 rd.RuleID from dbo.responsibilitydetail rd
+										where ResourceID = @ResourceID and ((PermissionsBitMask & @permission) = 0)) a
+										option(recompile)";
+
+			var AddrightCondition = companyContext.Database.Connection.Query<int>(responsibilitySQL, new { ResourceID = companyContext.CurrentResourceID, permission = (int)Permission.ReadRelationships }).FirstOrDefault();
+			//Create Temporary table to store No Read Asset/AssetTypeID
+			if (AddrightCondition == 1)
+			{
+				populateNoReadSQL = $@"
+					declare @ResourceID int = @CurrentResourceID,
+							@permission int = @ReadPremission;
+
+					drop table if exists #TempNoPermissionObjects;
+					create table #TempNoPermissionObjects (
+						AssetID bigint,
+						AssetTypeID int
+					);
+					Create Clustered Index IX_TempNoPermissionObjects on #TempNoPermissionObjects(AssetID,AssetTypeID);
+
+					Insert into #TempNoPermissionObjects
+					select distinct AssetID,AssetTypeID
+					from ResponsibilityDetail 
+					where ResourceID = @ResourceID and ((PermissionsBitMask & @permission) = 0)
+					option(recompile)";
+
+				dbArgs.Add("@CurrentResourceID", companyContext.CurrentResourceID);
+				dbArgs.Add("@ReadPremission", (int)Permission.ReadRelationships);
+			}
+
+			string baseTableSql(bool excludeFilterQueries = false)
+			{
+				return $@"
+				{(excludeFilterQueries ? " from @tempintersect TempI " : " ")} 
+				{(excludeFilterQueries ? " inner join [Intersect] I on I.ID = TempI.IntersectID " : " from[Intersect] I ")} 
+				inner join IntersectType T on T.ID = I.IntersectTypeID 
+				left join [Predicate] P on P.ID = T.PredicateID 
+				left join Asset S on S.ID = I.SubjectAssetID 
+				left join AssetType ST1 on S.ID is not null and ST1.ID = S.AssetTypeID
+				left join AssetType ST2 on S.ID is null and ST2.ID = I.SubjectAssetTypeID and I.SubjectAssetID = 0
+				left join Asset O on O.ID = I.ObjectAssetID 
+				left join AssetType OT1 on O.ID is not null and OT1.ID = O.AssetTypeID
+				left join AssetType OT2 on O.ID is null and OT2.ID = I.ObjectAssetTypeID and I.ObjectAssetID = 0";
+			};
+
+			whereStatements.Add(" coalesce(S.ID,ST2.ID) is not null and coalesce(O.ID,OT2.ID) is not null ");
 
 			List<FieldType> fieldTypes = new List<FieldType>();
 			bool filteringByFields = false;
@@ -166,8 +243,11 @@ namespace d360.model.DataAccessLayer
 			//use ISNULL(S.ID,-1)
 			//we need isnull as not in statment does not work well null values
 			//we need -1 to not match results when asset type id is null (Reference Lists)
-			whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" ISNULL(S.ID,-1) not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and ISNULL(S.AssetTypeID,-1) not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
-			whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" ISNULL(O.ID,-1) not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and ISNULL(O.AssetTypeID,-1) not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
+			if (AddrightCondition == 1)
+			{
+				whereStatements.Add(" not exists (select 1 from #TempNoPermissionObjects TNPO_A where TNPO_A.AssetID in (ISNULL(S.ID,-1),ISNULL(O.ID,-1)) and TNPO_A.AssetID > 0) ");
+				whereStatements.Add(" not exists (select 1 from #TempNoPermissionObjects TNPO_AT where TNPO_AT.AssetID = 0 and TNPO_AT.AssetTypeID in (ISNULL(S.AssetTypeID,-1),ISNULL(O.AssetTypeID,-1))) ");
+			}
 
 			if (queryParams != null)
 			{
@@ -181,8 +261,58 @@ namespace d360.model.DataAccessLayer
 					if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
 					{
 						dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
-						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";
 						fieldTypes = companyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on I.ID = F.IntersectTypeID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }, ApiTimeout).ToList();
+						if (fieldTypes != null && fieldTypes.Count() > 0)
+						{
+							var IntersectTypeID = fieldTypes.FirstOrDefault().IntersectTypeID;
+							dbArgs.Add("@IntersectTypeID", IntersectTypeID);
+						}
+
+						fiterIntersectType.Add($@"
+												insert into @filteredIntersectTypes(ID)
+												select IT.id 
+												from intersecttype IT
+												where IT.uid = cast(@relationshiptypeuid  as uniqueidentifier)
+												option (recompile);
+
+												set @AddInnerIntersectType = 1;");
+						AddInnerIntersectType = true;
+
+					}
+				}
+				if (queryParamsList.Any(q => q.Key.ToLower() == "predicateuid"))
+				{
+					Guid predicateUid;
+					var predicateUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "predicateuid").Value;
+					if (Guid.TryParse(predicateUidString, out predicateUid))
+					{
+						dbArgs.Add("@predicateuid", predicateUid);
+						whereStatements.Add($"(P.Uid = @predicateuid)");
+
+						fiterIntersectType.Add(@$"
+								if (@AddInnerIntersectType = 0)
+									begin
+										insert into @filteredIntersectTypes
+										select IT.ID 
+										from [IntersectType] IT
+										inner join [Predicate] P on P.ID = IT.PredicateID and P.UID = @predicateuid
+										option (recompile);
+									end
+								else
+									begin
+										delete fit
+										from @filteredIntersectTypes fit
+										where not exists (	select 1 
+															from  [IntersectType] IT
+															inner join [Predicate] P on P.ID = IT.PredicateID and P.UID = cast(@predicateuid  as uniqueidentifier)
+															where it.id = fit.id)
+										option (recompile);
+									end
+								set @AddInnerIntersectType = 1;
+									");
+
+						AddInnerIntersectType = true;
+
 					}
 				}
 				if (queryParamsList.Any(k => k.Key.ToLower() == "_listcolorsasjson"))
@@ -206,42 +336,96 @@ namespace d360.model.DataAccessLayer
 				if (queryParamsList.Any(q => q.Key.ToLower() == "uid"))
 				{
 					Guid uid;
-					var uidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "state").Value;
+					var uidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "uid").Value;
 					if (Guid.TryParse(uidString, out uid))
 					{
 						dbArgs.Add("@uid", uid);
-						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.[Uid] = @uid";
+						whereStatements.Add($" I.[Uid] = @uid");
+
+						fiterIntersect.Add($@"
+												insert into @filteredIntersect(ID)
+												select I.ID 
+												from [Intersect] I
+												where fI.id is null and I.uid =cast(@uid as uniqueidentifier)
+												option (recompile);
+
+												set @AddInnerIntersect = 1;");
+						AddInnerIntersect = true;
+
 					}
 				}
-				if (queryParamsList.Any(q => q.Key.ToLower() == "predicateuid"))
-				{
-					Guid predicateUid;
-					var predicateUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "predicateuid").Value;
-					if (Guid.TryParse(predicateUidString, out predicateUid))
-					{
-						dbArgs.Add("@predicateuid", predicateUid);
-						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (P.Uid = @predicateuid)";
 
-						prefilteredIntersectTypesTempTable = @"
-								drop table if exists #filteredIntersectTypes
-
-								select IT.ID 
-								into #filteredIntersectTypes
-								from [IntersectType] IT
-								inner join [Predicate] P on P.ID = IT.PredicateID
-								where P.UID = @predicateuid";
-
-						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (T.ID in (select id from #filteredIntersectTypes))";
-					}
-				}
 				if (queryParamsList.Any(q => q.Key.ToLower() == "subjectuid"))
 				{
 					Guid subjectUid;
 					var subjectUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "subjectuid").Value;
 					if (Guid.TryParse(subjectUidString, out subjectUid))
 					{
-						dbArgs.Add("@subjectuid", subjectUid);
-						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @subjectuid or (S.Uid is null and st2.uid = @subjectuid))";
+						long SubjAssetID = -1;
+						int SubjAssetTypeID = 0;
+						bool SubjIsReferenceList = false;
+
+						var assetSubj = companyContext.Query<dynamic>(AssetQuery, new { AssetUid = subjectUid }, ApiTimeout).FirstOrDefault();
+
+						if (assetSubj != null)
+						{
+							SubjAssetID = assetSubj?.AssetId;
+							SubjAssetTypeID = assetSubj?.AssetTypeId;
+							SubjIsReferenceList = (assetSubj?.IsReference == 1 ? true : false);
+						}
+
+						if (SubjIsReferenceList)
+						{
+							fiterIntersect.Add($@"
+												if ( @AddInnerIntersect = 0 )
+													begin
+														insert into @filteredIntersect(ID)
+														select I.ID 
+														from [Intersect] I
+														where I.subjectAssetTypeID = cast(@SubjAssetTypeID as int) and I.subjectAssetID = 0
+														option (recompile);
+
+														set @AddInnerIntersect = 1;
+													end
+												else
+													begin
+														delete fi
+														from @filteredIntersect fi
+														where not exists (select 1  
+																		 from [Intersect] I
+																		 where I.subjectAssetTypeID = cast(@SubjAssetTypeID as int) and I.subjectAssetID = 0
+																		 and i.id = fi.id)
+														option (recompile);
+													end
+												");
+							dbArgs.Add("@SubjAssetTypeID", SubjAssetTypeID);
+						}
+						else
+						{
+							fiterIntersect.Add($@"
+												if ( @AddInnerIntersect = 0 )
+													begin
+														insert into @filteredIntersect(ID)
+														select I.ID 
+														from [Intersect] I
+														where I.SubjectAssetId = cast(@SubjAssetID as bigint)
+														option (recompile);
+
+														set @AddInnerIntersect = 1;
+													end
+												else
+													begin
+														delete fi
+														from @filteredIntersect fi
+														where not exists (select 1 
+																		 from [Intersect] I
+																		 where I.SubjectAssetId = cast(@SubjAssetID as bigint) and I.Id = fi.Id)
+														option (recompile);
+													end
+												");
+							dbArgs.Add("@SubjAssetID", SubjAssetID);
+						}
+						AddInnerIntersect = true;
 					}
 				}
 				if (queryParamsList.Any(q => q.Key.ToLower() == "objectuid"))
@@ -249,8 +433,69 @@ namespace d360.model.DataAccessLayer
 					var objectUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "objectuid").Value;
 					if (Guid.TryParse(objectUidString, out objectUid))
 					{
-						dbArgs.Add("@objectuid", objectUid);
-						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (O.Uid = @objectuid or (O.Uid is null and ot2.uid = @objectuid))";
+						long ObjAssetID = -1;
+						int ObjAssetTypeID = 0;
+						bool ObjIsReferenceList = false;
+
+						var assetObj = companyContext.Query<dynamic>(AssetQuery, new { AssetUid = objectUid }, ApiTimeout).FirstOrDefault();
+
+						if (assetObj != null)
+						{
+							ObjAssetID = assetObj?.AssetId;
+							ObjAssetTypeID = assetObj?.AssetTypeId;
+							ObjIsReferenceList = (assetObj?.IsReference == 1 ? true : false);
+						}
+
+						if (ObjIsReferenceList)
+						{
+							fiterIntersect.Add($@"
+												if ( @AddInnerIntersect = 0 )
+													begin
+														insert into @filteredIntersect(ID)
+														select I.ID 
+														from [Intersect] I
+														where I.ObjectAssetTypeID = cast(@ObjAssetTypeID as int)  and I.ObjectAssetID = 0
+														option (recompile);
+														set @AddInnerIntersect = 1;
+													end
+												else
+													begin
+														delete fi
+														from @filteredIntersect fi
+														where not exists (select 1  
+																		 from [Intersect] I
+																		 where I.ObjectAssetTypeID = cast(@ObjAssetTypeID as int) and I.ObjectAssetID = 0
+																		 and i.id = fi.id)
+														option (recompile);
+													end
+												");
+							dbArgs.Add("@ObjAssetTypeID", ObjAssetTypeID);
+						}
+						else
+						{
+							fiterIntersect.Add($@"
+												if ( @AddInnerIntersect = 0 )
+													begin
+														insert into @filteredIntersect(ID)
+														select I.ID 
+														from [Intersect] I
+														where I.ObjectAssetId = cast(@ObjAssetID as bigint)
+														option (recompile);
+														set @AddInnerIntersect = 1;
+													end
+												else
+													begin
+														delete fi
+														from @filteredIntersect fi
+														where not exists (select 1 
+																		 from [Intersect] I
+																		 where I.ObjectAssetId = cast(@ObjAssetID as bigint) and I.Id = fi.Id)
+														option (recompile);
+													end
+												");
+							dbArgs.Add("@ObjAssetID", ObjAssetID);
+						}
+						AddInnerIntersect = true;
 					}
 				}
 				if (queryParamsList.Any(q => q.Key.ToLower() == "assetuid"))
@@ -266,33 +511,148 @@ namespace d360.model.DataAccessLayer
 							isFilteredByAssetUID = true;
 
 							dbArgs.Add("@assetId", asset.ID);
-							filteredIntersectsTempTable = @"drop table if exists #filteredIntersects;
-							;with assetIntersects as (
-								select * from [Intersect] where ObjectAssetID = @assetId
-								union
-								select * from [Intersect] where SubjectAssetID = @assetId
+
+							filteredIntersectAssets = @$"
+
+							drop table if exists #tempassettypedata;
+
+							with rsdata as
+							(
+							select distinct AssetTypeID
+							from (
+							select I.ObjectAssetTypeID AssetTypeID
+							from [Intersect] I
+							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.Intersecttypeid" : "")}
+							where I.SubjectAssetID = cast(@assetId as bigint)
+							union all
+							select I.SubjectAssetTypeID AssetTypeID
+							from [Intersect] I
+							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.Intersecttypeid" : "")}
+							where I.ObjectAssetID = cast(@assetId as bigint)
+							) a
 							)
-							select ID into #filteredIntersects from assetIntersects";
+							select rsdata.AssetTypeID,ATPath.[Path]
+							into #tempassettypedata
+							from rsdata
+							cross apply dbo.GetAssetTypeTextPathById(rsdata.AssetTypeID, ' > ') ATPath
+							option (recompile);
+
+							create index ix_tempassettypedata on #tempassettypedata(AssetTypeID) include ([Path]);
+
+							drop table if exists #filteredIntersectAssets;
+
+							create table #filteredIntersectAssets (ID int,RelationshipTypeName Nvarchar(4000),AssetPath Nvarchar(2000));
+							create clustered index ix_filteredIntersectAssets on #filteredIntersectAssets(ID);
+
+							insert into #filteredIntersectAssets
+							select  I.ID,
+									P.Name + ' ' + isnull(ATPath.[Path],'---') RelationshipTypeName,
+									ISNULL(AP.DisplayPath,OT2.Name) AssetPath
+							from [Intersect] I
+							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.IntersectTypeID" : "")}
+							inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
+							inner join [Predicate] p on IT.PredicateID = P.ID
+							left join AssetPath AP on AP.Id = I.ObjectAssetID
+							left join AssetType OT2 on OT2.ID = I.ObjectAssetTypeID
+							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.ObjectAssetTypeID
+							where I.SubjectAssetID = cast(@assetId as bigint)
+							option(recompile);
+
+							insert into #filteredIntersectAssets
+							select  I.ID,
+									P.Inverse + ' ' + isnull(ATPath.[Path],'---') RelationshipTypeName,
+									ISNULL(AP.DisplayPath,ST2.Name) AssetPath
+							from [Intersect] I
+							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.IntersectTypeID" : "")}
+							inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
+							inner join [Predicate] p on IT.PredicateID = P.ID
+							left join AssetPath AP on AP.Id = I.SubjectAssetID
+							left join AssetType ST2 on ST2.ID = I.SubjectAssetTypeID 
+							Left outer join #filteredIntersectAssets fia on fia.id = I.ID
+							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.SubjectAssetTypeID
+							where fia.id is null and I.ObjectAssetID = cast(@assetId as bigint)
+							option(recompile);
+							";
 						}
 						else
 						{
 							isFilteredByAssetTypeUID = true;
 							var type = companyContext.AssetTypes.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
 							dbArgs.Add("@assetTypeId", type.ID);
-							filteredIntersectsTempTable = @"drop table if exists #filteredIntersects;
-							;with assetIntersects as (
-								select * from [Intersect] I where i.ObjectAssetTypeID = @assetTypeId
-								union
-								select * from [Intersect] I where i.SubjectAssetTypeID = @assetTypeId
+							filteredIntersectAssets = @$"
+
+							drop table if exists #tempassettypedata;
+
+							with rsdata as
+							(
+							select distinct AssetTypeID
+							from (
+							select I.ObjectAssetTypeID AssetTypeID
+							from [Intersect] I
+							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.Intersecttypeid" : "")}
+							where I.SubjectAssetTypeID = cast(@assetTypeId as int) and I.SubjectAssetID = 0
+							union all
+							select I.SubjectAssetTypeID AssetTypeID
+							from [Intersect] I
+							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.Intersecttypeid" : "")}
+							where I.ObjectAssetTypeID = cast(@assetTypeId as int) and I.ObjectAssetID = 0
+							) a
 							)
-							select ID into #filteredIntersects from assetIntersects";
+							select rsdata.AssetTypeID,ATPath.[Path]
+							into #tempassettypedata
+							from rsdata
+							cross apply dbo.GetAssetTypeTextPathById(rsdata.AssetTypeID, ' > ') ATPath
+							option (recompile);
+
+							create index ix_tempassettypedata on #tempassettypedata(AssetTypeID) include ([Path]);
+
+							drop table if exists #filteredIntersectAssets;
+
+							create table #filteredIntersectAssets (ID int,RelationshipTypeName Nvarchar(max),AssetPath Nvarchar(max));
+							create clustered index ix_filteredIntersectAssets on #filteredIntersectAssets(ID);
+
+							insert into #filteredIntersectAssets
+							select  I.ID,
+									P.Name + ' ' + isnull(ATPath.[Path],'---') RelationshipTypeName,
+									ISNULL(AP.DisplayPath,OT2.Name) AssetPath
+							from [Intersect] I
+							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.IntersectTypeID" : "")}
+							inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
+							inner join [Predicate] p on IT.PredicateID = P.ID
+							left join AssetPath AP on AP.Id = I.ObjectAssetID
+							left join AssetType OT2 on OT2.ID = I.ObjectAssetTypeID 
+							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.ObjectAssetTypeID
+							where I.SubjectAssetTypeID = cast(@assetTypeId as int) and I.SubjectAssetID = 0
+							option(recompile);
+
+							insert into #filteredIntersectAssets
+							select  I.ID,
+									P.Inverse + ' ' + isnull(ATPath.[Path],'---') RelationshipTypeName,
+									ISNULL(AP.DisplayPath,ST2.Name) AssetPath
+							from [Intersect] I
+							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.IntersectTypeID" : "")}
+							inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
+							inner join [Predicate] p on IT.PredicateID = P.ID
+							left join AssetPath AP on AP.Id = I.SubjectAssetID
+							left join AssetType ST2 on ST2.ID = I.SubjectAssetTypeID
+							Left outer join #filteredIntersectAssets fia on fia.id = I.ID
+							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.SubjectAssetTypeID
+							where fia.id is null and I.ObjectAssetTypeID = cast(@assetTypeId as int) and I.ObjectAssetID = 0
+							option(recompile);
+							";
 						}
 
-						//filter items by inner join
-						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (exists(select top 1 1 from #filteredIntersects fi where fi.id = i.ID))";
-
 						//sort by relationship type then by asset
-						_orderBy = "RelationshipSideData.RelationshipTypeName,RelationshipSideData.AssetPath";
+						_orderBy = "cast(RelationshipSideData.RelationshipTypeName as nvarchar(850)),cast(RelationshipSideData.AssetPath as nvarchar(850))";
+						fieldsUsedInMainQuery.Add("RelationshipSideData");
 					}
 				}
 				if (queryParamsList.Any(q => q.Key.ToLower() == "_pagenum"))
@@ -328,8 +688,14 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
+				if (fieldTypes != null && fieldTypes.Count() > 0)
+				{
+					getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "i.Id", listColorsAsJSON, objectType: SystemObjects.Intersect, IsCreateTempTable: true, TempTableScriptList: TempTableScriptList);
+					TempTableScriptStr = string.Join("\n ", TempTableScriptList);
+				}
+
 				// Now deal with dynamic field filters
-				if (fieldTypes != null)
+				if (fieldTypes != null && fieldTypes.Count() > 0)
 				{
 					var avoidFields = new List<string> { "relationshiptypeuid", "subjectuid", "objectuid", "predicateuid", "_pagenum", "_pagesize", "state" };
 					queryParamsList.ForEach(qp =>
@@ -339,24 +705,45 @@ namespace d360.model.DataAccessLayer
 							var fieldType = fieldTypes.FirstOrDefault(i => i.Name.ToLower() == qp.Key.ToLower());
 							if (fieldType != null)
 							{
-								whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") +
-								$@" case {(fieldType.AllowAllValue == true ? $"when F{fieldType.ID}.Value = '0' then @F{fieldType.ID}_AllValue " : "")}
-									when F{fieldType.ID}.FormattedValue is not null then F{fieldType.ID}.FormattedValue
-									{(!string.IsNullOrEmpty(fieldType.DefaultFormattedValue) ? $"else @defaultValueF{fieldType.ID} " : "")}
-									end = @f{fieldType.ID}Value ";
 
-								dbArgs.Add($"@f{fieldType.ID}Value", qp.Value);
-								filteringByFields = true;
+								bool isNumber = decimal.TryParse(qp.Value.Trim('%'), out _);
+								bool isNumbericFieldType = fieldType.Type == DataType.Number.ToString() || fieldType.Type == DataType.Decimal.ToString();
+
+								if (!(!isNumber && isNumbericFieldType))
+								{
+									var select = fieldColumns.Selects().FirstOrDefault(x => x.FieldIdentifier == fieldType.ID.ToString());
+									var join = fieldJoins.Joins().FirstOrDefault(x => x.FieldIdentifier == fieldType.ID.ToString());
+
+									if (select != null && join != null)
+									{
+										var selectField = select.StatementWithoutColumnName;
+										var joinStatement = !string.IsNullOrEmpty(join.SimpleStatement) ? join.SimpleStatement : join.SQLStatement;
+
+										if (join.FieldFilter != null)
+										{
+											dynamicFilterTempTables.AppendLine(join.FieldFilter.SimpleFilterTempTable);
+											dynamicFilters.Add(join.FieldFilter.SimpleFilterStatement);
+										}
+										else
+										{
+											dynamicFilters.Add($@"
+											select  I.ID
+											from  [Intersect] I 
+											{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+											{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.IntersectTypeid" : "")}
+											{joinStatement}
+											left join #TempDynamicFilter tfa on tfa.IntersectId = I.ID
+											where tfa.IntersectId is null and I.IntersectTypeID = cast( @IntersectTypeID as int) and {selectField} = @f{fieldType.ID}Value
+											option(recompile)");
+										}
+									}
+									dbArgs.Add($"@f{fieldType.ID}Value", qp.Value);
+									filteringByFields = true;
+								}
 							}
 						}
 					});
 				}
-			}
-
-
-			if (fieldTypes != null)
-			{
-				getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "i.Id", listColorsAsJSON, objectType: SystemObjects.Intersect);
 			}
 
 			if (queryParams.Any(x => x.Key.ToLower() == "_order"))
@@ -365,62 +752,85 @@ namespace d360.model.DataAccessLayer
 				var joinColumn = fieldColumns.GetStatements().FirstOrDefault(x => x.ToLower().Contains($"[{orderValue}]"));
 				if (!string.IsNullOrEmpty(joinColumn))
 				{
+					var select = fieldColumns.Selects().FirstOrDefault(x => x.Statement == joinColumn);
+					if (select != null)
+					{
+						fieldsUsedInMainQuery.Add(select.FieldIdentifier);
+					}
 					_orderBy = joinColumn.Substring(0, joinColumn.IndexOf(" as ["));
 				}
 				else if (orderValue == "object.[path]")
 				{
-					_orderBy = "ISNULL(ANDP_Object.DisplayPath,OT2.Name)";
+					_orderBy = "cast(ISNULL(ANDP_Object.DisplayPath,OT2.Name) as nvarchar(850))";
 					isSubject = true;
 					orderByAssetPath = true;
+					fieldsUsedInMainQuery.Add("AssetPathObject");
 				}
 				else if (orderValue == "subject.[path]")
 				{
-					_orderBy = "ISNULL(ANDP_Subject.DisplayPath,ST2.Name)";
+					_orderBy = "cast(ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as nvarchar(850))";
 					orderByAssetPath = true;
+					fieldsUsedInMainQuery.Add("AssetPathSubject");
 				}
 				else if (orderValue == "relationshiptypename")
 				{
-					_orderBy = "RelationshipSideData.RelationshipTypeName";
+					_orderBy = "cast(RelationshipSideData.RelationshipTypeName as nvarchar(850))";
 					orderByAssetPath = true;
 				}
 				else if (orderValue == "assetpath")
 				{
-					_orderBy = "RelationshipSideData.AssetPath";
+					_orderBy = "cast(RelationshipSideData.AssetPath as nvarchar(850))";
 					orderByAssetPath = true;
 				}
 			}
-
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
 			{
 				var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
-				
+
 				if (!string.IsNullOrEmpty(simpleFilter))
 				{
 					filteringByFields = true;
+					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
 					simpleFilter = companyContext.GetEscapedFilterString(simpleFilter);
 
 					dbArgs.Add("@simpleFilter", simpleFilter);
 
-					List<string> simpleFilters = new List<string>();
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
 					foreach (var ft in fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString()))
 					{
-						if (ft.Type == DataType.Tag.ToString())
-						{
-							string simpleFilterTagSql = @"exists (select top 1 AT.TagId from AssetTag AT
-														inner join Tag T on AT.TagId = T.Id
-														where AT.AssetID = A.ID and T.Value like @simpleFilter)";
+						bool isNumbericFieldType = ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
 
-							simpleFilters.Add(simpleFilterTagSql);
-						}
-						else if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
+						if (!isNumber && isNumbericFieldType)
 						{
-							string ftformatted = companyContext.LookupFieldHasColorItem(ft) ? $@"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name')" : $@"F{ft.ID}.FormattedValue";
-							simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else {ftformatted} end as value) like @simpleFilter");
+							//if search term is not a number, do not filter over numeric field types
+							continue;
 						}
-						else
+
+						var select = fieldColumns.Selects().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
+						var join = fieldJoins.Joins().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
+
+						if (select != null && join != null)
 						{
-							simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+							var selectField = select.StatementWithoutColumnName;
+							var joinStatement = !string.IsNullOrEmpty(join.SimpleStatement) ? join.SimpleStatement : join.SQLStatement;
+
+							if (join.FieldFilter != null)
+							{
+								simpleFilterTempTables.AppendLine(join.FieldFilter.SimpleFilterTempTable);
+								simpleFilters.Add(join.FieldFilter.SimpleFilterStatement);
+							}
+							else
+							{
+								simpleFilters.Add($@"
+								select  I.ID
+								from  [Intersect] I 
+								{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+								{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.IntersectTypeid" : "")}
+								{joinStatement}
+								left join #TempSimpleFilter tfa on tfa.IntersectId = I.ID
+								where tfa.IntersectId is null and I.IntersectTypeID = @IntersectTypeID and {selectField} like @simpleFilter
+								option(recompile)");
+							}
 						}
 					}
 
@@ -428,24 +838,47 @@ namespace d360.model.DataAccessLayer
 					{
 						if (isSubject)
 						{
-							simpleFilters.Add($"ISNULL(ANDP_Object.DisplayPath,OT2.Name) like @simpleFilter");
+							simpleFilters.Add($@"
+									select  I.ID
+									from  [intersect] I
+									{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+									{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.IntersectTypeid" : "")}
+									left join AssetPath ANDP_Object on ANDP_Object.Id = I.ObjectAssetID
+									left join [AssetType] OT2 on I.ObjectAssetTypeID = OT2.ID 
+									left join #TempSimpleFilter tfa on tfa.IntersectId = I.ID
+									where tfa.IntersectId is null and ISNULL(ANDP_Object.DisplayPath,OT2.Name) like @simpleFilter
+									option(recompile)");
 						}
 						else
 						{
-							simpleFilters.Add($"ISNULL(ANDP_Subject.DisplayPath,ST2.Name) like @simpleFilter");
-
+							simpleFilters.Add($@"
+									select  I.ID
+									from  [intersect] I
+									{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+									{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.IntersectTypeid" : "")}
+									left join AssetPath ANDP_Subject on ANDP_Subject.Id = I.SubjectAssetID
+									left join [AssetType] ST2 on ST2.ID = I.SubjectAssetTypeID
+									left join #TempSimpleFilter tfa on tfa.IntersectId = I.ID
+									where tfa.IntersectId is null and ISNULL(ANDP_Subject.DisplayPath,ST2.Name) like @simpleFilter
+									option(recompile)");
 						}
 					}
 
 					if (isFilteredByAssetUID || isFilteredByAssetTypeUID)
 					{
-						simpleFilters.Add($"RelationshipSideData.RelationshipTypeName like @simpleFilter");
-						simpleFilters.Add($"RelationshipSideData.AssetPath like @simpleFilter");
-					}
+						simpleFilters.Add($@"
+							select  RelationshipSideData.ID
+							from  #filteredIntersectAssets RelationshipSideData 
+							left join #TempSimpleFilter tfa on tfa.IntersectId = RelationshipSideData.ID
+							where tfa.IntersectId is null and RelationshipSideData.RelationshipTypeName like @simpleFilter
+							option(recompile)");
 
-					if (simpleFilters.Any()) //it prevents `and()` instruction appears in WHERE clause
-					{
-						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $"({string.Join(" or ", simpleFilters)})";
+						simpleFilters.Add($@"
+							select  RelationshipSideData.ID
+							from  #filteredIntersectAssets RelationshipSideData 
+							left join #TempSimpleFilter tfa on tfa.IntersectId = RelationshipSideData.ID
+							where tfa.IntersectId is null and RelationshipSideData.AssetPath like @simpleFilter
+							option(recompile)");
 					}
 				}
 			}
@@ -453,7 +886,7 @@ namespace d360.model.DataAccessLayer
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
 			{
 				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
-				
+
 				if (!string.IsNullOrEmpty(value))
 				{
 					filteringByFields = true;
@@ -470,7 +903,12 @@ namespace d360.model.DataAccessLayer
 					filterExpressionParser.LoadFieldTypes(fieldTypes, tempFieldColumns.GetStatements());
 					var fieldsQuery = filterExpressionParser.Parse(value, out Dictionary<string, object> sqlParams, out List<int> filteredFields);
 
-					whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + fieldsQuery;
+					foreach (var ff in filteredFields)
+					{
+						filterfieldsUsedInMainQuery.Add(ff.ToString());
+					}
+
+					whereStatements.Add(fieldsQuery);
 
 					foreach (var item in sqlParams)
 					{
@@ -511,8 +949,11 @@ namespace d360.model.DataAccessLayer
 			});
 			predicateTypeSql += " end as 'Predicate.Type', ";
 
-			fieldJoins.Add(" left join AssetPath ANDP_Object on ANDP_Object.Id = O.Id ", "AssetPathObject");
-			fieldJoins.Add(" left join AssetPath ANDP_Subject on ANDP_Subject.Id = S.Id ", "AssetPathSubject");
+			if (orderByAssetPath || includeAssetPath)
+			{
+				fieldJoins.Add(" left join AssetPath ANDP_Object on ANDP_Object.Id = O.Id ", "AssetPathObject");
+				fieldJoins.Add(" left join AssetPath ANDP_Subject on ANDP_Subject.Id = S.Id ", "AssetPathSubject");
+			}
 
 			if (isExport)
 			{
@@ -522,83 +963,224 @@ namespace d360.model.DataAccessLayer
 				fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ') PO ", null);
 			}
 
-			if (isFilteredByAssetUID)
+			if (isFilteredByAssetUID || isFilteredByAssetTypeUID)
 			{
 				//apply data to check which side on relationship are we
-				fieldJoins.Add(@"outer apply (select case when I.SubjectAssetID = @assetId then 'Subject' else 'Object' end as Value)Side", null);
-				//depending on relationship side reslove relationship type name and asset name
-				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(coalesce(O.AssetTypeID,OT1.ID, OT2.ID), ' > ')),'---')
-				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(coalesce(S.AssetTypeID,ST1.ID,ST2.ID), ' > ')),'---') end as RelationshipTypeName,
-				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
-				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData", null);
+				fieldJoins.Add(@"inner join  #filteredIntersectAssets RelationshipSideData on RelationshipSideData.ID = I.ID ", "RelationshipSideData");
 			}
-			else if (isFilteredByAssetTypeUID)
+
+			var whereSql = "";
+			if (whereStatements.Any())
 			{
-				//apply data to check which side on relationship are we
-				fieldJoins.Add(@"outer apply (select case when I.SubjectAssetTypeID = @assetTypeId and I.SubjectAssetID = 0 then 'Subject' else 'Object' end as Value)Side", null);
-				//depending on relationship side reslove relationship type name and asset name
-				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(coalesce(O.AssetTypeID,OT1.ID, OT2.ID), ' > ')),'---')
-				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(coalesce(S.AssetTypeID,ST1.ID,ST2.ID), ' > ')),'---') end as RelationshipTypeName,
-				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
-				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData", null);
+				whereSql = $"where {string.Join(" and ", whereStatements)}";
+			}
+
+			fieldsUsedInMainQuery.Distinct().ToList().ForEach(field =>
+			{
+				var joins = fieldJoins.Joins().Where(x => x.SQLStatement.ToLowerInvariant().Contains(field.ToLowerInvariant()));
+				if (!(joins != null && joins.Count() > 0))
+				{
+					joins = fieldJoins.Joins().Where(x => x.FieldIdentifier.ToLowerInvariant().Contains(field.ToLowerInvariant()));
+				}
+				includedJoins.AddRange(joins);
+			});
+
+			filterfieldsUsedInMainQuery.Distinct().ToList().ForEach(field =>
+			{
+				var joins = fieldJoins.Joins().Where(x => x.SQLStatement.ToLowerInvariant().Contains(field.ToLowerInvariant()));
+				if (!(joins != null && joins.Count() > 0))
+				{
+					joins = fieldJoins.Joins().Where(x => x.FieldIdentifier.ToLowerInvariant().Contains(field.ToLowerInvariant()));
+				}
+				filterJoins.AddRange(joins);
+			});
+
+			string simpleFiltersTempTablesQuery = "";
+			if (dbArgs.ParameterNames.Contains("simpleFilter"))
+			{
+				simpleFilterTempTables.AppendLine("drop table if exists #TempSimpleFilter");
+				simpleFilterTempTables.AppendLine("create table #TempSimpleFilter(IntersectId int)");
+				simpleFilterTempTables.AppendLine("create index ix_TempSimpleFilter on #TempSimpleFilter (IntersectId)");
+
+				for (int i = 0; i < simpleFilters.Count; i++)
+				{
+					simpleFilterTempTables.AppendLine("insert into #TempSimpleFilter");
+					simpleFilterTempTables.AppendLine(simpleFilters[i]);
+				}
+
+				simpleFilterTempTables.Remove(simpleFilterTempTables.Length - 1, 1);
+				simpleFiltersTempTablesQuery = simpleFilterTempTables.ToString();
+			}
+
+			string dynamicFiltersTempTablesQuery = "";
+			if (dynamicFilters != null && dynamicFilters.Count() > 0)
+			{
+				dynamicFilterTempTables.AppendLine("drop table if exists #TempDynamicFilter");
+				dynamicFilterTempTables.AppendLine("create table #TempDynamicFilter(IntersectId int)");
+				dynamicFilterTempTables.AppendLine("create index ix_TempDynamicFilter on #TempDynamicFilter (IntersectId)");
+
+				for (int i = 0; i < dynamicFilters.Count; i++)
+				{
+					dynamicFilterTempTables.AppendLine("insert into #TempDynamicFilter");
+					dynamicFilterTempTables.AppendLine(dynamicFilters[i]);
+				}
+
+				dynamicFilterTempTables.Remove(dynamicFilterTempTables.Length - 1, 1);
+				dynamicFiltersTempTablesQuery = dynamicFilterTempTables.ToString();
+			}
+
+			string IntersectTypeTempTablesQuery = "";
+			if (AddInnerIntersectType)
+			{
+				IntersectTypeTempTables.AppendLine("declare @AddInnerIntersectType bit = 0;");
+				IntersectTypeTempTables.AppendLine("declare @filteredIntersectTypes table (Id int,index ix_filteredIntersectTypes (Id))");
+
+
+				for (int i = 0; i < fiterIntersectType.Count; i++)
+				{
+					IntersectTypeTempTables.AppendLine(fiterIntersectType[i]);
+				}
+
+				IntersectTypeTempTables.Remove(IntersectTypeTempTables.Length - 1, 1);
+				IntersectTypeTempTablesQuery = IntersectTypeTempTables.ToString();
+			}
+
+			string IntersectTempTablesQuery = "";
+			if (AddInnerIntersect)
+			{
+				IntersectTempTables.AppendLine("declare @AddInnerIntersect bit = 0;");
+				IntersectTempTables.AppendLine("declare @filteredIntersect table(Id int, index ix_filteredIntersect (Id))");
+
+				for (int i = 0; i < fiterIntersect.Count; i++)
+				{
+					IntersectTempTables.AppendLine(fiterIntersect[i]);
+				}
+
+				IntersectTempTables.Remove(IntersectTempTables.Length - 1, 1);
+				IntersectTempTablesQuery = IntersectTempTables.ToString();
+			}
+
+			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
+			bool useDynamicTempTable = dynamicFiltersTempTablesQuery.Length > 0;
+
+			bool containsAnyFilter = useSimpleFilterTempTable || useDynamicTempTable || AddInnerIntersect || AddInnerIntersectType;
+
+			bool addWhereSql = true;
+
+			string GetBaseQuery(bool excludeFilterQueries = false)
+			{
+				return $@"
+				select  I.ID
+				{baseTableSql()} 
+				{(excludeFilterQueries && containsAnyFilter ? "inner join #filtered_results fr on fr.IntersectId = I.ID" : "")}
+				{(!excludeFilterQueries && useSimpleFilterTempTable ? "inner join #TempSimpleFilter ta on ta.IntersectId = I.ID" : "")}
+				{(!excludeFilterQueries && AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
+				{(!excludeFilterQueries && AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = T.Id" : "")}
+				{(!excludeFilterQueries && useDynamicTempTable ? "inner join #TempDynamicFilter df on df.IntersectId = I.ID" : "")}
+
+				{includedJoins.SQLSimpleStatement}
+				{(addWhereSql ? filterJoins.SQLSimpleStatement : "")}
+				{(addWhereSql ? whereSql : "")}
+				";
+			};
+
+			var filteredResultsTempTable = "";
+
+			if (containsAnyFilter)
+			{
+				filteredResultsTempTable = @$"
+				{simpleFiltersTempTablesQuery}
+				drop table if exists #filtered_results
+				create table #filtered_results (IntersectId int)
+
+				insert into #filtered_results
+				{GetBaseQuery()}
+				option (recompile);";
+
+				addWhereSql = false;
+			}
+
+			string orderByClause = $"order by {_orderBy} {_orderDirection} {(!_orderBy.Contains("I.ID") ? ",I.ID " : "")}";
+
+			var baseSQL = $@"
+				{populateNoReadSQL}
+				{IntersectTypeTempTablesQuery}
+				{IntersectTempTablesQuery}
+				{dynamicFiltersTempTablesQuery}
+				{TempTableScriptStr}
+				{filteredIntersectAssets}
+				{filteredResultsTempTable}
+				
+				declare @tempintersect table (id int identity(1,1), IntersectId int,
+				index ix_tempintersect_id clustered (Id)
+				)
+
+				insert into @tempintersect
+				{GetBaseQuery(true)}
+				{orderByClause}
+				offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
+				option (recompile);";
+
+			string countSQL = "";
+			if (includeTotal)
+			{
+				if (containsAnyFilter)
+				{
+					countSQL = "select @total = count(1) from #filtered_results option(recompile);";
+				}
+				else
+				{
+					countSQL = $"select @total = count(1) from ({GetBaseQuery(true)}) a option(recompile);";
+				}
 			}
 
 			string fieldColumnsSql = "";
 			if (fieldColumns.Any())
 				fieldColumnsSql = string.Join(",\n", fieldColumns.GetStatements()) + ",";
 
-			var countFullSql = $@"select	
-		   @total = count(1) 
-				{countSql} 
-				{(filteringByFields ? string.Join("\n", fieldJoins.GetStatements()) : "")} 
-				{whereClause}";
-
-			string orderByClause = $"order by {_orderBy} {_orderDirection}";
-
 			var sql = $@"
-{filteredIntersectsTempTable}
-{prefilteredIntersectTypesTempTable}
 
-declare @total int
-{(includeTotal ? countFullSql : "")}
+declare @total int;
 
-select	@pageSize as 'pageSize',
-		@pageNum as 'pageNum',
-		@total as 'total',
-		(
-		select	lower(I.Uid) as Uid,
-				lower(T.Uid) as RelationshipTypeUid,
-				{(isFilteredByAssetUID || isFilteredByAssetTypeUID ? @"RelationshipSideData.RelationshipTypeName,
-				RelationshipSideData.AssetPath," : "")}
-				{stateSql}
-				{fieldColumnsSql}
-				lower(P.UID) as 'Predicate.Uid',
-				{predicateTypeSql}
-				P.Name as 'Predicate.Name',
-				P.Inverse as 'Predicate.Inverse',
-				lower(S.Uid) as 'Subject.Uid',
-				ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid'
-				{(includeAssetPath ? ",ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'" : "")}
-				{(isExport ? ",PS.[Path] as 'Subject.AssetTypePath'" : "")}                
-				{(isExport ? ",ADVS.DisplayValue as 'Subject.DisplayName'" : "")}
-				,lower(O.Uid) as 'Object.Uid'
-				,ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
-				{(isExport ? ",ADVO.DisplayValue as 'Object.DisplayName'" : "")}
-				{(isExport ? ",PO.[Path] as 'Object.AssetTypePath'" : "")}
-				{(includeAssetPath ? ",ISNULL(ANDP_Object.DisplayPath,OT2.Name) as 'Object.[Path]'" : "")}
+{countSQL}
+
+select	
+@pageSize as 'pageSize',
+@pageNum as 'pageNum',
+@total as 'total',
+(
+select	lower(I.Uid) as Uid,
+		lower(T.Uid) as RelationshipTypeUid,
+		{(isFilteredByAssetUID || isFilteredByAssetTypeUID ? @"RelationshipSideData.RelationshipTypeName,
+		RelationshipSideData.AssetPath," : "")}
+		{stateSql}
+		{fieldColumnsSql}
+		lower(P.UID) as 'Predicate.Uid',
+		{predicateTypeSql}
+		P.Name as 'Predicate.Name',
+		P.Inverse as 'Predicate.Inverse',
+		lower(S.Uid) as 'Subject.Uid',
+		ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid'
+		{(includeAssetPath ? ",ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'" : "")}
+		{(isExport ? ",PS.[Path] as 'Subject.AssetTypePath'" : "")}                
+		{(isExport ? ",ADVS.DisplayValue as 'Subject.DisplayName'" : "")}
+		,lower(O.Uid) as 'Object.Uid'
+		,ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
+		{(isExport ? ",ADVO.DisplayValue as 'Object.DisplayName'" : "")}
+		{(isExport ? ",PO.[Path] as 'Object.AssetTypePath'" : "")}
+		{(includeAssetPath ? ",ISNULL(ANDP_Object.DisplayPath,OT2.Name) as 'Object.[Path]'" : "")}
 				
-				
-				
-		{baseTableSql}
+		{baseTableSql(true)}
 		{string.Join("\n", fieldJoins.GetStatements())}
-		{whereClause} 
-		{orderByClause}
-		offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
+		order by TempI.ID
 		for json path,INCLUDE_NULL_VALUES
-		) as 'items'
-for json path, WITHOUT_ARRAY_WRAPPER";
+) as 'items'
+for json path, WITHOUT_ARRAY_WRAPPER
+OPTION(RECOMPILE)";
 
-			var models = await companyContext.GetDatabaseJsonAsObjectAsync<JObject>(sql, dbArgs, ApiTimeout);
+			var getAllQuery = $"{baseSQL} {sql}";
+
+			var models = await companyContext.ExecuteGetRelationshipQuery<JObject>(getAllQuery, cancellationToken.Value, dbArgs, ApiTimeout);
 
 			return models;
 		}

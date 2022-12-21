@@ -36,7 +36,6 @@ import { ConfigurationAssetTypeBreadcrumbsComponent } from './tabs/shared/config
 import { HeaderModule } from '../../shared/header/header.module';
 import { ConfigurationAssetTypeListTabsComponent } from './list/asset-type-list-tabs.component';
 import { GovernanceRolesComponent } from './governanceRoles/governance-roles.component';
-import { FormsModule } from '@angular/forms';
 import { EditorModule } from 'primeng/editor';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
@@ -45,6 +44,11 @@ import { ConnectorLabelsModule } from './connectorLabels/connector-labels.module
 import { AssetTypeDetailV2Module } from '../../shared/asset-type-detail-v2/asset-type-detail-v2.module';
 import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.component";
 import { PortalsModule } from '../../shared/portals/portals.module';
+import { FormsModule } from "@angular/forms";
+import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configuration-asset-type-levels-page.component';
+import { AdminLevelListComponent } from './levels/admin-level-list.component';
+import { AdminLevelEditorComponent } from './levels/admin-level-editor.component';
+import { TableModule } from 'primeng/table';
 
 @NgModule({
     imports: [
@@ -74,13 +78,15 @@ import { PortalsModule } from '../../shared/portals/portals.module';
         ConnectorLabelsModule,
         AssetTypeDetailV2Module,
         SharedGridPagingInfoModule,
-        PortalsModule
+        PortalsModule,
+		FormsModule,
+		TableModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
         ConfigurationAssetTypeListComponent,
         AssetTypeListSidePanelWrapperComponent,
-        AssetTypeListHeaderComponent,
+		AssetTypeListHeaderComponent,
         ConfigurationAssetTypeEditorPageComponent,
         ConfigurationAssetTypeDeletePageComponent,
         ConfigurationAssetTypeFieldsPageComponent,
@@ -93,7 +99,10 @@ import { PortalsModule } from '../../shared/portals/portals.module';
         ConfigurationAssetTypeBreadcrumbsComponent,
         ConfigurationAssetTypeListTabsComponent,
         ConfigurationAssetTypeConnectorLabelsPageComponent,
-        GovernanceRolesComponent
+        GovernanceRolesComponent,
+		ConfigurationAssetTypeLevelsPageComponent,
+		AdminLevelListComponent,
+		AdminLevelEditorComponent
     ],
     exports: [],
 })

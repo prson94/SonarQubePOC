@@ -196,7 +196,7 @@ namespace d360.model.DataAccessLayer
 											select ITD.PredicateInverse from IntersectTypeDetail ITD
 											inner join [Predicate] P on ITD.ObjectAssetTypeID = A.ID 
 											and P.ID = ITD.PredicateID 
-											and P.Type = {(int)PredicateType.InterTypeHierarchy}
+											and P.Type in ({(int)PredicateType.InterTypeHierarchy},{(int)PredicateType.IntraTypeHierarchy})
 											  ) PredicateInverse ";
 				
 			}
@@ -767,7 +767,9 @@ namespace d360.model.DataAccessLayer
 						where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id
 						option(recompile);
 
-					insert into #OwnershipLookupAssets
+					if exists (select top 1 1 from ResponsibilityDetail rd where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id)
+					begin
+						insert into #OwnershipLookupAssets
 						select a.[ID] as AssetID
 							 ,rd.[ResponsibilityTypeID]
 							 ,rd.[ResponsibilityTypeName]
@@ -783,6 +785,7 @@ namespace d360.model.DataAccessLayer
 						inner join asset a on rd.assettypeid = a.assettypeid
 						where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id
 						option(recompile);
+					end
 
 					insert into #OwnershipLookupAssets
 						select a.[ID] as AssetID
@@ -4006,15 +4009,18 @@ where an.Uid = fam.uid)
 							end as class,
 							att.name,
 							att.description
-							{(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")}
+							{(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")},
+							Levels.depth as maxDepth
 						 from AssetType att
 						 outer apply (
 							select	ATParent.uid 
 							from	IntersectType IT
 									inner join [Predicate] P on P.ID = it.PredicateID and P.Type in (3,4)
 									inner join [AssetType] ATParent on ATParent.ID = IT.SubjectAssetTypeID and IT.ObjectAssetTypeID = att.ID
+							where att.Class not in ({(int)AssetTypeClass.Model},{(int)AssetTypeClass.Policy})
 						 ) ATParent
 						 {(isReturnCount ? " left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID " : "")}
+						outer apply (select MAX(level) as depth from AssetTypeLevel where AssetTypeID = att.id)Levels
 						where att.Class in @filterClasses
 						 {assetTypePermissionWhere}
 					order by att.name";

@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AllocationDeleteMessage" xml:space="preserve">
+    <value>割り当ては削除されました!</value>
+  </data>
+  <data name="AllocationNotExists" xml:space="preserve">
+    <value>uid {0} との割り当ては存在しません。</value>
+  </data>
+  <data name="DuplicateMeasureUid" xml:space="preserve">
+    <value>ペイロードに指定された [measureUid] を複製します。</value>
+  </data>
+  <data name="EffectiveDateNotGTToday" xml:space="preserve">
+    <value>[effectiveDate] 今日の日付(UTC)より大きいものではなりません。</value>
+  </data>
+  <data name="ErrorAddingScoreResults" xml:space="preserve">
+    <value>スコア結果の追加にエラー</value>
+  </data>
+  <data name="ErrorGetDataQualityScore" xml:space="preserve">
+    <value>スコア結果のデータ品質エビデンス取得にエラー</value>
+  </data>
+  <data name="ErrorUnallocatedAssetType" xml:space="preserve">
+    <value>割り当てられなかったアセットタイプを取得する際のエラー</value>
+  </data>
+  <data name="LowerThreshold" xml:space="preserve">
+    <value>低い閾値を設定する必要があります。</value>
+  </data>
+  <data name="RangeLimitThreshold" xml:space="preserve">
+    <value>[Threshold] 値は 0 から 100 の間にある必要があります</value>
+  </data>
+  <data name="RestrictDeleteScore" xml:space="preserve">
+    <value>残念ながら、測定値が定義されているスコアを削除することはできません。</value>
+  </data>
+  <data name="RestrictReadAssetScoreITem" xml:space="preserve">
+    <value>このスコア項目に関連するアセットを読み込む権限はありません。</value>
+  </data>
+  <data name="RestrictReadVersionHistory" xml:space="preserve">
+    <value>この測定値の測定バージョン履歴を取得することはできません。</value>
+  </data>
+  <data name="RestrictRecalculateScore" xml:space="preserve">
+    <value>この測定に関連するスコア項目を再計算することはできません。</value>
+  </data>
+  <data name="RestrictUpdateScoreField" xml:space="preserve">
+    <value>ただし、スコアにアクティブな測定値が定義されている場合、アセットタイプ、スコアタイプ、または外部計算フラグを更新することはできません。</value>
+  </data>
+  <data name="ScoreDefinitionNotFound" xml:space="preserve">
+    <value>{0} でスコア定義が見つかりませんでした。</value>
+  </data>
+  <data name="ScoreExists" xml:space="preserve">
+    <value>スコア割り当てはすでに存在します。</value>
+  </data>
+  <data name="ScoreNotDataQualityMeasure" xml:space="preserve">
+    <value>Uid {0} のスコア項目は、データ品質測定ではありません。</value>
+  </data>
+  <data name="ScoreNotExists" xml:space="preserve">
+    <value>Uid {0} のスコア項目は存在しません。</value>
+  </data>
+  <data name="ScoreNotExternalCalculation" xml:space="preserve">
+    <value>{0} でのスコア定義は外部から計算されません。</value>
+  </data>
+  <data name="ScoreNotInternalCalculation" xml:space="preserve">
+    <value>{0} でのスコア定義は内部で計算されません。</value>
+  </data>
+  <data name="UpperGtLower" xml:space="preserve">
+    <value>[lowerThreshold] これより小さい必要があります [upperThreshold]</value>
+  </data>
+  <data name="UpperThreshold" xml:space="preserve">
+    <value>[upperThreshold] 設定しなければなりません</value>
+  </data>
+</root>

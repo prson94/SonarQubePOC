@@ -8,29 +8,7 @@ declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-resource-following-tile',    
-    template: `
-                <header *ngIf="isMe">
-                    <ng-container i18n>Items You Follow</ng-container>
-                    <d3s-tile-actions hasExport="true" (exportClick)="export()"></d3s-tile-actions>    
-                </header>
-                <header *ngIf="!isMe">
-                    <ng-container i18n>Items {{resource?.FirstName}} Follows</ng-container>
-                    <d3s-tile-actions hasExport="true" (exportClick)="export()"></d3s-tile-actions>      
-                </header>
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>      
-                <div *ngIf="!isLoading" class="row">
-                    <div class="col l3 s12 relationship-container">
-                        <div class="row relationship" *ngFor="let r of items; let i = index" [ngClass]="{'active' : isSelected(r)}" (click)="select(r)">
-                            <div class="col s10 name" [title]="r.Type | technicalNameToDisplayValue">{{r.TypeName}}</div>
-                            <div class="col s2 count center" [ngClass]="{'empty-count': r.Count == 0, 'count': r.Count != 0}">{{r.Count}}</div>
-                        </div>                        
-                    </div>
-                    <div class="col l9 s12">       
-                        <d3s-resource-following-grid-tile *ngIf="selected != null" [simpleFilter]="showFilter" [resourceId]="resourceId" [objectType]="selected.Type" [objectId]="selected.TypeID"></d3s-resource-following-grid-tile>
-                    </div>                    
-                </div>
-`
-    ,
+    templateUrl: './resource-following.tile.html',
     providers: [ResourcesService]
 })
 
