@@ -1,5 +1,5 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { DashboardService } from '../../../services/dashboard.service';
 import { DashboardModel } from '../../../models/dashboard.model';
@@ -35,7 +35,6 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 		private headerBreadcrumbService: HeaderBreadcrumbService,
 		private titleAndTabsService: TitleAndTabsService,
 		secondaryNavService: SecondaryNavService,
-		private router: Router,
 		breadcrumbService: HeaderBreadcrumbService,
 		protected settingsService: CompanySettingsService
 	) {

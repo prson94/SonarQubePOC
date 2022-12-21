@@ -1,5 +1,5 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 import { ObjectStatisticChildItem } from '../../../models/object-statistics.model';
@@ -52,7 +52,6 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
         protected objectStatisticsService: ObjectStatisticsService,
         protected objectDetailService: ObjectDetailService,
         private route: ActivatedRoute,
-        private router: Router,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         breadcrumbService: HeaderBreadcrumbService   

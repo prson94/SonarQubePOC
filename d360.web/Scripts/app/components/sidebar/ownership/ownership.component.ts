@@ -1,8 +1,6 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Subject } from "rxjs";
-
-import { ObjectDetailService } from '../../../services/object-detail.service';
 
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -21,7 +19,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
         </div>
     `,
 	providers: [
-		ObjectDetailService,
 	]
 })
 
@@ -30,8 +27,6 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
 
 	constructor(
 		private route: ActivatedRoute,
-		private router: Router,
-		private objectDetailService: ObjectDetailService,
 		secondaryNavService: SecondaryNavService,
 		breadcrumbService: HeaderBreadcrumbService,
 		protected settingsService: CompanySettingsService

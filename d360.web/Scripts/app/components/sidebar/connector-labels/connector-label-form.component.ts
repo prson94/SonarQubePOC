@@ -1,7 +1,6 @@
 ﻿import {
     ChangeDetectorRef,
     Component,
-    ElementRef,
     EventEmitter,
     Input,
     OnChanges,
@@ -45,8 +44,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     constructor(
         private asyncValidators: AsyncValidatorService,
         private cdRef: ChangeDetectorRef,
-        private connectorLabelService: ConnectorLabelService,
-        private elRef: ElementRef
+        private connectorLabelService: ConnectorLabelService
     ) {
 
     }

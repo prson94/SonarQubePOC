@@ -1,7 +1,6 @@
 ﻿import { Component, OnDestroy, OnInit } from "@angular/core";
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
-import { ObjectDetailService } from '../../../services/object-detail.service';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -19,7 +18,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
                 </div>
             </div>
         `,
-    providers: [ObjectDetailService]
+    providers: []
 })
 
 export class PermissionsComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -28,9 +27,7 @@ export class PermissionsComponent extends BaseComponent implements OnInit, OnDes
     title: string;
     showControls: boolean;
 
-    constructor(private objectDetailService: ObjectDetailService,
-        private route: ActivatedRoute,
-        private router: Router,
+    constructor(private route: ActivatedRoute,
         private authenticationService: AuthenticationService,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,

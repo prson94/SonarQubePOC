@@ -186,19 +186,6 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         return this.fields.find((x) => x.name === field).apiName;
     }
 
-    private checkSimpleSearchEnter(event, dt: Table) {
-        if (event.keyCode === 13) {
-            this.doSimpleSearch(dt);
-        } else {
-            if (this.simpleSearchID > 0) {
-                window.clearTimeout(this.simpleSearchID);
-                this.simpleSearchID = 0;
-            }
-
-            this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds);
-        }
-    }
-
     private doSimpleSearch(dt: Table) {
         if (dt) {
             dt.reset();
