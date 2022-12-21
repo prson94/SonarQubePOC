@@ -2,7 +2,7 @@ import * as _ from "lodash";
 import { Component, Input, OnDestroy } from "@angular/core";
 import { SelectItem, TreeNode } from "primeng/api";
 import { forkJoin, Subject, Subscription } from "rxjs";
-import { AssetCount, AssetTypeClass } from "../../../../models/asset.model";
+import { AssetCount, AssetTypeClass, FlowObjectType } from "../../../../models/asset.model";
 import { AssetService } from "../../../../services/asset.service";
 import { NumberOfRowsByCategoryService } from "../../../../services/number-of-rows-by-category.service";
 import { AppConstants } from "../../../../static/constants";
@@ -107,22 +107,38 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		}
 		menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.data.uid, type.data.parentUid) });
 		menuItems.push({ "title": $localize`Delete`, callback: () => { this.assetTypeToDelete = type } });
-		type["data"]["MenuItems"] = menuItems;
+		type.data["MenuItems"] = menuItems;
 
 		//resolve color names
 		const colorCode = (type?.data?.backColor ?? '') as string;
 		var defColor = this.defaultColors.find((c) => c.title.toLowerCase() === colorCode.toLowerCase());
-		type["data"]["backColorName"] = defColor ? defColor.value : $localize`Custom`;
+		type.data["backColorName"] = defColor ? defColor.value : $localize`Custom`;
 
 		//resolve icons
 		if (type?.data?.icon) {
 			const typeIcon = (type?.data?.icon ?? '') as string;
 			const icon = this.icons.find((x) => x.id.toLowerCase() === typeIcon.replace('fa-', '').toLowerCase());
-			type["data"]["iconName"] = icon?.name;
+			type.data["iconName"] = icon?.name;
 		}
 		else {
 			type.data.icon = 'fa-book';
-			type["data"]["iconName"] = '---';
+			type.data["iconName"] = '---';
+		}
+
+		if (this.hasFlowObjectType) {
+			var flowObjectType = type.data["flowObjectType"] as FlowObjectType;
+
+			switch (flowObjectType) {
+				case FlowObjectType.Activity:
+					type.data["flowObjectTypeName"] = $localize`Activity`;
+					return;
+				case FlowObjectType.Event:
+					type.data["flowObjectTypeName"] = $localize`Event`;
+					return;
+				case FlowObjectType.Gateway:
+					type.data["flowObjectTypeName"] = $localize`Gateway`;
+					return;
+			}
 		}
 
 	}
@@ -167,6 +183,9 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	}
 	get hasIcon() {
 		return featuresToTypeClasses.icon.includes(this.assetTypeClass);
+	}
+	get hasFlowObjectType() {
+		return featuresToTypeClasses.flowObjectType.includes(this.assetTypeClass);
 	}
 
 	get addNewAssetTypeWarning() {

@@ -77,6 +77,19 @@
 
 								</div>
 
+								<div class="field-col" *ngIf="isDiagramAssetTypeForm">
+									<label for="flowObjectType" class="ig-label" i18n>Flow Object Type</label>
+									<p-dropdown name="flowObjectType"
+												formControlName="flowObjectType"
+												[igDataCy]="'Asset_Type_Modal_Field_flowObjectType'"
+												igDropdown
+												required
+												igSize="full"
+												[appendTo]="'body'"
+												[options]="flowObjectTypes"></p-dropdown>
+
+								</div>
+
 								<div class="field-col" *ngIf="assetTypeForm.get('predicateUid').value">
 									<div class="flex">
 										<label for="autoDisplayParent" class="ig-label" i18n>Auto Display Owner/Parent</label>
@@ -151,7 +164,7 @@
 
 
 								</div>
-								<div class="field-col">
+								<div class="field-col" *ngIf="!isDiagramAssetTypeForm">
 									<label for="isDescriptionEnabled" class="ig-label" i18n>Show Description on List Page</label>
 									<ig-switch [attr.name]="'isDescriptionEnabled'"
 											   [formControlName]="'isDescriptionEnabled'"
@@ -163,7 +176,7 @@
 
 
 								</div>
-								<div *ngIf="assetTypeForm.get('isDescriptionEnabled').value === true"
+								<div *ngIf="assetTypeForm.get('isDescriptionEnabled').value === true && !isDiagramAssetTypeForm"
 									 class="field-col">
 									<div class="flex">
 										<div class="flex-col">
@@ -186,11 +199,33 @@
 										</div>
 									</div>
 								</div>
+								<!--on diagram type forms icon will not whos in special category-->
+								<div class="field-col" *ngIf="isDiagramAssetTypeForm">
+									<div class="flex">
+										<div class="flex-col">
+											<div class="flex">
+												<label for="icon" class="ig-label" i18n>Icon</label>
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Sets the icon representing items of this type within the summary page/search results."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</div>
+											<ig-icon-picker [showGovIcons]="true"
+															name="icon"
+															formControlName="icon"
+															[formControl]="assetTypeForm.controls['icon']"
+															[igDataCy]="'Asset_Type_Modal_Field_icon'"
+															ngDefaultControl></ig-icon-picker>
+
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
 				</ig-property-group>
-				<ig-property-group [igformGroup]="assetTypeForm" title="Styles" i18n-title>
+				<ig-property-group *ngIf="showStylesPropertyGroup" [igformGroup]="assetTypeForm" title="Styles" i18n-title>
 					<div inputs>
 						<div class="form-group">
 							<div class="row">
@@ -247,7 +282,7 @@
 					</div>
 				</ig-property-group>
 
-				<ig-property-group *ngIf="synonyms.length > 0" [igformGroup]="assetTypeForm" title="Grammatic Type Allocation" i18n-title>
+				<ig-property-group *ngIf="synonyms.length > 0 && showSynonymPropertyGroup" [igformGroup]="assetTypeForm" title="Grammatic Type Allocation" i18n-title>
 					<div inputs>
 						<div class="form-group">
 							<div class="row" *ngFor="let syn of synonyms;">

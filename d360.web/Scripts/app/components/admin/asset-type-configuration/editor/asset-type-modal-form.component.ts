@@ -3,7 +3,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms"
 import { result } from "lodash";
 import { SelectItem } from "primeng/api";
 import { forkJoin } from "rxjs";
-import { AssetType, AssetTypeApiModel, AssetTypeClass, AssetTypeEditorModel, Hierarchy, IconStyle } from "../../../../models/asset.model";
+import { AssetType, AssetTypeApiModel, AssetTypeClass, AssetTypeEditorModel, FlowObjectType, Hierarchy, IconStyle } from "../../../../models/asset.model";
 import { Predicate } from "../../../../models/predicate.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { AssetService } from "../../../../services/asset.service";
@@ -38,6 +38,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	synonyms: Predicate[] = [];
 	hierarchyPredicates: Predicate[] = [];
 	hierarchyPredicatesSelectItem: SelectItem[] = [];
+
+	flowObjectTypes: SelectItem[] = [];
 
 	@ViewChild('form', { static: false }) formElement: ElementRef;
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
@@ -81,6 +83,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			this.hierarchyPredicates.forEach((p) => {
 				this.hierarchyPredicatesSelectItem.push({ value: p.Uid, title: p.Inverse, label: p.Inverse });
 			});
+
+			this.flowObjectTypes = [];
+			this.flowObjectTypes.push({ value: FlowObjectType.Event, label: $localize`Event` });
+			this.flowObjectTypes.push({ value: FlowObjectType.Activity, label: $localize`Activity` });
+			this.flowObjectTypes.push({ value: FlowObjectType.Gateway, label: $localize`Gateway` });
 		});
 	}
 
@@ -104,9 +111,10 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			useAsTransformation: [null, { updateOn: "blur" }],
 			predicateUid: [null, { updateOn: "blur" }],
 			autoDisplayParent: [null, { updateOn: "blur" }],
-			canEditParent: [null, { updateOn: "blur" }]
+			canEditParent: [null, { updateOn: "blur" }],
+			flowObjectType: [null, { updateOn: "blur" }]
 		});
-		
+
 		this.setDefaultFormValues();
 	}
 
@@ -152,7 +160,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				if (assetType.PredicateInverse) {
 					predicateUid = this.hierarchyPredicates.find((x) => x.Inverse.toLowerCase() === assetType.PredicateInverse.toLowerCase())?.Uid;
 				}
-					this.assetTypeForm.controls["predicateUid"].setValue(predicateUid);
+				this.assetTypeForm.controls["predicateUid"].setValue(predicateUid);
 
 				this.title = $localize`Edit Asset Type`;
 				this.subTitle = assetType.Name;
@@ -161,6 +169,10 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 					assetType.SynonymAllocations.forEach((syn) => {
 						this.assetTypeForm.controls[`syn_${syn}`].setValue(true);
 					});
+				}
+
+				if (this.isDiagramAssetTypeForm) {
+					this.assetTypeForm.controls["flowObjectType"].setValue(assetType.FlowObjectType);
 				}
 
 				this.isLoading = false;
@@ -185,6 +197,9 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				case AssetTypeClass.Model:
 					this.subTitle = $localize`Models`;
 					break;
+				case AssetTypeClass.DiagramAsset:
+					this.subTitle = $localize`Diagram Assets`;
+					break;
 				default:
 					this.subTitle = `unset`;
 			}
@@ -208,6 +223,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		model.IsDescriptionEnabled = this.assetTypeForm.get("isDescriptionEnabled").value;
 		model.DescriptionButtonName = this.assetTypeForm.get("descriptionButtonName").value;
 		model.IsDescriptionVisibleByDefault = this.assetTypeForm.get("isDescriptionVisibleByDefault").value;
+
 		model.BackgroundColor = this.assetTypeForm.get("backgroundColor").value;
 		model.IconStyle = new IconStyle();
 		model.IconStyle.Icon = this.assetTypeForm.get("icon").value;
@@ -225,6 +241,10 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 		if (this.parentUid) {
 			model.ParentUid = this.parentUid;
+		}
+
+		if (this.isDiagramAssetTypeForm) {
+			model.FlowObjectType = this.assetTypeForm.get("flowObjectType").value;
 		}
 
 		model.SynonymAllocations = [];
@@ -319,5 +339,17 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	close() {
 		this.setDefaultFormValues();
 		this.onClose.emit();
+	}
+
+	get isDiagramAssetTypeForm() {
+		return this.assetTypeClass === AssetTypeClass.DiagramAsset;
+	}
+
+	get showStylesPropertyGroup() {
+		return !this.isDiagramAssetTypeForm;
+	}
+
+	get showSynonymPropertyGroup() {
+		return !this.isDiagramAssetTypeForm;
 	}
 }

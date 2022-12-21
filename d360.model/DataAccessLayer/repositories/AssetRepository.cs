@@ -4053,7 +4053,8 @@ where an.Uid = fam.uid)
 							{(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")},
 							Levels.depth as maxDepth,
 							ATS.IconBackColor as backColor,
-							ATS.icon
+							ATS.icon,
+							att.flowObjectType
 						 from AssetType att
 						left join AssetTypeStyle ATS on ATS.ID = att.ID
 						 outer apply (

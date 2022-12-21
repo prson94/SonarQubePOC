@@ -56,10 +56,14 @@
 								<th style="width: 300px"  *ngIf="hasBackgroundColor" [ttSortableColumn]="'backColorName'">
 									<ng-container i18n>Background Color</ng-container>
 									<d3s-sortIcon [field]="'backColorName'"></d3s-sortIcon>
+								</th>								
+								<th style="width: 300px"  *ngIf="hasFlowObjectType" [ttSortableColumn]="'flowObjectTypeName'">
+									<ng-container i18n>Flow Object Type</ng-container>
+									<d3s-sortIcon [field]="'flowObjectType'"></d3s-sortIcon>
 								</th>
-								<th style="width: 200px" *ngIf="hasIcon" [ttSortableColumn]="'icon'">
+								<th style="width: 200px" *ngIf="hasIcon" [ttSortableColumn]="'iconName'">
 									<ng-container i18n>Icon</ng-container>
-									<d3s-sortIcon [field]="'icon'"></d3s-sortIcon>
+									<d3s-sortIcon [field]="'iconName'"></d3s-sortIcon>
 								</th>
 								<th style="width: 40px"></th>
 							</tr>
@@ -89,7 +93,10 @@
 										 [style.background]="item.backColor">
 									</div>
 									{{item.backColorName}}
-								</td>
+								</td>	
+								<td *ngIf="hasFlowObjectType" class="background-column">
+									{{item.flowObjectTypeName}}
+								</td>								
 								<td *ngIf="hasIcon">
 									<div class="grid-icon">
 										<i class="fa {{item.icon}}"></i>{{item.iconName}}

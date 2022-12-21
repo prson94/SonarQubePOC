@@ -264,6 +264,7 @@ namespace d360.core.entities
 
 		public string backColor { get; set; }
 		public string icon { get; set; }
+		public FlowObjectType flowObjectType { get; set; }
 	}
 
 	public class UserGetAPIRestrictionModel

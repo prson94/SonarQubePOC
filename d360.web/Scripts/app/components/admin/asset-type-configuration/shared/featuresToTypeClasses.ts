@@ -15,6 +15,10 @@ export const featuresToTypeClasses = {
 	],
 	icon: [
 		AssetTypeClass.BusinessAsset,
-		AssetTypeClass.TechnicalAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.DiagramAsset
+	],
+	flowObjectType: [
+		AssetTypeClass.DiagramAsset
 	]
 };
