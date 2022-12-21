@@ -53,11 +53,11 @@
 									<ng-container i18n>Maximum Depth</ng-container>
 									<d3s-sortIcon [field]="'maxDepth'"></d3s-sortIcon>
 								</th>
-								<th *ngIf="hasBackgroundColor" [ttSortableColumn]="'backColorName'">
+								<th style="width: 300px"  *ngIf="hasBackgroundColor" [ttSortableColumn]="'backColorName'">
 									<ng-container i18n>Background Color</ng-container>
 									<d3s-sortIcon [field]="'backColorName'"></d3s-sortIcon>
-								</th>		
-								<th *ngIf="hasIcon" [ttSortableColumn]="'icon'">
+								</th>
+								<th style="width: 200px" *ngIf="hasIcon" [ttSortableColumn]="'icon'">
 									<ng-container i18n>Icon</ng-container>
 									<d3s-sortIcon [field]="'icon'"></d3s-sortIcon>
 								</th>
@@ -89,9 +89,11 @@
 										 [style.background]="item.backColor">
 									</div>
 									{{item.backColorName}}
-								</td>				
+								</td>
 								<td *ngIf="hasIcon">
-									{{item.icon}}
+									<div class="grid-icon">
+										<i class="fa {{item.icon}}"></i>{{item.iconName}}
+									</div>
 								</td>
 								<td>
 									<div class="token-popup-menu" *ngIf="item.MenuItems">

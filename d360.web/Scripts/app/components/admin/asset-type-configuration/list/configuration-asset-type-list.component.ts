@@ -11,6 +11,8 @@ import { Router } from "@angular/router";
 import { featuresToTypeClasses } from "../shared/featuresToTypeClasses";
 import { CompanySettingsService } from "../../../../services/settings.service";
 import { CompanySettingEnum } from "../../../../models/settings.model";
+import { IconService } from "../../../../services/icon.service";
+import { IconProperties } from "../../../../models/icon-properties.model";
 
 // eslint-disable-next-line no-var
 declare var CurrentResourceID;
@@ -40,9 +42,11 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 	gridDataSub: Subscription;
 	defaultColors: SelectItem[] = [];
+	icons: IconProperties[] = [];
 
 	constructor(
 		private assetsService: AssetService,
+		private iconService: IconService,
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 		private router: Router,
 		protected settingsService: CompanySettingsService) {
@@ -68,10 +72,12 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 			this.gridDataSub = forkJoin(
 				this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false),
-				this.assetsService.getAllColors()
+				this.assetsService.getAllColors(),
+				this.iconService.getIconProperties()
 			).subscribe((result) => {
 				const items = result[0];
 				this.defaultColors = result[1];
+				this.icons = result[2];
 
 				const treeNodes = items.map(AssetCount.ConvertToTreeNode);
 				this.artifactTypes = AssetCount.ListToTree(treeNodes, this.listItemTransform.bind(this));
@@ -107,6 +113,18 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		const colorCode = (type?.data?.backColor ?? '') as string;
 		var defColor = this.defaultColors.find((c) => c.title.toLowerCase() === colorCode.toLowerCase());
 		type["data"]["backColorName"] = defColor ? defColor.value : $localize`Custom`;
+
+		//resolve icons
+		if (type?.data?.icon) {
+			const typeIcon = (type?.data?.icon ?? '') as string;
+			const icon = this.icons.find((x) => x.id.toLowerCase() === typeIcon.replace('fa-', '').toLowerCase());
+			type["data"]["iconName"] = icon?.name;
+		}
+		else {
+			type.data.icon = 'fa-book';
+			type["data"]["iconName"] = '---';
+		}
+
 	}
 
 	ngOnInit() {
