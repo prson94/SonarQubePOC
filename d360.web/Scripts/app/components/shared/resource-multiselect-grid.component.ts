@@ -50,56 +50,7 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
 
 @Component({
     selector: 'd3s-resource-multiselect-grid',
-    template: `                
-                <span class="resource-grid">
-                    <ig-search-field *ngIf="showSimpleFilter"
-                                     mode="Keypress"
-                                     [debounce]="600"
-                                     (onSearch)="dt.filterGlobal($event, 'contains')"
-                                     [(ngModel)]="simpleTextFilter"
-                                     [infoTooltip]="simpleSearchTooltipHTML">
-                    </ig-search-field>
-                    <p-table #dt [value]="items" [selectionMode]="multiple ? 'multiple' : 'single'" [scrollable]="true" scrollWidth="100%" [lazy]="true" [totalRecords]="totalRecords" [metaKeySelection]="!multiple" 
-                        [globalFilterFields]="['Text','Type']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [loading]="isLoading" 
-                        loadingIcon="fa fa-spinner" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);"  (onLazyLoad)="lazyLoad($event)">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th style="flex: 0 0 38px"><p-tableHeaderCheckbox *ngIf="multiple"></p-tableHeaderCheckbox></th>
-                                <th [pSortableColumn]="'Text'">
-                                    <ng-container i18n>Name</ng-container>
-                                    <d3s-sortIcon [field]="'Text'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'Type'" *ngIf="showResourceType">
-                                    <ng-container i18n>Resource Type</ng-container>
-                                    <d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
-                                </th>
-                                <th style="flex: 0 0 5%" *ngIf="showToolTip"></th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr [pSelectableRow]="item">
-                                <td style="flex: 0 0 38px">
-                                    <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
-                                    <p-tableRadioButton *ngIf="!multiple" [value]="item"></p-tableRadioButton>
-                                </td>
-                                <td>{{item.Text}}</td>
-                                <td>{{item.Type}}</td>
-                                <td *ngIf="showToolTip" style="flex: 0 0 5%">
-                                    <div class="RowTools">
-                                        <d3s-preview-tooltip [objectType]="item.Value.split('|')[0]" [objectId]="item.Value.split('|')[1]" icon="info"></d3s-preview-tooltip>
-                                    </div>
-                                </td>
-                            </tr>
-                        </ng-template>
-                        <ng-template *ngIf="true" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                            <div *ngIf="showSelectedSummary && selectedItems && selectedItems.length > 0" class="multiselect-grid-sel"><ng-container i18n>Selected Items</ng-container>:
-                                <p *ngIf="selectedItems && selectedItems.length > 0"><span *ngFor="let item of selectedItems;let last = last" >{{last?item.Text:item.Text +','}} </span></p>
-                            </div>
-                        </ng-template>
-                    </p-table>
-                </span>
-                `,
+    templateUrl: './resource-multiselect-grid.component.html',
     providers: [RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: ['.resource-grid ig-search-field { width: 100%; padding: 8px 0;} .resource-grid ig-search-field .ig-search-field { width:100% !important; }'],
