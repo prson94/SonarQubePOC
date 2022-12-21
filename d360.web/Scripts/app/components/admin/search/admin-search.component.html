@@ -34,27 +34,28 @@
 				 [scrollable]="true"
 				 [scrollHeight]="'calc(100vh - 331px)'">
         <ng-template pTemplate="header">
-            <tr class="tr-head">
-                <th i18n>
+			<tr class="tr-head">
+				<th i18n>
 					<p-treeTableHeaderCheckbox [ngClass]="{'disabled': isUpdating || isGlobalSelectDisabled}">
 					</p-treeTableHeaderCheckbox>
 					Name
 				</th>
-				<th i18n style="width: 200px">Assets in Index</th>
-				<th i18n style="width: 200px">Assets in Database</th>
+				<th i18n class="number-cell">Assets in Index</th>
+				<th i18n class="number-cell">Assets in Database</th>
+				<th style="width: 40px"></th>
 				<th i18n style="width: 200px">Status</th>
 				<th i18n style="width: 200px">Last Updated</th>
-                <th style="width: 40px"></th>
-            </tr>
+				<th style="width: 40px"></th>
+			</tr>
         </ng-template>
         <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
-            <tr class="tr-body" (click)="onRowClick($event, rowNode, treeTable, rowToggle, kebabMenuDiv)"
+			<tr class="tr-body" (click)="onRowClick($event, rowNode, treeTable, rowToggle, kebabMenuDiv)"
 				[ngClass]="{'p-highlight': treeTable.isSelected(rowNode.node) && canRebuildNode(rowNode.node)}">
-                <td [class.name-cell]="rowNode.level !== 0">
+				<td [class.name-cell]="rowNode.level !== 0">
 					<ng-container *ngIf="rowNode.level === 0">
 						<ng-container *ngTemplateOutlet="checkBox"></ng-container>
 					</ng-container>
-                    <p-treeTableToggler #rowToggle
+					<p-treeTableToggler #rowToggle
 										[rowNode]="rowNode"
 										(click)="$event.stopImmediatePropagation()">
 					</p-treeTableToggler>
@@ -62,15 +63,16 @@
 						<ng-container *ngTemplateOutlet="checkBox"></ng-container>
 					</ng-container>
 					<span class="name-text">
-						{{rowData.Name}}
+						{{rowData.AssetTypePath ?? rowData.Name}}
 					</span>
-                </td>
-				<td style="width: 200px">
-					{{rowData.CurrentCount}}
 				</td>
-				<td style="width: 200px">
-					{{rowData.DatabaseCount}}
+				<td class="number-cell">
+					{{rowData.CurrentCount | number}}
 				</td>
+				<td class="number-cell">
+					{{rowData.DatabaseCount | number}}
+				</td>
+				<td style="width: 40px"></td>
 				<td style="width: 200px">
 					<div *ngIf="rowData.Status !== 0" class="rebuild-status">
 						<div class="rebuild-status__circle rebuild-status__circle--{{jobStatuses[rowData.Status].color}}">
@@ -78,7 +80,7 @@
 						{{jobStatuses[rowData.Status].name}}
 					</div>
 				</td>
-                <td style="width: 200px">
+				<td style="width: 200px">
 					{{ (rowData.LastUpdate | date:'medium') }}
 				</td>
 				<td style="width: 40px">
@@ -91,7 +93,7 @@
 						</ig-popup-menu>
 					</div>
 				</td>
-            </tr>
+			</tr>
 			<ng-template #checkBox>
 				<p-treeTableCheckbox adminSearchCheckbox [value]="rowNode"
 									 [disabled]="isUpdating || !this.canRebuildNode(rowNode.node)"

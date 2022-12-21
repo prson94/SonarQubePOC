@@ -44,9 +44,11 @@ namespace d360.extensions
         public string ClassName { get; set; }
         
         public Guid AssetTypeUid { get; set; }
-    }
 
-    public class IndexableCount
+		public string AssetTypePath { get; set; }
+	}
+
+	public class IndexableCount
     {
         public string ClassName { get; set; }
         

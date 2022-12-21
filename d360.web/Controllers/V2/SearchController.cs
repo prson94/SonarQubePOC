@@ -328,7 +328,11 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
 			}
 
-			List<IndexableType> types = Company.Query<IndexableType>("SELECT Name, Class, Uid as AssetTypeUid FROM [dbo].[AssetType] at WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.AssetTypeId = at.ID)").ToList();
+			List<IndexableType> types = Company.Query<IndexableType>(
+				@"SELECT at.Name, at.Class, at.Uid as AssetTypeUid, P.[Path] as AssetTypePath
+				FROM [dbo].[AssetType] at
+				cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P 
+				WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.AssetTypeId = at.ID)").ToList();
 			types.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
 
 			List<IndexableType> classes = assetTypeClasses.Where(c => types.Any(at => at.Class == (int)c)).Select(c => new IndexableType { Name = c.ToString(), Class = (int)c, AssetTypeUid = Guid.Empty, ClassName = c.ToString() }).ToList();
