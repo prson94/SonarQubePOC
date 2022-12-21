@@ -767,7 +767,9 @@ namespace d360.model.DataAccessLayer
 						where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id
 						option(recompile);
 
-					insert into #OwnershipLookupAssets
+					if exists (select top 1 1 from ResponsibilityDetail rd where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id)
+					begin
+						insert into #OwnershipLookupAssets
 						select a.[ID] as AssetID
 							 ,rd.[ResponsibilityTypeID]
 							 ,rd.[ResponsibilityTypeName]
@@ -783,6 +785,7 @@ namespace d360.model.DataAccessLayer
 						inner join asset a on rd.assettypeid = a.assettypeid
 						where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id
 						option(recompile);
+					end
 
 					insert into #OwnershipLookupAssets
 						select a.[ID] as AssetID
