@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
 import { ArtifactService } from '../../services/artifacts.service';
@@ -8,7 +8,6 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { Artifact, SynonymPermission } from '../../models/artifacts.model';
-import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SiteUrlHelpers } from "../../static/site-url-helpers";
 import { finalize } from 'rxjs/operators';
 import { SiteMenuService } from '../../services/site-menu.service';
@@ -17,9 +16,7 @@ import { DataProfileService } from '../../services/dataprofile.service';
 import { forkJoin, Subscription } from 'rxjs';
 import { AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
-import { CompanySettingEnum } from '../../models/settings.model';
 import { LinkClickInterceptor } from '../../services/href-click-service';
-import { AssetService } from '../../services/asset.service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 import { SidePanelService } from '../../services/side-panel.service';
@@ -39,12 +36,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 
 	private artifact: Artifact;
 	private sub: any;
-	private currentAreaNameSubscription: any;
-	private currentAreaName: string;
 
-	private messages: MessageBarItem[] = [];
-	private showSurvey: boolean = false;
-	private showSocialScoreBar: boolean = true;
 	private showDataProfile: boolean = false;
 	private dataProfile: any;
 	private sidePanelOpen: boolean = false;
@@ -60,7 +52,6 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 	resourceUid: string;
 
 	constructor(
-		private route: ActivatedRoute,
 		private sidePanelService: SidePanelService,
 		secondaryNavService: SecondaryNavService,
 		private router: Router,
@@ -72,7 +63,6 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 		private dataProfileService: DataProfileService,
 		protected settingsService: CompanySettingsService,
 		private linkClickInterceptor: LinkClickInterceptor,
-		private assetService: AssetService,
 		private featureFlagService: FeatureFlagsService
 	) {
 		super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
@@ -84,7 +74,6 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 
 		this.logAssetAction(UsageAction.View, this.uid);
 		this.isLoading = true;
-		this.messages = [];
 
 		this.permissionsService.getAssetPermissions(this.uid)
 			.subscribe((res) => {
@@ -97,7 +86,6 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 			this.linkClickInterceptor.handleEvent(this, ev);
 		});
 
-		this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
 
 	}
 
@@ -111,7 +99,6 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 	}
 
 	private load(assetUid: string) {
-		this.messages = []; /* clear any messages for this artifact */
 		this
 			.artifactService
 			.getArtifactByUid(assetUid)

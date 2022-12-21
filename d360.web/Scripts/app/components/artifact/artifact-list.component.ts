@@ -1,5 +1,4 @@
 ﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
 import { ArtifactTypeService } from '../../services/artifact-type.service';
@@ -68,9 +67,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 
 	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
 
-	constructor(private route: ActivatedRoute,
-		private router: Router,
-		private artifactTypeService: ArtifactTypeService,
+	constructor(private artifactTypeService: ArtifactTypeService,
 		private sidePanelService: SidePanelService,
 		private titleAndTabsService: TitleAndTabsService,
 		headerBreadcrumbService: HeaderBreadcrumbService,

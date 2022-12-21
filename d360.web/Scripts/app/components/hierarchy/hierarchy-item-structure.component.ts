@@ -12,7 +12,7 @@
 } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { AssetTypeApiModel, AssetTypeClass, AssetTypeLevelApiModel } from '../../models/asset.model';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { StringConstants } from '../../static/string-constants';
@@ -174,7 +174,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		protected secondaryNavService: SecondaryNavService,
 		protected settingsService: CompanySettingsService,
 		webAnalyticsService: WebAnalyticsService,
-		private route: ActivatedRoute,
 		private router: Router,
 		private changeDetectorRef: ChangeDetectorRef,
 		private linkClickInterceptor: LinkClickInterceptor
@@ -737,45 +736,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 					this.router.navigateByUrl(url);
 				}
 			});
-	}
-
-	private expandNodes() {
-		if (this.treeTable.filters["global"]) { // only expand if global filter populated.
-			this.totalRecordsFiltered = 0;
-			this.totalRecordsFiltered = this.treeTable.filteredNodes ? this.treeTable.filteredNodes.length : 0;
-			this.expandChildNodes(this.treeTable.filteredNodes, this.treeTable.globalFilterFields, this.treeTable.filters["global"].value);
-		}
-	}
-
-	private expandChildNodes(nodes: TreeNode[], fields: string[], search: string) {
-		nodes.forEach((node) => {
-			var match = false;
-			fields.forEach((field) => { if (node.data[field] && String(node.data[field]).toLowerCase().includes(search.toLowerCase())) { match = true; } }); //check each of the global filterfields for filter value
-			if (!match) { // if we haven't found a match expand the node and check children.
-				node.expanded = true;
-				if (node.children && node.children.length > 0) {
-					this.totalRecordsFiltered = this.totalRecordsFiltered + node.children.length;
-					this.expandChildNodes(node.children, fields, search);
-				}
-			}
-			else { // if matched then count number of child and futher child
-				if (node.children && node.children.length > 0) {
-					this.totalRecordsFiltered = this.totalRecordsFiltered + node.children.length;
-					this.expandChildNodesCount(node.children);
-				}
-			}
-		}
-		);
-	}
-
-	private expandChildNodesCount(nodes: TreeNode[]) {
-		nodes.forEach((node) => {
-			if (node.children && node.children.length > 0) {
-				this.totalRecordsFiltered = this.totalRecordsFiltered + node.children.length;
-				this.expandChildNodesCount(node.children);
-			}
-		}
-		);
 	}
 
 	onSort() {

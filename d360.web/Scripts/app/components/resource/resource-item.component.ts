@@ -5,10 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ResourcesService } from '../../services/resources.service';
 import { ObjectStatisticsService } from '../../services/object-statistics.service';
-import { UriBasedService } from '../../services/uri-based.service';
 import { SocialService } from '../../services/social.service';
-import { ObjectStatistics } from '../../models/object-statistics.model';
-import { WorkflowType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
@@ -34,7 +31,7 @@ enum PageMode {
 @Component({
     selector: 'd3s-resource-item',
     templateUrl: './resource-item.component.html',
-    providers: [ResourcesService, ObjectStatisticsService, UriBasedService, SocialService]
+    providers: [ResourcesService, ObjectStatisticsService, SocialService]
 })
 
 export class ResourceItemComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -47,15 +44,11 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     showAllUsersAPIKey = false;
     private totNumber = 0;
     private days = 90;
-	private resourceType = ' ';
 	resourceId: number;
 
     isApiKeysPopupVisible = false;
 
-    private statistics: ObjectStatistics;
-    private selectedWorkflow: WorkflowType;
     private pageMode: PageMode = PageMode.Default;
-    private showResourcesLink: boolean = false;
     PageMode = PageMode;
     private allowChangePassword = !SingleSignOn;
     itemsOwn: SecondaryNavItem;
@@ -71,7 +64,6 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         private route: ActivatedRoute,
         private resourcesService: ResourcesService,
         private statisticsService: ObjectStatisticsService,
-        private uriBasedService: UriBasedService,
         protected settingsService: CompanySettingsService,
         private socialService: SocialService,
         secondaryNavService: SecondaryNavService,
@@ -82,7 +74,6 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     }
 
     ngOnInit() {
-        this.showResourcesLink = this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
         this.isLoading = true;
 
         this.sub = this.route.params.subscribe((params) => {
@@ -134,7 +125,6 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     updateStatistics() {
         this.statisticsService.getObjectStatistics(this.resource.uid).subscribe(
             (s) => {
-                this.statistics = s;
             }
         );
     }

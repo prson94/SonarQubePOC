@@ -63,8 +63,6 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 
 	constructor(
 		private sidePanelService: SidePanelService,
-		private route: ActivatedRoute,
-		private router: Router,
 		secondaryNavService: SecondaryNavService,
 		protected modelsService: ModelsService,
 		protected policiesService: PoliciesService,

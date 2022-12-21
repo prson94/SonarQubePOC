@@ -10,7 +10,7 @@ import {
     SearchState
 } from '../../models/search-result.model';
 import { catchError, debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, of, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { BaseObservableService } from '../../services/baseObservable.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AuthenticationService } from '../../services/authentication.service';
@@ -21,14 +21,9 @@ import { SearchSession } from './search-session';
 
 @Injectable()
 export class SearchStateService extends BaseObservableService {
-
-    private readonly sessionKey:string = "d360SearchState";
-    private readonly sessionAgeMinutes: number = 10;
     private readonly debounceValue: number = 400;
     private readonly subCategoryKeySeparator: string = "___";
 
-    private AggSub$: Subscription;
-    private MainSub$: Subscription;
     private AggQuery$: BehaviorSubject<SearchQuery> = new BehaviorSubject<SearchQuery>(new SearchQuery());
     private MainQuery$: BehaviorSubject<SearchQuery> = new BehaviorSubject<SearchQuery>(new SearchQuery());
 
@@ -283,7 +278,7 @@ export class SearchStateService extends BaseObservableService {
      */
     createQuerySubscriptions() {
         //Aggregation query - results create the checkbox tree
-        this.AggSub$ = this.AggQuery$.pipe(
+        this.AggQuery$.pipe(
             debounceTime(this.debounceValue),
             distinctUntilChanged(this.compareQueries),
             tap((val) => { this._treeLoading.next(true); }),
@@ -334,7 +329,7 @@ export class SearchStateService extends BaseObservableService {
         let initialQuery = true;
 
         //Main query - results goes in the card list
-        this.MainSub$ = this.MainQuery$.pipe(
+        this.MainQuery$.pipe(
             debounceTime(this.debounceValue),
             distinctUntilChanged(this.compareQueries),
             tap((val) => { this._loading.next(true); }),
