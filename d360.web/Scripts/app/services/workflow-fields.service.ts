@@ -45,13 +45,11 @@ export class WorkflowFieldsService {
     private contextualFields: any[] = [];
 
     private objectType: string;
-    private objectId: number;
     private changeType: WorkflowChangeType;
 
 
     setWorkflow(objectType: string, objectId: number, changeType: WorkflowChangeType) {
         this.objectType = objectType;
-        this.objectId = objectId;
         this.changeType = changeType;
 
         this.contextualFields = [];

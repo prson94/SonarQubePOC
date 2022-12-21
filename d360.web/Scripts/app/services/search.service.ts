@@ -125,12 +125,6 @@ export class SearchService extends BaseObservableService  {
         );
     }
 
-    //Private message that clears visible categories cache.
-    private clearCache() {
-        this.reload$.next();
-        this.visibleCategories$ = null;
-    }
-
     public getIndexableTypes(): Observable<IndexableType[]> {
         return this.http
             .get("api/v2/search/indexableTypes")

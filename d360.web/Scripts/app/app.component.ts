@@ -27,6 +27,12 @@ declare var DataDogService;
 })
 
 export class AppComponent implements AfterContentInit, OnDestroy {
+    public get document(): Document {
+        return this._document;
+    }
+    public set document(value: Document) {
+        this._document = value;
+    }
     msgSub: Subscription;
     errorSub: Subscription;
     paramSub: Subscription;
@@ -40,13 +46,14 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     secondNavOpen: boolean = false;
 
     constructor(
-        private messagesService: MessagesObservableService,
+        messagesService: MessagesObservableService,
         protected headerActionsService: HeaderActionsService,
         private cookieService: CookieService,
         private route: ActivatedRoute,
         private toastService: MessageService,
         private router: Router,
-        @Inject(DOCUMENT) private document: Document,
+        @Inject(DOCUMENT)
+        private _document: Document,
         private renderer: Renderer2,
         private config: PrimeNGConfig) {
         this.msgs = [];

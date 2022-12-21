@@ -1,5 +1,5 @@
 import { first, map } from 'rxjs/operators';
-import { ChangeDetectorRef, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AbstractControl, AsyncValidatorFn, ValidationErrors } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -7,8 +7,7 @@ import { HttpClient } from '@angular/common/http';
 @Injectable()
 export class AsyncValidatorService {
 
-    constructor(private httpClient: HttpClient,
-        private cdRef: ChangeDetectorRef) {
+    constructor(private httpClient: HttpClient) {
     }
 
     public labelUniqueValidator(): AsyncValidatorFn {
