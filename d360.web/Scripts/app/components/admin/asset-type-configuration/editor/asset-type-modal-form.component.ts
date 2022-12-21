@@ -374,6 +374,6 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	get showSynonymPropertyGroup() {
-		return !this.isDiagramAssetTypeForm;
+		return !this.isDiagramAssetTypeForm && this.assetTypeClass !== AssetTypeClass.Rule;
 	}
 }
