@@ -172,7 +172,7 @@ export class AssetCount {
     }
 
 
-	public static ListToTree(arr: TreeNode[]): TreeNode[] {
+	public static ListToTree(arr: TreeNode[], menuItemSetterFcn: Function = null): TreeNode[] {
         var tree = [],
             mappedArr = {},
             arrElem,
@@ -199,7 +199,18 @@ export class AssetCount {
                     tree.push(mappedElem);
                 }
             }
-        }
+		}
+
+		if (menuItemSetterFcn) {
+			tree.forEach((type) => {
+				menuItemSetterFcn(type);
+				if (type.children) {
+					type.children.forEach((childType) => {
+						menuItemSetterFcn(childType);
+					});
+				}
+			});
+		}
         return tree;
     }
 }

@@ -53,8 +53,15 @@
 									<ng-container i18n>Maximum Depth</ng-container>
 									<d3s-sortIcon [field]="'maxDepth'"></d3s-sortIcon>
 								</th>
-								<th *ngIf="canAddHierarchy" style="width: 30px"></th>
-								<th style="width: 30px"></th>
+								<th *ngIf="hasBackgroundColor" [ttSortableColumn]="'backColorName'">
+									<ng-container i18n>Background Color</ng-container>
+									<d3s-sortIcon [field]="'backColorName'"></d3s-sortIcon>
+								</th>		
+								<th *ngIf="hasIcon" [ttSortableColumn]="'icon'">
+									<ng-container i18n>Icon</ng-container>
+									<d3s-sortIcon [field]="'icon'"></d3s-sortIcon>
+								</th>
+								<th style="width: 40px"></th>
 							</tr>
 						</ng-template>
 						<ng-template pTemplate="body"
@@ -77,11 +84,16 @@
 								<td *ngIf="hasMaxDepthColumn">
 									{{item.maxDepth}}
 								</td>
-								
-								
-							
+								<td *ngIf="hasBackgroundColor" class="background-column">
+									<div class="back-color-sample"
+										 [style.background]="item.backColor">
+									</div>
+									{{item.backColorName}}
+								</td>				
+								<td *ngIf="hasIcon">
+									{{item.icon}}
+								</td>
 								<td>
-									
 									<div class="token-popup-menu" *ngIf="item.MenuItems">
 										<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
 										<ig-popup-menu (onSelect)="onPopupMenuClick($event)"

@@ -210,8 +210,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		model.IsDescriptionVisibleByDefault = this.assetTypeForm.get("isDescriptionVisibleByDefault").value;
 		model.BackgroundColor = this.assetTypeForm.get("backgroundColor").value;
 		model.IconStyle = new IconStyle();
-		model.IconStyle.Icon = this.assetTypeForm.get("backgroundColor").value;
-		model.IconStyle.BackColor = "#000";
+		model.IconStyle.Icon = this.assetTypeForm.get("icon").value;
+		model.IconStyle.BackColor = this.assetTypeForm.get("backgroundColor").value;
 		model.IconStyle.ForeColor = "#FFF";
 		model.UseAsTransformation = this.assetTypeForm.get("useAsTransformation").value;
 

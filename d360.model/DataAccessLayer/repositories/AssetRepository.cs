@@ -4051,8 +4051,11 @@ where an.Uid = fam.uid)
 							att.name,
 							att.description
 							{(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")},
-							Levels.depth as maxDepth
+							Levels.depth as maxDepth,
+							ATS.IconBackColor as backColor,
+							ATS.icon
 						 from AssetType att
+						left join AssetTypeStyle ATS on ATS.ID = att.ID
 						 outer apply (
 							select	ATParent.uid 
 							from	IntersectType IT

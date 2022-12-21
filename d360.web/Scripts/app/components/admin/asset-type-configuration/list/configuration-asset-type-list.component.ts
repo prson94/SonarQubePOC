@@ -1,7 +1,7 @@
 import * as _ from "lodash";
-import { Component, Input } from "@angular/core";
-import { TreeNode } from "primeng/api";
-import { Subject } from "rxjs";
+import { Component, Input, OnDestroy } from "@angular/core";
+import { SelectItem, TreeNode } from "primeng/api";
+import { forkJoin, Subject, Subscription } from "rxjs";
 import { AssetCount, AssetTypeClass } from "../../../../models/asset.model";
 import { AssetService } from "../../../../services/asset.service";
 import { NumberOfRowsByCategoryService } from "../../../../services/number-of-rows-by-category.service";
@@ -20,7 +20,7 @@ declare var CurrentResourceID;
 	templateUrl: './configuration-asset-type-list.component.html',
 	styleUrls: ['./configuration-asset-type-list.component.less'],
 })
-export class ConfigurationAssetTypeListComponent {
+export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	@Input() assetTypeClass: AssetTypeClass;
 
 	rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
@@ -28,15 +28,18 @@ export class ConfigurationAssetTypeListComponent {
 
 	selectedRow: TreeNode;
 
-    artifactTypes = [];
-    loadingCounter = 0;
-    dataCyPrefix = 'AssetType_';
-    destroy = new Subject<void>();
-    simpleFilterValue = '';
+	artifactTypes = [];
+	loadingCounter = 0;
+	dataCyPrefix = 'AssetType_';
+	destroy = new Subject<void>();
+	simpleFilterValue = '';
 	public tabTitle: string = $localize`Admin`;
 
 	isModalVisible: boolean = false;
 	assetTypeToDelete: any;
+
+	gridDataSub: Subscription;
+	defaultColors: SelectItem[] = [];
 
 	constructor(
 		private assetsService: AssetService,
@@ -49,38 +52,46 @@ export class ConfigurationAssetTypeListComponent {
 		this.load();
 	}
 
+	ngOnDestroy() {
+		if (this.gridDataSub) {
+			this.gridDataSub.unsubscribe();
+		}
+	}
+
 	get sidePanelStorageKey() {
 		return 'configuration_' + this.assetTypeClass + '_' + CurrentResourceID;
 	}
 
-	async load(preselectedUid: string = null) {
+	load(preselectedUid: string = null) {
 		this.loadingCounter++;
 		try {
-			const items = await this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false).toPromise();
-			const treeNodes = items.map(AssetCount.ConvertToTreeNode);
-			this.artifactTypes = AssetCount.ListToTree(treeNodes);
-			this.artifactTypes.forEach((type) => {
-				this.setMenuItems(type);
-				if (type.children) {
-					type.children.forEach((childType) => {
-						this.setMenuItems(childType);
-					});
-				}
-			});
 
-			if (preselectedUid) {
-				this.selectedRow = this.artifactTypes.find((x) => x.id === preselectedUid);
-			}
-			else {
-				this.selectedRow = _.first(this.artifactTypes);
-			}
+			this.gridDataSub = forkJoin(
+				this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false),
+				this.assetsService.getAllColors()
+			).subscribe((result) => {
+				const items = result[0];
+				this.defaultColors = result[1];
+
+				const treeNodes = items.map(AssetCount.ConvertToTreeNode);
+				this.artifactTypes = AssetCount.ListToTree(treeNodes, this.listItemTransform.bind(this));
+
+				if (preselectedUid) {
+					this.selectedRow = this.artifactTypes.find((x) => x.id === preselectedUid);
+				}
+				else {
+					this.selectedRow = _.first(this.artifactTypes);
+				}
+			})
+
 		}
 		finally {
 			this.loadingCounter--;
 		}
 	}
 
-	setMenuItems(type) {
+	listItemTransform(type) {
+		//set menu items
 		let menuItems = [];
 		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedRow = type; } });
 		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
@@ -91,6 +102,11 @@ export class ConfigurationAssetTypeListComponent {
 		menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.data.uid, type.data.parentUid) });
 		menuItems.push({ "title": $localize`Delete`, callback: () => { this.assetTypeToDelete = type } });
 		type["data"]["MenuItems"] = menuItems;
+
+		//resolve color names
+		const colorCode = (type?.data?.backColor ?? '') as string;
+		var defColor = this.defaultColors.find((c) => c.title.toLowerCase() === colorCode.toLowerCase());
+		type["data"]["backColorName"] = defColor ? defColor.value : $localize`Custom`;
 	}
 
 	ngOnInit() {
@@ -122,6 +138,17 @@ export class ConfigurationAssetTypeListComponent {
 
 	get hasAssetTypeChildsFeature() {
 		return featuresToTypeClasses.assetTypeChilds.includes(this.assetTypeClass);
+	}
+
+	get hasMaxDepthColumn() {
+		return featuresToTypeClasses.assetTypeMaxDepth.includes(this.assetTypeClass);
+	}
+
+	get hasBackgroundColor() {
+		return featuresToTypeClasses.backgroundColor.includes(this.assetTypeClass);
+	}
+	get hasIcon() {
+		return featuresToTypeClasses.icon.includes(this.assetTypeClass);
 	}
 
 	get addNewAssetTypeWarning() {
