@@ -11,12 +11,18 @@ export const featuresToTypeClasses = {
 	],
 	backgroundColor: [
 		AssetTypeClass.BusinessAsset,
-		AssetTypeClass.TechnicalAsset
+		AssetTypeClass.TechnicalAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule
 	],
 	icon: [
 		AssetTypeClass.BusinessAsset,
 		AssetTypeClass.TechnicalAsset,
-		AssetTypeClass.DiagramAsset
+		AssetTypeClass.DiagramAsset,
+		AssetTypeClass.Model,
+		AssetTypeClass.Policy,
+		AssetTypeClass.Rule
 	],
 	flowObjectType: [
 		AssetTypeClass.DiagramAsset

@@ -12,6 +12,7 @@ import { IgColorPickerModule } from '../../../shared/controls/color-picker/color
 import { ColorSelectorModule } from '../../../shared/controls/color-selector/color-selector.component';
 import { FormFeedbackBadgesModule } from '../../../shared/controls/form-feedback-badges/form-feedback-badges.component';
 import { IconPickerModule } from '../../../shared/controls/icon-picker/icon-picker.component';
+import { IgNumberFieldModule } from '../../../shared/controls/number-picker/number-input.component';
 import { PopupMenuModule } from '../../../shared/controls/popup-menu/popup-menu.component';
 import { PropertyGroupModule } from '../../../shared/controls/property-group/property-group.component';
 import { SwitchModule } from '../../../shared/controls/switch/switch';
@@ -40,7 +41,8 @@ import { ConfigurationAssetTypeModalForm } from './asset-type-modal-form.compone
 		CheckboxModule,
 		ColorSelectorModule,
 		IgColorPickerModule,
-		IconPickerModule
+		IconPickerModule,
+		IgNumberFieldModule
     ],
 	declarations: [
 		ConfigurationAssetTypeModalForm

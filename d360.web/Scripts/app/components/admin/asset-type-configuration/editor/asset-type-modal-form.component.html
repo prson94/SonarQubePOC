@@ -77,20 +77,7 @@
 
 								</div>
 
-								<div class="field-col" *ngIf="isDiagramAssetTypeForm">
-									<label for="flowObjectType" class="ig-label" i18n>Flow Object Type</label>
-									<p-dropdown name="flowObjectType"
-												formControlName="flowObjectType"
-												[igDataCy]="'Asset_Type_Modal_Field_flowObjectType'"
-												igDropdown
-												required
-												igSize="full"
-												[appendTo]="'body'"
-												[options]="flowObjectTypes"></p-dropdown>
-
-								</div>
-
-								<div class="field-col" *ngIf="assetTypeForm.get('predicateUid').value">
+								<div class="field-col" *ngIf="!isHierarchy && assetTypeForm.get('predicateUid').value">
 									<div class="flex">
 										<label for="autoDisplayParent" class="ig-label" i18n>Auto Display Owner/Parent</label>
 										<span class="field-tooltip fa fa-question-circle"
@@ -106,10 +93,8 @@
 											   i18n-falseLabel
 											   trueLabel="True"
 											   falseLabel="False"></ig-switch>
-
-
 								</div>
-								<div class="field-col" *ngIf="assetTypeForm.get('predicateUid').value">
+								<div class="field-col" *ngIf="!isHierarchy && assetTypeForm.get('predicateUid').value">
 									<div class="flex">
 										<label for="canEditParent" class="ig-label" i18n>Edit Parent</label>
 										<span class="field-tooltip fa fa-question-circle"
@@ -126,6 +111,36 @@
 											   trueLabel="True"
 											   falseLabel="False"></ig-switch>
 
+
+								</div>
+
+								<div class="field-col" *ngIf="isHierarchy">
+									<div class="flex">
+										<label for="maxDepth" class="ig-label" i18n>Maximum Depth</label>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="The maximum depth to which a tree can contain nodes at"
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+									<ig-number-input [attr.name]="'maxDepth'"
+													 [formControlName]="'maxDepth'"
+													 [formControl]="assetTypeForm.controls['maxDepth']"
+													 required>
+									</ig-number-input>
+								</div>
+
+
+								<div class="field-col" *ngIf="isDiagramAssetTypeForm">
+									<label for="flowObjectType" class="ig-label" i18n>Flow Object Type</label>
+									<p-dropdown name="flowObjectType"
+												formControlName="flowObjectType"
+												[igDataCy]="'Asset_Type_Modal_Field_flowObjectType'"
+												igDropdown
+												required
+												igSize="full"
+												[appendTo]="'body'"
+												[options]="flowObjectTypes"></p-dropdown>
 
 								</div>
 

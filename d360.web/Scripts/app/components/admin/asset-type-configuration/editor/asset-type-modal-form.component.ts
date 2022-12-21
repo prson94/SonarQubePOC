@@ -2,7 +2,7 @@ import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitte
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { result } from "lodash";
 import { SelectItem } from "primeng/api";
-import { forkJoin } from "rxjs";
+import { forkJoin, Observable } from "rxjs";
 import { AssetType, AssetTypeApiModel, AssetTypeClass, AssetTypeEditorModel, FlowObjectType, Hierarchy, IconStyle } from "../../../../models/asset.model";
 import { Predicate } from "../../../../models/predicate.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
@@ -64,10 +64,16 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	ngOnInit() {
 		this.setForm();
+		let parentPredicatesSub = this.relationshipService.getPredicates("InterTypeHierarchy");
+
+		if (this.isHierarchy) {
+			parentPredicatesSub = this.relationshipService.getPredicates("IntraTypeHierarchy");
+		}
+
 		forkJoin(
 			this.assetService.getAllColors(),
-			this.relationshipService.getSynonyms(),
-			this.relationshipService.getInterTypeHierarchyPredicates()
+			this.relationshipService.getPredicates('Grammar'),
+			parentPredicatesSub
 		).subscribe((results) => {
 			this.synonyms = results[1];
 			this.defaultColors = results[0];
@@ -114,7 +120,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			predicateUid: [null, { updateOn: "blur" }],
 			autoDisplayParent: [null, { updateOn: "blur" }],
 			canEditParent: [null, { updateOn: "blur" }],
-			flowObjectType: [null, { updateOn: "blur" }]
+			flowObjectType: [null, { updateOn: "blur" }],
+			maxDepth: [null, { updateOn: "blur" }]
 		});
 
 		this.setDefaultFormValues();
@@ -163,6 +170,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				if (assetType.PredicateInverse) {
 					predicateUid = this.hierarchyPredicates.find((x) => x.Inverse.toLowerCase() === assetType.PredicateInverse.toLowerCase())?.Uid;
 				}
+
+				if (this.isHierarchy) {
+					this.assetTypeForm.controls["maxDepth"].setValue(assetType.HierarchyMaximumDepth);
+				}
+
 				this.assetTypeForm.controls["predicateUid"].setValue(predicateUid);
 
 				this.title = $localize`Edit Asset Type`;
@@ -246,6 +258,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			model.ParentUid = this.parentUid;
 		}
 
+		if (this.isHierarchy) {
+			model.Hierarchy.MaximumDepth = this.assetTypeForm.get("maxDepth").value;
+			model.ParentUid = null;
+		}
+
 		if (this.isDiagramAssetTypeForm) {
 			model.FlowObjectType = this.assetTypeForm.get("flowObjectType").value;
 		}
@@ -294,7 +311,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	get hasPredicateUid(): boolean {
-		return this.parentUid != null || this.assetTypeClass === AssetTypeClass.Model || this.assetTypeClass === AssetTypeClass.Policy;
+		return this.parentUid != null || this.isHierarchy;
+	}
+
+	get isHierarchy(): boolean {
+		return this.assetTypeClass === AssetTypeClass.Model || this.assetTypeClass === AssetTypeClass.Policy;
 	}
 
 	get isFormDisabled(): boolean {
