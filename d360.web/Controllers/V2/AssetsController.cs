@@ -3071,7 +3071,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetAsset(string assetUid)
 		{
-			if (Guid.TryParse(assetUid, out Guid assetId))
+			if (Guid.TryParse(assetUid.Trim(), out Guid assetId))
 			{
 				var res = await AssetRepository.GetAssetSingle(assetId);
 
