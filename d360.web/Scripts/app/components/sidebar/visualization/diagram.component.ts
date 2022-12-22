@@ -1,5 +1,5 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { BaseComponent } from '../../shared/base.component';
 
@@ -15,8 +15,7 @@ export class DiagramComponent extends BaseComponent implements OnInit, OnDestroy
 
     constructor(
         protected settingsService: CompanySettingsService,
-        private route: ActivatedRoute,
-        private router: Router
+        private route: ActivatedRoute
     ) {
         super(settingsService);
     }

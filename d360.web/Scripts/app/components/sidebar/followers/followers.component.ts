@@ -3,7 +3,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { FollowerService } from '../../../services/follower.service';
 import { FollowDetail } from '../../../models/follower.model';
-import { ObjectDetailService } from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -75,7 +74,7 @@ import { AssetService } from '../../../services/asset.service';
             </div>
         </div>
     `,
-    providers: [FollowerService, ObjectDetailService],
+    providers: [FollowerService],
 })
 
 export class FollowersComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -85,7 +84,6 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
 
     constructor(
         private followerService: FollowerService,
-		private objectDetailService: ObjectDetailService,
 		private assetsService: AssetService,
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,

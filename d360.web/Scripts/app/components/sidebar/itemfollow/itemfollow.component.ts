@@ -1,5 +1,5 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -27,7 +27,6 @@ export class ItemFollowComponent extends BaseComponent implements OnInit, OnDest
 
     constructor(
         private route: ActivatedRoute,
-        private router: Router,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
         protected settingsService: CompanySettingsService) {
