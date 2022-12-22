@@ -7,6 +7,9 @@ import { ArtifactService } from '../../../services/artifacts.service';
 import { SearchDetail } from '../../../models/search-result.model';
 import { Tab } from './tabs.models';
 import { SecondaryNavItem } from '../../../models/secondaryNav.model';
+import { CompanySettingsService } from "../../../services/settings.service";
+import { AuthenticationService } from '../../../services/authentication.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
 
 // TODO: it will be great to move out next out of this component: 
 // • statistics
@@ -48,7 +51,9 @@ export class TabsComponent implements OnDestroy {
     constructor(
         private secondaryNavService: SecondaryNavService,
         private ref: ChangeDetectorRef,
-        private router: Router) {
+		private router: Router,
+		private settingsService: CompanySettingsService,
+		private authenticationService: AuthenticationService) {
     }
 
     get visibleItems() {
@@ -83,9 +88,15 @@ export class TabsComponent implements OnDestroy {
         this.checkSize();
     }
 
-    isTabVisible = (tab: Tab) => {
-        return (tab.isVisible != null ? tab.isVisible() : true)
-            && this.filterScoringTabHasNoValue(tab);
+	isTabVisible = (tab: Tab) => {
+        let visible = (tab.isVisible != null ? tab.isVisible() : true)
+			&& this.filterScoringTabHasNoValue(tab);
+
+		if (tab.title === "Comments") {
+			visible = visible && (this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value);
+		}
+
+		return visible;
     }
 
     filterScoringTabHasNoValue = (tab: Tab) => {
