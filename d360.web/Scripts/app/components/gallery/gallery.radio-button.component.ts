@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 
 
 @Component({
@@ -28,8 +28,6 @@ export class GalleryRadioButtonComponent implements OnInit {
     val2: any;
     val3: any;
     formValue: any;
-
-    constructor(private cdRef: ChangeDetectorRef) {}
 
     test() {
         alert(this.formValue);

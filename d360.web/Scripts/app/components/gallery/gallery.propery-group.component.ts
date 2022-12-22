@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { AssetService } from '../../services/asset.service';
@@ -47,7 +47,7 @@ export class GalleryPropertyGroupComponent implements OnInit {
     defaultColors: SelectItem[] = [];
     formVal: any;
     formDateVal: any;
-    constructor(private cdRef: ChangeDetectorRef, private fb: FormBuilder, private assetService: AssetService) {
+    constructor(private fb: FormBuilder, private assetService: AssetService) {
       
     }
 
