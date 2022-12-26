@@ -61,7 +61,7 @@ namespace d360.model.DataAccessLayer
         
         List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution);
         
-        Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null);
         
         Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, int pageSize, int pageNum, bool includeTotal, string owner);
         

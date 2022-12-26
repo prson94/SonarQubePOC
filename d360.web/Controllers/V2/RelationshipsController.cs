@@ -615,7 +615,7 @@ namespace d360.web.Controllers.V2
 
 				if (isStreamResponse)
 				{
-					var items = await RelationshipRepository.GetRelationshipsExcel(queryParams);
+					var items = await RelationshipRepository.GetRelationshipsExcel(queryParams, cancellationToken: cancellationToken);
 
 					var stream = new MemoryStream();
 					items.SaveAs(stream);
