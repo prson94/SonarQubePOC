@@ -643,9 +643,9 @@ namespace d360.model
 									inner join [IntersectType] IT on IT.Id = @intersectTypeID
 									left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
 							where	A.AssetTypeID = @objectAssetTypeID
-									and (@query is null or P.TextPath like '%' + @query + '%')
+									and (@query is null or P.DisplayPath like '%' + @query + '%')
 									and not A.ID = @assetId {formattedCardinalityCheck}
-							order by 3 desc, P.TextPath asc
+							order by 3 desc, P.DisplayPath asc
 							OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 					break;
 			}
@@ -671,7 +671,8 @@ namespace d360.model
 						rows, 
 						query,
 						assetId,
-						intersectTypeID = intersectType.ID 
+						intersectTypeID = intersectType.ID,
+						objectAssetTypeID
 					}
 					).ToList();
 			}
