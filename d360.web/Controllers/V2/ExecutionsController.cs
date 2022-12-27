@@ -59,7 +59,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpGet,
 			Route(""),
-			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.OK, "A list of all execution statuses.", typeof(APIExecutionAPIModelResult)),

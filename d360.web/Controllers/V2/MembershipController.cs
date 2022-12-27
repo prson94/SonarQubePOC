@@ -644,7 +644,7 @@ namespace d360.web.Controllers.V2
 		   HttpGet,
 		   MapToApiVersion("2.0"),
 		   Route("groups/{groupUid:Guid}/members"),
-		   SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
+		   SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 		   SwaggerResponse(HttpStatusCode.OK, "Gets Members of a Group.", typeof(ResourceApiViewModel)),
 		   SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
 		   SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
