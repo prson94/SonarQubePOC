@@ -288,8 +288,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
 
         }
-        else if (this.selectedField.split('|')[0] === 'HTTPRequest') {
-            const field = this.httpFields.find((f) => f['@stepId'] === this.selectedField.split('|')[1] && f['@id'] === this.selectedField.split('|')[2]);
+		else if (this.selectedField.split('|')[0] === 'HTTPRequest') {
+            const field = this.httpFields.find((f) => f['@stepId'].toString() === this.selectedField.split('|')[1] && f['@id'] === this.selectedField.split('|')[2]);
 
             delete this.condition['@FormInputID'];
             delete this.condition['@VersionStepID'];
