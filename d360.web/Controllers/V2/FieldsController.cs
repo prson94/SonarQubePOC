@@ -2690,7 +2690,7 @@ namespace d360.web.Controllers.V2
 				var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
 				var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
 
-				if (fieldType.Type == DataType.OwnershipLookup.ToString())
+				if (fieldType != null && fieldType.Type == DataType.OwnershipLookup.ToString())
 				{
 					var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
 					var definition = ftl.ParseOwnershipLookupDefinition();
@@ -2706,8 +2706,8 @@ namespace d360.web.Controllers.V2
 					response.items.Add(new FieldTypeApiViewModel { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
 				}
 
-				if (fieldType.Type == DataType.RefListRelationship.ToString()
-					|| fieldType.Type == DataType.ComplexRelationLookup.ToString())
+				if (fieldType != null && (fieldType.Type == DataType.RefListRelationship.ToString()
+					|| fieldType.Type == DataType.ComplexRelationLookup.ToString()))
 				{
 					Guid? assetTypeUid = Guid.Empty;
 					var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();
