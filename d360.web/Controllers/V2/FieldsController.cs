@@ -843,12 +843,12 @@ namespace d360.web.Controllers.V2
 				else if (actionTypeUid != null)
 				{
 					int atID = Company.Filter<IssueType>(x => x.uid == actionTypeUid).SingleOrDefault().ID;
-					ft = Company.Filter<FieldType>(x => x.AssetTypeID == atID && x.Name == name).SingleOrDefault();
+					ft = Company.Filter<FieldType>(x => x.IssueTypeID == atID && x.Name == name).SingleOrDefault();
 				}
 				else if (relationshipTypeUid != null)
 				{
 					var itID = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault().ID;
-					ft = Company.Filter<FieldType>(x => x.AssetTypeID == itID && x.Name == name).SingleOrDefault();
+					ft = Company.Filter<FieldType>(x => x.IntersectTypeID == itID && x.Name == name).SingleOrDefault();
 				}
 				else
 				{
