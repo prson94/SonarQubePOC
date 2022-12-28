@@ -1,5 +1,5 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { AssetTypeClass } from '../../models/asset.model';
 import { AssetService } from '../../services/asset.service';
 import { CompanySettingsService } from '../../services/settings.service';
@@ -27,8 +27,7 @@ export class AssetComponent extends BaseComponent implements OnInit, OnDestroy {
 	constructor(
 		private assetService: AssetService,
 		protected settingsService: CompanySettingsService,
-		private route: ActivatedRoute,
-		private router: Router) {
+		private route: ActivatedRoute) {
 		super(settingsService);
 	}
 

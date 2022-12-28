@@ -22,7 +22,6 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 	adminType: string = "Artifacts";
 	selectedRow: TreeNode;
 	ArtifactTypes: TreeNode[];
-	private sub: any;
 	assetTypeClass: AssetTypeClass;
 	public searchValue: string;
 

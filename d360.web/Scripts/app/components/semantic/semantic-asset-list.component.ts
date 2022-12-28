@@ -1,6 +1,5 @@
 ﻿import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Title } from '@angular/platform-browser';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
@@ -28,7 +27,6 @@ declare var CurrentResourceID;
 export class SemanticTypeAssetListComponent extends SemanticBaseComponent implements OnInit {
 
     semanticType: SemanticType;
-    private sub: any;
     selectedAsset: SemanticTypeAsset;
     showSidePanel: boolean = true;
     private sidePanelOpen: boolean = false;
@@ -46,7 +44,6 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
     constructor(private route: ActivatedRoute,
         protected router: Router,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
@@ -57,7 +54,7 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
     }    
 
     ngOnInit() {        
-        this.sub = this.route.params.subscribe((params) => {
+        this.route.params.subscribe((params) => {
             const uid = params['semanticTypeUid'];
 
             this.sidePanelStorageKey = 'SemanticTypes_' + uid + '_' + CurrentResourceID;

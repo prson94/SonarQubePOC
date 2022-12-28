@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -27,7 +27,6 @@ export class GroupListComponent extends BaseComponent implements OnInit {
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected settingsService: CompanySettingsService,
         protected titleService: Title,
-        private route: ActivatedRoute,
         private router: Router
     ) {
         super(settingsService);

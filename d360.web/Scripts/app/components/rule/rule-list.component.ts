@@ -1,11 +1,9 @@
 ﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { RulesService } from '../../services/rules.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
-import { HeaderActionsService } from '../../services/header-actions.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { RuleType } from '../../models/rule.model';
@@ -70,14 +68,10 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 	secondarySidePanel: string = "detail";
 	resourceUid: string;
 
-	constructor(private route: ActivatedRoute,
-		private router: Router,
-		protected rulesService: RulesService,
+	constructor(protected rulesService: RulesService,
 		protected titleService: Title,
 		private sidePanelService: SidePanelService,
 		protected messagesService: MessagesObservableService,
-		private gridDefinitionService: GridDefinitionService,
-		private headerActionsService: HeaderActionsService,
 		private dataProfileService: DataProfileService,
 		protected headerBreadcrumbService: HeaderBreadcrumbService,
 		protected permissionsService: PermissionsService,

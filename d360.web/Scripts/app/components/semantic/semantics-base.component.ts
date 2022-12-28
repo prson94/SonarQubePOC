@@ -8,7 +8,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Router } from '@angular/router';
 
 export class SemanticBaseComponent extends AssetGridBaseComponent {
-    private _featureFlagSubscription: any;
     semanticTypesEnabled: boolean;
 
     constructor(

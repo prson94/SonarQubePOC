@@ -1,6 +1,5 @@
 ﻿import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { ReferenceService } from '../../services/reference.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ReferenceItemType } from '../../models/reference.model';
 import { FormMode } from '../../models/form.model';
@@ -16,7 +15,7 @@ import { Subject } from 'rxjs';
 @Component({
     selector: 'd3s-reference-item-type-list',
     templateUrl: './reference-item-type-list.component.html',
-    providers: [ReferenceService, PermissionsService, AssetTypeService],
+    providers: [PermissionsService, AssetTypeService],
 })
 
 export class ReferenceItemTypeGridComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -78,7 +77,6 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
     constructor(
         public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
-        private referenceService: ReferenceService,
         private permissionsService: PermissionsService,
         private assetTypeService: AssetTypeService,
         private messagesService: MessagesObservableService,

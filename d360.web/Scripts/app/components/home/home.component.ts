@@ -3,7 +3,6 @@ import { NavigationEnd, Router } from "@angular/router";
 import { Title } from "@angular/platform-browser";
 
 import { Breadcrumb } from "../../models/breadcrumb.model";
-import { WorkflowType } from "../../models/workflow.model";
 import { DashboardModel } from "../../models/dashboard.model";
 
 import { HeaderBreadcrumbService } from "../../services/header-breadcrumb.service";
@@ -45,8 +44,6 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     private selectedArtifactTypeName: string;
 
     private selectedCommentType: CommentType;
-
-    private selectedWorkflowType: WorkflowType;
 
     public numTiles: number = 3;
     private colSize = 4;

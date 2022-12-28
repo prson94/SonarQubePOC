@@ -10,7 +10,6 @@
     Output,
     ViewChild
 } from '@angular/core';
-import { Router } from '@angular/router';
 import { ToolTipService } from '../../services/tooltip.service';
 import { TooltipSingletonService } from '../../services/tooltip-singleton.service';
 import { LookupTooltipInfo } from '../../models/tooltip-info.model';
@@ -51,7 +50,6 @@ export class LookupTooltipComponent implements OnDestroy  {
     @Output() click = new EventEmitter();    
 
     constructor(private toolTipService: ToolTipService,
-        private router: Router,
         protected tooltipSingletonService: TooltipSingletonService,
         private ref: ChangeDetectorRef) {
         this.toolTipSub = this.tooltipSingletonService.tooltipMessage$.subscribe(

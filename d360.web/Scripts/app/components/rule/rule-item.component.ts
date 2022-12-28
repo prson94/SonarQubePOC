@@ -6,13 +6,11 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
-import { RuleDetail, RuleType } from '../../models/rule.model';
-import { MessageBarItem } from '../../models/message-bar-item.model';
+import { RuleDetail } from '../../models/rule.model';
 import { StringConstants } from '../../static/string-constants';
 import { Subscription } from 'rxjs';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
-import { CompanySettingEnum } from '../../models/settings.model';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
@@ -28,14 +26,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 	@Input() assetUid: string;
 
 	private routeParamsSubscription: any;
-	private currentAreaName: string;
-	private rightSub: any;
-	private ruleSub: Subscription;
 	private rule: RuleDetail;
-	private messages: MessageBarItem[] = [];
-	private showSurvey: boolean = false;
-	private showSocialScoreBar: boolean = true;
-	private ruleType: RuleType;
 
 	hrefSub: Subscription;
 	selectedAsset: any;
@@ -80,7 +71,6 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 			this.linkClickInterceptor.handleEvent(this, ev);
 		});
 
-		this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
 	}
 
     getSidePanelWidth(): number {
@@ -106,14 +96,12 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     }
 
 	load() {
-		this.ruleSub = this.rulesService.getRule(this.assetUid)
+		this.rulesService.getRule(this.assetUid)
 			.subscribe((result) => {
 				this.rule = result;
 
 				this.setBrowserTitle(this.titleService, this.rule.Name);
-				this.messages = []; //clear any messages for this rule
 				console.log(this.rule);
-				this.rulesService.getRuleType(this.rule.AssetTypeUid).subscribe((r) => { this.ruleType = r; });
 				this.headerBreadcrumbService.setCurrentObjectInfo('Rule', this.rule.ID, null, this.rule.UID);
 				this.setObjectInfo('Rule', this.rule.ID, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
 				

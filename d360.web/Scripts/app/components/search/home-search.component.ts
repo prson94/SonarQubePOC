@@ -21,27 +21,15 @@ export class HomeSearchComponent extends BaseComponent {
     @Input() hasResults: boolean;
     public searchResults: SearchResults;
     public categories: SearchAggregation[] = [];
-    private selectedCategory: SearchAggregation;
-    private searchText: string;
     isExactMatch: boolean = true;
     searchTypes: string[] = [];
-
-    private resultsPerPage: number = 5;
-    private pageNumber: number = 0;
        
     constructor(
-        private searchService: SearchService,
-        protected settingsService: CompanySettingsService,
-        private typeaheadSearchService: TypeaheadSearchService,
-        private router: Router) {
+        protected settingsService: CompanySettingsService) {
         super(settingsService);        
     }
 
     ngOnInit() {        
         this.searchTypes = (this.settingsService.getSettingById(CompanySettingEnum.DefaultSearchTypes).ScalarValue ?? "").split(',');
-    }
-
-    private navigateSearch() {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&types=${this.searchTypes ? this.searchTypes.join(',') : ''}`);
     }
 }

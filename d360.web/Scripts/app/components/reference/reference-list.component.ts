@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
@@ -9,7 +9,6 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ReferenceItemType } from '../../models/reference.model';
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { ReferenceService } from '../../services/reference.service';
-import { UriBasedService } from '../../services/uri-based.service';
 import { AuthenticationService } from '../../services/authentication.service';
 import { FormMode } from '../../models/form.model';
 import { AssetTypeService } from '../../services/asset-type.service';
@@ -21,22 +20,18 @@ import { HeaderActions } from '../../models/header.model';
 @Component({
 	selector: 'd3s-reference-list',
 	templateUrl: './reference-list.component.html',
-	providers: [PermissionsService, ReferenceService, UriBasedService, AssetTypeService],
+	providers: [PermissionsService, ReferenceService, AssetTypeService],
 })
 
 export class ReferenceListComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() assetTypeUid: string = "";
 
-	private sub: any;
 	private selectedReferenceItemType: ReferenceItemType;
 	private selectedReferenceListUid: string = '';
-	private canReadSelectedType = true;
 
 	private showDefault: boolean = true;
 
 	private canAddReferenceItem: boolean = false;
-	private canEditReferenceItem: boolean = false;
-	private canRemoveReferenceItem: boolean = false;
 
 	private loadPermissionSub: Subscription;
 	private loadObjectDataSub: Subscription;
@@ -52,8 +47,6 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		secondaryNavService: SecondaryNavService,
 		protected settingsService: CompanySettingsService,
 		protected titleService: Title,
-		private uriBasedService: UriBasedService,
-		private route: ActivatedRoute,
 		private router: Router
 	) {
 		super(settingsService);
@@ -67,7 +60,6 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
 
-		this.canReadSelectedType = false;
 		var refListIdString = "";
 		//load default perms
 		this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
@@ -118,14 +110,11 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
 		this.loadPermissionSub = this.referenceService.canReadReferenceType(this.selectedReferenceListUid)
 			.subscribe((r) => {
-				this.canReadSelectedType = r;
 				if (this.selectedReferenceListUid) {
 					this.permissionsService.getAssetTypePermissions(this.selectedReferenceListUid)
 						.subscribe((res) => {
 							this.objectPermission = res;
 							this.canAddReferenceItem = this.hasAddAssetPermissions();
-							this.canEditReferenceItem = this.hasModifyAssetPermissions();
-							this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
 						});
 
 					this.buildSecondaryNavigationForAssetTypeUid(this.selectedReferenceListUid, () => {

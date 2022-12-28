@@ -1,6 +1,5 @@
 ﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { ExportTemplateService } from '../../../services/export-template.service';
 import { ExportTemplate } from '../../../models/export-template.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldDefinition } from '../../../models/fields.model';
@@ -11,7 +10,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'd3s-admin-export-template-fields-component',
     templateUrl: 'admin-export-template-fields.component.html',
-    providers: [ExportTemplateService, FieldsObservableService],
+    providers: [FieldsObservableService],
 })
 
 export class AdminExportTemplateFieldsComponent extends BaseComponent implements OnInit, OnChanges {
@@ -25,7 +24,6 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
     labelRevert = $localize`Revert Changes`;
 
     constructor(
-        private exportTemplateService: ExportTemplateService,
         protected fieldsService: FieldsObservableService,
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService

@@ -1,5 +1,4 @@
 ﻿import { Component } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -30,8 +29,6 @@ import { CompanySettingEnum } from '../../models/settings.model';
 export class ResourceListComponent extends BaseComponent {
     showResources: boolean = true;
     constructor(
-        private route: ActivatedRoute,
-        private router: Router,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected settingsService: CompanySettingsService,

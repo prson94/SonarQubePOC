@@ -3,8 +3,6 @@ import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { ResourcesService } from '../../services/resources.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { Resource } from '../../models/resource.model';
-import { Observable } from 'rxjs';
 import { AssetService } from '../../services/asset.service';
 import { CompanySettingsService } from '../../services/settings.service';
 
@@ -18,7 +16,6 @@ export class ResourceGroupsComponent extends BaseComponent implements OnInit{
     @Input() resourceUid: string;
 
     private groups: any[];
-    private user: Observable<Resource>;
     private id: number;
 
     constructor(
