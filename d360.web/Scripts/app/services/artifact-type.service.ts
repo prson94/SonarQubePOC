@@ -75,19 +75,6 @@ export class ArtifactTypeService extends BaseObservableService {
         }
         return null;
     }
-    private formTree(data): TreeNode[] {
-        var tree = new Array<TreeNode>();
-
-        data.filter((d) => d.ParentID == null).forEach((d) => {
-            tree.push({ data: d, children: [], expanded: false });
-        });
-
-        tree.forEach((t) => {
-            this.formTreeR(t, data);
-        });
-
-        return tree;
-    }
 
     private formTreeR(
         node: TreeNode,

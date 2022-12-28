@@ -1,4 +1,4 @@
-﻿import { AfterContentInit, ChangeDetectorRef, Directive, ElementRef, Input, NgModule } from "@angular/core";
+﻿import { AfterContentInit, Directive, ElementRef, Input, NgModule } from "@angular/core";
 import { DomHandler } from "primeng/dom";
 import { CommonModule } from "@angular/common";
 import { Dropdown } from "primeng/dropdown";
@@ -14,7 +14,7 @@ export class DropdownDirective implements AfterContentInit {
     @Input() disabled: boolean;
     @Input() overlayLowerZIndex: boolean = false;
     @Input() ellipsisDirection: string = "ltr";
-    constructor(public el: ElementRef, public dropdownRef: Dropdown, private ref: ChangeDetectorRef) { }
+    constructor(public el: ElementRef, public dropdownRef: Dropdown) { }
 
     setDisabledState?(isDisabled: boolean): void {
         this.disabled = isDisabled;

@@ -1,4 +1,4 @@
-﻿import { ChangeDetectorRef, Directive, DoCheck, ElementRef } from "@angular/core";
+﻿import { Directive, DoCheck, ElementRef } from "@angular/core";
 
 @Directive({
     selector: "[igAutoFocus]"
@@ -8,7 +8,7 @@ export class AutoFocusDirective implements DoCheck {
 
     private isVisible: boolean = false;
 
-    constructor(private el: ElementRef, private cdRef: ChangeDetectorRef) {
+    constructor(private el: ElementRef) {
     }
 
     ngDoCheck() {
