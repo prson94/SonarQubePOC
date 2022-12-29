@@ -141,7 +141,7 @@ namespace d360.web.Controllers.V2
         /// <returns>Returns true if permissions are supported</returns>
         private bool SupportsPermissions(AssetTypeClass assetTypeClass)
         {
-            if (new[] { AssetTypeClass.Generic, AssetTypeClass.User, AssetTypeClass.Group }.Contains(assetTypeClass))
+            if (new[] { AssetTypeClass.Generic, AssetTypeClass.Group }.Contains(assetTypeClass))
             {
                 return false;
             }
