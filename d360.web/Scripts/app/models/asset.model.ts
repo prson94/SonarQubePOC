@@ -141,6 +141,13 @@ export class AssetTypeApiModel {
     AutoDisplayParent: boolean;
 	CanEditParent: boolean;
 	SynonymAllocations: string[];
+
+	CreatedOn: Date;
+	CreatedByUid: string;
+	CreatedByName: string;
+	UpdatedOn: Date;
+	UpdatedByUid: string;
+	UpdatedByName: string;
 }
 
 export class IconStyle {

@@ -175,6 +175,25 @@ namespace d360.model.DataAccessLayer
 					{
 						throw new ArgumentException(AssetTypeErrors.InvalidValueincludeLevels, includeLevelsString);
 					}
+				}				
+				
+				if (queryParams.Any(q => q.Key.ToLower() == "includesystemfields"))
+				{
+					var includeSystemFieldsString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "includesystemfields").Value;
+					if (bool.TryParse(includeSystemFieldsString, out bool includeSystemFields) && includeSystemFields)
+					{
+						extraJoins += @"
+							inner join reporting.Global_Resource created on created.ResourceID = a.CreatedBy
+							inner join reporting.Global_Resource updated on updated.ResourceID = a.UpdatedBy
+							";
+						extraColumns += @", 
+							created.uid as CreatedByUid, 
+							created.FirstName + ' ' + created.LastName as CreatedByName, 
+							a.CreatedOn,
+							updated.uid as UpdatedByUid, 
+							updated.FirstName + ' ' + updated.LastName as UpdatedByName, 
+							a.UpdatedOn ";
+					}
 				}
 
 				if (queryParams.Any(q => q.Key.ToLower() == "includesynonymallocation"))

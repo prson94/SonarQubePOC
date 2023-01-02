@@ -221,6 +221,23 @@ namespace d360.core.entities
 					: SynonymAllocationString.Split(',').Select(x=> Guid.Parse(x)).ToList();
 			}
 		}
+		[DataMember]
+		public DateTime? CreatedOn { get; set; }
+
+		[DataMember]
+		public Guid? CreatedByUid { get; set; }
+
+		[DataMember]
+		public string CreatedByName { get; set; }
+
+		[DataMember]
+		public DateTime? UpdatedOn { get; set; }
+
+		[DataMember]
+		public Guid? UpdatedByUid { get; set; }
+
+		[DataMember]
+		public string UpdatedByName { get; set; }
 	}
 
 	public class AssetTypeSelectApiModel

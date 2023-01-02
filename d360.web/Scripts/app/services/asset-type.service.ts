@@ -113,7 +113,7 @@ export class AssetTypeService extends BaseObservableService {
     GetAssetTypeByUid(uid: string): Observable<AssetTypeApiModel & ErrorResponse> {
         return this
             .http
-            .get(`api/v2/assets/types?assetTypeUid=${uid}&includeSynonymAllocation=true`)
+			.get(`api/v2/assets/types?assetTypeUid=${uid}&includeSynonymAllocation=true&IncludeSystemFields=true`)
             .pipe(
                 map((response) => { return <AssetTypeApiModel>response[0]; }),
                 catchError((err) => this.handleError(err))

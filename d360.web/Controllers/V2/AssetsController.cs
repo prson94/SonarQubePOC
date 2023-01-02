@@ -140,6 +140,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("AutoDisplayParent", "Filter results by AutoDisplayParent setting. The value is used by the Govern UI to display or hide the parent column on the data grids.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("IncludeLevels", "Include values of Level, Name, Description properties of the AssetTypeLevel table in response model.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("IncludeDashboardFlag", "Include value of HasDashboards property of the Report table in response model.", DataType = "boolean", ParameterType = "query", Required = false),
+			SwaggerParameter("IncludeSystemFields", "Include values of CreatedOn, CreatedBy, UpdatedOn and UpdatedBy fields.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
