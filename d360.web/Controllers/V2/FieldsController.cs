@@ -1010,7 +1010,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					throw new ArgumentNullException(string.Format(ApiMessages.InvalidValueMessage, identifier));
+					throw new RestApiException(HttpStatusCode.BadRequest, string.Format(ApiMessages.InvalidValueMessage, identifier));
 				}
 
 				switch (type)
