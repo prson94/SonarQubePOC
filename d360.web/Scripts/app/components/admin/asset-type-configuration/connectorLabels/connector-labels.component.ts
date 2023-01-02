@@ -40,7 +40,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
     showConsolidationPopup: boolean = false;
     consolidateValue: string;
-
+	sidePanelStorageKey: string = `ConnectorLabels_Admin`;
 
     @ViewChild('dt', { static: false }) tableEl: any;
     @ViewChild('usageTable', { static: false }) tableEl1: any;

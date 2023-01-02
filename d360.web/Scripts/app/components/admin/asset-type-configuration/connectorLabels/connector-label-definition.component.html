@@ -1,0 +1,37 @@
+{{label | json}}
+
+
+<ig-property-group i18n-title title="General">
+	<div inputs>
+		<div class="form-group">
+			<div class="row">
+				<label class="ig-label" i18n>Name</label>
+				<div>
+					{{label.Value}}
+				</div>
+			</div>
+			<div class="row">
+				<label class="ig-label" i18n>Use Count</label>
+				<span>
+					{{label.UseCount}}
+				</span>
+			</div>
+		</div>
+	</div>
+</ig-property-group>
+<ig-property-group i18n-title title="System Fields">
+	<div inputs>
+		<div class="row">
+			<b>Template driven forms</b>
+			<p>template model:</p>
+		</div>
+		<div class="form-group">
+			<div class="row">
+				<label for="theName" class="ig-label">Property1</label>
+			</div>
+			<div class="row">
+				<label for="theAddr" class="ig-label">Propertylabel that has a long name but should wrap to the next line.</label>
+			</div>
+		</div>
+	</div>
+</ig-property-group>

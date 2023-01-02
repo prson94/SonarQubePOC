@@ -1,235 +1,267 @@
-
 <div class="row connector-label-list">
-    <div class="col s12">
-        <div class="tile tile-detail main-panel">
-            <div class="inline-header">
-                <input [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
-                <div *ngIf="selected.length > 1" class="grid-header-actions">
-                    <div class="text" i18n>{{selected.length}} items selected</div>
-                    <button type="button" icon="fa-ellipsis-v" igButton (click)="popupMenu.toggle($event)"></button>
-                    <ig-popup-menu #popupMenu [location]="3" (onSelect)="actionSelected($event)" [items]="multiselectMenu"></ig-popup-menu>
-                </div>
-                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
-            </div>
+	<d3s-connector-label-sidepanel-wrapper [sidePanelStorageKey]="sidePanelStorageKey"
+										   [selectedItem]="selected">
 
-            <p-table #dt
-                     [value]="labels"
-                     [globalFilterFields]="['Value','UseCount']"
-                     [rowsPerPageOptions]="defaultPagingOptions"
-                     [rows]="rowsPerPage"
-                     sortField="Value"
-                     [sortOrder]="1"
-                     [pageLinks]="3"
-                     [paginator]="true"
-                     (onRowSelect)="onRowSelected()"
-                     [(selection)]="selected"
-                     [loading]="isLoading"
-                     [loadingIcon]="'fa fa-spinner fa-spin'">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th style="width: 20px;">
-                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                        </th>
-                        <th [pSortableColumn]="'Value'" style="width: 60%">
-                            <ng-container i18n>Name</ng-container>
-                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'UseCount'" style="width: 15%">
-                            <ng-container i18n>Use count</ng-container>
-                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
-                        </th>
-                        <th style="width: 110px"></th>
-                    </tr>
-                    <tr [hidden]="showSimpleFilter">
-                        <th></th>
-                        <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
-                        <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'UseCount'" [datatype]="'number'"></d3s-column-filter></th>
-                        <th></th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-item>
-                    <tr #el [pSelectableRow]="item">
-                        <td (click)="selectSingleItem($event,item,el);" class="enable-pointer-events">
-                            <p-tableCheckbox [value]="item"></p-tableCheckbox>
-                        </td>
-                        <td (click)="selectSingleItem($event,item, el);">
-                            <a (click)="openDetailsPage(item);">
-                                {{item.Value}}
-                            </a>
-                        </td>
-                        <td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
-                        <td (click)="selectSingleItem($event,item, el);">
-                            <div class="RowTools">
-                                <d3s-preview-tooltip [objectType]="'ConnectorLabel'"
-                                                     [objectId]="item.uid"
-                                                     icon="info"></d3s-preview-tooltip>&nbsp;&nbsp;&nbsp;
-                                <a style="cursor:pointer;" (click)="openEditor(item);"><i class="fa fa-pencil"></i></a>
-                                <a style="cursor:pointer;" (click)="openDeleteModal(item);"><i class="fa fa-trash-o"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="summary">
-                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                </ng-template>
-            </p-table>
+		<div class="col s12">
+			<div class="grid-actions-header column-layout">
+				<div class="grid-actions-header-row">
+					<div class="simple-search">
+						<ig-search-field mode="Keypress"
+										 [debounce]="600"
+										 (onSearch)="dt.filterGlobal($event.target.value, 'contains')">
+						</ig-search-field>
+					</div>
+					<div class="grid-action-buttons">
+						<button igButton
+								[attr.data-cy]="'Connector_Label_Add'"
+								pTooltip="Create New Connector Label"
+								i18n-pTooltip
+								tooltipPosition="top"
+								tooltipStyleClass="ig-tooltip"
+								class="ig-button-primary"
+								icon="fa-plus"
+								[igDataCy]="'Connector_Label_Add'"
+								(click)="add()">
+						</button>
 
-            <d3s-modal [title]="editPopupTitle"
-                       additionalClasses="modal-dyn-editor medium-dialog"
-                       (onClose)="showEditor=false"
-                       [isVisible]="showEditor">
-                <d3s-connector-label-form [label]="selected.length > 0 ? selected[0] : null"
-                                          [isSaving]="isSaving"
-                                          (onSave)="saveLabel($event)"
-                                          (onCancel)="closeEditor()"
-                                          [isVisible]="showEditor">
+						<div pTooltip="Export"
+							 i18n-pTooltip
+							 tooltipPosition="left"
+							 tooltipStyleClass="ig-tooltip">
+							<button igButton
+									class="ig-button-secondary"
+									[igDataCy]="'Connector_Label_Export'"
+									icon="fa-download"
+									(click)="export()">
+							</button>
+						</div>
+						<div *ngIf="selected.length > 1" class="grid-header-actions">
+							<button type="button" icon="fa-ellipsis-v" igButton i18n-label label="{{selected.length}} items selected" (click)="popupMenu.toggle($event)"></button>
+							<ig-popup-menu #popupMenu [location]="3" (onSelect)="actionSelected($event)" [items]="multiselectMenu"></ig-popup-menu>
+						</div>
+					</div>
+				</div>
+			</div>
 
-                </d3s-connector-label-form>
-            </d3s-modal>
+			<p-table #dt
+					 [value]="labels"
+					 [globalFilterFields]="['Value','UseCount']"
+					 [rowsPerPageOptions]="defaultPagingOptions"
+					 [rows]="rowsPerPage"
+					 sortField="Value"
+					 [sortOrder]="1"
+					 [pageLinks]="3"
+					 [paginator]="true"
+					 (onRowSelect)="onRowSelected()"
+					 [(selection)]="selected"
+					 [loading]="isLoading"
+					 [loadingIcon]="'fa fa-spinner fa-spin'">
+				<ng-template pTemplate="header">
+					<tr>
+						<th style="width: 5px;">
+							<p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+						</th>
+						<th [pSortableColumn]="'Value'" style="width: 60%">
+							<ng-container i18n>Name</ng-container>
+							<d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
+						</th>
+						<th [pSortableColumn]="'UseCount'" style="width: 15%">
+							<ng-container i18n>Use count</ng-container>
+							<d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
+						</th>
+						<th style="width: 110px"></th>
+					</tr>
+					<tr [hidden]="showSimpleFilter">
+						<th></th>
+						<th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
+						<th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'UseCount'" [datatype]="'number'"></d3s-column-filter></th>
+						<th></th>
+					</tr>
+				</ng-template>
+				<ng-template pTemplate="body" let-item>
+					<tr #el [pSelectableRow]="item">
+						<td (click)="selectSingleItem($event,item,el);" class="enable-pointer-events checkbox-column">
+							<p-tableCheckbox [value]="item"></p-tableCheckbox>
+						</td>
+						<td (click)="selectSingleItem($event,item, el);">
+							<a (click)="openDetailsPage(item);">
+								{{item.Value}}
+							</a>
+						</td>
+						<td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
+						<td (click)="selectSingleItem($event,item, el);">
+							<div class="RowTools">
+								<d3s-preview-tooltip [objectType]="'ConnectorLabel'"
+													 [objectId]="item.uid"
+													 icon="info"></d3s-preview-tooltip>&nbsp;&nbsp;&nbsp;
+								<a style="cursor:pointer;" (click)="openEditor(item);"><i class="fa fa-pencil"></i></a>
+								<a style="cursor:pointer;" (click)="openDeleteModal(item);"><i class="fa fa-trash-o"></i></a>
+							</div>
+						</td>
+					</tr>
+				</ng-template>
+				<ng-template pTemplate="summary">
+					<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+				</ng-template>
+			</p-table>
+		</div>
+	</d3s-connector-label-sidepanel-wrapper>
 
-            <d3s-delete-form *ngIf="selected && selected.length == 1"
-                             [callback]="theDeleteCallback"
-                             [method]="'callback'"
-                             [items]="selected[0]"
-                             [showAsModal]="true"
-                             [modalCssClasses]="'large-dialog'"
-                             [modalTitle]="deletePopupTitle"
-                             [confirmationText]="deleteConfirmationText"
-                             [isModalVisible]="showDelete"
-                             (onCancel)="showDelete=false;"
-                             [showDownloadWhereUsed]="labelUsage && labelUsage.length > 0"
-                             (onUsageExport)="exportUsage()">
-                <div prompt>
-                    <p i18n>
-                        Please confirm that you wish to delete the connector label '{{this.selected[0].Value}}'.
-                    </p>
-
-                    <d3s-where-used (onLoaded)="usageLoaded($event)" [uid]="selected[0].uid" [objectType]="'ConnectorLabel'"></d3s-where-used>
-                </div>
-            </d3s-delete-form>
-
-            <d3s-delete-form *ngIf="selected && selected.length > 1"
-                             [callback]="theDeleteCallback"
-                             [method]="'callback'"
-                             [items]="selected"
-                             [showAsModal]="true"
-                             [modalCssClasses]="'large-dialog'"
-                             [modalTitle]="deletePopupTitle"
-                             [confirmationText]="deleteConfirmationText"
-                             [isModalVisible]="showDelete"
-                             [showDownloadWhereUsed]="true"
-                             (onCancel)="showDelete=false;"
-                             (onUsageExport)="exportUsage()">
-                <div prompt>
-                    <p i18n>
-                        Please confirm that you wish to delete the following Connector Labels.
-                    </p>
-                    <p-table #usageTable
-                             [value]="selected"
-                             [pageLinks]="3"
-                             [paginator]="true"
-                             [rows]="rowsPerModal"
-                             class="ig-table"
-                             [loading]="isUsageLoading"
-                             [loadingIcon]="'fa fa-spinner fa-spin'">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th [pSortableColumn]="'Value'" style="width: 60%">
-                                    <ng-container i18n>Connector Label</ng-container>
-                                    <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'UseCount'" style="width: 15%">
-                                    <ng-container i18n>Where Used</ng-container>
-                                    <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
-                                </th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr>
-                                <td>
-                                    {{item.Value}}
-                                </td>
-                                <td>
-                                    <d3s-where-used [displayValue]="item.Value"
-                                                    [uid]="item.uid"
-                                                    [objectType]="'ConnectorLabel'"
-                                                    [showAsModal]="true">
-                                        {{item.UseCount}} {{item.UseCount == 1 ? 'diagram' : 'diagrams'}}
-                                    </d3s-where-used>
-                                </td>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="summary">
-                            <d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="selectedCount"></d3s-grid-paging-info>
-                        </ng-template>
-                    </p-table>
-                </div>
-            </d3s-delete-form>
-
-
-            <d3s-modal [title]="'Consolidate Connector Labels'"
-                       additionalClasses="modal-dyn-editor large-dialog"
-                       (onClose)="showConsolidationPopup=false"
-                       [isVisible]="showConsolidationPopup">
-                <div prompt>
-                    <div class="content">
-                        <div class="row">
-                            <p i18n>Please select the one Connector Label you wish to keep:</p>
-
-                            <p-table #usageTableConsolidate
-                                     [value]="selected"
-                                     [pageLinks]="3"
-                                     [paginator]="true"
-                                     [rows]="rowsPerModal"
-                                     class="ig-table"
-                                     [loading]="isUsageLoading"
-                                     [loadingIcon]="'fa fa-spinner fa-spin'">
-                                <ng-template pTemplate="header">
-                                    <tr>
-                                        <th [pSortableColumn]="'Value'" style="width: 60%">
-                                            <ng-container i18n>Connector Label</ng-container>
-                                            <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
-                                        </th>
-                                        <th [pSortableColumn]="'UseCount'" style="width: 15%">
-                                            <ng-container i18n>Where Used</ng-container>
-                                            <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
-                                        </th>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="body" let-item>
-                                    <tr>
-                                        <td>
-                                            <input [(ngModel)]="consolidateValue" type="radio" id="val_{{item.uid}}" name="consolidateTo" value="{{item.uid}}" />
-                                            <label class="default-label" for="val_{{item.uid}}">{{item.Value}}</label>
-                                        </td>
-                                        <td>
-                                            <d3s-where-used [displayValue]="item.Value"
-                                                            [uid]="item.uid"
-                                                            [objectType]="'ConnectorLabel'"
-                                                            [showAsModal]="true">
-                                                {{item.UseCount}} {{item.UseCount == 1 ? 'diagram' : 'diagrams'}}
-                                            </d3s-where-used>
-                                        </td>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="summary">
-                                    <d3s-grid-paging-info [first]="usageTableConsolidate.first" [rows]="usageTableConsolidate.rows" [totalRecords]="usageTableConsolidate.totalRecords"></d3s-grid-paging-info>
-                                </ng-template>
-                            </p-table>
-                        </div>
-                        <div class="row" i18n>
-                            All occurrences of the unselected labels will be replaced by occurrences of the selected label.<br />
-                            The unselected Connector Labels will then be deleted. Please note that this operation cannot be undone.
-                        </div>
-                    </div>
-                </div>
-                <div class="action-bar">
-                    <button igButton type="button" i18n-label label="Cancel" (click)="showConsolidationPopup=false"></button>&nbsp;&nbsp;
-                    <button igButton type="button" i18n-label label="Download Where Used Reports" (click)="exportUsage()"></button>
-                    <div class="grow"></div>
-                    <button igButton type="submit" i18n-label [disabled]="!consolidateValue" [loading]="isSaving" (click)="consolidateClick()" class="ig-button-primary" label="Consolidate"></button>
-                </div>
-            </d3s-modal>
-        </div>
-    </div>
 </div>
+
+<d3s-modal [title]="editPopupTitle"
+		   additionalClasses="modal-dyn-editor medium-dialog"
+		   (onClose)="showEditor=false"
+		   [isVisible]="showEditor">
+	<d3s-connector-label-form [label]="selected.length > 0 ? selected[0] : null"
+							  [isSaving]="isSaving"
+							  (onSave)="saveLabel($event)"
+							  (onCancel)="closeEditor()"
+							  [isVisible]="showEditor">
+
+	</d3s-connector-label-form>
+</d3s-modal>
+
+<d3s-delete-form *ngIf="selected && selected.length == 1"
+				 [callback]="theDeleteCallback"
+				 [method]="'callback'"
+				 [items]="selected[0]"
+				 [showAsModal]="true"
+				 [modalCssClasses]="'large-dialog'"
+				 [modalTitle]="deletePopupTitle"
+				 [confirmationText]="deleteConfirmationText"
+				 [isModalVisible]="showDelete"
+				 (onCancel)="showDelete=false;"
+				 [showDownloadWhereUsed]="labelUsage && labelUsage.length > 0"
+				 (onUsageExport)="exportUsage()">
+	<div prompt>
+		<p i18n>
+			Please confirm that you wish to delete the connector label '{{this.selected[0].Value}}'.
+		</p>
+
+		<d3s-where-used (onLoaded)="usageLoaded($event)" [uid]="selected[0].uid" [objectType]="'ConnectorLabel'"></d3s-where-used>
+	</div>
+</d3s-delete-form>
+
+<d3s-delete-form *ngIf="selected && selected.length > 1"
+				 [callback]="theDeleteCallback"
+				 [method]="'callback'"
+				 [items]="selected"
+				 [showAsModal]="true"
+				 [modalCssClasses]="'large-dialog'"
+				 [modalTitle]="deletePopupTitle"
+				 [confirmationText]="deleteConfirmationText"
+				 [isModalVisible]="showDelete"
+				 [showDownloadWhereUsed]="true"
+				 (onCancel)="showDelete=false;"
+				 (onUsageExport)="exportUsage()">
+	<div prompt>
+		<p i18n>
+			Please confirm that you wish to delete the following Connector Labels.
+		</p>
+		<p-table #usageTable
+				 [value]="selected"
+				 [pageLinks]="3"
+				 [paginator]="true"
+				 [rows]="rowsPerModal"
+				 class="ig-table"
+				 [loading]="isUsageLoading"
+				 [loadingIcon]="'fa fa-spinner fa-spin'">
+			<ng-template pTemplate="header">
+				<tr>
+					<th [pSortableColumn]="'Value'" style="width: 60%">
+						<ng-container i18n>Connector Label</ng-container>
+						<d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'UseCount'" style="width: 15%">
+						<ng-container i18n>Where Used</ng-container>
+						<d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
+					</th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body" let-item>
+				<tr>
+					<td>
+						{{item.Value}}
+					</td>
+					<td>
+						<d3s-where-used [displayValue]="item.Value"
+										[uid]="item.uid"
+										[objectType]="'ConnectorLabel'"
+										[showAsModal]="true">
+							{{item.UseCount}} {{item.UseCount == 1 ? 'diagram' : 'diagrams'}}
+						</d3s-where-used>
+					</td>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="summary">
+				<d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="selectedCount"></d3s-grid-paging-info>
+			</ng-template>
+		</p-table>
+	</div>
+</d3s-delete-form>
+
+
+<d3s-modal [title]="'Consolidate Connector Labels'"
+		   additionalClasses="modal-dyn-editor large-dialog"
+		   (onClose)="showConsolidationPopup=false"
+		   [isVisible]="showConsolidationPopup">
+	<div prompt>
+		<div class="content">
+			<div class="row">
+				<p i18n>Please select the one Connector Label you wish to keep:</p>
+
+				<p-table #usageTableConsolidate
+						 [value]="selected"
+						 [pageLinks]="3"
+						 [paginator]="true"
+						 [rows]="rowsPerModal"
+						 class="ig-table"
+						 [loading]="isUsageLoading"
+						 [loadingIcon]="'fa fa-spinner fa-spin'">
+					<ng-template pTemplate="header">
+						<tr>
+							<th [pSortableColumn]="'Value'" style="width: 60%">
+								<ng-container i18n>Connector Label</ng-container>
+								<d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
+							</th>
+							<th [pSortableColumn]="'UseCount'" style="width: 15%">
+								<ng-container i18n>Where Used</ng-container>
+								<d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
+							</th>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="body" let-item>
+						<tr>
+							<td>
+								<input [(ngModel)]="consolidateValue" type="radio" id="val_{{item.uid}}" name="consolidateTo" value="{{item.uid}}" />
+								<label class="default-label" for="val_{{item.uid}}">{{item.Value}}</label>
+							</td>
+							<td>
+								<d3s-where-used [displayValue]="item.Value"
+												[uid]="item.uid"
+												[objectType]="'ConnectorLabel'"
+												[showAsModal]="true">
+									{{item.UseCount}} {{item.UseCount == 1 ? 'diagram' : 'diagrams'}}
+								</d3s-where-used>
+							</td>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="summary">
+						<d3s-grid-paging-info [first]="usageTableConsolidate.first" [rows]="usageTableConsolidate.rows" [totalRecords]="usageTableConsolidate.totalRecords"></d3s-grid-paging-info>
+					</ng-template>
+				</p-table>
+			</div>
+			<div class="row" i18n>
+				All occurrences of the unselected labels will be replaced by occurrences of the selected label.<br />
+				The unselected Connector Labels will then be deleted. Please note that this operation cannot be undone.
+			</div>
+		</div>
+	</div>
+	<div class="action-bar">
+		<button igButton type="button" i18n-label label="Cancel" (click)="showConsolidationPopup=false"></button>&nbsp;&nbsp;
+		<button igButton type="button" i18n-label label="Download Where Used Reports" (click)="exportUsage()"></button>
+		<div class="grow"></div>
+		<button igButton type="submit" i18n-label [disabled]="!consolidateValue" [loading]="isSaving" (click)="consolidateClick()" class="ig-button-primary" label="Consolidate"></button>
+	</div>
+</d3s-modal>
