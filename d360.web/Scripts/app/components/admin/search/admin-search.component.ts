@@ -104,7 +104,8 @@ export class AdminSearchComponent extends AdminBaseComponent {
 
     private convertTypeToStatus(t: IndexableType): IndexableStatus {
         const elem: IndexableStatus = new IndexableStatus();
-        elem.AssetTypeUid = t.AssetTypeUid;
+		elem.AssetTypeUid = t.AssetTypeUid;
+		elem.AssetTypePath = t.AssetTypePath;
         elem.Class = t.Class;
         elem.ClassName = t.ClassName;
         elem.Name = t.Name;
