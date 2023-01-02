@@ -31,12 +31,11 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	selectedRow: TreeNode;
 
 	artifactTypes = [];
-	loadingCounter = 0;
 	dataCyPrefix = 'AssetType_';
 	destroy = new Subject<void>();
 	simpleFilterValue = '';
 	public tabTitle: string = $localize`Admin`;
-
+	isLoading: boolean = false;
 	isModalVisible: boolean = false;
 	assetTypeToDelete: any;
 
@@ -67,33 +66,27 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	}
 
 	load(preselectedUid: string = null) {
-		this.loadingCounter++;
-		try {
+		this.isLoading = true;
+		this.gridDataSub = forkJoin(
+			this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false),
+			this.assetsService.getAllColors(),
+			this.iconService.getIconProperties()
+		).subscribe((result) => {
+			const items = result[0];
+			this.defaultColors = result[1];
+			this.icons = result[2];
 
-			this.gridDataSub = forkJoin(
-				this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false),
-				this.assetsService.getAllColors(),
-				this.iconService.getIconProperties()
-			).subscribe((result) => {
-				const items = result[0];
-				this.defaultColors = result[1];
-				this.icons = result[2];
+			const treeNodes = items.map(AssetCount.ConvertToTreeNode);
+			this.artifactTypes = AssetCount.ListToTree(treeNodes, this.listItemTransform.bind(this));
 
-				const treeNodes = items.map(AssetCount.ConvertToTreeNode);
-				this.artifactTypes = AssetCount.ListToTree(treeNodes, this.listItemTransform.bind(this));
-
-				if (preselectedUid) {
-					this.selectedRow = this.artifactTypes.find((x) => x.id === preselectedUid);
-				}
-				else {
-					this.selectedRow = _.first(this.artifactTypes);
-				}
-			})
-
-		}
-		finally {
-			this.loadingCounter--;
-		}
+			if (preselectedUid) {
+				this.selectedRow = this.artifactTypes.find((x) => x.id === preselectedUid);
+			}
+			else {
+				this.selectedRow = _.first(this.artifactTypes);
+			}
+			this.isLoading = false;
+		});
 	}
 
 	listItemTransform(type) {
@@ -115,15 +108,12 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		type.data["backColorName"] = defColor ? defColor.value : $localize`Custom`;
 
 		//resolve icons
-		if (type?.data?.icon) {
-			const typeIcon = (type?.data?.icon ?? '') as string;
-			const icon = this.icons.find((x) => x.id.toLowerCase() === typeIcon.replace('fa-', '').toLowerCase());
-			type.data["iconName"] = icon?.name;
-		}
-		else {
+		if (!type?.data?.icon) {
 			type.data.icon = 'fa-book';
-			type.data["iconName"] = '---';
 		}
+
+		const icon = this.icons.find((x) => x.id.toLowerCase() === type.data.icon.replace('fa-', '').toLowerCase());
+		type.data["iconName"] = icon?.name;
 
 		if (this.hasFlowObjectType) {
 			var flowObjectType = type.data["flowObjectType"] as FlowObjectType;
