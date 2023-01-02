@@ -226,4 +226,34 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		this.formAssetUid = null;
 		this.formParentUid = null;
 	}
+
+	afterFilter() {
+		if (this.simpleFilterValue) {
+			this.expandAll();
+		}
+		else {
+			this.collapseAll();
+		}
+	}
+
+	public expandAll(): void {
+		this.artifactTypes.forEach(node => {
+			this.expandCollapseRecursive(node, true);
+		});
+	}
+
+	public collapseAll(): void {
+		this.artifactTypes.forEach(node => {
+			this.expandCollapseRecursive(node, false);
+		});
+	}
+
+	private expandCollapseRecursive(node: TreeNode, isExpand: boolean): void {
+		node.expanded = isExpand;
+		if (node.children) {
+			node.children.forEach(childNode => {
+				this.expandCollapseRecursive(childNode, isExpand);
+			});
+		}
+	}
 }

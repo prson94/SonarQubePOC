@@ -11,7 +11,7 @@
 					<div class="simple-search">
 						<ig-search-field [debounce]="600"
 										 [(ngModel)]="simpleFilterValue"
-										 (onSearch)="dt.filterGlobal($event, 'contains')"
+										 (onSearch)="dt.filterGlobal($event, 'contains');afterFilter();"
 										 mode="Keypress">
 						</ig-search-field>
 					</div>
@@ -34,7 +34,7 @@
 				<div class="tree-wrapper">
 					<p-treeTable #dt
 								 [value]="artifactTypes"
-								 [globalFilterFields]="['name']"
+								 [globalFilterFields]="['name','backColorName','flowObjectTypeName','iconName']"
 								 [paginator]="true"
 								 [rows]="rowsPerPage"
 								 [rowsPerPageOptions]="defaultPagingOptions"
@@ -53,11 +53,11 @@
 									<ng-container i18n>Maximum Depth</ng-container>
 									<d3s-sortIcon [field]="'maxDepth'"></d3s-sortIcon>
 								</th>
-								<th style="width: 300px"  *ngIf="hasBackgroundColor" [ttSortableColumn]="'backColorName'">
+								<th style="width: 300px" *ngIf="hasBackgroundColor" [ttSortableColumn]="'backColorName'">
 									<ng-container i18n>Background Color</ng-container>
 									<d3s-sortIcon [field]="'backColorName'"></d3s-sortIcon>
-								</th>								
-								<th style="width: 300px"  *ngIf="hasFlowObjectType" [ttSortableColumn]="'flowObjectTypeName'">
+								</th>
+								<th style="width: 300px" *ngIf="hasFlowObjectType" [ttSortableColumn]="'flowObjectTypeName'">
 									<ng-container i18n>Flow Object Type</ng-container>
 									<d3s-sortIcon [field]="'flowObjectType'"></d3s-sortIcon>
 								</th>
@@ -93,10 +93,10 @@
 										 [style.background]="item.backColor">
 									</div>
 									{{item.backColorName}}
-								</td>	
+								</td>
 								<td *ngIf="hasFlowObjectType" class="background-column">
 									{{item.flowObjectTypeName}}
-								</td>								
+								</td>
 								<td *ngIf="hasIcon">
 									<div class="grid-icon">
 										<i class="fa {{item.icon}}"></i>{{item.iconName}}
