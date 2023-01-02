@@ -53,6 +53,7 @@ import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configu
 import { AdminLevelListComponent } from './levels/admin-level-list.component';
 import { AdminLevelEditorComponent } from './levels/admin-level-editor.component';
 import { TableModule } from 'primeng/table';
+import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
 
 @NgModule({
     imports: [
@@ -89,7 +90,8 @@ import { TableModule } from 'primeng/table';
 		CheckboxModule,
         PortalsModule,
 		FormsModule,
-		TableModule
+		TableModule,
+		IgMessageBoxModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
