@@ -2868,6 +2868,10 @@ namespace d360.web.Controllers.V2
 						response.items.Add(c);
 					}
 				}
+				if (response.items.Count > 0)
+				{
+					response.total = response.items.Count;
+				}
 
 				return Request.CreateResponse(HttpStatusCode.OK, response);
 			}
