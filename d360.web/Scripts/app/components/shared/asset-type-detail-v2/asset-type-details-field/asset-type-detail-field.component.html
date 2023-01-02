@@ -6,7 +6,7 @@
 </div>
 <ng-container *ngIf="field.value !== null && field.value !== undefined; else emptyValue" [ngSwitch]="field.type">
     <div class="ig-value" *ngSwitchCase="fieldType.HTML">
-        <span *ngIf="field.value; else emptyHTML" [innerHTML]="field.value | safeHtml"></span>
+        <span class="ql-editor" *ngIf="field.value; else emptyHTML" [innerHTML]="field.value | safeHtml"></span>
         <ng-template #emptyHTML>
             <span> --- </span>
         </ng-template>
