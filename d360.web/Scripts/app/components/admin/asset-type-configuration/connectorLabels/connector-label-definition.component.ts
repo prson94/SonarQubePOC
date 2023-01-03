@@ -33,4 +33,13 @@ export class ConnectorLabelDefinitionComponent extends AdminBaseComponent {
 		super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
 	}
 
+	open(newTab: boolean = false) {
+		const url = `connectorLabel/${this.label.uid}`;
+		if (newTab) {
+			window.open(url, "_blank");
+		}
+		else {
+			this.router.navigateByUrl(url);
+		}
+	}
 }

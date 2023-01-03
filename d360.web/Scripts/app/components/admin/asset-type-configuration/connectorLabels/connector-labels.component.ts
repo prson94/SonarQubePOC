@@ -357,7 +357,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 	];
 
 	open(uid: string, newTab: boolean = false) {
-		const url = `test/${uid}/fields`;
+		const url = `connectorLabel/${uid}`;
 		if (newTab) {
 			window.open(url, "_blank");
 		}

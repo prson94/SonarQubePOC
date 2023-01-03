@@ -91,7 +91,7 @@
 						<td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
 						<td (click)="selectSingleItem($event,item, el);">
 							<div class="token-popup-menu" *ngIf="item.MenuItems">
-								<button igButton type="button" icon="fa-info-circle" (click)="selectedForInfoPanel = item"></button>&nbsp;&nbsp;
+								<button igButton type="button" class="{{(selectedForInfoPanel === item ? 'ig-button-primary' : '')}}" icon="fa-info-circle" (click)="selectedForInfoPanel = item"></button>&nbsp;&nbsp;
 
 								<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
 								<ig-popup-menu (onSelect)="onPopupMenuClick($event)"
