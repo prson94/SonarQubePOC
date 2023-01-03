@@ -1,4 +1,4 @@
-﻿import { Component, ViewChild, ChangeDetectorRef, ElementRef, Input } from "@angular/core";
+﻿import { Component, ViewChild, ChangeDetectorRef, ElementRef, Input, ViewEncapsulation } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { Router } from "@angular/router";
 import { ConnectorLabel } from "../../../../models/connectorLabel.model";
@@ -10,26 +10,27 @@ import { CompanySettingsService } from "../../../../services/settings.service";
 import { AdminBaseComponent } from "../../admin-base.component";
 
 @Component({
-    selector: 'd3s-connector-label-definition',
+	selector: 'd3s-connector-label-definition',
 	templateUrl: './connector-label-definition.component.html',
 	styleUrls: ['./connector-label-definition.component.less'],
-    providers: [ConnectorLabelService]
+	encapsulation: ViewEncapsulation.None,
+	providers: [ConnectorLabelService]
 })
 
 export class ConnectorLabelDefinitionComponent extends AdminBaseComponent {
 	@Input() label: ConnectorLabel;
-    
 
-    constructor(private router: Router,
-        private connectorLabelService: ConnectorLabelService,
-        headerBreadcrumbService: HeaderBreadcrumbService,
-        private messagesService: MessagesObservableService,
-        titleService: Title,
-        secondaryNavService: SecondaryNavService,
-        protected settingsService: CompanySettingsService,
-        private cdRef: ChangeDetectorRef
-    ) {
-        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
-    }
+
+	constructor(private router: Router,
+		private connectorLabelService: ConnectorLabelService,
+		headerBreadcrumbService: HeaderBreadcrumbService,
+		private messagesService: MessagesObservableService,
+		titleService: Title,
+		secondaryNavService: SecondaryNavService,
+		protected settingsService: CompanySettingsService,
+		private cdRef: ChangeDetectorRef
+	) {
+		super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
+	}
 
 }

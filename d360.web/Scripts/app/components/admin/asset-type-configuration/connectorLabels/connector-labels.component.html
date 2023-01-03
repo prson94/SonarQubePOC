@@ -1,6 +1,6 @@
 <div class="row connector-label-list">
 	<d3s-connector-label-sidepanel-wrapper [sidePanelStorageKey]="sidePanelStorageKey"
-										   [selectedItem]="selected">
+										   [selectedItem]="selectedForInfoPanel">
 
 		<div class="col s12">
 			<div class="grid-actions-header column-layout">
@@ -36,7 +36,7 @@
 							</button>
 						</div>
 						<div *ngIf="selected.length > 1" class="grid-header-actions">
-							<button type="button" icon="fa-ellipsis-v" igButton i18n-label label="{{selected.length}} items selected" (click)="popupMenu.toggle($event)"></button>
+							<button type="button" icon="fa-ellipsis-v" igButton prepend-label i18n-label label="{{selected.length}} items selected" (click)="popupMenu.toggle($event)"></button>
 							<ig-popup-menu #popupMenu [location]="3" (onSelect)="actionSelected($event)" [items]="multiselectMenu"></ig-popup-menu>
 						</div>
 					</div>
@@ -58,18 +58,18 @@
 					 [loadingIcon]="'fa fa-spinner fa-spin'">
 				<ng-template pTemplate="header">
 					<tr>
-						<th style="width: 5px;">
+						<th style="width: 25px;">
 							<p-tableHeaderCheckbox></p-tableHeaderCheckbox>
 						</th>
 						<th [pSortableColumn]="'Value'" style="width: 60%">
 							<ng-container i18n>Name</ng-container>
 							<d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
 						</th>
-						<th [pSortableColumn]="'UseCount'" style="width: 15%">
+						<th [pSortableColumn]="'UseCount'">
 							<ng-container i18n>Use count</ng-container>
 							<d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
 						</th>
-						<th style="width: 110px"></th>
+						<th style="width: 90px"></th>
 					</tr>
 					<tr [hidden]="showSimpleFilter">
 						<th></th>
@@ -90,12 +90,14 @@
 						</td>
 						<td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
 						<td (click)="selectSingleItem($event,item, el);">
-							<div class="RowTools">
-								<d3s-preview-tooltip [objectType]="'ConnectorLabel'"
-													 [objectId]="item.uid"
-													 icon="info"></d3s-preview-tooltip>&nbsp;&nbsp;&nbsp;
-								<a style="cursor:pointer;" (click)="openEditor(item);"><i class="fa fa-pencil"></i></a>
-								<a style="cursor:pointer;" (click)="openDeleteModal(item);"><i class="fa fa-trash-o"></i></a>
+							<div class="token-popup-menu" *ngIf="item.MenuItems">
+								<button igButton type="button" icon="fa-info-circle" (click)="selectedForInfoPanel = item"></button>&nbsp;&nbsp;
+
+								<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+								<ig-popup-menu (onSelect)="onPopupMenuClick($event)"
+											   [items]="item.MenuItems"
+											   #tokenMenu
+											   [tabIndex]="1"></ig-popup-menu>
 							</div>
 						</td>
 					</tr>

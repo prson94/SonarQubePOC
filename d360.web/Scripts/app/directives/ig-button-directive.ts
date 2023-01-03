@@ -60,10 +60,17 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
         }
 
         if (this._label) {
+			const usePrepend = this.el.nativeElement.attributes['prepend-label'] !== undefined;
+
             labelElement = document.createElement("span");
             labelElement.className = 'ig-button-label';
-            labelElement.appendChild(document.createTextNode(this.label));
-            this.el.nativeElement.appendChild(labelElement);
+			labelElement.appendChild(document.createTextNode(this.label));
+			if (usePrepend) {
+				this.el.nativeElement.prepend(labelElement);
+			}
+			else {
+				this.el.nativeElement.appendChild(labelElement);
+			}
             DomHandler.removeClass(this.el.nativeElement, "ig-button-icon-only");
         } else {
             DomHandler.addClass(this.el.nativeElement, "ig-button-icon-only");
@@ -81,7 +88,7 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
         const iconElement = DomHandler.findSingle(this.el.nativeElement, '.ig-button-icon');
         if (iconElement) {
             this.el.nativeElement.removeChild(iconElement);
-        }
+		}
 
         if (this._icon) {
             const iconElement = document.createElement("span");

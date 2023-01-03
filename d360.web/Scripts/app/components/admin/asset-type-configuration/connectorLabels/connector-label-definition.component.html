@@ -1,37 +1,75 @@
-{{label | json}}
+<div class="connector-label-definition asset-detail">
+	<div class="asset-detail-header ng-star-inserted">
+		<div class="asset-name">{{label.Value}}</div>
+		<div class="class-name" i18n>Connector Label</div>
 
+		<div class="ng-star-inserted">
+			<a>Open</a>
+			<span class="grey-delimiter">|</span>
+			<a>Open in New Tab</a>
+			<span class="grey-delimiter">|</span>
+			<a>Edit</a>
+		</div>
+	</div>
 
-<ig-property-group i18n-title title="General">
-	<div inputs>
-		<div class="form-group">
-			<div class="row">
-				<label class="ig-label" i18n>Name</label>
-				<div>
-					{{label.Value}}
+	<div class="asset-detail-tabs">
+		<ig-property-group i18n-title title="General">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Name</label>
+						<div>
+							{{label.Value}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Use Count</label>
+						<span>
+							{{label.UseCount}}
+						</span>
+					</div>
 				</div>
 			</div>
-			<div class="row">
-				<label class="ig-label" i18n>Use Count</label>
-				<span>
-					{{label.UseCount}}
-				</span>
+		</ig-property-group>
+		<ig-property-group i18n-title title="System Fields">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>
+							UID
+							<i class="fa fa-copy" [copy-clipboard]="label.uid"></i>
+						</label>
+						<div>
+							{{label.uid}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Date Created</label>
+						<span>
+							{{ label.CreatedOn | date:'d MMM yyyy' }}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Date Last Modified</label>
+						<span>
+							{{ label.UpdatedOn | date:'d MMM yyyy' }}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Created By</label>
+						<span>
+							{{ label.CreatedByName }}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Last Modified by</label>
+						<span>
+							{{ label.UpdatedByName }}
+						</span>
+					</div>
+				</div>
 			</div>
-		</div>
+		</ig-property-group>
 	</div>
-</ig-property-group>
-<ig-property-group i18n-title title="System Fields">
-	<div inputs>
-		<div class="row">
-			<b>Template driven forms</b>
-			<p>template model:</p>
-		</div>
-		<div class="form-group">
-			<div class="row">
-				<label for="theName" class="ig-label">Property1</label>
-			</div>
-			<div class="row">
-				<label for="theAddr" class="ig-label">Propertylabel that has a long name but should wrap to the next line.</label>
-			</div>
-		</div>
-	</div>
-</ig-property-group>
+
+</div>

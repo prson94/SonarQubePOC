@@ -128,8 +128,10 @@ namespace d360.model.DataAccessLayer
 						t.Value,
 						t.CreatedOn,
 						grc.uid as CreatedByUid,
+						grc.FirstName + ' ' + grc.LastName as CreatedByName,
 						t.UpdatedOn,
-						gru.uid as UpdatedByUid
+						gru.uid as UpdatedByUid,
+						gru.FirstName + ' ' + gru.LastName as UpdatedByName
 						from ConnectorLabel t
 						  left join reporting.Global_Resource grc on t.CreatedBy = grc.ResourceID
 						  left join reporting.Global_Resource gru on t.UpdatedBy = gru.ResourceID
