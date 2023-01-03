@@ -1,4 +1,4 @@
-﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../base.component';
 
 import * as Highcharts from 'highcharts';
@@ -16,7 +16,7 @@ import { AuthenticationService } from '../../../services/authentication.service'
     styleUrls: ['dataprofile.less']
 })
 
-export class DataProfileComponent extends BaseComponent implements OnInit {
+export class DataProfileComponent extends BaseComponent implements OnChanges {
     @Input() dataProfile: any;
     @Input() isModal: boolean = false;
     @Input() assetData: any;
@@ -39,7 +39,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         private authenticationService: AuthenticationService
     ) {
         super(settingsService);
-    }
+	}
 
     private sampleCountPercentage: number;
     private nullBlankCountTotal: number;
@@ -103,33 +103,19 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     semanticType: SemanticType;
     showEditor: boolean = false;
 
-    ngOnInit() {
-        this.initialize();
-        if (this.assetData) {
-            this.assetName = this.assetData.AssetName;
-            this.assetTypeName = this.assetData.AssetTypeName;
-        } else {
-            const uriParams: any = {};
-            this.isLoading = true;
-            this.assetService.getAsset(this.dataProfile.assetUid)
-                .subscribe((res) => {
-                    this.assetName = res.Name;
-                    uriParams.assetTypeUid = res.AssetTypeUid;
-                    this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
-                        this.assetTypeName = result[0].Name;
-                        this.isLoading = false;
-                    });
-                });
-        }
-    }
-
+    ngOnChanges(changes: SimpleChanges): void {
+		this.initialize();
+		this.getAssetDetails();			
+	}
+	
     ngAfterViewInit() {
         if (!this.sampleDistributionChart) {
             setTimeout(() => this.renderSampleDistributionChart(), 10);
         }
-    }
+	}
 
-    initialize() {
+	initialize() {
+		this.hasDefinedType = false;
         const startDate = new Date();
         startDate.setFullYear(startDate.getUTCFullYear() - 100);
         if (this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
@@ -194,6 +180,35 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
         this.setMinAndMaxText();
     }
+
+	getAssetDetails() {
+		const uriParams: any = {};
+		this.isLoading = true;
+
+		if (this.assetData) {
+			this.assetName = this.assetData.AssetName ?? this.assetData.Name;
+			if (this.assetData.AssetTypeName) {
+				this.assetTypeName = this.assetData.AssetTypeName;
+				this.isLoading = false;
+			} else {
+				uriParams.assetTypeUid = this.assetData.AssetTypeUid;
+				this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
+					this.assetTypeName = result[0].Name;
+					this.isLoading = false;
+				});
+			}			
+		} else {
+			this.assetService.getAsset(this.dataProfile.assetUid)
+				.subscribe((res) => {
+					this.assetName = res.Name;
+					uriParams.assetTypeUid = res.AssetTypeUid;
+					this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
+						this.assetTypeName = result[0].Name;
+						this.isLoading = false;
+					});
+				});
+		}
+	}
 
     private showSidePanel() {
         this.showDataProfile = !this.showDataProfile;
