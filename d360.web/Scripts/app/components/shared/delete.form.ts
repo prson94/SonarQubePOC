@@ -1,7 +1,6 @@
 import { map } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import {
-    ChangeDetectorRef,
     Component,
     EventEmitter,
     Input,
@@ -67,7 +66,7 @@ export class DeleteForm implements OnChanges {
 
     http: HttpClient;
 
-    constructor(http: HttpClient, private assetTypeService: AssetTypeService, private cdRef: ChangeDetectorRef) {
+    constructor(http: HttpClient, private assetTypeService: AssetTypeService) {
         this.http = http;
     }
 

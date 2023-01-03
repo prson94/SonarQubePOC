@@ -131,7 +131,6 @@ export class AdvancedFilteringComponent implements OnChanges {
     @HostBinding("class") class = "advanced-filtering-component";
 
     constructor(public cdRef: ChangeDetectorRef,
-        private elRef: ElementRef,
         private fieldsService: FieldsObservableService,
         protected settingsService: CompanySettingsService,
         private allocationService: AllocationService,

@@ -128,7 +128,6 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
         );
     }
 
-    private assetTimeout: any;
     private loadItems() {
         if (this.getAssetSub) {
             this.getAssetSub.unsubscribe();

@@ -7,7 +7,6 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { Location } from '@angular/common';
 import { ShoppingCart, ShoppingCartListItem } from '../../models/shopping-cart.model';
-import { MessagesObservableService } from '../../services/messages-observable.service';
 import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
@@ -28,7 +27,6 @@ export class ShoppingCartRequestComponent extends BaseComponent implements OnIni
         private titleService: Title,
         private locationService: Location,
         private shoppingCartService: ShoppingCartService,
-        private messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
         private route: ActivatedRoute,
         private router: Router) {

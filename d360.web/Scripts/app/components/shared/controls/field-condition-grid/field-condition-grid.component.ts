@@ -14,7 +14,6 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { SelectItem } from 'primeng/api';
 import { Operator } from '../../../../models/operator.model';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../../models/field-condition-grid.models';
-import { Condition } from '../../../../models/metrics.model';
 import * as _ from 'lodash';
 
 @Component({
@@ -320,9 +319,5 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
     private randstr(prefix) {
         return Math.random().toString(36).replace('0.', prefix || '');
-    }
-
-    private getUniqueId(prefix: string, item: Condition): string {
-        return prefix + item['hash'];
     }
 }

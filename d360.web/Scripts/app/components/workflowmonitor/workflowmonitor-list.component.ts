@@ -47,7 +47,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
     isAdmin: boolean = false;
     showConfirmDelete: boolean = false;
     selectedCount: number = 0;
-    selection: any;
+    selection: WorkflowMonitorItem[];
     @Output() selectionChange = new EventEmitter();
     @Output() hideDetails = new EventEmitter();
     private destroy = new Subject<void>();
@@ -158,7 +158,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
                 this.items = result.Items;
                 this.totalRecords = +result.Total;
                 if (this.items != null && this.items.length > 0) {
-                    let item: any;
+                    let item: WorkflowMonitorItem;
                     if (this.stateService.workflowItemFilters.itemId !== 0) {
                         item = this.items.find((x) => x.Id === this.stateService.workflowItemFilters.itemId);
                     }
@@ -187,7 +187,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
         if (Array.isArray(this.selection)) {
             itemIds = this.selection.map((i) => i.Id);
         } else if (this.selection != null) {
-            itemIds.push(this.selection.Id);
+            itemIds.push((this.selection as WorkflowMonitorItem).Id);
         }
         this.wfMonitorService.deleteItems(itemIds).subscribe(
             (res) => {

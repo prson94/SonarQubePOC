@@ -4,31 +4,7 @@ import { BaseComponent } from "../shared/base.component";
 
 @Component({
     selector: `d3s-monitor-workflow-version`,
-    template: `
-    <div style="padding-bottom: 15px">
-    <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
-        <div *ngIf="!isLoading">    
-        <header *ngIf="showHeader">   
-                {{title}}
-                 <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
-         </header>
-            <d3s-monitor-filter *ngIf="showHeader" [hidden]="isFiltered" (selectionChange)="filterChange($event)" [selectAll]="selectAll"></d3s-monitor-filter>
-            <d3s-monitor-filter *ngIf="!showHeader" [(filterMode)]="showSimpleFilter" [selection]="selectedWorkflowTypes"  [showFilter]="true" [hidden]="isFiltered" (selectionChange)="filterChange($event)" [selectAll]="selectAll"></d3s-monitor-filter>
-
-            <d3s-monitor-list 
-                    [showSimpleFilter]="showSimpleFilter"
-                    [title]="title"
-                    [workflowTypes]="selectedWorkflowTypes" 
-                    (selectionChange)="monitorListChange($event)" 
-                    [objectType]="objectType" 
-                    [objectId]="objectId" 
-                    (filteredTypes)="monitorFilterTypesChange($event)"
-                    (onLoadComplete)="onMonitorListLoadCompleted.emit($event)">
-            </d3s-monitor-list>
-        </div>
-   </div>
-
-`
+    templateUrl: './monitor-workflow-version.component.html'
 })
 export class MonitorWorkflowVersionComponent extends BaseComponent {
 

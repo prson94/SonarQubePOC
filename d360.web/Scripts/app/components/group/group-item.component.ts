@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -30,8 +30,7 @@ export class GroupItemComponent extends BaseComponent implements OnInit {
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected settingsService: CompanySettingsService,
         protected titleService: Title,
-        private route: ActivatedRoute,
-        private router: Router) {
+        private route: ActivatedRoute) {
         super(settingsService);
     }
 
@@ -62,9 +61,5 @@ export class GroupItemComponent extends BaseComponent implements OnInit {
             this.sub.unsubscribe();
         }
         this.clearSidebar();
-    }
-
-    private load() {
-
     }
 }

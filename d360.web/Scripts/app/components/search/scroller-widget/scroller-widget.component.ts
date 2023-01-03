@@ -16,10 +16,7 @@ export class ScrollerWidgetComponent implements OnInit {
 
 	@ViewChild('fieldScroller', { static: false }) fieldScroller: ElementRef;
 
-	constructor(
-		private ref: ChangeDetectorRef,
-		private elementRef: ElementRef) {
-		
+	constructor(private ref: ChangeDetectorRef) {
 	}
 
 	ngOnInit() {

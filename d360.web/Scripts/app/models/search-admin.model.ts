@@ -2,7 +2,8 @@
     Name: string;
     Class: number;
     ClassName: string;
-    AssetTypeUid: string;
+	AssetTypeUid: string;
+	AssetTypePath: string;
     }
 
 export class IndexableStatus extends IndexableType

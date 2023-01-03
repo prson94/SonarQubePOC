@@ -5561,9 +5561,18 @@ where	T.ExecutionID = @ExecutionID
 																	where	
 																	A.Uid = T.SubjectUid 
 																	and
-																	(
-																	(P.AssetID = A.ID)
-																	or P.AssetTypeID is null
+																	(															
+																		(
+																			P.AssetID = A.ID
+																			or 
+																			P.AssetTypeID is null
+																		)
+																		OR
+																		(																	
+																			P.AssetID=0 
+																			and 
+																			P.AssetTypeID=A.AssetTypeID
+																		)
 																	)
 																	and 
 																	P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p	
@@ -5582,9 +5591,18 @@ where	T.ExecutionID = @ExecutionID
 																	where	
 																	A.Uid = T.ObjectUid 
 																	and
-																	(
-																	(P.AssetID = A.ID)
-																	or P.AssetTypeID is null
+																	(															
+																		(
+																			P.AssetID = A.ID
+																			or 
+																			P.AssetTypeID is null
+																		)
+																		OR
+																		(																	
+																			P.AssetID=0 
+																			and 
+																			P.AssetTypeID=A.AssetTypeID
+																		)
 																	)
 																	and 
 																	P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p	

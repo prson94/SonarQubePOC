@@ -1,8 +1,7 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { PermissionsService } from '../../../services/permissions.service';
-import { ObjectDetailService } from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -16,7 +15,7 @@ import { AssetTypeClass } from '../../../models/asset.model';
 	template: `
      <gov-relationship-grid *ngIf="assetUid" [assetUid]="assetUid" [assetTypeUid]="assetTypeUid"></gov-relationship-grid>
     `,
-	providers: [PermissionsService, ObjectDetailService]
+	providers: [PermissionsService]
 })
 
 export class RelationshipsComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -26,10 +25,8 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
 
 	constructor(
 		private route: ActivatedRoute,
-		private router: Router,
 		private permissionsService: PermissionsService,
 		private assetService: AssetService,
-		private objectDetailService: ObjectDetailService,
 		secondaryNavService: SecondaryNavService,
 		breadcrumbService: HeaderBreadcrumbService,
 		protected settingsService: CompanySettingsService

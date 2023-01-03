@@ -1,5 +1,5 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { AssetService } from '../../services/asset.service';
@@ -30,8 +30,7 @@ export class AssetsBaseComponent extends BaseComponent implements OnInit, OnDest
 	constructor(
 		private assetTypeService: AssetTypeService,
         protected settingsService: CompanySettingsService,
-        private route: ActivatedRoute,
-        private router: Router) {
+        private route: ActivatedRoute) {
         super(settingsService);
     }
 

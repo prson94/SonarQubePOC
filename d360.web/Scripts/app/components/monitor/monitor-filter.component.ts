@@ -6,28 +6,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-monitor-filter',
-    template: ` 
-        <div class="row">
-            <div class="col s3 FieldName" i18n>Workflow Types</div>
-            <div class="col s9">
-                <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
-                <div *ngIf="!isLoading">
-                    <table style="table-layout: fixed">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)" selectedItemsLabel="{0} items selected"></p-multiSelect>
-                                </td>
-                                <td *ngIf="showFilter" style="width:32px">
-                                    <a style="font-size:1.1em" [style.color]="filterMode ? '#000' : '#f00'" (click)="filterModeChange.emit(!filterMode)"><i class="fa fa-filter"></i></a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>        
-            </div>
-        </div>   
-           `,
+    templateUrl: './monitor-filter.component.html',
     providers: [WorkflowService],
 })
 

@@ -567,5 +567,36 @@ END
 	]]>
 	</sql>
   </changeSet>
+<changeSet author="Puneet Gupta" id="Data.Corrections.GOV-20613">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+declare @FieldTypeID int;
 
+select top 1 @FieldTypeID = FT.ID 
+from assettype ATT 
+inner join FieldType FT on ATT.ID = FT.AssetTypeID
+where ATT.Class = 9 and ATT.Name  = 'Rule Dimension' and Type = 'Html';
+
+if (@FieldTypeID is not null)
+begin
+	Update FT
+	set Type = 'Text'
+	From fieldType FT
+	where FT.ID = @FieldTypeID;
+
+	Update F
+	set [Value]= [reporting].[StripHTML]( F.[Value]),
+	[Formattedvalue] = [reporting].[StripHTML]( F.[Formattedvalue])  
+	From Field F
+	where F.FieldTypeID = @FieldTypeID;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

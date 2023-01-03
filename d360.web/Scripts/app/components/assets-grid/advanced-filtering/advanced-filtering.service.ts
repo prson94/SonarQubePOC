@@ -1,5 +1,4 @@
 ﻿import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 
 export class AdvancedFilterUpdate {
@@ -11,8 +10,6 @@ export class AdvancedFilterUpdate {
 @Injectable({ providedIn: 'root' })
 export class AdvancedFilteringService {
     private subject = new Subject<AdvancedFilterUpdate>();
-
-    constructor(private router: Router) { }
 
     updateFilter(data: AdvancedFilterUpdate) {
         this.subject.next(data);

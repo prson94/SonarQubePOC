@@ -15,7 +15,6 @@ import { AuthenticationService } from '../../services/authentication.service';
 
 import { DataProfileService } from '../../services/dataprofile.service';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -71,7 +70,6 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         private resourcesService: ResourcesService,
         protected settingsService: CompanySettingsService,
         private authenticationService: AuthenticationService,
-        private headerbreadcrumbservice: HeaderBreadcrumbService,
         private featureFlagService: FeatureFlagsService,
     ) {
         super(settingsService);   

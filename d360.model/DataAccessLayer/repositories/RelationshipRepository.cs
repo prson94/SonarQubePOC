@@ -1672,10 +1672,10 @@ where	Id = @Id
 
 			return results;
 		}
-		public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
+		public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null)
 		{
 			var apiTimeout = ApiTimeout;
-			JObject results = await GetRelationships(queryParams, isExport: true).ConfigureAwait(false);
+			JObject results = await GetRelationships(queryParams, isExport: true, cancellationToken: cancellationToken).ConfigureAwait(false);
 			var includeTotal = true;
 			var includeAssetPath = false;
 

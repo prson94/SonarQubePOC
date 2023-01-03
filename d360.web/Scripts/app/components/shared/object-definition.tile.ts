@@ -15,7 +15,6 @@ import { BaseComponent } from '../shared/base.component';
 import { FormMode } from '../../models/form.model';
 import { AssetService } from '../../services/asset.service';
 import { AssetEditorModel } from '../../models/asset.model';
-import { MessagesObservableService } from '../../services/messages-observable.service';
 import { SynonymPermission } from '../../models/artifacts.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { D3SModal } from './modal/gov-modal.component';
@@ -53,8 +52,6 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     constructor(
         private objectDetailService: ObjectDetailService,
         private headerActionsService: HeaderActionsService,
-        private assetService: AssetService,
-        private messagesService: MessagesObservableService,
         private cdRef: ChangeDetectorRef,
         protected settingsService: CompanySettingsService
     ) {

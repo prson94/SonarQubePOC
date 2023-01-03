@@ -843,12 +843,12 @@ namespace d360.web.Controllers.V2
 				else if (actionTypeUid != null)
 				{
 					int atID = Company.Filter<IssueType>(x => x.uid == actionTypeUid).SingleOrDefault().ID;
-					ft = Company.Filter<FieldType>(x => x.AssetTypeID == atID && x.Name == name).SingleOrDefault();
+					ft = Company.Filter<FieldType>(x => x.IssueTypeID == atID && x.Name == name).SingleOrDefault();
 				}
 				else if (relationshipTypeUid != null)
 				{
 					var itID = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault().ID;
-					ft = Company.Filter<FieldType>(x => x.AssetTypeID == itID && x.Name == name).SingleOrDefault();
+					ft = Company.Filter<FieldType>(x => x.IntersectTypeID == itID && x.Name == name).SingleOrDefault();
 				}
 				else
 				{
@@ -1010,7 +1010,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					throw new ArgumentNullException(string.Format(ApiMessages.InvalidValueMessage, identifier));
+					throw new RestApiException(HttpStatusCode.BadRequest, string.Format(ApiMessages.InvalidValueMessage, identifier));
 				}
 
 				switch (type)
@@ -2690,7 +2690,7 @@ namespace d360.web.Controllers.V2
 				var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
 				var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
 
-				if (fieldType.Type == DataType.OwnershipLookup.ToString())
+				if (fieldType != null && fieldType.Type == DataType.OwnershipLookup.ToString())
 				{
 					var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
 					var definition = ftl.ParseOwnershipLookupDefinition();
@@ -2706,8 +2706,8 @@ namespace d360.web.Controllers.V2
 					response.items.Add(new FieldTypeApiViewModel { Name = "Context", FriendlyName = "Context", Type = new FieldTypeDataTypeApiViewModel { Html = new FieldTypeDataTypeHtmlApiViewModel() }, Category = "" });
 				}
 
-				if (fieldType.Type == DataType.RefListRelationship.ToString()
-					|| fieldType.Type == DataType.ComplexRelationLookup.ToString())
+				if (fieldType != null && (fieldType.Type == DataType.RefListRelationship.ToString()
+					|| fieldType.Type == DataType.ComplexRelationLookup.ToString()))
 				{
 					Guid? assetTypeUid = Guid.Empty;
 					var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();
@@ -2867,6 +2867,10 @@ namespace d360.web.Controllers.V2
 
 						response.items.Add(c);
 					}
+				}
+				if (response.items.Count > 0)
+				{
+					response.total = response.items.Count;
 				}
 
 				return Request.CreateResponse(HttpStatusCode.OK, response);

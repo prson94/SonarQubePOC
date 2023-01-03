@@ -1,6 +1,5 @@
 ﻿import {
     ChangeDetectionStrategy,
-    ChangeDetectorRef,
     Component,
     ElementRef,
     EventEmitter,
@@ -45,7 +44,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         private shoppingCartService: ShoppingCartService,
         private messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
-        private ref: ChangeDetectorRef,
         private elementRef: ElementRef,
         private datePipe: DatePipe) {
         super(settingsService);
@@ -105,11 +103,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         } else {
             this.router.navigateByUrl(url);
         }
-    }
-
-    private navigateVisualization() {
-        const url = (this.result.Group === 'Diagram Asset') ? this.result.Url : `/asset/${this.result.Uid}/diagrams`;
-        this.router.navigateByUrl(url);
     }
 
     private add() {

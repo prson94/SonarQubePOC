@@ -7,19 +7,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
 @Component({
     selector: 'd3s-asset-type-editor-use-as-transformation',
     providers: [RelationshipsService],
-    template: `
-<ng-container>
-    <div class="FieldName" i18n>Use As Transformation?</div>
-    <div class="row">
-        <div class="col l1 m2 s12">
-            <input pCheckbox type="checkbox" [(ngModel)]="UseAsTransformation" [disabled]="isRelationsExist" (ngModelChange)="tranformationChange($event)" />
-        </div>
-        <div class="col l11 m10 s12">
-            <div class="FieldInstructions" i18n>If enabled, assets of this type may be used as a connecting asset to form lineage relationships.</div>
-        </div>
-    </div>
-</ng-container>
-`
+    templateUrl: './asset-type-editor-use-as-transformation.component.html'
 
 })
 export class AssetTypeEditorUseAsTransformationComponent extends BaseComponent implements OnChanges, OnInit{

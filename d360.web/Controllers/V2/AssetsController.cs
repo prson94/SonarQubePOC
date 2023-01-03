@@ -2969,7 +2969,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 5000.", DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_includeTotal", "Whether or not to include the total count in the results, the default is true.", DataType = "boolean", ParameterType = "query", Required = false),
-			SwaggerConsumes("application/json", "application/xml"),
+			SwaggerConsumes("application/json"),
 			SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset uids and paths. This is an admin only endpoint.", typeof(AssetPathResults)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
@@ -3072,7 +3072,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetAsset(string assetUid)
 		{
-			if (Guid.TryParse(assetUid, out Guid assetId))
+			if (Guid.TryParse(assetUid.Trim(), out Guid assetId))
 			{
 				var res = await AssetRepository.GetAssetSingle(assetId);
 
@@ -3184,7 +3184,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_includeTotal", "Whether or not to include the total count in the results, the default is true.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are resourceId or name. By default the results are ordered by name.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of watchers for a given asset.", typeof(AssetWatchers)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
@@ -3338,7 +3338,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are resourceId, name, assetDisplayValue, governanceScore or dataQualityScore. By default the results are ordered by name.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("resourceUid", "Optional Uid of a resource. If provided returns assets relevant to that specific resource. If null asset details returned will be for all watchers.", DataType = "string", ParameterType = "query", Required = false),
-			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of watchers for a given asset.", typeof(WatchedAssetTypeDetailModel)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))

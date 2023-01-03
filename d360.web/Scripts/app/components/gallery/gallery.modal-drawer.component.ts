@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 
 @Component({
     selector: 'gallery-modal-drawer',
@@ -62,10 +62,6 @@ export class GalleryModalDrawerComponent implements OnInit {
         Confirm
     </button>
 </ng-container>`;
-
-
-    constructor(private ref: ChangeDetectorRef) {
-    }
 
     ngOnInit(): void {
         this.properties = [];

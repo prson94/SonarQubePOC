@@ -1,7 +1,6 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
-import { ObjectDetailService } from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -24,7 +23,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
             </div>
         </div>
     `,
-	providers: [ObjectDetailService]
+	providers: []
 })
 
 export class FieldDefinitionComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -34,10 +33,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
 	relationshipTypeUid: string;
 
 	constructor(
-		private objectDetailService: ObjectDetailService,
 		private route: ActivatedRoute,
 		secondaryNavService: SecondaryNavService,
-		private router: Router,
 		breadcrumbService: HeaderBreadcrumbService,
 		protected settingsService: CompanySettingsService
 	) {
