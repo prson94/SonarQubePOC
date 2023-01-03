@@ -10,6 +10,7 @@ import { DropdownModule } from "primeng/dropdown";
 import { EditorModule } from "primeng/editor";
 import { TableModule } from "primeng/table";
 import { DirectivesModule } from "../../../../directives/directives.module";
+import { ConnectorLabelDefinitionModule } from "../../../connector-label/definition/connector-label-definition.module";
 import { PopupMenuModule } from "../../../shared/controls/popup-menu/popup-menu.component";
 import { PropertyGroupModule } from "../../../shared/controls/property-group/property-group.component";
 import { SearchFieldModule } from "../../../shared/controls/search-field/search-field.component";
@@ -23,7 +24,6 @@ import { SidePanelModule } from "../../../shared/sidepanel/side-panel.module";
 import { TilesModule } from "../../../shared/tiles/tiles.module";
 import { WhereUsedModule } from "../../../shared/where-used/where-used.module";
 import { ConnectorLabelFormModule } from "../../../sidebar/connector-labels/connector-label-form.module";
-import { ConnectorLabelDefinitionComponent } from "./connector-label-definition.component";
 import { ConnectorLabelSidePanelWrapperComponent } from "./connector-label-sidepanel-wrapper.component";
 import { ConnectorLabelsComponent } from "./connector-labels.component";
 
@@ -62,16 +62,15 @@ import { ConnectorLabelsComponent } from "./connector-labels.component";
 		SearchFieldModule,
 		SidePanelModule,
 		AngularSplitModule,
-		PropertyGroupModule
+		PropertyGroupModule,
+		ConnectorLabelDefinitionModule
 	],
     declarations: [
 		ConnectorLabelsComponent,
-		ConnectorLabelSidePanelWrapperComponent,
-		ConnectorLabelDefinitionComponent
+		ConnectorLabelSidePanelWrapperComponent
     ],
     exports: [
-		ConnectorLabelsComponent,
-		ConnectorLabelDefinitionComponent
+		ConnectorLabelsComponent
     ],
     providers: [
     ]

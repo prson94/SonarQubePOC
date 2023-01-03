@@ -1,13 +1,14 @@
 ﻿import { Component, ChangeDetectorRef, Input, ViewEncapsulation } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { Router } from "@angular/router";
-import { ConnectorLabel } from "../../../../models/connectorLabel.model";
-import { ConnectorLabelService } from "../../../../services/connectorLabel.service";
-import { HeaderBreadcrumbService } from "../../../../services/header-breadcrumb.service";
-import { MessagesObservableService } from "../../../../services/messages-observable.service";
-import { SecondaryNavService } from "../../../../services/right-sidebar.service";
-import { CompanySettingsService } from "../../../../services/settings.service";
-import { AdminBaseComponent } from "../../admin-base.component";
+import { ConnectorLabel } from "../../../models/connectorLabel.model";
+import { ConnectorLabelService } from "../../../services/connectorLabel.service";
+import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
+import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { SecondaryNavService } from "../../../services/right-sidebar.service";
+import { CompanySettingsService } from "../../../services/settings.service";
+import { AdminBaseComponent } from "../../admin/admin-base.component";
+
 
 @Component({
 	selector: 'd3s-connector-label-definition',
