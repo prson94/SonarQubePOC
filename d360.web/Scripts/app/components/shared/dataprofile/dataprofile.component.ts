@@ -1,4 +1,4 @@
-﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { BaseComponent } from '../base.component';
 
 import * as Highcharts from 'highcharts';
@@ -103,7 +103,7 @@ export class DataProfileComponent extends BaseComponent implements OnChanges {
     semanticType: SemanticType;
     showEditor: boolean = false;
 
-    ngOnChanges(changes: SimpleChanges): void {
+    ngOnChanges(): void {
 		this.initialize();
 		this.getAssetDetails();			
 	}
