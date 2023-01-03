@@ -996,7 +996,7 @@ namespace d360.model.DataAccessLayer
 			});
 
 			string simpleFiltersTempTablesQuery = "";
-			if (dbArgs.ParameterNames.Contains("simpleFilter"))
+			if (dbArgs.ParameterNames.Contains("simpleFilter") && simpleFilters.Count()>0)
 			{
 				simpleFilterTempTables.AppendLine("drop table if exists #TempSimpleFilter");
 				simpleFilterTempTables.AppendLine("create table #TempSimpleFilter(IntersectId int)");
