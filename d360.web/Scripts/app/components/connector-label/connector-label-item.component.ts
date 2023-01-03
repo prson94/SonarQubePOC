@@ -13,6 +13,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AssetAction } from '../../models/secondaryNav.model';
 import { Location } from '@angular/common';
 import { CompanySettingsService } from '../../services/settings.service';
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 @Component({
 	selector: 'd3s-connector-label-item',
@@ -30,6 +32,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 	private labelUid: number;
 	private isAdmin: boolean = false;
 	private currentAreaName: string;
+	selectedForInfoPanel: ConnectorLabelUsage;
 
 	private actions: AssetAction;
 	isEditorVisible: boolean = false;
@@ -58,6 +61,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 		protected headerBreadcrumbService: HeaderBreadcrumbService,
 		private router: Router,
 		private loc: Location,
+		public sidePanelService: SidePanelService
 	) {
 		super(settingsService);
 		this.secondaryNavService = secondaryNavService;
@@ -122,6 +126,13 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 					this.connectorLabelService.getLabelUsage(this.label.uid)
 						.subscribe((data) => {
 							this.usage = data;
+							this.usage.forEach((asset) => {
+								const menuItems = [];
+								menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = asset; } });
+								menuItems.push({ "title": $localize`Open`, callback: () => this.open(asset.AssetUid) });
+								menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(asset.AssetUid, true) });
+								asset["MenuItems"] = menuItems;
+							});
 							this.isLoading = false;
 						});
 
@@ -223,5 +234,35 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 	}
 	private export() {
 		this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Connector Labels`, this.sort, this.filters);
+	}
+
+	open(uid: string, newTab: boolean = false) {
+		const url = `asset/${uid}`;
+		if (newTab) {
+			window.open(url, "_blank");
+		}
+		else {
+			this.router.navigateByUrl(url);
+		}
+	}
+
+	sidePanelStorageKey: string;
+
+	sidePanelOpen = false;
+
+	getSidePanelWidth(): number {
+		return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+	}
+
+	getSidePanelMaxWidth(): number {
+		return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+	}
+
+	getSidePanelMinWidth(): number {
+		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+	}
+
+	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
 	}
 }
