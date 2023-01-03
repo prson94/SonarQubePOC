@@ -125,7 +125,10 @@
 					hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
 				<ng-container *ngIf="selectedForInfoPanel">
-					asdasd
+					<asset-preview [assetUid]="selectedForInfoPanel.AssetUid"
+								   [assetType]="selectedForInfoPanel.Object"
+								   [hasEditLink]="false"
+								   [hasOpenLink]="true"></asset-preview>
 				</ng-container>
 			</ng-container>
 		</side-panel>

@@ -29,6 +29,7 @@ import { SearchFieldModule } from '../shared/controls/search-field/search-field.
 import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
 import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 import { AngularSplitModule, SplitAreaDirective } from 'angular-split';
+import { AssetPreviewModule } from '../shared/asset-preview/asset-preview.module';
 
 @NgModule({
     imports: [
@@ -62,7 +63,8 @@ import { AngularSplitModule, SplitAreaDirective } from 'angular-split';
 		SearchFieldModule,
 		PopupMenuModule,
 		SidePanelModule,
-		AngularSplitModule
+		AngularSplitModule,
+		AssetPreviewModule
     ],
     declarations: [
         ConnectorLabelComponent,
