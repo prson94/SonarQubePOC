@@ -85,7 +85,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
             if (res && res.length > 0) {
 				this.labels = res.sort((a, b) => a.Value.localeCompare(b.Value));
 				this.labels.forEach((label) => {
-					let menuItems = [];
+					const menuItems = [];
 					menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = label; } });
 					menuItems.push({ "title": $localize`Open`, callback: () => this.open(label.uid) });
 					menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(label.uid, true) });

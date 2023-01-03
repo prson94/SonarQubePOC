@@ -9,7 +9,6 @@ import { ButtonModule } from "primeng/button";
 import { DropdownModule } from "primeng/dropdown";
 import { EditorModule } from "primeng/editor";
 import { TableModule } from "primeng/table";
-import { CopyClipboardDirective } from "../../../../directives/copy-clipboard-directive";
 import { DirectivesModule } from "../../../../directives/directives.module";
 import { PopupMenuModule } from "../../../shared/controls/popup-menu/popup-menu.component";
 import { PropertyGroupModule } from "../../../shared/controls/property-group/property-group.component";

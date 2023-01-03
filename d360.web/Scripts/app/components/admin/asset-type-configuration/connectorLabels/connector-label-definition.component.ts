@@ -1,4 +1,4 @@
-﻿import { Component, ViewChild, ChangeDetectorRef, ElementRef, Input, ViewEncapsulation } from "@angular/core";
+﻿import { Component, ChangeDetectorRef, Input, ViewEncapsulation } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { Router } from "@angular/router";
 import { ConnectorLabel } from "../../../../models/connectorLabel.model";

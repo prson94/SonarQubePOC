@@ -1,6 +1,5 @@
 import { Component, Input } from "@angular/core";
 import { IOutputData } from "angular-split";
-import { TreeNode } from "primeng/api";
 import { SidePanelService } from "../../../../services/side-panel.service";
 
 

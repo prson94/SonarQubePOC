@@ -91,7 +91,7 @@ export class ConfigurationAssetTypeDeletePageComponent extends BaseComponent imp
 		const checkBoxMsg = $localize`Please check this box if you would like to continue.`;
 		this.isConfirmed = false;
 		if (this.assetsCount === 0) {
-			this.message = `"${name}" contains 0 assets.`
+			this.message = `"${name}" contains 0 assets.`;
 			this.isConfirmed = true;
 			return;
 		}
