@@ -83,6 +83,7 @@ export class BaseComponent {
 	groupsSidebar: SecondaryNavItem;
 	itemOwnSidebar: SecondaryNavItem;
 	followingSidebar: SecondaryNavItem;
+	whereUsedSidebar: SecondaryNavItem;
 
 	// tabs
 
@@ -357,7 +358,8 @@ export class BaseComponent {
 		hasProcessDiagram?: boolean,
 		hasGroups?: boolean,
 		hasFollowing?: boolean,
-		hasItemOwn?: boolean
+		hasItemOwn?: boolean,
+		hasWhereUsed?: boolean
 	}) {
 		if (this.secondaryNavService && this.objectType) {
 			this.clearSidebar();
@@ -559,6 +561,16 @@ export class BaseComponent {
 					`/asset/${this.uid}/results`
 					, null, 1);
 				this.secondaryNavService.showItem(this.ruleResultSidebar);
+			}
+
+			if (opts.hasWhereUsed) {
+				this.whereUsedSidebar = new SecondaryNavItem(
+					$localize`Where Used`,
+					'Where Used',
+					['fa-sitemap'],
+					`/connectorLabel/${this.uid}/whereUsed`
+					, null, 1);
+				this.secondaryNavService.showItem(this.whereUsedSidebar);
 			}
 
 			if (isCommonAsset) {

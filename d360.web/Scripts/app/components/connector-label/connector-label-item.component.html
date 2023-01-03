@@ -1,111 +1,128 @@
-﻿<div class="row">
-    <div class="col s12">
-        <div class="tile tile-detail" *ngIf="!isLoading">
-            <header class="flex-header">
-                <d3s-tile-actions [hasAdd]="false"
-                                  [hasFilterMode]="true"
-                                  [(filterMode)]="showSimpleFilter"
-                                  [hasExport]="true"
-                                  (exportClick)="export()">
-                    <input [(ngModel)]="filters.globalSearch" type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter {{showSimpleFilter ? '' : 'hidden'}}">
-                </d3s-tile-actions>
-                <div class="clearfix"></div>
-            </header>
-            <p-table #dt [value]="usage"
-                     selectionMode="single"
-                     [metaKeySelection]="true"
-                     [globalFilterFields]="['Diagram','AssetTypeName','Occurrences']"
-                     sortField="Diagram"
-                     [sortOrder]="1"
-                     [pageLinks]="3"
-                     [paginator]="true"
-                     [rowsPerPageOptions]="defaultPagingOptions"
-                     [rows]="10" [(selection)]="selected">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th [pSortableColumn]="'Diagram'" style="width: 20%">
-                            <ng-container i18n>Diagram</ng-container>
-                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Diagram'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'AssetTypeName'" style="width: 20%">
-                            <ng-container i18n>Asset Type</ng-container>
-                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'AssetTypeName'"></d3s-sortIcon>
+﻿<div class="row" *ngIf="!isWhereUsedPage">
+	<div class="col s12">
+		<div class="tile tile-detail" *ngIf="!isLoading">
+			<div class="button-top-right">
+				<button igButton
+						class="ig-button-primary"
+						icon="fa-pencil"
+						i18n-label
+						label="Edit"
+						(click)="isEditorVisible=true"></button>
+			</div>
+			<d3s-connector-label-definition [label]="label" [isSidePanel]="false"></d3s-connector-label-definition>
+		</div>
+	</div>
+</div>
 
-                        </th>
-                        <th [pSortableColumn]="'Occurrences'" style="width: 20%">
-                            <ng-container i18n>Occurrences</ng-container>
-                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Occurrences'"></d3s-sortIcon>
 
-                        </th>
-                        <th style="width: 10%"></th>
-                    </tr>
-                    <tr [hidden]="showSimpleFilter">
-                        <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'Diagram'" [datatype]="'text'"></d3s-column-filter></th>
-                        <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'AssetTypeName'" [datatype]="'text'"></d3s-column-filter></th>
-                        <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'Occurrences'" [datatype]="'text'"></d3s-column-filter></th>
-                        <th></th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-item>
-                    <tr [pSelectableRow]="item">
-                        <td>
-                            <a href="{{item.url}}" target="_blank">
-                                {{item.Diagram}}
-                            </a>
-                        </td>
-                        <td [innerHTML]="formatValue(item)"></td>
-                        <td>{{item.Occurrences}}</td>
-                        <td>
-                            <div class="RowTools">
-                                <d3s-preview-tooltip [objectType]="item.Object"
-                                                     [objectId]="item.ObjectID"
-                                                     icon="info"></d3s-preview-tooltip>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-template>
-                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                </ng-template>
-            </p-table>
-        </div>
-    </div>
+<div class="row" *ngIf="isWhereUsedPage">
+	<div class="col s12">
+		<div class="tile tile-detail" *ngIf="!isLoading">
+			<header class="flex-header">
+				<d3s-tile-actions [hasAdd]="false"
+								  [hasFilterMode]="true"
+								  [(filterMode)]="showSimpleFilter"
+								  [hasExport]="true"
+								  (exportClick)="export()">
+					<input [(ngModel)]="filters.globalSearch" type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter {{showSimpleFilter ? '' : 'hidden'}}">
+				</d3s-tile-actions>
+				<div class="clearfix"></div>
+			</header>
+			<p-table #dt [value]="usage"
+					 selectionMode="single"
+					 [metaKeySelection]="true"
+					 [globalFilterFields]="['Diagram','AssetTypeName','Occurrences']"
+					 sortField="Diagram"
+					 [sortOrder]="1"
+					 [pageLinks]="3"
+					 [paginator]="true"
+					 [rowsPerPageOptions]="defaultPagingOptions"
+					 [rows]="10" [(selection)]="selected">
+				<ng-template pTemplate="header">
+					<tr>
+						<th [pSortableColumn]="'Diagram'" style="width: 20%">
+							<ng-container i18n>Diagram</ng-container>
+							<d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Diagram'"></d3s-sortIcon>
+						</th>
+						<th [pSortableColumn]="'AssetTypeName'" style="width: 20%">
+							<ng-container i18n>Asset Type</ng-container>
+							<d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'AssetTypeName'"></d3s-sortIcon>
+
+						</th>
+						<th [pSortableColumn]="'Occurrences'" style="width: 20%">
+							<ng-container i18n>Occurrences</ng-container>
+							<d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Occurrences'"></d3s-sortIcon>
+
+						</th>
+						<th style="width: 10%"></th>
+					</tr>
+					<tr [hidden]="showSimpleFilter">
+						<th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'Diagram'" [datatype]="'text'"></d3s-column-filter></th>
+						<th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'AssetTypeName'" [datatype]="'text'"></d3s-column-filter></th>
+						<th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'Occurrences'" [datatype]="'text'"></d3s-column-filter></th>
+						<th></th>
+					</tr>
+				</ng-template>
+				<ng-template pTemplate="body" let-item>
+					<tr [pSelectableRow]="item">
+						<td>
+							<a href="{{item.url}}" target="_blank">
+								{{item.Diagram}}
+							</a>
+						</td>
+						<td [innerHTML]="formatValue(item)"></td>
+						<td>{{item.Occurrences}}</td>
+						<td>
+							<div class="RowTools">
+								<d3s-preview-tooltip [objectType]="item.Object"
+													 [objectId]="item.ObjectID"
+													 icon="info"></d3s-preview-tooltip>
+							</div>
+						</td>
+					</tr>
+				</ng-template>
+				<ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+					<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+				</ng-template>
+			</p-table>
+		</div>
+	</div>
 </div>
 
 <d3s-modal [title]="editConnectorLabel"
-           additionalClasses="modal-dyn-editor medium-dialog"
-           (onClose)="isEditorVisible=false"
-           [isVisible]="isEditorVisible">
-    <d3s-connector-label-form [label]="label"
-                              [isSaving]="isSaving"
-                              (onSave)="saveLabel($event)"
-                              (onCancel)="isEditorVisible = false"
-                              [isVisible]="isEditorVisible">
+		   additionalClasses="modal-dyn-editor medium-dialog"
+		   (onClose)="isEditorVisible=false"
+		   [isVisible]="isEditorVisible">
+	<d3s-connector-label-form [label]="label"
+							  [isSaving]="isSaving"
+							  (onSave)="saveLabel($event)"
+							  (onCancel)="isEditorVisible = false"
+							  [isVisible]="isEditorVisible">
 
-    </d3s-connector-label-form>
+	</d3s-connector-label-form>
 </d3s-modal>
 
 <d3s-delete-form *ngIf="label" [callback]="theDeleteCallback"
-                 [method]="'callback'"
-                 [showAsModal]="true"
-                 [modalCssClasses]="'large-dialog'"
-                 [modalTitle]="deletePopupTitle"
-                 [confirmationText]="deleteConfirmationText"
-                 [isModalVisible]="isDeleteVisible"
-                 (onCancel)="isDeleteVisible=false;"
-                 [showDownloadWhereUsed]="label.UseCount > 0"
-                 (onUsageExport)="exportUsage()"
-                 [isUsageLoading]="false">
-    <div prompt>
-        <p i18n>
-            Please confirm that you wish to delete the connector label '{{label.Value}}'.
-        </p>
+				 [method]="'callback'"
+				 [showAsModal]="true"
+				 [modalCssClasses]="'large-dialog'"
+				 [modalTitle]="deletePopupTitle"
+				 [confirmationText]="deleteConfirmationText"
+				 [isModalVisible]="isDeleteVisible"
+				 (onCancel)="isDeleteVisible=false;"
+				 [showDownloadWhereUsed]="label.UseCount > 0"
+				 (onUsageExport)="exportUsage()"
+				 [isUsageLoading]="false">
+	<div prompt>
+		<p i18n>
+			Please confirm that you wish to delete the connector label '{{label.Value}}'.
+		</p>
 
-        <d3s-where-used [uid]="label.uid" [objectType]="'ConnectorLabel'"></d3s-where-used>
+		<d3s-where-used [uid]="label.uid" [objectType]="'ConnectorLabel'"></d3s-where-used>
 
-        <p i18n>
-            Please note that this operation cannot be undone. Check the option below to confirm that you wish to continue.
-        </p>
-    </div>
+		<p i18n>
+			Please note that this operation cannot be undone. Check the option below to confirm that you wish to continue.
+		</p>
+	</div>
 
 </d3s-delete-form>

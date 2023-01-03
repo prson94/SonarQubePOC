@@ -15,258 +15,213 @@ import { Location } from '@angular/common';
 import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
-    selector: 'd3s-connector-label-item',
-    providers: [PermissionsService, ConnectorLabelService],
-    templateUrl: 'connector-label-item.component.html',
-    host: { 'class': 'gov-detail-page' }
+	selector: 'd3s-connector-label-item',
+	providers: [PermissionsService, ConnectorLabelService],
+	templateUrl: 'connector-label-item.component.html',
+	styleUrls: ['connector-label-item.component.less'],
+	host: { 'class': 'gov-detail-page' }
 })
 
 export class ConnectorLabelItemComponent extends BaseComponent implements OnInit {
 
-    label: ConnectorLabel;
-    private usage: ConnectorLabelUsage[] = [];
-    private sub: any;
-    private labelUid: number;
-    private isAdmin: boolean = false;
-    private currentAreaName: string;
+	label: ConnectorLabel;
+	private usage: ConnectorLabelUsage[] = [];
+	private sub: any;
+	private labelUid: number;
+	private isAdmin: boolean = false;
+	private currentAreaName: string;
 
-    private actions: AssetAction;
-    isEditorVisible: boolean = false;
-    isDeleteVisible: boolean = false;
-    isSaving: boolean = false;
+	private actions: AssetAction;
+	isEditorVisible: boolean = false;
+	isDeleteVisible: boolean = false;
+	isSaving: boolean = false;
 
-    deletePopupTitle = $localize`Delete Connector Label`;
-    editConnectorLabel = $localize`Edit Connector Label`;
-    deleteConfirmationText = '';
+	isWhereUsedPage: boolean = false;
 
-    private theDeleteCallback: Function;
+	deletePopupTitle = $localize`Delete Connector Label`;
+	editConnectorLabel = $localize`Edit Connector Label`;
+	deleteConfirmationText = '';
 
-    filters: any = { globalSearch: '', Diagram: '', AssetTypeName: '', Occurrences: '' };
-    sort: any;
+	private theDeleteCallback: Function;
 
-    constructor(
-        private route: ActivatedRoute,
-        secondaryNavService: SecondaryNavService,
-        protected permissionsService: PermissionsService,
-        private connectorLabelService: ConnectorLabelService,
-        protected titleService: Title,
-        protected messagesService: MessagesObservableService,
-        protected settingsService: CompanySettingsService,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
-        private router: Router,
-        private loc: Location,
-    ) {
-        super(settingsService);
-        this.secondaryNavService = secondaryNavService;
-        this.theDeleteCallback = this.deleteLabel.bind(this);
-    }
+	filters: any = { globalSearch: '', Diagram: '', AssetTypeName: '', Occurrences: '' };
+	sort: any;
 
-    updateSort(event) {
-        this.sort = event;
-    }
-    onFilterChange(event) {
-        this.filters[event.prop] = event.value;
-    }
+	constructor(
+		private route: ActivatedRoute,
+		secondaryNavService: SecondaryNavService,
+		protected permissionsService: PermissionsService,
+		private connectorLabelService: ConnectorLabelService,
+		protected titleService: Title,
+		protected messagesService: MessagesObservableService,
+		protected settingsService: CompanySettingsService,
+		protected headerBreadcrumbService: HeaderBreadcrumbService,
+		private router: Router,
+		private loc: Location,
+	) {
+		super(settingsService);
+		this.secondaryNavService = secondaryNavService;
+		this.theDeleteCallback = this.deleteLabel.bind(this);
+	}
 
-    ngOnInit() {
-        this.sub = this.route.params.subscribe((params) => {
-            this.labelUid = params['labelUid'];
-            this.secondaryNavService.clearCurrentObject();
-            this.isLoading = true;
-            this.loadPermissions(this.permissionsService, "ConnectorLabel", this.labelUid)
-                .then((p) => {
-                    if (this.hasModifyAssetPermissions() && this.hasDeleteAssetPermissions()) {
-                        this.isAdmin = true;
-                    }
-                    this.load();
-                });
-        });
-    }
+	updateSort(event) {
+		this.sort = event;
+	}
+	onFilterChange(event) {
+		this.filters[event.prop] = event.value;
+	}
 
-    ngOnDestroy() {
-        if (this.sub) {
-            this.sub.unsubscribe();
-        }
-        this.secondaryNavService.clearActions();
-        this.clearSidebar();
-    }
+	ngOnInit() {
+		this.sub = this.route.params.subscribe((params) => {
+			this.labelUid = params['labelUid'];
+			this.isWhereUsedPage = this.router.url.toLowerCase().indexOf('whereused') > 0;
+			this.secondaryNavService.clearCurrentObject();
+			this.isLoading = true;
+			this.loadPermissions(this.permissionsService, "ConnectorLabel", this.labelUid)
+				.then((p) => {
+					if (this.hasModifyAssetPermissions() && this.hasDeleteAssetPermissions()) {
+						this.isAdmin = true;
+					}
+					this.load();
+				});
+		});
+	}
 
-    private load() {
-        this.isLoading = true;
-        this.connectorLabelService.getLabelByUid(this.labelUid.toString())
-            .subscribe((result) => {
-                if (result) {
-                    this.label = result;
-                    this.setObjectInfo('ConnectorLabel', this.labelUid);
-                    this.buildBreadcrumb();
-                    this.setBrowserTitle(this.titleService, this.label.Value);
-                    this.deleteConfirmationText = $localize`Delete the Connector Label '${this.label.Value}'`;
+	ngOnDestroy() {
+		if (this.sub) {
+			this.sub.unsubscribe();
+		}
+		this.secondaryNavService.clearActions();
+		this.clearSidebar();
+	}
 
-                    this.setObjectInfo(
-                        'ConnectorLabel',
-                        this.labelUid,
-                        this.label.Value,
-                        null,
-                        null,
-                        this.label.uid
-                    );
+	private load() {
+		this.isLoading = true;
+		this.connectorLabelService.getLabelByUid(this.labelUid.toString())
+			.subscribe((result) => {
+				if (result) {
+					this.label = result;
+					this.setObjectInfo('ConnectorLabel', this.labelUid);
+					this.buildBreadcrumb();
+					this.setBrowserTitle(this.titleService, this.label.Value);
+					this.deleteConfirmationText = $localize`Delete the Connector Label '${this.label.Value}'`;
 
+					this.setObjectInfo(
+						'ConnectorLabel',
+						this.labelUid,
+						this.label.Value,
+						null,
+						null,
+						this.label.uid
+					);
 
-                    if (this.isAdmin) {
+					this.setCommonSecondaryNavTabs({ hasAudit: false, hasWhereUsed: true });
 
-                        this.setCommonSecondaryNavTabs({ hasAudit: false });
+					this.secondaryNavService.showHeader(true);
 
-                        //Coming soon
-                        //if (this.auditSidebar) {
-                        //    this.auditSidebar.url = `/sidebar/audit/ConnectorLabel/${this.labelUid}`;
-                        //}
-                    }
-                    else {
-                        this.setCommonSecondaryNavTabs({ hasAudit: false });
-
-                    }
-                    this.setActions();
-
-                    this.secondaryNavService.showHeader(true);
-
-                    this.connectorLabelService.getLabelUsage(this.label.uid)
-                        .subscribe((data) => {
-                            this.usage = data;
-                            this.isLoading = false;
-                        });
+					this.connectorLabelService.getLabelUsage(this.label.uid)
+						.subscribe((data) => {
+							this.usage = data;
+							this.isLoading = false;
+						});
 
 
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.currentAreaName = $localize`Connector Labels`;
-                    const areaBreadcrumb = new Breadcrumb(
-                        this.currentAreaName, ``
-                    );
+					this.headerBreadcrumbService.clearBreadcrumbs();
+					this.currentAreaName = $localize`Connector Labels`;
+					const areaBreadcrumb = new Breadcrumb(
+						this.currentAreaName, ``
+					);
 
-                    const itemBreadcrumb = new Breadcrumb(
-                        this.label.Value,
-                        `${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${this.label.uid}`
-                    );
+					const itemBreadcrumb = new Breadcrumb(
+						this.label.Value,
+						`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${this.label.uid}`
+					);
 
-                    this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
-                    this.headerBreadcrumbService.showBreadcrumb(itemBreadcrumb);
-                }
-                else {
-                    this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+					this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
+					this.headerBreadcrumbService.showBreadcrumb(itemBreadcrumb);
+				}
+				else {
+					this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
 
-                }
+				}
 
-            },
-                (err) => {
-                    this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-                });
+			},
+				(err) => {
+					this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+				});
 
 
-    }
+	}
 
-    buildBreadcrumb() {
-        this.secondaryNavService.setCurrentArea(this.label.Value, 'fa-tag', $localize`Where Used`);
-    }
+	buildBreadcrumb() {
+		this.secondaryNavService.setCurrentArea(this.label.Value, 'fa-tag', $localize`Definition`);
+	}
 
-    formatValue(item: ConnectorLabelUsage) {
-        return item.AssetTypeName.replace('>', ` <i class='fa fa-angle-right'></i> `);
-    }
+	formatValue(item: ConnectorLabelUsage) {
+		return item.AssetTypeName.replace('>', ` <i class='fa fa-angle-right'></i> `);
+	}
 
-    setActions() {
-        this.actions = new AssetAction();
-        this.actions.type = "CONNECTORLABEL";
-        this.actions.isVisible = true;
-        this.actions.showDelete = false;
-        this.actions.showEdit = false;
-        this.actions.showBack = true;
+	saveLabel(event) {
+		this.isSaving = true;
+		if (event.additionalOption && event.additionalOption.uid) {
+			const arr: string[] = [];
+			arr.push(event.item.uid);
+			this.consolidateLabels(event.additionalOption.uid, arr);
+			return;
+		}
 
-        this.actions.backCallback = this.onActionBackClick.bind(this);
+		this.connectorLabelService.saveLabel(event.item)
+			.subscribe((result) => {
+				let msg: string = '';
+				if (event.item.uid == null) {
+					msg = $localize`Connector label succesfully created`;
+				}
+				else {
+					msg = $localize`Connector label succesfully updated`;
+				}
+				this.showMessageForResult(this.messagesService, result, msg);
+				this.label.Value = event.item.Value;
+				this.load();
 
-        if (this.isAdmin) {
-            this.actions.showEdit = true;
-            this.actions.editCallback = this.onActionEditClick.bind(this);
+				this.isEditorVisible = false;
+				this.isSaving = false;
 
-            this.actions.showDelete = true;
-            this.actions.deleteCallback = this.onActionDeleteClick.bind(this);
-        }
+			});
+	}
 
-        this.secondaryNavService.setActionTitleItems(this.actions);
-    }
+	consolidateLabels(parentUid: string, childrenUids: string[]) {
+		this.connectorLabelService.consolidateConnectorLabels(parentUid, childrenUids)
+			.subscribe((result) => {
 
-    onActionEditClick() {
-        this.isEditorVisible = true;
-        this.secondaryNavService.setActionTitleItems(this.actions);
-    }
+				if (result) {
+					this.messagesService.showInfoMessage($localize`Success`, $localize`Connector label consolidation succesfull`);
+				}
+				this.isEditorVisible = false;
+				this.isSaving = false;
+				this.openConnectorLabelPageByUID(parentUid);
 
-    onActionDeleteClick() {
-        this.isDeleteVisible = true;
-        this.secondaryNavService.setActionTitleItems(this.actions);
-    }
+			}, (err) => {
+				this.showMessageForResult(this.messagesService, err);
+				this.isEditorVisible = false;
+				this.isSaving = false;
 
-    onActionBackClick() {
-        this.loc.back();
-    }
-    saveLabel(event) {
-        this.isSaving = true;
-        if (event.additionalOption && event.additionalOption.uid) {
-            const arr: string[] = [];
-            arr.push(event.item.uid);
-            this.consolidateLabels(event.additionalOption.uid, arr);
-            return;
-        }
+			});
+	}
 
-        this.connectorLabelService.saveLabel(event.item)
-            .subscribe((result) => {
-                let msg: string = '';
-                if (event.item.uid == null) {
-                    msg = $localize`Connector label succesfully created`;
-                }
-                else {
-                    msg = $localize`Connector label succesfully updated`;
-                }
-                this.showMessageForResult(this.messagesService, result, msg);
-                this.label.Value = event.item.Value;
-                this.load();
-
-                this.isEditorVisible = false;
-                this.isSaving = false;
-
-            });
-    }
-
-    consolidateLabels(parentUid: string, childrenUids: string[]) {
-        this.connectorLabelService.consolidateConnectorLabels(parentUid, childrenUids)
-            .subscribe((result) => {
-
-                if (result) {
-                    this.messagesService.showInfoMessage($localize`Success`, $localize`Connector label consolidation succesfull`);
-                }
-                this.isEditorVisible = false;
-                this.isSaving = false;
-                this.openConnectorLabelPageByUID(parentUid);
-
-            }, (err) => {
-                this.showMessageForResult(this.messagesService, err);
-                this.isEditorVisible = false;
-                this.isSaving = false;
-
-            });
-    }
-
-    deleteLabel() {
-        this.connectorLabelService.deleteLabels([this.label]).
-            subscribe((result) => {
-                this.showMessageForResult(this.messagesService, result);
-                this.isDeleteVisible = false;
-                this.onActionBackClick();
-            }, (err) => this.showMessageForResult(this.messagesService, err));
-    }
-    private exportUsage() {
-        this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Where Used report for Connector Label "${this.label.Value}"`);
-    }
-    openConnectorLabelPageByUID(uid: string) {
-        this.router.navigate([`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${uid}`]);
-    }
-    private export() {
-        this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Connector Labels`, this.sort, this.filters);
-    }
+	deleteLabel() {
+		this.connectorLabelService.deleteLabels([this.label]).
+			subscribe((result) => {
+				this.showMessageForResult(this.messagesService, result);
+				this.isDeleteVisible = false;
+			}, (err) => this.showMessageForResult(this.messagesService, err));
+	}
+	private exportUsage() {
+		this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Where Used report for Connector Label "${this.label.Value}"`);
+	}
+	openConnectorLabelPageByUID(uid: string) {
+		this.router.navigate([`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${uid}`]);
+	}
+	private export() {
+		this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Connector Labels`, this.sort, this.filters);
+	}
 }

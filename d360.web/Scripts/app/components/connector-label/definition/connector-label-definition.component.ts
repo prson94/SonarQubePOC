@@ -20,7 +20,7 @@ import { AdminBaseComponent } from "../../admin/admin-base.component";
 
 export class ConnectorLabelDefinitionComponent extends AdminBaseComponent {
 	@Input() label: ConnectorLabel;
-
+	@Input() isSidePanel: boolean = true;
 
 	constructor(private router: Router,
 		private connectorLabelService: ConnectorLabelService,

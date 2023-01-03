@@ -24,6 +24,7 @@ import { ConnectorLabelFormModule } from '../sidebar/connector-labels/connector-
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { WhereUsedModule } from '../shared/where-used/where-used.module';
 import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
+import { ConnectorLabelDefinitionModule } from './definition/connector-label-definition.module';
 
 @NgModule({
     imports: [
@@ -52,11 +53,12 @@ import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score
         SharedAssetScoreModule,
         ConnectorLabelFormModule,
         SiteModalModule,
-        WhereUsedModule
+		WhereUsedModule,
+		ConnectorLabelDefinitionModule
     ],
     declarations: [
         ConnectorLabelComponent,
-        ConnectorLabelItemComponent
+		ConnectorLabelItemComponent
     ],
     providers: [
         

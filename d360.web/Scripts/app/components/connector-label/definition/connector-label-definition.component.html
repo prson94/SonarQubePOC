@@ -1,5 +1,5 @@
-<div class="connector-label-definition asset-detail">
-	<div class="asset-detail-header ng-star-inserted">
+<div class="connector-label-definition asset-detail {{(isSidePanel ? 'no-padding' : '')}}">
+	<div *ngIf="label && isSidePanel" class="asset-detail-header">
 		<div class="asset-name">{{label.Value}}</div>
 		<div class="class-name" i18n>Connector Label</div>
 
@@ -12,7 +12,7 @@
 		</div>
 	</div>
 
-	<div class="asset-detail-tabs">
+	<div *ngIf="label" class="asset-detail-tabs">
 		<ig-property-group i18n-title title="General">
 			<div inputs>
 				<div class="form-group">
