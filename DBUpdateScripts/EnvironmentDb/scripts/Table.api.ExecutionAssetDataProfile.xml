@@ -197,4 +197,49 @@ ALTER COLUMN [StandardDeviation] FLOAT;
 		]]>
 	</rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Table.dbo.ExecutionAssetDataProfile-v10">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF NOT EXISTS (
+			  SELECT * 
+			  FROM   sys.columns 
+			  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
+					 AND name = 'PopularityCount'
+			)
+			BEGIN
+
+				ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [PopularityCount] BIGINT NULL		
+
+			END
+			
+			IF NOT EXISTS (
+			  SELECT * 
+			  FROM   sys.columns 
+			  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
+					 AND name = 'IsAuthorizedForPopularity'
+			)
+			BEGIN
+
+				ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [IsAuthorizedForPopularity] BIT NULL
+
+			END
+			
+				
+		]]>
+    </sql>
+	<rollback>
+	
+		<![CDATA[			
+		
+		ALTER TABLE [api].[ExecutionAssetDataProfile] 
+		DROP 
+			COLUMN IF EXISTS [PopularityCount], 
+			COLUMN IF EXISTS [IsAuthorizedForPopularity]
+
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

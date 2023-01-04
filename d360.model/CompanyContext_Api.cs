@@ -11228,7 +11228,10 @@ where   ER.ExecutionID = @ExecutionID
                     DataProfileTable.Columns.Add("FtaVersion", typeof(string));
                     DataProfileTable.Columns.Add("DecimalSeparator", typeof(string));
 
-                    DataProfileSampleTable.Columns.Add("ExecutionID", typeof(Guid));
+					DataProfileTable.Columns.Add("PopularityCount", typeof(long));
+					DataProfileTable.Columns.Add("IsAuthorizedForPopularity", typeof(bool));
+
+					DataProfileSampleTable.Columns.Add("ExecutionID", typeof(Guid));
                     DataProfileSampleTable.Columns.Add("ItemNumber", typeof(int));
                     DataProfileSampleTable.Columns.Add("ExecutionItemUid", typeof(Guid));
                     DataProfileSampleTable.Columns.Add("SampleType", typeof(string));
@@ -11293,7 +11296,10 @@ where   ER.ExecutionID = @ExecutionID
                         row["FtaVersion"] = item.FtaVersion ?? (object)DBNull.Value;
                         row["DecimalSeparator"] = item.DecimalSeparator ?? (object)DBNull.Value;
 
-                        DataProfileTable.Rows.Add(row);
+						row["PopularityCount"] = item.PopularityCount ?? (object)DBNull.Value;
+						row["IsAuthorizedForPopularity"] = item.IsAuthorizedForPopularity ?? (object)DBNull.Value;
+
+						DataProfileTable.Rows.Add(row);
                         if (item.outlierDetail != null)
                         {
                             foreach (DataProfileSampleDetail outlier in item.outlierDetail)
@@ -11607,7 +11613,10 @@ where   ER.ExecutionID = @ExecutionID
                                 bulkCopy.ColumnMappings.Add("FtaVersion", "FtaVersion");
                                 bulkCopy.ColumnMappings.Add("DecimalSeparator", "DecimalSeparator");
 
-                                bulkCopy.WriteToServer(DataProfileTable);
+								bulkCopy.ColumnMappings.Add("PopularityCount", "PopularityCount");
+								bulkCopy.ColumnMappings.Add("IsAuthorizedForPopularity", "IsAuthorizedForPopularity");
+
+								bulkCopy.WriteToServer(DataProfileTable);
                             }
 
                             #endregion
@@ -11796,6 +11805,8 @@ where   ER.ExecutionID = @ExecutionID
 													,[DetectionLocale]
 													,[FtaVersion]
 													,[DecimalSeparator]
+													,[PopularityCount]
+													,[IsAuthorizedForPopularity]
 													,[CreatedBy]
 													,[CreatedOn]
 													,[UpdatedBy]
@@ -11835,6 +11846,8 @@ where   ER.ExecutionID = @ExecutionID
 													,EDP.DetectionLocale
 													,EDP.FtaVersion
 													,EDP.DecimalSeparator
+													,EDP.PopularityCount
+													,EDP.IsAuthorizedForPopularity
 													,@CurrentResourceID
 													,GETDATE()
 													,@CurrentResourceID
@@ -11889,6 +11902,8 @@ where   ER.ExecutionID = @ExecutionID
 											,ADP.[DetectionLocale] = EDP.[DetectionLocale]
 											,ADP.[FtaVersion] = EDP.[FtaVersion]
 											,ADP.[DecimalSeparator] = EDP.[DecimalSeparator]
+											,ADP.[PopularityCount] = EDP.[PopularityCount]
+											,ADP.[IsAuthorizedForPopularity] = EDP.[IsAuthorizedForPopularity]
 											,ADP.[UpdatedBy] = @CurrentResourceID
 											,ADP.[UpdatedOn] = GETDATE()                                       
 										OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;
