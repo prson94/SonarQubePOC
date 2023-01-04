@@ -150,7 +150,8 @@ export class SiteUrlHelpers {
 		switch (objectType.toUpperCase()) {
 			case 'ARTIFACTTYPE':
 				return this.getObjectUrlByUid(objectType, objectId as string);
-            case 'ARTIFACT':
+			case 'ARTIFACT':
+			case 'TAXONOMY':
 				return this.getObjectUrlByUid(objectType, objectUid ?? objectId as string);//`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${parentId}/${objectId}`;
             case 'COMMENTS':
                 return `${SiteUrlHelpers.SITE_URL_COMMENTS_ROOT}/${objectId}/${objectName}`;
@@ -158,8 +159,6 @@ export class SiteUrlHelpers {
                 return `${SiteUrlHelpers.SITE_URL_GROUP_ROOT}/${objectId}`;
             case 'RESOURCE':
                 return `${SiteUrlHelpers.SITE_URL_RESOURCE_ROOT}/${objectId}`;
-            case 'TAXONOMY':
-                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${parentId}/id/${objectId}`;
             case 'TAXONOMYTYPE':
                 return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${objectId}/structure`;
             case 'POLICYTYPE':
@@ -182,8 +181,10 @@ export class SiteUrlHelpers {
 		console.log("Debug getObjectUrl > ", objectType, uid);
 		switch (objectType.toUpperCase()) {
 			case 'ARTIFACTTYPE':
+			case 'TAXONOMYTYPE':
 				return `${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${uid}`;
 			case 'ARTIFACT':
+			case 'TAXONOMY':
 				return `${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${uid}`;
 			default:
 				console.log('Unable to generate getObjectUrlByUid');
