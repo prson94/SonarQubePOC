@@ -331,7 +331,7 @@ namespace d360.web.Controllers.V2
 			List<IndexableType> types = Company.Query<IndexableType>(
 				@"SELECT at.Name, at.Class, at.Uid as AssetTypeUid, P.[Path] as AssetTypePath
 				FROM [dbo].[AssetType] at
-				cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P 
+				cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' > ') P 
 				WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.AssetTypeId = at.ID)").ToList();
 			types.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
 
