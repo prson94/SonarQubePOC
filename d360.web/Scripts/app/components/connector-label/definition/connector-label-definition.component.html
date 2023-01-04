@@ -8,7 +8,7 @@
 			<span class="grey-delimiter">|</span>
 			<a (click)="open(true)">Open in New Tab</a>
 			<span class="grey-delimiter">|</span>
-			<a>Edit</a>
+			<a (click)="onEdit.emit()">Edit</a>
 		</div>
 	</div>
 
@@ -57,15 +57,15 @@
 					</div>
 					<div class="row">
 						<label class="ig-label" i18n>Created By</label>
-						<span>
+						<a (click)="resourceClicked(label.CreatedByUid)">
 							{{ label.CreatedByName }}
-						</span>
+						</a>
 					</div>
 					<div class="row">
 						<label class="ig-label" i18n>Last Modified by</label>
-						<span>
+						<a (click)="resourceClicked(label.UpdatedByUid)">
 							{{ label.UpdatedByName }}
-						</span>
+						</a>
 					</div>
 				</div>
 			</div>

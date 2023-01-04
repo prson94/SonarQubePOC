@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef, Input, ViewEncapsulation } from "@angular/core";
+﻿import { Component, ChangeDetectorRef, Input, ViewEncapsulation, EventEmitter, Output } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { Router } from "@angular/router";
 import { ConnectorLabel } from "../../../models/connectorLabel.model";
@@ -21,6 +21,8 @@ import { AdminBaseComponent } from "../../admin/admin-base.component";
 export class ConnectorLabelDefinitionComponent extends AdminBaseComponent {
 	@Input() label: ConnectorLabel;
 	@Input() isSidePanel: boolean = true;
+	@Output() onLinkClicked = new EventEmitter();
+	@Output() onEdit = new EventEmitter();
 
 	constructor(private router: Router,
 		private connectorLabelService: ConnectorLabelService,
@@ -42,5 +44,9 @@ export class ConnectorLabelDefinitionComponent extends AdminBaseComponent {
 		else {
 			this.router.navigateByUrl(url);
 		}
+	}
+
+	resourceClicked(uid: string) {
+		this.onLinkClicked.emit({ uid: uid, type: 'Resource' });
 	}
 }

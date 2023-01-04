@@ -20,8 +20,14 @@
 					(expandedChange)="sidePanelOpen=$event"
 					hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
-				<ng-container *ngIf="selectedItem">
-					<d3s-connector-label-definition [label]="selectedItem"></d3s-connector-label-definition>
+				<ng-container *ngIf="selectedItem && !selectedForInfoPanel">
+					<d3s-connector-label-definition [label]="selectedItem" (onLinkClicked)="onResourceLinkClick($event)" (onEdit)="onEdit.emit()"></d3s-connector-label-definition>
+				</ng-container>
+				<ng-container *ngIf="selectedForInfoPanel && !selectedItem">
+					<asset-preview [assetUid]="selectedForInfoPanel.AssetUid"
+								   [assetType]="selectedForInfoPanel.Object"
+								   [hasEditLink]="false"
+								   [hasOpenLink]="true"></asset-preview>
 				</ng-container>
 			</ng-container>
 		</side-panel>

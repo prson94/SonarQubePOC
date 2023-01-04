@@ -54,6 +54,7 @@ import { AdminLevelListComponent } from './levels/admin-level-list.component';
 import { AdminLevelEditorComponent } from './levels/admin-level-editor.component';
 import { TableModule } from 'primeng/table';
 import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
+import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 
 @NgModule({
     imports: [
@@ -91,7 +92,8 @@ import { IgMessageBoxModule } from '../../shared/controls/message-box/message-bo
         PortalsModule,
 		FormsModule,
 		TableModule,
-		IgMessageBoxModule
+		IgMessageBoxModule,
+		AssetPreviewModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,

@@ -32,7 +32,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 	private labelUid: number;
 	private isAdmin: boolean = false;
 	private currentAreaName: string;
-	selectedForInfoPanel: ConnectorLabelUsage;
+	selectedForInfoPanel: any;
 
 	private actions: AssetAction;
 	isEditorVisible: boolean = false;
@@ -244,6 +244,10 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 		else {
 			this.router.navigateByUrl(url);
 		}
+	}
+
+	onResourceLinkClick($event) {
+		this.selectedForInfoPanel = { AssetUid: $event.uid, Object: $event.type };
 	}
 
 	sidePanelStorageKey: string;

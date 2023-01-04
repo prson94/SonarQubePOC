@@ -1,12 +1,4 @@
-﻿
-<!--<div class="row" *ngIf="isWhereUsedPage">
-	<div class="col s12">
-
-
-	</div>
-</div>-->
-
-<as-split [gutterSize]="sidePanelService.draggableAreaWidth"
+﻿<as-split [gutterSize]="sidePanelService.draggableAreaWidth"
 		  [class.side-panel-close]="!sidePanelOpen"
 		  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)"
 		  unit="pixel"
@@ -23,7 +15,7 @@
 						label="Edit"
 						(click)="isEditorVisible=true"></button>
 			</div>
-			<d3s-connector-label-definition [label]="label" [isSidePanel]="false"></d3s-connector-label-definition>
+			<d3s-connector-label-definition [label]="label" [isSidePanel]="false" (onLinkClicked)="onResourceLinkClick($event)"></d3s-connector-label-definition>
 		</div>
 		<div *ngIf="!isLoading && isWhereUsedPage">
 			<div class="grid-actions-header column-layout">

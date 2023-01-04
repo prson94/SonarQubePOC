@@ -11,6 +11,7 @@ import { EditorModule } from "primeng/editor";
 import { TableModule } from "primeng/table";
 import { DirectivesModule } from "../../../../directives/directives.module";
 import { ConnectorLabelDefinitionModule } from "../../../connector-label/definition/connector-label-definition.module";
+import { AssetDetailModule } from "../../../shared/asset-detail/asset-detail.module";
 import { PopupMenuModule } from "../../../shared/controls/popup-menu/popup-menu.component";
 import { PropertyGroupModule } from "../../../shared/controls/property-group/property-group.component";
 import { SearchFieldModule } from "../../../shared/controls/search-field/search-field.component";
@@ -63,7 +64,8 @@ import { ConnectorLabelsComponent } from "./connector-labels.component";
 		SidePanelModule,
 		AngularSplitModule,
 		PropertyGroupModule,
-		ConnectorLabelDefinitionModule
+		ConnectorLabelDefinitionModule,
+		AssetDetailModule
 	],
     declarations: [
 		ConnectorLabelsComponent,

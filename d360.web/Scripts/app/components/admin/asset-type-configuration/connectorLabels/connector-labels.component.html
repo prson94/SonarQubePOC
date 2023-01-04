@@ -1,6 +1,7 @@
 <div class="row connector-label-list">
 	<d3s-connector-label-sidepanel-wrapper [sidePanelStorageKey]="sidePanelStorageKey"
-										   [selectedItem]="selectedForInfoPanel">
+										   [selectedItem]="selectedForInfoPanel"
+										   (onEdit)="showEditor=true">
 
 		<div class="col s12">
 			<div class="grid-actions-header column-layout">
