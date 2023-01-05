@@ -3728,27 +3728,16 @@ namespace d360.web.Controllers.V2
 		[Route("asset/{assetUid:Guid}/hierarchy")]
 		public IEnumerable<dynamic> GetAssetHierarchy(Guid assetUid)
 		{
-			var querySql = $@";with hierarchy as(
-								select A.ID as ID, 
-									A.[Uid],
-									P.Id as ParentID,
-									TD.DisplayValue
-								from Asset A
-								inner join dbo.AssetDisplayValue TD on TD.AssetID = A.ID
-								outer apply GetParentByAssetID(A.ID) P
-								where A.uid = @assetUid
-							union all
-								select A.ID as ID, 
-									A.[Uid],
-									P.Id as ParentID,
-									TD.DisplayValue
-								from hierarchy
-								inner join Asset A on A.ID = hierarchy.ParentID
-								inner join dbo.AssetDisplayValue TD on TD.AssetID = A.ID
-								outer apply GetParentByAssetID(A.ID) P
-								where A.ID = hierarchy.ParentID
-							)
-							select * from hierarchy";
+			var querySql = $@"
+				declare @typeId int = (select top 1 AssetTypeID from asset where uid = @assetuid)
+				select A.ID as ID, 
+						A.[Uid],
+						P.Id as ParentID,
+						TD.DisplayValue 
+						from [Asset] A
+				inner join dbo.AssetDisplayValue TD on TD.AssetID = A.ID
+				outer apply GetParentByAssetID(A.ID) P
+				where A.AssetTypeID = @typeId";
 
 			return Company.Query<dynamic>(querySql, new { assetUid }).ToList();
 		}
