@@ -1020,6 +1020,8 @@ namespace d360.model.DataAccessLayer
 								,ADP.DetectionLocale
 								,ADP.FtaVersion
 								,ADP.DecimalSeparator
+								,ADP.PopularityCount
+								,ADP.IsAuthorizedForPopularity
 							from 
 								AssetDataProfile ADP
 								{(!string.IsNullOrWhiteSpace(joinSql) ? joinSql : "")}

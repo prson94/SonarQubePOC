@@ -223,4 +223,47 @@
 		]]>
 	</rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v15">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF NOT EXISTS (
+			  SELECT * 
+			  FROM   sys.columns 
+			  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+					 AND name = 'PopularityCount'
+			)
+			BEGIN
+
+				ALTER TABLE [dbo].[AssetDataProfile] ADD [PopularityCount] BIGINT NULL		
+
+			END
+			
+			IF NOT EXISTS (
+			  SELECT * 
+			  FROM   sys.columns 
+			  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+					 AND name = 'IsAuthorizedForPopularity'
+			)
+			BEGIN
+			
+				ALTER TABLE [dbo].[AssetDataProfile] ADD [IsAuthorizedForPopularity] BIT NULL
+
+			END
+		]]>
+    </sql>
+	<rollback>
+	
+		<![CDATA[			
+		
+		ALTER TABLE [dbo].[AssetDataProfile] 
+		DROP 
+			COLUMN IF EXISTS [PopularityCount], 
+			COLUMN IF EXISTS [IsAuthorizedForPopularity]
+
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
