@@ -6,7 +6,7 @@ import { FieldDefinitionComponent } from "../../../../shared/fielddefinition/fie
 
 type FieldTileSettings = Pick<
     FieldDefinitionComponent,
-    'supportsPrimaryFilterOption' | 'showDisplayInColumn' | 'allowSingleSegmentPath'
+	'supportsPrimaryFilterOption' | 'showDisplayInColumn' | 'allowSingleSegmentPath' | 'showAddToSearch'
 >;
 
 @Component({
@@ -60,7 +60,8 @@ export class ConfigurationAssetTypeFieldsPageComponent {
             {
                 supportsPrimaryFilterOption: true,
                 showDisplayInColumn: true,
-                allowSingleSegmentPath: true
+				allowSingleSegmentPath: true,
+				showAddToSearch: true
             }
         ],
         [
@@ -68,7 +69,8 @@ export class ConfigurationAssetTypeFieldsPageComponent {
             {
                 supportsPrimaryFilterOption: true,
                 showDisplayInColumn: true,
-                allowSingleSegmentPath: true
+				allowSingleSegmentPath: true,
+				showAddToSearch: true
             }
         ],
         [
@@ -76,7 +78,8 @@ export class ConfigurationAssetTypeFieldsPageComponent {
             {
                 supportsPrimaryFilterOption: true,
                 showDisplayInColumn: false,
-                allowSingleSegmentPath: true
+				allowSingleSegmentPath: true,
+				showAddToSearch: true
             }
         ],
 		[
@@ -84,7 +87,8 @@ export class ConfigurationAssetTypeFieldsPageComponent {
 			{
 				supportsPrimaryFilterOption: true,
 				showDisplayInColumn: true,
-				allowSingleSegmentPath: true
+				allowSingleSegmentPath: true,
+				showAddToSearch: true
 			}
 		],
 		[
@@ -92,7 +96,8 @@ export class ConfigurationAssetTypeFieldsPageComponent {
 			{
 				supportsPrimaryFilterOption: true,
 				showDisplayInColumn: true,
-				allowSingleSegmentPath: true
+				allowSingleSegmentPath: true,
+				showAddToSearch: true
 			}
 		],
 		[
@@ -100,7 +105,8 @@ export class ConfigurationAssetTypeFieldsPageComponent {
 			{
 				supportsPrimaryFilterOption: true,
 				showDisplayInColumn: true,
-				allowSingleSegmentPath: true
+				allowSingleSegmentPath: true,
+				showAddToSearch: true
 			}
 		]
     ])
