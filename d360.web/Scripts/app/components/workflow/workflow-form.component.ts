@@ -167,11 +167,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                     if (res.AllowReassignObject) {
                         this.reassignAvailableTypes.push({ value: 'object', text: 'Object' });
                     }
-                    if (res.AllowReassignResource) {
+                    if (res.AllowReassignResource && this.canViewUsers) {
                         this.reassignAvailableTypes.push({ value: 'resource', text: 'Resource' });
-                        if (this.canViewUsers) {
-                            this.loadResources();
-                        }
+                        this.loadResources();
                     }
                     this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);
                 }), map(() => {
