@@ -77,7 +77,7 @@
          [ngClass]="{ 'artifact-context-menu': isMenuOpen, 'artifact-context-menu-closed': !isMenuOpen }">
         <a [href]="itemUrl" target="_blank" i18n>Open in new window</a>
     </div>
-    <d3s-asset-grid-custom-export *ngIf="showCustomExport && canExportRecords()"
+    <d3s-asset-grid-custom-export #gridCustomExport *ngIf="showCustomExport && canExportRecords()"
                                   (closeClick)="showCustomExport = false"
                                   (customExportClick)="downloadCustomExcel($event)"
                                   [gridObject]="gridObject"
