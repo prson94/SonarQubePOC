@@ -433,7 +433,6 @@ namespace d360.model
 		/// <param name="ruleID">Optionally pass a specific rule by its ID.</param>
 		public async Task ProcessResponsibilityRelationRules(int? ruleID = null, int timeout = 7200)
 		{
-			ruleID = null;
 			List<ResponsibilityAssetMeasureProcessedResult> results = new List<ResponsibilityAssetMeasureProcessedResult>();
 
 			if (Connection.State != System.Data.ConnectionState.Open)
