@@ -1,0 +1,123 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="tduric" id="Procedure.dbo.GetRulesForRerun-v1.3">
+  <comment>GOV-20738</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [dbo].[GetRulesForRerun]
+( 
+	@ruleId int null 
+)
+as
+begin
+
+declare @ruleIds table (id int)
+
+if @ruleId is null
+begin
+	insert into @ruleIds
+	select ID from ResponsibilityTypeRelationRule
+end
+else
+begin
+	insert into @ruleIds 
+	select @ruleId
+end
+
+	--find all field updates
+	declare @fieldUpdates table (FieldTypeID int, ResponsibilityRuleId int, MaxDate datetime)
+	insert into @fieldUpdates (FieldTypeID, ResponsibilityRuleId)
+	select	WF.FieldTypeID, R.ID
+	from	ResponsibilityTypeRelationRule R
+			cross apply OPENJSON(R.Definition, '$.When') D
+			cross apply OPENJSON(D.value) with (
+					CheckType nvarchar(1) '$.CheckType',
+					FieldTypeID int '$.FieldTypeID'
+				) WF
+	where	WF.CheckType = 'F'
+
+	drop table if exists #fieldTypeUpdatesMap
+	;with cte as (select distinct FieldTypeId from @fieldUpdates)
+	select *
+	into #fieldTypeUpdatesMap
+	from cte
+	outer apply (select MAX(F.UpdatedOn) from Field F where F.FieldTypeID = cte.FieldTypeID)MaxDate(UpdatedOn)
+
+	merge @fieldUpdates as target
+	using (select * from #fieldTypeUpdatesMap)source
+	on source.FieldTypeId = target.FieldTypeId
+	when matched then update
+	set MaxDate = source.UpdatedOn;
+
+
+	--find all relationship updates
+	declare @relationshipUpdates table (IntersectTypeID int, ResponsibilityRuleId int, MaxDate datetime)
+	insert into @relationshipUpdates (IntersectTypeID, ResponsibilityRuleId)
+	select	WF.IntersectTypeID, R.ID
+	from	ResponsibilityTypeRelationRule R
+			cross apply OPENJSON(R.Definition, '$.When') D
+			cross apply OPENJSON(D.value) with (
+					CheckType nvarchar(1) '$.CheckType',
+					IntersectTypeID int '$.IntersectTypeID'
+					
+				) WF
+	where	 WF.CheckType = 'R'
+
+	drop table if exists #relationshipUpdatesMap
+	;with cte as (select distinct IntersectTypeID from @relationshipUpdates)
+	select *
+	into #relationshipUpdatesMap
+	from cte
+	outer apply (select MAX(I.UpdatedOn) from [Intersect] I where I.IntersectTypeID = cte.IntersectTypeID)MaxDate(UpdatedOn)
+
+	merge @relationshipUpdates as target
+	using (select * from #relationshipUpdatesMap)source
+	on source.IntersectTypeID = target.IntersectTypeID
+	when matched then update
+	set MaxDate = source.UpdatedOn;
+
+
+	select 
+		RTRR.*
+	from ResponsibilityTypeRelationRule RTRR
+		inner join AssetType AT on AT.Object = RTRR.Object AND AT.ObjectID = RTRR.ObjectID
+		outer apply (select case when RTRR.UpdatedOn > RTRR.LastRunOn then 1 else 0 end as Value)WasRuleUpdated
+		outer apply (select IIF(count(1) > 0, 1, 0)
+			from	reporting.Global_Resource
+			where	CreatedOn > RTRR.LastRunOn)HasNewUsers(Value)
+		outer apply (select	max(A.CreatedOn), max(A.UpdatedOn)
+			from	Asset A
+			Where AssetTypeID = AT.Id)AssetMax(AssetMaxCreatedOn, AssetMaxUpdatedOn)
+		outer apply (select	max(MaxDate)
+					from	@fieldUpdates where ResponsibilityRuleId = RTRR.ID)AssetFieldMaxDate(Value)
+		outer apply (select  max(MaxDate)
+					from	@relationshipUpdates where ResponsibilityRuleId = RTRR.ID)IntersectMaxDate(Value)
+		outer apply OPENJSON(RTRR.Definition, '$.Then') WITH ([Object] varchar(20), ObjectID int) as ThenCondition
+		outer apply (select g.UpdatedOn from [group] g where g.id = ThenCondition.ObjectId and ThenCondition.Object = 'GroupType')GroupUpdated(Value)
+		outer apply (	SELECT MAX(D) 
+				FROM 
+				(VALUES (AssetMax.AssetMaxCreatedOn), (AssetMax.AssetMaxUpdatedOn), (AssetFieldMaxDate.Value), (IntersectMaxDate.Value),(GroupUpdated.Value)) 
+				AS RelevantUpdateDates(D))AggregatedDates(MaxDate)
+	where 
+	rtrr.ID in (select id from @ruleIds) 
+	and
+	(WasRuleUpdated.Value = 1 or HasNewUsers.Value = 1 or AggregatedDates.MaxDate > RTRR.LastRunOn)
+
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
