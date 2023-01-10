@@ -63,7 +63,12 @@ export class AssetGridCustomExportComponent extends BaseComponent implements OnI
         });
     }
 
-    private doExport(option: AssetTypeExportTemplate) {
+	private doExport(option: AssetTypeExportTemplate) {
         this.customExportClick.emit(option);
-    }
+	}
+
+	public setExportState(option: AssetTypeExportTemplate, state: boolean) {
+		option.IsDownloading = state;
+		this.changeDetectorRef.markForCheck();
+	}
 }
