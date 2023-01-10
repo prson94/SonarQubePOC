@@ -148,15 +148,15 @@ namespace d360.model.helpers
 					if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
 					{
 						joins.Add($"inner join [Intersect] I{idx} on I{idx}.ObjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
-						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.SubjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = cast('{rel.IntersectTypeUid}' as uniqueidentifier)");
+						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.SubjectAssetId {(idx == 1 ? $" and A{idx}.uid = cast(@assetuid as  uniqueidentifier)" : "")}");
 						joins.Add($"left join dbo.[AssetPath] R{idx} ON R{idx}.id = {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id");
 					}
 					else
 					{
 						joins.Add($"inner join [Intersect] I{idx} on I{idx}.SubjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
-						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.ObjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = cast('{rel.IntersectTypeUid}' as uniqueidentifier)");
+						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.ObjectAssetId {(idx == 1 ? $" and A{idx}.uid = cast(@assetuid as  uniqueidentifier)" : "")}");
 						joins.Add($"left join dbo.[AssetPath] R{idx} ON R{idx}.id = {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id");
 					}
 				}
@@ -165,15 +165,15 @@ namespace d360.model.helpers
 					if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
 					{
 						joins.Add($"inner join [Intersect] I{idx} on I{idx}.SubjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
-						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.ObjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = cast('{rel.IntersectTypeUid}' as uniqueidentifier)");
+						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.ObjectAssetId {(idx == 1 ? $" and A{idx}.uid = cast(@assetuid as  uniqueidentifier)" : "")}");
 						joins.Add($"left join dbo.[AssetPath] R{idx} ON R{idx}.id = {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id");
 					}
 					else
 					{
 						joins.Add($"inner join [Intersect] I{idx} on I{idx}.ObjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
-						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.SubjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = cast('{rel.IntersectTypeUid}' as uniqueidentifier)");
+						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.SubjectAssetId {(idx == 1 ? $" and A{idx}.uid = cast(@assetuid as  uniqueidentifier)" : "")}");
 						joins.Add($"left join dbo.[AssetPath] R{idx} ON R{idx}.id = {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id");
 					}
 				}
@@ -317,7 +317,16 @@ namespace d360.model.helpers
 					}
 					else
 					{
-						joins.Add($"outer apply [utility].[FieldDetailsByAssetId](H{f.RelationIndex + 1}.ID, {f.FieldTypeID}) {fieldSelector}");
+						if (ft.AllowAllValue && !string.IsNullOrEmpty(ft.AllowAllLabel) || !string.IsNullOrEmpty(ft.DefaultFormattedValue))
+						{
+							var HasDefaultValue = !string.IsNullOrEmpty(ft.DefaultFormattedValue) ? 1 : 0;
+							var AllowAllValue = ft.AllowAllValue ? 1 : 0;
+							joins.Add($"outer apply [utility].[FieldDetailsByAssetId](H{f.RelationIndex + 1}.ID, {f.FieldTypeID}, {AllowAllValue}, {HasDefaultValue}) {fieldSelector}");
+						}
+						else
+						{
+							joins.Add($"left join field {fieldSelector} on {fieldSelector}.FieldTypeID = {f.FieldTypeID} and {fieldSelector}.AssetID = H{f.RelationIndex + 1}.ID");
+						}
 					}
 				}
 				else
@@ -346,7 +355,6 @@ namespace d360.model.helpers
 					{
 						selects.Add($"u{f.RelationIndex + 1}.{f.FieldTypeName} AS [H{f.RelationIndex + 1}_{f.FieldTypeName}]");
 					}
-
 				}
 			}
 
@@ -663,7 +671,10 @@ namespace d360.model.helpers
 							break;
 					}
 
-					joins.Add($"outer apply [utility].[FieldDetailsByAssetId](A.ID, {ft.ID}) F{ft.ID}");
+					var HasDefaultValue = !string.IsNullOrEmpty(ft.DefaultFormattedValue) ? 1 : 0;
+					var AllowAllValue = ft.AllowAllValue ? 1 : 0;
+
+					joins.Add($"outer apply [utility].[FieldDetailsByAssetId](A.ID, {ft.ID},{AllowAllValue}, {HasDefaultValue}) F{ft.ID}");
 				}
 			}
 
