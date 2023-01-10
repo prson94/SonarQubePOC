@@ -1,6 +1,5 @@
 ﻿import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { AppSettingsEnum, } from '../../../models/settings.model';
 import { SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
@@ -47,8 +46,7 @@ export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent im
 		private assetTypeService: AssetTypeService
 	) {
 		super(headerBreadcrumbService, titleService, settingsService);
-		const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
-		this.addAssetTypeHelpLink = helpBaseUri + "Default.htm#d-admin/establishing-responsibilities.htm?TocPath=Administration%257CManaging%2520users%2520and%2520groups%257C_____3";
+		this.addAssetTypeHelpLink = this.getHelpUrl("Data360-Govern-Help/Administration/Managing-users-and-groups/Establishing-responsibilities");
 	}
 
 	ngOnDestroy() {

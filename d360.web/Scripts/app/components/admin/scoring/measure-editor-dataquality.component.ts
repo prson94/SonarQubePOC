@@ -28,7 +28,6 @@ import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AppSettingsEnum } from '../../../models/settings.model';
 
 @Component({
     selector: 'dataquality-measure-editor',
@@ -94,10 +93,12 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         protected cdRef: ChangeDetectorRef
     ) {
         super(fieldsService, metricsService, messagesService, settingsService, cdRef);
-        const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
-        this.helpUri = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
-        const conditionHelpLink: string = helpBaseUri + "/Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
-        this.thresholdOverrideTooltipText = $localize`You can override the <b>Pass Threshold</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.<br/><a target='help' href='" + conditionHelpLink + "'><i class='fa fa-external-link'></i>&#160;Read more about Asset Conditions and Weighting.</a>`;
+		this.helpUri = this.getHelpUrl("Data360-Govern-Help/Configuration/Scoring-definitions");
+		const conditionHelpLink: string = this.getHelpUrl("Data360-Govern-Help/Configuration/Scoring-definitions?section=scoring-definitions__Asset_conditions");
+		const readMoreText = $localize`Read more about Asset Conditions and Weighting`;
+		const tooltipText = $localize`You can override the <b>Pass Threshold</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.`;
+
+		this.thresholdOverrideTooltipText = `${tooltipText}<br/><a target='help' href='${conditionHelpLink}'><i class='fa fa-external-link'></i >&#160;${readMoreText}.< /a>`;
     }
 
     ngOnChanges(changes: SimpleChanges): void {
