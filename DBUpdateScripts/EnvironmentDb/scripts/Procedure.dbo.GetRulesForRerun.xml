@@ -110,6 +110,7 @@ end
 	rtrr.ID in (select id from @ruleIds) 
 	and
 	(WasRuleUpdated.Value = 1 or HasNewUsers.Value = 1 or AggregatedDates.MaxDate > RTRR.LastRunOn)
+	option(recompile)
 
 end
 		]]>
