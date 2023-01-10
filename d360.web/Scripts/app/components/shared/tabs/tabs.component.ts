@@ -92,7 +92,7 @@ export class TabsComponent implements OnDestroy {
         let visible = (tab.isVisible != null ? tab.isVisible() : true)
 			&& this.filterScoringTabHasNoValue(tab);
 
-		if (tab.title === "Comments") {
+		if (tab.title === $localize`Comments`) {
 			visible = visible && (this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value);
 		}
 
@@ -100,7 +100,7 @@ export class TabsComponent implements OnDestroy {
     }
 
     filterScoringTabHasNoValue = (tab: Tab) => {
-        if (tab.title === "Scoring") {
+		if (tab.title === $localize`Scoring`) {
             return Boolean(this.searchDetails?.Scores.length);
         }
         return true;
