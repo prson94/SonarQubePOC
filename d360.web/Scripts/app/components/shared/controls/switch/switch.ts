@@ -92,8 +92,6 @@ export class Switch implements ControlValueAccessor, OnInit {
     }
 
     writeValue(obj: boolean): void {
-        if (this._el) {this._el.nativeElement.focus();}
-
         if (!this.optional && (obj === this.value)) {     // not optional and current value = previous   
             return;
         }
