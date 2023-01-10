@@ -837,18 +837,30 @@ namespace d360.web.Controllers.V2
 
 				if (assetTypeUid != null)
 				{
-					int atID = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault().ID;
-					ft = Company.Filter<FieldType>(x => x.AssetTypeID == atID && x.Name == name).SingleOrDefault();
+					var assetType  = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
+					if (assetType != null)
+					{
+						var atID = assetType.ID;
+						ft = Company.Filter<FieldType>(x => x.AssetTypeID == atID && x.Name == name).SingleOrDefault();
+					}
 				}
 				else if (actionTypeUid != null)
 				{
-					int atID = Company.Filter<IssueType>(x => x.uid == actionTypeUid).SingleOrDefault().ID;
-					ft = Company.Filter<FieldType>(x => x.IssueTypeID == atID && x.Name == name).SingleOrDefault();
+					var issueType = Company.Filter<IssueType>(x => x.uid == actionTypeUid).SingleOrDefault();
+					if (issueType != null)
+					{
+						int atID = issueType.ID;
+						ft = Company.Filter<FieldType>(x => x.IssueTypeID == atID && x.Name == name).SingleOrDefault();
+					}
 				}
 				else if (relationshipTypeUid != null)
 				{
-					var itID = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault().ID;
-					ft = Company.Filter<FieldType>(x => x.IntersectTypeID == itID && x.Name == name).SingleOrDefault();
+					var it = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault();
+					if (it != null)
+					{
+						int itID = it.ID;
+						ft = Company.Filter<FieldType>(x => x.IntersectTypeID == itID && x.Name == name).SingleOrDefault();
+					}
 				}
 				else
 				{
