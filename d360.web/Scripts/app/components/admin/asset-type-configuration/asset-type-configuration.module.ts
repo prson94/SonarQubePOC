@@ -49,6 +49,8 @@ import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configu
 import { AdminLevelListComponent } from './levels/admin-level-list.component';
 import { AdminLevelEditorComponent } from './levels/admin-level-editor.component';
 import { TableModule } from 'primeng/table';
+import { SharedDeleteFormModule } from '../../shared/delete.form';
+import { TilesModule } from '../../shared/tiles/tiles.module';
 
 @NgModule({
     imports: [
@@ -80,7 +82,9 @@ import { TableModule } from 'primeng/table';
         SharedGridPagingInfoModule,
         PortalsModule,
 		FormsModule,
-		TableModule
+		TableModule,
+		SharedDeleteFormModule,
+		TilesModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
