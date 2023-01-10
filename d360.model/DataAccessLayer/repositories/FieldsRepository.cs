@@ -2404,7 +2404,8 @@ namespace d360.model.DataAccessLayer
 					from AssetType where uid = @AssetTypeUid
 
 					select count(1) from intersecttype
-					where id = @FieldTypeID and SubjectAssetTypeID = @AssetTypeid and SubjectClass = @AssetTypeClass",
+					where id = @FieldTypeID and SubjectAssetTypeID = @AssetTypeid and SubjectClass = @AssetTypeClass
+					option(recompile)",
 					new { relFt.FieldTypeID, relFt.AssetTypeUid })
 					.FirstOrDefault();
 
@@ -2496,14 +2497,16 @@ namespace d360.model.DataAccessLayer
 			if (!Company.CurrentResourceIsAdmin)
 			{
 				permissionSQL = $@"	
-									declare @hasPermission bit = 1
+									declare @hasPermission bit = 1,
+									@CheckhasPermission int = 0;
 
 									declare @relations table (
 									RowNumber int identity, RN varchar(3), 
 									IntersectTypeUid uniqueidentifier, AssetTypeUid uniqueidentifier, RelationType int, Direction int, 
 									IntersectTypeID int, Object varchar(50), ObjectID int,
 									FieldCount int null,
-									AssetTypeId int)
+									AssetTypeId int,
+									index ix_relation_assettypeid(AssetTypeUid))
 
 									insert into @relations (IntersectTypeUid, AssetTypeUid, RelationType, Direction, FieldCount)
 									select	R.*,
@@ -2515,7 +2518,8 @@ namespace d360.model.DataAccessLayer
 												RelationType int, 
 												Direction int
 											) R
-									where	O.FieldTypeID = @fieldTypeId;
+									where	O.FieldTypeID = @fieldTypeId
+									option(recompile);
 
 									update	R 
 									set		R.RN = cast(R.RowNumber as varchar(5)),
@@ -2526,19 +2530,27 @@ namespace d360.model.DataAccessLayer
 									from	@relations R
 									left join IntersectType I on I.Uid = R.IntersectTypeUid
 									left join AssetType A on A.Uid = R.AssetTypeUid
+									option(recompile);
 
 									drop table if exists #AssetPermission;
 									Create table #AssetPermission (AssetID bigint);
 									Create nonclustered index Ix_PermissAsset_temp on #AssetPermission(AssetID);
 
 									insert into #AssetPermission
-									select P.AssetID
+									select distinct P.AssetID
 									from @relations r
 									cross apply  dbo.UserAssetPermissions(@resourceId, r.AssetTypeID) P
-									where (PermissionsBitMask & 1) = 0;
+									where (PermissionsBitMask & 1) = 0
+									option(recompile);
 
 								-- If resource can't read asset type of one or more hops, there should be no result. Add impossible condition.
-								if exists (select 1 from dbo.AssetTypesUserCantRead(@resourceId) u where u.AssetTypeID in (select AssetTypeID from @relations))
+								
+								select top 1 @CheckhasPermission = 1 
+								from dbo.AssetTypesUserCantRead(@resourceId) u 
+								where exists (select 1 from @relations rr where rr.AssetTypeID = AssetTypeID)
+								option(recompile);
+
+								if (@CheckhasPermission = 1)
 								begin
 									set @hasPermission = 0;
 								end";
@@ -2548,21 +2560,44 @@ namespace d360.model.DataAccessLayer
 				wheres.Add("@hasPermission = 1");
 			}
 
-			var itemsSQL = $@"{permissionSQL}
-							{sql}  
-							{(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
-							{orderByClause} {direction}
-							offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
-			var countSQL = $@"{sql}
-							  {(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+			var SQLAll = "";
+
 
 			if (countOnly)
 			{
-				itemsSQL = permissionSQL;
-			}
+				SQLAll = $@"{permissionSQL}
 
+							select count(1) 
+							from (	{sql}
+									{(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}) a 
+							option (recompile);";
+			}
+			else
+			{
+				SQLAll = $@"{permissionSQL}
+
+							drop table if exists #tempdata;
+
+							select a.* 
+							into #tempdata
+							from (
+							{sql}  
+							{(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
+							) a
+							option (recompile);
+
+							select td.*
+							from #tempdata td
+							{orderByClause} {direction}
+							offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only
+							option (recompile);
+
+							select count(1) 
+							from #tempdata a 
+							option (recompile);";
+			}
 			var reader = await Company.QueryMultipleAsync(
-				$"{itemsSQL}; select count(1) from ({countSQL})a", dbArgs);
+				$"{SQLAll}", dbArgs);
 
 			if (!countOnly)
 			{
@@ -2579,7 +2614,7 @@ namespace d360.model.DataAccessLayer
 							 FieldType ft 
 							inner join AssetType at on ft.assetTypeID = at.ID
 							inner join metrics.Allocation ma on ma.AssetTypeUid = at.uid  and ma.ScoreType = ft.ScoreType
-						where ft.Type = 'Score' and ft.id in @scoreFields", new { scoreFields })).ToList();
+						where ft.Type = 'Score' and ft.id in @scoreFields option (recompile);", new { scoreFields })).ToList();
 			}
 
 			return (Columns, Fields, Values, count, scoringInfo);

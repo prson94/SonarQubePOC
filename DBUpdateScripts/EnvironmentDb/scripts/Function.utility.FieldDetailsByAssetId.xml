@@ -5,13 +5,39 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Function.utility.FieldDetailsByAssetId-v1">
+  <changeSet author="Puneet Gupta" id="Function.utility.FieldDetailsByAssetId-v2">
+  <comment>GOV-20715</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
 CREATE OR ALTER FUNCTION [utility].[FieldDetailsByAssetId]
+(
+        @AssetID   		bigint,
+        @FieldTypeId     int,
+		@AllowAllValue   bit,
+		@HasDefaultValue bit
+        )
+        RETURNS TABLE 
+        AS
+        RETURN 
+        (
+            SELECT   TRY_CAST(CASE 
+                    WHEN @AllowAllValue = 1 AND F.[Value] = '0' THEN T.AllowAllLabel 
+                    WHEN F.FormattedValue IS NOT NULL THEN F.FormattedValue 
+                    WHEN @HasDefaultValue = 1 THEN T.DefaultFormattedValue
+                    ELSE NULL 
+                END AS nvarchar(MAX)) AS FormattedValue
+        FROM    dbo.FieldType AS T  
+                LEFT OUTER JOIN dbo.Field AS F ON F.FieldTypeID = @FieldTypeId and F.AssetId = @AssetID
+        WHERE    T.id = @FieldTypeId
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+			CREATE OR ALTER FUNCTION [utility].[FieldDetailsByAssetId]
 (
         @AssetID   		bigint,
         @FieldTypeId    int
@@ -34,12 +60,6 @@ CREATE OR ALTER FUNCTION [utility].[FieldDetailsByAssetId]
 				OR T.DefaultValue IS NOT NULL 
                 OR T.ShowIfEmpty = 1
         )
-)
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-			drop function if exists [utility].[FieldDetailsByAssetId]
 		]]>
 	</rollback>
   </changeSet>
