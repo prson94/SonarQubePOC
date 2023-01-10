@@ -599,4 +599,20 @@ end
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+<changeSet author="TKlok" id="Data.Corrections.GOV-GOV-20016">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+delete from [dbo].[HelpResource] where [Url] = 'Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0' and [isSystem] = 1;
+delete from [dbo].[HelpResource] where [Url] = 'Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0' and [isSystem] = 1;
+delete from [dbo].[HelpResource] where [Url] = 'Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat' and [isSystem] = 1;
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

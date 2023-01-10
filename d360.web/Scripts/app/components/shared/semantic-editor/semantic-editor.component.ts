@@ -25,7 +25,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { BaseComponent } from '../base.component';
 import { LocaleService } from '../../../services/locale.service';
 import { PropertyGroupComponent } from '../controls/property-group/property-group.component';
-import { AppSettingsEnum } from '../../../models/settings.model';
 
 @Component({
     selector: 'semantic-editor',
@@ -90,7 +89,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     ngOnInit(): void {
         this.isLoading = true;
 
-        this.semanticHelpURL = `${this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri)}Default.htm#c-user-guide/create-semantic-types.htm#Data_Profiler`;
+		this.semanticHelpURL = this.getHelpUrl("Data360-Govern-Help/User-guide/Semantic-types/Creating-semantic-types");
 
         this.semanticForm = this.formBuilder.group({
             name: ['', [Validators.required, this.isEmptyString()]],

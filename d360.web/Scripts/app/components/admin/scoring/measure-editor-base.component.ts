@@ -29,7 +29,6 @@ import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AppSettingsEnum } from '../../../models/settings.model';
 
 @Component({
     template: ''
@@ -121,19 +120,17 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         protected cdRef: ChangeDetectorRef
     ) {
         super(settingsService);
-        const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
-        this.conditionGroupLink = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
-        this.conditionAndWeightLink = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
+		this.conditionGroupLink = this.conditionAndWeightLink = this.getHelpUrl("Data360-Govern-Help/Configuration/Scoring-definitions?section=scoring-definitions__Asset_conditions");
         const readMoreText = $localize`Read more about Asset Conditions and Weighting`;
         const conditionWeightTooltipText = $localize`You can override the <b>Weight</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.`;
 
         this.conditionWeightTootlip = `<div>${conditionWeightTooltipText}</div>
-                <div style=\"padding-top: 8px;\" ><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionGroupLink + "\"><i class=\"fa fa-external-link\"></i> ${readMoreText}</a></div>`;
+                <div style=\"padding-top: 8px;\" ><a (click)=\"test()\" target=\"_blank\" href=\"${this.conditionGroupLink}\"><i class=\"fa fa-external-link\"></i> ${readMoreText}</a></div>`;
 
         const assetConditionsAndWeightingTooltipText = $localize`Asset Conditions and Weighting allows you to target specific subsets of your scoring asset type, 
                 either choosing to apply your measures to only those assets which match your conditions, or applying different weights to different matches.`;
 
-        this.assetConditionsAndWeightingTooltip = `<div>${assetConditionsAndWeightingTooltipText}</div><div style=\"padding-top: 8px;\"><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionAndWeightLink + "\"><i class=\"fa fa-external-link\"></i> ${readMoreText}</a></div>`;
+		this.assetConditionsAndWeightingTooltip = `<div>${assetConditionsAndWeightingTooltipText}</div><div style=\"padding-top: 8px;\"><a (click)=\"test()\" target=\"_blank\" href=\"${this.conditionAndWeightLink}\"><i class=\"fa fa-external-link\"></i> ${readMoreText}</a></div>`;
     }
 
     menuOptions(includeUp: boolean, includeDown: boolean): any[] {

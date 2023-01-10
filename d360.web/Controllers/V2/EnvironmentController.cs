@@ -1195,7 +1195,8 @@ select	r.uid as ResourceUid,
 		{
 			const string supportUrl = "https://community.precisely.com/home";
 			const string aboutUrl = "about";
-			var baseUrl = System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString();
+			var baseUrl = ConfigurationManager.AppSettings["HelpBaseUri"].ToString();
+			var helpLocale = "en-US";
 
 			try
 			{
@@ -1210,7 +1211,7 @@ select	r.uid as ResourceUid,
 					help.Name = item.Name;
 					if (item.isSystem && (item.Url != aboutUrl && item.Url != supportUrl))
 					{
-						help.Url = baseUrl + item.Url;
+						help.Url = baseUrl + helpLocale + "/" + item.Url;
 					}
 					else
 					{

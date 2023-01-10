@@ -19,7 +19,6 @@ import * as _ from 'lodash';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AppSettingsEnum } from '../../../models/settings.model';
 import { ScoreService } from '../../../services/score.service';
 
 @Component({
@@ -151,8 +150,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         private scoreService: ScoreService) {
         super(settingsService);
 
-        const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
-        this.helpUri = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
+		this.helpUri = this.getHelpUrl("Data360-Govern-Help/Configuration/Scoring-definitions");
     }
 
     delayedReload = _.debounce(() => {

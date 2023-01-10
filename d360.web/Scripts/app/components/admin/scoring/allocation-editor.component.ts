@@ -18,7 +18,6 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { AllocationService } from '../../../services/allocations.service';
 import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AppSettingsEnum } from '../../../models/settings.model';
 import { Dropdown } from "primeng/dropdown";
 
 @Component({
@@ -71,8 +70,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
         private cdRef: ChangeDetectorRef) {
         super(settingsService);
 
-        const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
-        this.scoringHelpPage = helpBaseUri + "Default.htm#d-admin/scoring.htm?Highlight=scoring";
+		this.scoringHelpPage = this.getHelpUrl("Data360-Govern-Help/Configuration/Scoring-definitions");
         this.selection = new ScoreTypeAllocation();
         this.selection.isExternallyCalculated = false;
         this.selection.lowerThreshold = 50;
