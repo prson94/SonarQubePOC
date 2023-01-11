@@ -567,7 +567,8 @@ END
 	]]>
 	</sql>
   </changeSet>
-<changeSet author="Puneet Gupta" id="Data.Corrections.GOV-20613">
+
+<changeSet author="Puneet Gupta" id="Data.Corrections.GOV-20613-2">
   <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -578,7 +579,7 @@ declare @FieldTypeID int;
 select top 1 @FieldTypeID = FT.ID 
 from assettype ATT 
 inner join FieldType FT on ATT.ID = FT.AssetTypeID
-where ATT.Class = 9 and ATT.Name  = 'Rule Dimension' and Type = 'Html';
+where ATT.Class = 9 and ATT.Name  = 'Rule Dimension' and ft.Type = 'Html' and ft.name ='Description';
 
 if (@FieldTypeID is not null)
 begin
