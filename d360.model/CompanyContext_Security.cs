@@ -440,7 +440,7 @@ namespace d360.model
 				Connection.Open();
 			}
 
-			IEnumerable<ResponsibilityTypeRelationRule> rules = await GetRulesToRun(ruleID).ConfigureAwait(false);
+			IEnumerable<ResponsibilityTypeRelationRule> rules = await GetRulesForRerun(ruleID).ConfigureAwait(false);
 
 			List<int> rulesRequiringRun = new List<int>();
 
@@ -450,19 +450,15 @@ namespace d360.model
 			{
 				try
 				{
-					if (await ShouldRuleRun(rule.ID).ConfigureAwait(false))
-					{
-						rulesRequiringRun.Add(rule.ID);
-						rule.SetDefinitionFromRaw();
+					rule.SetDefinitionFromRaw();
 
-						if (rule.ApplyToType)
-						{
-							await ProcessRuleForAssetType(rule, results).ConfigureAwait(false);
-						}
-						else
-						{
-							await ProcessRuleForAsset(rule, results).ConfigureAwait(false);
-						}
+					if (rule.ApplyToType)
+					{
+						await ProcessRuleForAssetType(rule, results).ConfigureAwait(false);
+					}
+					else
+					{
+						await ProcessRuleForAsset(rule, results).ConfigureAwait(false);
 					}
 				}
 				catch (ApplicationException ex)
@@ -828,6 +824,16 @@ namespace d360.model
 		private async Task<bool> ShouldRuleRun(int ruleId)
 		{
 			return await Connection.QueryFirstAsync<bool>("exec ResponsibilityRuleShouldRun @id", new { id = ruleId });
+		}
+
+		/// <summary>
+		/// Return all responsibility rules that should be rerun
+		/// </summary>
+		/// <param name="cnn">DB connection</param>
+		/// <returns></returns>
+		private async Task<IEnumerable<ResponsibilityTypeRelationRule>> GetRulesForRerun(int? ruleId)
+		{
+			return await Connection.QueryAsync<ResponsibilityTypeRelationRule>("exec GetRulesForRerun @id", new { id = ruleId });
 		}
 
 		/// <summary>
