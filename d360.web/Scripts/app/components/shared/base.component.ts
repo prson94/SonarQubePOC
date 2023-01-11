@@ -793,7 +793,7 @@ export class BaseComponent {
 				label: root.DisplayValue,
 				expanded: true,
 				data: {
-					id: root.ID
+					id: root.Uid
 				},
 				children: (includeChildren ? this.buildTreeNodeArrayBase(inputArr, root.ID) : null) // recursively find its children
 			});
@@ -1375,13 +1375,8 @@ export class BaseComponent {
 		this.breadcrumbsService.clearBreadcrumbs();
 
 		this.breadcrumbsService.breadcrumbTreeSource$.subscribe(
-			(id) => {
-				if (objectName.toLowerCase() === 'policy') {
-					this.breadcrumbsService.reRouteFromBreadcrumbs(`/${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
-				}
-				if (objectName.toLowerCase() === 'taxonomy') {
-					this.breadcrumbsService.reRouteFromBreadcrumbs(`/${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
-				}
+			(uid) => {
+				this.breadcrumbsService.reRouteFromBreadcrumbs(SiteUrlHelpers.getAssetUrl(uid.toString()));
 			}
 		);
 
