@@ -51,7 +51,7 @@ namespace d360.web.Controllers
 
             await this.AppendSettingsToViewData(httpContext: System.Web.HttpContext.Current);
 
-            ViewData.Add("EnvironmentSettings", new Dictionary<string, string> { { "HelpBaseUri", System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString() } });
+            ViewData.Add("EnvironmentSettings", new Dictionary<string, string> { { "HelpBaseUri", System.Configuration.ConfigurationManager.AppSettings["FluidTopicBaseUri"].ToString() } });
             ViewData.Add("SingleSignOn", await IsSingleSignOn());
 
             var res = Company.GlobalReportingResources.Where(x => x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
