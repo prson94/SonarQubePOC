@@ -33,7 +33,6 @@ using Resources;
 using SpreadsheetLight;
 
 using Swashbuckle.Swagger.Annotations;
-using static IdentityModel.OidcConstants;
 
 namespace d360.web.Controllers.V2
 {
