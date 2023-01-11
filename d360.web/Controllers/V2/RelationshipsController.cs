@@ -33,6 +33,7 @@ using Resources;
 using SpreadsheetLight;
 
 using Swashbuckle.Swagger.Annotations;
+using static IdentityModel.OidcConstants;
 
 namespace d360.web.Controllers.V2
 {
@@ -1853,38 +1854,17 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
+				var result = new List<RelationshipCountModel>();
+				string relationshipsCountQuery = string.Empty;
+
 				var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
-
-				if (asset == null || !Company.HasAssetPermission(asset.ID, Permission.ReadRelationships))
+				if (asset != null)
 				{
-					var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetUid);
-					if (assetType != null)
+					var permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
+
+					if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
 					{
-						var refTypeCountSQL = @"drop table if exists #relationshipCountMap
-								create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject bit,Count int)
-
-								insert into #relationshipCountMap
-								select lower(it.uid), 0, count(*) from [Intersect] I
-								inner join IntersectType IT on IT.ID = I.IntersectTypeID
-								where I.ObjectAssetTypeId = @id
-								group by it.uid
-
-								insert into #relationshipCountMap
-								select lower(it.uid), 1, count(*) from [Intersect] I
-								inner join IntersectType IT on IT.ID = I.IntersectTypeID
-								where I.subjectAssetTypeId = @id
-								group by it.uid
-								select distinct * from #relationshipCountMap";
-
-						var refListData = await Company.QueryAsync<RelationshipCountModel>(refTypeCountSQL, new { assetType.ID });
-						
-						return Request.CreateResponse(HttpStatusCode.OK, refListData);
-					}
-
-					return Request.CreateResponse(HttpStatusCode.OK, new List<string>());
-				}
-
-				var countsSql = $@"drop table if exists #relationshipCountMap
+						relationshipsCountQuery = $@"drop table if exists #relationshipCountMap
 									create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject bit,Count int)
 
 									;with cte as (
@@ -1924,10 +1904,38 @@ namespace d360.web.Controllers.V2
 															select IntersectTypeUid, IsSubject,Count from cte
 
 															select distinct * from #relationshipCountMap";
+					}
 
-				var data = await Company.QueryAsync<RelationshipCountModel>(countsSql, new { assetUid });
+				}
+				else if (asset == null)
+				{
+					var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetUid);
+					if (assetType != null)
+					{
+						relationshipsCountQuery = @"drop table if exists #relationshipCountMap
+								create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject bit,Count int)
 
-				return Request.CreateResponse(HttpStatusCode.OK, data);
+								insert into #relationshipCountMap
+								select lower(it.uid), 0, count(*) from [Intersect] I
+								inner join IntersectType IT on IT.ID = I.IntersectTypeID
+								where I.ObjectAssetTypeId = @id
+								group by it.uid
+
+								insert into #relationshipCountMap
+								select lower(it.uid), 1, count(*) from [Intersect] I
+								inner join IntersectType IT on IT.ID = I.IntersectTypeID
+								where I.subjectAssetTypeId = @id
+								group by it.uid
+								select distinct * from #relationshipCountMap";
+						}
+				}
+
+				if (!string.IsNullOrEmpty(relationshipsCountQuery))
+				{
+					result = (await Company.QueryAsync<RelationshipCountModel>(relationshipsCountQuery, new { assetUid })).ToList();
+				}
+
+				return Request.CreateResponse(HttpStatusCode.OK, result);
 			}
 			catch (Exception ex)
 			{
