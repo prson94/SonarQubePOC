@@ -2,20 +2,20 @@
     [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}"
     title="{{title}}" 
     [attr.data-cy]="getDataCyAttribute()"
-    (click)="navigateToUrl(url)" 
+    (click)="navigateToUrl(url, $event)" 
     style="cursor: pointer;"
     [igDataCy]="'PrimaryNav_' + title">
     <div class="menu-category-box" [ngClass]="{'caret-hovered':isCaretHovered}">
         <img class="d3s-gov-icon" *ngIf="rootIconName && rootIconName.indexOf('/Content') != -1" [src]="rootIconName" />
         <i *ngIf="rootIconName && rootIconName.indexOf('/Content') == -1" [class]="'fa ' + rootIconName"></i>
         <img *ngIf="imageUrl" [src]="imageUrl" />
-        <div [ngClass]="{'caption':true, 'min':!expanded}">
+        <div [ngClass]="{'min':!expanded, 'menu-title-item': true}">
             <div [ngClass]="{'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
-            <i *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0"
-               class="menu-category fa fa-caret-right" [ngClass]="{'icon-active':expanded,'icon':!expanded}"
-               (mouseover)="isCaretHovered = true;" (mouseout)="isCaretHovered = false;" (click)="onCategoryExpand($event)">
-            </i>
         </div>
+        <i *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0"
+           class="menu-category fa fa-caret-right" [ngClass]="{'icon-active':expanded,'icon':!expanded}"
+           (mouseover)="isCaretHovered = true;" (mouseout)="isCaretHovered = false;" (click)="onCategoryExpand($event)">
+        </i>
     </div>
     <div *ngIf="menu?.NavigationItems?.length > 0; else emptyHintContainer" 
         class="menu-child megamenu-panel" 
