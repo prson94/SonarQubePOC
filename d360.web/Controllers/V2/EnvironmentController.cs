@@ -215,7 +215,7 @@ namespace d360.web.Controllers.V2
 			{
 				var settings = new List<ApplicationSetting>();
 
-				settings.Add(new ApplicationSetting { Name = "HelpBaseUri", Value = Config.GetValue<string>("HelpBaseUri") });
+				settings.Add(new ApplicationSetting { Name = "HelpBaseUri", Value = Config.GetValue<string>("FluidTopicBaseUri") });
 				settings.Add(new ApplicationSetting { Name = "AppInsightsInstrumentationKey", Value = Config.GetValue<string>("AppInsightsInstrumentationKey") });
 
 				return Request.CreateResponse(HttpStatusCode.OK, settings);
@@ -1195,7 +1195,7 @@ select	r.uid as ResourceUid,
 		{
 			const string supportUrl = "https://community.precisely.com/home";
 			const string aboutUrl = "about";
-			var baseUrl = ConfigurationManager.AppSettings["HelpBaseUri"].ToString();
+			var baseUrl = ConfigurationManager.AppSettings["FluidTopicBaseUri"].ToString();
 			var helpLocale = "en-US";
 
 			try

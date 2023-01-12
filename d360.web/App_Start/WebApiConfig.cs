@@ -60,7 +60,7 @@ namespace d360.web
 
 			var versionInfoBuilder = new Action<VersionInfoBuilder>(info =>
 			{
-				var HelpBaseUri = ConfigurationManager.AppSettings["HelpBaseUri"];
+				var HelpBaseUri = ConfigurationManager.AppSettings["FluidTopicBaseUri"];
 				HelpBaseUri += "en-US/Data360-Govern-Help/Integration/API-documentation";
 
 				foreach (var group in apiExplorer.ApiDescriptions.OrderByDescending(i => i.Name))
