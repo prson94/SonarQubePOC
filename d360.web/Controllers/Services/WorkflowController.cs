@@ -960,7 +960,7 @@ namespace d360.web.Controllers.Services
 			desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), Company.CurrentCompanyDomain, itemStep, true, false, false);
 			Guid? ObjectUid = null;
 
-			if(itemStep.Item.Object == SystemObjects.Artifact.ToString() || itemStep.Item.Object == SystemObjects.Taxonomy.ToString())
+			if(itemStep.Item.Object == SystemObjects.Artifact.ToString() || itemStep.Item.Object == SystemObjects.Taxonomy.ToString() || itemStep.Item.Object == SystemObjects.Policy.ToString())
 			{
 				ObjectUid = Company.Assets.Where(a => a.Object == itemStep.Item.Object && a.ObjectID == itemStep.Item.ObjectID).FirstOrDefault().uid;
 			}
