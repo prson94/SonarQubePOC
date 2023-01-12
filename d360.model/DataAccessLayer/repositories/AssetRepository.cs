@@ -4010,7 +4010,7 @@ where an.Uid = fam.uid)
 							att.name,
 							att.description
 							{(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")},
-							Levels.depth as maxDepth
+							att.HierarchyMaximumDepth as maxDepth
 						 from AssetType att
 						 outer apply (
 							select	ATParent.uid 
@@ -4020,7 +4020,6 @@ where an.Uid = fam.uid)
 							where att.Class not in ({(int)AssetTypeClass.Model},{(int)AssetTypeClass.Policy})
 						 ) ATParent
 						 {(isReturnCount ? " left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID " : "")}
-						outer apply (select MAX(level) as depth from AssetTypeLevel where AssetTypeID = att.id)Levels
 						where att.Class in @filterClasses
 						 {assetTypePermissionWhere}
 					order by att.name";
