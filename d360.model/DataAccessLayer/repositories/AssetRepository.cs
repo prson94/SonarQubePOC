@@ -410,7 +410,7 @@ namespace d360.model.DataAccessLayer
 			List<string> pagingSql = new List<string>();
 			List<string> TempTableScriptList = new List<string>();
 			List<string> fieldsUsedInMainQuery = new List<string>();
-			string TempTableScriptStr = " ";
+
 			var tempincludeRelationships = "";
 
 			var dbArgs = new DynamicParameters();
@@ -428,8 +428,6 @@ namespace d360.model.DataAccessLayer
 			//The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
 			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Id]", listColorsAsJSON, true, TempTableScriptList);
 			var countJoins = fieldJoins.Clone();
-
-			TempTableScriptStr = string.Join("\n ", TempTableScriptList);
 
 			if (includeProfilingCheck)
 			{
@@ -972,7 +970,7 @@ namespace d360.model.DataAccessLayer
 					var tempJoins = new DynamicQueryJoins();
 					var tempFieldColumns = new DynamicQuerySelects();
 
-					getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
+					getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns, TempTableScriptList: TempTableScriptList, CreateTempTableForFieldFromRelationship: true);
 
 					var filterDataProvider = new FilterDataProvider(CompanyContext);
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, includeParent, allowTempTableFiltering: true);
@@ -999,7 +997,7 @@ namespace d360.model.DataAccessLayer
 						tempArgs = new DynamicParameters();
 						tempJoins.Clear();
 						tempFieldColumns.Clear();
-						getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns);
+						getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns, TempTableScriptList: TempTableScriptList, CreateTempTableForFieldFromRelationship: true);
 						fieldColumns.Merge(tempFieldColumns);
 						fieldJoins.Merge(tempJoins);
 						countJoins.Merge(tempJoins);
@@ -1586,6 +1584,8 @@ namespace d360.model.DataAccessLayer
 						exec CachedAssetFiltersProvider 'SET', @userId, @requesthash, @assetTypeId, @filteringDuration
 					end";
 			}
+
+			string TempTableScriptStr = string.Join("\n ", TempTableScriptList.Distinct());
 
 			var baseSQL = $@"
 				{TempTableScriptStr}
