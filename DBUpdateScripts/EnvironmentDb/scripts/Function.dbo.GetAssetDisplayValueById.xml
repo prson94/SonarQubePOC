@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Function.dbo.GetAssetDisplayValueById-v9">
+  <changeSet author="tduric" id="Function.dbo.GetAssetDisplayValueById-v9.1">
   <comment>GOV-20357</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -39,7 +39,7 @@ RETURN
 										left join Asset RI on TL.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ID
 										left join [Group] G on TL.Value = 'Name' and A.Object = 'Group' and G.ID = A.ObjectID
 										left join reporting.Global_resource R on TL.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
-										outer apply (select FT.CounterPrefix + CAST(FCV.Value as nvarchar(255)) from FieldCounterValue FCV where FT.Type = 'Counter' and FCV.AssetId = A.ID)CounterField(FormattedValue)
+										outer apply (select isnull(FT.CounterPrefix,'') + CAST(FCV.Value as nvarchar(255)) from FieldCounterValue FCV where FT.Type = 'Counter' and FCV.AssetId = A.ID)CounterField(FormattedValue)
 								where	RTRIM(TF.value) <> ''
 										and RTRIM(TL.value) <> ''
 								) D
