@@ -28,16 +28,17 @@ export class SiteMenuCategoryComponent extends BaseComponent {
 	@Input() menu: SiteMenu;
 	@Input() expanded: boolean;
 	@Input() imageUrl: string;
-	@Input() countData: any[];
+	@Input() countData: unknown[];
 	@Input() isActive: boolean = false;
-	@Input() customPanelContent: TemplateRef<any>;
-	@Input() emptyHint: TemplateRef<any>;
+	@Input() customPanelContent: TemplateRef<unknown>;
+	@Input() emptyHint: TemplateRef<unknown>;
 
 	@Output() clearClick = new EventEmitter();
 	@Output() activeItemChanged = new EventEmitter();
 
 	@HostListener('document:click', ['$event'])
-	documentClick(event: MouseEvent) {
+	documentClick() {
+		console.log("im working")
 		if (this.menu && this.menu.isActiveItem) {
 			this.activeItemChanged.emit(undefined);
 		}
@@ -70,7 +71,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
 		$event.stopPropagation();
 
 		if (this.menu && this.menu.isActiveItem) {
-			this.activeItemChanged.emit(undefined);
+			this.activeItemChanged.emit(null);
 		} else {
 			this.activeItemChanged.emit({ item: this });
 			this.positionMenu();
