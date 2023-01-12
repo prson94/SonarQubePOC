@@ -39,7 +39,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
 	@HostListener('document:click', ['$event'])
 	documentClick() {
 		if (this.menu && this.menu.isActiveItem) {
-			this.activeItemChanged.emit(undefined);
+			this.activeItemChanged.emit(null);
 		}
 	}
 
