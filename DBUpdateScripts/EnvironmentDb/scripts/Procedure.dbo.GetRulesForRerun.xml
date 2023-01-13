@@ -118,6 +118,7 @@ end
 				AS RelevantUpdateDates(D))AggregatedDates(MaxDate)
 	where 
 	rtrr.ID in (select id from @ruleIds) 
+	and ISNULL(ThenCondition.Object,'') <> 'OrganizationType'
 	and
 	(WasRuleUpdated.Value = 1 or HasNewUsers.Value = 1 or AggregatedDates.MaxDate > coalesce(RTRR.LastRunOn, '1/1/2000'))
 	option(recompile)
