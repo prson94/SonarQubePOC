@@ -16,104 +16,104 @@ import { CompanySettingEnum } from "../../../../models/settings.model";
 declare var CurrentResourceID;
 
 @Component({
-    selector: "d3s-configuration-asset-type-list",
-    templateUrl: './configuration-asset-type-list.component.html',
-    styleUrls: ['./configuration-asset-type-list.component.less'],
+	selector: "d3s-configuration-asset-type-list",
+	templateUrl: './configuration-asset-type-list.component.html',
+	styleUrls: ['./configuration-asset-type-list.component.less'],
 })
 export class ConfigurationAssetTypeListComponent {
-    @Input() assetTypeClass: AssetTypeClass;
+	@Input() assetTypeClass: AssetTypeClass;
 
-    rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
-    defaultPagingOptions = AppConstants.DEFAULT_PAGING_OPTIONS;
+	rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
+	defaultPagingOptions = AppConstants.DEFAULT_PAGING_OPTIONS;
 
-    selectedRow: TreeNode;
+	selectedRow: TreeNode;
 
-    artifactTypes = [];
-    loadingCounter = 0;
-    dataCyPrefix = 'AssetType_';
-    destroy = new Subject<void>();
-    simpleFilterValue = '';
+	artifactTypes = [];
+	loadingCounter = 0;
+	dataCyPrefix = 'AssetType_';
+	destroy = new Subject<void>();
+	simpleFilterValue = '';
 	public tabTitle: string = $localize`Admin`;
 
-    constructor(
-        private assetsService: AssetService,
-        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
-        private router: Router,
-        protected settingsService: CompanySettingsService) {
-    }
+	constructor(
+		private assetsService: AssetService,
+		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
+		private router: Router,
+		protected settingsService: CompanySettingsService) {
+	}
 
-    ngOnChanges() {
-        this.load();
-    }
+	ngOnChanges() {
+		this.load();
+	}
 
-    get sidePanelStorageKey() {
-        return 'configuration_' + this.assetTypeClass + '_' + CurrentResourceID;
-    }
+	get sidePanelStorageKey() {
+		return 'configuration_' + this.assetTypeClass + '_' + CurrentResourceID;
+	}
 
-    async load() {
-        this.loadingCounter++;
-        try {
-            const items = await this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false).toPromise();
+	async load() {
+		this.loadingCounter++;
+		try {
+			const items = await this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false).toPromise();
 			const treeNodes = items.map(AssetCount.ConvertToTreeNode);
 			this.artifactTypes = AssetCount.ListToTree(treeNodes);
-            this.selectedRow = _.first(this.artifactTypes);
-        }
-        finally {
-            this.loadingCounter--;
-        }
-    }
+			this.selectedRow = _.first(this.artifactTypes);
+		}
+		finally {
+			this.loadingCounter--;
+		}
+	}
 
-    ngOnInit() {
-        this.setRowsPerPage();
-        this.numberOfRowsByCategoryService.defineNumberOfRows();
-    }
+	ngOnInit() {
+		this.setRowsPerPage();
+		this.numberOfRowsByCategoryService.defineNumberOfRows();
+	}
 
-    setRowsPerPage(): void {
-        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
-            takeUntil(this.destroy)
-        ).subscribe((rowsPerPage) => {
-            this.rowsPerPage = rowsPerPage['Main'];
-        });
-    }
+	setRowsPerPage(): void {
+		this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+			takeUntil(this.destroy)
+		).subscribe((rowsPerPage) => {
+			this.rowsPerPage = rowsPerPage['Main'];
+		});
+	}
 
-    add(uid?: string) {
-        if (uid) {
-            this.router.navigateByUrl(`${this.baseUrl}/${uid}/new`);
-        } else {
-            this.router.navigateByUrl(`${this.baseUrl}/new`);
-        }
-    }
+	add(uid?: string) {
+		if (uid) {
+			this.router.navigateByUrl(`${this.baseUrl}/${uid}/new`);
+		} else {
+			this.router.navigateByUrl(`${this.baseUrl}/new`);
+		}
+	}
 
-    edit(uid: string) {
-        this.router.navigateByUrl(`${this.baseUrl}/${uid}/edit`);
-    }
+	edit(uid: string) {
+		this.router.navigateByUrl(`${this.baseUrl}/${uid}/edit`);
+	}
 
-    remove(uid: string) {
-        this.router.navigateByUrl(`${this.baseUrl}/${uid}/delete`);
-    }
+	remove(uid: string) {
+		this.router.navigateByUrl(`${this.baseUrl}/${uid}/delete`);
+	}
 
-    open(uid: string) {
-        this.router.navigateByUrl(`${this.baseUrl}/${uid}/fields`);
-    }
+	open(uid: string) {
+		this.router.navigateByUrl(`${this.baseUrl}/${uid}/fields`);
+	}
 
-    get baseUrl() {
-        return `/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`;
-    }
+	get baseUrl() {
+		return `/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`;
+	}
 
-    get hasAssetTypeChildsFeature() {
-        return featuresToTypeClasses.assetTypeChilds.includes(this.assetTypeClass);
-    }
+	get hasAssetTypeChildsFeature() {
+		return featuresToTypeClasses.assetTypeChilds.includes(this.assetTypeClass);
+	}
 
-    get addNewAssetTypeWarning() {
-        const governanceRoleIsSet = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid).GuidSetting.Value
-            !== '00000000-0000-0000-0000-000000000000';
+	get addNewAssetTypeWarning() {
+		const governanceRoleIsSet = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid).GuidSetting.Value
+			!== '00000000-0000-0000-0000-000000000000';
 
-        if (this.assetTypeClass === AssetTypeClass.DiagramAsset && !governanceRoleIsSet) {
-            return $localize`Cannot add new Diagram Asset Type before Governance Role is set.`;
-        }
+		if (this.assetTypeClass === AssetTypeClass.DiagramAsset && !governanceRoleIsSet) {
+			return $localize`Cannot add new Diagram Asset Type before Governance Role is set.`;
+		}
 
-        return null;
-    }
+		return null;
+	}
 
 	get hasMaxDepthColumn() {
 		return this.assetTypeClass === AssetTypeClass.Model || this.assetTypeClass === AssetTypeClass.Policy;
@@ -121,5 +121,26 @@ export class ConfigurationAssetTypeListComponent {
 
 	get canAddHierarchy() {
 		return this.assetTypeClass === AssetTypeClass.BusinessAsset || this.assetTypeClass === AssetTypeClass.TechnicalAsset;
+	}
+
+	//https://jira.syncsort.com/browse/GOV-20725
+	treeTogglerClicked(item) {
+		const element = document.getElementsByClassName("tree-scroll-workaround");
+		if (element.length > 0) {
+			const wrapper = element[0].parentElement;
+			const currentScrollTopLocation = wrapper.scrollTop;
+			wrapper.onscroll = (ev: Event) => {
+				//set next onscroll event to preserve current scroll location to avoid jumping at the top of tree grid
+				try {
+					wrapper.scrollTop = currentScrollTopLocation;
+				}
+				finally {
+					//immediately reset onscroll event to work as before
+					wrapper.onscroll = (ev: Event) => {
+						return true;
+					}
+				}
+			};
+		}
 	}
 }
