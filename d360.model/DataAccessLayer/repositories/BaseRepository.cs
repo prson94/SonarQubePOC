@@ -542,6 +542,9 @@ namespace d360.model.DataAccessLayer.repositories
 									 break;
 							 }
 
+							 temptableScript += @$"
+								create index ix_TempGraphFwd on {temptablename} (SourceAssetID);";
+
 							 if (!TempTableNameList.Contains(temptablename))
 							 {
 								 TempTableNameList.Add(temptablename);
