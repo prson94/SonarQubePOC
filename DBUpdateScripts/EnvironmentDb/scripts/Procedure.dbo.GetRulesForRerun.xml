@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Procedure.dbo.GetRulesForRerun-v1.3">
+  <changeSet author="tduric" id="Procedure.dbo.GetRulesForRerun-v1.4">
   <comment>GOV-20738</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -32,7 +32,7 @@ begin
 	select @ruleId
 end
 
-	--find all field updates
+	--find all field updates on when conditions
 	declare @fieldUpdates table (FieldTypeID int, ResponsibilityRuleId int, MaxDate datetime)
 	insert into @fieldUpdates (FieldTypeID, ResponsibilityRuleId)
 	select	WF.FieldTypeID, R.ID
@@ -42,7 +42,17 @@ end
 					CheckType nvarchar(1) '$.CheckType',
 					FieldTypeID int '$.FieldTypeID'
 				) WF
-	where	WF.CheckType = 'F'
+	where	WF.CheckType = 'F' and R.ID in (select id from @ruleIds) 
+
+	--find all field updates on then conditions
+	insert into @fieldUpdates (FieldTypeID, ResponsibilityRuleId)
+	select	WF.FieldTypeID, R.ID
+	from	ResponsibilityTypeRelationRule R
+			cross apply OPENJSON(R.Definition, '$.Then.Conditions') D
+			cross apply OPENJSON(D.value) with (
+					FieldTypeID int '$.FieldTypeID'
+				) WF
+	where WF.FieldTypeID is not null and R.ID in (select id from @ruleIds)
 
 	drop table if exists #fieldTypeUpdatesMap
 	;with cte as (select distinct FieldTypeId from @fieldUpdates)
@@ -69,7 +79,7 @@ end
 					IntersectTypeID int '$.IntersectTypeID'
 					
 				) WF
-	where	 WF.CheckType = 'R'
+	where	 WF.CheckType = 'R' and R.ID in (select id from @ruleIds)
 
 	drop table if exists #relationshipUpdatesMap
 	;with cte as (select distinct IntersectTypeID from @relationshipUpdates)
@@ -89,10 +99,10 @@ end
 		RTRR.*
 	from ResponsibilityTypeRelationRule RTRR
 		inner join AssetType AT on AT.Object = RTRR.Object AND AT.ObjectID = RTRR.ObjectID
-		outer apply (select case when RTRR.UpdatedOn > RTRR.LastRunOn then 1 else 0 end as Value)WasRuleUpdated
+		outer apply (select case when RTRR.UpdatedOn > coalesce(RTRR.LastRunOn, '1/1/2000') then 1 else 0 end as Value)WasRuleUpdated
 		outer apply (select IIF(count(1) > 0, 1, 0)
 			from	reporting.Global_Resource
-			where	CreatedOn > RTRR.LastRunOn)HasNewUsers(Value)
+			where	CreatedOn > coalesce(RTRR.LastRunOn, '1/1/2000'))HasNewUsers(Value)
 		outer apply (select	max(A.CreatedOn), max(A.UpdatedOn)
 			from	Asset A
 			Where AssetTypeID = AT.Id)AssetMax(AssetMaxCreatedOn, AssetMaxUpdatedOn)
@@ -108,8 +118,9 @@ end
 				AS RelevantUpdateDates(D))AggregatedDates(MaxDate)
 	where 
 	rtrr.ID in (select id from @ruleIds) 
+	and ISNULL(ThenCondition.Object,'') <> 'OrganizationType'
 	and
-	(WasRuleUpdated.Value = 1 or HasNewUsers.Value = 1 or AggregatedDates.MaxDate > RTRR.LastRunOn)
+	(WasRuleUpdated.Value = 1 or HasNewUsers.Value = 1 or AggregatedDates.MaxDate > coalesce(RTRR.LastRunOn, '1/1/2000'))
 	option(recompile)
 
 end
