@@ -121,11 +121,17 @@
   <data name="ActionCreatedMsg" xml:space="preserve">
     <value>Actie gemaakt</value>
   </data>
+  <data name="ActionTypeDeleted" xml:space="preserve">
+    <value>Actietype is verwijderd</value>
+  </data>
   <data name="ActionTypeNotFound" xml:space="preserve">
     <value>Actietype niet gevonden</value>
   </data>
   <data name="ActionTypeUidIsNotValid" xml:space="preserve">
     <value>Kan actietype met UID {0} niet vinden.</value>
+  </data>
+  <data name="ActionTypeUpdated" xml:space="preserve">
+    <value>Actietype is bijgewerkt.</value>
   </data>
   <data name="ActionUidNotFound" xml:space="preserve">
     <value>Kan actie met UID {0} niet vinden.</value>

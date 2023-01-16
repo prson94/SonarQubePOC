@@ -116,7 +116,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AssetAssetTypeNotFound" xml:space="preserve">
-    <value>Asset oder AsssetType für GUID [{0}] nicht gefunden</value>
+    <value>Asset oder AssetType für GUID [{0}] nicht gefunden</value>
   </data>
   <data name="AssetCount" xml:space="preserve">
     <value>AssetCount</value>
