@@ -922,21 +922,21 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	}
 
 	//https://jira.syncsort.com/browse/GOV-20725
-	treeTogglerClicked(item) {
+	treeTogglerClicked() {
 		const element = document.getElementsByClassName("tree-scroll-workaround");
 		if (element.length > 0) {
 			const wrapper = element[0].parentElement;
 			const currentScrollTopLocation = wrapper.scrollTop;
-			wrapper.onscroll = (ev: Event) => {
+			wrapper.onscroll = () => {
 				//set next onscroll event to preserve current scroll location to avoid jumping at the top of tree grid
 				try {
 					wrapper.scrollTop = currentScrollTopLocation;
 				}
 				finally {
 					//immediately reset onscroll event to work as before
-					wrapper.onscroll = (ev: Event) => {
+					wrapper.onscroll = () => {
 						return true;
-					}
+					};
 				}
 			};
 		}

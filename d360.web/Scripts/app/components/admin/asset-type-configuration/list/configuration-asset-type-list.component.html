@@ -68,7 +68,7 @@
 								[igDataCy]="(tabTitle | replaceString : ' ' : '_') + '_Row_' + item.uid">
 								<td>
 									<p-treeTableToggler *ngIf="hasAssetTypeChildsFeature"
-										(click)="treeTogglerClicked(item)"
+										(click)="treeTogglerClicked()"
 										[rowNode]="rowNode"
 										[igDataCy]="dataCyPrefix + item.AssetUid + '_Toggler'"
 										style="margin-right: 8px;"></p-treeTableToggler>
