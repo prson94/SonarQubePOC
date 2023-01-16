@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.CheckDisplayValues-v3">
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.CheckDisplayValues-v4">
   <comment>GOV-20086</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -47,11 +47,11 @@ BEGIN
 		
 		drop table if exists #TempClassAssetTypeIDs;
 
-		create table #TempClassAssetTypeIDs (AssetTypeID int,TFINDEX int,TLINDEX int,[value] nvarchar(max),FieldTypeID int, index idx_tempdispvalue clustered(AssetTypeID));
+		create table #TempClassAssetTypeIDs (AssetTypeID int,TFINDEX int,TLINDEX int,[value] nvarchar(max),FieldTypeID int,CounterPrefix nvarchar(50),[Type] [varchar](25), index idx_tempdispvalue clustered(AssetTypeID));
 
 		insert into #TempClassAssetTypeIDs
 		select 
-		Att.ID, TF.[index] TFINDEX, TL.[index] TLINDEX, TL.[value], FT.ID FieldTypeID
+		Att.ID, TF.[index] TFINDEX, TL.[index] TLINDEX, TL.[value], FT.ID FieldTypeID,isnull(FT.CounterPrefix,'') CounterPrefix,FT.Type
 		from AssetType Att
 		cross apply [utility].[OrderedSplit](replace(Att.DisplayFormat, '{', '|'), '|') TF
 		cross apply [utility].[OrderedSplit](replace(TF.[value], '}', '|'), '|') TL
@@ -78,17 +78,21 @@ BEGIN
 				string_agg(results.[value],'') as DisplayValue
 				from
 				(select	top 100
-				coalesce(D.FormattedValue, D.value) as [value]
+				coalesce(D.FormattedValue, D.CounterFormattedValue, D.value) as [value]
 				from (
 				select	TL.value,
 				coalesce(F.FormattedValue, case when TL.Value = 'Code' then A.Code else null end) as FormattedValue,
-				TL.TFINDEX as [TokenIndex]
+				CounterField.FormattedValue as CounterFormattedValue,
+				TL.TFINDEX as [TokenIndex],TL.TLINDEX [TokenIndexL]
 				from	#TempClassAssetTypeIDs TL
 				left join Field F on F.FieldTypeID = TL.FieldTypeID and F.AssetID = A.ID and TL.FieldTypeID is not null
+				outer apply (select TL.CounterPrefix + CAST(FCV.Value as nvarchar(255)) 
+							 from FieldCounterValue FCV 
+							 where FCV.AssetId = A.ID and FCV.FieldTypeID = TL.FieldTypeID and TL.Type = 'Counter')CounterField(FormattedValue)
 				where TL.AssetTypeID = att.ID
 				and RTRIM(TL.value) <> ''
 				) D
-				order by D.TokenIndex) results ) ADV
+				order by D.TokenIndex,D.TokenIndexL) results ) ADV
 				Where  att.Class = @AssetClass and ADV.DisplayValue is not null
 				option (recompile);
 			end
@@ -103,18 +107,22 @@ BEGIN
 				string_agg(results.[value],'') as DisplayValue
 				from
 				(select	top 100
-				coalesce(D.FormattedValue, D.value) as [value]
+				coalesce(D.FormattedValue, D.CounterFormattedValue, D.value) as [value]
 				from (
 				select	TL.value,
 				coalesce(F.FormattedValue, G.Name) as FormattedValue,
-				TL.TFINDEX as [TokenIndex]
+				CounterField.FormattedValue as CounterFormattedValue,
+				TL.TFINDEX as [TokenIndex],TL.TLINDEX [TokenIndexL]
 				from	#TempClassAssetTypeIDs TL
 				left join Field F on F.FieldTypeID = TL.FieldTypeID and F.AssetID = A.ID and TL.FieldTypeID is not null
 				left join [Group] G on TL.Value = 'Name' and A.Object = 'Group' and G.ID = A.ObjectID
+				outer apply (select TL.CounterPrefix + CAST(FCV.Value as nvarchar(255)) 
+							 from FieldCounterValue FCV 
+							 where FCV.AssetId = A.ID and FCV.FieldTypeID = TL.FieldTypeID and TL.Type = 'Counter')CounterField(FormattedValue)
 				where TL.AssetTypeID = att.ID
 				and RTRIM(TL.value) <> ''
 				) D
-				order by D.TokenIndex) results ) ADV
+				order by D.TokenIndex,D.TokenIndexL) results ) ADV
 				Where  att.Class = @AssetClass and ADV.DisplayValue is not null
 				option (recompile);
 			end
@@ -129,18 +137,22 @@ BEGIN
 				string_agg(results.[value],'') as DisplayValue
 				from
 				(select	top 100
-				coalesce(D.FormattedValue, D.value) as [value]
+				coalesce(D.FormattedValue, D.CounterFormattedValue, D.value) as [value]
 				from (
 				select	TL.value,
 				coalesce(case when TL.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end,F.FormattedValue) as FormattedValue,
-				TL.TFINDEX as [TokenIndex]
+				CounterField.FormattedValue as CounterFormattedValue,
+				TL.TFINDEX as [TokenIndex],TL.TLINDEX [TokenIndexL]
 				from	#TempClassAssetTypeIDs TL
 				left join Field F on F.FieldTypeID = TL.FieldTypeID and F.AssetID = A.ID and TL.FieldTypeID is not null
 				left join reporting.Global_resource R on TL.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
+				outer apply (select TL.CounterPrefix + CAST(FCV.Value as nvarchar(255)) 
+							 from FieldCounterValue FCV 
+							 where FCV.AssetId = A.ID and FCV.FieldTypeID = TL.FieldTypeID and TL.Type = 'Counter')CounterField(FormattedValue)
 				where TL.AssetTypeID = att.ID
 				and RTRIM(TL.value) <> ''
 				) D
-				order by D.TokenIndex) results ) ADV
+				order by D.TokenIndex,D.TokenIndexL) results ) ADV
 				Where  att.Class = @AssetClass and ADV.DisplayValue is not null
 				option (recompile);
 			end
@@ -155,17 +167,21 @@ BEGIN
 				string_agg(results.[value],'') as DisplayValue
 				from
 				(select	top 100
-				coalesce(D.FormattedValue, D.value) as [value]
+				coalesce(D.FormattedValue, D.CounterFormattedValue, D.value) as [value]
 				from (
 				select	TL.value,
 				F.FormattedValue as FormattedValue,
-				TL.TFINDEX as [TokenIndex]
+				CounterField.FormattedValue as CounterFormattedValue,
+				TL.TFINDEX as [TokenIndex],TL.TLINDEX [TokenIndexL]
 				from	#TempClassAssetTypeIDs TL
 				left join Field F on F.FieldTypeID = TL.FieldTypeID and F.AssetID = A.ID and TL.FieldTypeID is not null and F.AssetID is not null
+				outer apply (select TL.CounterPrefix + CAST(FCV.Value as nvarchar(255)) 
+							 from FieldCounterValue FCV 
+							 where FCV.AssetId = A.ID and FCV.FieldTypeID = TL.FieldTypeID and TL.Type = 'Counter')CounterField(FormattedValue)
 				where TL.AssetTypeID = att.ID
 				and RTRIM(TL.value) <> ''
 				) D
-				order by D.TokenIndex) results ) ADV
+				order by D.TokenIndex,D.TokenIndexL) results ) ADV
 				Where  att.Class = @AssetClass and ADV.DisplayValue is not null
 				option (recompile);
 			end
