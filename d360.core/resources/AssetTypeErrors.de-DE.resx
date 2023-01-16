@@ -152,7 +152,7 @@
     <value>Asset-Typ anhand von [Class] (angegeben) nicht gefunden.</value>
   </data>
   <data name="ErrorNameTaken" xml:space="preserve">
-    <value>Der Name ist vergeben. Geben Sie einen anderen Namen an.</value>
+    <value>Der Name ist vergeben. Bitte anderen Namen eingeben.</value>
   </data>
   <data name="NotFoundBasedOnUid" xml:space="preserve">
     <value>Asset-Typ anhand von [Uid] (angegeben) nicht gefunden.</value>
