@@ -42,8 +42,7 @@
 						[(selection)]="selectedRow"
 						(onPage)="numberOfRowsByCategoryService.onPage($event)"
 						filterMode="strict"
-						selectionMode="single"
-					    tableStyleClass="tree-scroll-workaround">
+						selectionMode="single">
 						<ng-template pTemplate="header">
 							<tr>
 								<th [ttSortableColumn]="'name'">
@@ -68,7 +67,6 @@
 								[igDataCy]="(tabTitle | replaceString : ' ' : '_') + '_Row_' + item.uid">
 								<td>
 									<p-treeTableToggler *ngIf="hasAssetTypeChildsFeature"
-										(click)="treeTogglerClicked()"
 										[rowNode]="rowNode"
 										[igDataCy]="dataCyPrefix + item.AssetUid + '_Toggler'"
 										style="margin-right: 8px;"></p-treeTableToggler>

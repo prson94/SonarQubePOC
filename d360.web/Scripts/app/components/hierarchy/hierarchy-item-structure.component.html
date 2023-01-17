@@ -91,7 +91,6 @@
                                  [selection]="selected"
                                  (selectionChange)="selectAsset($event)"
                                  styleClass="breadcrumbTree treetable"
-                                 tableStyleClass="tree-scroll-workaround"
                                  [style]="{'line-height':'25px'}"
                                  [globalFilterFields]="filterColumns"
                                  dataKey="AssetUid"
@@ -127,7 +126,6 @@
                                     <td [ngClass]="{'no-text-overflow': column.fieldType !== 'Text' || (column.fieldType === 'Text' && i === linkColumnIndex)}"
                                         [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
                                         <p-treeTableToggler [rowNode]="rowNode"
-                                                            (click)="treeTogglerClicked()"
                                                             style="margin-right: 8px;"
                                                             [igDataCy]="'Hierarchy_Toggler_' + item.AssetUid"
                                                             *ngIf="i === 0"></p-treeTableToggler>
