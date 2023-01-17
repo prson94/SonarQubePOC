@@ -1875,9 +1875,33 @@ namespace d360.web.Controllers.Services
 
 							@event.Object = model.Event.Object;
 							@event.ObjectID = model.Event.ObjectID;
-							@event.AssetTypeID = model.Event.AssetTypeID;
-							@event.IntersectTypeID = model.Event.IntersectTypeID;
-							@event.IssueTypeID = model.Event.IssueTypeID;
+
+							switch (@event.Object)
+							{
+								case "IntersectType":
+									@event.IntersectTypeID = @event.ObjectID;
+									@event.AssetTypeID = null;
+									@event.IssueTypeID = null;
+									break;
+								case "IssueType":
+									@event.IssueTypeID = @event.ObjectID;
+									@event.AssetTypeID = null;
+									@event.IntersectTypeID = null;
+									break;
+								default:
+									var assetType = Company.AssetTypes.SingleOrDefault(a => a.Object == @event.Object && a.ObjectID == @event.ObjectID);
+									@event.IntersectTypeID = null;
+									@event.IssueTypeID = null;
+
+									if (assetType != null)
+									{
+										@event.AssetTypeID = assetType.ID;
+									}
+
+									assetType = null;
+									break;
+							}
+
 							@event.TypeID = model.Type.ID;
 							@event.ChangeType = model.Event.ChangeType;
 
