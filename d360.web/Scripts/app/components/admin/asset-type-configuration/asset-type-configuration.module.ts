@@ -53,6 +53,8 @@ import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configu
 import { AdminLevelListComponent } from './levels/admin-level-list.component';
 import { AdminLevelEditorComponent } from './levels/admin-level-editor.component';
 import { TableModule } from 'primeng/table';
+import { SharedDeleteFormModule } from '../../shared/delete.form';
+import { TilesModule } from '../../shared/tiles/tiles.module';
 import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
 import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 
@@ -92,6 +94,8 @@ import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.mod
         PortalsModule,
 		FormsModule,
 		TableModule,
+		SharedDeleteFormModule,
+		TilesModule,
 		IgMessageBoxModule,
 		AssetPreviewModule
     ],

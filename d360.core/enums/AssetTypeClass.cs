@@ -58,8 +58,9 @@ namespace d360.core.enums
         Reference = 9,
 		[
             Name("User"),
-            Description("User asset.")
-        ]
+            Description("User asset."),
+			AllowCommentsOnAsset
+		]
         User = 11,
 
         [

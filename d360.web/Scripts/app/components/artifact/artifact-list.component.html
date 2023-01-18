@@ -75,7 +75,7 @@
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen && selection != null && !sidePanelLoading">
                     <ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">
-                        <data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondaryPanelOpen($event)"></data-profile>
+                        <data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondaryPanelOpen($event)" [assetData]="selection"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
                         <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag"

@@ -114,8 +114,14 @@ namespace d360.core.entities
         [DataMember]
         public long? UniqueCount { get; set; }
 
+		[DataMember]
+		public long? PopularityCount { get; set; }
 
-        [ForeignKey("AssetDataProfileID"), IgnoreDataMember]
+		[DataMember]
+		public bool? IsAuthorizedForPopularity { get; set; }
+
+
+		[ForeignKey("AssetDataProfileID"), IgnoreDataMember]
         public virtual ICollection<AssetDataProfileSample> AssetDataProfileSamples { get; set; }
 	}
 
@@ -312,7 +318,13 @@ namespace d360.core.entities
         [StringLength(1, ErrorMessage = "{0} cannot be more than {1} characters.")]
         public string DecimalSeparator { get; set; }
 
-        public DataProfileModel() { }
+		[DataMember(Name = "popularityCount")]
+		public long? PopularityCount { get; set; }
+
+		[DataMember(Name = "isAuthorizedForPopularity")]
+		public bool? IsAuthorizedForPopularity { get; set; }
+
+		public DataProfileModel() { }
 
         public DataProfileModel(Guid uid, AssetDataProfile profile, List<AssetDataProfileSample> samples, List<AssetDataProfileSampleJson> details)
         {
@@ -350,6 +362,8 @@ namespace d360.core.entities
             type = profile.Type;
             typeQualifier = profile.TypeQualifier;
             uniqueCount = profile.UniqueCount;
+			PopularityCount = profile.PopularityCount;	
+			IsAuthorizedForPopularity = profile.IsAuthorizedForPopularity;
 
 
             //populate sample details
@@ -357,11 +371,11 @@ namespace d360.core.entities
             {
                 var results = samples
                     .Where((s) => s.SampleType.Equals(key, StringComparison.InvariantCultureIgnoreCase))
-                    .Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) })
+                    .Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = double.Parse(sd.Value) })
                     .ToList();
 
                 return results.Any() ? results : null;
-            };
+            };			
 
 			shapesDetail = getSamplesByType("shapesdetail");
             cardinalityDetail = getSamplesByType("cardinalityDetail");
@@ -404,7 +418,7 @@ namespace d360.core.entities
     {
         public string key { get; set; }
 
-        public int count { get; set; }
+        public double count { get; set; }
     }
 
 	public class AssetDataProfileSampleJson

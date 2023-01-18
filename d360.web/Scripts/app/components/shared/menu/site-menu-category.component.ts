@@ -1,13 +1,13 @@
 ﻿import {
-    ChangeDetectionStrategy,
-    Component,
-    ElementRef,
-    EventEmitter,
-    HostListener,
-    Input,
-    Output,
-    TemplateRef,
-    ViewChild
+	ChangeDetectionStrategy,
+	Component,
+	ElementRef,
+	EventEmitter,
+	HostListener,
+	Input,
+	Output,
+	TemplateRef,
+	ViewChild
 } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { SiteMenu, SiteNav } from '../../../models/site-menu.model';
@@ -15,100 +15,104 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { Router } from '@angular/router';
 
 @Component({
-    selector: 'd3s-site-menu-category',
-    templateUrl: 'site-menu-category.component.html',
-    styleUrls: ['./site-menu-category.component.less'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+	selector: 'd3s-site-menu-category',
+	templateUrl: 'site-menu-category.component.html',
+	styleUrls: ['./site-menu-category.component.less'],
+	changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class SiteMenuCategoryComponent extends BaseComponent {
-    @Input() url: string;
-    @Input() title: string;
-    @Input() rootIconName: string;
-    @Input() menu: SiteMenu;
-    @Input() expanded: boolean;
-    @Input() imageUrl: string;
-    @Input() countData: any[];
-    @Input() isActive: boolean = false;
-    @Input() customPanelContent: TemplateRef<any>;
-    @Input() emptyHint: TemplateRef<any>;
+	@Input() url: string;
+	@Input() title: string;
+	@Input() rootIconName: string;
+	@Input() menu: SiteMenu;
+	@Input() expanded: boolean;
+	@Input() imageUrl: string;
+	@Input() countData: unknown[];
+	@Input() isActive: boolean = false;
+	@Input() customPanelContent: TemplateRef<unknown>;
+	@Input() emptyHint: TemplateRef<unknown>;
 
-    @Output() clearClick = new EventEmitter();
-    @Output() activeItemChanged = new EventEmitter();
+	@Output() clearClick = new EventEmitter();
+	@Output() activeItemChanged = new EventEmitter();
 
-    @HostListener('document:click', ['$event'])
-    documentClick(event: MouseEvent) {
-        if (this.menu && this.menu.isActiveItem) {
-            this.activeItemChanged.emit(undefined);
-        }
-    }
-    
-    isCaretHovered = false;
+	@HostListener('document:click', ['$event'])
+	documentClick() {
+		if (this.menu && this.menu.isActiveItem) {
+			this.activeItemChanged.emit(null);
+		}
+	}
 
-    constructor(
-        protected settingsService: CompanySettingsService,
-        private router: Router) {
-        super(settingsService);
-    }
+	isCaretHovered = false;
 
-    @ViewChild('item', { static: false }) item: ElementRef<HTMLLIElement>;
+	constructor(
+		protected settingsService: CompanySettingsService,
+		private router: Router) {
+		super(settingsService);
+	}
 
-    getDataCyAttribute() {
-        return `PrimaryNav_${this.title}`;
-    }
+	@ViewChild('item', { static: false }) item: ElementRef<HTMLLIElement>;
 
-    navigateToUrl(url) {
-        if (url) {
-            this.router.navigateByUrl(url);
-        }
-    }
+	getDataCyAttribute() {
+		return `PrimaryNav_${this.title}`;
+	}
 
-    onCategoryExpand($event: MouseEvent) {
-        $event.stopPropagation();
-        if (this.menu && this.menu.isActiveItem) {
-            this.activeItemChanged.emit(undefined);
-        } else {
-            this.activeItemChanged.emit({ item: this });
-            this.positionMenu();
-        }
-    }
+	navigateToUrl(url, $event: MouseEvent) {
+		if (url) {
+			this.router.navigateByUrl(url);
+		}
+		else if (!this.expanded) {
+			this.onCategoryExpand($event);
+		}
+	}
 
-    positionMenu() {
-        if (!this.menu || !this.menu.NavigationItems) {
-            return;
-        }
+	onCategoryExpand($event: MouseEvent) {
+		$event.stopPropagation();
 
-        const submenu = this.item.nativeElement.children[0].nextElementSibling as HTMLDivElement;
-        if (!submenu) {
-            return;
-        }
+		if (this.menu && this.menu.isActiveItem) {
+			this.activeItemChanged.emit(null);
+		} else {
+			this.activeItemChanged.emit({ item: this });
+			this.positionMenu();
+		}
+	}
 
-        this.menu.isActiveItem = true;
-        submenu.style.zIndex = (SiteNav.zindex + 1).toString();
-        submenu.style.left = this.item.nativeElement.offsetWidth + 'px';
+	positionMenu() {
+		if (!this.menu || !this.menu.NavigationItems) {
+			return;
+		}
 
-        this.repositionMenuToFit();
-        window.setTimeout(() => {
-            this.repositionMenuToFit();
-        }, 150);
-    }
+		const submenu = this.item.nativeElement.children[0].nextElementSibling as HTMLDivElement;
+		if (!submenu) {
+			return;
+		}
 
-    stopNavigation(event) {
-        event.stopPropagation();
-    }
+		this.menu.isActiveItem = true;
+		submenu.style.zIndex = (SiteNav.zindex + 1).toString();
+		submenu.style.left = this.item.nativeElement.offsetWidth + 'px';
 
-    repositionMenuToFit() {
-        const wantedPanelTop = this.item.nativeElement.getBoundingClientRect().top;
+		this.repositionMenuToFit();
+		window.setTimeout(() => {
+			this.repositionMenuToFit();
+		}, 150);
+	}
 
-        const panel = this.item.nativeElement.children[0].nextElementSibling as HTMLDivElement;
-        const panelRect = panel?.getBoundingClientRect();
+	stopNavigation(event) {
+		event.stopPropagation();
+	}
 
-        const panelBottomEstimate = wantedPanelTop + panelRect?.height;
-        const overflow = Math.max(0, panelBottomEstimate - window.innerHeight);
-        const newPanelTop = Math.max(0, wantedPanelTop - overflow);
+	repositionMenuToFit() {
+		const wantedPanelTop = this.item.nativeElement.getBoundingClientRect().top;
 
-        if (panel) {
-            panel.style.top = newPanelTop + 'px';
-        }
-    }
+		const panel = this.item.nativeElement.children[0].nextElementSibling as HTMLDivElement;
+		const panelRect = panel?.getBoundingClientRect();
+
+		const panelBottomEstimate = wantedPanelTop + panelRect?.height;
+		const overflow = Math.max(0, panelBottomEstimate - window.innerHeight);
+		const newPanelTop = Math.max(0, wantedPanelTop - overflow);
+
+		if (panel) {
+			panel.style.top = newPanelTop + 'px';
+		}
+	}
 }

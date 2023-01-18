@@ -960,9 +960,9 @@ namespace d360.web.Controllers.Services
 			desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), Company.CurrentCompanyDomain, itemStep, true, false, false);
 			Guid? ObjectUid = null;
 
-			if(itemStep.Item.Object == SystemObjects.Artifact.ToString())
+			if(itemStep.Item.Object == SystemObjects.Artifact.ToString() || itemStep.Item.Object == SystemObjects.Taxonomy.ToString() || itemStep.Item.Object == SystemObjects.Policy.ToString())
 			{
-				ObjectUid = Company.Assets.Where(a => a.Object == SystemObjects.Artifact.ToString() && a.ObjectID == itemStep.Item.ObjectID).FirstOrDefault().uid;
+				ObjectUid = Company.Assets.Where(a => a.Object == itemStep.Item.Object && a.ObjectID == itemStep.Item.ObjectID).FirstOrDefault().uid;
 			}
 
 			//parse the xml to get the form info
@@ -1875,9 +1875,33 @@ namespace d360.web.Controllers.Services
 
 							@event.Object = model.Event.Object;
 							@event.ObjectID = model.Event.ObjectID;
-							@event.AssetTypeID = model.Event.AssetTypeID;
-							@event.IntersectTypeID = model.Event.IntersectTypeID;
-							@event.IssueTypeID = model.Event.IssueTypeID;
+
+							switch (@event.Object)
+							{
+								case "IntersectType":
+									@event.IntersectTypeID = @event.ObjectID;
+									@event.AssetTypeID = null;
+									@event.IssueTypeID = null;
+									break;
+								case "IssueType":
+									@event.IssueTypeID = @event.ObjectID;
+									@event.AssetTypeID = null;
+									@event.IntersectTypeID = null;
+									break;
+								default:
+									var assetType = Company.AssetTypes.SingleOrDefault(a => a.Object == @event.Object && a.ObjectID == @event.ObjectID);
+									@event.IntersectTypeID = null;
+									@event.IssueTypeID = null;
+
+									if (assetType != null)
+									{
+										@event.AssetTypeID = assetType.ID;
+									}
+
+									assetType = null;
+									break;
+							}
+
 							@event.TypeID = model.Type.ID;
 							@event.ChangeType = model.Event.ChangeType;
 

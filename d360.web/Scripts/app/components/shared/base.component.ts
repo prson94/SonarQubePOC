@@ -24,7 +24,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
 import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';
-import { CompanySettingEnum } from '../../models/settings.model';
+import { AppSettingsEnum, CompanySettingEnum } from '../../models/settings.model';
 import { AppConstants } from '../../static/constants';
 import { UsageAction, UsageBrowser } from '../../models/web-analytics-activity.model';
 
@@ -805,7 +805,7 @@ export class BaseComponent {
 				label: root.DisplayValue,
 				expanded: true,
 				data: {
-					id: root.ID
+					id: root.Uid
 				},
 				children: (includeChildren ? this.buildTreeNodeArrayBase(inputArr, root.ID) : null) // recursively find its children
 			});
@@ -1387,13 +1387,8 @@ export class BaseComponent {
 		this.breadcrumbsService.clearBreadcrumbs();
 
 		this.breadcrumbsService.breadcrumbTreeSource$.subscribe(
-			(id) => {
-				if (objectName.toLowerCase() === 'policy') {
-					this.breadcrumbsService.reRouteFromBreadcrumbs(`/${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
-				}
-				if (objectName.toLowerCase() === 'taxonomy') {
-					this.breadcrumbsService.reRouteFromBreadcrumbs(`/${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
-				}
+			(uid) => {
+				this.breadcrumbsService.reRouteFromBreadcrumbs(SiteUrlHelpers.getAssetUrl(uid.toString()));
 			}
 		);
 
@@ -1534,5 +1529,17 @@ export class BaseComponent {
 	}
 	public get referenceListUid(): string {
 		return "0000000a-0000-0000-0000-000000000009";
+	}
+
+	public getHelpUrl(helpPath: string): string {
+		const helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+		const helpLocale: string = "en-US";
+
+		if (helpPath.charAt(0) === "/") {
+			helpPath = helpPath.slice(1);
+		}
+		const url = `${helpBaseUri}${helpLocale}/${helpPath}`;
+		console.log(helpBaseUri, helpLocale, helpPath, url);
+		return url;
 	}
 }

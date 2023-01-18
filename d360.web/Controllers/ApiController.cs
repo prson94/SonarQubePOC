@@ -1820,8 +1820,6 @@ namespace d360.web.Controllers
 					left join AssetDisplayValue adv on adv.AssetID = a.ID
 					where a.uid in @assets", new { assets = objectsToCheckAccesFor.Select(x=> x.Uid).ToList() }).ToList();
 
-			bool displayPath = relationshipAssetInfo.GroupBy(x => x.DisplayValue).Any(x => x.Count() > 1);
-
 			foreach (var intersect in intersects)
 			{
 				var isSubject = intersect.Subject == sType && intersect.SubjectID == id;
@@ -1831,7 +1829,7 @@ namespace d360.web.Controllers
 				var uid = isSubject ? intersect.ObjectUid : intersect.SubjectUid;
 
 				var assetInfo = relationshipAssetInfo.Where(x => x.Uid == uid).FirstOrDefault();
-				var intersectDisplayValue = displayPath ? assetInfo?.DisplayPath : assetInfo?.DisplayValue;
+				var intersectDisplayValue = assetInfo?.DisplayPath ?? assetInfo?.DisplayValue;
 
 				if (objectsWithoutReadAccess != null && objectsWithoutReadAccess.Any(x => x.Object == obj && x.ObjectID == objID))
 				{

@@ -8,7 +8,7 @@
             <div class="input-wrapper">
                 <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
                 <div *ngSwitchCase="'Text'" style="width:100%;">
-                    <input igInput 
+                    <input igInput
                            igSize="full"
                            [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
                            [formControlName]="field.FieldName"
@@ -131,29 +131,29 @@
                                            [required]="field.Required"
                                            [readonly]="true"
                                            [disabled]="isLookupFieldDisabled"
-										   placeholder="{{ lookupSelectPlaceholder }}"
+                                           placeholder="{{ lookupSelectPlaceholder }}"
                                            [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
                                            display="chip">
-								<ng-template pTemplate="selectedItems" let-items>
-									<ng-container *ngIf="dropdown.value && dropdown.value.length !== 0; else placeholder">
-										<div class="p-multiselect-token" *ngFor="let item of items">
-											<span class="p-multiselect-token-label">
-												{{ (item | findMultiselectOption: field.Items).label }}
-											</span>
-											<asset-editor-field-info *ngIf="useSidePanel && item"
-																	 [object]="{objectID: item.toLowerCase(), fieldName: field.FieldName}"
-																	 (click)="onItemInfoClick($event, item)"
-																	 [selected]="sidePanelSelection" size="chip">
-											</asset-editor-field-info>
-											<span class="p-multiselect-token-icon pi pi-times"
-												  (click)="dropdown.removeChip(item, $event); $event.stopPropagation()">
-											</span>
-										</div>
-									</ng-container>
-									<ng-template #placeholder>
-										{{ lookupSelectPlaceholder }}
-									</ng-template>
-								</ng-template>
+                                <ng-template pTemplate="selectedItems" let-items>
+                                    <ng-container *ngIf="dropdown.value && dropdown.value.length !== 0; else placeholder">
+                                        <div class="p-multiselect-token" *ngFor="let item of items">
+                                            <span class="p-multiselect-token-label">
+                                                {{ (item | findMultiselectOption: field.Items).label }}
+                                            </span>
+                                            <asset-editor-field-info *ngIf="useSidePanel && item"
+                                                                     [object]="{objectID: item.toLowerCase(), fieldName: field.FieldName}"
+                                                                     (click)="onItemInfoClick($event, item)"
+                                                                     [selected]="sidePanelSelection" size="chip">
+                                            </asset-editor-field-info>
+                                            <span class="p-multiselect-token-icon pi pi-times"
+                                                  (click)="dropdown.removeChip(item, $event); $event.stopPropagation()">
+                                            </span>
+                                        </div>
+                                    </ng-container>
+                                    <ng-template #placeholder>
+                                        {{ lookupSelectPlaceholder }}
+                                    </ng-template>
+                                </ng-template>
                             </p-multiSelect>
                         </div>
                         <p-dropdown *ngIf="!field?.MultiSelect"
@@ -180,15 +180,15 @@
                                 </div>
 
                                 <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
-								
-								<div class="info-button" 
-									 *ngIf="useSidePanel && item.value"
-									 [class.info-button--required]="field.Required">
-									<asset-editor-field-info (click)="onItemInfoClick($event, item.value)" size="m"
-															 [object]="{objectID: item.value.toLowerCase(), fieldName: field.FieldName}"
-															 [selected]="sidePanelSelection">
-									</asset-editor-field-info>
-								</div>
+
+                                <div class="info-button"
+                                     *ngIf="useSidePanel && item.value"
+                                     [class.info-button--required]="field.Required">
+                                    <asset-editor-field-info (click)="onItemInfoClick($event, item.value)" size="m"
+                                                             [object]="{objectID: item.value.toLowerCase(), fieldName: field.FieldName}"
+                                                             [selected]="sidePanelSelection">
+                                    </asset-editor-field-info>
+                                </div>
                             </ng-template>
                         </p-dropdown>
 
@@ -226,14 +226,13 @@
                                         </tr>
                                     </ng-template>
                                     <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-                                        <tr [pSelectableRow]="item" 
+                                        <tr [pSelectableRow]="item"
                                             [pSelectableRowIndex]="rowIndex"
                                             *ngIf="item.label !== null && item.value !== null"
                                             (click)="selectSingleItem($event,item);">
                                             <td class="first-col" *ngIf="field?.MultiSelect">
-                                                <p-tableCheckbox 
-                                                    [value]="item" 
-                                                    [pSelectableRow]="item">
+                                                <p-tableCheckbox [value]="item"
+                                                                 [pSelectableRow]="item">
                                                 </p-tableCheckbox>
                                             </td>
                                             <td style="flex-basis: auto">
@@ -244,12 +243,12 @@
 
                                                 <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label"></span>
                                             </td>
-											<td style="justify-content: flex-end;" *ngIf="useSidePanel && item.value">
-												<asset-editor-field-info (click)="onItemInfoClick($event, item.value)"
-																		 [object]="{objectID: item.value.toLowerCase(), fieldName: field.FieldName}"
-																		 [selected]="sidePanelSelection">
-												</asset-editor-field-info>
-											</td>
+                                            <td style="justify-content: flex-end;" *ngIf="useSidePanel && item.value">
+                                                <asset-editor-field-info (click)="onItemInfoClick($event, item.value)"
+                                                                         [object]="{objectID: item.value.toLowerCase(), fieldName: field.FieldName}"
+                                                                         [selected]="sidePanelSelection">
+                                                </asset-editor-field-info>
+                                            </td>
                                         </tr>
                                     </ng-template>
                                 </p-table>
@@ -258,7 +257,9 @@
                     </div>
                 </div>
             </div>
-            <div class="error-message" *ngIf="!isValid && isDirty && errorMessage">{{errorMessage}}</div>
+            <!--Show error message when form input contains error and is dirty (was changed)
+            or there is a key field error and this field is partOfKey. In multikey field type, it may happen this field was not dirty-->
+            <div class="error-message" *ngIf="(!isValid && isDirty && errorMessage) || (hasKeyFieldError && field.IsPartOfKey)">{{errorMessage}}</div>
         </div>
     </div>
 </div>

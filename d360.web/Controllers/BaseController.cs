@@ -639,8 +639,9 @@ namespace d360.web.Controllers
             DataType.DateTime.ToString(),
             DataType.Number.ToString(),
             DataType.Decimal.ToString(),
-            DataType.Lookup.ToString()
-        });
+            DataType.Lookup.ToString(),
+			DataType.Counter.ToString()
+		});
 
         public BaseController(ICoreComponentSet set)
         {

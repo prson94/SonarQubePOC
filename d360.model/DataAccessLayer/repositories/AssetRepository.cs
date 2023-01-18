@@ -441,7 +441,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			List<string> pagingSql = new List<string>();
 			List<string> TempTableScriptList = new List<string>();
 			List<string> fieldsUsedInMainQuery = new List<string>();
-			string TempTableScriptStr = " ";
+
 			var tempincludeRelationships = "";
 
 			var dbArgs = new DynamicParameters();
@@ -459,8 +459,6 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			//The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
 			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Id]", listColorsAsJSON, true, TempTableScriptList);
 			var countJoins = fieldJoins.Clone();
-
-			TempTableScriptStr = string.Join("\n ", TempTableScriptList);
 
 			if (includeProfilingCheck)
 			{
@@ -1003,7 +1001,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					var tempJoins = new DynamicQueryJoins();
 					var tempFieldColumns = new DynamicQuerySelects();
 
-					getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
+					getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns, TempTableScriptList: TempTableScriptList, CreateTempTableForFieldFromRelationship: true);
 
 					var filterDataProvider = new FilterDataProvider(CompanyContext);
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, includeParent, allowTempTableFiltering: true);
@@ -1030,7 +1028,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						tempArgs = new DynamicParameters();
 						tempJoins.Clear();
 						tempFieldColumns.Clear();
-						getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns);
+						getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns, TempTableScriptList: TempTableScriptList, CreateTempTableForFieldFromRelationship: true);
 						fieldColumns.Merge(tempFieldColumns);
 						fieldJoins.Merge(tempJoins);
 						countJoins.Merge(tempJoins);
@@ -1617,6 +1615,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						exec CachedAssetFiltersProvider 'SET', @userId, @requesthash, @assetTypeId, @filteringDuration
 					end";
 			}
+
+			string TempTableScriptStr = string.Join("\n ", TempTableScriptList.Distinct());
 
 			var baseSQL = $@"
 				{TempTableScriptStr}
@@ -4073,7 +4073,7 @@ where an.Uid = fam.uid)
 							att.name,
 							att.description
 							{(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")},
-							Levels.depth as maxDepth,
+							att.HierarchyMaximumDepth as maxDepth,
 							ATS.IconBackColor as backColor,
 							ATS.icon,
 							att.flowObjectType
@@ -4087,7 +4087,6 @@ where an.Uid = fam.uid)
 							where att.Class not in ({(int)AssetTypeClass.Model},{(int)AssetTypeClass.Policy})
 						 ) ATParent
 						 {(isReturnCount ? " left outer join #TempAssetCount Assets on Assets.ASSETTYPEID = att.ID " : "")}
-						outer apply (select MAX(level) as depth from AssetTypeLevel where AssetTypeID = att.id)Levels
 						where att.Class in @filterClasses
 						 {assetTypePermissionWhere}
 					order by att.name";

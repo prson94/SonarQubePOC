@@ -150,22 +150,20 @@ export class SiteUrlHelpers {
 		switch (objectType.toUpperCase()) {
 			case 'ARTIFACTTYPE':
 				return this.getObjectUrlByUid(objectType, objectId as string);
-            case 'ARTIFACT':
-				return this.getObjectUrlByUid(objectType, objectUid ?? objectId as string);//`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${parentId}/${objectId}`;
+			case 'ARTIFACT':
+			case 'TAXONOMY':
+			case 'POLICY':
+				return this.getObjectUrlByUid(objectType, objectUid ?? objectId as string);
             case 'COMMENTS':
                 return `${SiteUrlHelpers.SITE_URL_COMMENTS_ROOT}/${objectId}/${objectName}`;
             case 'GROUP':
                 return `${SiteUrlHelpers.SITE_URL_GROUP_ROOT}/${objectId}`;
             case 'RESOURCE':
                 return `${SiteUrlHelpers.SITE_URL_RESOURCE_ROOT}/${objectId}`;
-            case 'TAXONOMY':
-                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${parentId}/id/${objectId}`;
             case 'TAXONOMYTYPE':
                 return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${objectId}/structure`;
             case 'POLICYTYPE':
-                return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${objectId}/structure`;
-            case 'POLICY':
-                return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${parentId}/id/${objectId}`;
+                return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${objectId}/structure`;          
             case 'RULE':
                 return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${parentId}/${objectId}`;
             case 'DASHBOARD':
@@ -182,8 +180,11 @@ export class SiteUrlHelpers {
 		console.log("Debug getObjectUrl > ", objectType, uid);
 		switch (objectType.toUpperCase()) {
 			case 'ARTIFACTTYPE':
+			case 'TAXONOMYTYPE':
 				return `${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${uid}`;
 			case 'ARTIFACT':
+			case 'TAXONOMY':
+			case 'POLICY':
 				return `${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${uid}`;
 			default:
 				console.log('Unable to generate getObjectUrlByUid');

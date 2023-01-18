@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.dbo.ResponsibilityRuleShouldRun-v2">
-    <comment>GOV-12887</comment>
+  <changeSet author="PuneetGupta" id="Procedure.dbo.ResponsibilityRuleShouldRun-v3">
+    <comment>GOV-20731</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -26,7 +26,8 @@ begin
 			@assignedObjectID int,
 			@groupUpdatedOn datetime,
 			@orgUpdatedOn datetime,
-			@ruleUpdatedOn datetime
+			@ruleUpdatedOn datetime,
+			@AssetTypeID int;
 
 	-- invalid rule dont try to run it
 	if not exists(select 1 from ResponsibilityTypeRelationRule r inner join AssetType att on r.ObjectID = att.ObjectID and r.Object = att.Object and r.id = @id)
@@ -43,7 +44,10 @@ begin
 	from	ResponsibilityTypeRelationRule
 	where	ID = @id
 
-	declare @assetMaxDate datetime,
+	select @AssetTypeID = T.ID from AssetType T where T.Object = @o and T.ObjectID = @oid;
+
+	declare @assetMaxUpdateDate datetime,
+			@assetMaxDate datetime,
 			@assetFieldMaxDate datetime,
 			@newUsers bit = 0,
 			@newAssets bit = 0,
@@ -59,13 +63,15 @@ begin
 	from	reporting.Global_Resource
 	where	CreatedOn > @lastRunOn
 
-	select	@assetMaxDate = max(A.CreatedOn)
+	select	@assetMaxDate = max(A.CreatedOn), @assetMaxUpdateDate = max(A.UpdatedOn)
 	from	Asset A
-			inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid 
+	Where AssetTypeID = @AssetTypeID
+	option(recompile);
 
-	select	@assetMaxDate = IIF(max(A.UpdatedOn) > @assetMaxDate, max(A.UpdatedOn), @assetMaxDate)
-	from	Asset A
-			inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid 
+	if @assetMaxUpdateDate > @assetMaxDate
+	begin
+		set @assetMaxDate = @assetMaxUpdateDate;
+	end
 
 	if @assetMaxDate > @lastRunOn
 	begin
@@ -90,16 +96,18 @@ begin
 		if exists(select 1 from @fIDs)
 		begin
 			select	@assetFieldMaxDate = max(F.UpdatedOn)
-			from	Field F 
-					inner join @fIDs FT on FT.FieldTypeID = F.FieldTypeID					
-					inner join Asset A on A.[Object] = F.ObjectType and a.ObjectID = F.ObjectID 
-					inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid 
+			from	@fIDs FT
+					inner join FieldType FTF on FTF.ID = FT.FieldTypeID and FTF.AssetTypeID = @AssetTypeID
+					inner join Field F on F.FieldTypeID = FTF.ID
+					option(recompile);
 		end
 		else
 		begin
 			select	@assetFieldMaxDate = max(F.UpdatedOn)
-			from	Field F 
-					inner join FieldType FT on F.FieldTypeID = FT.id and FT.Object = @o and FT.ObjectID = @oid
+			from	FieldType FT
+					inner join Field F  on F.FieldTypeID = FT.id
+			where	FT.AssetTypeID = @AssetTypeID
+			option(recompile);
 		end
 
 		if @assetFieldMaxDate > @lastRunOn
@@ -140,6 +148,8 @@ begin
 			select	@intersectMaxDate = max(I.UpdatedOn)
 			from	[Intersect] I
 					inner join @intersectTypeIDs IT on IT.IntersectTypeID = I.IntersectTypeID					
+					option(recompile);
+					
 			print 'Checking max intersect update date against last run'
 			if @intersectMaxDate > @lastRunOn
 			begin
@@ -183,6 +193,7 @@ begin
 			select	@orgUpdatedOn = max(F.UpdatedOn)
 			from	Field F 
 					inner join @orgfIDs FT on FT.FieldTypeID = F.FieldTypeID
+					option(recompile);
 		end
 
 		if @orgUpdatedOn > @lastRunOn
@@ -202,7 +213,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[	
-create or alter procedure [dbo].[ResponsibilityRuleShouldRun]
+CREATE OR ALTER   procedure [dbo].[ResponsibilityRuleShouldRun]
 	@id int
 as
 begin
@@ -217,6 +228,14 @@ begin
 			@groupUpdatedOn datetime,
 			@orgUpdatedOn datetime,
 			@ruleUpdatedOn datetime
+
+	-- invalid rule dont try to run it
+	if not exists(select 1 from ResponsibilityTypeRelationRule r inner join AssetType att on r.ObjectID = att.ObjectID and r.Object = att.Object and r.id = @id)
+	begin
+		select 0
+
+		return
+	end
 
 	select	@lastRunOn = coalesce(LastRunOn, '1/1/2000'),
 			@o = Object,

@@ -45,6 +45,7 @@ import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
 import { LinkClickInterceptor } from "../../services/href-click-service";
 import { AssetTypeApiModel } from "../../models/asset.model";
 import { LocalStorageKey } from "../../enums/localstorage.enum";
+import { AssetGridCustomExportComponent } from "./asset-grid-custom-export.component";
 
 @Component({
     selector: "d3s-asset-grid",
@@ -70,6 +71,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     @ViewChild('dt', { static: false }) dt: Table;
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
+	@ViewChild('gridCustomExport', { static: false }) gridCustomExport: AssetGridCustomExportComponent;
     @ViewChildren('tableRow') tableRows: QueryList<ElementRef>;
 
     @HostListener('document:keydown.arrowup', ['$event'])
@@ -657,9 +659,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     downloadCustomExcel(option: AssetTypeExportTemplate) {
         var params = JSON.parse(JSON.stringify(this.getParams()));
-        params['_exporttemplateuid'] = option.Uid;
+		params['_exporttemplateuid'] = option.Uid;
 
-        this.assetService.downloadAssetsExcel(this.gridObject.AssetTypeUID, params, $localize`Filtered ${this.gridObject.Name} List`);
+		this.gridCustomExport.setExportState(option, true);
+		this.assetService.downloadAssetsExcel(this.gridObject.AssetTypeUID, params, $localize`Filtered ${this.gridObject.Name} List`, () => { this.gridCustomExport.setExportState(option, false); });
     }
 
     customExport() {

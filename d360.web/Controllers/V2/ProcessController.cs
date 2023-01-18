@@ -200,8 +200,12 @@ namespace d360.web.Controllers.V2
 			{
 				validateFields = false;
 			}
+			bool isModelEmpty = true;
 
-			bool isModelEmpty = model.linkDataArray == null && model.linkFromPortIdProperty == null && model.linkToPortIdProperty == null && model.nodeDataArray == null;
+			if (model != null)
+			{
+				isModelEmpty = model.linkDataArray == null && model.linkFromPortIdProperty == null && model.linkToPortIdProperty == null && model.nodeDataArray == null;
+			}
 
 			if (!sourceAssetUid.HasValue && isModelEmpty)
 			{

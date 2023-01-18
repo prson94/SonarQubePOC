@@ -121,11 +121,17 @@
   <data name="ActionCreatedMsg" xml:space="preserve">
     <value>Action créée</value>
   </data>
+  <data name="ActionTypeDeleted" xml:space="preserve">
+    <value>Le type d’action a été supprimé.</value>
+  </data>
   <data name="ActionTypeNotFound" xml:space="preserve">
     <value>Type d’action introuvable</value>
   </data>
   <data name="ActionTypeUidIsNotValid" xml:space="preserve">
     <value>Le type d’action dont l’UID est {0} est introuvable.</value>
+  </data>
+  <data name="ActionTypeUpdated" xml:space="preserve">
+    <value>Le type d’action a été mis à jour.</value>
   </data>
   <data name="ActionUidNotFound" xml:space="preserve">
     <value>L’action dont l’UID est {0} est introuvable.</value>

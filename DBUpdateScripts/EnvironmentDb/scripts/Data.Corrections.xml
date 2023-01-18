@@ -567,7 +567,8 @@ END
 	]]>
 	</sql>
   </changeSet>
-<changeSet author="Puneet Gupta" id="Data.Corrections.GOV-20613">
+
+<changeSet author="Puneet Gupta" id="Data.Corrections.GOV-20613-2">
   <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -578,7 +579,7 @@ declare @FieldTypeID int;
 select top 1 @FieldTypeID = FT.ID 
 from assettype ATT 
 inner join FieldType FT on ATT.ID = FT.AssetTypeID
-where ATT.Class = 9 and ATT.Name  = 'Rule Dimension' and Type = 'Html';
+where ATT.Class = 9 and ATT.Name  = 'Rule Dimension' and ft.Type = 'Html' and ft.name ='Description';
 
 if (@FieldTypeID is not null)
 begin
@@ -593,6 +594,22 @@ begin
 	From Field F
 	where F.FieldTypeID = @FieldTypeID;
 end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+<changeSet author="TKlok" id="Data.Corrections.GOV-GOV-20016">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+delete from [dbo].[HelpResource] where [Url] = 'Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0' and [isSystem] = 1;
+delete from [dbo].[HelpResource] where [Url] = 'Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0' and [isSystem] = 1;
+delete from [dbo].[HelpResource] where [Url] = 'Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat' and [isSystem] = 1;
+
 		]]>
     </sql>
 	<rollback>

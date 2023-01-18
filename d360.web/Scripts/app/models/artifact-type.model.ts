@@ -50,5 +50,6 @@ export class ArtifactType {
 export class AssetTypeExportTemplate {
     Name: string;
     Description: string;
-    Uid: string;
+	Uid: string;
+	IsDownloading?: boolean;
 }

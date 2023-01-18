@@ -124,7 +124,7 @@ namespace d360.model.DataAccessLayer.repositories
 			return "";
 		}
 
-		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string idSql = "A.[ID]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null, SystemObjects objectType = SystemObjects.Artifact)
+		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string idSql = "A.[ID]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null, SystemObjects objectType = SystemObjects.Artifact, bool CreateTempTableForFieldFromRelationship = false)
 		{
 			List<string> TempTableNameList = new List<string>();
 			
@@ -355,7 +355,7 @@ namespace d360.model.DataAccessLayer.repositories
 					 string temptablename = "";
 					 string temptableScript;
 
-					 if (IsCreateTempTable)
+					 if (IsCreateTempTable || CreateTempTableForFieldFromRelationship)
 					 {
 						 switch (filtercond)
 						 {
@@ -541,6 +541,9 @@ namespace d360.model.DataAccessLayer.repositories
 									) a;";
 									 break;
 							 }
+
+							 temptableScript += @$"
+								create index ix_TempGraphFwd on {temptablename} (SourceAssetID);";
 
 							 if (!TempTableNameList.Contains(temptablename))
 							 {

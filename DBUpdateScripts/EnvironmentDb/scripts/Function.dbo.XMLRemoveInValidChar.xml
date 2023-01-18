@@ -1,0 +1,44 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+	
+	<changeSet author="Puneet Gupta" id="Function.dbo.XMLRemoveInValidChar-V1.0">
+	<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+	<comment>GOV-20714</comment>
+			<![CDATA[
+create or alter function [dbo].[XMLRemoveInValidChar] 
+(
+	@FieldValue nvarchar(4000)
+)
+returns nvarchar(4000) 
+WITH SCHEMABINDING , RETURNS NULL ON NULL INPUT 
+as
+begin
+declare
+    @illegalChars nvarchar(4000) = 
+        char(0) + char(1) + char(2) + char(3) + char(4) + char(5) + char(6) + char(7) + char(8) + char(11) + 
+        char(12) + char(14) + char(15) + char(16) + char(17) + char(18) + char(19) + char(20) + char(21) + char(22) + 
+        char(23) + char(24) + char(25) + char(26) + char(27) + char(28) + char(29) + char(30) + char(31);
+
+	declare @XMLData nvarchar(4000)
+
+	if @FieldValue is not null
+	begin
+		set @XMLData = replace(translate(@FieldValue, @illegalChars, replicate(char(1), len(@illegalChars))),char(1),'');
+	end
+
+	return @XMLData
+end
+		]]>
+		</sql>
+		<rollback>
+			<![CDATA[	
+drop function if exists [dbo].[XMLRemoveInValidChar] ;
+			]]>
+		</rollback>
+	</changeSet>
+
+</databaseChangeLog>

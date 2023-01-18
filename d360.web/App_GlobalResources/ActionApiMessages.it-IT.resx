@@ -121,11 +121,17 @@
   <data name="ActionCreatedMsg" xml:space="preserve">
     <value>Azione creata</value>
   </data>
+  <data name="ActionTypeDeleted" xml:space="preserve">
+    <value>Il tipo di azione è stato eliminato</value>
+  </data>
   <data name="ActionTypeNotFound" xml:space="preserve">
     <value>Tipo di azione non trovato</value>
   </data>
   <data name="ActionTypeUidIsNotValid" xml:space="preserve">
     <value>Impossibile trovare il tipo di azione con l'UID {0}.</value>
+  </data>
+  <data name="ActionTypeUpdated" xml:space="preserve">
+    <value>Il tipo di azione è stato aggiornato.</value>
   </data>
   <data name="ActionUidNotFound" xml:space="preserve">
     <value>Impossibile trovare l'azione con l'UID {0}.</value>
