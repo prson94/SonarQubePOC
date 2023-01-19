@@ -34,12 +34,12 @@
   .form-header-wrapper {
     display: flex;
 
-    @formHeaderBottomPadding: 16px;
+    @formheaderbottompadding: 16px;
 
     .form-header {
       font-size: 16px;
       font-weight: bold;
-      padding-bottom: @formHeaderBottomPadding;
+      padding-bottom: @formheaderbottompadding;
 
       .sub-header {
         color: @igx-gray-color;
@@ -51,7 +51,7 @@
     .ig-form-feedback-badges {
       margin-left: auto;
       align-self: center;
-      padding-bottom: calc(@formHeaderBottomPadding / 2);
+      padding-bottom: calc(@formheaderbottompadding / 2);
     }
   }
 
@@ -230,7 +230,7 @@
       }
     }
   }
-  //we do not want key fields error to disable submit button so we are just enforcing invalid field colour instead of marking field as invalid
+  /*we do not want key fields error to disable submit button so we are just enforcing invalid field colour instead of marking field as invalid*/
   .has-key-field-error {
     input {
       background-color: @ig-red-t5;
@@ -300,7 +300,6 @@
   }
 }
 
-
 .dropdown-lazy-load {
   .ig-dropdown-overlay {
     display: none;
@@ -328,8 +327,8 @@
 
   .token-popup-menu {
     position: absolute;
-    top: 0px;
-    right: 0px;
+    top: 0;
+    right: 0;
 
     button {
       width: 24px;

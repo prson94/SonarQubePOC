@@ -10,6 +10,8 @@ import { CompanySettingsService } from "../../../../services/settings.service";
 import { SiteUrlHelpers } from "../../../../static/site-url-helpers";
 import { AdminBaseComponent } from "../../admin-base.component";
 
+/*global $localize*/
+
 @Component({
     selector: 'd3s-connector-labels',
     templateUrl: './connector-labels.component.html',
@@ -91,7 +93,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 					menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(label.uid, true) });
 
 					menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditor(label) });
-					menuItems.push({ "title": $localize`Delete`, callback: () => { this.openDeleteModal(label) } });
+					menuItems.push({ "title": $localize`Delete`, callback: () => { this.openDeleteModal(label); } });
 					label["MenuItems"] = menuItems;
 				});
             }

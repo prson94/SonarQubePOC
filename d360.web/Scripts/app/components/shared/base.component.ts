@@ -28,6 +28,8 @@ import { AppSettingsEnum, CompanySettingEnum } from '../../models/settings.model
 import { AppConstants } from '../../static/constants';
 import { UsageAction, UsageBrowser } from '../../models/web-analytics-activity.model';
 
+/*global $localize*/
+
 export class BaseComponent {
 	public isLoading = false;
 	public gridStateStorage: string = 'session';

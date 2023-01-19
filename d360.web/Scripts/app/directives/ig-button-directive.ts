@@ -60,7 +60,7 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
         }
 
         if (this._label) {
-			const usePrepend = this.el.nativeElement.attributes['prepend-label'] !== undefined;
+			const usePrepend = typeof this.el.nativeElement.attributes['prepend-label'] !== 'undefined';
 
             labelElement = document.createElement("span");
             labelElement.className = 'ig-button-label';

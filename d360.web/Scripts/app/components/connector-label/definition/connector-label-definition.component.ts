@@ -47,6 +47,6 @@ export class ConnectorLabelDefinitionComponent extends AdminBaseComponent {
 	}
 
 	resourceClicked(uid: string) {
-		this.onLinkClicked.emit({ uid: uid, type: 'Resource' });
+		this.onLinkClicked.emit({ uid, type: 'Resource' });
 	}
 }

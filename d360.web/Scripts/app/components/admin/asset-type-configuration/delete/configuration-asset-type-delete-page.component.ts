@@ -1,12 +1,13 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { AssetTypeClass } from "../../../../models/asset.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { AssetService } from "../../../../services/asset.service";
 import { MessagesObservableService } from "../../../../services/messages-observable.service";
 import { CompanySettingsService } from "../../../../services/settings.service";
 import { StateService } from "../../../../services/state.service";
 import { BaseComponent } from "../../../shared/base.component";
+
+/*global $localize*/
 
 @Component({
 	selector: "d3s-configuration-asset-type-delete-page",

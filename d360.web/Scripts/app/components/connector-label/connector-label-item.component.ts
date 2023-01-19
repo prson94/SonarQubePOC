@@ -15,6 +15,9 @@ import { Location } from '@angular/common';
 import { CompanySettingsService } from '../../services/settings.service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { Subscription } from 'rxjs';
+
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-connector-label-item',
@@ -28,11 +31,11 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 
 	label: ConnectorLabel;
 	private usage: ConnectorLabelUsage[] = [];
-	private sub: any;
+	private sub: Subscription;
 	private labelUid: number;
 	private isAdmin: boolean = false;
 	private currentAreaName: string;
-	selectedForInfoPanel: any;
+	selectedForInfoPanel: unknown;
 
 	private actions: AssetAction;
 	isEditorVisible: boolean = false;
@@ -47,8 +50,8 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 
 	private theDeleteCallback: Function;
 
-	filters: any = { globalSearch: '', Diagram: '', AssetTypeName: '', Occurrences: '' };
-	sort: any;
+	filters: unknown = { globalSearch: '', Diagram: '', AssetTypeName: '', Occurrences: '' };
+	sort: unknown;
 
 	constructor(
 		private route: ActivatedRoute,

@@ -1,15 +1,16 @@
 import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
-import { result } from "lodash";
 import { SelectItem } from "primeng/api";
-import { forkJoin, Observable } from "rxjs";
-import { AssetType, AssetTypeApiModel, AssetTypeClass, AssetTypeEditorModel, FlowObjectType, Hierarchy, IconStyle } from "../../../../models/asset.model";
+import { forkJoin } from "rxjs";
+import { AssetType, AssetTypeClass, Hierarchy, IconStyle } from "../../../../models/asset.model";
 import { Predicate } from "../../../../models/predicate.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { AssetService } from "../../../../services/asset.service";
 import { FieldsObservableService } from "../../../../services/fieldsObservable.service";
 import { RelationshipsService } from "../../../../services/relationships.service";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
+
+/*global $localize*/
 
 @Component({
 	selector: "asset-type-modal-form",
@@ -330,7 +331,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	@HostListener('window:resize', ['$event'])
-	onResize(event) {
+	onResize() {
 		this.setFormHeight();
 	}
 
@@ -340,20 +341,19 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	modalFormMaxHeight = 400;
 	private setFormHeight() {
-		var groupsHeight = 0;
-		var topPos = 260;
+		let groupsHeight = 0;
+		let topPos = 260;
 		if (this.elRef.nativeElement) {
-			var els = this.elRef.nativeElement.getElementsByClassName('form-wrapper');
+			const els = this.elRef.nativeElement.getElementsByClassName('form-wrapper');
 			if (els[0]) {
-				var rect = els[0].getBoundingClientRect();
+				const rect = els[0].getBoundingClientRect();
 				topPos = rect.top + 120;
 			}
 		}
-		var maxHeight = window.innerHeight - topPos;
+		const maxHeight = window.innerHeight - topPos;
 		if (this.propertyGroups) {
-			var a = this.propertyGroups.first;
 			this.propertyGroups.forEach((pg) => {
-				var height = pg.inputContainer.nativeElement.offsetHeight;
+				const height = pg.inputContainer.nativeElement.offsetHeight;
 				groupsHeight += height !== 0 ? (height + 34) : 34;
 			});
 			groupsHeight += 26; //form-wrapper bottom padding

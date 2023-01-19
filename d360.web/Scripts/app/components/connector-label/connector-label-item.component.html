@@ -23,7 +23,7 @@
 					<div class="simple-search">
 						<ig-search-field mode="Keypress"
 										 [debounce]="600"
-										 (onSearch)="dt.filterGlobal($event.target.value, 'contains')">
+										 (onSearch)="dt.filterGlobal($event, 'contains')">
 						</ig-search-field>
 					</div>
 					<div class="grid-action-buttons">

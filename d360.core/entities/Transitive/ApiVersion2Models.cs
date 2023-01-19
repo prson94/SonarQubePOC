@@ -661,7 +661,10 @@ namespace d360.core.entities
 			{
 				return IntersectID;
 			}
-			set { }
+			set
+			{
+				//it's just for interface satisfaction. should be empty.
+			}
 		}
 
 		[DataMember]

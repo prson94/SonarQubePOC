@@ -14,6 +14,7 @@ import { CompanySettingEnum } from "../../../../models/settings.model";
 import { IconService } from "../../../../services/icon.service";
 import { IconProperties } from "../../../../models/icon-properties.model";
 
+/*global $localize*/
 // eslint-disable-next-line no-var
 declare var CurrentResourceID;
 
@@ -99,7 +100,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			menuItems.push({ "title": $localize`Add Child Asset Type`, callback: () => this.openEditForm(null, type.data.uid) });
 		}
 		menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.data.uid, type.data.parentUid) });
-		menuItems.push({ "title": $localize`Delete`, callback: () => { this.assetTypeToDelete = type } });
+		menuItems.push({ "title": $localize`Delete`, callback: () => { this.assetTypeToDelete = type; } });
 		type.data["MenuItems"] = menuItems;
 
 		//resolve color names
@@ -227,13 +228,13 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	}
 
 	public expandAll(): void {
-		this.artifactTypes.forEach(node => {
+		this.artifactTypes.forEach((node) => {
 			this.expandCollapseRecursive(node, true);
 		});
 	}
 
 	public collapseAll(): void {
-		this.artifactTypes.forEach(node => {
+		this.artifactTypes.forEach((node) => {
 			this.expandCollapseRecursive(node, false);
 		});
 	}
@@ -241,7 +242,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	private expandCollapseRecursive(node: TreeNode, isExpand: boolean): void {
 		node.expanded = isExpand;
 		if (node.children) {
-			node.children.forEach(childNode => {
+			node.children.forEach((childNode) => {
 				this.expandCollapseRecursive(childNode, isExpand);
 			});
 		}

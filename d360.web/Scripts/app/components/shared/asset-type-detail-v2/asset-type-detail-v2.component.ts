@@ -22,7 +22,7 @@ import {
 	ControlsOptions,
 	OpenBehaviour
 } from './asset-type-detail-v2.model';
-import { AssetType, AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
+import { AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
 import { RelationshipsService } from '../../../services/relationships.service';
 import { Predicate } from '../../../models/predicate.model';
 
@@ -255,6 +255,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 				break;
 			case AssetTypeClass.Rule:
 				this.fillSynonyms(assetTypeModel);
+				break;
 			case AssetTypeClass.DiagramAsset:
 				this.addFieldsToCategory($localize`General`, [
 					{
