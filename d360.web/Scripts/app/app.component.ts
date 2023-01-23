@@ -126,8 +126,6 @@ export class AppComponent implements AfterContentInit, OnDestroy {
                     name: ResourceName,
                     email: ResourceEmail,
                 });
-
-                datadogRum.startSessionReplayRecording();
             }
         }
         catch {
