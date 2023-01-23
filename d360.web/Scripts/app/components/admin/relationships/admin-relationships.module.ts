@@ -1,4 +1,4 @@
-﻿import { NgModule } from '@angular/core';
+﻿import { assertPlatform, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -20,6 +20,9 @@ import { AdminRelationshipsRoutingModule } from './admin-relationships.routes';
 
 import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
+import { AdminRelationshipsSidePanelWrapperComponent } from './admin-relationships-sidepanel-wrapper.component';
+import { AngularSplitModule } from 'angular-split';
+import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
 
 @NgModule({
     imports: [
@@ -42,10 +45,13 @@ import { TableModule } from 'primeng/table';
         SharedDynamicGridEditorModule,
         SharedFieldDefinitionModule,
         SharedGridPagingInfoModule,
-        TilesModule,
+		TilesModule,
+		AngularSplitModule,
+		SidePanelModule
     ],
     declarations: [
-        AdminRelationshipsComponent,        
+		AdminRelationshipsComponent,    
+		AdminRelationshipsSidePanelWrapperComponent
     ],    
     providers: [
     ]
