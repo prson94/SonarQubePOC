@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 
 export class DummyformModel {
     constructor(
@@ -37,10 +37,10 @@ export class GalleryNumberFieldComponent implements OnInit {
     sampleUsage: string = '<ig-number-input></ig-number-input>';
     model: DummyformModel = new DummyformModel("name", 0);
     enforcemodel: DummyenforceModel = new DummyenforceModel("enforcemodel", 0, true);
-    form: FormGroup = null;
+    form: UntypedFormGroup = null;
     demoSize: string = "small";
-    enforceForm: FormGroup = null;
-    constructor(private fb: FormBuilder) { }
+    enforceForm: UntypedFormGroup = null;
+    constructor(private fb: UntypedFormBuilder) { }
 
     ngOnInit(): void {
         this.form = this.fb.group({

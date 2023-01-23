@@ -20,7 +20,7 @@ import {
 } from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
-import { FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldType, FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
@@ -89,7 +89,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
         protected fieldsService: FieldsObservableService,
-        protected fb: FormBuilder,
+        protected fb: UntypedFormBuilder,
         protected cdRef: ChangeDetectorRef
     ) {
         super(fieldsService, metricsService, messagesService, settingsService, cdRef);

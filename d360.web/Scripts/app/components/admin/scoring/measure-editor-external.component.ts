@@ -13,7 +13,7 @@ import {
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetDefinitionViewModel } from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import * as _ from 'lodash';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
@@ -50,7 +50,7 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
         protected fieldsService: FieldsObservableService,
-        protected fb: FormBuilder,
+        protected fb: UntypedFormBuilder,
         protected cdRef: ChangeDetectorRef
     ) {
         super(fieldsService, metricsService, messagesService, settingsService, cdRef);

@@ -13,7 +13,7 @@
 	ViewChildren,
 	ViewEncapsulation
 } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import * as _ from 'lodash';
 import { forkJoin, Subject } from 'rxjs';
 import { startWith, takeUntil, tap } from 'rxjs/operators';
@@ -61,7 +61,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	folderModel: SiteNav;
 	folderNameIsFocused: boolean = false;
 	selection: SiteNav = null;
-	folderForm: FormGroup;
+	folderForm: UntypedFormGroup;
 	hasFormChanged: boolean = false;
 	isInErrorMessage: string = "";
 	advancedJson: string = "";
@@ -118,7 +118,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	constructor(
 		private cdRef: ChangeDetectorRef,
-		private formBuilder: FormBuilder,
+		private formBuilder: UntypedFormBuilder,
 		private messagesService: MessagesObservableService,
 		protected settingsService: CompanySettingsService,
 		private siteMenuService: SiteMenuService,

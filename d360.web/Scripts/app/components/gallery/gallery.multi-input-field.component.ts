@@ -1,5 +1,5 @@
 ﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from "@angular/core";
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn } from "@angular/forms";
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn } from "@angular/forms";
 
 @Component({
     selector: "gallery-multi-input-field",
@@ -37,8 +37,8 @@ export class GalleryMultiInputFieldComponent implements OnInit {
     lastEvent: string = "";
     constructor(private ref: ChangeDetectorRef) { }
 
-    myForm = new FormGroup({
-        multiInput: new FormControl(this.multiValueInvalid, [NoDuplicate()]),
+    myForm = new UntypedFormGroup({
+        multiInput: new UntypedFormControl(this.multiValueInvalid, [NoDuplicate()]),
     });
 
     ngOnInit(): void {

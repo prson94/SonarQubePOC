@@ -17,7 +17,7 @@ import {
     ViewChildren,
     ViewEncapsulation
 } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 
 import { EditorCategory, EditorField, EditorRow } from '../../../models/editor-field.model';
 
@@ -111,7 +111,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     @Input() diagramNodeKey: string = "";
 
-    form: FormGroup;
+    form: UntypedFormGroup;
 	initialFormValue: Object;
 
     action: string = "Edit";
@@ -147,7 +147,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     constructor(
         private ref: ChangeDetectorRef,
-        private formBuilder: FormBuilder,
+        private formBuilder: UntypedFormBuilder,
         private messagesService: MessagesObservableService,
         private editorDefinitionService: EditorDefinitionService,
         private uriBasedService: UriBasedService,
@@ -525,8 +525,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     url = field.Value;
                 }
 
-                group[field.FieldName + '_Name'] = new FormControl(name || '');
-                group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
+                group[field.FieldName + '_Name'] = new UntypedFormControl(name || '');
+                group[field.FieldName + '_Url'] = new UntypedFormControl(url || '', this.getFieldValidators(field));
             } else if (field.FieldType === "DateTime" || field.FieldType === "Date") {
                 if (field.Value != null) {
                     const date = new Date(field.Value);
@@ -538,7 +538,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     field.Value = date;
                 }
 
-                group[field.FieldName] = new FormControl({
+                group[field.FieldName] = new UntypedFormControl({
                     value: (field.Value),
                     disabled: field.ReadOnly
                 }, this.getFieldValidators(field));
@@ -552,7 +552,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     field.Value = arrValue;
 
                 }
-                group[field.FieldName] = new FormControl({
+                group[field.FieldName] = new UntypedFormControl({
                     value: (field.Value === null ? '' : field.Value),
                     disabled: setDisabled
                 }, this.getFieldValidators(field));
@@ -584,14 +584,14 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     setDisabled = true;
                 }
 
-                group[field.FieldName] = new FormControl({
+                group[field.FieldName] = new UntypedFormControl({
                     value: (field.Value === null ? '' : field.Value),
                     disabled: setDisabled
                 }, this.getFieldValidators(field));
             }
         });
 
-        return new FormGroup(group);
+        return new UntypedFormGroup(group);
     }
 
     private getFieldValidators(field: EditorField) {

@@ -14,7 +14,7 @@
     ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormFeedbackBadgesModule } from '../form-feedback-badges/form-feedback-badges.component';
 import { isFormContainerValid } from '../form-feedback-badges/form-feedback-utils';
@@ -33,7 +33,7 @@ export const PropertyGroupInstanceIdAttributeName = 'data-property-group-instanc
 export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @HostBinding(`attr.${PropertyGroupInstanceIdAttributeName}`) instanceId: string;
 
-    @Input() igformGroup: FormGroup;
+    @Input() igformGroup: UntypedFormGroup;
     @Input() title: string = $localize`Property Group`;
     @Input() showMoreInfo: boolean = false;
     @Input() moreInfoHtml: string = "";

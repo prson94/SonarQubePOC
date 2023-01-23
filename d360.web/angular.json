@@ -47,7 +47,7 @@
             "index": "index.html",
             "main": "Scripts/main.ts",
             "polyfills": "Scripts/polyfills.ts",
-            "tsConfig": "Scripts/tsconfig.aot.json",
+            "tsConfig": "Scripts/tsconfig.json",
             "localize": true,
             "assets": [],
             "styles": [
@@ -132,5 +132,7 @@
       }
     }
   },
-  "defaultProject": "govern"
+  "cli": {
+    "analytics": false
+  }
 }

@@ -23,7 +23,7 @@ import {
 } from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
-import { FormBuilder, FormControl, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, Validators } from '@angular/forms';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldCondition } from '../../../models/field-condition-grid.models';
 import * as _ from 'lodash';
@@ -90,7 +90,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
         protected fieldsService: FieldsObservableService,
-        protected fb: FormBuilder,
+        protected fb: UntypedFormBuilder,
         protected cdRef: ChangeDetectorRef
     ) {
         super(fieldsService, metricsService, messagesService, settingsService, cdRef);
@@ -250,8 +250,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
     loadTestConditions() {
         switch (this.model.Definition.Governance.Check) {
             case 0:
-                this.metricForm.addControl("instructionString", new FormControl(''));
-                this.metricForm.addControl("updateFrequency", new FormControl(''));
+                this.metricForm.addControl("instructionString", new UntypedFormControl(''));
+                this.metricForm.addControl("updateFrequency", new UntypedFormControl(''));
                 if (this.model.Definition.Governance.External.UpdateFrequency) {
                     this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency[this.model.Definition.Governance.External.UpdateFrequency + ""];
                 }
@@ -280,24 +280,24 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 this.cdRef.markForCheck();
                 break;
             case 2:
-                this.metricForm.addControl("ResponsibilityTypeUid", new FormControl(''));
-                this.metricForm.addControl("ResponsibilityTypeOperator", new FormControl(''));
+                this.metricForm.addControl("ResponsibilityTypeUid", new UntypedFormControl(''));
+                this.metricForm.addControl("ResponsibilityTypeOperator", new UntypedFormControl(''));
                 if (!this.model.Definition.Governance.Owner.Operator) {
                     this.model.Definition.Governance.Owner.Operator = Operator.Populated;
                 }
                 this.cdRef.markForCheck();
                 break;
             case 3:
-                this.metricForm.addControl("PredicateTypeUid", new FormControl(''));
-                this.metricForm.addControl("PredicateTypeOperator", new FormControl(''));
+                this.metricForm.addControl("PredicateTypeUid", new UntypedFormControl(''));
+                this.metricForm.addControl("PredicateTypeOperator", new UntypedFormControl(''));
                 if (!this.model.Definition.Governance.Predicate.Operator) {
                     this.model.Definition.Governance.Predicate.Operator = Operator.Populated;
                 }
                 this.cdRef.markForCheck();
                 break;
             case 4:
-                this.metricForm.addControl("IntersectTypeUid", new FormControl(''));
-                this.metricForm.addControl("RelationshipTypeOperator", new FormControl(''));
+                this.metricForm.addControl("IntersectTypeUid", new UntypedFormControl(''));
+                this.metricForm.addControl("RelationshipTypeOperator", new UntypedFormControl(''));
                 if (!this.model.Definition.Governance.Relation.Operator) {
                     this.model.Definition.Governance.Relation.Operator = Operator.Populated;
                 }
@@ -313,28 +313,28 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         this.resetGovernanceDefinition();
         switch (this.model.Definition.Governance.Check) {
             case 0:
-                this.metricForm.addControl("instructionString", new FormControl(''));
-                this.metricForm.addControl("updateFrequency", new FormControl(''));
+                this.metricForm.addControl("instructionString", new UntypedFormControl(''));
+                this.metricForm.addControl("updateFrequency", new UntypedFormControl(''));
                 this.model.Definition.Governance.External = new MetricAssetDefinitionGovernanceExternalViewModel();
                 break;
             case 1:
                 this.model.Definition.Governance.Field = new MetricAssetDefinitionGovernanceFieldViewModel();
                 break;
             case 2:
-                this.metricForm.addControl("ResponsibilityTypeUid", new FormControl(''));
-                this.metricForm.addControl("ResponsibilityTypeOperator", new FormControl(''));
+                this.metricForm.addControl("ResponsibilityTypeUid", new UntypedFormControl(''));
+                this.metricForm.addControl("ResponsibilityTypeOperator", new UntypedFormControl(''));
                 this.model.Definition.Governance.Owner = new MetricAssetDefinitionGovernanceOwnerViewModel();
                 this.model.Definition.Governance.Owner.Operator = Operator.Populated;
                 break;
             case 3:
-                this.metricForm.addControl("PredicateTypeUid", new FormControl(''));
-                this.metricForm.addControl("PredicateTypeOperator", new FormControl(''));
+                this.metricForm.addControl("PredicateTypeUid", new UntypedFormControl(''));
+                this.metricForm.addControl("PredicateTypeOperator", new UntypedFormControl(''));
                 this.model.Definition.Governance.Predicate = new MetricAssetDefinitionGovernancePredicateViewModel();
                 this.model.Definition.Governance.Predicate.Operator = Operator.Populated;
                 break;
             case 4:
-                this.metricForm.addControl("IntersectTypeUid", new FormControl(''));
-                this.metricForm.addControl("RelationshipTypeOperator", new FormControl(''));
+                this.metricForm.addControl("IntersectTypeUid", new UntypedFormControl(''));
+                this.metricForm.addControl("RelationshipTypeOperator", new UntypedFormControl(''));
                 this.model.Definition.Governance.Relation = new MetricAssetDefinitionGovernanceRelationViewModel();
                 this.model.Definition.Governance.Relation.Operator = Operator.Populated;
                 break;
@@ -374,7 +374,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 this.metricForm.removeControl("check");
                 this.conditionGroups = [];
             } else {
-                this.metricForm.addControl("check", new FormControl(''));
+                this.metricForm.addControl("check", new UntypedFormControl(''));
                 this.loadConditions();
             }
         }

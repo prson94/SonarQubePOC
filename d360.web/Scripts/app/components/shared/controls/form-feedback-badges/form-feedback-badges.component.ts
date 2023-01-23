@@ -10,7 +10,7 @@ import {
     SimpleChanges
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import * as _ from 'lodash';
 import { getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
@@ -26,7 +26,7 @@ import { PropertyGroupInstanceIdAttributeName } from '../property-group/property
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
-    @Input() igformGroup: FormGroup;
+    @Input() igformGroup: UntypedFormGroup;
     @Input() inputContainer: ElementRef;
 
     $destroy = new Subject();
@@ -122,7 +122,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     getOrderedControls() {
         return Object.keys(this.igformGroup.controls)
             .map((controlName) => {
-                const control = this.igformGroup.get(controlName) as FormControl;
+                const control = this.igformGroup.get(controlName) as UntypedFormControl;
                 const element = this.getFormControlDomElement(controlName);
                 return { controlName, control, element };
             })
@@ -197,7 +197,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     getFormControlCount(type: string): number {
         let count = 0;
         Object.keys(this.igformGroup.controls).forEach((x) => {
-            const control = <FormControl>this.igformGroup.get(x);
+            const control = <UntypedFormControl>this.igformGroup.get(x);
             if (control) {
                 if (type === "required") {
                     if (control.errors && control.errors["required"] === true) {

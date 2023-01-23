@@ -4,7 +4,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { OperatorModel } from '../../models/operator.model';
 import { FieldTypeHelper } from '../../models/fieldtype-api.model';
 import { FieldTypeAPIModelFieldCondition } from '../../models/field-condition-grid.models';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 
 
 @Component({
@@ -35,13 +35,13 @@ export class GalleryFieldConditionGridComponent implements OnInit {
     fields: FieldTypeAPIModelFieldCondition[] = null;
     operators: OperatorModel[] = [];
     blank: any[] = [];
-    formGroup: FormGroup;
+    formGroup: UntypedFormGroup;
     simpleValue: any;
     eventValue: any;    
     constructor(
         private fieldsService: FieldsObservableService,
         protected settingsService: CompanySettingsService,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private ref: ChangeDetectorRef
     ) {
         this.formGroup = fb.group({});

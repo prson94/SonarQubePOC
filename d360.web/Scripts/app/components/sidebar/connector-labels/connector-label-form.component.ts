@@ -10,7 +10,7 @@
     ViewChild
 } from '@angular/core';
 import { ConnectorLabelService } from '../../../services/connectorLabel.service';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { AsyncValidatorService } from '../../../services/async-validators.service';
 import { ConnectorLabel } from '../../../models/connectorLabel.model';
 
@@ -30,9 +30,9 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     @Output() onSave = new EventEmitter<any>();
     @Output() onCancel = new EventEmitter<any>();
 
-    connectorLabelForm = new FormGroup({
-        value: new FormControl('', [Validators.required, Validators.maxLength(40)])
-	});
+    connectorLabelForm = new UntypedFormGroup({
+        value: new UntypedFormControl('', [Validators.required, Validators.maxLength(40)])
+    });
 
 	@ViewChild('form', { static: false }) formElement: ElementRef;
 

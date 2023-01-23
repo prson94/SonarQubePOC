@@ -17,7 +17,7 @@ import {
     ViewChildren,
     ViewEncapsulation
 } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { SemanticMatchType, SemanticSource, SemanticType } from '../../../models/semantic-type.model';
 import { DataProfileService } from '../../../services/dataprofile.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -50,7 +50,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     hasHeader: boolean = false;
     isInError: boolean = false;
     model: SemanticType;
-    semanticForm: FormGroup;
+    semanticForm: UntypedFormGroup;
     hasFormChanged: boolean = false;
     isInErrorMessage: string = "";
     modalFormMaxHeight = 400;
@@ -76,7 +76,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
 
     constructor(
         private cdRef: ChangeDetectorRef,
-        private formBuilder: FormBuilder,
+        private formBuilder: UntypedFormBuilder,
         private messagesService: MessagesObservableService,
         private dataProfileService: DataProfileService,
         protected settingsService: CompanySettingsService,

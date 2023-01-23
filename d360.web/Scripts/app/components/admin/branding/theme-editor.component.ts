@@ -9,7 +9,7 @@
     SimpleChanges,
     ViewEncapsulation
 } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import * as _ from 'lodash';
 import { BrandingService, Theme } from '../../../services/branding.service';
 import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
@@ -35,7 +35,7 @@ export class ThemeEditorComponent implements OnChanges {
     confirmCurrentThemeSaveVisible: boolean = false;
 
     savingInProgress: boolean = false;
-    formGroup: FormGroup = null;
+    formGroup: UntypedFormGroup = null;
     hasCustomCss: boolean = false;
     isCurrentTheme: boolean = false;
 
@@ -51,7 +51,7 @@ export class ThemeEditorComponent implements OnChanges {
 	labelEditTheme = $localize`Edit Theme`;
 	labelCreateTheme = $localize`Create New Theme`;
 
-    constructor(private fb: FormBuilder,
+    constructor(private fb: UntypedFormBuilder,
         private brandingService: BrandingService,
         private cdRef: ChangeDetectorRef,
         featureFlagService?: FeatureFlagsService

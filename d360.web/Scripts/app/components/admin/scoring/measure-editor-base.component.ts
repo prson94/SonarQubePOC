@@ -20,7 +20,7 @@ import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
-import { AbstractControl, FormControl, FormGroup, ValidatorFn } from '@angular/forms';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, ValidatorFn } from '@angular/forms';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
 import * as _ from 'lodash';
@@ -81,7 +81,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     hasModelChanged: boolean = false;
     isLoadingFields: boolean = false;
     isSaving: boolean = false;
-    metricForm: FormGroup = null;
+    metricForm: UntypedFormGroup = null;
     matchType: string;
     maxHeight: number = window.innerHeight - 160;
     originalConditions: MetricAssetVersionConditionViewModel[];
@@ -260,9 +260,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     addConditionGroupFormControls(index: number) {
         const prefix = `cg_${index}_`;
-        this.metricForm.addControl(prefix + 'matchType', new FormControl());
-        this.metricForm.addControl(prefix + 'threshold', new FormControl('', [this.isValidThresholdOptional()]));
-        this.metricForm.addControl(prefix + 'weight', new FormControl('', [this.isValidWeightOptional()]));
+        this.metricForm.addControl(prefix + 'matchType', new UntypedFormControl());
+        this.metricForm.addControl(prefix + 'threshold', new UntypedFormControl('', [this.isValidThresholdOptional()]));
+        this.metricForm.addControl(prefix + 'weight', new UntypedFormControl('', [this.isValidWeightOptional()]));
 
     }
 

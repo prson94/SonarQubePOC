@@ -1,5 +1,5 @@
 ﻿import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { AssetService } from '../../services/asset.service';
 
@@ -41,13 +41,13 @@ export class GalleryPropertyGroupComponent implements OnInit {
     </div>
 </ig-property-group>
 `;
-    testForm: FormGroup = null;
-    multiTestForm: FormGroup = null;
+    testForm: UntypedFormGroup = null;
+    multiTestForm: UntypedFormGroup = null;
     model: DummyformModel = new DummyformModel(null, null,null);
     defaultColors: SelectItem[] = [];
     formVal: any;
     formDateVal: any;
-    constructor(private fb: FormBuilder, private assetService: AssetService) {
+    constructor(private fb: UntypedFormBuilder, private assetService: AssetService) {
       
     }
 

@@ -10,7 +10,7 @@
     SimpleChanges,
     ViewEncapsulation
 } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { Operator } from '../../../../models/operator.model';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../../models/field-condition-grid.models';
@@ -24,7 +24,7 @@ import * as _ from 'lodash';
     styleUrls: ['./field-condition-grid.component.less']
 })
 export class FieldConditionGrid implements OnChanges, OnDestroy {
-    @Input() formGroup: FormGroup;
+    @Input() formGroup: UntypedFormGroup;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = [];
     @Input() conditions: FieldCondition[] = [];
     @Input() singleSelectMode: boolean = false;
@@ -42,7 +42,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
     private disabledValuesOperators = [Operator.NotPopulated, Operator.Populated, Operator.IsFalse, Operator.IsTrue];
 
-    constructor(public cdRef: ChangeDetectorRef, private fb: FormBuilder) {
+    constructor(public cdRef: ChangeDetectorRef, private fb: UntypedFormBuilder) {
         this.formGroup = fb.group({});
     }
 
@@ -212,14 +212,14 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
     private createFormControl(hash: FieldCondition) {
         const type = this.getTypeForCondition(hash);
-        this.formGroup.addControl(this.conditionPrefix + 'option_' + hash.hash, new FormControl(''));
-        this.formGroup.addControl(this.conditionPrefix + 'condition_' + hash.hash, new FormControl(''));
+        this.formGroup.addControl(this.conditionPrefix + 'option_' + hash.hash, new UntypedFormControl(''));
+        this.formGroup.addControl(this.conditionPrefix + 'condition_' + hash.hash, new UntypedFormControl(''));
         if (type === "date" || type === "date") {
-            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl(new Date(hash.value), [Validators.maxLength(250)]));
-            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl(new Date(hash.value2), [Validators.maxLength(250)]));
+            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new UntypedFormControl(new Date(hash.value), [Validators.maxLength(250)]));
+            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new UntypedFormControl(new Date(hash.value2), [Validators.maxLength(250)]));
         } else {
-            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl('', [Validators.maxLength(250)]));
-            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl('', [Validators.maxLength(250)]));
+            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new UntypedFormControl('', [Validators.maxLength(250)]));
+            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new UntypedFormControl('', [Validators.maxLength(250)]));
         }
     }
 

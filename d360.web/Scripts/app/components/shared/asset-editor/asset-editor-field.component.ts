@@ -12,7 +12,7 @@ import {
     Output,
     ViewChild
 } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { UntypedFormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
 import { Observable, Subscription } from 'rxjs';
 
@@ -42,7 +42,7 @@ import { MultiSelect } from "primeng/multiselect";
 })
 export class AssetEditorFieldComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
     @Input() field: EditorField;
-    @Input() form: FormGroup;
+    @Input() form: UntypedFormGroup;
     @Input() object: string;
     @Input() objectID: number = null;
     @Input() selectedObject: string;
