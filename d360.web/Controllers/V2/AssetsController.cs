@@ -1506,7 +1506,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpGet,
 			Route("{assetUid:Guid}/fields/{fieldApiName}"),
-			SwaggerConsumes("application/json", "application/xml"),
+			SwaggerConsumes("application/json"),
 			SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<dynamic>)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
