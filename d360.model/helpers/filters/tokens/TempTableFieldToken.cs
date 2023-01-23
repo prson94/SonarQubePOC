@@ -48,14 +48,22 @@ namespace d360.model.helpers.filters
 				filterExpression = UpdateTokenForNullValue();
 			}
 
-			this.tempTableInfo.TempTableQuery = @$"				
+			string fieldJoin = joinSql;
+
+			if (fieldType.Type == DataType.Score.ToString())
+			{
+				//requires temp table build in FilterExpressionParser.GetAdvancedFilterTempTableFilters
+				fieldJoin = @$"left join #scoreTempValues{fieldType.ID} F{fieldType.ID} on F{fieldType.ID}.AssetId = A.ID";
+			}
+
+			this.tempTableInfo.TempTableQuery = @$"
 				drop table if exists #advanced_filter_{parameterIdx}
 				create table #advanced_filter_{parameterIdx} (AssetId int)
 
 				insert into #advanced_filter_{parameterIdx}
 				select A.Id 
 				from Asset A
-				{joinSql}
+				{fieldJoin}
 				where a.AssetTypeID = @assettypeid and {filterExpression}
 				option(recompile)";
 
@@ -126,7 +134,7 @@ namespace d360.model.helpers.filters
 
 			if (fieldType.Type == "Score")
 			{
-				fieldSql = $"CONVERT(DECIMAL(7,2),REPLACE({fieldSql},'%',''))";
+				fieldSql = $"CONVERT(DECIMAL(8,3),{fieldSql})";
 			}
 
 			return $"{fieldSql} {FilterHelpers.GetSQLOperator(@operator)} @filter_{parameterIdx}";

@@ -630,6 +630,22 @@ namespace d360.model.helpers
 				}
 			}
 
+			foreach (var scoreField in fieldTypes.Where(x => x.Type == DataType.Score.ToString()))
+			{
+				string aggregatedDataSQL = @$"
+				drop table if exists #scoreTempValues{scoreField.ID}
+				create table #scoreTempValues{scoreField.ID} (AssetId int, FormattedValue decimal(8,3))
+				create index ix_scoreTempValues{scoreField.ID} on #scoreTempValues{scoreField.ID}	(AssetId);
+
+				insert into #scoreTempValues{scoreField.ID}(AssetId, FormattedValue)
+				select a.id, S.Value*100 from Asset A
+				inner join metrics.Score S on S.AssetUid = A.uid and S.EndDate is null 
+				inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {(int)scoreField.ScoreType} and Al.OverrideName is null
+				where A.AssetTypeID = @assettypeid";
+
+				data.Add(new AdvancedFilterTempTableInfo { TempTableQuery = aggregatedDataSQL });
+			}
+
 			foreach(var token in filterTokens)
 			{
 				if (token is ITempTableFilter)
