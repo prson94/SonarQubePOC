@@ -104,20 +104,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                     }
                     this.checkGridState();
                 });
-        } else {
-            this.relationshipsService.getRelationshipTypes()
-                .subscribe((result) => {
-                    this.relationships = result ?? [];
-                    this.filterResults();
-                    this.isLoading = false;
-                    if (this.relationships && !this.showEditor) {
-                        if (this.relationships.length > 0) {
-                            this.selected = this.relationships[0];
-                            this.selectedChange.emit(this.selected);
-                        }
-                    }
-                    this.checkGridState();
-                });
+		} else {
+			console.warn("use new admin relationship component for full list of relationship types");
         }
     }
 

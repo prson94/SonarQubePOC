@@ -140,7 +140,14 @@ namespace d360.core.entities
 
         [DataMember]
         public IntersectTypeApiEdgeViewModel Object { get; set; }
+
         [DataMember]
         public bool? HasFieldTypes { get; set; }
-    }
+
+		[DataMember]
+		public bool? HasRelationships { get; set; }
+
+		[DataMember]
+		public int? TotalRelationshipCount { get; set; }
+	}
 }

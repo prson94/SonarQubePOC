@@ -986,6 +986,8 @@ namespace d360.web.Controllers.V2
 		/// <param name="PredicateUid">Allows for filtering of relationship types by predicate unique identifier.</param>
 		/// <param name="State">Allows for filtering by the relationship type's state.</param>
 		/// <param name="includeHasFieldTypes">Return a property "HasFieldTypes". If Relationship Type has defined custom fields value is true otherwise false.</param>
+		/// <param name="includeHasRelationships">Return a property "HasRelationships". If Relationship Type has relationships value is true otherwise false.</param>
+		/// <param name="includeTotalRelationshipCount">Return a property "TotalRelationshipCount". Returns number of total relationships for type.</param>
 		/// <returns></returns>
 		[
 			HttpGet,
@@ -995,7 +997,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, State? State = null, bool? includeHasFieldTypes = null, Guid? RelationshipTypeUid = null)
+		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, State? State = null, bool? includeHasFieldTypes = null, bool? includeHasRelationships = null, bool? includeTotalRelationshipCount = null, Guid? RelationshipTypeUid = null)
 		{
 			var prefix = "Relationships.GetRelationshipTypesAsync => ";
 			string errorMessage;
@@ -1022,6 +1024,16 @@ namespace d360.web.Controllers.V2
 				if (includeHasFieldTypes.HasValue)
 				{
 					queryParams.Add(new KeyValuePair<string, string>("includeHasFieldTypes", includeHasFieldTypes.ToString()));
+				}
+
+				if (includeHasRelationships.HasValue)
+				{
+					queryParams.Add(new KeyValuePair<string, string>("includeHasRelationships", includeHasRelationships.ToString()));
+				}
+
+				if (includeTotalRelationshipCount.HasValue)
+				{
+					queryParams.Add(new KeyValuePair<string, string>("includeTotalRelationshipCount", includeTotalRelationshipCount.ToString()));
 				}
 
 				if (RelationshipTypeUid.HasValue)
