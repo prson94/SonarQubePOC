@@ -1256,7 +1256,7 @@ select	r.uid as ResourceUid,
 
 			if (!Company.CurrentResourceIsAdmin)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage));
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, HelpMenuErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage));
 			}
 
 			try
@@ -1350,7 +1350,7 @@ select	r.uid as ResourceUid,
 
 			if (!Company.CurrentResourceIsAdmin)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage));
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, HelpMenuErrors.ErrorOnUpdate, ApiMessages.EndpointNotAuthorizedMessage));
 			}
 
 			try
@@ -1458,7 +1458,7 @@ select	r.uid as ResourceUid,
 
 			if (!Company.CurrentResourceIsAdmin)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage));
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, HelpMenuErrors.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage));
 			}
 
 			try
