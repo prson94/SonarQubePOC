@@ -91,7 +91,6 @@ import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.mod
 		PopupMenuModule,
 		SiteModalModule,
 		CheckboxModule,
-        PortalsModule,
 		FormsModule,
 		TableModule,
 		SharedDeleteFormModule,
