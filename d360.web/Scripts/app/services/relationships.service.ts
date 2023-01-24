@@ -26,11 +26,19 @@ export class RelationshipsService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getRelationshipTypes(assetTypeUid: string = null): Observable<RelationshipType[]> {
+	getRelationshipTypes(assetTypeUid: string = null, includeHasRelationships: boolean = false, includeTotalRelationshipCount: boolean = false): Observable<RelationshipType[]> {
         var url = 'api/v2/relationships/types?state=1';
 
         if (assetTypeUid) {
             url += `&AssetTypeUid=${assetTypeUid}`;
+		}
+
+		if (includeHasRelationships) {
+			url += `&includeHasRelationships=true`;
+		}
+
+		if (includeTotalRelationshipCount) {
+			url += `&includeTotalRelationshipCount=true`;
         }
 
         return this.http.get(url)

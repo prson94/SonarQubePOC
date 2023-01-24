@@ -1,10 +1,11 @@
 ﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { RelationshipType } from '../../../models/relationship.model';
+import { RelationshipType, RelationshipTypeSimpleUIModel } from '../../../models/relationship.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { PredicateFriendlyType } from '../../../models/predicate.model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'd3s-admin-relationships-list',
@@ -13,7 +14,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class AdminRelationshipsListComponent extends BaseComponent implements OnChanges {
-    relationships: RelationshipType[] = [];
+    relationships: RelationshipTypeSimpleUIModel[] = [];
 
     private id: number = null;
     private subject: string = "";
@@ -27,7 +28,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     @Input() showTitle = true;
 
-    @Input() selected: RelationshipType;
+	@Input() selected: RelationshipTypeSimpleUIModel;
     @Output() selectedChange = new EventEmitter();
 
     showEditor: boolean = false;
@@ -66,20 +67,6 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         this.relationshipsService.exportRelationshipTypes(this.filterToName ?? "", this.id ?? null, this.subject ?? "", this.predicate ?? "", this.object ?? "");
     }
 
-    private filterResults() {
-        if (this.filterToName && this.filterToName.length > 0) {
-            var search = this.filterToName.toLowerCase();
-            this.relationships = this.relationships.filter((item) =>
-                item.Predicate && item.Predicate.Name && item.Predicate.Name.toLowerCase().includes(search) ||
-                item.Predicate && item.Predicate.Inverse && item.Predicate.Inverse.toLowerCase().includes(search) ||
-                item.Object && item.Object.Class && item.Object.Class.toLowerCase().includes(search) ||
-                item.Object && item.Object.Name && item.Object.Name.toLowerCase().includes(search) ||
-                item.Subject && item.Subject.Class && item.Subject.Class.toLowerCase().includes(search) ||
-                item.Subject && item.Subject.Name && item.Subject.Name.toLowerCase().includes(search)
-            );
-        }
-    }
-
     getFriendlyNameForFunctionalType(type: string): string {
         let friendly: string = type;
 
@@ -90,23 +77,33 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     getRelationships() {
         this.updateStorageKey();
-        this.isLoading = true;
-        if (this.objectID && this.objectType) {
-            this.relationshipsService.getRelationshipTypesById(this.objectID, this.objectType)
-                .subscribe((result) => {
-                    this.relationships = result ?? [];
-                    this.isLoading = false;
-                    if (this.relationships && !this.showEditor) {
-                        if (this.relationships.length > 0) {
-                            this.selected = this.relationships[0];
-                            this.selectedChange.emit(this.selected);
-                        }
-                    }
-                    this.checkGridState();
-                });
-		} else {
-			console.warn("use new admin relationship component for full list of relationship types");
-        }
+		this.isLoading = true;
+		let obs = this.relationshipsService.getRelationshipTypes();
+
+		if (this.objectID && this.objectType) {
+			obs = this.relationshipsService.getRelationshipTypesById(this.objectID, this.objectType)
+		}
+
+		obs.subscribe((result) => {
+			this.relationships = [];
+
+			(result ?? []).forEach((rel) => {
+				this.relationships.push({
+					RelationshipTypeName: rel.Object.Name + " - " + rel.Predicate.Name + " - " + rel.Subject.Name,
+					Uid: rel.Uid,
+					HasRelationships: rel.HasRelationships
+				})
+			});
+
+			this.isLoading = false;
+			if (this.relationships && !this.showEditor) {
+				if (this.relationships.length > 0) {
+					this.selected = this.relationships[0];
+					this.selectedChange.emit(this.selected);
+				}
+			}
+			this.checkGridState();
+		});
     }
 
     private checkGridState() {
@@ -167,32 +164,11 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         this.selected = null;
     }
 
-    displayTypeName(type: string) {
-        if (!type) {return "";}
-        return type.replace("Type", "");
-    }
-
-    onFilter($event) {
-        this.id = $event.filters["Id"]?.value;
-        this.subject = $event.filters["Subject.Name"]?.value;
-        this.predicate = $event.filters["Predicate.Name"]?.value;
-        this.object = $event.filters["Object.Name"]?.value;
-
-        if ($event && $event.filteredValue) {
-            this.selected = $event.filteredValue[0];
-            this.filterToName = $event.filters?.global?.value;
-
-            if (this.selected) {
-                this.selectedChange.emit(this.selected);
-            }
-        }
-    }
-
     public downloadRel(relationship: RelationshipType) {
         this.relationshipsService.exportRelationshipTypeItems(relationship);
     }
 
-    get deletePromptText(): string {
-        return $localize`Are you sure you want to delete the relationship[${this.selected?.Subject?.Name} / ${this.selected?.Object?.Name}]?`;
+	get deletePromptText(): string {
+		return $localize`Are you sure you want to delete the relationship[${this.selected?.RelationshipTypeName}]?`;
     }
 }

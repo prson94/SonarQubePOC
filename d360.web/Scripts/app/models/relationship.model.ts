@@ -1,4 +1,5 @@
-﻿import { Predicate } from "./predicate.model";
+﻿import { NumericDictionary } from "lodash";
+import { Predicate } from "./predicate.model";
 
 export enum Cardinality {
     One = 1,
@@ -19,8 +20,18 @@ export class RelationshipType {
     Predicate: Predicate;
     Subject: RelationshipTypeEdge;
     Object: RelationshipTypeEdge;
-    HasFieldTypes?: boolean;
+	HasFieldTypes?: boolean;
+	HasRelationships?: boolean;
+	TotalRelationshipCount?: number;
 }
+
+export class RelationshipTypeSimpleUIModel {
+	Uid: string;
+	RelationshipTypeName: string;
+	HasRelationships?: boolean;
+}
+
+
 
 export class RelationshipCount {
     IntersectTypeUid: string;
