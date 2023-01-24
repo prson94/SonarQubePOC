@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RelationshipTypeDetailComponent } from './relationship-type-detail.component';
+import { PropertyGroupModule } from '../../../shared/controls/property-group/property-group.component';
+import { CoreModule } from '../../../shared/core.module';
 
 
 
@@ -9,7 +11,9 @@ import { RelationshipTypeDetailComponent } from './relationship-type-detail.comp
 		RelationshipTypeDetailComponent
 	],
 	imports: [
-		CommonModule
+		CommonModule,
+		CoreModule,
+		PropertyGroupModule
 	],
 	exports: [
 		RelationshipTypeDetailComponent

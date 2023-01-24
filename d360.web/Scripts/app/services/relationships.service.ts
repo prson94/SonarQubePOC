@@ -49,7 +49,7 @@ export class RelationshipsService extends BaseObservableService {
 	}
 
 	getRelationshipType(RelationshipTypeUid: string): Observable<RelationshipType[]> {
-		var url = `api/v2/relationships/types?state=1&RelationshipTypeUid=${RelationshipTypeUid}`;
+		var url = `api/v2/relationships/types?state=1&RelationshipTypeUid=${RelationshipTypeUid}&includeHasRelationships=true&includeTotalRelationshipCount=true&includeCreatedModifiedBy=true`;
 
 		return this.http.get(url)
 			.pipe(
@@ -297,7 +297,7 @@ export class RelationshipsService extends BaseObservableService {
         if (cachedItem)
             {return cachedItem.obs;}
 
-        const url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active&includeHasFieldTypes=true`;
+		const url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active&includeHasFieldTypes=true`;
 
         var obs = this.http.get(url)
             .pipe(map((response) => <RelationshipType[]>response),

@@ -1283,6 +1283,7 @@ OPTION(RECOMPILE)";
 			bool includeHasFieldTypes = false;
 			bool includeHasRelationships = false;
 			bool includeTotalRelationshipCount = false;
+			bool includeCreatedModifiedBy = false;
 
 			if (queryParams != null)
 			{
@@ -1364,6 +1365,12 @@ OPTION(RECOMPILE)";
 					var includeTotalRelationshipCountString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includetotalrelationshipcount").Value;
 					bool.TryParse(includeTotalRelationshipCountString, out includeTotalRelationshipCount);
 				}
+
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includecreatedmodifiedby"))
+				{
+					var includeCreatedModifiedByString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includecreatedmodifiedby").Value;
+					bool.TryParse(includeCreatedModifiedByString, out includeCreatedModifiedBy);
+				}
 			}
 
 			List<string> additionalColumns = new List<string>();
@@ -1389,6 +1396,17 @@ OPTION(RECOMPILE)";
 			{
 				additionalColumns.Add($@",(select count(1) from [Intersect] where IntersectTypeID = I.ID)
 									as 'TotalRelationshipCount'");
+			}
+
+			if (includeCreatedModifiedBy)
+			{
+				additionalColumns.Add($@",
+						I.CreatedOn,
+						created.FirstName + ' ' + created.LastName as CreatedByName,
+						created.uid as CreatedByUid,
+						I.UpdatedOn,
+						created.FirstName + ' ' + created.LastName as UpdatedByName,
+						created.uid as UpdatedByUid");
 			}
 
 			var sql = $@"
@@ -1417,6 +1435,9 @@ from	IntersectType I
 		left join AssetType O on O.ID = I.ObjectAssetTypeID and I.ObjectAssetTypeID > 0
 		left join AssetType O9 on O9.OBJECTID = 0 AND O9.CLASS = 9 AND O9.CLASS = I.OBJECTCLASS and I.ObjectAssetTypeID = 0
 		outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
+		{(includeCreatedModifiedBy ? @"		
+			left join reporting.global_resource created on created.ResourceID = I.CreatedBy
+			left join reporting.global_resource updated on updated.ResourceID = I.UpdatedBy" : "")}
 		{whereClause} for json path";
 
 			var models = await companyContext.GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs, ApiTimeout);

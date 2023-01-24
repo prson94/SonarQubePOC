@@ -979,6 +979,7 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
 			}
 		}
+
 		/// <summary>
 		/// GET a list of relationship types.
 		/// </summary>
@@ -988,6 +989,7 @@ namespace d360.web.Controllers.V2
 		/// <param name="includeHasFieldTypes">Return a property "HasFieldTypes". If Relationship Type has defined custom fields value is true otherwise false.</param>
 		/// <param name="includeHasRelationships">Return a property "HasRelationships". If Relationship Type has relationships value is true otherwise false.</param>
 		/// <param name="includeTotalRelationshipCount">Return a property "TotalRelationshipCount". Returns number of total relationships for type.</param>
+		/// <param name="includeCreatedModifiedBy">"Include the CreatedByName, CreatedByUid, ModifiedByName and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.</param>
 		/// <returns></returns>
 		[
 			HttpGet,
@@ -997,7 +999,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, State? State = null, bool? includeHasFieldTypes = null, bool? includeHasRelationships = null, bool? includeTotalRelationshipCount = null, Guid? RelationshipTypeUid = null)
+		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, State? State = null, bool? includeHasFieldTypes = null, bool? includeHasRelationships = null, bool? includeTotalRelationshipCount = null, bool? includeCreatedModifiedBy = null, Guid? RelationshipTypeUid = null)
 		{
 			var prefix = "Relationships.GetRelationshipTypesAsync => ";
 			string errorMessage;
@@ -1034,6 +1036,11 @@ namespace d360.web.Controllers.V2
 				if (includeTotalRelationshipCount.HasValue)
 				{
 					queryParams.Add(new KeyValuePair<string, string>("includeTotalRelationshipCount", includeTotalRelationshipCount.ToString()));
+				}
+
+				if (includeCreatedModifiedBy.HasValue)
+				{
+					queryParams.Add(new KeyValuePair<string, string>("includeCreatedModifiedBy", includeCreatedModifiedBy.ToString()));
 				}
 
 				if (RelationshipTypeUid.HasValue)

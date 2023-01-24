@@ -149,5 +149,23 @@ namespace d360.core.entities
 
 		[DataMember]
 		public int? TotalRelationshipCount { get; set; }
+
+		[DataMember]
+		public DateTime? CreatedOn { get; set; }
+
+		[DataMember]
+		public Guid? CreatedByUid { get; set; }
+
+		[DataMember]
+		public string CreatedByName { get; set; }
+
+		[DataMember]
+		public DateTime? UpdatedOn { get; set; }
+
+		[DataMember]
+		public Guid? UpdatedByUid { get; set; }
+
+		[DataMember]
+		public string UpdatedByName { get; set; }
 	}
 }

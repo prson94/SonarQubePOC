@@ -10,27 +10,31 @@ import { SidePanelService } from "../../../../services/side-panel.service";
 	styleUrls: ['./admin-relationships-sidepanel-wrapper.component.less']
 })
 export class AdminRelationshipsSidePanelWrapperComponent {
-    @Input() sidePanelStorageKey: string;
-    @Input() selectedItem: TreeNode;
+	@Input() sidePanelStorageKey: string;
+	@Input() selectedItem: TreeNode;
 
-    sidePanelOpen = false;
-    
-    constructor(public sidePanelService: SidePanelService) {
-    }
+	sidePanelOpen = false;
 
-    getSidePanelWidth(): number {
-        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
-    }
+	constructor(public sidePanelService: SidePanelService) {
+	}
 
-    getSidePanelMaxWidth(): number {
-        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
-    }
+	getSidePanelWidth(): number {
+		return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+	}
 
-    getSidePanelMinWidth(): number {
-        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
-    }
+	getSidePanelMaxWidth(): number {
+		return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+	}
 
-    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
-        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
-    }
+	getSidePanelMinWidth(): number {
+		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+	}
+
+	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+	}
+
+	onRelTypeEditClick($event) {
+		console.log("edit clicked", $event);
+	}
 }

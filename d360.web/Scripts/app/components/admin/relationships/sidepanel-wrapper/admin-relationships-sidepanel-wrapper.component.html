@@ -21,7 +21,7 @@
 			hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
 				<ng-container *ngIf="selectedItem">
-					<d3s-relationship-type-detail></d3s-relationship-type-detail>
+					<d3s-relationship-type-detail [relationshipTypeUid]="selectedItem.Uid" (onEditClick)="onRelTypeEditClick($event)"></d3s-relationship-type-detail>
 				</ng-container>
 			</ng-container>
 		</side-panel>
