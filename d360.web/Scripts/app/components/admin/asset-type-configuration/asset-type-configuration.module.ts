@@ -29,7 +29,6 @@ import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shar
 import { ConfigurationAssetTypeAllocationsPageComponent } from './tabs/allocations/configuration-asset-type-allocations-page.component';
 import { AdminModule } from '../admin.module';
 import { ConfigurationAssetTypeRelationshipsPageComponent } from './tabs/relationships/configuration-asset-type-relationships-page.component';
-import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
 import { ConfigurationAssetTypeLogPageComponent } from './tabs/log/configuration-asset-type-log-page.component';
 import { AuditModule } from '../../sidebar/audit/audit.module';
 import { ConfigurationAssetTypeBreadcrumbsComponent } from './tabs/shared/configuration-asset-type-breadcrumbs/configuration-asset-type-breadcrumbs.component';
@@ -51,6 +50,7 @@ import { AdminLevelEditorComponent } from './levels/admin-level-editor.component
 import { TableModule } from 'primeng/table';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { TilesModule } from '../../shared/tiles/tiles.module';
+import { AdminRelationshipEditorModule } from '../relationships/list/admin-relationship-editor.module';
 
 @NgModule({
     imports: [
