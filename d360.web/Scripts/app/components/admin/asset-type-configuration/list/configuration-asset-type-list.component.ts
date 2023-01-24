@@ -203,8 +203,6 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		this.load(($event.Uid as string).toLowerCase());
 	}
 
-	onPopupMenuClick($event) { }
-
 	onDeleteClose($event) {
 		this.assetTypeToDelete = null;
 		if ($event) {
