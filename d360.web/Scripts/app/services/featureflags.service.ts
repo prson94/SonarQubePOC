@@ -10,7 +10,6 @@ import { MessagesObservableService } from "./messages-observable.service";
 export enum FeatureFlags {
     DistributedCacheFlag = "GovernDistributedCachePerm",
     BrandingThemeCustomCss = "GovernBrandingCustomCssPerm",
-    BrandingThemeUiTemp = "GovernBrandingUiTemp20220531",
     DataProfilingUiFlag = "GovernDataProfileUiPerm",
     SemanticTypesUiFlag = "GovernSemanticTypesUiPerm",
 	ContainsSearchDefaultUiFlag = "GovernContainsSearchDefaultUiPerm",
@@ -31,7 +30,6 @@ export class FeatureFlagsService extends BaseObservableService {
         this.flags = {
             "GovernDistributedCachePerm": false,
             "GovernBrandingCustomCssPerm": false,
-            "GovernBrandingUiTemp20220531": false,
             "GovernDataProfileUiPerm": false,
             "GovernSemanticTypesUiPerm": false,
 			"GovernContainsSearchDefaultUiPerm": false
@@ -65,9 +63,6 @@ export class FeatureFlagsService extends BaseObservableService {
             }
             if (flags[FeatureFlags.BrandingThemeCustomCss] !== undefined) {
                 this.flags[FeatureFlags.BrandingThemeCustomCss] = flags[FeatureFlags.BrandingThemeCustomCss];
-            }
-            if (flags[FeatureFlags.BrandingThemeUiTemp] !== undefined) {
-                this.flags[FeatureFlags.BrandingThemeUiTemp] = flags[FeatureFlags.BrandingThemeUiTemp];
             }
             if (flags[FeatureFlags.DataProfilingUiFlag] !== undefined) {
                 this.flags[FeatureFlags.DataProfilingUiFlag] = flags[FeatureFlags.DataProfilingUiFlag];

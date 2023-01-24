@@ -2172,22 +2172,18 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
 
             var settings = SettingsRepository.GetSettingsAsDictionary();
 
-            var isThemeEnabled = Ld.BoolVariation(FeatureFlags.TEMP_BRANDING_NEWUI_TEMP, GetSdkFeatureFlagUser(), false);
-            if (isThemeEnabled)
+            settings["CustomCSSLocation"] = "";
+            settings["CompanyIcon"] = "";
+            settings["CompanyLogo"] = "";
+            var currentTheme = await this.ThemeRepository.GetCurrentThemeByUserAsync();
+            if (currentTheme != null && !string.IsNullOrEmpty(currentTheme.IconUri))
             {
-                settings["CustomCSSLocation"] = "";
-                settings["CompanyIcon"] = "";
-                settings["CompanyLogo"] = "";
-                var currentTheme = await this.ThemeRepository.GetCurrentThemeByUserAsync();
-                if (currentTheme != null && !string.IsNullOrEmpty(currentTheme.IconUri))
-                {
-                    settings["CompanyIcon"] = currentTheme.IconUri;
-                }
+                settings["CompanyIcon"] = currentTheme.IconUri;
+            }
 
-                if (currentTheme != null && !string.IsNullOrEmpty(currentTheme.HeaderLogoUri))
-                {
-                    settings["CompanyLogo"] = currentTheme.HeaderLogoUri;
-                }
+            if (currentTheme != null && !string.IsNullOrEmpty(currentTheme.HeaderLogoUri))
+            {
+                settings["CompanyLogo"] = currentTheme.HeaderLogoUri;
             }
 
             ViewData.Add("Settings", settings);
