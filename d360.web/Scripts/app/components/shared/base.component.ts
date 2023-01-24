@@ -569,6 +569,9 @@ export class BaseComponent {
 					`/asset/${this.uid}/score`, null, 7
 				);
 
+				this.scoreSidebar.subTabsUrl.push(`/asset/${this.uid}/score/Governance`);
+				this.scoreSidebar.subTabsUrl.push(`/asset/${this.uid}/score/DataQuality`);
+
 				this.secondaryNavService.showItem(this.scoreSidebar);
 
 				if (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement)) {
