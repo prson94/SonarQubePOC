@@ -127,21 +127,24 @@ namespace d360.model.DataAccessLayer
 						t.uid,
 						t.Value,
 						t.CreatedOn,
-						grc.uid as CreatedByUid,
-						grc.FirstName + ' ' + grc.LastName as CreatedByName,
-						t.UpdatedOn,
-						gru.uid as UpdatedByUid,
-						gru.FirstName + ' ' + gru.LastName as UpdatedByName
+						created.uid as CreatedByUid, 
+						adv_created.DisplayValue as CreatedByName, 
+						t.CreatedOn,
+						updated.uid as UpdatedByUid, 
+						adv_updated.DisplayValue as UpdatedByName, 
+						t.UpdatedOn  
 						from ConnectorLabel t
-						  left join reporting.Global_Resource grc on t.CreatedBy = grc.ResourceID
-						  left join reporting.Global_Resource gru on t.UpdatedBy = gru.ResourceID
+						  left join asset created on created.Object = 'Resource' and created.ObjectID = t.CreatedBy
+						  left join AssetDisplayValue adv_created on adv_created.AssetID = created.ID
+						  left join asset updated on updated.Object = 'Resource' and updated.ObjectID = t.CreatedBy
+						  left join AssetDisplayValue adv_updated on adv_updated.AssetID = updated.ID
 						  cross apply (select count(*) from #labelUidMap where uid = t.uid)Labels (count)
 						{whereClause}";
 
 			var countSql = @"select count(*)
 							from ConnectorLabel";
 
-			sql += " order by [ID] ASC"; // admin screen will most likely order results however it sees fit
+			sql += " order by t.[ID] ASC"; // admin screen will most likely order results however it sees fit
 
 			if (pageSize < 1)
 			{
@@ -331,12 +334,17 @@ namespace d360.model.DataAccessLayer
 						t.uid,
 						t.Value,
 						t.CreatedOn,
-						grc.FirstName + ' ' +grc.LastName as CreatedBy,
-						t.UpdatedOn,
-						gru.FirstName + ' ' +gru.LastName as UpdatedBy
+						created.uid as CreatedByUid, 
+						adv_created.DisplayValue as CreatedByName, 
+						t.CreatedOn,
+						updated.uid as UpdatedByUid, 
+						adv_updated.DisplayValue as UpdatedByName, 
+						t.UpdatedOn  
 						from ConnectorLabel t
-						  left join reporting.Global_Resource grc on t.CreatedBy = grc.ResourceID
-						  left join reporting.Global_Resource gru on t.UpdatedBy = gru.ResourceID
+						  left join asset created on created.Object = 'Resource' and created.ObjectID = t.CreatedBy
+						  left join AssetDisplayValue adv_created on adv_created.AssetID = created.ID
+						  left join asset updated on updated.Object = 'Resource' and updated.ObjectID = t.CreatedBy
+						  left join AssetDisplayValue adv_updated on adv_updated.AssetID = updated.ID
 						  cross apply (select count(*) from #labelUidMap where uid = t.uid)Labels (count)
 						{whereClause}
 						{sortClause}";

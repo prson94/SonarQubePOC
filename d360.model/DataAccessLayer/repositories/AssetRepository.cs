@@ -177,21 +177,23 @@ namespace d360.model.DataAccessLayer
 					}
 				}				
 				
-				if (queryParams.Any(q => q.Key.ToLower() == "includesystemfields"))
+				if (queryParams.Any(q => q.Key.ToLower() == "includeupdatedandcreatedfields"))
 				{
-					var includeSystemFieldsString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "includesystemfields").Value;
-					if (bool.TryParse(includeSystemFieldsString, out bool includeSystemFields) && includeSystemFields)
+					var IncludeCreatedOnCreatedByString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "includeupdatedandcreatedfields").Value;
+					if (bool.TryParse(IncludeCreatedOnCreatedByString, out bool IncludeCreatedOnCreatedBy) && IncludeCreatedOnCreatedBy)
 					{
 						extraJoins += @"
-							inner join reporting.Global_Resource created on created.ResourceID = a.CreatedBy
-							inner join reporting.Global_Resource updated on updated.ResourceID = a.UpdatedBy
+							left join asset created on created.Object = 'Resource' and created.ObjectID = a.CreatedBy
+							left join AssetDisplayValue adv_created on adv_created.AssetID = created.ID
+							left join asset updated on updated.Object = 'Resource' and updated.ObjectID = a.CreatedBy
+							left join AssetDisplayValue adv_updated on adv_updated.AssetID = updated.ID
 							";
 						extraColumns += @", 
 							created.uid as CreatedByUid, 
-							created.FirstName + ' ' + created.LastName as CreatedByName, 
+							adv_created.DisplayValue as CreatedByName, 
 							a.CreatedOn,
 							updated.uid as UpdatedByUid, 
-							updated.FirstName + ' ' + updated.LastName as UpdatedByName, 
+							adv_updated.DisplayValue as UpdatedByName, 
 							a.UpdatedOn ";
 					}
 				}
