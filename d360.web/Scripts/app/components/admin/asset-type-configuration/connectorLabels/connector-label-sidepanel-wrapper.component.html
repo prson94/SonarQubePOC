@@ -12,11 +12,11 @@
 				   [minSize]="getSidePanelMinWidth()"
 				   [maxSize]="getSidePanelMaxWidth()"
 				   class="tile tile-detail side-panel">
-		<side-panel [selectedItem]="selectedItem"
+		<side-panel [selectedItem]="anySelectedItem"
 					[setMinMaxWidth]="false"
 					[storageKey]="sidePanelStorageKey"
 					[expanded]="true"
-					[showEmptyOverlay]="!selectedItem"
+					[showEmptyOverlay]="!selectedItem && !selectedForInfoPanel"
 					(expandedChange)="sidePanelOpen=$event"
 					hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">

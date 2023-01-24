@@ -45,4 +45,11 @@ export class ConnectorLabelSidePanelWrapperComponent implements OnChanges {
 	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
 		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
 	}
+
+	get anySelectedItem(): any {
+		if (this.selectedItem) {
+			return this.selectedItem;
+		}
+		else return this.selectedForInfoPanel;
+	}
 }
