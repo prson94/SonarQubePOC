@@ -95,6 +95,9 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 				})
 			});
 
+			this.relationships =
+				this.relationships.sort((a, b) => a.RelationshipTypeName > b.RelationshipTypeName ? 1 : -1);
+
 			this.isLoading = false;
 			if (this.relationships && !this.showEditor) {
 				if (this.relationships.length > 0) {
