@@ -35,7 +35,7 @@ export class LinkClickInterceptor {
         var adcEv = new AssetDetailClickEvent();
         adcEv.type = AssetDetailClickType.Undefined;
 		adcEv.url = url;
-
+		adcEv.data = data;
         adcEv.originalEvent = origEvent;
 
         if (origEvent) {

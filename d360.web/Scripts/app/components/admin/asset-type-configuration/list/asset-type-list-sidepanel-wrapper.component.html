@@ -12,17 +12,23 @@
 		[minSize]="getSidePanelMinWidth()"
 		[maxSize]="getSidePanelMaxWidth()"
 		class="tile tile-detail side-panel">
-		<side-panel [selectedItem]="selectedItem"
+		<side-panel [selectedItem]="anySelectedItem"
 			[setMinMaxWidth]="false"
 			[storageKey]="sidePanelStorageKey"
 			[expanded]="true"
-			[showEmptyOverlay]="!selectedItem"
+			[showEmptyOverlay]="!selectedItem && !selectedForInfoPanel"
 			(expandedChange)="sidePanelOpen=$event"
 			hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
-				<ng-container *ngIf="selectedItem">
+				<ng-container *ngIf="selectedItem && !selectedForInfoPanel">
 					<ig-asset-type-detail-v2 [uid]="selectedItem.key">
 					</ig-asset-type-detail-v2>
+				</ng-container>
+				<ng-container *ngIf="selectedForInfoPanel && !selectedItem">
+					<asset-preview [assetUid]="selectedForInfoPanel.AssetUid"
+								   [assetType]="selectedForInfoPanel.Object"
+								   [hasEditLink]="false"
+								   [hasOpenLink]="true"></asset-preview>
 				</ng-container>
 			</ng-container>
 		</side-panel>

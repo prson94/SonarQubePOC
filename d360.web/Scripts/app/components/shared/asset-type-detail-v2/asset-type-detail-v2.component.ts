@@ -22,7 +22,7 @@ import {
 	ControlsOptions,
 	OpenBehaviour
 } from './asset-type-detail-v2.model';
-import { AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
+import { AssetType, AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
 import { RelationshipsService } from '../../../services/relationships.service';
 import { Predicate } from '../../../models/predicate.model';
 
@@ -215,8 +215,8 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 			{ name: 'UID', type: AssetTypeDetailFieldType.SYSTEM, value: assetTypeModel.uid },
 			{ name: `Date Created`, type: AssetTypeDetailFieldType.DATE, value: assetTypeModel.CreatedOn },
 			{ name: `Date Last Modified`, type: AssetTypeDetailFieldType.DATE, value: assetTypeModel.UpdatedOn },
-			{ name: `Created By`, type: AssetTypeDetailFieldType.TEXT, value: assetTypeModel.CreatedByName },
-			{ name: `Last Modified By`, type: AssetTypeDetailFieldType.TEXT, value: assetTypeModel.UpdatedByName }
+			{ name: `Created By`, type: AssetTypeDetailFieldType.USER, value: { title: assetTypeModel.CreatedByName, value: assetTypeModel.CreatedByUid } },
+			{ name: `Last Modified By`, type: AssetTypeDetailFieldType.USER, value: { title: assetTypeModel.UpdatedByName, value: assetTypeModel.UpdatedByUid } }
 		]);
 	}
 

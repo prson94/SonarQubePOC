@@ -30,5 +30,6 @@ export enum AssetTypeDetailFieldType {
     FLOW_OBJECT_TYPE = "FLOW_OBJECT_TYPE",
     HTML = "HTML",
 	SWITCH = "SWITCH",
-	DATE = "DATE"
+	DATE = "DATE",
+	USER = "USER"
 }
