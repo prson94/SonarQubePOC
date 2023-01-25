@@ -96,4 +96,9 @@
 							  (onDelete)="deleteRelationship($event)">
 </d3s-relationship-type-delete>
 
-<d3s-admin-relationships-editor *ngIf="showEditor" [relationshipType]="selected" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-admin-relationships-editor>
+<d3s-admin-relationships-editor 
+								[isModalVisible]="showEditor"
+								[relationshipTypeUid]="selected?.Uid" 
+								(saveClick)="saveRelationship($event)" 
+								(closeClick)="closeEditor()">
+</d3s-admin-relationships-editor>

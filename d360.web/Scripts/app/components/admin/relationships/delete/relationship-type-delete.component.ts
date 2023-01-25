@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { RelationshipType, RelationshipTypeSimpleUIModel } from '../../../../models/relationship.model';
-import { MessagesObservableService } from '../../../../services/messages-observable.service';
 import { RelationshipsService } from '../../../../services/relationships.service';
 
 @Component({
@@ -19,8 +18,7 @@ export class RelationshipTypeDeleteComponent implements OnChanges {
 	deleteInProgress: boolean = false;
 
 	constructor(
-		private relationshipService: RelationshipsService,
-		private messagesService: MessagesObservableService,
+		private relationshipService: RelationshipsService
 	) { }
 
 	ngOnChanges(changes: SimpleChanges): void {

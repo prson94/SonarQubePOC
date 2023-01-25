@@ -1,11 +1,11 @@
-<d3s-modal additionalClasses="modal-dyn-editor asset-editor large-dialog"
+<d3s-modal additionalClasses="modal-dyn-editor asset-editor large-dialog modal-form"
 		   [showTitle]="false"
 		   (onClose)="close()"
 		   [isVisible]="isModalVisible">
-	<div class="asset-editor-container">
+	<div class="editor-container">
 		<d3s-loading [isLoading]="isLoading"></d3s-loading>
 
-		<div *ngIf="!isLoading" class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
+		<div *ngIf="!isLoading" class="form-editor-container {{savingInProgress ? 'saving-in-progress' : ''}}">
 			<div class="form-header-wrapper">
 				<div class="form-header">
 					{{title}}
