@@ -1401,12 +1401,12 @@ OPTION(RECOMPILE)";
 			if (includeCreatedModifiedBy)
 			{
 				additionalColumns.Add($@",
+						created.uid as CreatedByUid, 
+						adv_created.DisplayValue as CreatedByName, 
 						I.CreatedOn,
-						created.FirstName + ' ' + created.LastName as CreatedByName,
-						created.uid as CreatedByUid,
-						I.UpdatedOn,
-						created.FirstName + ' ' + created.LastName as UpdatedByName,
-						created.uid as UpdatedByUid");
+						updated.uid as UpdatedByUid, 
+						adv_updated.DisplayValue as UpdatedByName, 
+						I.UpdatedOn");
 			}
 
 			var sql = $@"
@@ -1436,8 +1436,10 @@ from	IntersectType I
 		left join AssetType O9 on O9.OBJECTID = 0 AND O9.CLASS = 9 AND O9.CLASS = I.OBJECTCLASS and I.ObjectAssetTypeID = 0
 		outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
 		{(includeCreatedModifiedBy ? @"		
-			left join reporting.global_resource created on created.ResourceID = I.CreatedBy
-			left join reporting.global_resource updated on updated.ResourceID = I.UpdatedBy" : "")}
+			left join asset created on created.Object = 'Resource' and created.ObjectID = I.CreatedBy
+			left join AssetDisplayValue adv_created on adv_created.AssetID = created.ID
+			left join asset updated on updated.Object = 'Resource' and updated.ObjectID = I.CreatedBy
+			left join AssetDisplayValue adv_updated on adv_updated.AssetID = updated.ID" : "")}
 		{whereClause} for json path";
 
 			var models = await companyContext.GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs, ApiTimeout);
