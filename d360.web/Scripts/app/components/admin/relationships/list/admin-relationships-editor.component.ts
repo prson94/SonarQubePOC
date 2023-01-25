@@ -1,4 +1,5 @@
-﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { forkJoin } from 'rxjs';
 import { Predicate } from '../../../../models/predicate.model';
@@ -22,6 +23,9 @@ export class AdminRelationshipsEditor implements OnChanges {
 
 	relationshipType: RelationshipType;
 	title: string = $localize`Edit`;
+
+	saveLabel: string;
+
 	error: any;
 	cardinalityOptions: SelectItem[] = [];
 	subjectCardinalityOptions: SelectItem[] = [];
@@ -40,14 +44,26 @@ export class AdminRelationshipsEditor implements OnChanges {
 	selectedPredicate: any;
 	limitedChangesOnly: boolean = false;
 
+	relationshipTypeForm: FormGroup = null;
+	@ViewChild('form', { static: false }) formElement: ElementRef;
 
-
-	constructor(private relationshipsService: RelationshipsService, private cdRef: ChangeDetectorRef) {
+	constructor(
+		private fb: FormBuilder,
+		private relationshipsService: RelationshipsService,
+		private cdRef: ChangeDetectorRef) {
 		this.relationshipType = new RelationshipType();
 		this.relationshipType.Subject = new RelationshipTypeEdge();
 		this.relationshipType.Object = new RelationshipTypeEdge();
 		this.relationshipType.Predicate = new Predicate();
 		this.title = $localize`Add Relationship Type`;
+
+		this.relationshipTypeForm = this.fb.group({
+			subject: [null, { validators: [Validators.required], updateOn: "blur" }],
+			object: [null, { validators: [Validators.required], updateOn: "blur" }],
+			predicate: [null, { validators: [Validators.required], updateOn: "blur" }],
+			subjectCardinality: [null, { validators: [Validators.required], updateOn: "blur" }],
+			objectCardinality: [null, { validators: [Validators.required], updateOn: "blur" }]
+		});
 	}
 
 	ngOnChanges(changes: SimpleChanges) {
@@ -69,6 +85,7 @@ export class AdminRelationshipsEditor implements OnChanges {
 			this.relationshipType.Object = new RelationshipTypeEdge();
 			this.relationshipType.Predicate = new Predicate();
 			this.title = $localize`Add Relationship Type`;
+			this.saveLabel = this.title;
 		}
 	}
 

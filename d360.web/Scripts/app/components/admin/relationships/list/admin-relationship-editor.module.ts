@@ -1,6 +1,6 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AdminRelationshipsEditor } from './admin-relationships-editor.component';
 import { AdminRelationshipsListComponent } from './admin-relationships-list.component';
 import { ButtonModule } from 'primeng/button';
@@ -17,6 +17,9 @@ import { TilesModule } from '../../../shared/tiles/tiles.module';
 import { PopupMenuModule } from '../../../shared/controls/popup-menu/popup-menu.component';
 import { RelationshipTypeDeleteComponent } from '../delete/relationship-type-delete.component';
 import { SiteModalModule } from '../../../shared/modal/gov-modal.module';
+import { IgMessageBoxModule } from '../../../shared/controls/message-box/message-box.module';
+import { PropertyGroupModule } from '../../../shared/controls/property-group/property-group.component';
+import { FormFeedbackBadgesModule } from '../../../shared/controls/form-feedback-badges/form-feedback-badges.component';
 
 
 @NgModule({
@@ -40,7 +43,11 @@ import { SiteModalModule } from '../../../shared/modal/gov-modal.module';
 		TilesModule,
 		SearchFieldModule,
 		PopupMenuModule,
-		SiteModalModule
+		SiteModalModule,
+		IgMessageBoxModule,
+		PropertyGroupModule,
+		FormFeedbackBadgesModule,
+		ReactiveFormsModule
     ],
     declarations: [        
         AdminRelationshipsEditor,        

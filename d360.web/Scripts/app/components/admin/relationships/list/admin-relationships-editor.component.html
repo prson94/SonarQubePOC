@@ -1,116 +1,132 @@
 ﻿<d3s-modal additionalClasses="modal-dyn-editor asset-editor large-dialog modal-form"
-		   [title]="title"
-		   i18n-subtitle
-		   subtitle="Relationships"
+		   [showTitle]="false"
 		   (onClose)="closeClick.emit();"
 		   [isVisible]="isModalVisible">
 	<div class="editor-container">
 		<div class="form-editor-container">
-			<div class="form-instructions" i18n>When creating a relationship type, Subject should always be the higher-level item in the relationship, while Object is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Subject and Business Term as Object.  This will impact how sourcing and synonym inheritance works, as Object is what you are sourcing as well as where synonyms defined on the relationship will also appear.</div>
-			<form (ngSubmit)="onSubmit()" #relationshipEditorForm="ngForm">
-
-				<div class="row">
-					<div class="col l4 m4 s12">
-						<div class="FieldName" i18n>Subject</div>
-						<p-dropdown igDropdown
-									igSize="full"
-									[igDataCy]="'Relationship_Dropdown_Subject'"
-									[ellipsisDirection]="'rtl'"
-									i18n-placeholder
-									placeholder="Select Subject"
-									filter="true"
-									appendTo="body"
-									name="subject"
-									#subject="ngModel"
-									[options]="subjectOptions"
-									[(ngModel)]="relationshipType.Subject.Uid"
-									[disabled]="limitedChangesOnly"
-									required
-									(ngModelChange)="relationshipType.Subject.Uid=$event;subjectChanged($event);"></p-dropdown>
-					</div>
-					<div class="col l4 m4 s12">
-						<div class="FieldName" i18n>Predicate</div>
-						<p-dropdown igDropdown
-									igSize="full"
-									[igDataCy]="'Relationship_Dropdown_Predicate'"
-									i18n-placeholder
-									placeholder="Select A Predicate"
-									filter="true"
-									appendTo="body"
-									name="predicate"
-									#predicate="ngModel"
-									[options]="predicates"
-									[(ngModel)]="relationshipType.Predicate.Uid"
-									[disabled]="!canChangePredicate"
-									required
-									(ngModelChange)="relationshipType.Predicate.Uid=$event;predicateChanged($event);"></p-dropdown>
-					</div>
-					<div class="col l4 m4 s12">
-						<d3s-loading [isLoading]="isLoadingObject"></d3s-loading>
-						<div *ngIf="!isLoadingObject" class="FieldName" i18n>Object</div>
-						<p-dropdown igDropdown
-									igSize="full"
-									[igDataCy]="'Relationship_Dropdown_Object'"
-									[ellipsisDirection]="'rtl'"
-									i18n-placeholder
-									placeholder="Select Object"
-									*ngIf="!isLoadingObject"
-									filter="true"
-									appendTo="body"
-									name="object"
-									#object="ngModel"
-									[options]="objectOptions"
-									[(ngModel)]="relationshipType.Object.Uid"
-									[disabled]="limitedChangesOnly || !canChangeObject"
-									required></p-dropdown>
-					</div>
+			<div class="form-header-wrapper">
+				<div class="form-header">
+					{{title}}
+					<h2 i18n>Relationships</h2>
 				</div>
+				<ig-form-feedback-badges class="ig-form-feedback-badges"
+										 [igformGroup]="relationshipTypeForm"
+										 [inputContainer]="formElement">
+				</ig-form-feedback-badges>
+			</div>
+			<ig-message-box>
+				<span i18n>
+					When creating a relationship type, Subject should always be the higher-level item in the relationship, while Object is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Subject and Business Term as Object.  This will impact how sourcing and synonym inheritance works, as Object is what you are sourcing as well as where synonyms defined on the relationship will also appear.
+				</span>
+			</ig-message-box>
+			<form #form
+				  (ngSubmit)="onSubmit()"
+				  [formGroup]="relationshipTypeForm">
+				<ig-property-group [igformGroup]="relationshipTypeForm"
+								   title="General"
+								   i18n-title>
+					<div inputs>
+						<div class="form-group">
+							<div class="row">
+								<div class="field-col">
+									<label for="subject" class="ig-label" i18n>Subject</label>
+									<p-dropdown igDropdown
+												igSize="full"
+												[igDataCy]="'Relationship_Dropdown_Subject'"
+												[ellipsisDirection]="'rtl'"
+												i18n-placeholder
+												placeholder="Select Subject"
+												filter="true"
+												appendTo="body"
+												name="subject"
+												formControlName="subject"
+												[options]="subjectOptions"
+												[(ngModel)]="relationshipType.Subject.Uid"
+												required
+												(ngModelChange)="relationshipType.Subject.Uid=$event;subjectChanged($event);"></p-dropdown>
+								</div>
+								<div class="field-col">
+									<label for="predicate" class="ig-label" i18n>Predicate</label>
 
-				<div class="row">
-					<div class="col l4 m4 s12">
-						<d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
-						<div *ngIf="!isLoadingCardinality" class="FieldName" i18n>Subject Cardinality</div>
-						<p-dropdown igDropdown
-									igSize="full"
-									[igDataCy]="'Relationship_Dropdown_Subject_Cardinality'"
-									i18n-placeholder
-									placeholder="Select Cardinality"
-									*ngIf="!isLoadingCardinality"
-									panelStyleClass="dropdown-z-correction"
-									filter="true"
-									name="subjectCardinality"
-									#subjectCardinality="ngModel"
-									[options]="subjectCardinalityOptions"
-									[(ngModel)]="relationshipType.Subject.Cardinality"
-									[disabled]="!canChangeCardinality" required></p-dropdown>
+									<p-dropdown igDropdown
+												igSize="full"
+												[igDataCy]="'Relationship_Dropdown_Predicate'"
+												i18n-placeholder
+												placeholder="Select A Predicate"
+												filter="true"
+												appendTo="body"
+												name="predicate"
+												formControlName="predicate"
+												[options]="predicates"
+												[(ngModel)]="relationshipType.Predicate.Uid"
+												required
+												(ngModelChange)="relationshipType.Predicate.Uid=$event;predicateChanged($event);"></p-dropdown>
+								</div>
+
+								<div class="field-col">
+									<label for="object" class="ig-label" i18n>Object</label>
+									<p-dropdown igDropdown
+												igSize="full"
+												[igDataCy]="'Relationship_Dropdown_Object'"
+												[ellipsisDirection]="'rtl'"
+												i18n-placeholder
+												placeholder="Select Object"
+												filter="true"
+												appendTo="body"
+												name="object"
+												formControlName="object"
+												[options]="objectOptions"
+												[(ngModel)]="relationshipType.Object.Uid"
+												required></p-dropdown>
+								</div>
+
+								<div class="field-col">
+									<div class="col l4 m4 s12">
+										<d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
+										<div *ngIf="!isLoadingCardinality" class="FieldName" i18n>Subject Cardinality</div>
+										<p-dropdown igDropdown
+													igSize="full"
+													[igDataCy]="'Relationship_Dropdown_Subject_Cardinality'"
+													i18n-placeholder
+													placeholder="Select Cardinality"
+													panelStyleClass="dropdown-z-correction"
+													filter="true"
+													name="subjectCardinality"
+													formControlName="subjectCardinality"
+													[options]="subjectCardinalityOptions"
+													[(ngModel)]="relationshipType.Subject.Cardinality" required></p-dropdown>
+									</div>
+									<div class="col l4 m4 s12" style="text-align: center">&nbsp;<br /><ng-container i18n>to</ng-container></div>
+									<div class="col l4 m4 s12">
+										<d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
+										<div *ngIf="!isLoadingCardinality" class="FieldName" i18n>Object Cardinality</div>
+										<p-dropdown igDropdown
+													igSize="full"
+													[igDataCy]="'Relationship_Dropdown_Object_Cardinality'"
+													i18n-placeholder
+													placeholder="Select Cardinality"
+													filter="true"
+													name="objectCardinality"
+													formControlName="objectCardinality"
+													[options]="objectCardinalityOptions"
+													[(ngModel)]="relationshipType.Object.Cardinality"
+													required></p-dropdown>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
-					<div class="col l4 m4 s12" style="text-align: center">&nbsp;<br /><ng-container i18n>to</ng-container></div>
-					<div class="col l4 m4 s12">
-						<d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
-						<div *ngIf="!isLoadingCardinality" class="FieldName" i18n>Object Cardinality</div>
-						<p-dropdown igDropdown
-									igSize="full"
-									[igDataCy]="'Relationship_Dropdown_Object_Cardinality'"
-									i18n-placeholder
-									placeholder="Select Cardinality"
-									*ngIf="!isLoadingCardinality"
-									filter="true"
-									name="objectCardinality"
-									#objectCardinality="ngModel"
-									[options]="objectCardinalityOptions"
-									[(ngModel)]="relationshipType.Object.Cardinality"
-									[disabled]="!canChangeCardinality"
-									required></p-dropdown>
-					</div>
-				</div>
+				</ig-property-group>
+
+
 			</form>
 		</div>
 
 	</div>
 	<div class="action-bar">
-		<button igButton class="ig-button-secondary" type="button" (click)="closeClick.emit();" label="Close" i18n-label></button>
+		<button igButton class="ig-button-secondary" type="button" (click)="closeClick.emit();" label="Cancel" i18n-label></button>
 		<span class="grow"></span>
-		<button igButton igAutoFocus class="ig-button-primary" margin type="submit" i18n-label label="Save"></button>
+		<button igButton igAutoFocus class="ig-button-primary" margin type="submit" i18n-label label="{{saveLabel}}"></button>
 	</div>
 </d3s-modal>
 
