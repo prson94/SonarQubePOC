@@ -1333,9 +1333,11 @@ namespace d360.model
 						if (!string.IsNullOrEmpty(rel))
 						{
 							string[] parts = rel.Split('|');
+							var Object = parts[0];
+							var ObjectID = int.Parse(parts[1]);
 
 							var intersect = new Intersect { IntersectTypeID = intersectType.ID };
-							var otherAsset = Assets.FirstOrDefault(a => a.Object == (parts[0] ?? "").Replace("Type", "") && a.ObjectID == int.Parse(parts[1]));
+							var otherAsset = Assets.FirstOrDefault(a => a.Object == (Object ?? "").Replace("Type", "") && a.ObjectID == ObjectID);
 
 							if (otherAsset != null)
 							{ 
@@ -1366,7 +1368,11 @@ namespace d360.model
 		private void DeleteIntersects(long assetId, int intersectTypeId, bool isSubject)
 		{
 			var targetColumn = isSubject ? "SubjectAssetID" : "ObjectAssetID";
-			string sql = $"delete from [intersect] output deleted.uid into #deletedIntersects where {targetColumn} = @assetId and intersecttypeid = @intersectTypeId";
+			
+			string sql = @$"drop table if exists #deletedIntersects;
+							create table #deletedIntersects (uid uniqueidentifier);
+							delete from [intersect] output deleted.uid into #deletedIntersects where {targetColumn} = @assetId and intersecttypeid = @intersectTypeId";
+
 			Database.Connection.Execute(sql, new { assetId, intersectTypeId });
 		}
 
