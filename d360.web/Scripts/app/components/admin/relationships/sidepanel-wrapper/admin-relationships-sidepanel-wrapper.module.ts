@@ -4,6 +4,7 @@ import { AdminRelationshipsSidePanelWrapperComponent } from './admin-relationshi
 import { SidePanelModule } from '../../../shared/sidepanel/side-panel.module';
 import { AngularSplitModule } from 'angular-split';
 import { RelationshipTypeDetailModule } from '../relationship-type-detail/relationship-type-detail.module';
+import { AssetPreviewModule } from '../../../shared/asset-preview/asset-preview.module';
 
 
 
@@ -15,7 +16,8 @@ import { RelationshipTypeDetailModule } from '../relationship-type-detail/relati
 		CommonModule,
 		SidePanelModule,
 		AngularSplitModule,
-		RelationshipTypeDetailModule
+		RelationshipTypeDetailModule,
+		AssetPreviewModule
 	],
 	exports: [
 		AdminRelationshipsSidePanelWrapperComponent

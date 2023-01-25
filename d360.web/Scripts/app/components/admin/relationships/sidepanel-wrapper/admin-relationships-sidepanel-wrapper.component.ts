@@ -1,4 +1,4 @@
-import { Component, Input } from "@angular/core";
+import { Component, Input, OnChanges, SimpleChanges } from "@angular/core";
 import { IOutputData } from "angular-split";
 import { TreeNode } from "primeng/api";
 import { SidePanelService } from "../../../../services/side-panel.service";
@@ -9,13 +9,20 @@ import { SidePanelService } from "../../../../services/side-panel.service";
 	templateUrl: './admin-relationships-sidepanel-wrapper.component.html',
 	styleUrls: ['./admin-relationships-sidepanel-wrapper.component.less']
 })
-export class AdminRelationshipsSidePanelWrapperComponent {
+export class AdminRelationshipsSidePanelWrapperComponent implements OnChanges {
 	@Input() sidePanelStorageKey: string;
 	@Input() selectedItem: TreeNode;
 
 	sidePanelOpen = false;
+	selectedForInfoPanel: unknown;
 
 	constructor(public sidePanelService: SidePanelService) {
+	}
+
+	ngOnChanges(changes: SimpleChanges) {
+		if (changes.selectedItem && changes.selectedItem.currentValue !== changes.selectedItem.previousValue) {
+			this.selectedForInfoPanel = null;
+		}
 	}
 
 	getSidePanelWidth(): number {
@@ -35,6 +42,16 @@ export class AdminRelationshipsSidePanelWrapperComponent {
 	}
 
 	onRelTypeEditClick($event) {
-		console.log("edit clicked", $event);
+		this.selectedItem = null;
+		this.selectedForInfoPanel = { AssetUid: $event.uid, Object: $event.type };
+	}
+
+	get anySelectedItem(): unknown {
+		if (this.selectedItem) {
+			return this.selectedItem;
+		}
+		else {
+			return this.selectedForInfoPanel;
+		}
 	}
 }

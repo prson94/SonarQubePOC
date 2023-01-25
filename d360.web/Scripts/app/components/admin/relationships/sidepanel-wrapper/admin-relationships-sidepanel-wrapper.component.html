@@ -12,16 +12,22 @@
 		[minSize]="getSidePanelMinWidth()"
 		[maxSize]="getSidePanelMaxWidth()"
 		class="tile tile-detail side-panel">
-		<side-panel [selectedItem]="selectedItem"
+		<side-panel [selectedItem]="anySelectedItem"
 			[setMinMaxWidth]="false"
 			[storageKey]="sidePanelStorageKey"
 			[expanded]="true"
-			[showEmptyOverlay]="!selectedItem"
+			[showEmptyOverlay]="!selectedItem && !selectedForInfoPanel"
 			(expandedChange)="sidePanelOpen=$event"
 			hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
-				<ng-container *ngIf="selectedItem">
-					<d3s-relationship-type-detail [relationshipTypeUid]="selectedItem.Uid" (onEditClick)="onRelTypeEditClick($event)"></d3s-relationship-type-detail>
+				<ng-container *ngIf="selectedItem && !selectedForInfoPanel">
+					<d3s-relationship-type-detail [relationshipTypeUid]="selectedItem.Uid" (onEditClick)="onRelTypeEditClick($event)" (onLinkClicked)="onRelTypeEditClick($event)"></d3s-relationship-type-detail>
+				</ng-container>
+				<ng-container *ngIf="selectedForInfoPanel && !selectedItem">
+					<asset-preview [assetUid]="selectedForInfoPanel.AssetUid"
+								   [assetType]="selectedForInfoPanel.Object"
+								   [hasEditLink]="false"
+								   [hasOpenLink]="true"></asset-preview>
 				</ng-container>
 			</ng-container>
 		</side-panel>
