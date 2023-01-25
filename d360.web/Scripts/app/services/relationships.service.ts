@@ -9,7 +9,8 @@ import {
 	RelatedItem,
 	RelationshipCount,
 	RelationshipDetail,
-	RelationshipType
+	RelationshipType,
+    RelationshipTypeSimpleUIModel
 } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
@@ -167,7 +168,7 @@ export class RelationshipsService extends BaseObservableService {
 			catchError((err) => this.handleError(err, true))
 		);
 	}
-	exportRelationshipTypeItems(relType: RelationshipType) {
+	exportRelationshipTypeItems(relType: RelationshipTypeSimpleUIModel) {
 		this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship type items'));
 	}
 

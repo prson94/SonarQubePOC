@@ -14,6 +14,9 @@ import { SharedDynamicGridEditorModule } from '../../../shared/dynamicgrideditor
 import { SharedGridPagingInfoModule } from '../../../shared/grid-paging-info.component';
 import { SearchFieldModule } from '../../../shared/controls/search-field/search-field.component';
 import { TilesModule } from '../../../shared/tiles/tiles.module';
+import { PopupMenuModule } from '../../../shared/controls/popup-menu/popup-menu.component';
+import { RelationshipTypeDeleteComponent } from '../delete/relationship-type-delete.component';
+import { SiteModalModule } from '../../../shared/modal/gov-modal.module';
 
 
 @NgModule({
@@ -32,15 +35,17 @@ import { TilesModule } from '../../../shared/tiles/tiles.module';
 
         //d3s        
         CoreModule,
-        SharedDeleteFormModule,
         SharedDynamicGridEditorModule,        
         SharedGridPagingInfoModule,
 		TilesModule,
-		SearchFieldModule
+		SearchFieldModule,
+		PopupMenuModule,
+		SiteModalModule
     ],
     declarations: [        
         AdminRelationshipsEditor,        
-        AdminRelationshipsListComponent,
+		AdminRelationshipsListComponent,
+		RelationshipTypeDeleteComponent
     ],
     exports: [
         AdminRelationshipsListComponent,

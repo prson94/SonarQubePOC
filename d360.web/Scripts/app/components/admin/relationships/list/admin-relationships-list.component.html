@@ -18,6 +18,18 @@
 					class="ig-button-primary"
 					icon="fa-plus">
 			</button>
+
+			<div pTooltip="Export"
+				 i18n-pTooltip
+				 tooltipPosition="left"
+				 tooltipStyleClass="ig-tooltip">
+				<button igButton
+						class="ig-button-secondary"
+						[igDataCy]="'RelationshipType_Export'"
+						icon="fa-download"
+						(click)="export()">
+				</button>
+			</div>
 		</div>
 	</div>
 </div>
@@ -43,6 +55,7 @@
 						<d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
 					</th>
 					<th style="width: 200px">Relationships Exist</th>
+					<th style="width: 40px"></th>
 				</tr>
 			</ng-template>
 			<ng-template pTemplate="body" let-item>
@@ -60,27 +73,14 @@
 							</ng-template>
 						</div>
 					</td>
-					<!--<td>
-						<div class="RowTools">
-							<d3s-preview-tooltip objectType="IntersectType" [objectId]="item.Id" icon="info"></d3s-preview-tooltip>
+					<td>
+						<div class="token-popup-menu" *ngIf="item.MenuItems">
+							<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+							<ig-popup-menu [items]="item.MenuItems"
+										   #tokenMenu
+										   [tabIndex]="1"></ig-popup-menu>
 						</div>
 					</td>
-					<td>
-
-						<div *ngIf="item?.Predicate.Type != 'Diagram' && item?.Predicate.Type != 'DiagramUse' && item?.Predicate.Type != 'DiagramReference'" class="RowTools">
-							<a style="cursor:pointer;" title="Download all relationships in this type" (click)="downloadRel(item)"><i class="fa fa-download"></i></a>
-						</div>
-					</td>
-					<td>
-						<div *ngIf="!item.IsSystem" class="RowTools">
-							<a style="cursor:pointer;" (click)="selected=item;selectedChange.emit(selected);showEditor=true"><i class="fa fa-pencil"></i></a>
-						</div>
-					</td>
-					<td>
-						<div *ngIf="!item.IsSystem" class="RowTools">
-							<a style="cursor:pointer;" (click)="selected=item;selectedChange.emit(selected);showDelete=true"><i class="fa fa-trash-o"></i></a>
-						</div>
-					</td>-->
 				</tr>
 			</ng-template>
 			<ng-template pTemplate="summary">
@@ -89,10 +89,11 @@
 		</p-table>
 	</div>
 </div>
-<d3s-delete-form *ngIf="showDelete"
-				 [callback]="theDeleteCallback"
-				 [itemId]="selected?.Uid"
-				 [method]="'callback'"
-				 [prompt]="deletePromptText"
-				 (onCancel)="showDelete=false;"></d3s-delete-form>
+
+<d3s-relationship-type-delete [relationshipTypeUid]="selected?.Uid"
+							  [isModalVisible]="showDelete"
+							  (onCancel)="showDelete=false"
+							  (onDelete)="deleteRelationship($event)">
+</d3s-relationship-type-delete>
+
 <d3s-admin-relationships-editor *ngIf="showEditor" [relationshipType]="selected" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-admin-relationships-editor>

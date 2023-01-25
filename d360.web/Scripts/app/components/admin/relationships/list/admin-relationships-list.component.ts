@@ -1,4 +1,5 @@
 ﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
+import { Router } from '@angular/router';
 import { PredicateFriendlyType } from '../../../../models/predicate.model';
 import { RelationshipType, RelationshipTypeSimpleUIModel } from '../../../../models/relationship.model';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
@@ -33,18 +34,17 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
 	showEditor: boolean = false;
 	showDelete: boolean = false;
-	theDeleteCallback: Function;
 	gridStorageKey: string = "admin-relationships-grid";
 	simpleFilterValue: string = "";
 	constructor(
 		private messagesService: MessagesObservableService,
 		private relationshipsService: RelationshipsService,
 		protected settingsService: CompanySettingsService,
-		private cdRef: ChangeDetectorRef
+		private cdRef: ChangeDetectorRef,
+		private router: Router
 	) {
 		super(settingsService);
 		this.filterToName = '';
-		this.theDeleteCallback = this.deleteRelationship.bind(this);
 	}
 
 	ngOnInit() {
@@ -63,7 +63,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		}
 	}
 
-	private export() {
+	export() {
 		this.relationshipsService.exportRelationshipTypes(this.filterToName ?? "", this.id ?? null, this.subject ?? "", this.predicate ?? "", this.object ?? "");
 	}
 
@@ -86,17 +86,22 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
 		obs.subscribe((result) => {
 			this.relationships = [];
-
-			(result ?? []).forEach((rel) => {
-				this.relationships.push({
-					RelationshipTypeName: rel.Object.Name + " - " + rel.Predicate.Name + " - " + rel.Subject.Name,
-					Uid: rel.Uid,
-					HasRelationships: rel.HasRelationships
-				})
-			});
+			this.relationships = result.map((rel) => RelationshipType.ConvertToUIModeldata(rel));
 
 			this.relationships =
 				this.relationships.sort((a, b) => a.RelationshipTypeName > b.RelationshipTypeName ? 1 : -1);
+
+			this.relationships.forEach((rel) => {
+				const menuItems = [];
+				menuItems.push({ "title": $localize`View Information`, callback: () => { this.selected = rel; } });
+				menuItems.push({ "title": $localize`Open`, callback: () => this.open(rel.Uid) });
+				menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(rel.Uid, true) });
+
+				menuItems.push({ "title": $localize`Edit`, callback: () => this.edit(rel) });
+				menuItems.push({ "title": $localize`Delete`, callback: () => { this.showDelete = true; } });
+				menuItems.push({ "title": $localize`Export`, callback: () => { this.downloadRel(rel) } });
+				rel.MenuItems = menuItems;
+			});
 
 			this.isLoading = false;
 			if (this.relationships && !this.showEditor) {
@@ -127,17 +132,13 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		}
 	}
 
-	deleteRelationship(uid: string) {
-		this.relationshipsService.deleteRelationshipType(uid)
-			.subscribe((result) => {
-				result = result[0];
-				this.showMessageForApiResult(this.messagesService, result);
-				this.showDelete = false;
-				if (result.Success === true) {
-					this.selected = this.relationships.length > 0 ? this.relationships[0] : null;
-					this.relationships.splice(this.findRelationshipIndex(uid), 1);
-				}
-			});
+	deleteRelationship($event) {
+		this.showMessageForApiResult(this.messagesService, $event);
+		this.showDelete = false;
+		if ($event.Success === true) {
+			this.selected = this.relationships.length > 0 ? this.relationships[0] : null;
+			this.relationships.splice(this.findRelationshipIndex($event.uid), 1);
+		}
 	}
 
 	saveRelationship(event) {
@@ -166,11 +167,26 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		this.selected = null;
 	}
 
-	public downloadRel(relationship: RelationshipType) {
+	edit(rel: RelationshipTypeSimpleUIModel) {
+		this.showEditor = true;
+		this.selected = rel;
+	}
+
+	public downloadRel(relationship: RelationshipTypeSimpleUIModel) {
 		this.relationshipsService.exportRelationshipTypeItems(relationship);
 	}
 
 	get deletePromptText(): string {
 		return $localize`Are you sure you want to delete the relationship[${this.selected?.RelationshipTypeName}]?`;
+	}
+
+	open(uid: string, newTab: boolean = false) {
+		const url = `/admin/relationships/${uid}/fields`;
+		if (newTab) {
+			window.open(url, "_blank");
+		}
+		else {
+			this.router.navigateByUrl(url);
+		}
 	}
 }
