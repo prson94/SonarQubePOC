@@ -818,22 +818,28 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						option(recompile);
 					end
 
+					drop table if exists #tempApplyToTypeOwnership
+					select * 
+					into #tempApplyToTypeOwnership
+					from ResponsibilityDetail rd 
+					where rd.AssetTypeID = 0 and rd.IsVisible = 1
+
 					insert into #OwnershipLookupAssets
-						select a.[ID] as AssetID
-							 ,rd.[ResponsibilityTypeID]
-							 ,rd.[ResponsibilityTypeName]
-							 ,rd.[ResourceName]
-							 ,rd.[SecurityAsset]
-							 ,rd.[SecurityAssetName]
-							 ,rd.[Context]
-							 ,rd.[ResourceId]
-							 ,rd.[ResourceUid]
-							 ,rd.[SecurityAssetId]
-							 ,rd.[SecurityAssetUid]
-						from ResponsibilityDetail rd
-						inner join asset a on rd.assetid = a.id
-						where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @id
-						option(recompile);
+					select a.[ID] as AssetID
+						 ,rd.[ResponsibilityTypeID]
+						 ,rd.[ResponsibilityTypeName]
+						 ,rd.[ResourceName]
+						 ,rd.[SecurityAsset]
+						 ,rd.[SecurityAssetName]
+						 ,rd.[Context]
+						 ,rd.[ResourceId]
+						 ,rd.[ResourceUid]
+						 ,rd.[SecurityAssetId]
+						 ,rd.[SecurityAssetUid]
+					from #tempApplyToTypeOwnership rd
+					inner join asset a on rd.assetid = a.id
+					where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @id
+					option(recompile);
 
 					create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
 					";
