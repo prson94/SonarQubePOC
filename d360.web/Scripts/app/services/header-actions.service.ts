@@ -21,13 +21,13 @@ export class HeaderActionsService {
         this.headerActionsSource.next(actions);
     }
     // Observable sources
-    private onFavoritesChangeSource = new Subject();
+    private onFavoritesChangeSource = new Subject<void>();
     public onFavoritesChanges$ = this.onFavoritesChangeSource.asObservable();
 
-    private onSiteNavChangeSource = new Subject();
+    private onSiteNavChangeSource = new Subject<void>();
     public onSiteNavChanges$ = this.onSiteNavChangeSource.asObservable();
 
-    private onSiteCountsChangeSource = new Subject();
+    private onSiteCountsChangeSource = new Subject<void>();
     public onSiteCountsChange = this.onSiteCountsChangeSource.asObservable();
 
     public setActionsToDefaultValues(showFavorite: boolean, showFollow: boolean) {

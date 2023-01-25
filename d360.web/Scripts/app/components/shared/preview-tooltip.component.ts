@@ -41,7 +41,7 @@ export class PreviewTooltipComponent {
     private subscriptions: Subscription = new Subscription();
 
     private pending: boolean = false;
-    public hideDebounce: Subject<any> = new Subject();
+    public hideDebounce: Subject<void> = new Subject<void>();
     public mouseIn: boolean = false;
     private colorHtml: string = "";
     @Output() click = new EventEmitter();

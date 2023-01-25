@@ -11,10 +11,10 @@ export class GenericMessageService extends BaseObservableService {
 
     sendMessage(message: GenericMessageModel) {
         this.subject.next(message);
-    }
+    }y
 
     clearMessages() {
-        this.subject.next();
+        this.subject.next(null);
     }
 
     getMessage(): Observable<GenericMessageModel> {

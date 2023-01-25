@@ -39,7 +39,7 @@ export class StateService {
     public artifactTypeFilters: ArtifactTypeFilters;
     public workflowItemFilters: WorkflowItemFilters;
     private siteMenuRequiresReloadSource = new Subject<boolean>();
-    private recalculateTagSizeSource = new Subject();
+    private recalculateTagSizeSource = new Subject<void>();
 
     siteMenuRequiresReload$ = this.siteMenuRequiresReloadSource.asObservable();
     recalculateTagSize$ = this.recalculateTagSizeSource.asObservable();

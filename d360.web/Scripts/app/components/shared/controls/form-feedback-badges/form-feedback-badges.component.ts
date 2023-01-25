@@ -29,7 +29,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     @Input() igformGroup: UntypedFormGroup;
     @Input() inputContainer: ElementRef;
 
-    $destroy = new Subject();
+    $destroy = new Subject<void>();
 
     invalidCount: number = 0;
     requiredCount: number = 0;
