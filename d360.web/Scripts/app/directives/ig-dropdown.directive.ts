@@ -52,22 +52,25 @@ export class DropdownDirective implements AfterContentInit {
         }
         this.dropdownRef.scrollHeight = "340px";
 
-        setInterval(() => {
-            if (this.dropdownRef.overlayVisible && this.dropdownRef?.overlay) {
-                if (this.dropdownRef.overlay.className.indexOf("ig-dropdown-overlay") === -1) {
-                    this.dropdownRef.overlay.classList.add("ig-dropdown-overlay");
+		setInterval(() => {
+			if (this.dropdownRef.overlayVisible && this.dropdownRef?.overlayViewChild) {
+
+				var panelEl = DomHandler.findSingle(this.dropdownRef.overlayViewChild.contentEl, '.p-dropdown-panel');
+
+				if (panelEl.className.indexOf("ig-dropdown-overlay") === -1) {
+					panelEl.classList.add("ig-dropdown-overlay");
 
                     if (this.ellipsisDirection === "ltr") {
-                        this.dropdownRef.overlay.classList.add("ig-dropdown-ellipsis-ltr");
+						panelEl.classList.add("ig-dropdown-ellipsis-ltr");
                     }
                     else {
-                        this.dropdownRef.overlay.classList.add("ig-dropdown-ellipsis-rtl");
+						panelEl.classList.add("ig-dropdown-ellipsis-rtl");
                     }
 
                     if (this.overlayLowerZIndex) {
-                        this.dropdownRef.overlay.classList.add("ig-dropdown-overlay-lower-index");
+						panelEl.classList.add("ig-dropdown-overlay-lower-index");
                     }
-                    var input = this.dropdownRef.overlay.getElementsByTagName("input")[0];
+					var input = panelEl.getElementsByTagName("input")[0];
 
                     if (input)
                         {input.className = "ig-input";}
