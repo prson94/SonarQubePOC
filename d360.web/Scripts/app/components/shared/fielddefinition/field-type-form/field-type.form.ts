@@ -537,10 +537,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.Type[this.currentType].Format.Display = "";
                 this.model.FieldType.Type[this.currentType].Format.Edit = "";
             }
-            if (!this.isUid(uid)) {
-                this.model.FieldType.Type[this.currentType].List.Uid = uid;
-                this.model.FieldType.Type[this.currentType].List.Class = uid;
-            }
+			if (!this.isUid(uid)) {
+				this.model.FieldType.Type[this.currentType].List.Uid = uid;
+				this.model.FieldType.Type[this.currentType].List.Class = uid;
+			} else {
+				this.model.FieldType.Type[this.currentType].List.Class = null;
+			}
 
             this.loadDefaultValueOptions(uid);
             this.loadHierarchyOptions(uid);
