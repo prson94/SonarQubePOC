@@ -28,12 +28,18 @@ namespace d360.core.entities
         [DataMember]
         public DateTime CreatedOn { get; set; }
 
-        [DataMember]
+		[DataMember]
+		public string CreatedByName { get; set; }
+
+		[DataMember]
         public Guid? UpdatedByUid { get; set; }
 
         [DataMember]
         public DateTime UpdatedOn { get; set; }
-    }
+
+		[DataMember]
+		public string UpdatedByName { get; set; }
+	}
 
     public class ConnectorLabelApiDeleteModel
     {

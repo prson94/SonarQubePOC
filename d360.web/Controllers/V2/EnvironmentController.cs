@@ -1254,6 +1254,11 @@ select	r.uid as ResourceUid,
 			List<Guid> uids = new List<Guid>();
 			List<HelpMenuItemMessage> result = new List<HelpMenuItemMessage>();
 
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, HelpMenuErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage));
+			}
+
 			try
 			{
 				foreach (var item in items)
@@ -1342,6 +1347,11 @@ select	r.uid as ResourceUid,
 			List<int> visibilties = new List<int> { 1, 2, 3 };
 			List<Guid> uids = new List<Guid>();
 			List<HelpMenuItemMessage> result = new List<HelpMenuItemMessage>();
+
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, HelpMenuErrors.ErrorOnUpdate, ApiMessages.EndpointNotAuthorizedMessage));
+			}
 
 			try
 			{
@@ -1446,6 +1456,11 @@ select	r.uid as ResourceUid,
 			List<Guid> uids = new List<Guid>();
 			List<HelpMenuItemMessage> result = new List<HelpMenuItemMessage>();
 
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, HelpMenuErrors.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage));
+			}
+
 			try
 			{
 				foreach (var item in items)
@@ -1496,7 +1511,6 @@ select	r.uid as ResourceUid,
 		}
 
 		#endregion
-
 
 		#region Theme Endpoints
 
@@ -2265,6 +2279,7 @@ select	r.uid as ResourceUid,
 		#endregion
 
 		#region Dashboard Endpoints
+
 		/// <summary>
 		/// Gets a list of dashboards in an environment.
 		/// </summary>
@@ -2666,6 +2681,11 @@ select	r.uid as ResourceUid,
 			Route("dashboards/{reportId}/powerbi-tokens")]
 		public async Task<IHttpActionResult> GetPowerBITokens(string reportId)
 		{
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage));
+			}
+
 			var companySettings = SettingsRepository.GetSettings();
 			var groupId = companySettings.First(s => s.ID == Setting.PowerBIGroupId).Value;
 			var clientId = companySettings.First(s => s.ID == Setting.PowerBIClientId).Value;
@@ -3005,6 +3025,7 @@ select	r.uid as ResourceUid,
 				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.Error, ApiMessages.UnknownErrorInvestigatingMessage);
 			}
 		}
+		
 		#endregion
 	}
 }

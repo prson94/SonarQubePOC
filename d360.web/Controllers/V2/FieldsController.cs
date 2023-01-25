@@ -1809,27 +1809,42 @@ namespace d360.web.Controllers.V2
 				var actionType = Company.Filter<IssueType>(x => x.uid == model.TypeUid).SingleOrDefault();
 				var intersectType = Company.Filter<IntersectType>(i => i.uid == model.TypeUid).SingleOrDefault();
 				var name = "";
+				FieldType fieldTypes = null;
 
 				if (assetType != null)
 				{
 					Enum.TryParse(assetType.Object, out type);
 					id = assetType.ID;
 					name = assetType.Name;
-					fieldTypeID = Company.Filter<FieldType>(x => x.AssetTypeID == assetType.ID && x.Name == model.FieldTypename).SingleOrDefault().ID;
+
+
+					fieldTypes = Company.Filter<FieldType>(x => x.AssetTypeID == assetType.ID && x.Name == model.FieldTypename).SingleOrDefault();
+					if (fieldTypes != null)
+					{
+						fieldTypeID = fieldTypes.ID;
+					}
 				}
 				else if (actionType != null)
 				{
 					type = SystemObjects.IssueType;
 					id = actionType.ID;
 					name = actionType.Name;
-					fieldTypeID = Company.Filter<FieldType>(x => x.IssueTypeID == actionType.ID && x.Name == model.FieldTypename).SingleOrDefault().ID;
+					fieldTypes = Company.Filter<FieldType>(x => x.IssueTypeID == actionType.ID && x.Name == model.FieldTypename).SingleOrDefault();
+					if (fieldTypes != null)
+					{
+						fieldTypeID = fieldTypes.ID;
+					}
 				}
 				else if (intersectType != null)
 				{
 					type = SystemObjects.IntersectType;
 					id = intersectType.ID;
 					name = "intersectType:" + model.TypeUid.ToString();
-					fieldTypeID = Company.Filter<FieldType>(x => x.IntersectTypeID == intersectType.ID && x.Name == model.FieldTypename).SingleOrDefault().ID;
+					fieldTypes = Company.Filter<FieldType>(x => x.IntersectTypeID == intersectType.ID && x.Name == model.FieldTypename).SingleOrDefault();
+					if (fieldTypes != null)
+					{
+						fieldTypeID = fieldTypes.ID;
+					}
 				}
 				else
 				{
@@ -1837,11 +1852,10 @@ namespace d360.web.Controllers.V2
 				}
 
 				string message = "";
-				errorMessage = string.Format("{0} could not be found for {1}.", model.FieldTypename, name);
 
 				List<FieldType> list = Company.Filter<FieldType>(ft => ((type == SystemObjects.IssueType && ft.IssueTypeID == id) || (type == SystemObjects.IntersectType && ft.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && ft.AssetTypeID == id))).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
-				if (list != null)
+				if (list != null && fieldTypeID > 0)
 				{
 					//Verify the list colum order is an ordered list
 					//If not Chagne the field defintion to ordered before applying the perform move
@@ -1886,7 +1900,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return Request.CreateResponse(HttpStatusCode.NotFound, message);
+					return ReturnApiError(HttpStatusCode.NotFound, ApiMessages.FieldTypeNotFound);
 				}
 			}
 			catch (RestApiException ex)

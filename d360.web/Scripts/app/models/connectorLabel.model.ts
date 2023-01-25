@@ -5,8 +5,10 @@
     State: ConnectorLabelState;
     CreatedOn: Date;
     CreatedBy: string;
+    CreatedByName: string;
     UpdatedOn: Date;
     UpdatedBy: string;
+    UpdatedByName: string;
     TooltipID: number;
 }
 

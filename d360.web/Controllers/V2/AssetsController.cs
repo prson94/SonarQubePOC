@@ -140,6 +140,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("AutoDisplayParent", "Filter results by AutoDisplayParent setting. The value is used by the Govern UI to display or hide the parent column on the data grids.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("IncludeLevels", "Include values of Level, Name, Description properties of the AssetTypeLevel table in response model.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("IncludeDashboardFlag", "Include value of HasDashboards property of the Report table in response model.", DataType = "boolean", ParameterType = "query", Required = false),
+			SwaggerParameter("IncludeUpdatedAndCreatedFields ", "Include values of CreatedOn, CreatedBy, UpdatedOn and UpdatedBy fields.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
@@ -1506,7 +1507,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpGet,
 			Route("{assetUid:Guid}/fields/{fieldApiName}"),
-			SwaggerConsumes("application/json", "application/xml"),
+			SwaggerConsumes("application/json"),
 			SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<dynamic>)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),

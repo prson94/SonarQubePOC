@@ -261,6 +261,10 @@ namespace d360.core.entities
 		public int? count { get; set; }
 
 		public int? maxDepth { get; set; }
+
+		public string backColor { get; set; }
+		public string icon { get; set; }
+		public FlowObjectType flowObjectType { get; set; }
 	}
 
 	public class UserGetAPIRestrictionModel

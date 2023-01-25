@@ -7,6 +7,7 @@
                 [group]="true"
                 [ngModel]="ngModel"
                 (ngModelChange)="ngModelChange.emit($event)"
+                (onChange)="itemChanged($event)"
                 [filter]="true"
                 [showClear]="true"
                 appendTo="body"

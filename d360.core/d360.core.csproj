@@ -84,6 +84,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>GraphFilterErrors.resx</DependentUpon>
     </Compile>
+    <Compile Update="resources\HelpMenuErrors.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>HelpMenuErrors.resx</DependentUpon>
+    </Compile>
     <Compile Update="resources\IssueErrors.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -227,6 +232,10 @@
     <EmbeddedResource Update="resources\GraphFilterErrors.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>GraphFilterErrors.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\HelpMenuErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HelpMenuErrors.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\IssueErrors.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

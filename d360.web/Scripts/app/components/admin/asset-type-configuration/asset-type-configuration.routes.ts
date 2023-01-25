@@ -120,26 +120,6 @@ export const assetTypeConfigurationRoutes: Routes = [
         component: ConfigurationAssetTypeConnectorLabelsPageComponent,
     },
     {
-        path: ':typeClass/new',
-        component: ConfigurationAssetTypeEditorPageComponent,
-        canActivate: [WhenCanAccessBasicFeaturesGuard]
-    },
-    {
-        path: ':typeClass/:parentUid/new',
-        component: ConfigurationAssetTypeEditorPageComponent,
-        canActivate: [WhenCanCreateNewAssetTypeChildGuard]
-    },
-    {
-        path: ':typeClass/:uid/edit',
-        component: ConfigurationAssetTypeEditorPageComponent,
-        canActivate: [WhenCanAccessBasicFeaturesGuard]
-    },
-    {
-        path: ':typeClass/:uid/delete',
-        component: ConfigurationAssetTypeDeletePageComponent,
-        canActivate: [WhenCanAccessBasicFeaturesGuard]
-    },
-    {
         path: ':typeClass/:uid/fields',
         component: ConfigurationAssetTypeFieldsPageComponent,
         canActivate: [WhenCanSeeFieldDefinitionsGuard]

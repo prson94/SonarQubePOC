@@ -294,7 +294,11 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                             this.scoresPointSelected = this.scoresPointsDDL[0].value;
                         }
 
-                        subject.next(true);
+						setTimeout(() => {
+							//when we go back to tab we already visited, api response will be read from cache
+							//in that case this line of code will trigger before asObservable() is returned and subscribe wont trigger
+							subject.next(true);
+						}, 10);
 
                         if (this.allocationData) {
                             const stype = ScoreType[this.selectedScoreType];

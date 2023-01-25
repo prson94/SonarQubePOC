@@ -4,30 +4,31 @@ import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
 import {
-    ObjectRelationship,
-    PredicateDropdown,
-    RelatedItem,
-    RelationshipCount,
-    RelationshipDetail,
-    RelationshipType
+	ObjectRelationship,
+	PredicateDropdown,
+	RelatedItem,
+	RelationshipCount,
+	RelationshipDetail,
+	RelationshipType
 } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 import { forkJoin, Observable } from 'rxjs';
 import { ApiResult } from '../models/apiresult.model';
 import * as _ from 'lodash';
+import { Predicate } from '../models/predicate.model';
 
 @Injectable({
-    providedIn: 'root'
+	providedIn: 'root'
 })
 export class RelationshipsService extends BaseObservableService {
 
-    private MAX_SYNCHRONOUS_API_ITEM_COUNT: number = 250;
+	private MAX_SYNCHRONOUS_API_ITEM_COUNT: number = 250;
 
-    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
+	constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
 	getRelationshipTypes(assetTypeUid: string = null, includeHasRelationships: boolean = false, includeTotalRelationshipCount: boolean = false): Observable<RelationshipType[]> {
-        var url = 'api/v2/relationships/types?state=1';
+        let url = 'api/v2/relationships/types?state=1';
 
         if (assetTypeUid) {
             url += `&AssetTypeUid=${assetTypeUid}`;
@@ -58,343 +59,351 @@ export class RelationshipsService extends BaseObservableService {
 			);
 	}
 
-    getRelationshipTypesByAssetUid(uid: string): Observable<RelationshipType[]> {
-        return this.http.get(`api/v2/relationships/types?state=1&AssetTypeUid=${uid}`)
-            .pipe(
-                map((response) => <RelationshipType[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getRelationshipTypesByAssetUid(uid: string): Observable<RelationshipType[]> {
+		return this.http.get(`api/v2/relationships/types?state=1&AssetTypeUid=${uid}`)
+			.pipe(
+				map((response) => <RelationshipType[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getRelationshipTypesById(id: number, type: string): Observable<RelationshipType[]> {
-        return this.http.get(`api/v2/relationships/types/${id}/${type}`)
-            .pipe(
-                map((response) => <RelationshipType[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getRelationshipTypesById(id: number, type: string): Observable<RelationshipType[]> {
+		return this.http.get(`api/v2/relationships/types/${id}/${type}`)
+			.pipe(
+				map((response) => <RelationshipType[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getRelationshipTypesForComplexField(assetUid: string, fieldName: string): Observable<RelationshipType[]> {
-        return this.http.get(`api/v2/relationships/types/complexField/${assetUid}/${fieldName}`)
-            .pipe(
-                map((response) => <RelationshipType[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getRelationshipTypesForComplexField(assetUid: string, fieldName: string): Observable<RelationshipType[]> {
+		return this.http.get(`api/v2/relationships/types/complexField/${assetUid}/${fieldName}`)
+			.pipe(
+				map((response) => <RelationshipType[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    saveRelationshipType(relationshipType: RelationshipType): Observable<any> {
-        if (relationshipType) {
-            return this.http.request(relationshipType.Uid == null ? 'POST' : 'PUT', 'api/v2/relationships/types', {
-                body: [{
-                    Uid: relationshipType.Uid,
-                    PredicateUid: relationshipType.Predicate.Uid,
-                    SubjectUid: relationshipType.Subject.Uid,
-                    SubjectCardinality: relationshipType.Subject.Cardinality,
-                    ObjectUid: relationshipType.Object.Uid,
-                    ObjectCardinality: relationshipType.Object.Cardinality
-                }]
-            })
-                .pipe(
-                    map((response) => <any>response),
-                    catchError((err) => this.handleError(err))
-                );
-        }
-    }
+	saveRelationshipType(relationshipType: RelationshipType): Observable<any> {
+		if (relationshipType) {
+			return this.http.request(relationshipType.Uid == null ? 'POST' : 'PUT', 'api/v2/relationships/types', {
+				body: [{
+					Uid: relationshipType.Uid,
+					PredicateUid: relationshipType.Predicate.Uid,
+					SubjectUid: relationshipType.Subject.Uid,
+					SubjectCardinality: relationshipType.Subject.Cardinality,
+					ObjectUid: relationshipType.Object.Uid,
+					ObjectCardinality: relationshipType.Object.Cardinality
+				}]
+			})
+				.pipe(
+					map((response) => <any>response),
+					catchError((err) => this.handleError(err))
+				);
+		}
+	}
 
-    saveRelationships(intersectTypeUid: string, model: any[]): Observable<ApiResult[]> {
-        if (model.length > this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
-            var models: any[] = [];
-            for (var i = 0; i < model.length; i += this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
-                models.push(model.slice(i, i + this.MAX_SYNCHRONOUS_API_ITEM_COUNT));
-            }
-            var obsArr: Observable<ApiResult[]>[] = [];
-            models.forEach((m) => {
-                obsArr.push(this.saveRelationships(intersectTypeUid, m));
-            });
-            return forkJoin(obsArr).pipe(
-                map((response) => {
-                    var origResponse: ApiResult[] = [];
-                    response.forEach((res) => {
-                        res.forEach((r) =>
-                            origResponse.push(r));
-                    });
-                    for (let i = 0; i < response.length; i++) {
-                        origResponse[i].ItemNumber = i + 1;
-                    }
-                    return origResponse;
-                }),
-                catchError((err) => this.handleError(err, true))
-            );
-        }
-        else {
-            return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true&lookupFieldsPassedByValue=true`, model).pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err, true))
-            );
-        }
-    }
+	saveRelationships(intersectTypeUid: string, model: any[]): Observable<ApiResult[]> {
+		if (model.length > this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
+			const models: any[] = [];
+			for (var i = 0; i < model.length; i += this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
+				models.push(model.slice(i, i + this.MAX_SYNCHRONOUS_API_ITEM_COUNT));
+			}
+			const obsArr: Observable<ApiResult[]>[] = [];
+			models.forEach((m) => {
+				obsArr.push(this.saveRelationships(intersectTypeUid, m));
+			});
+			return forkJoin(obsArr).pipe(
+				map((response) => {
+					const origResponse: ApiResult[] = [];
+					response.forEach((res) => {
+						res.forEach((r) =>
+							origResponse.push(r));
+					});
+					for (let i = 0; i < response.length; i++) {
+						origResponse[i].ItemNumber = i + 1;
+					}
+					return origResponse;
+				}),
+				catchError((err) => this.handleError(err, true))
+			);
+		}
+		else {
+			return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true&lookupFieldsPassedByValue=true`, model).pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err, true))
+			);
+		}
+	}
 
-    saveRelationshipsForked(intersectTypeUid: number, model: any[]): Observable<any> {
-        var obj = { intersectTypeUid, model };
-        return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true&lookupFieldsPassedByValue=true`, model).pipe(
-            map((response) => { return { obj, response }; }),
-            catchError((err) => this.handleError(err, true))
-        );
-    }
+	saveRelationshipsForked(intersectTypeUid: number, model: any[]): Observable<any> {
+		const obj = { intersectTypeUid, model };
+		return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true&lookupFieldsPassedByValue=true`, model).pipe(
+			map((response) => { return { obj, response }; }),
+			catchError((err) => this.handleError(err, true))
+		);
+	}
 
-    deleteSingleRelationshipV2(intersectTypeUid: string, intersectUid: string): Observable<ApiResult[]> {
-        const model = [{
-            Cascade: true,
-            Uid: intersectUid
-        }];
+	deleteSingleRelationshipV2(intersectTypeUid: string, intersectUid: string): Observable<ApiResult[]> {
+		const model = [{
+			Cascade: true,
+			Uid: intersectUid
+		}];
 
-        const httpHeaders = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
-        };
-        return this.http.delete(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true`, httpHeaders).pipe(
-            map((response) => response),
-            catchError((err) => this.handleError(err, true))
-        );
-    }
+		const httpHeaders = {
+			headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
+		};
+		return this.http.delete(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true`, httpHeaders).pipe(
+			map((response) => response),
+			catchError((err) => this.handleError(err, true))
+		);
+	}
 
-    deleteRelationshipV2(intersectTypeUid: string, model: any[]): Observable<ApiResult[]> {
-        const httpHeaders = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
-        };
-        return this.http.delete(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true`, httpHeaders).pipe(
-            map((response) => response),
-            catchError((err) => this.handleError(err, true))
-        );
-    }
-    exportRelationshipTypeItems(relType: RelationshipType) {
-        this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship type items'));
-    }
+	deleteRelationshipV2(intersectTypeUid: string, model: any[]): Observable<ApiResult[]> {
+		const httpHeaders = {
+			headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
+		};
+		return this.http.delete(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true`, httpHeaders).pipe(
+			map((response) => response),
+			catchError((err) => this.handleError(err, true))
+		);
+	}
+	exportRelationshipTypeItems(relType: RelationshipType) {
+		this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship type items'));
+	}
 
-    exportRelationshipTypes(keyword: string, id: number, subject: string, predicate: string, object: string) {
-        this.http.get(`api/v2/relationships/export/types?keyword=${keyword}&id=${id}&subject=${subject}&predicate=${predicate}&object=${object}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship types'));
-    }
+	exportRelationshipTypes(keyword: string, id: number, subject: string, predicate: string, object: string) {
+		this.http.get(`api/v2/relationships/export/types?keyword=${keyword}&id=${id}&subject=${subject}&predicate=${predicate}&object=${object}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship types'));
+	}
 
-    getRelation(id: number): Observable<RelationshipDetail> {
-        return this.http.get(`form/IntersectType_FormData?id=${id}`)
-            .pipe(
-                map((response) => <RelationshipDetail>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getRelation(id: number): Observable<RelationshipDetail> {
+		return this.http.get(`form/IntersectType_FormData?id=${id}`)
+			.pipe(
+				map((response) => <RelationshipDetail>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getIntersectTypeById(id: number): Observable<any> {
-        return this.http.get(`api/v2/relationships/types/${id}`)
-            .pipe(
-                map((response) => <any>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getIntersectTypeById(id: number): Observable<any> {
+		return this.http.get(`api/v2/relationships/types/${id}`)
+			.pipe(
+				map((response) => <any>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getRelationshipUids(relationshipTypeUid: string): Observable<any> {
-        return this.http.get(`api/v2/relationships/uids/${relationshipTypeUid}`)
-            .pipe(
-                map((response) => <any>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getRelationshipUids(relationshipTypeUid: string): Observable<any> {
+		return this.http.get(`api/v2/relationships/uids/${relationshipTypeUid}`)
+			.pipe(
+				map((response) => <any>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getObjectRelations(subjectUid: string, predicateUid: string): Observable<ObjectRelationship[]> {
+	getObjectRelations(subjectUid: string, predicateUid: string): Observable<ObjectRelationship[]> {
 		return this.http.get(`/api/v2/relationships/types/possibilities?subjectUid=${subjectUid}`)
-            .pipe(
-                map((response) => <ObjectRelationship[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+			.pipe(
+				map((response) => <ObjectRelationship[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getRelatedObjects(objectType: string, objectId: number, intersectTypeId: number): Observable<RelatedItem[]> {
-        return this.http.get(`/api/RelationshipObjectsByType?type=${objectType}&id=${objectId}&intersectTypeId=${intersectTypeId}`)
-            .pipe(
-                map((response) => <RelatedItem[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getRelatedObjects(objectType: string, objectId: number, intersectTypeId: number): Observable<RelatedItem[]> {
+		return this.http.get(`/api/RelationshipObjectsByType?type=${objectType}&id=${objectId}&intersectTypeId=${intersectTypeId}`)
+			.pipe(
+				map((response) => <RelatedItem[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    deleteRelationship(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'intersecttype', id);
-    }
+	deleteRelationship(id: number): Observable<JsonResult> {
+		return this.deleteDynamicWithResult(this.http, 'intersecttype', id);
+	}
 
-    deleteRelationshipType(uid: string): Observable<any> {
-        return this.http.delete('api/v2/relationships/types', { body: [{ uid }] })
-            .pipe(
-                map((response) => <any>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	deleteRelationshipType(uid: string): Observable<any> {
+		return this.http.delete('api/v2/relationships/types', { body: [{ uid }] })
+			.pipe(
+				map((response) => <any>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    saveRelationship(relationship: RelationshipDetail): Observable<JsonResult> {
-        if (relationship.ID == null || !relationship.ID) {
-            return this.postDynamic(this.http, 'intersecttype', relationship);
-        }
-        return this.putDynamic(this.http, 'intersecttype', relationship);
-    }
+	saveRelationship(relationship: RelationshipDetail): Observable<JsonResult> {
+		if (relationship.ID == null || !relationship.ID) {
+			return this.postDynamic(this.http, 'intersecttype', relationship);
+		}
+		return this.putDynamic(this.http, 'intersecttype', relationship);
+	}
 
-    getRelationshipPredicates(subjectUid: string, objectUid?: string, predicateUid?: string): Observable<PredicateDropdown[]> {
-        let url = `form/IntersectType_PredicateOptions?subjectUid=${subjectUid}`;
-        if (objectUid != null) {
-            url = url += `&objectUid=${objectUid}`;
-        }
-        if (predicateUid != null) {
-            url = url += `&predicateUid=${predicateUid}`;
-        }
-        return this.http.get(url)
-            .pipe(
-                map((response) => <PredicateDropdown[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getRelationshipPredicates(subjectUid: string, objectUid?: string, predicateUid?: string): Observable<PredicateDropdown[]> {
+		let url = `form/IntersectType_PredicateOptions?subjectUid=${subjectUid}`;
+		if (objectUid != null) {
+			url = url += `&objectUid=${objectUid}`;
+		}
+		if (predicateUid != null) {
+			url = url += `&predicateUid=${predicateUid}`;
+		}
+		return this.http.get(url)
+			.pipe(
+				map((response) => <PredicateDropdown[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getCardinalityOptions(): Observable<DropdownOption[]> {
-        return this.http.get('form/IntersectType_CardinalityOptions')
-            .pipe(
-                map((response) => <DropdownOption[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getCardinalityOptions(): Observable<DropdownOption[]> {
+		return this.http.get('form/IntersectType_CardinalityOptions')
+			.pipe(
+				map((response) => <DropdownOption[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getSubjectOptions(): Observable<DropdownOption[]> {
-        return this.http.get('form/IntersectType_SubjectOptions')
-            .pipe(
-                map((response) => <DropdownOption[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getSubjectOptions(): Observable<DropdownOption[]> {
+		return this.http.get('form/IntersectType_SubjectOptions')
+			.pipe(
+				map((response) => <DropdownOption[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getObjectOptions(subjectUid: string, objectUid?: string, predicateUid?: string): Observable<DropdownOption[]> {
-        let url = `form/IntersectType_ObjectOptions?subjectUid=${subjectUid}`;
-        if (objectUid != null) {
-            url = url += `&objectUid=${objectUid}`;
-        }
-        if (predicateUid != null) {
-            url = url += `&predicateUid=${predicateUid}`;
-        }
+	getObjectOptions(subjectUid: string, objectUid?: string, predicateUid?: string): Observable<DropdownOption[]> {
+		let url = `form/IntersectType_ObjectOptions?subjectUid=${subjectUid}`;
+		if (objectUid != null) {
+			url = url += `&objectUid=${objectUid}`;
+		}
+		if (predicateUid != null) {
+			url = url += `&predicateUid=${predicateUid}`;
+		}
 
-        return this.http.get(url)
-            .pipe(
-                map((response) => <DropdownOption[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+		return this.http.get(url)
+			.pipe(
+				map((response) => <DropdownOption[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    IsTransformPredicateExists(id: number): Observable<boolean> {
-        return this.http.get(`api/v2/relationships/IsTransformPredicateExists/${id}`)
-            .pipe(
-                map((response) => <boolean>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	IsTransformPredicateExists(id: number): Observable<boolean> {
+		return this.http.get(`api/v2/relationships/IsTransformPredicateExists/${id}`)
+			.pipe(
+				map((response) => <boolean>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
 
-    private tagTooltipsCache: any[] = [];
+	private tagTooltipsCache: any[] = [];
 
-    getRelationshipsByAssetTypeUid(assetTypeUid: string): Observable<RelationshipType[]> {
+	getRelationshipsByAssetTypeUid(assetTypeUid: string): Observable<RelationshipType[]> {
 
-        var cachedItem = this.tagTooltipsCache.find((x) => x.assetTypeUid === assetTypeUid);
-        if (cachedItem)
-            {return cachedItem.obs;}
+		const cachedItem = this.tagTooltipsCache.find((x) => x.assetTypeUid === assetTypeUid);
+		if (cachedItem) { return cachedItem.obs; }
 
 		const url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active&includeHasFieldTypes=true`;
 
-        var obs = this.http.get(url)
-            .pipe(map((response) => <RelationshipType[]>response),
-                publishReplay(1),
-                refCount(),
-                catchError((err) => this.handleError(err)));
+		const obs = this.http.get(url)
+			.pipe(map((response) => <RelationshipType[]>response),
+				publishReplay(1),
+				refCount(),
+				catchError((err) => this.handleError(err)));
 
-        var data = { assetTypeUid, obs };
-        this.tagTooltipsCache.push(data);
+		const data = { assetTypeUid, obs };
+		this.tagTooltipsCache.push(data);
 
-        return obs;
-    }
+		return obs;
+	}
 
-    getRelationships(intersectTypeUid: string, params: any, isExport = false): Observable<any> {
-        var url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid + '&_includepath=true';
+	getRelationships(intersectTypeUid: string, params: any, isExport = false): Observable<any> {
+		let url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid + '&_includepath=true';
 
-        if (params) {
-            url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
-        }
+		if (params) {
+			url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+		}
 
-        if (isExport === false) {
-            return this.http.get(url)
-                .pipe(
-                    map((response) => <any>response),
-                    catchError((err) => {
-                        if (!this.isErrorFromFilterExpression(err)) {
-                            return this.handleError(err);
-                        }
-                        else {
-                            throw err;
-                        }
+		if (isExport === false) {
+			return this.http.get(url)
+				.pipe(
+					map((response) => <any>response),
+					catchError((err) => {
+						if (!this.isErrorFromFilterExpression(err)) {
+							return this.handleError(err);
+						}
+						else {
+							throw err;
+						}
 
-                    }
-                    )
-                );
-        }
-        else {
-            this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-                .subscribe((data) => this.downloadFile(data, 'Relationships'));
-        }
-    }
+					}
+					)
+				);
+		}
+		else {
+			this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+				.subscribe((data) => this.downloadFile(data, 'Relationships'));
+		}
+	}
 
-    getRelationshipsCountsForAsset(assetUid: string): Observable<RelationshipCount[]> {
-        var url = 'api/v2/relationships/counts/' + assetUid;
+	getRelationshipsCountsForAsset(assetUid: string): Observable<RelationshipCount[]> {
+		const url = 'api/v2/relationships/counts/' + assetUid;
 
-        return this.http.get(url)
-            .pipe(
-                map((response) => <any>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+		return this.http.get(url)
+			.pipe(
+				map((response) => <any>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getRelationshipsForAsset(assetUid: string, params: any): Observable<any[]> {
-        var url = `/api/v2/relationships?AssetUid=${assetUid}`;
-        if (!params) {
-            params = {};
-        }
-        params["State"] = "Active";
-        params["_includeTotal"] = "true";
-        params["_includePath"] = "true";
+	getRelationshipsForAsset(assetUid: string, params: any): Observable<any[]> {
+		let url = `/api/v2/relationships?AssetUid=${assetUid}`;
+		if (!params) {
+			params = {};
+		}
+		params["State"] = "Active";
+		params["_includeTotal"] = "true";
+		params["_includePath"] = "true";
 
-        if (params) {
-            url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
-        }
+		if (params) {
+			url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+		}
 
-        return this.http.get(url)
-            .pipe(
-                map((response) => <any>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+		return this.http.get(url)
+			.pipe(
+				map((response) => <any>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    public getRelationshipsForAssetExcel(assetUid: string, params: any, fileName: string = '', callback: Function = null) {
-        var url = `/api/v2/relationships?AssetUid=${assetUid}`;
-        if (!params) {
-            params = {};
-        }
-        var copyParams = _.clone(params);
+	public getRelationshipsForAssetExcel(assetUid: string, params: any, fileName: string = '', callback: Function = null) {
+		let url = `/api/v2/relationships?AssetUid=${assetUid}`;
+		if (!params) {
+			params = {};
+		}
+		const copyParams = _.clone(params);
 
-        //Setup paging for export
-        copyParams['_pageNum'] = 1;
-        copyParams['_pageSize'] = 200000;
-        copyParams['_includeTotal'] = false;
-        copyParams['_includePath'] = true;
-        copyParams["State"] = "Active";
+		//Setup paging for export
+		copyParams['_pageNum'] = 1;
+		copyParams['_pageSize'] = 200000;
+		copyParams['_includeTotal'] = false;
+		copyParams['_includePath'] = true;
+		copyParams["State"] = "Active";
 
-        if (copyParams) {
-            url += "&" + Object.keys(copyParams).map((key) => key + '=' + copyParams[key]).join('&');
-        }
+		if (copyParams) {
+			url += "&" + Object.keys(copyParams).map((key) => key + '=' + copyParams[key]).join('&');
+		}
 
-        return this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-            .subscribe((data) => {
-                this.downloadFile(data, fileName);
-                if (callback) {
-                    callback();
-                }
-            });
-    }
+		return this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+			.subscribe((data) => {
+				this.downloadFile(data, fileName);
+				if (callback) {
+					callback();
+				}
+			});
+	}
 
+	getPredicates(type: string): Observable<Predicate[]> {
+		const url = '/api/v2/relationships/predicates?Type=' + type;
+
+		return this.http.get(url)
+			.pipe(
+				map((response) => <Predicate>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 }

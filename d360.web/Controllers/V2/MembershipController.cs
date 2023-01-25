@@ -111,7 +111,7 @@ namespace d360.web.Controllers.V2
 			HttpGet,
 			MapToApiVersion("2.0"),
 			Route("users"),
-			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/octet-stream"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/octet-stream"),
 			SwaggerResponse(HttpStatusCode.OK, "Gets a list of Users.", typeof(ResourceApiViewModel)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),

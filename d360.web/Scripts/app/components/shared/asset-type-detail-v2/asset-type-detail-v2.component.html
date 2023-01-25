@@ -27,12 +27,12 @@
             </div>
         </div>
         <div class="asset-detail-tabs" *ngIf="categories">
-            <div *ngFor="let category of categories; let first = first">
+            <div *ngFor="let category of categories;">
                 <ig-property-group [expanded]="category.active"
                                    (expandedChange)="category.active = $event; onStateSave()"
                                    [title]="category.name"
                                    [shouldBePadded]="false"
-                                   [showHeaderLine]="!first">
+                                   [showHeaderLine]="false">
                     <div readonly>
                         <ig-asset-type-detail-category [category]="category"></ig-asset-type-detail-category>
                     </div>
