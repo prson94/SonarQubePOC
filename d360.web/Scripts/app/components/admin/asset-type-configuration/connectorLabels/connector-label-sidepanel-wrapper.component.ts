@@ -14,7 +14,7 @@ export class ConnectorLabelSidePanelWrapperComponent implements OnChanges {
 	@Output() onEdit = new EventEmitter();
 
 	sidePanelOpen = false;
-	selectedForInfoPanel: any;
+	selectedForInfoPanel: unknown;
 
 	constructor(public sidePanelService: SidePanelService) {
 	}
@@ -46,10 +46,12 @@ export class ConnectorLabelSidePanelWrapperComponent implements OnChanges {
 		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
 	}
 
-	get anySelectedItem(): any {
+	get anySelectedItem(): unknown {
 		if (this.selectedItem) {
 			return this.selectedItem;
 		}
-		else return this.selectedForInfoPanel;
+		else {
+			return this.selectedForInfoPanel;
+		}
 	}
 }

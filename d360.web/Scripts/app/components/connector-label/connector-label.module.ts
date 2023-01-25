@@ -28,7 +28,7 @@ import { ConnectorLabelDefinitionModule } from './definition/connector-label-def
 import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
 import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
 import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
-import { AngularSplitModule, SplitAreaDirective } from 'angular-split';
+import { AngularSplitModule } from 'angular-split';
 import { AssetPreviewModule } from '../shared/asset-preview/asset-preview.module';
 
 @NgModule({

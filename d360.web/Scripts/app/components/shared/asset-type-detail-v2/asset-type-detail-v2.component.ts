@@ -22,7 +22,7 @@ import {
 	ControlsOptions,
 	OpenBehaviour
 } from './asset-type-detail-v2.model';
-import { AssetType, AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
+import { AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
 import { RelationshipsService } from '../../../services/relationships.service';
 import { Predicate } from '../../../models/predicate.model';
 

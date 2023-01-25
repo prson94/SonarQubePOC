@@ -28,7 +28,7 @@ export class RelationshipsService extends BaseObservableService {
 	constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
 	getRelationshipTypes(assetTypeUid: string = null): Observable<RelationshipType[]> {
-		var url = 'api/v2/relationships/types?state=1';
+		let url = 'api/v2/relationships/types?state=1';
 
 		if (assetTypeUid) {
 			url += `&AssetTypeUid=${assetTypeUid}`;
@@ -42,7 +42,7 @@ export class RelationshipsService extends BaseObservableService {
 	}
 
 	getRelationshipType(RelationshipTypeUid: string): Observable<RelationshipType[]> {
-		var url = `api/v2/relationships/types?state=1&RelationshipTypeUid=${RelationshipTypeUid}`;
+		const url = `api/v2/relationships/types?state=1&RelationshipTypeUid=${RelationshipTypeUid}`;
 
 		return this.http.get(url)
 			.pipe(
@@ -96,17 +96,17 @@ export class RelationshipsService extends BaseObservableService {
 
 	saveRelationships(intersectTypeUid: string, model: any[]): Observable<ApiResult[]> {
 		if (model.length > this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
-			var models: any[] = [];
+			const models: any[] = [];
 			for (var i = 0; i < model.length; i += this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
 				models.push(model.slice(i, i + this.MAX_SYNCHRONOUS_API_ITEM_COUNT));
 			}
-			var obsArr: Observable<ApiResult[]>[] = [];
+			const obsArr: Observable<ApiResult[]>[] = [];
 			models.forEach((m) => {
 				obsArr.push(this.saveRelationships(intersectTypeUid, m));
 			});
 			return forkJoin(obsArr).pipe(
 				map((response) => {
-					var origResponse: ApiResult[] = [];
+					const origResponse: ApiResult[] = [];
 					response.forEach((res) => {
 						res.forEach((r) =>
 							origResponse.push(r));
@@ -128,7 +128,7 @@ export class RelationshipsService extends BaseObservableService {
 	}
 
 	saveRelationshipsForked(intersectTypeUid: number, model: any[]): Observable<any> {
-		var obj = { intersectTypeUid, model };
+		const obj = { intersectTypeUid, model };
 		return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true&lookupFieldsPassedByValue=true`, model).pipe(
 			map((response) => { return { obj, response }; }),
 			catchError((err) => this.handleError(err, true))
@@ -286,25 +286,25 @@ export class RelationshipsService extends BaseObservableService {
 
 	getRelationshipsByAssetTypeUid(assetTypeUid: string): Observable<RelationshipType[]> {
 
-		var cachedItem = this.tagTooltipsCache.find((x) => x.assetTypeUid === assetTypeUid);
+		const cachedItem = this.tagTooltipsCache.find((x) => x.assetTypeUid === assetTypeUid);
 		if (cachedItem) { return cachedItem.obs; }
 
 		const url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active&includeHasFieldTypes=true`;
 
-		var obs = this.http.get(url)
+		const obs = this.http.get(url)
 			.pipe(map((response) => <RelationshipType[]>response),
 				publishReplay(1),
 				refCount(),
 				catchError((err) => this.handleError(err)));
 
-		var data = { assetTypeUid, obs };
+		const data = { assetTypeUid, obs };
 		this.tagTooltipsCache.push(data);
 
 		return obs;
 	}
 
 	getRelationships(intersectTypeUid: string, params: any, isExport = false): Observable<any> {
-		var url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid + '&_includepath=true';
+		let url = 'api/v2/relationships?RelationshipTypeUid=' + intersectTypeUid + '&_includepath=true';
 
 		if (params) {
 			url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
@@ -333,7 +333,7 @@ export class RelationshipsService extends BaseObservableService {
 	}
 
 	getRelationshipsCountsForAsset(assetUid: string): Observable<RelationshipCount[]> {
-		var url = 'api/v2/relationships/counts/' + assetUid;
+		const url = 'api/v2/relationships/counts/' + assetUid;
 
 		return this.http.get(url)
 			.pipe(
@@ -343,7 +343,7 @@ export class RelationshipsService extends BaseObservableService {
 	}
 
 	getRelationshipsForAsset(assetUid: string, params: any): Observable<any[]> {
-		var url = `/api/v2/relationships?AssetUid=${assetUid}`;
+		let url = `/api/v2/relationships?AssetUid=${assetUid}`;
 		if (!params) {
 			params = {};
 		}
@@ -363,11 +363,11 @@ export class RelationshipsService extends BaseObservableService {
 	}
 
 	public getRelationshipsForAssetExcel(assetUid: string, params: any, fileName: string = '', callback: Function = null) {
-		var url = `/api/v2/relationships?AssetUid=${assetUid}`;
+		let url = `/api/v2/relationships?AssetUid=${assetUid}`;
 		if (!params) {
 			params = {};
 		}
-		var copyParams = _.clone(params);
+		const copyParams = _.clone(params);
 
 		//Setup paging for export
 		copyParams['_pageNum'] = 1;
@@ -390,7 +390,7 @@ export class RelationshipsService extends BaseObservableService {
 	}
 
 	getPredicates(type: string): Observable<Predicate[]> {
-		var url = '/api/v2/relationships/predicates?Type=' + type;
+		const url = '/api/v2/relationships/predicates?Type=' + type;
 
 		return this.http.get(url)
 			.pipe(

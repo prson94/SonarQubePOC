@@ -17,7 +17,7 @@ export class AssetTypeListSidePanelWrapperComponent implements OnDestroy, OnChan
 
     sidePanelOpen = false;
 	hrefSub: Subscription;
-	selectedForInfoPanel: any;
+	selectedForInfoPanel: unknown;
 
 	constructor(public sidePanelService: SidePanelService,
 		private linkClickInterceptor: LinkClickInterceptor
@@ -56,10 +56,12 @@ export class AssetTypeListSidePanelWrapperComponent implements OnDestroy, OnChan
         this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
 	}
 
-	get anySelectedItem(): any {
+	get anySelectedItem(): unknown {
 		if (this.selectedItem) {
 			return this.selectedItem;
 		}
-		else return this.selectedForInfoPanel;
+		else {
+			return this.selectedForInfoPanel;
+		}
 	}
 }

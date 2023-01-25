@@ -45,7 +45,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	@ViewChild('form', { static: false }) formElement: ElementRef;
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
-	selectedIcon: any;
+	selectedIcon: string = '';
 
 	constructor(private fb: FormBuilder,
 		private assetService: AssetService,
@@ -228,13 +228,13 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	updateDisplayFormat($event) {
-		var newValue = this.assetTypeForm.get("displayFormat").value + `{${$event.value}}`;
+		const newValue = this.assetTypeForm.get("displayFormat").value + `{${$event.value}}`;
 		this.assetTypeForm.controls["displayFormat"].setValue(newValue);
 	}
 
 	save() {
 		this.savingInProgress = true;
-		let model = new AssetType();
+		const model = new AssetType();
 		model.Class = this.assetTypeClass;
 		model.Name = this.assetTypeForm.get("name").value;
 		model.DisplayFormat = this.assetTypeForm.get("displayFormat").value;

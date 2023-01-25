@@ -92,7 +92,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 	listItemTransform(type) {
 		//set menu items
-		let menuItems = [];
+		const menuItems = [];
 		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedRow = type; } });
 		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
 		menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(type.data.uid, true) });
@@ -105,7 +105,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 		//resolve color names
 		const colorCode = (type?.data?.backColor ?? '') as string;
-		var defColor = this.defaultColors.find((c) => c.title.toLowerCase() === colorCode.toLowerCase());
+		const defColor = this.defaultColors.find((c) => c.title.toLowerCase() === colorCode.toLowerCase());
 		type.data["backColorName"] = defColor ? defColor.value : $localize`Custom`;
 
 		//resolve icons
@@ -117,7 +117,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		type.data["iconName"] = icon?.name;
 
 		if (this.hasFlowObjectType) {
-			var flowObjectType = type.data["flowObjectType"] as FlowObjectType;
+			const flowObjectType = type.data["flowObjectType"] as FlowObjectType;
 
 			switch (flowObjectType) {
 				case FlowObjectType.Activity:

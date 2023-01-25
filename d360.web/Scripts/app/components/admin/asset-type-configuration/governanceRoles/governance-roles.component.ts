@@ -96,7 +96,7 @@ export class GovernanceRolesComponent implements OnInit, OnDestroy {
 			);
 	}
 
-	onChange($event) {
+	onChange() {
 		this.save();
 	}
 
