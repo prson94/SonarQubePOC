@@ -126,7 +126,7 @@
 	<div class="action-bar">
 		<button igButton class="ig-button-secondary" type="button" (click)="closeClick.emit();" label="Cancel" i18n-label></button>
 		<span class="grow"></span>
-		<button igButton igAutoFocus class="ig-button-primary" margin type="submit" i18n-label label="{{saveLabel}}"></button>
+		<button igButton igAutoFocus class="ig-button-primary" margin (click)="onSubmit()" type="submit" i18n-label label="{{saveLabel}}"></button>
 	</div>
 </d3s-modal>
 
