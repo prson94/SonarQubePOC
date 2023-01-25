@@ -24,6 +24,12 @@ import { ConnectorLabelFormModule } from '../sidebar/connector-labels/connector-
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { WhereUsedModule } from '../shared/where-used/where-used.module';
 import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
+import { ConnectorLabelDefinitionModule } from './definition/connector-label-definition.module';
+import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
+import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
+import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
+import { AngularSplitModule } from 'angular-split';
+import { AssetPreviewModule } from '../shared/asset-preview/asset-preview.module';
 
 @NgModule({
     imports: [
@@ -52,11 +58,17 @@ import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score
         SharedAssetScoreModule,
         ConnectorLabelFormModule,
         SiteModalModule,
-        WhereUsedModule
+		WhereUsedModule,
+		ConnectorLabelDefinitionModule,
+		SearchFieldModule,
+		PopupMenuModule,
+		SidePanelModule,
+		AngularSplitModule,
+		AssetPreviewModule
     ],
     declarations: [
         ConnectorLabelComponent,
-        ConnectorLabelItemComponent
+		ConnectorLabelItemComponent
     ],
     providers: [
         

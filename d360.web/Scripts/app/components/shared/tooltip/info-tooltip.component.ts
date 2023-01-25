@@ -24,7 +24,7 @@ export class InfoTooltipComponent implements OnInit {
                 this.titleValue = `<i class='fa fa-question-circle'><i/>`;
             }
             if (this.style === 'warning') {
-                this.titleValue = `<i class='fa fa-exclamation-triangle'></i>`;
+                this.titleValue = `<i class='fa fa-exclamation-circle'></i>`;
             }
         }
     }

@@ -98,7 +98,9 @@ export class AssetType {
     IconStyle: IconStyle = new IconStyle();
     Hierarchy: Hierarchy = new Hierarchy();
     AutoDisplayParent: boolean;
-    CanEditParent: boolean;
+	CanEditParent: boolean;
+	BackgroundColor: string;
+	SynonymAllocations: string[];
 }
 
 export class AssetTypeClassApiModel {
@@ -137,7 +139,15 @@ export class AssetTypeApiModel {
     IconStyle: IconStyle;
     PredicateInverse: string;
     AutoDisplayParent: boolean;
-    CanEditParent: boolean;
+	CanEditParent: boolean;
+	SynonymAllocations: string[];
+
+	CreatedOn: Date;
+	CreatedByUid: string;
+	CreatedByName: string;
+	UpdatedOn: Date;
+	UpdatedByUid: string;
+	UpdatedByName: string;
 }
 
 export class IconStyle {
@@ -169,7 +179,7 @@ export class AssetCount {
     }
 
 
-	public static ListToTree(arr: TreeNode[]): TreeNode[] {
+	public static ListToTree(arr: TreeNode[], menuItemSetterFcn = null): TreeNode[] {
         var tree = [],
             mappedArr = {},
             arrElem,
@@ -196,7 +206,18 @@ export class AssetCount {
                     tree.push(mappedElem);
                 }
             }
-        }
+		}
+
+		if (menuItemSetterFcn) {
+			tree.forEach((type) => {
+				menuItemSetterFcn(type);
+				if (type.children) {
+					type.children.forEach((childType) => {
+						menuItemSetterFcn(childType);
+					});
+				}
+			});
+		}
         return tree;
     }
 }

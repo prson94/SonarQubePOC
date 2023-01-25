@@ -1,56 +1,68 @@
 <div class="row-header">
-    <label class="ig-label">
-        {{ field.name }}
-    </label>
-    <i *ngIf="field.type === fieldType.SYSTEM" class="fa fa-copy" [copy-clipboard]="field.value"></i>
+	<label class="ig-label">
+		{{ field.name }}
+	</label>
+	<span *ngIf="field.tooltip" class="field-tooltip fa fa-question-circle"
+		  pTooltip="{{field.tooltip}}"
+		  tooltipPosition="top"
+		  tooltipStyleClass="ig-tooltip"></span>
+	<i *ngIf="field.type === fieldType.SYSTEM" class="fa fa-copy" [copy-clipboard]="field.value"></i>
 </div>
 <ng-container *ngIf="field.value !== null && field.value !== undefined; else emptyValue" [ngSwitch]="field.type">
-    <div class="ig-value" *ngSwitchCase="fieldType.HTML">
-        <span class="ql-editor" *ngIf="field.value; else emptyHTML" [innerHTML]="field.value | safeHtml"></span>
-        <ng-template #emptyHTML>
-            <span> --- </span>
-        </ng-template>
-    </div>
-    <div class="ig-value" *ngSwitchCase="fieldType.BOOL">
-        <ng-container *ngIf="field.value; else falseTemplate">
-            <i class="fa fa-check-circle enabled ig-bool" title="True"></i>
-            <ng-container i18n>True</ng-container>
-        </ng-container>
-        <ng-template #falseTemplate>
-            <i class="fa fa-times-circle disabled ig-bool" title="False"></i>
-            <ng-container i18n>False</ng-container>
-        </ng-template>
-    </div>
-    <div class="ig-value" *ngSwitchCase="fieldType.FLOW_OBJECT_TYPE">
-        <ng-container [ngSwitch]="field.value">
-            <span *ngSwitchCase="1">Event</span>
-            <span *ngSwitchCase="2">Activity</span>
-            <span *ngSwitchCase="3">Gateway</span>
-        </ng-container>
-    </div>
-    <div class="ig-value ig-value--flex" *ngSwitchCase="fieldType.COLOR">
-        <div class="ig-value-color" [style.background-color]="field.value"></div>
-        <span>
-            {{ field.value }}
-        </span>
-    </div>
-    <div class="ig-value ig-value--flex" *ngSwitchCase="fieldType.ICON">
-        <i class="fa ig-value-icon" [ngClass]="field.value"></i>
-        <span>
-            {{ field.value | iconName }}
-        </span>
-    </div>
-    <div class="ig-value" *ngSwitchCase="fieldType.SWITCH">
-        <button class="ig-value__purple-button">
-            {{ field.value }}
-        </button>
-    </div>
-    <div class="ig-value" *ngSwitchDefault>
-        <span>{{ field.value }}</span>
-    </div>
+	<div class="ig-value" *ngSwitchCase="fieldType.HTML">
+		<span class="ql-editor" *ngIf="field.value; else emptyHTML" [innerHTML]="field.value | safeHtml"></span>
+		<ng-template #emptyHTML>
+			<span> --- </span>
+		</ng-template>
+	</div>
+	<div class="ig-value" *ngSwitchCase="fieldType.BOOL">
+		<ng-container *ngIf="field.value; else falseTemplate">
+			<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+			<ng-container i18n>True</ng-container>
+		</ng-container>
+		<ng-template #falseTemplate>
+			<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+			<ng-container i18n>False</ng-container>
+		</ng-template>
+	</div>
+	<div class="ig-value" *ngSwitchCase="fieldType.FLOW_OBJECT_TYPE">
+		<ng-container [ngSwitch]="field.value">
+			<span *ngSwitchCase="1">Event</span>
+			<span *ngSwitchCase="2">Activity</span>
+			<span *ngSwitchCase="3">Gateway</span>
+		</ng-container>
+	</div>
+	<div class="ig-value ig-value--flex" *ngSwitchCase="fieldType.COLOR">
+		<div class="ig-value-color" [style.background-color]="field.value"></div>
+		<span>
+			{{ field.value }}
+		</span>
+	</div>
+	<div class="ig-value ig-value--flex" *ngSwitchCase="fieldType.ICON">
+		<i class="fa ig-value-icon" [ngClass]="field.value"></i>
+		<span>
+			{{ field.value | iconName }}
+		</span>
+	</div>
+	<div class="ig-value" *ngSwitchCase="fieldType.SWITCH">
+		<button class="ig-value__purple-button">
+			{{ field.value }}
+		</button>
+	</div>
+	<div class="ig-value" *ngSwitchCase="fieldType.DATE">
+		{{ field.value | date:'d MMM yyyy' }}
+	</div>
+	<div class="ig-value" *ngSwitchCase="fieldType.USER">
+		<a href="#" (click)="onResourceClick($event)">
+			{{field.value.title}}
+		</a>
+	</div>
+	<div class="ig-value" *ngSwitchDefault>
+		<span>{{ field.value }}</span>
+	</div>
 </ng-container>
 <ng-template #emptyValue>
-    <div class="ig-value">
-        ---
-    </div>
+	<div class="ig-value">
+		---
+	</div>
 </ng-template>

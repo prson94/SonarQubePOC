@@ -1,0 +1,75 @@
+<div class="connector-label-definition asset-detail {{(isSidePanel ? 'no-padding' : '')}}">
+	<div *ngIf="label && isSidePanel" class="asset-detail-header">
+		<div class="asset-name">{{label.Value}}</div>
+		<div class="class-name" i18n>Connector Label</div>
+
+		<div class="ng-star-inserted">
+			<a (click)="open()">Open</a>
+			<span class="grey-delimiter">|</span>
+			<a (click)="open(true)">Open in New Tab</a>
+			<span class="grey-delimiter">|</span>
+			<a (click)="onEdit.emit()">Edit</a>
+		</div>
+	</div>
+
+	<div *ngIf="label" class="asset-detail-tabs">
+		<ig-property-group i18n-title title="General">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Name</label>
+						<div>
+							{{label.Value}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Use Count</label>
+						<span>
+							{{label.UseCount}}
+						</span>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+		<ig-property-group i18n-title title="System Fields">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>
+							UID
+							<i class="fa fa-copy" [copy-clipboard]="label.uid"></i>
+						</label>
+						<div>
+							{{label.uid}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Date Created</label>
+						<span>
+							{{ label.CreatedOn | date:'d MMM yyyy' }}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Date Last Modified</label>
+						<span>
+							{{ label.UpdatedOn | date:'d MMM yyyy' }}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Created By</label>
+						<a (click)="resourceClicked(label.CreatedByUid)">
+							{{ label.CreatedByName }}
+						</a>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Last Modified by</label>
+						<a (click)="resourceClicked(label.UpdatedByUid)">
+							{{ label.UpdatedByName }}
+						</a>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+	</div>
+
+</div>

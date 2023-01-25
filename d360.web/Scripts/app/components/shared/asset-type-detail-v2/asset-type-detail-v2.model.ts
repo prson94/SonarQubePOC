@@ -1,7 +1,8 @@
 export interface AssetTypeDetailField {
     name: string;
     value: any;
-    type: AssetTypeDetailFieldType;
+	type: AssetTypeDetailFieldType;
+	tooltip?: string;
 }
 
 export interface AssetTypeDetailCategory {
@@ -28,5 +29,7 @@ export enum AssetTypeDetailFieldType {
     SYSTEM = "SYSTEM",
     FLOW_OBJECT_TYPE = "FLOW_OBJECT_TYPE",
     HTML = "HTML",
-    SWITCH = "SWITCH"
+	SWITCH = "SWITCH",
+	DATE = "DATE",
+	USER = "USER"
 }
