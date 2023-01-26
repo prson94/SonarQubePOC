@@ -287,6 +287,7 @@
 											</div>
 											<ig-icon-picker [showGovIcons]="true"
 															name="icon"
+															[(ngModel)]="selectedIcon"
 															formControlName="icon"
 															[formControl]="assetTypeForm.controls['icon']"
 															[igDataCy]="'Asset_Type_Modal_Field_icon'"

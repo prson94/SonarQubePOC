@@ -136,6 +136,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		this.assetTypeForm.controls["displayFormat"].setValue('{Name}');
 		this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Information`);
 		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
+		this.selectedIcon = 'Ebony';
 
 		if (this.hasPredicateUid) {
 			if (this.hierarchyPredicatesSelectItem.length > 0) {
