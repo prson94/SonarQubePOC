@@ -34,6 +34,7 @@
 							 [value]="artifactTypes"
 							 [globalFilterFields]="['name','backColorName','flowObjectTypeName','iconName']"
 							 [paginator]="true"
+							 [(first)]="first"
 							 [rows]="rowsPerPage"
 							 [rowsPerPageOptions]="defaultPagingOptions"
 							 [pageLinks]="3"
@@ -74,6 +75,7 @@
 								 let-item="rowData">
 						<tr #treetableRows
 							[ttSelectableRow]="rowNode"
+							[attr.data-uid]="item.uid"
 							[igDataCy]="(tabTitle | replaceString : ' ' : '_') + '_Row_' + item.uid">
 							<td>
 								<p-treeTableToggler *ngIf="hasAssetTypeChildsFeature"

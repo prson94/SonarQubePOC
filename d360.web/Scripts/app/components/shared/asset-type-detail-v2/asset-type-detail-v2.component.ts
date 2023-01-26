@@ -200,13 +200,13 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 			{
 				name: $localize`Background Color`,
 				type: AssetTypeDetailFieldType.COLOR,
-				value: assetTypeModel.IconStyle.BackColor,
+				value: assetTypeModel?.IconStyle?.BackColor,
 				tooltip: $localize`Sets the background color of icons representing items of this type within diagrams.`
 			},
 			{
 				name: $localize`Icon`,
 				type: AssetTypeDetailFieldType.ICON,
-				value: assetTypeModel.IconStyle.Icon,
+				value: assetTypeModel?.IconStyle?.Icon,
 				tooltip: $localize`Sets the icon representing items of this type within the summary page/search results.`
 			}
 		]);
