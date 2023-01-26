@@ -1,5 +1,5 @@
 <div class="row">
-	<d3s-asset-type-list-sidepanel-wrapper [sidePanelStorageKey]="sidePanelStorageKey"
+	<d3s-asset-type-list-sidepanel-wrapper #sidepanelWrapper [sidePanelStorageKey]="sidePanelStorageKey"
 										   [selectedItem]="selectedRow">
 		<div class="grid-actions-header column-layout">
 			<div *ngIf="addNewAssetTypeWarning != null" class="warningMessage">

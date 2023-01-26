@@ -14,6 +14,7 @@ import { CompanySettingEnum } from "../../../../models/settings.model";
 import { IconService } from "../../../../services/icon.service";
 import { IconProperties } from "../../../../models/icon-properties.model";
 import { TreeTable } from "primeng/treetable";
+import { AssetTypeListSidePanelWrapperComponent } from "./asset-type-list-sidepanel-wrapper.component";
 
 /*global $localize*/
 // eslint-disable-next-line no-var
@@ -47,6 +48,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	icons: IconProperties[] = [];
 
 	@ViewChild('dt', { static: false }) treeTable: TreeTable;
+	@ViewChild('sidepanelWrapper', { static: false }) sidepanelWrapper: AssetTypeListSidePanelWrapperComponent;
 
 	constructor(
 		private assetsService: AssetService,
@@ -101,7 +103,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	listItemTransform(type) {
 		//set menu items
 		const menuItems = [];
-		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedRow = type; } });
+		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedRow = type; this.sidepanelWrapper.expandPanel(); } });
 		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
 		menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(type.data.uid, true) });
 		if (this.hasAssetTypeChildsFeature) {
