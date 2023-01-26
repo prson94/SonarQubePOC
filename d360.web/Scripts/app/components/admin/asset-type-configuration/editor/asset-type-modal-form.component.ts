@@ -136,6 +136,13 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		this.assetTypeForm.controls["displayFormat"].setValue('{Name}');
 		this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Information`);
 		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
+
+		if (this.hasPredicateUid) {
+			if (this.hierarchyPredicatesSelectItem.length > 0) {
+				const selected = this.hierarchyPredicatesSelectItem[0];
+				this.assetTypeForm.controls["predicateUid"].setValue(selected.value);
+			}
+		}
 	}
 
 	updateForm() {
@@ -172,7 +179,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.assetTypeForm.controls["icon"].setValue(assetType.IconStyle.Icon);
 				this.selectedIcon = assetType.IconStyle.Icon;
 				this.assetTypeForm.controls["useAsTransformation"].setValue(assetType.UseAsTransformation);
-				this.assetTypeForm.controls["autoDisplayParent"].setValue(assetType.AutoDisplayParent);
+
+				this.assetTypeForm.controls["autoDisplayParent"].setValue(assetType.AutoDisplayParent ?? false);
 				this.assetTypeForm.controls["canEditParent"].setValue(assetType.CanEditParent);
 
 				let predicateUid = null;
@@ -386,7 +394,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	onIsDescriptionEnabledChange($event: boolean) {
-		console.log($event);
+		//if toggled to false, we need to set default value to button name to avoid validation errors
 		if (!$event) {
 			this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Information`);
 		}
