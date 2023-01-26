@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren } from "@angular/core";
+import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { SelectItem } from "primeng/api";
 import { forkJoin } from "rxjs";
@@ -15,7 +15,8 @@ import { PropertyGroupComponent } from "../../../shared/controls/property-group/
 @Component({
 	selector: "asset-type-modal-form",
 	templateUrl: './asset-type-modal-form.component.html',
-	styleUrls: ['asset-type-modal-form.component.less']
+	styleUrls: ['asset-type-modal-form.component.less'],
+	encapsulation: ViewEncapsulation.None
 })
 export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, AfterViewChecked {
 	@Input() isModalVisible: boolean = false;

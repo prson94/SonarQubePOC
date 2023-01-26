@@ -21,7 +21,7 @@
 				  [formGroup]="assetTypeForm"
 				  [style.height.px]="modalFormMaxHeight"
 				  [style.overflow]="'auto'">
-				<ig-property-group [igformGroup]="assetTypeForm" title="General" i18n-title>
+				<ig-property-group [showHeaderLine]="false" [igformGroup]="assetTypeForm" title="General" i18n-title>
 					<div inputs>
 						<div class="form-group">
 							<div class="row">
@@ -243,7 +243,7 @@
 						</div>
 					</div>
 				</ig-property-group>
-				<ig-property-group *ngIf="showStylesPropertyGroup" [igformGroup]="assetTypeForm" title="Styles" i18n-title>
+				<ig-property-group [showHeaderLine]="false" *ngIf="showStylesPropertyGroup" [igformGroup]="assetTypeForm" title="Styles" i18n-title>
 					<div inputs>
 						<div class="form-group">
 							<div class="row">
@@ -301,7 +301,7 @@
 					</div>
 				</ig-property-group>
 
-				<ig-property-group *ngIf="synonyms.length > 0 && showSynonymPropertyGroup" [igformGroup]="assetTypeForm" title="Grammatic Type Allocation" i18n-title>
+				<ig-property-group [showHeaderLine]="false" *ngIf="synonyms.length > 0 && showSynonymPropertyGroup" [igformGroup]="assetTypeForm" title="Grammatic Type Allocation" i18n-title>
 					<div inputs>
 						<div class="form-group">
 							<div class="row" *ngFor="let syn of synonyms;">
@@ -321,7 +321,6 @@
 				</ig-property-group>
 
 			</form>
-
 
 		</div>
 	</div>
