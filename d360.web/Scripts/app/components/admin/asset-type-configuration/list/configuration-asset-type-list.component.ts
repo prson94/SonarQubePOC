@@ -269,7 +269,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			this.getParents(this.selectedRow, parents);
 
 			//get top most parent, if there is no such node, our select node is top most parent
-			var topMostParent = parents[parents.length - 1];
+			let topMostParent = parents[parents.length - 1];
 			if (!topMostParent) {
 				topMostParent = this.selectedRow;
 			}
@@ -281,15 +281,15 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 
 			//find index of topmost parent and naviate to its page
-			var idx = this.artifactTypes.indexOf(topMostParent);
-			var pageNumber = Math.floor(idx / this.rowsPerPage);
+			let idx = this.artifactTypes.indexOf(topMostParent);
+			let pageNumber = Math.floor(idx / this.rowsPerPage);
 
 			if (pageNumber >= 0) {
 				this.first = pageNumber * this.rowsPerPage;
 				setTimeout(() => {
 					//find preselected element and focus to it
-					var htmlElement = document.querySelectorAll(`[data-uid='${preselectedUid}']`)[0] as HTMLElement;
-					var treeTable = document.getElementsByClassName(`p-treetable-wrapper`)[0];
+					let htmlElement = document.querySelectorAll(`[data-uid='${preselectedUid}']`)[0] as HTMLElement;
+					let treeTable = document.getElementsByClassName(`p-treetable-wrapper`)[0];
 					treeTable.scrollTo({ top: htmlElement.offsetTop - 200 });
 				}, 100);
 			}
