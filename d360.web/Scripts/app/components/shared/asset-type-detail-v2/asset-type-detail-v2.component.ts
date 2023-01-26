@@ -167,13 +167,22 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 
 	private fillBasicCategories(assetTypeModel: AssetTypeApiModel): void {
 		this.addFieldsToCategory($localize`General`, [
-			{ name: $localize`Name`, type: AssetTypeDetailFieldType.TEXT, value: assetTypeModel.Name },
+			{
+				name: $localize`Name`,
+				type: AssetTypeDetailFieldType.TEXT,
+				value: assetTypeModel.Name
+			},
 			{
 				name: $localize`Display Format`,
 				type: AssetTypeDetailFieldType.TEXT,
 				value: assetTypeModel.DisplayFormat,
 				tooltip: $localize`The value of this field token is used to reference the asset throughout the application, for example when you open an asset details page, the value of this field token is displayed in the breadcrumb`
-			},
+			}
+		]);
+
+		this.fillParentRelationshipCategories(assetTypeModel);
+
+		this.addFieldsToCategory($localize`General`, [
 			{
 				name: $localize`Description`,
 				type: AssetTypeDetailFieldType.HTML,
@@ -232,12 +241,10 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 		]);
 	}
 
-	private fillCategories(assetTypeModel: AssetTypeApiModel): void {
-		this.fillBasicCategories(assetTypeModel);
+	private fillParentRelationshipCategories(assetTypeModel: AssetTypeApiModel): void {
 		switch (assetTypeModel.Class.ID) {
 			case AssetTypeClass.BusinessAsset:
 			case AssetTypeClass.TechnicalAsset:
-				this.fillSynonyms(assetTypeModel);
 				if (assetTypeModel.PredicateInverse) {
 					this.addFieldsToCategory($localize`General`, [
 						{
@@ -257,25 +264,6 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 						}
 					]);
 				}
-				this.addFieldsToCategory($localize`General`, [
-					{
-						name: 'Use as Transformation?',
-						type: AssetTypeDetailFieldType.BOOL,
-						value: assetTypeModel.UseAsTransformation
-					}
-				]);
-				break;
-			case AssetTypeClass.Rule:
-				this.fillSynonyms(assetTypeModel);
-				break;
-			case AssetTypeClass.DiagramAsset:
-				this.addFieldsToCategory($localize`General`, [
-					{
-						name: 'Flow Object Type',
-						type: AssetTypeDetailFieldType.TEXT,
-						value: assetTypeModel.FlowObjectType
-					}
-				]);
 				break;
 			case AssetTypeClass.Model:
 			case AssetTypeClass.Policy:
@@ -291,6 +279,38 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 						name: 'Maximum Depth',
 						type: AssetTypeDetailFieldType.TEXT,
 						value: assetTypeModel.HierarchyMaximumDepth
+					}
+				]);
+				break;
+		}
+	}
+
+	private fillCategories(assetTypeModel: AssetTypeApiModel): void {
+		this.fillBasicCategories(assetTypeModel);
+
+		switch (assetTypeModel.Class.ID) {
+			case AssetTypeClass.BusinessAsset:
+			case AssetTypeClass.TechnicalAsset:
+				this.fillSynonyms(assetTypeModel);
+				this.addFieldsToCategory($localize`General`, [
+					{
+						name: 'Use as Transformation?',
+						type: AssetTypeDetailFieldType.BOOL,
+						value: assetTypeModel.UseAsTransformation
+					}
+				]);
+				break;
+			case AssetTypeClass.Rule:
+			case AssetTypeClass.Model:
+			case AssetTypeClass.Policy:
+				this.fillSynonyms(assetTypeModel);
+				break;
+			case AssetTypeClass.DiagramAsset:
+				this.addFieldsToCategory($localize`General`, [
+					{
+						name: 'Flow Object Type',
+						type: AssetTypeDetailFieldType.TEXT,
+						value: assetTypeModel.FlowObjectType
 					}
 				]);
 				break;
