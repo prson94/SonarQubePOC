@@ -384,4 +384,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	get showSynonymPropertyGroup() {
 		return !this.isDiagramAssetTypeForm && this.assetTypeClass !== AssetTypeClass.Rule;
 	}
+
+	onIsDescriptionEnabledChange($event: boolean) {
+		console.log($event);
+		if (!$event) {
+			this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Information`);
+		}
+	}
 }
