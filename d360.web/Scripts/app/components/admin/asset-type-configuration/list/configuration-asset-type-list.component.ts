@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, ViewChild } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild } from "@angular/core";
 import { SelectItem, TreeNode } from "primeng/api";
 import { forkJoin, Subject, Subscription } from "rxjs";
 import { AssetCount, AssetTypeClass, FlowObjectType } from "../../../../models/asset.model";
@@ -14,8 +14,6 @@ import { CompanySettingEnum } from "../../../../models/settings.model";
 import { IconService } from "../../../../services/icon.service";
 import { IconProperties } from "../../../../models/icon-properties.model";
 import { TreeTable } from "primeng/treetable";
-import { HTML } from "../../../../models/fieldtype-api.model";
-import { Tree } from "primeng/tree";
 
 /*global $localize*/
 // eslint-disable-next-line no-var

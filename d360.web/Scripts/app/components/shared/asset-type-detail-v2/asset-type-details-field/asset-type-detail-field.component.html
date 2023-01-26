@@ -33,9 +33,9 @@
 		</ng-container>
 	</div>
 	<div class="ig-value ig-value--flex" *ngSwitchCase="fieldType.COLOR">
-		<div class="ig-value-color" [style.background-color]="field.value"></div>
+		<div class="ig-value-color" [style.background-color]="field.value.value"></div>
 		<span>
-			{{ field.value }}
+			{{ field.value.title }}
 		</span>
 	</div>
 	<div class="ig-value ig-value--flex" *ngSwitchCase="fieldType.ICON">

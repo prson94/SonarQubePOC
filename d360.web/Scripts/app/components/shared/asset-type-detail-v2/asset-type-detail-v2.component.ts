@@ -25,6 +25,8 @@ import {
 import { AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
 import { RelationshipsService } from '../../../services/relationships.service';
 import { Predicate } from '../../../models/predicate.model';
+import { AssetService } from '../../../services/asset.service';
+import { SelectItem } from 'primeng/api';
 
 /*global $localize*/
 
@@ -33,7 +35,7 @@ declare const CurrentResourceID;
 @Component({
 	selector: 'ig-asset-type-detail-v2',
 	templateUrl: './asset-type-detail-v2.component.html',
-	providers: [AssetTypeService],
+	providers: [AssetTypeService, AssetService],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	styleUrls: ['asset-type-detail-v2.component.less'],
 	encapsulation: ViewEncapsulation.None
@@ -50,6 +52,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 	subscription: Subscription;
 
 	synonyms: Predicate[] = [];
+	defaultColors: SelectItem[] = [];
 
 	isAdmin: boolean;
 	isLoading: boolean;
@@ -57,6 +60,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 	constructor(
 		private router: Router,
 		private assetTypeService: AssetTypeService,
+		private assetsService: AssetService,
 		private authService: AuthenticationService,
 		private relationshipService: RelationshipsService,
 		private cdRef: ChangeDetectorRef
@@ -81,9 +85,11 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 		this.subscription =
 			forkJoin(
 				this.assetTypeService.GetAssetTypeByUid(this.uid),
+				this.assetsService.getAllColors(),
 				this.relationshipService.getPredicates('Grammar')).subscribe((data) => {
 					this.assetTypeModel = data[0];
-					this.synonyms = data[1];
+					this.defaultColors = data[1];
+					this.synonyms = data[2];
 					this.categories = [];
 					if (this.assetTypeModel) {
 						this.fillCategories(this.assetTypeModel);
@@ -196,11 +202,17 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 			);
 		}
 
+		const defColor = this.defaultColors.find((c) => c.title.toLowerCase() === assetTypeModel?.IconStyle?.BackColor.toLowerCase());
+		const backColorValue = {
+				title: (defColor ? defColor.value : $localize`Custom`),
+				value: assetTypeModel?.IconStyle?.BackColor
+			};
+
 		this.addFieldsToCategory($localize`Styles`, [
 			{
 				name: $localize`Background Color`,
 				type: AssetTypeDetailFieldType.COLOR,
-				value: assetTypeModel?.IconStyle?.BackColor,
+				value: backColorValue,
 				tooltip: $localize`Sets the background color of icons representing items of this type within diagrams.`
 			},
 			{
