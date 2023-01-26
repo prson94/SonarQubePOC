@@ -281,15 +281,15 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 
 			//find index of topmost parent and naviate to its page
-			let idx = this.artifactTypes.indexOf(topMostParent);
-			let pageNumber = Math.floor(idx / this.rowsPerPage);
+			const idx = this.artifactTypes.indexOf(topMostParent);
+			const pageNumber = Math.floor(idx / this.rowsPerPage);
 
 			if (pageNumber >= 0) {
 				this.first = pageNumber * this.rowsPerPage;
 				setTimeout(() => {
 					//find preselected element and focus to it
-					let htmlElement = document.querySelectorAll(`[data-uid='${preselectedUid}']`)[0] as HTMLElement;
-					let treeTable = document.getElementsByClassName(`p-treetable-wrapper`)[0];
+					const htmlElement = document.querySelectorAll(`[data-uid='${preselectedUid}']`)[0] as HTMLElement;
+					const treeTable = document.getElementsByClassName(`p-treetable-wrapper`)[0];
 					treeTable.scrollTo({ top: htmlElement.offsetTop - 200 });
 				}, 100);
 			}
