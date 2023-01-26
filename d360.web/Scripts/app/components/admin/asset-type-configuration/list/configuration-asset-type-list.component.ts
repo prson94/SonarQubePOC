@@ -22,7 +22,7 @@ declare var CurrentResourceID;
 @Component({
 	selector: "d3s-configuration-asset-type-list",
 	templateUrl: './configuration-asset-type-list.component.html',
-	styleUrls: ['./configuration-asset-type-list.component.less'],
+	styleUrls: ['./configuration-asset-type-list.component.less']
 })
 export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	@Input() assetTypeClass: AssetTypeClass;
@@ -118,11 +118,12 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 		//resolve icons
 		if (!type?.data?.icon) {
-			type.data.icon = 'fa-book';
+			type.data["iconName"] = '---';
 		}
-
-		const icon = this.icons.find((x) => x.id.toLowerCase() === type.data.icon.replace('fa-', '').toLowerCase());
-		type.data["iconName"] = icon?.name;
+		else {
+			const icon = this.icons.find((x) => x.id.toLowerCase() === type.data.icon.replace('fa-', '').toLowerCase());
+			type.data["iconName"] = icon?.name;
+		}
 
 		if (this.hasFlowObjectType) {
 			const flowObjectType = type.data["flowObjectType"] as FlowObjectType;
