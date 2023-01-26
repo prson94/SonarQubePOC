@@ -134,7 +134,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		}
 		this.assetTypeForm.reset();
 		this.assetTypeForm.controls["displayFormat"].setValue('{Name}');
-		this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Information`);
+		this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Description`);
 		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
 		this.selectedIcon = 'Ebony';
 
@@ -397,7 +397,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	onIsDescriptionEnabledChange($event: boolean) {
 		//if toggled to false, we need to set default value to button name to avoid validation errors
 		if (!$event) {
-			this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Information`);
+			this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Description`);
 		}
 	}
 }
