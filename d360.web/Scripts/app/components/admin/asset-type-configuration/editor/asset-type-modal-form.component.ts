@@ -284,24 +284,20 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			});
 		}
 
-		if (!this.uid) {
-			this.assetTypeService.postAssetType(model)
-				.subscribe((res) => {
-					this.onUpdated.emit(res);
-					this.close();
-					this.savingInProgress = false;
-				});
-		}
-		else {
+		let saveObs = this.assetTypeService.postAssetType(model);
+
+		if (this.uid) {
 			model.Uid = this.uid;
-			this.assetTypeService.putAssetType(model)
-				.subscribe((res) => {
-					this.onUpdated.emit(res);
-					this.close();
-					this.savingInProgress = false;
-				});
+			saveObs = this.assetTypeService.putAssetType(model);
 		}
 
+		saveObs.subscribe((res) => {
+			if (res) {
+				this.onUpdated.emit(res);
+				this.close();
+			}
+			this.savingInProgress = false;
+		});
 	}
 
 	onColorSelect($event) {
