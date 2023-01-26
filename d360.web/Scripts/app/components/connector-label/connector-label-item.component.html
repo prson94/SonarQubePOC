@@ -52,7 +52,9 @@
 					 [pageLinks]="3"
 					 [paginator]="true"
 					 [rowsPerPageOptions]="defaultPagingOptions"
-					 [rows]="10" [(selection)]="selected">
+					 [rows]="10" 
+					 [(selection)]="selected"
+					 (onRowSelect)="onRowSelected($event)">
 				<ng-template pTemplate="header">
 					<tr>
 						<th [pSortableColumn]="'Diagram'" style="width: 20%">
@@ -107,7 +109,8 @@
 				   [minSize]="getSidePanelMinWidth()"
 				   [maxSize]="getSidePanelMaxWidth()"
 				   class="tile tile-detail side-panel">
-		<side-panel [selectedItem]="selectedForInfoPanel"
+		<side-panel #sidePanel 
+					[selectedItem]="selectedForInfoPanel"
 					[setMinMaxWidth]="false"
 					[storageKey]="sidePanelStorageKey"
 					[expanded]="true"

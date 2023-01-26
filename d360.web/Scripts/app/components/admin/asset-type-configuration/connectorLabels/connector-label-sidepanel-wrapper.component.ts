@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from "@angular/core";
 import { IOutputData } from "angular-split";
 import { SidePanelService } from "../../../../services/side-panel.service";
+import { SidePanelComponent } from "../../../shared/sidepanel/side-panel.component";
 
 
 @Component({
@@ -15,6 +16,8 @@ export class ConnectorLabelSidePanelWrapperComponent implements OnChanges {
 
 	sidePanelOpen = false;
 	selectedForInfoPanel: unknown;
+
+	@ViewChild('sidePanel', { static: false }) sidePanel: SidePanelComponent;
 
 	constructor(public sidePanelService: SidePanelService) {
 	}
@@ -44,6 +47,10 @@ export class ConnectorLabelSidePanelWrapperComponent implements OnChanges {
 
 	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
 		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+	}
+
+	expandPanel() {
+		this.sidePanel.expandSidePanel();
 	}
 
 	get anySelectedItem(): unknown {

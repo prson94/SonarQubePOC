@@ -268,6 +268,13 @@ export class SidePanelComponent extends BaseComponent {
         this.stateService.recalculateTagSize();
 
         this.saveState();
+	}
 
-    }
+	expandSidePanel() {
+		this.expanded = true;
+		this.expandedChange.emit(true);
+		this.stateService.recalculateTagSize();
+
+		this.saveState();
+	}
 }
