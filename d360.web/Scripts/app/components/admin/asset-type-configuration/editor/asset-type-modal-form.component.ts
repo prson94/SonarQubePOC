@@ -164,6 +164,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.assetTypeForm.controls["descriptionButtonName"].setValue(assetType.DescriptionButtonName);
 				this.assetTypeForm.controls["isDescriptionVisibleByDefault"].setValue(assetType.IsDescriptionVisibleByDefault);
 				this.assetTypeForm.controls["backgroundColor"].setValue(assetType.IconStyle.BackColor);
+
+				const colorCode = (assetType.IconStyle.BackColor ?? '') as string;
+				const defColor = this.defaultColors.find((c) => c.title.toLowerCase() === colorCode.toLowerCase());
+				this.chosenColor = defColor ? defColor.value : $localize`Custom`;
+
 				this.assetTypeForm.controls["icon"].setValue(assetType.IconStyle.Icon);
 				this.selectedIcon = assetType.IconStyle.Icon;
 				this.assetTypeForm.controls["useAsTransformation"].setValue(assetType.UseAsTransformation);
