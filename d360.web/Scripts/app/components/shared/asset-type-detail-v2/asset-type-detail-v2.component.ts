@@ -44,7 +44,7 @@ declare const CurrentResourceID;
 
 export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 	@Input() uid: string;
-	@Input() controlsOptions: ControlsOptions = { showEdit: false, showOpen: OpenBehaviour.NEW_TAB };
+	@Input() controlsOptions: ControlsOptions = { showEdit: true, showOpen: OpenBehaviour.NEW_TAB };
 	@Output() onEditClick: EventEmitter<string> = new EventEmitter<string>();
 
 	assetTypeModel: AssetTypeApiModel;

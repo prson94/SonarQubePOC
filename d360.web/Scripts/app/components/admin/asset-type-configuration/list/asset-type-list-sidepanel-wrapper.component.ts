@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from "@angular/core";
 import { IOutputData } from "angular-split";
 import { TreeNode } from "primeng/api";
 import { Subscription } from "rxjs";
@@ -15,6 +15,8 @@ import { SidePanelComponent } from "../../../shared/sidepanel/side-panel.compone
 export class AssetTypeListSidePanelWrapperComponent implements OnDestroy, OnChanges {
     @Input() sidePanelStorageKey: string;
 	@Input() selectedItem: TreeNode;
+
+	@Output() onEditClick: EventEmitter<string> = new EventEmitter<string>();
 
 	sidePanelOpen = false;
 

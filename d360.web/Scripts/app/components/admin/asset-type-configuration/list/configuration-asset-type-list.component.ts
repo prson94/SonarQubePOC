@@ -100,6 +100,10 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		});
 	}
 
+	onEditClick() {
+		this.openEditForm(this.selectedRow.data.uid, this.selectedRow.data.parentUid);
+	}
+
 	listItemTransform(type) {
 		//set menu items
 		const menuItems = [];

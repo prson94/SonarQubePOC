@@ -21,7 +21,7 @@
 			hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
 				<ng-container *ngIf="selectedItem && !selectedForInfoPanel">
-					<ig-asset-type-detail-v2 [uid]="selectedItem.key">
+					<ig-asset-type-detail-v2 [uid]="selectedItem.key" (onEditClick)="onEditClick.emit($event)">
 					</ig-asset-type-detail-v2>
 				</ng-container>
 				<ng-container *ngIf="selectedForInfoPanel && !selectedItem">
