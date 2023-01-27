@@ -36,7 +36,7 @@
 										   required />
 								</div>
 
-								<div class="field-col">
+								<div class="field-col" [hidden]="isDiagramAssetTypeForm">
 									<div class="flex">
 										<label for="displayFormat" class="ig-label" i18n>Display Format</label>
 										<span class="field-tooltip fa fa-question-circle"
@@ -138,9 +138,33 @@
 												[igDataCy]="'Asset_Type_Modal_Field_flowObjectType'"
 												igDropdown
 												required
-												igSize="full"
+												igSize="medium"
 												[appendTo]="'body'"
-												[options]="flowObjectTypes"></p-dropdown>
+												[options]="flowObjectTypes">
+										<ng-template let-type pTemplate="item">
+											<div *ngIf="type.value === 'Event'" class="flow-object-item"
+												 pTooltip="{{eventTooltip}}"
+												 i18n-pTooltip
+												 tooltipPosition="right"
+												 tooltipStyleClass="ig-tooltip">
+												<div>{{type.value}}</div>
+											</div>
+											<div *ngIf="type.value === 'Activity'" class="flow-object-item"
+												 pTooltip="{{activityTooltip}}"
+												 i18n-pTooltip
+												 tooltipPosition="right"
+												 tooltipStyleClass="ig-tooltip">
+												<div>{{type.value}}</div>
+											</div>
+											<div *ngIf="type.value === 'Gateway'" class="flow-object-item"
+												 pTooltip="{{gatewayTooltip}}"
+												 i18n-pTooltip
+												 tooltipPosition="right"
+												 tooltipStyleClass="ig-tooltip">
+												<div>{{type.value}}</div>
+											</div>
+										</ng-template>
+									</p-dropdown>
 
 								</div>
 
@@ -224,7 +248,7 @@
 												<label for="icon" class="ig-label" i18n>Icon</label>
 												<span class="field-tooltip fa fa-question-circle"
 													  i18n-pTooltip
-													  pTooltip="Sets the icon representing items of this type within the summary page/search results."
+													  pTooltip="Sets the icon representing items of this type within diagrams."
 													  tooltipPosition="top"
 													  tooltipStyleClass="ig-tooltip"></span>
 											</div>

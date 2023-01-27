@@ -9,6 +9,7 @@ import { SecondaryNavService } from "../../../../services/right-sidebar.service"
 import { CompanySettingsService } from "../../../../services/settings.service";
 import { SiteUrlHelpers } from "../../../../static/site-url-helpers";
 import { AdminBaseComponent } from "../../admin-base.component";
+import { ConnectorLabelSidePanelWrapperComponent } from "./connector-label-sidepanel-wrapper.component";
 
 /*global $localize*/
 
@@ -51,7 +52,9 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     @ViewChild('usageTableConsolidate', { static: false }) tableEl2: any;
 
     selectedCount: number = 0;
-    lastSelectedElement: ConnectorLabel;
+	lastSelectedElement: ConnectorLabel;
+
+	@ViewChild('sidepanelWrapper', { static: false }) sidepanelWrapper: ConnectorLabelSidePanelWrapperComponent;
 
     constructor(private router: Router,
         private connectorLabelService: ConnectorLabelService,
@@ -88,7 +91,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 				this.labels = res.sort((a, b) => a.Value.localeCompare(b.Value));
 				this.labels.forEach((label) => {
 					const menuItems = [];
-					menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = label; } });
+					menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = label; this.sidepanelWrapper.expandPanel(); } });
 					menuItems.push({ "title": $localize`Open`, callback: () => this.open(label.uid) });
 					menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(label.uid, true) });
 
@@ -264,7 +267,6 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
 	selectSingleItem(event: MouseEvent, item: ConnectorLabel, element: ElementRef = null) {
 		this.editPopupTitle = $localize`Edit Connector Label`;
-		this.selectedForInfoPanel = item;
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
         if (event && element) {
             if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {

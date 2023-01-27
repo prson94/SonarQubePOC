@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,6 +16,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { Subscription } from 'rxjs';
+import { SidePanelComponent } from '../shared/sidepanel/side-panel.component';
 
 /*global $localize*/
 
@@ -35,7 +36,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 	private labelUid: number;
 	private isAdmin: boolean = false;
 	private currentAreaName: string;
-	selectedForInfoPanel: unknown;
+	selectedForInfoPanel: any;
 
 	private actions: AssetAction;
 	isEditorVisible: boolean = false;
@@ -52,6 +53,8 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 
 	filters: unknown = { globalSearch: '', Diagram: '', AssetTypeName: '', Occurrences: '' };
 	sort: unknown;
+
+	@ViewChild('sidePanel', { static: false }) sidePanel: SidePanelComponent;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -131,7 +134,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 							this.usage = data;
 							this.usage.forEach((asset) => {
 								const menuItems = [];
-								menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = asset; } });
+								menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = asset; this.sidePanel.expandSidePanel(); } });
 								menuItems.push({ "title": $localize`Open`, callback: () => this.open(asset.AssetUid) });
 								menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(asset.AssetUid, true) });
 								asset["MenuItems"] = menuItems;
@@ -165,6 +168,10 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 				});
 
 
+	}
+
+	onRowSelected($event) {
+		this.selectedForInfoPanel = $event.data;
 	}
 
 	buildBreadcrumb() {
