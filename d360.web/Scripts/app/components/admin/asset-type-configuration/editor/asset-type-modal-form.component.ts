@@ -14,8 +14,7 @@ import { PropertyGroupComponent } from "../../../shared/controls/property-group/
 
 @Component({
 	selector: "asset-type-modal-form",
-	templateUrl: './asset-type-modal-form.component.html',
-	styleUrls: ['asset-type-modal-form.component.less']
+	templateUrl: './asset-type-modal-form.component.html'
 })
 export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, AfterViewChecked {
 	@Input() isModalVisible: boolean = false;
