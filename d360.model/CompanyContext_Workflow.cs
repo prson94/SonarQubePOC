@@ -59,6 +59,8 @@ namespace d360.model
 
 		#region Engine Methods
 
+		private readonly Random randomNumberGenerator = new Random();
+
 		private bool DoesWorkflowApply(EventObjectInfo objectInfo, WorkflowEventRegistration registration)
 		{
 			string workflowName = "";
@@ -1373,8 +1375,8 @@ namespace d360.model
 		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, Asset asset = null)
 		{
 			//wait a moment in case there are multiple workflow steps that are trying to update/create same field
-			//https://jira.syncsort.com/browse/GOV-20406
-			Thread.Sleep(new Random().Next(1000));
+			//https://jira.syncsort.com/browse/GOV-20872
+			Thread.Sleep(randomNumberGenerator.Next(1500));
 
 			bool isAssetEdited = false;
 			//check if the field exists
