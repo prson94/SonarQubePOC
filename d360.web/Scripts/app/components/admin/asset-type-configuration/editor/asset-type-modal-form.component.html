@@ -21,7 +21,7 @@
 				  [formGroup]="assetTypeForm"
 				  [style.height.px]="modalFormMaxHeight"
 				  [style.overflow]="'auto'">
-				<ig-property-group [igformGroup]="assetTypeForm" title="General" i18n-title>
+				<ig-property-group [showHeaderLine]="false" [igformGroup]="assetTypeForm" title="General" i18n-title>
 					<div inputs>
 						<div class="form-group">
 							<div class="row">
@@ -126,7 +126,7 @@
 									<ig-number-input [attr.name]="'maxDepth'"
 													 [formControlName]="'maxDepth'"
 													 [formControl]="assetTypeForm.controls['maxDepth']"
-													 required>
+													 [required]="true">
 									</ig-number-input>
 								</div>
 
@@ -181,7 +181,8 @@
 								</div>
 								<div class="field-col" *ngIf="!isDiagramAssetTypeForm">
 									<label for="isDescriptionEnabled" class="ig-label" i18n>Show Description on List Page</label>
-									<ig-switch [attr.name]="'isDescriptionEnabled'"
+									<ig-switch (onChange)="onIsDescriptionEnabledChange($event)"
+											   [attr.name]="'isDescriptionEnabled'"
 											   [formControlName]="'isDescriptionEnabled'"
 											   [formControl]="assetTypeForm.controls['isDescriptionEnabled']"
 											   i18n-trueLabel
@@ -196,13 +197,14 @@
 									<div class="flex">
 										<div class="flex-col">
 											<label for="descriptionButtonName" class="ig-label" i18n>Description Button Name</label>
-											<input igInput
+											<input 
+												   required
+												   igInput
 												   igSize="full"
 												   name="descriptionButtonName"
 												   formControlName="descriptionButtonName"
 												   [igDataCy]="'Asset_Type_Modal_Field_descriptionButtonName'"
-												   type="text"
-												   required />
+												   type="text" />
 										</div>
 										<div class="flex-col center-block">
 											<p-checkbox igCheckbox
@@ -241,7 +243,7 @@
 						</div>
 					</div>
 				</ig-property-group>
-				<ig-property-group *ngIf="showStylesPropertyGroup" [igformGroup]="assetTypeForm" title="Styles" i18n-title>
+				<ig-property-group [showHeaderLine]="false" *ngIf="showStylesPropertyGroup" [igformGroup]="assetTypeForm" title="Styles" i18n-title>
 					<div inputs>
 						<div class="form-group">
 							<div class="row">
@@ -285,6 +287,7 @@
 											</div>
 											<ig-icon-picker [showGovIcons]="true"
 															name="icon"
+															[(ngModel)]="selectedIcon"
 															formControlName="icon"
 															[formControl]="assetTypeForm.controls['icon']"
 															[igDataCy]="'Asset_Type_Modal_Field_icon'"
@@ -298,7 +301,7 @@
 					</div>
 				</ig-property-group>
 
-				<ig-property-group *ngIf="synonyms.length > 0 && showSynonymPropertyGroup" [igformGroup]="assetTypeForm" title="Grammatic Type Allocation" i18n-title>
+				<ig-property-group [showHeaderLine]="false" *ngIf="synonyms.length > 0 && showSynonymPropertyGroup" [igformGroup]="assetTypeForm" title="Grammatic Type Allocation" i18n-title>
 					<div inputs>
 						<div class="form-group">
 							<div class="row" *ngFor="let syn of synonyms;">
@@ -318,7 +321,6 @@
 				</ig-property-group>
 
 			</form>
-
 
 		</div>
 	</div>

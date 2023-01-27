@@ -1,9 +1,10 @@
-import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from "@angular/core";
 import { IOutputData } from "angular-split";
 import { TreeNode } from "primeng/api";
 import { Subscription } from "rxjs";
 import { LinkClickInterceptor } from "../../../../services/href-click-service";
 import { SidePanelService } from "../../../../services/side-panel.service";
+import { SidePanelComponent } from "../../../shared/sidepanel/side-panel.component";
 
 
 @Component({
@@ -13,11 +14,16 @@ import { SidePanelService } from "../../../../services/side-panel.service";
 })
 export class AssetTypeListSidePanelWrapperComponent implements OnDestroy, OnChanges {
     @Input() sidePanelStorageKey: string;
-    @Input() selectedItem: TreeNode;
+	@Input() selectedItem: TreeNode;
 
-    sidePanelOpen = false;
+	@Output() onEditClick: EventEmitter<string> = new EventEmitter<string>();
+
+	sidePanelOpen = false;
+
 	hrefSub: Subscription;
 	selectedForInfoPanel: unknown;
+
+	@ViewChild('sidePanel', { static: false }) sidePanel: SidePanelComponent;
 
 	constructor(public sidePanelService: SidePanelService,
 		private linkClickInterceptor: LinkClickInterceptor
@@ -32,6 +38,10 @@ export class AssetTypeListSidePanelWrapperComponent implements OnDestroy, OnChan
 		if (changes.selectedItem && changes.selectedItem.currentValue !== changes.selectedItem.previousValue) {
 			this.selectedForInfoPanel = null;
 		}
+	}
+
+	expandPanel() {
+		this.sidePanel.expandSidePanel();
 	}
 
 	ngOnDestroy() {
