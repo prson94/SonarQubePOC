@@ -56,6 +56,7 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { TilesModule } from '../../shared/tiles/tiles.module';
 import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
 import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
+import { TooltipModule } from 'primeng/tooltip';
 import { AdminRelationshipEditorModule } from '../relationships/list/admin-relationship-editor.module';
 
 @NgModule({
@@ -96,7 +97,8 @@ import { AdminRelationshipEditorModule } from '../relationships/list/admin-relat
 		SharedDeleteFormModule,
 		TilesModule,
 		IgMessageBoxModule,
-		AssetPreviewModule
+		AssetPreviewModule,
+		TooltipModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,

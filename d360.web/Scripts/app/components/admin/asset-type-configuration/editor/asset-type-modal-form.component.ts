@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren } from "@angular/core";
+import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { SelectItem } from "primeng/api";
 import { forkJoin } from "rxjs";
@@ -15,6 +15,7 @@ import { PropertyGroupComponent } from "../../../shared/controls/property-group/
 @Component({
 	selector: "asset-type-modal-form",
 	templateUrl: './asset-type-modal-form.component.html'
+	encapsulation: ViewEncapsulation.None
 })
 export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, AfterViewChecked {
 	@Input() isModalVisible: boolean = false;
@@ -45,6 +46,9 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
 	selectedIcon: string = '';
+	eventTooltip = $localize`An event is represented by a circle and is something that "happens" during the course of a business process. These events affect the flow of the process and usually have a cause (trigger) or an impact (result).`;
+	gatewayTooltip = $localize`A gateway is represented by the diamond shape and is used to control the divergence and convergence of connections. It will determine traditional decisions, as well as the forking, merging, and joining of paths.`;
+	activityTooltip = $localize`An activity is represented by a rounded-corner rectangle and is a generic term for work that the company performs. The types of activities are Task and Sub-Process.`;
 
 	constructor(private fb: FormBuilder,
 		private assetService: AssetService,
@@ -133,8 +137,16 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		}
 		this.assetTypeForm.reset();
 		this.assetTypeForm.controls["displayFormat"].setValue('{Name}');
-		this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Information`);
+		this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Description`);
 		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
+		this.selectedIcon = 'Ebony';
+
+		if (this.hasPredicateUid) {
+			if (this.hierarchyPredicatesSelectItem.length > 0) {
+				const selected = this.hierarchyPredicatesSelectItem[0];
+				this.assetTypeForm.controls["predicateUid"].setValue(selected.value);
+			}
+		}
 	}
 
 	updateForm() {
@@ -163,10 +175,16 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.assetTypeForm.controls["descriptionButtonName"].setValue(assetType.DescriptionButtonName);
 				this.assetTypeForm.controls["isDescriptionVisibleByDefault"].setValue(assetType.IsDescriptionVisibleByDefault);
 				this.assetTypeForm.controls["backgroundColor"].setValue(assetType.IconStyle.BackColor);
+
+				const colorCode = (assetType.IconStyle.BackColor ?? '') as string;
+				const defColor = this.defaultColors.find((c) => c.title.toLowerCase() === colorCode.toLowerCase());
+				this.chosenColor = defColor ? defColor.value : $localize`Custom`;
+
 				this.assetTypeForm.controls["icon"].setValue(assetType.IconStyle.Icon);
 				this.selectedIcon = assetType.IconStyle.Icon;
 				this.assetTypeForm.controls["useAsTransformation"].setValue(assetType.UseAsTransformation);
-				this.assetTypeForm.controls["autoDisplayParent"].setValue(assetType.AutoDisplayParent);
+
+				this.assetTypeForm.controls["autoDisplayParent"].setValue(assetType.AutoDisplayParent ?? false);
 				this.assetTypeForm.controls["canEditParent"].setValue(assetType.CanEditParent);
 
 				let predicateUid = null;
@@ -280,24 +298,20 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			});
 		}
 
-		if (!this.uid) {
-			this.assetTypeService.postAssetType(model)
-				.subscribe((res) => {
-					this.onUpdated.emit(res);
-					this.close();
-					this.savingInProgress = false;
-				});
-		}
-		else {
+		let saveObs = this.assetTypeService.postAssetType(model);
+
+		if (this.uid) {
 			model.Uid = this.uid;
-			this.assetTypeService.putAssetType(model)
-				.subscribe((res) => {
-					this.onUpdated.emit(res);
-					this.close();
-					this.savingInProgress = false;
-				});
+			saveObs = this.assetTypeService.putAssetType(model);
 		}
 
+		saveObs.subscribe((res) => {
+			if (res) {
+				this.onUpdated.emit(res);
+				this.close();
+			}
+			this.savingInProgress = false;
+		});
 	}
 
 	onColorSelect($event) {
@@ -377,5 +391,12 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	get showSynonymPropertyGroup() {
 		return !this.isDiagramAssetTypeForm && this.assetTypeClass !== AssetTypeClass.Rule;
+	}
+
+	onIsDescriptionEnabledChange($event: boolean) {
+		//if toggled to false, we need to set default value to button name to avoid validation errors
+		if (!$event) {
+			this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Description`);
+		}
 	}
 }

@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { Component, Input, OnDestroy } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild } from "@angular/core";
 import { SelectItem, TreeNode } from "primeng/api";
 import { forkJoin, Subject, Subscription } from "rxjs";
 import { AssetCount, AssetTypeClass, FlowObjectType } from "../../../../models/asset.model";
@@ -13,6 +13,8 @@ import { CompanySettingsService } from "../../../../services/settings.service";
 import { CompanySettingEnum } from "../../../../models/settings.model";
 import { IconService } from "../../../../services/icon.service";
 import { IconProperties } from "../../../../models/icon-properties.model";
+import { TreeTable } from "primeng/treetable";
+import { AssetTypeListSidePanelWrapperComponent } from "./asset-type-list-sidepanel-wrapper.component";
 
 /*global $localize*/
 // eslint-disable-next-line no-var
@@ -21,7 +23,7 @@ declare var CurrentResourceID;
 @Component({
 	selector: "d3s-configuration-asset-type-list",
 	templateUrl: './configuration-asset-type-list.component.html',
-	styleUrls: ['./configuration-asset-type-list.component.less'],
+	styleUrls: ['./configuration-asset-type-list.component.less']
 })
 export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	@Input() assetTypeClass: AssetTypeClass;
@@ -30,8 +32,9 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	defaultPagingOptions = AppConstants.DEFAULT_PAGING_OPTIONS;
 
 	selectedRow: TreeNode;
+	first: number = 0;
 
-	artifactTypes = [];
+	artifactTypes: TreeNode[] = [];
 	dataCyPrefix = 'AssetType_';
 	destroy = new Subject<void>();
 	simpleFilterValue = '';
@@ -44,11 +47,15 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	defaultColors: SelectItem[] = [];
 	icons: IconProperties[] = [];
 
+	@ViewChild('dt', { static: false }) treeTable: TreeTable;
+	@ViewChild('sidepanelWrapper', { static: false }) sidepanelWrapper: AssetTypeListSidePanelWrapperComponent;
+
 	constructor(
 		private assetsService: AssetService,
 		private iconService: IconService,
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 		private router: Router,
+		private cdRef: ChangeDetectorRef,
 		protected settingsService: CompanySettingsService) {
 	}
 
@@ -81,19 +88,26 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			this.artifactTypes = AssetCount.ListToTree(treeNodes, this.listItemTransform.bind(this));
 
 			if (preselectedUid) {
-				this.selectedRow = this.artifactTypes.find((x) => x.id === preselectedUid);
+				this.selectedRow = this.findSelectedNode(this.artifactTypes, preselectedUid);
+
+				this.focusToPreselctedNode(preselectedUid);
 			}
 			else {
 				this.selectedRow = _.first(this.artifactTypes);
 			}
 			this.isLoading = false;
+			this.cdRef.markForCheck();
 		});
+	}
+
+	onEditClick() {
+		this.openEditForm(this.selectedRow.data.uid, this.selectedRow.data.parentUid);
 	}
 
 	listItemTransform(type) {
 		//set menu items
 		const menuItems = [];
-		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedRow = type; } });
+		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedRow = type; this.sidepanelWrapper.expandPanel(); } });
 		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
 		menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(type.data.uid, true) });
 		if (this.hasAssetTypeChildsFeature) {
@@ -110,11 +124,12 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 		//resolve icons
 		if (!type?.data?.icon) {
-			type.data.icon = 'fa-book';
+			type.data["iconName"] = '---';
 		}
-
-		const icon = this.icons.find((x) => x.id.toLowerCase() === type.data.icon.replace('fa-', '').toLowerCase());
-		type.data["iconName"] = icon?.name;
+		else {
+			const icon = this.icons.find((x) => x.id.toLowerCase() === type.data.icon.replace('fa-', '').toLowerCase());
+			type.data["iconName"] = icon?.name;
+		}
 
 		if (this.hasFlowObjectType) {
 			const flowObjectType = type.data["flowObjectType"] as FlowObjectType;
@@ -244,5 +259,76 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 				this.expandCollapseRecursive(childNode, isExpand);
 			});
 		}
+	}
+
+
+	private focusToPreselctedNode(preselectedUid: string) {
+		try {
+			//populate all parents for selected node
+			const parents: TreeNode[] = [];
+			this.getParents(this.selectedRow, parents);
+
+			//get top most parent, if there is no such node, our select node is top most parent
+			let topMostParent = parents[parents.length - 1];
+			if (!topMostParent) {
+				topMostParent = this.selectedRow;
+			}
+
+			//expand all parents of selected node
+			parents.forEach((parent) => {
+				parent.expanded = true;
+			});
+
+
+			//find index of topmost parent and naviate to its page
+			const idx = this.artifactTypes.indexOf(topMostParent);
+			const pageNumber = Math.floor(idx / this.rowsPerPage);
+
+			if (pageNumber >= 0) {
+				this.first = pageNumber * this.rowsPerPage;
+				setTimeout(() => {
+					//find preselected element and focus to it
+					const htmlElement = document.querySelectorAll(`[data-uid='${preselectedUid}']`)[0] as HTMLElement;
+					const treeTable = document.getElementsByClassName(`p-treetable-wrapper`)[0];
+					treeTable.scrollTo({ top: htmlElement.offsetTop - 200 });
+				}, 100);
+			}
+		}
+		catch {
+			console.warn("failed to focus element");
+		}
+	}
+
+	getParents(node: TreeNode, parentNodes: TreeNode[], lvl: number = 0) {
+		if (lvl > 100) {
+			return null;
+		}
+
+		if (node["parentid"]) {
+			const result = this.findSelectedNode(this.artifactTypes, node["parentid"]);
+			parentNodes.push(result);
+			this.getParents(result, parentNodes, lvl++);
+		}
+
+		return parentNodes;
+	}
+
+	findSelectedNode(nodes: TreeNode[], uid: string, lvl: number = 0) {
+		let result: TreeNode;
+		if (lvl > 100) {
+			return null;
+		}
+		nodes.forEach((node) => {
+			if (result) {
+				return;
+			}
+			else if (node["id"] === uid) {
+				result = node;
+			}
+			else {
+				result = this.findSelectedNode(node.children, uid, lvl++);
+			}
+		});
+		return result;
 	}
 }

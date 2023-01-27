@@ -12,7 +12,8 @@
 				   [minSize]="getSidePanelMinWidth()"
 				   [maxSize]="getSidePanelMaxWidth()"
 				   class="tile tile-detail side-panel">
-		<side-panel [selectedItem]="anySelectedItem"
+		<side-panel #sidePanel 
+					[selectedItem]="anySelectedItem"
 					[setMinMaxWidth]="false"
 					[storageKey]="sidePanelStorageKey"
 					[expanded]="true"

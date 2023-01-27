@@ -1,5 +1,6 @@
 <div class="row connector-label-list">
-	<d3s-connector-label-sidepanel-wrapper [sidePanelStorageKey]="sidePanelStorageKey"
+	<d3s-connector-label-sidepanel-wrapper #sidepanelWrapper
+										   [sidePanelStorageKey]="sidePanelStorageKey"
 										   [selectedItem]="selectedForInfoPanel"
 										   (onEdit)="showEditor=true">
 
@@ -90,13 +91,12 @@
 							</a>
 						</td>
 						<td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
-						<td (click)="selectSingleItem($event,item, el);">
+						<td>
 							<div class="token-popup-menu" *ngIf="item.MenuItems">
-								<button igButton type="button" class="{{(selectedForInfoPanel === item ? 'ig-button-primary' : '')}}" icon="fa-info-circle" (click)="selectedForInfoPanel = item"></button>&nbsp;&nbsp;
+								<button igButton type="button" class="{{(selectedForInfoPanel === item ? 'ig-button-primary' : '')}}" icon="fa-info-circle" (click)="selectedForInfoPanel = item;sidepanelWrapper.expandPanel();"></button>&nbsp;&nbsp;
 
 								<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
-								<ig-popup-menu (onSelect)="onPopupMenuClick($event)"
-											   [items]="item.MenuItems"
+								<ig-popup-menu [items]="item.MenuItems"
 											   #tokenMenu
 											   [tabIndex]="1"></ig-popup-menu>
 							</div>
