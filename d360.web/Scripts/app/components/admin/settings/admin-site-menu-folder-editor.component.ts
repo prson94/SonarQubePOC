@@ -114,7 +114,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.cdRef.markForCheck();
 	}, 200);
 
-	$destroy = new Subject();
+	$destroy = new Subject<void>();
 
 	constructor(
 		private cdRef: ChangeDetectorRef,
