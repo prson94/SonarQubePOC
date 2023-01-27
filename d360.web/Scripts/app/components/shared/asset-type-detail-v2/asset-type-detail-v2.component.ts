@@ -22,7 +22,7 @@ import {
 	ControlsOptions,
 	OpenBehaviour
 } from './asset-type-detail-v2.model';
-import { AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
+import { AssetType, AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
 import { RelationshipsService } from '../../../services/relationships.service';
 import { Predicate } from '../../../models/predicate.model';
 import { AssetService } from '../../../services/asset.service';
@@ -182,55 +182,60 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 
 		this.fillParentRelationshipCategories(assetTypeModel);
 
-		this.addFieldsToCategory($localize`General`, [
-			{
-				name: $localize`Description`,
-				type: AssetTypeDetailFieldType.HTML,
-				value: assetTypeModel.Description
-			},
-			{
-				name: $localize`Show Description on List Page`,
-				type: AssetTypeDetailFieldType.BOOL,
-				value: assetTypeModel.IsDescriptionEnabled
-			}
-		]);
+		if (assetTypeModel.Class.ID !== AssetTypeClass.DiagramAsset) {
+			this.addFieldsToCategory($localize`General`, [
+				{
+					name: $localize`Description`,
+					type: AssetTypeDetailFieldType.HTML,
+					value: assetTypeModel.Description
+				},
+				{
+					name: $localize`Show Description on List Page`,
+					type: AssetTypeDetailFieldType.BOOL,
+					value: assetTypeModel.IsDescriptionEnabled
+				}
+			]);
 
-		if (assetTypeModel.IsDescriptionEnabled) {
-			this.addFieldsToCategory($localize`General`,
-				[
-					{
-						name: $localize`Description Button Name`,
-						type: AssetTypeDetailFieldType.TEXT,
-						value: assetTypeModel.DescriptionButtonName ?? $localize`Information`
-					},
-					{
-						name: $localize`Collapsed by default`,
-						type: AssetTypeDetailFieldType.BOOL,
-						value: assetTypeModel.IsDescriptionVisibleByDefault
-					}]
-			);
+
+			if (assetTypeModel.IsDescriptionEnabled) {
+				this.addFieldsToCategory($localize`General`,
+					[
+						{
+							name: $localize`Description Button Name`,
+							type: AssetTypeDetailFieldType.TEXT,
+							value: assetTypeModel.DescriptionButtonName ?? $localize`Information`
+						},
+						{
+							name: $localize`Collapsed by default`,
+							type: AssetTypeDetailFieldType.BOOL,
+							value: assetTypeModel.IsDescriptionVisibleByDefault
+						}]
+				);
+			}
 		}
 
 		const defColor = this.defaultColors.find((c) => c.title.toLowerCase() === assetTypeModel?.IconStyle?.BackColor.toLowerCase());
 		const backColorValue = {
 				title: (defColor ? defColor.value : $localize`Custom`),
 				value: assetTypeModel?.IconStyle?.BackColor
-			};
+		};
 
-		this.addFieldsToCategory($localize`Styles`, [
-			{
-				name: $localize`Background Color`,
-				type: AssetTypeDetailFieldType.COLOR,
-				value: backColorValue,
-				tooltip: $localize`Sets the background color of icons representing items of this type within diagrams.`
-			},
-			{
-				name: $localize`Icon`,
-				type: AssetTypeDetailFieldType.ICON,
-				value: assetTypeModel?.IconStyle?.Icon,
-				tooltip: $localize`Sets the icon representing items of this type within the summary page/search results.`
-			}
-		]);
+		if (assetTypeModel.Class.ID !== AssetTypeClass.DiagramAsset) {
+			this.addFieldsToCategory($localize`Styles`, [
+				{
+					name: $localize`Background Color`,
+					type: AssetTypeDetailFieldType.COLOR,
+					value: backColorValue,
+					tooltip: $localize`Sets the background color of icons representing items of this type within diagrams.`
+				},
+				{
+					name: $localize`Icon`,
+					type: AssetTypeDetailFieldType.ICON,
+					value: assetTypeModel?.IconStyle?.Icon,
+					tooltip: $localize`Sets the icon representing items of this type within the summary page/search results.`
+				}
+			]);
+		}
 
 		this.addFieldsToCategory($localize`System Fields`, [
 			{ name: 'UID', type: AssetTypeDetailFieldType.SYSTEM, value: assetTypeModel.uid },
@@ -311,6 +316,12 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 						name: 'Flow Object Type',
 						type: AssetTypeDetailFieldType.TEXT,
 						value: assetTypeModel.FlowObjectType
+					},
+					{
+						name: $localize`Icon`,
+						type: AssetTypeDetailFieldType.ICON,
+						value: assetTypeModel?.IconStyle?.Icon,
+						tooltip: $localize`Sets the icon representing items of this type within the summary page/search results.`
 					}
 				]);
 				break;
