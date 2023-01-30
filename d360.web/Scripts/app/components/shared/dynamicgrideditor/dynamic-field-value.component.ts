@@ -81,7 +81,15 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
                 else
                     {this.fieldValue = `<a href="${href}" target="_blank">${name}</a>`;}                
             }
-        }
+		}
+
+		if (this.column['fieldType'] === 'FieldFromRelationship') {
+			let regEx: RegExp = /^<a href=([\"'])([\S]+)([\"'])( target=([\"'])([\S]+)([\"']))?>([\s\S]+)<\/a>$/;
+			
+			if (regEx.test(this.fieldValue)) {
+				this.fieldType = 'html';
+			}
+		}
 
         if (this.column['fieldType'] === 'Score' && this.fieldValue) {
             const thresholdKey = colKey + '_threshold';
