@@ -15,6 +15,7 @@ import { IconService } from "../../../../services/icon.service";
 import { IconProperties } from "../../../../models/icon-properties.model";
 import { TreeTable } from "primeng/treetable";
 import { AssetTypeListSidePanelWrapperComponent } from "./asset-type-list-sidepanel-wrapper.component";
+import { MessagesObservableService } from "../../../../services/messages-observable.service";
 
 /*global $localize*/
 // eslint-disable-next-line no-var
@@ -47,6 +48,8 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	defaultColors: SelectItem[] = [];
 	icons: IconProperties[] = [];
 
+	flatNodes = [];
+
 	@ViewChild('dt', { static: false }) treeTable: TreeTable;
 	@ViewChild('sidepanelWrapper', { static: false }) sidepanelWrapper: AssetTypeListSidePanelWrapperComponent;
 
@@ -56,6 +59,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 		private router: Router,
 		private cdRef: ChangeDetectorRef,
+		private messagesService: MessagesObservableService,
 		protected settingsService: CompanySettingsService) {
 	}
 
@@ -84,11 +88,11 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			this.defaultColors = result[1];
 			this.icons = result[2];
 
-			const treeNodes = items.map(AssetCount.ConvertToTreeNode);
-			this.artifactTypes = AssetCount.ListToTree(treeNodes, this.listItemTransform.bind(this));
+			this.flatNodes = items.map(AssetCount.ConvertToTreeNode);
+			this.artifactTypes = AssetCount.ListToTree(this.flatNodes, this.listItemTransform.bind(this));
 
 			if (preselectedUid) {
-				this.selectedRow = this.findSelectedNode(this.artifactTypes, preselectedUid);
+				this.selectedRow = this.flatNodes.find(((x) => x.key === preselectedUid));
 
 				this.focusToPreselctedNode(preselectedUid);
 			}
@@ -109,7 +113,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		const menuItems = [];
 		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedRow = type; this.sidepanelWrapper.expandPanel(); } });
 		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
-		menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(type.data.uid, true) });
+		menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(type.data.uid, true) });
 		if (this.hasAssetTypeChildsFeature) {
 			menuItems.push({ "title": $localize`Add Child Asset Type`, callback: () => this.openEditForm(null, type.data.uid) });
 		}
@@ -215,6 +219,15 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 	onEditSaveFinished($event: any) {
 		this.isModalVisible = false;
+
+		if ($event.type === 'error') {
+			this.messagesService.showError($event.title, $event.Message);
+		} else {
+			this.messagesService.showInfoMessage(
+				$localize`Success`,
+				$event.Message
+			);
+		}
 		this.load(($event.Uid as string).toLowerCase());
 	}
 
@@ -279,7 +292,6 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 				parent.expanded = true;
 			});
 
-
 			//find index of topmost parent and naviate to its page
 			const idx = this.artifactTypes.indexOf(topMostParent);
 			const pageNumber = Math.floor(idx / this.rowsPerPage);
@@ -291,7 +303,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 					const htmlElement = document.querySelectorAll(`[data-uid='${preselectedUid}']`)[0] as HTMLElement;
 					const treeTable = document.getElementsByClassName(`p-treetable-wrapper`)[0];
 					treeTable.scrollTo({ top: htmlElement.offsetTop - 200 });
-				}, 100);
+				}, 250);
 			}
 		}
 		catch {
@@ -305,7 +317,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		}
 
 		if (node["parentid"]) {
-			const result = this.findSelectedNode(this.artifactTypes, node["parentid"]);
+			const result = this.findSelectedNode(this.flatNodes, node["parentid"]);
 			parentNodes.push(result);
 			this.getParents(result, parentNodes, lvl++);
 		}
@@ -322,7 +334,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			if (result) {
 				return;
 			}
-			else if (node["id"] === uid) {
+			else if (node["key"] === uid) {
 				result = node;
 			}
 			else {

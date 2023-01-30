@@ -135,7 +135,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 								const menuItems = [];
 								menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = asset; this.sidePanelService.setSidePanelState({ expanded: true }); } });
 								menuItems.push({ "title": $localize`Open`, callback: () => this.open(asset.AssetUid) });
-								menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(asset.AssetUid, true) });
+								menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(asset.AssetUid, true) });
 								asset["MenuItems"] = menuItems;
 							});
 							this.isLoading = false;
@@ -145,7 +145,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 					this.headerBreadcrumbService.clearBreadcrumbs();
 					this.currentAreaName = $localize`Connector Labels`;
 					const areaBreadcrumb = new Breadcrumb(
-						this.currentAreaName, ``
+						this.currentAreaName, `/admin/configuration/assets/DiagramAsset/connectorLabels`
 					);
 
 					const itemBreadcrumb = new Breadcrumb(

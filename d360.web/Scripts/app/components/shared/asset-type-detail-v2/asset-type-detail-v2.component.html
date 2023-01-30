@@ -21,7 +21,7 @@
                     Open in New Tab
                 </a>
                 <ng-container *ngIf="isAdmin && controlsOptions.showEdit">
-                    |
+                    <span class="grey-delimiter">|</span>
                     <a (click)="onEditClick.emit(uid)" i18n>Edit</a>
                 </ng-container>
             </div>

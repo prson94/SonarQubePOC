@@ -18,8 +18,6 @@
 
         #region Temporary Feature Flags
 
-        public static readonly string TEMP_BRANDING_NEWUI_TEMP = "GovernBrandingUiTemp20220531";
-
         #endregion
     }
 }
