@@ -92,7 +92,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			this.artifactTypes = AssetCount.ListToTree(this.flatNodes, this.listItemTransform.bind(this));
 
 			if (preselectedUid) {
-				this.selectedRow = this.flatNodes.find((x => x.key === preselectedUid));
+				this.selectedRow = this.flatNodes.find(((x) => x.key === preselectedUid));
 
 				this.focusToPreselctedNode(preselectedUid);
 			}
