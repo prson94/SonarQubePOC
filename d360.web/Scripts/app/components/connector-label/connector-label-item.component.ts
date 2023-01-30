@@ -146,7 +146,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 					this.headerBreadcrumbService.clearBreadcrumbs();
 					this.currentAreaName = $localize`Connector Labels`;
 					const areaBreadcrumb = new Breadcrumb(
-						this.currentAreaName, ``
+						this.currentAreaName, `/admin/configuration/assets/DiagramAsset/connectorLabels`
 					);
 
 					const itemBreadcrumb = new Breadcrumb(
