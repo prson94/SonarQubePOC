@@ -62,7 +62,6 @@ export class SiteUrlHelpers {
 	static SITE_URL_ADMIN_ASSET_POLICIES = 'Policy';
 	static SITE_URL_ADMIN_ASSET_RULES = 'Rule';
 
-    static SITE_URL_ADMIN_CUSTOMIZATIONS = 'customizations';
     static SITE_URL_ADMIN_BRANDING = 'branding';
     static SITE_URL_ADMIN_RELATIONSHIPS = 'relationships';
     static SITE_URL_ADMIN_SURVEYS = 'surveys';
