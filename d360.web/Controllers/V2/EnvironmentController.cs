@@ -2681,11 +2681,6 @@ select	r.uid as ResourceUid,
 			Route("dashboards/{reportId}/powerbi-tokens")]
 		public async Task<IHttpActionResult> GetPowerBITokens(string reportId)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage));
-			}
-
 			var companySettings = SettingsRepository.GetSettings();
 			var groupId = companySettings.First(s => s.ID == Setting.PowerBIGroupId).Value;
 			var clientId = companySettings.First(s => s.ID == Setting.PowerBIClientId).Value;
