@@ -52,7 +52,7 @@
                     <ig-badge *ngIf="theme.isCurrent" i18n-text text="Current Theme" [variant]="'positive'"></ig-badge>
 
                     <button igButton type="button" icon="fa-ellipsis-v" (click)="linkMenu.toggle($event);"></button>
-                    <ig-popup-menu (onSelect)="clickMenuItem($event, theme)"
+                    <ig-popup-menu (onSelect)="updateDisplayValue($event)"
                                    [items]="theme.menuItems"
                                    #linkMenu
                                    [tabIndex]="1"></ig-popup-menu>

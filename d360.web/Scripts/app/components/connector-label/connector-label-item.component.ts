@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,260 +13,270 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AssetAction } from '../../models/secondaryNav.model';
 import { Location } from '@angular/common';
 import { CompanySettingsService } from '../../services/settings.service';
+import { SidePanelService } from '../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
+import { Subscription } from 'rxjs';
+import { SidePanelComponent } from '../shared/sidepanel/side-panel.component';
+
+/*global $localize*/
 
 @Component({
-    selector: 'd3s-connector-label-item',
-    providers: [PermissionsService, ConnectorLabelService],
-    templateUrl: 'connector-label-item.component.html',
-    host: { 'class': 'gov-detail-page' }
+	selector: 'd3s-connector-label-item',
+	providers: [PermissionsService, ConnectorLabelService],
+	templateUrl: 'connector-label-item.component.html',
+	styleUrls: ['connector-label-item.component.less'],
+	host: { 'class': 'gov-detail-page' }
 })
 
 export class ConnectorLabelItemComponent extends BaseComponent implements OnInit {
 
-    label: ConnectorLabel;
-    private usage: ConnectorLabelUsage[] = [];
-    private sub: any;
-    private labelUid: number;
-    private isAdmin: boolean = false;
-    private currentAreaName: string;
+	label: ConnectorLabel;
+	private usage: ConnectorLabelUsage[] = [];
+	private sub: Subscription;
+	private labelUid: number;
+	private isAdmin: boolean = false;
+	private currentAreaName: string;
+	selectedForInfoPanel: any;
 
-    private actions: AssetAction;
-    isEditorVisible: boolean = false;
-    isDeleteVisible: boolean = false;
-    isSaving: boolean = false;
+	private actions: AssetAction;
+	isEditorVisible: boolean = false;
+	isDeleteVisible: boolean = false;
+	isSaving: boolean = false;
 
-    deletePopupTitle = $localize`Delete Connector Label`;
-    editConnectorLabel = $localize`Edit Connector Label`;
-    deleteConfirmationText = '';
+	isWhereUsedPage: boolean = false;
 
-    private theDeleteCallback: Function;
+	deletePopupTitle = $localize`Delete Connector Label`;
+	editConnectorLabel = $localize`Edit Connector Label`;
+	deleteConfirmationText = '';
 
-    filters: any = { globalSearch: '', Diagram: '', AssetTypeName: '', Occurrences: '' };
-    sort: any;
+	private theDeleteCallback: Function;
 
-    constructor(
-        private route: ActivatedRoute,
-        secondaryNavService: SecondaryNavService,
-        protected permissionsService: PermissionsService,
-        private connectorLabelService: ConnectorLabelService,
-        protected titleService: Title,
-        protected messagesService: MessagesObservableService,
-        protected settingsService: CompanySettingsService,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
-        private router: Router,
-        private loc: Location,
-    ) {
-        super(settingsService);
-        this.secondaryNavService = secondaryNavService;
-        this.theDeleteCallback = this.deleteLabel.bind(this);
-    }
+	filters: unknown = { globalSearch: '', Diagram: '', AssetTypeName: '', Occurrences: '' };
+	sort: unknown;
 
-    updateSort(event) {
-        this.sort = event;
-    }
-    onFilterChange(event) {
-        this.filters[event.prop] = event.value;
-    }
+	@ViewChild('sidePanel', { static: false }) sidePanel: SidePanelComponent;
 
-    ngOnInit() {
-        this.sub = this.route.params.subscribe((params) => {
-            this.labelUid = params['labelUid'];
-            this.secondaryNavService.clearCurrentObject();
-            this.isLoading = true;
-            this.loadPermissions(this.permissionsService, "ConnectorLabel", this.labelUid)
-                .then((p) => {
-                    if (this.hasModifyAssetPermissions() && this.hasDeleteAssetPermissions()) {
-                        this.isAdmin = true;
-                    }
-                    this.load();
-                });
-        });
-    }
+	constructor(
+		private route: ActivatedRoute,
+		secondaryNavService: SecondaryNavService,
+		protected permissionsService: PermissionsService,
+		private connectorLabelService: ConnectorLabelService,
+		protected titleService: Title,
+		protected messagesService: MessagesObservableService,
+		protected settingsService: CompanySettingsService,
+		protected headerBreadcrumbService: HeaderBreadcrumbService,
+		private router: Router,
+		private loc: Location,
+		public sidePanelService: SidePanelService
+	) {
+		super(settingsService);
+		this.secondaryNavService = secondaryNavService;
+		this.theDeleteCallback = this.deleteLabel.bind(this);
+	}
 
-    ngOnDestroy() {
-        if (this.sub) {
-            this.sub.unsubscribe();
-        }
-        this.secondaryNavService.clearActions();
-        this.clearSidebar();
-    }
+	updateSort(event) {
+		this.sort = event;
+	}
+	onFilterChange(event) {
+		this.filters[event.prop] = event.value;
+	}
 
-    private load() {
-        this.isLoading = true;
-        this.connectorLabelService.getLabelByUid(this.labelUid.toString())
-            .subscribe((result) => {
-                if (result) {
-                    this.label = result;
-                    this.setObjectInfo('ConnectorLabel', this.labelUid);
-                    this.buildBreadcrumb();
-                    this.setBrowserTitle(this.titleService, this.label.Value);
-                    this.deleteConfirmationText = $localize`Delete the Connector Label '${this.label.Value}'`;
+	ngOnInit() {
+		this.sub = this.route.params.subscribe((params) => {
+			this.labelUid = params['labelUid'];
+			this.isWhereUsedPage = this.router.url.toLowerCase().indexOf('whereused') > 0;
+			this.secondaryNavService.clearCurrentObject();
+			this.isLoading = true;
+			this.loadPermissions(this.permissionsService, "ConnectorLabel", this.labelUid)
+				.then((p) => {
+					if (this.hasModifyAssetPermissions() && this.hasDeleteAssetPermissions()) {
+						this.isAdmin = true;
+					}
+					this.load();
+				});
+		});
+	}
 
-                    this.setObjectInfo(
-                        'ConnectorLabel',
-                        this.labelUid,
-                        this.label.Value,
-                        null,
-                        null,
-                        this.label.uid
-                    );
+	ngOnDestroy() {
+		if (this.sub) {
+			this.sub.unsubscribe();
+		}
+		this.secondaryNavService.clearActions();
+		this.clearSidebar();
+	}
 
+	private load() {
+		this.isLoading = true;
+		this.connectorLabelService.getLabelByUid(this.labelUid.toString())
+			.subscribe((result) => {
+				if (result) {
+					this.label = result;
+					this.setObjectInfo('ConnectorLabel', this.labelUid);
+					this.buildBreadcrumb();
+					this.setBrowserTitle(this.titleService, this.label.Value);
+					this.deleteConfirmationText = $localize`Delete the Connector Label '${this.label.Value}'`;
 
-                    if (this.isAdmin) {
+					this.setObjectInfo(
+						'ConnectorLabel',
+						this.labelUid,
+						this.label.Value,
+						null,
+						null,
+						this.label.uid
+					);
 
-                        this.setCommonSecondaryNavTabs({ hasAudit: false });
+					this.setCommonSecondaryNavTabs({ hasAudit: false, hasWhereUsed: true });
 
-                        //Coming soon
-                        //if (this.auditSidebar) {
-                        //    this.auditSidebar.url = `/sidebar/audit/ConnectorLabel/${this.labelUid}`;
-                        //}
-                    }
-                    else {
-                        this.setCommonSecondaryNavTabs({ hasAudit: false });
+					this.secondaryNavService.showHeader(true);
 
-                    }
-                    this.setActions();
-
-                    this.secondaryNavService.showHeader(true);
-
-                    this.connectorLabelService.getLabelUsage(this.label.uid)
-                        .subscribe((data) => {
-                            this.usage = data;
-                            this.isLoading = false;
-                        });
-
-
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.currentAreaName = $localize`Connector Labels`;
-                    const areaBreadcrumb = new Breadcrumb(
-                        this.currentAreaName, ``
-                    );
-
-                    const itemBreadcrumb = new Breadcrumb(
-                        this.label.Value,
-                        `${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${this.label.uid}`
-                    );
-
-                    this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
-                    this.headerBreadcrumbService.showBreadcrumb(itemBreadcrumb);
-                }
-                else {
-                    this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-
-                }
-
-            },
-                (err) => {
-                    this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-                });
+					this.connectorLabelService.getLabelUsage(this.label.uid)
+						.subscribe((data) => {
+							this.usage = data;
+							this.usage.forEach((asset) => {
+								const menuItems = [];
+								menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = asset; this.sidePanel.expandSidePanel(); } });
+								menuItems.push({ "title": $localize`Open`, callback: () => this.open(asset.AssetUid) });
+								menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(asset.AssetUid, true) });
+								asset["MenuItems"] = menuItems;
+							});
+							this.isLoading = false;
+						});
 
 
-    }
+					this.headerBreadcrumbService.clearBreadcrumbs();
+					this.currentAreaName = $localize`Connector Labels`;
+					const areaBreadcrumb = new Breadcrumb(
+						this.currentAreaName, ``
+					);
 
-    buildBreadcrumb() {
-        this.secondaryNavService.setCurrentArea(this.label.Value, 'fa-tag', $localize`Where Used`);
-    }
+					const itemBreadcrumb = new Breadcrumb(
+						this.label.Value,
+						`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${this.label.uid}`
+					);
 
-    formatValue(item: ConnectorLabelUsage) {
-        return item.AssetTypeName.replace('>', ` <i class='fa fa-angle-right'></i> `);
-    }
+					this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
+					this.headerBreadcrumbService.showBreadcrumb(itemBreadcrumb);
+				}
+				else {
+					this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
 
-    setActions() {
-        this.actions = new AssetAction();
-        this.actions.type = "CONNECTORLABEL";
-        this.actions.isVisible = true;
-        this.actions.showDelete = false;
-        this.actions.showEdit = false;
-        this.actions.showBack = true;
+				}
 
-        this.actions.backCallback = this.onActionBackClick.bind(this);
+			},
+				(err) => {
+					this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+				});
 
-        if (this.isAdmin) {
-            this.actions.showEdit = true;
-            this.actions.editCallback = this.onActionEditClick.bind(this);
 
-            this.actions.showDelete = true;
-            this.actions.deleteCallback = this.onActionDeleteClick.bind(this);
-        }
+	}
 
-        this.secondaryNavService.setActionTitleItems(this.actions);
-    }
+	onRowSelected($event) {
+		this.selectedForInfoPanel = $event.data;
+	}
 
-    onActionEditClick() {
-        this.isEditorVisible = true;
-        this.secondaryNavService.setActionTitleItems(this.actions);
-    }
+	buildBreadcrumb() {
+		this.secondaryNavService.setCurrentArea(this.label.Value, 'fa-tag', $localize`Definition`);
+	}
 
-    onActionDeleteClick() {
-        this.isDeleteVisible = true;
-        this.secondaryNavService.setActionTitleItems(this.actions);
-    }
+	formatValue(item: ConnectorLabelUsage) {
+		return item.AssetTypeName.replace('>', ` <i class='fa fa-angle-right'></i> `);
+	}
 
-    onActionBackClick() {
-        this.loc.back();
-    }
-    saveLabel(event) {
-        this.isSaving = true;
-        if (event.additionalOption && event.additionalOption.uid) {
-            const arr: string[] = [];
-            arr.push(event.item.uid);
-            this.consolidateLabels(event.additionalOption.uid, arr);
-            return;
-        }
+	saveLabel(event) {
+		this.isSaving = true;
+		if (event.additionalOption && event.additionalOption.uid) {
+			const arr: string[] = [];
+			arr.push(event.item.uid);
+			this.consolidateLabels(event.additionalOption.uid, arr);
+			return;
+		}
 
-        this.connectorLabelService.saveLabel(event.item)
-            .subscribe((result) => {
-                let msg: string = '';
-                if (event.item.uid == null) {
-                    msg = $localize`Connector label succesfully created`;
-                }
-                else {
-                    msg = $localize`Connector label succesfully updated`;
-                }
-                this.showMessageForResult(this.messagesService, result, msg);
-                this.label.Value = event.item.Value;
-                this.load();
+		this.connectorLabelService.saveLabel(event.item)
+			.subscribe((result) => {
+				let msg: string = '';
+				if (event.item.uid == null) {
+					msg = $localize`Connector label succesfully created`;
+				}
+				else {
+					msg = $localize`Connector label succesfully updated`;
+				}
+				this.showMessageForResult(this.messagesService, result, msg);
+				this.label.Value = event.item.Value;
+				this.load();
 
-                this.isEditorVisible = false;
-                this.isSaving = false;
+				this.isEditorVisible = false;
+				this.isSaving = false;
 
-            });
-    }
+			});
+	}
 
-    consolidateLabels(parentUid: string, childrenUids: string[]) {
-        this.connectorLabelService.consolidateConnectorLabels(parentUid, childrenUids)
-            .subscribe((result) => {
+	consolidateLabels(parentUid: string, childrenUids: string[]) {
+		this.connectorLabelService.consolidateConnectorLabels(parentUid, childrenUids)
+			.subscribe((result) => {
 
-                if (result) {
-                    this.messagesService.showInfoMessage($localize`Success`, $localize`Connector label consolidation succesfull`);
-                }
-                this.isEditorVisible = false;
-                this.isSaving = false;
-                this.openConnectorLabelPageByUID(parentUid);
+				if (result) {
+					this.messagesService.showInfoMessage($localize`Success`, $localize`Connector label consolidation succesfull`);
+				}
+				this.isEditorVisible = false;
+				this.isSaving = false;
+				this.openConnectorLabelPageByUID(parentUid);
 
-            }, (err) => {
-                this.showMessageForResult(this.messagesService, err);
-                this.isEditorVisible = false;
-                this.isSaving = false;
+			}, (err) => {
+				this.showMessageForResult(this.messagesService, err);
+				this.isEditorVisible = false;
+				this.isSaving = false;
 
-            });
-    }
+			});
+	}
 
-    deleteLabel() {
-        this.connectorLabelService.deleteLabels([this.label]).
-            subscribe((result) => {
-                this.showMessageForResult(this.messagesService, result);
-                this.isDeleteVisible = false;
-                this.onActionBackClick();
-            }, (err) => this.showMessageForResult(this.messagesService, err));
-    }
-    private exportUsage() {
-        this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Where Used report for Connector Label "${this.label.Value}"`);
-    }
-    openConnectorLabelPageByUID(uid: string) {
-        this.router.navigate([`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${uid}`]);
-    }
-    private export() {
-        this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Connector Labels`, this.sort, this.filters);
-    }
+	deleteLabel() {
+		this.connectorLabelService.deleteLabels([this.label]).
+			subscribe((result) => {
+				this.showMessageForResult(this.messagesService, result);
+				this.isDeleteVisible = false;
+			}, (err) => this.showMessageForResult(this.messagesService, err));
+	}
+	private exportUsage() {
+		this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Where Used report for Connector Label "${this.label.Value}"`);
+	}
+	openConnectorLabelPageByUID(uid: string) {
+		this.router.navigate([`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${uid}`]);
+	}
+	private export() {
+		this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Connector Labels`, this.sort, this.filters);
+	}
+
+	open(uid: string, newTab: boolean = false) {
+		const url = `asset/${uid}`;
+		if (newTab) {
+			window.open(url, "_blank");
+		}
+		else {
+			this.router.navigateByUrl(url);
+		}
+	}
+
+	onResourceLinkClick($event) {
+		this.selectedForInfoPanel = { AssetUid: $event.uid, Object: $event.type };
+	}
+
+	sidePanelStorageKey: string;
+
+	sidePanelOpen = false;
+
+	getSidePanelWidth(): number {
+		return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+	}
+
+	getSidePanelMaxWidth(): number {
+		return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+	}
+
+	getSidePanelMinWidth(): number {
+		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+	}
+
+	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+	}
 }

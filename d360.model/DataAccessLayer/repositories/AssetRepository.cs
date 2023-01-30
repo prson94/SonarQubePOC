@@ -175,6 +175,38 @@ namespace d360.model.DataAccessLayer
 					{
 						throw new ArgumentException(AssetTypeErrors.InvalidValueincludeLevels, includeLevelsString);
 					}
+				}				
+				
+				if (queryParams.Any(q => q.Key.ToLower() == "includeupdatedandcreatedfields"))
+				{
+					var IncludeCreatedOnCreatedByString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "includeupdatedandcreatedfields").Value;
+					if (bool.TryParse(IncludeCreatedOnCreatedByString, out bool IncludeCreatedOnCreatedBy) && IncludeCreatedOnCreatedBy)
+					{
+						extraJoins += @"
+							left join asset created on created.Object = 'Resource' and created.ObjectID = a.CreatedBy
+							left join AssetDisplayValue adv_created on adv_created.AssetID = created.ID
+							left join asset updated on updated.Object = 'Resource' and updated.ObjectID = a.CreatedBy
+							left join AssetDisplayValue adv_updated on adv_updated.AssetID = updated.ID
+							";
+						extraColumns += @", 
+							created.uid as CreatedByUid, 
+							adv_created.DisplayValue as CreatedByName, 
+							a.CreatedOn,
+							updated.uid as UpdatedByUid, 
+							adv_updated.DisplayValue as UpdatedByName, 
+							a.UpdatedOn ";
+					}
+				}
+
+				if (queryParams.Any(q => q.Key.ToLower() == "includesynonymallocation"))
+				{
+					var includesynonymallocationString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "includesynonymallocation").Value;
+					if (bool.TryParse(includesynonymallocationString, out bool includeLevels))
+					{
+						extraColumns += @", (select string_agg(CAST(P.UID as nvarchar(max)),',') from NymRelation NR
+inner join [Predicate] P on P.ID = NR.PredicateID
+WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationString";
+					}
 				}
 			}
 
@@ -198,7 +230,7 @@ namespace d360.model.DataAccessLayer
 											and P.ID = ITD.PredicateID 
 											and P.Type in ({(int)PredicateType.InterTypeHierarchy},{(int)PredicateType.IntraTypeHierarchy})
 											  ) PredicateInverse ";
-				
+
 			}
 
 			//in case of Reference List items, check if there is parent to calculate if it is Hierarchical
@@ -243,6 +275,7 @@ namespace d360.model.DataAccessLayer
 						{condition}
 						order by    P.[Path]
 						";
+			
 
 			// If you change the order of the select columns please pay attention to the dapper multimap split on parameter where it is splitting out the icon class.
 			return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param: dbArgs, map: (a, i) => { a.IconStyle = i; return a; }, splitOn: "Path,BackColor", timeout: ApiTimeout);
@@ -785,22 +818,28 @@ namespace d360.model.DataAccessLayer
 						option(recompile);
 					end
 
+					drop table if exists #tempApplyToTypeOwnership
+					select * 
+					into #tempApplyToTypeOwnership
+					from ResponsibilityDetail rd 
+					where rd.AssetTypeID = 0 and rd.IsVisible = 1
+
 					insert into #OwnershipLookupAssets
-						select a.[ID] as AssetID
-							 ,rd.[ResponsibilityTypeID]
-							 ,rd.[ResponsibilityTypeName]
-							 ,rd.[ResourceName]
-							 ,rd.[SecurityAsset]
-							 ,rd.[SecurityAssetName]
-							 ,rd.[Context]
-							 ,rd.[ResourceId]
-							 ,rd.[ResourceUid]
-							 ,rd.[SecurityAssetId]
-							 ,rd.[SecurityAssetUid]
-						from ResponsibilityDetail rd
-						inner join asset a on rd.assetid = a.id
-						where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @id
-						option(recompile);
+					select a.[ID] as AssetID
+						 ,rd.[ResponsibilityTypeID]
+						 ,rd.[ResponsibilityTypeName]
+						 ,rd.[ResourceName]
+						 ,rd.[SecurityAsset]
+						 ,rd.[SecurityAssetName]
+						 ,rd.[Context]
+						 ,rd.[ResourceId]
+						 ,rd.[ResourceUid]
+						 ,rd.[SecurityAssetId]
+						 ,rd.[SecurityAssetUid]
+					from #tempApplyToTypeOwnership rd
+					inner join asset a on rd.assetid = a.id
+					where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @id
+					option(recompile);
 
 					create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
 					";
@@ -2971,6 +3010,8 @@ where an.Uid = fam.uid)
 					break;
 			}
 
+			UpdateAssetTypeSynonymAllocations(model, at);
+
 			if (predicate != null)
 			{
 				var intersectType = new IntersectType
@@ -2988,6 +3029,37 @@ where an.Uid = fam.uid)
 			}
 
 			return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
+		}
+
+		private void UpdateAssetTypeSynonymAllocations(AssetTypeUpsert model, AssetType at)
+		{
+			//add synonym allocation
+			if (model.SynonymAllocations is not null)
+			{
+				// delete any existing allocations
+				var rels = CompanyContext.Filter<NymRelation>(x => x.Object == at.Object.ToString() && x.ObjectID == at.ObjectID).ToList();
+
+				foreach (var rel in rels)
+				{
+					CompanyContext.Delete(rel);
+				}
+
+
+				foreach (var pUid in model.SynonymAllocations)
+				{
+					int predicateId = CompanyContext.Predicates.FirstOrDefault(x => x.UID == pUid).ID;
+					NymRelation rel = new NymRelation
+					{
+						PredicateID = predicateId,
+						Object = at.Object.ToString(),
+						ObjectID = at.ObjectID,
+						UpdatedBy = CompanyContext.CurrentResourceID,
+						UpdatedOn = DateTime.UtcNow
+					};
+
+					CompanyContext.Add<NymRelation>(rel);
+				}
+			}
 		}
 
 		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
@@ -3186,6 +3258,7 @@ where an.Uid = fam.uid)
 			try
 			{
 				CompanyContext.Update(assetType);
+				UpdateAssetTypeSynonymAllocations(model, assetType);
 			}
 			catch (Exception ex)
 			{
@@ -3964,8 +4037,7 @@ where an.Uid = fam.uid)
 							from assettype att
 							cross apply dbo.userassetpermissions(@resourceId, att.id) up
 							 where att.class in @filterClasses and((up.permissionsbitmask & @p)) = 0
-							{assetTypePermissionWhere
-								};
+							{assetTypePermissionWhere};
 
 								IF EXISTS(SELECT 1 FROM #TempAssetpremission)
 														BEGIN
@@ -3975,8 +4047,7 @@ where an.Uid = fam.uid)
 															 from AssetType Att
 															inner join Asset A on Att.ID = A.AssetTypeID
 															where att.class in @filterClasses
-															{assetTypePermissionWhere
-							}
+															{assetTypePermissionWhere}
 							and NOT EXISTS (select 1 from #TempAssetpremission U
 															where U.ASSETTYPEID = Att.ID and U.AssetID = A.ID)	
 															GROUP BY Att.ID
@@ -3988,7 +4059,7 @@ where an.Uid = fam.uid)
 															from AssetType Att
 															inner join Asset A on Att.ID = A.AssetTypeID
 															where att.class in @filterClasses
-							{ assetTypePermissionWhere}
+							{assetTypePermissionWhere}
 							group by Att.ID
 							END ";
 
@@ -4010,8 +4081,12 @@ where an.Uid = fam.uid)
 							att.name,
 							att.description
 							{(isReturnCount ? ",isnull(Assets.Recordcount,0) as count " : "")},
-							att.HierarchyMaximumDepth as maxDepth
+							att.HierarchyMaximumDepth as maxDepth,
+							ATS.IconBackColor as backColor,
+							ATS.icon,
+							att.flowObjectType
 						 from AssetType att
+						left join AssetTypeStyle ATS on ATS.ID = att.ID
 						 outer apply (
 							select	ATParent.uid 
 							from	IntersectType IT

@@ -1,4 +1,4 @@
-﻿import { Component, ViewChild, ChangeDetectorRef, ElementRef } from "@angular/core";
+﻿import { Component, ViewChild, ChangeDetectorRef, ElementRef, ViewEncapsulation } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { Router } from "@angular/router";
 import { ConnectorLabel } from "../../../../models/connectorLabel.model";
@@ -9,17 +9,22 @@ import { SecondaryNavService } from "../../../../services/right-sidebar.service"
 import { CompanySettingsService } from "../../../../services/settings.service";
 import { SiteUrlHelpers } from "../../../../static/site-url-helpers";
 import { AdminBaseComponent } from "../../admin-base.component";
+import { ConnectorLabelSidePanelWrapperComponent } from "./connector-label-sidepanel-wrapper.component";
+
+/*global $localize*/
 
 @Component({
     selector: 'd3s-connector-labels',
     templateUrl: './connector-labels.component.html',
-    styleUrls: ['./connector-labels.component.less'],
+	styleUrls: ['./connector-labels.component.less'],
+	encapsulation: ViewEncapsulation.None,
     providers: [ConnectorLabelService]
 })
 
 export class ConnectorLabelsComponent extends AdminBaseComponent {
     labels: ConnectorLabel[] = [];
     selected: ConnectorLabel[] = [];
+    selectedForInfoPanel: ConnectorLabel;
     rowsPerPage: number = 25;
     rowsPerModal: number = 5;
     error: any;
@@ -40,14 +45,16 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
     showConsolidationPopup: boolean = false;
     consolidateValue: string;
-
+	sidePanelStorageKey: string = `ConnectorLabels_Admin`;
 
     @ViewChild('dt', { static: false }) tableEl: any;
     @ViewChild('usageTable', { static: false }) tableEl1: any;
     @ViewChild('usageTableConsolidate', { static: false }) tableEl2: any;
 
     selectedCount: number = 0;
-    lastSelectedElement: ConnectorLabel;
+	lastSelectedElement: ConnectorLabel;
+
+	@ViewChild('sidepanelWrapper', { static: false }) sidepanelWrapper: ConnectorLabelSidePanelWrapperComponent;
 
     constructor(private router: Router,
         private connectorLabelService: ConnectorLabelService,
@@ -81,7 +88,17 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         this.connectorLabelService.getLabelList().subscribe((res) => {
             this.labels = [];
             if (res && res.length > 0) {
-                this.labels = res.sort((a, b) => a.Value.localeCompare(b.Value));
+				this.labels = res.sort((a, b) => a.Value.localeCompare(b.Value));
+				this.labels.forEach((label) => {
+					const menuItems = [];
+					menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = label; this.sidepanelWrapper.expandPanel(); } });
+					menuItems.push({ "title": $localize`Open`, callback: () => this.open(label.uid) });
+					menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(label.uid, true) });
+
+					menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditor(label) });
+					menuItems.push({ "title": $localize`Delete`, callback: () => { this.openDeleteModal(label); } });
+					label["MenuItems"] = menuItems;
+				});
             }
             this.isLoading = false;
         }, (err) => this.error = err);
@@ -248,8 +265,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
 
-    selectSingleItem(event: MouseEvent, item: ConnectorLabel, element: ElementRef = null) {
-        this.editPopupTitle = 'Edit Connector Label';
+	selectSingleItem(event: MouseEvent, item: ConnectorLabel, element: ElementRef = null) {
+		this.editPopupTitle = $localize`Edit Connector Label`;
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
         if (event && element) {
             if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
@@ -341,5 +358,15 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         {
             title: $localize`Consolidate`
         }
-    ];
+	];
+
+	open(uid: string, newTab: boolean = false) {
+		const url = `connectorLabel/${uid}`;
+		if (newTab) {
+			window.open(url, "_blank");
+		}
+		else {
+			this.router.navigateByUrl(url);
+		}
+	}
 }

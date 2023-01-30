@@ -1,12 +1,21 @@
-<d3s-asset-type-list-header [assetTypeClass]="assetTypeClass"></d3s-asset-type-list-header>
-<div class="row">
-	<div class="tile tile-detail">
-		<d3s-loading [isLoading]="loadingCounter !== 0"></d3s-loading>
-		<d3s-asset-type-delete 
-			[callback]="delete"
-			[artifactTypeUid]="uid"
-			[count]="assetsCount"
-			[assetTypeName]="assetType.Name"
-			(onCancel)="cancel()"></d3s-asset-type-delete>
+<d3s-modal additionalClasses="modal-dyn-editor asset-editor"
+		   title="Delete Asset Type"
+		   (onClose)="cancel()"
+		   i18n-title
+		   [isVisible]="isModalVisible">
+	<div class="content">
+		<d3s-loading [isLoading]="loadingCounter > 0"></d3s-loading>
+		<span *ngIf="loadingCounter === 0" i18n>Are you sure you want to delete this asset type?</span><br /><br />
+		<p-checkbox *ngIf="loadingCounter === 0 && this.assetsCount > 0"
+					igCheckbox
+					[(ngModel)]="isConfirmed"
+					[binary]="true" i18n-label
+					[label]="message"></p-checkbox>
+		<span *ngIf="this.assetsCount === 0">{{message}}</span>
 	</div>
-</div>
+	<div class="action-bar">
+		<button igButton igAutoFocus i18n-label label="Cancel" (click)="cancel()"></button>
+		<span class="grow"></span>
+		<button igButton class="ig-button-danger" i18n-label label="Delete" [disabled]="!isConfirmed" [loading]="deleteInProgress" (click)="delete()"></button>
+	</div>
+</d3s-modal>

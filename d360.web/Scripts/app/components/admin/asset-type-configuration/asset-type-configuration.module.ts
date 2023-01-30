@@ -44,6 +44,10 @@ import { ConnectorLabelsModule } from './connectorLabels/connector-labels.module
 import { AssetTypeDetailV2Module } from '../../shared/asset-type-detail-v2/asset-type-detail-v2.module';
 import { SharedGridPagingInfoModule } from "../../shared/grid-paging-info.component";
 import { PortalsModule } from '../../shared/portals/portals.module';
+import { AssetTypeModalFormModule } from './editor/asset-type-modal-form.module';
+import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
+import { SiteModalModule } from '../../shared/modal/gov-modal.module';
+import { CheckboxModule } from 'primeng/checkbox';
 import { FormsModule } from "@angular/forms";
 import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configuration-asset-type-levels-page.component';
 import { AdminLevelListComponent } from './levels/admin-level-list.component';
@@ -51,6 +55,9 @@ import { AdminLevelEditorComponent } from './levels/admin-level-editor.component
 import { TableModule } from 'primeng/table';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { TilesModule } from '../../shared/tiles/tiles.module';
+import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
+import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [
@@ -80,11 +87,18 @@ import { TilesModule } from '../../shared/tiles/tiles.module';
         ConnectorLabelsModule,
         AssetTypeDetailV2Module,
         SharedGridPagingInfoModule,
-        PortalsModule,
+		PortalsModule,
+		AssetTypeModalFormModule,
+		PopupMenuModule,
+		SiteModalModule,
+		CheckboxModule,
 		FormsModule,
 		TableModule,
 		SharedDeleteFormModule,
-		TilesModule
+		TilesModule,
+		IgMessageBoxModule,
+		AssetPreviewModule,
+		TooltipModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,

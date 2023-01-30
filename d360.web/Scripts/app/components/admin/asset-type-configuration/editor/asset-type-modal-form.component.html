@@ -1,0 +1,356 @@
+<d3s-modal additionalClasses="modal-dyn-editor asset-editor large-dialog"
+		   [showTitle]="false"
+		   (onClose)="close()"
+		   [isVisible]="isModalVisible">
+	<div class="asset-editor-container">
+		<d3s-loading [isLoading]="isLoading"></d3s-loading>
+
+		<div *ngIf="!isLoading" class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
+			<div class="form-header-wrapper">
+				<div class="form-header">
+					{{title}}
+					<h2 *ngIf="subTitle" [innerHTML]="subTitle"></h2>
+				</div>
+				<ig-form-feedback-badges class="ig-form-feedback-badges"
+										 [igformGroup]="assetTypeForm"
+										 [inputContainer]="formElement">
+				</ig-form-feedback-badges>
+			</div>
+
+			<form #form
+				  [formGroup]="assetTypeForm"
+				  [style.height.px]="modalFormMaxHeight"
+				  [style.overflow]="'auto'">
+				<ig-property-group [showHeaderLine]="false" [igformGroup]="assetTypeForm" title="General" i18n-title>
+					<div inputs>
+						<div class="form-group">
+							<div class="row">
+								<div class="field-col">
+									<label for="name" class="ig-label" i18n>Name</label>
+									<input igInput
+										   igSize="full"
+										   name="name"
+										   formControlName="name"
+										   [igDataCy]="'Asset_Type_Modal_Field_Name'"
+										   type="text"
+										   required />
+								</div>
+
+								<div class="field-col" [hidden]="isDiagramAssetTypeForm">
+									<div class="flex">
+										<label for="displayFormat" class="ig-label" i18n>Display Format</label>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="The value of this field token is used to reference the asset throughout the application, for example when you open an asset details page, the value of this field token is displayed in the breadcrumb"
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+
+									<div class="display-format-picker">
+										<input igInput
+											   igSize="full"
+											   name="displayFormat"
+											   formControlName="displayFormat"
+											   [igDataCy]="'Asset_Type_Modal_Field_displayFormat'"
+											   type="text"
+											   required />
+										<div class="token-popup-menu">
+											<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+											<ig-popup-menu (onSelect)="updateDisplayFormat($event)"
+														   [items]="fieldTokens"
+														   #tokenMenu
+														   [tabIndex]="1"></ig-popup-menu>
+										</div>
+									</div>
+								</div>
+
+								<div class="field-col" *ngIf="hasPredicateUid">
+									<label for="predicateUid" class="ig-label" i18n>Predicate to Parent</label>
+									<p-dropdown name="predicateUid"
+												formControlName="predicateUid"
+												[igDataCy]="'Asset_Type_Modal_Field_predicateUid'"
+												igDropdown
+												required
+												igSize="full"
+												[appendTo]="'body'"
+												[options]="hierarchyPredicatesSelectItem"></p-dropdown>
+
+								</div>
+
+								<div class="field-col" *ngIf="!isHierarchy && assetTypeForm.get('predicateUid').value">
+									<div class="flex">
+										<label for="autoDisplayParent" class="ig-label" i18n>Auto Display Owner/Parent</label>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="If enabled, the Owner/Parent asset type display format will be included on the list page for this asset type if the asset type has a Predicate to Parent of 'child type of'"
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+									<ig-switch [attr.name]="'autoDisplayParent'"
+											   [formControlName]="'autoDisplayParent'"
+											   [formControl]="assetTypeForm.controls['autoDisplayParent']"
+											   i18n-trueLabel
+											   i18n-falseLabel
+											   trueLabel="True"
+											   falseLabel="False"></ig-switch>
+								</div>
+								<div class="field-col" *ngIf="!isHierarchy && assetTypeForm.get('predicateUid').value">
+									<div class="flex">
+										<label for="canEditParent" class="ig-label" i18n>Edit Parent</label>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="If Enabled, the Parent can be edited on the asset definition page."
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+									<ig-switch [attr.name]="'canEditParent'"
+											   [formControlName]="'canEditParent'"
+											   [formControl]="assetTypeForm.controls['canEditParent']"
+											   i18n-trueLabel
+											   i18n-falseLabel
+											   trueLabel="True"
+											   falseLabel="False"></ig-switch>
+
+
+								</div>
+
+								<div class="field-col" *ngIf="isHierarchy">
+									<div class="flex">
+										<label for="maxDepth" class="ig-label" i18n>Maximum Depth</label>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="The maximum depth to which a tree can contain nodes at"
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+									<ig-number-input [attr.name]="'maxDepth'"
+													 [formControlName]="'maxDepth'"
+													 [formControl]="assetTypeForm.controls['maxDepth']"
+													 [required]="true">
+									</ig-number-input>
+								</div>
+
+
+								<div class="field-col" *ngIf="isDiagramAssetTypeForm">
+									<label for="flowObjectType" class="ig-label" i18n>Flow Object Type</label>
+									<p-dropdown name="flowObjectType"
+												formControlName="flowObjectType"
+												[igDataCy]="'Asset_Type_Modal_Field_flowObjectType'"
+												igDropdown
+												required
+												igSize="medium"
+												[appendTo]="'body'"
+												[options]="flowObjectTypes">
+										<ng-template let-type pTemplate="item">
+											<div *ngIf="type.value === 'Event'" class="flow-object-item"
+												 pTooltip="{{eventTooltip}}"
+												 i18n-pTooltip
+												 tooltipPosition="right"
+												 tooltipStyleClass="ig-tooltip">
+												<div>{{type.value}}</div>
+											</div>
+											<div *ngIf="type.value === 'Activity'" class="flow-object-item"
+												 pTooltip="{{activityTooltip}}"
+												 i18n-pTooltip
+												 tooltipPosition="right"
+												 tooltipStyleClass="ig-tooltip">
+												<div>{{type.value}}</div>
+											</div>
+											<div *ngIf="type.value === 'Gateway'" class="flow-object-item"
+												 pTooltip="{{gatewayTooltip}}"
+												 i18n-pTooltip
+												 tooltipPosition="right"
+												 tooltipStyleClass="ig-tooltip">
+												<div>{{type.value}}</div>
+											</div>
+										</ng-template>
+									</p-dropdown>
+
+								</div>
+
+								<div class="field-col">
+									<label for="description" class="ig-label" i18n>Description</label>
+									<p-editor formControlName="description"
+											  [igDataCy]="'Asset_Modal_Field_description'"
+											  attr.name="description"
+											  [style]="{'height':'150px'}"
+											  ngDefaultControl #ed>
+										<p-header>
+											<span class="ql-formats with-border">
+												<select class="ql-header">
+													<option value="1">Heading</option>
+													<option value="2">Subheading</option>
+													<option selected>Normal</option>
+												</select>
+											</span>
+											<span class="ql-formats with-border">
+												<button class="ql-bold"></button>
+												<button class="ql-italic"></button>
+												<button class="ql-underline"></button>
+											</span>
+										</p-header>
+									</p-editor>
+								</div>
+								<div class="field-col" *ngIf="hasUseAsTransformation">
+									<label for="useAsTransformation" class="ig-label" i18n>Use As Transformation</label>
+									<ig-switch [attr.name]="'useAsTransformation'"
+											   [formControlName]="'useAsTransformation'"
+											   [formControl]="assetTypeForm.controls['useAsTransformation']"
+											   i18n-trueLabel
+											   i18n-falseLabel
+											   trueLabel="True"
+											   falseLabel="False"></ig-switch>
+
+
+								</div>
+								<div class="field-col" *ngIf="!isDiagramAssetTypeForm">
+									<label for="isDescriptionEnabled" class="ig-label" i18n>Show Description on List Page</label>
+									<ig-switch (onChange)="onIsDescriptionEnabledChange($event)"
+											   [attr.name]="'isDescriptionEnabled'"
+											   [formControlName]="'isDescriptionEnabled'"
+											   [formControl]="assetTypeForm.controls['isDescriptionEnabled']"
+											   i18n-trueLabel
+											   i18n-falseLabel
+											   trueLabel="True"
+											   falseLabel="False"></ig-switch>
+
+
+								</div>
+								<div *ngIf="assetTypeForm.get('isDescriptionEnabled').value === true && !isDiagramAssetTypeForm"
+									 class="field-col">
+									<div class="flex">
+										<div class="flex-col">
+											<label for="descriptionButtonName" class="ig-label" i18n>Description Button Name</label>
+											<input 
+												   required
+												   igInput
+												   igSize="full"
+												   name="descriptionButtonName"
+												   formControlName="descriptionButtonName"
+												   [igDataCy]="'Asset_Type_Modal_Field_descriptionButtonName'"
+												   type="text" />
+										</div>
+										<div class="flex-col center-block">
+											<p-checkbox igCheckbox
+														binary="true"
+														label="Collapsed by default"
+														name="isDescriptionVisibleByDefault"
+														formControlName="isDescriptionVisibleByDefault"
+														[igDataCy]="'Asset_Type_Modal_Field_isDescriptionVisibleByDefault'"></p-checkbox>
+										</div>
+									</div>
+								</div>
+								<!--on diagram type forms icon will not whos in special category-->
+								<div class="field-col" *ngIf="isDiagramAssetTypeForm">
+									<div class="flex">
+										<div class="flex-col">
+											<div class="flex">
+												<label for="icon" class="ig-label" i18n>Icon</label>
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Sets the icon representing items of this type within diagrams."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</div>
+											<ig-icon-picker [showGovIcons]="true"
+															[(ngModel)]="selectedIcon"
+															name="icon"
+															formControlName="icon"
+															[formControl]="assetTypeForm.controls['icon']"
+															[igDataCy]="'Asset_Type_Modal_Field_icon'"
+															ngDefaultControl></ig-icon-picker>
+
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</ig-property-group>
+				<ig-property-group [showHeaderLine]="false" *ngIf="showStylesPropertyGroup" [igformGroup]="assetTypeForm" title="Styles" i18n-title>
+					<div inputs>
+						<div class="form-group">
+							<div class="row">
+								<div class="field-col">
+									<div class="flex">
+										<label for="backgroundColor" class="ig-label" i18n>Background Color</label>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="Sets the background color of icons representing items of this type within diagrams."
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+									<div class="flex">
+										<div class="flex-col">
+											<ig-color-picker [colors]="defaultColors"
+															 igSize="full"
+															 [selectedColor]="chosenColor"
+															 (selectedColorChange)="onColorSelect($event)"
+															 required></ig-color-picker>
+										</div>
+										<div class="flex-col" [hidden]="chosenColor !== 'Custom'" style="margin-left:8px;">
+											<color-selector name="backgroundColor"
+															formControlName="backgroundColor"
+															(onChange)="assetTypeForm.controls['backgroundColor'].setValue($event)"
+															[igDataCy]="'Asset_Type_Modal_Field_backgroundColor'"
+															[appendTo]="'body'"></color-selector>
+										</div>
+									</div>
+								</div>
+
+								<div class="field-col">
+									<div class="flex">
+										<div class="flex-col">
+											<div class="flex">
+												<label for="icon" class="ig-label" i18n>Icon</label>
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Sets the icon representing items of this type within the summary page/search results."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</div>
+											<ig-icon-picker [showGovIcons]="true"
+															name="icon"
+															[(ngModel)]="selectedIcon"
+															formControlName="icon"
+															[formControl]="assetTypeForm.controls['icon']"
+															[igDataCy]="'Asset_Type_Modal_Field_icon'"
+															ngDefaultControl></ig-icon-picker>
+
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</ig-property-group>
+
+				<ig-property-group [showHeaderLine]="false" *ngIf="synonyms.length > 0 && showSynonymPropertyGroup" [igformGroup]="assetTypeForm" title="Grammatic Type Allocation" i18n-title>
+					<div inputs>
+						<div class="form-group">
+							<div class="row" *ngFor="let syn of synonyms;">
+								<div class="field-col">
+									<label for="'syn_'{{syn.Uid}}" class="ig-label">{{syn.Name}}</label>
+									<ig-switch [attr.name]="'syn_'+syn.Uid"
+											   [formControlName]="'syn_'+syn.Uid"
+											   [formControl]="assetTypeForm.controls['syn_'+syn.Uid]"
+											   i18n-trueLabel
+											   i18n-falseLabel
+											   trueLabel="True"
+											   falseLabel="False"></ig-switch>
+								</div>
+							</div>
+						</div>
+					</div>
+				</ig-property-group>
+
+			</form>
+
+		</div>
+	</div>
+	<div class="action-bar">
+		<button igButton igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
+		<span class="grow"></span>
+		<button igButton class="ig-button-primary" label="{{saveButtonLabel}}" (click)="save()" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+	</div>
+</d3s-modal>

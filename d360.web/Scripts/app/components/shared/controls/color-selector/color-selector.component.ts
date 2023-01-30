@@ -3,9 +3,11 @@
     ChangeDetectorRef,
     Component,
     ElementRef,
+    EventEmitter,
     forwardRef,
     Input,
     NgModule,
+    Output,
     ViewEncapsulation
 } from "@angular/core";
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from "@angular/forms";
@@ -37,11 +39,14 @@ export const COLOR_SELECTOR_ACCESSOR: any = {
 })
 export class ColorSelector implements ControlValueAccessor {
     @Input() appendTo: string = '';
+	@Output() onChange: EventEmitter<any> = new EventEmitter();
+
     value = "";
     textBoxValue = "";
 
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };
+
 
     valueEvaluators: ColorSelecterEvaluator[] = [];
 
@@ -53,7 +58,7 @@ export class ColorSelector implements ControlValueAccessor {
 
     writeValue(obj: any): void {
         this.value = obj;
-        this.textBoxValue = obj;
+		this.textBoxValue = obj;
         this.ref.markForCheck();
         this.onModelChange(this.value);
     }
@@ -66,8 +71,9 @@ export class ColorSelector implements ControlValueAccessor {
         this.onModelTouched = fn;
     }
 
-    onChange($event) {
-        this.writeValue($event.value);
+	updatedValue($event) {
+		this.writeValue($event.value);
+		this.onChange.emit(this.value);
     }
 
     onEnter($event: Event) {

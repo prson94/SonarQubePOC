@@ -9,7 +9,7 @@
     ViewEncapsulation,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { IconService } from '../../../../services/icon.service';
 import { DropdownModule } from 'primeng/dropdown';
 import { DirectivesModule } from "../../../../directives/directives.module";
@@ -38,6 +38,7 @@ export class IconPickerComponent implements ControlValueAccessor {
 	@Input() categories: any = [];
 
     @Output() ngModelChange = new EventEmitter();
+	@Input() formControl: FormControl;
 
     onModelChange: Function = () => { };
 	onModelTouched: Function = () => { };
@@ -87,7 +88,7 @@ export class IconPickerComponent implements ControlValueAccessor {
 
                 this.categories.forEach((c) => c.items.sort((a, b) => this.sortByName(a, b)));
                 this.categories.sort((a, b) => this.sortByName(a, b));
-                this.isLoading = false;
+				this.isLoading = false;
                 this.cdRef.markForCheck();
             });
         });
@@ -97,7 +98,7 @@ export class IconPickerComponent implements ControlValueAccessor {
         return (a.label < b.label) ? -1 : (a.label > b.label) ? 1 : 0;
     }
 
-    writeValue(obj: string): void {
+	writeValue(obj: string): void {
         this.onModelChange(obj);
     }
     registerOnChange(fn: any): void {
@@ -108,7 +109,14 @@ export class IconPickerComponent implements ControlValueAccessor {
     }
     setDisabledState?(isDisabled: boolean): void {
         this.disabled = isDisabled;
-    }
+	}
+
+	itemChanged(item: any) {
+		this.writeValue(item.value);
+		if (this.formControl) {
+			this.formControl.setValue(item.value, { emitEvent: false });
+		}
+	}
 }
 
 @NgModule({

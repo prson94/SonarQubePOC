@@ -1,24 +1,24 @@
-<d3s-loading [isLoading]="loadingCounter != 0"></d3s-loading>
-<div *ngIf="loadingCounter === 0">
-	<div class="row">
-		<d3s-asset-type-list-sidepanel-wrapper [sidePanelStorageKey]="sidePanelStorageKey"
-			[selectedItem]="selectedRow">
-			<div class="grid-actions-header column-layout">
-				<div *ngIf="addNewAssetTypeWarning != null" class="warningMessage">
-					{{addNewAssetTypeWarning}}
+<div class="row">
+	<d3s-asset-type-list-sidepanel-wrapper #sidepanelWrapper 
+										   [sidePanelStorageKey]="sidePanelStorageKey"
+										   (onEditClick)="onEditClick()"
+										   [selectedItem]="selectedRow">
+		<div class="grid-actions-header column-layout">
+			<div *ngIf="addNewAssetTypeWarning != null" class="warningMessage">
+				{{addNewAssetTypeWarning}}
+			</div>
+			<div class="grid-actions-header-row">
+				<div class="simple-search">
+					<ig-search-field [debounce]="600"
+									 [(ngModel)]="simpleFilterValue"
+									 (onSearch)="dt.filterGlobal($event, 'contains');afterFilter();"
+									 mode="Keypress">
+					</ig-search-field>
 				</div>
-				<div class="grid-actions-header-row">
-					<div class="simple-search">
-						<ig-search-field [debounce]="600"
-							[(ngModel)]="simpleFilterValue"
-							(onSearch)="dt.filterGlobal($event, 'contains')"
-							mode="Keypress">
-						</ig-search-field>
-					</div>
-					<div class="grid-action-buttons">
-						<button *ngIf="addNewAssetTypeWarning == null"
+				<div class="grid-action-buttons">
+					<button *ngIf="addNewAssetTypeWarning == null"
 							[igDataCy]="'Assets_Add'"
-							(click)="add()"
+							(click)="openEditForm(null, null)"
 							igButton
 							pTooltip="Add new asset"
 							i18n-pTooltip
@@ -26,106 +26,118 @@
 							tooltipStyleClass="ig-tooltip"
 							class="ig-button-primary"
 							icon="fa-plus">
-						</button>
-					</div>
+					</button>
 				</div>
 			</div>
-			<div class="tree-wrapper-wrapper">
-				<div class="tree-wrapper">
-					<p-treeTable #dt
-						[value]="artifactTypes"
-						[globalFilterFields]="['name']"
-						[paginator]="true"
-						[rows]="rowsPerPage"
-						[rowsPerPageOptions]="defaultPagingOptions"
-						[pageLinks]="3"
-						[(selection)]="selectedRow"
-						(onPage)="numberOfRowsByCategoryService.onPage($event)"
-						filterMode="strict"
-						selectionMode="single">
-						<ng-template pTemplate="header">
-							<tr>
-								<th [ttSortableColumn]="'name'">
-									<ng-container i18n>Name</ng-container>
-									<d3s-sortIcon [field]="'name'"></d3s-sortIcon>
-								</th>
-								<th *ngIf="hasMaxDepthColumn" [ttSortableColumn]="'maxDepth'">
-									<ng-container i18n>Maximum Depth</ng-container>
-									<d3s-sortIcon [field]="'maxDepth'"></d3s-sortIcon>
-								</th>
-								<th *ngIf="canAddHierarchy" style="width: 30px"></th>
-								<th *ngIf="hasAssetTypeChildsFeature" style="width: 30px"></th>
-								<th style="width: 30px"></th>
-								<th style="width: 30px"></th>
-							</tr>
-						</ng-template>
-						<ng-template pTemplate="body"
-							let-rowNode
-							let-item="rowData">
-							<tr #treetableRows
-								[ttSelectableRow]="rowNode"
-								[igDataCy]="(tabTitle | replaceString : ' ' : '_') + '_Row_' + item.uid">
-								<td>
-									<p-treeTableToggler *ngIf="hasAssetTypeChildsFeature"
-										[rowNode]="rowNode"
-										[igDataCy]="dataCyPrefix + item.AssetUid + '_Toggler'"
-										style="margin-right: 8px;"></p-treeTableToggler>
-									<a [igDataCy]="dataCyPrefix + item.uid + '_Button_View'"
-									   (click)="open(item.uid)"
-									   style="cursor:pointer;">
-										{{item.name}}
-									</a>
-								</td>
-								<td *ngIf="hasMaxDepthColumn">
-									{{item.maxDepth}}
-								</td>
-								<td *ngIf="canAddHierarchy">
-								<td *ngIf="hasAssetTypeChildsFeature">
-									<div class="RowTools">
-										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Add'"
-										   (click)="add(item.uid)"
-										   style="cursor:pointer;">
-											<i class="fa fa-plus"></i>
-										</a>
-									</div>
-								</td>
-								<td>
-									<div class="RowTools">
-										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Edit'"
-										   (click)="edit(item.uid)"
-										   style="cursor:pointer;">
-											<i class="fa fa-pencil"></i>
-										</a>
-									</div>
-								</td>
-								<td>
-									<div class="RowTools">
-										<a [igDataCy]="dataCyPrefix + item.uid + '_Button_Remove'"
-										   (click)="remove(item.uid)"
-										   style="cursor:pointer;">
-											<i class="fa fa-trash-o"></i>
-										</a>
-									</div>
-								</td>
-							</tr>
-						</ng-template>
-						<ng-template pTemplate="summary">
-							<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords">
-							</d3s-grid-paging-info>
-						</ng-template>
-						<ng-template pTemplate="emptymessage"
-							let-columns>
-							<tr>
-								<td colspan="5">
-									<ng-container i18n>
-										No asset types found.
-									</ng-container>
-								</td>
-							</tr>
-						</ng-template>
-					</p-treeTable>
-				</div>
+		</div>
+		<div class="tree-wrapper-wrapper">
+			<div class="tree-wrapper">
+				<p-treeTable #dt
+							 [value]="artifactTypes"
+							 [globalFilterFields]="['name','backColorName','flowObjectTypeName','iconName']"
+							 [paginator]="true"
+							 [(first)]="first"
+							 [rows]="rowsPerPage"
+							 [rowsPerPageOptions]="defaultPagingOptions"
+							 [pageLinks]="3"
+							 [(selection)]="selectedRow"
+							 (onPage)="numberOfRowsByCategoryService.onPage($event)"
+							 filterMode="strict"
+							 [loading]="isLoading"
+							 [loadingIcon]="'fa fa-spinner fa-spin'"
+							 [showLoader]="true"
+							 selectionMode="single">
+					<ng-template pTemplate="header">
+						<tr>
+							<th [ttSortableColumn]="'name'">
+								<ng-container i18n>Name</ng-container>
+								<d3s-sortIcon [field]="'name'"></d3s-sortIcon>
+							</th>
+							<th *ngIf="hasMaxDepthColumn" [ttSortableColumn]="'maxDepth'">
+								<ng-container i18n>Maximum Depth</ng-container>
+								<d3s-sortIcon [field]="'maxDepth'"></d3s-sortIcon>
+							</th>
+							<th style="width: 300px" *ngIf="hasBackgroundColor" [ttSortableColumn]="'backColorName'">
+								<ng-container i18n>Background Color</ng-container>
+								<d3s-sortIcon [field]="'backColorName'"></d3s-sortIcon>
+							</th>
+							<th style="width: 300px" *ngIf="hasFlowObjectType" [ttSortableColumn]="'flowObjectTypeName'">
+								<ng-container i18n>Flow Object Type</ng-container>
+								<d3s-sortIcon [field]="'flowObjectType'"></d3s-sortIcon>
+							</th>
+							<th style="width: 200px" *ngIf="hasIcon" [ttSortableColumn]="'iconName'">
+								<ng-container i18n>Icon</ng-container>
+								<d3s-sortIcon [field]="'iconName'"></d3s-sortIcon>
+							</th>
+							<th style="width: 40px"></th>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="body"
+								 let-rowNode
+								 let-item="rowData">
+						<tr #treetableRows
+							[ttSelectableRow]="rowNode"
+							[attr.data-uid]="item.uid"
+							[igDataCy]="(tabTitle | replaceString : ' ' : '_') + '_Row_' + item.uid">
+							<td>
+								<p-treeTableToggler *ngIf="hasAssetTypeChildsFeature"
+													[rowNode]="rowNode"
+													[igDataCy]="dataCyPrefix + item.AssetUid + '_Toggler'"
+													style="margin-right: 8px;"></p-treeTableToggler>
+								<a [igDataCy]="dataCyPrefix + item.uid + '_Button_View'"
+								   (click)="open(item.uid)"
+								   style="cursor:pointer;">
+									{{item.name}}
+								</a>
+							</td>
+							<td *ngIf="hasMaxDepthColumn">
+								{{item.maxDepth}}
+							</td>
+							<td *ngIf="hasBackgroundColor" class="background-column">
+								<div class="back-color-sample"
+									 [style.background]="item.backColor">
+								</div>
+								{{item.backColorName}}
+							</td>
+							<td *ngIf="hasFlowObjectType" class="background-column">
+								{{item.flowObjectTypeName}}
+							</td>
+							<td *ngIf="hasIcon">
+								<div class="grid-icon">
+									<i class="fa {{item.icon}}"></i>{{item.iconName}}
+								</div>
+							</td>
+							<td style="padding-left:0">
+								<div class="token-popup-menu" *ngIf="item.MenuItems">
+									<button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+									<ig-popup-menu [items]="item.MenuItems"
+												   #tokenMenu
+												   [tabIndex]="1"></ig-popup-menu>
+								</div>
+							</td>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="summary">
+						<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords">
+						</d3s-grid-paging-info>
+					</ng-template>
+					<ng-template pTemplate="emptymessage"
+								 let-columns>
+						<tr>
+							<td colspan="5">
+								<ng-container i18n>
+									No asset types found.
+								</ng-container>
+							</td>
+						</tr>
+					</ng-template>
+				</p-treeTable>
 			</div>
-		</d3s-asset-type-list-sidepanel-wrapper>
-	</div>
+		</div>
+	</d3s-asset-type-list-sidepanel-wrapper>
 </div>
+
+
+<asset-type-modal-form [assetTypeClass]="assetTypeClass" [uid]="formAssetUid" [parentUid]="formParentUid" [isModalVisible]="isModalVisible" (onClose)="onEditFormClose()" (onUpdated)="onEditSaveFinished($event)"></asset-type-modal-form>
+
+<d3s-configuration-asset-type-delete-page [uid]="assetTypeToDelete?.data?.uid" (onClose)="onDeleteClose($event)"></d3s-configuration-asset-type-delete-page>

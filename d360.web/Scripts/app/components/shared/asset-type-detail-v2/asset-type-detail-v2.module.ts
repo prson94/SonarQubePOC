@@ -7,6 +7,7 @@ import { AssetTypeDetailV2Component } from "./asset-type-detail-v2.component";
 import { PropertyGroupModule } from "../controls/property-group/property-group.component";
 import { AssetTypeDetailCategoryComponent } from "./asset-type-details-category/asset-type-detail-category.component";
 import { AssetTypeDetailFieldComponent } from "./asset-type-details-field/asset-type-detail-field.component";
+import { TooltipModule } from 'primeng/tooltip';
 
 
 @NgModule({
@@ -15,7 +16,8 @@ import { AssetTypeDetailFieldComponent } from "./asset-type-details-field/asset-
         FormsModule,
         CoreModule,
         PipesModule,
-        PropertyGroupModule
+		PropertyGroupModule,
+		TooltipModule
     ],
     declarations: [
         AssetTypeDetailCategoryComponent,
