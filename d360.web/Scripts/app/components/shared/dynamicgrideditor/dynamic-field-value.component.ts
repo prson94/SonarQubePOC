@@ -84,7 +84,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 		}
 
 		if (this.column['fieldType'] === 'FieldFromRelationship') {
-			let regEx: RegExp = /^<a href=([\"'])([\S]+)([\"'])( target=([\"'])([\S]+)([\"']))?>([\s\S]+)<\/a>$/;
+			const regEx: RegExp = /^<a href=(["'])([\S]+)(["'])( target=(["'])([\S]+)(["']))?>([\s\S]+)<\/a>$/;
 			
 			if (regEx.test(this.fieldValue)) {
 				this.fieldType = 'html';
