@@ -268,7 +268,9 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		model.IconStyle.ForeColor = "#FFF";
 		model.UseAsTransformation = this.assetTypeForm.get("useAsTransformation").value;
 
-		model.AutoDisplayParent = this.assetTypeForm.get("autoDisplayParent").value;
+		if (this.assetTypeClass === AssetTypeClass.BusinessAsset || this.assetTypeClass === AssetTypeClass.TechnicalAsset) {
+			model.AutoDisplayParent = this.assetTypeForm.get("autoDisplayParent").value;
+		}
 		model.CanEditParent = this.assetTypeForm.get("canEditParent").value;
 
 		if (this.hasPredicateUid) {

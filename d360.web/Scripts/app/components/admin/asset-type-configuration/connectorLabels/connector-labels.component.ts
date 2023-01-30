@@ -93,7 +93,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 					const menuItems = [];
 					menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = label; this.sidepanelWrapper.expandPanel(); } });
 					menuItems.push({ "title": $localize`Open`, callback: () => this.open(label.uid) });
-					menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(label.uid, true) });
+					menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(label.uid, true) });
 
 					menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditor(label) });
 					menuItems.push({ "title": $localize`Delete`, callback: () => { this.openDeleteModal(label); } });
