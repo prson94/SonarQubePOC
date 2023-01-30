@@ -14,7 +14,7 @@ import { PropertyGroupComponent } from "../../../shared/controls/property-group/
 
 @Component({
 	selector: "asset-type-modal-form",
-	templateUrl: './asset-type-modal-form.component.html'
+	templateUrl: './asset-type-modal-form.component.html',
 	encapsulation: ViewEncapsulation.None
 })
 export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, AfterViewChecked {
