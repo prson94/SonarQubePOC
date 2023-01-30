@@ -47,6 +47,8 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	defaultColors: SelectItem[] = [];
 	icons: IconProperties[] = [];
 
+	flatNodes = [];
+
 	@ViewChild('dt', { static: false }) treeTable: TreeTable;
 	@ViewChild('sidepanelWrapper', { static: false }) sidepanelWrapper: AssetTypeListSidePanelWrapperComponent;
 
@@ -84,11 +86,11 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			this.defaultColors = result[1];
 			this.icons = result[2];
 
-			const treeNodes = items.map(AssetCount.ConvertToTreeNode);
-			this.artifactTypes = AssetCount.ListToTree(treeNodes, this.listItemTransform.bind(this));
+			this.flatNodes = items.map(AssetCount.ConvertToTreeNode);
+			this.artifactTypes = AssetCount.ListToTree(this.flatNodes, this.listItemTransform.bind(this));
 
 			if (preselectedUid) {
-				this.selectedRow = this.findSelectedNode(this.artifactTypes, preselectedUid);
+				this.selectedRow = this.flatNodes.find((x => x.key === preselectedUid));
 
 				this.focusToPreselctedNode(preselectedUid);
 			}
@@ -279,7 +281,6 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 				parent.expanded = true;
 			});
 
-
 			//find index of topmost parent and naviate to its page
 			const idx = this.artifactTypes.indexOf(topMostParent);
 			const pageNumber = Math.floor(idx / this.rowsPerPage);
@@ -291,7 +292,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 					const htmlElement = document.querySelectorAll(`[data-uid='${preselectedUid}']`)[0] as HTMLElement;
 					const treeTable = document.getElementsByClassName(`p-treetable-wrapper`)[0];
 					treeTable.scrollTo({ top: htmlElement.offsetTop - 200 });
-				}, 100);
+				}, 250);
 			}
 		}
 		catch {
@@ -305,7 +306,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		}
 
 		if (node["parentid"]) {
-			const result = this.findSelectedNode(this.artifactTypes, node["parentid"]);
+			const result = this.findSelectedNode(this.flatNodes, node["parentid"]);
 			parentNodes.push(result);
 			this.getParents(result, parentNodes, lvl++);
 		}
@@ -322,7 +323,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			if (result) {
 				return;
 			}
-			else if (node["id"] === uid) {
+			else if (node["key"] === uid) {
 				result = node;
 			}
 			else {

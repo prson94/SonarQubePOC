@@ -1,4 +1,5 @@
-﻿import { TreeNode } from "primeng/api";
+﻿import { defaultOptions } from "highcharts";
+import { TreeNode } from "primeng/api";
 
 
 export enum State {
@@ -209,15 +210,17 @@ export class AssetCount {
 		}
 
 		if (menuItemSetterFcn) {
-			tree.forEach((type) => {
-				menuItemSetterFcn(type);
-				if (type.children) {
-					type.children.forEach((childType) => {
-						menuItemSetterFcn(childType);
-					});
-				}
-			});
+			this.setFunctionRecursivly(tree, menuItemSetterFcn);
 		}
         return tree;
-    }
+	}
+
+	private static setFunctionRecursivly(targetArr: any[], fcn) {
+		targetArr.forEach((item) => {
+			fcn(item);
+			if (item.children) {
+				this.setFunctionRecursivly(item.children, fcn);
+			}
+		});
+	}
 }
