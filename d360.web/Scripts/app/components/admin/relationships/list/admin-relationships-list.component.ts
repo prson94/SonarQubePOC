@@ -1,4 +1,4 @@
-﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { PredicateFriendlyType } from '../../../../models/predicate.model';
 import { RelationshipType, RelationshipTypeSimpleUIModel } from '../../../../models/relationship.model';
@@ -12,7 +12,9 @@ import { BaseComponent } from '../../../shared/base.component';
 @Component({
 	selector: 'd3s-admin-relationships-list',
 	providers: [RelationshipsService],
-	templateUrl: 'admin-relationships-list.component.html'
+	templateUrl: 'admin-relationships-list.component.html',
+	styleUrls: ['admin-relationships-list.component.less'],
+	encapsulation: ViewEncapsulation.None
 })
 
 export class AdminRelationshipsListComponent extends BaseComponent implements OnChanges {

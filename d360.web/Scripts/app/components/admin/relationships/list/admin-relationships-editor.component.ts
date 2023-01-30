@@ -79,6 +79,8 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	}
 
 	async loadForm() {
+		this.canUpdateSides = true;
+
 		if (this.relationshipTypeUid) {
 			await this.loadItem(this.relationshipTypeUid);
 		}
@@ -94,7 +96,6 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 
 	private async loadItem(uid: string) {
 		this.isLoadingItem = true;
-
 		if (this.relationshipType && this.relationshipType.Subject) {
 			const results = await this.relationshipsService.getRelationshipType(uid).toPromise();
 			const typeToLoad = results[0];
