@@ -723,7 +723,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.html</context>
-          <context context-type="linenumber">66,69</context>
+          <context context-type="linenumber">67,70</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
@@ -1046,14 +1046,14 @@
         <source>Create New Connector Label</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.html</context>
-          <context context-type="linenumber">18,23</context>
+          <context context-type="linenumber">19,24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5f19586aba912ec6eb123ec5ab609a3bcc073066" datatype="html">
         <source>Export</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.html</context>
-          <context context-type="linenumber">29,33</context>
+          <context context-type="linenumber">30,34</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.html</context>
@@ -1064,14 +1064,14 @@
         <source><x id="INTERPOLATION" equiv-text="&quot;&gt;&lt;/ig-popup-me"/> items selected</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.html</context>
-          <context context-type="linenumber">40,41</context>
+          <context context-type="linenumber">41,42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="87a9cc6fb570f4e122147de49887c77f2fd50e3c" datatype="html">
         <source>Use count</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.html</context>
-          <context context-type="linenumber">70,73</context>
+          <context context-type="linenumber">71,74</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/tags/admin-tags.component.html</context>
@@ -1145,7 +1145,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">328,330</context>
+          <context context-type="linenumber">352,354</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/admin-branding.component.html</context>
@@ -1366,41 +1366,41 @@
         <source>Delete Connector Label</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">37,38</context>
+          <context context-type="linenumber">38,39</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">223,224</context>
+          <context context-type="linenumber">226,227</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">47,48</context>
+          <context context-type="linenumber">48,49</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5937431068987624652" datatype="html">
         <source>Edit Connector Label</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">38,39</context>
+          <context context-type="linenumber">39,40</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">112,114</context>
+          <context context-type="linenumber">115,117</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">266,267</context>
+          <context context-type="linenumber">269,270</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">48,51</context>
+          <context context-type="linenumber">49,52</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4916034445624718726" datatype="html">
         <source>View Information</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">91</context>
+          <context context-type="linenumber">94</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
@@ -1416,7 +1416,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">134</context>
+          <context context-type="linenumber">137</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
@@ -1439,7 +1439,7 @@
         <source>Open</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">92,93</context>
+          <context context-type="linenumber">95,96</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
@@ -1459,7 +1459,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">135,136</context>
+          <context context-type="linenumber">138,139</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
@@ -1522,7 +1522,7 @@
         <source>Open In A New Tab</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">93,94</context>
+          <context context-type="linenumber">96,97</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
@@ -1530,14 +1530,14 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">136</context>
+          <context context-type="linenumber">139</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7585826646011739428" datatype="html">
         <source>Edit</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">95,96</context>
+          <context context-type="linenumber">98,99</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/edit/configuration-asset-type-editor-page.component.ts</context>
@@ -1668,15 +1668,15 @@
         <source>Delete</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">96</context>
+          <context context-type="linenumber">99</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">341,343</context>
+          <context context-type="linenumber">343,345</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">354,357</context>
+          <context context-type="linenumber">356,359</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
@@ -1775,36 +1775,36 @@
         <source>Add Connector Label</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">118,120</context>
+          <context context-type="linenumber">121,123</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5880437434099265052" datatype="html">
         <source>Connector label succesfully created</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">151,154</context>
+          <context context-type="linenumber">154,157</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">191,194</context>
+          <context context-type="linenumber">198,201</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3892949154793986371" datatype="html">
         <source>Connector label succesfully updated</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">154,156</context>
+          <context context-type="linenumber">157,159</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">194,196</context>
+          <context context-type="linenumber">201,203</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4648900870671159218" datatype="html">
         <source>Success</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">170</context>
+          <context context-type="linenumber">173</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/delete/configuration-asset-type-delete-page.component.ts</context>
@@ -1864,7 +1864,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">211</context>
+          <context context-type="linenumber">218</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/base.component.ts</context>
@@ -1939,44 +1939,44 @@
         <source>Connector label consolidation succesfull</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">170,171</context>
+          <context context-type="linenumber">173,174</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">211,212</context>
+          <context context-type="linenumber">218,219</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8747538191961729882" datatype="html">
         <source>Delete Connector Labels</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">223,224</context>
+          <context context-type="linenumber">226,227</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">343,344</context>
+          <context context-type="linenumber">345,346</context>
         </context-group>
       </trans-unit>
       <trans-unit id="88147535082261485" datatype="html">
         <source>Delete the Connector Label &apos;<x id="PH" equiv-text="this.deleteConfirmationText = $localize`Delete the Connector Label &apos;${"/>&apos;</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">224</context>
+          <context context-type="linenumber">227</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">114</context>
+          <context context-type="linenumber">117</context>
         </context-group>
       </trans-unit>
       <trans-unit id="9128056369965430655" datatype="html">
         <source>Where Used report for Connector Label &quot;<x id="PH" equiv-text="this.connectorLabelService.exportLabelUsage(item.uid, $localize`Where Used report for Connector Label &quot;${"/>&quot;</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">255</context>
+          <context context-type="linenumber">258</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">233</context>
+          <context context-type="linenumber">240</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/where-used/where-used.component.ts</context>
@@ -1987,18 +1987,18 @@
         <source>Delete all Connector Labels listed above</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">344,347</context>
+          <context context-type="linenumber">346,349</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8808451607862704047" datatype="html">
         <source>Consolidate</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">347,348</context>
+          <context context-type="linenumber">349,350</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/connectorLabels/connector-labels.component.ts</context>
-          <context context-type="linenumber">357,361</context>
+          <context context-type="linenumber">359,363</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/sidebar/connector-labels/connector-label-form.component.ts</context>
@@ -2364,15 +2364,15 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">178,183</context>
+          <context context-type="linenumber">202,207</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">191,195</context>
+          <context context-type="linenumber">215,219</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">316,325</context>
+          <context context-type="linenumber">340,349</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-detail/asset-detail-field.component.html</context>
@@ -2395,15 +2395,15 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">178,183</context>
+          <context context-type="linenumber">202,207</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">191,196</context>
+          <context context-type="linenumber">215,220</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">316,327</context>
+          <context context-type="linenumber">340,351</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-detail/asset-detail-field.component.html</context>
@@ -2461,11 +2461,32 @@
           <context context-type="linenumber">65,68</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="42f553b6b850ad163a3ec76e7a8f8b45165e11b1" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="&lt;/div&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
+          <context context-type="linenumber">146,152</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="895b94c7a3d9ac2000b3b194bac40b3b4ed5eb36" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="&lt;/div&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
+          <context context-type="linenumber">153,158</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="686974de72390bb5b8ff6b89bb12090fff4da33f" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="&lt;/div&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
+          <context context-type="linenumber">160,165</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="eec715de352a6b114713b30b640d319fa78207a0" datatype="html">
         <source>Description</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">148,151</context>
+          <context context-type="linenumber">172,175</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/levels/admin-level-list.component.html</context>
@@ -2532,21 +2553,21 @@
         <source>Use As Transformation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">171,174</context>
+          <context context-type="linenumber">195,198</context>
         </context-group>
       </trans-unit>
       <trans-unit id="93b6d8b808076db2deedd5115ecb7e06ae604ee3" datatype="html">
         <source>Show Description on List Page</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">183,186</context>
+          <context context-type="linenumber">207,210</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8abad54357c4cd172cd5d6a5bdedf8139cc679f1" datatype="html">
         <source>Description Button Name</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">199,205</context>
+          <context context-type="linenumber">223,229</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/assettypeeditor/asset-type-editor.component.html</context>
@@ -2557,11 +2578,11 @@
         <source>Icon</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">224,227</context>
+          <context context-type="linenumber">248,251</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">281,284</context>
+          <context context-type="linenumber">305,308</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.html</context>
@@ -2580,29 +2601,29 @@
           <context context-type="linenumber">73,76</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="6c73dc172c2024791e60130a75715ba3a488684e" datatype="html">
-        <source>Sets the icon representing items of this type within the summary page/search results.</source>
+      <trans-unit id="7722add1c524a469c24fdbd48f64405224de78d9" datatype="html">
+        <source>Sets the icon representing items of this type within diagrams.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">227,231</context>
+          <context context-type="linenumber">251,255</context>
         </context-group>
         <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">284,288</context>
+          <context context-type="sourcefile">Scripts/app/components/shared/assettypeeditor/asset-type-editor.component.html</context>
+          <context context-type="linenumber">165,169</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7d2ecc1c92a415d90348382568c1f07f7f1b1bc7" datatype="html">
         <source>Styles</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">246,252</context>
+          <context context-type="linenumber">270,276</context>
         </context-group>
       </trans-unit>
       <trans-unit id="e088252c0e2ede83d27a24702b1f77c90cee60b7" datatype="html">
         <source>Background Color</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">252,255</context>
+          <context context-type="linenumber">276,279</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.html</context>
@@ -2625,18 +2646,25 @@
         <source>Sets the background color of icons representing items of this type within diagrams.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">255,260</context>
+          <context context-type="linenumber">279,284</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/assettypeeditor/asset-type-editor.component.html</context>
           <context context-type="linenumber">154,158</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="6c73dc172c2024791e60130a75715ba3a488684e" datatype="html">
+        <source>Sets the icon representing items of this type within the summary page/search results.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
+          <context context-type="linenumber">308,312</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="985e9c90bfba686c2456873194bbb7a914adf16f" datatype="html">
         <source>Grammatic Type Allocation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.html</context>
-          <context context-type="linenumber">304,308</context>
+          <context context-type="linenumber">328,332</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7590013429208346303" datatype="html">
@@ -2647,7 +2675,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">179,181</context>
+          <context context-type="linenumber">182,184</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
@@ -2658,11 +2686,32 @@
           <context context-type="linenumber">219,220</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="7979708776722090358" datatype="html">
+        <source>An event is represented by a circle and is something that &quot;happens&quot; during the course of a business process. These events affect the flow of the process and usually have a cause (trigger) or an impact (result).</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
+          <context context-type="linenumber">50,51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4151845022763036130" datatype="html">
+        <source>A gateway is represented by the diamond shape and is used to control the divergence and convergence of connections. It will determine traditional decisions, as well as the forking, merging, and joining of paths.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
+          <context context-type="linenumber">51,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4843038412865234118" datatype="html">
+        <source>An activity is represented by a rounded-corner rectangle and is a generic term for work that the company performs. The types of activities are Task and Sub-Process.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
+          <context context-type="linenumber">52,54</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="3304972143698843178" datatype="html">
         <source>Event</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">98,99</context>
+          <context context-type="linenumber">101,102</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
@@ -2677,7 +2726,7 @@
         <source>Activity</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">99,100</context>
+          <context context-type="linenumber">102,103</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
@@ -2692,7 +2741,7 @@
         <source>Gateway</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">100,104</context>
+          <context context-type="linenumber">103,107</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
@@ -2707,11 +2756,11 @@
         <source>Description</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">138</context>
+          <context context-type="linenumber">141</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">401</context>
+          <context context-type="linenumber">400</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.ts</context>
@@ -2726,18 +2775,18 @@
         <source>Edit Asset Type</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">199,202</context>
+          <context context-type="linenumber">202,205</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8821593779180260896" datatype="html">
         <source>Add Asset Type</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">216,219</context>
+          <context context-type="linenumber">219,222</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">345,348</context>
+          <context context-type="linenumber">344,347</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/assettypeeditor/asset-type-editor.component.ts</context>
@@ -2748,7 +2797,7 @@
         <source>Business Assets</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">220,222</context>
+          <context context-type="linenumber">223,225</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/shared/typeClassToHeaderSettings.ts</context>
@@ -2771,7 +2820,7 @@
         <source>Technical Assets</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">223,225</context>
+          <context context-type="linenumber">226,228</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/shared/typeClassToHeaderSettings.ts</context>
@@ -2794,7 +2843,7 @@
         <source>Rules</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">226,228</context>
+          <context context-type="linenumber">229,231</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/shared/typeClassToHeaderSettings.ts</context>
@@ -2821,7 +2870,7 @@
         <source>Policies</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">229,231</context>
+          <context context-type="linenumber">232,234</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/shared/typeClassToHeaderSettings.ts</context>
@@ -2844,7 +2893,7 @@
         <source>Models</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">232,234</context>
+          <context context-type="linenumber">235,237</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/shared/typeClassToHeaderSettings.ts</context>
@@ -2867,7 +2916,7 @@
         <source>Diagram Assets</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">235,238</context>
+          <context context-type="linenumber">238,241</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/shared/typeClassToHeaderSettings.ts</context>
@@ -2886,7 +2935,7 @@
         <source>Save Changes</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/editor/asset-type-modal-form.component.ts</context>
-          <context context-type="linenumber">345,348</context>
+          <context context-type="linenumber">344,347</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.ts</context>
@@ -3179,11 +3228,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">144,145</context>
+          <context context-type="linenumber">147,148</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">239</context>
+          <context context-type="linenumber">246</context>
         </context-group>
       </trans-unit>
       <trans-unit id="c73973935de1810fcf902e319ad1669f329c403b" datatype="html">
@@ -4468,7 +4517,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.html</context>
-          <context context-type="linenumber">63,67</context>
+          <context context-type="linenumber">65,69</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/rule/rule-results-grid.component.html</context>
@@ -9900,7 +9949,7 @@
         <source>Diagram</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.html</context>
-          <context context-type="linenumber">59,62</context>
+          <context context-type="linenumber">61,64</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/where-used/where-used.component.html</context>
@@ -9915,28 +9964,28 @@
         <source>Occurrences</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.html</context>
-          <context context-type="linenumber">68,72</context>
+          <context context-type="linenumber">70,74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2f9fef5c6a546a2fbe81faeb30245b3f62fb1798" datatype="html">
         <source> Please confirm that you wish to delete the connector label &apos;<x id="INTERPOLATION" equiv-text="{{label.Value}}"/>&apos;. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.html</context>
-          <context context-type="linenumber">158</context>
+          <context context-type="linenumber">161</context>
         </context-group>
       </trans-unit>
       <trans-unit id="d68c7d6ff0961592990b5055f7bb7bd04c077bf3" datatype="html">
         <source> Please note that this operation cannot be undone. Check the option below to confirm that you wish to continue. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.html</context>
-          <context context-type="linenumber">164,169</context>
+          <context context-type="linenumber">167,172</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1626270852419683091" datatype="html">
         <source>Definition</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
-          <context context-type="linenumber">171</context>
+          <context context-type="linenumber">178</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/monitor/monitor.component.ts</context>
@@ -11779,6 +11828,13 @@ Please refine your search.</source>
           <context context-type="linenumber">11,13</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="12a914acb4929db6e9c51e74d01040bf64bf45ec" datatype="html">
+        <source> No results match your search criteria or you do not have permission to view the related assets </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-detail/asset-lookup-grid.component.html</context>
+          <context context-type="linenumber">151,156</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="cb6602bbaf81ea05b619a2c57285ce149c427307" datatype="html">
         <source>  No matches found</source>
         <context-group purpose="location">
@@ -12882,13 +12938,6 @@ Please refine your search.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/assettypeeditor/asset-type-editor.component.html</context>
           <context context-type="linenumber">164,165</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="7722add1c524a469c24fdbd48f64405224de78d9" datatype="html">
-        <source>Sets the icon representing items of this type within diagrams.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/assettypeeditor/asset-type-editor.component.html</context>
-          <context context-type="linenumber">165,169</context>
         </context-group>
       </trans-unit>
       <trans-unit id="b50bb4f2871bb9e897079ab8c1463595aff8927f" datatype="html">
@@ -20825,7 +20874,7 @@ Please refine your search.</source>
         <source>Search fields</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/directives/ig-dropdown.directive.ts</context>
-          <context context-type="linenumber">82,84</context>
+          <context context-type="linenumber">81,83</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8547620549038587295" datatype="html">
