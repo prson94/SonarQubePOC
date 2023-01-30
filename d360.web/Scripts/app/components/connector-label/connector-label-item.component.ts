@@ -136,7 +136,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 								const menuItems = [];
 								menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = asset; this.sidePanel.expandSidePanel(); } });
 								menuItems.push({ "title": $localize`Open`, callback: () => this.open(asset.AssetUid) });
-								menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(asset.AssetUid, true) });
+								menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(asset.AssetUid, true) });
 								asset["MenuItems"] = menuItems;
 							});
 							this.isLoading = false;

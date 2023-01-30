@@ -113,7 +113,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		const menuItems = [];
 		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedRow = type; this.sidepanelWrapper.expandPanel(); } });
 		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
-		menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(type.data.uid, true) });
+		menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(type.data.uid, true) });
 		if (this.hasAssetTypeChildsFeature) {
 			menuItems.push({ "title": $localize`Add Child Asset Type`, callback: () => this.openEditForm(null, type.data.uid) });
 		}

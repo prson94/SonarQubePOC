@@ -109,7 +109,7 @@
 							</td>
 							<td style="padding-left:0">
 								<div class="token-popup-menu" *ngIf="item.MenuItems">
-									<button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+									<button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="$event.stopPropagation();tokenMenu.toggle($event);"></button>
 									<ig-popup-menu [items]="item.MenuItems"
 												   #tokenMenu
 												   [tabIndex]="1"></ig-popup-menu>
