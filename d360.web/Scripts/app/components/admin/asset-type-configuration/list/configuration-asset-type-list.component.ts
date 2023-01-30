@@ -15,6 +15,7 @@ import { IconService } from "../../../../services/icon.service";
 import { IconProperties } from "../../../../models/icon-properties.model";
 import { TreeTable } from "primeng/treetable";
 import { AssetTypeListSidePanelWrapperComponent } from "./asset-type-list-sidepanel-wrapper.component";
+import { MessagesObservableService } from "../../../../services/messages-observable.service";
 
 /*global $localize*/
 // eslint-disable-next-line no-var
@@ -58,6 +59,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 		private router: Router,
 		private cdRef: ChangeDetectorRef,
+		private messagesService: MessagesObservableService,
 		protected settingsService: CompanySettingsService) {
 	}
 
@@ -217,6 +219,15 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 	onEditSaveFinished($event: any) {
 		this.isModalVisible = false;
+
+		if ($event.type === 'error') {
+			this.messagesService.showError($event.title, $event.Message);
+		} else {
+			this.messagesService.showInfoMessage(
+				$localize`Success`,
+				$event.Message
+			);
+		}
 		this.load(($event.Uid as string).toLowerCase());
 	}
 
