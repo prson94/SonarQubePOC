@@ -7,91 +7,89 @@ import { HeaderBreadcrumbService } from "../../../../services/header-breadcrumb.
 import { MessagesObservableService } from "../../../../services/messages-observable.service";
 import { SecondaryNavService } from "../../../../services/right-sidebar.service";
 import { CompanySettingsService } from "../../../../services/settings.service";
+import { SidePanelService } from "../../../../services/side-panel.service";
 import { SiteUrlHelpers } from "../../../../static/site-url-helpers";
 import { AdminBaseComponent } from "../../admin-base.component";
-import { ConnectorLabelSidePanelWrapperComponent } from "./connector-label-sidepanel-wrapper.component";
 
 /*global $localize*/
 
 @Component({
-    selector: 'd3s-connector-labels',
-    templateUrl: './connector-labels.component.html',
+	selector: 'd3s-connector-labels',
+	templateUrl: './connector-labels.component.html',
 	styleUrls: ['./connector-labels.component.less'],
 	encapsulation: ViewEncapsulation.None,
-    providers: [ConnectorLabelService]
+	providers: [ConnectorLabelService]
 })
 
 export class ConnectorLabelsComponent extends AdminBaseComponent {
-    labels: ConnectorLabel[] = [];
-    selected: ConnectorLabel[] = [];
-    selectedForInfoPanel: ConnectorLabel;
-    rowsPerPage: number = 25;
-    rowsPerModal: number = 5;
-    error: any;
+	labels: ConnectorLabel[] = [];
+	selected: ConnectorLabel[] = [];
+	selectedForInfoPanel: ConnectorLabel;
+	rowsPerPage: number = 25;
+	rowsPerModal: number = 5;
+	error: any;
 
-    showDelete: boolean = false;
-    showEditor: boolean = false;
-    showConsolidate: boolean = false;
-    filters: any = { globalSearch: '', Value: '', UseCount: '' };
-    sort: any;
+	showDelete: boolean = false;
+	showEditor: boolean = false;
+	showConsolidate: boolean = false;
+	filters: any = { globalSearch: '', Value: '', UseCount: '' };
+	sort: any;
 
-    deletePopupTitle: string = $localize`Delete Connector Label`;
-    editPopupTitle: string = $localize`Edit Connector Label`;
-    isUsageLoading: boolean = false;
-    deleteConfirmationText: string = '';
-    labelUsage: any;
-    public theDeleteCallback: Function;
-    isSaving: boolean = false;
+	deletePopupTitle: string = $localize`Delete Connector Label`;
+	editPopupTitle: string = $localize`Edit Connector Label`;
+	isUsageLoading: boolean = false;
+	deleteConfirmationText: string = '';
+	labelUsage: any;
+	public theDeleteCallback: Function;
+	isSaving: boolean = false;
 
-    showConsolidationPopup: boolean = false;
-    consolidateValue: string;
+	showConsolidationPopup: boolean = false;
+	consolidateValue: string;
 	sidePanelStorageKey: string = `ConnectorLabels_Admin`;
 
-    @ViewChild('dt', { static: false }) tableEl: any;
-    @ViewChild('usageTable', { static: false }) tableEl1: any;
-    @ViewChild('usageTableConsolidate', { static: false }) tableEl2: any;
+	@ViewChild('dt', { static: false }) tableEl: any;
+	@ViewChild('usageTable', { static: false }) tableEl1: any;
+	@ViewChild('usageTableConsolidate', { static: false }) tableEl2: any;
 
-    selectedCount: number = 0;
+	selectedCount: number = 0;
 	lastSelectedElement: ConnectorLabel;
 
-	@ViewChild('sidepanelWrapper', { static: false }) sidepanelWrapper: ConnectorLabelSidePanelWrapperComponent;
+	constructor(private router: Router,
+		private connectorLabelService: ConnectorLabelService,
+		headerBreadcrumbService: HeaderBreadcrumbService,
+		private messagesService: MessagesObservableService,
+		titleService: Title,
+		secondaryNavService: SecondaryNavService,
+		protected settingsService: CompanySettingsService,
+		private cdRef: ChangeDetectorRef,
+		private sidePanelService: SidePanelService
+	) {
+		super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
+	}
 
-    constructor(private router: Router,
-        private connectorLabelService: ConnectorLabelService,
-        headerBreadcrumbService: HeaderBreadcrumbService,
-        private messagesService: MessagesObservableService,
-        titleService: Title,
-        secondaryNavService: SecondaryNavService,
-        protected settingsService: CompanySettingsService,
-        private cdRef: ChangeDetectorRef
-    ) {
-        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
-    }
+	ngOnInit() {
+		this.getLabels();
 
-    ngOnInit() {
-        this.getLabels();
+		this.theDeleteCallback = this.deleteLabel.bind(this);
+	}
 
-        this.theDeleteCallback = this.deleteLabel.bind(this);
-    }
+	updateSort(event) {
+		this.sort = event;
+	}
+	onFilterChange(event) {
+		if (event !== 'globalSearch') { this.filters.globalSearch = ''; }
 
-    updateSort(event) {
-        this.sort = event;
-    }
-    onFilterChange(event) {
-        if (event !== 'globalSearch')
-            {this.filters.globalSearch = '';}
-
-        this.filters[event.prop] = event.value;
-    }
-    getLabels() {
-        this.isLoading = true;
-        this.connectorLabelService.getLabelList().subscribe((res) => {
-            this.labels = [];
-            if (res && res.length > 0) {
+		this.filters[event.prop] = event.value;
+	}
+	getLabels() {
+		this.isLoading = true;
+		this.connectorLabelService.getLabelList().subscribe((res) => {
+			this.labels = [];
+			if (res && res.length > 0) {
 				this.labels = res.sort((a, b) => a.Value.localeCompare(b.Value));
 				this.labels.forEach((label) => {
 					const menuItems = [];
-					menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = label; this.sidepanelWrapper.expandPanel(); } });
+					menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = label; this.sidePanelService.setSidePanelState({ expanded: true }); } });
 					menuItems.push({ "title": $localize`Open`, callback: () => this.open(label.uid) });
 					menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(label.uid, true) });
 
@@ -99,265 +97,263 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 					menuItems.push({ "title": $localize`Delete`, callback: () => { this.openDeleteModal(label); } });
 					label["MenuItems"] = menuItems;
 				});
-            }
-            this.isLoading = false;
-        }, (err) => this.error = err);
-    }
+			}
+			this.isLoading = false;
+		}, (err) => this.error = err);
+	}
 
-    closeEditor() {
-        this.showEditor = false;
-        this.cdRef.markForCheck();
-    }
+	closeEditor() {
+		this.showEditor = false;
+		this.cdRef.markForCheck();
+	}
 
-    openEditor(label: ConnectorLabel) {
-        this.selected = [label];
-        this.showEditor = true;
-        this.editPopupTitle = $localize`Edit Connector Label`;
-        this.cdRef.markForCheck();
-    }
+	openEditor(label: ConnectorLabel) {
+		this.selected = [label];
+		this.showEditor = true;
+		this.editPopupTitle = $localize`Edit Connector Label`;
+		this.cdRef.markForCheck();
+	}
 
-    add() {
-        this.selected = [];
-        this.editPopupTitle = $localize`Add Connector Label`;
-        this.showEditor = true;
-        this.cdRef.markForCheck();
-    }
+	add() {
+		this.selected = [];
+		this.editPopupTitle = $localize`Add Connector Label`;
+		this.showEditor = true;
+		this.cdRef.markForCheck();
+	}
 
-    consolidateClick() {
-        if (!this.consolidateValue || this.consolidateValue.trim() === "") {
-            console.error("Cannot consolidate connectors without selecting a connector to keep.");
-            return;
-        }
-        this.isSaving = true;
-        var children = [];
-        this.selected.forEach((label) => {
-            if (label.uid !== this.consolidateValue) {
-                children.push(label.uid);
-            }
-        });
-        this.consolidateLabels(this.consolidateValue, children);
-    }
+	consolidateClick() {
+		if (!this.consolidateValue || this.consolidateValue.trim() === "") {
+			console.error("Cannot consolidate connectors without selecting a connector to keep.");
+			return;
+		}
+		this.isSaving = true;
+		var children = [];
+		this.selected.forEach((label) => {
+			if (label.uid !== this.consolidateValue) {
+				children.push(label.uid);
+			}
+		});
+		this.consolidateLabels(this.consolidateValue, children);
+	}
 
-    saveLabel(event) {
-        this.isSaving = true;
-        if (event.additionalOption && event.additionalOption.uid) {
-            const arr: string[] = [];
-            arr.push(event.item.uid);
-            this.consolidateLabels(event.additionalOption.uid, arr);
-            return;
-        }
+	saveLabel(event) {
+		this.isSaving = true;
+		if (event.additionalOption && event.additionalOption.uid) {
+			const arr: string[] = [];
+			arr.push(event.item.uid);
+			this.consolidateLabels(event.additionalOption.uid, arr);
+			return;
+		}
 
-        this.connectorLabelService.saveLabel(event.item)
-            .subscribe((result) => {
-                let msg: string = '';
-                if (event.item.uid == null) {
-                    msg = $localize`Connector label succesfully created`;
-                }
-                else {
-                    msg = $localize`Connector label succesfully updated`;
-                }
-                this.showMessageForResult(this.messagesService, result, msg);
-                this.getLabels();
-                this.showEditor = false;
-                this.isSaving = false;
+		this.connectorLabelService.saveLabel(event.item)
+			.subscribe((result) => {
+				let msg: string = '';
+				if (event.item.uid == null) {
+					msg = $localize`Connector label succesfully created`;
+				}
+				else {
+					msg = $localize`Connector label succesfully updated`;
+				}
+				this.showMessageForResult(this.messagesService, result, msg);
+				this.getLabels();
+				this.showEditor = false;
+				this.isSaving = false;
 
-            });
-    }
+			});
+	}
 
-    consolidateLabels(parentUid: string, childrenUids: string[]) {
-        this.connectorLabelService.consolidateConnectorLabels(parentUid, childrenUids)
-            .subscribe((result) => {
+	consolidateLabels(parentUid: string, childrenUids: string[]) {
+		this.connectorLabelService.consolidateConnectorLabels(parentUid, childrenUids)
+			.subscribe((result) => {
 
-                if (result) {
+				if (result) {
 
-                    this.messagesService.showInfoMessage($localize`Success`, $localize`Connector label consolidation succesfull`);
+					this.messagesService.showInfoMessage($localize`Success`, $localize`Connector label consolidation succesfull`);
 
-                    this.getLabels();
-                }
-                this.selected = [];
-                this.consolidateValue = null;
-                this.showConsolidate = false;
-                this.showConsolidationPopup = false;
-                this.showEditor = false;
-                this.isSaving = false;
-            }, (err) => {
-                this.showMessageForResult(this.messagesService, err);
-                this.showConsolidate = false;
-                this.showEditor = false;
-                this.isSaving = false;
-            });
-    }
+					this.getLabels();
+				}
+				this.selected = [];
+				this.consolidateValue = null;
+				this.showConsolidate = false;
+				this.showConsolidationPopup = false;
+				this.showEditor = false;
+				this.isSaving = false;
+			}, (err) => {
+				this.showMessageForResult(this.messagesService, err);
+				this.showConsolidate = false;
+				this.showEditor = false;
+				this.isSaving = false;
+			});
+	}
 
-    deleteLabel() {
-        this.connectorLabelService.deleteLabels(this.selected).
-            subscribe((result) => {
-                this.showMessageForResult(this.messagesService, result);
-                //remove the template with this id from the grid
-                if (result.type !== 'error') {
-                    this.selected = [];
-                }
-                this.getLabels();
-                this.showDelete = false;
-                this.cdRef.markForCheck();
-            }, (err) => this.showMessageForResult(this.messagesService, err));
-    }
+	deleteLabel() {
+		this.connectorLabelService.deleteLabels(this.selected).
+			subscribe((result) => {
+				this.showMessageForResult(this.messagesService, result);
+				//remove the template with this id from the grid
+				if (result.type !== 'error') {
+					this.selected = [];
+				}
+				this.getLabels();
+				this.showDelete = false;
+				this.cdRef.markForCheck();
+			}, (err) => this.showMessageForResult(this.messagesService, err));
+	}
 
-    private lastLoadedUid: string = '';
+	private lastLoadedUid: string = '';
 
-    onRowSelected() {
+	onRowSelected() {
 
-        if (this.lastLoadedUid !== this.selected[0].uid) {
-            this.isUsageLoading = true;
-            this.lastLoadedUid = this.selected[0].uid;
-            this.cdRef.markForCheck();
-        }
-    }
+		if (this.lastLoadedUid !== this.selected[0].uid) {
+			this.isUsageLoading = true;
+			this.lastLoadedUid = this.selected[0].uid;
+			this.cdRef.markForCheck();
+		}
+	}
 
-    openDeleteModal(label: ConnectorLabel) {
-        this.selected = [label];
+	openDeleteModal(label: ConnectorLabel) {
+		this.selected = [label];
 
-        if (this.lastLoadedUid !== label.uid) {
-            this.cdRef.markForCheck();
-            this.isUsageLoading = true;
-        }
+		if (this.lastLoadedUid !== label.uid) {
+			this.cdRef.markForCheck();
+			this.isUsageLoading = true;
+		}
 
-        this.lastLoadedUid = label.uid;
-        setTimeout(() => {
-            this.deletePopupTitle = this.selected ? $localize`Delete Connector Label` : $localize`Delete Connector Labels`;
-            this.deleteConfirmationText = $localize`Delete the Connector Label '${this.selected[0].Value}'`;
-            this.isUsageLoading = false;
-            this.showDelete = true;
-            this.cdRef.markForCheck();
-        }, 100);
+		this.lastLoadedUid = label.uid;
+		setTimeout(() => {
+			this.deletePopupTitle = this.selected ? $localize`Delete Connector Label` : $localize`Delete Connector Labels`;
+			this.deleteConfirmationText = $localize`Delete the Connector Label '${this.selected[0].Value}'`;
+			this.isUsageLoading = false;
+			this.showDelete = true;
+			this.cdRef.markForCheck();
+		}, 100);
 
-    }
+	}
 
-    private usageLoaded(data) {
-        this.isUsageLoading = false;
-        this.labelUsage = data;
-        this.cdRef.markForCheck();
-    }
+	private usageLoaded(data) {
+		this.isUsageLoading = false;
+		this.labelUsage = data;
+		this.cdRef.markForCheck();
+	}
 
-    openConsolidateModal() {
-        this.showConsolidate = true;
-    }
-    findLabelIndex(uid: string) {
-        var index: number = -1;
-        for (var label of this.labels) {
-            index++;
-            if (label.uid === uid) {return index;}
-        }
-    }
+	openConsolidateModal() {
+		this.showConsolidate = true;
+	}
+	findLabelIndex(uid: string) {
+		var index: number = -1;
+		for (var label of this.labels) {
+			index++;
+			if (label.uid === uid) { return index; }
+		}
+	}
 
-    export() {
-        this.connectorLabelService.exportLabels(this.filters, this.sort);
-    }
+	export() {
+		this.connectorLabelService.exportLabels(this.filters, this.sort);
+	}
 
-    exportUsage() {
-        this.selected.forEach((item) => {
-            this.connectorLabelService.exportLabelUsage(item.uid, $localize`Where Used report for Connector Label "${item.Value}"`);
-        });
-    }
+	exportUsage() {
+		this.selected.forEach((item) => {
+			this.connectorLabelService.exportLabelUsage(item.uid, $localize`Where Used report for Connector Label "${item.Value}"`);
+		});
+	}
 
 
-    openDetailsPage(item: ConnectorLabel) {
-        this.router.navigate([`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${item.uid}`]);
-    }
+	openDetailsPage(item: ConnectorLabel) {
+		this.router.navigate([`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${item.uid}`]);
+	}
 
 
 	selectSingleItem(event: MouseEvent, item: ConnectorLabel, element: ElementRef = null) {
 		this.editPopupTitle = $localize`Edit Connector Label`;
-        //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
-        if (event && element) {
-            if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
-                if (this.selected.filter((x) => x.uid === item.uid).length > 0) {
-                    this.selected = this.selected.filter((x) => x.uid !== item.uid);
-                    this.triggerRerenderOfSelection();
-                }
-                else {
-                    this.selected.push(item);
-                    this.triggerRerenderOfSelection();
-                }
+		//p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
+		if (event && element) {
+			if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
+				if (this.selected.filter((x) => x.uid === item.uid).length > 0) {
+					this.selected = this.selected.filter((x) => x.uid !== item.uid);
+					this.triggerRerenderOfSelection();
+				}
+				else {
+					this.selected.push(item);
+					this.triggerRerenderOfSelection();
+				}
 
-                this.lastSelectedElement = item;
-                this.selectedCount = this.selected.length;
-                return;
-            }
-            if (event.shiftKey) {
-                var lastIndex = this.labels.indexOf(this.lastSelectedElement);
-                if (lastIndex === -1 && this.selected.length === 1) {
-                    lastIndex = this.labels.indexOf(this.selected[0]);
-                }
-                var currentIndex = this.labels.indexOf(item);
+				this.lastSelectedElement = item;
+				this.selectedCount = this.selected.length;
+				return;
+			}
+			if (event.shiftKey) {
+				var lastIndex = this.labels.indexOf(this.lastSelectedElement);
+				if (lastIndex === -1 && this.selected.length === 1) {
+					lastIndex = this.labels.indexOf(this.selected[0]);
+				}
+				var currentIndex = this.labels.indexOf(item);
 
-                if (lastIndex > currentIndex) {
-                    lastIndex += currentIndex;
-                    currentIndex = lastIndex - currentIndex;
-                    lastIndex -= currentIndex;
-                }
+				if (lastIndex > currentIndex) {
+					lastIndex += currentIndex;
+					currentIndex = lastIndex - currentIndex;
+					lastIndex -= currentIndex;
+				}
 
-                var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
-                for (var i = lastIndex; i <= currentIndex; i++) {
-                    if (!tableRows[i].classList.contains('p-highlight')) {
-                        this.selected.push(this.labels[i]);
-                        this.triggerRerenderOfSelection();
-                    }
-                }
+				var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
+				for (var i = lastIndex; i <= currentIndex; i++) {
+					if (!tableRows[i].classList.contains('p-highlight')) {
+						this.selected.push(this.labels[i]);
+						this.triggerRerenderOfSelection();
+					}
+				}
 
-                this.lastSelectedElement = item;
-                this.selectedCount = this.selected.length;
-                return;
-            }
+				this.lastSelectedElement = item;
+				this.selectedCount = this.selected.length;
+				return;
+			}
 
-        }
-        const target = (<any>(event.target));
-        if (element && target.nodeName !== "P-TABLECHECKBOX") {
-            this.selected = [];
-            this.selected.push(item);
-            this.lastSelectedElement = item;
-        } else {
-            if (this.selected.filter((x) => x.uid === item.uid).length > 0) {
-                this.selected = this.selected.filter((x) => x.uid !== item.uid);
-                this.triggerRerenderOfSelection();
-            }
-            else {
-                this.selected.push(item);
-                this.triggerRerenderOfSelection();
-            }
-            if (this.tableEl1)
-                {this.tableEl1.totalRecords = this.selected.length;}
+		}
+		const target = (<any>(event.target));
+		if (element && target.nodeName !== "P-TABLECHECKBOX") {
+			this.selected = [];
+			this.selected.push(item);
+			this.lastSelectedElement = item;
+		} else {
+			if (this.selected.filter((x) => x.uid === item.uid).length > 0) {
+				this.selected = this.selected.filter((x) => x.uid !== item.uid);
+				this.triggerRerenderOfSelection();
+			}
+			else {
+				this.selected.push(item);
+				this.triggerRerenderOfSelection();
+			}
+			if (this.tableEl1) { this.tableEl1.totalRecords = this.selected.length; }
 
-            if (this.tableEl2)
-                {this.tableEl2.totalRecords = this.selected.length;}
-            this.lastSelectedElement = item;
-        }
-        this.selectedCount = this.selected.length;
-    }
+			if (this.tableEl2) { this.tableEl2.totalRecords = this.selected.length; }
+			this.lastSelectedElement = item;
+		}
+		this.selectedCount = this.selected.length;
+	}
 
-    private triggerRerenderOfSelection() {
-        // primeNg library expects us to pass new array whenever we want to change contents of array        
-        this.selected = this.selected.slice();
-    }
+	private triggerRerenderOfSelection() {
+		// primeNg library expects us to pass new array whenever we want to change contents of array        
+		this.selected = this.selected.slice();
+	}
 
-    actionSelected($event) {
-        if ($event.value === $localize`Delete`) {
-            this.showDelete = true;
-            this.deletePopupTitle = $localize`Delete Connector Labels`;
-            this.deleteConfirmationText = $localize`Delete all Connector Labels listed above`;
-        }
+	actionSelected($event) {
+		if ($event.value === $localize`Delete`) {
+			this.showDelete = true;
+			this.deletePopupTitle = $localize`Delete Connector Labels`;
+			this.deleteConfirmationText = $localize`Delete all Connector Labels listed above`;
+		}
 
-        if ($event.value === $localize`Consolidate`) {
-            this.showConsolidationPopup = true;
-        }
-    }
+		if ($event.value === $localize`Consolidate`) {
+			this.showConsolidationPopup = true;
+		}
+	}
 
-    multiselectMenu = [
-        {
-            title: $localize`Delete`
-        },
-        {
-            title: $localize`Consolidate`
-        }
+	multiselectMenu = [
+		{
+			title: $localize`Delete`
+		},
+		{
+			title: $localize`Consolidate`
+		}
 	];
 
 	open(uid: string, newTab: boolean = false) {

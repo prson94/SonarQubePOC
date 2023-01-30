@@ -17,6 +17,7 @@ import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { Subscription } from 'rxjs';
 import { SidePanelComponent } from '../shared/sidepanel/side-panel.component';
+import { StateService } from '../../services/state.service';
 
 /*global $localize*/
 
@@ -53,8 +54,6 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 
 	filters: unknown = { globalSearch: '', Diagram: '', AssetTypeName: '', Occurrences: '' };
 	sort: unknown;
-
-	@ViewChild('sidePanel', { static: false }) sidePanel: SidePanelComponent;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -134,7 +133,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 							this.usage = data;
 							this.usage.forEach((asset) => {
 								const menuItems = [];
-								menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = asset; this.sidePanel.expandSidePanel(); } });
+								menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = asset; this.sidePanelService.setSidePanelState({ expanded: true }); } });
 								menuItems.push({ "title": $localize`Open`, callback: () => this.open(asset.AssetUid) });
 								menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(asset.AssetUid, true) });
 								asset["MenuItems"] = menuItems;

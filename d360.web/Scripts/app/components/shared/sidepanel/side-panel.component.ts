@@ -5,6 +5,7 @@ import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
+import { SidePanelService } from '../../../services/side-panel.service';
 
 @Component({
     selector: 'side-panel',
@@ -47,11 +48,21 @@ export class SidePanelComponent extends BaseComponent {
     readonly minWidth = '400px';
     readonly maxWidth = '400px';
 
-    constructor(
-        private stateService: StateService,
+	constructor(
+		private sidePanelService: SidePanelService,
+		private stateService: StateService,
         protected settingsService: CompanySettingsService,
         private featureFlagService: FeatureFlagsService) {
-        super(settingsService);
+		super(settingsService);
+
+		this.sidePanelService.sidePanelStateChange$.subscribe((state) => {
+			if (state.expanded) {
+				this.expandSidePanel();
+			}
+			else {
+				this.collapseSidePanel();
+			}
+		});
     }
 
     ngOnInit() {
@@ -270,7 +281,7 @@ export class SidePanelComponent extends BaseComponent {
         this.saveState();
 	}
 
-	expandSidePanel() {
+	private expandSidePanel() {
 		this.expanded = true;
 		this.expandedChange.emit(true);
 		this.stateService.recalculateTagSize();

@@ -5,6 +5,7 @@ import { RelationshipType, RelationshipTypeSimpleUIModel } from '../../../../mod
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
+import { SidePanelService } from '../../../../services/side-panel.service';
 import { BaseComponent } from '../../../shared/base.component';
 
 
@@ -40,6 +41,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		private messagesService: MessagesObservableService,
 		private relationshipsService: RelationshipsService,
 		protected settingsService: CompanySettingsService,
+		private sidePanelService: SidePanelService,
 		private cdRef: ChangeDetectorRef,
 		private router: Router
 	) {
@@ -93,7 +95,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
 			this.relationships.forEach((rel) => {
 				const menuItems = [];
-				menuItems.push({ "title": $localize`View Information`, callback: () => { this.selected = rel; } });
+				menuItems.push({ "title": $localize`View Information`, callback: () => { this.selected = rel; this.sidePanelService.setSidePanelState({ expanded: true }); } });
 				menuItems.push({ "title": $localize`Open`, callback: () => this.open(rel.Uid) });
 				menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(rel.Uid, true) });
 
