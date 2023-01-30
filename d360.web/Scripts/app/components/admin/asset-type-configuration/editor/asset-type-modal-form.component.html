@@ -124,6 +124,9 @@
 											  tooltipStyleClass="ig-tooltip"></span>
 									</div>
 									<ig-number-input [attr.name]="'maxDepth'"
+													 [min]="1"
+													 [max]="10"
+													 [enforceMaxMin]="true"
 													 [formControlName]="'maxDepth'"
 													 [formControl]="assetTypeForm.controls['maxDepth']"
 													 [required]="true">
