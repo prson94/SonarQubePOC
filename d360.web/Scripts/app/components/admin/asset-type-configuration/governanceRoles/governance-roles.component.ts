@@ -73,27 +73,31 @@ export class GovernanceRolesComponent implements OnInit, OnDestroy {
 	}
 
 	public save() {
-		//calling save function
-		this.isSaving = true;
 
 		const setting = new SettingsPutModel();
 		setting.SettingID = CompanySettingEnum.GovernanceRoleReferenceListUid;
 		setting.GuidSetting = new GuidSetting();
 		setting.GuidSetting.Value = this.model.RefListUid;
 
-		this.settingsService.putSetting(setting)
-			.subscribe(
-				(res) => {
-					this.isSaving = false;
-					this.originalModel = this.model;
-					this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
-					this.settingsService.loadSettings();
-					this.cdRef.detectChanges();
-				},
-				(err) => {
-					this.messagesService.showError($localize`Error saving governance role`, err.error.message);
-				}
-			);
+		const currentSetting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);
+
+		if (currentSetting.GuidSetting && setting.GuidSetting && currentSetting.GuidSetting.Value !== setting.GuidSetting.Value) {
+			//calling save function
+			this.isSaving = true;
+			this.settingsService.putSetting(setting)
+				.subscribe(
+					(res) => {
+						this.isSaving = false;
+						this.originalModel = this.model;
+						this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
+						this.settingsService.loadSettings();
+						this.cdRef.detectChanges();
+					},
+					(err) => {
+						this.messagesService.showError($localize`Error saving governance role`, err.error.message);
+					}
+				);
+		}
 	}
 
 	onChange() {
