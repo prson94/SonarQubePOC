@@ -16,6 +16,7 @@ import { IconProperties } from "../../../../models/icon-properties.model";
 import { TreeTable } from "primeng/treetable";
 import { AssetTypeListSidePanelWrapperComponent } from "./asset-type-list-sidepanel-wrapper.component";
 import { MessagesObservableService } from "../../../../services/messages-observable.service";
+import { StateService } from "../../../../services/state.service";
 
 /*global $localize*/
 // eslint-disable-next-line no-var
@@ -60,7 +61,8 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		private router: Router,
 		private cdRef: ChangeDetectorRef,
 		private messagesService: MessagesObservableService,
-		protected settingsService: CompanySettingsService) {
+		protected settingsService: CompanySettingsService,
+		private stateService: StateService) {
 	}
 
 	ngOnChanges() {
@@ -228,6 +230,8 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 				$event.Message
 			);
 		}
+
+		this.stateService.reloadLeftNavMenu();
 		this.load(($event.Uid as string).toLowerCase());
 	}
 
@@ -235,6 +239,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		this.assetTypeToDelete = null;
 		if ($event) {
 			this.load();
+			this.stateService.reloadLeftNavMenu();
 		}
 	}
 
