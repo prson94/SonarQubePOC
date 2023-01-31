@@ -21,7 +21,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-	activeControl: string = "icon-picker";
+	activeControl: string = "color-picker";
     controls = [
         { label: "Switch Input", key: "switch", type: "Form" },
         { label: "Button Directive", key: "button", type: "Form" },

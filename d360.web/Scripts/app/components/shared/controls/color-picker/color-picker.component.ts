@@ -7,6 +7,7 @@
     forwardRef,
     Input,
     OnChanges,
+    OnInit,
     Output,
     SimpleChanges,
     ViewChild,
@@ -27,7 +28,6 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
     templateUrl: 'color-picker.component.html',
     providers: [COLORPICKER_VALUE_ACCESSOR],
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ['./color-picker.less'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         "(click)": "focus($event)",
@@ -35,7 +35,7 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
     }
 })
 
-export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit, OnChanges {
+export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit, OnChanges, OnInit {
 
     @Input() colors: SelectItem[] = [];
     @Input() placeholder: string = $localize`Optional`;
@@ -46,15 +46,20 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
     @Input() styleClass: string = '';
     @Input() style: any;
     @Input() tabindex: number = 0;
-
-    @Input() igSize: string = '';
+	@Input() required;
+	@Input() igSize: string = "medium";
 
     @Output() selectedColorChange = new EventEmitter();
 
     onModelChange: Function = () => { };
 
     onModelTouched: Function = () => { };
-    protected value: string;
+	protected value: string;
+
+	isRequired = false;
+
+	labelRequired = $localize`Required`;
+	labelOptional = $localize`Optional`;
 
     @ViewChild("dd", { static: false }) dropdown: Dropdown;
 
@@ -70,22 +75,15 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
                 }
             });
         }
-    }
+	}
+
+	ngOnInit() {
+		this.isRequired = this.required !== undefined;
+	}
 
     ngAfterViewInit(): void {
         if (this.invalidOptions.indexOf(this.selectedColor) !== -1) {
             this.writeValue(null);
-        }
-
-        //set igSize
-        if (this.igSize && this.igSize === "small") {
-            this.styleClass += "ig-input-small";
-        } else if (this.igSize && this.igSize === "medium") {
-            this.styleClass += "ig-input-medium";
-        } else if (this.igSize && this.igSize === "large") {
-            this.styleClass += "ig-input-large";
-        } else if (this.igSize && this.igSize === "full") {
-            this.styleClass += "ig-input-full";
         }
 
         this.ref.markForCheck();
