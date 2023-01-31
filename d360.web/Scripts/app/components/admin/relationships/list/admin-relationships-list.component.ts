@@ -39,6 +39,9 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	showDelete: boolean = false;
 	gridStorageKey: string = "admin-relationships-grid";
 	simpleFilterValue: string = "";
+
+	editorSelectedUid: string = "";
+
 	constructor(
 		private messagesService: MessagesObservableService,
 		private relationshipsService: RelationshipsService,
@@ -102,7 +105,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 				menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(rel.Uid, true) });
 
 				menuItems.push({ "title": $localize`Edit`, callback: () => this.edit(rel) });
-				menuItems.push({ "title": $localize`Delete`, callback: () => { this.showDelete = true; } });
+				menuItems.push({ "title": $localize`Delete`, callback: () => { this.editorSelectedUid = rel.Uid; this.showDelete = true; } });
 				menuItems.push({ "title": $localize`Export`, callback: () => { this.downloadRel(rel) } });
 				rel.MenuItems = menuItems;
 			});
@@ -174,6 +177,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	edit(rel: RelationshipTypeSimpleUIModel) {
 		this.showEditor = true;
 		this.selected = rel;
+		this.editorSelectedUid = rel.Uid;
 	}
 
 	public downloadRel(relationship: RelationshipTypeSimpleUIModel) {

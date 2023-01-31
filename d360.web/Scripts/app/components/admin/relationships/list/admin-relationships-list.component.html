@@ -91,14 +91,14 @@
 	</p-table>
 </div>
 
-<d3s-relationship-type-delete [relationshipTypeUid]="selected?.Uid"
+<d3s-relationship-type-delete [relationshipTypeUid]="editorSelectedUid"
 							  [isModalVisible]="showDelete"
 							  (onCancel)="showDelete=false"
 							  (onDelete)="deleteRelationship($event)">
 </d3s-relationship-type-delete>
 
 <d3s-admin-relationships-editor [isModalVisible]="showEditor"
-								[relationshipTypeUid]="selected?.Uid"
+								[relationshipTypeUid]="editorSelectedUid"
 								(saveClick)="saveRelationship($event)"
 								(closeClick)="closeEditor()">
 </d3s-admin-relationships-editor>

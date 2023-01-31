@@ -26,6 +26,7 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	title: string = $localize`Edit`;
 
 	saveLabel: string;
+	cancelLabel: string;
 
 	error: any;
 	cardinalityOptions: SelectItem[] = [];
@@ -91,6 +92,7 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 			this.relationshipType.Predicate = new Predicate();
 			this.title = $localize`Add Relationship Type`;
 			this.saveLabel = this.title;
+			this.cancelLabel = $localize`Cancel`;
 		}
 	}
 
@@ -120,6 +122,9 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 				if (this.relationshipType.Predicate.Uid != null && this.relationshipType.HasRelationships) {
 					this.canUpdateSides = false;
 				}
+
+				this.saveLabel = $localize`Save Changes`;
+				this.cancelLabel = $localize`Close`;
 			}
 			this.isLoadingItem = false;
 
@@ -129,6 +134,7 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	}
 
 	async subjectChanged($event) {
+		
 		console.log($event);
 		if (!$event) { return; }
 		return;

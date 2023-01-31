@@ -27,7 +27,7 @@ export class RelationshipType {
 
 	public static ConvertToUIModeldata(data: RelationshipType): RelationshipTypeSimpleUIModel {
 		return {
-			RelationshipTypeName: data.Object.Name + " - " + data.Predicate.Name + " - " + data.Subject.Name,
+			RelationshipTypeName: data.Subject.Name + " - " + data.Predicate.Name + " - " + data.Object.Name,
 			Uid: data.Uid,
 			HasRelationships: data.HasRelationships,
 			TotalRelationshipCount: data.TotalRelationshipCount

@@ -43,7 +43,7 @@
 												formControlName="subject"
 												[options]="subjectOptions"
 												[(ngModel)]="relationshipType.Subject.Uid"
-												[disabled]="canUpdateSides"
+												[disabled]="!canUpdateSides"
 												required
 												(ngModelChange)="relationshipType.Subject.Uid=$event;subjectChanged($event);"></p-dropdown>
 								</div>
@@ -61,7 +61,7 @@
 												formControlName="predicate"
 												[options]="predicates"
 												[(ngModel)]="relationshipType.Predicate.Uid"
-												[disabled]="canUpdateSides"
+												[disabled]="!canUpdateSides"
 												required
 												(ngModelChange)="relationshipType.Predicate.Uid=$event;predicateChanged($event);"></p-dropdown>
 								</div>
@@ -80,7 +80,7 @@
 												formControlName="object"
 												[options]="objectOptions"
 												[(ngModel)]="relationshipType.Object.Uid"
-												[disabled]="canUpdateSides"
+												[disabled]="!canUpdateSides"
 												required></p-dropdown>
 								</div>
 
@@ -130,7 +130,7 @@
 	<div class="action-bar">
 		<button igButton class="ig-button-secondary" type="button" (click)="closeClick.emit();" label="Cancel" i18n-label></button>
 		<span class="grow"></span>
-		<button igButton igAutoFocus class="ig-button-primary" margin (click)="onSubmit()" type="submit" i18n-label label="{{saveLabel}}"></button>
+		<button [disabled]="!relationshipTypeForm.valid || (relationshipType.Uid && true)" igButton igAutoFocus class="ig-button-primary" margin (click)="onSubmit()" type="submit" i18n-label label="{{saveLabel}}"></button>
 	</div>
 </d3s-modal>
 
