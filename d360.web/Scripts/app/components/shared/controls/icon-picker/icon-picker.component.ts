@@ -36,6 +36,7 @@ export class IconPickerComponent implements ControlValueAccessor {
     @Input() required;
     @Input() style: any;
 	@Input() categories: any = [];
+	@Input() igSize: string = "medium";
 
     @Output() ngModelChange = new EventEmitter();
 	@Input() formControl: FormControl;
@@ -54,7 +55,7 @@ export class IconPickerComponent implements ControlValueAccessor {
     }
 
     ngOnInit() {
-        this.isRequired = this.required !== undefined;
+		this.isRequired = this.required !== undefined;
         this.iconService.getIconProperties().subscribe((result) => {
             this.iconService.getIconImages().subscribe((images) => {
                 if (this.showGovIcons)

@@ -1,5 +1,7 @@
 ﻿<ng-container *ngIf="!isLoading">
-    <p-dropdown clearTooltip styleClass="icon-picker"
+    <p-dropdown igDropdown
+                clearTooltip
+                [igSize]="igSize"
                 panelStyleClass="icon-panel"
                 [style]="style"
                 [options]="categories"
@@ -12,6 +14,7 @@
                 [showClear]="true"
                 appendTo="body"
                 scrollHeight="320px"
+                [required]="isRequired"
                 [attr.required]="isRequired"
                 [placeholder]="(isRequired ? this.labelRequired : this.labelOptional)"
                 filterPlaceholder="Type to filter">
