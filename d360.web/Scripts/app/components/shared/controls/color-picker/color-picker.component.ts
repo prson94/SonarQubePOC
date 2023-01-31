@@ -14,7 +14,7 @@
     ViewEncapsulation
 } from '@angular/core';
 import { SelectItem } from 'primeng/api';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Dropdown } from 'primeng/dropdown';
 
 export const COLORPICKER_VALUE_ACCESSOR: any = {
@@ -40,7 +40,7 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
     @Input() colors: SelectItem[] = [];
     @Input() placeholder: string = $localize`Optional`;
     @Input() filterplaceholder: string = $localize`Search colors`;
-    @Input() selectedColor: string;
+    @Input() selectedColor: string = '';
     @Input() invalidOptions: string[] = [];
     @Input() disabled: boolean = false;
     @Input() styleClass: string = '';
@@ -48,6 +48,7 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
     @Input() tabindex: number = 0;
 	@Input() required;
 	@Input() igSize: string = "medium";
+	@Input() formControl: FormControl;
 
     @Output() selectedColorChange = new EventEmitter();
 
@@ -83,7 +84,7 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
 
     ngAfterViewInit(): void {
         if (this.invalidOptions.indexOf(this.selectedColor) !== -1) {
-            this.writeValue(null);
+			this.writeValue(null);
         }
 
         this.ref.markForCheck();
@@ -110,7 +111,10 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
     }
 
     itemChanged(item: any) {
-        this.writeValue(item.value);
+		this.writeValue(item.value);
+		if (this.formControl) {
+			this.formControl.setValue(item.value, { emitEvent: true });
+		}
     }
 
     public focus(evt) {
