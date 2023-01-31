@@ -17,6 +17,8 @@ import { SelectItem } from 'primeng/api';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Dropdown } from 'primeng/dropdown';
 
+/*global $localize*/
+
 export const COLORPICKER_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => ColorPickerComponent),
@@ -79,7 +81,7 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
 	}
 
 	ngOnInit() {
-		this.isRequired = this.required !== undefined;
+		this.isRequired = typeof this.required !== "undefined";
 	}
 
     ngAfterViewInit(): void {

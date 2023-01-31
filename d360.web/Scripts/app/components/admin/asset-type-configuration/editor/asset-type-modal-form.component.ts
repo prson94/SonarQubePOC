@@ -321,7 +321,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			return;
 		}
 
-		let selectedValue = this.defaultColors.find((x) => x.value === $event);
+		const selectedValue = this.defaultColors.find((x) => x.value === $event);
 		if (selectedValue.label !== 'Custom') {
 			this.assetTypeForm.controls["backgroundColor"].setValue(selectedValue.title);
 		}
