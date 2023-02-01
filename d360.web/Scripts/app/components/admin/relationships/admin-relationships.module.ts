@@ -13,7 +13,7 @@ import { AdminRelationshipsRoutingModule } from './admin-relationships.routes';
 import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { AdminRelationshipsSidePanelWrapperModule } from './sidepanel-wrapper/admin-relationships-sidepanel-wrapper.module';
-import { AdminRelationshipEditorModule } from './list/admin-relationship-editor.module';;
+import { AdminRelationshipEditorModule } from './list/admin-relationship-editor.module';
 
 @NgModule({
     imports: [

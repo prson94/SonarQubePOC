@@ -11,13 +11,16 @@ import { CompanySettingsService } from "../../../services/settings.service";
 import { AuthenticationService } from '../../../services/authentication.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 
-// TODO: it will be great to move out next out of this component: 
+// TODO: it will be great to move out next out of this component:
 // • statistics
 // • searchDetails
-// • isScoringScreen 
-// • area 
+// • isScoringScreen
+// • area
 // • filterScoringTabHasNoValue
 // • getTitle
+
+/*global $localize*/
+
 @Component({
     selector: 'd3s-tabs',
     templateUrl: 'tabs.component.html',

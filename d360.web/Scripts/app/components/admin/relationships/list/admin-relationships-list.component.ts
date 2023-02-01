@@ -20,10 +20,6 @@ import { BaseComponent } from '../../../shared/base.component';
 export class AdminRelationshipsListComponent extends BaseComponent implements OnChanges {
 	relationships: RelationshipTypeSimpleUIModel[] = [];
 
-	private id: number = null;
-	private subject: string = "";
-	private predicate: string = "";
-
 	@Input() filterToName: string = "";
 	@Input() assetTypeUid: string;
 	@Input() showTitle = true;
@@ -38,6 +34,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
 	editorSelectedUid: string = "";
 
+	/*global $localize*/
+
 	constructor(
 		private messagesService: MessagesObservableService,
 		private relationshipsService: RelationshipsService,
@@ -50,7 +48,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		this.filterToName = '';
 
 		this.sidePanelService.editClickSource$.subscribe((res) => {
-			var data = res as RelationshipType;
+			const data = res as RelationshipType;
 			this.edit(RelationshipType.ConvertToUIModeldata(data));
 		});
 	}
@@ -78,7 +76,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	getFriendlyNameForFunctionalType(type: string): string {
 		let friendly: string = type;
 
-		friendly = PredicateFriendlyType[type];
+		friendly = PredicateFriendlyType[`${type}`];
 
 		return friendly;
 	}
@@ -86,10 +84,10 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	getRelationships() {
 		this.updateStorageKey();
 		this.isLoading = true;
-		let obs = this.relationshipsService.getRelationshipTypes(null, true)
+		let obs = this.relationshipsService.getRelationshipTypes(null, true);
 
 		if (this.assetTypeUid) {
-			obs = this.relationshipsService.getRelationshipTypes(this.assetTypeUid, null)
+			obs = this.relationshipsService.getRelationshipTypes(this.assetTypeUid, null);
 		}
 
 		obs.subscribe((result) => {
@@ -133,8 +131,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	}
 
 	findRelationshipIndex(uid: string) {
-		var index: number = -1;
-		for (var relationship of this.relationships) {
+		let index: number = -1;
+		for (const relationship of this.relationships) {
 			index++;
 			if (relationship.Uid === uid) { return index; }
 		}

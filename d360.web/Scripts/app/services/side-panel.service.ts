@@ -24,7 +24,7 @@ export class SidePanelService {
 	private sidePanelStateSource = new Subject<SidePanelState>();
 	sidePanelStateChange$ = this.sidePanelStateSource.asObservable();
 
-	private editClickSource = new Subject<any>();
+	private editClickSource = new Subject<unknown>();
 	editClickSource$ = this.editClickSource.asObservable();
 
 	constructor(private messagesService: MessagesObservableService) {

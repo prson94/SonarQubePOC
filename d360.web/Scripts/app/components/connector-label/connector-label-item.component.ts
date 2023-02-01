@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,8 +16,6 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { Subscription } from 'rxjs';
-import { SidePanelComponent } from '../shared/sidepanel/side-panel.component';
-import { StateService } from '../../services/state.service';
 
 /*global $localize*/
 
@@ -65,7 +63,6 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 		protected settingsService: CompanySettingsService,
 		protected headerBreadcrumbService: HeaderBreadcrumbService,
 		private router: Router,
-		private loc: Location,
 		public sidePanelService: SidePanelService
 	) {
 		super(settingsService);

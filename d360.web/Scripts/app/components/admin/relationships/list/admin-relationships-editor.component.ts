@@ -1,11 +1,11 @@
 ﻿import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { result } from 'lodash';
 import { SelectItem } from 'primeng/api';
-import { forkJoin } from 'rxjs';
 import { Predicate } from '../../../../models/predicate.model';
 import { Cardinality, PredicateDropdown, RelationshipType, RelationshipTypeEdge } from '../../../../models/relationship.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
+
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-admin-relationships-editor',
@@ -28,7 +28,6 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	saveLabel: string;
 	cancelLabel: string;
 
-	error: any;
 	cardinalityOptions: SelectItem[] = [];
 	subjectCardinalityOptions: SelectItem[] = [];
 	objectCardinalityOptions: SelectItem[] = [];
@@ -41,7 +40,7 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	isLoadingPredicate: boolean = false;
 	isLoadingCardinality: boolean = false;
 
-	selectedPredicate: any;
+	selectedPredicate: PredicateDropdown;
 
 	isFormDisabled: boolean = false;
 	isFormSet: boolean = false;

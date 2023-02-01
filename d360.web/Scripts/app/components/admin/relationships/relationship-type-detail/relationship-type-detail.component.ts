@@ -4,13 +4,15 @@ import { RelationshipType } from '../../../../models/relationship.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { SidePanelService } from '../../../../services/side-panel.service';
 
+/*global $localize*/
+
 @Component({
 	selector: 'd3s-relationship-type-detail',
 	templateUrl: './relationship-type-detail.component.html',
 	styleUrls: ['./relationship-type-detail.component.less'],
 	encapsulation: ViewEncapsulation.None
 })
-export class RelationshipTypeDetailComponent implements OnInit, OnChanges {
+export class RelationshipTypeDetailComponent implements OnChanges {
 	@Input() relationshipTypeUid: string;
 	@Output() onLinkClicked = new EventEmitter();
 
@@ -22,9 +24,6 @@ export class RelationshipTypeDetailComponent implements OnInit, OnChanges {
 		private relationshipTypeService: RelationshipsService,
 		private sidePanelService: SidePanelService,
 		private router: Router) { }
-
-	ngOnInit(): void {
-	}
 
 	ngOnChanges(changes: SimpleChanges) {
 		if (changes && changes.relationshipTypeUid.previousValue !== changes.relationshipTypeUid.currentValue) {
@@ -53,7 +52,7 @@ export class RelationshipTypeDetailComponent implements OnInit, OnChanges {
 			"DiagramAsset": $localize`Diagram Asset`
 		};
 
-		return friendlyNames[cs];
+		return friendlyNames[`${cs}`];
 	}
 
 

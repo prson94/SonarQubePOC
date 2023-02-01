@@ -51,7 +51,7 @@ export class RelationshipsService extends BaseObservableService {
 	}
 
 	getRelationshipType(RelationshipTypeUid: string): Observable<RelationshipType[]> {
-		var url = `api/v2/relationships/types?state=1&RelationshipTypeUid=${RelationshipTypeUid}&includeHasRelationships=true&includeTotalRelationshipCount=true&includeCreatedModifiedBy=true`;
+		const url = `api/v2/relationships/types?state=1&RelationshipTypeUid=${RelationshipTypeUid}&includeHasRelationships=true&includeTotalRelationshipCount=true&includeCreatedModifiedBy=true`;
 
 		return this.http.get(url)
 			.pipe(

@@ -9,7 +9,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 import { CoreModule } from '../../../shared/core.module';
-import { SharedDeleteFormModule } from '../../../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedGridPagingInfoModule } from '../../../shared/grid-paging-info.component';
 import { SearchFieldModule } from '../../../shared/controls/search-field/search-field.component';

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { RelationshipType, RelationshipTypeSimpleUIModel } from '../../../../models/relationship.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
 

@@ -1,5 +1,4 @@
-﻿import { NumericDictionary } from "lodash";
-import { MenuItem } from "primeng/api";
+﻿import { MenuItem } from "primeng/api";
 import { Predicate } from "./predicate.model";
 
 export enum Cardinality {
@@ -13,6 +12,15 @@ export class RelationshipTypeEdge {
 	Class: string;
 	Cardinality: string;
 }
+
+export class RelationshipTypeSimpleUIModel {
+	Uid: string;
+	RelationshipTypeName: string;
+	HasRelationships?: boolean;
+	TotalRelationshipCount?: number;
+	MenuItems?: MenuItem[];
+}
+
 export class RelationshipType {
 	Id: number;
 	Uid: string;
@@ -33,14 +41,6 @@ export class RelationshipType {
 			TotalRelationshipCount: data.TotalRelationshipCount
 		};
 	}
-}
-
-export class RelationshipTypeSimpleUIModel {
-	Uid: string;
-	RelationshipTypeName: string;
-	HasRelationships?: boolean;
-	TotalRelationshipCount?: number;
-	MenuItems?: MenuItem[];
 }
 
 export class RelationshipCount {
