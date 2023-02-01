@@ -11,7 +11,7 @@
 		<div #tabScroller
 			[ngStyle]="{'margin-left.px': showScrollButtons ? 40 : 0,'margin-right.px': showScrollButtons ? 40 : 0}"
 			class="tab-bar can-overflow">
-			<button *ngIf="!isScoringScreen && !hideMainTab"
+			<button *ngIf="isMainTabVisible"
 				[ngClass]="{'selected':AllClosed()}"
 				[igDataCy]="area.tabTitle"
 				(click)="itemClicked({active:false,title:'homeClick', url: 'blank'})"

@@ -29,7 +29,8 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
 		this.baseIntersectTypeUid = this.selected.Uid;
 		this.buildSecondaryNavigation({
 			intersectTypeUid: this.baseIntersectTypeUid,
-			forceRefresh: true
+			forceRefresh: true,
+			excludeTabs: true
 		});
 	}
 

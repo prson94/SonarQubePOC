@@ -111,7 +111,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
 				menuItems.push({ "title": $localize`Edit`, callback: () => this.edit(rel) });
 				menuItems.push({ "title": $localize`Delete`, callback: () => { this.editorSelectedUid = rel.Uid; this.showDelete = true; } });
-				menuItems.push({ "title": $localize`Export`, callback: () => { this.downloadRel(rel) } });
+				menuItems.push({ "title": $localize`Export`, callback: () => { this.downloadRel(rel); }, tooltip: $localize`Export all relationships in this type` });
 				rel.MenuItems = menuItems;
 			});
 

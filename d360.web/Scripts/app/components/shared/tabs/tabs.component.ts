@@ -31,7 +31,7 @@ export class TabsComponent implements OnDestroy {
     @Input() items: Tab[];
     @Input() showOnlyMainTab = false;
     @Input() hideMainTab = true;
-    @Input() area = { icon: 'fa-folder', title: '' };
+    @Input() area = { icon: 'fa-folder', title: '', tabTitle: '' };
     @Input() emitSecondaryNav = false;
     @Input() statistics: ObjectStatistics;
     @Input() searchDetails: SearchDetail;
@@ -79,7 +79,7 @@ export class TabsComponent implements OnDestroy {
 
         this.homeUrlChangeSub = this.secondaryNavService.homeUrlChange$.subscribe(
             (item) => {
-                this.homeUrl = item;
+				this.homeUrl = item;
             }
         );
     }
@@ -232,5 +232,10 @@ export class TabsComponent implements OnDestroy {
     ngOnDestroy() {
         this.routerUrlChangeSub?.unsubscribe();
         this.homeUrlChangeSub?.unsubscribe();
-    }
+	}
+
+	get isMainTabVisible() {
+
+		return !this.isScoringScreen && !this.hideMainTab && this.area?.tabTitle !== $localize`Relationship Types`;
+	}
 }
