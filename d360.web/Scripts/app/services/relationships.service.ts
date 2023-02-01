@@ -68,14 +68,6 @@ export class RelationshipsService extends BaseObservableService {
 			);
 	}
 
-	getRelationshipTypesById(id: number, type: string): Observable<RelationshipType[]> {
-		return this.http.get(`api/v2/relationships/types/${id}/${type}`)
-			.pipe(
-				map((response) => <RelationshipType[]>response),
-				catchError((err) => this.handleError(err))
-			);
-	}
-
 	getRelationshipTypesForComplexField(assetUid: string, fieldName: string): Observable<RelationshipType[]> {
 		return this.http.get(`api/v2/relationships/types/complexField/${assetUid}/${fieldName}`)
 			.pipe(
@@ -172,8 +164,8 @@ export class RelationshipsService extends BaseObservableService {
 		this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship type items'));
 	}
 
-	exportRelationshipTypes(keyword: string, id: number, subject: string, predicate: string, object: string) {
-		this.http.get(`api/v2/relationships/export/types?keyword=${keyword}&id=${id}&subject=${subject}&predicate=${predicate}&object=${object}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship types'));
+	exportRelationshipTypes(keyword: string, assetTypeUid: string) {
+		this.http.get(`api/v2/relationships/export/types?keyword=${keyword}&assetTypeUid=${assetTypeUid}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship types'));
 	}
 
 	getRelation(id: number): Observable<RelationshipDetail> {

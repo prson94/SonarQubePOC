@@ -43,6 +43,9 @@ import { AdminRelationshipEditorModule } from './list/admin-relationship-editor.
 		AdminRelationshipsComponent
     ],    
     providers: [
-    ]
+	],
+	exports: [
+		AdminRelationshipsComponent
+	]
 })
 export class AdminRelationshipsModule { }

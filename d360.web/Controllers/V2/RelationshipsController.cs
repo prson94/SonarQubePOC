@@ -1151,48 +1151,6 @@ namespace d360.web.Controllers.V2
 			return Request.CreateResponse(HttpStatusCode.OK, types);
 		}
 
-		/// <summary>
-		/// GET a list of relationship types using an ID and a Type.
-		/// </summary>
-		/// <param name="id">The legacy type ID of the asset type.</param>
-		/// <param name="type">The legacy object type of the asset type (ArtifactType, FusioAttributeType, TaxonomyType, etc.).</param>
-		/// <returns></returns>
-		[
-			HttpGet,
-			ApiExplorerSettings(IgnoreApi = true),
-			MapToApiVersion("2.0"),
-			Route("types/{id}/{type}"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types by a given Type and Id, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
-		]
-		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(int id, string type)
-		{
-			var prefix = "Relationships.GetRelationshipTypesAsync => ";
-			string errorMessage;
-
-			try
-			{
-				if (Enum.TryParse(type, out SystemObjects systemType))
-				{
-					var types = await Company.GetActiveIntersectTypesByObjectType(id, systemType);
-
-					return Request.CreateResponse(HttpStatusCode.OK, types);
-				}
-				else
-				{
-					return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidParameter);
-				}
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
-		}
-
 		[Route("types/{id:int}"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
 		public IQueryable<IntersectType> GetIntersectType(int id)
 		{
@@ -1798,18 +1756,20 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "Exported relationship types to Excel.", typeof(List<PredicateTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> ExportTypesToExcel(string keyword = null, int? id = null, string subject = null, string predicate = null, string @object = null)
+		public async Task<IHttpActionResult> ExportTypesToExcel(string keyword = null, Guid? assetTypeUid = null)
 		{
 			var queryParams = new List<KeyValuePair<string, string>>
 			{
 				new KeyValuePair<string, string>("state", "1")
 			};
+
+			if (assetTypeUid.HasValue)
+			{
+				queryParams.Add(new KeyValuePair<string, string>("assettypeuid", assetTypeUid.Value.ToString()));
+			}
+
 			var models = await Company.GetRelationshipTypes(queryParams,
-				keyword: keyword,
-				id: id,
-				subject: subject,
-				predicate: predicate,
-				@object: @object);
+				keyword: keyword);
 
 			return Excel(ItemsToExcel(models), $"Relationship Types {DateTime.Now.ToShortDateString()}.xlsx");
 		}

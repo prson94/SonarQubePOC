@@ -58,6 +58,7 @@ import { IgMessageBoxModule } from '../../shared/controls/message-box/message-bo
 import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 import { TooltipModule } from 'primeng/tooltip';
 import { AdminRelationshipEditorModule } from '../relationships/list/admin-relationship-editor.module';
+import { AdminRelationshipsModule } from '../relationships/admin-relationships.module';
 
 @NgModule({
     imports: [
@@ -98,7 +99,8 @@ import { AdminRelationshipEditorModule } from '../relationships/list/admin-relat
 		TilesModule,
 		IgMessageBoxModule,
 		AssetPreviewModule,
-		TooltipModule
+		TooltipModule,
+		AdminRelationshipsModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,

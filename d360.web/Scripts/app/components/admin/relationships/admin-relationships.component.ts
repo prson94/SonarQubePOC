@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy } from '@angular/core';
+﻿import { Component, Input, OnDestroy } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -13,6 +13,10 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class AdminRelationshipsComponent extends AdminBaseComponent implements OnDestroy {
+	@Input() assetTypeUid: string;
+	@Input() showTitle = true;
+	@Input() isStandalonePage: boolean = true;
+
 	selected: RelationshipType;
 
 	constructor(
@@ -26,12 +30,15 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
 
 	selectedItemChange(event) {
 		this.selected = event;
-		this.baseIntersectTypeUid = this.selected.Uid;
-		this.buildSecondaryNavigation({
-			intersectTypeUid: this.baseIntersectTypeUid,
-			forceRefresh: true,
-			excludeTabs: true
-		});
+
+		if (this.isStandalonePage) {
+			this.baseIntersectTypeUid = this.selected.Uid;
+			this.buildSecondaryNavigation({
+				intersectTypeUid: this.baseIntersectTypeUid,
+				forceRefresh: true,
+				excludeTabs: true
+			});
+		}
 	}
 
 	ngOnDestroy() {

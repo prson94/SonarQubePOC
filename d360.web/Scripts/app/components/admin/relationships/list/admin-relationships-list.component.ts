@@ -25,11 +25,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	private predicate: string = "";
 
 	@Input() filterToName: string = "";
-
-	@Input() object: string;
-	@Input() objectType: string;
-	@Input() objectID: number;
-
+	@Input() assetTypeUid: string;
 	@Input() showTitle = true;
 
 	@Input() selected: RelationshipTypeSimpleUIModel;
@@ -70,13 +66,13 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	}
 
 	private updateStorageKey() {
-		if (this.objectType && this.objectID) {
-			this.gridStorageKey = `admin-relationships-grid_${this.objectType}_${this.objectID}`;
+		if (this.assetTypeUid) {
+			this.gridStorageKey = `admin-relationships-grid_${this.assetTypeUid}`;
 		}
 	}
 
 	export() {
-		this.relationshipsService.exportRelationshipTypes(this.filterToName ?? "", this.id ?? null, this.subject ?? "", this.predicate ?? "", this.object ?? "");
+		this.relationshipsService.exportRelationshipTypes(this.filterToName ?? "", this.assetTypeUid);
 	}
 
 	getFriendlyNameForFunctionalType(type: string): string {
@@ -92,8 +88,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		this.isLoading = true;
 		let obs = this.relationshipsService.getRelationshipTypes(null, true)
 
-		if (this.objectID && this.objectType) {
-			obs = this.relationshipsService.getRelationshipTypesById(this.objectID, this.objectType)
+		if (this.assetTypeUid) {
+			obs = this.relationshipsService.getRelationshipTypes(this.assetTypeUid, null)
 		}
 
 		obs.subscribe((result) => {
