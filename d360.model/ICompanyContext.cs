@@ -364,8 +364,10 @@ namespace d360.model
         bool HasAssetPermission(string type, int id, Permission permission);
         
         bool HasAssetPermission(SystemObjects type, int id, Permission permission);
-        
-        bool HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId);
+
+		bool HasAssetPermissionByUid(Guid uid, Permission permission);
+
+		bool HasUserReadPermission(string type, int objectId, int assetTypeId, int resourceId);
         
         bool HasAssetTypePermission(string type, int id, Permission permission);
         

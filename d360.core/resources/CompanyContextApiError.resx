@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="DataProfilingNoPermission" xml:space="preserve">
+    <value>User does not have permission to add, edit or delete profiling data for this asset</value>
+  </data>
   <data name="DuplicateExecutionItem" xml:space="preserve">
     <value>Duplicate [ExecutionItemUid]: {0}. Identifiers must be unique within a batch.</value>
   </data>
