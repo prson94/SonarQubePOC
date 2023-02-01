@@ -167,6 +167,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	add() {
 		this.showEditor = true;
 		this.selected = null;
+		this.editorSelectedUid = null;
 	}
 
 	edit(rel: RelationshipTypeSimpleUIModel) {
