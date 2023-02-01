@@ -20,8 +20,12 @@ export class SidePanelService {
 	readonly sidePanelOpenMinWidth = 400;
 	readonly draggableAreaWidth: number = 6;
 	readonly panelWidthStorageKeyPrefix: string = 'side_panel_width_';
+
 	private sidePanelStateSource = new Subject<SidePanelState>();
 	sidePanelStateChange$ = this.sidePanelStateSource.asObservable();
+
+	private editClickSource = new Subject<any>();
+	editClickSource$ = this.editClickSource.asObservable();
 
 	constructor(private messagesService: MessagesObservableService) {
 		const windowSize$ = new BehaviorSubject(this.getWindowSize());
@@ -87,5 +91,9 @@ export class SidePanelService {
 
 	public setSidePanelState(state: SidePanelState) {
 		this.sidePanelStateSource.next(state);
+	}
+
+	public editClick(event) {
+		this.editClickSource.next(event);
 	}
 }

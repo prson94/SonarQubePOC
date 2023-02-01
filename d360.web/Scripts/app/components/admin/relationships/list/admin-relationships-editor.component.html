@@ -67,6 +67,7 @@
 								</div>
 
 								<div class="field-col">
+									{{canUpdateSides}}
 									<label for="object" class="ig-label" i18n>Object</label>
 									<p-dropdown igDropdown
 												igSize="full"
@@ -128,9 +129,9 @@
 
 	</div>
 	<div class="action-bar">
-		<button igButton class="ig-button-secondary" type="button" (click)="closeClick.emit();" label="Cancel" i18n-label></button>
+		<button igButton [disabled]="isSaving" class="ig-button-secondary" type="button" (click)="closeClick.emit();" label="{{cancelLabel}}"></button>
 		<span class="grow"></span>
-		<button [disabled]="!relationshipTypeForm.valid || (relationshipType.Uid && true)" igButton igAutoFocus class="ig-button-primary" margin (click)="onSubmit()" type="submit" i18n-label label="{{saveLabel}}"></button>
+		<button [disabled]="isSubmitDisabled || isSaving" [loading]="isSaving" igButton igAutoFocus class="ig-button-primary" margin (click)="onSubmit()" type="submit" i18n-label label="{{saveLabel}}"></button>
 	</div>
 </d3s-modal>
 

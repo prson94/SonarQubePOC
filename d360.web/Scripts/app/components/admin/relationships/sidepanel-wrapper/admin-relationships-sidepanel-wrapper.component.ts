@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import { IOutputData } from "angular-split";
 import { TreeNode } from "primeng/api";
 import { SidePanelService } from "../../../../services/side-panel.service";
@@ -12,6 +12,7 @@ import { SidePanelService } from "../../../../services/side-panel.service";
 export class AdminRelationshipsSidePanelWrapperComponent implements OnChanges {
 	@Input() sidePanelStorageKey: string;
 	@Input() selectedItem: TreeNode;
+	@Output() onEditClick = new EventEmitter();
 
 	sidePanelOpen = false;
 	selectedForInfoPanel: unknown;
@@ -41,7 +42,7 @@ export class AdminRelationshipsSidePanelWrapperComponent implements OnChanges {
 		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
 	}
 
-	onRelTypeEditClick($event) {
+	onResourceLinkClick($event) {
 		this.selectedItem = null;
 		this.selectedForInfoPanel = { AssetUid: $event.uid, Object: $event.type };
 	}

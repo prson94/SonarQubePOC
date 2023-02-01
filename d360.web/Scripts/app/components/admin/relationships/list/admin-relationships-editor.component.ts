@@ -20,7 +20,7 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	@Input() isModalVisible: false;
 
 	@Output() closeClick = new EventEmitter();
-	@Output() saveClick = new EventEmitter();
+	@Output() onSave = new EventEmitter();
 
 	relationshipType: RelationshipType;
 	title: string = $localize`Edit`;
@@ -45,6 +45,7 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	limitedChangesOnly: boolean = false;
 
 	canUpdateSides: boolean = true;
+	isSaving: boolean = false;
 
 	relationshipTypeForm: FormGroup = null;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
@@ -119,12 +120,12 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 					this.limitedChangesOnly = true;
 				}
 
-				if (this.relationshipType.Predicate.Uid != null && this.relationshipType.HasRelationships) {
+				if (this.relationshipType.HasRelationships) {
 					this.canUpdateSides = false;
 				}
 
 				this.saveLabel = $localize`Save Changes`;
-				this.cancelLabel = $localize`Close`;
+				this.cancelLabel = $localize`Discard Changes`;
 			}
 			this.isLoadingItem = false;
 
@@ -244,7 +245,15 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	}
 
 	onSubmit() {
-		//save the item back to the save or edit url        
-		this.saveClick.emit({ relationship: this.relationshipType, action: this.relationshipType.Uid == null ? "new" : "edit" });
+		this.isSaving = true;
+		this.relationshipsService.saveRelationshipType(this.relationshipType)
+			.subscribe((result) => {
+				this.isSaving = false;
+				this.onSave.emit(result);
+			});
+	}
+
+	get isSubmitDisabled(): boolean {
+		return !this.relationshipTypeForm.valid;
 	}
 }

@@ -52,6 +52,11 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	) {
 		super(settingsService);
 		this.filterToName = '';
+
+		this.sidePanelService.editClickSource$.subscribe((res) => {
+			var data = res as RelationshipType;
+			this.edit(RelationshipType.ConvertToUIModeldata(data));
+		});
 	}
 
 	ngOnInit() {
@@ -148,18 +153,14 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		}
 	}
 
-	saveRelationship(event) {
-		this.relationshipsService.saveRelationshipType(event.relationship)
-			.subscribe((result) => {
+	onSaveRelationship(result) {
+		result = result[0];
+		this.showMessageForApiResult(this.messagesService, result);
 
-				result = result[0];
-				this.showMessageForApiResult(this.messagesService, result);
-
-				if (result.Success === true) {
-					this.getRelationships();
-					this.showEditor = false;
-				}
-			});
+		if (result.Success === true) {
+			this.getRelationships();
+			this.showEditor = false;
+		}
 	}
 
 	closeEditor() {

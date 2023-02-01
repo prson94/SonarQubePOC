@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
-import { AssetTypeClass } from '../../../../models/asset.model';
 import { RelationshipType } from '../../../../models/relationship.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
+import { SidePanelService } from '../../../../services/side-panel.service';
 
 @Component({
 	selector: 'd3s-relationship-type-detail',
@@ -12,7 +12,6 @@ import { RelationshipsService } from '../../../../services/relationships.service
 })
 export class RelationshipTypeDetailComponent implements OnInit, OnChanges {
 	@Input() relationshipTypeUid: string;
-	@Output() onEditClick = new EventEmitter();
 	@Output() onLinkClicked = new EventEmitter();
 
 	isLoading: boolean = false;
@@ -21,6 +20,7 @@ export class RelationshipTypeDetailComponent implements OnInit, OnChanges {
 	formattedRelationshipTypeName: string = "";
 	constructor(
 		private relationshipTypeService: RelationshipsService,
+		private sidePanelService: SidePanelService,
 		private router: Router) { }
 
 	ngOnInit(): void {
@@ -69,5 +69,9 @@ export class RelationshipTypeDetailComponent implements OnInit, OnChanges {
 
 	resourceClicked(uid: string) {
 		this.onLinkClicked.emit({ uid, type: 'Resource' });
+	}
+
+	editClick() {
+		this.sidePanelService.editClick(this.relationshipType);
 	}
 }
