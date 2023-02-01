@@ -352,7 +352,7 @@
 		</div>
 	</div>
 	<div class="action-bar">
-		<button igButton igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
+		<button igButton igAutoFocus i18n-label label="{{closeButtonLabel}}" (click)="close()"></button>
 		<span class="grow"></span>
 		<button igButton class="ig-button-primary" label="{{saveButtonLabel}}" (click)="save()" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>

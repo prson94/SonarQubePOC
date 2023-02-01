@@ -52,6 +52,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	gatewayTooltip = $localize`A gateway is represented by the diamond shape and is used to control the divergence and convergence of connections. It will determine traditional decisions, as well as the forking, merging, and joining of paths.`;
 	activityTooltip = $localize`An activity is represented by a rounded-corner rectangle and is a generic term for work that the company performs. The types of activities are Task and Sub-Process.`;
 
+	private isEditFormUpdated: boolean = false;
+
 	constructor(private fb: FormBuilder,
 		private assetService: AssetService,
 		private assetTypeService: AssetTypeService,
@@ -114,20 +116,20 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 	setForm() {
 		this.assetTypeForm = this.fb.group({
-			name: [null, { validators: [Validators.required], updateOn: "blur" }],
-			displayFormat: [null, { validators: [Validators.required], updateOn: "blur" }],
-			description: [null, { updateOn: "blur" }],
-			isDescriptionEnabled: [false, { updateOn: "blur" }],
-			descriptionButtonName: [null, { updateOn: "blur" }],
-			isDescriptionVisibleByDefault: [false, { updateOn: "blur" }],
-			backgroundColor: [null, { updateOn: "blur" }],
-			icon: [null, { updateOn: "blur" }],
-			useAsTransformation: [null, { updateOn: "blur" }],
-			predicateUid: [null, { updateOn: "blur" }],
-			autoDisplayParent: [null, { updateOn: "blur" }],
-			canEditParent: [null, { updateOn: "blur" }],
-			flowObjectType: [null, { updateOn: "blur" }],
-			maxDepth: [null, { updateOn: "blur" }]
+			name: [null, { validators: [Validators.required] }],
+			displayFormat: [null, { validators: [Validators.required] }],
+			description: [null],
+			isDescriptionEnabled: [false],
+			descriptionButtonName: [null],
+			isDescriptionVisibleByDefault: [false],
+			backgroundColor: [null],
+			icon: [null],
+			useAsTransformation: [null],
+			predicateUid: [null],
+			autoDisplayParent: [null],
+			canEditParent: [null],
+			flowObjectType: [null],
+			maxDepth: [null]
 		});
 
 		this.setDefaultFormValues();
@@ -213,7 +215,15 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 					this.assetTypeForm.controls["flowObjectType"].setValue(assetType.FlowObjectType);
 				}
 
+				this.isEditFormUpdated = false;
+				setTimeout(() => {
+					this.assetTypeForm.valueChanges.subscribe(() => {
+						this.isEditFormUpdated = true;
+					});
+				},200);
+
 				this.isLoading = false;
+
 			});
 		}
 		else {
@@ -345,7 +355,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	get isFormDisabled(): boolean {
-		return this.savingInProgress || this.assetTypeForm.invalid;
+		return this.savingInProgress || this.assetTypeForm.invalid || (this.uid && !this.isEditFormUpdated);
 	}
 
 	get saveButtonLabel(): string {
@@ -358,6 +368,10 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		else {
 			return $localize`Add Asset Type`;
 		}
+	}
+
+	get closeButtonLabel(): string {
+		return this.uid ? $localize`Discard Changes` : $localize`Cancel`;
 	}
 
 	@HostListener('window:resize', ['$event'])
