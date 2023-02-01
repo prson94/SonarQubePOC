@@ -98,8 +98,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			});
 
 			this.flowObjectTypes = [];
-			this.flowObjectTypes.push({ value: 'Event', label: $localize`Event` });
 			this.flowObjectTypes.push({ value: 'Activity', label: $localize`Activity` });
+			this.flowObjectTypes.push({ value: 'Event', label: $localize`Event` });
 			this.flowObjectTypes.push({ value: 'Gateway', label: $localize`Gateway` });
 		});
 	}
@@ -162,7 +162,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.fieldTokens = [];
 				if (results[1] && results[1].length) {
 					results[1].forEach((field) => {
-						const keyFieldTypes = ["Text", "Date", "DateTime", "Number", "Decimal", "Lookup"];
+						const keyFieldTypes = ["Text", "Date", "DateTime", "Number", "Decimal", "Lookup", "Counter"];
 						if (keyFieldTypes.some((ft) => ft.toLowerCase() === field.Type.toLowerCase())) {
 							this.fieldTokens.push({ title: field.Name });
 						}
