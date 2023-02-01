@@ -90,9 +90,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     ngOnInit() {
         this.loadMenu();
-
-
-        this.subSiteNav = this.stateService.siteMenuRequiresReload$.subscribe(() => {
+	
+	this.subSiteNav = this.stateService.siteMenuRequiresReload$.subscribe(() => {
             this.loadMenu();
         });
 
