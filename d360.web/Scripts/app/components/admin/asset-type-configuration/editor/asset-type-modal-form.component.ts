@@ -51,6 +51,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	gatewayTooltip = $localize`A gateway is represented by the diamond shape and is used to control the divergence and convergence of connections. It will determine traditional decisions, as well as the forking, merging, and joining of paths.`;
 	activityTooltip = $localize`An activity is represented by a rounded-corner rectangle and is a generic term for work that the company performs. The types of activities are Task and Sub-Process.`;
 
+	defaultDescriptionButtonTextValue = $localize`Information`;
+
 	constructor(private fb: FormBuilder,
 		private assetService: AssetService,
 		private assetTypeService: AssetTypeService,
@@ -138,7 +140,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		}
 		this.assetTypeForm.reset();
 		this.assetTypeForm.controls["displayFormat"].setValue('{Name}');
-		this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Description`);
+		this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
 		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
 		this.selectedIcon = 'Ebony';
 
@@ -174,6 +176,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.assetTypeForm.controls["description"].setValue(assetType.Description);
 				this.assetTypeForm.controls["isDescriptionEnabled"].setValue(assetType.IsDescriptionEnabled);
 				this.assetTypeForm.controls["descriptionButtonName"].setValue(assetType.DescriptionButtonName);
+
+				if (!assetType.DescriptionButtonName) {
+					this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
+				}
+
 				this.assetTypeForm.controls["isDescriptionVisibleByDefault"].setValue(assetType.IsDescriptionVisibleByDefault);
 				this.assetTypeForm.controls["backgroundColor"].setValue(assetType.IconStyle.BackColor);
 
@@ -399,7 +406,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	onIsDescriptionEnabledChange($event: boolean) {
 		//if toggled to false, we need to set default value to button name to avoid validation errors
 		if (!$event) {
-			this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Description`);
+			this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
 		}
 	}
 }
