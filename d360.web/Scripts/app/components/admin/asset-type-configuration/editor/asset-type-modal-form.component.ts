@@ -353,7 +353,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			return $localize`Save Changes`;
 		}
 		else if (this.parentUid) {
-			return $localize`Add Child Asset Type`
+			return $localize`Add Child Asset Type`;
 		}
 		else {
 			return $localize`Add Asset Type`;
