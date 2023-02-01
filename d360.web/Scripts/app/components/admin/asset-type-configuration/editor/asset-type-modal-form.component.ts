@@ -216,14 +216,13 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 				this.isEditFormUpdated = false;
 				setTimeout(() => {
-					this.assetTypeForm.valueChanges.subscribe((change) => {
+					this.assetTypeForm.valueChanges.subscribe(() => {
 						this.isEditFormUpdated = true;
 					});
-				},200)
+				},200);
 
 				this.isLoading = false;
 
-				
 			});
 		}
 		else {
