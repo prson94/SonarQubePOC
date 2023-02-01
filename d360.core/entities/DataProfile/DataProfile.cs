@@ -295,6 +295,9 @@ namespace d360.core.entities
 		[DataMember]
 		public List<DataProfileSemanticAnalysisDetail> semanticAnalysisDetails { get; set; }
 
+		[DataMember]
+		public List<DataProfileConfidenceAnalysisDetails> confidenceAnalysisDetails { get; set; }
+
 		[DataMember(Name = "totalCount")]
         public long? TotalCount { get; set; }
 
@@ -393,6 +396,8 @@ namespace d360.core.entities
 			textPatternDetails = details?.Where(d => d.SampleType.Equals("textPatternDetails", StringComparison.InvariantCultureIgnoreCase))?.Select(d => JsonConvert.DeserializeObject<DataProfileTextPatternDetail>(d.Value))?.ToList() ?? null;
 			semanticAnalysisDetails = details?.Where(d => d.SampleType.Equals("semanticAnalysisDetails", StringComparison.InvariantCultureIgnoreCase))?.Select(d => JsonConvert.DeserializeObject<DataProfileSemanticAnalysisDetail>(d.Value))?.ToList() ?? null;
 
+			confidenceAnalysisDetails = details?.Where(d => d.SampleType.Equals("confidenceAnalysisDetails", StringComparison.InvariantCultureIgnoreCase))?.Select(d => JsonConvert.DeserializeObject<DataProfileConfidenceAnalysisDetails>(d.Value))?.ToList() ?? null;
+
 			if (topK.Count == 0)
             {
                 topK = null;
@@ -446,6 +451,14 @@ namespace d360.core.entities
 		public List<DataProfileSampleDetail> phoneCountryFrequency { get; set; }
 		public List<DataProfileSampleDetail> phoneTypeFrequency { get; set; }
 		public List<DataProfileSampleDetail> phoneRegionFrequency { get; set; }
+	}
+
+	public class DataProfileConfidenceAnalysisDetails
+	{
+		public string semanticType { get; set; }
+		public long? validCount { get; set; }
+		public long? invalidCount { get; set; }
+		public string displayName { get; set; }
 	}
 
     public class AssetDataProfilesApiViewModel : PagedApiBaseViewModel

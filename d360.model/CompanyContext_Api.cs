@@ -11500,7 +11500,24 @@ where   ER.ExecutionID = @ExecutionID
 							}
 						}
 
-                        if (item.topK != null)
+						if (item.confidenceAnalysisDetails != null)
+						{
+							foreach (DataProfileConfidenceAnalysisDetails stat in item?.confidenceAnalysisDetails)
+							{
+								DataRow jsonRow = DataProfileSampleTable.NewRow();
+								jsonRow["ExecutionID"] = execution.ExecutionID;
+								jsonRow["ItemNumber"] = itemNumber;
+								if (item.ExecutionItemUid.HasValue)
+								{
+									jsonRow["ExecutionItemUid"] = item.ExecutionItemUid;
+								}
+								jsonRow["SampleType"] = "confidenceAnalysisDetails";
+								jsonRow["JsonValue"] = JsonConvert.SerializeObject(stat);
+								DataProfileSampleTable.Rows.Add(jsonRow);
+							}
+						}
+
+						if (item.topK != null)
                         {
                             foreach (string topK in item?.topK)
                             {

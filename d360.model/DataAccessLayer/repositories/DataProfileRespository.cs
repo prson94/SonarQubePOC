@@ -1012,6 +1012,7 @@ namespace d360.model.DataAccessLayer
 								{(includeSamples ? ",JSON_QUERY(percentileStatistics.[value]) as percentileStatistics" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(textPatternDetails.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as textPatternDetails" : "")}
 								{(includeSamples ? $@",JSON_QUERY(REPLACE(REPLACE(semanticAnalysisDetails.value,'""value"":{{',''),'}}}}','}}')) as semanticAnalysisDetails" : "")}
+								{(includeSamples ? $@",JSON_QUERY(REPLACE(REPLACE(confidenceAnalysisDetails.value,'""value"":{{',''),'}}}}','}}')) as confidenceAnalysisDetails" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK" : "")}
 								,ADP.TotalCount
@@ -1172,6 +1173,17 @@ namespace d360.model.DataAccessLayer
 															for json path
 															) as [value]
 								) as semanticAnalysisDetails
+								outer apply (								
+													select  (
+															select json_query([value]) as [value]
+															from AssetDataProfileSampleJson
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'confidenceAnalysisDetails'
+															for json path
+															) as [value]
+								) as confidenceAnalysisDetails
 "
 					: "")}";
 		}
