@@ -107,7 +107,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	}
 
 	onEditClick() {
-		this.openEditForm(this.selectedRow.data.uid, this.selectedRow.data.parentUid);
+		this.openEditForm(this.selectedRow.data.uid, this.selectedRow.data.parentUid, this.selectedRow.data.name);
 	}
 
 	listItemTransform(type) {
@@ -117,9 +117,9 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
 		menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(type.data.uid, true) });
 		if (this.hasAssetTypeChildsFeature) {
-			menuItems.push({ "title": $localize`Add Child Asset Type`, callback: () => this.openEditForm(null, type.data.uid) });
+			menuItems.push({ "title": $localize`Add Child Asset Type`, callback: () => this.openEditForm(null, type.data.uid, type.data.name) });
 		}
-		menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.data.uid, type.data.parentUid) });
+		menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.data.uid, type.data.parentUid, type.data.name) });
 		menuItems.push({ "title": $localize`Delete`, callback: () => { this.assetTypeToDelete = type; } });
 		type.data["MenuItems"] = menuItems;
 
@@ -213,9 +213,11 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 	formAssetUid: string;
 	formParentUid: string;
-	openEditForm(assetUid: string, parentUid: string) {
+	formParentName: string;
+	openEditForm(assetUid: string, parentUid: string, parentTypeName: string) {
 		this.formAssetUid = assetUid;
 		this.formParentUid = parentUid;
+		this.formParentName = parentTypeName;
 		this.isModalVisible = true;
 	}
 

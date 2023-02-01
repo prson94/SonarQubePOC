@@ -23,6 +23,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	@Input() assetTypeClass: AssetTypeClass;
 	@Input() uid: string;
 	@Input() parentUid: string;
+	@Input() parentTypeName: string;
 
 	@Output() onClose = new EventEmitter();
 	@Output() onUpdated = new EventEmitter();
@@ -241,6 +242,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 					this.subTitle = `unset`;
 			}
 
+			if (this.parentUid) {
+				this.title = $localize`Add Child Asset Type`;
+				this.subTitle = this.parentTypeName;
+			}
+
 			this.setDefaultFormValues();
 		}
 	}
@@ -343,7 +349,15 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	get saveButtonLabel(): string {
-		return this.uid ? $localize`Save Changes` : $localize`Add Asset Type`;
+		if (this.uid) {
+			return $localize`Save Changes`;
+		}
+		else if (this.parentUid) {
+			return $localize`Add Child Asset Type`;
+		}
+		else {
+			return $localize`Add Asset Type`;
+		}
 	}
 
 	@HostListener('window:resize', ['$event'])
