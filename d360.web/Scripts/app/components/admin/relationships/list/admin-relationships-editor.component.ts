@@ -42,9 +42,11 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	isLoadingCardinality: boolean = false;
 
 	selectedPredicate: any;
-	limitedChangesOnly: boolean = false;
 
-	canUpdateSides: boolean = true;
+	isFormDisabled: boolean = false;
+	isFormSet: boolean = false;
+	hasChanges: boolean = false;
+
 	isSaving: boolean = false;
 
 	relationshipTypeForm: FormGroup = null;
@@ -81,7 +83,9 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	}
 
 	async loadForm() {
-		this.canUpdateSides = true;
+		this.isFormDisabled = false;
+		this.isFormSet = false;
+		this.hasChanges = false;
 
 		if (this.relationshipTypeUid) {
 			await this.loadItem(this.relationshipTypeUid);
@@ -94,6 +98,7 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 			this.title = $localize`Add Relationship Type`;
 			this.saveLabel = this.title;
 			this.cancelLabel = $localize`Cancel`;
+			this.isFormSet = true;
 		}
 	}
 
@@ -112,17 +117,21 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 
 					if (this.relationshipType.Subject.Cardinality === Cardinality[Cardinality.One]
 						&& this.relationshipType.Object.Cardinality === Cardinality[Cardinality.Many]) {
-						this.canUpdateSides = false;
+						this.isFormDisabled = true;
 					}
 				}
 
 				if (this.relationshipType.HasRelationships) {
-					this.limitedChangesOnly = true;
+					this.isFormDisabled = true;
 				}
 
-				if (this.relationshipType.HasRelationships) {
-					this.canUpdateSides = false;
-				}
+				setTimeout(() => {
+					this.isFormSet = true;
+					this.hasChanges = false;
+					this.relationshipTypeForm.valueChanges.subscribe(() => {
+						this.hasChanges = true;
+					});
+				}, 200);
 
 				this.saveLabel = $localize`Save Changes`;
 				this.cancelLabel = $localize`Discard Changes`;
@@ -135,10 +144,9 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	}
 
 	async subjectChanged($event) {
-		
-		console.log($event);
-		if (!$event) { return; }
-		return;
+		if (!this.isFormSet || !$event) {
+			return;
+		}
 
 		this.relationshipType.Object.Uid = null;
 		this.relationshipType.Predicate.Uid = null;
@@ -147,24 +155,21 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	}
 
 	async predicateChanged(value) {
-		if (!value) { return; }
+		if (!this.isFormSet || !value) {
+			return;
+		}
+
 		const predicate = this.predicates.find((p) => p.value === value);
 		this.selectedPredicate = predicate;
 
 		if (predicate != null && predicate.isSemantic === true) {
-			this.canUpdateSides = false;
 			this.objectOptions = this.subjectOptions.slice();
 			this.cdRef.detectChanges();
 			this.relationshipType.Object.Uid = this.relationshipType.Subject.Uid;
 		}
-		else {
-			this.canUpdateSides = true;
-		}
 
-		if (!this.limitedChangesOnly && this.canUpdateSides) {
-			this.relationshipType.Object.Uid = null;
-			await this.loadObjectOptionsAsync(this.relationshipType.Subject.Uid, null, value);
-		}
+		this.relationshipType.Object.Uid = null;
+		await this.loadObjectOptionsAsync(this.relationshipType.Subject.Uid, null, value);
 	}
 
 
@@ -254,6 +259,6 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	}
 
 	get isSubmitDisabled(): boolean {
-		return !this.relationshipTypeForm.valid;
+		return !this.relationshipTypeForm.valid || (this.relationshipType.Uid && this.hasChanges);
 	}
 }

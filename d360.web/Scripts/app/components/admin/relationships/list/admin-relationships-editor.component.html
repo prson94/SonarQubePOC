@@ -43,7 +43,7 @@
 												formControlName="subject"
 												[options]="subjectOptions"
 												[(ngModel)]="relationshipType.Subject.Uid"
-												[disabled]="!canUpdateSides"
+												[disabled]="isFormDisabled"
 												required
 												(ngModelChange)="relationshipType.Subject.Uid=$event;subjectChanged($event);"></p-dropdown>
 								</div>
@@ -61,13 +61,12 @@
 												formControlName="predicate"
 												[options]="predicates"
 												[(ngModel)]="relationshipType.Predicate.Uid"
-												[disabled]="!canUpdateSides"
+												[disabled]="isFormDisabled"
 												required
 												(ngModelChange)="relationshipType.Predicate.Uid=$event;predicateChanged($event);"></p-dropdown>
 								</div>
 
 								<div class="field-col">
-									{{canUpdateSides}}
 									<label for="object" class="ig-label" i18n>Object</label>
 									<p-dropdown igDropdown
 												igSize="full"
@@ -81,7 +80,7 @@
 												formControlName="object"
 												[options]="objectOptions"
 												[(ngModel)]="relationshipType.Object.Uid"
-												[disabled]="!canUpdateSides"
+												[disabled]="isFormDisabled"
 												required></p-dropdown>
 								</div>
 
