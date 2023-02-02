@@ -166,7 +166,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.fieldTokens = [];
 				if (results[1] && results[1].length) {
 					results[1].forEach((field) => {
-						const keyFieldTypes = ["Text", "Date", "DateTime", "Number", "Decimal", "Lookup", "Counter"];
+						const keyFieldTypes = ["Text", "Date", "DateTime", "Number", "Boolean", "Decimal", "Lookup", "Counter"];
 						if (keyFieldTypes.some((ft) => ft.toLowerCase() === field.Type.toLowerCase())) {
 							this.fieldTokens.push({ title: field.Name });
 						}
