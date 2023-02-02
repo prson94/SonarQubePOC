@@ -1,15 +1,15 @@
 ﻿import {
-    AfterViewChecked,
-    ChangeDetectorRef,
-    Component,
-    ElementRef,
-    EventEmitter,
-    Input,
-    OnChanges,
-    OnInit,
-    Output,
-    SimpleChanges,
-    ViewChild
+	AfterViewChecked,
+	ChangeDetectorRef,
+	Component,
+	ElementRef,
+	EventEmitter,
+	Input,
+	OnChanges,
+	OnInit,
+	Output,
+	SimpleChanges,
+	ViewChild
 } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { ScoreTypeAllocation } from '../../../models/metrics.model';
@@ -18,13 +18,12 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { AllocationService } from '../../../services/allocations.service';
 import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { Dropdown } from "primeng/dropdown";
 
 @Component({
-    selector: 'allocation-editor',
-    templateUrl: 'allocation-editor.component.html',
-    providers: [AllocationService],
-    styles: [`
+	selector: 'allocation-editor',
+	templateUrl: 'allocation-editor.component.html',
+	providers: [AllocationService],
+	styles: [`
         .separator{
             padding:0px 4px;
         }
@@ -33,296 +32,311 @@ import { Dropdown } from "primeng/dropdown";
 
 export class AllocationEditorComponent extends BaseComponent implements OnChanges, OnInit, AfterViewChecked {
 
-    @Input() selection: ScoreTypeAllocation = new ScoreTypeAllocation();
-    @Input() disabled: boolean = false;
-    @Output() onCancel = new EventEmitter();
-    @Output() onSave = new EventEmitter();
-	
-	@ViewChild('assetTypeDropdown') assetTypeDropdown: Dropdown;
+	@Input() allocationUid: string = '';
+	@Output() onCancel = new EventEmitter();
+	@Output() onSave = new EventEmitter();
 
-    savingInProgress: boolean = false;
+	selection: ScoreTypeAllocation = new ScoreTypeAllocation();
 
-    ddlScoreTypes: any[] = [];
-    ddlAssetTypes: any[] = [];
-    saveLabel: string = $localize`Create`;
-    closeLabel: string = $localize`Cancel`;
-    requiredLabel = $localize`Value required`;
-    internallyCaluclatedLabel = $localize`Internally calculated`;
-    externallyCaluclatedLabel = $localize`Externally calculated`;
+	disabled: boolean = false;
+	savingInProgress: boolean = false;
 
-    howDoesItWorkTitle = $localize`How does this work?`;
+	ddlScoreTypes: any[] = [];
+	ddlAssetTypes: any[] = [];
+	saveLabel: string = $localize`Create`;
+	closeLabel: string = $localize`Cancel`;
+	requiredLabel = $localize`Value required`;
+	internallyCaluclatedLabel = $localize`Internally calculated`;
+	externallyCaluclatedLabel = $localize`Externally calculated`;
 
-    isEdit: boolean = false;
-    modelChanged: boolean = false;
+	howDoesItWorkTitle = $localize`How does this work?`;
 
-    originalSelection: ScoreTypeAllocation = null;
+	isEdit: boolean = false;
+	modelChanged: boolean = false;
 
-    public scoringHelpPage: string = "";
+	originalSelection: ScoreTypeAllocation = null;
 
-    rangeValues: number[] = [];
-    @ViewChild('slider', { static: true }) slider: ElementRef;
+	public scoringHelpPage: string = "";
 
-    constructor(
-        private allocationService: AllocationService,
-        protected messagesService: MessagesObservableService,
-        protected settingsService: CompanySettingsService,
-        private elementRef: ElementRef,
-        private cdRef: ChangeDetectorRef) {
-        super(settingsService);
+	rangeValues: number[] = [];
+	@ViewChild('slider', { static: true }) slider: ElementRef;
+
+	constructor(
+		private allocationService: AllocationService,
+		protected messagesService: MessagesObservableService,
+		protected settingsService: CompanySettingsService,
+		private elementRef: ElementRef,
+		private cdRef: ChangeDetectorRef) {
+		super(settingsService);
 
 		this.scoringHelpPage = this.getHelpUrl("Data360-Govern-Help/Configuration/Scoring-definitions");
-        this.selection = new ScoreTypeAllocation();
-        this.selection.isExternallyCalculated = false;
-        this.selection.lowerThreshold = 50;
-        this.selection.upperThreshold = 90;
+		this.resetForm();
+	}
 
-        this.updateRanges();
-    }
+	ngOnInit() {
+		this.initialData();
+	}
 
-    ngOnInit() {
-        this.initialData();
-    }
+	resetForm() {
+		this.selection = new ScoreTypeAllocation();
+		this.selection.isExternallyCalculated = false;
+		this.selection.lowerThreshold = 50;
+		this.selection.upperThreshold = 90;
 
-    ngOnChanges(change: SimpleChanges) {
-		this.assetTypeDropdown?.writeValue(this.selection.assetTypeUid);
-        this.populateAssetTypesDDL();
-        this.updateRanges();
+		this.updateRanges();
+	}
 
-        if (this.selection.uid) {
-            this.closeLabel = $localize`Close`;
-            this.saveLabel = $localize`Save Changes`;
-            this.isEdit = true;
-            this.originalSelection = _.cloneDeep(this.selection);
-        } else {
-            this.isEdit = false;
-            this.closeLabel = $localize`Cancel`;
-            this.saveLabel = $localize`Create`;
-        }
-    }
+	ngOnChanges(changes: SimpleChanges) {
+		if (changes && changes.allocationUid) {
+			this.load();
+		}
+	}
 
-    updateRanges() {
-        this.rangeValues[0] = this.selection.lowerThreshold;
-        this.rangeValues[1] = this.selection.upperThreshold;
+	load() {
+		this.selection = null;
+		this.resetForm();
 
-        this.rangeValues = JSON.parse(JSON.stringify(this.rangeValues));
+		if (this.allocationUid) {
+			this.allocationService.getAllocationByUid(this.allocationUid)
+				.subscribe((res) => {
+					this.selection = res[0];
+					this.closeLabel = $localize`Close`;
+					this.saveLabel = $localize`Save Changes`;
+					this.isEdit = true;
+					this.originalSelection = _.cloneDeep(this.selection);
+					if (this.selection.uid) {
+						this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' > ' + this.selection.assetTypePath });
+					}
+					this.populateAssetTypesDDL();
+					this.updateRanges();
 
-        this.hasModelChanged();
-    }
+					this.disabled = this.selection.hasMeasure || this.selection.hasDisabledMeasure;
+				});
 
-    scoreTypeChange($event) {
-        if (this.selection.scoreType) {
-            this.populateAssetTypesDDL();
+		} else {
+			this.isEdit = false;
+			this.closeLabel = $localize`Cancel`;
+			this.saveLabel = $localize`Create`;
+			this.disabled = false;
+			this.resetForm();
+		}
+		this.cdRef.detectChanges();
+	}
 
-            if (!this.selection.uid) {
-                this.selection.isExternallyCalculated = false;
-            }
+	updateRanges() {
+		this.rangeValues[0] = this.selection.lowerThreshold;
+		this.rangeValues[1] = this.selection.upperThreshold;
 
-            this.hasModelChanged();
-        }
-    }
+		this.rangeValues = JSON.parse(JSON.stringify(this.rangeValues));
 
-    private populateAssetTypesDDL() {
-        if (this.selection.scoreType) {
-            this.allocationService.getunallocatedAssetTypes(this.selection.scoreType)
-                .subscribe((data) => {
-                    this.ddlAssetTypes = [];
-                    data.forEach((item) => {
-                        this.ddlAssetTypes.push({
-                            value: item.assetTypeUid,
-                            class: this.getClassFriendlyName(item.assetTypeClass),
-                            name: item.assetTypePath,
-                            label: '<span>' + this.getClassFriendlyName(item.assetTypeClass) + '</span> <span class="fa fa-angle-right separator"></span> <span> ' + item.assetTypePath + '</span>'
-                        });
-                    });
+		this.hasModelChanged();
+	}
 
-                    if (this.selection.uid) {
-                        this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' > ' + this.selection.assetTypePath });
-                    }
-                    this.ddlAssetTypes = this.ddlAssetTypes.sort((a, b) => a.label.localeCompare(b.label));
-					this.assetTypeDropdown.options = this.ddlAssetTypes;
-					this.assetTypeDropdown.writeValue(this.selection.assetTypeUid);
-                });
-        }
-    }
+	scoreTypeChange($event) {
+		if (this.selection.scoreType) {
+			this.populateAssetTypesDDL();
+
+			if (!this.selection.uid) {
+				this.selection.isExternallyCalculated = false;
+			}
+
+			this.hasModelChanged();
+		}
+	}
+
+	private populateAssetTypesDDL() {
+		if (this.selection.scoreType) {
+			this.allocationService.getunallocatedAssetTypes(this.selection.scoreType)
+				.subscribe((data) => {
+					this.ddlAssetTypes = [];
+					data.forEach((item) => {
+						this.ddlAssetTypes.push({
+							value: item.assetTypeUid,
+							class: this.getClassFriendlyName(item.assetTypeClass),
+							name: item.assetTypePath,
+							label: '<span>' + this.getClassFriendlyName(item.assetTypeClass) + '</span> <span class="fa fa-angle-right separator"></span> <span> ' + item.assetTypePath + '</span>'
+						});
+					});
+
+					if (this.selection.uid) {
+						this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' > ' + this.selection.assetTypePath });
+					}
+					this.ddlAssetTypes = this.ddlAssetTypes.sort((a, b) => a.label.localeCompare(b.label));
+				});
+		}
+	}
 
 
 
-    private initialData() {
-        this.ddlScoreTypes.push({ value: 'Governance', label: $localize`Governance Score` });
-        this.ddlScoreTypes.push({ value: 'DataQuality', label: $localize`Data Quality Score` });
-    }
+	private initialData() {
+		this.ddlScoreTypes.push({ value: 'Governance', label: $localize`Governance Score` });
+		this.ddlScoreTypes.push({ value: 'DataQuality', label: $localize`Data Quality Score` });
+	}
 
-    hasModelChanged() {
-		this.selection.assetTypeUid = this.assetTypeDropdown?.value;
+	hasModelChanged() {
 		if (this.originalSelection) {
-            this.modelChanged = (JSON.stringify(this.originalSelection, (k, v) => v === undefined || v === null ? "" : v) !== JSON.stringify(this.selection, (k, v) => v === undefined || v === null ? "" : v));
+			this.modelChanged = (JSON.stringify(this.originalSelection, (k, v) => v === undefined || v === null ? "" : v) !== JSON.stringify(this.selection, (k, v) => v === undefined || v === null ? "" : v));
 			if (this.isEdit) {
-                if (this.modelChanged) {
-                    this.closeLabel = $localize`Discard Changes`;
-                } else {
-                    this.closeLabel = $localize`Close`;
-                }
-            }
-            this.cdRef.detectChanges();
-        }
+				if (this.modelChanged) {
+					this.closeLabel = $localize`Discard Changes`;
+				} else {
+					this.closeLabel = $localize`Close`;
+				}
+			}
+			this.cdRef.detectChanges();
+		}
 
-        return this.modelChanged;
-    }
+		return this.modelChanged;
+	}
 
-    getClassFriendlyName(atc: AssetTypeClass): string {
-        switch (atc.toString()) {
-            case 'BusinessAsset':
-                return $localize`Business Asset`;
-            case 'TechnicalAsset':
-                return $localize`Technical Asset`;
-            default:
-                return atc.toString();
-        }
-    }
+	getClassFriendlyName(atc: AssetTypeClass): string {
+		switch (atc.toString()) {
+			case 'BusinessAsset':
+				return $localize`Business Asset`;
+			case 'TechnicalAsset':
+				return $localize`Technical Asset`;
+			default:
+				return atc.toString();
+		}
+	}
 
-    cancel() {
-        //Set selection back to original
-        if (this.isEdit) {
-            this.selection = _.cloneDeep(this.originalSelection);
-            this.updateRanges();
-        }
-        this.onCancel.emit();
-    }
+	cancel() {
+		//Set selection back to original
+		if (this.isEdit) {
+			this.selection = _.cloneDeep(this.originalSelection);
+			this.updateRanges();
+		}
+		this.onCancel.emit();
+	}
 
-    save() {
-        var item = new ScoreTypeAllocation();
-        if (this.selection.uid)
-            {item.uid = this.selection.uid;}
+	save() {
+		var item = new ScoreTypeAllocation();
+		if (this.selection.uid) { item.uid = this.selection.uid; }
 
-        item.assetTypeUid = this.selection.assetTypeUid;
-        item.scoreType = this.selection.scoreType;
-        item.isExternallyCalculated = this.selection.isExternallyCalculated;
-        item.lowerThreshold = this.selection.lowerThreshold;
-        item.upperThreshold = this.selection.upperThreshold;
-        this.savingInProgress = true;
-        this.allocationService.save(item)
-            .subscribe((res) => {
-                let openItem = false;
-                this.savingInProgress = false;
-                if (!res || (res.type && res.type === "error"))
-                    {return;}
+		item.assetTypeUid = this.selection.assetTypeUid;
+		item.scoreType = this.selection.scoreType;
+		item.isExternallyCalculated = this.selection.isExternallyCalculated;
+		item.lowerThreshold = this.selection.lowerThreshold;
+		item.upperThreshold = this.selection.upperThreshold;
+		this.savingInProgress = true;
+		this.allocationService.save(item)
+			.subscribe((res) => {
+				let openItem = false;
+				this.savingInProgress = false;
+				if (!res || (res.type && res.type === "error")) { return; }
 
-                let msg: string = '';
-                if (this.selection.uid == null) {
-                    msg = $localize`Your score has been added`;
-                    openItem = true;
-                }
-                else {
-                    msg = $localize`Your score has been updated`;
-                }
-                this.messagesService.showInfoMessage($localize`Success`, msg);
-                this.onSave.emit({ item: res, openItem });
-            });
-    }
+				let msg: string = '';
+				if (this.selection.uid == null) {
+					msg = $localize`Your score has been added`;
+					openItem = true;
+				}
+				else {
+					msg = $localize`Your score has been updated`;
+				}
+				this.messagesService.showInfoMessage($localize`Success`, msg);
+				this.onSave.emit({ item: res, openItem });
+			});
+	}
 
-    handleChange(e) {
-        this.selection.lowerThreshold = e.values[0];
-        if (this.selection.lowerThreshold === 100)
-            {this.selection.lowerThreshold = 99;}
-        this.selection.upperThreshold = e.values[1];
+	handleChange(e) {
+		this.selection.lowerThreshold = e.values[0];
+		if (this.selection.lowerThreshold === 100) { this.selection.lowerThreshold = 99; }
+		this.selection.upperThreshold = e.values[1];
 
-        this.hasModelChanged();
-    }
+		this.hasModelChanged();
+	}
 
-    private thresholdCheckLower: any;
+	private thresholdCheckLower: any;
 
-    onLowerThresholdChange($event, el: HTMLInputElement) {
+	onLowerThresholdChange($event, el: HTMLInputElement) {
 
-        if (this.thresholdCheckLower)
-            {window.clearTimeout(this.thresholdCheckLower);}
+		if (this.thresholdCheckLower) { window.clearTimeout(this.thresholdCheckLower); }
 
-        this.thresholdCheckLower = window.setTimeout(() => {
-            var tempVal = +el.value;
+		this.thresholdCheckLower = window.setTimeout(() => {
+			var tempVal = +el.value;
 
-            if (tempVal <= 0) {
-                el.value = "0";
-            }
+			if (tempVal <= 0) {
+				el.value = "0";
+			}
 
-            if (tempVal > 99) {
-                el.value = "99";
-            }
-            if (tempVal > this.selection.upperThreshold) {
-                el.value = this.selection.upperThreshold.toString();
-            }
+			if (tempVal > 99) {
+				el.value = "99";
+			}
+			if (tempVal > this.selection.upperThreshold) {
+				el.value = this.selection.upperThreshold.toString();
+			}
 
-            this.selection.lowerThreshold = +el.value;
-            this.updateRanges();
-        }, 500);
+			this.selection.lowerThreshold = +el.value;
+			this.updateRanges();
+		}, 500);
 
-    }
-    private thresholdCheckUpper: any;
+	}
+	private thresholdCheckUpper: any;
 
-    onUpperThresholdChange($event, el: HTMLInputElement) {
+	onUpperThresholdChange($event, el: HTMLInputElement) {
 
 
-        if (this.thresholdCheckUpper)
-            {window.clearTimeout(this.thresholdCheckUpper);}
+		if (this.thresholdCheckUpper) { window.clearTimeout(this.thresholdCheckUpper); }
 
-        this.thresholdCheckUpper = window.setTimeout(() => {
-            var tempVal = +el.value;
+		this.thresholdCheckUpper = window.setTimeout(() => {
+			var tempVal = +el.value;
 
-            if (tempVal < 0) {
-                el.value = this.selection.lowerThreshold.toString();
-            }
+			if (tempVal < 0) {
+				el.value = this.selection.lowerThreshold.toString();
+			}
 
-            if (tempVal > 99) {
-                el.value = "99";
-            }
+			if (tempVal > 99) {
+				el.value = "99";
+			}
 
-            if (tempVal < this.selection.lowerThreshold) {
-                el.value = this.selection.lowerThreshold.toString();
-            }
+			if (tempVal < this.selection.lowerThreshold) {
+				el.value = this.selection.lowerThreshold.toString();
+			}
 
-            this.selection.upperThreshold = +el.value;
-            this.updateRanges();
-        }, 500);
+			this.selection.upperThreshold = +el.value;
+			this.updateRanges();
+		}, 500);
 
-    }
+	}
 
-    ngAfterViewChecked() {
+	ngAfterViewChecked() {
+		//Dynamically load good, average and score css styles from computed style object so branding is possible
+		var poorEl = this.elementRef.nativeElement.getElementsByClassName("score-poor")[0];
+		var avgEl = this.elementRef.nativeElement.getElementsByClassName("score-average")[0];
+		var goodEl = this.elementRef.nativeElement.getElementsByClassName("score-good")[0];
 
-        //Dynamically load good, average and score css styles from computed style object so branding is possible
-        var poorEl = this.elementRef.nativeElement.getElementsByClassName("score-poor")[0];
-        var avgEl = this.elementRef.nativeElement.getElementsByClassName("score-average")[0];
-        var goodEl = this.elementRef.nativeElement.getElementsByClassName("score-good")[0];
+		var poorColor = window.getComputedStyle(poorEl).backgroundColor;
+		var averageColor = window.getComputedStyle(avgEl).backgroundColor;
+		var goodColor = window.getComputedStyle(goodEl).backgroundColor;
 
-        var poorColor = window.getComputedStyle(poorEl).backgroundColor;
-        var averageColor = window.getComputedStyle(avgEl).backgroundColor;
-        var goodColor = window.getComputedStyle(goodEl).backgroundColor;
+		var backgroundStyle = `linear-gradient(90deg, ${poorColor} ${this.selection.lowerThreshold}%, ${poorColor} ${this.selection.lowerThreshold}%,${averageColor} ${this.selection.lowerThreshold}%, ${averageColor} ${this.selection.upperThreshold}%, ${goodColor} ${this.selection.upperThreshold}%, ${goodColor} 100%)`;
+		var sliderElement = this.slider["el"].nativeElement.getElementsByClassName('p-slider-horizontal')[0];
+		sliderElement.style.background = backgroundStyle;
 
-        var backgroundStyle = `linear-gradient(90deg, ${poorColor} ${this.selection.lowerThreshold}%, ${poorColor} ${this.selection.lowerThreshold}%,${averageColor} ${this.selection.lowerThreshold}%, ${averageColor} ${this.selection.upperThreshold}%, ${goodColor} ${this.selection.upperThreshold}%, ${goodColor} 100%)`;
-        var sliderElement = this.slider["el"].nativeElement.getElementsByClassName('p-slider-horizontal')[0];
-        sliderElement.style.background = backgroundStyle;
+		var sliders = this.slider["el"].nativeElement.getElementsByClassName('p-slider-handle');
 
-        var sliders = this.slider["el"].nativeElement.getElementsByClassName('p-slider-handle');
+		this.rangeValues.forEach((value: number, index) => {
+			var tooltip = sliders[index].getElementsByClassName('slider-tooltip');
+			if (tooltip.length === 0) {
+				var el = document.createElement("span");
+				el.className = 'slider-tooltip';
+				el.innerHTML = value + '%';
+				sliders[index].appendChild(el);
+			}
+			else {
+				tooltip[0].innerHTML = this.rangeValues[index] + '%';
+			}
+		});
+	}
 
-        this.rangeValues.forEach((value: number, index) => {
-            var tooltip = sliders[index].getElementsByClassName('slider-tooltip');
-            if (tooltip.length === 0) {
-                var el = document.createElement("span");
-                el.className = 'slider-tooltip';
-                el.innerHTML = value + '%';
-                sliders[index].appendChild(el);
-            }
-            else {
-                tooltip[0].innerHTML = this.rangeValues[index] + '%';
-            }
-        });
-    }
+	reverseElipsis(str: string, length: number) {
 
-    reverseElipsis(str: string, length: number) {
+		var startIndex = str.length - length;
+		if (startIndex < 0) {
+			return str;
+		}
 
-        var startIndex = str.length - length;
-        if (startIndex < 0) {
-            return str;
-        }
-
-        return '...' + str.substring(startIndex);
-    }
+		return '...' + str.substring(startIndex);
+	}
 
 }

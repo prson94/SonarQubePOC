@@ -20,7 +20,7 @@
 							[igDataCy]="'Assets_Add'"
 							(click)="openEditForm(null, null)"
 							igButton
-							pTooltip="Add new asset"
+							pTooltip="Add Asset Type"
 							i18n-pTooltip
 							tooltipPosition="top"
 							tooltipStyleClass="ig-tooltip"
@@ -138,6 +138,6 @@
 </div>
 
 
-<asset-type-modal-form [assetTypeClass]="assetTypeClass" [uid]="formAssetUid" [parentUid]="formParentUid" [isModalVisible]="isModalVisible" (onClose)="onEditFormClose()" (onUpdated)="onEditSaveFinished($event)"></asset-type-modal-form>
+<asset-type-modal-form [assetTypeClass]="assetTypeClass" [uid]="formAssetUid" [parentTypeName]="formParentName" [parentUid]="formParentUid" [isModalVisible]="isModalVisible" (onClose)="onEditFormClose()" (onUpdated)="onEditSaveFinished($event)"></asset-type-modal-form>
 
 <d3s-configuration-asset-type-delete-page [uid]="assetTypeToDelete?.data?.uid" (onClose)="onDeleteClose($event)"></d3s-configuration-asset-type-delete-page>

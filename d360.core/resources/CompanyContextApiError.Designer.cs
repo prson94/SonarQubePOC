@@ -61,6 +61,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to User does not have permission to add, edit or delete profiling data for this asset.
+        /// </summary>
+        public static string DataProfilingNoPermission {
+            get {
+                return ResourceManager.GetString("DataProfilingNoPermission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Duplicate [ExecutionItemUid]: {0}. Identifiers must be unique within a batch..
         /// </summary>
         public static string DuplicateExecutionItem {
