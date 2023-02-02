@@ -301,6 +301,19 @@ namespace d360.model
 			return hasPermission;
 		}
 
+		public bool HasAssetPermissionByUid(Guid uid, Permission permission)
+		{
+			bool hasPermission = CurrentResourceIsAdmin;
+
+			if (!hasPermission)
+			{
+				Asset asset = Assets.Single(a => a.uid == uid);
+				hasPermission = HasPermission(asset.ID, asset.AssetTypeID, permission);
+			}
+
+			return hasPermission;
+		}
+
 		public bool HasAssetPermission(SystemObjects type, int id, Permission permission)
 		{
 			return HasAssetPermission(type.ToString(), id, permission);

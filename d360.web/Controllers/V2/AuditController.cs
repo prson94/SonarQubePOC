@@ -153,7 +153,8 @@ namespace d360.web.Controllers.V2
 			{
 				if (ex is ArgumentException || ex is FilterExpressionParserException)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ex.Message)).ConfigureAwait(false);
+					var msg = ex.Message.Replace("\n", " ").Replace("\r", "");
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, msg)).ConfigureAwait(false);
 				}
 
 				throw;

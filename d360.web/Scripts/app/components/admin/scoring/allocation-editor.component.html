@@ -5,15 +5,14 @@
                 <div class="FieldName">
                     <span i18n>Score Type</span>
                 </div>
-                <p-dropdown 
-                            igDropdown 
-                            igSize="medium" 
-                            [disabled]="disabled" 
-                            [options]="ddlScoreTypes" 
-                            (onChange)="scoreTypeChange($event)" 
-                            [(ngModel)]="selection.scoreType" 
-                            appendTo="body" 
-                            [required]="true" 
+                <p-dropdown igDropdown
+                            igSize="medium"
+                            [disabled]="disabled"
+                            [options]="ddlScoreTypes"
+                            (onChange)="scoreTypeChange($event)"
+                            [(ngModel)]="selection.scoreType"
+                            appendTo="body"
+                            [required]="true"
                             i18n-placeholder
                             placeholder="Value required">
                     <ng-template let-item pTemplate="selectedItem">
@@ -29,15 +28,16 @@
                     <span i18n>Asset Type</span>
                 </div>
                 <p-dropdown #assetTypeDropdown
-                            igDropdown 
-                            igSize="full" 
-                            [disabled]="disabled || !selection.scoreType" 
-                            [options]="ddlAssetTypes" 
-                            filter="true" 
-                            appendTo="body" 
-                            [required]="true"  
+                            igDropdown
+                            igSize="full"
+                            [disabled]="disabled || !selection.scoreType"
+                            [options]="ddlAssetTypes"
+                            [(ngModel)]="selection.assetTypeUid"
+                            filter="true"
+                            appendTo="body"
+                            [required]="true"
                             placeholder="{{requiredLabel}}"
-                            [showClear]="false" 
+                            [showClear]="false"
                             (onChange)="hasModelChanged()">
                     <ng-template let-item pTemplate="selectedItem">
                         <span [innerHtml]="item.label"></span>
@@ -114,10 +114,8 @@
     </div>
     <br />
     <div class="action-bar">
-        <button igButton class="ig-button-secondary" (click)="cancel()" [disabled]="savingInProgress">{{closeLabel}}</button>
+        <button igButton class="ig-button-secondary" (click)="cancel()" [disabled]="savingInProgress" label="{{closeLabel}}"></button>
         <span class="grow"></span>
-        <button igButton class="ig-button-primary" [loading]="savingInProgress" (click)="save()" [disabled]="(isEdit && !modelChanged) || !selection.assetTypeUid">
-            {{saveLabel}}
-        </button>
+        <button igButton class="ig-button-primary" [loading]="savingInProgress" label="{{saveLabel}}" (click)="save()" [disabled]="savingInProgress || (isEdit && !modelChanged)"></button>
     </div>
 </div>

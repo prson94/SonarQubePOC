@@ -16,6 +16,7 @@ import { IconProperties } from "../../../../models/icon-properties.model";
 import { TreeTable } from "primeng/treetable";
 import { AssetTypeListSidePanelWrapperComponent } from "./asset-type-list-sidepanel-wrapper.component";
 import { MessagesObservableService } from "../../../../services/messages-observable.service";
+import { StateService } from "../../../../services/state.service";
 
 /*global $localize*/
 // eslint-disable-next-line no-var
@@ -60,7 +61,8 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		private router: Router,
 		private cdRef: ChangeDetectorRef,
 		private messagesService: MessagesObservableService,
-		protected settingsService: CompanySettingsService) {
+		protected settingsService: CompanySettingsService,
+		private stateService: StateService) {
 	}
 
 	ngOnChanges() {
@@ -105,7 +107,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	}
 
 	onEditClick() {
-		this.openEditForm(this.selectedRow.data.uid, this.selectedRow.data.parentUid);
+		this.openEditForm(this.selectedRow.data.uid, this.selectedRow.data.parentUid, this.selectedRow.data.name);
 	}
 
 	listItemTransform(type) {
@@ -115,9 +117,9 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
 		menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(type.data.uid, true) });
 		if (this.hasAssetTypeChildsFeature) {
-			menuItems.push({ "title": $localize`Add Child Asset Type`, callback: () => this.openEditForm(null, type.data.uid) });
+			menuItems.push({ "title": $localize`Add Child Asset Type`, callback: () => this.openEditForm(null, type.data.uid, type.data.name) });
 		}
-		menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.data.uid, type.data.parentUid) });
+		menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.data.uid, type.data.parentUid, type.data.name) });
 		menuItems.push({ "title": $localize`Delete`, callback: () => { this.assetTypeToDelete = type; } });
 		type.data["MenuItems"] = menuItems;
 
@@ -211,9 +213,11 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 	formAssetUid: string;
 	formParentUid: string;
-	openEditForm(assetUid: string, parentUid: string) {
+	formParentName: string;
+	openEditForm(assetUid: string, parentUid: string, parentTypeName: string) {
 		this.formAssetUid = assetUid;
 		this.formParentUid = parentUid;
+		this.formParentName = parentTypeName;
 		this.isModalVisible = true;
 	}
 
@@ -228,6 +232,8 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 				$event.Message
 			);
 		}
+
+		this.stateService.reloadLeftNavMenu();
 		this.load(($event.Uid as string).toLowerCase());
 	}
 
@@ -235,6 +241,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		this.assetTypeToDelete = null;
 		if ($event) {
 			this.load();
+			this.stateService.reloadLeftNavMenu();
 		}
 	}
 
