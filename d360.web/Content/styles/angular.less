@@ -4734,6 +4734,7 @@ d3s-header-typeahead-search {
         padding-left: 4px;
       }
     }
+
     .select-all-label {
       color: @ig-black;
       margin-left: 22px;
@@ -5653,6 +5654,7 @@ d3s-header-typeahead-search {
   background: transparent;
   border: none;
   box-shadow: none !important;
+
   as-split.split.as-horizontal .as-split-gutter[role="slider"] {
     margin-right: -10px;
     margin-left: -5px;
@@ -6720,7 +6722,7 @@ table {
   margin-bottom: 12px;
   line-height: 16px;
   word-break: break-word;
-  
+
   &--flex {
     display: flex;
     align-items: center;
@@ -7209,7 +7211,7 @@ p-treetableheadercheckbox {
   .p-checkbox {
     border-radius: 4px;
     color: white;
-    
+
     .p-disabled {
       opacity: 1;
       background-color: @ig-grey-t5;
@@ -7220,7 +7222,7 @@ p-treetableheadercheckbox {
       background-color: @ig-purple-t1 !important;
       border: unset;
     }
-    
+
     &-icon {
       font-size: 9px;
       font-weight: bold;
@@ -7244,5 +7246,21 @@ p-treeTableHeaderCheckbox {
 .cdk-virtual-scroll-content-wrapper {
   .p-datatable-tbody {
     overflow-anchor: none;
+  }
+}
+
+.d3s-color-picker {
+  .p-multiselect {
+    width: 100%;
+    border-radius: 4px;
+
+    .p-multiselect-trigger {
+      border: none;
+      background: #ededed;
+      border-radius: 4px;
+      width: 24px;
+      height: 24px;
+      color: @ig-black;
+    }
   }
 }
