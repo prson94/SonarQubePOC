@@ -63,12 +63,37 @@ namespace d360.web.Handlers.Exceptions
 			var ex = exception;
 			do
 			{
+				bool IsParamNameExists = false;
 				if (ex is TargetInvocationException)
 				{
 					continue;
 				}
+				
+				if (ex is ArgumentNullException )
+				{
+					var aex = (ArgumentNullException)ex;
+					if  (!string.IsNullOrEmpty(aex.ParamName))
+					{
+						IsParamNameExists = true;
+					}
+				}
 
-				result.Add(ex.Message);
+				if (ex is ArgumentException)
+				{
+					var aex = (ArgumentException)ex;
+					if (!string.IsNullOrEmpty(aex.ParamName))
+					{
+						IsParamNameExists = true;
+					}
+				}
+
+				var msg = ex.Message;
+				if (IsParamNameExists)
+				{
+					msg = msg.Replace("\n", " ").Replace("\r", "");
+				}
+
+				result.Add(msg);
 				ex = ex.InnerException;
 			} while (ex != null);
 
