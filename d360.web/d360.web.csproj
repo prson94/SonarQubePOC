@@ -25,7 +25,8 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
-    <IISExpressSSLPort>443</IISExpressSSLPort>
+    <IISExpressSSLPort>
+    </IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
@@ -2048,8 +2049,8 @@
     <TypeScriptCompile Include="Scripts\vendor.ts" />
   </ItemGroup>
   <ItemGroup>
-	<TypeScriptCompile Include="Scripts\app\**\*.ts" />
-	<None Include="Scripts\app\**\*.html" />
+    <TypeScriptCompile Include="Scripts\app\**\*.ts" />
+    <None Include="Scripts\app\**\*.html" />
     <None Include="Scripts\app\**\*.less" />
     <None Include="Scripts\app\**\*.css" />
   </ItemGroup>

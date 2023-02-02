@@ -322,11 +322,12 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             id = +this.model.Event.IssueObject.split('|')[1];
         }
 
-        if (type != null && id != null) {
-            if (this.model.Event.ChangeType === WorkflowChangeType.ScoreUpdate
-                || this.model.Event.ChangeType === WorkflowChangeType.Update
-                || this.model.Event.ChangeType === WorkflowChangeType.RequestCertification
-                || this.model.Event.ChangeType === WorkflowChangeType.Schedule) {
+		if (type != null && id != null) {
+			let selectedChangeType = this.model.Event.ChangeType;
+			if (selectedChangeType == WorkflowChangeType.ScoreUpdate
+				|| selectedChangeType == WorkflowChangeType.Update
+				|| selectedChangeType == WorkflowChangeType.RequestCertification
+				|| selectedChangeType == WorkflowChangeType.Schedule) {
                 this.workflowService.getScoreTypes(id, type)
                     .subscribe((res) => {
                         this.scoreTypes = res;
