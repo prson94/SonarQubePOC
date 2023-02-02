@@ -95,8 +95,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     isEditing: boolean = false;
     isMenuOpen: boolean = false;
 	isContainsSearchDefault: boolean = false;
-    showCertificationStatus: boolean = false;
-    certificationStatusIndex: string = null;
     deleteName: string = 'Artifact';
     previousEvent: LazyLoadEvent;
     totalRecords: number;
@@ -146,7 +144,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     private assetSearchSub: Subscription;
 
     isExportInProgress = false;
-    statusHasColor: boolean;
 
     isDebugMode: boolean = false;
     initialLoadInterval: any;
@@ -361,13 +358,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     this.hasProfilingChange.emit(this.hasProfiling);
                 }
 
-                const statusField = this.fields.find((x) => x.apiName != null && x.apiName.toLowerCase() === "status");
-
-                if (statusField != null) {
-                    this.showCertificationStatus = true;
-                    this.certificationStatusIndex = statusField.apiName;
-                }
-
                 if (result.Columns && result.Columns.length === 0) {
                     this.hasNoListableColumns = true;
                 }
@@ -549,21 +539,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     }
                 }
 
-                this.statusHasColor = this.items.filter((x) => {
-                    let foundColorToken = false;
-                    for (var prop in x) {
-                        if (Object.prototype.hasOwnProperty.call(x, prop) && prop.toLowerCase() === "status") {
-                            if ((x[prop] + "").indexOf('"name":') > -1 && (x[prop] + "").indexOf('"color":') > -1) {
-
-                                foundColorToken = true;
-                            }
-
-                        }
-
-                    }
-                    return foundColorToken;
-                }).length > 0;
-
 				if (params._includeTotal) {
 					this.totalRecords = res.total;
 				}
@@ -581,31 +556,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     this.totalRecords = 0;
                     this.changeDetectorRef.markForCheck();
                 });
-    }
-
-
-
-    getCertificationStatusColor(status: string) {
-        status = status.toLowerCase().trim();
-        if (this.statusHasColor !== true) {
-            switch (status) {
-                case 'draft':
-                    return '#BBBBBB';
-                case 'certified':
-                    return '#3f9d40';
-                case 'under review':
-                    return '#e2792a';
-                default:
-                    //custom status, we need to generate a color
-                    let hash = 0;
-                    for (let i = 0; i < status.length; i++) {
-                        hash = status.charCodeAt(i) + ((hash << 5) - hash);
-                        hash = hash & hash;
-                    }
-                    return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
-            }
-        }
-    }
+    }    
 
     getThreshold(value: string, lower: number, upper: number): string {
         if (value == null || value.length < 1)
