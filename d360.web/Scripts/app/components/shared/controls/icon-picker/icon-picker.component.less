@@ -1,144 +1,53 @@
 ﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
 @import "../../../../../../Content/styles/_Variables.less";
 
-ig-icon-picker {
-    &:focus {
-        outline-color: @ig-focus-color;
-    }
-
-    p-dropdown .p-dropdown {
-        background: #ffffff;
-        border: 1px solid @ig-field-border-color;
-        height: 32px;
-        width: 100%;
-        border-radius: 4px;
-    }
-
-    .p-dropdown {
-        .p-dropdown-trigger {
-            background-color: @ig-grey-t5;
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            text-align: center;
-            padding: 0;
-            color: @ig-black;
-            margin-top: 3px;
-            margin-right: 3px;
-            border-radius: 2px;
-            font-size: 10px;
-
-            &:hover {
-                background-color: @ig-grey-t4;
-            }
-        }
-
-        &:not(.p-disabled):hover {
-            border-color: @ig-grey-t1;
-        }
-
-        &:not(.p-disabled):focus {
-            outline: 0 none;
-            outline-offset: 0;
-            box-shadow: 0 0 0 2px @ig-midblue-t3;
-        }
-
-        .p-dropdown-clear-icon {
-            right: 30px;
-            top: 3px;
-            margin-top: 0;
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            background: @ig-grey-t5;
-            text-align: center;
-            font-size: 16px;
-            color: @ig-black;
-
-            &:hover {
-                background-color: @ig-grey-t4;
-            }
-        }
-
-        .p-dropdown-label {
-            background: none;
-            height: 30px;
-            padding-left: 8px;
-            padding-right: 62px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-
-            &.p-placeholder {
-                color: @ig-grey;
-                position: relative;
-                border-radius: 4px;
-            }
-        }
-
-        .p-dropdown-panel .p-dropdown-item-group {
-            font-size: 14px;
-            color: @ig-grey-t1;
-            height: 32px;
-            font-weight: 700;
-        }
-
-        .p-dropdown-panel .p-dropdown-item-group:has(.noGroup) {
-            height: 0 !important;
-        }
-    }
-
-    .p-focus {
-        background: none !important;
-    }
-}
-
 .iconfield-swatch {
-    display: inline-block;
-    position: relative;
-    left: -3px;
-    width: 24px;
-    height: 24px;
-    line-height: 24px;
-    text-align: center;
-    background: @ig-grey-t5;
-    color: @ig-black;
-    border-radius: 2px;
-    margin-right: 5px;
-    font-size: 1em;
-    img{
-        width:16px;
-        vertical-align:middle;
-    }
+  display: inline-block;
+  position: relative;
+  left: -3px;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  background: @ig-grey-t5;
+  color: @ig-black;
+  border-radius: 2px;
+  margin-right: 5px;
+  font-size: 1em;
+
+  img {
+    width: 16px;
+    vertical-align: middle;
+  }
 }
 
 .iconfield-item-label {
-    position: relative;
-    top: 1px;
-    -webkit-box-flex: 1;
-    -ms-flex-positive: 1;
-    flex-grow: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: @ig-black;
-    white-space: nowrap;
+  position: relative;
+  top: 1px;
+  -webkit-box-flex: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: @ig-black;
+  white-space: nowrap;
 }
 
 .iconfield-item, .iconfield-item-selected {
-    display: -webkit-inline-box;
-    display: -ms-inline-flexbox;
-    display: inline-flex;
-    height: 32px;
-    margin: 0;
-    padding: 0;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    max-width: 100%;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  max-width: 100%;
 }
 
 .iconfield-item-selected {
-    position: relative;
-    top: -5px;
-    left: -2px;
+  position: relative;
+  top: -5px;
+  left: -2px;
 }

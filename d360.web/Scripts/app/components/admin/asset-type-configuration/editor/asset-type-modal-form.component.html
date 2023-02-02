@@ -224,8 +224,7 @@
 									<div class="flex">
 										<div class="flex-col">
 											<label for="descriptionButtonName" class="ig-label" i18n>Description Button Name</label>
-											<input 
-												   required
+											<input required
 												   igInput
 												   igSize="full"
 												   name="descriptionButtonName"
@@ -286,12 +285,14 @@
 									<div class="flex">
 										<div class="flex-col">
 											<ig-color-picker [colors]="defaultColors"
-															 igSize="full"
-															 [selectedColor]="chosenColor"
+															 igSize="medium"
+															 [formControl]="assetTypeForm.controls['backgroundColorTextValue']"
+															 formControlName="backgroundColorTextValue"
+															 name="backgroundColorTextValue"
 															 (selectedColorChange)="onColorSelect($event)"
 															 required></ig-color-picker>
 										</div>
-										<div class="flex-col" [hidden]="chosenColor !== 'Custom'" style="margin-left:8px;">
+										<div class="flex-col" [hidden]="assetTypeForm.get('backgroundColorTextValue').value !== 'Custom'" style="margin-left:8px;">
 											<color-selector name="backgroundColor"
 															formControlName="backgroundColor"
 															(onChange)="assetTypeForm.controls['backgroundColor'].setValue($event)"

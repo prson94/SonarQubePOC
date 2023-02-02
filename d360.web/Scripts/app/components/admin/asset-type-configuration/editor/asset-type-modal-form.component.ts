@@ -35,7 +35,6 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	isLoading = false;
 	savingInProgress = false;
 	defaultColors: SelectItem[] = [];
-	chosenColor: string;
 	defaultColorItem: SelectItem = { label: $localize`Custom`, value: 'Custom', title: 'Custom' };
 
 	synonyms: Predicate[] = [];
@@ -86,7 +85,6 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			this.synonyms = results[1];
 			this.defaultColors = results[0];
 			this.defaultColors.unshift(this.defaultColorItem);
-			this.chosenColor = "Ebony";
 
 			if (this.synonyms && this.synonyms.length > 0) {
 				this.synonyms.forEach((syn) => {
@@ -123,6 +121,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			descriptionButtonName: [null],
 			isDescriptionVisibleByDefault: [false],
 			backgroundColor: [null],
+			backgroundColorTextValue: [null, { validators: [Validators.required]}],
 			icon: [null],
 			useAsTransformation: [null],
 			predicateUid: [null],
@@ -143,7 +142,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		this.assetTypeForm.controls["displayFormat"].setValue('{Name}');
 		this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Description`);
 		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
-		this.selectedIcon = 'Ebony';
+		this.assetTypeForm.controls['backgroundColorTextValue'].setValue('Ebony');
 
 		if (this.hasPredicateUid) {
 			if (this.hierarchyPredicatesSelectItem.length > 0) {
@@ -182,7 +181,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 				const colorCode = (assetType.IconStyle.BackColor ?? '') as string;
 				const defColor = this.defaultColors.find((c) => c.title.toLowerCase() === colorCode.toLowerCase());
-				this.chosenColor = defColor ? defColor.value : $localize`Custom`;
+				this.assetTypeForm.controls['backgroundColorTextValue'].setValue(defColor ? defColor.value : $localize`Custom`);
 
 				this.assetTypeForm.controls["icon"].setValue(assetType.IconStyle.Icon);
 				this.selectedIcon = assetType.IconStyle.Icon;
@@ -334,12 +333,14 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	onColorSelect($event) {
-		this.chosenColor = $event;
-		let selectedValue = this.defaultColors.find((x) => x.value === $event).title;
-		if (selectedValue === 'Custom') {
-			selectedValue = "#202020";
+		if (!$event) {
+			return;
 		}
-		this.assetTypeForm.controls["backgroundColor"].setValue(selectedValue);
+
+		const selectedValue = this.defaultColors.find((x) => x.value === $event);
+		if (selectedValue.label !== 'Custom') {
+			this.assetTypeForm.controls["backgroundColor"].setValue(selectedValue.title);
+		}
 	}
 
 	get hasUseAsTransformation(): boolean {
