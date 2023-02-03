@@ -33,7 +33,8 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         "(click)": "focus($event)",
-        '(blur)': 'focus($event)',
+		'(blur)': 'focus($event)',
+		'(focus)': 'focus($event)'
     }
 })
 
@@ -119,7 +120,7 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
 		}
     }
 
-    public focus(evt) {
+	public focus(evt) {
         this.dropdown.focus();
     }
 }

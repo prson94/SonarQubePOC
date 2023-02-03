@@ -30,6 +30,7 @@
 									<input igInput
 										   igSize="full"
 										   name="name"
+										   tabindex="10"
 										   formControlName="name"
 										   [igDataCy]="'Asset_Type_Modal_Field_Name'"
 										   type="text"
@@ -50,6 +51,7 @@
 										<input igInput
 											   igSize="full"
 											   name="displayFormat"
+											   tabindex="20"
 											   formControlName="displayFormat"
 											   [igDataCy]="'Asset_Type_Modal_Field_displayFormat'"
 											   type="text"
@@ -71,6 +73,7 @@
 												[igDataCy]="'Asset_Type_Modal_Field_predicateUid'"
 												igDropdown
 												required
+												tabindex="30"
 												igSize="full"
 												[appendTo]="'body'"
 												[options]="hierarchyPredicatesSelectItem"></p-dropdown>
@@ -91,6 +94,7 @@
 											   [formControl]="assetTypeForm.controls['autoDisplayParent']"
 											   i18n-trueLabel
 											   i18n-falseLabel
+											   tabindex="40"
 											   trueLabel="True"
 											   falseLabel="False"></ig-switch>
 								</div>
@@ -108,6 +112,7 @@
 											   [formControl]="assetTypeForm.controls['canEditParent']"
 											   i18n-trueLabel
 											   i18n-falseLabel
+											   tabindex="50"
 											   trueLabel="True"
 											   falseLabel="False"></ig-switch>
 
@@ -129,6 +134,7 @@
 													 [enforceMaxMin]="true"
 													 [formControlName]="'maxDepth'"
 													 [formControl]="assetTypeForm.controls['maxDepth']"
+													 tabindex="60"
 													 [required]="true">
 									</ig-number-input>
 								</div>
@@ -141,6 +147,7 @@
 												[igDataCy]="'Asset_Type_Modal_Field_flowObjectType'"
 												igDropdown
 												required
+												tabindex="70"
 												igSize="medium"
 												[appendTo]="'body'"
 												[options]="flowObjectTypes">
@@ -176,22 +183,9 @@
 									<p-editor formControlName="description"
 											  [igDataCy]="'Asset_Modal_Field_description'"
 											  attr.name="description"
+											  tabindex="80"
 											  [style]="{'height':'150px'}"
 											  ngDefaultControl #ed>
-										<p-header>
-											<span class="ql-formats with-border">
-												<select class="ql-header">
-													<option value="1">Heading</option>
-													<option value="2">Subheading</option>
-													<option selected>Normal</option>
-												</select>
-											</span>
-											<span class="ql-formats with-border">
-												<button class="ql-bold"></button>
-												<button class="ql-italic"></button>
-												<button class="ql-underline"></button>
-											</span>
-										</p-header>
 									</p-editor>
 								</div>
 								<div class="field-col" *ngIf="hasUseAsTransformation">
@@ -201,6 +195,7 @@
 											   [formControl]="assetTypeForm.controls['useAsTransformation']"
 											   i18n-trueLabel
 											   i18n-falseLabel
+											   tabindex="90"
 											   trueLabel="True"
 											   falseLabel="False"></ig-switch>
 
@@ -214,6 +209,7 @@
 											   [formControl]="assetTypeForm.controls['isDescriptionEnabled']"
 											   i18n-trueLabel
 											   i18n-falseLabel
+											   tabindex="100"
 											   trueLabel="True"
 											   falseLabel="False"></ig-switch>
 
@@ -227,6 +223,7 @@
 											<input required
 												   igInput
 												   igSize="full"
+												   tabindex="110"
 												   name="descriptionButtonName"
 												   formControlName="descriptionButtonName"
 												   [igDataCy]="'Asset_Type_Modal_Field_descriptionButtonName'"
@@ -238,6 +235,7 @@
 														label="Collapsed by default"
 														name="isDescriptionVisibleByDefault"
 														formControlName="isDescriptionVisibleByDefault"
+														tabindex="120"
 														[igDataCy]="'Asset_Type_Modal_Field_isDescriptionVisibleByDefault'"></p-checkbox>
 										</div>
 									</div>
@@ -260,6 +258,7 @@
 															formControlName="icon"
 															[formControl]="assetTypeForm.controls['icon']"
 															[igDataCy]="'Asset_Type_Modal_Field_icon'"
+															tabindex="130"
 															ngDefaultControl></ig-icon-picker>
 
 										</div>
@@ -290,11 +289,13 @@
 															 formControlName="backgroundColorTextValue"
 															 name="backgroundColorTextValue"
 															 (selectedColorChange)="onColorSelect($event)"
+															 tabindex="140"
 															 required></ig-color-picker>
 										</div>
 										<div class="flex-col" [hidden]="assetTypeForm.get('backgroundColorTextValue').value !== 'Custom'" style="margin-left:8px;">
 											<color-selector name="backgroundColor"
 															formControlName="backgroundColor"
+															tabindex="150"
 															(onChange)="assetTypeForm.controls['backgroundColor'].setValue($event)"
 															[igDataCy]="'Asset_Type_Modal_Field_backgroundColor'"
 															[appendTo]="'body'"></color-selector>
@@ -317,6 +318,7 @@
 															name="icon"
 															[(ngModel)]="selectedIcon"
 															formControlName="icon"
+															tabindex="160"
 															[formControl]="assetTypeForm.controls['icon']"
 															[igDataCy]="'Asset_Type_Modal_Field_icon'"
 															ngDefaultControl></ig-icon-picker>
@@ -340,6 +342,7 @@
 											   [formControl]="assetTypeForm.controls['syn_'+syn.Uid]"
 											   i18n-trueLabel
 											   i18n-falseLabel
+											   tabindex="170"
 											   trueLabel="True"
 											   falseLabel="False"></ig-switch>
 								</div>

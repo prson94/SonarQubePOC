@@ -1,6 +1,7 @@
 import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { SelectItem } from "primeng/api";
+import { Editor } from "primeng/editor";
 import { forkJoin } from "rxjs";
 import { AssetType, AssetTypeClass, Hierarchy, IconStyle } from "../../../../models/asset.model";
 import { Predicate } from "../../../../models/predicate.model";
@@ -8,6 +9,7 @@ import { AssetTypeService } from "../../../../services/asset-type.service";
 import { AssetService } from "../../../../services/asset.service";
 import { FieldsObservableService } from "../../../../services/fieldsObservable.service";
 import { RelationshipsService } from "../../../../services/relationships.service";
+import { IconPickerComponent } from "../../../shared/controls/icon-picker/icon-picker.component";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 
 /*global $localize*/
@@ -44,6 +46,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	flowObjectTypes: SelectItem[] = [];
 
 	@ViewChild('form', { static: false }) formElement: ElementRef;
+	@ViewChild('ed', { static: false }) primeEditor: Editor;
+
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
 	selectedIcon: string = '';
@@ -123,7 +127,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			descriptionButtonName: [null],
 			isDescriptionVisibleByDefault: [false],
 			backgroundColor: [null],
-			backgroundColorTextValue: [null, { validators: [Validators.required]}],
+			backgroundColorTextValue: [null, { validators: [Validators.required] }],
 			icon: [null],
 			useAsTransformation: [null],
 			predicateUid: [null],
@@ -226,7 +230,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 					this.assetTypeForm.valueChanges.subscribe(() => {
 						this.isEditFormUpdated = true;
 					});
-				},200);
+				}, 200);
 
 				this.isLoading = false;
 
@@ -436,6 +440,43 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		//if toggled to false, we need to set default value to button name to avoid validation errors
 		if (!$event) {
 			this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
+		}
+	}
+
+	lastVisitedTabIndex: number = 0;
+	@HostListener('keydown.tab', ['$event'])
+	onKeyDown(event: KeyboardEvent) {
+		const target = event.target as HTMLElement;
+		const editor = (this.primeEditor.el.nativeElement as HTMLElement).querySelector('.ql-editor') as HTMLElement;
+		editor.focus();
+		console.log(this.primeEditor.el.nativeElement as HTMLElement);
+		if (target.tabIndex > 9) {
+			this.lastVisitedTabIndex = target.tabIndex;
+			const nextInput = this.getNextInputTab(this.lastVisitedTabIndex);
+			if (nextInput) {
+				nextInput.focus();
+			}
+		}
+	}
+
+	getNextInputTab(idx: number): HTMLElement {
+		const nextTabIndex = idx + 10;
+		if (nextTabIndex > 250) {
+			return null;
+		}
+		const nextElement = document.querySelectorAll(`[tabindex='${nextTabIndex}']`);
+		if (nextElement.length > 0) {
+			console.log(nextElement[0]["tabIndex"]);
+			const parentOffset = (nextElement[0] as HTMLElement).offsetParent;
+			if (parentOffset) {
+				return nextElement[0] as HTMLElement;
+			}
+			else {
+				return this.getNextInputTab(nextTabIndex);
+			}
+		}
+		else {
+			return this.getNextInputTab(nextTabIndex);
 		}
 	}
 }

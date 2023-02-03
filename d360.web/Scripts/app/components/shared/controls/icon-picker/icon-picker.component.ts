@@ -6,12 +6,13 @@
     Input,
     NgModule,
     Output,
+    ViewChild,
     ViewEncapsulation,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { IconService } from '../../../../services/icon.service';
-import { DropdownModule } from 'primeng/dropdown';
+import { Dropdown, DropdownModule } from 'primeng/dropdown';
 import { DirectivesModule } from "../../../../directives/directives.module";
 
 export const ICON_VALUE_ACCESSOR: any = {
@@ -25,7 +26,10 @@ export const ICON_VALUE_ACCESSOR: any = {
     templateUrl: 'icon-picker.component.html',
     providers: [ICON_VALUE_ACCESSOR],
     styleUrls: ['icon-picker.component.less'],
-    encapsulation: ViewEncapsulation.None,
+	encapsulation: ViewEncapsulation.None,
+	host: {
+		'(focus)': 'focus($event)'
+	}
 })
 
 export class IconPickerComponent implements ControlValueAccessor {
@@ -49,6 +53,8 @@ export class IconPickerComponent implements ControlValueAccessor {
 
     protected isRequired = false;
     public isLoading: boolean = true;
+
+	@ViewChild("dd", { static: false }) dropdown: Dropdown;
 
     constructor(private iconService: IconService,
                 private cdRef: ChangeDetectorRef) {
@@ -117,6 +123,10 @@ export class IconPickerComponent implements ControlValueAccessor {
 		if (this.formControl) {
 			this.formControl.setValue(item.value, { emitEvent: false });
 		}
+	}
+
+	public focus(evt) {
+		this.dropdown.focus();
 	}
 }
 
