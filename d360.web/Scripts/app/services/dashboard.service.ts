@@ -9,7 +9,7 @@ import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
-import { escapeHTML } from 'core-js/fn/string';
+import { escape } from "lodash";
 
 @Injectable({
 	providedIn: 'root'
@@ -94,7 +94,7 @@ export class DashboardService extends BaseObservableService {
 				form.append(key, JSON.stringify(report[key]));
 			}
 			else {
-				form.append(key, escapeHTML(report[key]));
+				form.append(key, escape(report[key]));
 			}
 		}
 		);

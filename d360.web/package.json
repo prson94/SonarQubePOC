@@ -31,7 +31,6 @@
     "@datadog/browser-rum": "4.2.0",
     "angular-split": "^14.1.0",
     "codemirror": "5.64.0",
-    "core-js": "2.6.12",
     "eslint": "^8.24.0",
     "gojs": "2.1.22",
     "highcharts": "9.1.2",
