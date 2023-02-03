@@ -9,7 +9,7 @@ import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
-import { escape } from "lodash";
+import { escape } from "lodash-es";
 
 @Injectable({
 	providedIn: 'root'

@@ -12,7 +12,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { concatMap, finalize, map } from 'rxjs/operators';
-import * as _ from 'lodash';
+import { isEmpty } from "lodash-es";
 import { State } from '../../../models/asset.model';
 import { of, Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -150,7 +150,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
                         this.workflowFieldsService.setWorkflow(this.model.Event.Object, this.model.Event.ObjectID, this.model.Event.ChangeType);
 
-                        if ((this.model.Event.ConditionObject == null || _.isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
+                        if ((this.model.Event.ConditionObject == null || isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
                             const conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
                             this.conditions = [];
                             conditions.forEach((c) => this.conditions.push(c));

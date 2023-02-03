@@ -26,7 +26,7 @@ import { Operator } from '../../../models/operator.model';
 import { UntypedFormBuilder, UntypedFormControl, Validators } from '@angular/forms';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldCondition } from '../../../models/field-condition-grid.models';
-import * as _ from 'lodash';
+import { cloneDeep, debounce } from "lodash-es";
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -81,7 +81,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
     
     @ViewChild('form', { static: false }) formElement: ElementRef;
 
-    delayedReload = _.debounce(() => {
+    delayedReload = debounce(() => {
         this.load();
         this.loadFieldData();
     }, 200);
@@ -136,8 +136,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
     }
 
     ngAfterViewInit() {
-        this.originalConditions = _.cloneDeep(this.conditionGroups);
-        this.originalModel = _.cloneDeep(this.model);
+        this.originalConditions = cloneDeep(this.conditionGroups);
+        this.originalModel = cloneDeep(this.model);
         this.originalEffectiveDate = new Date(this.displayEffectiveDate?.toString());
         if (!this.uid) {
             this.hasModelChanged = true;

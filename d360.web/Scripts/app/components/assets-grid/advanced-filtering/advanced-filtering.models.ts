@@ -1,5 +1,5 @@
 ﻿import { DatePipe } from "@angular/common";
-import * as _ from "lodash";
+import { cloneDeep, escape } from "lodash-es";
 import { SelectItem } from "primeng/api";
 import { Observable } from "rxjs/internal/Observable";
 import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
@@ -344,7 +344,7 @@ export class AdvancedFilterFieldCondition {
 
                     // Escape user input, but avoid escaping chevron icons using js replace all method .split(x).join(y)
                     
-                    const arr = value.map((v: SelectItem) => _.escape(
+                    const arr = value.map((v: SelectItem) => escape(
                             v.title.replace(/(<i)(.*?)(i>)/g, placeholder)
                         ).split(placeholder).join(chevronHtml)
                     );
@@ -383,11 +383,11 @@ export class AdvancedFilterFieldCondition {
                 }
 
                 if (this.operator.toString() === "StartsWith" || this.operator.toString() === "EndsWith") {
-                    return _.escape(value);
+                    return escape(value);
                 }
 
                 let valueAsString = "";
-                var stringArr = this.value.map((v) => _.escape(v)) as string[];
+                var stringArr = this.value.map((v) => escape(v)) as string[];
                 if (stringArr.length === 1) {
                     return stringArr[0];
                 }
@@ -416,7 +416,7 @@ export class AdvancedFilterFieldCondition {
                 return valueAsString.trim();
 
             }
-            return _.escape(value);
+            return escape(value);
         }
         catch (ex) {
             console.warn(ex);
@@ -497,7 +497,7 @@ export class AdvancedFilterFieldCondition {
     }
 
     public getCopyWithNewValue(newValue: string): AdvancedFilterFieldCondition {
-        var newObj = _.cloneDeep(this);
+        var newObj = cloneDeep(this);
         newObj.value = newValue;
         return newObj;
     }
@@ -523,7 +523,7 @@ export class AdvancedFilterFieldConditionCollection {
         this.allocations = allocations;
         var f = new Filters();
         f.filter = this.getQueryStringValue();
-        f.data = _.cloneDeep(this.filters);
+        f.data = cloneDeep(this.filters);
         return f;
     }
 

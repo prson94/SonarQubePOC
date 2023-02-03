@@ -12,7 +12,7 @@
     ViewChild
 } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import * as _ from 'lodash';
+import { cloneDeep } from "lodash-es";
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LazyLoadEvent } from 'primeng/api';
 import { AssetService } from '../../../services/asset.service';
@@ -356,7 +356,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             for (const item of event) {
                 items.push(item.Value);
             }
-            this.value = _.cloneDeep(items);
+            this.value = cloneDeep(items);
             this.onModelChange(this.value);
         }
         else {
@@ -366,7 +366,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                 var sel = [];
                 sel.push(event);
                 this.selectedItems = sel;
-                this.value = _.cloneDeep(items);
+                this.value = cloneDeep(items);
                 this.onModelChange(this.value);
                 this.selectedRelationRowIndex = this.items.findIndex((i) => (i.Value === this.value[0]));
             }

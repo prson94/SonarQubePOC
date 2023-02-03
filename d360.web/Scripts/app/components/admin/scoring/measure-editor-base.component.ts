@@ -23,7 +23,7 @@ import { Operator } from '../../../models/operator.model';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, ValidatorFn } from '@angular/forms';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
-import * as _ from 'lodash';
+import { cloneDeep } from "lodash-es";
 import { Observable } from 'rxjs';
 import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
@@ -191,7 +191,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     duplicate(pos) {
         const itemToDupe = this.conditionGroups.find((x) => x.Position === pos);
-        const newGroup = _.cloneDeep(itemToDupe);
+        const newGroup = cloneDeep(itemToDupe);
         newGroup.Position = this.getMaxPositionForGroups();
         newGroup.DisplayOrder = this.getMaxDisplayOrderForGroups();
         this.addConditionGroupFormControls(newGroup.Position);

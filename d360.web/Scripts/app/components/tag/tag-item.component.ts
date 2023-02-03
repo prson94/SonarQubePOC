@@ -30,7 +30,7 @@ import {
 } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../models/fieldtype-api.model';
 import { UiAdvancedFiltering } from '../../services/ui-advanced-filtering.service';
-import { isEqual as _isEqual, uniqWith as _uniqWith } from 'lodash';
+import { isEqual as _isEqual, uniqWith as _uniqWith } from "lodash-es";
 import { Table } from 'primeng/table';
 import { SearchService } from '../../services/search.service';
 import { SidePanelService } from '../../services/side-panel.service';

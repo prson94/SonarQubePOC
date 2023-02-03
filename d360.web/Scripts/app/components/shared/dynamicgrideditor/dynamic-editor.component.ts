@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import { cloneDeep, orderBy } from "lodash-es";
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -173,7 +173,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         this.isInErrorMessage = '';
         this.isInError = false;
         if (this.selection != null) {
-            this.editedItem = _.cloneDeep(this.selection);
+            this.editedItem = cloneDeep(this.selection);
         } else {
             this.editedItem = {};
             this.action = this.newActionName;
@@ -260,7 +260,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
             this.categories = [];
 
-            result = _.orderBy(result, [(field) => field.Row ? field.Row : 0], ['asc']);
+            result = orderBy(result, [(field) => field.Row ? field.Row : 0], ['asc']);
             this.fields = result;
 
             this.fields.forEach((f) => {

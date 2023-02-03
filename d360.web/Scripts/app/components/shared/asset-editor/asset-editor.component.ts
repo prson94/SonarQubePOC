@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import { cloneDeep, orderBy, isEqual, filter, union as _union, keys as _keys } from "lodash-es";
 import {
     AfterViewChecked,
     ChangeDetectionStrategy,
@@ -259,7 +259,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         this.isInErrorMessage = '';
         this.isInError = false;
         if (typeof this.selection === "undefined") {
-            this.editedItem = _.cloneDeep(this.selection);
+            this.editedItem = cloneDeep(this.selection);
         } else {
             this.editedItem = {};
             this.action = this.newActionName;
@@ -412,7 +412,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.isLoading = false;
             this.categories = [];
 
-            result = _.orderBy(result, [(field) => field.Row ? field.Row : 0], ['asc']);
+            result = orderBy(result, [(field) => field.Row ? field.Row : 0], ['asc']);
             this.fields = result;
 
             this.fields.forEach((f) => {
@@ -478,7 +478,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             setTimeout(() => {
 				this.initialFormValue = this.form.value;
 				this.form.valueChanges.subscribe((change) => {
-					if (this.selection && !_.isEqual(this.initialFormValue, change)) {
+					if (this.selection && !isEqual(this.initialFormValue, change)) {
                         this.hasUpdateFormChanged = true;
                     }
                 });
@@ -1030,8 +1030,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     }
 
 	private getChangedKeys(o1: object, o2: object) {
-		const keys = _.union(_.keys(o1), _.keys(o2));
-		return _.filter(keys, function(key) {
+		const keys = _union(_keys(o1), _keys(o2));
+		return filter(keys, function(key) {
 			return o1[key] !== o2[key];
 		});
 	}
@@ -1091,7 +1091,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	}
 	
 	onSidePanelSelectionChange(selection: {objectID: string, fieldName: string}): void {
-		if (!_.isEqual(this.sidePanelSelection, selection)) {
+		if (!isEqual(this.sidePanelSelection, selection)) {
 			this.sidePanelSelection = selection;
 			const objectType = this.getObjectTypeByFieldName(selection.fieldName);
 			if (objectType.startsWith('ReferenceItem')) {

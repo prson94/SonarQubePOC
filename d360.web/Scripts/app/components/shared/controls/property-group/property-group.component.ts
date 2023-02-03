@@ -19,7 +19,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { FormFeedbackBadgesModule } from '../form-feedback-badges/form-feedback-badges.component';
 import { isFormContainerValid } from '../form-feedback-badges/form-feedback-utils';
 import { uuidv4 } from '../../../../static/lang';
-import * as _ from 'lodash';
+import { debounce } from "lodash-es";
 import { PropertyGroupsService } from './property-groups.service';
 
 export const PropertyGroupInstanceIdAttributeName = 'data-property-group-instance-id';
@@ -45,7 +45,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() expanded: boolean = true;
     @Output() expandedChange = new EventEmitter();
 
-    delayedRefresh = _.debounce(() => {
+    delayedRefresh = debounce(() => {
         this.isValid.emit(isFormContainerValid({ formGroup: this.igformGroup, formContainer: this.inputContainer }));
     }, 200);
 

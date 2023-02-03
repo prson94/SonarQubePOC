@@ -18,7 +18,7 @@ import { ActivatedRoute, Event as NavigationEvent, NavigationEnd, NavigationStar
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AssetAction, DynamicButton, SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { Subscription } from 'rxjs';
-import * as _ from 'lodash';
+import { sortBy, startsWith } from "lodash-es";
 import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 import { SurveysService } from '../../../services/surveys.service';
@@ -194,7 +194,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.subscription = this.secondaryNavService.rightSidebar$.subscribe(
             (item) => {
                 this.items.push(item);
-                this.items = _.sortBy(this.items, 'orderPriority'); this.emitChanges();
+                this.items = sortBy(this.items, 'orderPriority'); this.emitChanges();
                 this.secondaryNavService.setLocalCurrentTabs([...this.items]);
 
                 if (item.tag === 'GovernanceRoles') {
@@ -209,7 +209,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.buttonSubscription = this.secondaryNavService.rightSidebarButton$.subscribe(
             (button) => {
                 this.buttons.push(button);
-                this.buttons = _.sortBy(this.buttons, 'text'); this.emitChanges();
+                this.buttons = sortBy(this.buttons, 'text'); this.emitChanges();
             });
         this.buttonSubscriptionClear = this.secondaryNavService.rightSidebarButtonClear$.subscribe(
             (item) => {
@@ -445,7 +445,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     IsIcon(icon: string) {
-        return !_.startsWith(icon.toUpperCase(), "URL-");
+        return !startsWith(icon.toUpperCase(), "URL-");
     }
 
     GetURL(icon: string) {

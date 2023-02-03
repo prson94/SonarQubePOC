@@ -1,5 +1,5 @@
 import * as go from 'gojs';
-import * as _ from 'lodash';
+import { cloneDeep } from "lodash-es";
 import {
     AfterViewChecked,
     AfterViewInit,
@@ -1916,7 +1916,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_UpdateDiagramType(dt: DiagramType) {
-        const model: AssetBrowserFilterModel = _.cloneDeep(this.displayConfiguration);
+        const model: AssetBrowserFilterModel = cloneDeep(this.displayConfiguration);
         model.DiagramType = dt;
 		this.displayConfiguration = model;
 		this.currentDiagramType = dt;

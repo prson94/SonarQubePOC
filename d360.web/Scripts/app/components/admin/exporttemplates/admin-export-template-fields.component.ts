@@ -3,7 +3,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { ExportTemplate } from '../../../models/export-template.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldDefinition } from '../../../models/fields.model';
-import * as _ from 'lodash';
+import { clone } from "lodash-es";
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -99,7 +99,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
             if (this.availableFields[i].ID !== field.ID)
                 {this.availableFields[i].ExtOrder++;}
         }
-        this.availableFields = _.clone(this.availableFields);
+        this.availableFields = clone(this.availableFields);
         this.isLoading = false;
     }
 
@@ -116,7 +116,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
             max = this.availableFields[i].ExtOrder;
         }
         field.ExtOrder = max + 1;
-        this.availableFields = _.clone(this.availableFields);
+        this.availableFields = clone(this.availableFields);
         this.isLoading = false;
     }
 
@@ -132,7 +132,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
 
             }
         }
-        this.availableFields = _.clone(this.availableFields);
+        this.availableFields = clone(this.availableFields);
         this.isLoading = false;
     }
 
@@ -147,7 +147,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
                 this.availableFields[i + 1].ExtOrder = order;
             }
         }
-        this.availableFields = _.clone(this.availableFields);
+        this.availableFields = clone(this.availableFields);
         this.isLoading = false;
     }
 }

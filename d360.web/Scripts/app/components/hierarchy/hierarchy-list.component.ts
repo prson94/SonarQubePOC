@@ -8,7 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 
-import * as _ from 'lodash';
+import { sortBy } from "lodash-es";
 import { StringConstants } from '../../static/string-constants';
 import { CompanySettingsService } from '../../services/settings.service';
 import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
@@ -106,7 +106,7 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
                 this.isLoading = false;
 
                 this.types = result;
-                this.types = _.sortBy(this.types, 'Name');
+                this.types = sortBy(this.types, 'Name');
 
                 if (this.types.length && this.types.length > 0) {
                     this.selected = this.types[0];

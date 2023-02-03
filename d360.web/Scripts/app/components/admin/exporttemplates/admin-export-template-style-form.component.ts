@@ -4,7 +4,7 @@ import { BaseComponent } from "../../shared/base.component";
 import { ExportTemplateStyle, ExportViewType } from "../../../models/export-template.model";
 import { SelectItem } from "primeng/api";
 import { ExportTemplateService } from "../../../services/export-template.service";
-import * as _ from "lodash";
+import { clone } from "lodash-es";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
 
@@ -50,7 +50,7 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
     ngOnChanges(changes: SimpleChanges): void {
         this.model.AssetTypeExportTemplateID = changes["templateId"].currentValue;
         if (changes["mode"].currentValue === $localize`Edit` && changes["selectedStyle"].currentValue) {
-            this.model = _.clone(changes["selectedStyle"].currentValue);
+            this.model = clone(changes["selectedStyle"].currentValue);
         }
         this.model.SelectionType = this.exportViewType.toString() !== String(ExportViewType[ExportViewType.Pivot]) ? "Header" : this.model.Column === -1 ? "Row" : "Column";
 

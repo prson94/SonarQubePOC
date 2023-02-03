@@ -3,7 +3,7 @@ import { SelectItem } from 'primeng/api';
 import { LoadColumn, LoadFilePostModel } from '../../../models/load.model';
 import { LoadService } from '../../../services/load.service';
 import { FormHelper } from '../../../models/form.model';
-import * as _ from 'lodash';
+import { includes } from "lodash-es";
 
 @Component({
     selector: 'd3s-load-form',
@@ -103,15 +103,15 @@ export class LoadForm implements OnInit, OnChanges {
         col = col.toLowerCase();
 
         if (this.selectedAction === 'P' && type === 'artifacttype') {
-            if (_.includes(['name', 'subject area'], col) || col.startsWith('parent ')) {return true;}
+            if (includes(['name', 'subject area'], col) || col.startsWith('parent ')) {return true;}
             return false;
         }
         if (this.selectedAction === 'P' && type === 'domain') {
-            if (_.includes(['name', 'code'], col)) {return true;}
+            if (includes(['name', 'code'], col)) {return true;}
             return false;
         }
         if (this.selectedAction === 'P' && type === 'domaintype') {
-            if (_.includes(['name', 'domain group'], col)) {return true;}
+            if (includes(['name', 'domain group'], col)) {return true;}
             return false;
         }
         return true;

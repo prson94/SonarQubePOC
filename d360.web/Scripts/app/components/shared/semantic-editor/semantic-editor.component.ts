@@ -1,4 +1,4 @@
-﻿import * as _ from 'lodash';
+﻿import { cloneDeep } from "lodash-es";
 import {
     AfterViewChecked,
     ChangeDetectionStrategy,
@@ -131,7 +131,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     ngOnChanges(changes: SimpleChanges): void {
 		const c = changes;
         if (this.semanticType) {
-            this.model = _.cloneDeep(this.semanticType);
+            this.model = cloneDeep(this.semanticType);
             this.isBuiltIn = this.semanticType.source.toString() === SemanticSource[SemanticSource.BuiltIn];
             this.isEdit = true;
 

@@ -41,7 +41,7 @@ import 'primeng/treetable';
 import 'primeng/focustrap';
 
 
-import 'lodash';
+import 'lodash-es';
 import 'highcharts/highcharts';
 import 'highcharts/highcharts-more';
 import 'ng-json-view';

@@ -31,7 +31,7 @@ import { BaseComponent } from "../shared/base.component";
 import { SiteUrlHelpers } from "../../static/site-url-helpers";
 import { StringConstants } from "../../static/string-constants";
 import { ObjectDetailService } from "../../services/object-detail.service";
-import * as _ from "lodash";
+import { isEqual } from "lodash-es";
 import { V2ApiFilters } from "../../models/asset-search.model";
 import { SortOrder } from "../../models/enums.model";
 import { AssetGridObject } from "./asset-grid.model";
@@ -677,7 +677,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     private loadArtifactsLazy(event: LazyLoadEvent) {
         //if its the same filter then no need to load same data 
-        if (_.isEqual(event, this.previousEvent)) {
+        if (isEqual(event, this.previousEvent)) {
             return;
         }
         this.previousEvent = event;

@@ -1,6 +1,6 @@
 ﻿import { MenuItem } from 'primeng/api';
 import * as go from 'gojs';
-import * as _ from 'lodash';
+import { cloneDeep, isArray, isEmpty } from "lodash-es";
 import {
     Component,
     ElementRef,
@@ -468,8 +468,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         });
 
         //get deep copy of lists
-        this.initialLinks = _.cloneDeep(linkList);
-        this.initialNodes = _.cloneDeep(nodeList);
+        this.initialLinks = cloneDeep(linkList);
+        this.initialNodes = cloneDeep(nodeList);
 
         this.checkHasMultipleInputs();
 
@@ -857,7 +857,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
 
                 if (n.fields != null && n.fields.form != null && n.fields.form.field != null && n.fields.form.field.length == null) {
-                    const f = _.cloneDeep(n.fields.form.field);
+                    const f = cloneDeep(n.fields.form.field);
 
                     n.fields.form.field = [];
                     n.fields.form.field.push(f);
@@ -890,7 +890,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             if (m.SettingsObject != null && m.SettingsObject.settings != null)
                 {n.settings = m.SettingsObject.settings;}
-            else if (m.SettingsObject != null && !_.isEmpty(m.SettingsObject) && m.SettingsObject.settings == null)
+            else if (m.SettingsObject != null && !isEmpty(m.SettingsObject) && m.SettingsObject.settings == null)
                 {n.settings = m.SettingsObject;}
 
             if (n.activityType === WorkflowActivityType.FieldChange) {
@@ -899,8 +899,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (n.settings.FieldUpdate.Field == null) {n.settings.FieldUpdate.Field = [];}
                 //handle obj vs array due to XML parsing
 
-                if (n.settings.FieldUpdate.Field != null && !_.isEmpty(n.settings.FieldUpdate.Field) && n.settings.FieldUpdate.Field.constructor !== Array) {
-                    const f = _.cloneDeep(n.settings.FieldUpdate.Field);
+                if (n.settings.FieldUpdate.Field != null && !isEmpty(n.settings.FieldUpdate.Field) && n.settings.FieldUpdate.Field.constructor !== Array) {
+                    const f = cloneDeep(n.settings.FieldUpdate.Field);
                     n.settings.FieldUpdate.Field = [];
                     n.settings.FieldUpdate.Field.push(f);
                 }
@@ -975,7 +975,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
 
             //clone conditions so we can remove field name and _$visited
-            const cond = _.cloneDeep(m.condition);
+            const cond = cloneDeep(m.condition);
             cond.forEach((c) => {
                 delete c['@FieldName'];
                 delete c['_$visited'];
@@ -993,7 +993,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         } else if (model.diagramObjectType === DiagramObjectType.Node) {
             const m: NodeModel = <NodeModel>model;
             const n = new WorkflowDiagramNode();
-            const settings = _.cloneDeep(m.settings);
+            const settings = cloneDeep(m.settings);
 
             //remove name attributes and prime's _$visited property
             if (m.activityType === WorkflowActivityType.FieldChange) {
@@ -1120,7 +1120,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         switch (n.activityType) {
             case WorkflowActivityType.EmailNotification:
 
-                if (n.settings == null || _.isEmpty(n.settings))
+                if (n.settings == null || isEmpty(n.settings))
                     {return false;}
                 if (n.settings.MessageSubjectTemplate == null || n.settings.MessageSubjectTemplate.length < 1)
                     {return false;}
@@ -1137,7 +1137,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 break;
             case WorkflowActivityType.Form:
 
-                if (n.settings == null || _.isEmpty(n.settings))
+                if (n.settings == null || isEmpty(n.settings))
                     {return false;}
                 if (n.settings.FormResponseType == null || n.settings.FormResponseType === '')
                     {return false;}
@@ -1152,7 +1152,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     n.errors = n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
                 }
 
-                if (n.fields == null || _.isEmpty(n.fields))
+                if (n.fields == null || isEmpty(n.fields))
                     {return false;}
 
                 if (n.fields && n.fields.form && n.fields.form["@description"]) {
@@ -1178,7 +1178,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     {return false;}
                 break;
             case WorkflowActivityType.FieldChange:
-                if (n.settings == null || n.settings.FieldUpdate == null || n.settings.FieldUpdate.Field == null || _.isEmpty(n.settings.FieldUpdate.Field))
+                if (n.settings == null || n.settings.FieldUpdate == null || n.settings.FieldUpdate.Field == null || isEmpty(n.settings.FieldUpdate.Field))
                     {return false;}
 
                 if (n.settings.FieldUpdate.Field.length == null || n.settings.FieldUpdate.Field.length < 1)
@@ -1212,7 +1212,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (hasInvalidField) {return false;}
                 break;
             case WorkflowActivityType.RelationshipUpdate:
-                if (n.settings == null || n.settings.RelationshipUpdate == null || n.settings.RelationshipUpdate.Relationship == null || _.isEmpty(n.settings.RelationshipUpdate.Relationship))
+                if (n.settings == null || n.settings.RelationshipUpdate == null || n.settings.RelationshipUpdate.Relationship == null || isEmpty(n.settings.RelationshipUpdate.Relationship))
                     {return false;}
                 if (n.settings.RelationshipUpdate.Relationship['@ClearValue'] == null || n.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() === "false") {
                     if (n.settings.RelationshipUpdate.Relationship['@FormStepId'] == null || n.settings.RelationshipUpdate.Relationship['@FormFieldId'] == null)
@@ -1278,9 +1278,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     {return false;}
                 if (n.settings.ResponsibilityTypeID == null)
                     {return false;}
-                if (!_.isArray(n.settings.ResponsibilityTypeID) && n.settings.ResponsibilityTypeID < 0) //we still need to check single value here for legacy workflows
+                if (!isArray(n.settings.ResponsibilityTypeID) && n.settings.ResponsibilityTypeID < 0) //we still need to check single value here for legacy workflows
                     {return false;}
-                if (_.isArray(n.settings.ResponsibilityTypeID)) {
+                if (isArray(n.settings.ResponsibilityTypeID)) {
                     if (n.settings.ResponsibilityTypeID.length < 1)
                         {return false;}
 
@@ -1674,7 +1674,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.selectedStepId = null;
             this.selectedStepIdChange.emit(null);
         } else {
-            sel = _.cloneDeep(sel.toArray());
+            sel = cloneDeep(sel.toArray());
 
             if (sel != null && sel.length !== 0) {
                 this.selectedData = sel[0].data;
@@ -1801,10 +1801,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             //gojs doesn't like giving each node its own settings/fields object for some reason
             //set it here if it's empty
-            if ((<any>n).settings == null || _.isEmpty((<any>n).settings))
+            if ((<any>n).settings == null || isEmpty((<any>n).settings))
                 {(<any>n).settings = Object.create({});}
 
-            if ((<any>n).fields == null || _.isEmpty((<any>n).fields))
+            if ((<any>n).fields == null || isEmpty((<any>n).fields))
                 {(<any>n).fields = Object.create({});}
 
             this.diagram.model.setDataProperty(n, 'valid', this.validateNode(<NodeModel>n));
@@ -1824,7 +1824,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
 
                 //clone settings
-                this.diagram.model.setDataProperty(nodes[i].data, "settings", _.cloneDeep(nodes[i].data.settings));
+                this.diagram.model.setDataProperty(nodes[i].data, "settings", cloneDeep(nodes[i].data.settings));
 
                 //move the copy slightly so it's not directly on top of the original
                 nodes[i].location = new go.Point(nodes[i].location.x - (Math.random() * 30), nodes[i].location.y - (Math.random() * 30));

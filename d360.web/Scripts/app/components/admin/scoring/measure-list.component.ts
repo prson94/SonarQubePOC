@@ -15,7 +15,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
-import * as _ from 'lodash';
+import { debounce } from "lodash-es";
 import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -153,7 +153,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 		this.helpUri = this.getHelpUrl("Data360-Govern-Help/Configuration/Scoring-definitions");
     }
 
-    delayedReload = _.debounce(() => {
+    delayedReload = debounce(() => {
         this.formMode = FormMode.Default;
         this.load();
     }, 200);

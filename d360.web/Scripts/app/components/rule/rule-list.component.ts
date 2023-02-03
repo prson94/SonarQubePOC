@@ -10,7 +10,6 @@ import { RuleType } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
-import * as _ from 'lodash';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';

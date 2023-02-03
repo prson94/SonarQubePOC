@@ -5,7 +5,7 @@ import {
     FilterBetweenParams,
     Filters
 } from '../components/assets-grid/advanced-filtering/advanced-filtering.models';
-import { remove } from 'lodash';
+import { remove } from "lodash-es";
 import { OperatorString } from '../models/operator.model';
 import { MessagesObservableService } from './messages-observable.service';
 

@@ -24,7 +24,7 @@ import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldType, FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
-import * as _ from 'lodash';
+import { cloneDeep, debounce } from "lodash-es";
 import { SelectItem } from 'primeng/api';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -79,7 +79,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     
     @ViewChild('form', { static: false }) formElement: ElementRef;
 
-    delayedReload = _.debounce(() => {
+    delayedReload = debounce(() => {
         this.load();
         this.loadFieldData();
     }, 200);
@@ -139,8 +139,8 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     }
 
     ngAfterViewInit() {
-        this.originalConditions = _.cloneDeep(this.conditionGroups);
-        this.originalModel = _.cloneDeep(this.model);
+        this.originalConditions = cloneDeep(this.conditionGroups);
+        this.originalModel = cloneDeep(this.model);
         this.originalEffectiveDate = new Date(this.displayEffectiveDate?.toString());
         if (this.uid) {
             this.metricForm?.valueChanges.subscribe(() => {
@@ -197,7 +197,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
                                 this.ruleResultFilters.push(filter);
                             });
-                            this.originalRuleResultFilters = _.cloneDeep(this.ruleResultFilters); // Only copy to original model once successfully loaded and parsed.
+                            this.originalRuleResultFilters = cloneDeep(this.ruleResultFilters); // Only copy to original model once successfully loaded and parsed.
                         }
                     }
                     this.cdRef.markForCheck();

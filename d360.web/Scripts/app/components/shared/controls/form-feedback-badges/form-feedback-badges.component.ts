@@ -12,7 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
-import * as _ from 'lodash';
+import { throttle } from "lodash-es";
 import { getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
 import { Subject } from 'rxjs';
 import { startWith, takeUntil, tap } from 'rxjs/operators';
@@ -37,7 +37,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     private requiredPos: number = 0;
     private invalidPos: number = 0;
 
-	delayedRefresh = _.throttle(() => {
+    delayedRefresh = throttle(() => {
         this.requiredCount = getRequiredCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
         this.invalidCount = getInvalidCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
         this.ref.markForCheck();

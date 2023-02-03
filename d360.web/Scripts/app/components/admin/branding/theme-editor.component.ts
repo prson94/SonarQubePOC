@@ -10,7 +10,7 @@
     ViewEncapsulation
 } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import * as _ from 'lodash';
+import { cloneDeep } from "lodash-es";
 import { BrandingService, Theme } from '../../../services/branding.service';
 import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
 
@@ -129,7 +129,7 @@ export class ThemeEditorComponent implements OnChanges {
                     valObj[`${p}`] = _th[`${p}`];
                     this.formGroup.patchValue(valObj);
                 });
-                this._originalEditTheme = _.cloneDeep(_th);
+                this._originalEditTheme = cloneDeep(_th);
             });
     }
 

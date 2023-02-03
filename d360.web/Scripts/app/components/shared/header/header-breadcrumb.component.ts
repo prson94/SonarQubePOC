@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, ViewChild
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { Subscription } from 'rxjs';
-import * as _ from 'lodash';
+import { cloneDeep, isEqual, omit } from "lodash-es";
 
 @Component({
     selector: 'd3s-header-breadcrumb',
@@ -36,7 +36,7 @@ export class HeaderBreadcrumbComponent {
         this.breadcrumbs = [];
         this.subscriptionAdd = headerBreadcrumbService.breadcrumbs$.subscribe(
             (breadcrumb) => {
-                if (!_.isEqual(_.omit(this.breadcrumbs[this.breadcrumbs.length - 1], ['active']), _.omit(breadcrumb, ['active']))) {
+                if (!isEqual(omit(this.breadcrumbs[this.breadcrumbs.length - 1], ['active']), omit(breadcrumb, ['active']))) {
 
                     if (this.breadcrumbs.length !== 0) {
                         this.breadcrumbs[this.breadcrumbs.length - 1].active = true;
@@ -77,7 +77,7 @@ export class HeaderBreadcrumbComponent {
             });
 
             if (hasUpdate) {
-                this.breadcrumbs = _.cloneDeep(this.breadcrumbs);
+                this.breadcrumbs = cloneDeep(this.breadcrumbs);
             }
             this.ref.markForCheck();
         });

@@ -6,7 +6,7 @@ import { Breadcrumb } from '../models/breadcrumb.model';
 import { AppConstants } from '../static/constants';
 import { LocalStorageHelper } from '../static/localstorage-helper';
 import { HeaderBreadcrumbService } from './header-breadcrumb.service';
-import { cloneDeep, isEqual } from "lodash";
+import { cloneDeep, isEqual } from "lodash-es";
 import { NavigationEnd, Router } from '@angular/router';
 
 export interface OnPageEvent {

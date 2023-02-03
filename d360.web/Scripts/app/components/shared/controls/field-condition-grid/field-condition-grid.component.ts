@@ -14,7 +14,7 @@ import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } 
 import { SelectItem } from 'primeng/api';
 import { Operator } from '../../../../models/operator.model';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../../models/field-condition-grid.models';
-import * as _ from 'lodash';
+import { debounce } from "lodash-es";
 
 @Component({
     selector: 'field-condition-grid',
@@ -46,7 +46,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         this.formGroup = fb.group({});
     }
 
-    delayedClearUnusedConditions = _.debounce(() => {
+    delayedClearUnusedConditions = debounce(() => {
         this.clearUnusedFormControls();
     }, 200);
 

@@ -5,7 +5,7 @@ import { AuthenticationService } from "../../../services/authentication.service"
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { SocialService } from "../../../services/social.service";
 import { BaseComponent } from "../base.component";
-import * as _ from "lodash";
+import { cloneDeep } from "lodash-es";
 import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
@@ -39,7 +39,7 @@ export class CommentFormComponent extends BaseComponent {
 
     ngOnInit() {
         if (this.comment.Body) {
-            this.originalComment = _.cloneDeep(this.comment);
+            this.originalComment = cloneDeep(this.comment);
         }
     }
 

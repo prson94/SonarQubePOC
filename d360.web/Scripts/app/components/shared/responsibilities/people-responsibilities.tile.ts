@@ -4,7 +4,7 @@ import { ResponsibilityService } from "../../../services/responsibility.service"
 import { PermissionsService } from "../../../services/permissions.service";
 import { BaseComponent } from "../../shared/base.component";
 import { Router, RouterModule } from "@angular/router";
-import * as _ from "lodash";
+import { orderBy } from "lodash-es";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
@@ -147,7 +147,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         console.log(event);
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
-        this.responsibilities = _.orderBy(this.responsibilities, [(item) => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order === -1 ? "desc" : "asc"]);
+        this.responsibilities = orderBy(this.responsibilities, [(item) => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order === -1 ? "desc" : "asc"]);
     }
 
     private deleteResponsibility() {

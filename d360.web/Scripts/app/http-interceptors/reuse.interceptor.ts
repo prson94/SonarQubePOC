@@ -1,6 +1,6 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { Observable } from "rxjs";
 import { map, tap } from "rxjs/operators";
 import { cancellableShareReplayLast } from "../static/rxjs";

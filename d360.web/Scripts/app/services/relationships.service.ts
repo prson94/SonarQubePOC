@@ -16,7 +16,7 @@ import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 import { forkJoin, Observable } from 'rxjs';
 import { ApiResult } from '../models/apiresult.model';
-import * as _ from 'lodash';
+import { clone } from "lodash-es";
 import { Predicate } from '../models/predicate.model';
 
 @Injectable({
@@ -368,7 +368,7 @@ export class RelationshipsService extends BaseObservableService {
 		if (!params) {
 			params = {};
 		}
-		const copyParams = _.clone(params);
+		const copyParams = clone(params);
 
 		//Setup paging for export
 		copyParams['_pageNum'] = 1;

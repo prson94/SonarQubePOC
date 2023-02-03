@@ -14,7 +14,7 @@
 	ViewEncapsulation
 } from '@angular/core';
 import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
-import * as _ from 'lodash';
+import { cloneDeep, debounce, isEmpty } from "lodash-es";
 import { forkJoin, Subject } from 'rxjs';
 import { startWith, takeUntil, tap } from 'rxjs/operators';
 import { FormHelper, FormMode } from '../../../models/form.model';
@@ -109,7 +109,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
-	delayedRefresh = _.debounce(() => {
+	delayedRefresh = debounce(() => {
 		this.setRequiredCount();
 		this.cdRef.markForCheck();
 	}, 200);
@@ -152,7 +152,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 
 		if (this.navigationFolder) {
-			this.folderModel = _.cloneDeep(this.navigationFolder);
+			this.folderModel = cloneDeep(this.navigationFolder);
 			this.isEdit = true;
 		} else {
 			this.isEdit = false;
@@ -484,14 +484,14 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	addNewFolder(item: SiteNav) {
 		const x = this.foldersFromSource.findIndex((i) => i.ObjectID === item.ObjectID && i.Object === item.Object);
-		const i = _.cloneDeep(this.foldersFromSource.splice(x, 1)[0]);
+		const i = cloneDeep(this.foldersFromSource.splice(x, 1)[0]);
 		this.foldersFromTarget.push(i);
 		this.setRequiredCount();
 	}
 
 	deleteNewFolder(item: SiteNav) {
 		const x = this.foldersFromSource.findIndex((i) => i.ObjectID === item.ObjectID && i.Object === item.Object);
-		const i = _.cloneDeep(this.foldersFromTarget.splice(x, 1)[0]);
+		const i = cloneDeep(this.foldersFromTarget.splice(x, 1)[0]);
 		this.foldersFromSource.push(i);
 		this.setRequiredCount();
 	}
@@ -544,7 +544,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	showInfo(item) {
-		if(_.isEmpty(item)) {
+		if(isEmpty(item)) {
 			this.clearInfoPanel();
 			return;
 		}

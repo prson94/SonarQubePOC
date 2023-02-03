@@ -9,7 +9,7 @@
     SimpleChange,
     ViewEncapsulation
 } from "@angular/core";
-import * as _ from "lodash";
+import { cloneDeep } from "lodash-es";
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { SortOrder } from "../../models/enums.model";
 import { EditorField } from "../../models/editor-field.model";
@@ -126,7 +126,7 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
             for (const item of event) {
                 seletions.push(item.Value);
             }
-            this.value = _.cloneDeep(seletions);
+            this.value = cloneDeep(seletions);
             this.onModelChange(this.value);
         }
         else {
@@ -135,7 +135,7 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
             var sel = [];
             sel.push(event);
             this.selectedItems = sel;
-            this.value = _.cloneDeep(selections);
+            this.value = cloneDeep(selections);
             this.onModelChange(this.value);
         }
     }

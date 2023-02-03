@@ -2,7 +2,7 @@
 import { SurveysService } from '../../../services/surveys.service';
 import { QuestionTypeV2 } from '../../../models/survey.model';
 import { DropdownOption } from '../../../models/dropdown.model';
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from "lodash-es";
 import { UntypedFormGroup, NgForm } from '@angular/forms';
 
 @Component({
