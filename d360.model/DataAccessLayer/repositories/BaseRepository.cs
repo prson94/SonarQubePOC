@@ -620,11 +620,12 @@ namespace d360.model.DataAccessLayer.repositories
 				 {
 					 var filter = new AssetFieldFilter();
 					 filter.SimpleFilterStatement = @"
-									select AssetId
+									select AT.AssetId
 										from [Tag] T
 										inner join [AssetTag] [AT] ON [AT].TagID = T.ID
 										inner join [Asset] A on [AT].AssetID = A.ID
-									where A.AssetTypeID = @assettypeid and T.[Value] like @simpleFilter";
+										left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
+									where tfa.AssetId is null and A.AssetTypeID = @assettypeid and T.[Value] like @simpleFilter";
 
 					 fieldJoins.Add($@"outer apply(
 						select FormattedValue = STUFF((
