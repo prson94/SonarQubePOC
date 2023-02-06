@@ -98,6 +98,33 @@ namespace d360.web.Controllers
 			}
 		}
 
+		private string getRelationshipFieldType(int FieldTypeID, string defaulttype)
+		{
+			var fieldType = defaulttype;
+			var relatedField = Company.GetById<FieldType>(FieldTypeID);
+			if (relatedField != null)
+			{
+				switch (relatedField.Type)
+				{
+					case "Date":
+					case "DateTime":
+						fieldType = "date";
+						break;
+					case "Number":
+					case "Decimal":
+						fieldType = "number";
+						break;
+					case "Boolean":
+						fieldType = "bool";
+						break;
+					case "Html":
+					case "Link":
+						fieldType = "html";
+						break;
+				}
+			}
+			return fieldType;
+		}
 		private async Task<List<DetailReadOnlyRowModel>> loadDynamicDisplayField(FieldType ft, List<FieldWithRelation> fields, ObjectDetail details, SystemObjects type, int id, List<LookupDataReadOnlyModel> lookupFieldData, ComplexRelationFieldHasAnyModel complexRelationFieldHasAnyModel)
 		{
 			var list = new List<DetailReadOnlyRowModel>();
@@ -380,10 +407,16 @@ namespace d360.web.Controllers
 				var issueID = -1;
 				var intersectID = -1;
 				var assetID = -1l;
-				
+				var fieldType = "Html";
+
 				assetID = Company.Assets.Where(a => a.Object == sType && a.ObjectID == id).FirstOrDefault().ID;
 				
 				var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectTypeID && (i.SubjectAssetID == assetID || i.ObjectAssetID == assetID)).FirstOrDefault();
+
+				if (fieldTypeID > 0)
+				{
+					fieldType = getRelationshipFieldType(fieldTypeID, "Html");
+				}
 
 				string fieldValue = null;
 
@@ -430,7 +463,7 @@ namespace d360.web.Controllers
 					Value = fieldValue,
 					FieldDescription = ft.DisplayDescription,
 					FieldName = ft.Name,
-					DataType = "Html",
+					DataType = fieldType,
 					ShowIfEmpty = ft.ShowIfEmpty,
 					IsPartOfKey = ft.IsPartOfKey
 				};
@@ -905,6 +938,13 @@ namespace d360.web.Controllers
 						break;
 					case "OwnershipLookup":
 						fieldType = "ownershiplookup";
+						break;
+					case "FieldFromRelationship":
+						FieldType relatedField = null;
+						if (item.LookupObjectFieldTypeID.HasValue && item.LookupObjectID.HasValue)
+						{
+							fieldType = getRelationshipFieldType((int)item.LookupObjectFieldTypeID, "string");
+						}
 						break;
 				}
 			}
