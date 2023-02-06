@@ -20,6 +20,7 @@ import { WhereUsedModule } from '../../shared/where-used/where-used.module';
 import { ConnectorLabelsFormComponent } from './connector-label-form.component';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { FormFeedbackBadgesModule } from '../../shared/controls/form-feedback-badges/form-feedback-badges.component';
 
 @NgModule({
     imports: [
@@ -32,7 +33,8 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
         CoreModule,
         SharedGridPagingInfoModule,
         TilesModule,
-        DirectivesModule,
+		DirectivesModule,
+		FormFeedbackBadgesModule,
 
         //prime     
         EditorModule,
