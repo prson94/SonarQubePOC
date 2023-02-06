@@ -58,6 +58,7 @@
 											<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
 											<ig-popup-menu (onSelect)="updateDisplayFormat($event)"
 														   [items]="fieldTokens"
+														   [forceOpenBottom]="true"
 														   #tokenMenu
 														   [tabIndex]="1"></ig-popup-menu>
 										</div>
@@ -178,20 +179,6 @@
 											  attr.name="description"
 											  [style]="{'height':'150px'}"
 											  ngDefaultControl #ed>
-										<p-header>
-											<span class="ql-formats with-border">
-												<select class="ql-header">
-													<option value="1">Heading</option>
-													<option value="2">Subheading</option>
-													<option selected>Normal</option>
-												</select>
-											</span>
-											<span class="ql-formats with-border">
-												<button class="ql-bold"></button>
-												<button class="ql-italic"></button>
-												<button class="ql-underline"></button>
-											</span>
-										</p-header>
 									</p-editor>
 								</div>
 								<div class="field-col" *ngIf="hasUseAsTransformation">
@@ -224,8 +211,7 @@
 									<div class="flex">
 										<div class="flex-col">
 											<label for="descriptionButtonName" class="ig-label" i18n>Description Button Name</label>
-											<input 
-												   required
+											<input required
 												   igInput
 												   igSize="full"
 												   name="descriptionButtonName"
@@ -286,12 +272,14 @@
 									<div class="flex">
 										<div class="flex-col">
 											<ig-color-picker [colors]="defaultColors"
-															 igSize="full"
-															 [selectedColor]="chosenColor"
+															 igSize="medium"
+															 [formControl]="assetTypeForm.controls['backgroundColorTextValue']"
+															 formControlName="backgroundColorTextValue"
+															 name="backgroundColorTextValue"
 															 (selectedColorChange)="onColorSelect($event)"
 															 required></ig-color-picker>
 										</div>
-										<div class="flex-col" [hidden]="chosenColor !== 'Custom'" style="margin-left:8px;">
+										<div class="flex-col" [hidden]="assetTypeForm.get('backgroundColorTextValue').value !== 'Custom'" style="margin-left:8px;">
 											<color-selector name="backgroundColor"
 															formControlName="backgroundColor"
 															(onChange)="assetTypeForm.controls['backgroundColor'].setValue($event)"
@@ -352,7 +340,7 @@
 		</div>
 	</div>
 	<div class="action-bar">
-		<button igButton igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
+		<button igButton igAutoFocus i18n-label label="{{closeButtonLabel}}" (click)="close()"></button>
 		<span class="grow"></span>
 		<button igButton class="ig-button-primary" label="{{saveButtonLabel}}" (click)="save()" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>

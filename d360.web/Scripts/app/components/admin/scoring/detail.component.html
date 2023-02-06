@@ -81,5 +81,5 @@
     </div>
 </div>
 <d3s-modal *ngIf="allocation" title="Edit Scoring Definition" additionalClasses="medium-dialog" [isVisible]="showEdit">
-    <allocation-editor [disabled]="allocation?.hasMeasure||allocation?.hasDisabledMeasure" [selection]="allocationCopy" (onCancel)="showEdit=false;" (onSave)="save();"></allocation-editor>
+    <allocation-editor [allocationUid]="allocationCopy.uid" (onCancel)="showEdit=false;" (onSave)="save();"></allocation-editor>
 </d3s-modal>

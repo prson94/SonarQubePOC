@@ -22,12 +22,15 @@ import { AdminBaseComponent } from "../../admin-base.component";
 })
 
 export class ConnectorLabelsComponent extends AdminBaseComponent {
-	labels: ConnectorLabel[] = [];
+    labels: ConnectorLabel[] = [];
 	selected: ConnectorLabel[] = [];
+
 	selectedForInfoPanel: ConnectorLabel;
-	rowsPerPage: number = 25;
-	rowsPerModal: number = 5;
-	error: any;
+	selectedForEdit: ConnectorLabel;
+
+    rowsPerPage: number = 25;
+    rowsPerModal: number = 5;
+    error: any;
 
 	showDelete: boolean = false;
 	showEditor: boolean = false;
@@ -107,19 +110,19 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 		this.cdRef.markForCheck();
 	}
 
-	openEditor(label: ConnectorLabel) {
-		this.selected = [label];
-		this.showEditor = true;
-		this.editPopupTitle = $localize`Edit Connector Label`;
-		this.cdRef.markForCheck();
-	}
+    openEditor(label: ConnectorLabel) {
+		this.selectedForEdit = label;
+        this.showEditor = true;
+        this.editPopupTitle = $localize`Edit Connector Label`;
+        this.cdRef.markForCheck();
+    }
 
-	add() {
-		this.selected = [];
-		this.editPopupTitle = $localize`Add Connector Label`;
-		this.showEditor = true;
-		this.cdRef.markForCheck();
-	}
+    add() {
+		this.selectedForEdit = null;
+        this.editPopupTitle = $localize`Add Connector Label`;
+        this.showEditor = true;
+        this.cdRef.markForCheck();
+    }
 
 	consolidateClick() {
 		if (!this.consolidateValue || this.consolidateValue.trim() === "") {

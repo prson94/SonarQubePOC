@@ -115,11 +115,13 @@ namespace d360.web.Controllers.V2
             }
             catch (ArgumentException e)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, e.Message);
+                var msg = e.Message.Replace("\n", " ").Replace("\r", "");
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, msg);
             }
             catch (Exception ex)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorFetchTags, ex.Message);
+                var msg = ex.Message.Replace("\n", " ").Replace("\r", "");
+                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorFetchTags, msg);
             }
         }
 

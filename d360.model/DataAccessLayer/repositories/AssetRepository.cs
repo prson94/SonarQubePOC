@@ -185,7 +185,7 @@ namespace d360.model.DataAccessLayer
 						extraJoins += @"
 							left join asset created on created.Object = 'Resource' and created.ObjectID = a.CreatedBy
 							left join AssetDisplayValue adv_created on adv_created.AssetID = created.ID
-							left join asset updated on updated.Object = 'Resource' and updated.ObjectID = a.CreatedBy
+							left join asset updated on updated.Object = 'Resource' and updated.ObjectID = a.UpdatedBy
 							left join AssetDisplayValue adv_updated on adv_updated.AssetID = updated.ID
 							";
 						extraColumns += @", 

@@ -1,4 +1,4 @@
-import { first, map } from 'rxjs/operators';
+import { debounceTime, first, map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AbstractControl, AsyncValidatorFn, ValidationErrors } from '@angular/forms';
@@ -13,15 +13,16 @@ export class AsyncValidatorService {
     public labelUniqueValidator(): AsyncValidatorFn {
         return (control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> => {
             const url = `/api/v2/connectorLabels/search?q=${encodeURIComponent(control.value)}&isExact=true`;
-            return this
-                .httpClient
-                .get(url)
-                .pipe(
-                    map((response) => <any[]>response))
+			return this
+				.httpClient
+				.get(url)
+				.pipe(
+					debounceTime(1000),
+					map((response) => <any[]>response))
 
-                .pipe(map((res) => {
-                    return (res && res.length > 0) ? { "alreadyExists": true } : null;
-                })).pipe(first());
+				.pipe(map((res) => {
+					return (res && res.length > 0) ? { "alreadyExists": true } : null;
+				})).pipe(first());
         };
     }
 

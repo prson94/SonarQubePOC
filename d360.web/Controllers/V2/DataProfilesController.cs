@@ -300,12 +300,7 @@ namespace d360.web.Controllers.V2
                 if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
                 {
                     throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
-
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-                }
+                }				               
 
                 var validationResult = ValidateDataProfileUpsertRequest(models, true);
                 if (validationResult.StatusCode != HttpStatusCode.OK)
@@ -363,14 +358,9 @@ namespace d360.web.Controllers.V2
                 if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
                 {
                     throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+                }				
 
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-                }
-
-                var validationResult = ValidateDataProfileUpsertRequest(models, false);
+				var validationResult = ValidateDataProfileUpsertRequest(models, false);
 
                 if (validationResult.StatusCode != HttpStatusCode.OK)
                 {
@@ -433,12 +423,17 @@ namespace d360.web.Controllers.V2
                     throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
                 }
 
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-                }
+				if (!Company.CurrentResourceIsAdmin)
+				{
+					var noPermissions = !Company.HasAssetPermissionByUid(assetUid, Permission.EditAsset);
 
-                Asset asset = AssetRepository.GetAssetByUID(assetUid);
+					if (noPermissions)
+					{
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+					}
+				}
+
+				Asset asset = AssetRepository.GetAssetByUID(assetUid);
 
                 if (asset == null)
                 {
@@ -518,7 +513,12 @@ namespace d360.web.Controllers.V2
 
 				if (!Company.CurrentResourceIsAdmin)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+					var noPermissions = !Company.HasAssetPermissionByUid(assetUid, Permission.EditAsset);
+
+					if (noPermissions)
+					{
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+					}
 				}
 
 				Asset asset = AssetRepository.GetAssetByUID(assetUid);
@@ -633,10 +633,6 @@ namespace d360.web.Controllers.V2
                     throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
                 }
 
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-                }
 
                 List<ValidationResult> validationResults = new List<ValidationResult>();
                 foreach (var model in models)
@@ -702,10 +698,6 @@ namespace d360.web.Controllers.V2
                     throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
                 }
 
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-                }
 
                 List<ValidationResult> validationResults = new List<ValidationResult>();
                 foreach (var model in models)
@@ -774,12 +766,8 @@ namespace d360.web.Controllers.V2
                     throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
                 }
 
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-                }
 
-                var execution = getApiExecution(models.Count);
+				var execution = getApiExecution(models.Count);
                 ApiExecutionInfo executionInfo = await DataProfiles.DeleteBatchDataProfiles(models, execution);
                 var result = Request.CreateResponse(
                             HttpStatusCode.OK,
@@ -1141,7 +1129,19 @@ namespace d360.web.Controllers.V2
 
         public WorkHttpStatus ValidateDataProfileUpsertRequest(List<DataProfileUpsertModel> models, bool IsInsert)
         {
-            if (models == null || models.Count == 0)
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				var noPermissions = models.Select(s => s.assetUid).Distinct().ToList().Any(x =>
+					!Company.HasAssetPermissionByUid(x, Permission.EditAsset)
+				);
+
+				if (noPermissions)
+				{
+					return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE);
+				}
+			}
+
+			if (models == null || models.Count == 0)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.JSONValidMessage);
             }

@@ -1,6 +1,4 @@
 ﻿@import "_Variables.less";
-/* need to import the color-picker styles until the the new dropdown component is completed or the measures screen is not displaying correctly */
-@import "../../Scripts/app/components/shared/controls/color-picker/color-picker.less";
 /* source-sans-pro-regular - latin */
 @font-face {
   font-family: 'Precisely';
@@ -3809,6 +3807,16 @@ button.tab-scroller {
       border: 1px solid @ig-grey-t4;
       border-radius: 4px;
     }
+
+    &.connector-label-form {
+      position: relative;
+
+      .ig-form-feedback-badges {
+        position: absolute;
+        right: 24px;
+        top: -55px;
+      }
+    }
   }
 
   .info-block {
@@ -4736,6 +4744,7 @@ d3s-header-typeahead-search {
         padding-left: 4px;
       }
     }
+
     .select-all-label {
       color: @ig-black;
       margin-left: 22px;
@@ -5655,6 +5664,7 @@ d3s-header-typeahead-search {
   background: transparent;
   border: none;
   box-shadow: none !important;
+
   as-split.split.as-horizontal .as-split-gutter[role="slider"] {
     margin-right: -10px;
     margin-left: -5px;
@@ -6068,7 +6078,7 @@ table {
   border: 1px dashed rgba(0,0,0,0.3);
 }
 
-.ig-colorfield-item, .ig-colorfield-item-selected {
+.ig-colorfield-item-selected {
   display: inline-flex;
   height: 32px;
   margin: 0;
@@ -6722,7 +6732,7 @@ table {
   margin-bottom: 12px;
   line-height: 16px;
   word-break: break-word;
-  
+
   &--flex {
     display: flex;
     align-items: center;
@@ -7211,7 +7221,7 @@ p-treetableheadercheckbox {
   .p-checkbox {
     border-radius: 4px;
     color: white;
-    
+
     .p-disabled {
       opacity: 1;
       background-color: @ig-grey-t5;
@@ -7222,7 +7232,7 @@ p-treetableheadercheckbox {
       background-color: @ig-purple-t1 !important;
       border: unset;
     }
-    
+
     &-icon {
       font-size: 9px;
       font-weight: bold;
@@ -7246,5 +7256,21 @@ p-treeTableHeaderCheckbox {
 .cdk-virtual-scroll-content-wrapper {
   .p-datatable-tbody {
     overflow-anchor: none;
+  }
+}
+
+.d3s-color-picker {
+  .p-multiselect {
+    width: 100%;
+    border-radius: 4px;
+
+    .p-multiselect-trigger {
+      border: none;
+      background: #ededed;
+      border-radius: 4px;
+      width: 24px;
+      height: 24px;
+      color: @ig-black;
+    }
   }
 }

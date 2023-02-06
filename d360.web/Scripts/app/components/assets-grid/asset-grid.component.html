@@ -122,7 +122,6 @@
                         <d3s-sortIcon *ngIf="col.sortable"
                                       [field]="col.datafield"></d3s-sortIcon>
                     </th>
-                    <th style="width: 30px"></th>
                     <th class="asset-grid-tools" style="width: 30px"></th>
                 </tr>
             </ng-template>
@@ -153,16 +152,7 @@
                             </a>
                         </ng-template>
 
-                    </td>
-                    <td style="width: 30px">
-                        <div class="RowTools"
-                             *ngIf="item[certificationStatusIndex] != null && item[certificationStatusIndex] != '' && !statusHasColor">
-                            <i [pTooltip]="'Status: ' + item[certificationStatusIndex]"
-                               [style.color]="getCertificationStatusColor(item[certificationStatusIndex])"
-                               class="fa fa-certificate"
-                               style="margin: 0 10px 0 5px"></i>
-                        </div>
-                    </td>
+                    </td>                    
                     <td class="asset-grid-tools" #assetGridTools style="width: 30px">
                         <div style="display:inline-block">
                             <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>

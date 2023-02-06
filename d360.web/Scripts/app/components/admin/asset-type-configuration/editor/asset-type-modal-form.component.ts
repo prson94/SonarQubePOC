@@ -1,7 +1,7 @@
 import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { SelectItem } from "primeng/api";
-import { forkJoin } from "rxjs";
+import { forkJoin, Subscription } from "rxjs";
 import { AssetType, AssetTypeClass, Hierarchy, IconStyle } from "../../../../models/asset.model";
 import { Predicate } from "../../../../models/predicate.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
@@ -22,6 +22,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	@Input() assetTypeClass: AssetTypeClass;
 	@Input() uid: string;
 	@Input() parentUid: string;
+	@Input() parentTypeName: string;
 
 	@Output() onClose = new EventEmitter();
 	@Output() onUpdated = new EventEmitter();
@@ -33,7 +34,6 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	isLoading = false;
 	savingInProgress = false;
 	defaultColors: SelectItem[] = [];
-	chosenColor: string;
 	defaultColorItem: SelectItem = { label: $localize`Custom`, value: 'Custom', title: 'Custom' };
 
 	synonyms: Predicate[] = [];
@@ -49,6 +49,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	eventTooltip = $localize`An event is represented by a circle and is something that "happens" during the course of a business process. These events affect the flow of the process and usually have a cause (trigger) or an impact (result).`;
 	gatewayTooltip = $localize`A gateway is represented by the diamond shape and is used to control the divergence and convergence of connections. It will determine traditional decisions, as well as the forking, merging, and joining of paths.`;
 	activityTooltip = $localize`An activity is represented by a rounded-corner rectangle and is a generic term for work that the company performs. The types of activities are Task and Sub-Process.`;
+
+	private isEditFormUpdated: boolean = false;
+	private changeFormSub: Subscription;
+
+	defaultDescriptionButtonTextValue = $localize`Information`;
 
 	constructor(private fb: FormBuilder,
 		private assetService: AssetService,
@@ -82,7 +87,6 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			this.synonyms = results[1];
 			this.defaultColors = results[0];
 			this.defaultColors.unshift(this.defaultColorItem);
-			this.chosenColor = "Ebony";
 
 			if (this.synonyms && this.synonyms.length > 0) {
 				this.synonyms.forEach((syn) => {
@@ -97,8 +101,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			});
 
 			this.flowObjectTypes = [];
-			this.flowObjectTypes.push({ value: 'Event', label: $localize`Event` });
 			this.flowObjectTypes.push({ value: 'Activity', label: $localize`Activity` });
+			this.flowObjectTypes.push({ value: 'Event', label: $localize`Event` });
 			this.flowObjectTypes.push({ value: 'Gateway', label: $localize`Gateway` });
 		});
 	}
@@ -112,20 +116,21 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 	setForm() {
 		this.assetTypeForm = this.fb.group({
-			name: [null, { validators: [Validators.required], updateOn: "blur" }],
-			displayFormat: [null, { validators: [Validators.required], updateOn: "blur" }],
-			description: [null, { updateOn: "blur" }],
-			isDescriptionEnabled: [false, { updateOn: "blur" }],
-			descriptionButtonName: [null, { updateOn: "blur" }],
-			isDescriptionVisibleByDefault: [false, { updateOn: "blur" }],
-			backgroundColor: [null, { updateOn: "blur" }],
-			icon: [null, { updateOn: "blur" }],
-			useAsTransformation: [null, { updateOn: "blur" }],
-			predicateUid: [null, { updateOn: "blur" }],
-			autoDisplayParent: [null, { updateOn: "blur" }],
-			canEditParent: [null, { updateOn: "blur" }],
-			flowObjectType: [null, { updateOn: "blur" }],
-			maxDepth: [null, { updateOn: "blur" }]
+			name: [null, { validators: [Validators.required] }],
+			displayFormat: [null, { validators: [Validators.required] }],
+			description: [null],
+			isDescriptionEnabled: [false],
+			descriptionButtonName: [null],
+			isDescriptionVisibleByDefault: [false],
+			backgroundColor: [null],
+			backgroundColorTextValue: [null, { validators: [Validators.required]}],
+			icon: [null],
+			useAsTransformation: [null],
+			predicateUid: [null],
+			autoDisplayParent: [null],
+			canEditParent: [null],
+			flowObjectType: [null],
+			maxDepth: [null]
 		});
 
 		this.setDefaultFormValues();
@@ -137,9 +142,9 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		}
 		this.assetTypeForm.reset();
 		this.assetTypeForm.controls["displayFormat"].setValue('{Name}');
-		this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Description`);
+		this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
 		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
-		this.selectedIcon = 'Ebony';
+		this.assetTypeForm.controls['backgroundColorTextValue'].setValue('Ebony');
 
 		if (this.hasPredicateUid) {
 			if (this.hierarchyPredicatesSelectItem.length > 0) {
@@ -151,6 +156,10 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	updateForm() {
 		if (this.uid) {
+			if (this.changeFormSub) {
+				this.changeFormSub.unsubscribe();
+			}
+
 			this.isLoading = true;
 
 			forkJoin(
@@ -161,7 +170,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.fieldTokens = [];
 				if (results[1] && results[1].length) {
 					results[1].forEach((field) => {
-						const keyFieldTypes = ["Text", "Date", "DateTime", "Number", "Decimal", "Lookup"];
+						const keyFieldTypes = ["Text", "Date", "DateTime", "Number", "Boolean", "Decimal", "Lookup", "Counter"];
 						if (keyFieldTypes.some((ft) => ft.toLowerCase() === field.Type.toLowerCase())) {
 							this.fieldTokens.push({ title: field.Name });
 						}
@@ -173,12 +182,17 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.assetTypeForm.controls["description"].setValue(assetType.Description);
 				this.assetTypeForm.controls["isDescriptionEnabled"].setValue(assetType.IsDescriptionEnabled);
 				this.assetTypeForm.controls["descriptionButtonName"].setValue(assetType.DescriptionButtonName);
+
+				if (!assetType.DescriptionButtonName) {
+					this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
+				}
+
 				this.assetTypeForm.controls["isDescriptionVisibleByDefault"].setValue(assetType.IsDescriptionVisibleByDefault);
 				this.assetTypeForm.controls["backgroundColor"].setValue(assetType.IconStyle.BackColor);
 
 				const colorCode = (assetType.IconStyle.BackColor ?? '') as string;
 				const defColor = this.defaultColors.find((c) => c.title.toLowerCase() === colorCode.toLowerCase());
-				this.chosenColor = defColor ? defColor.value : $localize`Custom`;
+				this.assetTypeForm.controls['backgroundColorTextValue'].setValue(defColor ? defColor.value : $localize`Custom`);
 
 				this.assetTypeForm.controls["icon"].setValue(assetType.IconStyle.Icon);
 				this.selectedIcon = assetType.IconStyle.Icon;
@@ -211,7 +225,15 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 					this.assetTypeForm.controls["flowObjectType"].setValue(assetType.FlowObjectType);
 				}
 
+				this.isEditFormUpdated = false;
+				setTimeout(() => {
+					this.changeFormSub = this.assetTypeForm.valueChanges.subscribe(() => {
+						this.isEditFormUpdated = true;
+					});
+				},200);
+
 				this.isLoading = false;
+
 			});
 		}
 		else {
@@ -238,6 +260,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 					break;
 				default:
 					this.subTitle = `unset`;
+			}
+
+			if (this.parentUid) {
+				this.title = $localize`Add Child Asset Type`;
+				this.subTitle = this.parentTypeName;
 			}
 
 			this.setDefaultFormValues();
@@ -317,12 +344,14 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	onColorSelect($event) {
-		this.chosenColor = $event;
-		let selectedValue = this.defaultColors.find((x) => x.value === $event).title;
-		if (selectedValue === 'Custom') {
-			selectedValue = "#202020";
+		if (!$event) {
+			return;
 		}
-		this.assetTypeForm.controls["backgroundColor"].setValue(selectedValue);
+
+		const selectedValue = this.defaultColors.find((x) => x.value === $event);
+		if (selectedValue.label !== 'Custom') {
+			this.assetTypeForm.controls["backgroundColor"].setValue(selectedValue.title);
+		}
 	}
 
 	get hasUseAsTransformation(): boolean {
@@ -338,11 +367,27 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	get isFormDisabled(): boolean {
-		return this.savingInProgress || this.assetTypeForm.invalid;
+		return this.savingInProgress || this.assetTypeForm.invalid || (this.uid && !this.isEditFormUpdated);
 	}
 
 	get saveButtonLabel(): string {
-		return this.uid ? $localize`Save Changes` : $localize`Add Asset Type`;
+		if (this.uid) {
+			return $localize`Save Changes`;
+		}
+		else if (this.parentUid) {
+			return $localize`Add Child Asset Type`;
+		}
+		else {
+			return $localize`Add Asset Type`;
+		}
+	}
+
+	get closeButtonLabel(): string {
+		if (this.uid && this.isEditFormUpdated) {
+			return $localize`Discard Changes`;
+		}
+
+		return $localize`Cancel`;
 	}
 
 	@HostListener('window:resize', ['$event'])
@@ -398,7 +443,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	onIsDescriptionEnabledChange($event: boolean) {
 		//if toggled to false, we need to set default value to button name to avoid validation errors
 		if (!$event) {
-			this.assetTypeForm.controls["descriptionButtonName"].setValue($localize`Description`);
+			this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
 		}
 	}
 }

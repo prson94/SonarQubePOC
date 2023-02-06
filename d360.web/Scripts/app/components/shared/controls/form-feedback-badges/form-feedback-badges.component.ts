@@ -37,7 +37,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     private requiredPos: number = 0;
     private invalidPos: number = 0;
 
-    delayedRefresh = _.throttle(() => {
+	delayedRefresh = _.throttle(() => {
         this.requiredCount = getRequiredCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
         this.invalidCount = getInvalidCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
         this.ref.markForCheck();
@@ -46,7 +46,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     constructor(private ref: ChangeDetectorRef, private propertyGroups: PropertyGroupsService) {
     }
 
-    ngOnChanges(changes: SimpleChanges) {
+	ngOnChanges(changes: SimpleChanges) {
         const needReinit = 'igformGroup' in changes || 'inputContainer' in changes;
         if (!needReinit) {
             return;

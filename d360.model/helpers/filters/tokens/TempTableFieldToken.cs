@@ -84,6 +84,18 @@ namespace d360.model.helpers.filters
 
 			var fieldSql = GetColumnValueSyntax(fieldType.ID);
 
+			if (fieldType.Type == DataType.Text.ToString() || fieldType.Type == DataType.Html.ToString())
+			{
+				if (@operator == "eq")
+				{
+					return $"({fieldSql} is null or {fieldSql} = '')";
+				}
+				else
+				{
+					return $"({fieldSql} is not null and {fieldSql} <> '')";
+				}
+			}
+
 			return $"{fieldSql} {FilterHelpers.GetSQLNullOperator(@operator)}";
 		}
 

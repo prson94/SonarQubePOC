@@ -11500,7 +11500,24 @@ where   ER.ExecutionID = @ExecutionID
 							}
 						}
 
-                        if (item.topK != null)
+						if (item.confidenceAnalysisDetails != null)
+						{
+							foreach (DataProfileConfidenceAnalysisDetails stat in item?.confidenceAnalysisDetails)
+							{
+								DataRow jsonRow = DataProfileSampleTable.NewRow();
+								jsonRow["ExecutionID"] = execution.ExecutionID;
+								jsonRow["ItemNumber"] = itemNumber;
+								if (item.ExecutionItemUid.HasValue)
+								{
+									jsonRow["ExecutionItemUid"] = item.ExecutionItemUid;
+								}
+								jsonRow["SampleType"] = "confidenceAnalysisDetails";
+								jsonRow["JsonValue"] = JsonConvert.SerializeObject(stat);
+								DataProfileSampleTable.Rows.Add(jsonRow);
+							}
+						}
+
+						if (item.topK != null)
                         {
                             foreach (string topK in item?.topK)
                             {
@@ -11712,7 +11729,7 @@ where   ER.ExecutionID = @ExecutionID
 							Asset A on EDP.AssetUid = A.Uid
 							inner join 
 							AssetDataProfile ADP on A.ID = ADP.AssetId and EDP.ProfileSetDate = ADP.ProfileSetDate
-						where	ExecutionID = @ExecutionID and @isInsert = 1;
+						where	ExecutionID = @ExecutionID and @isInsert = 1;						
 
 						Update EDP
 						set		Success = 0,
@@ -11728,8 +11745,46 @@ where   ER.ExecutionID = @ExecutionID
 								where ExecutionID = @ExecutionID and TRIM(Value)='' and LOWER(SampleType) in ('topk', 'bottomk') 
 							) EDPS on EDP.ExecutionID=EDPS.ExecutionID and EDP.ItemNumber=EDPS.ItemNumber 
 						where 
-							EDP.ExecutionID = @ExecutionID                             ",
-                                    new { execution.ExecutionID, isInsert }, commandTimeout: timeout);
+							EDP.ExecutionID = @ExecutionID                             
+						
+						declare @IsAdministrator bit = 0						
+						select	@IsAdministrator = IsAdministrator
+						from	reporting.Global_Resource
+						where	ResourceID = @ResourceID
+						IF(@IsAdministrator = 0)
+						BEGIN
+							update	EDP
+							set		Success = 0,
+									[Message] = coalesce([Message] + '; ', '') + '{CompanyContextApiError.DataProfilingNoPermission}'
+							from	
+									api.ExecutionAssetDataProfile EDP
+							where 
+									EDP.ExecutionID = @ExecutionID and not exists (
+												select 1
+												from	Asset A
+														outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
+														where	
+														A.Uid = EDP.AssetUid 
+														and
+														(															
+															(
+																P.AssetID = A.ID
+																or 
+																P.AssetTypeID is null
+															)
+															OR
+															(																	
+																P.AssetID=0 
+																and 
+																P.AssetTypeID=A.AssetTypeID
+															)
+														)
+														and 
+														P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p	
+												);
+						END
+",
+                                    new { execution.ExecutionID, isInsert, execution.ResourceID, p = Permission.EditAsset }, commandTimeout: timeout);
 
                     AddMeasurement(metrics, "LogAssetDataProfileErrors", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
@@ -12606,8 +12661,47 @@ where   ER.ExecutionID = @ExecutionID
 						update	api.ExecutionDeleteAssetDataProfile
 						set		Success = 0,
 								[Message] = coalesce([Message] + '; ', '') + 'StartDate must be before EndDate.'
-						where	ExecutionID = @ExecutionID and startdate > enddate;",
-                                    new { execution.ExecutionID }, commandTimeout: timeout);
+						where	ExecutionID = @ExecutionID and startdate > enddate;
+
+						declare @IsAdministrator bit = 0						
+						select	@IsAdministrator = IsAdministrator
+						from	reporting.Global_Resource
+						where	ResourceID = @ResourceID
+
+						IF(@IsAdministrator = 0)
+						BEGIN
+							update	EDP
+							set		Success = 0,
+									[Message] = coalesce([Message] + '; ', '') + '{CompanyContextApiError.DataProfilingNoPermission}'
+							from	
+									api.ExecutionDeleteAssetDataProfile EDP
+							where 
+									EDP.ExecutionID = @ExecutionID and not exists (
+												select 1
+												from	Asset A
+														outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
+														where	
+														A.Uid = EDP.AssetUid 
+														and
+														(															
+															(
+																P.AssetID = A.ID
+																or 
+																P.AssetTypeID is null
+															)
+															OR
+															(																	
+																P.AssetID=0 
+																and 
+																P.AssetTypeID=A.AssetTypeID
+															)
+														)
+														and 
+														P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p	
+												);
+						END
+",
+                                    new { execution.ExecutionID, execution.ResourceID, p = Permission.EditAsset }, commandTimeout: timeout);
 
                     AddMeasurement(metrics, "LogDeleteAssetDataProfileErrors", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();

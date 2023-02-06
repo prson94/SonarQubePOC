@@ -58,7 +58,7 @@
     <div class="gallery-section">
         <h4>Reactive Forms</h4>
         <p>
-            The component can be used with reactive forms as well.
+            The component can be used with reactive forms as well. (required)
         </p>
         <div>
             <form #form="ngForm">
@@ -66,16 +66,7 @@
                     <ig-icon-picker #myIcon="ngModel"
                                      name="myIcon"
                                      [(ngModel)]="formValue"
-                                     [style]="{'border' : myIcon?.errors?.required ? '2px solid #900' : ''}"
                                      required></ig-icon-picker>
-                </div>
-                <div class="row">&nbsp;</div>
-                <div class="row">
-                    <span *ngIf="myIcon.invalid && (myIcon.dirty || myIcon.touched)" class="requiredMessage">
-                        <span *ngIf="myIcon.errors.required">
-                            * Value required
-                        </span>
-                    </span>
                 </div>
                 <div class="row">&nbsp;</div>
                 <div class="row">
