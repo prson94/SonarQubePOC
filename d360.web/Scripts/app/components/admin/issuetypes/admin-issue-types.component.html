@@ -13,7 +13,7 @@
 				</div>
 				<div class="grid-action-buttons">
 					<button [igDataCy]="'WorkflowAction_Add'"
-							(click)="add()"
+							(click)="showAdd()"
 							igButton
 							pTooltip="Add Workflow Action"
 							i18n-pTooltip
@@ -26,86 +26,90 @@
 			</div>
 		</div>
 
-			<p-table #dt
-					 [value]="issueTypes"
-					 selectionMode="single"
-					 [metaKeySelection]="true"
-					 [globalFilterFields]="['Name','Description']"
-					 sortField="Name"
-					 [sortOrder]="1"
-					 [pageLinks]="3"
-					 [paginator]="true"
-					 [rows]="20"
-					 [(selection)]="selected"
-					 responsiveLayout="scroll"
-					 [loading]="isLoading"
-					 [loadingIcon]="'fa fa-spinner fa-spin'"
-					 (onRowSelect)="selectedItemChange()">
-				<ng-template pTemplate="header">
-					<tr>
-						<th [pSortableColumn]="'Name'">
-							<ng-container i18n>Name</ng-container>
-							<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
-						</th>
-						<th i18n>Description</th>
-						<th style="width: 30px"></th>
-						<th style="width: 30px"></th>
-					</tr>
-					<tr [hidden]="showSimpleFilter">
-						<th>
-							<d3s-column-filter [field]="'Name'"
-											   [datatype]="'text'"></d3s-column-filter>
-						</th>
-						<th>
-							<d3s-column-filter [field]="'Description'"
-											   [datatype]="'text'"></d3s-column-filter>
-						</th>
-						<th></th>
-						<th></th>
-					</tr>
-				</ng-template>
-				<ng-template pTemplate="body" let-item>
-					<tr (dblclick)="selected=item;showEditor=true;" [pSelectableRow]="item">
-						<td>{{item.Name}}</td>
-						<td>
-							<span [innerHtml]="item.Description"></span>
-						</td>
-						<td>
-							<div class="RowTools" *ngIf="!item.IsSystem">
-								<a style="cursor:pointer;" (click)="selected=item;OnEdit();">
-									<i class="fa fa-pencil"></i>
-								</a>
-							</div>
-						</td>
-						<td>
-							<div class="RowTools" *ngIf="!item.IsSystem">
-								<a style="cursor:pointer;" (click)="selected=item;OnDelete();">
-									<i class="fa fa-trash-o"></i>
-								</a>
-							</div>
-						</td>
-					</tr>
-				</ng-template>
-				<ng-template pTemplate="summary">
-					<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
-										  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-				</ng-template>
-			</p-table>
+		<p-table #dt
+				 [value]="issueTypes"
+				 selectionMode="single"
+				 [metaKeySelection]="true"
+				 [globalFilterFields]="['Name','Description']"
+				 sortField="Name"
+				 [sortOrder]="1"
+				 [pageLinks]="3"
+				 [paginator]="true"
+				 [rows]="20"
+				 [(selection)]="selected"
+				 responsiveLayout="scroll"
+				 [loading]="isLoading"
+				 [loadingIcon]="'fa fa-spinner fa-spin'"
+				 (onRowSelect)="selectedItemChange()">
+			<ng-template pTemplate="header">
+				<tr>
+					<th style="width: 350px"
+						[pSortableColumn]="'Name'">
+						<ng-container i18n>Name</ng-container>
+						<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+					</th>
+					<th i18n>Description</th>
+					<th style="width: 30px"></th>
+					<th style="width: 30px"></th>
+				</tr>
+				<tr [hidden]="showSimpleFilter">
+					<th>
+						<d3s-column-filter [field]="'Name'"
+										   [datatype]="'text'"></d3s-column-filter>
+					</th>
+					<th>
+						<d3s-column-filter [field]="'Description'"
+										   [datatype]="'text'"></d3s-column-filter>
+					</th>
+					<th></th>
+					<th></th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body" let-item>
+				<tr (dblclick)="selected=item;showEditor=true;" [pSelectableRow]="item">
+					<td><a href="#" (click)="open($event,item.Uid)">{{item.Name}}</a></td>
+					<td>
+						<span [innerHtml]="item.Description"></span>
+					</td>
+					<td>
+						<div class="RowTools" *ngIf="!item.IsSystem">
+							<a style="cursor:pointer;" (click)="selected=item;OnEdit();">
+								<i class="fa fa-pencil"></i>
+							</a>
+						</div>
+					</td>
+					<td>
+						<div class="RowTools" *ngIf="!item.IsSystem">
+							<a style="cursor:pointer;" (click)="selected=item;OnDelete();">
+								<i class="fa fa-trash-o"></i>
+							</a>
+						</div>
+					</td>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="summary">
+				<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+									  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+			</ng-template>
+		</p-table>
 	</div>
 </d3s-issuetype-sidepanel-wrapper>
 
-<d3s-dynamic-editor *ngIf="showEditor"
-					[objectID]="selected?.ID"
-					[objectType]="'IssueType'"
-					[title]="editorTitle"
-					[selection]="selected"
-					(saveClick)="saveIssueType($event)"
-					(closeClick)="closeEditor()"
-					[objectTypeUid]="selected?.Uid">
-</d3s-dynamic-editor>
-<d3s-delete-form *ngIf="showDelete"
-				 [callback]="theDeleteCallback"
-				 [itemUid]="selected?.Uid"
-				 [method]="'callback'"
-				 [prompt]="deleteModalTitle"
-				 (onCancel)="showDelete=false;"></d3s-delete-form>
+<div class="tile tile-detail main-panel" *ngIf="showDelete || showEditor">
+	<d3s-dynamic-editor *ngIf="showEditor"
+						[objectID]="selected?.ID"
+						[objectType]="'IssueType'"
+						[title]="editorTitle"
+						[selection]="selected"
+						(saveClick)="saveIssueType($event)"
+						(closeClick)="closeEditor()"
+						[objectTypeUid]="selected?.Uid">
+	</d3s-dynamic-editor>
+
+	<d3s-delete-form *ngIf="showDelete"
+					 [callback]="theDeleteCallback"
+					 [itemUid]="selected?.Uid"
+					 [method]="'callback'"
+					 [prompt]="deleteModalTitle"
+					 (onCancel)="showDelete=false;"></d3s-delete-form>
+</div>

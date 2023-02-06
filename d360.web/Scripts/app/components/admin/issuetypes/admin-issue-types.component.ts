@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { Router } from '@angular/router';
 
 /*global $localize*/
 // eslint-disable-next-line no-var
@@ -43,6 +44,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 		protected messagesService: MessagesObservableService,
 		secondaryNavService: SecondaryNavService,
 		protected settingsService: CompanySettingsService,
+		private router: Router,
 		titleService: Title,
 		private workflowService: WorkflowService) {
 		super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
@@ -119,6 +121,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 	private showAdd() {
 		this.selected = null;
 		this.showEditor = true;
+		this.showDelete = false;
 	}
 
 	private saveIssueType(event) {
@@ -141,10 +144,22 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 	}
 
 	private OnEdit() {
-		this.selectedItemChange(() => this.showEditor = true);
+		this.selectedItemChange(() => {
+			this.showEditor = true;
+			this.showDelete = false;
+		});
 	}
 
 	private OnDelete() {
-		this.selectedItemChange(() => this.showDelete = true);
+		this.selectedItemChange(() => {
+			this.showDelete = true;
+			this.showEditor = false;
+		});
+	}
+
+	open($event: PointerEvent, uid: string) {
+		$event.preventDefault();
+		const url = `/admin/configuration/WorkflowActions/${uid}/fields`;
+		this.router.navigateByUrl(url);
 	}
 }
