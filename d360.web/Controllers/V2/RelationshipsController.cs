@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -1856,11 +1857,13 @@ namespace d360.web.Controllers.V2
 				var result = new List<RelationshipCountModel>();
 				string relationshipsCountQuery = string.Empty;
 
+				var dbArgs = new DynamicParameters();
+
 				var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
 				if (asset != null)
 				{
+					dbArgs.Add("assetUid", asset.uid);
 					var permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
-
 					if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
 					{
 						relationshipsCountQuery = $@"drop table if exists #relationshipCountMap
@@ -1911,6 +1914,8 @@ namespace d360.web.Controllers.V2
 					var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetUid);
 					if (assetType != null)
 					{
+						dbArgs.Add("id", assetType.ID);
+
 						relationshipsCountQuery = @"drop table if exists #relationshipCountMap
 								create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject bit,Count int)
 
@@ -1931,7 +1936,7 @@ namespace d360.web.Controllers.V2
 
 				if (!string.IsNullOrEmpty(relationshipsCountQuery))
 				{
-					result = (await Company.QueryAsync<RelationshipCountModel>(relationshipsCountQuery, new { assetUid })).ToList();
+					result = (await Company.QueryAsync<RelationshipCountModel>(relationshipsCountQuery, dbArgs)).ToList();
 				}
 
 				return Request.CreateResponse(HttpStatusCode.OK, result);
