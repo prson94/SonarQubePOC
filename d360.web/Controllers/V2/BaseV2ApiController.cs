@@ -29,7 +29,7 @@ namespace d360.web.Controllers.V2
 
 		public int ApiTimeout => Company.ApiTimeout;
 
-		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string joinObjectField = "A.[ID]", string joinObjectIdField = "A.[ObjectID]", string assetIdColumn = "A.ID")
+		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string joinObjectField = "A.[ID]", string joinObjectIdField = "A.[ObjectID]", string assetIdColumn = "A.ID", bool isExport = false)
 		{
 			fieldTypes.ForEach(f =>
 			{
@@ -209,7 +209,7 @@ namespace d360.web.Controllers.V2
 							), 2, 1, '')
 							){tableAlias}(FormattedValue) ");
 				}
-				else if (f.Type == "Lookup" && Company.LookupFieldHasColorItem(f))
+				else if (f.Type == "Lookup" && Company.LookupFieldHasColorItem(f) && !isExport)
 				{
 					string lookupValueJoinCriteria;
 					string displayName;
