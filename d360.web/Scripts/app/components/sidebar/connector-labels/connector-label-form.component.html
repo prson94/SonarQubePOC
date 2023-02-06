@@ -1,57 +1,62 @@
-﻿<form class="modal-edit-form" [formGroup]="connectorLabelForm">
-    <div class="content">
-        <div class="form-group">
-            <div class="row">
-                <div class="field-col">
-                    <label for="name" class="ig-label" i18n>Name</label>
-                    <input igInput
-                           igSize="full"
-                           name="value"
-                           formControlName="value"
-                           [igDataCy]="'Asset_Type_Modal_Field_Name'"
-                           type="text"
-                           required />
+﻿<form #form class="modal-edit-form connector-label-form" [formGroup]="connectorLabelForm">
+	<ig-form-feedback-badges class="ig-form-feedback-badges"
+							 [igformGroup]="connectorLabelForm"
+							 [inputContainer]="formElement">
+	</ig-form-feedback-badges>
+	<div class="content">
+		<div class="form-group">
+			<div class="row">
+				<div class="field-col">
+					<label for="name" class="ig-label" i18n>Name</label>
+					<input *ngIf="!label" igInput
+						   igSize="full"
+						   name="value"
+						   formControlName="value"
+						   [igDataCy]="'Asset_Type_Modal_Field_Name'"
+						   type="text"
+						   required />
 
-                    <p-autoComplete igAutoFocus igAutocomplete *ngIf="label"
-                                    placeholder="Value required"
-                                    i18n-placeholder
-                                    formControlName="value"
-                                    (onBlur)="OnBlurTrim()"
-                                    [suggestions]="suggestionResults"
-                                    (completeMethod)="onAutocomplete($event)"
-                                    (onSelect)="onAutocompleteSelect($event)"
-                                    tabindex="10">
-                    </p-autoComplete>
-                </div>
+					<p-autoComplete igAutoFocus igAutocomplete *ngIf="label"
+									placeholder="Value required"
+									i18n-placeholder
+									formControlName="value"
+									(onBlur)="OnBlurTrim()"
+									[suggestions]="suggestionResults"
+									(completeMethod)="onAutocomplete($event)"
+									[appendTo]="'body'"
+									(onSelect)="onAutocompleteSelect($event)"
+									tabindex="10">
+					</p-autoComplete>
+				</div>
 
-            </div>
-        </div>
-        <div *ngIf="(value.invalid && (value.dirty || value.touched)) && !value.errors.required" class="error-message">
-            <div *ngIf="value.errors.maxlength" i18n>
-                Connector label name maximum length of 40 characters exceeded
-            </div>
-            <div *ngIf="value.errors.alreadyExists" i18n>
-                Please enter a unique name
-            </div>
-        </div>
+			</div>
+		</div>
+		<div *ngIf="(value.invalid && (value.dirty || value.touched)) && !value.errors.required" class="error-message">
+			<div *ngIf="value.errors.maxlength" i18n>
+				Connector label name maximum length of 40 characters exceeded
+			</div>
+			<div *ngIf="value.errors.alreadyExists" i18n>
+				Please enter a unique name
+			</div>
+		</div>
 
 
-        <div *ngIf="selectedValue && label" class="warningMessage">
-            <h4 i18n>Consolidate Labels?</h4>
-            <p i18n>
-                A label with the name '{{selectedValue.name}}' already exists, used in
-                <d3s-where-used [displayValue]="selectedValue.name" [uid]="selectedValue.uid" [objectType]="'ConnectorLabel'" [showAsModal]="true">{{selectedValue.UseCount}} diagrams</d3s-where-used>
-                <br />
-                Choose <strong>Consolidate</strong> to replace the label '{{label.Value}}' with '{{selectedValue.name}}', in
-                <d3s-where-used [displayValue]="label.Value" [uid]="label.uid" [objectType]="'ConnectorLabel'" [showAsModal]="true">{{label.UseCount}} diagram.</d3s-where-used>
-                <br />
-                The label '{{label.Value}}' will then be deleted.
-            </p>
-        </div>
-    </div>
-    <div class="action-bar">
-        <button igButton type="button" i18n-label label="Cancel" (click)="onCancel.emit()"></button>
-        <div class="grow"></div>
-        <button igButton type="submit" [loading]="isSaving" (click)="onSubmit()" class="ig-button-primary" [disabled]="!connectorLabelForm.valid" label="{{saveLabel}}"></button>
-    </div>
+		<div *ngIf="selectedValue && label" class="warningMessage">
+			<h4 i18n>Consolidate Labels?</h4>
+			<p i18n>
+				A label with the name '{{selectedValue.name}}' already exists, used in
+				<d3s-where-used [displayValue]="selectedValue.name" [uid]="selectedValue.uid" [objectType]="'ConnectorLabel'" [showAsModal]="true">{{selectedValue.UseCount}} diagrams</d3s-where-used>
+				<br />
+				Choose <strong>Consolidate</strong> to replace the label '{{label.Value}}' with '{{selectedValue.name}}', in
+				<d3s-where-used [displayValue]="label.Value" [uid]="label.uid" [objectType]="'ConnectorLabel'" [showAsModal]="true">{{label.UseCount}} diagram.</d3s-where-used>
+				<br />
+				The label '{{label.Value}}' will then be deleted.
+			</p>
+		</div>
+	</div>
+	<div class="action-bar">
+		<button igButton type="button" i18n-label label="Cancel" (click)="onCancel.emit()"></button>
+		<div class="grow"></div>
+		<button igButton type="submit" [loading]="isSaving" (click)="onSubmit()" class="ig-button-primary" [disabled]="!connectorLabelForm.valid" label="{{saveLabel}}"></button>
+	</div>
 </form>

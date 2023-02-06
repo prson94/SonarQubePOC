@@ -154,6 +154,18 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 						`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${this.label.uid}`
 					);
 
+					this.headerBreadcrumbService.showBreadcrumb(
+						new Breadcrumb(
+							$localize`Configuration`
+						)
+					);
+
+					this.headerBreadcrumbService.showBreadcrumb(
+						new Breadcrumb(
+							$localize`Diagram Assets`, `/admin/configuration/assets/DiagramAsset`
+						)
+					);
+
 					this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
 					this.headerBreadcrumbService.showBreadcrumb(itemBreadcrumb);
 				}
