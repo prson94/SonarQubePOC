@@ -36,6 +36,8 @@ import { TabsModule } from '../../shared/tabs/tabs.module';
 import { ConfigurationIssueTypeAllocationsPageComponent } from './tabs/allocations/configuration-issue-type-allocations-page.component';
 import { AuditModule } from '../../sidebar/audit/audit.module';
 import { ConfigurationIssueTypeLogPageComponent } from './tabs/log/configuration-issue-type-log-page.component';
+import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
+import { IssueTypeDefinitionModule } from './definition/issue-type-definition.module';
 
 @NgModule({
     imports: [
@@ -50,7 +52,7 @@ import { ConfigurationIssueTypeLogPageComponent } from './tabs/log/configuration
         InputTextModule,
         SharedModule,
         TableModule,
-        MultiSelectModule,
+		MultiSelectModule,
 
         //d3s                
         CoreModule,
@@ -66,7 +68,9 @@ import { ConfigurationIssueTypeLogPageComponent } from './tabs/log/configuration
 		PageHeaderModule,
 		PortalsModule,
 		TabsModule,
-		AuditModule
+		AuditModule,
+		SearchFieldModule,
+		IssueTypeDefinitionModule
     ],
     declarations: [
         AdminIssueTypesComponent,

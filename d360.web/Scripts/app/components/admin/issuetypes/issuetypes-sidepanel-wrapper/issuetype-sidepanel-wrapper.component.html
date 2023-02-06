@@ -12,7 +12,7 @@
 				   [minSize]="getSidePanelMinWidth()"
 				   [maxSize]="getSidePanelMaxWidth()"
 				   class="tile tile-detail side-panel">
-		<side-panel #sidePanel 
+		<side-panel #sidePanel
 					[selectedItem]="anySelectedItem"
 					[setMinMaxWidth]="false"
 					[storageKey]="sidePanelStorageKey"
@@ -22,7 +22,7 @@
 					hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
 				<ng-container *ngIf="selectedItem && !selectedForInfoPanel">
-asdfasdfasdf
+					<d3s-issue-type-definition [workflowIssueType]="selectedItem"></d3s-issue-type-definition>
 				</ng-container>
 				<ng-container *ngIf="selectedForInfoPanel && !selectedItem">
 					<asset-preview [assetUid]="selectedForInfoPanel.AssetUid"
