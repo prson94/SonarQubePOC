@@ -23,18 +23,21 @@ import { AdminIssueTypesComponent } from './admin-issue-types.component';
 import { AdminIssueTypeAllocationComponent } from './admin-issue-type-allocation.component';
 import { AdminIssueTypeAllocationEditorComponent } from "./admin-issue-type-allocation-editor.component";
 
-
 import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
-import { AngularSplitModule, SplitAreaDirective } from 'angular-split';
+import { AngularSplitModule } from 'angular-split';
 import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 import { IssueTypeSidePanelWrapperComponent } from './issuetypes-sidepanel-wrapper/issuetype-sidepanel-wrapper.component';
+import { ConfigurationIssueTypeFieldsPageComponent } from './tabs/fields/configuration-issue-type-fields-page.component';
+import { ConfigurationIssueTypeHeaderComponent } from './tabs/shared/issue-type-header/issue-type-header.component';
+import { PageHeaderModule } from '../../shared/page-header/page-header.module';
+import { PortalsModule } from '../../shared/portals/portals.module';
+import { TabsModule } from '../../shared/tabs/tabs.module';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
-
 
         AdminIssueTypesRoutingModule,
 
@@ -56,13 +59,18 @@ import { IssueTypeSidePanelWrapperComponent } from './issuetypes-sidepanel-wrapp
 		TilesModule,
 		AngularSplitModule,
 		AssetPreviewModule,
-		SidePanelModule
+		SidePanelModule,
+		PageHeaderModule,
+		PortalsModule,
+		TabsModule
     ],
     declarations: [
         AdminIssueTypesComponent,
         AdminIssueTypeAllocationComponent,
 		AdminIssueTypeAllocationEditorComponent,
-		IssueTypeSidePanelWrapperComponent
+		IssueTypeSidePanelWrapperComponent,
+		ConfigurationIssueTypeFieldsPageComponent,
+		ConfigurationIssueTypeHeaderComponent
     ],
     providers: [
     ]

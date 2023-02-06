@@ -73,7 +73,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_RESOURCES = 'resources';
     static SITE_URL_ADMIN_SETTINGS = 'settings';
     static SITE_URL_ADMIN_WORKFLOW = 'workflow';
-    static SITE_URL_ADMIN_ISSUE_TYPES = 'issuetypes';
+	static SITE_URL_ADMIN_ISSUE_TYPES = 'configuration/WorkflowActions';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
     static SITE_URL_ADMIN_EXPORT_TEMPLATES = 'exporttemplates';
 

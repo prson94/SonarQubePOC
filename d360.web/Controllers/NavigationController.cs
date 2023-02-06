@@ -1186,7 +1186,7 @@ namespace d360.web.Controllers
 					responseModel.ObjectID = model.ObjectId ?? 0;
 					responseModel.DisplayValue = PageNames.WorkflowActionsTab;
 					responseModel.MainTabTitle = PageNames.WorkflowActionsTabTitle;
-					responseModel.MainTabUrl = "admin/issuetypes";
+					responseModel.MainTabUrl = "admin/configuration/WorkflowActions";
 					responseModel.Items.HasAudit = true;
 
 					responseModel.AssetTypeUid = Company.IssueTypes.Where(x => x.ID == model.ObjectId).Select(x=> x.uid).FirstOrDefault();
@@ -1354,7 +1354,7 @@ namespace d360.web.Controllers
 						responseModel.DisplayValue = PageNames.WorkflowActionsTab;
 						responseModel.MainTabTitle = PageNames.WorkflowActionsTabTitle;
 						responseModel.Items.HasAudit = true;
-						responseModel.MainTabUrl = "admin/issuetypes";
+						responseModel.MainTabUrl = "admin/configuration/WorkflowActions";
 						responseModel.AssetTypeUid = model.AssetTypeUid;
 					}
 
