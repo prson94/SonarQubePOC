@@ -3,718 +3,720 @@ import { UID } from './shared.model';
 
 
 export class Issue {
-    Issue: string;
-    IssueType: IssueType;
-    IssueTypeName: string;
-    ResourceName: string;
-    ResourceID: number;
-    ActivityName: string;
-    DateStarted: string;
-    WorkflowID: string;
-    IssueID: number;
+	Issue: string;
+	IssueType: IssueType;
+	IssueTypeName: string;
+	ResourceName: string;
+	ResourceID: number;
+	ActivityName: string;
+	DateStarted: string;
+	WorkflowID: string;
+	IssueID: number;
 }
 
 export class IssueDetail {
-    ActivityName: string;
-    AllowAction: boolean;
-    DateCompleted: Date;
-    DateStarted: Date;
-    IsCompleted: boolean;
-    Issue: string;
-    Name: string;
-    Notes: string;
-    Object: string;
-    ObjectID: number;
-    RaisedBy: string;
-    RaisedByResourceID: number;
-    Url: string;
-    WorkflowID: string;
-    EllapsedDays: number;
-    WorkflowItemID: number;
+	ActivityName: string;
+	AllowAction: boolean;
+	DateCompleted: Date;
+	DateStarted: Date;
+	IsCompleted: boolean;
+	Issue: string;
+	Name: string;
+	Notes: string;
+	Object: string;
+	ObjectID: number;
+	RaisedBy: string;
+	RaisedByResourceID: number;
+	Url: string;
+	WorkflowID: string;
+	EllapsedDays: number;
+	WorkflowItemID: number;
 }
 
 export class WorkflowIssueType {
-    Uid: string;
-    ID: number;
-    Name: string;
-    Description: string;
-    IsSystem: boolean;
+	Uid: string;
+	ID: number;
+	Name: string;
+	Description: string;
+	IsSystem: boolean;
+	UpdatedOn: string;
+	UpdatedByUid: string;
+	UpdatedByName: string;
 }
 
-export class WorkflowTypeNew
-{
-    ID: number;
-    Name: string;
-    Description: string;
-    CreatedBy: number;
-    CreatedOn: string;
-    UpdatedBy: number;
-    UpdatedOn: string;
-    PublishedVersionID: number;
-    Deleted: boolean = false; 
-    State: State = State.Active;
+export class WorkflowTypeNew {
+	ID: number;
+	Name: string;
+	Description: string;
+	CreatedBy: number;
+	CreatedOn: string;
+	UpdatedBy: number;
+	UpdatedOn: string;
+	PublishedVersionID: number;
+	Deleted: boolean = false;
+	State: State = State.Active;
 }
 
 export class WorkflowVersion {
-    ID: number;
-    TypeID: number;
-    Version: number=1;
-    UID: string;
+	ID: number;
+	TypeID: number;
+	Version: number = 1;
+	UID: string;
 }
 
 //#region diagram
 
 export class WorkflowDiagramModel {
-    Type: WorkflowTypeNew = new WorkflowTypeNew();
-    Event: WorkflowEventRegistration = new WorkflowEventRegistration();
-    Nodes: WorkflowDiagramNode[] = [];
-    Links: WorkflowDiagramLink[] = [];
+	Type: WorkflowTypeNew = new WorkflowTypeNew();
+	Event: WorkflowEventRegistration = new WorkflowEventRegistration();
+	Nodes: WorkflowDiagramNode[] = [];
+	Links: WorkflowDiagramLink[] = [];
 
-    CurrentVersion: WorkflowVersion;
-    PublishedVersion: WorkflowVersion;
+	CurrentVersion: WorkflowVersion;
+	PublishedVersion: WorkflowVersion;
 
 }
 
 export class WorkflowDiagramNode {
-    Key: string;
-    XPosition: string;
-    YPosition: string;
-    StepType: StepType;
-    ActivityType: number;
-    ActivityTypeInfo: ActivityTypeInfo;
-    Settings: string;
-    SettingsObject: any;
-    Fields: string;
-    FieldsObject: any;
-    Name: string;
-    RunCount: number;
+	Key: string;
+	XPosition: string;
+	YPosition: string;
+	StepType: StepType;
+	ActivityType: number;
+	ActivityTypeInfo: ActivityTypeInfo;
+	Settings: string;
+	SettingsObject: any;
+	Fields: string;
+	FieldsObject: any;
+	Name: string;
+	RunCount: number;
 }
 
 export class WorkflowDiagramLink {
-    Key: string;
-    FromKey: string;
-    ToKey: string;
-    FromPortID: string;
-    ToPortID: string;
-    TransitionType: TransitionType;
-    Condition: string;
-    ConditionObject: any;
-    Settings: string;
-    SettingsObject: any;
-    Name: string;
+	Key: string;
+	FromKey: string;
+	ToKey: string;
+	FromPortID: string;
+	ToPortID: string;
+	TransitionType: TransitionType;
+	Condition: string;
+	ConditionObject: any;
+	Settings: string;
+	SettingsObject: any;
+	Name: string;
 }
 
 export class LinkModel {
-    key: string;
-    from: string;
-    to: string;
-    name: string;
-    category: string = '';
-    diagramObjectType: DiagramObjectType = DiagramObjectType.Link;
-    frompid: string;
-    topid: string;
-    icon: string;
+	key: string;
+	from: string;
+	to: string;
+	name: string;
+	category: string = '';
+	diagramObjectType: DiagramObjectType = DiagramObjectType.Link;
+	frompid: string;
+	topid: string;
+	icon: string;
 
-    transitionType: TransitionType = TransitionType.Always;
-    condition: any = [];
-    settings: any = {};
-    formInputs: any = [];
-    httpInputs: any = [];
-    httpResponseInputs: any = [];
+	transitionType: TransitionType = TransitionType.Always;
+	condition: any = [];
+	settings: any = {};
+	formInputs: any = [];
+	httpInputs: any = [];
+	httpResponseInputs: any = [];
 
-    valid: boolean = true;
-    errors: string[] = [];
+	valid: boolean = true;
+	errors: string[] = [];
 }
 
 export class NodeModel {
-    key: string;
-    name: string;
-    pos: string;
-    category: string = 'task';
+	key: string;
+	name: string;
+	pos: string;
+	category: string = 'task';
 
-    diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
+	diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
 
-    x: string;
-    y: string;
-    stepType: StepType;
-    activityType: number;
-    fore: string;
-    back: string;
-    icon: string;
-    activityDescription: string;
-    activityName: string;
-    runCount: number;
+	x: string;
+	y: string;
+	stepType: StepType;
+	activityType: number;
+	fore: string;
+	back: string;
+	icon: string;
+	activityDescription: string;
+	activityName: string;
+	runCount: number;
 
-    settings: NodeSettings = new NodeSettings();
-    fields: NodeFields = new NodeFields();
+	settings: NodeSettings = new NodeSettings();
+	fields: NodeFields = new NodeFields();
 
-    hasMultipleInputs: boolean = false;
-    valid: boolean = false;
-    errors: string[] = [];
+	hasMultipleInputs: boolean = false;
+	valid: boolean = false;
+	errors: string[] = [];
 }
 
 export class FieldUpdateSettings {
-    Field: any[] = [];
+	Field: any[] = [];
 }
 
 export class RelationshipUpdateSettings {
-    Relationship: any;
+	Relationship: any;
 }
 
 export class HTTPRequestSettings {
-    Timeout: number = 90;
-    Method: string;
-    Url: string;
-    Body: string;
-    Headers: any[] = [];
-    lookupFieldsPassedByValue: any;
+	Timeout: number = 90;
+	Method: string;
+	Url: string;
+	Body: string;
+	Headers: any[] = [];
+	lookupFieldsPassedByValue: any;
 }
 
 export class HTTPResponseOutput {
 	StepId: string;
 	StepName: string;
-    Id: string;
-    Name: string;
-    Type: string = "text";
-    Format: string = "json";
-    Path: string;
+	Id: string;
+	Name: string;
+	Type: string = "text";
+	Format: string = "json";
+	Path: string;
 }
 
 export class HTTPResponseSettings {
-    InputStepId: string;
-    InputStepName: string;
-    Outputs: HTTPResponseOutput[] = [];
+	InputStepId: string;
+	InputStepName: string;
+	Outputs: HTTPResponseOutput[] = [];
 }
 
 export class NodeSettings {
-    Status: any;
-    State: any;
-    ProcedureID: any;
-    FieldUpdate: FieldUpdateSettings;
-    RelationshipUpdate: RelationshipUpdateSettings;
-    HTTPRequest: HTTPRequestSettings;
-    HTTPResponse: HTTPResponseSettings;
+	Status: any;
+	State: any;
+	ProcedureID: any;
+	FieldUpdate: FieldUpdateSettings;
+	RelationshipUpdate: RelationshipUpdateSettings;
+	HTTPRequest: HTTPRequestSettings;
+	HTTPResponse: HTTPResponseSettings;
 
-    FormResponseType: any;
-    MessageRecipientType: any;
-    MessageToUser: any;
-    ResponsibilityTypeID: any;
-    MessageToGroup: any;
-    SendFormEmail: any;
-    MessageBodyTemplate: any;
-    MessageSubjectTemplate: any;
-    ResponsibilitySide: any;
-    SendToDefaultUsers: any;
-     
-    IncludePreviousFormResponses: any;
-    WaitForAllTransitions: any;
+	FormResponseType: any;
+	MessageRecipientType: any;
+	MessageToUser: any;
+	ResponsibilityTypeID: any;
+	MessageToGroup: any;
+	SendFormEmail: any;
+	MessageBodyTemplate: any;
+	MessageSubjectTemplate: any;
+	ResponsibilitySide: any;
+	SendToDefaultUsers: any;
+
+	IncludePreviousFormResponses: any;
+	WaitForAllTransitions: any;
 }
 
 export class NodeFields {
-    form: FormField = new FormField();
+	form: FormField = new FormField();
 }
 
 export class FormField {
-    field: any[] = [];
+	field: any[] = [];
 }
 
 
 
 export class ActivityTypeInfo {
-    ID: number;
-    Name: string;
-    Description: string;
-    BackColor: string;
-    ForeColor: string;
-    Icon: string;
-    IsShow: boolean = true;
+	ID: number;
+	Name: string;
+	Description: string;
+	BackColor: string;
+	ForeColor: string;
+	Icon: string;
+	IsShow: boolean = true;
 }
 
 export class TransitionTypeInfo {
-    ID: Number;
-    Name: string;
-    Description: string;
+	ID: Number;
+	Name: string;
+	Description: string;
 }
 
 //#endregion
 
 export class WorkflowFormField {
-    Label: string;
-    FieldType: WorkflowFormFieldType;   
-    Value: any;
-    ID: string;
-    AllowMultipleValues: boolean;
-    Required: boolean;
+	Label: string;
+	FieldType: WorkflowFormFieldType;
+	Value: any;
+	ID: string;
+	AllowMultipleValues: boolean;
+	Required: boolean;
 
 }
 
 export class WorkflowForm {
-    Fields: WorkflowFormField[]=[];
-    Title: string;
-    Description: string;
-    IsCompleted: boolean;
-    IsItemDeleted: boolean;
-    IsUserAllowedToComplete: boolean;
-    IsFormInvalid: boolean;
-    ObjectName: string;
-    ObjectType: string;
-    ObjectTypeID: number;
-    ObjectID: number;
-    IssueObject: string;
-    IssueObjectID: number;
-    IssueObjectName: string;
-    IssueTypeName: string;
-    TypeName: string;
-    AllowReassignObject: boolean;
-    AllowReassignResource: boolean;
+	Fields: WorkflowFormField[] = [];
+	Title: string;
+	Description: string;
+	IsCompleted: boolean;
+	IsItemDeleted: boolean;
+	IsUserAllowedToComplete: boolean;
+	IsFormInvalid: boolean;
+	ObjectName: string;
+	ObjectType: string;
+	ObjectTypeID: number;
+	ObjectID: number;
+	IssueObject: string;
+	IssueObjectID: number;
+	IssueObjectName: string;
+	IssueTypeName: string;
+	TypeName: string;
+	AllowReassignObject: boolean;
+	AllowReassignResource: boolean;
 	IsClearAssignementsAllowed: boolean;
 	ObjectUid: string;
 }
 
 export class WorkflowTypeItem {
-    WorkflowTypeUid: string;
-    ActionTypeUid: string;
-    ActionType: string;
-    AssetTypeUid: string;
-    AssetType: string;
-    RelationshipTypeUid: string;
-    RelationshipType: string;
-    Name: string;
-    State: string;
-    ChangeType: string;
-    Description: string;
-    Type: string;
-    PublishedVersionUid: string;
-    PublishedVersion: string;
-    CreatedOn: string;
-    UpdatedOn: string;
-    CreatedBy: string;
-    UpdatedBy: string;
+	WorkflowTypeUid: string;
+	ActionTypeUid: string;
+	ActionType: string;
+	AssetTypeUid: string;
+	AssetType: string;
+	RelationshipTypeUid: string;
+	RelationshipType: string;
+	Name: string;
+	State: string;
+	ChangeType: string;
+	Description: string;
+	Type: string;
+	PublishedVersionUid: string;
+	PublishedVersion: string;
+	CreatedOn: string;
+	UpdatedOn: string;
+	CreatedBy: string;
+	UpdatedBy: string;
 
 
 }
 export class WorkflowListItem {
-    ID: number;
-    CreatedOn: string;
-    CreatedBy: string;
-    UpdatedOn: string;
-    UpdatedBy: string;
-    Name: string;
-    TypeName: string;
-    ChangeType: WorkflowChangeType;
-    Published: string;
-    NumberOfEvents: number;
-    VersionID: number;
-    ItemID: number;
-    ChangeTypeName: string;
-    State: State;
-    Type: string;
-    Uid: string;
+	ID: number;
+	CreatedOn: string;
+	CreatedBy: string;
+	UpdatedOn: string;
+	UpdatedBy: string;
+	Name: string;
+	TypeName: string;
+	ChangeType: WorkflowChangeType;
+	Published: string;
+	NumberOfEvents: number;
+	VersionID: number;
+	ItemID: number;
+	ChangeTypeName: string;
+	State: State;
+	Type: string;
+	Uid: string;
 }
 
 export class WorkflowEventRegistration {
-    ID: number = 0;
-    TypeID: number;
-    Object: string;
-    ObjectID: number;
-    ChangeType: WorkflowChangeType;
-    Condition: string;
-    ConditionObject: any = {};
-    Settings: string;
-    SettingsObject: any = {};
-    LastExecuted: any;
-    conditions: EventCondition[] = [];
-    IssueObject: string = "";
-    ScoreType: number;
+	ID: number = 0;
+	TypeID: number;
+	Object: string;
+	ObjectID: number;
+	ChangeType: WorkflowChangeType;
+	Condition: string;
+	ConditionObject: any = {};
+	Settings: string;
+	SettingsObject: any = {};
+	LastExecuted: any;
+	conditions: EventCondition[] = [];
+	IssueObject: string = "";
+	ScoreType: number;
 }
 
 export class WorkflowObjectType {
-    value: string;
-    id: number;
-    type: string;
-    label: string;
-    count: number;
+	value: string;
+	id: number;
+	type: string;
+	label: string;
+	count: number;
 }
 
 export class ChangeTypeInfo {
-    ID: number;
-    Name: string;
-    Description: string;
+	ID: number;
+	Name: string;
+	Description: string;
 }
 
 export class EventCondition {
-    FieldTypeID: number = 0;
-    Value: any;
-    ValueType: string;
-    Operator: string;
+	FieldTypeID: number = 0;
+	Value: any;
+	ValueType: string;
+	Operator: string;
 
-    fieldName: string;
+	fieldName: string;
 
-    //TODO: explore as alternative to mapping manually
-    //get FieldTypeID(): number {
-    //    return +this['@FieldTypeID'];
-    //}
+	//TODO: explore as alternative to mapping manually
+	//get FieldTypeID(): number {
+	//    return +this['@FieldTypeID'];
+	//}
 
-    //set FieldTypeID(val: number) {
-    //    this['@FieldTypeID'] = val;
-    //}
+	//set FieldTypeID(val: number) {
+	//    this['@FieldTypeID'] = val;
+	//}
 }
 
 
 export class WorkflowTaskProcedure {
-    ID: number;
-    Name: string;
-    Procedure: string;
-    PassObjectInfo: boolean;
-    UpdatedBy: number;
-    UpdatedOn: string;
+	ID: number;
+	Name: string;
+	Procedure: string;
+	PassObjectInfo: boolean;
+	UpdatedBy: number;
+	UpdatedOn: string;
 }
 
 //#region enums
 
 export enum WorkflowChangeType {
-    Add = 1,
-    Update = 2,
-    Delete = 3,
-    Schedule = 4,
-    ScoreUpdate = 5,
-    RequestCertification = 8,
+	Add = 1,
+	Update = 2,
+	Delete = 3,
+	Schedule = 4,
+	ScoreUpdate = 5,
+	RequestCertification = 8,
 }
 
 export enum WorkflowFormFieldType {
-    Text = 0,
-    Boolean = 1,
-    Integer = 2,
-    Date = 3,
-    TextArea = 4,
-    List = 5,
-    RelationshipType = 6,
-    HTML = 7,
-    Link = 8,
+	Text = 0,
+	Boolean = 1,
+	Integer = 2,
+	Date = 3,
+	TextArea = 4,
+	List = 5,
+	RelationshipType = 6,
+	HTML = 7,
+	Link = 8,
 }
 
 export enum WorkflowActivityType {
-    None = 0,
-    EmailNotification = 1,
-    StatusChange = 2,
-    Form = 3,
-    Procedure = 4,
-    FieldChange = 5,
-    RelationshipUpdate = 6,
-    StateChange = 7,
-    Delete = 8,
-    HTTPRequest = 9,
-    HTTPResponse = 10
+	None = 0,
+	EmailNotification = 1,
+	StatusChange = 2,
+	Form = 3,
+	Procedure = 4,
+	FieldChange = 5,
+	RelationshipUpdate = 6,
+	StateChange = 7,
+	Delete = 8,
+	HTTPRequest = 9,
+	HTTPResponse = 10
 }
 
 export enum DiagramObjectType {
-    Link,
-    Node
+	Link,
+	Node
 }
 
 export enum StepType {
-    Start = 1,
-    Task = 2,
-    Terminate = 3,
-    Finish = 4
+	Start = 1,
+	Task = 2,
+	Terminate = 3,
+	Finish = 4
 }
 
 export enum TransitionType {
-    Always = 1,
-    Condition = 2,
-    Timer = 3
+	Always = 1,
+	Condition = 2,
+	Timer = 3
 }
 
 export enum IssueType {
-    Issue = 0,
-    Challenge = 1
+	Issue = 0,
+	Challenge = 1
 }
 
 export enum WorkflowType {
-    None = 0,
-    SuggestNewArtifact = 1,
-    CertifyArtifact = 2,
-    WorkIssue = 3,
-    ChallengeArtifact = 4,
-    SuggestNewArtifactMulti = 5,
+	None = 0,
+	SuggestNewArtifact = 1,
+	CertifyArtifact = 2,
+	WorkIssue = 3,
+	ChallengeArtifact = 4,
+	SuggestNewArtifactMulti = 5,
 }
 
 export enum FormResponseType {
-    FirstResponse = 0,
-    All = 1,
-    Majority = 2
+	FirstResponse = 0,
+	All = 1,
+	Majority = 2
 }
 
 export enum EmailTaskRecipientType {
-    None = 0,
-    Initiator,
-    Responsibility,
-    SpecificUser,
-    Followers,
-    Group
+	None = 0,
+	Initiator,
+	Responsibility,
+	SpecificUser,
+	Followers,
+	Group
 }
 
 export enum ConditionFieldType {
-    Field,
-    Form,
-    Contextual,
-    HttpRequest,
-    HttpResponse
+	Field,
+	Form,
+	Contextual,
+	HttpRequest,
+	HttpResponse
 }
 
 //#endregion
 
 export class WorkflowAssignmentSummary {
 
-    Version: number;
-    StepName: string;
-    ObjectName: string;
-    TypeName: string;
-    SendFormEmail: boolean;
+	Version: number;
+	StepName: string;
+	ObjectName: string;
+	TypeName: string;
+	SendFormEmail: boolean;
 }
 
 export class WorkflowAssignmentDetail {
-    ItemID: number;
-    ItemStepID: number;
-    Object: string;
-    ObjectID: number;
-    ObjectName: string;
-    ObjectType: string;
-    ObjectTypeID: number;
-    StartedBy: string;
-    StartedByResourceID: number;
-    StartedOn: Date;
-    TypeName: string;
-    WorkflowName: string;
-    StepName: string;
-    StepType: StepType;    
-    ActivityType: WorkflowActivityType;
-    responseType: string;
-    countAssigned: number;
+	ItemID: number;
+	ItemStepID: number;
+	Object: string;
+	ObjectID: number;
+	ObjectName: string;
+	ObjectType: string;
+	ObjectTypeID: number;
+	StartedBy: string;
+	StartedByResourceID: number;
+	StartedOn: Date;
+	TypeName: string;
+	WorkflowName: string;
+	StepName: string;
+	StepType: StepType;
+	ActivityType: WorkflowActivityType;
+	responseType: string;
+	countAssigned: number;
 }
 
 export class WorkflowItemStep {
-    ID: number;
-    ItemID: number;
-    StepID: number;
-    Name: string;
-    StepType: StepType;
-    ActivityType: WorkflowActivityType;
-    Assignee: string;
-    Complete: boolean;
-    StartedOn: string;
-    StartedBy: string;
-    CompletedOn: string;
-    CompletedBy: string;
-    IsIssueType: boolean;
-    Object: string;
-    ObjectID: number;
-    TypeID: number;
+	ID: number;
+	ItemID: number;
+	StepID: number;
+	Name: string;
+	StepType: StepType;
+	ActivityType: WorkflowActivityType;
+	Assignee: string;
+	Complete: boolean;
+	StartedOn: string;
+	StartedBy: string;
+	CompletedOn: string;
+	CompletedBy: string;
+	IsIssueType: boolean;
+	Object: string;
+	ObjectID: number;
+	TypeID: number;
 }
 
 export class BulkWorkflowFormModel {
-    ItemStepIDs: number[] = [];
-    Fields: WorkflowFormField[] = [];
+	ItemStepIDs: number[] = [];
+	Fields: WorkflowFormField[] = [];
 }
 
 export class BulkWorkflowReassignModel {
-    ItemStepIDs: number[] = [];
-    StepHasFormEmails: boolean;
-    OriginalAssigneeResourceID: number = -1;
-    OriginalAssigneeResourceName: string = '[unknown user]';
-    NewAssigneeResourceID: number = -1;
-    NewAssigneeResourceName: string = '';
-    StepName: string = 'Form';
-    SendFormEmails: boolean = true;
-    IsClearOtherAssignmentsAllowed: boolean = false;
-    ClearOtherAssignments: boolean = false ;
+	ItemStepIDs: number[] = [];
+	StepHasFormEmails: boolean;
+	OriginalAssigneeResourceID: number = -1;
+	OriginalAssigneeResourceName: string = '[unknown user]';
+	NewAssigneeResourceID: number = -1;
+	NewAssigneeResourceName: string = '';
+	StepName: string = 'Form';
+	SendFormEmails: boolean = true;
+	IsClearOtherAssignmentsAllowed: boolean = false;
+	ClearOtherAssignments: boolean = false;
 }
 
 
 export class EmailTaskRecipientTypeInfo {
-    ID: number;
-    Name: string;
+	ID: number;
+	Name: string;
 }
 
 export class WorkflowStepDetail {
-    ID: number;
-    StepType: StepType;
-    ActivityType: WorkflowActivityType;
-    SettingsXml: string;
-    FieldsXml: string;
-    Settings: any;
-    Fields: any;
-    ItemSettingsXml: string;
-    ItemFieldsXml: string;
-    ItemSettings: WorkflowStepItemSettings;
-    ItemFields: WorkflowStepItemFields;
-    Name: string;
-    ObjectType: string;
-    ObjectTypeID: number;
-    ObjectTypeName: string;
-    Object: string;
-    ObjectID: number;
-    ObjectName: string;
-    ChangeType: WorkflowChangeType;
-    ConditionXml: string;
-    Condition: any;
-    EventSettingsXml: string;
-    EventSettings: any;
-    IsIssueType: boolean;
-    Version: number;
-    IsPublishedVersion: boolean;
-    IssueDetails: WorkflowStepIssueDetail;
-    AssignedUsers: WorkflowStepAssignedUser[] = [];
-    StepID: number;
-    TypeID: number;
-    IsAssignedLoginUser: boolean;
-    ItemID: number;
-    ItemStepID: number;
-    FieldChanges: WorkflowStepFieldChangeDetail[];
-    RelationshipChange: WorkflowStepRelationshipChangeDetail;
-    StateChange: State;
+	ID: number;
+	StepType: StepType;
+	ActivityType: WorkflowActivityType;
+	SettingsXml: string;
+	FieldsXml: string;
+	Settings: any;
+	Fields: any;
+	ItemSettingsXml: string;
+	ItemFieldsXml: string;
+	ItemSettings: WorkflowStepItemSettings;
+	ItemFields: WorkflowStepItemFields;
+	Name: string;
+	ObjectType: string;
+	ObjectTypeID: number;
+	ObjectTypeName: string;
+	Object: string;
+	ObjectID: number;
+	ObjectName: string;
+	ChangeType: WorkflowChangeType;
+	ConditionXml: string;
+	Condition: any;
+	EventSettingsXml: string;
+	EventSettings: any;
+	IsIssueType: boolean;
+	Version: number;
+	IsPublishedVersion: boolean;
+	IssueDetails: WorkflowStepIssueDetail;
+	AssignedUsers: WorkflowStepAssignedUser[] = [];
+	StepID: number;
+	TypeID: number;
+	IsAssignedLoginUser: boolean;
+	ItemID: number;
+	ItemStepID: number;
+	FieldChanges: WorkflowStepFieldChangeDetail[];
+	RelationshipChange: WorkflowStepRelationshipChangeDetail;
+	StateChange: State;
 }
 
 export class WorkflowStepItemFields {
-    form: any;
-    Reassigned: any;
+	form: any;
+	Reassigned: any;
 }
 
 export class WorkflowStepItemSettings {
-    emails: any;
-    hasPendingForms: boolean;
-    hasEmails: boolean;
+	emails: any;
+	hasPendingForms: boolean;
+	hasEmails: boolean;
 }
 
 export class WorkflowStepAssignedUser {
-    ResourceID: number;
-    FirstName: string;
-    LastName: string;
+	ResourceID: number;
+	FirstName: string;
+	LastName: string;
 }
 
 export class WorkflowStepReassignment {
 
-    constructor(reassignObject: any = null) {
-        if (reassignObject != null) {
-            this.ReassignType = reassignObject['@reassignType'];
-            this.ObjectType = reassignObject['@objectType'];
-            this.ObjectID = reassignObject['@objectId'];
-            this.ObjectUid = reassignObject['@objectUid'];
-            this.ObjectName = reassignObject['@objectName'];
-            this.ByResourceID = reassignObject['@byResourceId'];
-            this.FromResourceID = reassignObject['@fromResourceId'];
-            this.ToResourceID = reassignObject['@toResourceId'];
-            this.ByResourceName = reassignObject['@byResourceName'];
-            this.ToResourceName = reassignObject['@toResourceName'];
-            this.FromResourceName = reassignObject['@fromResourceName'];
-            this.ReassignOn = reassignObject['@reassignOn'];
-            this.NewItemId = reassignObject['@newItemId'];
-            this.IsBulkReassignment = (this.ReassignType === 'Resource' && this.ByResourceID != null);
-        }
-    }
+	constructor(reassignObject: any = null) {
+		if (reassignObject != null) {
+			this.ReassignType = reassignObject['@reassignType'];
+			this.ObjectType = reassignObject['@objectType'];
+			this.ObjectID = reassignObject['@objectId'];
+			this.ObjectUid = reassignObject['@objectUid'];
+			this.ObjectName = reassignObject['@objectName'];
+			this.ByResourceID = reassignObject['@byResourceId'];
+			this.FromResourceID = reassignObject['@fromResourceId'];
+			this.ToResourceID = reassignObject['@toResourceId'];
+			this.ByResourceName = reassignObject['@byResourceName'];
+			this.ToResourceName = reassignObject['@toResourceName'];
+			this.FromResourceName = reassignObject['@fromResourceName'];
+			this.ReassignOn = reassignObject['@reassignOn'];
+			this.NewItemId = reassignObject['@newItemId'];
+			this.IsBulkReassignment = (this.ReassignType === 'Resource' && this.ByResourceID != null);
+		}
+	}
 
-    IsBulkReassignment: boolean = false;
-    ReassignType: string;
-    ObjectType: string;
-    ObjectID: number;
-    ObjectUid: string;
-    ObjectName: string;
-    ByResourceID: number;
-    ByResourceName: string;
-    FromResourceID: number;
-    FromResourceName: string;
-    ToResourceID: number;
-    ToResourceName: string;
-    ReassignOn: string;
-    NewItemId: number;
+	IsBulkReassignment: boolean = false;
+	ReassignType: string;
+	ObjectType: string;
+	ObjectID: number;
+	ObjectUid: string;
+	ObjectName: string;
+	ByResourceID: number;
+	ByResourceName: string;
+	FromResourceID: number;
+	FromResourceName: string;
+	ToResourceID: number;
+	ToResourceName: string;
+	ReassignOn: string;
+	NewItemId: number;
 }
 
 export class WorkflowStepIssueDetail {
-    ID: number;
-    IssueID: number;
-    IssueTypeID: number;
-    IssueName: string;
-    ObjectName: string;
-    ObjectTypeName: string;
-    Object: string;
-    ObjectID: number;
-    ObjectType: string;
-    ObjectTypeID: number;
+	ID: number;
+	IssueID: number;
+	IssueTypeID: number;
+	IssueName: string;
+	ObjectName: string;
+	ObjectTypeName: string;
+	Object: string;
+	ObjectID: number;
+	ObjectType: string;
+	ObjectTypeID: number;
 }
 
 export class WorkflowStepFieldChangeDetail {
-    FieldValue: string;
-    FieldName: string;
-    Asset: string;
-    Type: string;
-    Value: string;
-    UseCurrentDate: boolean;
-    FormValue: string;
-    AppendValue: string;
-    ClearValue: string;
-    ObjectType: string;
+	FieldValue: string;
+	FieldName: string;
+	Asset: string;
+	Type: string;
+	Value: string;
+	UseCurrentDate: boolean;
+	FormValue: string;
+	AppendValue: string;
+	ClearValue: string;
+	ObjectType: string;
 }
 
 
 export class WorkflowStepRelationshipChangeDetail {
-    TypeName: string;
-    Relationship: string;
-    AppendValue: boolean;
-    ClearValue: boolean;
+	TypeName: string;
+	Relationship: string;
+	AppendValue: boolean;
+	ClearValue: boolean;
 }
 
 export class ActionEditorModel {
-    AssetUid: string;
-    AssetTypeUid: string;
-    Fields: any;
+	AssetUid: string;
+	AssetTypeUid: string;
+	Fields: any;
 }
 
 export class AllocationResponsibilityModel {
-    Name: string;
-    Uid: string;
+	Name: string;
+	Uid: string;
 }
 
 export class AllocationAPIModel {
-    AssetTypeUid: string;
-    Name: string;
-    Class: number;
-    Path: string;
-    ClassName: string;
-    Responsibilities: AllocationResponsibilityModel[];
+	AssetTypeUid: string;
+	Name: string;
+	Class: number;
+	Path: string;
+	ClassName: string;
+	Responsibilities: AllocationResponsibilityModel[];
 }
 
 export class AllocationRequestModel {
-    AssetTypeUid: string;
-    ResponsibilityTypeUid: string[];
+	AssetTypeUid: string;
+	ResponsibilityTypeUid: string[];
 }
 
 export class WorkflowReassignmentAsset {
-    ID: number;
-    Name: string;
-    Object: string;
-    ObjectID: number;
+	ID: number;
+	Name: string;
+	Object: string;
+	ObjectID: number;
 }
 
 export interface WorkflowTypeModel {
-    WorkflowTypeUid: UID;
-    ActionTypeUid: UID;
-    ActionType: string;
-    AssetTypeUid: UID;
-    AssetType: string;
-    RelationshipTypeUid: UID;
-    RelationshipType: string;
-    Name: string;
-    State: State;
-    ChangeType: WorkflowChangeType;
-    Description: string;
-    Type: string;
-    PublishedVersionUid: UID;
-    PublishedVersion: number;
-    CreatedOn: string;
-    UpdatedOn: string;
-    CreatedBy: string;
-    UpdatedBy: string;
-    label?: string;
-    value?: string;
-    ID?: number;
+	WorkflowTypeUid: UID;
+	ActionTypeUid: UID;
+	ActionType: string;
+	AssetTypeUid: UID;
+	AssetType: string;
+	RelationshipTypeUid: UID;
+	RelationshipType: string;
+	Name: string;
+	State: State;
+	ChangeType: WorkflowChangeType;
+	Description: string;
+	Type: string;
+	PublishedVersionUid: UID;
+	PublishedVersion: number;
+	CreatedOn: string;
+	UpdatedOn: string;
+	CreatedBy: string;
+	UpdatedBy: string;
+	label?: string;
+	value?: string;
+	ID?: number;
 }

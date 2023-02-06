@@ -104,6 +104,12 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 		this.workflowService.getAdminWorkflowIssueTypes()
 			.subscribe((result) => {
 				this.issueTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
+
+				this.issueTypes.forEach((type) => {
+					if (!type.Description) {
+						type.Description = "---";
+					}
+				});
 				this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
 				this.selectedItemChange();
 				this.isLoading = false;

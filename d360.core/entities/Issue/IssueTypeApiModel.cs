@@ -25,7 +25,10 @@ namespace d360.core.entities
         [DataMember]
         public Guid? UpdatedByUid { get; set; }
 
-        [DataMember]
+		[DataMember]
+		public string UpdatedByName { get; set; }
+
+		[DataMember]
         public bool IsSystem { get; set; }
     }
 
