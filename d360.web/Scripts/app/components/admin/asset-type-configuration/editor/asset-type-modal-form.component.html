@@ -58,6 +58,7 @@
 											<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
 											<ig-popup-menu (onSelect)="updateDisplayFormat($event)"
 														   [items]="fieldTokens"
+														   [forceOpenBottom]="true"
 														   #tokenMenu
 														   [tabIndex]="1"></ig-popup-menu>
 										</div>
