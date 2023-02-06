@@ -1,7 +1,7 @@
 import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { SelectItem } from "primeng/api";
-import { forkJoin } from "rxjs";
+import { forkJoin, Subscription } from "rxjs";
 import { AssetType, AssetTypeClass, Hierarchy, IconStyle } from "../../../../models/asset.model";
 import { Predicate } from "../../../../models/predicate.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
@@ -52,6 +52,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	activityTooltip = $localize`An activity is represented by a rounded-corner rectangle and is a generic term for work that the company performs. The types of activities are Task and Sub-Process.`;
 
 	private isEditFormUpdated: boolean = false;
+	private changeFormSub: Subscription;
 
 	defaultDescriptionButtonTextValue = $localize`Information`;
 
@@ -156,6 +157,10 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	updateForm() {
 		if (this.uid) {
+			if (this.changeFormSub) {
+				this.changeFormSub.unsubscribe();
+			}
+
 			this.isLoading = true;
 
 			forkJoin(
@@ -223,7 +228,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 				this.isEditFormUpdated = false;
 				setTimeout(() => {
-					this.assetTypeForm.valueChanges.subscribe(() => {
+					this.changeFormSub = this.assetTypeForm.valueChanges.subscribe(() => {
 						this.isEditFormUpdated = true;
 					});
 				},200);
@@ -379,7 +384,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	get closeButtonLabel(): string {
-		return this.uid ? $localize`Discard Changes` : $localize`Cancel`;
+		if (this.uid && this.isEditFormUpdated) {
+			return $localize`Discard Changes`;
+		}
+
+		return $localize`Cancel`;
 	}
 
 	@HostListener('window:resize', ['$event'])
