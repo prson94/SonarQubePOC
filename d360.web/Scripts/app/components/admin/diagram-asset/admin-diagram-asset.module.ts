@@ -14,7 +14,6 @@ import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-obj
 import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
 import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared-asset-type-editor.module';
-import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
 
 import { AdminDiagramAssetComponent } from './admin-diagram-asset.component';
 
@@ -35,6 +34,7 @@ import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsib
 import { AdminDiagramAssetRoutingModule } from './admin-diagram-asset.routes';
 import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.module';
 import { TableModule } from 'primeng/table';
+import { AdminRelationshipEditorModule } from '../relationships/list/admin-relationship-editor.module';
 
 
 @NgModule({

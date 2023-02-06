@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy } from '@angular/core';
+﻿import { Component, Input, OnDestroy } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -9,17 +9,14 @@ import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
 	selector: 'd3s-admin-relationships-component',
-	template: `<div class="row">
-                    <div class="col l12 m12 s12">                    
-                        <div class="tile tile-detail">
-                            <d3s-admin-relationships-list (selectedChange)="selectedItemChange($event)" [(selected)]="selected"></d3s-admin-relationships-list>
-                        </div>
-                    </div>                    
-                </div>  
-                `
+	templateUrl: 'admin-relationships.component.html'
 })
 
 export class AdminRelationshipsComponent extends AdminBaseComponent implements OnDestroy {
+	@Input() assetTypeUid: string;
+	@Input() showTitle = true;
+	@Input() isStandalonePage: boolean = true;
+
 	selected: RelationshipType;
 
 	constructor(
@@ -33,15 +30,22 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
 
 	selectedItemChange(event) {
 		this.selected = event;
-		this.baseIntersectTypeUid = this.selected.Uid;
-		this.buildSecondaryNavigation({
-			intersectTypeUid: this.baseIntersectTypeUid,
-			forceRefresh: true
-		});
+
+		if (this.isStandalonePage) {
+			this.baseIntersectTypeUid = this.selected.Uid;
+			this.buildSecondaryNavigation({
+				intersectTypeUid: this.baseIntersectTypeUid,
+				forceRefresh: true,
+				excludeTabs: true
+			});
+		}
 	}
 
 	ngOnDestroy() {
 		this.clearSidebar();
 	}
 
+	get sidePanelStorageKey() {
+		return 'configuration_admin_relationship';
+	}
 }

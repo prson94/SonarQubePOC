@@ -1176,23 +1176,25 @@ export class BaseComponent {
 				{areaIcon = 'fa-tag';}
 			this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
 
-			this.setCommonSecondaryNavTabs({
-				hasAudit: r.Items.HasAudit,
-				hasOwnership: r.Items.HasOwnership,
-				hasDashboard: r.Items.HasDashboard,
-				hasLineage: r.Items.HasLineage,
-				hasImpact: r.Items.HasImpact,
-				hasRelationships: r.Items.HasRelationship,
-				hasFollowers: r.Items.HasFollowers,
-				hasMonitor: r.Items.HasWorkflow,
-				hasField: r.Items.HasField,
-				hasChild: r.Items.HasChild,
-				hasRuleResult: this.objectType === 'Rule',
-				hasProcessDiagram: r.Items.HasProcessDiagram,
-				hasGroups: r.Items.HasGroups,
-				hasFollowing: r.Items.HasFollowing,
-				hasItemOwn: r.Items.HasItemOwn
-			});
+			if (!requestModel.excludeTabs) {
+				this.setCommonSecondaryNavTabs({
+					hasAudit: r.Items.HasAudit,
+					hasOwnership: r.Items.HasOwnership,
+					hasDashboard: r.Items.HasDashboard,
+					hasLineage: r.Items.HasLineage,
+					hasImpact: r.Items.HasImpact,
+					hasRelationships: r.Items.HasRelationship,
+					hasFollowers: r.Items.HasFollowers,
+					hasMonitor: r.Items.HasWorkflow,
+					hasField: r.Items.HasField,
+					hasChild: r.Items.HasChild,
+					hasRuleResult: this.objectType === 'Rule',
+					hasProcessDiagram: r.Items.HasProcessDiagram,
+					hasGroups: r.Items.HasGroups,
+					hasFollowing: r.Items.HasFollowing,
+					hasItemOwn: r.Items.HasItemOwn
+				});
+			}
 
 			var isType = this.IsType(r.Object);
 			this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid, r.Items.HasRequestCertificationWorkflow));

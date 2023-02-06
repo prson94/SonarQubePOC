@@ -980,6 +980,7 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
 			}
 		}
+
 		/// <summary>
 		/// GET a list of relationship types.
 		/// </summary>
@@ -987,6 +988,9 @@ namespace d360.web.Controllers.V2
 		/// <param name="PredicateUid">Allows for filtering of relationship types by predicate unique identifier.</param>
 		/// <param name="State">Allows for filtering by the relationship type's state.</param>
 		/// <param name="includeHasFieldTypes">Return a property "HasFieldTypes". If Relationship Type has defined custom fields value is true otherwise false.</param>
+		/// <param name="includeHasRelationships">Return a property "HasRelationships". If Relationship Type has relationships value is true otherwise false.</param>
+		/// <param name="includeTotalRelationshipCount">Return a property "TotalRelationshipCount". Returns number of total relationships for type.</param>
+		/// <param name="includeCreatedModifiedBy">"Include the CreatedByName, CreatedByUid, ModifiedByName and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.</param>
 		/// <returns></returns>
 		[
 			HttpGet,
@@ -996,7 +1000,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, State? State = null, bool? includeHasFieldTypes = null, Guid? RelationshipTypeUid = null)
+		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, State? State = null, bool? includeHasFieldTypes = null, bool? includeHasRelationships = null, bool? includeTotalRelationshipCount = null, bool? includeCreatedModifiedBy = null, Guid? RelationshipTypeUid = null)
 		{
 			var prefix = "Relationships.GetRelationshipTypesAsync => ";
 			string errorMessage;
@@ -1023,6 +1027,21 @@ namespace d360.web.Controllers.V2
 				if (includeHasFieldTypes.HasValue)
 				{
 					queryParams.Add(new KeyValuePair<string, string>("includeHasFieldTypes", includeHasFieldTypes.ToString()));
+				}
+
+				if (includeHasRelationships.HasValue)
+				{
+					queryParams.Add(new KeyValuePair<string, string>("includeHasRelationships", includeHasRelationships.ToString()));
+				}
+
+				if (includeTotalRelationshipCount.HasValue)
+				{
+					queryParams.Add(new KeyValuePair<string, string>("includeTotalRelationshipCount", includeTotalRelationshipCount.ToString()));
+				}
+
+				if (includeCreatedModifiedBy.HasValue)
+				{
+					queryParams.Add(new KeyValuePair<string, string>("includeCreatedModifiedBy", includeCreatedModifiedBy.ToString()));
 				}
 
 				if (RelationshipTypeUid.HasValue)
@@ -1131,48 +1150,6 @@ namespace d360.web.Controllers.V2
 			var types = await Company.GetAllowedIntersectionTypes(subjectUid, predicateUid);
 
 			return Request.CreateResponse(HttpStatusCode.OK, types);
-		}
-
-		/// <summary>
-		/// GET a list of relationship types using an ID and a Type.
-		/// </summary>
-		/// <param name="id">The legacy type ID of the asset type.</param>
-		/// <param name="type">The legacy object type of the asset type (ArtifactType, FusioAttributeType, TaxonomyType, etc.).</param>
-		/// <returns></returns>
-		[
-			HttpGet,
-			ApiExplorerSettings(IgnoreApi = true),
-			MapToApiVersion("2.0"),
-			Route("types/{id}/{type}"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types by a given Type and Id, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
-		]
-		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(int id, string type)
-		{
-			var prefix = "Relationships.GetRelationshipTypesAsync => ";
-			string errorMessage;
-
-			try
-			{
-				if (Enum.TryParse(type, out SystemObjects systemType))
-				{
-					var types = await Company.GetActiveIntersectTypesByObjectType(id, systemType);
-
-					return Request.CreateResponse(HttpStatusCode.OK, types);
-				}
-				else
-				{
-					return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.InvalidParameter);
-				}
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
 		}
 
 		[Route("types/{id:int}"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
@@ -1780,18 +1757,20 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "Exported relationship types to Excel.", typeof(List<PredicateTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> ExportTypesToExcel(string keyword = null, int? id = null, string subject = null, string predicate = null, string @object = null)
+		public async Task<IHttpActionResult> ExportTypesToExcel(string keyword = null, Guid? assetTypeUid = null)
 		{
 			var queryParams = new List<KeyValuePair<string, string>>
 			{
 				new KeyValuePair<string, string>("state", "1")
 			};
+
+			if (assetTypeUid.HasValue)
+			{
+				queryParams.Add(new KeyValuePair<string, string>("assettypeuid", assetTypeUid.Value.ToString()));
+			}
+
 			var models = await Company.GetRelationshipTypes(queryParams,
-				keyword: keyword,
-				id: id,
-				subject: subject,
-				predicate: predicate,
-				@object: @object);
+				keyword: keyword);
 
 			return Excel(ItemsToExcel(models), $"Relationship Types {DateTime.Now.ToShortDateString()}.xlsx");
 		}

@@ -293,20 +293,6 @@ namespace d360.model
 			return result.FirstOrDefault();
 		}
 
-		public Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type)
-		{
-			var sType = type.ToString();
-			var assetType = Filter<AssetType>(a => a.Object == sType && a.ObjectID == id).FirstOrDefault();
-			if (assetType != null)
-			{
-				return GetRelationshipTypes(null, $"where State = 1 and (SubjectAssetTypeID = {assetType.ID} or ObjectAssetTypeID = {assetType.ID})");
-			}
-			else
-			{
-				return null;
-			}
-		}
-
 		public List<AllocationPossibility> GetAllocationOptions()
 		{
 			List<AllocationPossibility> list = Database

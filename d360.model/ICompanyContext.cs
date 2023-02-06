@@ -268,9 +268,7 @@ namespace d360.model
         bool ExecuteTimerSteps();
         
         string GenerateFormResponsesEmailContent(long itemId);
-        
-        Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type);
-        
+                
         List<AllocationPossibility> GetAllocationOptions();
         
         Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(Guid subjectUid, Guid? predicateUid = null);

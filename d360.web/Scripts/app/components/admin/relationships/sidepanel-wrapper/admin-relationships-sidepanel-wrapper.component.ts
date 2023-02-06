@@ -1,48 +1,28 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import { IOutputData } from "angular-split";
 import { TreeNode } from "primeng/api";
-import { Subscription } from "rxjs";
-import { LinkClickInterceptor } from "../../../../services/href-click-service";
 import { SidePanelService } from "../../../../services/side-panel.service";
 
+
 @Component({
-	selector: "d3s-asset-type-list-sidepanel-wrapper",
-	templateUrl: './asset-type-list-sidepanel-wrapper.component.html',
-	styleUrls: ['./asset-type-list-sidepanel-wrapper.component.less']
+	selector: "d3s-admin-relationshipst-sidepanel-wrapper",
+	templateUrl: './admin-relationships-sidepanel-wrapper.component.html',
+	styleUrls: ['./admin-relationships-sidepanel-wrapper.component.less']
 })
-export class AssetTypeListSidePanelWrapperComponent implements OnDestroy, OnChanges {
+export class AdminRelationshipsSidePanelWrapperComponent implements OnChanges {
 	@Input() sidePanelStorageKey: string;
 	@Input() selectedItem: TreeNode;
-
-	@Output() onEditClick: EventEmitter<string> = new EventEmitter<string>();
+	@Output() onEditClick = new EventEmitter();
 
 	sidePanelOpen = false;
-
-	hrefSub: Subscription;
 	selectedForInfoPanel: unknown;
 
-	constructor(public sidePanelService: SidePanelService,
-		private linkClickInterceptor: LinkClickInterceptor
-	) {
-		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-			this.selectedItem = null;
-			this.selectedForInfoPanel = { AssetUid: ev.data.uid, Object: ev.data.type };
-		});
+	constructor(public sidePanelService: SidePanelService) {
 	}
 
 	ngOnChanges(changes: SimpleChanges) {
 		if (changes.selectedItem && changes.selectedItem.currentValue !== changes.selectedItem.previousValue) {
 			this.selectedForInfoPanel = null;
-		}
-	}
-
-	expandPanel() {
-		this.sidePanelService.setSidePanelState({ expanded: true });
-	}
-
-	ngOnDestroy() {
-		if (this.hrefSub) {
-			this.hrefSub.unsubscribe();
 		}
 	}
 
@@ -60,6 +40,11 @@ export class AssetTypeListSidePanelWrapperComponent implements OnDestroy, OnChan
 
 	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
 		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+	}
+
+	onResourceLinkClick($event) {
+		this.selectedItem = null;
+		this.selectedForInfoPanel = { AssetUid: $event.uid, Object: $event.type };
 	}
 
 	get anySelectedItem(): unknown {

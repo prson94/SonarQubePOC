@@ -21,8 +21,7 @@
 			hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
 				<ng-container *ngIf="selectedItem && !selectedForInfoPanel">
-					<ig-asset-type-detail-v2 [uid]="selectedItem.key" (onEditClick)="onEditClick.emit($event)">
-					</ig-asset-type-detail-v2>
+					<d3s-relationship-type-detail [relationshipTypeUid]="selectedItem.Uid" (onLinkClicked)="onResourceLinkClick($event)"></d3s-relationship-type-detail>
 				</ng-container>
 				<ng-container *ngIf="selectedForInfoPanel && !selectedItem">
 					<asset-preview [assetUid]="selectedForInfoPanel.AssetUid"
