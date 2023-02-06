@@ -92,25 +92,3 @@
 				 [method]="'callback'"
 				 [prompt]="deleteModalTitle"
 				 (onCancel)="showDelete=false;"></d3s-delete-form>
-
-<div class="col l6 s12" *ngIf="false && !showEditor && !showDelete && selected">
-	<div class="row">
-		<div class="col s12">
-			<div class="tile tile-detail">
-				<d3s-field-definition-tile [showIsListable]="false"
-										   [showIsPartOfKey]="false"
-										   [actionTypeUid]="selected?.Uid"
-										   [objectName]="selectedRow?.Name"></d3s-field-definition-tile>
-			</div>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col s12">
-			<div class="tile tile-detail">
-				<d3s-admin-issue-type-allocation [issueTypeUid]="selected?.Uid"></d3s-admin-issue-type-allocation>
-			</div>
-		</div>
-	</div>
-	<div>
-	</div>
-</div>

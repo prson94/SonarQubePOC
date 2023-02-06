@@ -33,6 +33,9 @@ import { ConfigurationIssueTypeHeaderComponent } from './tabs/shared/issue-type-
 import { PageHeaderModule } from '../../shared/page-header/page-header.module';
 import { PortalsModule } from '../../shared/portals/portals.module';
 import { TabsModule } from '../../shared/tabs/tabs.module';
+import { ConfigurationIssueTypeAllocationsPageComponent } from './tabs/allocations/configuration-issue-type-allocations-page.component';
+import { AuditModule } from '../../sidebar/audit/audit.module';
+import { ConfigurationIssueTypeLogPageComponent } from './tabs/log/configuration-issue-type-log-page.component';
 
 @NgModule({
     imports: [
@@ -62,7 +65,8 @@ import { TabsModule } from '../../shared/tabs/tabs.module';
 		SidePanelModule,
 		PageHeaderModule,
 		PortalsModule,
-		TabsModule
+		TabsModule,
+		AuditModule
     ],
     declarations: [
         AdminIssueTypesComponent,
@@ -70,6 +74,8 @@ import { TabsModule } from '../../shared/tabs/tabs.module';
 		AdminIssueTypeAllocationEditorComponent,
 		IssueTypeSidePanelWrapperComponent,
 		ConfigurationIssueTypeFieldsPageComponent,
+		ConfigurationIssueTypeLogPageComponent,
+		ConfigurationIssueTypeAllocationsPageComponent,
 		ConfigurationIssueTypeHeaderComponent
     ],
     providers: [

@@ -1,6 +1,8 @@
 import { Component, Input } from "@angular/core";
 import { Breadcrumb } from "../../../../../../models/breadcrumb.model";
+import { WorkflowIssueType } from "../../../../../../models/workflow.model";
 import { HeaderBreadcrumbService } from "../../../../../../services/header-breadcrumb.service";
+import { WorkflowService } from "../../../../../../services/workflow.service";
 import { Tab } from "../../../../../shared/tabs/tabs.models";
 
 
@@ -12,9 +14,11 @@ import { Tab } from "../../../../../shared/tabs/tabs.models";
 export class ConfigurationIssueTypeHeaderComponent {
 	@Input() uid: string;
 
-	issueType: { Name: string };
+	workflowIssueType: WorkflowIssueType;
 
-	constructor(private headerBreadcrumbService: HeaderBreadcrumbService) {
+	constructor(private headerBreadcrumbService: HeaderBreadcrumbService,
+		private workflowService: WorkflowService
+	) {
 
 		this.headerBreadcrumbService.clearBreadcrumbs();
 
@@ -27,7 +31,7 @@ export class ConfigurationIssueTypeHeaderComponent {
 	}
 
 	get header() {
-		return this.issueType?.Name ?? '…';
+		return this.workflowIssueType?.Name ?? '…';
 	}
 
 	ngOnChanges() {
@@ -36,11 +40,11 @@ export class ConfigurationIssueTypeHeaderComponent {
 
 	async loadAssetType(uid: string) {
 		if (uid !== this.uid) {
-			this.issueType = null;
+			this.workflowIssueType = null;
 		}
 
-		this.issueType = { Name: 'some issue type name' };
-		this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.issueType.Name));
+		this.workflowIssueType = await this.workflowService.getIssueByUID(this.uid).toPromise();
+		this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.workflowIssueType.Name));
 	}
 
 	get tabs(): Tab[] {
