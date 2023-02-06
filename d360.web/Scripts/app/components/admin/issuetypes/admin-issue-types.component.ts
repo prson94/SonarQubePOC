@@ -9,6 +9,10 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
 
+/*global $localize*/
+// eslint-disable-next-line no-var
+declare var CurrentResourceID
+
 @Component({
     selector: 'd3s-admin-issue-types',
     templateUrl: 'admin-issue-types.component.html',
@@ -26,7 +30,11 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 
     get deleteModalTitle(): string {
         return $localize`Are you sure you want to delete the action type [${this.selected?.Name}]?`;
-    }
+	}
+
+	get sidePanelStorageKey() {
+		return 'configuration_workflow_actions_' + CurrentResourceID;
+	}
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,

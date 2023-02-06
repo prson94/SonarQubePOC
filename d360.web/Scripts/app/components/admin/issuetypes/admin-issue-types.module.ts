@@ -25,6 +25,10 @@ import { AdminIssueTypeAllocationEditorComponent } from "./admin-issue-type-allo
 
 
 import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
+import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
+import { AngularSplitModule, SplitAreaDirective } from 'angular-split';
+import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
+import { IssueTypeSidePanelWrapperComponent } from './issuetypes-sidepanel-wrapper/issuetype-sidepanel-wrapper.component';
 
 @NgModule({
     imports: [
@@ -49,12 +53,16 @@ import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
         SharedDynamicGridEditorModule,     
         SharedFieldDefinitionModule,   
         SharedGridPagingInfoModule,
-        TilesModule,
+		TilesModule,
+		AngularSplitModule,
+		AssetPreviewModule,
+		SidePanelModule
     ],
     declarations: [
         AdminIssueTypesComponent,
         AdminIssueTypeAllocationComponent,
-        AdminIssueTypeAllocationEditorComponent
+		AdminIssueTypeAllocationEditorComponent,
+		IssueTypeSidePanelWrapperComponent
     ],
     providers: [
     ]
