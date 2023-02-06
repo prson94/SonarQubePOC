@@ -137,4 +137,5 @@ export class SecondaryNavRequestModel {
 	forceRefresh?: boolean = false;
 	isScoringDefinitionPage?: boolean = false;
 	isDiagramAdminPage?: boolean = false;
+	excludeTabs?: boolean = false;
 }

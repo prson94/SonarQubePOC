@@ -2,7 +2,7 @@
 	<d3s-connector-label-sidepanel-wrapper #sidepanelWrapper
 										   [sidePanelStorageKey]="sidePanelStorageKey"
 										   [selectedItem]="selectedForInfoPanel"
-										   (onEdit)="showEditor=true">
+										   (onEdit)="openEditor(selectedForInfoPanel)">
 
 		<div class="col s12">
 			<div class="grid-actions-header column-layout">
@@ -111,7 +111,7 @@
 					</ng-template>
 				</p-table>
 			</div>
-		
+
 		</div>
 	</d3s-connector-label-sidepanel-wrapper>
 
@@ -120,8 +120,10 @@
 <d3s-modal [title]="editPopupTitle"
 		   additionalClasses="modal-dyn-editor medium-dialog"
 		   (onClose)="showEditor=false"
+		   i18n-subtitle
+		   subtitle="Diagram Assets"
 		   [isVisible]="showEditor">
-	<d3s-connector-label-form [label]="selected.length > 0 ? selected[0] : null"
+	<d3s-connector-label-form [label]="selectedForEdit ? selectedForEdit : null"
 							  [isSaving]="isSaving"
 							  (onSave)="saveLabel($event)"
 							  (onCancel)="closeEditor()"

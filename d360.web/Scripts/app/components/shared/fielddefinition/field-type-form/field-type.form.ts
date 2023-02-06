@@ -1443,9 +1443,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 			case 'IsPartOfKey':
                 return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Link']
                     .indexOf(this.currentType) > -1
-                    || (this.model.FieldType.Type
-                        && this.model.FieldType.Type[this.currentType]
-                        && this.model.FieldType.Type[this.currentType].AllowMultipleValues)
                     || this.objectType === 'ReferenceItemType');
             case 'IsPrimaryFilter':
                 return (!this.supportsPrimaryFilterOption || ['FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'RefListRelationship'].indexOf(this.currentType) > -1);

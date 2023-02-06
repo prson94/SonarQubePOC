@@ -9,7 +9,8 @@ import {
 	RelatedItem,
 	RelationshipCount,
 	RelationshipDetail,
-	RelationshipType
+	RelationshipType,
+    RelationshipTypeSimpleUIModel
 } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
@@ -27,22 +28,30 @@ export class RelationshipsService extends BaseObservableService {
 
 	constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-	getRelationshipTypes(assetTypeUid: string = null): Observable<RelationshipType[]> {
-		let url = 'api/v2/relationships/types?state=1';
+	getRelationshipTypes(assetTypeUid: string = null, includeHasRelationships: boolean = false, includeTotalRelationshipCount: boolean = false): Observable<RelationshipType[]> {
+        let url = 'api/v2/relationships/types?state=1';
 
-		if (assetTypeUid) {
-			url += `&AssetTypeUid=${assetTypeUid}`;
+        if (assetTypeUid) {
+            url += `&AssetTypeUid=${assetTypeUid}`;
 		}
 
-		return this.http.get(url)
-			.pipe(
-				map((response) => <RelationshipType[]>response),
-				catchError((err) => this.handleError(err))
-			);
+		if (includeHasRelationships) {
+			url += `&includeHasRelationships=true`;
+		}
+
+		if (includeTotalRelationshipCount) {
+			url += `&includeTotalRelationshipCount=true`;
+        }
+
+        return this.http.get(url)
+            .pipe(
+                map((response) => <RelationshipType[]>response),
+                catchError((err) => this.handleError(err))
+            );
 	}
 
 	getRelationshipType(RelationshipTypeUid: string): Observable<RelationshipType[]> {
-		const url = `api/v2/relationships/types?state=1&RelationshipTypeUid=${RelationshipTypeUid}`;
+		const url = `api/v2/relationships/types?state=1&RelationshipTypeUid=${RelationshipTypeUid}&includeHasRelationships=true&includeTotalRelationshipCount=true&includeCreatedModifiedBy=true`;
 
 		return this.http.get(url)
 			.pipe(
@@ -53,14 +62,6 @@ export class RelationshipsService extends BaseObservableService {
 
 	getRelationshipTypesByAssetUid(uid: string): Observable<RelationshipType[]> {
 		return this.http.get(`api/v2/relationships/types?state=1&AssetTypeUid=${uid}`)
-			.pipe(
-				map((response) => <RelationshipType[]>response),
-				catchError((err) => this.handleError(err))
-			);
-	}
-
-	getRelationshipTypesById(id: number, type: string): Observable<RelationshipType[]> {
-		return this.http.get(`api/v2/relationships/types/${id}/${type}`)
 			.pipe(
 				map((response) => <RelationshipType[]>response),
 				catchError((err) => this.handleError(err))
@@ -159,12 +160,12 @@ export class RelationshipsService extends BaseObservableService {
 			catchError((err) => this.handleError(err, true))
 		);
 	}
-	exportRelationshipTypeItems(relType: RelationshipType) {
+	exportRelationshipTypeItems(relType: RelationshipTypeSimpleUIModel) {
 		this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship type items'));
 	}
 
-	exportRelationshipTypes(keyword: string, id: number, subject: string, predicate: string, object: string) {
-		this.http.get(`api/v2/relationships/export/types?keyword=${keyword}&id=${id}&subject=${subject}&predicate=${predicate}&object=${object}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship types'));
+	exportRelationshipTypes(keyword: string, assetTypeUid: string) {
+		this.http.get(`api/v2/relationships/export/types?keyword=${keyword}&assetTypeUid=${assetTypeUid}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship types'));
 	}
 
 	getRelation(id: number): Observable<RelationshipDetail> {

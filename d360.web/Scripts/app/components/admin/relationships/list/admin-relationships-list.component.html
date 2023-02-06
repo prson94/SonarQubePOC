@@ -1,0 +1,104 @@
+﻿<div class="grid-actions-header column-layout">
+	<div class="grid-actions-header-row">
+		<div class="simple-search">
+			<ig-search-field [debounce]="600"
+							 [(ngModel)]="simpleFilterValue"
+							 (onSearch)="dt.filterGlobal($event, 'contains')"
+							 mode="Keypress">
+			</ig-search-field>
+		</div>
+		<div class="grid-action-buttons">
+			<button [igDataCy]="'RelationshipTypeAdd_Add'"
+					(click)="add()"
+					igButton
+					pTooltip="Add new relationship type"
+					i18n-pTooltip
+					tooltipPosition="top"
+					tooltipStyleClass="ig-tooltip"
+					class="ig-button-primary"
+					icon="fa-plus">
+			</button>
+
+			<div pTooltip="Export"
+				 i18n-pTooltip
+				 tooltipPosition="left"
+				 tooltipStyleClass="ig-tooltip">
+				<button igButton
+						class="ig-button-secondary"
+						[igDataCy]="'RelationshipType_Export'"
+						icon="fa-download"
+						(click)="export()">
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="grid-wrapper">
+	<p-table #dt [value]="relationships"
+			 selectionMode="single"
+			 [metaKeySelection]="true"
+			 [globalFilterFields]="['RelationshipTypeName']"
+			 [pageLinks]="3"
+			 [paginator]="true"
+			 [rows]="20"
+			 [selection]="selected"
+			 [stateStorage]="gridStateStorage"
+			 stateKey="{{gridStorageKey}}"
+			 [loading]="isLoading"
+			 [loadingIcon]="'fa fa-spinner fa-spin'">
+		<ng-template pTemplate="header">
+			<tr>
+				<th [pSortableColumn]="'RelationshipTypeName'">
+					<ng-container i18n>Relationship Type</ng-container>
+					<d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
+				</th>
+				<th style="width: 200px">Relationships Exist</th>
+				<th style="width: 40px"></th>
+			</tr>
+		</ng-template>
+		<ng-template pTemplate="body" let-item>
+			<tr (click)="selected=item;selectedChange.emit(selected);" (dblclick)="selected=item;selectedChange.emit(selected);showEditor=true;" [pSelectableRow]="item">
+				<td>
+					<a href="#" (click)="$event.preventDefault();open(item.Uid);">{{item.RelationshipTypeName}}</a>
+				</td>
+				<td>
+					<div class="ig-value">
+						<ng-container *ngIf="item.HasRelationships; else falseTemplate">
+							<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+							<ng-container i18n>True</ng-container>
+						</ng-container>
+						<ng-template #falseTemplate>
+							<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+							<ng-container i18n>False</ng-container>
+						</ng-template>
+					</div>
+				</td>
+				<td>
+					<div class="token-popup-menu" *ngIf="item.MenuItems">
+						<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+						<ig-popup-menu [items]="item.MenuItems"
+									   #tokenMenu
+									   [tabIndex]="1"></ig-popup-menu>
+					</div>
+				</td>
+			</tr>
+		</ng-template>
+		<ng-template pTemplate="summary">
+			<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+		</ng-template>
+	</p-table>
+</div>
+
+<d3s-relationship-type-delete [relationshipTypeUid]="editorSelectedUid"
+							  [isModalVisible]="showDelete"
+							  (onCancel)="showDelete=false"
+							  (onDelete)="deleteRelationship($event)">
+</d3s-relationship-type-delete>
+
+<d3s-admin-relationships-editor [isModalVisible]="showEditor"
+								[relationshipTypeUid]="editorSelectedUid"
+								(onSave)="onSaveRelationship($event)"
+								(closeClick)="closeEditor()">
+</d3s-admin-relationships-editor>

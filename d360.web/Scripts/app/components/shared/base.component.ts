@@ -1176,7 +1176,7 @@ export class BaseComponent {
 				{areaIcon = 'fa-tag';}
 			this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
 
-			if (r?.ObjectType !== 'IssueType') {
+			if (!requestModel.excludeTabs && r?.ObjectType !== 'IssueType') {
 				this.setCommonSecondaryNavTabs({
 					hasAudit: r.Items.HasAudit,
 					hasOwnership: r.Items.HasOwnership,

@@ -1,0 +1,114 @@
+<div class="asset-detail side-panel-detail no-padding">
+	<d3s-loading [isLoading]="isLoading"></d3s-loading>
+
+	<div *ngIf="!isLoading" class="asset-detail-header">
+		<div class="asset-name">{{formattedRelationshipTypeName}}</div>
+		<div class="class-name" i18n>Relationship Type</div>
+
+		<div class="ng-star-inserted">
+			<a (click)="open()">Open</a>
+			<span class="grey-delimiter">|</span>
+			<a (click)="open(true)">Open in New Tab</a>
+			<span class="grey-delimiter">|</span>
+			<a (click)="editClick()">Edit</a>
+		</div>
+	</div>
+
+	<div *ngIf="!isLoading" class="asset-detail-tabs">
+		<ig-property-group i18n-title title="General">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Relationships Exist</label>
+						<div class="ig-value">
+							<ng-container *ngIf="relationshipType.HasRelationships; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Number of Relationships</label>
+						<span>
+							{{relationshipType.TotalRelationshipCount}}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Subject</label>
+						<span>
+							{{getAssetTypeClassFriendlyName(relationshipType.Subject.Class)}}: {{relationshipType.Subject.Name}}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Predicate</label>
+						<span>
+							{{relationshipType.Predicate.Name}}/{{relationshipType.Predicate.Inverse}} <span class="light-text">({{relationshipType.Predicate.FriendlyTypeName}})</span>
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Object</label>
+						<span>
+							{{getAssetTypeClassFriendlyName(relationshipType.Object.Class)}}: {{relationshipType.Object.Name}}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Subject Cardinality</label>
+						<span>
+							{{relationshipType.Subject.Cardinality}}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Object Cardinality</label>
+						<span>
+							{{relationshipType.Object.Cardinality}}
+						</span>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+		<ig-property-group i18n-title title="System Fields">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>
+							UID
+							<i class="fa fa-copy" [copy-clipboard]="relationshipType.Uid"></i>
+						</label>
+						<div>
+							{{relationshipType.Uid}}
+						</div>
+					</div>
+					<div class="row" *ngIf="relationshipType.CreatedOn">
+						<label class="ig-label" i18n>Date Created</label>
+						<span>
+							{{ relationshipType.CreatedOn | date:'d MMM yyyy' }}
+						</span>
+					</div>
+					<div class="row" *ngIf="relationshipType.UpdatedOn">
+						<label class="ig-label" i18n>Date Last Modified</label>
+						<span>
+							{{ relationshipType.UpdatedOn | date:'d MMM yyyy' }}
+						</span>
+					</div>
+					<div class="row" *ngIf="relationshipType.CreatedByName">
+						<label class="ig-label" i18n>Created By</label>
+						<a (click)="resourceClicked(relationshipType.CreatedByUid)">
+							{{ relationshipType.CreatedByName }}
+						</a>
+					</div>
+					<div class="row" *ngIf="relationshipType.UpdatedByName">
+						<label class="ig-label" i18n>Last Modified by</label>
+						<a (click)="resourceClicked(relationshipType.UpdatedByUid)">
+							{{ relationshipType.UpdatedByName }}
+						</a>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+	</div>
+
+</div>
