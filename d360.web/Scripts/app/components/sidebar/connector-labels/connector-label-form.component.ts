@@ -14,6 +14,8 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AsyncValidatorService } from '../../../services/async-validators.service';
 import { ConnectorLabel } from '../../../models/connectorLabel.model';
 
+/*global $localize*/
+
 @Component({
     selector: 'd3s-connector-label-form',
     templateUrl: './connector-label-form.component.html',
