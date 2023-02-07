@@ -1,10 +1,9 @@
-﻿import { Component, ChangeDetectorRef, Input, ViewEncapsulation, EventEmitter, Output } from "@angular/core";
+﻿import { Component, Input, ViewEncapsulation, EventEmitter, Output } from "@angular/core";
 import { Title } from "@angular/platform-browser";
 import { Router } from "@angular/router";
 import { ConnectorLabel } from "../../../models/connectorLabel.model";
 import { ConnectorLabelService } from "../../../services/connectorLabel.service";
 import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
-import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { SecondaryNavService } from "../../../services/right-sidebar.service";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { AdminBaseComponent } from "../../admin/admin-base.component";
@@ -25,13 +24,10 @@ export class ConnectorLabelDefinitionComponent extends AdminBaseComponent {
 	@Output() onEdit = new EventEmitter();
 
 	constructor(private router: Router,
-		private connectorLabelService: ConnectorLabelService,
 		headerBreadcrumbService: HeaderBreadcrumbService,
-		private messagesService: MessagesObservableService,
 		titleService: Title,
 		secondaryNavService: SecondaryNavService,
-		protected settingsService: CompanySettingsService,
-		private cdRef: ChangeDetectorRef
+		protected settingsService: CompanySettingsService
 	) {
 		super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
 	}
