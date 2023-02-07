@@ -305,7 +305,7 @@ namespace d360.web.Controllers.V2
                 var validationResult = ValidateDataProfileUpsertRequest(models, true);
                 if (validationResult.StatusCode != HttpStatusCode.OK)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
                 }
 
                 if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
@@ -364,7 +364,7 @@ namespace d360.web.Controllers.V2
 
                 if (validationResult.StatusCode != HttpStatusCode.OK)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
                 }
 
                 if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
