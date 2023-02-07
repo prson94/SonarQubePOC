@@ -84,8 +84,26 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(false)
         ]
         IntraTypeHierarchy = 4,
-        
-        [
+
+		[
+			Category("Catalog"),
+			Name("Catalog Browser"),
+			Description("Allows for organizing assets into simpler views based on relationships to reference items."),
+			ReadOnly(false),
+			SingleRelationshipByFunctionalType(false),
+			AllowIntersectTypeAssignment(true),
+			AllowMultiplePredicates(true),
+			AllowDifferentSubjectObject(true),
+			ForceDifferentSubjectObject(true),
+			AllowEditFromPredicateEditor(true),
+			AllowEditFromRelationshipEditor(true),
+			SubjectAssetClassesSupported(AssetTypeClass.Reference),
+			ObjectAssetClassesSupported(AssetTypeClass.TechnicalAsset),
+			AllowIntersectTypeAsSubject(false)
+		]
+		CatalogBrowse = 5,
+
+		[
             Category("General"),
             Name("Grammatic Association"),
             Description("Allows you to establish grammatic association between two objects."),
