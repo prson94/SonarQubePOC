@@ -34,5 +34,8 @@
 	"include": [
 		".",
 		"../node_modules/gojs/extensionsTS/LinkLabelOnPathDraggingTool.ts"
+	],
+	"exclude": [
+		"environments/environment.prod.ts"
 	]
 }
