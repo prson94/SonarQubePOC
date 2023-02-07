@@ -9,6 +9,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { Router } from '@angular/router';
+import { SidePanelService } from '../../../services/side-panel.service';
 
 /*global $localize*/
 // eslint-disable-next-line no-var
@@ -44,6 +45,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 		protected messagesService: MessagesObservableService,
 		secondaryNavService: SecondaryNavService,
 		protected settingsService: CompanySettingsService,
+		private sidePanelService: SidePanelService,
 		private router: Router,
 		titleService: Title,
 		private workflowService: WorkflowService) {
@@ -53,6 +55,11 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 		this.tabTitle = $localize`Action Types`;
 		this.setCommonItems();
 		this.theDeleteCallback = this.deleteIssueType.bind(this);
+
+		this.sidePanelService.editClickSource$.subscribe((res) => {
+			this.selected = res as WorkflowIssueType;
+			this.OnEdit();
+		});
 	}
 
 	ngOnInit() {
@@ -111,6 +118,13 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 					if (!type.Description) {
 						type.Description = "---";
 					}
+					if (!type.UpdatedByName) {
+						type.UpdatedByName = "---";
+					}
+					if (!type.UpdatedOn) {
+						type.UpdatedOn = "---"
+					}
+					type.Description = type.Description.replace(/<[^>]*>/g, '');
 				});
 				this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
 				this.selectedItemChange();

@@ -38,6 +38,7 @@ import { AuditModule } from '../../sidebar/audit/audit.module';
 import { ConfigurationIssueTypeLogPageComponent } from './tabs/log/configuration-issue-type-log-page.component';
 import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
 import { IssueTypeDefinitionModule } from './definition/issue-type-definition.module';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [
@@ -70,7 +71,8 @@ import { IssueTypeDefinitionModule } from './definition/issue-type-definition.mo
 		TabsModule,
 		AuditModule,
 		SearchFieldModule,
-		IssueTypeDefinitionModule
+		IssueTypeDefinitionModule,
+		TooltipModule
     ],
     declarations: [
         AdminIssueTypesComponent,
