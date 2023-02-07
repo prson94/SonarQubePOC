@@ -15,7 +15,6 @@ export class ConfigurationIssueTypeAllocationsPageComponent {
 	ngOnInit() {
 		this.route.params.subscribe((params) => {
 			this.uid = params["uid"];
-			//this.loadAssetType(this.uid);
 		});
 	}
 }
