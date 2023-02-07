@@ -26,6 +26,7 @@ export class IssueTypeDefinitionComponent {
 	open(newTab: boolean = false) {
 		const url = `/admin/configuration/WorkflowActions/${this.workflowIssueType.Uid}/fields`;
 		if (newTab) {
+			// eslint-disable-next-line
 			window.open(url, "_blank");
 		}
 		else {
