@@ -1,8 +1,7 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import { IOutputData } from "angular-split";
 import { WorkflowIssueType } from "../../../../models/workflow.model";
 import { SidePanelService } from "../../../../services/side-panel.service";
-import { SidePanelComponent } from "../../../shared/sidepanel/side-panel.component";
 
 
 @Component({

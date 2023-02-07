@@ -26,6 +26,7 @@ export class IssueTypeDefinitionComponent {
 	open(newTab: boolean = false) {
 		const url = `/admin/configuration/WorkflowActions/${this.workflowIssueType.Uid}/fields`;
 		if (newTab) {
+			// eslint-disable-next-line ESLint_security_detect-non-literal-fs-filename
 			window.open(url, "_blank");
 		}
 		else {

@@ -1,7 +1,5 @@
 import { Component } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { AssetTypeClass } from "../../../../../models/asset.model";
-import { AssetTypeService } from "../../../../../services/asset-type.service";
 
 @Component({
 	selector: "d3s-configuration-issue-type-log-page",
@@ -11,10 +9,8 @@ import { AssetTypeService } from "../../../../../services/asset-type.service";
 export class ConfigurationIssueTypeLogPageComponent {
 	uid: string;
 
-
 	constructor(
-		private route: ActivatedRoute,
-		private assetTypeService: AssetTypeService) {
+		private route: ActivatedRoute) {
 	}
 
 	ngOnInit() {

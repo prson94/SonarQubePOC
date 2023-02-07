@@ -5,6 +5,7 @@ import { HeaderBreadcrumbService } from "../../../../../../services/header-bread
 import { WorkflowService } from "../../../../../../services/workflow.service";
 import { Tab } from "../../../../../shared/tabs/tabs.models";
 
+/*global $localize*/
 
 @Component({
 	selector: "d3s-configuration-issue-type-header",

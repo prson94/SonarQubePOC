@@ -13,7 +13,7 @@ import { SidePanelService } from '../../../services/side-panel.service';
 
 /*global $localize*/
 // eslint-disable-next-line no-var
-declare var CurrentResourceID
+declare var CurrentResourceID;
 
 @Component({
 	selector: 'd3s-admin-issue-types',
@@ -122,7 +122,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 						type.UpdatedByName = "---";
 					}
 					if (!type.UpdatedOn) {
-						type.UpdatedOn = "---"
+						type.UpdatedOn = "---";
 					}
 					type.Description = type.Description.replace(/<[^>]*>/g, '');
 				});
