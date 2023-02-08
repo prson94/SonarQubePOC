@@ -23,14 +23,27 @@ import { AdminIssueTypesComponent } from './admin-issue-types.component';
 import { AdminIssueTypeAllocationComponent } from './admin-issue-type-allocation.component';
 import { AdminIssueTypeAllocationEditorComponent } from "./admin-issue-type-allocation-editor.component";
 
-
 import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
+import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
+import { AngularSplitModule } from 'angular-split';
+import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
+import { IssueTypeSidePanelWrapperComponent } from './issuetypes-sidepanel-wrapper/issuetype-sidepanel-wrapper.component';
+import { ConfigurationIssueTypeFieldsPageComponent } from './tabs/fields/configuration-issue-type-fields-page.component';
+import { ConfigurationIssueTypeHeaderComponent } from './tabs/shared/issue-type-header/issue-type-header.component';
+import { PageHeaderModule } from '../../shared/page-header/page-header.module';
+import { PortalsModule } from '../../shared/portals/portals.module';
+import { TabsModule } from '../../shared/tabs/tabs.module';
+import { ConfigurationIssueTypeAllocationsPageComponent } from './tabs/allocations/configuration-issue-type-allocations-page.component';
+import { AuditModule } from '../../sidebar/audit/audit.module';
+import { ConfigurationIssueTypeLogPageComponent } from './tabs/log/configuration-issue-type-log-page.component';
+import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
+import { IssueTypeDefinitionModule } from './definition/issue-type-definition.module';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
-
 
         AdminIssueTypesRoutingModule,
 
@@ -40,7 +53,7 @@ import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
         InputTextModule,
         SharedModule,
         TableModule,
-        MultiSelectModule,
+		MultiSelectModule,
 
         //d3s                
         CoreModule,
@@ -49,12 +62,27 @@ import { AdminIssueTypesRoutingModule } from './admin-issue-types.routes';
         SharedDynamicGridEditorModule,     
         SharedFieldDefinitionModule,   
         SharedGridPagingInfoModule,
-        TilesModule,
+		TilesModule,
+		AngularSplitModule,
+		AssetPreviewModule,
+		SidePanelModule,
+		PageHeaderModule,
+		PortalsModule,
+		TabsModule,
+		AuditModule,
+		SearchFieldModule,
+		IssueTypeDefinitionModule,
+		TooltipModule
     ],
     declarations: [
         AdminIssueTypesComponent,
         AdminIssueTypeAllocationComponent,
-        AdminIssueTypeAllocationEditorComponent
+		AdminIssueTypeAllocationEditorComponent,
+		IssueTypeSidePanelWrapperComponent,
+		ConfigurationIssueTypeFieldsPageComponent,
+		ConfigurationIssueTypeLogPageComponent,
+		ConfigurationIssueTypeAllocationsPageComponent,
+		ConfigurationIssueTypeHeaderComponent
     ],
     providers: [
     ]
