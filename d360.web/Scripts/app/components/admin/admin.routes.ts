@@ -20,7 +20,7 @@ const routes: Routes = [
             { path: 'responsibilities', loadChildren: () => import('./responsibilities/admin-responsibilities.module').then((m) => m.AdminResponsibilitiesModule) },
             { path: 'resources', loadChildren: () => import('./resources/admin-resources.module').then( (m) => m.AdminResourcesModule) },
             { path: 'groups', loadChildren: () => import('./groups/admin-groups.module').then( (m) => m.AdminGroupsModule) },          
-            { path: 'issuetypes', loadChildren: () => import('./issuetypes/admin-issue-types.module').then((m) => m.AdminIssueTypesModule) },
+			{ path: 'configuration/WorkflowActions', loadChildren: () => import('./issuetypes/admin-issue-types.module').then((m) => m.AdminIssueTypesModule) },
             { path: 'predicates', loadChildren: () => import('./predicates/admin-predicates.module').then((m) => m.AdminPredicatesModule) },
             { path: 'exporttemplates', loadChildren: () => import('./exporttemplates/admin-export-templates.module').then((m) => m.AdminExportTemplatesModule) },
             { path: 'tags', loadChildren: () => import('./tags/admin-tags.module').then((m) => m.AdminTagsModule) },
