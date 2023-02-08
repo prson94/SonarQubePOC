@@ -48,12 +48,12 @@ namespace d360.model.DataAccessLayer
 										IT.Description, 
 										IT.IsSystem, 
 										IT.UpdatedOn,
-										A.Uid as UpdatedByUid,
+										UpdatedBy.Uid as UpdatedByUid,
 										ADV_Created.DisplayValue as UpdatedByName
 									from 
 										IssueType IT
-										left join Asset A on A.ObjectID = IT.UpdatedBy and A.Object = 'Resource' 
-										left join AssetDisplayValue ADV_Created on ADV_Created.AssetID = A.ID";
+										left join Asset UpdatedBy on UpdatedBy.ObjectID = IT.UpdatedBy and UpdatedBy.Object = 'Resource' 
+										left join AssetDisplayValue ADV_Created on ADV_Created.AssetID = UpdatedBy.ID";
 
 
 			var workflowSql = $@"EXISTS (SELECT 1 FROM workflow.type T INNER JOIN workflow.EventRegistration E on E.TypeID = T.ID and E.[Object] = 'IssueType' and E.ObjectID = IT.ID and T.State = 1)";
