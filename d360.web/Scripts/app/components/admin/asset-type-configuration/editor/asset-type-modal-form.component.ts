@@ -425,6 +425,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	close() {
 		this.setDefaultFormValues();
+
+		if (this.formElement) {
+			this.formElement.nativeElement.scrollTop = 0;
+		}
+
 		this.onClose.emit();
 	}
 

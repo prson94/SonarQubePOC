@@ -76,11 +76,17 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
 
     constructor(private ref: ChangeDetectorRef) { }
 
-    writeValue(obj: any): void {
+	writeValue(obj: any): void {
 		if (obj != null) {
             this.hasValue = true;
 			if (this.enforceMaxMin && this.el) {
-                var value = +this.el.nativeElement.value;
+				let value: number = 0;
+				if (this.el.nativeElement.value) {
+					value = +this.el.nativeElement.value;
+				}
+				else if (obj) {
+					value = +obj;
+				}
                 if (this.max && value > this.max) {
                     value = this.max;
                     this.el.nativeElement.value = value;
