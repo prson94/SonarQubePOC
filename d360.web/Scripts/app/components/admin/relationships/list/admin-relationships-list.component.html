@@ -11,7 +11,7 @@
 			<button [igDataCy]="'RelationshipTypeAdd_Add'"
 					(click)="add()"
 					igButton
-					pTooltip="Add new relationship type"
+					pTooltip="Add Relationship Type"
 					i18n-pTooltip
 					tooltipPosition="top"
 					tooltipStyleClass="ig-tooltip"
@@ -39,7 +39,7 @@
 	<p-table #dt [value]="relationships"
 			 selectionMode="single"
 			 [metaKeySelection]="true"
-			 [globalFilterFields]="['RelationshipTypeName']"
+			 [globalFilterFields]="['RelationshipTypeName', 'HasRelationshipsTextValue']"
 			 [pageLinks]="3"
 			 [paginator]="true"
 			 [rows]="20"
@@ -54,7 +54,10 @@
 					<ng-container i18n>Relationship Type</ng-container>
 					<d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
 				</th>
-				<th style="width: 200px">Relationships Exist</th>
+				<th style="width: 200px" [pSortableColumn]="'HasRelationshipsTextValue'">
+					Relationships Exist
+					<d3s-sortIcon [field]="'HasRelationshipsTextValue'"></d3s-sortIcon>
+				</th>
 				<th style="width: 40px"></th>
 			</tr>
 		</ng-template>

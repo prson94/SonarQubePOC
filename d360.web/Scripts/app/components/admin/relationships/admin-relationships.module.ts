@@ -14,6 +14,7 @@ import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { AdminRelationshipsSidePanelWrapperModule } from './sidepanel-wrapper/admin-relationships-sidepanel-wrapper.module';
 import { AdminRelationshipEditorModule } from './list/admin-relationship-editor.module';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [
@@ -25,7 +26,8 @@ import { AdminRelationshipEditorModule } from './list/admin-relationship-editor.
 
         //prime        
         SharedModule,
-        TableModule,
+		TableModule,
+		TooltipModule,
 
         //d3s        
         AdminRelationshipEditorModule,

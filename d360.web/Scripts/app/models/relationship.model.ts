@@ -1,6 +1,8 @@
 ﻿import { MenuItem } from "primeng/api";
 import { Predicate } from "./predicate.model";
 
+/*global $localize*/
+
 export enum Cardinality {
 	One = 1,
 	Many = 2
@@ -17,6 +19,7 @@ export class RelationshipTypeSimpleUIModel {
 	Uid: string;
 	RelationshipTypeName: string;
 	HasRelationships?: boolean;
+	HasRelationshipsTextValue?: string;
 	TotalRelationshipCount?: number;
 	MenuItems?: MenuItem[];
 }
@@ -38,6 +41,7 @@ export class RelationshipType {
 			RelationshipTypeName: data.Subject.Name + " - " + data.Predicate.Name + " - " + data.Object.Name,
 			Uid: data.Uid,
 			HasRelationships: data.HasRelationships,
+			HasRelationshipsTextValue: data.HasRelationships ? $localize`True` : $localize`False`,
 			TotalRelationshipCount: data.TotalRelationshipCount
 		};
 	}

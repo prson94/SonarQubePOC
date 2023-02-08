@@ -9,8 +9,8 @@
 			<a (click)="open()">Open</a>
 			<span class="grey-delimiter">|</span>
 			<a (click)="open(true)">Open in New Tab</a>
-			<span class="grey-delimiter">|</span>
-			<a (click)="editClick()">Edit</a>
+			<span *ngIf="hasEdit" class="grey-delimiter">|</span>
+			<a *ngIf="hasEdit" (click)="editClick()">Edit</a>
 		</div>
 	</div>
 

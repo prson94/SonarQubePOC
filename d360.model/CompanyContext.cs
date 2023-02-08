@@ -1250,18 +1250,18 @@ from	IntersectType I
 											T.ObjectID as ID,
 											T.Uid,
 											case 
-												when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: '
-												when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: '
-												when T.Object = 'GroupType' then 'Security :: '
-												when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} :: '
-												when T.Object = 'ReferenceItemType' then 'Reference :: '
-												when T.Object = 'ResourceType' then 'Security :: '
-												when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} :: '
-												when T.Object = 'TaskType' and T.[Class] = 15 then '{CommonNames.AssetTypeClass_Task.CleanForSql()} :: ' 
-												when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} :: '
+												when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} : '
+												when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} : '
+												when T.Object = 'GroupType' then 'Security : '
+												when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} : '
+												when T.Object = 'ReferenceItemType' then 'Reference : '
+												when T.Object = 'ResourceType' then 'Security : '
+												when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} : '
+												when T.Object = 'TaskType' and T.[Class] = 15 then '{CommonNames.AssetTypeClass_Task.CleanForSql()} : ' 
+												when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} : '
 											end + coalesce(P.[Path], T.Name) as Name
 									from	AssetType T
-											cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
+											cross apply dbo.GetAssetTypeTextPathById(T.ID, ' > ') P
 									{whereStatement}
 									) I";
 
