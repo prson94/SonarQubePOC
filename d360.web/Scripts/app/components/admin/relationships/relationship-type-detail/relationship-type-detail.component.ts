@@ -18,6 +18,7 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 
 	isLoading: boolean = false;
 	relationshipType: RelationshipType;
+	hasEdit: boolean = false;
 
 	formattedRelationshipTypeName: string = "";
 	constructor(
@@ -38,6 +39,7 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 				this.relationshipType = res[0];
 				this.formattedRelationshipTypeName = this.relationshipType.Object.Name + " - " + this.relationshipType.Predicate.Name + " - " + this.relationshipType.Subject.Name;
 
+				this.hasEdit = !this.relationshipType.HasRelationships;
 				this.isLoading = false;
 			});
 	}

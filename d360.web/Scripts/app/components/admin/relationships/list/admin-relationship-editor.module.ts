@@ -19,6 +19,7 @@ import { SiteModalModule } from '../../../shared/modal/gov-modal.module';
 import { IgMessageBoxModule } from '../../../shared/controls/message-box/message-box.module';
 import { PropertyGroupModule } from '../../../shared/controls/property-group/property-group.component';
 import { FormFeedbackBadgesModule } from '../../../shared/controls/form-feedback-badges/form-feedback-badges.component';
+import { TooltipModule } from 'primeng/tooltip';
 
 
 @NgModule({
@@ -33,7 +34,8 @@ import { FormFeedbackBadgesModule } from '../../../shared/controls/form-feedback
         DropdownModule,
         InputTextModule,        
         SharedModule,
-        TableModule, 
+		TableModule,
+		TooltipModule,
 
         //d3s        
         CoreModule,

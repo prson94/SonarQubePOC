@@ -1,6 +1,7 @@
 ﻿import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
+import { Subscription } from 'rxjs';
 import { Predicate } from '../../../../models/predicate.model';
 import { Cardinality, PredicateDropdown, RelationshipType, RelationshipTypeEdge } from '../../../../models/relationship.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
@@ -10,6 +11,7 @@ import { RelationshipsService } from '../../../../services/relationships.service
 @Component({
 	selector: 'd3s-admin-relationships-editor',
 	templateUrl: './admin-relationships-editor.component.html',
+	styles: [`.form-wrapper { padding-top:16px; }`],
 	providers: [RelationshipsService],
 
 })
@@ -47,6 +49,7 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	hasChanges: boolean = false;
 
 	isSaving: boolean = false;
+	formSub: Subscription;
 
 	relationshipTypeForm: FormGroup = null;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
@@ -86,7 +89,14 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 		this.isFormSet = false;
 		this.hasChanges = false;
 
+		if (this.formSub) {
+			this.formSub.unsubscribe();
+		}
+
 		if (this.relationshipTypeUid) {
+			this.saveLabel = $localize`Save Changes`;
+			this.cancelLabel = $localize`Close`;
+			this.title = $localize`Edit Relationship Type`;
 			await this.loadItem(this.relationshipTypeUid);
 		}
 		else {
@@ -127,13 +137,11 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 				setTimeout(() => {
 					this.isFormSet = true;
 					this.hasChanges = false;
-					this.relationshipTypeForm.valueChanges.subscribe(() => {
+					this.formSub = this.relationshipTypeForm.valueChanges.subscribe(() => {
 						this.hasChanges = true;
+						this.cancelLabel = $localize`Discard Changes`;
 					});
 				}, 200);
-
-				this.saveLabel = $localize`Save Changes`;
-				this.cancelLabel = $localize`Discard Changes`;
 			}
 			this.isLoadingItem = false;
 
@@ -258,6 +266,11 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	}
 
 	get isSubmitDisabled(): boolean {
-		return !this.relationshipTypeForm.valid || (this.relationshipType.Uid && this.hasChanges);
+		return !this.relationshipTypeForm.valid || (this.relationshipType.Uid && !this.hasChanges);
+	}
+
+	async cancel() {
+		await this.loadForm();
+		this.closeClick.emit();
 	}
 }

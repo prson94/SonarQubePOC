@@ -269,7 +269,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.ts</context>
-          <context context-type="linenumber">99,103</context>
+          <context context-type="linenumber">109,113</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
@@ -1620,11 +1620,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.ts</context>
-          <context context-type="linenumber">26,29</context>
+          <context context-type="linenumber">28,31</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-list.component.ts</context>
-          <context context-type="linenumber">106,107</context>
+          <context context-type="linenumber">106</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rule.form.ts</context>
@@ -2209,7 +2209,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.ts</context>
-          <context context-type="linenumber">47,48</context>
+          <context context-type="linenumber">49,50</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/allocation-editor.component.ts</context>
@@ -2232,7 +2232,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.ts</context>
-          <context context-type="linenumber">48,50</context>
+          <context context-type="linenumber">50,52</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/allocation-editor.component.ts</context>
@@ -2251,7 +2251,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.ts</context>
-          <context context-type="linenumber">49,51</context>
+          <context context-type="linenumber">51,53</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
@@ -2274,7 +2274,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.ts</context>
-          <context context-type="linenumber">50,52</context>
+          <context context-type="linenumber">52,54</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
@@ -2297,7 +2297,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.ts</context>
-          <context context-type="linenumber">51,53</context>
+          <context context-type="linenumber">53,55</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/pipes/technical-to-display.pipe.ts</context>
@@ -2320,7 +2320,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.ts</context>
-          <context context-type="linenumber">52,55</context>
+          <context context-type="linenumber">54,57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3978974431601306494" datatype="html">
@@ -2381,7 +2381,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
-          <context context-type="linenumber">28,33</context>
+          <context context-type="linenumber">29,34</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.html</context>
@@ -2467,7 +2467,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-list.component.html</context>
-          <context context-type="linenumber">70,74</context>
+          <context context-type="linenumber">73,77</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.html</context>
@@ -2506,7 +2506,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-list.component.html</context>
-          <context context-type="linenumber">74,80</context>
+          <context context-type="linenumber">77,83</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.html</context>
@@ -3084,7 +3084,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.ts</context>
-          <context context-type="linenumber">135,136</context>
+          <context context-type="linenumber">97,98</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/allocation-editor.component.ts</context>
@@ -3127,7 +3127,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.ts</context>
-          <context context-type="linenumber">136,138</context>
+          <context context-type="linenumber">142,146</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/allocation-editor.component.ts</context>
@@ -3285,6 +3285,10 @@
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/issuetypes/admin-issue-type-allocation-editor.component.ts</context>
           <context context-type="linenumber">31,34</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.ts</context>
+          <context context-type="linenumber">98,99</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/allocation-editor.component.ts</context>
@@ -3460,7 +3464,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/issuetypes/tabs/shared/issue-type-header/issue-type-header.component.ts</context>
-          <context context-type="linenumber">55,59</context>
+          <context context-type="linenumber">56,60</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.ts</context>
@@ -3486,7 +3490,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/issuetypes/tabs/shared/issue-type-header/issue-type-header.component.ts</context>
-          <context context-type="linenumber">59,63</context>
+          <context context-type="linenumber">60,64</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1192565081164513070" datatype="html">
@@ -3515,7 +3519,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/issuetypes/tabs/shared/issue-type-header/issue-type-header.component.ts</context>
-          <context context-type="linenumber">63,68</context>
+          <context context-type="linenumber">64,69</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/base.component.ts</context>
@@ -4911,7 +4915,7 @@
         <source>Configuration</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/issuetypes/tabs/shared/issue-type-header/issue-type-header.component.ts</context>
-          <context context-type="linenumber">25,26</context>
+          <context context-type="linenumber">26,27</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
@@ -4930,7 +4934,7 @@
         <source>Workflow Actions</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/issuetypes/tabs/shared/issue-type-header/issue-type-header.component.ts</context>
-          <context context-type="linenumber">26,27</context>
+          <context context-type="linenumber">27,28</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/menu/site-menu.component.ts</context>
@@ -5293,8 +5297,8 @@
           <context context-type="linenumber">13,16</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="a4ce0cf2d4042162e35661ba04f248076f682795" datatype="html">
-        <source> When creating a relationship type, Subject should always be the higher-level item in the relationship, while Object is the lower-level, or atomic, item in the relationship. For example, when defining a relationships between Application and Business Term you would set Application as Subject and Business Term as Object. This will impact how sourcing and synonym inheritance works, as Object is what you are sourcing as well as where synonyms defined on the relationship will also appear. </source>
+      <trans-unit id="c0aebfaa17bb9bb2d1ef2a5d11672006b5aecde8" datatype="html">
+        <source> When creating a relationship type, Subject should always be the higher-level item in the relationship, while Object is the lower-level item in the relationship. For example, when defining a relationship between Application and Business Term you would set Application as Subject and Business Term as Object. This will impact how sourcing and synonym inheritance works, as the Object is what you are sourcing as well as where synonyms defined on the relationship will also appear. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
           <context context-type="linenumber">19,25</context>
@@ -5304,18 +5308,11 @@
         <source>Subject</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
-          <context context-type="linenumber">33,37</context>
+          <context context-type="linenumber">35,39</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.html</context>
           <context context-type="linenumber">41,45</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="099ac2f93eff766e69ce331ede8cfb214dcccfb2" datatype="html">
-        <source>Select Subject</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
-          <context context-type="linenumber">39,44</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2a6b28145365671ed48ca2712ebd217a527300d7" datatype="html">
@@ -5333,18 +5330,11 @@
           <context context-type="linenumber">62,66</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="b29896a258f7b5d95cd5e603bcb35bedcb81ad22" datatype="html">
-        <source>Select A Predicate</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
-          <context context-type="linenumber">57,62</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="a3c95219829b1b12ce2674f49df3a1a195407cfc" datatype="html">
         <source>Object</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
-          <context context-type="linenumber">70,74</context>
+          <context context-type="linenumber">68,72</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.html</context>
@@ -5363,47 +5353,29 @@
           <context context-type="linenumber">22,24</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="0f26f5bc40135276aeedac8eaba8cbe217247a34" datatype="html">
-        <source>Select Object</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
-          <context context-type="linenumber">76,81</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="dac8d5e583a22fd71013f8fe6c0149ca1f2cb585" datatype="html">
         <source>Subject Cardinality</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
-          <context context-type="linenumber">90,94</context>
+          <context context-type="linenumber">86,90</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.html</context>
           <context context-type="linenumber">59,65</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="3c5d7996ab44054a9a7f33ad453069b0eb3de3a3" datatype="html">
-        <source>Select Cardinality</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
-          <context context-type="linenumber">95,99</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
-          <context context-type="linenumber">111,115</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="e04356b41e0d85f3e2f7ebc72a3f75c6e1147663" datatype="html">
         <source>to</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
-          <context context-type="linenumber">103,106</context>
+          <context context-type="linenumber">99,102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="03ec39f78e204e5068ce98f108bc53844b6658a3" datatype="html">
         <source>Object Cardinality</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
-          <context context-type="linenumber">106,110</context>
+          <context context-type="linenumber">102,106</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.html</context>
@@ -5414,22 +5386,29 @@
         <source><x id="INTERPOLATION"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.html</context>
-          <context context-type="linenumber">133,138</context>
+          <context context-type="linenumber">128,133</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5246868488955086590" datatype="html">
         <source>Add Relationship Type</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.ts</context>
-          <context context-type="linenumber">62,64</context>
+          <context context-type="linenumber">65,67</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.ts</context>
-          <context context-type="linenumber">97,99</context>
+          <context context-type="linenumber">107,109</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="98b205da63f73ca7454baf16e729c6e791fc5f5a" datatype="html">
-        <source>Add new relationship type</source>
+      <trans-unit id="1534322003458304437" datatype="html">
+        <source>Edit Relationship Type</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-editor.component.ts</context>
+          <context context-type="linenumber">99,100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="750d1cc8c59a582f6983a73ba166c720d661c91c" datatype="html">
+        <source>Add Relationship Type</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-list.component.html</context>
           <context context-type="linenumber">14,20</context>
@@ -5439,7 +5418,7 @@
         <source>Relationship Type</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-list.component.html</context>
-          <context context-type="linenumber">54,58</context>
+          <context context-type="linenumber">54,57</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/relationship-type-detail/relationship-type-detail.component.html</context>
@@ -6196,6 +6175,10 @@
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-form/field-type.form.ts</context>
           <context context-type="linenumber">175,176</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/models/relationship.model.ts</context>
+          <context context-type="linenumber">44,45</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="3800326155195149498" datatype="html">
         <source>False</source>
@@ -6214,6 +6197,10 @@
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-form/field-type.form.ts</context>
           <context context-type="linenumber">176,180</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/models/relationship.model.ts</context>
+          <context context-type="linenumber">44,45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8623978917681527907" datatype="html">
@@ -9227,84 +9214,84 @@
         <source>There are pending workflow items for this workflow. These items can still be completed, but no new workflow items will be created.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/workflow/admin-workflow-editor.component.ts</context>
-          <context context-type="linenumber">372,374</context>
+          <context context-type="linenumber">373,375</context>
         </context-group>
       </trans-unit>
       <trans-unit id="220185362174299426" datatype="html">
         <source>One or more conditions is not valid.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/workflow/admin-workflow-editor.component.ts</context>
-          <context context-type="linenumber">483,484</context>
+          <context context-type="linenumber">484,485</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2815401579689045684" datatype="html">
         <source>The value changed operator for conditions may only be used with the Item Changed workflow change type.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/workflow/admin-workflow-editor.component.ts</context>
-          <context context-type="linenumber">488,489</context>
+          <context context-type="linenumber">489,490</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4926891486263508688" datatype="html">
         <source>Please select a Run Interval.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/workflow/admin-workflow-editor.component.ts</context>
-          <context context-type="linenumber">501,502</context>
+          <context context-type="linenumber">502,503</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2643546524971106626" datatype="html">
         <source>Please enter a Run Frequency.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/workflow/admin-workflow-editor.component.ts</context>
-          <context context-type="linenumber">507,508</context>
+          <context context-type="linenumber">508,509</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4285488403352846828" datatype="html">
         <source>Run Frequency must be an integer.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/workflow/admin-workflow-editor.component.ts</context>
-          <context context-type="linenumber">511,512</context>
+          <context context-type="linenumber">512,513</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2389486688606469735" datatype="html">
         <source>Run Frequency must be greater than or equal to 1.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/workflow/admin-workflow-editor.component.ts</context>
-          <context context-type="linenumber">515,516</context>
+          <context context-type="linenumber">516,517</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8723159515744752694" datatype="html">
         <source>Run Frequency must be less than or equal to <x id="PH" equiv-text="this.errorMessage = $localize`Run Frequency must be less than or equal to ${"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/workflow/admin-workflow-editor.component.ts</context>
-          <context context-type="linenumber">519</context>
+          <context context-type="linenumber">520</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3536011973278722233" datatype="html">
         <source>At least one Run Day must be selected.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/workflow/admin-workflow-editor.component.ts</context>
-          <context context-type="linenumber">525,526</context>
+          <context context-type="linenumber">526,527</context>
         </context-group>
       </trans-unit>
       <trans-unit id="9218222910222412988" datatype="html">
         <source>At least 1 condition is required when using change type Schedule.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/workflow/admin-workflow-editor.component.ts</context>
-          <context context-type="linenumber">531,532</context>
+          <context context-type="linenumber">532,533</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6902888728175776399" datatype="html">
         <source>The chosen object type has more than <x id="PH" equiv-text="this.errorMessage = $localize`The chosen object type has more than ${"/> items, which exceeds the limit for change type Schedule.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/workflow/admin-workflow-editor.component.ts</context>
-          <context context-type="linenumber">539</context>
+          <context context-type="linenumber">540</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2561696208177733622" datatype="html">
         <source>Please select a score type</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/workflow/admin-workflow-editor.component.ts</context>
-          <context context-type="linenumber">591,593</context>
+          <context context-type="linenumber">592,594</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2efba61ede9bcf2e4c2b846ecec3d43da141de9b" datatype="html">
