@@ -1,5 +1,6 @@
 ﻿<div class="modal-form">
-    <div class="content">
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <div class="content" *ngIf="!isLoading">
         <div class="row">
             <div class="col s12 no-padding">
                 <div class="FieldName">
