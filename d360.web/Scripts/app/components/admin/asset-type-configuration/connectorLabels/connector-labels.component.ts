@@ -152,10 +152,10 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 			.subscribe((result) => {
 				let msg: string = '';
 				if (event.item.uid == null) {
-					msg = $localize`Connector label succesfully created`;
+					msg = $localize`Connector label successfully created`;
 				}
 				else {
-					msg = $localize`Connector label succesfully updated`;
+					msg = $localize`Connector label successfully updated`;
 				}
 				this.showMessageForResult(this.messagesService, result, msg);
 				this.getLabels();
