@@ -121,7 +121,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			description: [null],
 			isDescriptionEnabled: [false],
 			descriptionButtonName: [null],
-			isDescriptionVisibleByDefault: [false],
+			isDescriptionCollapsedByDefault: [true],
 			backgroundColor: [null],
 			backgroundColorTextValue: [null, { validators: [Validators.required]}],
 			icon: [null],
@@ -145,6 +145,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
 		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
 		this.assetTypeForm.controls['backgroundColorTextValue'].setValue('Ebony');
+		this.assetTypeForm.controls['isDescriptionCollapsedByDefault'].setValue(true);
 
 		if (this.hasPredicateUid) {
 			if (this.hierarchyPredicatesSelectItem.length > 0) {
@@ -187,7 +188,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 					this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
 				}
 
-				this.assetTypeForm.controls["isDescriptionVisibleByDefault"].setValue(assetType.IsDescriptionVisibleByDefault);
+				//ui label is `Collapsed by default` so we need to revert this boolean here
+				this.assetTypeForm.controls["isDescriptionCollapsedByDefault"].setValue(!assetType.IsDescriptionVisibleByDefault);
 				this.assetTypeForm.controls["backgroundColor"].setValue(assetType.IconStyle.BackColor);
 
 				const colorCode = (assetType.IconStyle.BackColor ?? '') as string;
@@ -285,7 +287,9 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		model.Description = this.assetTypeForm.get("description").value;
 		model.IsDescriptionEnabled = this.assetTypeForm.get("isDescriptionEnabled").value;
 		model.DescriptionButtonName = this.assetTypeForm.get("descriptionButtonName").value;
-		model.IsDescriptionVisibleByDefault = this.assetTypeForm.get("isDescriptionVisibleByDefault").value;
+
+		//ui label is `Collapsed by default` so we need to revert this boolean here
+		model.IsDescriptionVisibleByDefault = !this.assetTypeForm.get("isDescriptionCollapsedByDefault").value;
 
 		model.BackgroundColor = this.assetTypeForm.get("backgroundColor").value;
 		model.IconStyle = new IconStyle();
