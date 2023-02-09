@@ -36,20 +36,12 @@ end
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Resource-Indexes-v1">
+  <changeSet author="Core" id="Table.dbo.Resource-Indexes-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-if not exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Resource]') AND name = N'IX_Resource_APIPublicKey_APIPrivateKey')
-begin
-	CREATE NONCLUSTERED INDEX [IX_Resource_APIPublicKey_APIPrivateKey] ON [dbo].[Resource]
-	(
-		[APIPublicKey] ASC,
-		[APIPrivateKey] ASC
-	)
-end
 
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Resource]') AND name = N'IX_Resource_UID')
 begin
@@ -64,29 +56,83 @@ end
 	</rollback>
   </changeSet>
 
-  <changeSet author="Puneet Gupta" id="Index.dbo.Resource-v2">
-  <comment>GOV-17248</comment>
+  <changeSet author="Puneet Gupta" id="Index.dbo.Resource-v3">
+  <comment>GOV-20792 - Username</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-if not exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Resource]') AND name = N'IX_Resource_Email')
+if not exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_Resource_UserName')
 begin
-	CREATE NONCLUSTERED INDEX [IX_Resource_Email] ON [dbo].[Resource]
-	(
-		[Email] ASC
-	)
+	ALTER TABLE [dbo].[Resource] ADD CONSTRAINT UQ_Resource_UserName UNIQUE (Username); 
 end
 
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
+if exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_Resource_UserName')
+begin
+	ALTER TABLE [dbo].[Resource] DROP CONSTRAINT UQ_Resource_UserName WITH ( ONLINE = OFF ); 
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Puneet Gupta" id="Index.dbo.Resource-v4">
+  <comment>GOV-20792 - Email</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
 if exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Resource]') AND name = N'IX_Resource_Email')
 BEGIN
-	DROP INDEX [IX_Resource_Email] ON [api].[Resource]
+	DROP INDEX [IX_Resource_Email] ON [dbo].[Resource]
 END
+
+if not exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_Resource_Email')
+begin
+	ALTER TABLE [dbo].[Resource] ADD CONSTRAINT UQ_Resource_Email UNIQUE (Email); 
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_Resource_Email')
+begin
+	ALTER TABLE [dbo].[Resource] DROP CONSTRAINT UQ_Resource_Email WITH ( ONLINE = OFF ); 
+end
+		]]>
+	</rollback>
+  </changeSet>
+  
+  
+ <changeSet author="Puneet Gupta" id="Index.dbo.Resource-v5">
+  <comment>GOV-20792 - ApiKey</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[Resource]') AND name = N'IX_Resource_APIPublicKey_APIPrivateKey')
+begin
+	DROP INDEX [IX_Resource_APIPublicKey_APIPrivateKey] ON [dbo].[Resource];
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_Resource_ApiKey')
+begin
+	ALTER TABLE [dbo].[Resource] ADD CONSTRAINT UQ_Resource_ApiKey UNIQUE (APIPublicKey,APIPrivateKey); 
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_Resource_ApiKey')
+begin
+	ALTER TABLE [dbo].[Resource] DROP CONSTRAINT UQ_Resource_ApiKey WITH ( ONLINE = OFF ); 
+end
 		]]>
 	</rollback>
   </changeSet>
