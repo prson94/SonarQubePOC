@@ -2995,6 +2995,14 @@ from	processexpandeddata ped
 					{
 						s.Value = s.Value.ToLowerInvariant();
 					}
+					else if (s.ID == Setting.GovernanceRoleReferenceListUid)
+					{
+						AssetType IsUidExists = Filter<AssetType>(i => i.uid.ToString().ToLower() == s.Value.ToLower()).FirstOrDefault();
+						if (IsUidExists == null)
+						{
+							s.Value = Guid.Empty.ToString();
+						}
+					}
 				}
 				else
 				{
