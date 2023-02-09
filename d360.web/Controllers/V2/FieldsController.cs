@@ -2275,7 +2275,7 @@ namespace d360.web.Controllers.V2
 
 								if @targetassettypeid = 0
 								begin";
-					sql += onlyCount ? "select 1 where 1 = 0" : $@"
+					sql += onlyCount ? Environment.NewLine + "select 1 where 1 = 0" : $@"
 									select AT.ObjectID as value, AT.Name as text 
 									from AssetType AT
 									where AT.Class = {(int)AssetTypeClass.Reference} and (AT.Name like @filter or @filter is null)
@@ -2288,7 +2288,7 @@ namespace d360.web.Controllers.V2
 								begin
 									declare @assetTypeId int = (select top 1 id from assettype where id = @targetassettypeid)";
 
-					sql += onlyCount ? "select 1 where 1 = 0;" : $@"
+					sql += onlyCount ? Environment.NewLine + "select 1 where 1 = 0;" : $@"
 									select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
 									 inner join AssetPath Node on Node.id = a.id
 									where a.AssetTypeID = @assetTypeId {whereQuery}
