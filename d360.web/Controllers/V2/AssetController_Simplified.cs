@@ -186,6 +186,7 @@ namespace d360.web.Controllers.V2
 							{
 								// Treat as standard text value.
 								var operation = "";
+								bool shouldInclude = true;
 								switch (filterOperation)
 								{
 									case "ct":
@@ -216,8 +217,14 @@ namespace d360.web.Controllers.V2
 										operation = "<>";
 										dbArgs.Add($"p{parameterIndex}", filterValue);
 										break;
+									default:
+										shouldInclude = false;
+										break;
 								}
-								wheres.Add($"{column.Column} {operation} p{parameterIndex}");
+								if (shouldInclude)
+								{
+									wheres.Add($"{column.Column} {operation} p{parameterIndex}");
+								}
 							}
 						}
 					}
