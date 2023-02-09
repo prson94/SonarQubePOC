@@ -2032,6 +2032,7 @@ namespace d360.web.Controllers.V2
 				string fieldObject = "";
 				int fieldObjectID = 0;
 				int id = -1;
+				bool onlyCount = false;
 
 				var atype = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
 
@@ -2052,6 +2053,10 @@ namespace d360.web.Controllers.V2
 				if (skip != null && take != null)
 				{
 					pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
+					if (take == 0)
+					{
+						onlyCount = true;
+					}
 				}
 
 				if (atype != null && atype.Class == AssetTypeClass.Group
@@ -2081,10 +2086,14 @@ namespace d360.web.Controllers.V2
 						baseSql += " where " + string.Join(" and ", wheres);
 					}
 
-					var dataSelect = "select r.LastName + ', ' + r.FirstName as text, uid as value ";
-					var countSelect = "select count(*) ";
+					var dataSelect = $"select r.LastName + ', ' + r.FirstName as text, uid as value  {baseSql} order by r.LastName + ', ' + r.FirstName {pagingQuery}";
+					var countSelect = $"select count(*)   {baseSql}; ";
+					if (onlyCount)
+					{
+						dataSelect = "select 1 where 1 = 0";
+					}
 
-					var sql = $"{dataSelect} {baseSql} order by r.LastName + ', ' + r.FirstName {pagingQuery};{countSelect}  {baseSql}; ";
+					var sql = $"{dataSelect};{countSelect}";
 					var resultsAssets = Company.Connection.QueryMultiple(sql, new { skip, take, filter });
 					var data = new
 					{
@@ -2122,8 +2131,16 @@ namespace d360.web.Controllers.V2
 								from asset a
 								inner join AssetPath Node on Node.ID = a.ID 
 								where a.AssetTypeID = @parentAssetTypeId
-								option(recompile);
+								option(recompile);";
 
+						if (onlyCount)
+						{
+							sql += @"
+								select 1 where 1 = 0";
+						}
+						else
+						{
+							sql += $@"
 								select 
 								cast(uid as nvarchar(36)) as value,
 								coalesce(DisplayPath,'Path Missing') as text 
@@ -2131,8 +2148,10 @@ namespace d360.web.Controllers.V2
 								{(!string.IsNullOrEmpty(whereQuery) ? "where " + whereQuery : "")}
 								order by displaypath 
 								{pagingQuery}
-								option(recompile);
+								option(recompile);";
+						}
 
+						sql += $@"
 								select count(*) from #tempAssetsMap
 								{(!string.IsNullOrEmpty(whereQuery) ? "where " + whereQuery : "")}
 								option(recompile);";
@@ -2153,7 +2172,13 @@ namespace d360.web.Controllers.V2
 													where	A.uid = @assetUid
 													", new { assetUid }).SingleOrDefault();
 
-						sql = $@"
+						if (onlyCount)
+						{
+							sql = "select 1 where 1 = 0";
+						}
+						else
+						{
+							sql = $@"
 								drop table if exists #results
 	
 								select	P.DisplayPath as text,
@@ -2168,8 +2193,10 @@ namespace d360.web.Controllers.V2
 								{pagingQuery}
 								option (maxrecursion 100, RECOMPILE)
 
-								select * from #results where (value != @assetUid or @assetUid is null)
+								select * from #results where (value != @assetUid or @assetUid is null)";
+						}
 
+						sql += $@"
 								select	count(*) + 1
 								from	Asset A
 										inner join AssetType T on T.ID = A.AssetTypeID and T.Id = @id
@@ -2178,7 +2205,7 @@ namespace d360.web.Controllers.V2
 								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
 								option (maxrecursion 100, RECOMPILE)";
 
-						if(skip != null && skip > 0)
+						if (skip != null && skip > 0)
 						{
 							skip--;
 						}
@@ -2247,26 +2274,28 @@ namespace d360.web.Controllers.V2
 								where ft.id = @fieldtypeid
 
 								if @targetassettypeid = 0
-								begin
+								begin";
+					sql += onlyCount ? "select 1 where 1 = 0" : $@"
 									select AT.ObjectID as value, AT.Name as text 
 									from AssetType AT
 									where AT.Class = {(int)AssetTypeClass.Reference} and (AT.Name like @filter or @filter is null)
 									order by AT.Name
-									{pagingQuery}
-
+									{pagingQuery}";
+					sql += $@"
 									select COUNT(*) from AssetType AT where AT.Class = {(int)AssetTypeClass.Reference}  and (AT.Name like @filter or @filter is null)
 								end
 								else
 								begin
-									declare @assetTypeId int = (select top 1 id from assettype where id = @targetassettypeid)
+									declare @assetTypeId int = (select top 1 id from assettype where id = @targetassettypeid)";
 
+					sql += onlyCount ? "select 1 where 1 = 0;" : $@"
 									select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
 									 inner join AssetPath Node on Node.id = a.id
 									where a.AssetTypeID = @assetTypeId {whereQuery}
 									order by node.displaypath
 									{pagingQuery}
-									OPTION(RECOMPILE);
-
+									OPTION(RECOMPILE);";
+					sql += $@"
 									select count(*) from Asset A
 									 inner join AssetPath Node on Node.id = a.id
 									where a.AssetTypeID = @assetTypeId {whereQuery}
@@ -2366,6 +2395,15 @@ namespace d360.web.Controllers.V2
 						{pagingQuery};
 
 					 select {selectStatement} from #tempResults V {colorjoin};
+
+					select count(1) from FieldLookupValue V {parentFieldJoins}
+						where @fieldTypeId = FieldTypeID {whereQuery};";
+				}
+
+				if (onlyCount)
+				{
+					query = $@"
+					select 1 where 1 = 0;
 
 					select count(1) from FieldLookupValue V {parentFieldJoins}
 						where @fieldTypeId = FieldTypeID {whereQuery};";

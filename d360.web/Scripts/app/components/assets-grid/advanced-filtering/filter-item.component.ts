@@ -675,6 +675,11 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 		if (!this.checkIfLoadLookupValues(params)) {
 			return;
 		}
+		if (+params["take"] < 40) {
+			//prime table event sometimes tries to load less than 40 results and after that assumes there is no more new items to fetch
+			//forcing to take min 40 items resolves an issue
+			params["take"] = 40;
+		}
 
 		if (this.lazyLoadSubscription) {
 			this.lazyLoadSubscription.unsubscribe();

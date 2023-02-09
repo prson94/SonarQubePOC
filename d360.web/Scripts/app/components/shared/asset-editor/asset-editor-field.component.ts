@@ -802,7 +802,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
 
             if (this.lookupValues.length > 10 || loadParams["filter"]) {
-                this.showLookupSearchField = true;
+				// Filtering on the virtual sroll triggers an endless loop that freezes the browser.
+				// Disabling the filter field for now
+                //this.showLookupSearchField = true;
             }
             else {
                 this.showLookupSearchField = false;
