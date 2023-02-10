@@ -1354,6 +1354,12 @@ OPTION(RECOMPILE)";
 					}
 				}
 
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includehasfieldtypes"))
+				{
+					var includeHasFieldTypesString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includehasfieldtypes").Value;
+					bool.TryParse(includeHasFieldTypesString, out includeHasFieldTypes);
+				}
+
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includehasrelationships"))
 				{
 					var includeHasRelationshipsString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includehasrelationships").Value;

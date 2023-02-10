@@ -9,6 +9,7 @@ import { SecondaryNavService } from "../../../../services/right-sidebar.service"
 import { CompanySettingsService } from "../../../../services/settings.service";
 import { SidePanelService } from "../../../../services/side-panel.service";
 import { SiteUrlHelpers } from "../../../../static/site-url-helpers";
+import { PopupMenu } from "../../../shared/controls/popup-menu/popup-menu.component";
 import { AdminBaseComponent } from "../../admin-base.component";
 
 /*global $localize*/
@@ -92,7 +93,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 				this.labels = res.sort((a, b) => a.Value.localeCompare(b.Value));
 				this.labels.forEach((label) => {
 					const menuItems = [];
-					menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = label; this.sidePanelService.setSidePanelState({ expanded: true }); } });
+					menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedForInfoPanel = label; this.expandPanel() ; } });
 					menuItems.push({ "title": $localize`Open`, callback: () => this.open(label.uid) });
 					menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(label.uid, true) });
 
@@ -103,6 +104,10 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 			}
 			this.isLoading = false;
 		}, (err) => this.error = err);
+	}
+
+	expandPanel() {
+		this.sidePanelService.setSidePanelState({ expanded: true });
 	}
 
 	closeEditor() {
@@ -152,10 +157,10 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 			.subscribe((result) => {
 				let msg: string = '';
 				if (event.item.uid == null) {
-					msg = $localize`Connector label succesfully created`;
+					msg = $localize`Connector label successfully created`;
 				}
 				else {
-					msg = $localize`Connector label succesfully updated`;
+					msg = $localize`Connector label successfully updated`;
 				}
 				this.showMessageForResult(this.messagesService, result, msg);
 				this.getLabels();
@@ -367,5 +372,24 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 		else {
 			this.router.navigateByUrl(url);
 		}
+	}
+
+	positionContextMenu(
+		$event: MouseEvent, container: HTMLElement, floatMenu: PopupMenu, assetGridTools: HTMLElement
+	): void {
+		if (!assetGridTools.contains(<Node>$event.target) && !this.isElementLink(<HTMLElement>$event.target)) {
+			container.style.top = `${$event['layerY']}px`;
+			container.style.left = `${$event['layerX']}px`;
+			floatMenu.toggle($event);
+			$event.preventDefault();
+		}
+	}
+
+	private isElementLink(element: HTMLElement): boolean {
+		while (element.parentElement) {
+			if (element.tagName === 'A') { return true; }
+			element = element.parentElement;
+		}
+		return false;
 	}
 }
