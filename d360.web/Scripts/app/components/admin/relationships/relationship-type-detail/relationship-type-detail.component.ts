@@ -45,13 +45,15 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 	}
 
 	getAssetTypeClassFriendlyName(cs: string) {
+		console.log(cs);
 		const friendlyNames = {
 			"BusinessAsset": $localize`Business Asset`,
 			"TechnicalAsset": $localize`Technical Asset`,
 			"Model": $localize`Model`,
 			"Policy": $localize`Policy`,
 			"Rule": $localize`Rule`,
-			"DiagramAsset": $localize`Diagram Asset`
+			"DiagramAsset": $localize`Diagram Asset`,
+			"Reference": $localize`Reference`
 		};
 
 		return friendlyNames[`${cs}`];
