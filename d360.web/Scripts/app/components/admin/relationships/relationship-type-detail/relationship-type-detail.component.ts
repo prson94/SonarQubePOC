@@ -51,7 +51,8 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 			"Model": $localize`Model`,
 			"Policy": $localize`Policy`,
 			"Rule": $localize`Rule`,
-			"DiagramAsset": $localize`Diagram Asset`
+			"DiagramAsset": $localize`Diagram Asset`,
+			"Reference": $localize`Reference`
 		};
 
 		return friendlyNames[`${cs}`];
