@@ -11,7 +11,16 @@ import { RelationshipsService } from '../../../../services/relationships.service
 @Component({
 	selector: 'd3s-admin-relationships-editor',
 	templateUrl: './admin-relationships-editor.component.html',
-	styles: [`.form-wrapper { padding-top:16px; }`],
+	styles: [`
+	.form-wrapper { 
+		padding-top:16px; 
+	} 
+
+	.form-editor-container {     
+		max-height: calc(100vh - 147px);
+		overflow: auto;
+		margin-bottom: 16px;
+	}`],
 	providers: [RelationshipsService],
 
 })
