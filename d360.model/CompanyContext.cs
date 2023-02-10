@@ -435,16 +435,25 @@ namespace d360.model
 				.AsQueryable();
 		}
 
-		public Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, long assetId, int offset = 0, int rows = 25, string query = null, bool includeSelection = true)
+		public Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, long assetId, int offset = 0, int rows = 25, string query = null, bool includeSelection = true, IntersectType intersectType = null, FieldType ft = null, bool onlyQueries = false)
 		{
-			var ft = GetById<FieldType>(fieldTypeID);
+			if (ft == null)
+			{
+				//if not passed by method argument, get from db
+				ft = GetById<FieldType>(fieldTypeID);
+			}
 			bool hasCardinalityOne = false;
 
 			if (!ft.LookupObjectID.HasValue)
 			{
 				throw new ArgumentNullException(CompanyContextErrors.InvalidRelationShipField);
 			}
-			var intersectType = GetById<IntersectType>(ft.LookupObjectID.Value);
+
+			if (intersectType == null)
+			{
+				//if not passed by method argument, get from db
+				intersectType = GetById<IntersectType>(ft.LookupObjectID.Value);
+			}
 
 			if (intersectType == null)
 			{
@@ -634,6 +643,18 @@ namespace d360.model
 							order by 3 desc, P.DisplayPath asc
 							OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 					break;
+			}
+
+			if (onlyQueries)
+			{
+				Dictionary<string, object> results = new Dictionary<string, object>
+				{
+					{ "Count", countSql },
+					{ "Results", selectedSql },
+					{ "objectAssetTypeID", objectAssetTypeID }
+				};
+
+				return results;
 			}
 
 			if (offset == 0 || query != null)

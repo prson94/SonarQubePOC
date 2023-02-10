@@ -343,7 +343,7 @@ namespace d360.model
         
         List<PermissionInfo> GetPermissions(long assetId, int assetTypeId);
         
-        Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, long assetId, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
+        Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, long assetId, int offset = 0, int rows = 25, string query = null, bool includeSelection = true, IntersectType intersectType = null, FieldType ft = null, bool onlyQueries = false);
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", string keyword = null, int? id = null, string subject = null, string predicate = null, string @object = null);     
                 
         string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "", bool includeUid = true);
