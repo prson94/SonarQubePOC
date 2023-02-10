@@ -124,7 +124,9 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		if (sessionStorage.getItem(this.gridStorageKey)) {
 			const gridData = JSON.parse(sessionStorage.getItem(this.gridStorageKey));
 
-			if (gridData.filters && Object.keys(gridData.filters).filter((x) => x !== "global").length > 0) { this.showSimpleFilter = false; }
+			if (gridData.filters && gridData.filters.global) {
+				this.simpleFilterValue = gridData.filters.global.value;
+			}
 
 			this.cdRef.detectChanges();
 		}
