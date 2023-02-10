@@ -13,7 +13,8 @@ export class DropdownDirective implements AfterContentInit {
     @Input() required: boolean;
     @Input() disabled: boolean;
     @Input() overlayLowerZIndex: boolean = false;
-    @Input() ellipsisDirection: string = "ltr";
+	@Input() ellipsisDirection: string = "ltr";
+	@Input() alwaysShowFilter: boolean = false;
     constructor(public el: ElementRef, public dropdownRef: Dropdown) { }
 
     setDisabledState?(isDisabled: boolean): void {
@@ -52,6 +53,11 @@ export class DropdownDirective implements AfterContentInit {
         }
         this.dropdownRef.scrollHeight = "340px";
 
+		if (this.alwaysShowFilter) {
+			this.dropdownRef.filter = true;
+			this.dropdownRef.filterPlaceholder = $localize`Search fields`;
+		}
+
         setInterval(() => {
             if (this.dropdownRef.overlayVisible && this.dropdownRef?.overlay) {
                 if (this.dropdownRef.overlay.className.indexOf("ig-dropdown-overlay") === -1) {
@@ -76,7 +82,7 @@ export class DropdownDirective implements AfterContentInit {
             }
 
             const count: number = this.getItemsCount();
-            if (count > 10) {
+			if (count > 10 || this.alwaysShowFilter) {
                 this.dropdownRef.filter = true;
                 this.dropdownRef.filterPlaceholder = $localize`Search fields`;
             }
