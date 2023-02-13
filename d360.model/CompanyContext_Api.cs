@@ -11532,6 +11532,20 @@ where   ER.ExecutionID = @ExecutionID
 							}
 						}
 
+						if (item.tableStructureInfo != null)
+						{
+								DataRow jsonRow = DataProfileSampleTable.NewRow();
+								jsonRow["ExecutionID"] = execution.ExecutionID;
+								jsonRow["ItemNumber"] = itemNumber;
+								if (item.ExecutionItemUid.HasValue)
+								{
+									jsonRow["ExecutionItemUid"] = item.ExecutionItemUid;
+								}
+								jsonRow["SampleType"] = "tableStructureInfo";
+								jsonRow["JsonValue"] = JsonConvert.SerializeObject(item.tableStructureInfo);
+								DataProfileSampleTable.Rows.Add(jsonRow);
+						}
+
 						if (item.topK != null)
                         {
                             foreach (string topK in item?.topK)
