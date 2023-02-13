@@ -98,7 +98,7 @@ namespace d360.model.DataAccessLayer
 
 					if (!includeChildAssets)
 					{
-						List<AssetDataProfileSample> dataProfileSamples = includeSamples ? CompanyContext.AssetDataProfileSample.Where(x => x.AssetDataProfileID == dataprofile.ID).ToList() : new List<AssetDataProfileSample>(); ;
+						List<AssetDataProfileSample> dataProfileSamples = includeSamples ? CompanyContext.AssetDataProfileSample.Where(x => x.AssetDataProfileID == dataprofile.ID).ToList() : new List<AssetDataProfileSample>();
 						List<AssetDataProfileSampleJson> dataProfileDetails = includeSamples ? CompanyContext.AssetDataProfileSampleJson.Where(x => x.AssetDataProfileID == dataprofile.ID).ToList() : new List<AssetDataProfileSampleJson>();
 						results.items = new List<DataProfileModel> { new DataProfileModel(assetUid, dataprofile, dataProfileSamples, dataProfileDetails) };
 
