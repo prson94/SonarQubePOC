@@ -98,8 +98,8 @@ namespace d360.model.DataAccessLayer
 
 					if (!includeChildAssets)
 					{
-						List<AssetDataProfileSample> dataProfileSamples = CompanyContext.AssetDataProfileSample.Where(x => x.AssetDataProfileID == dataprofile.ID).ToList();
-						List<AssetDataProfileSampleJson> dataProfileDetails = CompanyContext.AssetDataProfileSampleJson.Where(x => x.AssetDataProfileID == dataprofile.ID).ToList();
+						List<AssetDataProfileSample> dataProfileSamples = includeSamples ? CompanyContext.AssetDataProfileSample.Where(x => x.AssetDataProfileID == dataprofile.ID).ToList() : new List<AssetDataProfileSample>(); ;
+						List<AssetDataProfileSampleJson> dataProfileDetails = includeSamples ? CompanyContext.AssetDataProfileSampleJson.Where(x => x.AssetDataProfileID == dataprofile.ID).ToList() : new List<AssetDataProfileSampleJson>();
 						results.items = new List<DataProfileModel> { new DataProfileModel(assetUid, dataprofile, dataProfileSamples, dataProfileDetails) };
 
 						if (includeTotal)
@@ -1013,6 +1013,7 @@ namespace d360.model.DataAccessLayer
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(textPatternDetails.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as textPatternDetails" : "")}
 								{(includeSamples ? $@",JSON_QUERY(REPLACE(REPLACE(semanticAnalysisDetails.value,'""value"":{{',''),'}}}}','}}')) as semanticAnalysisDetails" : "")}
 								{(includeSamples ? $@",JSON_QUERY(REPLACE(REPLACE(confidenceAnalysisDetails.value,'""value"":{{',''),'}}}}','}}')) as confidenceAnalysisDetails" : "")}
+								{(includeSamples ? $@",JSON_QUERY(REPLACE(REPLACE(tableStructureInfo.value,'""value"":{{',''),'}}}}','}}')) as tableStructureInfo" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK" : "")}
 								,ADP.TotalCount
@@ -1184,6 +1185,17 @@ namespace d360.model.DataAccessLayer
 															for json path
 															) as [value]
 								) as confidenceAnalysisDetails
+								outer apply (								
+													select  (
+															select json_query([value]) as [value]
+															from AssetDataProfileSampleJson
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'tableStructureInfo'
+															for json path
+															) as [value]
+								) as tableStructureInfo
 "
 					: "")}";
 		}
