@@ -8,7 +8,8 @@ import {
     Input,
     OnChanges,
     OnDestroy,
-    OnInit,
+	OnInit,
+	AfterViewInit,
     Output,
     ViewChild
 } from '@angular/core';
@@ -40,7 +41,7 @@ import { MultiSelect } from "primeng/multiselect";
     providers: [FieldsObservableService, TagService, AssetService]
 
 })
-export class AssetEditorFieldComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
+export class AssetEditorFieldComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked, AfterViewInit {
     @Input() field: EditorField;
     @Input() form: UntypedFormGroup;
     @Input() object: string;
@@ -140,9 +141,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 this.lookupValues = [];
             }
         });
-        setInterval(() => {
+/*        setInterval(() => {
             this.setSelectionVirtualScrollHeight();
-        }, 25);
+        }, 25);*/
     }
 
     get hasKeyFieldError () {
@@ -773,10 +774,16 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
         }
         return null;
-    }
+	}
+
+	ngAfterViewInit() {
+		if (this.getFieldTypeForSwitch(this.field.FieldType) == 'LazyLookup') {
+			this.loadListLazy({ first: 0, rows: 20 });
+		}
+	}
 
     lastParams: any;
-    loadListLazy($params) {
+	loadListLazy($params) {
         var loadParams: any = { skip: $params.first, take: $params.rows, filter: $params.globalFilter ?? "" };
         loadParams["isForAssetForm"] = true;
         loadParams["assetUid"] = this.assetUid;
@@ -846,8 +853,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			}
 			
             this.lookupValues = JSON.parse(JSON.stringify(this.lookupValues));
-            this.setSelectionVirtualScrollHeight();
-            this.ref.detectChanges();
+//            this.setSelectionVirtualScrollHeight();
+			this.ref.detectChanges();
         });
     }
 
@@ -920,7 +927,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
     }
 
-    setSelectionVirtualScrollHeight() {
+	setSelectionVirtualScrollHeight() {
         try {
             let count: number = 0;
             let res = [];

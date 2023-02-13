@@ -205,6 +205,7 @@
                                          [virtualScroll]="true"
                                          [rows]="20"
                                          [lazy]="true"
+                                         [lazyLoadOnInit]="false"
                                          selectionMode="multiple"
                                          [metaKeySelection]="false"
                                          (onLazyLoad)="loadListLazy($event)"
@@ -228,13 +229,13 @@
                                         <tr [pSelectableRow]="item"
                                             [pSelectableRowIndex]="rowIndex"
                                             *ngIf="item.label !== null && item.value !== null"
-                                            (click)="selectSingleItem($event,item);">
+                                            (click)="selectSingleItem($event,item);" style="display: flex; align-items: baseline">
                                             <td class="first-col" *ngIf="field?.MultiSelect">
                                                 <p-tableCheckbox [value]="item"
                                                                  [pSelectableRow]="item">
                                                 </p-tableCheckbox>
                                             </td>
-                                            <td style="flex-basis: auto">
+                                            <td style="flex-basis: auto; flex-grow: 1">
                                                 <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value">
                                                     <span class="ig-colorfield-swatch" [style.background-color]="hexToRgb(item.color)"></span>
                                                     <span class="ig-colorfield-item-label">{{item.label}}</span>
