@@ -125,7 +125,7 @@ export class IconPickerComponent implements ControlValueAccessor {
 		}
 	}
 
-	public focus(evt) {
+	public focus() {
 		this.dropdown.focus();
 	}
 }

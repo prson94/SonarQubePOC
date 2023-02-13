@@ -2,14 +2,12 @@ import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitte
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { SelectItem } from "primeng/api";
 import { forkJoin, Subscription } from "rxjs";
-import { Editor } from "primeng/editor";
 import { AssetType, AssetTypeClass, Hierarchy, IconStyle } from "../../../../models/asset.model";
 import { Predicate } from "../../../../models/predicate.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { AssetService } from "../../../../services/asset.service";
 import { FieldsObservableService } from "../../../../services/fieldsObservable.service";
 import { RelationshipsService } from "../../../../services/relationships.service";
-import { IconPickerComponent } from "../../../shared/controls/icon-picker/icon-picker.component";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 
 /*global $localize*/
