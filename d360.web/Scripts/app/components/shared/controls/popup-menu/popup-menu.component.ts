@@ -377,6 +377,13 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 					const menuHeight = 36 * this.items.length + 10;
 					const maxHeight = window.innerHeight - topPosition - 80;
 
+					const rightPadding = window.innerWidth - leftPosition - menu.offsetWidth;
+
+					if (rightPadding < 0) {
+						const menuUlElement = menu.getElementsByTagName("UL")[0] as HTMLElement;
+						menuUlElement.style.width = (menu.offsetWidth + rightPadding - 20) + "px";
+					}
+
 					if (menuHeight > maxHeight) {
 						const menuUlElement = menu.getElementsByTagName("UL")[0] as HTMLElement;
 						menuUlElement.style.maxHeight = maxHeight + "px";
