@@ -23,24 +23,6 @@ export class ConfigurationAssetTypeRelationshipsPageComponent {
         this.route.params.subscribe((params) => {
             this.assetTypeClass = AssetTypeClass[params["typeClass"] as string];
             this.uid = params["uid"];
-            this.loadAssetType(this.uid);
         });
-    }
-
-    async loadAssetType(uid: string) {
-        if (uid !== this.uid) {
-            this.assetType = null;
-        }
-
-        this.loadingCount++;
-        try {
-            const newAssetType = await this.assetTypeService.getAssetTypeObjectAndID(uid).toPromise();
-            if (uid === this.uid) {
-                this.assetType = newAssetType;
-            }
-        }
-        finally {
-            this.loadingCount--;
-        }
     }
 }

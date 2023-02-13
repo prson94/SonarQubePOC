@@ -1,16 +1,20 @@
 ﻿import {
     ChangeDetectorRef,
     Component,
+    ElementRef,
     EventEmitter,
     Input,
     OnChanges,
     Output,
-    SimpleChanges
+    SimpleChanges,
+    ViewChild
 } from '@angular/core';
 import { ConnectorLabelService } from '../../../services/connectorLabel.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AsyncValidatorService } from '../../../services/async-validators.service';
 import { ConnectorLabel } from '../../../models/connectorLabel.model';
+
+/*global $localize*/
 
 @Component({
     selector: 'd3s-connector-label-form',
@@ -28,7 +32,9 @@ export class ConnectorLabelsFormComponent implements OnChanges {
 
     connectorLabelForm = new FormGroup({
         value: new FormControl('', [Validators.required, Validators.maxLength(40)])
-    });
+	});
+
+	@ViewChild('form', { static: false }) formElement: ElementRef;
 
     private suggestionResults: string[] = [];
     private suggestionResultsArray: any[] = [];
@@ -38,7 +44,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     get value() { return this.connectorLabelForm.get('value'); }
 
     get saveLabel(): string {
-        return this.selectedValue ? $localize`Consolidate` : (this.label ? $localize`Save` : $localize`Create`);
+		return this.selectedValue ? $localize`Consolidate` : (this.label ? $localize`Save` : $localize`Add Connector Label`);
     }
 
     constructor(

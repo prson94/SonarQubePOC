@@ -88,7 +88,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request.
+        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request..
         /// </summary>
         public static string InvalidOrderBy {
             get {
@@ -142,7 +142,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request.
+        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request..
         /// </summary>
         public static string InvalidTagUid {
             get {

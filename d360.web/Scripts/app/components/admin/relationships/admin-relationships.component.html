@@ -1,0 +1,9 @@
+﻿<div class="row">
+	<d3s-admin-relationshipst-sidepanel-wrapper [sidePanelStorageKey]="sidePanelStorageKey"
+												[selectedItem]="selected">
+		<d3s-admin-relationships-list (selectedChange)="selectedItemChange($event)"
+									  [(selected)]="selected"
+									  [showTitle]="showTitle"
+									  [assetTypeUid]="assetTypeUid"></d3s-admin-relationships-list>
+	</d3s-admin-relationshipst-sidepanel-wrapper>
+</div>

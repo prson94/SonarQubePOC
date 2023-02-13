@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
-
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
@@ -17,17 +16,11 @@ using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
-
 using Dapper;
-
 using Microsoft.Web.Http;
-
 using Newtonsoft.Json;
-
 using Resources;
-
 using Swashbuckle.Swagger.Annotations;
-
 using static d360.core.entities.Resource;
 
 namespace d360.web.Controllers.V2

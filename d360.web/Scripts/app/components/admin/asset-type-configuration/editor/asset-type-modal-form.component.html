@@ -1,11 +1,11 @@
-<d3s-modal additionalClasses="modal-dyn-editor asset-editor large-dialog"
+<d3s-modal additionalClasses="modal-dyn-editor asset-editor large-dialog modal-form"
 		   [showTitle]="false"
 		   (onClose)="close()"
 		   [isVisible]="isModalVisible">
-	<div class="asset-editor-container">
+	<div class="editor-container">
 		<d3s-loading [isLoading]="isLoading"></d3s-loading>
 
-		<div *ngIf="!isLoading" class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
+		<div *ngIf="!isLoading" class="form-editor-container {{savingInProgress ? 'saving-in-progress' : ''}}">
 			<div class="form-header-wrapper">
 				<div class="form-header">
 					{{title}}
@@ -60,6 +60,7 @@
 											<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
 											<ig-popup-menu (onSelect)="updateDisplayFormat($event)"
 														   [items]="fieldTokens"
+														   [forceOpenBottom]="true"
 														   #tokenMenu
 														   [tabIndex]="1"></ig-popup-menu>
 										</div>
@@ -233,10 +234,10 @@
 											<p-checkbox igCheckbox
 														binary="true"
 														label="Collapsed by default"
-														name="isDescriptionVisibleByDefault"
-														formControlName="isDescriptionVisibleByDefault"
+														name="isDescriptionCollapsedByDefault"
+														formControlName="isDescriptionCollapsedByDefault"
 														tabindex="120"
-														[igDataCy]="'Asset_Type_Modal_Field_isDescriptionVisibleByDefault'"></p-checkbox>
+														[igDataCy]="'Asset_Type_Modal_Field_isDescriptionCollapsedByDefault'"></p-checkbox>
 										</div>
 									</div>
 								</div>

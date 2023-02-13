@@ -227,7 +227,7 @@
                         <p-checkbox binary="true"
                                     [ngModel]="model.FieldType.Type[currentType].AllowMultipleValues"
                                     [igDataCy]="'FieldType_Field_AllowMultipleValues'"
-                                    (ngModelChange)="model.FieldType.Type[currentType].AllowMultipleValues=$event;model.FieldType.Type[currentType].IsPartOfKey=false;"
+                                    (ngModelChange)="model.FieldType.Type[currentType].AllowMultipleValues=$event;"
                                     label="Allow Multiple Items?"
                                     i18n-label
                                     [ngModelOptions]="{standalone: true}"

@@ -9,13 +9,16 @@
     OnDestroy,
     Output,
     SimpleChanges,
-    ViewChild
+    ViewChild,
+    ViewEncapsulation
 } from '@angular/core';
 
 
 @Component({
     selector: 'd3s-modal',
-    templateUrl: 'gov-modal.component.html'
+	templateUrl: 'gov-modal.component.html',
+	styleUrls: ['gov-modal.component.less'],
+	encapsulation: ViewEncapsulation.None
 })
 
 export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {

@@ -1,8 +1,8 @@
 import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { SelectItem } from "primeng/api";
+import { forkJoin, Subscription } from "rxjs";
 import { Editor } from "primeng/editor";
-import { forkJoin } from "rxjs";
 import { AssetType, AssetTypeClass, Hierarchy, IconStyle } from "../../../../models/asset.model";
 import { Predicate } from "../../../../models/predicate.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
@@ -17,7 +17,6 @@ import { PropertyGroupComponent } from "../../../shared/controls/property-group/
 @Component({
 	selector: "asset-type-modal-form",
 	templateUrl: './asset-type-modal-form.component.html',
-	styleUrls: ['asset-type-modal-form.component.less'],
 	encapsulation: ViewEncapsulation.None
 })
 export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, AfterViewChecked {
@@ -56,6 +55,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	activityTooltip = $localize`An activity is represented by a rounded-corner rectangle and is a generic term for work that the company performs. The types of activities are Task and Sub-Process.`;
 
 	private isEditFormUpdated: boolean = false;
+	private changeFormSub: Subscription;
 
 	defaultDescriptionButtonTextValue = $localize`Information`;
 
@@ -125,7 +125,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			description: [null],
 			isDescriptionEnabled: [false],
 			descriptionButtonName: [null],
-			isDescriptionVisibleByDefault: [false],
+			isDescriptionCollapsedByDefault: [true],
 			backgroundColor: [null],
 			backgroundColorTextValue: [null, { validators: [Validators.required] }],
 			icon: [null],
@@ -149,6 +149,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
 		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
 		this.assetTypeForm.controls['backgroundColorTextValue'].setValue('Ebony');
+		this.assetTypeForm.controls['isDescriptionCollapsedByDefault'].setValue(true);
 
 		if (this.hasPredicateUid) {
 			if (this.hierarchyPredicatesSelectItem.length > 0) {
@@ -160,6 +161,10 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	updateForm() {
 		if (this.uid) {
+			if (this.changeFormSub) {
+				this.changeFormSub.unsubscribe();
+			}
+
 			this.isLoading = true;
 
 			forkJoin(
@@ -170,7 +175,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.fieldTokens = [];
 				if (results[1] && results[1].length) {
 					results[1].forEach((field) => {
-						const keyFieldTypes = ["Text", "Date", "DateTime", "Number", "Decimal", "Lookup", "Counter"];
+						const keyFieldTypes = ["Text", "Date", "DateTime", "Number", "Boolean", "Decimal", "Lookup", "Counter"];
 						if (keyFieldTypes.some((ft) => ft.toLowerCase() === field.Type.toLowerCase())) {
 							this.fieldTokens.push({ title: field.Name });
 						}
@@ -187,7 +192,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 					this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
 				}
 
-				this.assetTypeForm.controls["isDescriptionVisibleByDefault"].setValue(assetType.IsDescriptionVisibleByDefault);
+				//ui label is `Collapsed by default` so we need to revert this boolean here
+				this.assetTypeForm.controls["isDescriptionCollapsedByDefault"].setValue(!assetType.IsDescriptionVisibleByDefault);
 				this.assetTypeForm.controls["backgroundColor"].setValue(assetType.IconStyle.BackColor);
 
 				const colorCode = (assetType.IconStyle.BackColor ?? '') as string;
@@ -227,7 +233,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 				this.isEditFormUpdated = false;
 				setTimeout(() => {
-					this.assetTypeForm.valueChanges.subscribe(() => {
+					this.changeFormSub = this.assetTypeForm.valueChanges.subscribe(() => {
 						this.isEditFormUpdated = true;
 					});
 				}, 200);
@@ -285,7 +291,9 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		model.Description = this.assetTypeForm.get("description").value;
 		model.IsDescriptionEnabled = this.assetTypeForm.get("isDescriptionEnabled").value;
 		model.DescriptionButtonName = this.assetTypeForm.get("descriptionButtonName").value;
-		model.IsDescriptionVisibleByDefault = this.assetTypeForm.get("isDescriptionVisibleByDefault").value;
+
+		//ui label is `Collapsed by default` so we need to revert this boolean here
+		model.IsDescriptionVisibleByDefault = !this.assetTypeForm.get("isDescriptionCollapsedByDefault").value;
 
 		model.BackgroundColor = this.assetTypeForm.get("backgroundColor").value;
 		model.IconStyle = new IconStyle();
@@ -383,7 +391,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	}
 
 	get closeButtonLabel(): string {
-		return this.uid ? $localize`Discard Changes` : $localize`Cancel`;
+		if (this.uid && this.isEditFormUpdated) {
+			return $localize`Discard Changes`;
+		}
+
+		return $localize`Cancel`;
 	}
 
 	@HostListener('window:resize', ['$event'])
@@ -421,6 +433,11 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	close() {
 		this.setDefaultFormValues();
+
+		if (this.formElement) {
+			this.formElement.nativeElement.scrollTop = 0;
+		}
+
 		this.onClose.emit();
 	}
 

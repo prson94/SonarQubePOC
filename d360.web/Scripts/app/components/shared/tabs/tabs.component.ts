@@ -11,13 +11,16 @@ import { CompanySettingsService } from "../../../services/settings.service";
 import { AuthenticationService } from '../../../services/authentication.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 
-// TODO: it will be great to move out next out of this component: 
+// TODO: it will be great to move out next out of this component:
 // • statistics
 // • searchDetails
-// • isScoringScreen 
-// • area 
+// • isScoringScreen
+// • area
 // • filterScoringTabHasNoValue
 // • getTitle
+
+/*global $localize*/
+
 @Component({
     selector: 'd3s-tabs',
     templateUrl: 'tabs.component.html',
@@ -31,7 +34,7 @@ export class TabsComponent implements OnDestroy {
     @Input() items: Tab[];
     @Input() showOnlyMainTab = false;
     @Input() hideMainTab = true;
-    @Input() area = { icon: 'fa-folder', title: '' };
+    @Input() area = { icon: 'fa-folder', title: '', tabTitle: '' };
     @Input() emitSecondaryNav = false;
     @Input() statistics: ObjectStatistics;
     @Input() searchDetails: SearchDetail;
@@ -79,7 +82,7 @@ export class TabsComponent implements OnDestroy {
 
         this.homeUrlChangeSub = this.secondaryNavService.homeUrlChange$.subscribe(
             (item) => {
-                this.homeUrl = item;
+				this.homeUrl = item;
             }
         );
     }
@@ -232,5 +235,10 @@ export class TabsComponent implements OnDestroy {
     ngOnDestroy() {
         this.routerUrlChangeSub?.unsubscribe();
         this.homeUrlChangeSub?.unsubscribe();
-    }
+	}
+
+	get isMainTabVisible() {
+
+		return !this.isScoringScreen && !this.hideMainTab && this.area?.tabTitle !== $localize`Relationship Types`;
+	}
 }

@@ -293,20 +293,6 @@ namespace d360.model
 			return result.FirstOrDefault();
 		}
 
-		public Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type)
-		{
-			var sType = type.ToString();
-			var assetType = Filter<AssetType>(a => a.Object == sType && a.ObjectID == id).FirstOrDefault();
-			if (assetType != null)
-			{
-				return GetRelationshipTypes(null, $"where State = 1 and (SubjectAssetTypeID = {assetType.ID} or ObjectAssetTypeID = {assetType.ID})");
-			}
-			else
-			{
-				return null;
-			}
-		}
-
 		public List<AllocationPossibility> GetAllocationOptions()
 		{
 			List<AllocationPossibility> list = Database
@@ -1264,18 +1250,18 @@ from	IntersectType I
 											T.ObjectID as ID,
 											T.Uid,
 											case 
-												when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: '
-												when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: '
-												when T.Object = 'GroupType' then 'Security :: '
-												when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} :: '
-												when T.Object = 'ReferenceItemType' then 'Reference :: '
-												when T.Object = 'ResourceType' then 'Security :: '
-												when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} :: '
-												when T.Object = 'TaskType' and T.[Class] = 15 then '{CommonNames.AssetTypeClass_Task.CleanForSql()} :: ' 
-												when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} :: '
+												when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} : '
+												when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} : '
+												when T.Object = 'GroupType' then 'Security : '
+												when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} : '
+												when T.Object = 'ReferenceItemType' then 'Reference : '
+												when T.Object = 'ResourceType' then 'Security : '
+												when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} : '
+												when T.Object = 'TaskType' and T.[Class] = 15 then '{CommonNames.AssetTypeClass_Task.CleanForSql()} : ' 
+												when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} : '
 											end + coalesce(P.[Path], T.Name) as Name
 									from	AssetType T
-											cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
+											cross apply dbo.GetAssetTypeTextPathById(T.ID, ' > ') P
 									{whereStatement}
 									) I";
 
@@ -3008,6 +2994,14 @@ from	processexpandeddata ped
 					if (s.Value.In("True", "False"))
 					{
 						s.Value = s.Value.ToLowerInvariant();
+					}
+					else if (s.ID == Setting.GovernanceRoleReferenceListUid)
+					{
+						AssetType IsUidExists = Filter<AssetType>(i => i.uid.ToString().ToLower() == s.Value.ToLower()).FirstOrDefault();
+						if (IsUidExists == null)
+						{
+							s.Value = Guid.Empty.ToString();
+						}
 					}
 				}
 				else

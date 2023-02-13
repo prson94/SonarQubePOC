@@ -1281,6 +1281,10 @@ OPTION(RECOMPILE)";
 		{
 			var dbArgs = new DynamicParameters();
 			bool includeHasFieldTypes = false;
+			bool includeHasRelationships = false;
+			bool includeTotalRelationshipCount = false;
+			bool includeCreatedModifiedBy = false;
+
 			if (queryParams != null)
 			{
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "predicateuid"))
@@ -1293,6 +1297,7 @@ OPTION(RECOMPILE)";
 						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" P.[UID] = @predicateUid";
 					}
 				}
+
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "assettypeuid"))
 				{
 					Guid assetTypeUid;
@@ -1325,7 +1330,8 @@ OPTION(RECOMPILE)";
 							whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid)";
 						}
 					}
-				}				
+				}		
+				
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "relationshiptypeuid"))
 				{
 					Guid relationshipTypeUid;
@@ -1336,6 +1342,7 @@ OPTION(RECOMPILE)";
 						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (I.Uid = @relationshiptypeuid)";
 					}
 				}
+
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "state"))
 				{
 					State state;
@@ -1346,13 +1353,67 @@ OPTION(RECOMPILE)";
 						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.State = @state";
 					}
 				}
+
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includehasfieldtypes"))
 				{
-					var hasFieldTypesString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includehasfieldtypes").Value;
-					bool.TryParse(hasFieldTypesString, out includeHasFieldTypes);
+					var includeHasFieldTypesString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includehasfieldtypes").Value;
+					bool.TryParse(includeHasFieldTypesString, out includeHasFieldTypes);
+				}
+
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includehasrelationships"))
+				{
+					var includeHasRelationshipsString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includehasrelationships").Value;
+					bool.TryParse(includeHasRelationshipsString, out includeHasRelationships);
+				}
+
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includetotalrelationshipcount"))
+				{
+					var includeTotalRelationshipCountString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includetotalrelationshipcount").Value;
+					bool.TryParse(includeTotalRelationshipCountString, out includeTotalRelationshipCount);
+				}
+
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includecreatedmodifiedby"))
+				{
+					var includeCreatedModifiedByString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includecreatedmodifiedby").Value;
+					bool.TryParse(includeCreatedModifiedByString, out includeCreatedModifiedBy);
 				}
 			}
 
+			List<string> additionalColumns = new List<string>();
+			if (includeHasFieldTypes)
+			{
+				additionalColumns.Add($@",case 
+								when exists (select top 1 1 from FieldType where IntersectTypeID = I.ID)
+									then 1
+									else 0
+								end as 'HasFieldTypes'");
+			}
+
+			if (includeHasRelationships)
+			{
+				additionalColumns.Add($@",case 
+								when exists (select top 1 1 from [Intersect] where IntersectTypeID = I.ID)
+									then 1
+									else 0
+								end as 'HasRelationships'");
+			}
+
+			if (includeTotalRelationshipCount)
+			{
+				additionalColumns.Add($@",(select count(1) from [Intersect] where IntersectTypeID = I.ID)
+									as 'TotalRelationshipCount'");
+			}
+
+			if (includeCreatedModifiedBy)
+			{
+				additionalColumns.Add($@",
+						created.uid as CreatedByUid, 
+						adv_created.DisplayValue as CreatedByName, 
+						I.CreatedOn,
+						updated.uid as UpdatedByUid, 
+						adv_updated.DisplayValue as UpdatedByName, 
+						I.UpdatedOn");
+			}
 
 			var sql = $@"
 select	I.Id,
@@ -1371,11 +1432,7 @@ select	I.Id,
 		coalesce(OP.[Path], O.Name, O9.Name)  as 'Object.Name',
 		coalesce(I.ObjectClass,0) as 'Object.Class',
 		I.ObjectCardinality as 'Object.Cardinality'
-		{(includeHasFieldTypes ? @",case 
-								when exists (select top 1 1 from FieldType where IntersectTypeID = I.ID)
-									then 1
-									else 0
-								end as 'HasFieldTypes'" : "")}
+		{(additionalColumns.Count > 0 ? string.Join(Environment.NewLine, additionalColumns) : "")}
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
 		left join AssetType S on S.ID = I.SubjectAssetTypeID and I.SubjectAssetTypeID > 0
@@ -1384,6 +1441,11 @@ from	IntersectType I
 		left join AssetType O on O.ID = I.ObjectAssetTypeID and I.ObjectAssetTypeID > 0
 		left join AssetType O9 on O9.OBJECTID = 0 AND O9.CLASS = 9 AND O9.CLASS = I.OBJECTCLASS and I.ObjectAssetTypeID = 0
 		outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
+		{(includeCreatedModifiedBy ? @"		
+			left join asset created on created.Object = 'Resource' and created.ObjectID = I.CreatedBy
+			left join AssetDisplayValue adv_created on adv_created.AssetID = created.ID
+			left join asset updated on updated.Object = 'Resource' and updated.ObjectID = I.CreatedBy
+			left join AssetDisplayValue adv_updated on adv_updated.AssetID = updated.ID" : "")}
 		{whereClause} for json path";
 
 			var models = await companyContext.GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs, ApiTimeout);

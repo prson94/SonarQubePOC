@@ -298,6 +298,9 @@ namespace d360.core.entities
 		[DataMember]
 		public List<DataProfileConfidenceAnalysisDetails> confidenceAnalysisDetails { get; set; }
 
+		[DataMember]
+		public TableStructureInfo tableStructureInfo { get; set; }
+
 		[DataMember(Name = "totalCount")]
         public long? TotalCount { get; set; }
 
@@ -398,6 +401,8 @@ namespace d360.core.entities
 
 			confidenceAnalysisDetails = details?.Where(d => d.SampleType.Equals("confidenceAnalysisDetails", StringComparison.InvariantCultureIgnoreCase))?.Select(d => JsonConvert.DeserializeObject<DataProfileConfidenceAnalysisDetails>(d.Value))?.ToList() ?? null;
 
+			tableStructureInfo = details?.Where(d => d.SampleType.Equals("TableStructureInfo", StringComparison.InvariantCultureIgnoreCase))?.Select(d => JsonConvert.DeserializeObject<TableStructureInfo>(d.Value))?.FirstOrDefault() ?? null;
+
 			if (topK.Count == 0)
             {
                 topK = null;
@@ -461,7 +466,19 @@ namespace d360.core.entities
 		public string displayName { get; set; }
 	}
 
-    public class AssetDataProfilesApiViewModel : PagedApiBaseViewModel
+	public class TableStructureInfo
+	{
+		public string tableState { get; set; }
+		public List<columnStructureInfo>? columnStructureInfoList { get; set; }
+	}
+
+	public class columnStructureInfo
+	{
+		public string columnName { get; set; }
+		public string dataType { get; set; }
+	}
+
+	public class AssetDataProfilesApiViewModel : PagedApiBaseViewModel
     {
         [DataMember]
         public IEnumerable<DataProfileModel> items { get; set; }

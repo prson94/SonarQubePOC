@@ -355,37 +355,6 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void GetRelationshipTypesAsyncWithParams()
-        {
-
-            var actionResult = relationshipsController.GetRelationshipTypesAsync(0, SystemObjects.Artifact.ToString());
-
-            var str = await actionResult.Result.Content.ReadAsStringAsync();
-
-
-            Assert.True(actionResult.Result.IsSuccessStatusCode);
-            Assert.True(!string.IsNullOrEmpty(str));
-            var data = JsonConvert.DeserializeObject<List<IntersectTypeApiViewModel>>(str);
-            Assert.True(data.Count > 0);
-
-        }
-
-
-        [Fact]
-        public async void GetRelationshipTypesAsyncWithErrParams()
-        {
-
-            var actionResult = relationshipsController.GetRelationshipTypesAsync(0, "wrong object type");
-
-            var str = await actionResult.Result.Content.ReadAsStringAsync();
-
-
-            Assert.True(!actionResult.Result.IsSuccessStatusCode);
-            Assert.True(actionResult.Result.StatusCode == HttpStatusCode.BadRequest);
-
-        }
-
-        [Fact]
         public void GetIntersectType()
         {
             var actionResult = relationshipsController.GetIntersectType(1);

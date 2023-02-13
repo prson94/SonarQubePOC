@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
 using d360.core.entities;
 using d360.core.entities.Process;
 using d360.core.enums;
@@ -16,17 +15,11 @@ using d360.model.validators;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
-
 using Dapper;
-
 using Microsoft.Web.Http;
-
 using Newtonsoft.Json;
-
 using Resources;
-
 using SpreadsheetLight;
-
 using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
@@ -425,9 +418,9 @@ namespace d360.web.Controllers.V2
 				document.SetCellValue(rowNumber, index++, (row.Value ?? "").ToString());
 				document.SetCellValue(rowNumber, index++, (row.UseCount ?? "").ToString());
 				document.SetCellValue(rowNumber, index++, (row.CreatedOn ?? "").ToString());
-				document.SetCellValue(rowNumber, index++, (row.CreatedBy ?? "").ToString());
+				document.SetCellValue(rowNumber, index++, (row.CreatedByName ?? "").ToString());
 				document.SetCellValue(rowNumber, index++, (row.UpdatedOn ?? "").ToString());
-				document.SetCellValue(rowNumber, index++, (row.UpdatedBy ?? "").ToString());
+				document.SetCellValue(rowNumber, index++, (row.UpdatedByName ?? "").ToString());
 				document.SetCellValue(rowNumber, index++, (row.uid ?? "").ToString());
 			}
 

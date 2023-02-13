@@ -109,8 +109,7 @@
 				   [minSize]="getSidePanelMinWidth()"
 				   [maxSize]="getSidePanelMaxWidth()"
 				   class="tile tile-detail side-panel">
-		<side-panel #sidePanel 
-					[selectedItem]="selectedForInfoPanel"
+		<side-panel [selectedItem]="selectedForInfoPanel"
 					[setMinMaxWidth]="false"
 					[storageKey]="sidePanelStorageKey"
 					[expanded]="true"
@@ -133,6 +132,8 @@
 
 
 <d3s-modal [title]="editConnectorLabel"
+		   i18n-subtitle
+		   subtitle="Diagram Assets"
 		   additionalClasses="modal-dyn-editor medium-dialog"
 		   (onClose)="isEditorVisible=false"
 		   [isVisible]="isEditorVisible">

@@ -17,8 +17,6 @@ export class ConnectorLabelSidePanelWrapperComponent implements OnChanges {
 	sidePanelOpen = false;
 	selectedForInfoPanel: unknown;
 
-	@ViewChild('sidePanel', { static: false }) sidePanel: SidePanelComponent;
-
 	constructor(public sidePanelService: SidePanelService) {
 	}
 
@@ -47,10 +45,6 @@ export class ConnectorLabelSidePanelWrapperComponent implements OnChanges {
 
 	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
 		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
-	}
-
-	expandPanel() {
-		this.sidePanel.expandSidePanel();
 	}
 
 	get anySelectedItem(): unknown {

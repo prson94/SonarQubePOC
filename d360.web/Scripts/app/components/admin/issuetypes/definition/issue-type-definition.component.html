@@ -1,0 +1,63 @@
+<div class="issue-type-definition asset-detail {{(isSidePanel ? 'no-padding' : '')}}">
+	<div *ngIf="workflowIssueType && isSidePanel" class="asset-detail-header">
+		<div class="asset-name">{{workflowIssueType.Name}}</div>
+		<div class="class-name" i18n>Workflow Action Type</div>
+
+		<div class="ng-star-inserted">
+			<a (click)="open()">Open</a>
+			<span class="grey-delimiter">|</span>
+			<a (click)="open(true)">Open in New Tab</a>
+			<span class="grey-delimiter">|</span>
+			<a (click)="editClick()">Edit</a>
+		</div>
+	</div>
+
+	<div class="asset-detail-tabs">
+		<ig-property-group i18n-title title="General">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Name</label>
+						<div>
+							{{workflowIssueType.Name}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Description</label>
+						<span [innerHtml]="workflowIssueType.Description">
+						</span>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+
+		<ig-property-group i18n-title title="System Fields">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>
+							UID
+							<i class="fa fa-copy" [copy-clipboard]="workflowIssueType.Uid"></i>
+						</label>
+						<div>
+							{{workflowIssueType.Uid}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Date Last Modified</label>
+						<span>
+							{{ workflowIssueType.UpdatedOn | date:'d MMM yyyy' }}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Last Modified by</label>
+						<a (click)="resourceClicked(workflowIssueType.UpdatedByUid)">
+							{{ workflowIssueType.UpdatedByName }}
+						</a>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+
+	</div>
+</div>

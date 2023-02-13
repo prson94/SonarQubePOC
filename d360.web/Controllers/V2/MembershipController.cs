@@ -128,6 +128,8 @@ namespace d360.web.Controllers.V2
 				var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
 				bool IsCurrentUser = false;
 
+				var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
 				if (ResourceID != null)
 				{
 					if (ResourceID == Company.CurrentResourceID)
@@ -288,7 +290,7 @@ namespace d360.web.Controllers.V2
 					fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID.HasValue && assetTypeIds.Contains(f.AssetTypeID.Value)).ToList();
 				}
 
-				getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+				getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, isExport: isStreamResponse);
 
 				if (Uid != null || ResourceID != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
 				{
@@ -498,9 +500,7 @@ namespace d360.web.Controllers.V2
 							 new CommandDefinition(countSql,
 							cancellationToken: Cancellationtoken,
 							parameters: dbArgs,
-							commandTimeout: ApiTimeout));
-
-				var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+							commandTimeout: ApiTimeout));				
 
 				if (isStreamResponse)
 				{
@@ -1734,7 +1734,7 @@ namespace d360.web.Controllers.V2
 
 				foreach (var f in fieldMap)
 				{
-					var val = (((row as IDictionary<string, object>)[$"{f.Item2}"]) ?? "").ToString();
+					var val = (((row as IDictionary<string, object>)[$"{f.Item2}"]) ?? "").ToString();					
 					SetCellValue(document, rowIndex, colIndex, f.Item3, val);
 					colIndex++;
 				}
