@@ -8,11 +8,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
+using System.Web.Http.Results;
+using System.Windows.Forms.VisualStyles;
+using AngleSharp.Text;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
@@ -31,7 +34,6 @@ using d360.web.Models;
 using d360.web.Services;
 
 using Dapper;
-
 using Microsoft.Web.Http;
 
 using Newtonsoft.Json;
@@ -53,7 +55,7 @@ namespace d360.web.Controllers.V2
 		RoutePrefix("api/v{version:apiVersion}/assets"),
 		Authorize
 	]
-	public class AssetsController : BaseV2ApiController
+	public partial class AssetsController : BaseV2ApiController
 	{
 		#region DI
 		
