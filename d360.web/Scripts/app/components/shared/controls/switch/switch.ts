@@ -127,7 +127,6 @@ export class Switch implements ControlValueAccessor, OnInit {
 		this.disabled = isDisabled;
 	}
 	public focus(evt) {
-		console.log(evt);
 		if (this._el) { this._el.nativeElement.focus(); }
 	}
 }
