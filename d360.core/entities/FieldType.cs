@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using d360.core.entities.Contracts;
@@ -184,6 +185,32 @@ namespace d360.core.entities
 					{
 						return Guid.TryParse(definition.GetValue("AssetTypeUid").ToString(), out _);
 					}
+				}
+
+				return false;
+			}
+		}
+
+		public bool UseAsCombinedSimpleFilter
+		{
+			get
+			{
+				var types = new string[] {
+					DataType.Text.ToString(),
+					DataType.Lookup.ToString(),
+					DataType.Link.ToString(),
+					DataType.JSON.ToString(),
+					DataType.Html.ToString(),
+					DataType.Decimal.ToString(),
+					DataType.Number.ToString(),
+					DataType.Date.ToString(),
+					DataType.DateTime.ToString(),
+					DataType.Boolean.ToString()
+				};
+
+				if (types.Contains(this.Type))
+				{
+					return true;
 				}
 
 				return false;
