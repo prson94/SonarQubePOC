@@ -208,12 +208,7 @@ namespace d360.core.entities
 					DataType.Boolean.ToString()
 				};
 
-				if (types.Contains(this.Type))
-				{
-					return true;
-				}
-
-				return false;
+				return types.Contains(this.Type);
 			}
 		}
 	}
