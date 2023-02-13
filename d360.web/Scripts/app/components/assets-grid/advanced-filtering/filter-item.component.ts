@@ -881,9 +881,9 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 		this.lazyLoadSubscription = this.assetService
 			.getAssetsLookupValues(nameAsParam.split("|")[1], params)
 			.subscribe((res) => {
-				if (!this.currentField.Values || (params.filter && params.filter !== this.oldSearchPhrase)) {
+				if (!this.currentField.Values || res.length > this.currentField.Values?.length || (params.filter && params.filter !== this.oldSearchPhrase)) {
 					//initialize new empty array if its uninitialized or if simple filter changes
-					this.currentField.Values = Array.from({ length: 0 });
+					this.currentField.Values = Array.from({ length: res.lenght });
 				}
 
 				this.oldSearchPhrase = params.filter ?? "";
@@ -908,10 +908,6 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 				Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 
 				this.currentField.Values = [...this.currentField.Values];
-
-				if (+params.take === res.length) {
-					this.currentField.Values.push(null);
-				}
 
 				this.isLookupValuesLoading = false;
 				this.cdRef.markForCheck();

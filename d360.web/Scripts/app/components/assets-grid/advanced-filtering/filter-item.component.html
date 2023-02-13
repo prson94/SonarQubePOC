@@ -124,6 +124,7 @@
                                      [virtualScroll]="true"
                                      [lazy]="isLazyLoad()"
                                      (onLazyLoad)="loadListLazy($event)"
+                                     [lazyLoadOnInit]="false"
                                      [loading]="isLookupValuesLoading"
                                      [loadingIcon]="'fa fa-spinner fa-spin'">
                                 <ng-template pTemplate="header">
