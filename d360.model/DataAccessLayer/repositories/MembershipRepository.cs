@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 using d360.core;
@@ -112,7 +113,7 @@ namespace d360.model.DataAccessLayer
 				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
 			}
 
-			var groupIdList = CompanyContext.AssetTypes.Where(a => a.Class == AssetTypeClass.Group).Select(s=> s.ID);
+			var groupIdList = CompanyContext.AssetTypes.Where(a => a.Class == AssetTypeClass.Group).Select(s => s.ID);
 
 			var fieldTypes = CompanyContext.FieldTypes.Where(f => groupIdList.Contains(f.AssetTypeID.Value)).ToList();
 			getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, listColorsAsJSON: listColorsAsJSON);
@@ -496,13 +497,13 @@ namespace d360.model.DataAccessLayer
 							messages.Add(MemberShipErrors.PasswordRule);
 						}
 					}
-					
+
 					if (string.IsNullOrEmpty(user.FirstName))
 					{
 						success = false;
 						messages.Add(MemberShipErrors.FirstNameMissing);
 					}
-					
+
 					if (string.IsNullOrEmpty(user.LastName))
 					{
 						success = false;
@@ -528,7 +529,7 @@ namespace d360.model.DataAccessLayer
 					{
 						NewPassword = user.Fields.Where(z => z.Key == "NewPassword").Select(z => z.Value).FirstOrDefault();
 						CurrPassword = user.Fields.Where(z => z.Key == "CurrentPassword").Select(z => z.Value).FirstOrDefault();
-						
+
 						if (NewPassword == null)
 						{
 							success = false;
@@ -547,7 +548,7 @@ namespace d360.model.DataAccessLayer
 
 						var CurrPasswordHash = PasswordHelper.HashPassword(CurrPassword);
 						var existing = CommunityContext.Filter<Resource>(i => i.Password == CurrPasswordHash && i.Uid == user.uid).FirstOrDefault();
-						
+
 						if (existing == null)
 						{
 							success = false;
@@ -587,7 +588,7 @@ namespace d360.model.DataAccessLayer
 						success = false;
 						messages.Add(MemberShipErrors.FirstNameMissing);
 					}
-					
+
 					if (string.IsNullOrEmpty(user.LastName))
 					{
 						success = false;
@@ -596,7 +597,7 @@ namespace d360.model.DataAccessLayer
 				}
 
 				if (user.FirstName != null && user.FirstName.Length > 250)
-                {
+				{
 					success = false;
 					messages.Add(MemberShipErrors.FirstNameTooLong);
 				}
@@ -629,22 +630,22 @@ namespace d360.model.DataAccessLayer
 				}
 
 				row["ExecutionID"] = executionID;
-				
+
 				if (user.uid.HasValue)
 				{
 					row["Uid"] = user.uid;
 				}
-				
+
 				if (user.ResourceID.HasValue)
 				{
 					row["ResourceID"] = user.ResourceID;
 				}
-				
+
 				if (user.ExecutionItemUid.HasValue)
 				{
 					row["ExecutionItemUId"] = user.ExecutionItemUid;
 				}
-				
+
 				row["ItemNumber"] = user.ItemNumber;
 				row["Username"] = user.Username;
 
@@ -652,12 +653,12 @@ namespace d360.model.DataAccessLayer
 				row["LastName"] = user.LastName;
 
 				row["Password"] = user.Password;
-				
+
 				if (user.State.HasValue && !IsChangePasswordReqeust)
 				{
 					row["State"] = (int)user.State;
 				}
-				
+
 				row["IsAdministrator"] = user.IsAdministrator;
 				row["IsNew"] = user.IsNew;
 				row["Object"] = "Resource";
@@ -1110,17 +1111,17 @@ namespace d360.model.DataAccessLayer
 						var row = resultsTable.NewRow();
 						row["ExecutionID"] = executionID;
 						row["ItemNumber"] = r.ItemNumber;
-						
+
 						if (r.uid.HasValue)
 						{
 							row["uid"] = r.uid;
 						}
-						
+
 						if (r.Success == false)
 						{
 							row["Success"] = false;
 						}
-						
+
 						row["Message"] = r.Message ?? "";
 
 						resultsTable.Rows.Add(row);
@@ -1217,7 +1218,6 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
-
 			using (SqlTransaction trans = CompanyContext.Connection.BeginTransaction())
 			{
 				try
@@ -1300,6 +1300,24 @@ namespace d360.model.DataAccessLayer
 			}
 
 			#endregion
+
+			await CompanyContext.Connection.ExecuteAsync(@$"
+						UPDATE ADV
+						SET ADV.DisplayValue = DisplayValue.DisplayValue,
+							DisplayValueHash = CONVERT(NVARCHAR(32), HashBytes('SHA1', DisplayValue.DisplayValue), 2),
+							DisplayValuePrefix = SUBSTRING(DisplayValue.DisplayValue, 1, 250)
+						from AssetDisplayValue ADV
+						inner join api.ExecutionUser EU on EU.ExecutionID = @executionID and EU.AssetId = ADV.AssetID
+						cross apply GetAssetDisplayValueById(EU.AssetId) DisplayValue;
+
+						exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, 0;",
+							new
+							{
+								executionID = execution.ExecutionID,
+								@class = (int)AssetTypeClass.User,
+								begin = 0,
+								end = itemNumber
+							});
 
 			return results;
 		}
@@ -1463,8 +1481,8 @@ namespace d360.model.DataAccessLayer
 			var newClaim = new ClaimMapping();
 			var companyDomainSetting = CommunityContext
 				.CompanyDomainSettings
-				.FirstOrDefault(d => 
-					d.CompanyID == CompanyContext.CurrentCompanyID 
+				.FirstOrDefault(d =>
+					d.CompanyID == CompanyContext.CurrentCompanyID
 					&& d.DomainSettingID == CompanyContext.CurrentDomainSettingID);
 
 			if (claim.Location == ClaimLocation.Environment)
