@@ -2415,7 +2415,23 @@ namespace d360.model.DataAccessLayer
 					isSubject ? FieldTypeComplexLookupRelationDirection.Forward : FieldTypeComplexLookupRelationDirection.Back));
 			}
 
-			string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, selects, fieldRelationDirectionMapping);
+			var fieldtypeRelationshipType = Company.Query<FieldTypeRelationShipType>(@"
+					select distinct IT.uid IntersectTypeUid,IT.ID IntersectTypeId,case when SubjectAssetTypeID = ObjectAssetTypeID then 1 else 0 end IsBothSideSame
+					from FieldTypeLookup FTL 
+					cross apply OPENJSON(FTL.[Definition], N'lax $.Relations') with (
+						IntersectTypeUid uniqueidentifier, 
+						AssetTypeUid uniqueidentifier,
+						RelationType int, 
+						Direction int
+					) R
+					inner join [intersecttype] it on it.uid = r.IntersectTypeUid
+					where fieldtypeid = @FieldTypeID and ISJSON(FTL.[Definition]) = 1
+					option(recompile)",
+			new { ftl.FieldTypeID })
+			.ToList();
+
+
+			string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, selects, fieldRelationDirectionMapping, fieldtypeRelationshipType);
 
 			(Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
 

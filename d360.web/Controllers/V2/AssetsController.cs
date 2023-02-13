@@ -1697,6 +1697,7 @@ namespace d360.web.Controllers.V2
 				dbArgs.Add("object", asset.Object);
 				dbArgs.Add("objectId", asset.ObjectID);
 				dbArgs.Add("fieldTypeId", fieldType.ID);
+				dbArgs.Add("AssetId", asset.ID);
 
 				if (fieldType.Type == "ComplexRelationLookup")
 				{

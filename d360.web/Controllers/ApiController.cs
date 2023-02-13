@@ -636,14 +636,30 @@ namespace d360.web.Controllers
 
 			try
 			{
-				complexRelationFieldHasAnyModels = ComplexFieldsHelper.GetComplexRelationFieldHasAnyModels(fieldTypeLookups, fieldTypes);
+				var fieldtypeRelationshipType = Company.Query<FieldTypeRelationShipType>(@"
+					select distinct IT.uid IntersectTypeUid,IT.ID IntersectTypeId,case when it.SubjectAssetTypeID = it.ObjectAssetTypeID then 1 else 0 end IsBothSideSame
+					from FieldType FT
+					inner join FieldTypeLookup FTL on FT.ID = ftl.FieldTypeID
+					cross apply OPENJSON(FTL.[Definition], N'lax $.Relations') with (
+						IntersectTypeUid uniqueidentifier, 
+						AssetTypeUid uniqueidentifier,
+						RelationType int, 
+						Direction int
+					) R
+					inner join [intersecttype] it on it.uid = r.IntersectTypeUid
+					where Ft.AssetTypeID = @AssetTypeID and ISJSON(FTL.[Definition]) = 1
+					option(recompile)",
+				new { details.AssetTypeID })
+				.ToList();
+
+				complexRelationFieldHasAnyModels = ComplexFieldsHelper.GetComplexRelationFieldHasAnyModels(fieldTypeLookups, fieldTypes, fieldtypeRelationshipType);
 				string multiSql = "";
 				var complexModels = complexRelationFieldHasAnyModels.Where(x => !string.IsNullOrEmpty(x.SQL)).ToList();
 				complexModels.ForEach(x => multiSql += x.SQL);
 
 				if (!string.IsNullOrEmpty(multiSql))
 				{
-					var relationLookupHasAnyReader = await Company.QueryMultipleAsync(multiSql, new { assetUid = details.UID });
+					var relationLookupHasAnyReader = await Company.QueryMultipleAsync(multiSql, new { assetid = details.AssetID, assetUid = details.UID });
 					foreach (var item in complexModels)
 					{
 						var data = relationLookupHasAnyReader.Read<int>().FirstOrDefault();
@@ -1777,6 +1793,7 @@ namespace d360.web.Controllers
 				dbArgs.Add("object", asset.Object);
 				dbArgs.Add("objectId", asset.ObjectID);
 				dbArgs.Add("fieldTypeId", fieldType.ID);
+				dbArgs.Add("AssetId", asset.ID);
 
 				if (fieldType.Type == "ComplexRelationLookup")
 				{

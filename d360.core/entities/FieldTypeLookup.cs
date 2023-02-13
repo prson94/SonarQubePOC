@@ -127,4 +127,14 @@ namespace d360.core.entities
         
         public Guid? ResponsibilityTypeUid { get; set; }
     }
+
+    public class FieldTypeRelationShipType
+    {
+        public Guid IntersectTypeUid { get; set; }
+
+        public int IntersectTypeId { get; set; }
+
+        public bool IsBothSideSame { get; set; } = false;
+
+    }
 }
