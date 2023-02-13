@@ -45,7 +45,6 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	flowObjectTypes: SelectItem[] = [];
 
 	@ViewChild('form', { static: false }) formElement: ElementRef;
-	@ViewChild('ed', { static: false }) primeEditor: Editor;
 
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
@@ -464,9 +463,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	@HostListener('keydown.tab', ['$event'])
 	onKeyDown(event: KeyboardEvent) {
 		const target = event.target as HTMLElement;
-		const editor = (this.primeEditor.el.nativeElement as HTMLElement).querySelector('.ql-editor') as HTMLElement;
-		editor.focus();
-		console.log(this.primeEditor.el.nativeElement as HTMLElement);
+
 		if (target.tabIndex > 9) {
 			this.lastVisitedTabIndex = target.tabIndex;
 			const nextInput = this.getNextInputTab(this.lastVisitedTabIndex);
@@ -483,7 +480,6 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		}
 		const nextElement = document.querySelectorAll(`[tabindex='${nextTabIndex}']`);
 		if (nextElement.length > 0) {
-			console.log(nextElement[0]["tabIndex"]);
 			const parentOffset = (nextElement[0] as HTMLElement).offsetParent;
 			if (parentOffset) {
 				return nextElement[0] as HTMLElement;
