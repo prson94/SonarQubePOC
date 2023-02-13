@@ -74,13 +74,13 @@ namespace d360.model.helpers
 					{
 						if (IsBothSideSame)
 						{
-							joins.Add($@"cross apply (select distinct Ia{idx}.SubjectAssetId 
+							joins.Add($@"cross apply (select Ia{idx}.id, Ia{idx}.SubjectAssetId 
 												  from [Intersect] Ia{idx} 
 												  where Ia{idx}.IntersectTypeID  = cast('{IntersecttypeID}' as int) 
 												  and Ia{idx}.ObjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id 
 												  {(idx == 1 ? $" and Ia{idx}.SubjectAssetId = cast(@assetid as  bigint)" : "")}
 												  union all
-												  select distinct Ia{idx}.ObjectAssetID SubjectAssetId 
+												  select Ia{idx}.id, Ia{idx}.ObjectAssetID SubjectAssetId 
 												  from [Intersect] Ia{idx} 
 												  where Ia{idx}.IntersectTypeID  = cast('{IntersecttypeID}' as int) 
 												  and Ia{idx}.SubjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id
@@ -104,13 +104,13 @@ namespace d360.model.helpers
 					{
 						if (IsBothSideSame)
 						{
-							joins.Add($@"cross apply (select distinct Ia{idx}.ObjectAssetId 
+							joins.Add($@"cross apply (select Ia{idx}.id, Ia{idx}.ObjectAssetId 
 												  from [Intersect] Ia{idx} 
 												  where Ia{idx}.IntersectTypeID  = cast('{IntersecttypeID}' as int) 
 												  and Ia{idx}.SubjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id
 												  {(idx == 1 ? $" and Ia{idx}.ObjectAssetId = cast(@assetid as  bigint)" : "")}
 												  union all
-												  select distinct Ia{idx}.SubjectAssetId ObjectAssetID 
+												  select Ia{idx}.id, Ia{idx}.SubjectAssetId ObjectAssetID 
 												  from [Intersect] Ia{idx} 
 												  where Ia{idx}.IntersectTypeID  = cast('{IntersecttypeID}' as int) 
 												  and Ia{idx}.ObjectAssetID = H{(idx == 1 ? idx : idx - 1)}.Id
@@ -198,13 +198,13 @@ namespace d360.model.helpers
 				{
 					if (IsBothSideSame)
 					{
-						joins.Add($@"cross apply (select distinct Ia{idx}.SubjectAssetId 
+						joins.Add($@"cross apply (select Ia{idx}.id, Ia{idx}.SubjectAssetId 
 												  from [Intersect] Ia{idx} 
 												  where Ia{idx}.IntersectTypeID  = cast('{IntersecttypeID}' as int) 
 												  and Ia{idx}.ObjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id
 												  {(idx == 1 ? $" and Ia{idx}.SubjectAssetId = cast(@assetid as  bigint)" : "")}
 												  union all
-												  select distinct Ia{idx}.ObjectAssetID SubjectAssetId 
+												  select Ia{idx}.id, Ia{idx}.ObjectAssetID SubjectAssetId 
 												  from [Intersect] Ia{idx} 
 												  where Ia{idx}.IntersectTypeID  = cast('{IntersecttypeID}' as int) 
 												  and Ia{idx}.SubjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id
@@ -230,13 +230,13 @@ namespace d360.model.helpers
 				{
 					if (IsBothSideSame)
 					{
-						joins.Add($@"cross apply (select distinct Ia{idx}.ObjectAssetId 
+						joins.Add($@"cross apply (select Ia{idx}.id, Ia{idx}.ObjectAssetId 
 												  from [Intersect] Ia{idx} 
 												  where Ia{idx}.IntersectTypeID  = cast('{IntersecttypeID}' as int) 
 												  and Ia{idx}.SubjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id
 												  {(idx == 1 ? $" and Ia{idx}.ObjectAssetId = cast(@assetid as  bigint)" : "")}
 												  union all
-												  select distinct Ia{idx}.SubjectAssetId ObjectAssetID 
+												  select Ia{idx}.id, Ia{idx}.SubjectAssetId ObjectAssetID 
 												  from [Intersect] Ia{idx} 
 												  where Ia{idx}.IntersectTypeID  = cast('{IntersecttypeID}' as int) 
 												  and Ia{idx}.ObjectAssetID = H{(idx == 1 ? idx : idx - 1)}.Id
