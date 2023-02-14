@@ -125,6 +125,20 @@ namespace d360.model.DataAccessLayer
 			{
 				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.NameExists);
 			}
+
+			if(!string.IsNullOrEmpty(model.Definition.url))
+			{
+				var validProtools = new string[] { "http", "https", "mailto" };
+				var colonPos = model.Definition.url.IndexOf(":");
+				if (colonPos > 2) //Allow a file path with a one letter drive
+				{
+					var protocol = model.Definition.url.Substring(0, colonPos).ToLower();
+					if(!validProtools.Contains(protocol))
+					{
+						throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDashboardURL);
+					}
+				}
+			}
 		}
 
 		public bool DeleteDashboard(Guid? uid)
