@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, ViewChild
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { Subscription } from 'rxjs';
-import { cloneDeep, isEqual, omit } from "lodash-es";
+import { cloneDeep, isEqual, omit, escape as _escape } from "lodash-es";
 
 @Component({
     selector: 'd3s-header-breadcrumb',
@@ -155,9 +155,9 @@ export class HeaderBreadcrumbComponent {
         let maxNumberOfCrumbsInSpace = 0;
         let html = '';
 		for (var i = this.breadcrumbs.length - 1; i >= 0; i--) {
-			html = '<a class="breadcrumb"><span class="breadcrumb-text">' + _.escape(this.breadcrumbs[i].text) + ' </span>';
+			html = '<a class="breadcrumb"><span class="breadcrumb-text">' + _escape(this.breadcrumbs[i].text) + ' </span>';
 			if (this.breadcrumbs[i].parentTypeName !== undefined) {
-				html += '<span class="parent">' + _.escape(this.breadcrumbs[i].parentTypeName ? this.breadcrumbs[i].parentTypeName : '') + '</span>';
+				html += '<span class="parent">' + _escape(this.breadcrumbs[i].parentTypeName ? this.breadcrumbs[i].parentTypeName : '') + '</span>';
 			}
             html += '</a>';
 
