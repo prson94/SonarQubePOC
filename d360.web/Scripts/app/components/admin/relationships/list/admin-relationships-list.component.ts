@@ -1,4 +1,4 @@
-﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewEncapsulation } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { PredicateFriendlyType } from '../../../../models/predicate.model';
 import { RelationshipType, RelationshipTypeSimpleUIModel } from '../../../../models/relationship.model';
@@ -6,8 +6,10 @@ import { MessagesObservableService } from '../../../../services/messages-observa
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { SidePanelService } from '../../../../services/side-panel.service';
+import { AppConstants } from '../../../../static/constants';
 import { BaseComponent } from '../../../shared/base.component';
 import { PopupMenu } from '../../../shared/controls/popup-menu/popup-menu.component';
+import { Table } from "primeng/table";
 
 
 @Component({
@@ -21,12 +23,17 @@ import { PopupMenu } from '../../../shared/controls/popup-menu/popup-menu.compon
 export class AdminRelationshipsListComponent extends BaseComponent implements OnChanges {
 	relationships: RelationshipTypeSimpleUIModel[] = [];
 
+	rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
+	defaultPagingOptions = AppConstants.DEFAULT_PAGING_OPTIONS;
+
 	@Input() filterToName: string = "";
 	@Input() assetTypeUid: string;
 	@Input() showTitle = true;
 
 	@Input() selected: RelationshipTypeSimpleUIModel;
 	@Output() selectedChange = new EventEmitter();
+
+	first: number = 0;
 
 	showEditor: boolean = false;
 	showDelete: boolean = false;
@@ -36,6 +43,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	editorSelectedUid: string = "";
 
 	/*global $localize*/
+
+	@ViewChild('dt', { static: false }) dataTable: Table;
 
 	constructor(
 		private messagesService: MessagesObservableService,
@@ -82,7 +91,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		return friendly;
 	}
 
-	getRelationships() {
+	getRelationships(preselectedUid: string = null) {
 		this.updateStorageKey();
 		this.isLoading = true;
 		let obs = this.relationshipsService.getRelationshipTypes(null, true);
@@ -112,7 +121,10 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
 			this.isLoading = false;
 			if (this.relationships && !this.showEditor) {
-				if (this.relationships.length > 0) {
+				if (preselectedUid) {
+					this.focusToPreselectedNode(preselectedUid);
+				}
+				else if (this.relationships.length > 0) {
 					this.selected = this.relationships[0];
 					this.selectedChange.emit(this.selected);
 				}
@@ -155,7 +167,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		this.showMessageForApiResult(this.messagesService, result);
 
 		if (result.Success === true) {
-			this.getRelationships();
+			this.getRelationships(result.uid);
 			this.showEditor = false;
 		}
 	}
@@ -214,5 +226,29 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 			element = element.parentElement;
 		}
 		return false;
+	}
+
+	focusToPreselectedNode(preselectedUid: string) {
+		try {
+			this.selected = this.relationships.find((x) => x.Uid === preselectedUid);
+			this.selectedChange.emit(this.selected);
+
+			//find index of topmost parent and naviate to its page
+			const idx = this.relationships.indexOf(this.selected);
+			const pageNumber = Math.floor(idx / this.dataTable.rows);
+
+			if (pageNumber >= 0) {
+				this.first = pageNumber * this.dataTable.rows;
+				setTimeout(() => {
+					//find preselected element and focus to it
+					const htmlElement = document.querySelectorAll(`[data-uid='${preselectedUid}']`)[0] as HTMLElement;
+					const treeTable = document.getElementsByClassName(`p-datatable-wrapper`)[0];
+					treeTable.scrollTo({ top: htmlElement.offsetTop - 200 });
+				}, 250);
+			}
+		}
+		catch {
+			console.warn("failed to focus element");
+		}
 	}
 }
