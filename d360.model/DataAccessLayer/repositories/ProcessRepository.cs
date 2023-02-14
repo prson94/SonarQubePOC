@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using d360.core;
@@ -585,9 +586,9 @@ namespace d360.model.DataAccessLayer
 
 					//call new procedure.
 					conn.Execute(
-						"exec api.MergeAssetPaths @executionId, @class, @begin, @end",
-						new { executionID = execution.ExecutionID, @class = (int)AssetTypeClass.Diagram, begin = 0, end = 0 },
-						transaction: trans, ApiTimeout);
+						"exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, @isInsert",
+						new { executionID = execution.ExecutionID, @class = (int)AssetTypeClass.Diagram, begin = 0, end = 0, isInsert = 0 },
+						transaction: trans);
 
 					trans.Commit();
 
