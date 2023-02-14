@@ -154,11 +154,11 @@ export class HeaderBreadcrumbComponent {
         let max = 0;
         let maxNumberOfCrumbsInSpace = 0;
         let html = '';
-        for (var i = this.breadcrumbs.length - 1; i >= 0; i--) {
-
-            html = '<a class="breadcrumb"><span class="breadcrumb-text">' + this.breadcrumbs[i].text + ' </span>';
-            if (this.breadcrumbs[i].parentTypeName !== undefined)
-                {html += '<span class="parent">' + this.breadcrumbs[i].parentTypeName ? this.breadcrumbs[i].parentTypeName : '' + '</span>';}
+		for (var i = this.breadcrumbs.length - 1; i >= 0; i--) {
+			html = '<a class="breadcrumb"><span class="breadcrumb-text">' + _.escape(this.breadcrumbs[i].text) + ' </span>';
+			if (this.breadcrumbs[i].parentTypeName !== undefined) {
+				html += '<span class="parent">' + _.escape(this.breadcrumbs[i].parentTypeName ? this.breadcrumbs[i].parentTypeName : '') + '</span>';
+			}
             html += '</a>';
 
             this.breadcrumbUIElement.nativeElement.insertAdjacentHTML('beforeend', html);
