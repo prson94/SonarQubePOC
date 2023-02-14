@@ -111,6 +111,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 				const menuItems = [];
 				menuItems.push({ "title": $localize`View Information`, callback: () => { this.selected = rel; this.sidePanelService.setSidePanelState({ expanded: true }); } });
 				menuItems.push({ "title": $localize`Open`, callback: () => this.open(rel.Uid) });
+				// false poisitve fs.open eslint error
+				// eslint-disable-next-line
 				menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(rel.Uid, true) });
 
 				menuItems.push({ "title": $localize`Edit`, callback: () => this.edit(rel), disabled: rel.HasRelationships });
@@ -248,6 +250,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 			}
 		}
 		catch {
+			// we want warning here instead of all ui breaking 
+			// eslint-disable-next-line
 			console.warn("failed to focus element");
 		}
 	}
