@@ -904,8 +904,11 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 					loadedData.push({ title: label, value: str.value });
 				});
 
+				Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, Math.max(params.take, loadedData.length)], ...loadedData]);
 
-				Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
+				if (+params.take === res.length) {
+					this.currentField.Values.push(null);
+				}
 
 				this.currentField.Values = [...this.currentField.Values];
 
