@@ -111,7 +111,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 				const menuItems = [];
 				menuItems.push({ "title": $localize`View Information`, callback: () => { this.selected = rel; this.sidePanelService.setSidePanelState({ expanded: true }); } });
 				menuItems.push({ "title": $localize`Open`, callback: () => this.open(rel.Uid) });
-				menuItems.push({ "title": $localize`Open In A New Tab`, callback: () => this.open(rel.Uid, true) });
+				menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(rel.Uid, true) });
 
 				menuItems.push({ "title": $localize`Edit`, callback: () => this.edit(rel), disabled: rel.HasRelationships });
 				menuItems.push({ "title": $localize`Delete`, callback: () => { this.editorSelectedUid = rel.Uid; this.showDelete = true; } });
