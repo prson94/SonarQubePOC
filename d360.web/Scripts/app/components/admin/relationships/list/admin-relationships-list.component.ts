@@ -7,6 +7,7 @@ import { RelationshipsService } from '../../../../services/relationships.service
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { SidePanelService } from '../../../../services/side-panel.service';
 import { BaseComponent } from '../../../shared/base.component';
+import { PopupMenu } from '../../../shared/controls/popup-menu/popup-menu.component';
 
 
 @Component({
@@ -194,5 +195,24 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		else {
 			this.router.navigateByUrl(url);
 		}
+	}
+
+	positionContextMenu(
+		$event: MouseEvent, container: HTMLElement, floatMenu: PopupMenu, assetGridTools: HTMLElement
+	): void {
+		if (!assetGridTools.contains(<Node>$event.target) && !this.isElementLink(<HTMLElement>$event.target)) {
+			container.style.top = `${$event['layerY']}px`;
+			container.style.left = `${$event['layerX']}px`;
+			floatMenu.toggle($event);
+			$event.preventDefault();
+		}
+	}
+
+	private isElementLink(element: HTMLElement): boolean {
+		while (element.parentElement) {
+			if (element.tagName === 'A') { return true; }
+			element = element.parentElement;
+		}
+		return false;
 	}
 }
