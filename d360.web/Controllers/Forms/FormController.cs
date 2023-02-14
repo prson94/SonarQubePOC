@@ -1714,6 +1714,11 @@ order by Sort, title";
 				return jsonException(FormControllerApiMessage.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
 			}
 
+			if (!string.IsNullOrEmpty(shortcut.IconPayload) && (!shortcut.IconPayload.IsValidImageData()))
+			{
+				return jsonException(FormControllerApiMessage.IconIsInvalid, HttpStatusCode.BadRequest);
+			}
+
 			try
 			{
 				if (!string.IsNullOrEmpty(shortcut.IconPayload))
@@ -1774,6 +1779,11 @@ order by Sort, title";
 			if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconUrl) && string.IsNullOrEmpty(shortcut.IconPayload))
 			{
 				return jsonException(FormControllerApiMessage.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
+			}
+
+			if(!string.IsNullOrEmpty(shortcut.IconPayload) && (!shortcut.IconPayload.IsValidImageData()))
+			{ 
+				return jsonException(FormControllerApiMessage.IconIsInvalid, HttpStatusCode.BadRequest);
 			}
 
 			try

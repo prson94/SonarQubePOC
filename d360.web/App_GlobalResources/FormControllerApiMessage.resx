@@ -276,6 +276,9 @@
   <data name="GrammarAllocationModified" xml:space="preserve">
     <value>Grammar allocation successfully modified.</value>
   </data>
+  <data name="IconIsInvalid" xml:space="preserve">
+    <value>The icon is an invalid filetype</value>
+  </data>
   <data name="InvalidCreateType" xml:space="preserve">
     <value>Invalid / unsupported create type</value>
   </data>

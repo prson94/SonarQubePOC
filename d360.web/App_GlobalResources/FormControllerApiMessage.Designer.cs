@@ -538,6 +538,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The icon is an invalid filetype.
+        /// </summary>
+        public static string IconIsInvalid {
+            get {
+                return ResourceManager.GetString("IconIsInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid / unsupported create type.
         /// </summary>
         public static string InvalidCreateType {
