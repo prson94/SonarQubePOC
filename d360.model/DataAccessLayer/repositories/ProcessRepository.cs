@@ -4,21 +4,16 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-
 using d360.core;
 using d360.core.entities;
 using d360.core.entities.Process;
 using d360.core.enums;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
-
 using Dapper;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using SpreadsheetLight;
 using SpreadsheetLight.Drawing;
 
