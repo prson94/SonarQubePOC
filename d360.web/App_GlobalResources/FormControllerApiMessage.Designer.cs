@@ -1177,6 +1177,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The shortcut URL is invalid.
+        /// </summary>
+        public static string ShortcutInvalidURL {
+            get {
+                return ResourceManager.GetString("ShortcutInvalidURL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This shortcut is missing an icon.
         /// </summary>
         public static string ShortcutMissingAnIcon {
