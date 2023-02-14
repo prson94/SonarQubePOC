@@ -160,6 +160,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid [URL] value in [Definition].
+        /// </summary>
+        public static string InvalidDashboardURL {
+            get {
+                return ResourceManager.GetString("InvalidDashboardURL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid JSON value for [Definition].
         /// </summary>
         public static string InvalidDefinitionValue {

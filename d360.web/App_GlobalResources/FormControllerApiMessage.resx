@@ -276,6 +276,9 @@
   <data name="GrammarAllocationModified" xml:space="preserve">
     <value>Grammar allocation successfully modified.</value>
   </data>
+  <data name="IconIsInvalid" xml:space="preserve">
+    <value>The icon is an invalid filetype</value>
+  </data>
   <data name="InvalidCreateType" xml:space="preserve">
     <value>Invalid / unsupported create type</value>
   </data>
@@ -485,6 +488,9 @@
   </data>
   <data name="ShortcutIDNotFound" xml:space="preserve">
     <value>Shortcut Id {0} not found</value>
+  </data>
+  <data name="ShortcutInvalidURL" xml:space="preserve">
+    <value>The shortcut URL is invalid</value>
   </data>
   <data name="ShortcutMissingAnIcon" xml:space="preserve">
     <value>This shortcut is missing an icon</value>

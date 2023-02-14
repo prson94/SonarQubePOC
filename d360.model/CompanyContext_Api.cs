@@ -833,8 +833,9 @@ namespace d360.model
 											and EF.FieldTypeID is not null
 							inner join Field F on F.FieldTypeId = EF.FieldTypeID 
 											and F.AssetID = {(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "EA.ObjectAssetID" : "EA.AssetID")} 
+							inner join FieldType FT on F.FieldTypeID=FT.ID
 					where   EA.ExecutionID = @executionID 
-							and EA.IsNew <> 1 
+							and EA.IsNew <> 1 and FT.Type != 'Lookup'
 							{(!isInsert ? "and F.FormattedValue <> EF.FieldValue" : "")} 
 							and EA.ItemNumber between @beginItemNumber and @endItemNumber
 
@@ -854,7 +855,24 @@ namespace d360.model
 							and EA.ItemNumber between @beginItemNumber and @endItemNumber
 							{(!isInsert ? "and coalesce(EF.FieldValue, '') <> ''" : "")} 
 							and not exists (select 1 from Field F where FieldTypeID = EF.FieldTypeID 
-								and F.AssetID = {(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "EA.ObjectAssetID" : "EA.AssetID")} )";
+								and F.AssetID = {(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "EA.ObjectAssetID" : "EA.AssetID")} )
+					UNION ALL
+					select  
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.Object" : "EA.Object")}, 
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.ObjectID" : "EA.ObjectID")}, 
+							EF.FieldTypeID AS Id 
+					from    {tableName} EA 
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "inner join Asset a on a.id = EA.ObjectAssetID" : " ")}
+							inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
+											and EF.ItemNumber = EA.ItemNumber 
+											and EF.FieldTypeID is not null
+							inner join Field F on F.FieldTypeId = EF.FieldTypeID 
+											and F.AssetID = {(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "EA.ObjectAssetID" : "EA.AssetID")} 
+							inner join FieldType FT on F.FieldTypeID=FT.ID
+					where   EA.ExecutionID = @executionID 
+							and EA.IsNew <> 1 and FT.Type = 'Lookup'
+							{(!isInsert ? "and F.Value <> EF.FieldValue" : "")}
+							and EA.ItemNumber between @beginItemNumber and @endItemNumber";
 
                 if (!isInsert)
                 {
@@ -4696,6 +4714,19 @@ where	T.ExecutionID = @ExecutionID
 									{
 										AddMeasurement(metrics, $"CheckIfKeyFieldsUpdated >> {currentLoop} > Begin", 0, ++step);
 
+										string codeFieldCheck = string.Empty;
+										if (at.Class == AssetTypeClass.Reference)
+										{
+											codeFieldCheck = @$"
+												if @updatedFieldsCount = 0
+												begin
+													set @updatedFieldsCount = (select count(*) from {ApiExecutionFieldTable} EF
+													inner join api.ExecutionAsset EA on EA.ItemNumber = EF.ItemNumber AND EA.ExecutionID = EF.ExecutionID
+													WHERE EF.ExecutionID = @ExecutionID AND EF.ItemNumber between @beginItemNumber and @endItemNumber
+													and EF.FieldName = 'Code')
+												end";
+										}
+
 										var checkUpdatedKeyFields = $@"
 											declare @result int = 0;
 
@@ -4709,6 +4740,8 @@ where	T.ExecutionID = @ExecutionID
 											declare @updatedHierarcyRelationships int = (
 																		select COUNT(*) from api.ExecutionItemDependentChange EIDC
 																		where EIDC.ExecutionID = @ExecutionID AND EIDC.ItemNumber between @beginItemNumber and @endItemNumber)
+
+											{codeFieldCheck}
 
 											if @updatedFieldsCount > 0 or @updatedHierarcyRelationships > 0
 											begin
@@ -11515,6 +11548,20 @@ where   ER.ExecutionID = @ExecutionID
 								jsonRow["JsonValue"] = JsonConvert.SerializeObject(stat);
 								DataProfileSampleTable.Rows.Add(jsonRow);
 							}
+						}
+
+						if (item.tableStructureInfo != null)
+						{
+								DataRow jsonRow = DataProfileSampleTable.NewRow();
+								jsonRow["ExecutionID"] = execution.ExecutionID;
+								jsonRow["ItemNumber"] = itemNumber;
+								if (item.ExecutionItemUid.HasValue)
+								{
+									jsonRow["ExecutionItemUid"] = item.ExecutionItemUid;
+								}
+								jsonRow["SampleType"] = "tableStructureInfo";
+								jsonRow["JsonValue"] = JsonConvert.SerializeObject(item.tableStructureInfo);
+								DataProfileSampleTable.Rows.Add(jsonRow);
 						}
 
 						if (item.topK != null)

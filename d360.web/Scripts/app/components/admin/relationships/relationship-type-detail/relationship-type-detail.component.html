@@ -31,7 +31,7 @@
 							</ng-template>
 						</div>
 					</div>
-					<div class="row">
+					<div class="row" *ngIf="relationshipType.TotalRelationshipCount > 0">
 						<label class="ig-label" i18n>Number of Relationships</label>
 						<span>
 							{{relationshipType.TotalRelationshipCount}}

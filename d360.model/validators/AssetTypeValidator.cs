@@ -183,7 +183,12 @@ namespace d360.core.validators
 				}
 			}
 
-			if (model.IconStyle == null || !Regex.Match(model.IconStyle.BackColor, ColorRegex, RegexOptions.IgnoreCase).Success || !Regex.Match(model.IconStyle.ForeColor, ColorRegex, RegexOptions.IgnoreCase).Success)
+			if (model.IconStyle != null && model.IconStyle?.ForeColor == null)
+			{
+				model.IconStyle.ForeColor = "#fff";
+			}
+
+			if (model.IconStyle == null || model.IconStyle?.BackColor == null || !Regex.Match(model.IconStyle?.BackColor, ColorRegex, RegexOptions.IgnoreCase).Success || !Regex.Match(model.IconStyle?.ForeColor, ColorRegex, RegexOptions.IgnoreCase).Success)
 			{
 				return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidStyle} {AssetTypeErrors.CheckRequest}");
 			}

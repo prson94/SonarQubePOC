@@ -1021,6 +1021,7 @@
     <Compile Include="App_Start\ClaimMappingsMiddleware.cs" />
     <Compile Include="App_Start\ContentSecurityPolicyMiddleware.cs" />
     <Compile Include="App_Start\CorsMiddleware.cs" />
+    <Compile Include="Controllers\V2\AssetController_Simplified.cs" />
     <Compile Include="Controllers\V2\NavigationController.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\Exceptions\ApplicationExceptionHandler.cs" />

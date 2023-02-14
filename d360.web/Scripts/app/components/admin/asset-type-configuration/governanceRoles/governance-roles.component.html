@@ -13,7 +13,8 @@
 					</ig-message-box>
 					<div class="col s12">
 						<div class="FieldName" i18n>Governance Role Reference List</div>
-						<p-dropdown igDropdown
+						<d3s-loading [isLoading]="isSaving"></d3s-loading>
+						<p-dropdown *ngIf="!isSaving" igDropdown
 									igSize="medium"
 									panelStyleClass="dropdown-govrole-correction"
 									name="refListDDL"

@@ -84,8 +84,11 @@ export class GovernanceRolesComponent implements OnInit, OnDestroy {
 		if (currentSetting.GuidSetting && setting.GuidSetting && currentSetting.GuidSetting.Value !== setting.GuidSetting.Value) {
 			//calling save function
 			this.isSaving = true;
-			this.settingsService.putSetting(setting)
-				.subscribe(
+			this.settingsService.putSetting(setting).pipe(
+				finalize(() => {
+					this.isSaving = false;
+				})
+				).subscribe(
 					(res) => {
 						this.isSaving = false;
 						this.originalModel = this.model;
@@ -101,7 +104,9 @@ export class GovernanceRolesComponent implements OnInit, OnDestroy {
 	}
 
 	onChange() {
-		this.save();
+		if (this.model.RefListUid !== "") {
+			this.save();
+		}
 	}
 
 	ngOnDestroy() {

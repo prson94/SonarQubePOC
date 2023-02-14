@@ -59,7 +59,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 	public scoringHelpPage: string = "";
 
 	rangeValues: number[] = [];
-	@ViewChild('slider', { static: true }) slider: ElementRef;
+	@ViewChild('slider', { static: false }) slider: ElementRef;
 
 	constructor(
 		private allocationService: AllocationService,
@@ -94,6 +94,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 
 	load() {
 		this.selection = null;
+		this.isLoading = true;
 		this.resetForm();
 
 		if (this.allocationUid) {
@@ -111,16 +112,19 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 					this.updateRanges();
 
 					this.disabled = this.selection.hasMeasure || this.selection.hasDisabledMeasure;
+					this.isLoading = false;
+					this.cdRef.detectChanges();
 				});
 
 		} else {
+			this.isLoading = false;
 			this.isEdit = false;
 			this.closeLabel = $localize`Cancel`;
 			this.saveLabel = $localize`Create`;
 			this.disabled = false;
 			this.resetForm();
+			this.cdRef.detectChanges();
 		}
-		this.cdRef.detectChanges();
 	}
 
 	updateRanges() {
@@ -300,6 +304,9 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 	}
 
 	ngAfterViewChecked() {
+		if (!window || !this.elementRef || !this.slider) {
+			return;
+		}
 		//Dynamically load good, average and score css styles from computed style object so branding is possible
 		var poorEl = this.elementRef.nativeElement.getElementsByClassName("score-poor")[0];
 		var avgEl = this.elementRef.nativeElement.getElementsByClassName("score-average")[0];

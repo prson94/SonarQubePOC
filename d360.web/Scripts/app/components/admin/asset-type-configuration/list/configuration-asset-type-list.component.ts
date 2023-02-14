@@ -17,6 +17,7 @@ import { TreeTable } from "primeng/treetable";
 import { AssetTypeListSidePanelWrapperComponent } from "./asset-type-list-sidepanel-wrapper.component";
 import { MessagesObservableService } from "../../../../services/messages-observable.service";
 import { StateService } from "../../../../services/state.service";
+import { PopupMenu } from "../../../shared/controls/popup-menu/popup-menu.component";
 
 /*global $localize*/
 // eslint-disable-next-line no-var
@@ -104,6 +105,10 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			this.isLoading = false;
 			this.cdRef.markForCheck();
 		});
+	}
+
+	selectRow(uid: string) {
+		this.selectedRow = this.flatNodes.find(((x) => x.key === uid));
 	}
 
 	onEditClick() {
@@ -349,5 +354,24 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			}
 		});
 		return result;
+	}
+
+	positionContextMenu(
+		$event: MouseEvent, container: HTMLElement, floatMenu: PopupMenu, assetGridTools: HTMLElement
+	): void {
+		if (!assetGridTools.contains(<Node>$event.target) && !this.isElementLink(<HTMLElement>$event.target)) {
+			container.style.top = `${$event['layerY']}px`;
+			container.style.left = `${$event['layerX']}px`;
+			floatMenu.toggle($event);
+			$event.preventDefault();
+		}
+	}
+
+	private isElementLink(element: HTMLElement): boolean {
+		while (element.parentElement) {
+			if (element.tagName === 'A') { return true; }
+			element = element.parentElement;
+		}
+		return false;
 	}
 }

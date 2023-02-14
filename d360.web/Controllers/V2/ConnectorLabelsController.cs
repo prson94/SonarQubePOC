@@ -418,9 +418,9 @@ namespace d360.web.Controllers.V2
 				document.SetCellValue(rowNumber, index++, (row.Value ?? "").ToString());
 				document.SetCellValue(rowNumber, index++, (row.UseCount ?? "").ToString());
 				document.SetCellValue(rowNumber, index++, (row.CreatedOn ?? "").ToString());
-				document.SetCellValue(rowNumber, index++, (row.CreatedByUid ?? "").ToString());
+				document.SetCellValue(rowNumber, index++, (row.CreatedByName ?? "").ToString());
 				document.SetCellValue(rowNumber, index++, (row.UpdatedOn ?? "").ToString());
-				document.SetCellValue(rowNumber, index++, (row.UpdatedByUid ?? "").ToString());
+				document.SetCellValue(rowNumber, index++, (row.UpdatedByName ?? "").ToString());
 				document.SetCellValue(rowNumber, index++, (row.uid ?? "").ToString());
 			}
 

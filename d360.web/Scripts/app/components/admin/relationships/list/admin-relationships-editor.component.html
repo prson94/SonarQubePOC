@@ -44,6 +44,7 @@
 													[options]="subjectOptions"
 													[(ngModel)]="relationshipType.Subject.Uid"
 													[disabled]="isFormDisabled"
+													[alwaysShowFilter]="true"
 													required
 													(ngModelChange)="relationshipType.Subject.Uid=$event;subjectChanged($event);"></p-dropdown>
 									</div>
@@ -75,6 +76,7 @@
 													name="object"
 													formControlName="object"
 													[options]="objectOptions"
+													[alwaysShowFilter]="true"
 													[(ngModel)]="relationshipType.Object.Uid"
 													[disabled]="isFormDisabled"
 													required></p-dropdown>
@@ -120,7 +122,6 @@
 				</form>
 			</div>
 		</div>
-
 	</div>
 	<div class="action-bar">
 		<button igButton [disabled]="isSaving" class="ig-button-secondary" type="button" (click)="cancel()" label="{{cancelLabel}}"></button>

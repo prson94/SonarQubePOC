@@ -538,6 +538,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The icon is an invalid filetype.
+        /// </summary>
+        public static string IconIsInvalid {
+            get {
+                return ResourceManager.GetString("IconIsInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid / unsupported create type.
         /// </summary>
         public static string InvalidCreateType {
@@ -1164,6 +1173,15 @@ namespace Resources {
         public static string ShortcutIDNotFound {
             get {
                 return ResourceManager.GetString("ShortcutIDNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The shortcut URL is invalid.
+        /// </summary>
+        public static string ShortcutInvalidURL {
+            get {
+                return ResourceManager.GetString("ShortcutInvalidURL", resourceCulture);
             }
         }
         
