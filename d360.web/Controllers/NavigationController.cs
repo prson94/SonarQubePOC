@@ -389,6 +389,15 @@ namespace d360.web.Controllers
 
 				if (!string.IsNullOrEmpty(model.Folder.IconPayload))
 				{
+					if(!model.Folder.IconPayload.IsValidImageData())
+					{
+						return new JsonNetResult
+						{
+							Data = new { type = "error", success = false, message = string.Format(FormControllerApiMessage.IconIsInvalid, model.Folder.Title) },
+							Formatting = Newtonsoft.Json.Formatting.None
+						};
+					}
+
 					var imageMatch = MimeTypeExtensionsMap.RegEx.Match(model.Folder.IconPayload);
 
 					var imageMime = imageMatch.Groups["mime"].Value;
@@ -685,6 +694,10 @@ namespace d360.web.Controllers
 
 				if (!string.IsNullOrEmpty(patch.IconPayload))
 				{
+					if (!patch.IconPayload.IsValidImageData())
+					{
+						throw new ArgumentNullException(FormControllerApiMessage.IconIsInvalid);
+					}
 					var imageMatch = MimeTypeExtensionsMap.RegEx.Match(patch.IconPayload);
 
 					var imageMime = imageMatch.Groups["mime"].Value;

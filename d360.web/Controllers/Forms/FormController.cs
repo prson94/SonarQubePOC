@@ -1714,6 +1714,16 @@ order by Sort, title";
 				return jsonException(FormControllerApiMessage.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
 			}
 
+			if (!string.IsNullOrEmpty(shortcut.IconPayload) && (!shortcut.IconPayload.IsValidImageData()))
+			{
+				return jsonException(FormControllerApiMessage.IconIsInvalid, HttpStatusCode.BadRequest);
+			}
+
+			if (!string.IsNullOrEmpty(shortcut.Url) && !ValidateShortcutUrl(shortcut.Url))
+			{
+				return jsonException(FormControllerApiMessage.ShortcutInvalidURL, HttpStatusCode.BadRequest);
+			}
+
 			try
 			{
 				if (!string.IsNullOrEmpty(shortcut.IconPayload))
@@ -1776,6 +1786,16 @@ order by Sort, title";
 				return jsonException(FormControllerApiMessage.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
 			}
 
+			if(!string.IsNullOrEmpty(shortcut.IconPayload) && (!shortcut.IconPayload.IsValidImageData()))
+			{ 
+				return jsonException(FormControllerApiMessage.IconIsInvalid, HttpStatusCode.BadRequest);
+			}
+
+			if(!string.IsNullOrEmpty(shortcut.Url) && !ValidateShortcutUrl(shortcut.Url))
+			{
+				return jsonException(FormControllerApiMessage.ShortcutInvalidURL, HttpStatusCode.BadRequest);
+			}
+
 			try
 			{
 				if (!string.IsNullOrEmpty(shortcut.IconPayload))
@@ -1834,6 +1854,18 @@ order by Sort, title";
 			}
 
 			return jsonSuccess(FormControllerApiMessage.ShortcutModified, shortcut.ID.ToString(), "edit", HttpStatusCode.OK);
+		}
+
+		private bool ValidateShortcutUrl(string url)
+		{
+			var validProtools = new string[] { "http", "https", "mailto" };
+			var colonPos = url.IndexOf(":");
+			if(colonPos > 0)
+			{
+				var protocol = url.Substring(0, colonPos).ToLower();
+				return validProtools.Contains(protocol);
+			}
+			return true;
 		}
 
 		[HttpDelete, Route("shortcut/delete/{id:int}")]
