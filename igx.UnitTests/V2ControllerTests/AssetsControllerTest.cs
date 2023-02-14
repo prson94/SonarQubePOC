@@ -601,7 +601,7 @@ namespace igx.UnitTests
 
             insertItem.DisplayFormat = "{name}";
             responseMessageResult = await GetResponseForPostAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
 
             insertItem.IconStyle.BackColor = "#000000";
             insertItem.IconStyle.ForeColor = "#000000";
@@ -655,7 +655,7 @@ namespace igx.UnitTests
 
             insertItem.Uid = Guid.Parse(DataConstants.ValidGUID);
             responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
            
 
             insertItem.IconStyle.BackColor = "#000000";
