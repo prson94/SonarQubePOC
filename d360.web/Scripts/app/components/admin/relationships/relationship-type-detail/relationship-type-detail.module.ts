@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RelationshipTypeDetailComponent } from './relationship-type-detail.component';
 import { PropertyGroupModule } from '../../../shared/controls/property-group/property-group.component';
 import { CoreModule } from '../../../shared/core.module';
+import { DirectivesModule } from '../../../../directives/directives.module';
 
 
 
@@ -13,7 +14,8 @@ import { CoreModule } from '../../../shared/core.module';
 	imports: [
 		CommonModule,
 		CoreModule,
-		PropertyGroupModule
+		PropertyGroupModule,
+		DirectivesModule
 	],
 	exports: [
 		RelationshipTypeDetailComponent
