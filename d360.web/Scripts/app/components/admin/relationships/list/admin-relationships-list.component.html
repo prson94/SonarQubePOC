@@ -34,7 +34,6 @@
 	</div>
 </div>
 
-
 <div class="grid-wrapper">
 	<p-table #dt [value]="relationships"
 			 selectionMode="single"
@@ -42,7 +41,9 @@
 			 [globalFilterFields]="['RelationshipTypeName', 'HasRelationshipsTextValue']"
 			 [pageLinks]="3"
 			 [paginator]="true"
-			 [rows]="20"
+			 [(first)]="first"
+			 [rows]="rowsPerPage"
+			 [rowsPerPageOptions]="defaultPagingOptions"
 			 [selection]="selected"
 			 [stateStorage]="gridStateStorage"
 			 stateKey="{{gridStorageKey}}"
@@ -62,7 +63,12 @@
 			</tr>
 		</ng-template>
 		<ng-template pTemplate="body" let-item>
-			<tr (click)="selected=item;selectedChange.emit(selected);" (dblclick)="selected=item;selectedChange.emit(selected);showEditor=true;" [pSelectableRow]="item">
+			<tr (click)="selected=item;selectedChange.emit(selected);"
+				(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selected=item;"
+				(dblclick)="selected=item;selectedChange.emit(selected);showEditor=true;"
+				[pSelectableRow]="item"
+				style="position:relative;"
+				[attr.data-uid]="item.Uid">
 				<td>
 					<a href="#" (click)="$event.preventDefault();open(item.Uid);">{{item.RelationshipTypeName}}</a>
 				</td>
@@ -78,13 +84,18 @@
 						</ng-template>
 					</div>
 				</td>
-				<td>
+				<td #assetGridTools>
 					<div class="token-popup-menu" *ngIf="item.MenuItems">
 						<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
 						<ig-popup-menu [items]="item.MenuItems"
 									   #tokenMenu
 									   [tabIndex]="1"></ig-popup-menu>
 					</div>
+
+					<button class="ig-float-popup-container" #floatButton>
+						<ig-popup-menu [items]="item.MenuItems" #floatMenu [tabIndex]="1">
+						</ig-popup-menu>
+					</button>
 				</td>
 			</tr>
 		</ng-template>
