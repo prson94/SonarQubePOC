@@ -127,7 +127,7 @@ namespace d360.model.DataAccessLayer.repositories
 		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string idSql = "A.[ID]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null, SystemObjects objectType = SystemObjects.Artifact, bool CreateTempTableForFieldFromRelationship = false)
 		{
 			List<string> TempTableNameList = new List<string>();
-			
+
 			fieldTypes.OrderBy(x => x.ID).ToList().ForEach(f =>
 			 {
 				 var defaultVal = f.DefaultFormattedValue;
@@ -405,8 +405,8 @@ namespace d360.model.DataAccessLayer.repositories
 					 }
 					 else
 					 {
-						 assetIdBackwardQuery = $@"select I.ObjectAssetId as TargetAssetId from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} AND I.SubjectAssetId = A.Id";
-						 assetIdForwardQuery = $@"select I.SubjectAssetId as TargetAssetId from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} AND I.ObjectAssetId = A.Id";
+						 assetIdForwardQuery = $@"select I.ObjectAssetId as TargetAssetId from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} AND I.SubjectAssetId = A.Id";
+						 assetIdBackwardQuery = $@"select I.SubjectAssetId as TargetAssetId from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} AND I.ObjectAssetId = A.Id";
 						 assetIdBothQuery = assetIdBackwardQuery + " union " + assetIdForwardQuery;
 					 }
 
