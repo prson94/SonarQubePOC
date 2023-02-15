@@ -22,6 +22,9 @@ export class RelationshipTypeSimpleUIModel {
 	HasRelationshipsTextValue?: string;
 	TotalRelationshipCount?: number;
 	MenuItems?: MenuItem[];
+	Subject: string;
+	Predicate: string;
+	Object: string;
 }
 
 export class RelationshipType {
@@ -38,6 +41,9 @@ export class RelationshipType {
 
 	public static ConvertToUIModeldata(data: RelationshipType): RelationshipTypeSimpleUIModel {
 		return {
+			Subject: data.Subject.Name,
+			Predicate: data.Predicate.Name,
+			Object: data.Object.Name,
 			RelationshipTypeName: data.Subject.Name + " - " + data.Predicate.Name + " - " + data.Object.Name,
 			Uid: data.Uid,
 			HasRelationships: data.HasRelationships,

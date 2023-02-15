@@ -105,7 +105,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 			this.relationships = result.map((rel) => RelationshipType.ConvertToUIModeldata(rel));
 
 			this.relationships =
-				this.relationships.sort((a, b) => a.RelationshipTypeName > b.RelationshipTypeName ? 1 : -1);
+				this.relationships.sort((a, b) => a.Subject > b.Subject ? 1 : -1);
 
 			this.relationships.forEach((rel) => {
 				const menuItems = [];

@@ -38,7 +38,7 @@
 	<p-table #dt [value]="relationships"
 			 selectionMode="single"
 			 [metaKeySelection]="true"
-			 [globalFilterFields]="['RelationshipTypeName', 'HasRelationshipsTextValue']"
+			 [globalFilterFields]="['Subject','Predicate','Object', 'HasRelationshipsTextValue']"
 			 [pageLinks]="3"
 			 [paginator]="true"
 			 [(first)]="first"
@@ -51,9 +51,17 @@
 			 [loadingIcon]="'fa fa-spinner fa-spin'">
 		<ng-template pTemplate="header">
 			<tr>
-				<th [pSortableColumn]="'RelationshipTypeName'">
-					<ng-container i18n>Relationship Type</ng-container>
-					<d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
+				<th [pSortableColumn]="'Subject'">
+					<ng-container i18n>Subject</ng-container>
+					<d3s-sortIcon [field]="'Subject'"></d3s-sortIcon>
+				</th>
+				<th [pSortableColumn]="'Predicate'">
+					<ng-container i18n>Predicate</ng-container>
+					<d3s-sortIcon [field]="'Predicate'"></d3s-sortIcon>
+				</th>
+				<th [pSortableColumn]="'Object'">
+					<ng-container i18n>Object</ng-container>
+					<d3s-sortIcon [field]="'Object'"></d3s-sortIcon>
 				</th>
 				<th style="width: 200px" [pSortableColumn]="'HasRelationshipsTextValue'">
 					Relationships Exist
@@ -70,7 +78,13 @@
 				style="position:relative;"
 				[attr.data-uid]="item.Uid">
 				<td>
-					<a href="#" (click)="$event.preventDefault();open(item.Uid);">{{item.RelationshipTypeName}}</a>
+					{{item.Subject}}
+				</td>				
+				<td>
+					{{item.Predicate}}
+				</td>				
+				<td>
+					{{item.Object}}
 				</td>
 				<td>
 					<div class="ig-value">
