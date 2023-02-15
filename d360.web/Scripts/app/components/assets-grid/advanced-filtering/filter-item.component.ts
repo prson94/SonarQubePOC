@@ -883,7 +883,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			.subscribe((res) => {
 				if (!this.currentField.Values || res.length > this.currentField.Values?.length || (params.filter && params.filter !== this.oldSearchPhrase)) {
 					//initialize new empty array if its uninitialized or if simple filter changes
-					this.currentField.Values = Array.from({ length: res.lenght });
+					this.currentField.Values = Array.from({ length: res.length });
 				}
 
 				this.oldSearchPhrase = params.filter ?? "";
