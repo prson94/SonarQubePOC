@@ -43,6 +43,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	flowObjectTypes: SelectItem[] = [];
 
 	@ViewChild('form', { static: false }) formElement: ElementRef;
+
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
 	selectedIcon: string = '';
@@ -123,7 +124,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			descriptionButtonName: [null],
 			isDescriptionCollapsedByDefault: [true],
 			backgroundColor: [null],
-			backgroundColorTextValue: [null, { validators: [Validators.required]}],
+			backgroundColorTextValue: [null, { validators: [Validators.required] }],
 			icon: [null],
 			useAsTransformation: [null],
 			predicateUid: [null],
@@ -232,7 +233,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 					this.changeFormSub = this.assetTypeForm.valueChanges.subscribe(() => {
 						this.isEditFormUpdated = true;
 					});
-				},200);
+				}, 200);
 
 				this.isLoading = false;
 
@@ -453,6 +454,40 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		//if toggled to false, we need to set default value to button name to avoid validation errors
 		if (!$event) {
 			this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
+		}
+	}
+
+	lastVisitedTabIndex: number = 0;
+	@HostListener('keydown.tab', ['$event'])
+	onKeyDown(event: KeyboardEvent) {
+		const target = event.target as HTMLElement;
+
+		if (target.tabIndex > 9) {
+			this.lastVisitedTabIndex = target.tabIndex;
+			const nextInput = this.getNextInputTab(this.lastVisitedTabIndex);
+			if (nextInput) {
+				nextInput.focus();
+			}
+		}
+	}
+
+	getNextInputTab(idx: number): HTMLElement {
+		const nextTabIndex = idx + 10;
+		if (nextTabIndex > 250) {
+			return null;
+		}
+		const nextElement = document.querySelectorAll(`[tabindex='${nextTabIndex}']`);
+		if (nextElement.length > 0) {
+			const parentOffset = (nextElement[0] as HTMLElement).offsetParent;
+			if (parentOffset) {
+				return nextElement[0] as HTMLElement;
+			}
+			else {
+				return this.getNextInputTab(nextTabIndex);
+			}
+		}
+		else {
+			return this.getNextInputTab(nextTabIndex);
 		}
 	}
 }
