@@ -1,7 +1,7 @@
 ﻿import { Pipe, PipeTransform } from '@angular/core';
 
 import { TreeNode } from 'primeng/api';
-import * as _ from 'lodash';
+import { cloneDeep } from "lodash-es";
 
 @Pipe({ name: 'treeSearch' })
 export class TreeSearchPipe implements PipeTransform {
@@ -12,7 +12,7 @@ export class TreeSearchPipe implements PipeTransform {
             return tree;
         }
 
-        var dupTree = _.cloneDeep(tree); // dup tree so we dont mess with original
+        var dupTree = cloneDeep(tree); // dup tree so we dont mess with original
         
         const search = searchTerm.toLowerCase();
         

@@ -9,7 +9,7 @@ import { FormMessage } from '../../../models/form.model';
 import { SelectItem, SharedModule } from 'primeng/api';
 import { ResponsibilityService } from '../../../services/responsibility.service';
 import { BaseComponent } from '../../shared/base.component';
-import { isNumber } from 'lodash';
+import { isNumber } from "lodash-es";
 import { EditorField } from '../../../models/editor-field.model';
 import { StringHelpers } from '../../../static/string-helpers';
 import { ResourcesService } from '../../../services/resources.service';

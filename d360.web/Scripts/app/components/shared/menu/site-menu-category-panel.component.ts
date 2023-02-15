@@ -11,7 +11,7 @@
 } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { SiteMenu, SiteMenuItem } from '../../../models/site-menu.model';
-import * as _ from 'lodash';
+import { cloneDeep } from "lodash-es";
 import { SearchFieldComponent } from '../controls/search-field/search-field.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -65,7 +65,7 @@ export class SiteMenuCategoryPanelComponent extends BaseComponent implements Aft
     _visibleMenuItems: SiteMenuItem[] = [];
     get visibleMenuItems(): SiteMenuItem[] {
         if (this.hideEmptyItems) {
-            var menu = _.cloneDeep(this.menu.NavigationItems);
+            var menu = cloneDeep(this.menu.NavigationItems);
             var items = menu.filter((x) => x.count > 0);
             this.hideEmptySubItems(items);
             if (this.getTreeCount(this._visibleMenuItems) !== this.getTreeCount(items)) {

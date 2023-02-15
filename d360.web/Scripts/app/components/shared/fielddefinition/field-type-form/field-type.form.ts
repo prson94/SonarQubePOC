@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import { cloneDeep, set, sumBy } from "lodash-es";
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 
@@ -178,7 +178,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     ngOnInit() {
-        this.initialItem = _.cloneDeep(this.model);
+        this.initialItem = cloneDeep(this.model);
 
         this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid)
             .subscribe((res) => {
@@ -198,14 +198,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         for (const p in changes) {
             if (p === 'name') {
                 this.load();
-                this.initialItem = _.cloneDeep(this.model);
+                this.initialItem = cloneDeep(this.model);
 
             }
         }
     }
 
     selectListSegment(event: string) {
-        _.set(this.model, 'FieldType.Type.Path.Definition.AssetTypeUid', event);
+        set(this.model, 'FieldType.Type.Path.Definition.AssetTypeUid', event);
     }
 
     currentFieldType(item: FieldTypeAPIModelField): string {
@@ -323,7 +323,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         });
 
 
-        const clone = _.cloneDeep(this.model.RelationItems);
+        const clone = cloneDeep(this.model.RelationItems);
         if (this.model.RelationItems != null && this.model.RelationItems.length) {
             for (let i = 0; i < this.model.RelationItems.length; i++) {
                 const item = this.model.RelationItems[i];
@@ -1024,7 +1024,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (other) {
             const sum = (parent.DisplayFields.length * (parent.DisplayFields.length + 1)) / 2;
-            const total = _.sumBy(parent.DisplayFields,
+            const total = sumBy(parent.DisplayFields,
                 (i) => {
                     return (i === other) ? 0 : (+i.DisplayOrder || 0);
                 }

@@ -5,7 +5,7 @@ import { FormMode } from '../../../../models/form.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 
-import * as _ from 'lodash';
+import { cloneDeep } from "lodash-es";
 import * as go from 'gojs';
 import { CompanySettingsService } from '../../../../services/settings.service';
 
@@ -49,7 +49,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     }
 
     ngOnInit() {
-        this.originalTransition = _.cloneDeep(this.transition);
+        this.originalTransition = cloneDeep(this.transition);
         this.workflowService.getTransitionTypes()
             .subscribe((r) => {
                 this.transitionTypes = r;

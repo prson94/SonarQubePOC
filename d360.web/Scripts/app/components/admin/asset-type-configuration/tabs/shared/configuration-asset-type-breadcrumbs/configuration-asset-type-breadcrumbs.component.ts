@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from "@angular/core";
-import * as _ from "lodash";
+import { keyBy } from "lodash-es";
 import { AssetTypeClass } from "../../../../../../models/asset.model";
 import { Breadcrumb } from "../../../../../../models/breadcrumb.model";
 import { SiteMenuService } from "../../../../../../services/site-menu.service";
@@ -50,7 +50,7 @@ export class ConfigurationAssetTypeBreadcrumbsComponent {
     }
 
     async ngOnInit() {
-        this.idToItemMap = _.keyBy(await this.siteMenuService.getAdminConfigurationMenu().toPromise(), (x) => x.Uid);
+        this.idToItemMap = keyBy(await this.siteMenuService.getAdminConfigurationMenu().toPromise(), (x) => x.Uid);
         this.cdRef.markForCheck();
     }
 }

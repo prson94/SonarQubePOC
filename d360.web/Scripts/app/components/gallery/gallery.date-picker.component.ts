@@ -1,5 +1,5 @@
 ﻿import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 
 
 @Component({
@@ -22,7 +22,7 @@ export class GalleryDatePickerComponent implements OnInit {
     properties: Array<any>;
     events: Array<any>;
     sampleUsage: string = '<ig-date></ig-date>';
-    form: FormGroup = null;
+    form: UntypedFormGroup = null;
     val: any;
 
     public time: string;
@@ -33,8 +33,8 @@ export class GalleryDatePickerComponent implements OnInit {
     nextWeek: Date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     ngOnInit(): void {
-        this.form = new FormGroup({}, []);
-        this.form.addControl('myDate', new FormControl(null, [Validators.required, this.startDateValidator(new Date())]));
+        this.form = new UntypedFormGroup({}, []);
+        this.form.addControl('myDate', new UntypedFormControl(null, [Validators.required, this.startDateValidator(new Date())]));
 
         this.properties = [];
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Whether or not the textarea control is disabled", Default: "" });

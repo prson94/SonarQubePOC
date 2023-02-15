@@ -1,5 +1,5 @@
 ﻿import { ChangeDetectionStrategy, Component, OnInit } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from "@angular/forms";
 
 
 @Component({
@@ -26,8 +26,8 @@ export class GalleryInputGroupComponent implements OnInit {
                 <ig-number-input></ig-number-input>
                 <span class="ig-input-addon">%</span>
             </div>`;
-    form: FormGroup = null;
-    constructor(private fb: FormBuilder) { }
+    form: UntypedFormGroup = null;
+    constructor(private fb: UntypedFormBuilder) { }
 
     ngOnInit() {
         this.form = this.fb.group({

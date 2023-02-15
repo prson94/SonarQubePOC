@@ -21,7 +21,7 @@ import { AuthenticationService } from '../../../services/authentication.service'
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { NavigationState, SiteMenu, SiteMenuItem } from '../../../models/site-menu.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import * as _ from 'lodash';
+import { debounce, findIndex, includes, isArray, isString, sortBy } from "lodash-es";
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
 import { ActivatedRoute } from '@angular/router';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -142,7 +142,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         }
     }
 
-    delayedCheckScrollerPos = _.debounce(() => {
+    delayedCheckScrollerPos = debounce(() => {
         this.checkScrollerPos();
     }, 50);
 
@@ -264,7 +264,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
                 }
 
-                this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order                                                
+                this.siteMenu = sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order                                                
 
                 if (result.IsAdmin) {
                     this.buildConfigMenu();
@@ -310,13 +310,13 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     getAllCounts(items, arr: any[]) {
-        if (_.isString(items.Name) && _.isString(items.Url) && items.Url.indexOf('/') !== -1) {
+        if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') !== -1) {
 			//get count for item
-			var id = _.findIndex(arr, function (o) {
+			var id = findIndex(arr, function (o) {
                 let currentURL = items.Url.toLowerCase();
                 currentURL = items.Url.replace('model', 'taxonomy');
                 return o.Name === items.Name
-                    && _.includes(currentURL.toLowerCase(), o.Uid.toLowerCase());
+                    && includes(currentURL.toLowerCase(), o.Uid.toLowerCase());
             });
             if (id !== -1) {
                 items.count = arr[id].count;
@@ -326,7 +326,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         }
 
         //check if sub items exist
-        if (_.isArray(items.Items)) {
+        if (isArray(items.Items)) {
             //recursively check sub items
             items.Items.forEach((item) => this.getAllCounts(item, arr));
         }

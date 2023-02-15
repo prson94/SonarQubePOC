@@ -5,7 +5,7 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FavoritesService } from '../../../services/favorites.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { FavoriteApiModel, FavoriteViewModel } from '../../../models/favorite.model';
-import * as _ from 'lodash';
+import { trimStart } from "lodash-es";
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
@@ -73,7 +73,7 @@ export class HeaderActionsComponent {
                 this.previousUrl = this.currentUrl;
                 this.currentUrl = e.url;
                 this.isAdminSidebarUrl = false;
-                this.uri = _.trimStart(e.urlAfterRedirects, '/');
+                this.uri = trimStart(e.urlAfterRedirects, '/');
                 
                 let isHomeUrl: boolean = false;
                 isHomeUrl = (this.uri && this.uri.toUpperCase() === SiteUrlHelpers.SITE_URL_HOME_ROOT.toUpperCase());
@@ -121,7 +121,7 @@ export class HeaderActionsComponent {
 				const isSemanticsUrl = (this.uri || "").toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT.toUpperCase());
 
                 if (this.previousUrl) {
-                    this.previousUrl = _.trimStart(this.previousUrl, '/');
+                    this.previousUrl = trimStart(this.previousUrl, '/');
                     this.isAdminSidebarUrl = (this.uri || '').toUpperCase().startsWith('sidebar'.toUpperCase()) && (this.previousUrl || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
                 }
 

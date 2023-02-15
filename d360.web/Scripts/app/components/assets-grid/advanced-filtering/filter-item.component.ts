@@ -675,6 +675,11 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 		if (!this.checkIfLoadLookupValues(params)) {
 			return;
 		}
+		if (+params["take"] < 40) {
+			//prime table event sometimes tries to load less than 40 results and after that assumes there is no more new items to fetch
+			//forcing to take min 40 items resolves an issue
+			params["take"] = 40;
+		}
 
 		if (this.lazyLoadSubscription) {
 			this.lazyLoadSubscription.unsubscribe();
@@ -876,9 +881,9 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 		this.lazyLoadSubscription = this.assetService
 			.getAssetsLookupValues(nameAsParam.split("|")[1], params)
 			.subscribe((res) => {
-				if (!this.currentField.Values || (params.filter && params.filter !== this.oldSearchPhrase)) {
+				if (!this.currentField.Values || res.length > this.currentField.Values?.length || (params.filter && params.filter !== this.oldSearchPhrase)) {
 					//initialize new empty array if its uninitialized or if simple filter changes
-					this.currentField.Values = Array.from({ length: 0 });
+					this.currentField.Values = Array.from({ length: res.length });
 				}
 
 				this.oldSearchPhrase = params.filter ?? "";
@@ -899,14 +904,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 					loadedData.push({ title: label, value: str.value });
 				});
 
-
-				Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
-
-				this.currentField.Values = [...this.currentField.Values];
+				Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, Math.max(params.take, loadedData.length)], ...loadedData]);
 
 				if (+params.take === res.length) {
 					this.currentField.Values.push(null);
 				}
+
+				this.currentField.Values = [...this.currentField.Values];
 
 				this.isLookupValuesLoading = false;
 				this.cdRef.markForCheck();

@@ -28,7 +28,7 @@ import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 import { GroupService } from '../../../../services/group.service';
 
-import * as _ from 'lodash';
+import { cloneDeep, includes } from "lodash-es";
 import * as go from 'gojs';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../../services/settings.service';
@@ -173,7 +173,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     ngOnChanges() {
         if (this.step.settings == null)
             {this.step.settings = new NodeSettings();}
-        this.originalStep = _.cloneDeep(this.step);
+        this.originalStep = cloneDeep(this.step);
 
 
         if (this.step.activityType === WorkflowActivityType.EmailNotification) {
@@ -373,7 +373,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         const step = steps.find((s) => s.key === key);
         const toLinks = links.filter((l) => l.to === key);
 
-        if (_.includes(upstreamSteps, key)) {return;}
+        if (includes(upstreamSteps, key)) {return;}
         upstreamSteps.push(step.key);
 
         if (toLinks == null || toLinks.length < 1) {return;}

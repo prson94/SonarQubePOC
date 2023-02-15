@@ -13,9 +13,9 @@ import {
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetDefinitionViewModel } from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
-import * as _ from 'lodash';
+import { cloneDeep, debounce } from "lodash-es";
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -30,7 +30,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent implements OnInit, OnChanges {
     @Input() scoreData: any;
 
-    delayedReload = _.debounce(() => {
+    delayedReload = debounce(() => {
         this.load();
     }, 200);
 
@@ -50,7 +50,7 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
         protected fieldsService: FieldsObservableService,
-        protected fb: FormBuilder,
+        protected fb: UntypedFormBuilder,
         protected cdRef: ChangeDetectorRef
     ) {
         super(fieldsService, metricsService, messagesService, settingsService, cdRef);
@@ -81,7 +81,7 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
     }
 
     ngAfterViewInit() {
-        this.originalModel = _.cloneDeep(this.model);
+        this.originalModel = cloneDeep(this.model);
         this.originalEffectiveDate = new Date(this.displayEffectiveDate?.toString());
         if (this.uid) {
             this.metricForm?.valueChanges.subscribe(() => {

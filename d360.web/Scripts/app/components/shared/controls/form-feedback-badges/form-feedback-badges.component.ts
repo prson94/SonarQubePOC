@@ -10,9 +10,9 @@ import {
     SimpleChanges
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
-import * as _ from 'lodash';
+import { throttle } from "lodash-es";
 import { getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
 import { Subject } from 'rxjs';
 import { startWith, takeUntil, tap } from 'rxjs/operators';
@@ -26,10 +26,10 @@ import { PropertyGroupInstanceIdAttributeName } from '../property-group/property
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
-    @Input() igformGroup: FormGroup;
+    @Input() igformGroup: UntypedFormGroup;
     @Input() inputContainer: ElementRef;
 
-    $destroy = new Subject();
+    $destroy = new Subject<void>();
 
     invalidCount: number = 0;
     requiredCount: number = 0;
@@ -37,7 +37,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     private requiredPos: number = 0;
     private invalidPos: number = 0;
 
-	delayedRefresh = _.throttle(() => {
+    delayedRefresh = throttle(() => {
         this.requiredCount = getRequiredCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
         this.invalidCount = getInvalidCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
         this.ref.markForCheck();
@@ -122,7 +122,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     getOrderedControls() {
         return Object.keys(this.igformGroup.controls)
             .map((controlName) => {
-                const control = this.igformGroup.get(controlName) as FormControl;
+                const control = this.igformGroup.get(controlName) as UntypedFormControl;
                 const element = this.getFormControlDomElement(controlName);
                 return { controlName, control, element };
             })
@@ -197,7 +197,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     getFormControlCount(type: string): number {
         let count = 0;
         Object.keys(this.igformGroup.controls).forEach((x) => {
-            const control = <FormControl>this.igformGroup.get(x);
+            const control = <UntypedFormControl>this.igformGroup.get(x);
             if (control) {
                 if (type === "required") {
                     if (control.errors && control.errors["required"] === true) {

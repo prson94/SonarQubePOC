@@ -15,7 +15,7 @@ import { Router } from '@angular/router';
 @Injectable()
 export class HeaderBreadcrumbService extends BaseObservableService {
     private sitenavservice: SiteMenuService;
-    breadcrumbIsSetToStorage: Subject<any> = new Subject();
+    breadcrumbIsSetToStorage: Subject<void> = new Subject<void>();
 
     constructor(
         private http: HttpClient,

@@ -1,5 +1,5 @@
 import { ElementRef } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 
 export function getFormControlDomElement({ formContainer, controlName }: { formContainer: ElementRef; controlName: string; }) {
     if (formContainer == null) {
@@ -11,14 +11,14 @@ export function getFormControlDomElement({ formContainer, controlName }: { formC
         : null;
 }
 
-export function getRequiredCount({ formGroup, formContainer }: { formGroup: FormGroup; formContainer: ElementRef; }): number {
+export function getRequiredCount({ formGroup, formContainer }: { formGroup: UntypedFormGroup; formContainer: ElementRef; }): number {
     if (formGroup == null) {
         return 0;
     }
 
     let reqCount = 0;
     Object.keys(formGroup.controls).forEach((x) => {
-        const control = <FormControl>formGroup.get(x);
+        const control = <UntypedFormControl>formGroup.get(x);
         const elem = getFormControlDomElement({ formContainer, controlName: x });
 
         if (elem && control && control.errors && control.errors["required"] === true) {
@@ -29,14 +29,14 @@ export function getRequiredCount({ formGroup, formContainer }: { formGroup: Form
     return reqCount;
 }
 
-export function getInvalidCount({ formGroup, formContainer }: { formGroup: FormGroup; formContainer: ElementRef; }): number {
+export function getInvalidCount({ formGroup, formContainer }: { formGroup: UntypedFormGroup; formContainer: ElementRef; }): number {
     if (formGroup == null) {
         return 0;
     }
 
     let invCount = 0;
     Object.keys(formGroup.controls).forEach((x) => {
-        const control = <FormControl>formGroup.get(x);
+        const control = <UntypedFormControl>formGroup.get(x);
         const elem = getFormControlDomElement({ formContainer, controlName: x });
         if (elem && control && control.errors) {
             invCount += Object.keys(control.errors).filter((x) => x !== "required").length > 0 ? 1 : 0;
@@ -46,7 +46,7 @@ export function getInvalidCount({ formGroup, formContainer }: { formGroup: FormG
     return invCount;
 }
 
-export function isFormContainerValid({ formGroup, formContainer }: { formGroup: FormGroup; formContainer: ElementRef; }): boolean {
+export function isFormContainerValid({ formGroup, formContainer }: { formGroup: UntypedFormGroup; formContainer: ElementRef; }): boolean {
     return getRequiredCount({ formGroup, formContainer }) === 0
         && getInvalidCount({ formGroup, formContainer }) === 0;
 }

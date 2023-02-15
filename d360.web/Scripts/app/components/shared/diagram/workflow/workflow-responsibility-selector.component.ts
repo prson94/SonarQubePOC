@@ -2,7 +2,7 @@
 import { WorkflowService } from '../../../../services/workflow.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 
-import * as _ from 'lodash';
+import { isArray } from "lodash-es";
 
 @Component({
     selector: 'd3s-workflow-responsibility-selector',
@@ -78,7 +78,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
         }
 
         //convert single value to array
-        if (this.step.settings.ResponsibilityTypeID != null && !_.isArray(this.step.settings.ResponsibilityTypeID)) {
+        if (this.step.settings.ResponsibilityTypeID != null && !isArray(this.step.settings.ResponsibilityTypeID)) {
             const id = this.step.settings.ResponsibilityTypeID;
             delete this.step.settings.ResponsibilityTypeID;
             this.step.settings.ResponsibilityTypeID = [];

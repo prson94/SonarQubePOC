@@ -1,5 +1,5 @@
 ﻿import * as go from 'gojs';
-import * as _ from 'lodash';
+import { clamp, round } from "lodash-es";
 import {
     ChangeDetectionStrategy,
     Component,
@@ -178,7 +178,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
             h = h * s;
         }
 
-        this.zoomLevel = _.clamp(_.round(this.diagram.scale * 75), 0, 100);
+        this.zoomLevel = clamp(round(this.diagram.scale * 75), 0, 100);
     }
 
     private ChangedSelection(e: any) {

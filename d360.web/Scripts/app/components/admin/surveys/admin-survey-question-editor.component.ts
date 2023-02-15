@@ -2,8 +2,8 @@
 import { SurveysService } from '../../../services/surveys.service';
 import { QuestionTypeV2 } from '../../../models/survey.model';
 import { DropdownOption } from '../../../models/dropdown.model';
-import { cloneDeep } from 'lodash';
-import { FormGroup, NgForm } from '@angular/forms';
+import { cloneDeep } from "lodash-es";
+import { UntypedFormGroup, NgForm } from '@angular/forms';
 
 @Component({
     selector: 'd3s-admin-survey-question-editor',
@@ -57,7 +57,7 @@ export class AdminSurveyQuestionEditorEditor {
         this.editedQuestion.Options.push({ Name: '', Value: 0, });
     }
 
-    private duplicatesValidator(form: FormGroup) {
+    private duplicatesValidator(form: UntypedFormGroup) {
 
         function hasDuplicates(array): string {
             var valuesSoFar = Object.create(null);

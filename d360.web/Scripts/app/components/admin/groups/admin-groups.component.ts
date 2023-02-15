@@ -29,7 +29,7 @@ import { V2ApiFilters } from '../../../models/asset-search.model';
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
 import { LazyLoadEvent } from 'primeng/api';
-import { isEqual } from 'lodash';
+import { isEqual } from "lodash-es";
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { SortOrder } from '../../../models/enums.model';

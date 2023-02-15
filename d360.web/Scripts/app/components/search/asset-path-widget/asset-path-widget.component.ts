@@ -1,6 +1,6 @@
 ﻿import { Component, Input } from '@angular/core';
 import { SearchPathComponent } from '../../../models/search-result.model';
-import { escape, isNil } from "lodash/";
+import { escape, isNil } from "lodash-es";
 
 @Component({
     selector: 'asset-path-widget',

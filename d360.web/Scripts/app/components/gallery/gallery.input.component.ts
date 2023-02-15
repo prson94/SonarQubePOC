@@ -1,5 +1,5 @@
 ﻿import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 
 
 @Component({
@@ -24,9 +24,9 @@ export class GalleryInputComponent implements OnInit {
     disabledState: boolean = false;
    
     model: DummyformModel = new DummyformModel("name", 0);
-    testForm: FormGroup = null;
+    testForm: UntypedFormGroup = null;
 
-    constructor(private fb: FormBuilder) { }
+    constructor(private fb: UntypedFormBuilder) { }
 
     ngOnInit(): void {
 

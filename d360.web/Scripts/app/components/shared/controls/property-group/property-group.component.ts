@@ -14,12 +14,12 @@
     ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormFeedbackBadgesModule } from '../form-feedback-badges/form-feedback-badges.component';
 import { isFormContainerValid } from '../form-feedback-badges/form-feedback-utils';
 import { uuidv4 } from '../../../../static/lang';
-import * as _ from 'lodash';
+import { debounce } from "lodash-es";
 import { PropertyGroupsService } from './property-groups.service';
 
 export const PropertyGroupInstanceIdAttributeName = 'data-property-group-instance-id';
@@ -33,7 +33,7 @@ export const PropertyGroupInstanceIdAttributeName = 'data-property-group-instanc
 export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @HostBinding(`attr.${PropertyGroupInstanceIdAttributeName}`) instanceId: string;
 
-    @Input() igformGroup: FormGroup;
+    @Input() igformGroup: UntypedFormGroup;
     @Input() title: string = $localize`Property Group`;
     @Input() showMoreInfo: boolean = false;
     @Input() moreInfoHtml: string = "";
@@ -45,7 +45,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() expanded: boolean = true;
     @Output() expandedChange = new EventEmitter();
 
-    delayedRefresh = _.debounce(() => {
+    delayedRefresh = debounce(() => {
         this.isValid.emit(isFormContainerValid({ formGroup: this.igformGroup, formContainer: this.inputContainer }));
     }, 200);
 

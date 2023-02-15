@@ -2,7 +2,7 @@
 import { BaseComponent } from '../base.component';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SiteMenu } from '../../../models/site-menu.model';
-import { isEqual } from 'lodash';
+import { isEqual } from "lodash-es";
 import { StringConstants } from "../../../static/string-constants";
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FavoritesManagementService } from './FavoritesManagementService';

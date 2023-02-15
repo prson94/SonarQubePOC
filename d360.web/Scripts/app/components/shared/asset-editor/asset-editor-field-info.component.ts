@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 
-import * as _ from 'lodash';
+import { isEqual } from "lodash-es";
 
 enum IgInfoButtonSize {
 	CHIP = 'chip',
@@ -27,7 +27,7 @@ export class AssetEditorFieldInfoComponent implements OnChanges {
 		if (changes.object || changes.selected) {
 			this.isVisible = this.object.objectID && this.object.objectID !== String(0) && this.object.objectID !== this.emptyUid;
 			if (this.isVisible) {
-				this.isSelected = _.isEqual(this.selected, this.object);
+				this.isSelected = isEqual(this.selected, this.object);
 			}
 		}
 	}

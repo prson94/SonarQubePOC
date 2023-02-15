@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+import { first as _first } from "lodash";
 import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild } from "@angular/core";
 import { SelectItem, TreeNode } from "primeng/api";
 import { forkJoin, Subject, Subscription } from "rxjs";
@@ -100,7 +100,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 				this.focusToPreselctedNode(preselectedUid);
 			}
 			else {
-				this.selectedRow = _.first(this.artifactTypes);
+				this.selectedRow = _first(this.artifactTypes);
 			}
 			this.isLoading = false;
 			this.cdRef.markForCheck();

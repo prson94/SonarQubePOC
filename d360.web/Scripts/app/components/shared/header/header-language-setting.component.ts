@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, Input, Output, EventEmitter } from "@angular/core";
-import * as _ from "lodash";
+import { cloneDeep } from "lodash-es";
 import { CompanySettingsService } from "../../../services/settings.service";
 
 declare let ApplicationLanguageSetting: string;
@@ -80,7 +80,7 @@ export class HeaderLanguageSettingComponent {
 			this.selectedLanguage = this.languages.find((x) => x.code.toLowerCase() === ApplicationLanguageSetting.toLowerCase());
 		}
 
-		this.initialLanguage = _.cloneDeep(this.selectedLanguage);
+		this.initialLanguage = cloneDeep(this.selectedLanguage);
 	}
 
 	saveChanges() {
@@ -91,7 +91,7 @@ export class HeaderLanguageSettingComponent {
 	}
 
 	cancelClick() {
-		this.selectedLanguage = _.cloneDeep(this.initialLanguage);
+		this.selectedLanguage = cloneDeep(this.initialLanguage);
 		this.onClose.emit();
 	}
 

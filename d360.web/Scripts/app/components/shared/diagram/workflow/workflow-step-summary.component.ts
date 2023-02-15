@@ -7,7 +7,7 @@ import { ResponsibilityTypeService } from '../../../../services/responsibility-t
 import { WorkflowService } from '../../../../services/workflow.service';
 import { GroupService } from '../../../../services/group.service';
 
-import * as _ from 'lodash';
+import { isArray } from "lodash-es";
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../../services/settings.service';
 
@@ -75,7 +75,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
             if (this.step.activityType === WorkflowActivityType.EmailNotification || this.step.activityType === WorkflowActivityType.Form) {
                 if (this.step.settings['MessageRecipientType'] === 'Responsibility') {
                     if (this.step.settings.ResponsibilityTypeID != null) {
-                        if (!_.isArray(this.step.settings.ResponsibilityTypeID)) {
+                        if (!isArray(this.step.settings.ResponsibilityTypeID)) {
                             const id = this.step.settings.ResponsibilityTypeID;
                             delete this.step.settings.ResponsibilityTypeID;
                             this.step.settings.ResponsibilityTypeID = [];

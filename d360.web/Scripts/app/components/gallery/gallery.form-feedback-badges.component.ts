@@ -1,5 +1,5 @@
 ﻿import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 
 
 @Component({
@@ -19,10 +19,10 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GalleryFormFeedbackBadgesComponent {
-    formGroup = new FormGroup({
-        name: new FormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(10)]),
-        count: new FormControl(null, [Validators.required, Validators.min(2), Validators.max(10)]),
-        simpleField: new FormControl('', [])
+    formGroup = new UntypedFormGroup({
+        name: new UntypedFormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(10)]),
+        count: new UntypedFormControl(null, [Validators.required, Validators.min(2), Validators.max(10)]),
+        simpleField: new UntypedFormControl('', [])
     });
 
     @ViewChild('form', { static: false }) formElement: ElementRef;

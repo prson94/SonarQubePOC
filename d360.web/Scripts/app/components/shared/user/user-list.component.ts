@@ -35,7 +35,7 @@ import {
     LookupValuesAPIModel,
     LookupValuesAPIParameters
 } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
-import { isEqual } from "lodash";
+import { isEqual } from "lodash-es";
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 
 @Component({

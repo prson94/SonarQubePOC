@@ -47,12 +47,20 @@
             "index": "index.html",
             "main": "Scripts/main.ts",
             "polyfills": "Scripts/polyfills.ts",
-            "tsConfig": "Scripts/tsconfig.aot.json",
+            "tsConfig": "Scripts/tsconfig.json",
             "localize": true,
             "assets": [],
-            "styles": [
-              "Content/styles/angular.less"
-            ],
+			"styles": [
+			  "Content/styles/angular.less"
+			],
+			"allowedCommonJsDependencies": [
+				"highcharts",
+				"gojs",
+				"powerbi-client",
+				"quill",
+				"codemirror",
+				"codemirror/*",
+			],
             "scripts": [
             ],
             "vendorChunk": true,
@@ -132,5 +140,7 @@
       }
     }
   },
-  "defaultProject": "govern"
+  "cli": {
+    "analytics": false
+  }
 }

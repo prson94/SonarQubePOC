@@ -119,11 +119,12 @@
                                      dataKey="value"
                                      [scrollable]="true"
                                      [scrollHeight]="selectionScrollHeight"
-                                     [virtualRowHeight]="32"
+                                     [virtualRowHeight]="30"
                                      [rows]="20"
                                      [virtualScroll]="true"
                                      [lazy]="isLazyLoad()"
                                      (onLazyLoad)="loadListLazy($event)"
+                                     [lazyLoadOnInit]="false"
                                      [loading]="isLookupValuesLoading"
                                      [loadingIcon]="'fa fa-spinner fa-spin'">
                                 <ng-template pTemplate="header">

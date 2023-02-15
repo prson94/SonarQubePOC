@@ -10,7 +10,7 @@
     SimpleChanges,
     ViewChild
 } from "@angular/core";
-import * as _ from "lodash";
+import { cloneDeep, includes } from "lodash-es";
 import { WorkflowService } from "../../../../services/workflow.service";
 import { WorkflowFieldsService } from "../../../../services/workflow-fields.service";
 import { HTTPResponseOutput, NodeModel } from "../../../../models/workflow.model";
@@ -108,10 +108,10 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
             .subscribe((r) => {
                 this.fields = [];
-                this.fields = _.cloneDeep(this.defaultFields);
+                this.fields = cloneDeep(this.defaultFields);
 
                 if (this.objectType === "IntersectType") {
-                    this.fields = this.fields.concat(_.cloneDeep(this.relationshipFields));
+                    this.fields = this.fields.concat(cloneDeep(this.relationshipFields));
                 }
 
                 r.forEach((f) => {
@@ -207,7 +207,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
         const step = steps.find((s) => s.key === key);
         const toLinks = links.filter((l) => l.to === key);
 
-        if (_.includes(upstreamSteps, key)) {
+        if (includes(upstreamSteps, key)) {
             return;
         }
         upstreamSteps.push(step.key);

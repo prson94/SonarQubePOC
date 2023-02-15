@@ -1,5 +1,5 @@
 ﻿import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from "@angular/core";
-import * as _ from "lodash";
+import { isEqual } from "lodash-es";
 import { LazyLoadEvent } from "primeng/api";
 import { MetricAssetDefinitionViewModel, MetricRuleResultOperation, ScoreType } from "../../../../models/metrics.model";
 import { DataQualityEvidenceItemModel, DataQualityEvidenceModel, PointBreakdown } from "../../../../models/score.model";
@@ -72,7 +72,7 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     }
 
     performLazyLoad(event: LazyLoadEvent) {
-        if (_.isEqual(event, this.previousEvent)) {
+        if (isEqual(event, this.previousEvent)) {
             return;
         }
         this.previousEvent = event;

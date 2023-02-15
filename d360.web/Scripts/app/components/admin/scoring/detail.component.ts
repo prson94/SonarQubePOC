@@ -28,7 +28,7 @@ import { RelationshipsService } from '../../../services/relationships.service';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { StringConstants } from '../../../static/string-constants';
 import { finalize } from 'rxjs/operators';
-import * as _ from 'lodash';
+import { cloneDeep } from "lodash-es";
 
 @Component({
     selector: 'd3s-allocation-detail',
@@ -107,7 +107,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
 				})
 			).subscribe((res) => {
                 this.allocation = res;
-                this.allocationCopy = _.cloneDeep(this.allocation);
+                this.allocationCopy = cloneDeep(this.allocation);
                 this.formatScoreCalc();
                 this.allocation.scoreType = ScoreType[this.allocation.scoreType.toString()];
                 if (this.allocation.scoreType === 2 || res.scoreType.toString() === "DataQuality") {
@@ -237,7 +237,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
 
                         if (items.length > 0) {
                             this.allocation = items[0];
-                            this.allocationCopy = _.cloneDeep(this.allocation);
+                            this.allocationCopy = cloneDeep(this.allocation);
                             this.formatScoreCalc();
                             this.metricsService.getMetricsScores(this.assetTypeUid, this.allocation.scoreType)
                                 .subscribe((f) => {

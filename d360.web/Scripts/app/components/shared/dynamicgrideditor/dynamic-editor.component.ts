@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import { cloneDeep, orderBy } from "lodash-es";
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -12,7 +12,7 @@ import {
     SimpleChange,
     ViewChild
 } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 
 import { EditorCategory, EditorField, EditorRow } from '../../../models/editor-field.model';
 
@@ -88,7 +88,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     private isInErrorMessage: string = "";
     readonly defaultCategory: string = $localize`General`;
 
-    form: FormGroup;
+    form: UntypedFormGroup;
 
     action: string = "Edit";
     fields: EditorField[] = [];
@@ -105,7 +105,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     constructor(
         private ref: ChangeDetectorRef,
-        private formBuilder: FormBuilder,
+        private formBuilder: UntypedFormBuilder,
         private messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
         private editorDefinitionService: EditorDefinitionService,
@@ -173,7 +173,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         this.isInErrorMessage = '';
         this.isInError = false;
         if (this.selection != null) {
-            this.editedItem = _.cloneDeep(this.selection);
+            this.editedItem = cloneDeep(this.selection);
         } else {
             this.editedItem = {};
             this.action = this.newActionName;
@@ -260,7 +260,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
             this.categories = [];
 
-            result = _.orderBy(result, [(field) => field.Row ? field.Row : 0], ['asc']);
+            result = orderBy(result, [(field) => field.Row ? field.Row : 0], ['asc']);
             this.fields = result;
 
             this.fields.forEach((f) => {
@@ -369,8 +369,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     url = field.Value;
                 }
 
-                group[field.FieldName + '_Name'] = new FormControl(name || '');
-                group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
+                group[field.FieldName + '_Name'] = new UntypedFormControl(name || '');
+                group[field.FieldName + '_Url'] = new UntypedFormControl(url || '', this.getFieldValidators(field));
             }
             else if (field.FieldType === "DateTime" || field.FieldType === "Date") {
                 if (field.Value != null) {
@@ -378,7 +378,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     field.Value = date;
                 }
 
-                group[field.FieldName] = new FormControl({
+                group[field.FieldName] = new UntypedFormControl({
                     value: (field.Value),
                     disabled: field.ReadOnly
                 }, this.getFieldValidators(field));
@@ -419,14 +419,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
 
 
-                group[field.FieldName] = new FormControl({
+                group[field.FieldName] = new UntypedFormControl({
                     value: fieldValue,
                     disabled: setDisabled
                 }, this.getFieldValidators(field));
             }
         });
 
-        return new FormGroup(group);
+        return new UntypedFormGroup(group);
     }
 
     private getFieldValidators(field: EditorField) {

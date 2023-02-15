@@ -13,7 +13,7 @@ import {
 } from "../../../models/responsibility-type.model";
 import { ObjectDetailService } from "../../../services/object-detail.service";
 import { BaseComponent } from "../../shared/base.component";
-import * as _ from "lodash";
+import { cloneDeep } from "lodash-es";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { Operator } from "../../../models/operator.model";
@@ -277,7 +277,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         if (item.FieldTypeID) {
             let selectedFieldType = this.whenFieldTypes.find((f) => f.value === item.FieldTypeID);
             if (selectedFieldType) {
-                selectedFieldType = _.cloneDeep(selectedFieldType);
+                selectedFieldType = cloneDeep(selectedFieldType);
                 item.FieldTypeName = selectedFieldType.fieldTypeName ?? selectedFieldType.label;
                 if (selectedFieldType.isLookup) {
 
@@ -348,7 +348,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         const promises = [];
         this.disableTestWhen = true;
 
-        const whenTest = _.cloneDeep(this.model);
+        const whenTest = cloneDeep(this.model);
 
         //remove valueoptions from any when criteria
         if (whenTest.StructuredDefinition.When) {
@@ -468,7 +468,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         const promises = [];
         this.disableTestThen = true;
 
-        const thenTest = _.cloneDeep(this.model);
+        const thenTest = cloneDeep(this.model);
 
         //remove valueoptions from any when criteria
         if (thenTest.StructuredDefinition.When) {

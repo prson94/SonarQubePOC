@@ -9,7 +9,7 @@ import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../../models/form.model';
 
-import * as _ from 'lodash';
+import { cloneDeep, sortBy } from "lodash-es";
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FeatureFlagsService } from '../../../services/featureflags.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
@@ -247,13 +247,13 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
 	addNewFolder(item: SiteNav) {
 		const x = this.availableItems.findIndex((i) => i.ObjectID === item.ObjectID && i.Object === item.Object);
-		const i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
+		const i = cloneDeep(this.availableItems.splice(x, 1)[0]);
 		this.newFolderItems.push(i);
 	}
 
 	deleteNewFolder(item: SiteNav) {
 		const x = this.availableItems.findIndex((i) => i.ObjectID === item.ObjectID && i.Object === item.Object);
-		const i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
+		const i = cloneDeep(this.newFolderItems.splice(x, 1)[0]);
 		this.availableItems.push(i);
 	}
 
@@ -472,12 +472,12 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 					this.siteMenuService.getSiteNavFolderItems(this.selection.ID)
 						.subscribe((s) => {
 							this.folderItems = s;
-							this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
+							this.folderItems = sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
 							this.isLoading = false;
 							this.siteMenuService.getSiteNavFolderItems(this.selection.ID)
 								.subscribe((s) => {
 									this.folderItems = s;
-									this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
+									this.folderItems = sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
 									this.isLoading = false;
 									this.stateService.reloadLeftNavMenu();
 								});

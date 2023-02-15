@@ -1,6 +1,6 @@
 ﻿import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { BaseComponent } from "../../../shared/base.component";
-import * as _ from "lodash";
+import { includes } from "lodash-es";
 import { HTTPResponseOutput, NodeModel } from "../../../../models/workflow.model";
 import { WorkflowFieldsService } from "../../../../services/workflow-fields.service";
 import { CompanySettingsService } from "../../../../services/settings.service";
@@ -172,7 +172,7 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
         const step = steps.find((s) => s.key === key);
         const toLinks = links.filter((l) => l.to === key);
 
-        if (_.includes(upstreamSteps, key)) {
+        if (includes(upstreamSteps, key)) {
             return;
         }
         upstreamSteps.push(step.key);

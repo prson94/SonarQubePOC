@@ -1,5 +1,5 @@
 ﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild } from "@angular/core";
-import * as _ from "lodash";
+import { cloneDeep } from "lodash-es";
 import { Editor } from "primeng/editor";
 
 import { BaseComponent } from "../../../shared/base.component";
@@ -118,7 +118,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     ngOnInit() {
-        this.originalStep = _.cloneDeep(this.step);
+        this.originalStep = cloneDeep(this.step);
         const promises = [];
 
         this.usedFields = this.workflowFieldsService.getUsedFields();
@@ -202,7 +202,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         }
 
         if (this.step.fields.form.field.length == null) {
-            const f = _.cloneDeep(this.step.fields.form.field);
+            const f = cloneDeep(this.step.fields.form.field);
             this.step.fields.form.field = [];
             this.step.fields.form.field.push(f);
         }
@@ -313,7 +313,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             this.step.fields.form.field.splice(i, 1);
 
             //primeng v4.1 issue
-            const fields = _.cloneDeep(this.step.fields.form.field);
+            const fields = cloneDeep(this.step.fields.form.field);
             this.step.fields.form.field = null;
             this.step.fields.form.field = fields;
 
@@ -357,7 +357,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                 const i = this.step.fields.form.field.findIndex((f) => f["@id"] === this.newField["@oldId"]);
 
                 if (i >= 0) {
-                    existing = _.cloneDeep(this.step.fields.form.field[i]);
+                    existing = cloneDeep(this.step.fields.form.field[i]);
                     this.step.fields.form.field.splice(i, 1);
                 }
 
@@ -391,7 +391,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         f["@stepId"] = this.step.key;
 
         if (existing == null || typeChanged) {
-            this.step.fields.form.field.push(_.cloneDeep(this.newField));
+            this.step.fields.form.field.push(cloneDeep(this.newField));
         }
         else {
             this.workflowFieldsService.forceFormFieldUpdate();

@@ -12,7 +12,7 @@ import { AssetCount, AssetEditorModel, AssetTypeClass } from '../models/asset.mo
 import { AssetSearchApiResponse, AssetSearchFilter } from '../models/asset-search.model';
 import { SelectItem } from 'primeng/api';
 import { LookupGrid } from '../models/grid-definition.model';
-import * as _ from 'lodash';
+import { clone } from "lodash-es";
 
 @Injectable({
     providedIn: 'root'
@@ -214,7 +214,7 @@ export class AssetService extends BaseObservableService {
     }
 
     public downloadAssetsExcel(assetTypeUid: string, params: any, fileName, callback: Function = null) {
-        var copyParams = _.clone(params);
+        var copyParams = clone(params);
 
         //Setup paging for export
         copyParams['_pageNum'] = 1;

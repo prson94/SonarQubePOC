@@ -2034,7 +2034,6 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.ttf" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.woff" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.woff2" />
-    <Content Include="Scripts\tsconfig.aot.json" />
     <Content Include="Scripts\tsconfig.json" />
     <Content Include="Views\Shared\Unsupported.cshtml" />
     <None Include="Web.Debug.config">

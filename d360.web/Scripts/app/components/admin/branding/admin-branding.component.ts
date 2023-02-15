@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { DomSanitizer, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import * as _ from 'lodash';
+import { cloneDeep } from "lodash-es";
 import { forkJoin } from 'rxjs';
 import { BrandingService, Theme } from '../../../services/branding.service';
 import { FeatureFlagsService } from '../../../services/featureflags.service';
@@ -175,7 +175,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     }
 
     duplicateSelectedTheme() {
-        var theme = _.cloneDeep(this.selectedRow._orig);
+        var theme = cloneDeep(this.selectedRow._orig);
         const uid = theme.uid;
         theme.name = this.getUniqueName(this.selectedRow.name, 0);
         theme.isCurrent = false;
@@ -218,7 +218,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     }
 
     download() {
-        var toExport = _.cloneDeep(this.selectedRow);
+        var toExport = cloneDeep(this.selectedRow);
 
         //delete properties we do not wish to export
         delete toExport["defaultThemeUid"];
@@ -327,7 +327,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     }
 
     checkUploadTheme() {
-        var _toValidate = _.cloneDeep(this.themeToLoad);
+        var _toValidate = cloneDeep(this.themeToLoad);
         _toValidate.name = "temp_" + Date.now().toString();
         this.brandingService.validateTheme(_toValidate)
             .subscribe((res) => {

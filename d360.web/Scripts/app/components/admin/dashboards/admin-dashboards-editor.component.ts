@@ -1,7 +1,7 @@
 ﻿import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { DropdownOption } from '../../../models/dropdown.model';
-import * as _ from 'lodash';
+import { cloneDeep } from "lodash-es";
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
@@ -46,7 +46,7 @@ export class AdminDashboardsEditor {
 			this.reportTypes.push({ value: "DqPlus", title: "Data360 DQ+" });
 		}
 		if (this.report != null) {
-			this.editedReport = _.cloneDeep(this.report);
+			this.editedReport = cloneDeep(this.report);
 			if (this.editedReport.AssetTypeUid) {
 				this.editedReport.SelectedObjectData = this.editedReport.AssetTypeUid.toLowerCase();
 				if (this.editedReport.Location === DashboardLocation.Detail) {

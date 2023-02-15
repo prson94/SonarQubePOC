@@ -13,7 +13,7 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FavoritesService } from '../../../services/favorites.service';
 import { FavoriteApiModel, FavoriteViewModel } from '../../../models/favorite.model';
-import * as _ from 'lodash';
+import { trimStart } from "lodash-es";
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -92,7 +92,7 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.routerSub = this.router.events.subscribe((e) => {
             if (e instanceof NavigationEnd) {
-                this.uri = _.trimStart(e.urlAfterRedirects, '/');
+                this.uri = trimStart(e.urlAfterRedirects, '/');
 
                 //dont show raise issue button on raise issue screen or any admin screens or user profile           
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());

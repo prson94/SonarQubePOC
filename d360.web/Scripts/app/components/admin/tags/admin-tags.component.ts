@@ -22,7 +22,7 @@ import { Table } from 'primeng/table';
 import { tap } from 'rxjs/operators';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 import { SearchService } from '../../../services/search.service';
-import { isEqual as _isEqual, uniqWith as _uniqWith } from 'lodash';
+import { isEqual as _isEqual, uniqWith as _uniqWith } from "lodash-es";
 
 @Component({
     selector: 'd3s-admin-tags',

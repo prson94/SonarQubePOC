@@ -5,7 +5,7 @@ import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 import { FormMode } from '../../../../models/form.model';
 import { map } from 'rxjs/operators';
-import * as _ from 'lodash';
+import { cloneDeep, isEmpty } from "lodash-es";
 import { NodeModel } from '../../../../models/lineage.model';
 import { CompanySettingsService } from '../../../../services/settings.service';
 
@@ -73,10 +73,10 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                     this.fields = r.filter((x) => x.Type !== "JsonElement");//Exclude Json Element Fields
                 }),
                 map(() => {
-                    if (_.isEmpty(this.fieldUpdate.Field)) {
+                    if (isEmpty(this.fieldUpdate.Field)) {
                         this.fieldUpdate.Field = [];
                     } else if (this.fieldUpdate.Field.length == null) {
-                        const f = _.cloneDeep(this.fieldUpdate.Field);
+                        const f = cloneDeep(this.fieldUpdate.Field);
                         this.fieldUpdate.Field = [];
                         this.fieldUpdate.Field.push(f);
                     }
@@ -268,7 +268,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     save() {
-        const field = _.cloneDeep(this.selectedField);
+        const field = cloneDeep(this.selectedField);
         const fieldTypeIndex = this.fields.findIndex((f) => f.ID.toString() === field['@FieldId'].toString());
 
 		var selectedField = this.fields.filter((f) => f.ID.toString() === field['@FieldId'].toString())[0];
@@ -362,7 +362,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
     edit(i: any) {
         this.selectedFieldIndex = i;
-        this.selectedField = _.cloneDeep(this.fieldUpdate.Field[i]);
+        this.selectedField = cloneDeep(this.fieldUpdate.Field[i]);
         this.selectedFormFieldId = null;
 
         //free up the field so it can be selected and changed
@@ -417,7 +417,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
     cancel() {
 
-        const field = _.cloneDeep(this.selectedField);
+        const field = cloneDeep(this.selectedField);
         if (field && field['@FieldId']) {
             const fieldTypeIndex = this.fields.findIndex((f) => f.ID.toString() === field['@FieldId'].toString());
             if (fieldTypeIndex > -1) {

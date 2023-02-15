@@ -16,7 +16,7 @@ import { ScoreTypeAllocation } from '../../../models/metrics.model';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
-import * as _ from 'lodash';
+import { cloneDeep } from "lodash-es";
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
@@ -104,7 +104,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 					this.closeLabel = $localize`Close`;
 					this.saveLabel = $localize`Save Changes`;
 					this.isEdit = true;
-					this.originalSelection = _.cloneDeep(this.selection);
+					this.originalSelection = cloneDeep(this.selection);
 					if (this.selection.uid) {
 						this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' > ' + this.selection.assetTypePath });
 					}
@@ -207,7 +207,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 	cancel() {
 		//Set selection back to original
 		if (this.isEdit) {
-			this.selection = _.cloneDeep(this.originalSelection);
+			this.selection = cloneDeep(this.originalSelection);
 			this.updateRanges();
 		}
 		this.onCancel.emit();

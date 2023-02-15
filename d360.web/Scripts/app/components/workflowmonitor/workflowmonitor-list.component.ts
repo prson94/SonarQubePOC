@@ -20,7 +20,7 @@ import { GridFilterExpression } from "../../models/grid-definition.model";
 import { StateService } from "../../services/state.service";
 import { StringHelpers } from "../../static/string-helpers";
 import { AuthenticationService } from '../../services/authentication.service';
-import * as _ from "lodash";
+import { clone } from "lodash-es";
 import { CompanySettingsService } from "../../services/settings.service";
 import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-category.service";
 import { takeUntil } from "rxjs/operators";
@@ -120,7 +120,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
         let filter: GridFilterExpression[] = [];
 
         if (this.predefinedFilters && this.predefinedFilters.length > 0) {
-            filter = _.clone(this.predefinedFilters);
+            filter = clone(this.predefinedFilters);
             return filter;
         }
 
@@ -132,7 +132,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
         }
 
         if (this.stateService.workflowItemFilters.columFilters && this.stateService.workflowItemFilters.columFilters.length > 0)
-            {filter = _.clone(this.stateService.workflowItemFilters.columFilters);}
+            {filter = clone(this.stateService.workflowItemFilters.columFilters);}
 
         if (this.stateService.workflowItemFilters.workflowTypeFilters &&
             !StringHelpers.isNullOrEmpty(this.stateService.workflowItemFilters.workflowTypeFilters.value))
