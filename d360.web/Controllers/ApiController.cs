@@ -659,7 +659,7 @@ namespace d360.web.Controllers
 
 				if (!string.IsNullOrEmpty(multiSql))
 				{
-					var relationLookupHasAnyReader = await Company.QueryMultipleAsync(multiSql, new { assetid = details.AssetID, assetUid = details.UID });
+					var relationLookupHasAnyReader = await Company.QueryMultipleAsync(multiSql, new { assetUid = details.UID });
 					foreach (var item in complexModels)
 					{
 						var data = relationLookupHasAnyReader.Read<int>().FirstOrDefault();
@@ -1793,7 +1793,6 @@ namespace d360.web.Controllers
 				dbArgs.Add("object", asset.Object);
 				dbArgs.Add("objectId", asset.ObjectID);
 				dbArgs.Add("fieldTypeId", fieldType.ID);
-				dbArgs.Add("AssetId", asset.ID);
 
 				if (fieldType.Type == "ComplexRelationLookup")
 				{
@@ -2815,7 +2814,6 @@ namespace d360.web.Controllers
 					from    Asset A 
 							inner join AssetDisplayValue V on V.AssetID = A.ID 
 							inner join AssetType T on T.ID = A.AssetTypeID 
-							outer apply dbo.UserAssetPermissions(@resourceId, T.ID) P 
 					where   A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id, resourceId = Company.CurrentResourceID });
 			var metadata = metadataResult.FirstOrDefault();
 
