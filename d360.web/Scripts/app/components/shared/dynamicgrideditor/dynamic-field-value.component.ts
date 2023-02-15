@@ -5,6 +5,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { escape } from "lodash-es";
 
 @Component({
     selector: 'd3s-dynamic-field-value',
@@ -74,12 +75,13 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         if (this.useApiName && this.column['fieldType'] === 'Link' && this.fieldValue) {
             var delimiterIdx = (this.fieldValue as string).indexOf('|');
             if (delimiterIdx > -1) {
-                var name = (this.fieldValue as string).substring(0, delimiterIdx);
-                var href = (this.fieldValue as string).substring(delimiterIdx + 1);
-                if (!name)
-                    {this.fieldValue = `<a href="${href}" target="_blank">${href}</a>`;}
-                else
-                    {this.fieldValue = `<a href="${href}" target="_blank">${name}</a>`;}                
+                let name = (this.fieldValue as string).substring(0, delimiterIdx);
+                const href = (this.fieldValue as string).substring(delimiterIdx + 1);
+				if (!name) {
+					name = href;
+				}
+				name = escape(name)
+                this.fieldValue = `<a href="${href}" target="_blank">${name}</a>`;
             }
 		}
 
