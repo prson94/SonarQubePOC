@@ -175,7 +175,8 @@ namespace igx.UnitTests.RepositoryTests
             mustContain.Add("AssetDetail Parent on Parent.ID = AAP.Id");
 
             List<string> mustContainWithFilter = new List<string>();
-            mustContainWithFilter.Add("F1.FormattedValue like @simpleFilter");
+			mustContainWithFilter.Add("cast(f.FormattedValue as nvarchar(4000)) like @simpleFilter");
+			mustContainWithFilter.Add("in @combinedSimpleFilters");
             mustContainWithFilter.Add("Node.DisplayPath like @simpleFilter");
             mustContainWithFilter.Add("rd.SecurityAssetUid in @ownerUids");
             mustContainWithFilter.Add("rd.SecurityAssetUid in @notOwnerUids");

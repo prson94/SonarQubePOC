@@ -1128,8 +1128,19 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					dbArgs.Add("@simpleFilter", simpleFilter);
 					var simpleFilterFields = fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString());
 
+					if (simpleFilterFields.Any(x => x.UseAsCombinedSimpleFilter))
+					{
+						dbArgs.Add("combinedSimpleFilters", simpleFilterFields.Where(x => x.UseAsCombinedSimpleFilter).Select(x => x.ID).ToList());
+
+						simpleFilters.Add($@"
+							select f.AssetID from Field f 
+							left join #TempFilteredAssets tfa on tfa.AssetId = f.ID
+							where f.FieldTypeID in @combinedSimpleFilters and cast(f.FormattedValue as nvarchar(4000)) like @simpleFilter and tfa.AssetId is null
+						option(recompile);");
+					}
+
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
-					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment))
+					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment && !x.UseAsCombinedSimpleFilter))
 					{
 						bool isNumbericFieldType = ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
 
@@ -1283,13 +1294,29 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					//do not use simple filter on parent value if response is used for tree grid, otherwise all child items will be matched incorrectly
 					if (includeParent && !isForTreeGrid)
 					{
-						simpleFilters.Add($@"select  A.ID
-								from Asset A
-									outer apply GetParentByAssetID(A.ID)AAP
-									left join AssetDetail Parent on Parent.ID = AAP.Id
-									left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
-								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and Parent.DisplayValue like @simpleFilter
-								option(recompile)");
+						simpleFilterTempTables.Append($@"
+							declare @parentAssetTypeId int;
+							declare @parentIntersectTypeId int;
+							declare @parentAssets table (assetid int)
+
+							select top 1 
+								@parentAssetTypeId = it.SubjectAssetTypeID,
+								@parentIntersectTypeId = it.ID 
+							from [IntersectType] it 
+							inner join AssetType T on T.ID = @ASSETTYPEID
+							inner join [Predicate] R on R.ID = IT.PredicateID and R.[Type] = case when T.Class IN (6,2) then 4 else 3 end 
+							where it.ObjectAssetTypeID = T.ID
+
+							insert into @parentAssets
+							select a.ID  from Asset A
+							inner join AssetDisplayValue ADV on ADV.AssetID = a.ID
+							where a.AssetTypeID = @parentAssetTypeId and cast(ADV.DisplayValue as nvarchar(4000)) like @simpleFilter
+							option(recompile)");
+
+						simpleFilters.Add($@"
+							select I.ObjectAssetID from [Intersect] I 
+							where I.IntersectTypeID = @parentIntersectTypeId and I.SubjectAssetID in (select assetid from @parentAssets)
+							option(recompile)");
 					}
 
 					if (assetType.Class == AssetTypeClass.Reference)
