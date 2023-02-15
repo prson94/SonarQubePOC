@@ -636,7 +636,23 @@ namespace d360.web.Controllers
 
 			try
 			{
-				complexRelationFieldHasAnyModels = ComplexFieldsHelper.GetComplexRelationFieldHasAnyModels(fieldTypeLookups, fieldTypes);
+				var fieldtypeRelationshipType = Company.Query<FieldTypeRelationShipType>(@"
+					select distinct IT.uid IntersectTypeUid,IT.ID IntersectTypeId,case when it.SubjectAssetTypeID = it.ObjectAssetTypeID then 1 else 0 end IsBothSideSame
+					from FieldType FT
+					inner join FieldTypeLookup FTL on FT.ID = ftl.FieldTypeID
+					cross apply OPENJSON(FTL.[Definition], N'lax $.Relations') with (
+						IntersectTypeUid uniqueidentifier, 
+						AssetTypeUid uniqueidentifier,
+						RelationType int, 
+						Direction int
+					) R
+					inner join [intersecttype] it on it.uid = r.IntersectTypeUid
+					where Ft.AssetTypeID = @AssetTypeID and ISJSON(FTL.[Definition]) = 1
+					option(recompile)",
+				new { details.AssetTypeID })
+				.ToList();
+
+				complexRelationFieldHasAnyModels = ComplexFieldsHelper.GetComplexRelationFieldHasAnyModels(fieldTypeLookups, fieldTypes, fieldtypeRelationshipType);
 				string multiSql = "";
 				var complexModels = complexRelationFieldHasAnyModels.Where(x => !string.IsNullOrEmpty(x.SQL)).ToList();
 				complexModels.ForEach(x => multiSql += x.SQL);
@@ -2798,7 +2814,6 @@ namespace d360.web.Controllers
 					from    Asset A 
 							inner join AssetDisplayValue V on V.AssetID = A.ID 
 							inner join AssetType T on T.ID = A.AssetTypeID 
-							outer apply dbo.UserAssetPermissions(@resourceId, T.ID) P 
 					where   A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id, resourceId = Company.CurrentResourceID });
 			var metadata = metadataResult.FirstOrDefault();
 
