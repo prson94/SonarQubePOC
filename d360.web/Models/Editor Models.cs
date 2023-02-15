@@ -332,7 +332,14 @@ namespace d360.web.Models
         public bool Selected { get; set; }
     }
 
-    public class FieldTypeItemDisplayFieldEditorModel
+	public class EditableFieldItemRelationshipData
+	{
+		public int FieldTypeId { get; set; }
+		public int Count { get; set; }
+		public string Results { get; set; }
+	}
+
+	public class FieldTypeItemDisplayFieldEditorModel
     {
         public int FieldTypeID { get; set; }
 

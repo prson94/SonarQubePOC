@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data.Entity;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -25,7 +27,6 @@ using d360.web.Handlers.Exceptions;
 using d360.web.Models;
 using d360.web.Utilities;
 using Dapper;
-
 using LaunchDarkly.Sdk;
 
 using Microsoft.ApplicationInsights;
@@ -1082,373 +1083,414 @@ namespace d360.web.Controllers
         }
 
         internal List<EditableField> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false, bool useDefaultCategory = true, bool loadOnlySelectedLookupValue = false)
-        {
-            var row = startRow;
-            const string defaultCategoryName = "General";
+		{
+			var row = startRow;
+			const string defaultCategoryName = "General";
+			var asset = Company.GetAssetDetail(@object, objectID);
+			List<IntersectType> intersectTypes;
+			List<EditableFieldItemRelationshipData> relationshipFieldData;
+			LoadRelationshipFieldData(fieldTypes, asset, out intersectTypes, out relationshipFieldData);
 
-            fieldTypes.ForEach(ft =>
-            {
-                var categoryName = ft.Category;
+			fieldTypes.ForEach(ft =>
+			{
+				var categoryName = ft.Category;
 
-                if (useDefaultCategory && string.IsNullOrWhiteSpace(categoryName))
-                {
-                    categoryName = defaultCategoryName;
-                }
+				if (useDefaultCategory && string.IsNullOrWhiteSpace(categoryName))
+				{
+					categoryName = defaultCategoryName;
+				}
 
-                if (ft.IsEditable && ft.Type != "Tag")
-                {
-                    #region Is Editable
+				if (ft.IsEditable && ft.Type != "Tag")
+				{
+					#region Is Editable
 
-                    if (!limitedFieldTypes.Contains(ft.Type))
-                    {
-                        var f = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
-                        var patternMessage = "";
+					if (!limitedFieldTypes.Contains(ft.Type))
+					{
+						var f = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
+						var patternMessage = "";
 
-                        if (string.IsNullOrEmpty(ft.ValidationDescription))
-                        {
-                            if (ft.Type == "Number")
-                            {
-                                patternMessage = "must be a whole number";
-                            }
+						if (string.IsNullOrEmpty(ft.ValidationDescription))
+						{
+							if (ft.Type == "Number")
+							{
+								patternMessage = "must be a whole number";
+							}
 
-                            if (ft.Type == "Decimal")
-                            {
-                                patternMessage = "must be a decimal number";
-                            }
-                        }
-                        else
-                        {
-                            patternMessage = ft.ValidationDescription;
-                        }
+							if (ft.Type == "Decimal")
+							{
+								patternMessage = "must be a decimal number";
+							}
+						}
+						else
+						{
+							patternMessage = ft.ValidationDescription;
+						}
 
-                        var fld = new EditableField
-                        {
-                            Row = row,
-                            Column = 1,
-                            FieldName = ft.Name,
-                            Name = ft.FriendlyName,
-                            FieldType = ft.Type.ToString(),
-                            FieldDescription = ft.FormDescription,
-                            Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage, ft.Increment, ft.Precision),
-                            Category = categoryName,
-                            FieldTypeID = ft.ID,
-                            IsPartOfKey = ft.IsPartOfKey
-                        };
+						var fld = new EditableField
+						{
+							Row = row,
+							Column = 1,
+							FieldName = ft.Name,
+							Name = ft.FriendlyName,
+							FieldType = ft.Type.ToString(),
+							FieldDescription = ft.FormDescription,
+							Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage, ft.Increment, ft.Precision),
+							Category = categoryName,
+							FieldTypeID = ft.ID,
+							IsPartOfKey = ft.IsPartOfKey
+						};
 
-                        #region Lookup
+						#region Lookup
 
-                        if (ft.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType))
-                        {
-                            try
-                            {
-                                fld.Items = new List<SelectListItem>();
-                                fld.ParentFieldTypeID = ft.ParentFieldTypeID;
-                                fld.MultiSelect = ft.AllowMultipleValues;
-                                var lookupType = ft.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : ft.LookupObjectType;
-                                fld.UseColorControl = Company.Assets.Any(x => x.Color != null && x.AssetType.Object == lookupType && ft.LookupObjectID == x.AssetType.ObjectID);
+						if (ft.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType))
+						{
+							try
+							{
+								fld.Items = new List<SelectListItem>();
+								fld.ParentFieldTypeID = ft.ParentFieldTypeID;
+								fld.MultiSelect = ft.AllowMultipleValues;
+								var lookupType = ft.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : ft.LookupObjectType;
+								fld.UseColorControl = Company.Assets.Any(x => x.Color != null && x.AssetType.Object == lookupType && ft.LookupObjectID == x.AssetType.ObjectID);
 
-                                if (ft.ParentFieldTypeID > 0)
-                                {
-                                    var parent = Company.FieldTypes.Where(x => x.ID == ft.ParentFieldTypeID).FirstOrDefault();
+								if (ft.ParentFieldTypeID > 0)
+								{
+									var parent = Company.FieldTypes.Where(x => x.ID == ft.ParentFieldTypeID).FirstOrDefault();
 
-                                    if (parent != null)
-                                    {
-                                        fld.ParentFieldTypeName = parent.Name;
-                                    }
-                                }
+									if (parent != null)
+									{
+										fld.ParentFieldTypeName = parent.Name;
+									}
+								}
 
-                                if (ft.ParentFieldTypeID > 0 && !loadOnlySelectedLookupValue)
-                                {
-                                    if (ft.AllowMultipleValues)
-                                    {
-                                        if (f != null && !string.IsNullOrWhiteSpace(f.Value))
-                                        {
-                                            fld.Value = f.Value;
-                                        }
-                                        else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
-                                        {
-                                            fld.Value = ft.DefaultValue;
-                                        }
-                                    }
-                                }
-                                else if (ft.FilterFieldTypeID > 0 || ft.FilterPredicateID > 0)
-                                {
-                                    if (ft.FilterFieldTypeID > 0)
-                                    {
-                                        fld.DelayedLoadType = "FieldFilter";
-                                        //Field filter works similar to ParentFieldType, so we'll overload those parameters
-                                        var filterParent = Company.FieldTypes.Where(x => x.ID == ft.FilterFieldTypeID).FirstOrDefault();
-                                        if (filterParent != null)
-                                        {
-                                            fld.ParentFieldTypeID = ft.FilterFieldTypeID;
-                                            fld.ParentFieldTypeName = filterParent.FriendlyName;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        fld.DelayedLoadType = "Predicate";
-                                    }
-                                    if (ft.AllowMultipleValues && f != null && !string.IsNullOrWhiteSpace(f.Value))
-                                    {
-                                        fld.Value = f.Value;
-                                    }
-                                }
-                                else
-                                {
-                                    if (!ft.IsRequired && !ft.AllowMultipleValues && !loadOnlySelectedLookupValue)
-                                    {
-                                        fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
-                                    }
+								if (ft.ParentFieldTypeID > 0 && !loadOnlySelectedLookupValue)
+								{
+									if (ft.AllowMultipleValues)
+									{
+										if (f != null && !string.IsNullOrWhiteSpace(f.Value))
+										{
+											fld.Value = f.Value;
+										}
+										else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
+										{
+											fld.Value = ft.DefaultValue;
+										}
+									}
+								}
+								else if (ft.FilterFieldTypeID > 0 || ft.FilterPredicateID > 0)
+								{
+									if (ft.FilterFieldTypeID > 0)
+									{
+										fld.DelayedLoadType = "FieldFilter";
+										//Field filter works similar to ParentFieldType, so we'll overload those parameters
+										var filterParent = Company.FieldTypes.Where(x => x.ID == ft.FilterFieldTypeID).FirstOrDefault();
+										if (filterParent != null)
+										{
+											fld.ParentFieldTypeID = ft.FilterFieldTypeID;
+											fld.ParentFieldTypeName = filterParent.FriendlyName;
+										}
+									}
+									else
+									{
+										fld.DelayedLoadType = "Predicate";
+									}
+									if (ft.AllowMultipleValues && f != null && !string.IsNullOrWhiteSpace(f.Value))
+									{
+										fld.Value = f.Value;
+									}
+								}
+								else
+								{
+									if (!ft.IsRequired && !ft.AllowMultipleValues && !loadOnlySelectedLookupValue)
+									{
+										fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
+									}
 
-                                    if ((ft.AllowAllValue && !loadOnlySelectedLookupValue) || (loadOnlySelectedLookupValue && f?.Value == "0"))
-                                    {
-                                        fld.Items.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
-                                    }
+									if ((ft.AllowAllValue && !loadOnlySelectedLookupValue) || (loadOnlySelectedLookupValue && f?.Value == "0"))
+									{
+										fld.Items.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
+									}
 
-                                    List<SelectListItem> items;
-                                    bool hideData3SixtyUsers = HideData3SixtyUsers();
+									List<SelectListItem> items;
+									bool hideData3SixtyUsers = HideData3SixtyUsers();
 
-                                    var columns = $@"
+									var columns = $@"
 										V.FieldTypeID,
 										V.LookupObjectType,
 										V.LookupObjectID,
 										V.Value,
 										{(fld.UseColorControl ? "colorJson.FV AS Text" : "V.Text")}";
 
-                                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
+									var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
 
-                                    var resourceJoin = $@"
+									var resourceJoin = $@"
 										inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
 										";
 
-                                    var colorjoin = $@"
+									var colorjoin = $@"
 										outer apply(SELECT FV = (SELECT V.Text as name, COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color 
 													from Asset A 
 													outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
 													where A.Object = v.LookupObjectType and A.ObjectID = V.Value FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) 
 										)colorJSON";
 
-                                    string loadOnlySelectedLookupValueSQL = "";
-                                    List<int> lookupValues = new List<int>();
+									string loadOnlySelectedLookupValueSQL = "";
+									List<int> lookupValues = new List<int>();
 
-                                    if (loadOnlySelectedLookupValue)
-                                    {
-                                        if (!string.IsNullOrEmpty(f?.Value))
-                                        {
-                                            lookupValues = f.Value.Split(',').Select(x => int.Parse(x)).ToList();
-                                            loadOnlySelectedLookupValueSQL = " and V.Value in @lookupValues";
-                                        }
-                                    }
+									if (loadOnlySelectedLookupValue)
+									{
+										if (!string.IsNullOrEmpty(f?.Value))
+										{
+											lookupValues = f.Value.Split(',').Select(x => int.Parse(x)).ToList();
+											loadOnlySelectedLookupValueSQL = " and V.Value in @lookupValues";
+										}
+									}
 
-                                    var itemSql = $@"select {columns} 
+									var itemSql = $@"select {columns} 
 										from FieldLookupValue V
 										{(ft.LookupObjectType == "Resource" ? resourceJoin : "")}
 										{(fld.UseColorControl ? colorjoin : "")}
 										where V.FieldTypeID = @fieldTypeId {loadOnlySelectedLookupValueSQL}";
 
-                                    var countSql = $@"select count(*)
+									var countSql = $@"select count(*)
 										from FieldLookupValue V
 										{(ft.LookupObjectType == "Resource" ? resourceJoin : "")}
 										{(fld.UseColorControl ? colorjoin : "")}
 										where V.FieldTypeID = @fieldTypeId";
 
-                                    if (loadOnlySelectedLookupValue)
-                                    {
-                                        if (lookupValues.Count > 0)
-                                        {
-                                            items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupValues })
-                                                    .OrderBy(o => o.Text)
-                                                    .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                                    .ToList();
+									if (loadOnlySelectedLookupValue)
+									{
+										if (lookupValues.Count > 0)
+										{
+											items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupValues })
+													.OrderBy(o => o.Text)
+													.Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+													.ToList();
 
-                                            items.ForEach(x => x.Selected = true);
+											items.ForEach(x => x.Selected = true);
 
-                                            //Handle value is not exists in refernce list items
-                                            if (items.Count == 0 && ft.LookupObjectType == "ReferenceItem")
-                                            {
-                                                f.Value = null;
-                                                f.FormattedValue = null;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            items = new List<SelectListItem>();
-                                        }
-                                    }
-                                    else if (ft.AllowMultipleValues)
-                                    {
-                                        items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupValues })
-                                            .OrderBy(o => o.Text)
-                                            .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                            .ToList();
+											//Handle value is not exists in refernce list items
+											if (items.Count == 0 && ft.LookupObjectType == "ReferenceItem")
+											{
+												f.Value = null;
+												f.FormattedValue = null;
+											}
+										}
+										else
+										{
+											items = new List<SelectListItem>();
+										}
+									}
+									else if (ft.AllowMultipleValues)
+									{
+										items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupValues })
+											.OrderBy(o => o.Text)
+											.Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+											.ToList();
 
-                                        var selected = new List<string>();
+										var selected = new List<string>();
 
-                                        // selected items need to go into multiplevalues array
-                                        if (f != null && !string.IsNullOrWhiteSpace(f.Value))
-                                        {
-                                            selected = f.Value.Split(',').ToList();
-                                        }
-                                        else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
-                                        {
-                                            selected = ft.DefaultValue.Split(',').ToList();
-                                        }
+										// selected items need to go into multiplevalues array
+										if (f != null && !string.IsNullOrWhiteSpace(f.Value))
+										{
+											selected = f.Value.Split(',').ToList();
+										}
+										else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
+										{
+											selected = ft.DefaultValue.Split(',').ToList();
+										}
 
-                                        if (ft.AllowAllValue && selected.Contains("0"))
-                                        {
-                                            var all = fld.Items.Where(x => x.Value == "0").FirstOrDefault();
-                                            all.Selected = true;
-                                        }
+										if (ft.AllowAllValue && selected.Contains("0"))
+										{
+											var all = fld.Items.Where(x => x.Value == "0").FirstOrDefault();
+											all.Selected = true;
+										}
 
-                                        foreach (var item in items)
-                                        {
-                                            if (selected.Contains(item.Value))
-                                            {
-                                                item.Selected = true;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        int maxItems = SettingsRepository.GetSettingValue<int>(Setting.MaxDropdownItems);
-                                        int count = Company.Query<int>(countSql, new { fieldTypeId = ft.ID }).FirstOrDefault();
+										foreach (var item in items)
+										{
+											if (selected.Contains(item.Value))
+											{
+												item.Selected = true;
+											}
+										}
+									}
+									else
+									{
+										int maxItems = SettingsRepository.GetSettingValue<int>(Setting.MaxDropdownItems);
+										int count = Company.Query<int>(countSql, new { fieldTypeId = ft.ID }).FirstOrDefault();
 
-                                        string selectedValue = null;
+										string selectedValue = null;
 
-                                        if (f != null && !string.IsNullOrWhiteSpace(f.Value))
-                                        {
-                                            selectedValue = f.Value;
-                                        }
-                                        else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
-                                        {
-                                            selectedValue = ft.DefaultValue;
-                                        }
+										if (f != null && !string.IsNullOrWhiteSpace(f.Value))
+										{
+											selectedValue = f.Value;
+										}
+										else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
+										{
+											selectedValue = ft.DefaultValue;
+										}
 
-                                        List<SelectListItem> selected = null;
+										List<SelectListItem> selected = null;
 
-                                        if (count > maxItems)
-                                        {
-                                            fld.UseTypeahead = true;
+										if (count > maxItems)
+										{
+											fld.UseTypeahead = true;
 
-                                            if (!string.IsNullOrWhiteSpace(selectedValue) && selectedValue != null && int.TryParse(selectedValue, out var selectedValueInt))
-                                            {
-                                                selected = Company.FieldLookupValues.Where(i => i.FieldTypeID == ft.ID && i.Value == selectedValueInt)
-                                                .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = true })
-                                                .ToList();
-                                            }
-                                            items = selected;
-                                        }
-                                        else
-                                        {
-                                            fld.UseTypeahead = false;
-                                            items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID })
-                                                .OrderBy(o => o.Text)
-                                                .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                                .ToList();
-                                        }
-                                    }
+											if (!string.IsNullOrWhiteSpace(selectedValue) && selectedValue != null && int.TryParse(selectedValue, out var selectedValueInt))
+											{
+												selected = Company.FieldLookupValues.Where(i => i.FieldTypeID == ft.ID && i.Value == selectedValueInt)
+												.Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = true })
+												.ToList();
+											}
+											items = selected;
+										}
+										else
+										{
+											fld.UseTypeahead = false;
+											items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID })
+												.OrderBy(o => o.Text)
+												.Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+												.ToList();
+										}
+									}
 
-                                    if (items != null) // missing null check causes exception if items is null GOV-6041
-                                    {
-                                        fld.Items.AddRange(
-                                            items
-                                        );
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                fld.Items.Add(new SelectListItem { Text = "Error while rendering lookup field type.", Value = "" });
+									if (items != null) // missing null check causes exception if items is null GOV-6041
+									{
+										fld.Items.AddRange(
+											items
+										);
+									}
+								}
+							}
+							catch (Exception ex)
+							{
+								fld.Items.Add(new SelectListItem { Text = "Error while rendering lookup field type.", Value = "" });
 
-                                SendException(ex);
-                            }
-                        }
+								SendException(ex);
+							}
+						}
 
-                        #endregion Lookup
+						#endregion Lookup
 
-                        #region Relationship
+						#region Relationship
 
-                        if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType))
-                        {
-                            var intersectType = Company.GetById<IntersectType>(ft.LookupObjectID.Value);
+						if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType))
+						{
+							var intersectType = intersectTypes.FirstOrDefault(x => x.ID == ft.LookupObjectID.Value);
 
-                            if (intersectType != null)
-                            {
-                                bool isSubject = (intersectType.SubjectAssetTypeID == ft.AssetTypeID);
-                                var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
+							if (intersectType != null)
+							{
+								bool isSubject = (intersectType.SubjectAssetTypeID == ft.AssetTypeID);
+								var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
-                                if (cardinality != Cardinality.Many)
-                                {
-                                    fld.MultiSelect = false;
-                                }
-                                else
-                                {
-                                    fld.MultiSelect = true;
-                                }
-								var asset = Company.GetAssetDetail(@object, objectID);
-                                var result = Company.GetRelationshipFieldItems(ft.ID, asset.ID);
+								if (cardinality != Cardinality.Many)
+								{
+									fld.MultiSelect = false;
+								}
+								else
+								{
+									fld.MultiSelect = true;
+								}
 
-                                fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
-                                fld.RecordCount = (int)result["Count"];
+								var relFieldData = relationshipFieldData.FirstOrDefault(x => x.FieldTypeId == ft.ID);
+								if (relFieldData != null)
+								{
+									var parsedResults = JsonConvert.DeserializeObject<List<dynamic>>(relFieldData.Results ?? "[]");
+									fld.Value = JsonConvert.SerializeObject(parsedResults.Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
 
-                                Predicate predicate = null;
+									fld.RecordCount = relFieldData.Count;
+								}
 
-                                if (intersectType.PredicateID.HasValue)
-                                {
-                                    predicate = Company.GetById<Predicate>((int)intersectType.PredicateID);
+								Predicate predicate = null;
 
-                                    if (predicate != null && predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType)
-                                    {
-                                        fld.IsSemantic = true;
-                                    }
-                                }
-                            }
-                        }
+								if (intersectType.PredicateID.HasValue)
+								{
+									predicate = intersectType.Predicate;
 
-                        #endregion Relationship
+									if (predicate != null && predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType)
+									{
+										fld.IsSemantic = true;
+									}
+								}
+							}
+						}
 
-                        if (ft.Type == DataType.Lookup.ToString())
-                        {
-                            fld.Required = (ft.MinimumLength > 0 || ft.Length > 0 || ft.IsRequired);
-                        }
-                        else if (!new[] { "Number", "Decimal", "Text" }.Contains(ft.Type))
-                        {
-                            fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
-                        }
+						#endregion Relationship
 
-                        if (!ft.AllowMultipleValues)
-                        {
-                            if (f != null)
-                            {
-                                if (!string.IsNullOrEmpty(f.Value))
-                                {
-                                    fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
-                                }
-                                else
-                                {
-                                    fld.Value = decode ? Server.HtmlDecode(f.FormattedValue) : f.FormattedValue;
-                                }
-                            }
+						if (ft.Type == DataType.Lookup.ToString())
+						{
+							fld.Required = (ft.MinimumLength > 0 || ft.Length > 0 || ft.IsRequired);
+						}
+						else if (!new[] { "Number", "Decimal", "Text" }.Contains(ft.Type))
+						{
+							fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
+						}
 
-                            if (f == null && !string.IsNullOrEmpty(ft.DefaultValue))
-                            {
-                                fld.Value = ft.DefaultValue;
-                            }
-                        }
+						if (!ft.AllowMultipleValues)
+						{
+							if (f != null)
+							{
+								if (!string.IsNullOrEmpty(f.Value))
+								{
+									fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
+								}
+								else
+								{
+									fld.Value = decode ? Server.HtmlDecode(f.FormattedValue) : f.FormattedValue;
+								}
+							}
 
-                        list.Add(fld);
+							if (f == null && !string.IsNullOrEmpty(ft.DefaultValue))
+							{
+								fld.Value = ft.DefaultValue;
+							}
+						}
 
-                        row++;
-                    }
+						list.Add(fld);
 
-                    #endregion Is Editable
-                }
-            });
+						row++;
+					}
 
-            return list;
-        }
+					#endregion Is Editable
+				}
+			});
+			return list;
+		}
 
-        internal void SendException(Exception ex, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
+		//instead of loading relationship field one by one for asset form, this method will load all relationship at once by building one single query for all
+		private void LoadRelationshipFieldData(List<FieldType> fieldTypes, AssetDetail asset, out List<IntersectType> intersectTypes, out List<EditableFieldItemRelationshipData> relationshipFieldData)
+		{
+			var relationshipFieldTypes = fieldTypes.Where(x => x.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(x.LookupObjectType)).ToList();
+			var intersectTypeIds = relationshipFieldTypes.Select(x => x.LookupObjectID.Value);
+			intersectTypes = Company.IntersectTypes.Include(x => x.Predicate).Where(x => intersectTypeIds.Contains(x.ID)).ToList();
+			DynamicParameters getRelationshipArgs = new DynamicParameters();
+			getRelationshipArgs.Add("assetId", asset.ID);
+			StringBuilder queryBuilder = new StringBuilder();
+			queryBuilder.Append("declare  @results table(FieldTypeId int, Count int, Results nvarchar(max))");
+			foreach (var ft in relationshipFieldTypes)
+			{
+				var intersectType = intersectTypes.FirstOrDefault(x => x.ID == ft.LookupObjectID.Value);
+				var result = Company.GetRelationshipFieldItems(ft.ID, asset.ID, intersectType: intersectType, ft: ft, onlyQueries: true);
+
+				var relFieldDataSQL = $@"
+					insert into @results (FieldTypeId, Count, Results)
+					values ({ft.ID}, ({result["Count"]}), ({result["Results"]} for json path))	
+				";
+
+
+				getRelationshipArgs.Add($"intersectTypeID_ft{ft.ID}", intersectType.ID);
+				relFieldDataSQL = relFieldDataSQL.Replace("@intersectTypeID", $"@intersectTypeID_ft{ft.ID}");
+
+				getRelationshipArgs.Add($"objectAssetTypeID_ft{ft.ID}", result["objectAssetTypeID"]);
+				relFieldDataSQL = relFieldDataSQL.Replace("@objectAssetTypeID", $"@objectAssetTypeID_ft{ft.ID}");
+
+				queryBuilder.Append(relFieldDataSQL);
+			}
+			queryBuilder.Append("select * from @results");
+			var dataSQL = queryBuilder.ToString();
+			relationshipFieldData = Company.Query<EditableFieldItemRelationshipData>(dataSQL, getRelationshipArgs).ToList();
+		}
+
+		internal void SendException(Exception ex, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
         {
             if (properties == null)
             {
