@@ -25,7 +25,7 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 		private relationshipTypeService: RelationshipsService,
 		private sidePanelService: SidePanelService,
 		private router: Router) {
-		this.sidePanelService.refreshSource$.subscribe((res) => {
+		this.sidePanelService.refreshSource$.subscribe(() => {
 			this.loadData();
 		});
 	}
