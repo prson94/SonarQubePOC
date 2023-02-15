@@ -24,7 +24,11 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 	constructor(
 		private relationshipTypeService: RelationshipsService,
 		private sidePanelService: SidePanelService,
-		private router: Router) { }
+		private router: Router) {
+		this.sidePanelService.refreshSource$.subscribe((res) => {
+			this.loadData();
+		});
+	}
 
 	ngOnChanges(changes: SimpleChanges) {
 		if (changes && changes.relationshipTypeUid.previousValue !== changes.relationshipTypeUid.currentValue) {
