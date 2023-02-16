@@ -2560,10 +2560,10 @@ namespace d360.model.DataAccessLayer
 									option(recompile);
 
 								-- If resource can't read asset type of one or more hops, there should be no result. Add impossible condition.
-								
-								select top 1 @CheckhasPermission = 1 
-								from dbo.AssetTypesUserCantRead(@resourceId) u 
-								where exists (select 1 from @relations rr where rr.AssetTypeID = AssetTypeID)
+								select	top 1 
+										@CheckhasPermission = 1  
+								from	AssetTypesUserCantRead(@resourceId) N
+										inner join @relations rr on rr.AssetTypeID = N.AssetTypeID
 								option(recompile);
 
 								if (@CheckhasPermission = 1)
