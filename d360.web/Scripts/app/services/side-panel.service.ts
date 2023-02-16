@@ -27,6 +27,9 @@ export class SidePanelService {
 	private editClickSource = new Subject<unknown>();
 	editClickSource$ = this.editClickSource.asObservable();
 
+	private refreshSource = new Subject<unknown>();
+	refreshSource$ = this.refreshSource.asObservable();
+
 	constructor(private messagesService: MessagesObservableService) {
 		const windowSize$ = new BehaviorSubject(this.getWindowSize());
 		fromEvent(window, 'resize').pipe(map(this.getWindowSize)).subscribe(windowSize$);
@@ -95,5 +98,9 @@ export class SidePanelService {
 
 	public editClick(event) {
 		this.editClickSource.next(event);
+	}
+
+	public refreshSidePanel() {
+		this.refreshSource.next();
 	}
 }

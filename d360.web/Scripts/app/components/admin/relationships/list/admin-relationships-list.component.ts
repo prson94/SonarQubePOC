@@ -171,6 +171,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		if (result.Success === true) {
 			this.getRelationships(result.uid);
 			this.showEditor = false;
+			this.sidePanelService.refreshSidePanel();
 		}
 	}
 
