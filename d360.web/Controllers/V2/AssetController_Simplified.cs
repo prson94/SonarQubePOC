@@ -108,16 +108,16 @@ namespace d360.web.Controllers.V2
 			var queryParams = Request.GetQueryNameValuePairs();
 			string sql = "";
 
-			var columns = new List<CatalogColumn> {
-				new CatalogColumn { ApiName = "uid", Column = "a.Uid", Position = 1 },
-				new CatalogColumn { ApiName = "displayValue", Column = "v.DisplayValue", Position = 2 },
-				new CatalogColumn { ApiName = "path", Column = "p.DisplayPath", Position = 3 }
-			};
-
-			#region Predicate logic
-
+			// Get relevant predicates.
 			sql = "select p.Id, p.Name from [Predicate] p where p.[Type] = 5 and exists (select 1 from IntersectType where PredicateId = p.Id)";
 			var predicates = Company.Query<PredValue>(sql).ToList();
+
+			#region Add columns
+
+			var columns = new List<CatalogColumn> {
+				new CatalogColumn { ApiName = "uid", Column = "a.Uid", Position = 1 },
+				new CatalogColumn { ApiName = "displayValue", Column = "v.DisplayValue", Position = 2 }
+			};
 
 			predicates.ForEach(p => {
 				columns.Add(new CatalogColumn
@@ -131,6 +131,9 @@ namespace d360.web.Controllers.V2
 					Position = columns.Max(c => c.Position) + 1
 				});
 			});
+
+			// Add path as the last column.
+			columns.Add(new CatalogColumn { ApiName = "path", Column = "p.DisplayPath", Position = columns.Max(c => c.Position) + 1 });
 
 			#endregion
 
@@ -241,10 +244,10 @@ namespace d360.web.Controllers.V2
 			{
 				var rawSorts = queryParams.Where(q => q.Key == "_order").Select(s => s.Value).ToList();
 				rawSorts.ForEach(rawSort => {
-					var sortMatch = Regex.Match(rawSort, @"^(asc|desc)\(([\w\-\/\:]+)\)$");
+					var sortMatch = Regex.Match(rawSort, @"^(asc|desc)\(([\w\d\s\-\/\:]+)\)$");
 					if (sortMatch.Success && sortMatch.Groups.Count == 3)
 					{
-						var sortProperty = sortMatch.Groups[2].Value;
+						var sortProperty = sortMatch.Groups[2].Value.Trim();
 						var sortDirection = (sortMatch.Groups[1].Value == "asc");
 						if (parsedSorts.ContainsKey(sortProperty))
 						{
@@ -304,9 +307,14 @@ namespace d360.web.Controllers.V2
 				{
 					int maxRows = 250;
 
-					if (pageSize <= 0 || pageSize > maxRows)
+					if (pageSize <= 0)
 					{
 						pageSizeValid = false;
+					}
+
+					if (pageSize > maxRows)
+					{
+						pageSize = maxRows;
 					}
 				}
 				else
