@@ -27,7 +27,7 @@ export class SidePanelService {
 	private editClickSource = new Subject<unknown>();
 	editClickSource$ = this.editClickSource.asObservable();
 
-	private refreshSource = new Subject<unknown>();
+	private refreshSource = new Subject<void>();
 	refreshSource$ = this.refreshSource.asObservable();
 
 	constructor(private messagesService: MessagesObservableService) {
