@@ -74,22 +74,32 @@ namespace d360.web.Controllers.V2
 		/// Retrieves assets across types that are categorized using special relationships.
 		/// </summary>
 		/// <remarks>
-		/// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
-		/// *  For comparison operators on Text fields you can use eq (equal), neq (not equal), ct (contains), nct (not contains)
-		/// *  For comparison operators on List fields you can use in (in) and nin (not in)
+		///Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example: `city eq 'Redmond'`.
+		///*  For comparison operators on Text fields you can use eq (equal), neq (not equal), ct (contains), nct (not contains)
+		///*  For comparison operators on List fields you can use in (in) and nin (not in)
 		///     
-		///     Example :
+		///Example :
 		///     
-		///     - **Text Comparison Operators**
-		///         - Equals operator - {fieldname} eq Data
-		///         - Not equals operator - {fieldname} neq Data
-		///         - Contains operator - {fieldname} ct Data
-		///         - Not Contains operator - {fieldname} nct Data
-		///     - **List Comparison Operators**
-		///         - In operator - {fieldname} in Data
-		///         - In operator - {fieldname} in Data1,Data2
-		///         - Not In operator - {fieldname} nin Data
-		///         - Not In operator - {fieldname} nin Data1,Data2
+		///- **Text Comparison Operators**
+		///	- Equals operator - {fieldname} eq Data
+		///	- Not equals operator - {fieldname} neq Data
+		///	- Contains operator - {fieldname} ct Data
+		///	- Not Contains operator - {fieldname} nct Data
+		///- **List Comparison Operators**
+		///	- In operator - {fieldname} in Data
+		///	- In operator - {fieldname} in Data1,Data2
+		///	- Not In operator - {fieldname} nin Data
+		///	- Not In operator - {fieldname} nin Data1,Data2
+		///
+		///Sorting is done using _order parameter and sort expressions are specified using operator and property name. For example: `desc(displayValue)`.
+		///
+		///Examples using Ascending Order:
+		///- asc(path)
+		///- asc(displayValue)
+		///
+		///Examples using Descending Order:
+		///- desc(path)
+		///- desc(displayValue)
 		/// </remarks>
 		[
 			HttpGet,
@@ -98,9 +108,9 @@ namespace d360.web.Controllers.V2
 			SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerParameter("_includeDefinition", "An option to include the definition of the fields, including lookup options for any list fields.", DataType = "boolean", ParameterType = "query", Required = false),
-			SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+			SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
-			SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_order", "Use this field to set the direction and proeprty to sort by. The syntax is: asc(propertyName) or desc(propertyName). By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false)
 		]
 		public async Task<IHttpActionResult> GetCatalogAssetsAsync(CancellationToken cancellationToken)
