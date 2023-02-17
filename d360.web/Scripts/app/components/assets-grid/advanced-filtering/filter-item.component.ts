@@ -181,7 +181,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			});
 		}
 
-		if (this.isAssetType) {
+		if (this.isAssetType && this.fields && this.fields.length > 0) {
 			this.addSystemFields();
 
 			if (SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).length > 0) {
