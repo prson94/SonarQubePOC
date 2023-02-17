@@ -109,6 +109,7 @@
                  (onLazyLoad)="loadArtifactsLazy($event)"
                  [totalRecords]="totalRecords"
                  responsiveLayout="scroll"
+                 [tableStyle]="{'min-width': 'max-content'}"
                  [loading]="isLoading"
                  [loadingIcon]="'fa fa-spinner fa-spin'"
                  (onPage)="numberOfRowsByCategoryService.onPage($event)">
