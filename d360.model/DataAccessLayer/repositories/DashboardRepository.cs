@@ -126,7 +126,7 @@ namespace d360.model.DataAccessLayer
 				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.NameExists);
 			}
 
-			if(!string.IsNullOrEmpty(model.Definition.url))
+			if(!string.IsNullOrEmpty(model.Definition?.url))
 			{
 				var validProtools = new string[] { "http", "https", "mailto" };
 				var colonPos = model.Definition.url.IndexOf(":");
