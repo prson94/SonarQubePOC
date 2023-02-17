@@ -128,7 +128,7 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 
 			if (typeToLoad) {
 				await this.loadObjectOptionsAsync(typeToLoad.Subject.Uid, typeToLoad.Object.Uid, typeToLoad.Predicate.Uid);
-				await this.loadPredicatesAsync(typeToLoad.Subject.Uid, typeToLoad.Object.Uid, typeToLoad.Predicate.Uid, true);
+				await this.loadPredicatesAsync(typeToLoad.Subject.Uid, typeToLoad.Object.Uid, typeToLoad.Predicate.Uid, true, typeToLoad.Predicate);
 				this.relationshipType = typeToLoad;
 
 				if (this.relationshipType.Predicate.Type === "InterTypeHierarchy" || this.relationshipType.Predicate.Type === "IntraTypeHierarchy") {
@@ -189,7 +189,7 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	}
 
 
-	private async loadPredicatesAsync(subjectUid: string, objectUid?: string, predicateUid?: string, Loadpredicate?: boolean) {
+	private async loadPredicatesAsync(subjectUid: string, objectUid?: string, predicateUid?: string, Loadpredicate?: boolean, predicate?: Predicate) {
 		if (Loadpredicate) {
 			this.isLoadingPredicate = Loadpredicate;
 		}
@@ -208,6 +208,17 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 		}
 
 		this.selectedPredicate = this.predicates.find((p) => p.value === this.relationshipType.Predicate.Uid);
+		if (predicate && !this.selectedPredicate) {
+			this.predicates.push({
+				label: predicate.Name + " / " + predicate.Inverse,
+				value: predicate.Uid,
+				isSemantic: false,
+				type: predicate.Type
+			});
+
+			this.selectedPredicate = this.predicates.find((p) => p.value === this.relationshipType.Predicate.Uid);
+		}
+
 		this.isLoadingPredicate = false;
 	}
 
