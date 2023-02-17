@@ -41,9 +41,10 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 		this.relationshipTypeService.getRelationshipType(this.relationshipTypeUid)
 			.subscribe((res) => {
 				this.relationshipType = res[0];
+				const uiModel = RelationshipType.ConvertToUIModeldata(this.relationshipType);
 				this.formattedRelationshipTypeName = this.relationshipType.Object.Name + " - " + this.relationshipType.Predicate.Name + " - " + this.relationshipType.Subject.Name;
 
-				this.hasEdit = !this.relationshipType.HasRelationships;
+				this.hasEdit = !uiModel.IsEditDisabled;
 				this.isLoading = false;
 			});
 	}

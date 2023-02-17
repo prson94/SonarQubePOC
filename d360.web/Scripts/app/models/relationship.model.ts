@@ -25,6 +25,7 @@ export class RelationshipTypeSimpleUIModel {
 	Subject: string;
 	Predicate: string;
 	Object: string;
+	IsEditDisabled: boolean = false;
 }
 
 export class RelationshipType {
@@ -40,6 +41,21 @@ export class RelationshipType {
 	TotalRelationshipCount?: number;
 
 	public static ConvertToUIModeldata(data: RelationshipType): RelationshipTypeSimpleUIModel {
+		let isEditDisabled = false;
+
+		//disable edit if there are relationships
+		if (data.HasRelationships) {
+			isEditDisabled = true;
+		}
+
+		//disable edit in case of parent-child relationship type
+		if (data.Predicate.Type === "InterTypeHierarchy" || data.Predicate.Type === "IntraTypeHierarchy") {
+			if (data.Subject.Cardinality === Cardinality[Cardinality.One]
+				&& data.Object.Cardinality === Cardinality[Cardinality.Many]) {
+				isEditDisabled = true;
+			}
+		}
+
 		return {
 			Subject: data.Subject.Name,
 			Predicate: data.Predicate.Name,
@@ -48,7 +64,8 @@ export class RelationshipType {
 			Uid: data.Uid,
 			HasRelationships: data.HasRelationships,
 			HasRelationshipsTextValue: data.HasRelationships ? $localize`True` : $localize`False`,
-			TotalRelationshipCount: data.TotalRelationshipCount
+			TotalRelationshipCount: data.TotalRelationshipCount,
+			IsEditDisabled: isEditDisabled
 		};
 	}
 }
