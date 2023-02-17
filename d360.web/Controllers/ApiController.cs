@@ -107,15 +107,17 @@ namespace d360.web.Controllers
 				switch (relatedField.Type)
 				{
 					case "Date":
-					case "DateTime":
 						fieldType = "date";
+						break;
+					case "DateTime":
+						fieldType = "datetime";
 						break;
 					case "Number":
 					case "Decimal":
 						fieldType = "number";
 						break;
 					case "Boolean":
-						fieldType = "bool";
+						fieldType = defaulttype;
 						break;
 					case "Html":
 					case "Link":
