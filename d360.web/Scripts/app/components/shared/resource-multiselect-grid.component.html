@@ -15,7 +15,7 @@
              (selectionChange)="handleItemSelection($event);" (onLazyLoad)="lazyLoad($event)">
         <ng-template pTemplate="header">
             <tr>
-                <th style="flex: 0 0 38px"><p-tableHeaderCheckbox
+                <th style="width: 38px"><p-tableHeaderCheckbox
                         *ngIf="multiple"></p-tableHeaderCheckbox></th>
                 <th [pSortableColumn]="'Text'">
                     <ng-container i18n>Name</ng-container>
@@ -25,18 +25,18 @@
                     <ng-container i18n>Resource Type</ng-container>
                     <d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
                 </th>
-                <th style="flex: 0 0 5%" *ngIf="showToolTip"></th>
+                <th style="width: 5%" *ngIf="showToolTip"></th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
             <tr [pSelectableRow]="item">
-                <td style="flex: 0 0 38px">
+                <td style="width: 38px">
                     <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
                     <p-tableRadioButton *ngIf="!multiple" [value]="item"></p-tableRadioButton>
                 </td>
                 <td>{{item.Text}}</td>
-                <td>{{item.Type}}</td>
-                <td *ngIf="showToolTip" style="flex: 0 0 5%">
+                <td *ngIf="showResourceType">{{item.Type}}</td>
+                <td *ngIf="showToolTip" style="width: 5%">
                     <div class="RowTools">
                         <d3s-preview-tooltip [objectType]="item.Value.split('|')[0]"
                                              [objectId]="item.Value.split('|')[1]"
