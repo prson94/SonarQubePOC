@@ -134,8 +134,8 @@ export class AdvancedFilteringComponent implements OnChanges {
         private fieldsService: FieldsObservableService,
         protected settingsService: CompanySettingsService,
         private allocationService: AllocationService,
-		private relationshipService: RelationshipsService,
-		private usersettingsService: UserSettingsService,
+        private relationshipService: RelationshipsService,
+        private usersettingsService: UserSettingsService,
         private datePipe: DatePipe,
         private router: Router
     ) {
@@ -204,7 +204,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 this.allocations = this.externalAllocations;
             }
 
-            if (res.some((f) => f.Type.ComputedRelationshipField)) {
+            if (res && res.some((f) => f.Type.ComputedRelationshipField)) {
                 try {
                     //load field types for Field from relationship
                     this.loadFieldFromRelationshipData(res);
@@ -270,24 +270,26 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     private processLoadedData(res: AdvancedFilterFieldType[], newFiltersPushed: boolean = false) {
         var tempFields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
-        res.forEach((f) => {
+        if (res) {
+            res.forEach((f) => {
             if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {
+                    var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
+                    tempFields.push(fModel);
+                }
+            });
+
+            SystemFields.GetSystemFieldDefinition(this.gridType, this.loadIdentifier).forEach((f) => {
                 var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
+                fModel.IsSystemField = true;
                 tempFields.push(fModel);
-            }
-        });
-
-		SystemFields.GetSystemFieldDefinition(this.gridType, this.loadIdentifier).forEach((f) => {
-            var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
-            fModel.IsSystemField = true;
-            tempFields.push(fModel);
-        });
-
-        SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
-            var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
-            fModel.IsSystemField = true;
-            tempFields.push(fModel);
-        });
+            });
+        
+            SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
+                var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
+                fModel.IsSystemField = true;
+                tempFields.push(fModel);
+            });
+        }
 
         tempFields.forEach((f) => {
             f.Operators = [];
@@ -317,10 +319,12 @@ export class AdvancedFilteringComponent implements OnChanges {
             });
         });
 
-        res.filter((r) => r.RemovePopulatedOperator).forEach((r) => {
-            const ft = tempFields.find((t) => t.Name === r.Name);
-            ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
-        });
+        if (res) {
+            res.filter((r) => r.RemovePopulatedOperator).forEach((r) => {
+                const ft = tempFields.find((t) => t.Name === r.Name);
+                ft.Operators = ft.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
+            });
+        }
 
         this.fields = tempFields;
 
@@ -395,13 +399,13 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     private saveFilters() {
-		if (this.enableFilterSaving) {
-			const storageValue = JSON.stringify(this.conditions);
-			localStorage.setItem(this.getLocalStorageKey(), storageValue);
+        if (this.enableFilterSaving) {
+            const storageValue = JSON.stringify(this.conditions);
+            localStorage.setItem(this.getLocalStorageKey(), storageValue);
 
-			if (this.isAssetType) {
-				this.usersettingsService.updateUserSetting(this.assetTypeUid, "AdvancedFilters", storageValue).subscribe();
-			}
+            if (this.isAssetType) {
+                this.usersettingsService.updateUserSetting(this.assetTypeUid, "AdvancedFilters", storageValue).subscribe();
+            }
         }
     }
 
