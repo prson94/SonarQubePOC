@@ -41,8 +41,10 @@
                         <th i18n>{{sourceTableTitle}}</th>
                     </tr>
                     <tr *ngIf="itemsFromSource?.length == 0">
-                        <div i18n
-                             class="empty-message">{{emptySourceTableMessage}}</div>
+                        <td colspan="2">
+                            <div i18n
+                                 class="empty-message">{{emptySourceTableMessage}}</div>
+                        </td>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body"
@@ -177,9 +179,11 @@
                         <th i18n>{{targetTableTitle}}</th>
                     </tr>
                     <tr *ngIf="itemsFromTarget?.length == 0">
-                        <div i18n
-                             class="empty-message"
-                             [ngClass]="{'highlighted': isRequired}">{{emptyTargetTableMessage}}</div>
+                        <td colspan="3">
+                            <div i18n
+                                 class="empty-message"
+                                 [ngClass]="{'highlighted': isRequired}">{{emptyTargetTableMessage}}</div>
+                        </td>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body"

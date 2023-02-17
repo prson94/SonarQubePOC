@@ -1,4 +1,4 @@
-import { first as _first } from "lodash";
+import { first as _first } from "lodash-es";
 import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild } from "@angular/core";
 import { SelectItem, TreeNode } from "primeng/api";
 import { forkJoin, Subject, Subscription } from "rxjs";
