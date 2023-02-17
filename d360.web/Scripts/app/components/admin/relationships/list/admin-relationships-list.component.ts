@@ -115,7 +115,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 				// eslint-disable-next-line
 				menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(rel.Uid, true) });
 
-				menuItems.push({ "title": $localize`Edit`, callback: () => this.edit(rel), disabled: rel.HasRelationships });
+				menuItems.push({ "title": $localize`Edit`, callback: () => this.edit(rel), disabled: rel.IsEditDisabled });
 				menuItems.push({ "title": $localize`Delete`, callback: () => { this.editorSelectedUid = rel.Uid; this.showDelete = true; } });
 				menuItems.push({ "title": $localize`Export`, callback: () => { this.downloadRel(rel); }, tooltip: $localize`Export all relationships in this type` });
 				rel.MenuItems = menuItems;
