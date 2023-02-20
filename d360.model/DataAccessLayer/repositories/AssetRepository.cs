@@ -1128,19 +1128,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					dbArgs.Add("@simpleFilter", simpleFilter);
 					var simpleFilterFields = fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString());
 
-					if (simpleFilterFields.Any(x => x.UseAsCombinedSimpleFilter))
-					{
-						dbArgs.Add("combinedSimpleFilters", simpleFilterFields.Where(x => x.UseAsCombinedSimpleFilter).Select(x => x.ID).ToList());
-
-						simpleFilters.Add($@"
-							select f.AssetID from Field f 
-							left join #TempFilteredAssets tfa on tfa.AssetId = f.ID
-							where f.FieldTypeID in @combinedSimpleFilters and cast(f.FormattedValue as nvarchar(4000)) like @simpleFilter and tfa.AssetId is null
-						option(recompile);");
-					}
-
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
-					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment && !x.UseAsCombinedSimpleFilter))
+					foreach (var ft in simpleFilterFields.Where(x => !x.IsPathSegment))
 					{
 						bool isNumbericFieldType = ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
 

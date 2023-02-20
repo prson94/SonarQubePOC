@@ -190,27 +190,6 @@ namespace d360.core.entities
 				return false;
 			}
 		}
-
-		public bool UseAsCombinedSimpleFilter
-		{
-			get
-			{
-				var types = new string[] {
-					DataType.Text.ToString(),
-					DataType.Lookup.ToString(),
-					DataType.Link.ToString(),
-					DataType.JSON.ToString(),
-					DataType.Html.ToString(),
-					DataType.Decimal.ToString(),
-					DataType.Number.ToString(),
-					DataType.Date.ToString(),
-					DataType.DateTime.ToString(),
-					DataType.Boolean.ToString()
-				};
-
-				return types.Contains(this.Type);
-			}
-		}
 	}
 
 	#region Definition property models
