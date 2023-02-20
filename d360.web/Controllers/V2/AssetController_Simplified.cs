@@ -5,7 +5,9 @@ using d360.web.Models;
 using Dapper;
 using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
+using System.EnterpriseServices;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -63,9 +65,21 @@ namespace d360.web.Controllers.V2
 		{
 			public string Column { get; set; }
 
+			public string JoinStatement { get; set; }
+
+			public string DataStatement { get; set; }
+
 			public string ApiName { get; set; }
 
 			public int Position { get; set; }
+
+			public CatalogColumnType CatalogColumnType { get; set; }
+
+		}
+
+		public enum CatalogColumnType
+		{
+			SystemField, Predicate
 		}
 
 		#endregion
@@ -126,19 +140,18 @@ namespace d360.web.Controllers.V2
 
 			var columns = new List<CatalogColumn> {
 				new CatalogColumn { ApiName = "uid", Column = "a.Uid", Position = 1 },
-				new CatalogColumn { ApiName = "displayValue", Column = "v.DisplayValue", Position = 2 }
+				new CatalogColumn { ApiName = "displayValue", Column = "adv.DisplayValue", Position = 2 }
 			};
 
 			predicates.ForEach(p => {
 				columns.Add(new CatalogColumn
 				{
 					ApiName = p.Name,
-					Column = $@"(
-	select	string_agg(v.DisplayValue, '; ')
-	from	PredicateIntersect i
-			inner join #v v on v.AssetID = i.SubjectAssetID and i.PredicateID = v.PredicateId and ObjectAssetId = a.ID and i.PredicateType = 5 and i.PredicateID = {p.Id}
-)",
-					Position = columns.Max(c => c.Position) + 1
+					Column = $@"P{p.Id}.val as [{p.Name}]",
+					DataStatement = $"outer apply (select string_agg(SubjectDisplayValue, '; ') from dbo.CatalogBrowseSubject where ObjectAssetID = res.objectassetid and PredicateId = {p.Id})P{p.Id}(val)",
+					Position = columns.Max(c => c.Position) + 1,
+					JoinStatement = $"left join dbo.CatalogBrowseSubject T{p.Id} on T{p.Id}.ObjectAssetID = S.ObjectAssetID and T{p.Id}.PredicateId = {p.Id}",
+					CatalogColumnType = CatalogColumnType.Predicate
 				});
 			});
 
@@ -415,7 +428,68 @@ order by {string.Join(", ", sorts)}
 
 			#endregion
 
-			var results = await Company.QueryMultipleAsync(sql, dbArgs);
+			//new sql logic
+			string sortColumn = "S.ObjectDisplayValue";
+			string sortDir = "asc";
+
+			string definitionSql = "";
+			if (includeDefinition)
+			{
+				definitionSql = $@"
+					create table #v (PredicateId int, AssetId bigint, DisplayValue nvarchar(500));
+					insert into #v
+						select	distinct
+								p.Id,
+								a.Id as AssetId,
+								d.DisplayValue
+						from	[Predicate] p
+								inner join IntersectType t on t.PredicateId = p.Id and p.[Type] = 5
+								inner join Asset a on a.AssetTypeId = t.SubjectAssetTypeId
+								inner join AssetDisplayValue d on d.AssetId = a.Id;
+
+					select PredicateId as Id, DisplayValue as Name from #v;
+					";
+			}
+
+			string baseSQL = $@"
+				select {{0}}
+				from
+				dbo.CatalogBrowseObject S
+				{string.Join(Environment.NewLine, columns.Where(x=> !string.IsNullOrEmpty(x.JoinStatement)).Select(x=> x.JoinStatement))}";
+
+
+			string countSql = $@"
+				;with cte as (
+				{string.Format(baseSQL, "count(1) as cnt")}
+				group by {sortColumn}
+				)
+				select COUNT(1) from cte;";
+
+			string resultsSql = $@"
+				declare @results table (objectassetid int);
+
+				insert into @results
+				{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId")}
+				group by {sortColumn}
+				order by {sortColumn} {sortDir}
+				{offset}";
+
+			string finalSql = $@"
+				{definitionSql}
+
+				{countSql}
+
+				{resultsSql}
+
+				select {string.Join(","+ Environment.NewLine, columns.Select(x=> x.Column))}
+				from @results res
+				inner join AssetDisplayValue adv on adv.AssetID = res.objectassetid
+				inner join asset a on a.ID = res.objectassetid
+				inner join AssetPath p on p.Id = A.Id
+				{string.Join(Environment.NewLine, columns.Where(x=> x.CatalogColumnType == CatalogColumnType.Predicate).Select(x => x.DataStatement))}
+				";
+
+			var results = await Company.QueryMultipleAsync(finalSql, dbArgs);
 
 			List<PropertyDefinition> properties = null;
 			if (includeDefinition)
