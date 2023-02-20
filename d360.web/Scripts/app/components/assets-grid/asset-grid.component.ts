@@ -511,7 +511,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
 		const params = this.getParams();
 		this.assetSearchSub = this.assetService.getAssets(this.gridObject.AssetTypeUID, params, true)
-			.pipe(debounceTime(200))
 			.subscribe((res) => {
 				this._oldParamsJSON = params.countUpdateFilters();
 
