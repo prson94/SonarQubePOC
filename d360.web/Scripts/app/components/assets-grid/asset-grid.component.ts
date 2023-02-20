@@ -498,7 +498,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
 		//instead of calling assetService.getAssets directly and causing multiple cancelled calls by ui
 		//we are using subjectLoadGrid to debounce data load before api call is even made
-		this.subjectLoadGrid.next({ autoSelect: autoSelect, edit: { keyFieldChanged: edit?.keyFieldChanged } });
+		this.subjectLoadGrid.next({ autoSelect, edit: { keyFieldChanged: edit?.keyFieldChanged } });
 	}    
 
 	getDataDebounced(obj: AssetGridLoadDataObject) {
