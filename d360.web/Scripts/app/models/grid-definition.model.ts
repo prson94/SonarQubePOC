@@ -18,6 +18,11 @@ export class GridColumn {
     fieldType: string;
 }
 
+export class AssetGridLoadDataObject {
+	autoSelect: boolean = true;
+	edit?: { keyFieldChanged: boolean };
+}
+
 export class GridRelationshipFilterExpression {
     includeType: string = "Any";
     objectIds: string[];

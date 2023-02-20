@@ -162,7 +162,7 @@ export class AssetService extends BaseObservableService {
         return this.
             http
             .get(`/api/v2/assets/${assetTypeUid}${qString}`)
-            .pipe(debounceTime(500),
+            .pipe(debounceTime(300),
                 map((res) => { return <any>res; }),
                 catchError((err) => {
                     return this.handleError(err);

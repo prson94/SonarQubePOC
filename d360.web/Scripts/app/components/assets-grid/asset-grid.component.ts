@@ -19,7 +19,7 @@ import {
 import { LazyLoadEvent } from "primeng/api";
 import { Table } from "primeng/table";
 import { ActivatedRoute, Router } from "@angular/router";
-import { GridColumn, GridField, GridFilterColumn, GridScoreAllocation } from "../../models/grid-definition.model";
+import { AssetGridLoadDataObject, GridColumn, GridField, GridFilterColumn, GridScoreAllocation } from "../../models/grid-definition.model";
 import { GridDefinitionService } from "../../services/grid-definition.service";
 import { ArtifactService } from "../../services/artifacts.service";
 import { AssetService } from "../../services/asset.service";
@@ -160,7 +160,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     get assetEditorTitle(): string {
         return this.selected ? $localize`Edit Asset` : $localize`Create New Asset`;
-    }
+	}
+
+	subjectLoadGrid = new Subject<AssetGridLoadDataObject>();
 
     constructor(
         public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
@@ -197,6 +199,12 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		});
 		
 		this.isContainsSearchDefault = this.featureFlagService.flags[FeatureFlags.ContainsSearchDefaultUiFlag];
+
+		this.subjectLoadGrid.pipe(
+			debounceTime(300))
+			.subscribe((res) => {
+				this.getDataDebounced(res);
+			});
 	}
 
     ngOnInit() {
@@ -486,77 +494,88 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     getData(autoSelect: boolean = true, edit?: { keyFieldChanged: boolean }) {
         this.isLoading = true;
-        this.isLoadingChange.emit(true);
-        if (this.assetSearchSub) {
-            this.assetSearchSub.unsubscribe();
+		this.isLoadingChange.emit(true);
+
+		//instead of calling assetService.getAssets directly and causing multiple cancelled calls by ui
+		//we are using subjectLoadGrid to debounce data load before api call is even made
+		this.subjectLoadGrid.next({ autoSelect: autoSelect, edit: { keyFieldChanged: edit?.keyFieldChanged } });
+	}    
+
+	getDataDebounced(obj: AssetGridLoadDataObject) {
+		if (this.assetSearchSub) {
+			this.assetSearchSub.unsubscribe();
 		}
+
+		const autoSelect = obj.autoSelect;
+		const edit = obj.edit;
+
 		const params = this.getParams();
 		this.assetSearchSub = this.assetService.getAssets(this.gridObject.AssetTypeUID, params, true)
-            .pipe(debounceTime(200))
+			.pipe(debounceTime(200))
 			.subscribe((res) => {
 				this._oldParamsJSON = params.countUpdateFilters();
 
-                this.items = res.items;
-                const hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
+				this.items = res.items;
+				const hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
 				let isRowSelected = false;
 
-                this.items.forEach((item) => {
+				this.items.forEach((item) => {
 
-                    item[this.menuKey] = [
+					item[this.menuKey] = [
 						{ title: $localize`View Information` },
 						{ title: $localize`Open` },
-                        { title: $localize`Open in New Tab` },
-                    ];
+						{ title: $localize`Open in New Tab` },
+					];
 
-                    if (item.Permissions.ModifyAsset) {
-                        item[this.menuKey].push({ title: $localize`Edit` });
-                    }
+					if (item.Permissions.ModifyAsset) {
+						item[this.menuKey].push({ title: $localize`Edit` });
+					}
 
-                    if (item.Permissions.DeleteAsset) {
-                        item[this.menuKey].push({ title: $localize`Delete` });
-                    }
+					if (item.Permissions.DeleteAsset) {
+						item[this.menuKey].push({ title: $localize`Delete` });
+					}
 
-                    if (hasScoring) {
-                        this.scoreAllocations.forEach((s) => {
-                            item[s.Name + '_threshold'] = this.getThreshold(item[s.Name], s.LowerThreshold, s.UpperThreshold);
-                        });
-                    }
+					if (hasScoring) {
+						this.scoreAllocations.forEach((s) => {
+							item[s.Name + '_threshold'] = this.getThreshold(item[s.Name], s.LowerThreshold, s.UpperThreshold);
+						});
+					}
 
-                    if (this.selected && autoSelect && edit && !edit.keyFieldChanged) {
+					if (this.selected && autoSelect && edit && !edit.keyFieldChanged) {
 						if (item.AssetId === this.selected.AssetId) {
-                            this.selectRow(item, true);
+							this.selectRow(item, true);
 							isRowSelected = true;
-                        }
-                    }
+						}
+					}
 
-                });
+				});
 
-                if (!this.showEditor && autoSelect && (!edit || !isRowSelected)) {
-                    if (this.items && this.items.length > 0) {
-                        this.selectRow(this.items[0]);
-                    } else {
-                        this.selectRow(null);
-                    }
-                }
+				if (!this.showEditor && autoSelect && (!edit || !isRowSelected)) {
+					if (this.items && this.items.length > 0) {
+						this.selectRow(this.items[0]);
+					} else {
+						this.selectRow(null);
+					}
+				}
 
 				if (params._includeTotal) {
 					this.totalRecords = res.total;
 				}
-                if (this.initialTotalRecords == null) {
-                    this.initialTotalRecords = res.total;
-                }
-                this.isLoading = false;
-                this.isLoadingChange.emit(false);
-                this.changeDetectorRef.markForCheck();
-            },
-                (err) => {
-                    this.isLoading = false;
-                    this.isLoadingChange.emit(false);
-                    this.items = [];
-                    this.totalRecords = 0;
-                    this.changeDetectorRef.markForCheck();
-                });
-    }    
+				if (this.initialTotalRecords == null) {
+					this.initialTotalRecords = res.total;
+				}
+				this.isLoading = false;
+				this.isLoadingChange.emit(false);
+				this.changeDetectorRef.markForCheck();
+			},
+				(err) => {
+					this.isLoading = false;
+					this.isLoadingChange.emit(false);
+					this.items = [];
+					this.totalRecords = 0;
+					this.changeDetectorRef.markForCheck();
+				});
+	}
 
     getThreshold(value: string, lower: number, upper: number): string {
         if (value == null || value.length < 1)
