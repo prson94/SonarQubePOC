@@ -75,6 +75,10 @@ namespace d360.web.Controllers.V2
 
 			public CatalogColumnType CatalogColumnType { get; set; }
 
+			public bool UseAsSortBy { get; set; }
+
+			public string Sort { get; set; }
+
 		}
 
 		public enum CatalogColumnType
@@ -140,23 +144,25 @@ namespace d360.web.Controllers.V2
 
 			var columns = new List<CatalogColumn> {
 				new CatalogColumn { ApiName = "uid", Column = "a.Uid", Position = 1 },
-				new CatalogColumn { ApiName = "displayValue", Column = "adv.DisplayValue", Position = 2 }
+				new CatalogColumn { ApiName = "displayValue", Column = "adv.DisplayValue", Position = 2, Sort = "S.ObjectDisplayValue" }
 			};
 
-			predicates.ForEach(p => {
+			predicates.ForEach(p =>
+			{
 				columns.Add(new CatalogColumn
 				{
 					ApiName = p.Name,
 					Column = $@"P{p.Id}.val as [{p.Name}]",
 					DataStatement = $"outer apply (select string_agg(SubjectDisplayValue, '; ') from dbo.CatalogBrowseSubject where ObjectAssetID = res.objectassetid and PredicateId = {p.Id})P{p.Id}(val)",
 					Position = columns.Max(c => c.Position) + 1,
-					JoinStatement = $"left join dbo.CatalogBrowseSubject T{p.Id} on T{p.Id}.ObjectAssetID = S.ObjectAssetID and T{p.Id}.PredicateId = {p.Id}",
-					CatalogColumnType = CatalogColumnType.Predicate
+					JoinStatement = $"left join dbo.CatalogBrowseSubject P{p.Id} on P{p.Id}.ObjectAssetID = S.ObjectAssetID and P{p.Id}.PredicateId = {p.Id}",
+					CatalogColumnType = CatalogColumnType.Predicate,
+					Sort = $"P{p.Id}.SubjectDisplayValue"
 				});
 			});
 
 			// Add path as the last column.
-			columns.Add(new CatalogColumn { ApiName = "path", Column = "p.DisplayPath", Position = columns.Max(c => c.Position) + 1 });
+			columns.Add(new CatalogColumn { ApiName = "path", Column = "p.DisplayPath", Sort = "p.DisplayPath", Position = columns.Max(c => c.Position) + 1 });
 
 			#endregion
 
@@ -170,7 +176,8 @@ namespace d360.web.Controllers.V2
 			{
 				var rawFilters = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).ToList();
 				int parameterIndex = 1;
-				rawFilters.ForEach(rawSort => {
+				rawFilters.ForEach(rawSort =>
+				{
 					var filterMatch = Regex.Match(rawSort, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin)\s([\w\-\/\:\,\*]+)$");
 					if (filterMatch.Success && filterMatch.Groups.Count == 4)
 					{
@@ -266,7 +273,8 @@ namespace d360.web.Controllers.V2
 			if (queryParams.Any(q => q.Key == "_order"))
 			{
 				var rawSorts = queryParams.Where(q => q.Key == "_order").Select(s => s.Value).ToList();
-				rawSorts.ForEach(rawSort => {
+				rawSorts.ForEach(rawSort =>
+				{
 					var sortMatch = Regex.Match(rawSort, @"^(asc|desc)\(([\w\d\s\-\/\:]+)\)$");
 					if (sortMatch.Success && sortMatch.Groups.Count == 3)
 					{
@@ -292,16 +300,17 @@ namespace d360.web.Controllers.V2
 			foreach (var key in parsedSorts.Keys)
 			{
 				var sortDirection = (parsedSorts[key] ? "asc" : "desc");
-				var column = columns.FirstOrDefault(c => c.ApiName == key);
+				var column = columns.Where(x => !string.IsNullOrEmpty(x.Sort)).FirstOrDefault(c => c.ApiName == key);
 				if (column != null)
 				{
-					sorts.Add($"{column.Position} {sortDirection}");
+					sorts.Add($"{column.Sort} {sortDirection}");
+					column.UseAsSortBy = true;
 				}
 			}
 
 			if (sorts.Count == 0)
 			{
-				sorts.Add($"2 asc");
+				sorts.Add($"S.ObjectDisplayValue asc");
 			}
 
 			#endregion
@@ -428,10 +437,6 @@ order by {string.Join(", ", sorts)}
 
 			#endregion
 
-			//new sql logic
-			string sortColumn = "S.ObjectDisplayValue";
-			string sortDir = "asc";
-
 			string definitionSql = "";
 			if (includeDefinition)
 			{
@@ -455,23 +460,31 @@ order by {string.Join(", ", sorts)}
 				select {{0}}
 				from
 				dbo.CatalogBrowseObject S
-				{string.Join(Environment.NewLine, columns.Where(x=> !string.IsNullOrEmpty(x.JoinStatement)).Select(x=> x.JoinStatement))}";
+				{string.Join(Environment.NewLine, columns.Where(x => !string.IsNullOrEmpty(x.JoinStatement) && x.UseAsSortBy == true).Select(x => x.JoinStatement))}";
 
 
 			string countSql = $@"
 				;with cte as (
 				{string.Format(baseSQL, "count(1) as cnt")}
-				group by {sortColumn}
+				group by S.ObjectDisplayValue
 				)
 				select COUNT(1) from cte;";
+
+
+			string offsetGroupBy = "group by S.ObjectDisplayValue";
+
+			if (columns.Any(x => x.UseAsSortBy))
+			{
+				offsetGroupBy += ", " + string.Join(", ", columns.Where(x => x.UseAsSortBy).Select(x => x.Sort));
+			}
 
 			string resultsSql = $@"
 				declare @results table (objectassetid int);
 
 				insert into @results
 				{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId")}
-				group by {sortColumn}
-				order by {sortColumn} {sortDir}
+				{offsetGroupBy}
+				order by {string.Join(", ", sorts)}
 				{offset}";
 
 			string finalSql = $@"
@@ -481,12 +494,12 @@ order by {string.Join(", ", sorts)}
 
 				{resultsSql}
 
-				select {string.Join(","+ Environment.NewLine, columns.Select(x=> x.Column))}
+				select {string.Join("," + Environment.NewLine, columns.Select(x => x.Column))}
 				from @results res
 				inner join AssetDisplayValue adv on adv.AssetID = res.objectassetid
 				inner join asset a on a.ID = res.objectassetid
 				inner join AssetPath p on p.Id = A.Id
-				{string.Join(Environment.NewLine, columns.Where(x=> x.CatalogColumnType == CatalogColumnType.Predicate).Select(x => x.DataStatement))}
+				{string.Join(Environment.NewLine, columns.Where(x => x.CatalogColumnType == CatalogColumnType.Predicate).Select(x => x.DataStatement))}
 				";
 
 			var results = await Company.QueryMultipleAsync(finalSql, dbArgs);
