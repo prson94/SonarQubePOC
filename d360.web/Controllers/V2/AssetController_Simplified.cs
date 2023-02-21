@@ -181,7 +181,7 @@ namespace d360.web.Controllers.V2
 			});
 
 			// Add path as the last column.
-			columns.Add(new CatalogColumn { ApiName = "path", Column = "p.DisplayPath", Sort = "p.DisplayPath", Position = columns.Max(c => c.Position) + 1 });
+			columns.Add(new CatalogColumn { ApiName = "displaypath", Column = "p.DisplayPath", Sort = "p.DisplayPath", Position = columns.Max(c => c.Position) + 1 });
 
 			#endregion
 
@@ -216,7 +216,7 @@ namespace d360.web.Controllers.V2
 						var filterProperty = filterMatch.Groups[1].Value;
 						var filterOperation = filterMatch.Groups[2].Value;
 						var filterValue = filterMatch.Groups[3].Value;
-						var column = columns.FirstOrDefault(c => c.ApiName == filterProperty);
+						var column = columns.FirstOrDefault(c => c.ApiName.ToLowerInvariant() == filterProperty.ToLowerInvariant());
 						if (column != null)
 						{
 							// Treat as standard text value.
@@ -256,7 +256,7 @@ namespace d360.web.Controllers.V2
 									shouldInclude = false;
 									break;
 							}
-							var predicate = predicates.FirstOrDefault(p => p.Name == filterProperty);
+							var predicate = predicates.FirstOrDefault(p => p.Name.ToLowerInvariant() == filterProperty);
 
 							if (predicate != null)
 							{
@@ -447,26 +447,19 @@ namespace d360.web.Controllers.V2
 					drop table if exists #filteredResults
 					create table #filteredResults ({string.Join(",", tempCols)});");
 
-				foreach (var predFilter in catalogWheres.Where(x => x.PredicateId > 0))
+				foreach (var filter in catalogWheres)
 				{
-					if (predFilter.PredicateId > 0)
-					{
 						sb.AppendLine($@"
 						MERGE #filteredResults AS Target
 						USING (
-						select I.ObjectAssetID from #v pred 
-						inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
-						inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predFilter.PredicateId}
-						where pred.PredicateId = {predFilter.PredicateId} and pred.DisplayValue like @{predFilter.PropertyName}
+						{filter.Query}
 						) AS Source
 						ON Source.ObjectAssetID = Target.AssetId
 						WHEN MATCHED THEN UPDATE SET
-							Target.{predFilter.PropertyName} = 1
+							Target.{filter.PropertyName} = 1
 						WHEN NOT MATCHED BY Target THEN
-							INSERT (AssetId,{predFilter.PropertyName}) 
+							INSERT (AssetId,{filter.PropertyName}) 
 							VALUES (Source.ObjectAssetID, 1);");
-					}
-
 				}
 
 				filtersTempTable = sb.ToString();
