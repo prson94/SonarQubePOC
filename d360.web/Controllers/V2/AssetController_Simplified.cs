@@ -256,7 +256,7 @@ namespace d360.web.Controllers.V2
 									shouldInclude = false;
 									break;
 							}
-							var predicate = predicates.FirstOrDefault(p => p.Name.ToLowerInvariant() == filterProperty);
+							var predicate = predicates.FirstOrDefault(p => p.Name.ToLowerInvariant() == filterProperty.ToLowerInvariant());
 
 							if (predicate != null)
 							{
