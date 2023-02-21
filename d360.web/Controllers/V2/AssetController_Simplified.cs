@@ -281,7 +281,7 @@ namespace d360.web.Controllers.V2
 								});
 							}
 
-							else if (column.ApiName == "path")
+							else if (column.ApiName == "displaypath")
 							{
 								catalogWheres.Add(new CatalogWhere()
 								{
