@@ -7,10 +7,12 @@ using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.EnterpriseServices;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -81,9 +83,26 @@ namespace d360.web.Controllers.V2
 
 		}
 
+		public class CatalogWhere
+		{
+			public string PropertyName { get; set; }
+			public string Query { get; set; }
+			public string Where { get; set; }
+			public int PredicateId { get; set; }
+		}
+
 		public enum CatalogColumnType
 		{
 			SystemField, Predicate
+		}
+
+		public IEnumerable<int> GetAllIndexes(string source, string matchString)
+		{
+			matchString = Regex.Escape(matchString);
+			foreach (Match match in Regex.Matches(source, matchString))
+			{
+				yield return match.Index;
+			}
 		}
 
 		#endregion
@@ -168,17 +187,30 @@ namespace d360.web.Controllers.V2
 
 			#region Filtering logic
 
-			var wheres = new List<string> {
-				"exists(select 1 from PredicateIntersect where PredicateType = 5 and ObjectAssetID = a.Id)"
-			};
+			var whereConnectors = new List<Tuple<string, int>>();
+			var catalogWheres = new List<CatalogWhere>();
 			var dbArgs = new DynamicParameters();
 			if (queryParams.Any(q => q.Key == "_filter"))
 			{
-				var rawFilters = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).ToList();
-				int parameterIndex = 1;
-				rawFilters.ForEach(rawSort =>
+				var filterString = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).FirstOrDefault();
+
+				foreach (var idx in GetAllIndexes(filterString, " and "))
 				{
-					var filterMatch = Regex.Match(rawSort, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin)\s([\w\-\/\:\,\*]+)$");
+					whereConnectors.Add(new Tuple<string, int>("and", idx));
+				}
+
+				foreach (var idx in GetAllIndexes(filterString, " or "))
+				{
+					whereConnectors.Add(new Tuple<string, int>("or", idx));
+				}
+
+				string[] delimiters = { " and ", " or " };
+				var rawFilters = filterString.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
+
+				int parameterIndex = 1;
+				foreach (var rawFilter in rawFilters)
+				{
+					var filterMatch = Regex.Match(rawFilter, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin)\s([\w\-\/\:\,\*]+)$");
 					if (filterMatch.Success && filterMatch.Groups.Count == 4)
 					{
 						var filterProperty = filterMatch.Groups[1].Value;
@@ -187,82 +219,81 @@ namespace d360.web.Controllers.V2
 						var column = columns.FirstOrDefault(c => c.ApiName == filterProperty);
 						if (column != null)
 						{
+							// Treat as standard text value.
+							var operation = "";
+							bool shouldInclude = true;
+							switch (filterOperation)
+							{
+								case "ct":
+									operation = "like";
+									if (filterValue.StartsWith("*"))
+									{
+										dbArgs.Add($"p{parameterIndex}", $"%{filterValue.Replace("*", "")}");
+									}
+									else if (filterValue.EndsWith("*"))
+									{
+										dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "")}%");
+									}
+									else
+									{
+										dbArgs.Add($"p{parameterIndex}", $"%{filterValue}%");
+									}
+
+									break;
+								case "eq":
+									operation = "=";
+									dbArgs.Add($"p{parameterIndex}", filterValue);
+									break;
+								case "nct":
+									operation = "not like";
+									dbArgs.Add($"p{parameterIndex}", filterValue);
+									break;
+								case "neq":
+									operation = "<>";
+									dbArgs.Add($"p{parameterIndex}", filterValue);
+									break;
+								default:
+									shouldInclude = false;
+									break;
+							}
 							var predicate = predicates.FirstOrDefault(p => p.Name == filterProperty);
+
 							if (predicate != null)
 							{
-								// Treat as a list: IN, NOT IN
-
-								var filterText = $"v.DisplayValue {(filterOperation == "in" ? "in" : "not in")} (";
-								var filterParamIds = new List<string>();
-								if (filterValue.Contains(","))
+								catalogWheres.Add(new CatalogWhere()
 								{
-									var filterValues = filterValue.SplitCommas().ToList();
-									int i = 1;
-									filterValues.ForEach(fV =>
-									{
-										var paramId = $"p{predicate.Id}_{i}";
-										dbArgs.Add(paramId, fV);
-										filterParamIds.Add(paramId);
-										i++;
-									});
-								}
-								else
-								{
-									var paramId = $"p{predicate.Id}_1";
-									dbArgs.Add(paramId, filterValue);
-									filterParamIds.Add(paramId);
-								}
-								filterText += string.Join(",", filterParamIds.Select(o => $"@{o}")) + ")";
-								wheres.Add($"exists(select 1 from PredicateIntersect i inner join #v v on v.AssetId = i.SubjectAssetId and i.PredicateType = 5 and i.PredicateId = {predicate.Id} and ObjectAssetID = a.Id and {filterText})");
+									PropertyName = $"p{parameterIndex}",
+									PredicateId = predicate.Id,
+									Where = $"fr.p{parameterIndex} = 1",
+									Query = $@"select I.ObjectAssetID from #v pred 
+											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
+											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
+											where pred.PredicateId = {predicate.Id} and pred.DisplayValue like @p{parameterIndex}"
+								});
 							}
-							else
+							else if (column.ApiName == "displayValue")
 							{
-								// Treat as standard text value.
-								var operation = "";
-								bool shouldInclude = true;
-								switch (filterOperation)
+								catalogWheres.Add(new CatalogWhere()
 								{
-									case "ct":
-										operation = "like";
-										if (filterValue.StartsWith("*"))
-										{
-											dbArgs.Add($"p{parameterIndex}", $"%{filterValue.Replace("*", "")}");
-										}
-										else if (filterValue.EndsWith("*"))
-										{
-											dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "")}%");
-										}
-										else
-										{
-											dbArgs.Add($"p{parameterIndex}", $"%{filterValue}%");
-										}
+									PropertyName = $"p{parameterIndex}",
+									Where = $"fr.p{parameterIndex} = 1",
+									Query = $@"select ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue like @p{parameterIndex}"
+								});
+							}
 
-										break;
-									case "eq":
-										operation = "=";
-										dbArgs.Add($"p{parameterIndex}", filterValue);
-										break;
-									case "nct":
-										operation = "not like";
-										dbArgs.Add($"p{parameterIndex}", filterValue);
-										break;
-									case "neq":
-										operation = "<>";
-										dbArgs.Add($"p{parameterIndex}", filterValue);
-										break;
-									default:
-										shouldInclude = false;
-										break;
-								}
-								if (shouldInclude)
+							else if (column.ApiName == "path")
+							{
+								catalogWheres.Add(new CatalogWhere()
 								{
-									wheres.Add($"{column.Column} {operation} p{parameterIndex}");
-								}
+									PropertyName = $"p{parameterIndex}",
+									Where = $"fr.p{parameterIndex} = 1",
+									Query = $@"select id as ObjectAssetID from assetpath ap where ap.displaypath like @p{parameterIndex}"
+								});
 							}
 						}
 					}
 					parameterIndex++;
-				});
+				}
 			}
 
 			#endregion
@@ -392,75 +423,78 @@ namespace d360.web.Controllers.V2
 			var offset = $"offset {(pageNum - 1) * pageSize} rows fetch next {pageSize} rows only";
 
 			#endregion
-
-			#region Build Sql, including the Count, the Lookup, and the Resultset
-
-			sql = $@"
-drop table if exists #v; 
-create table #v (PredicateId int, AssetId bigint, DisplayValue nvarchar(500));
-insert into #v
-	select	distinct
-			p.Id,
-			a.Id as AssetId,
-			d.DisplayValue
-	from	[Predicate] p
-			inner join IntersectType t on t.PredicateId = p.Id and p.[Type] = 5
-			inner join Asset a on a.AssetTypeId = t.SubjectAssetTypeId
-			inner join AssetDisplayValue d on d.AssetId = a.Id;";
-
-			if (includeDefinition)
-			{
-				sql += "select PredicateId as Id, DisplayValue as Name from #v;";
-			}
-
-			if (wheres.Count > 1)
-			{
-				sql += $@"
-select	count(1) as [Total] 
-from	Asset a 
-		inner join AssetPath p on p.Id = A.Id
-		inner join AssetDisplayValue v on v.AssetId = a.Id 
-where	{string.Join(" and ", wheres)};";
-			}
-			else
-			{
-				sql += $"select count(1) as [Total] from Asset a where {string.Join(" and ", wheres)};";
-			}
-
-			sql += $@"select	{string.Join(", ", columns.Select(c => $"{c.Column} as [{c.ApiName.CleanForSql()}]"))}
-from	Asset a
-		inner join AssetPath p on p.Id = A.Id
-		inner join AssetDisplayValue v on v.AssetId = a.Id
-where	{string.Join(" and ", wheres)}
-order by {string.Join(", ", sorts)}
-{offset};";
-
-			#endregion
-
 			string definitionSql = "";
 			if (includeDefinition)
 			{
-				definitionSql = $@"
-					create table #v (PredicateId int, AssetId bigint, DisplayValue nvarchar(500));
-					insert into #v
-						select	distinct
-								p.Id,
-								a.Id as AssetId,
-								d.DisplayValue
-						from	[Predicate] p
-								inner join IntersectType t on t.PredicateId = p.Id and p.[Type] = 5
-								inner join Asset a on a.AssetTypeId = t.SubjectAssetTypeId
-								inner join AssetDisplayValue d on d.AssetId = a.Id;
+				definitionSql = "select PredicateId as Id, DisplayValue as Name from #v;";
+			}
 
-					select PredicateId as Id, DisplayValue as Name from #v;
-					";
+			bool hasFilters = catalogWheres.Count > 0;
+
+			string filtersTempTable = "";
+			if (hasFilters)
+			{
+				StringBuilder sb = new StringBuilder();
+				List<string> tempCols = new List<string>
+				{
+					"AssetId bigint"
+				};
+				catalogWheres.ForEach(w =>
+				{
+					tempCols.Add($"{w.PropertyName} bit");
+				});
+				sb.AppendLine($@"
+					drop table if exists #filteredResults
+					create table #filteredResults ({string.Join(",", tempCols)});");
+
+				foreach (var predFilter in catalogWheres.Where(x => x.PredicateId > 0))
+				{
+					if (predFilter.PredicateId > 0)
+					{
+						sb.AppendLine($@"
+						MERGE #filteredResults AS Target
+						USING (
+						select I.ObjectAssetID from #v pred 
+						inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
+						inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predFilter.PredicateId}
+						where pred.PredicateId = {predFilter.PredicateId} and pred.DisplayValue like @{predFilter.PropertyName}
+						) AS Source
+						ON Source.ObjectAssetID = Target.AssetId
+						WHEN MATCHED THEN UPDATE SET
+							Target.{predFilter.PropertyName} = 1
+						WHEN NOT MATCHED BY Target THEN
+							INSERT (AssetId,{predFilter.PropertyName}) 
+							VALUES (Source.ObjectAssetID, 1);");
+					}
+
+				}
+
+				filtersTempTable = sb.ToString();
+			}
+
+			string whereStatement = "";
+
+			if (catalogWheres.Count > 0)
+			{
+				whereStatement += "where " + catalogWheres[0].Where;
+
+				if (catalogWheres.Count > 1)
+				{
+					int idx = 0;
+					foreach (var filter in catalogWheres)
+					{
+						whereStatement += whereConnectors[idx].Item1 + " " + filter.Where;
+					}
+				}
 			}
 
 			string baseSQL = $@"
 				select {{0}}
 				from
 				dbo.CatalogBrowseObject S
-				{string.Join(Environment.NewLine, columns.Where(x => !string.IsNullOrEmpty(x.JoinStatement) && x.UseAsSortBy == true).Select(x => x.JoinStatement))}";
+				{(hasFilters ? "inner join #filteredResults fr on fr.AssetId = S.ObjectAssetID" : "")}
+				{string.Join(Environment.NewLine, columns.Where(x => !string.IsNullOrEmpty(x.JoinStatement) && x.UseAsSortBy == true).Select(x => x.JoinStatement))}
+				{whereStatement}";
 
 
 			string countSql = $@"
@@ -488,7 +522,21 @@ order by {string.Join(", ", sorts)}
 				{offset}";
 
 			string finalSql = $@"
+				drop table if exists #v 
+				create table #v (PredicateId int, AssetId bigint, DisplayValue nvarchar(500));
+				insert into #v
+					select	distinct
+							p.Id,
+							a.Id as AssetId,
+							d.DisplayValue
+					from	[Predicate] p
+							inner join IntersectType t on t.PredicateId = p.Id and p.[Type] = 5
+							inner join Asset a on a.AssetTypeId = t.SubjectAssetTypeId
+							inner join AssetDisplayValue d on d.AssetId = a.Id;
+	
 				{definitionSql}
+
+				{filtersTempTable}
 
 				{countSql}
 
