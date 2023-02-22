@@ -221,7 +221,6 @@ namespace d360.web.Controllers.V2
 						{
 							// Treat as standard text value.
 							var operation = "";
-							bool shouldInclude = true;
 							switch (filterOperation)
 							{
 								case "ct":
@@ -253,14 +252,13 @@ namespace d360.web.Controllers.V2
 									dbArgs.Add($"p{parameterIndex}", filterValue);
 									break;
 								default:
-									shouldInclude = false;
 									break;
 							}
 							var predicate = predicates.FirstOrDefault(p => p.Name.ToLowerInvariant() == filterProperty.ToLowerInvariant());
 
 							if (predicate != null)
 							{
-								catalogWheres.Add(new CatalogWhere()
+								catalogWheres.Add(new CatalogWhere
 								{
 									PropertyName = $"p{parameterIndex}",
 									PredicateId = predicate.Id,
@@ -268,26 +266,26 @@ namespace d360.web.Controllers.V2
 									Query = $@"select I.ObjectAssetID from #v pred 
 											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
 											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
-											where pred.PredicateId = {predicate.Id} and pred.DisplayValue like @p{parameterIndex}"
+											where pred.PredicateId = {predicate.Id} and pred.DisplayValue {operation} @p{parameterIndex}"
 								});
 							}
 							else if (column.ApiName == "displayValue")
 							{
-								catalogWheres.Add(new CatalogWhere()
+								catalogWheres.Add(new CatalogWhere
 								{
 									PropertyName = $"p{parameterIndex}",
 									Where = $"fr.p{parameterIndex} = 1",
-									Query = $@"select ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue like @p{parameterIndex}"
+									Query = $@"select ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue {operation} @p{parameterIndex}"
 								});
 							}
 
 							else if (column.ApiName == "displaypath")
 							{
-								catalogWheres.Add(new CatalogWhere()
+								catalogWheres.Add(new CatalogWhere
 								{
 									PropertyName = $"p{parameterIndex}",
 									Where = $"fr.p{parameterIndex} = 1",
-									Query = $@"select id as ObjectAssetID from assetpath ap where ap.displaypath like @p{parameterIndex}"
+									Query = $@"select id as ObjectAssetID from assetpath ap where ap.displaypath {operation} @p{parameterIndex}"
 								});
 							}
 						}
