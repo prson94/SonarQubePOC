@@ -148,6 +148,9 @@
   <data name="InvalidDashboardUid" xml:space="preserve">
     <value>UID fornito non valido.</value>
   </data>
+  <data name="InvalidDashboardURL" xml:space="preserve">
+    <value>Valore [URL] non valido in [Definition]</value>
+  </data>
   <data name="InvalidDefinitionValue" xml:space="preserve">
     <value>Valore JSON non valido per [Definition]</value>
   </data>

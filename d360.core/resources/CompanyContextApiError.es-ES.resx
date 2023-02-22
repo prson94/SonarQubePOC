@@ -115,6 +115,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="DataProfilingNoPermission" xml:space="preserve">
+    <value>El usuario no tiene permiso para añadir, editar ni eliminar datos de creación de perfiles en este activo</value>
+  </data>
   <data name="DuplicateExecutionItem" xml:space="preserve">
     <value>Duplicar [ExecutionItemUid]: {0}. Los identificadores de un mismo lote deben ser únicos.</value>
   </data>

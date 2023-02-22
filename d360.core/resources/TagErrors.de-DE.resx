@@ -122,7 +122,7 @@
     <value>Ungültiger Wert [{0}] in der Anforderung übergeben.</value>
   </data>
   <data name="InvalidOrderBy" xml:space="preserve">
-    <value>Ungültiger Wert [{0}] in der Anforderung übergeben</value>
+    <value>Ungültiger Wert [{0}] in der Anforderung übergeben.</value>
   </data>
   <data name="InvalidPageNumber" xml:space="preserve">
     <value>Ungültiger Wert für Parameter [_pagenum].</value>
@@ -140,7 +140,7 @@
     <value>Ungültiger '[sortorder]'-Wert in der Anforderung angegeben.</value>
   </data>
   <data name="InvalidTagUid" xml:space="preserve">
-    <value>Ungültiger Wert [{0}] in der Anforderung übergeben</value>
+    <value>Ungültiger Wert [{0}] in der Anforderung übergeben.</value>
   </data>
   <data name="Invalid_IncludeTotal" xml:space="preserve">
     <value>Ungültiger Wert [{0}] für Parameter [_includetotal] in Anforderung angegeben.</value>

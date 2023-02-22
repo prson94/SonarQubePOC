@@ -122,7 +122,7 @@
     <value>Valeur non valide [{0}] transmise dans la requête.</value>
   </data>
   <data name="InvalidOrderBy" xml:space="preserve">
-    <value>Valeur non valide [{0}] transmise dans la requête</value>
+    <value>Valeur non valide [{0}] transmise dans la requête.</value>
   </data>
   <data name="InvalidPageNumber" xml:space="preserve">
     <value>Valeur du paramètre [_pagenum] non valide !</value>
@@ -140,7 +140,7 @@
     <value>Valeur [sortorder] fournie dans la requête non valide.</value>
   </data>
   <data name="InvalidTagUid" xml:space="preserve">
-    <value>Valeur non valide [{0}] transmise dans la requête</value>
+    <value>Valeur non valide [{0}] transmise dans la requête.</value>
   </data>
   <data name="Invalid_IncludeTotal" xml:space="preserve">
     <value>Valeur non valide fournie [{0}] dans la requête pour le paramètre [_includetotal].</value>

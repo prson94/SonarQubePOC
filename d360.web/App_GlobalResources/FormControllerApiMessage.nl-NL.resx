@@ -274,6 +274,9 @@
   <data name="GrammarAllocationModified" xml:space="preserve">
     <value>Grammaticatoewijzing is aangepast.</value>
   </data>
+  <data name="IconIsInvalid" xml:space="preserve">
+    <value>Het pictogram is een ongeldig bestandstype</value>
+  </data>
   <data name="InvalidCreateType" xml:space="preserve">
     <value>Ongeldig/niet ondersteund creatie type</value>
   </data>
@@ -483,6 +486,9 @@
   </data>
   <data name="ShortcutIDNotFound" xml:space="preserve">
     <value>Snelkoppelings-ID {0} niet gevonden</value>
+  </data>
+  <data name="ShortcutInvalidURL" xml:space="preserve">
+    <value>De snelkoppelings-URL is ongeldig</value>
   </data>
   <data name="ShortcutMissingAnIcon" xml:space="preserve">
     <value>Pictogram ontbreekt in deze snelkoppeling</value>

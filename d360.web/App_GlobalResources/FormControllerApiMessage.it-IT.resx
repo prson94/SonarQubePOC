@@ -274,6 +274,9 @@
   <data name="GrammarAllocationModified" xml:space="preserve">
     <value>Allocazione grammaticale modificata correttamente.</value>
   </data>
+  <data name="IconIsInvalid" xml:space="preserve">
+    <value>L'icona è un tipo di file non valido</value>
+  </data>
   <data name="InvalidCreateType" xml:space="preserve">
     <value>Tipo di creazione non valido/non supportato</value>
   </data>
@@ -483,6 +486,9 @@
   </data>
   <data name="ShortcutIDNotFound" xml:space="preserve">
     <value>ID collegamento {0} non trovato</value>
+  </data>
+  <data name="ShortcutInvalidURL" xml:space="preserve">
+    <value>L'URL di collegamento non è valido</value>
   </data>
   <data name="ShortcutMissingAnIcon" xml:space="preserve">
     <value>A questo collegamento manca un'icona</value>
