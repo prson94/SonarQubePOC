@@ -282,6 +282,7 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 			.subscribe((result) => {
 				this.isSaving = false;
 				this.onSave.emit(result);
+				this.cancel();
 			});
 	}
 
