@@ -145,6 +145,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     }
 
     loadUsers() {
+        const baseFilter = `(State eq 'Active' or State eq 'Inactive')`;
         this.isLoading = true;
 
         var params = {};
@@ -162,11 +163,18 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         params["_pageNum"] = 1;
 
         var usersParam = {};
-        usersParam["_pageSize"] = 10000;
+        var maxrows = 10000;
+        if (this.maxExportRows > 10000) {
+            maxrows = this.maxExportRows;
+        }
+        usersParam["_pageSize"] = maxrows;
         usersParam["_pageNum"] = 1;
 
         if (this.advancedFilters) {
-            usersParam["_filter"] = `(${this.advancedFilters})`;
+            usersParam["_filter"] = `(${this.advancedFilters}) and ${baseFilter}`;
+        }
+         else {
+            usersParam["_filter"] = baseFilter;
         }
 
         forkJoin(
