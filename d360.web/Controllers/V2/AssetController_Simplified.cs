@@ -251,8 +251,6 @@ namespace d360.web.Controllers.V2
 									operation = "<>";
 									dbArgs.Add($"p{parameterIndex}", filterValue);
 									break;
-								default:
-									break;
 							}
 							var predicate = predicates.FirstOrDefault(p => p.Name.ToLowerInvariant() == filterProperty.ToLowerInvariant());
 
@@ -463,21 +461,22 @@ namespace d360.web.Controllers.V2
 				filtersTempTable = sb.ToString();
 			}
 
-			string whereStatement = "";
+			StringBuilder whereSb = new StringBuilder();
 
 			if (catalogWheres.Count > 0)
 			{
-				whereStatement += "where " + catalogWheres[0].Where;
+				whereSb.Append("where " + catalogWheres[0].Where);
 
 				if (catalogWheres.Count > 1)
 				{
 					int idx = 0;
 					foreach (var filter in catalogWheres)
 					{
-						whereStatement += whereConnectors[idx].Item1 + " " + filter.Where;
+						whereSb.Append(whereConnectors[idx].Item1 + " " + filter.Where);
 					}
 				}
 			}
+			string whereStatement = whereSb.ToString();
 
 			string baseSQL = $@"
 				select {{0}}
