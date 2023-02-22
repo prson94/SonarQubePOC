@@ -59,8 +59,6 @@ namespace d360.model
 
 		#region Engine Methods
 
-		private readonly Random randomNumberGenerator = new Random();
-
 		private bool DoesWorkflowApply(EventObjectInfo objectInfo, WorkflowEventRegistration registration)
 		{
 			string workflowName = "";
@@ -1380,10 +1378,6 @@ namespace d360.model
 
 		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, Asset asset = null)
 		{
-			//wait a moment in case there are multiple workflow steps that are trying to update/create same field
-			//https://jira.syncsort.com/browse/GOV-20872
-			Thread.Sleep(randomNumberGenerator.Next(1500));
-
 			bool isAssetEdited = false;
 			//check if the field exists
 			Field field = null;
@@ -1430,7 +1424,28 @@ namespace d360.model
 			//use SQL here instead of EF to avoid triggering further workflows
 			if (field == null && !string.IsNullOrEmpty(val))
 			{
-				await Database.Connection.ExecuteAsync("insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], IssueID, IntersectID, UpdatedBy) values (@assetID, @fieldTypeID, @objectId, @objectType, @value, @IssueID, @IntersectID, @updatedBy)"
+				await Database.Connection.ExecuteAsync(@"
+					declare @fieldId int = 
+						(select top 1 ID from dbo.Field 
+						where  @fieldTypeID = @fieldTypeID and 
+						(
+						(@assetID is not null and AssetID = @assetID) or 
+						(@IntersectID is not null and IntersectID = @IntersectID) or 
+						(@issueid is not null and IssueID = @issueid)))
+					
+					if @fieldId > 0
+					begin
+						update Field
+							set Value = @value,
+							UpdatedBy = @updatedBy,
+							UpdatedOn = GETUTCDATE()
+						where ID = @fieldId
+					end
+					else
+					begin
+						insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], IssueID, IntersectID, UpdatedBy) 
+						values (@assetID, @fieldTypeID, @objectId, @objectType, @value, @IssueID, @IntersectID, @updatedBy)
+					end"
 					, new
 					{
 						value = val,
@@ -1452,7 +1467,7 @@ namespace d360.model
 					IEnumerable<string> oldValues = field.Value?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
 					IEnumerable<string> newValues = val?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
 					newValues = oldValues.Union(newValues).Distinct().OrderBy(x => x);
-					updateValue = string.Join(",", newValues);
+					updateValue = string.Join(", ", newValues);
 
 				}
 
