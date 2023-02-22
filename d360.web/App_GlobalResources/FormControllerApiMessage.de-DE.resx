@@ -274,6 +274,9 @@
   <data name="GrammarAllocationModified" xml:space="preserve">
     <value>Grammatikzuordnung geändert.</value>
   </data>
+  <data name="IconIsInvalid" xml:space="preserve">
+    <value>Das Symbol hat einen ungültigen Dateityp</value>
+  </data>
   <data name="InvalidCreateType" xml:space="preserve">
     <value>Ungültiger/nicht unterstützter Erstellungstyp</value>
   </data>
@@ -483,6 +486,9 @@
   </data>
   <data name="ShortcutIDNotFound" xml:space="preserve">
     <value>Tastenkombinations-ID {0} nicht gefunden</value>
+  </data>
+  <data name="ShortcutInvalidURL" xml:space="preserve">
+    <value>Die Verknüpfungs-URL ist ungültig</value>
   </data>
   <data name="ShortcutMissingAnIcon" xml:space="preserve">
     <value>Für diese Tastenkombination fehlt ein Symbol</value>

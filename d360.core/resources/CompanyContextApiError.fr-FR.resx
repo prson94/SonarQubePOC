@@ -115,6 +115,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="DataProfilingNoPermission" xml:space="preserve">
+    <value>L’utilisateur n’a pas le droit d’ajouter, de modifier ou de supprimer des données de profilage pour cet asset.</value>
+  </data>
   <data name="DuplicateExecutionItem" xml:space="preserve">
     <value>Dupliquer [ExecutionItemUid] : {0}. Les identifiants d’un même lot doivent être uniques.</value>
   </data>

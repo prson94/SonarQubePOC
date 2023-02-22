@@ -115,40 +115,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DeleteCascadeTagRelateAsset" xml:space="preserve">
-    <value>La etiqueta con el UID '{0}' tiene activos relacionados. Establezca [cascade] en 'true' para eliminar esta etiqueta.</value>
+  <data name="ErrorOnCreate" xml:space="preserve">
+    <value>Error al añadir el elemento del menú de ayuda</value>
   </data>
-  <data name="InvalidDirection" xml:space="preserve">
-    <value>Valor no válido [{0}] pasado en la solicitud.</value>
+  <data name="ErrorOnDelete" xml:space="preserve">
+    <value>Error al eliminar el elemento del menú de ayuda</value>
   </data>
-  <data name="InvalidOrderBy" xml:space="preserve">
-    <value>Valor no válido [{0}] pasado en la solicitud.</value>
+  <data name="ErrorOnGetMany" xml:space="preserve">
+    <value>Error al recuperar los elementos del menú de ayuda</value>
   </data>
-  <data name="InvalidPageNumber" xml:space="preserve">
-    <value>Valor no válido para el parámetro [_pagenum].</value>
-  </data>
-  <data name="InvalidPageSize" xml:space="preserve">
-    <value>Valor no válido para el parámetro [_pagesize].</value>
-  </data>
-  <data name="InvalidParaMeter" xml:space="preserve">
-    <value>Parámetros no válidos suministrados. Los parámetros [DisplayValue], [AssetType], [TagsAsString] no pueden utilizarse cuando el parámetro [globalSearch] está presente.</value>
-  </data>
-  <data name="InvalidSortBy" xml:space="preserve">
-    <value>Valor [sortby] no válido proporcionado en la solicitud.</value>
-  </data>
-  <data name="InvalidSortOrder" xml:space="preserve">
-    <value>Valor [sortorder] no válido proporcionado en la solicitud.</value>
-  </data>
-  <data name="InvalidTagUid" xml:space="preserve">
-    <value>Valor no válido [{0}] pasado en la solicitud.</value>
-  </data>
-  <data name="Invalid_IncludeTotal" xml:space="preserve">
-    <value>Valor no válido [{0}] proporcionado para el parámetro [_includetotal] en la solicitud.</value>
-  </data>
-  <data name="InvalueTotalValue" xml:space="preserve">
-    <value>Valor no válido [{0}] pasado en la solicitud.</value>
-  </data>
-  <data name="TagUidNotExists" xml:space="preserve">
-    <value>No existe la etiqueta con el UID '{0}'.</value>
+  <data name="ErrorOnUpdate" xml:space="preserve">
+    <value>Error al actualizar el elemento del menú de ayuda</value>
   </data>
 </root>

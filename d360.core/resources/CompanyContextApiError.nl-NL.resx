@@ -115,6 +115,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="DataProfilingNoPermission" xml:space="preserve">
+    <value>De gebruiker is niet gemachtigd om profileringsgegevens voor deze asset toe te voegen, te bewerken of te verwijderen</value>
+  </data>
   <data name="DuplicateExecutionItem" xml:space="preserve">
     <value>Duplicaat [ExecutionItemUid]: {0}. ID's binnen een batch moeten uniek zijn.</value>
   </data>

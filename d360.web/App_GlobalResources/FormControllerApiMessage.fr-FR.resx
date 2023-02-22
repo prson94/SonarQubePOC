@@ -274,6 +274,9 @@
   <data name="GrammarAllocationModified" xml:space="preserve">
     <value>Allocation de grammaire correctement modifiée.</value>
   </data>
+  <data name="IconIsInvalid" xml:space="preserve">
+    <value>L’icône est un type de fichier non valide</value>
+  </data>
   <data name="InvalidCreateType" xml:space="preserve">
     <value>Type de création non valide/non pris en charge</value>
   </data>
@@ -483,6 +486,9 @@
   </data>
   <data name="ShortcutIDNotFound" xml:space="preserve">
     <value>ID de raccourci {0} introuvable</value>
+  </data>
+  <data name="ShortcutInvalidURL" xml:space="preserve">
+    <value>L’URL du raccourci n’est pas valide</value>
   </data>
   <data name="ShortcutMissingAnIcon" xml:space="preserve">
     <value>Il manque une icône à ce raccourci</value>

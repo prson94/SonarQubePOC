@@ -274,6 +274,9 @@
   <data name="GrammarAllocationModified" xml:space="preserve">
     <value>Asignación gramatical modificada correctamente.</value>
   </data>
+  <data name="IconIsInvalid" xml:space="preserve">
+    <value>El icono es un tipo de archivo no válido</value>
+  </data>
   <data name="InvalidCreateType" xml:space="preserve">
     <value>Tipo de creación no válido/no admitido</value>
   </data>
@@ -483,6 +486,9 @@
   </data>
   <data name="ShortcutIDNotFound" xml:space="preserve">
     <value>ID {0} del acceso directo no encontrado</value>
+  </data>
+  <data name="ShortcutInvalidURL" xml:space="preserve">
+    <value>La URL del acceso directo no es válida</value>
   </data>
   <data name="ShortcutMissingAnIcon" xml:space="preserve">
     <value>Falta un icono en este acceso directo</value>
