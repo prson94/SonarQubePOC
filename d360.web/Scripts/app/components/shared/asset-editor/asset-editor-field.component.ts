@@ -138,12 +138,12 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 this.form.controls[this.field.FieldName].setValue(null);
                 this.field.Items = [];
                 this.lookupSelectedValue = [];
-                this.lookupValues = [];
+				this.lookupValues = [];
+				if (this.getFieldTypeForSwitch(this.field.FieldType) == 'LazyLookup') {
+					this.initLazyList();
+				}
             }
         });
-/*        setInterval(() => {
-            this.setSelectionVirtualScrollHeight();
-        }, 25);*/
     }
 
     get hasKeyFieldError () {
@@ -778,40 +778,56 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
 	ngAfterViewInit() {
 		if (this.getFieldTypeForSwitch(this.field.FieldType) == 'LazyLookup') {
-			this.loadListLazy({ first: 0, rows: 20 });
+			this.initLazyList();
 		}
 	}
 
-    lastParams: any;
+	initLazyList() {
+		const loadParams = this.getLoadParams({ first: 0, rows: 0 });
+		this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
+			if (!this.lookupValues || this.lookupValues.length === 0) {
+				this.lookupValues = Array.from({ length: res.count }, () => { return { label: null, value: null, color: null }; });
+			}
+		});
+	}
+
+	getLoadParams($params) {
+		var loadParams: any = { skip: $params.first, take: $params.rows, filter: $params.globalFilter ?? "" };
+		loadParams["isForAssetForm"] = true;
+		loadParams["assetUid"] = this.assetUid;
+
+		if ($params.globalFilter) {
+			loadParams["filter"] = $params.globalFilter;
+		}
+
+		if (this.lookupParentValue) {
+			loadParams["lookupParentValue"] = this.lookupParentValue;
+		}
+		return loadParams;
+	}
+
 	loadListLazy($params) {
-        var loadParams: any = { skip: $params.first, take: $params.rows, filter: $params.globalFilter ?? "" };
-        loadParams["isForAssetForm"] = true;
-        loadParams["assetUid"] = this.assetUid;
-        this.hadInitialLazyLoad = true;
 
-        if ($params.globalFilter) {
-            loadParams["filter"] = $params.globalFilter;
-        }
+		if (this.isLookupValuesLoading) {
+			return;
+		}
 
-        if (this.lookupParentValue) {
-            loadParams["lookupParentValue"] = this.lookupParentValue;
-        }
+		var loadParams: any = this.getLoadParams($params);
 
+		this.hadInitialLazyLoad = true;
         this.isLookupValuesLoading = true;
 
         if (this.lookupSub) {
             this.lookupSub.unsubscribe();
         }
 
-        this.lookupSub = this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
-            if (!this.lookupValues || this.lookupValues.length === 0) {
+		this.lookupSub = this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
+			if (!this.lookupValues || this.lookupValues.length === 0 || this.lookupValues.length < res.count) {
 				this.lookupValues = Array.from({ length: res.count }, () => { return { label: null, value: null, color: null }; });
-            }
+			}
 
             if (this.lookupValues.length > 10 || loadParams["filter"]) {
-				// Filtering on the virtual sroll triggers an endless loop that freezes the browser.
-				// Disabling the filter field for now
-                //this.showLookupSearchField = true;
+                this.showLookupSearchField = true;
             }
             else {
                 this.showLookupSearchField = false;
@@ -826,13 +842,20 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
             Array.prototype.splice.apply(this.lookupValues, [...[loadParams.skip, loadParams.take], ...loadedData]);
 
-            this.lookupValues = [...this.lookupValues];
-
             if (this.lookupValues.length > res.count) {
                 this.lookupValues = this.lookupValues.slice(0, res.count);
-            }
-            this.isLookupValuesLoading = false;
-            this.lastParams = loadParams;
+			}
+
+			// Until we can use the PrimeNG dropdown filter template https://github.com/primefaces/primeng/issues/11628
+			// The Virtual scroll will shrink the dropdown container if there is less than 10 items in the list, and will not
+			// take the filter input field into account, so the area shrinks too much.
+			// By adding an empty element and hiding it, the area size is usable.
+			// This should be redone once PrimeNG has been updated to 14.x
+			if (this.showLookupSearchField && this.lookupValues.length < 10) {
+				this.lookupValues.push({ label: null, value: null, color: null });
+			}
+
+			this.lookupValues = [...this.lookupValues];
 			
 			if (!this.field.MultiSelect) {
 				const selectedItem = this.lookupValues.find((lookup) => {
@@ -843,17 +866,15 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 				}
 			}
 
-			// Until we can use the PrimeNG dropdown filter template https://github.com/primefaces/primeng/issues/11628
-			// The Virtual scroll will shrink the dropdown container if there is less than 10 items in the list, and will not
-			// take the filter input field into account, so the area shrinks too much.
-			// By adding an empty element and hiding it, the area size is usable.
-			// This should be redone once PrimeNG has been updated to 14.x
-			if (this.showLookupSearchField && this.lookupValues.length < 10) {
-				this.lookupValues.push({label:null, value: null});
-			}
+			const maxHeight: number = 320;
+			const minHeight: number = 50;
+			const calculatedHeight = Math.min(Math.max(this.lookupValues.length * 32, minHeight), maxHeight);
+
+			setTimeout(() => {
+				this.selectionScrollHeight = calculatedHeight + "px";
+			}, 100);
 			
-            this.lookupValues = JSON.parse(JSON.stringify(this.lookupValues));
-//            this.setSelectionVirtualScrollHeight();
+			this.isLookupValuesLoading = false;
 			this.ref.detectChanges();
         });
     }
@@ -925,55 +946,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         if (event) {
             this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
         }
-    }
-
-	setSelectionVirtualScrollHeight() {
-        try {
-            let count: number = 0;
-            let res = [];
-
-            if (!this.dataTable || !this.dataTable.value) {
-                return;
-            }
-
-            var filter = this.dataTable?.filters?.global ? (this.dataTable?.filters?.global["value"] as string) : "";
-            if (!filter || !this.dataTable.filteredValue) {
-                res = new Array(this.dataTable.value.length);
-            }
-            else {
-                res = new Array(this.dataTable.filteredValue.length);
-            }
-            if (res.length) {
-                count = res.length;
-            }
-
-            let calculatedHeight: number = 0;
-            const maxHeight: number = 320;
-            const minHeight: number = 50;
-
-            if (count < 10) {
-                calculatedHeight = count * 32;
-                if (calculatedHeight < 32) {
-                    calculatedHeight = 32;
-                }
-
-            }
-            else {
-                calculatedHeight = maxHeight;
-            }
-
-            if (calculatedHeight > maxHeight) {
-                calculatedHeight = maxHeight;
-            }
-            if (calculatedHeight < minHeight) {
-                calculatedHeight = minHeight;
-            }
-            this.selectionScrollHeight = calculatedHeight + "px";
-        }
-        catch (ex) {
-            this.selectionScrollHeight = "320px";
-        }
-        this.ref.markForCheck();
     }
 
     getFieldTypeForSwitch(type: string) {
