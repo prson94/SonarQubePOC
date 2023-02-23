@@ -2052,8 +2052,12 @@ namespace d360.web.Controllers.V2
 
 				if (skip != null && take != null)
 				{
+					if(skip < 0)
+					{
+						skip = 0;
+					}
 					pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
-					if (take == 0)
+					if (take <= 0)
 					{
 						onlyCount = true;
 					}

@@ -792,7 +792,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	}
 
 	getLoadParams($params) {
-		var loadParams: any = { skip: $params.first, take: $params.rows, filter: $params.globalFilter ?? "" };
+		var loadParams: any = { skip: Math.max($params.first, 0), take: $params.rows, filter: $params.globalFilter ?? "" };
 		loadParams["isForAssetForm"] = true;
 		loadParams["assetUid"] = this.assetUid;
 
