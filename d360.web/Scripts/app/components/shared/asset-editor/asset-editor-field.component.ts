@@ -788,6 +788,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			if (!this.lookupValues || this.lookupValues.length === 0) {
 				this.lookupValues = Array.from({ length: res.count }, () => { return { label: null, value: null, color: null }; });
 			}
+			this.setSelectionScrollHeight();
 		});
 	}
 
@@ -866,13 +867,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 				}
 			}
 
-			const maxHeight: number = 320;
-			const minHeight: number = 50;
-			const calculatedHeight = Math.min(Math.max(this.lookupValues.length * 32, minHeight), maxHeight);
-
-			setTimeout(() => {
-				this.selectionScrollHeight = calculatedHeight + "px";
-			}, 100);
+			this.setSelectionScrollHeight();
 			
 			this.isLookupValuesLoading = false;
 			this.ref.detectChanges();
@@ -973,5 +968,15 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	onItemInfoClick($event: MouseEvent, objectID: string): void {
 		$event.stopPropagation();
 		this.sidePanelSelectionChange.emit({ objectID: objectID.toLowerCase(), fieldName: this.field.FieldName });
+	}
+
+	setSelectionScrollHeight() {
+		const maxHeight: number = 320;
+		const minHeight: number = 50;
+		const calculatedHeight = Math.min(Math.max(this.lookupValues.length * 32, minHeight), maxHeight);
+
+		setTimeout(() => {
+			this.selectionScrollHeight = calculatedHeight + "px";
+		}, 100);
 	}
 }
