@@ -2,6 +2,7 @@
 import { DomHandler } from "primeng/dom";
 import { CommonModule } from "@angular/common";
 import { Dropdown } from "primeng/dropdown";
+import { isNil } from "lodash-es";
 
 @Directive({
     selector: "[igDropdown]"
@@ -71,7 +72,12 @@ export class DropdownDirective implements AfterContentInit {
                     }
                     else {
 						panelEl.classList.add("ig-dropdown-ellipsis-rtl");
-                    }
+					}
+
+					if (isNil(this.dropdownRef.appendTo)) {
+						const panelWidth = this.el.nativeElement.offsetWidth;
+						panelEl.style.maxWidth = `${panelWidth}px`;
+					}
 
                     if (this.overlayLowerZIndex) {
 						panelEl.classList.add("ig-dropdown-overlay-lower-index");
