@@ -63,7 +63,7 @@ end
     </sql>
   </changeSet>
 
-<changeSet author="Pappas" id="Table.dbo.Intersect-Indices-v4">
+<changeSet author="TKlok" id="Table.dbo.Intersect-Indices-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -124,6 +124,11 @@ end
 	if not exists (select 1 from [sys].[indexes] i where name = 'IX_Intersect_IntersectTypeID_Include')
 	begin
 		create nonclustered index [IX_Intersect_IntersectTypeID_Include] on [dbo].[Intersect] ( [IntersectTypeID] ASC ) include ([ObjectAssetID], [SubjectAssetID])
+	end
+
+	if not exists (select 1 from [sys].[indexes] i where name = 'IX_Intersect_ObjectAssetID_SubjectAssetID')
+	begin
+		create nonclustered index [IX_Intersect_ObjectAssetID_SubjectAssetID] on [dbo].[Intersect] ( ObjectAssetID ) include ( [SubjectAssetID] ) 
 	end
 ]]>
     </sql>
