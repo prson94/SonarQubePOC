@@ -1,5 +1,5 @@
 <d3s-asset-type-list-header [assetTypeClass]="assetTypeClass"></d3s-asset-type-list-header>
-<d3s-configuration-asset-type-list-tabs [assetTypeClass]="assetTypeClass"></d3s-configuration-asset-type-list-tabs>
+<d3s-configuration-asset-type-list-tabs [assetTypeClass]="assetTypeClass" [GovernTabSaveInProcess] ="isSaving"></d3s-configuration-asset-type-list-tabs>
 <div class="row governance-role-detail">
 	<div class="col s12">
 		<div class="tile tile-detail">
@@ -13,8 +13,7 @@
 					</ig-message-box>
 					<div class="col s12">
 						<div class="FieldName" i18n>Governance Role Reference List</div>
-						<d3s-loading [isLoading]="isSaving"></d3s-loading>
-						<p-dropdown *ngIf="!isSaving" igDropdown
+						<p-dropdown *ngIf="!isLoading" igDropdown
 									igSize="medium"
 									panelStyleClass="dropdown-govrole-correction"
 									name="refListDDL"

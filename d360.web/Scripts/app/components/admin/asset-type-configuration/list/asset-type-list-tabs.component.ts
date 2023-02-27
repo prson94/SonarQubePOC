@@ -12,6 +12,7 @@ import { Tab } from "../../../shared/tabs/tabs.models";
 })
 export class ConfigurationAssetTypeListTabsComponent {
     @Input() assetTypeClass: AssetTypeClass;
+    @Input() GovernTabSaveInProcess = false;
 
     constructor(private settingsService: CompanySettingsService) {
     }
@@ -33,7 +34,7 @@ export class ConfigurationAssetTypeListTabsComponent {
                 title: $localize`Asset Types`,
                 isVisible: () => [
                     AssetTypeClass.DiagramAsset
-                ].includes(this.assetTypeClass),
+                ].includes(this.assetTypeClass) && !this.GovernTabSaveInProcess,
             },
             {
                 url: `${baseUrl}/governanceRoles`,
@@ -50,7 +51,7 @@ export class ConfigurationAssetTypeListTabsComponent {
                 title: $localize`Connector Labels`,
                 isVisible: () => [
                     AssetTypeClass.DiagramAsset
-                ].includes(this.assetTypeClass)
+                ].includes(this.assetTypeClass) && !this.GovernTabSaveInProcess
             }
         ];
     }

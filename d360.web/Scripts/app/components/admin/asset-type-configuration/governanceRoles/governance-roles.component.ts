@@ -46,7 +46,6 @@ export class GovernanceRolesComponent implements OnInit, OnDestroy {
 			)
 			.subscribe((res) => {
 				this.refListDDL = [];
-				this.refListDDL.push({ value: '', label: $localize`Select Reference List...` });
 				res.forEach((x) => {
 					this.refListDDL.push({ value: x.uid, label: x.Name });
 				});
@@ -83,18 +82,26 @@ export class GovernanceRolesComponent implements OnInit, OnDestroy {
 
 		if (currentSetting.GuidSetting && setting.GuidSetting && currentSetting.GuidSetting.Value !== setting.GuidSetting.Value) {
 			//calling save function
+			this.isLoading = true;
 			this.isSaving = true;
 			this.settingsService.putSetting(setting).pipe(
 				finalize(() => {
+					this.isLoading = false;
 					this.isSaving = false;
 				})
 				).subscribe(
 					(res) => {
-						this.isSaving = false;
-						this.originalModel = this.model;
-						this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
-						this.settingsService.loadSettings();
-						this.cdRef.detectChanges();
+						this.settingsService.loadSettings().then(
+							(val) => {
+								this.isLoading = false;
+								this.isSaving = false;
+								this.originalModel = this.model;
+								this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
+								this.cdRef.detectChanges();
+							}).finally(() => {
+								this.isLoading = false;
+								this.isSaving = false;
+							})
 					},
 					(err) => {
 						this.messagesService.showError($localize`Error saving governance role`, err.error.message);
