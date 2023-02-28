@@ -76,7 +76,7 @@ namespace igx.UnitTests.V2ControllerTests
 			//Arrange
 			var pageSize = "500000";
 			var pageNum = "1";
-			var expectedErrorMessage = "Invalid pageSize value provided. Number is too large";
+			var expectedErrorMessage = "Invalid pageSize value provided. Number is too large.";
 			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
 			//Act
@@ -92,7 +92,7 @@ namespace igx.UnitTests.V2ControllerTests
 			//Arrange
 			var pageSize = "-1";
 			var pageNum = "1";
-			var expectedErrorMessage = "Invalid pageSize value provided. Value must be greater than 0";
+			var expectedErrorMessage = "Invalid pageSize value provided. Value must be greater than 0.";
 			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
 			//Act
@@ -108,7 +108,7 @@ namespace igx.UnitTests.V2ControllerTests
 			//Arrange
 			var pageSize = "5";
 			var pageNum = "-1";
-			var expectedErrorMessage = "Invalid pageNum value provided. Value must be greater than 0";
+			var expectedErrorMessage = "Invalid pageNum value provided. Value must be greater than 0.";
 			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
 			//Act
@@ -124,7 +124,7 @@ namespace igx.UnitTests.V2ControllerTests
 			//Arrange
 			var pageSize = "abcdef";
 			var pageNum = "-1";
-			var expectedErrorMessage = "Invalid pageSize value provided. Must be a numeric value";
+			var expectedErrorMessage = "Invalid pageSize value provided. Must be a numeric value without decimal point.";
 			var pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
 			//Act
