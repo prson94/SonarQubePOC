@@ -277,6 +277,69 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid pageNum value provided..
+        /// </summary>
+        public static string InvalidpageNum {
+            get {
+                return ResourceManager.GetString("InvalidpageNum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid pageNum value provided. Value must be greater than 0..
+        /// </summary>
+        public static string InvalidpageNumGT0 {
+            get {
+                return ResourceManager.GetString("InvalidpageNumGT0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid pageNum value provided. Must be a numeric value without decimal point..
+        /// </summary>
+        public static string InvalidpageNumNumberValue {
+            get {
+                return ResourceManager.GetString("InvalidpageNumNumberValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid pageSize value provided..
+        /// </summary>
+        public static string InvalidPageSize {
+            get {
+                return ResourceManager.GetString("InvalidPageSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid pageSize value provided. Value must be greater than 0..
+        /// </summary>
+        public static string InvalidpageSizeGT0 {
+            get {
+                return ResourceManager.GetString("InvalidpageSizeGT0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid pageSize value provided. Number is too large..
+        /// </summary>
+        public static string InvalidpageSizeNumberLarge {
+            get {
+                return ResourceManager.GetString("InvalidpageSizeNumberLarge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid pageSize value provided. Must be a numeric value without decimal point..
+        /// </summary>
+        public static string InvalidpageSizeNumberValue {
+            get {
+                return ResourceManager.GetString("InvalidpageSizeNumberValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Item not found..
         /// </summary>
         public static string ItemNotFound {

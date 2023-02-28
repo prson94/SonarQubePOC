@@ -183,6 +183,27 @@
   <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
     <value>Invalid Relationship field encountered invalid or deleted relationship type encountered.</value>
   </data>
+  <data name="InvalidpageNum" xml:space="preserve">
+    <value>Invalid pageNum value provided.</value>
+  </data>
+  <data name="InvalidpageNumGT0" xml:space="preserve">
+    <value>Invalid pageNum value provided. Value must be greater than 0.</value>
+  </data>
+  <data name="InvalidpageNumNumberValue" xml:space="preserve">
+    <value>Invalid pageNum value provided. Must be a numeric value without decimal point.</value>
+  </data>
+  <data name="InvalidPageSize" xml:space="preserve">
+    <value>Invalid pageSize value provided.</value>
+  </data>
+  <data name="InvalidpageSizeGT0" xml:space="preserve">
+    <value>Invalid pageSize value provided. Value must be greater than 0.</value>
+  </data>
+  <data name="InvalidpageSizeNumberLarge" xml:space="preserve">
+    <value>Invalid pageSize value provided. Number is too large.</value>
+  </data>
+  <data name="InvalidpageSizeNumberValue" xml:space="preserve">
+    <value>Invalid pageSize value provided. Must be a numeric value without decimal point.</value>
+  </data>
   <data name="ItemNotFound" xml:space="preserve">
     <value>Item not found.</value>
   </data>
