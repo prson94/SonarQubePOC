@@ -616,4 +616,30 @@ delete from [dbo].[HelpResource] where [Url] = 'Default.htm#b-release-notes/what
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+  <changeSet author="TKlok" id="Data.Corrections.GOV-21085">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+	INSERT INTO AssetDisplayValue ([AssetID], [DisplayValue], DisplayValueHash, DisplayValuePrefix, [UpdatedOn])
+	SELECT
+		a.id,
+		DisplayValue.DisplayValue,
+		CONVERT(NVARCHAR(32), HashBytes('SHA1', DisplayValue.DisplayValue), 2) as DisplayValueHash,
+		SUBSTRING(DisplayValue.DisplayValue, 1, 250) as DisplayValuePrefix, GETUTCDATE()
+	FROM
+		reporting.Global_Resource r
+		inner join dbo.asset a on a.Object = 'Resource' and a.ObjectID = r.ResourceID
+		cross apply dbo.GetAssetDisplayValueById(a.id) DisplayValue
+		left outer join dbo.AssetDisplayValue adv on a.id = adv.AssetID
+	WHERE adv.AssetID IS NULL;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
+
+
