@@ -76,7 +76,12 @@ export class GovernanceRolesComponent implements OnInit, OnDestroy {
 		const setting = new SettingsPutModel();
 		setting.SettingID = CompanySettingEnum.GovernanceRoleReferenceListUid;
 		setting.GuidSetting = new GuidSetting();
-		setting.GuidSetting.Value = this.model.RefListUid;
+		if (this.model.RefListUid === null) {
+			setting.GuidSetting.Value = "00000000-0000-0000-0000-000000000000";
+		}
+		else {
+			setting.GuidSetting.Value = this.model.RefListUid;
+		}
 
 		const currentSetting = this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid);
 
@@ -91,17 +96,12 @@ export class GovernanceRolesComponent implements OnInit, OnDestroy {
 				})
 				).subscribe(
 					(res) => {
-						this.settingsService.loadSettings().then(
-							(val) => {
-								this.isLoading = false;
-								this.isSaving = false;
-								this.originalModel = this.model;
-								this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
-								this.cdRef.detectChanges();
-							}).finally(() => {
-								this.isLoading = false;
-								this.isSaving = false;
-							})
+						this.settingsService.SetGovernUidSettings(setting.GuidSetting.Value);
+						this.isLoading = false;
+						this.isSaving = false;
+						this.originalModel = this.model;
+						this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
+						this.cdRef.detectChanges();
 					},
 					(err) => {
 						this.messagesService.showError($localize`Error saving governance role`, err.error.message);
