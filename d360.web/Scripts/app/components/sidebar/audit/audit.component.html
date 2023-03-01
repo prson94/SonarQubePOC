@@ -38,7 +38,7 @@
                 [(selection)]="selected">
         <ng-template pTemplate="header">
             <tr>
-                <th *ngFor="let column of columns" [pSortableColumn]="column.datafield" [style]="'flex: 0 0 '+ column.columnWidth + 'px'">
+                <th *ngFor="let column of columns" [pSortableColumn]="column.datafield" [style]="'width: '+ column.columnWidth + 'px'">
                     {{column.text}}
                     <d3s-sortIcon [field]="column.datafield"></d3s-sortIcon>
                 </th>
@@ -46,7 +46,7 @@
         </ng-template>
         <ng-template pTemplate="body" let-item>
             <tr [pSelectableRow]="item">
-                <td *ngFor="let column of columns" [style]="'flex: 0 0 ' + column.columnWidth + 'px'">
+                <td *ngFor="let column of columns" [style]="'width: ' + column.columnWidth + 'px'">
                     <ng-container [ngSwitch]="column.datafield">
                         <span *ngSwitchCase="'date'">{{item.date | date: 'medium'}}</span>
                         <ng-container *ngSwitchDefault>{{item[column.datafield]}}</ng-container>
