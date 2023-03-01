@@ -1817,7 +1817,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					if (useTempTableForResults)
 					{
 						IDictionary<string, object> res = result;
-						result.Remove("_rowid");
+						res.Remove("_rowid");
 					}
 
 					if (includeRelationships)
