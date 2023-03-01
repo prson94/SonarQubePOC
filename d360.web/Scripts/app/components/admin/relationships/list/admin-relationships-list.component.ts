@@ -97,7 +97,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		let obs = this.relationshipsService.getRelationshipTypes(null, true);
 
 		if (this.assetTypeUid) {
-			obs = this.relationshipsService.getRelationshipTypes(this.assetTypeUid, null);
+			obs = this.relationshipsService.getRelationshipTypes(this.assetTypeUid, true);
 		}
 
 		obs.subscribe((result) => {
