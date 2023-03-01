@@ -1302,13 +1302,26 @@ namespace d360.model.DataAccessLayer
 			#endregion
 
 			await CompanyContext.Connection.ExecuteAsync(@$"
-						UPDATE ADV
-						SET ADV.DisplayValue = DisplayValue.DisplayValue,
-							DisplayValueHash = CONVERT(NVARCHAR(32), HashBytes('SHA1', DisplayValue.DisplayValue), 2),
-							DisplayValuePrefix = SUBSTRING(DisplayValue.DisplayValue, 1, 250)
-						from AssetDisplayValue ADV
-						inner join api.ExecutionUser EU on EU.ExecutionID = @executionID and EU.AssetId = ADV.AssetID
-						cross apply GetAssetDisplayValueById(EU.AssetId) DisplayValue;
+						MERGE	dbo.AssetDisplayValue as ADV
+						USING	(
+							SELECT
+								eu.AssetId,
+								DisplayValue.DisplayValue,
+								CONVERT(NVARCHAR(32), HashBytes('SHA1', DisplayValue.DisplayValue), 2) as DisplayValueHash,
+								SUBSTRING(DisplayValue.DisplayValue, 1, 250) as DisplayValuePrefix
+							from api.ExecutionUser EU 
+							cross apply GetAssetDisplayValueById(EU.AssetId) DisplayValue
+							where  EU.ExecutionID = @executionID
+						) as S
+						ON		(ADV.AssetID = S.AssetID)
+						WHEN	matched THEN
+						UPDATE	SET
+							ADV.DisplayValue = s.DisplayValue,
+							ADV.DisplayValueHash = s.DisplayValueHash,
+							ADV.DisplayValuePrefix = s.DisplayValuePrefix
+						WHEN not matched by target THEN
+						INSERT	([AssetID], [DisplayValue], DisplayValueHash, DisplayValuePrefix, [UpdatedOn])
+						VALUES	(S.[AssetID], S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcdate());
 
 						exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, 0;",
 							new
