@@ -1312,6 +1312,7 @@ namespace d360.model.DataAccessLayer
 							from api.ExecutionUser EU 
 							cross apply GetAssetDisplayValueById(EU.AssetId) DisplayValue
 							where  EU.ExecutionID = @executionID
+							and EU.AssetId is not null
 						) as S
 						ON		(ADV.AssetID = S.AssetID)
 						WHEN	matched THEN
