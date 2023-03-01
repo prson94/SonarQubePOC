@@ -67,6 +67,9 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 			});
 			this.selected = (this.dashboards.length > 0 ? this.dashboards[0] : null);
 			this.selectedItemChange();
+			if (result.length === 0) {
+				this.buildSecondaryNavigation({ assetUid: "00000000-0000-0000-0000-000000000000", objectType: 'Report' });
+			}
 		});
 	}
 
