@@ -278,7 +278,7 @@ namespace d360.web.Controllers.V2
 
 				if (_pageSize.Length > 10)
 				{
-					return "Invalid pageSize value provided.";
+					return OthersMessages.InvalidPageSize;
 				}
 
 				if (long.TryParse(_pageSize, out pageSize))
@@ -287,17 +287,17 @@ namespace d360.web.Controllers.V2
 
 					if (pageSize > maxRows)
 					{
-						return "Invalid pageSize value provided. Number is too large";
+						return OthersMessages.InvalidpageSizeNumberLarge;
 					}
 
 					if (pageSize <= 0)
 					{
-						return "Invalid pageSize value provided. Value must be greater than 0";
+						return OthersMessages.InvalidpageSizeGT0;
 					}
 				}
 				else
 				{
-					return "Invalid pageSize value provided. Must be a numeric value";
+					return OthersMessages.InvalidpageSizeNumberValue;
 				}
 			}
 
@@ -307,19 +307,19 @@ namespace d360.web.Controllers.V2
 
 				if (_pageNum.Length > 10)
 				{
-					return "Invalid pageNum value provided.";
+					return OthersMessages.InvalidpageNum;
 				}
 
 				if (long.TryParse(_pageNum, out pageNum))
 				{
 					if (pageNum <= 0)
 					{
-						return "Invalid pageNum value provided. Value must be greater than 0";
+						return OthersMessages.InvalidpageNumGT0;
 					}
 				}
 				else
 				{
-					return "Invalid pageNum value provided. Must be a numeric value.";
+					return OthersMessages.InvalidpageNumNumberValue;
 				}
 			}
 
