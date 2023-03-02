@@ -1463,7 +1463,7 @@ namespace d360.web.Controllers
 			var intersectTypeIds = relationshipFieldTypes.Select(x => x.LookupObjectID.Value);
 			intersectTypes = Company.IntersectTypes.Include(x => x.Predicate).Where(x => intersectTypeIds.Contains(x.ID)).ToList();
 			DynamicParameters getRelationshipArgs = new DynamicParameters();
-			getRelationshipArgs.Add("assetId", asset.ID);
+			getRelationshipArgs.Add("assetId", asset?.ID);
 			getRelationshipArgs.Add("query", null);
 			StringBuilder queryBuilder = new StringBuilder();
 			queryBuilder.Append("declare  @results table(FieldTypeId int, Count int, Results nvarchar(max))");
