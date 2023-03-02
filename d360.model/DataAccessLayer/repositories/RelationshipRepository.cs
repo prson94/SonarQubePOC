@@ -1526,14 +1526,14 @@ from	IntersectType I
 			var customColumnName = "[" + customColumns.Aggregate((x, y) => x + "],[" + y) + "]";
 			var CteColumnName = "CTE.[" + customColumns.Aggregate((x, y) => x + "],CTE.[" + y) + "]";
 
-			var sql = @"WITH CTE (ObjectID, " + customColumnName +
-				") AS ( SELECT ObjectId, " + customColumnName +
-				" FROM ( select f2.ObjectID, f.FriendlyName,FormattedValue from fieldtype f  " +
+			var sql = @"WITH CTE (IntersectID, " + customColumnName +
+				") AS ( SELECT IntersectID, " + customColumnName +
+				" FROM ( select f2.IntersectID, f.FriendlyName,FormattedValue from fieldtype f  " +
 				"inner join field f2 on f2.fieldtypeid = f.id where f.IntersectTypeID = @id  ) as PivotData " +
 				"PIVOT (max(FormattedValue) FOR FriendlyName IN (" + customColumnName + ") ) AS PivotResult) " +
 				"select i.ID, i.[Subject],i.SubjectID, i.SubjectName, i.SubjectTypeName, i.[Object], " +
 				"i.ObjectID, i.ObjectName, i.ObjectTypeName, i.PredicateName , i.SubjectUid, i.ObjectUid, " + CteColumnName +
-				" from  intersectdetail as i left join CTE  on CTE.ObjectID =i.id where intersecttypeid=@id ";
+				" from  intersectdetail as i left join CTE  on CTE.IntersectID =i.id where intersecttypeid=@id ";
 			var models = companyContext.Query<dynamic>(sql, new { id }, ApiTimeout);
 
 			return models;
