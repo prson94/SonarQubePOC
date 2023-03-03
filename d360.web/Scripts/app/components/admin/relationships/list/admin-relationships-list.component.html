@@ -73,7 +73,7 @@
 		<ng-template pTemplate="body" let-item>
 			<tr (click)="selected=item;selectedChange.emit(selected);"
 				(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selected=item;"
-				(dblclick)="selected=item;selectedChange.emit(selected);showEditor=true;"
+				(dblclick)="selected=item;selectedChange.emit(selected);edit(item)"
 				[pSelectableRow]="item"
 				style="position:relative;"
 				[attr.data-uid]="item.Uid">
