@@ -42,6 +42,16 @@ export class CompanySettingsService extends BaseObservableService {
 		});
 	}
 
+	SetGovernUidSettings(setting: string) {
+		this.settings.forEach((s) => {
+			if (s.SettingID === CompanySettingEnum.GovernanceRoleReferenceListUid) {
+				s.GuidSetting.Value = setting;
+				s.ScalarValue = s.GuidSetting.Value;
+			}
+		});
+
+	}
+
 	loadSettings() {
 		return new Promise((resolve, reject) => {
 			this.http
