@@ -3442,6 +3442,10 @@ namespace d360.web.Controllers.V2
 			{
 				return ReturnApiError(HttpStatusCode.BadRequest, "Take must be greater than 0");
 			}
+			if(skip < 0)
+			{
+				skip = 0;
+			}
 
 			try
 			{
