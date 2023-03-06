@@ -1,6 +1,6 @@
 ﻿import { HttpClient, HttpContext } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { initialize, LDClient, LDFlagSet } from "ldclient-js";
+import { initialize, LDClient, LDFlagSet } from "launchdarkly-js-client-sdk";
 import { Observable, Subject } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 import { ROUTE_INDEPENDENT_QUERY } from "../http-interceptors";
