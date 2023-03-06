@@ -28,7 +28,8 @@
             <ul *ngFor="let item of field.Values; index as i">
                 <li *ngIf="item.TooltipContext == 'Preview'" [class]="valueCount > 1 ? 'ig-item' : ''">
                     <a context-link *ngIf="item.TooltipUrl && fieldDataType != 'color'" [innerHtml]="(valueCount > 1 ? '&bull; ' : '') + item.Value" (click)="navigate(item.TooltipUrl, $event, item)" [attr.data-link-type]="getDataLinkType(item)"></a>
-                    <span *ngIf="!item.TooltipUrl && fieldDataType != 'color'" [innerHtml]="item.Value"></span>
+                    <span *ngIf="!item.TooltipUrl && fieldDataType != 'color' &&  item.HasReadAccess" [innerHtml]="item.Value"></span>
+                    <span *ngIf="!item.TooltipUrl && fieldDataType != 'color' &&  !item.HasReadAccess" [innerHtml]="item.Value" i18n-pTooltip pTooltip="You do not have permission to view the details of this item." tooltipStyleClass="ig-tooltip" tooltipPosition="top"></span>
                     <d3s-color-display *ngIf="fieldDataType == 'color'" [valueIndex]="i" [url]="item.TooltipUrl" [colorsJSON]="item.Value" styleClass="detail" [interceptLinkClick]="interceptLinkClick" [field]="field"></d3s-color-display>
                 </li>
                 <li *ngIf="item.TooltipContext != 'Preview'">

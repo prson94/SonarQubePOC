@@ -37,6 +37,7 @@ export class DetailSubField {
     TooltipType: any;
     TooltipUrl: string;
     Value: string;
+    HasReadAccess = true;
 }
 
 export class DetailField {
