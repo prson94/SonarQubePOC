@@ -1,0 +1,56 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="tduric" id="View.dbo.CatalogBrowseObject-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			CREATE OR ALTER VIEW dbo.CatalogBrowseObject
+			WITH SCHEMABINDING
+			AS
+				select
+				I.ID as IntersectId,
+				I.ObjectAssetID, 
+				I.SubjectAssetId,
+				CAST(ADV_Object.DisplayValue as nvarchar(4000)) as ObjectDisplayValue,
+				P.Id as PredicateId 
+				from dbo.[Predicate] P
+					inner join dbo.[IntersectType] IT on IT.PredicateID = P.ID
+					inner join dbo.[Intersect] I on I.IntersectTypeID = IT.ID
+					inner join dbo.AssetDisplayValue ADV_Object on ADV_Object.AssetID = I.ObjectAssetID
+				where P.Type = 5;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+  
+  
+    <changeSet author="tduric" id="View.dbo.CatalogBrowseObject-Indexes-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			create unique clustered index UCI_CatalogBrowseObject
+			ON dbo.CatalogBrowseObject (IntersectId);
+
+			CREATE INDEX IX_CatalogBrowseObject_DisplayValue
+			ON dbo.CatalogBrowseObject (ObjectDisplayValue);
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

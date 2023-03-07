@@ -5,10 +5,14 @@ using d360.web.Models;
 using Dapper;
 using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.EnterpriseServices;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,9 +67,42 @@ namespace d360.web.Controllers.V2
 		{
 			public string Column { get; set; }
 
+			public string JoinStatement { get; set; }
+
+			public string DataStatement { get; set; }
+
 			public string ApiName { get; set; }
 
 			public int Position { get; set; }
+
+			public CatalogColumnType CatalogColumnType { get; set; }
+
+			public bool UseAsSortBy { get; set; }
+
+			public string Sort { get; set; }
+
+		}
+
+		public class CatalogWhere
+		{
+			public string PropertyName { get; set; }
+			public string Query { get; set; }
+			public string Where { get; set; }
+			public int PredicateId { get; set; }
+		}
+
+		public enum CatalogColumnType
+		{
+			SystemField, Predicate
+		}
+
+		public IEnumerable<int> GetAllIndexes(string source, string matchString)
+		{
+			matchString = Regex.Escape(matchString);
+			foreach (Match match in Regex.Matches(source, matchString))
+			{
+				yield return match.Index;
+			}
 		}
 
 		#endregion
@@ -126,123 +163,133 @@ namespace d360.web.Controllers.V2
 
 			var columns = new List<CatalogColumn> {
 				new CatalogColumn { ApiName = "uid", Column = "a.Uid", Position = 1 },
-				new CatalogColumn { ApiName = "displayValue", Column = "v.DisplayValue", Position = 2 }
+				new CatalogColumn { ApiName = "displayValue", Column = "adv.DisplayValue", Position = 2, Sort = "S.ObjectDisplayValue" }
 			};
 
-			predicates.ForEach(p => {
+			predicates.ForEach(p =>
+			{
 				columns.Add(new CatalogColumn
 				{
 					ApiName = p.Name,
-					Column = $@"(
-	select	string_agg(v.DisplayValue, '; ')
-	from	PredicateIntersect i
-			inner join #v v on v.AssetID = i.SubjectAssetID and i.PredicateID = v.PredicateId and ObjectAssetId = a.ID and i.PredicateType = 5 and i.PredicateID = {p.Id}
-)",
-					Position = columns.Max(c => c.Position) + 1
+					Column = $@"P{p.Id}.val as [{p.Name}]",
+					DataStatement = $"outer apply (select string_agg(SubjectDisplayValue, '; ') from dbo.CatalogBrowseSubject where ObjectAssetID = res.objectassetid and PredicateId = {p.Id})P{p.Id}(val)",
+					Position = columns.Max(c => c.Position) + 1,
+					JoinStatement = $"left join dbo.CatalogBrowseSubject P{p.Id} on P{p.Id}.ObjectAssetID = S.ObjectAssetID and P{p.Id}.PredicateId = {p.Id}",
+					CatalogColumnType = CatalogColumnType.Predicate,
+					Sort = $"P{p.Id}.SubjectDisplayValue"
 				});
 			});
 
 			// Add path as the last column.
-			columns.Add(new CatalogColumn { ApiName = "path", Column = "p.DisplayPath", Position = columns.Max(c => c.Position) + 1 });
+			columns.Add(new CatalogColumn { ApiName = "displaypath", Column = "p.DisplayPath", Sort = "p.DisplayPath", Position = columns.Max(c => c.Position) + 1 });
 
 			#endregion
 
 			#region Filtering logic
 
-			var wheres = new List<string> {
-				"exists(select 1 from PredicateIntersect where PredicateType = 5 and ObjectAssetID = a.Id)"
-			};
+			var whereConnectors = new List<Tuple<string, int>>();
+			var catalogWheres = new List<CatalogWhere>();
 			var dbArgs = new DynamicParameters();
 			if (queryParams.Any(q => q.Key == "_filter"))
 			{
-				var rawFilters = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).ToList();
+				var filterString = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).FirstOrDefault();
+
+				foreach (var idx in GetAllIndexes(filterString, " and "))
+				{
+					whereConnectors.Add(new Tuple<string, int>("and", idx));
+				}
+
+				foreach (var idx in GetAllIndexes(filterString, " or "))
+				{
+					whereConnectors.Add(new Tuple<string, int>("or", idx));
+				}
+
+				string[] delimiters = { " and ", " or " };
+				var rawFilters = filterString.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
+
 				int parameterIndex = 1;
-				rawFilters.ForEach(rawSort => {
-					var filterMatch = Regex.Match(rawSort, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin)\s([\w\-\/\:\,\*]+)$");
+				foreach (var rawFilter in rawFilters)
+				{
+					var filterMatch = Regex.Match(rawFilter, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin)\s([\w\-\/\:\,\*]+)$");
 					if (filterMatch.Success && filterMatch.Groups.Count == 4)
 					{
 						var filterProperty = filterMatch.Groups[1].Value;
 						var filterOperation = filterMatch.Groups[2].Value;
 						var filterValue = filterMatch.Groups[3].Value;
-						var column = columns.FirstOrDefault(c => c.ApiName == filterProperty);
+						var column = columns.FirstOrDefault(c => c.ApiName.ToLowerInvariant() == filterProperty.ToLowerInvariant());
 						if (column != null)
 						{
-							var predicate = predicates.FirstOrDefault(p => p.Name == filterProperty);
+							// Treat as standard text value.
+							var operation = "";
+							switch (filterOperation)
+							{
+								case "ct":
+									operation = "like";
+									if (filterValue.StartsWith("*"))
+									{
+										dbArgs.Add($"p{parameterIndex}", $"%{filterValue.Replace("*", "")}");
+									}
+									else if (filterValue.EndsWith("*"))
+									{
+										dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "")}%");
+									}
+									else
+									{
+										dbArgs.Add($"p{parameterIndex}", $"%{filterValue}%");
+									}
+
+									break;
+								case "eq":
+									operation = "=";
+									dbArgs.Add($"p{parameterIndex}", filterValue);
+									break;
+								case "nct":
+									operation = "not like";
+									dbArgs.Add($"p{parameterIndex}", filterValue);
+									break;
+								case "neq":
+									operation = "<>";
+									dbArgs.Add($"p{parameterIndex}", filterValue);
+									break;
+							}
+							var predicate = predicates.FirstOrDefault(p => p.Name.ToLowerInvariant() == filterProperty.ToLowerInvariant());
+
 							if (predicate != null)
 							{
-								// Treat as a list: IN, NOT IN
-
-								var filterText = $"v.DisplayValue {(filterOperation == "in" ? "in" : "not in")} (";
-								var filterParamIds = new List<string>();
-								if (filterValue.Contains(","))
+								catalogWheres.Add(new CatalogWhere
 								{
-									var filterValues = filterValue.SplitCommas().ToList();
-									int i = 1;
-									filterValues.ForEach(fV =>
-									{
-										var paramId = $"p{predicate.Id}_{i}";
-										dbArgs.Add(paramId, fV);
-										filterParamIds.Add(paramId);
-										i++;
-									});
-								}
-								else
-								{
-									var paramId = $"p{predicate.Id}_1";
-									dbArgs.Add(paramId, filterValue);
-									filterParamIds.Add(paramId);
-								}
-								filterText += string.Join(",", filterParamIds.Select(o => $"@{o}")) + ")";
-								wheres.Add($"exists(select 1 from PredicateIntersect i inner join #v v on v.AssetId = i.SubjectAssetId and i.PredicateType = 5 and i.PredicateId = {predicate.Id} and ObjectAssetID = a.Id and {filterText})");
+									PropertyName = $"p{parameterIndex}",
+									PredicateId = predicate.Id,
+									Where = $"fr.p{parameterIndex} = 1",
+									Query = $@"select I.ObjectAssetID from #v pred 
+											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
+											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
+											where pred.PredicateId = {predicate.Id} and pred.DisplayValue {operation} @p{parameterIndex}"
+								});
 							}
-							else
+							else if (column.ApiName == "displayValue")
 							{
-								// Treat as standard text value.
-								var operation = "";
-								bool shouldInclude = true;
-								switch (filterOperation)
+								catalogWheres.Add(new CatalogWhere
 								{
-									case "ct":
-										operation = "like";
-										if (filterValue.StartsWith("*"))
-										{
-											dbArgs.Add($"p{parameterIndex}", $"%{filterValue.Replace("*", "")}");
-										}
-										else if (filterValue.EndsWith("*"))
-										{
-											dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "")}%");
-										}
-										else
-										{
-											dbArgs.Add($"p{parameterIndex}", $"%{filterValue}%");
-										}
+									PropertyName = $"p{parameterIndex}",
+									Where = $"fr.p{parameterIndex} = 1",
+									Query = $@"select ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue {operation} @p{parameterIndex}"
+								});
+							}
 
-										break;
-									case "eq":
-										operation = "=";
-										dbArgs.Add($"p{parameterIndex}", filterValue);
-										break;
-									case "nct":
-										operation = "not like";
-										dbArgs.Add($"p{parameterIndex}", filterValue);
-										break;
-									case "neq":
-										operation = "<>";
-										dbArgs.Add($"p{parameterIndex}", filterValue);
-										break;
-									default:
-										shouldInclude = false;
-										break;
-								}
-								if (shouldInclude)
+							else if (column.ApiName == "displaypath")
+							{
+								catalogWheres.Add(new CatalogWhere
 								{
-									wheres.Add($"{column.Column} {operation} p{parameterIndex}");
-								}
+									PropertyName = $"p{parameterIndex}",
+									Where = $"fr.p{parameterIndex} = 1",
+									Query = $@"select id as ObjectAssetID from assetpath ap where ap.displaypath {operation} @p{parameterIndex}"
+								});
 							}
 						}
 					}
 					parameterIndex++;
-				});
+				}
 			}
 
 			#endregion
@@ -253,7 +300,8 @@ namespace d360.web.Controllers.V2
 			if (queryParams.Any(q => q.Key == "_order"))
 			{
 				var rawSorts = queryParams.Where(q => q.Key == "_order").Select(s => s.Value).ToList();
-				rawSorts.ForEach(rawSort => {
+				rawSorts.ForEach(rawSort =>
+				{
 					var sortMatch = Regex.Match(rawSort, @"^(asc|desc)\(([\w\d\s\-\/\:]+)\)$");
 					if (sortMatch.Success && sortMatch.Groups.Count == 3)
 					{
@@ -279,16 +327,17 @@ namespace d360.web.Controllers.V2
 			foreach (var key in parsedSorts.Keys)
 			{
 				var sortDirection = (parsedSorts[key] ? "asc" : "desc");
-				var column = columns.FirstOrDefault(c => c.ApiName == key);
+				var column = columns.Where(x => !string.IsNullOrEmpty(x.Sort)).FirstOrDefault(c => c.ApiName == key);
 				if (column != null)
 				{
-					sorts.Add($"{column.Position} {sortDirection}");
+					sorts.Add($"{column.Sort} {sortDirection}");
+					column.UseAsSortBy = true;
 				}
 			}
 
 			if (sorts.Count == 0)
 			{
-				sorts.Add($"2 asc");
+				sorts.Add($"S.ObjectDisplayValue asc");
 			}
 
 			#endregion
@@ -370,52 +419,128 @@ namespace d360.web.Controllers.V2
 			var offset = $"offset {(pageNum - 1) * pageSize} rows fetch next {pageSize} rows only";
 
 			#endregion
-
-			#region Build Sql, including the Count, the Lookup, and the Resultset
-
-			sql = $@"
-drop table if exists #v; 
-create table #v (PredicateId int, AssetId bigint, DisplayValue nvarchar(500));
-insert into #v
-	select	distinct
-			p.Id,
-			a.Id as AssetId,
-			d.DisplayValue
-	from	[Predicate] p
-			inner join IntersectType t on t.PredicateId = p.Id and p.[Type] = 5
-			inner join Asset a on a.AssetTypeId = t.SubjectAssetTypeId
-			inner join AssetDisplayValue d on d.AssetId = a.Id;";
-
+			string definitionSql = "";
 			if (includeDefinition)
 			{
-				sql += "select PredicateId as Id, DisplayValue as Name from #v;";
+				definitionSql = "select PredicateId as Id, DisplayValue as Name from #v;";
 			}
 
-			if (wheres.Count > 1)
+			bool hasFilters = catalogWheres.Count > 0;
+
+			string filtersTempTable = "";
+			if (hasFilters)
 			{
-				sql += $@"
-select	count(1) as [Total] 
-from	Asset a 
-		inner join AssetPath p on p.Id = A.Id
-		inner join AssetDisplayValue v on v.AssetId = a.Id 
-where	{string.Join(" and ", wheres)};";
+				StringBuilder sb = new StringBuilder();
+				List<string> tempCols = new List<string>
+				{
+					"AssetId bigint"
+				};
+				catalogWheres.ForEach(w =>
+				{
+					tempCols.Add($"{w.PropertyName} bit");
+				});
+				sb.AppendLine($@"
+					drop table if exists #filteredResults
+					create table #filteredResults ({string.Join(",", tempCols)});");
+
+				foreach (var filter in catalogWheres)
+				{
+						sb.AppendLine($@"
+						MERGE #filteredResults AS Target
+						USING (
+						{filter.Query}
+						) AS Source
+						ON Source.ObjectAssetID = Target.AssetId
+						WHEN MATCHED THEN UPDATE SET
+							Target.{filter.PropertyName} = 1
+						WHEN NOT MATCHED BY Target THEN
+							INSERT (AssetId,{filter.PropertyName}) 
+							VALUES (Source.ObjectAssetID, 1);");
+				}
+
+				filtersTempTable = sb.ToString();
 			}
-			else
+
+			StringBuilder whereSb = new StringBuilder();
+
+			if (catalogWheres.Count > 0)
 			{
-				sql += $"select count(1) as [Total] from Asset a where {string.Join(" and ", wheres)};";
+				whereSb.Append("where " + catalogWheres[0].Where);
+
+				if (catalogWheres.Count > 1)
+				{
+					int idx = 0;
+					foreach (var filter in catalogWheres)
+					{
+						whereSb.Append(whereConnectors[idx].Item1 + " " + filter.Where);
+					}
+				}
+			}
+			string whereStatement = whereSb.ToString();
+
+			string baseSQL = $@"
+				select {{0}}
+				from
+				dbo.CatalogBrowseObject S
+				{(hasFilters ? "inner join #filteredResults fr on fr.AssetId = S.ObjectAssetID" : "")}
+				{string.Join(Environment.NewLine, columns.Where(x => !string.IsNullOrEmpty(x.JoinStatement) && x.UseAsSortBy == true).Select(x => x.JoinStatement))}
+				{whereStatement}";
+
+
+			string countSql = $@"
+				;with cte as (
+				{string.Format(baseSQL, "count(1) as cnt")}
+				group by S.ObjectDisplayValue
+				)
+				select COUNT(1) from cte;";
+
+
+			string offsetGroupBy = "group by S.ObjectDisplayValue";
+
+			if (columns.Any(x => x.UseAsSortBy))
+			{
+				offsetGroupBy += ", " + string.Join(", ", columns.Where(x => x.UseAsSortBy).Select(x => x.Sort));
 			}
 
-			sql += $@"select	{string.Join(", ", columns.Select(c => $"{c.Column} as [{c.ApiName.CleanForSql()}]"))}
-from	Asset a
-		inner join AssetPath p on p.Id = A.Id
-		inner join AssetDisplayValue v on v.AssetId = a.Id
-where	{string.Join(" and ", wheres)}
-order by {string.Join(", ", sorts)}
-{offset};";
+			string resultsSql = $@"
+				declare @results table (objectassetid int);
 
-			#endregion
+				insert into @results
+				{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId")}
+				{offsetGroupBy}
+				order by {string.Join(", ", sorts)}
+				{offset}";
 
-			var results = await Company.QueryMultipleAsync(sql, dbArgs);
+			string finalSql = $@"
+				drop table if exists #v 
+				create table #v (PredicateId int, AssetId bigint, DisplayValue nvarchar(500));
+				insert into #v
+					select	distinct
+							p.Id,
+							a.Id as AssetId,
+							d.DisplayValue
+					from	[Predicate] p
+							inner join IntersectType t on t.PredicateId = p.Id and p.[Type] = 5
+							inner join Asset a on a.AssetTypeId = t.SubjectAssetTypeId
+							inner join AssetDisplayValue d on d.AssetId = a.Id;
+	
+				{definitionSql}
+
+				{filtersTempTable}
+
+				{countSql}
+
+				{resultsSql}
+
+				select {string.Join("," + Environment.NewLine, columns.Select(x => x.Column))}
+				from @results res
+				inner join AssetDisplayValue adv on adv.AssetID = res.objectassetid
+				inner join asset a on a.ID = res.objectassetid
+				inner join AssetPath p on p.Id = A.Id
+				{string.Join(Environment.NewLine, columns.Where(x => x.CatalogColumnType == CatalogColumnType.Predicate).Select(x => x.DataStatement))}
+				";
+
+			var results = await Company.QueryMultipleAsync(finalSql, dbArgs);
 
 			List<PropertyDefinition> properties = null;
 			if (includeDefinition)
