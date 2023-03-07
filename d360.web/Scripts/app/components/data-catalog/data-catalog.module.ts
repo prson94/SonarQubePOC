@@ -7,6 +7,9 @@ import { TableModule } from 'primeng/table';
 import { DataCatalogSidePanelWrapperComponent } from './sidepanel-wrapper/data-catalog-sidepanel-wrapper.component';
 import { AngularSplitModule } from 'angular-split';
 import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
+import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
+import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advanced-filtering.module';
+import { FormsModule } from '@angular/forms';
 
 const routes: Routes = [
 	{ path: '', component: DataCatalogComponent }
@@ -22,10 +25,13 @@ const routes: Routes = [
 	imports: [
 		RouterModule.forChild(routes),
 		CommonModule,
+		FormsModule,
 
 		TableModule,
 		AngularSplitModule,
-		SidePanelModule
+		SidePanelModule,
+		SearchFieldModule,
+		AdvancedFiltersModule
 	],
 	exports: [RouterModule]
 })
