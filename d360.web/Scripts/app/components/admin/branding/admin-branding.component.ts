@@ -13,7 +13,6 @@ import { Router } from '@angular/router';
 import { cloneDeep } from "lodash-es";
 import { forkJoin } from 'rxjs';
 import { BrandingService, Theme } from '../../../services/branding.service';
-import { FeatureFlagsService } from '../../../services/featureflags.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -68,8 +67,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
-        public sanitizer: DomSanitizer,
-        featureFlagService?: FeatureFlagsService) {
+        public sanitizer: DomSanitizer) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
 
         this.areaName = StringConstants.Section_Branding;

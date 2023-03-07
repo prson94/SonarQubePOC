@@ -22,7 +22,8 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { StringConstants } from '../../../static/string-constants';
 import { HelpMenu } from '../../../models/helpmenu.model';
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
-import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "../../../services/feature-flags.enum";
 
 @Component({
     selector: 'admin-settings',
@@ -65,13 +66,14 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     
     SaveButton: DynamicButton;
 
-    distributedCacheEnabled: boolean;
-    _featureFlagSubscription: any;
+    get distributedCacheEnabled(): boolean {
+        return this.featureFlagService.variation<boolean>(FeatureFlags.DistributedCacheFlag);
+    }
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         protected settingsService: CompanySettingsService,
-        private featureFlagService: FeatureFlagsService,
+        private featureFlagService: LaunchDarklyService,
         private searchService: SearchService,
         secondaryNavService: SecondaryNavService,
         private helpMenuService: HelpMenuService,
@@ -82,11 +84,6 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);        
         this.areaName = StringConstants.Section_Settings;
         this.setCommonItems();
-
-        this.distributedCacheEnabled = featureFlagService.flags[FeatureFlags.DistributedCacheFlag];
-        this._featureFlagSubscription = featureFlagService.flagChange.subscribe((flags) => {
-            this.distributedCacheEnabled = flags[FeatureFlags.DistributedCacheFlag].current;
-        });
     }
 
     ngOnInit() {

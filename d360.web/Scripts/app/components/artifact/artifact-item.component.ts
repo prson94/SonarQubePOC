@@ -18,7 +18,8 @@ import { AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
-import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "../../services/feature-flags.enum";
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
@@ -63,7 +64,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 		private dataProfileService: DataProfileService,
 		protected settingsService: CompanySettingsService,
 		private linkClickInterceptor: LinkClickInterceptor,
-		private featureFlagService: FeatureFlagsService
+		private featureFlagService: LaunchDarklyService
 	) {
 		super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
 	}
@@ -117,7 +118,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 					this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + CurrentResourceID;
 
 					this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
-					if (this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
+					if (this.featureFlagService.variation<boolean>(FeatureFlags.DataProfilingUiFlag)) {
 						this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(
 							(r) => {
 								if (r && r.items && r.items.length > 0) {

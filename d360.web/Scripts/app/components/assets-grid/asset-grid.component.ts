@@ -40,7 +40,8 @@ import { CompanySettingsService } from "../../services/settings.service";
 import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.component";
 import { AppConstants } from "../../static/constants";
 import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-category.service";
-import { FeatureFlags, FeatureFlagsService } from "../../services/featureflags.service";
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "../../services/feature-flags.enum";
 import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
 import { LinkClickInterceptor } from "../../services/href-click-service";
 import { AssetTypeApiModel } from "../../models/asset.model";
@@ -175,7 +176,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         private changeDetectorRef: ChangeDetectorRef,
         private assetService: AssetService,
         private route: ActivatedRoute,
-        private featureFlagService: FeatureFlagsService,
+        private featureFlagService: LaunchDarklyService,
 		private linkClickInterceptor: LinkClickInterceptor
     ) {
         super(settingsService);
@@ -198,7 +199,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 			this.doSimpleSearch(me.dt, me.isLoading);
 		});
 		
-		this.isContainsSearchDefault = this.featureFlagService.flags[FeatureFlags.ContainsSearchDefaultUiFlag];
+		this.isContainsSearchDefault = this.featureFlagService.variation<boolean>(FeatureFlags.ContainsSearchDefaultUiFlag);
 
 		this.subjectLoadGrid.pipe(
 			debounceTime(300))
@@ -361,7 +362,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 this.fields = result.Fields;
                 this.topLevelFilters = result.TopLevelFilterColumns;
                 this.scoreAllocations = result.ScoreAllocations;
-                if (this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
+                if (this.featureFlagService.variation<boolean>(FeatureFlags.DataProfilingUiFlag)) {
                     this.hasProfiling = result.HasProfiling;
                     this.hasProfilingChange.emit(this.hasProfiling);
                 }
