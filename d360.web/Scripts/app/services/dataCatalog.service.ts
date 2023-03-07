@@ -17,10 +17,15 @@ export class DataCatalogService extends BaseObservableService {
         super(messagesService);
     }
 
-    public getAssets(): Observable<any[]> {
+	public getAssets(params): Observable<any[]> {
+		let qString = ``;
+		if (params) {
+			qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+			if (qString) { qString = '?' + qString; }
+		}
         return this
             .http
-            .get(`/api/v2/assets`)
+			.get(`/api/v2/assets` + qString)
             .pipe(
                 map((response) => <any[]>response),
                 catchError((err) => this.handleError(err, true))

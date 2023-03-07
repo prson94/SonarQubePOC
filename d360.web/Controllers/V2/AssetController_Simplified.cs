@@ -455,7 +455,8 @@ namespace d360.web.Controllers.V2
 							Target.{filter.PropertyName} = 1
 						WHEN NOT MATCHED BY Target THEN
 							INSERT (AssetId,{filter.PropertyName}) 
-							VALUES (Source.ObjectAssetID, 1);");
+							VALUES (Source.ObjectAssetID, 1)
+						option(recompile);");
 				}
 
 				filtersTempTable = sb.ToString();
@@ -492,7 +493,8 @@ namespace d360.web.Controllers.V2
 				{string.Format(baseSQL, "count(1) as cnt")}
 				group by S.ObjectDisplayValue
 				)
-				select COUNT(1) from cte;";
+				select COUNT(1) from cte
+				option(recompile);";
 
 
 			string offsetGroupBy = "group by S.ObjectDisplayValue";
@@ -538,6 +540,7 @@ namespace d360.web.Controllers.V2
 				inner join asset a on a.ID = res.objectassetid
 				inner join AssetPath p on p.Id = A.Id
 				{string.Join(Environment.NewLine, columns.Where(x => x.CatalogColumnType == CatalogColumnType.Predicate).Select(x => x.DataStatement))}
+				option(recompile)
 				";
 
 			var results = await Company.QueryMultipleAsync(finalSql, dbArgs);

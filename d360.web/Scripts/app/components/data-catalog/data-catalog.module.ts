@@ -10,6 +10,7 @@ import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
 import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advanced-filtering.module';
 import { FormsModule } from '@angular/forms';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
 const routes: Routes = [
 	{ path: '', component: DataCatalogComponent }
@@ -31,7 +32,8 @@ const routes: Routes = [
 		AngularSplitModule,
 		SidePanelModule,
 		SearchFieldModule,
-		AdvancedFiltersModule
+		AdvancedFiltersModule,
+		SharedGridPagingInfoModule
 	],
 	exports: [RouterModule]
 })

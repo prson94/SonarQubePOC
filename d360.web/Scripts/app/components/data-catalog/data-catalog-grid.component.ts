@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { debounceTime, Observable, ReplaySubject, Subject, Subscription, takeUntil } from 'rxjs';
 import { FieldType } from '../../models/fieldtype-api.model';
 import { Predicate, PredicateType } from '../../models/predicate.model';
@@ -16,7 +16,8 @@ import { BaseComponent } from '../shared/base.component';
 @Component({
 	selector: 'd3s-data-catalog-grid',
 	templateUrl: './data-catalog-grid.component.html',
-	styleUrls: ['./data-catalog-grid.component.less']
+	styleUrls: ['./data-catalog-grid.component.less'],
+	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DataCatalogGridComponent extends BaseComponent implements OnInit {
 	subjectLoadGrid = new Subject<unknown>();
@@ -42,13 +43,14 @@ export class DataCatalogGridComponent extends BaseComponent implements OnInit {
 		private predicateService: PredicatesService,
 		settingsService: CompanySettingsService,
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
-		private featureFlagService: FeatureFlagsService
+		private featureFlagService: FeatureFlagsService,
+		private cdRef: ChangeDetectorRef
 	) {
 		super(settingsService);
 
 		this.isContainsSearchDefault = this.featureFlagService.flags[FeatureFlags.ContainsSearchDefaultUiFlag];
 		this.filterFields$ = this.filterFieldsSubject.asObservable();
-		
+
 		this.subjectLoadGrid.pipe(
 			debounceTime(300))
 			.subscribe(() => {
@@ -75,25 +77,33 @@ export class DataCatalogGridComponent extends BaseComponent implements OnInit {
 				this.predicates = res;
 
 				this.columns = [];
-				this.columns.push({ columnName: $localize`Name`, apiProperty: "displayValue" });
+				this.columns.push({ columnName: $localize`Name`, apiProperty: "DisplayValue" });
 				this.predicates.forEach((pred) => {
 					this.columns.push({ columnName: pred.Name, apiProperty: pred.Name });
 				});
-				this.columns.push({ columnName: $localize`Asset Path`, apiProperty: "path" });
+				this.columns.push({ columnName: $localize`Asset Path`, apiProperty: "DisplayPath" });
 				this.setFieldsObsservable();
 				this.subjectLoadGrid.next(0);
 			});
 	}
 
 	loadData() {
-		console.log("here");
 		this.isLoading = true;
 		if (this.assetSearchSub) {
 			this.assetSearchSub.unsubscribe();
 		}
-		this.assetSearchSub = this.dataCatalogService.getAssets().subscribe((res) => {
+
+		const params = {};
+
+		if (this.advancedFilterText) {
+			params['_filter'] = this.advancedFilterText;
+		}
+
+		this.assetSearchSub = this.dataCatalogService.getAssets(params).subscribe((res) => {
 			this.data = res["items"];
+			this.totalRecords = +res["total"];
 			this.isLoading = false;
+			this.cdRef.markForCheck();
 		});
 	}
 
@@ -110,13 +120,25 @@ export class DataCatalogGridComponent extends BaseComponent implements OnInit {
 		fields.push({
 			Name: "displayValue", FriendlyName: "Name", Type: new FieldType("Text"), Category: "", RemovePopulatedOperator: true
 		});
+		this.predicates.forEach((pred) => {
+			const ft = new FieldType("Lookup");
+			ft.Lookup.IsPrimaryFilter = true;
+			fields.push({
+				Name: pred.Name, FriendlyName: pred.Name, Type: ft, Category: "", RemovePopulatedOperator: true
+			});
+		});
+		fields.push({
+			Name: "displayPath", FriendlyName: "Asset Path", Type: new FieldType("Path"), Category: "", RemovePopulatedOperator: true
+		});
 		this.filterFieldsSubject.next(fields);
 		this.filterFieldsSubject.complete();
 	}
 
 	public advancedFiltersChanged($event) {
-		this.advancedFilterText = $event.filter;
+		this.advancedFilterText = $event.filter as string;
+
+		this.advancedFilterText = this.advancedFilterText.split(`'`).join(``).split('(').join(``).split(`)`).join(``);
+
 		this.subjectLoadGrid.next(0);
-		console.log(this.advancedFilterText);
 	}
 }

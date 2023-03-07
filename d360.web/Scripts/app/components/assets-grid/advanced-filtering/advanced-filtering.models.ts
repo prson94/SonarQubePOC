@@ -32,7 +32,7 @@ export class LookupValuesAPIModel {
 }
 
 export class AdvancedFilterFieldType extends FieldTypeAPIModelField {
-    RemovePopulatedOperator?: boolean = false;
+	RemovePopulatedOperator?: boolean = false;
     ValueLoader?(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel>;
 }
 
