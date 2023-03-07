@@ -1,0 +1,105 @@
+<p>data-catalog-grid works!</p>
+<div class="grid-wrapper">
+
+	<p-table [value]="data">
+		<ng-template pTemplate="header">
+			<tr>
+				<th [pSortableColumn]="'Subject'">
+					<ng-container i18n>Subject</ng-container>
+					<d3s-sortIcon [field]="'Subject'"></d3s-sortIcon>
+				</th>
+			</tr>
+		</ng-template>
+		<ng-template pTemplate="body" let-item>
+			<tr>
+				<td>
+					{{item.displayValue}}
+				</td>
+			</tr>
+		</ng-template>
+	</p-table>
+
+	<!--<p-table #dt
+			 [value]="relationships"
+			 selectionMode="single"
+			 [metaKeySelection]="true"
+			 [globalFilterFields]="['Subject','Predicate','Object', 'HasRelationshipsTextValue']"
+			 [pageLinks]="3"
+			 [paginator]="true"
+			 [(first)]="first"
+			 [rows]="rowsPerPage"
+			 [rowsPerPageOptions]="defaultPagingOptions"
+			 [selection]="selected"
+			 [stateStorage]="gridStateStorage"
+			 stateKey="{{gridStorageKey}}"
+			 [loading]="isLoading"
+			 [loadingIcon]="'fa fa-spinner fa-spin'">
+		<ng-template pTemplate="header">
+			<tr>
+				<th [pSortableColumn]="'Subject'">
+					<ng-container i18n>Subject</ng-container>
+					<d3s-sortIcon [field]="'Subject'"></d3s-sortIcon>
+				</th>
+				<th [pSortableColumn]="'Predicate'">
+					<ng-container i18n>Predicate</ng-container>
+					<d3s-sortIcon [field]="'Predicate'"></d3s-sortIcon>
+				</th>
+				<th [pSortableColumn]="'Object'">
+					<ng-container i18n>Object</ng-container>
+					<d3s-sortIcon [field]="'Object'"></d3s-sortIcon>
+				</th>
+				<th style="width: 200px" [pSortableColumn]="'HasRelationshipsTextValue'">
+					Relationships Exist
+					<d3s-sortIcon [field]="'HasRelationshipsTextValue'"></d3s-sortIcon>
+				</th>
+				<th style="width: 40px"></th>
+			</tr>
+		</ng-template>
+		<ng-template pTemplate="body" let-item>
+			<tr (click)="selected=item;selectedChange.emit(selected);"
+				(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selected=item;"
+				(dblclick)="selected=item;selectedChange.emit(selected);edit(item)"
+				[pSelectableRow]="item"
+				style="position:relative;"
+				[attr.data-uid]="item.Uid">
+				<td>
+					{{item.Subject}}
+				</td>
+				<td>
+					{{item.Predicate}}
+				</td>
+				<td>
+					{{item.Object}}
+				</td>
+				<td>
+					<div class="ig-value">
+						<ng-container *ngIf="item.HasRelationships; else falseTemplate">
+							<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+							<ng-container i18n>True</ng-container>
+						</ng-container>
+						<ng-template #falseTemplate>
+							<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+							<ng-container i18n>False</ng-container>
+						</ng-template>
+					</div>
+				</td>
+				<td #assetGridTools>
+					<div class="token-popup-menu" *ngIf="item.MenuItems">
+						<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+						<ig-popup-menu [items]="item.MenuItems"
+									   #tokenMenu
+									   [tabIndex]="1"></ig-popup-menu>
+					</div>
+
+					<button class="ig-float-popup-container" #floatButton>
+						<ig-popup-menu [items]="item.MenuItems" #floatMenu [tabIndex]="1">
+						</ig-popup-menu>
+					</button>
+				</td>
+			</tr>
+		</ng-template>
+		<ng-template pTemplate="summary">
+			<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+		</ng-template>
+	</p-table>-->
+</div>
