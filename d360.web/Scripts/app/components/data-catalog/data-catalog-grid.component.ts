@@ -1,16 +1,21 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { Table } from 'primeng/table';
 import { debounceTime, Observable, ReplaySubject, Subject, Subscription, takeUntil } from 'rxjs';
+import { Breadcrumb } from '../../models/breadcrumb.model';
 import { FieldType } from '../../models/fieldtype-api.model';
 import { Predicate, PredicateType } from '../../models/predicate.model';
 import { DataCatalogService } from '../../services/dataCatalog.service';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { PredicatesService } from '../../services/predicates.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { AppConstants } from '../../static/constants';
 import { AdvancedFilteringComponent } from '../assets-grid/advanced-filtering/advanced-filtering.component';
 import { AdvancedFilterFieldType } from '../assets-grid/advanced-filtering/advanced-filtering.models';
+import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { BaseComponent } from '../shared/base.component';
 
 @Component({
@@ -19,7 +24,7 @@ import { BaseComponent } from '../shared/base.component';
 	styleUrls: ['./data-catalog-grid.component.less'],
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DataCatalogGridComponent extends BaseComponent implements OnInit {
+export class DataCatalogGridComponent extends AssetGridBaseComponent implements OnInit {
 	subjectLoadGrid = new Subject<unknown>();
 	predicates: Predicate[];
 	columns: any[] = [];
@@ -45,9 +50,12 @@ export class DataCatalogGridComponent extends BaseComponent implements OnInit {
 		settingsService: CompanySettingsService,
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 		private featureFlagService: FeatureFlagsService,
-		private cdRef: ChangeDetectorRef
+		private cdRef: ChangeDetectorRef,
+		private titleService: Title,
+		public headerBreadcrumbService: HeaderBreadcrumbService,
+		public secondaryNavService: SecondaryNavService
 	) {
-		super(settingsService);
+		super(headerBreadcrumbService, settingsService, secondaryNavService);
 
 		this.isContainsSearchDefault = this.featureFlagService.flags[FeatureFlags.ContainsSearchDefaultUiFlag];
 		this.filterFields$ = this.filterFieldsSubject.asObservable();
@@ -57,6 +65,17 @@ export class DataCatalogGridComponent extends BaseComponent implements OnInit {
 			.subscribe(() => {
 				this.loadData();
 			});
+
+		this.folderTitle = $localize`Data Catalog`;
+		this.setBrowserTitle(this.titleService, this.folderTitle);
+		this.area = this.folderTitle;
+
+		this.headerBreadcrumbService.clearBreadcrumbs();
+		this.headerBreadcrumbService.clearCurrentObjectInfo();
+		this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.folderTitle ? this.folderTitle : this.area));
+		this.secondaryNavService.clearCurrentObject();
+		this.secondaryNavService.clearItems();
+		this.secondaryNavService.setCurrentArea(this.folderTitle ? this.folderTitle : this.area, 'fa-database', null);
 
 	}
 
@@ -108,6 +127,10 @@ export class DataCatalogGridComponent extends BaseComponent implements OnInit {
 				params['_order'] = `desc(${this.dataTable.sortField})`;
 			}
 		}
+
+		params["_pageNum"] = this.dataTable.first / this.dataTable.rows;
+		params["_pageSize"] = this.dataTable.rows;
+
 
 		this.assetSearchSub = this.dataCatalogService.getAssets(params).subscribe((res) => {
 			this.data = res["items"];

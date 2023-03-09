@@ -8,8 +8,6 @@
 							 [infoTooltip]="isContainsSearchDefault ? null : simpleSearchTooltipHTML">
 			</ig-search-field>
 		</div>
-	</div>
-	<div class="grid-actions-header-row">
 		<advanced-filtering #advancedFilter
 							[loadIdentifier]="'DataCatalog'"
 							[fieldsObserver]="filterFields$"
@@ -27,10 +25,11 @@
 			 [rows]="rowsPerPage"
 			 [rowsPerPageOptions]="defaultPagingOptions"
 			 [lazy]="true"
-			 (sortFunction)="subjectLoadGrid.next(0);" 
-			 [customSort]="true" 
+			 (sortFunction)="subjectLoadGrid.next(0);"
+			 [customSort]="true"
 			 (onLazyLoad)="subjectLoadGrid.next(0);"
-			 [totalRecords]="totalRecords">
+			 [totalRecords]="totalRecords"
+			 (onPage)="numberOfRowsByCategoryService.onPage($event)">
 		<ng-template pTemplate="header">
 			<tr>
 				<th *ngFor="let col of columns" [pSortableColumn]="col.apiProperty">

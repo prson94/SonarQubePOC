@@ -251,6 +251,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 						case '#ASSET_TYPE':
 							menu.ngUrl = menu["url"];
 							break;
+						case '#DataCatalog':
+							menu.ngUrl = `/dataCatalog`;
+							break;
                         default:
                             //is it a custom menu?
                             if (menu.MenuID.startsWith('~')) {

@@ -111,11 +111,12 @@ namespace d360.web.Controllers
 			{
 				nodes = nodes.Prepend(new TopNavigationItem
 				{
-					Title = "Data Catalog",
+					Title = CommonNames.Text_DataCatalog,
 					MenuID = "#DataCatalog",
 					SortOrder = 0,
-					Icon = "fa-book-open-cover",
-					ShouldDisplay = true
+					Icon = "fa-database",
+					ShouldDisplay = true,
+					NavigationItems = new List<NavigationItem>() 
 
 				}).ToList();
 			}
