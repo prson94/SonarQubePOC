@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { Table } from 'primeng/table';
 import { debounceTime, Observable, ReplaySubject, Subject, Subscription, takeUntil } from 'rxjs';
 import { Breadcrumb } from '../../models/breadcrumb.model';
@@ -17,6 +18,7 @@ import { AppConstants } from '../../static/constants';
 import { AdvancedFilteringComponent } from '../assets-grid/advanced-filtering/advanced-filtering.component';
 import { AdvancedFilterFieldType } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
+import { PopupMenu } from '../shared/controls/popup-menu/popup-menu.component';
 
 @Component({
 	selector: 'd3s-data-catalog-grid',
@@ -55,7 +57,8 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		private cdRef: ChangeDetectorRef,
 		private titleService: Title,
 		public headerBreadcrumbService: HeaderBreadcrumbService,
-		public secondaryNavService: SecondaryNavService
+		public secondaryNavService: SecondaryNavService,
+		private router: Router
 	) {
 		super(headerBreadcrumbService, settingsService, secondaryNavService);
 
@@ -141,6 +144,16 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		this.assetSearchSub = this.dataCatalogService.getAssets(params).subscribe((res) => {
 			this.data = res["items"];
 			this.totalRecords = +res["total"];
+
+			this.data.forEach((item) => {
+				const menuItems = [];
+				menuItems.push({ "title": $localize`Open`, callback: () => this.open(item.Uid) });
+				// false poisitve fs.open eslint error
+				// eslint-disable-next-line
+				menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(item.Uid, true) });
+				item.MenuItems = menuItems;
+			});
+
 			this.isLoading = false;
 			this.cdRef.markForCheck();
 		});
@@ -183,5 +196,34 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	}
 	selectRow($event) {
 		this.sidePanelService.setSidePanelState({ assetUid: $event.Uid });
+	}
+
+	open(uid: string, newTab: boolean = false) {
+		const url = `/asset/${uid}`;
+		if (newTab) {
+			window.open(url, "_blank");
+		}
+		else {
+			this.router.navigateByUrl(url);
+		}
+	}
+
+	positionContextMenu(
+		$event: MouseEvent, container: HTMLElement, floatMenu: PopupMenu, assetGridTools: HTMLElement
+	): void {
+		if (!assetGridTools.contains(<Node>$event.target) && !this.isElementLink(<HTMLElement>$event.target)) {
+			container.style.top = `${$event['layerY']}px`;
+			container.style.left = `${$event['layerX']}px`;
+			floatMenu.toggle($event);
+			$event.preventDefault();
+		}
+	}
+
+	private isElementLink(element: HTMLElement): boolean {
+		while (element.parentElement) {
+			if (element.tagName === 'A') { return true; }
+			element = element.parentElement;
+		}
+		return false;
 	}
 }

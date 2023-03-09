@@ -40,12 +40,29 @@
 					<ng-container>{{col.columnName}}</ng-container>
 					<d3s-sortIcon [field]="col.apiProperty"></d3s-sortIcon>
 				</th>
+				<th></th>
 			</tr>
 		</ng-template>
 		<ng-template pTemplate="body" let-item>
-			<tr [pSelectableRow]="item">
+			<tr style="position:relative;"
+				[pSelectableRow]="item"
+				(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selected=item;">
 				<td *ngFor="let col of columns">
-					{{item[col.apiProperty] ?? '---'}}
+					<span *ngIf="col.apiProperty !== 'DisplayValue'">{{item[col.apiProperty] ?? '---'}}</span>
+					<a *ngIf="col.apiProperty === 'DisplayValue'" href="#" (click)="$event.preventDefault();this.open(item.Uid)">{{item[col.apiProperty] ?? '---'}}</a>
+				</td>
+				<td #assetGridTools>
+					<div class="token-popup-menu" *ngIf="item.MenuItems">
+						<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+						<ig-popup-menu [items]="item.MenuItems"
+									   #tokenMenu
+									   [tabIndex]="1"></ig-popup-menu>
+					</div>
+
+					<button class="ig-float-popup-container" #floatButton>
+						<ig-popup-menu [items]="item.MenuItems" #floatMenu [tabIndex]="1">
+						</ig-popup-menu>
+					</button>
 				</td>
 			</tr>
 		</ng-template>
