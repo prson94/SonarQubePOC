@@ -121,6 +121,10 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 			params['_filter'] = this.advancedFilterText;
 		}
 
+		if (this.simpleSearchText) {
+			params['_simpleFilter'] = this.simpleSearchText;
+		}
+
 		if (this.dataTable.sortField) {
 			if (this.dataTable.sortOrder > 0) {
 				params['_order'] = `asc(${this.dataTable.sortField})`;
@@ -158,8 +162,9 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		this.predicates.forEach((pred) => {
 			const ft = new FieldType("Lookup");
 			ft.Lookup.IsPrimaryFilter = true;
+			ft.Lookup.List.AllowMultipleValues = true;
 			fields.push({
-				Name: pred.Name, FriendlyName: pred.Name, Type: ft, Category: "", RemovePopulatedOperator: true
+				Name: pred.Name, FriendlyName: pred.Name, Type: ft, Category: ""
 			});
 		});
 		fields.push({
@@ -172,7 +177,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	public advancedFiltersChanged($event) {
 		this.advancedFilterText = $event.filter as string;
 
-		this.advancedFilterText = this.advancedFilterText.split(`'`).join(``).split('(').join(``).split(`)`).join(``);
+		this.advancedFilterText = this.advancedFilterText.split(`'`).join(``);
 
 		this.subjectLoadGrid.next(0);
 	}
