@@ -12,7 +12,7 @@ import { FieldType } from '../../models/fieldtype-api.model';
 import { LazyLoadEvent } from 'primeng/api';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SemanticBaseComponent } from './semantics-base.component';
-import { FeatureFlagsService } from '../../services/featureflags.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
     selector: 'semantic-asset-list-grid',
@@ -78,7 +78,7 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
-        private featureFlagService: FeatureFlagsService,
+        featureFlagService: LaunchDarklyService,
     ) {
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
         this.exportTooltip = this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;

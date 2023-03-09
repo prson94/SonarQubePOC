@@ -18,7 +18,8 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { TitleAndTabsService } from '../../services/title-and-tabs.service';
-import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "../../services/feature-flags.enum";
 import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
@@ -77,7 +78,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		secondaryNavService: SecondaryNavService,
 		private linkClickInterceptor: LinkClickInterceptor,
 		protected settingsService: CompanySettingsService,
-		private featureFlagService: FeatureFlagsService) {
+		private featureFlagService: LaunchDarklyService) {
 		super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
 
 		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
@@ -188,7 +189,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 			this.assetDetail?.load();
 		}
 
-		if (this.selection && this.selection.HasProfiling && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
+		if (this.selection && this.selection.HasProfiling && this.featureFlagService.variation<boolean>(FeatureFlags.DataProfilingUiFlag)) {
 			this.sidePanelLoading = true;
 			this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
 				(r) => {
@@ -229,7 +230,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		if (this.selection == null || this.sidePanelTab === 'detail') {
 			return true;
 		}
-		if (this.selection != null && this.sidePanelTab === 'dataprofile' && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
+		if (this.selection != null && this.sidePanelTab === 'dataprofile' && this.featureFlagService.variation<boolean>(FeatureFlags.DataProfilingUiFlag)) {
 			return this.selection.HasProfiling;
 		}
 	}

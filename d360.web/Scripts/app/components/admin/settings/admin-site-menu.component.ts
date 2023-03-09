@@ -8,11 +8,8 @@ import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../../models/form.model';
-
 import { cloneDeep, sortBy } from "lodash-es";
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { FeatureFlagsService } from '../../../services/featureflags.service';
-import { AssetTypeService } from '../../../services/asset-type.service';
 
 @Component({
 	selector: 'd3s-admin-site-menu',
@@ -61,9 +58,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		titleService: Title,
 		private siteMenuService: SiteMenuService,
 		private stateService: StateService,
-		private messagesService: MessagesObservableService,
-		private featureFlagService: FeatureFlagsService,
-		private assetTypeService: AssetTypeService
+		private messagesService: MessagesObservableService
 	) {
 		super(headerBreadcrumbService, titleService, settingsService);
 	}

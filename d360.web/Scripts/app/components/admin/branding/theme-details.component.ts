@@ -11,7 +11,8 @@
 import { Category } from '../../../models/object-detail.model';
 
 import { BrandingService, Theme } from '../../../services/branding.service';
-import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "../../../services/feature-flags.enum";
 
 @Component({
     selector: "theme-detail",
@@ -34,8 +35,8 @@ export class ThemeDetailComponent implements OnChanges {
 	labelCurrentTheme = $localize`Set as Current Theme`;
 
     constructor(private brandingService: BrandingService,
-        featureFlagService?: FeatureFlagsService) {
-        if (featureFlagService.flags[FeatureFlags.BrandingThemeCustomCss]) {
+        featureFlagService?: LaunchDarklyService) {
+        if (featureFlagService.variation<boolean>(FeatureFlags.BrandingThemeCustomCss)) {
             this.hasCustomCss = true;
         }
     }

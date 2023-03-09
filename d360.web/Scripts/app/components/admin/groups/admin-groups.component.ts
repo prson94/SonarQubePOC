@@ -24,7 +24,8 @@ import { AssetEditorComponent } from '../../shared/asset-editor/asset-editor.com
 import { Table } from 'primeng/table';
 import { AssetDetailComponent } from '../../shared/asset-detail/asset-detail.component';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
-import { FeatureFlags, FeatureFlagsService } from "../../../services/featureflags.service";
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "../../../services/feature-flags.enum";
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
@@ -114,7 +115,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         private cdRef: ChangeDetectorRef,
         public sidePanelService: SidePanelService,
         private linkClickInterceptor: LinkClickInterceptor,
-		private featureFlagService: FeatureFlagsService,
+		private featureFlagService: LaunchDarklyService,
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService
     ) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
@@ -130,7 +131,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
             this.linkClickInterceptor.handleEvent(this, ev);
         });
 		
-		this.isContainsSearchDefault = this.featureFlagService.flags[FeatureFlags.ContainsSearchDefaultUiFlag];
+		this.isContainsSearchDefault = this.featureFlagService.variation<boolean>(FeatureFlags.ContainsSearchDefaultUiFlag);
 	}
 
     ngOnInit() {

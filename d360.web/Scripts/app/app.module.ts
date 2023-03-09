@@ -40,21 +40,19 @@ import { SiteMenuService } from './services/site-menu.service';
 import { DialogModule } from 'primeng/dialog';
 import { AssetStyleService } from './services/asset-style.service';
 import { CompanySettingsService } from './services/settings.service';
-import { FeatureFlagsService } from './services/featureflags.service';
 import { UserSettingsService } from './services/usersettings.service';
 import { governHttpInterceptorProviders } from './http-interceptors';
 import { SelectAssetService } from './services/select-asset.service';
 import { ForceNoReuseStrategy } from './services/forceNoReuseStrategy';
 import { AngularSplitModule } from 'angular-split';
+import { FeatureFlagsInitService } from './services/feature-flags-init.service';
 
 export function localeIdFactory() {
     return navigator.language;
 }
 
-export function featureFlagServiceInitializer(provider: FeatureFlagsService) {
-    return () => provider.initialize().subscribe((s) => {
-        provider.createClientConnection();
-    });
+export function featureFlagServiceInitializer(provider: FeatureFlagsInitService) {
+    return () => provider.initialize();
 }
 
 export function settingsInitializer(provider: CompanySettingsService) {
@@ -148,7 +146,7 @@ export function localeInitializer(localeId: string) {
             provide: APP_INITIALIZER,
             multi: true,
             useFactory: featureFlagServiceInitializer,
-            deps: [FeatureFlagsService]
+            deps: [FeatureFlagsInitService]
         },
         {
             provide: APP_INITIALIZER,
