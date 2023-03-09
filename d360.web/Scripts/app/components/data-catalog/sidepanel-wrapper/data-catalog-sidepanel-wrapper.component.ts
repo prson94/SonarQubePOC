@@ -1,5 +1,7 @@
-import { Component, Input, OnChanges, SimpleChanges } from "@angular/core";
+import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from "@angular/core";
 import { IOutputData } from "angular-split";
+import { Subscription } from "rxjs";
+import { LinkClickInterceptor } from "../../../services/href-click-service";
 import { SidePanelService } from "../../../services/side-panel.service";
 
 @Component({
@@ -7,23 +9,43 @@ import { SidePanelService } from "../../../services/side-panel.service";
 	templateUrl: './data-catalog-sidepanel-wrapper.component.html',
 	styleUrls: ['./data-catalog-sidepanel-wrapper.component.less']
 })
-export class DataCatalogSidePanelWrapperComponent implements OnChanges {
+export class DataCatalogSidePanelWrapperComponent implements OnChanges, OnDestroy {
 	@Input() sidePanelStorageKey: string;
 
 	sidePanelOpen = false;
-	selectedForInfoPanel: unknown;
 
-	constructor(public sidePanelService: SidePanelService) {
+	selectedAsset: any;
+	selectedReferenceItem: any;
+	selectedTag: any;
+
+	hrefSub: Subscription;
+
+	constructor(public sidePanelService: SidePanelService,
+		private linkClickInterceptor: LinkClickInterceptor) {
+		this.sidePanelService.sidePanelStateChange$.subscribe((res) => {
+			if (res.assetUid) {
+				this.selectedAsset = { uid: res.assetUid, type: 'Artifact' };
+			}
+		});
+
+		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			this.linkClickInterceptor.handleEvent(this, ev);
+		});
+	}
+	ngOnDestroy(): void {
+		if (this.hrefSub) {
+			this.hrefSub.unsubscribe();
+		}
 	}
 
 	ngOnChanges(changes: SimpleChanges) {
 		if (changes.selectedItem && changes.selectedItem.currentValue !== changes.selectedItem.previousValue) {
-			this.selectedForInfoPanel = null;
+			this.selectedAsset = null;
 		}
 	}
 
 	onResourceLinkClick($event) {
-		this.selectedForInfoPanel = { AssetUid: $event.uid, Object: $event.type };
+		this.selectedAsset = { uid: $event.uid, type: $event.type };
 	}
 
 	getSidePanelWidth(): number {
@@ -43,6 +65,6 @@ export class DataCatalogSidePanelWrapperComponent implements OnChanges {
 	}
 
 	get anySelectedItem(): unknown {
-		return this.selectedForInfoPanel;
+		return this.selectedAsset;
 	}
 }

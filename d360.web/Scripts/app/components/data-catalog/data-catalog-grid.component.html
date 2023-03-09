@@ -17,6 +17,10 @@
 <div class="grid-wrapper">
 
 	<p-table #dt [value]="data"
+			 [selection]="selected"
+			 (selectionChange)="selectRow($event)"
+			 selectionMode="single"
+			 [metaKeySelection]="true"
 			 [loading]="isLoading"
 			 [loadingIcon]="'fa fa-spinner fa-spin'"
 			 [pageLinks]="3"
@@ -39,7 +43,7 @@
 			</tr>
 		</ng-template>
 		<ng-template pTemplate="body" let-item>
-			<tr>
+			<tr [pSelectableRow]="item">
 				<td *ngFor="let col of columns">
 					{{item[col.apiProperty] ?? '---'}}
 				</td>

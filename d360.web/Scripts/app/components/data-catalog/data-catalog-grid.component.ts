@@ -12,11 +12,11 @@ import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-
 import { PredicatesService } from '../../services/predicates.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../services/settings.service';
+import { SidePanelService, SidePanelState } from '../../services/side-panel.service';
 import { AppConstants } from '../../static/constants';
 import { AdvancedFilteringComponent } from '../assets-grid/advanced-filtering/advanced-filtering.component';
 import { AdvancedFilterFieldType } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
-import { BaseComponent } from '../shared/base.component';
 
 @Component({
 	selector: 'd3s-data-catalog-grid',
@@ -38,6 +38,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	isContainsSearchDefault: boolean = false;
 	simpleSearchText: string = '';
 	advancedFilterText: string = '';
+	selected: any = null;
 
 	public filterFields$: Observable<AdvancedFilterFieldType[]>;
 	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -47,6 +48,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	constructor(
 		private dataCatalogService: DataCatalogService,
 		private predicateService: PredicatesService,
+		public sidePanelService: SidePanelService,
 		settingsService: CompanySettingsService,
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 		private featureFlagService: FeatureFlagsService,
@@ -173,5 +175,8 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		this.advancedFilterText = this.advancedFilterText.split(`'`).join(``).split('(').join(``).split(`)`).join(``);
 
 		this.subjectLoadGrid.next(0);
+	}
+	selectRow($event) {
+		this.sidePanelService.setSidePanelState({ assetUid: $event.Uid });
 	}
 }
