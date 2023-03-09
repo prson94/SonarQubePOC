@@ -90,7 +90,7 @@ namespace igx.UnitTests.WebControllerTests
 
             ;
 
-            Assert.True(navigationController.GenerateSiteMenu(nodes, false, true).Count == 0);
+            Assert.True(navigationController.GenerateSiteMenu(nodes, false, true, true).Count == 0);
         }
 
         [Fact]
@@ -112,7 +112,7 @@ namespace igx.UnitTests.WebControllerTests
                             </nav>"
             });
 
-            Assert.True(navigationController.GenerateSiteMenu(nodes, true, true).Count == 1);
+            Assert.True(navigationController.GenerateSiteMenu(nodes, true, true, true).Count == 1);
         }
 
         [Fact]
@@ -574,7 +574,7 @@ namespace igx.UnitTests.WebControllerTests
             });
             
 
-            navigationController.GenerateSiteMenu(nodes,true,true);
+            navigationController.GenerateSiteMenu(nodes,true,true, true);
 
             Assert.True(nodes.Count == 1);
             Assert.True(nodes[0].MenuID == "#Business");

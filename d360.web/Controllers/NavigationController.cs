@@ -67,7 +67,7 @@ namespace d360.web.Controllers
 			return items;
 		}
 
-		internal List<TopNavigationItem> GenerateSiteMenu(List<TopNavigationItem> nodes, bool hasTechAssets, bool showChildren)
+		internal List<TopNavigationItem> GenerateSiteMenu(List<TopNavigationItem> nodes, bool hasTechAssets, bool showChildren, bool hasDataCatalog)
 		{
 			if (!hasTechAssets)
 			{
@@ -107,6 +107,19 @@ namespace d360.web.Controllers
 				});
 			}
 
+			if (hasDataCatalog)
+			{
+				nodes = nodes.Prepend(new TopNavigationItem
+				{
+					Title = "Data Catalog",
+					MenuID = "#DataCatalog",
+					SortOrder = 0,
+					Icon = "fa-book-open-cover",
+					ShouldDisplay = true
+
+				}).ToList();
+			}
+
 			return nodes;
 		}
 
@@ -114,9 +127,19 @@ namespace d360.web.Controllers
 		[Route("sitemenu")]
 		public JsonNetResult SiteMenu()
 		{
-			var techAssets = Company.Query<int>($"select count(*) from AssetType where Class = {(int)AssetTypeClass.TechnicalAsset}").First();
+			var additionalMenuItems = Company.Query<(bool hasTechAssets, bool hasDataCatalog)>($@"
+				declare @hasTechAssets bit = 0;
+				declare @hasDataCatalog bit = 0;
+
+				select @hasTechAssets = iif(count(*) > 0,1,0) from AssetType where Class =  {(int)AssetTypeClass.TechnicalAsset};
+
+				select @hasDataCatalog = iif(count(*) > 0,1,0) from IntersectType IT 
+				inner join [Predicate] P on P.ID = IT.PredicateID AND P.Type =  {(int)PredicateType.CatalogBrowse};
+
+				select @hasTechAssets as hasTechAssets, @hasDataCatalog as hasDataCatalog;").First();
+
 			var showChildren = SettingsRepository.GetSettingValue<bool>(Setting.ShowNavigationChildren);
-			var menuItems = GenerateSiteMenu(Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList(), techAssets > 0, showChildren);
+			var menuItems = GenerateSiteMenu(Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList(), additionalMenuItems.hasTechAssets, showChildren, additionalMenuItems.hasDataCatalog);
 
 			//if db Titles are still defaults ones than load translation for them
 			//if different, use title from db record
