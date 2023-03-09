@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { Table } from 'primeng/table';
 import { debounceTime, Observable, ReplaySubject, Subject, Subscription, takeUntil } from 'rxjs';
 import { FieldType } from '../../models/fieldtype-api.model';
 import { Predicate, PredicateType } from '../../models/predicate.model';
-import { SearchFieldFilter } from '../../models/search-result.model';
 import { DataCatalogService } from '../../services/dataCatalog.service';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
@@ -37,6 +37,7 @@ export class DataCatalogGridComponent extends BaseComponent implements OnInit {
 	public filterFields$: Observable<AdvancedFilterFieldType[]>;
 	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 	@ViewChild("advancedFilter", { static: false }) advancedFilter: AdvancedFilteringComponent;
+	@ViewChild("dt", { static: false }) dataTable: Table;
 
 	constructor(
 		private dataCatalogService: DataCatalogService,
@@ -97,6 +98,15 @@ export class DataCatalogGridComponent extends BaseComponent implements OnInit {
 
 		if (this.advancedFilterText) {
 			params['_filter'] = this.advancedFilterText;
+		}
+
+		if (this.dataTable.sortField) {
+			if (this.dataTable.sortOrder > 0) {
+				params['_order'] = `asc(${this.dataTable.sortField})`;
+			}
+			else {
+				params['_order'] = `desc(${this.dataTable.sortField})`;
+			}
 		}
 
 		this.assetSearchSub = this.dataCatalogService.getAssets(params).subscribe((res) => {

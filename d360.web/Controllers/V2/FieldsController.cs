@@ -2061,7 +2061,7 @@ namespace d360.web.Controllers.V2
 						where P.Name = @fieldName and Type = 5
 
 						select 
-						cast(a.uid as nvarchar(36)) as value,
+						coalesce(a.code,'Code Missing') as value,
 						coalesce(a.code,'Code Missing') as name 
 						from asset a 
 						{whereQuery}

@@ -26,6 +26,10 @@
 			 paginatorDropdownAppendTo="body"
 			 [rows]="rowsPerPage"
 			 [rowsPerPageOptions]="defaultPagingOptions"
+			 [lazy]="true"
+			 (sortFunction)="subjectLoadGrid.next(0);" 
+			 [customSort]="true" 
+			 (onLazyLoad)="subjectLoadGrid.next(0);"
 			 [totalRecords]="totalRecords">
 		<ng-template pTemplate="header">
 			<tr>

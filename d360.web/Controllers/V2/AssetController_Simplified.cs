@@ -181,7 +181,7 @@ namespace d360.web.Controllers.V2
 			});
 
 			// Add path as the last column.
-			columns.Add(new CatalogColumn { ApiName = "displaypath", Column = "p.DisplayPath", Sort = "p.DisplayPath", Position = columns.Max(c => c.Position) + 1 });
+			columns.Add(new CatalogColumn { ApiName = "displaypath", Column = "p.DisplayPath", Sort = "p.DisplayPath", JoinStatement = "inner join AssetPath p on p.Id = S.ObjectAssetId", Position = columns.Max(c => c.Position) + 1 });
 
 			#endregion
 
@@ -210,7 +210,7 @@ namespace d360.web.Controllers.V2
 				int parameterIndex = 1;
 				foreach (var rawFilter in rawFilters)
 				{
-					var filterMatch = Regex.Match(rawFilter, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin)\s([\w\-\/\:\,\*]+)$");
+					var filterMatch = Regex.Match(rawFilter, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin)\s([\w\s\-\/\:\,\*]+)$");
 					if (filterMatch.Success && filterMatch.Groups.Count == 4)
 					{
 						var filterProperty = filterMatch.Groups[1].Value;
@@ -292,6 +292,11 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
+			if (queryParams.Any(q => q.Key == "_simpleFilter"))
+			{
+				var simpleFilter = queryParams.Where(q => q.Key.ToLowerInvariant() == "_simplefilter").Select(s => s.Value).FirstOrDefault();
+			}
+
 			#endregion
 
 			#region Sort logic
@@ -327,7 +332,7 @@ namespace d360.web.Controllers.V2
 			foreach (var key in parsedSorts.Keys)
 			{
 				var sortDirection = (parsedSorts[key] ? "asc" : "desc");
-				var column = columns.Where(x => !string.IsNullOrEmpty(x.Sort)).FirstOrDefault(c => c.ApiName == key);
+				var column = columns.Where(x => !string.IsNullOrEmpty(x.Sort)).FirstOrDefault(c => c.ApiName.ToLowerInvariant() == key.ToLowerInvariant());
 				if (column != null)
 				{
 					sorts.Add($"{column.Sort} {sortDirection}");
@@ -445,7 +450,7 @@ namespace d360.web.Controllers.V2
 
 				foreach (var filter in catalogWheres)
 				{
-						sb.AppendLine($@"
+					sb.AppendLine($@"
 						MERGE #filteredResults AS Target
 						USING (
 						{filter.Query}
@@ -495,6 +500,12 @@ namespace d360.web.Controllers.V2
 				)
 				select COUNT(1) from cte
 				option(recompile);";
+
+
+			if (!hasFilters)
+			{
+				countSql = $@"select COUNT(distinct ObjectAssetID) from dbo.CatalogBrowseSubject option(recompile)";
+			}
 
 
 			string offsetGroupBy = "group by S.ObjectDisplayValue";

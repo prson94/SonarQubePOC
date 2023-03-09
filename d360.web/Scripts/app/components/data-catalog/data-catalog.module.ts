@@ -11,6 +11,7 @@ import { SearchFieldModule } from '../shared/controls/search-field/search-field.
 import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advanced-filtering.module';
 import { FormsModule } from '@angular/forms';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
+import { D3SSortIconModule } from '../shared/turbotable-sorticon.component';
 
 const routes: Routes = [
 	{ path: '', component: DataCatalogComponent }
@@ -33,7 +34,8 @@ const routes: Routes = [
 		SidePanelModule,
 		SearchFieldModule,
 		AdvancedFiltersModule,
-		SharedGridPagingInfoModule
+		SharedGridPagingInfoModule,
+		D3SSortIconModule
 	],
 	exports: [RouterModule]
 })
