@@ -239,15 +239,9 @@ namespace d360.web.Controllers.V2
 
 			var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
 			var ExistingIntersectID = new List<Tuple<string, Guid>>();
-
-			foreach(var field in model.Fields.FindAll(x => x.Type.System != null))
-			{
-
-			}
+			
 			if (model.Fields.Any(x => x.Type.System != null))
 			{
-				var isvalid = true;
-				var allowedFields = new List<string> { "formdescription", "displaydescription", "sortorder", "sortbyascending", "friendlyname" };
 				if(model.Fields.Any(f=> f.Type.System != null && !existingFields.Any(e=> f.Name == e.Name && e.Type == DataType.System.ToString())))
 				{
 					// can't add new system fields 

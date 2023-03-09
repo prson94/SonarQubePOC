@@ -248,7 +248,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.lookups.Field_JsonFields.unshift({ label: this.chooseLabel, value: null });
 		this.lookups.DataTypes.unshift({ label: this.chooseLabel, value: "Empty" });	
 		if (!this.model.FieldType.Type.System) {
-			this.lookups.DataTypes = this.lookups.DataTypes.filter(s => s.label.toLowerCase() != "system")
+			this.lookups.DataTypes = this.lookups.DataTypes.filter(s => s.label.toLowerCase() !== "system")
 		}		
     };
 

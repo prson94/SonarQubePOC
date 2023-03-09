@@ -9,7 +9,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { SystemFields } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 
 
 @Component({
