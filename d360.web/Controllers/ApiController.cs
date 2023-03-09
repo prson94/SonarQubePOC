@@ -2927,6 +2927,18 @@ namespace d360.web.Controllers
 									var parentAsset = Company.GetAssetDetail("Artifact", parent.ObjectID);
 									var parentUrl = Company.Query<string>($"select dbo.GenerateAssetUrl({parentAsset.ID})").First();
 
+									var perms = Company.GetPermissions(parentAsset.ID, parentAsset.AssetTypeID);
+									bool HasAssetReadAccess;
+
+									if (perms.Any(x => x.ID == Permission.ReadAsset) || Company.CurrentResourceIsAdmin)
+									{
+										HasAssetReadAccess = true;
+									}
+									else
+									{
+										HasAssetReadAccess = false;
+									}
+
 									model.rows.Insert(1, new DetailReadOnlyRowModel
 									{
 										columns = 1,
@@ -2936,7 +2948,7 @@ namespace d360.web.Controllers
 											FieldName = "ArtifactParentName",
 											FieldDescription = FieldInfo.Parent_Description,
 											Value = parentAsset.DisplayValue,
-											TooltipUrl = parentUrl,
+											TooltipUrl = HasAssetReadAccess ? parentUrl : "",
 											TooltipType="Artifact",
 											TooltipContext="Preview",
 											TooltipID = parent.ObjectID,
@@ -2945,7 +2957,8 @@ namespace d360.web.Controllers
 												new ReadOnlyFieldValue{
 													Value = parentAsset.DisplayValue,
 													uid = parentAsset.uid,
-													TooltipUrl = parentUrl,
+													TooltipUrl = HasAssetReadAccess ? parentUrl : "",
+													HasReadAccess = HasAssetReadAccess,
 													TooltipType="Artifact",
 													TooltipContext="Preview",
 													TooltipID = parent.ObjectID,

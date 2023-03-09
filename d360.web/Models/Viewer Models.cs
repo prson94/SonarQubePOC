@@ -252,6 +252,10 @@ namespace d360.web.Models
 
         [DataMember]
         public bool? HideTooltip { get; set; }
+
+        [DataMember]
+        public bool HasReadAccess { get; set; } = true;
+
     }
 
     public class ReadOnlyFieldValueComparer : IEqualityComparer<ReadOnlyFieldValue>

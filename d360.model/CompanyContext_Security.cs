@@ -116,10 +116,13 @@ namespace d360.model
 			IEnumerable<int> responsibilityAssignments = Query<int>(@"select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = 0
 														union select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = @assetId", new { r = CurrentResourceID, assetTypeId, assetId });
 
-			permissions.ForEach(p =>
+			if (responsibilityAssignments.Any())
 			{
-				p.Selected = responsibilityAssignments.Any(i => (i & p.Value) == p.Value);
-			});
+				permissions.ForEach(p =>
+				{
+					p.Selected = responsibilityAssignments.Any(i => (i & p.Value) == p.Value);
+				});
+			}
 
 			permissions.RemoveAll(i => !i.Selected);
 
