@@ -869,6 +869,24 @@ namespace d360.core.entities
 		public bool? DisplayInColumn { get; set; }
 	}
 
+	public class FieldTypeDataTypeSystemApiViewModel : FieldTypeEditableApiViewModel
+	{
+		[DataMember]
+		public string DefaultValue { get; set; }
+
+		[DataMember]
+		public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
+
+		[DataMember]
+		public FieldTypeDescriptionApiViewModel_ValidationText Validation { get; set; }
+
+		[DataMember]
+		public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
+
+		[DataMember]
+		public bool? DisplayInColumn { get; set; }
+	}
+
 	public class FieldTypeDataTypeApiViewModel
 	{
 		[DataMember]
@@ -931,6 +949,9 @@ namespace d360.core.entities
 		[DataMember]
 		public FieldTypeDataTypeComputedScoreApiViewModel Score { get; set; }
 
+		[DataMember]
+		public FieldTypeDataTypeSystemApiViewModel System { get; set; }
+
 		public bool IsOnlyOneTypeModelDefined()
 		{
 			int childPopulatedCount = 0;
@@ -955,6 +976,7 @@ namespace d360.core.entities
 			childPopulatedCount += (Tag != null) ? 1 : 0;
 			childPopulatedCount += (Score != null) ? 1 : 0;
 			childPopulatedCount += (Counter != null) ? 1 : 0;
+			childPopulatedCount += (System != null) ? 1 : 0;
 
 			return (childPopulatedCount == 1);
 		}

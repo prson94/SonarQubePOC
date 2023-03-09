@@ -753,4 +753,13 @@
   <data name="InvalidLanguageCode" xml:space="preserve">
     <value>Invalid [LanguageCode]. Supported values are {0}.</value>
   </data>
+  <data name="AddSystemFieldTypeNotAllowed" xml:space="preserve">
+    <value>You cannot add system field types</value>
+  </data>
+  <data name="EditSystemFieldTypePropertyNotAllowed" xml:space="preserve">
+    <value>You cannot edit certain field type properties</value>
+  </data>
+  <data name="DeleteSystemFieldsError" xml:space="preserve">
+    <value>You cannot delete system field {0}.</value>
+  </data>
 </root>

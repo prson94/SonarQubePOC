@@ -222,7 +222,7 @@ namespace d360.web.Controllers.V2
 				{
 					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeNotFound, model.AssetTypeUid.Value.ToString()));
 				}
-			}
+			}			
 
 			if (model.RelationshipTypeUid.HasValue)
 			{
@@ -239,6 +239,40 @@ namespace d360.web.Controllers.V2
 
 			var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
 			var ExistingIntersectID = new List<Tuple<string, Guid>>();
+
+			foreach(var field in model.Fields.FindAll(x => x.Type.System != null))
+			{
+
+			}
+			if (model.Fields.Any(x => x.Type.System != null))
+			{
+				var isvalid = true;
+				var allowedFields = new List<string> { "formdescription", "displaydescription", "sortorder", "sortbyascending", "friendlyname" };
+				if(model.Fields.Any(f=> f.Type.System != null && !existingFields.Any(e=> f.Name == e.Name && e.Type == DataType.System.ToString())))
+				{
+					// can't add new system fields 
+					throw new ForbiddenBusinessLayerException(ApiMessages.AddSystemFieldTypeNotAllowed);
+				}
+
+				model.Fields.FindAll(x => x.Type.System != null).ForEach(f =>
+				{
+					var existing = existingFields.First(e => e.Name == f.Name);
+					
+					if(
+					f.Type.System.DefaultValue != existing.DefaultValue
+					|| f.Type.System.IsEditable != existing.IsEditable
+					|| f.Type.System.IsListable != existing.IsListable
+					|| f.Type.System.IsPartOfKey != existing.IsPartOfKey
+					|| f.Type.System.IsPrimaryFilter != existing.IsPrimaryFilter
+					|| f.Type.System.ShowIfEmpty != existing.ShowIfEmpty
+					|| f.Type.System.IsDisplayable != existing.IsDisplayable
+					)
+					{
+						throw new ForbiddenBusinessLayerException(ApiMessages.EditSystemFieldTypePropertyNotAllowed);
+					}
+
+				});
+			}
 
 			if (model.AssetTypeUid.HasValue)
 			{
@@ -393,6 +427,14 @@ namespace d360.web.Controllers.V2
 				if (model.Fields.Any(x => new[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
 				{
 					throw new ArgumentException(ApiMessages.DiagramAssetTypeSystemFieldValidation);
+				}
+			}
+
+			if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.ReferenceItemType.ToString())
+			{
+				if (model.Fields.Any(x => x.Name.ToLower() == "code"))
+				{
+					throw new ArgumentException(string.Format(ApiMessages.DeleteSystemFieldsError, "Code"));
 				}
 			}
 
@@ -1029,10 +1071,6 @@ namespace d360.web.Controllers.V2
 				{
 					case SystemObjects.ArtifactType:
 						list.Add("ID", "ID");
-						break;
-					case SystemObjects.ReferenceItem:
-					case SystemObjects.ReferenceItemType:
-						list = list.Prepend(new KeyValuePair<string, string>("Code", "Code")).ToDictionary(d => d.Key, d => d.Value);
 						break;
 					case SystemObjects.PolicyType:
 						list.Add("TextPath", "TextPath");
@@ -2003,11 +2041,12 @@ namespace d360.web.Controllers.V2
 			]
 		public async Task<HttpResponseMessage> GetFilterValues(CancellationToken cancellationToken, Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, string lookupParentValue = null, bool isForAssetForm = false, Guid? assetUid = null)
 		{
-			var prefix = "Fields.GetFilterVales => ";
+			var prefix = "Fields.GetFilterValues => ";
 			try
 			{
 				string pagingQuery = "";
 				string whereQuery = "";
+				string refListOrder = "";
 
 				if (assetTypeUid == Guid.Empty && fieldName == "EvaluatedAssetClass")
 				{
@@ -2320,12 +2359,7 @@ namespace d360.web.Controllers.V2
 
 				bool hasColor = false;
 
-				var colorjoin = $@"
-										outer apply(SELECT FV = (SELECT V.Text as name, COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color 
-													from Asset A 
-													outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
-													where A.Object = v.LookupObjectType and A.ObjectID = V.Value FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) 
-										)colorJSON";
+				var colorjoin = "";
 
 				string selectStatement = "v.text";
 				string resourceJoin = "";
@@ -2357,6 +2391,8 @@ namespace d360.web.Controllers.V2
 					}
 				}
 
+
+
 				string parentFieldJoins = "";
 				List<string> parentValues = new List<string>();
 
@@ -2371,16 +2407,9 @@ namespace d360.web.Controllers.V2
 					whereQuery += " and SA.ObjectID in @parentValues ";
 				}
 
-				string query = $@"
-					select {selectStatement} 
-					from FieldLookupValue V
-					{parentFieldJoins}
-					{(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
-					where @fieldTypeId = v.FieldTypeID
-					{whereQuery}
-					order by text asc
-					{pagingQuery};
+				string query = "select 1 where 1 = 0;";
 
+				string countQuery = $@"
 					select count(1) from FieldLookupValue V
 						{parentFieldJoins}
 						{(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
@@ -2388,32 +2417,74 @@ namespace d360.web.Controllers.V2
 
 				if (hasColor)
 				{
-					query = $@"
-					drop table if exists #tempResults
-						select V.*
-						into #tempResults
-						from FieldLookupValue V
-						{parentFieldJoins}
-						where @fieldTypeId = FieldTypeID {whereQuery}
-						order by text asc
-						{pagingQuery};
-
-					 select {selectStatement} from #tempResults V {colorjoin};
-
-					select count(1) from FieldLookupValue V {parentFieldJoins}
-						where @fieldTypeId = FieldTypeID {whereQuery};";
+					colorjoin = $@"
+										outer apply(SELECT FV = (SELECT V.Text as name, COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color 
+													from Asset A 
+													outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
+													where A.Object = v.LookupObjectType and A.ObjectID = V.Value FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) 
+										)colorJSON";
 				}
 
-				if (onlyCount)
+				if (!onlyCount)
 				{
 					query = $@"
-					select 1 where 1 = 0;
+							drop table if exists #tempResults
+							select V.*
+							into #tempResults
+							from FieldLookupValue V
+							{parentFieldJoins}
+							{(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
+							where @fieldTypeId = v.FieldTypeID
+							{whereQuery}
+							order by text asc
+							{pagingQuery};
 
-					select count(1) from FieldLookupValue V {parentFieldJoins}
-						where @fieldTypeId = FieldTypeID {whereQuery};";
+							select {selectStatement} from #tempResults V {colorjoin};";					
+
+					if (fieldType.LookupObjectType == SystemObjects.ReferenceItem.ToString() || fieldType.LookupObjectType == SystemObjects.ReferenceItemType.ToString())
+					{						
+						var refvalues = Company.Connection.Query<dynamic>($"exec [GetReferenceItemValues] {fieldType.LookupObjectID}, 0, 0, 1 ").ToList();
+
+						Dictionary<int, int> values = new Dictionary<int, int>();
+						for (int i = 0; i < refvalues.Count(); i++)
+						{
+							var row = (IDictionary<string, object>)refvalues[i];
+							int itemID = (int)row["ID"];
+							values.Add(itemID, i);
+						}
+
+						refListOrder = JsonConvert.SerializeObject(values);
+
+						query = $@"
+							drop table if exists #tempResults
+							select V.*
+							into #tempResults
+							from FieldLookupValue V
+							{parentFieldJoins}							
+							where @fieldTypeId = v.FieldTypeID
+							{whereQuery}
+							order by text asc
+							{pagingQuery};
+
+							select 
+								{selectStatement} 
+							from 
+								#tempResults V 
+								inner join 
+								OPENJSON(@refListOrder) O on O.[Key] = V.Value							
+								{colorjoin}
+							order by 
+								O.Value;";
+						
+					}
 				}
+				query = $@"
+						{query} 
 
-				var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel, parentValues });
+						{countQuery}
+						";
+
+				var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel, parentValues, refListOrder });				
 
 				if (!isForAssetForm)
 				{
@@ -2926,6 +2997,11 @@ namespace d360.web.Controllers.V2
 							{
 								CounterPrefix = f.CounterPrefix
 							};
+						}
+
+						if (f.Type == DataType.System.ToString())
+						{
+							c.Type.System = new FieldTypeDataTypeSystemApiViewModel();
 						}
 
 						if (string.IsNullOrEmpty(c.FriendlyName))

@@ -82,7 +82,10 @@ export class FieldType {
                 break;
             case 'Counter':
                 this.Counter = new Counter();
-                break;
+				break;
+			case 'System':
+				this.System = new Text();
+				break;
             default:
                 this.Empty = new Empty();
         }
@@ -123,7 +126,8 @@ export class FieldType {
     Text: Text;
     Tag: Tag;
     Score: Score;
-    Counter: Counter;
+	Counter: Counter;
+	System: Text;
     Empty: Empty;
 }
 

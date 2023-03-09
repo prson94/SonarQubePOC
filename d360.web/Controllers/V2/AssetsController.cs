@@ -747,6 +747,31 @@ namespace d360.web.Controllers.V2
 						Company.Add(nameFieldType);
 					}
 
+					if(model.Class == AssetTypeClass.Reference)
+					{
+						var codeFieldType = new FieldType
+						{							
+							Name = "Code",
+							FriendlyName = "Code",
+							Type = DataType.System.ToString(),							
+							AssetTypeID = model.AssetTypeID,
+							IsRequired = true,
+							IsListable = true,
+							IsDisplayable = true,
+							IsEditable = true,
+							IsPartOfKey = true,
+							ShowIfEmpty = true,
+							MaximumLength = 500,
+							MinimumLength = 1,
+							SortOrder = 1,
+							ColumnOrder = 1,
+							SortByAscending = true,																				
+							UpdatedBy = Company.CurrentResourceID
+						};
+
+						Company.Add(codeFieldType);
+					}
+
 					if (model.Class == AssetTypeClass.Diagram)
 					{
 						Company.Add(new FieldType

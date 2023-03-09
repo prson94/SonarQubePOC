@@ -1164,8 +1164,6 @@ namespace d360.web.Controllers
 					remainingWidth = 85;
 					dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-					columns.Add(new GridColumn { text = Fields.Code_Name, datafield = "Code" });
-					columns.Add(new GridColumn { text = Fields.Color_Name, datafield = "Color" });
 					var parentRefType = Company.GetParentType(assetType.ID);
 					var loopCount = 0;
 
@@ -1178,7 +1176,7 @@ namespace d360.web.Controllers
 						parentRefType = Company.GetParentType(parentRefType.ID);
 						loopCount++;
 					}
-
+					
 					var idx = 0;
 					//parent fields were added starting from child element up, meaning we need to reverse this list to get correct index segment withing asset path
 					parentGridFields.Reverse();
@@ -1191,9 +1189,11 @@ namespace d360.web.Controllers
 
 					parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
 
+					//Add the colour column after code
+					columns.Insert(columns.IndexOf(columns.First(x => x.apiName.ToLower() == "code")) + 1, new GridColumn { text = Fields.Color_Name, datafield = "Color", });
+
 					fields.Add(new GridField { name = "AssetID", type = "number" });
 					fields.Add(new GridField { name = "ID", type = "number" });
-					fields.Add(new GridField { name = "Code", type = "string" });
 					fields.Add(new GridField { name = "Color", type = "Color" });
 					fields.Add(new GridField { name = "ReferenceItemType", type = "number" });
 					break;

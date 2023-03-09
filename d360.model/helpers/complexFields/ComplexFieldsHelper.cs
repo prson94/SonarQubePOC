@@ -8,6 +8,7 @@ using d360.core.Models;
 using Newtonsoft.Json;
 
 using Dapper;
+using d360.core;
 
 namespace d360.model.helpers
 {
@@ -702,7 +703,7 @@ namespace d360.model.helpers
 			foreach (var ft in fields)
 			{
 
-				if (ft.Name == "Code" && ft.ID == 0)
+				if (ft.Name == "Code" && ft.Type == DataType.System.ToString())
 				{
 					selects.Add("A.[Code] as [Code]");
 				}

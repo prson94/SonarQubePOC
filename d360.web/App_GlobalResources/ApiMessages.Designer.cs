@@ -97,6 +97,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You cannot add system field types.
+        /// </summary>
+        public static string AddSystemFieldTypeNotAllowed {
+            get {
+                return ResourceManager.GetString("AddSystemFieldTypeNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You are already watching {0}.
         /// </summary>
         public static string AlreadyWatch {
@@ -313,6 +322,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You cannot delete system field {0}..
+        /// </summary>
+        public static string DeleteSystemFieldsError {
+            get {
+                return ResourceManager.GetString("DeleteSystemFieldsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Fields [Name], [GovernanceRole] and [StepNo] cannot be delete from Diagram Asset Type..
         /// </summary>
         public static string DiagramAssetTypeSystemFieldValidation {
@@ -327,6 +345,15 @@ namespace Resources {
         public static string DuplicateUserUidProvided {
             get {
                 return ResourceManager.GetString("DuplicateUserUidProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You cannot edit certain field type properties.
+        /// </summary>
+        public static string EditSystemFieldTypePropertyNotAllowed {
+            get {
+                return ResourceManager.GetString("EditSystemFieldTypePropertyNotAllowed", resourceCulture);
             }
         }
         
