@@ -13,12 +13,14 @@ import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-
 import { PredicatesService } from '../../services/predicates.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../services/settings.service';
-import { SidePanelService, SidePanelState } from '../../services/side-panel.service';
+import { SidePanelService } from '../../services/side-panel.service';
 import { AppConstants } from '../../static/constants';
 import { AdvancedFilteringComponent } from '../assets-grid/advanced-filtering/advanced-filtering.component';
 import { AdvancedFilterFieldType } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { PopupMenu } from '../shared/controls/popup-menu/popup-menu.component';
+
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-data-catalog-grid',
@@ -29,8 +31,8 @@ import { PopupMenu } from '../shared/controls/popup-menu/popup-menu.component';
 export class DataCatalogGridComponent extends AssetGridBaseComponent implements OnInit {
 	subjectLoadGrid = new Subject<unknown>();
 	predicates: Predicate[];
-	columns: any[] = [];
-	data: any[] = [];
+	columns: Record<string, unknown>[] = [];
+	data: Record<string, unknown>[] = [];
 
 	rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
 	destroy = new Subject<void>();
@@ -40,7 +42,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	isContainsSearchDefault: boolean = false;
 	simpleSearchText: string = '';
 	advancedFilterText: string = '';
-	selected: any = null;
+	selected: Record<string, unknown> = null;
 
 	public filterFields$: Observable<AdvancedFilterFieldType[]>;
 	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -147,6 +149,8 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 
 			this.data.forEach((item) => {
 				const menuItems = [];
+				// false poisitve fs.open eslint error
+				// eslint-disable-next-line
 				menuItems.push({ "title": $localize`Open`, callback: () => this.open(item.Uid) });
 				// false poisitve fs.open eslint error
 				// eslint-disable-next-line
@@ -168,7 +172,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	}
 
 	private setFieldsObsservable() {
-		var fields: AdvancedFilterFieldType[] = [];
+		const fields: AdvancedFilterFieldType[] = [];
 		fields.push({
 			Name: "displayValue", FriendlyName: "Name", Type: new FieldType("Text"), Category: "", RemovePopulatedOperator: true
 		});
@@ -198,9 +202,11 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		this.sidePanelService.setSidePanelState({ assetUid: $event.Uid });
 	}
 
-	open(uid: string, newTab: boolean = false) {
+	open(uid, newTab: boolean = false) {
 		const url = `/asset/${uid}`;
 		if (newTab) {
+			// false poisitve fs.open eslint error
+			// eslint-disable-next-line
 			window.open(url, "_blank");
 		}
 		else {

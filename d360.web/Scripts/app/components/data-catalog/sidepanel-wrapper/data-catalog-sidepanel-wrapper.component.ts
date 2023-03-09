@@ -14,9 +14,9 @@ export class DataCatalogSidePanelWrapperComponent implements OnChanges, OnDestro
 
 	sidePanelOpen = false;
 
-	selectedAsset: any;
-	selectedReferenceItem: any;
-	selectedTag: any;
+	selectedAsset: Record<string, unknown>;
+	selectedReferenceItem: Record<string, unknown>;
+	selectedTag: Record<string, unknown>;
 
 	hrefSub: Subscription;
 

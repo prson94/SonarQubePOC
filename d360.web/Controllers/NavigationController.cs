@@ -107,7 +107,7 @@ namespace d360.web.Controllers
 				});
 			}
 
-			if (hasDataCatalog)
+			if (hasDataCatalog && nodes != null)
 			{
 				nodes = nodes.Prepend(new TopNavigationItem
 				{

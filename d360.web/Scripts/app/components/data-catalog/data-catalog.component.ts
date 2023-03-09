@@ -6,11 +6,6 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 	styleUrls: ['./data-catalog.component.less'],
 	encapsulation: ViewEncapsulation.None
 })
-export class DataCatalogComponent implements OnInit {
-
-	constructor() { }
-
-	ngOnInit(): void {
-	}
+export class DataCatalogComponent {
 
 }
