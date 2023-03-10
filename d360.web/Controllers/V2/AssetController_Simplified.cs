@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.EnterpriseServices;
 using System.Linq;
@@ -154,6 +155,11 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetCatalogAssetsAsync(CancellationToken cancellationToken)
 		{
+			if (cancellationToken == null)
+			{
+				cancellationToken = CancellationToken.None;
+			}
+
 			var queryParams = Request.GetQueryNameValuePairs();
 			string sql = "";
 			string advancedFilterString = "";
@@ -328,6 +334,11 @@ namespace d360.web.Controllers.V2
 
 					insert into #simpleFiltersTempTable
 					select ObjectAssetID from dbo.CatalogBrowseObject where ObjectDisplayValue like @simpleFilter
+
+					insert into #simpleFiltersTempTable 
+					select ObjectAssetID from dbo.CatalogBrowseObject
+					inner join AssetPath ap on ap.ID = ObjectAssetID
+					where ap.DisplayPath like 'eagle%'
 
 					create nonclustered index idx on #simpleFiltersTempTable (ObjectAssetID)";
 			}
@@ -598,7 +609,12 @@ namespace d360.web.Controllers.V2
 				option(recompile)
 				";
 
-			var results = await Company.QueryMultipleAsync(finalSql, dbArgs);
+			SqlMapper.GridReader results = await Company.Database.Connection.QueryMultipleAsync(
+					  new CommandDefinition(finalSql,
+					  cancellationToken: cancellationToken,
+					  parameters: dbArgs,
+					  commandTimeout: ApiTimeout
+					));
 
 			List<PropertyDefinition> properties = null;
 			if (includeDefinition)
