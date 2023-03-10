@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { Table } from 'primeng/table';
 import { debounceTime, Observable, ReplaySubject, Subject, Subscription, takeUntil } from 'rxjs';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { FieldType } from '../../models/fieldtype-api.model';
 import { Predicate, PredicateType } from '../../models/predicate.model';
 import { DataCatalogService } from '../../services/dataCatalog.service';
-import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
+import { FeatureFlags } from '../../services/feature-flags.enum';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { PredicatesService } from '../../services/predicates.service';
@@ -55,7 +56,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		public sidePanelService: SidePanelService,
 		settingsService: CompanySettingsService,
 		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
-		private featureFlagService: FeatureFlagsService,
+		private featureFlagService: LaunchDarklyService,
 		private cdRef: ChangeDetectorRef,
 		private titleService: Title,
 		public headerBreadcrumbService: HeaderBreadcrumbService,
@@ -64,7 +65,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	) {
 		super(headerBreadcrumbService, settingsService, secondaryNavService);
 
-		this.isContainsSearchDefault = this.featureFlagService.flags[FeatureFlags.ContainsSearchDefaultUiFlag];
+		this.isContainsSearchDefault = this.featureFlagService.variation<boolean>(FeatureFlags.ContainsSearchDefaultUiFlag);
 		this.filterFields$ = this.filterFieldsSubject.asObservable();
 
 		this.subjectLoadGrid.pipe(
@@ -128,6 +129,10 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 
 		if (this.simpleSearchText) {
 			params['_simpleFilter'] = this.simpleSearchText;
+
+			if (this.isContainsSearchDefault) {
+				params['_simpleFilter'] = "*" + this.simpleSearchText;
+			}
 		}
 
 		if (this.dataTable.sortField) {
