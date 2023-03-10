@@ -10,6 +10,7 @@ import { AssetTypeClass } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-field-definition-tile',
