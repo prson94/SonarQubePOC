@@ -11,7 +11,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Subscription } from 'rxjs';
 import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SemanticBaseComponent } from './semantics-base.component';
-import { FeatureFlagsService } from '../../services/featureflags.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { AuthenticationService } from '../../services/authentication.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { IOutputData } from 'angular-split';
@@ -57,7 +57,7 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
         private sidePanelService: SidePanelService,
-        private featureFlagService: FeatureFlagsService,
+        featureFlagService: LaunchDarklyService,
         private authenticationService: AuthenticationService,
         private headerActionsService: HeaderActionsService,
     ) {

@@ -23,48 +23,53 @@ namespace d360.web
             bool isPreflight = false;
             int? companyID = context.Request.Get<int?>("CompanyID");
 
-            if (companyID.HasValue && context.Request.Headers.ContainsKey("Origin"))
-            {
-                var acceptOrigin = context.Request.Headers["Origin"];
+			if (companyID.HasValue && context.Request.Headers.ContainsKey("Origin"))
+			{
+				var acceptOrigin = context.Request.Headers["Origin"];
 
-                if (companyID.HasValue)
-                {
-                    isPreflight = context.Request.Method == "OPTIONS";
-                    var ctx = CreateOwinCompanyContext(companyID.Value);
-                    string originsSetting = ctx.GetSettingValue<string>(Setting.AllowedOrigins);
+				if (companyID.HasValue)
+				{
+					isPreflight = context.Request.Method == "OPTIONS";
+					var ctx = CreateOwinCompanyContext(companyID.Value);
+					string originsSetting = ctx.GetSettingValue<string>(Setting.AllowedOrigins);
 
-                    if (!string.IsNullOrEmpty(originsSetting))
-                    {
-                        var allowOrigin = originsSetting
-                            .Split(',')
-                            .ToList()
-                            .Contains(acceptOrigin);
+					List<string> allowedOrigins = new List<string> {
+						"https://shell-dev.dis.cloud.precisely.services",
+						"https://shell-qa.dis.cloud.precisely.services",
+						"https://shell-stg.dis.cloud.precisely.com",
+						"https://shell.dis.cloud.precisely.com",
+						"https://cloud.precisely.com"
+					};
 
-                        //the requested origin is allowed, set appropriate access headers
-                        if (allowOrigin)
-                        {
-                            context.Response.OnSendingHeaders(s =>
-                            {
-                                var res = (IOwinResponse)s;
+					if (!string.IsNullOrEmpty(originsSetting))
+					{
+						allowedOrigins.AddRange(originsSetting.Split(',').Select(s => s.Trim()));
+					}
 
-                                res.Headers.Add("Access-Control-Allow-Origin", new string[] { acceptOrigin });
-                                res.Headers.Add("Access-Control-Allow-Methods", new string[] { "*" });
-                                res.Headers.Add("Access-Control-Allow-Headers", new string[] { "*" });
+					//the requested origin is allowed, set appropriate access headers
+					if (allowedOrigins.Contains(acceptOrigin))
+					{
+						context.Response.OnSendingHeaders(s =>
+						{
+							var res = (IOwinResponse)s;
 
-                                //override status code if this is a valid preflight request
-                                if (isPreflight)
-                                {
-                                    res.StatusCode = (int)HttpStatusCode.OK;
-                                    res.ReasonPhrase = HttpStatusCode.OK.ToString();
-                                }
+							res.Headers.Add("Access-Control-Allow-Origin", new string[] { acceptOrigin });
+							res.Headers.Add("Access-Control-Allow-Methods", new string[] { "*" });
+							res.Headers.Add("Access-Control-Allow-Headers", new string[] { "*" });
 
-                            }, response);
-                        }
-                    }
-                }
-            }
+							//override status code if this is a valid preflight request
+							if (isPreflight)
+							{
+								res.StatusCode = (int)HttpStatusCode.OK;
+								res.ReasonPhrase = HttpStatusCode.OK.ToString();
+							}
 
-            await Next(environment);
+						}, response);
+					}
+				}
+			}
+
+			await Next(environment);
         }
     }
 }

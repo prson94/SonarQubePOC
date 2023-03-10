@@ -3,11 +3,9 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
-import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { FeatureFlagsService } from '../../../services/featureflags.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { Table } from 'primeng/table';
 import { Subscription } from 'rxjs';
@@ -40,9 +38,7 @@ export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent im
 		protected settingsService: CompanySettingsService,
 		titleService: Title,
 		private siteMenuService: SiteMenuService,
-		private stateService: StateService,
 		private messagesService: MessagesObservableService,
-		private featureFlagService: FeatureFlagsService,
 		private assetTypeService: AssetTypeService
 	) {
 		super(headerBreadcrumbService, titleService, settingsService);

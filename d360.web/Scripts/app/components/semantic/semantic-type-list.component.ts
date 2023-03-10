@@ -20,7 +20,8 @@ import { FieldType } from '../../models/fieldtype-api.model';
 import { LazyLoadEvent } from 'primeng/api';
 import { StringConstants } from '../../static/string-constants';
 import { SemanticBaseComponent } from './semantics-base.component';
-import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "../../services/feature-flags.enum";
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AuthenticationService } from '../../services/authentication.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
@@ -166,7 +167,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
-        private featureFlagService: FeatureFlagsService,
+        private featureFlagService: LaunchDarklyService,
         private messagesService: MessagesObservableService,
         private authenticationService: AuthenticationService,
         private headerActionsService: HeaderActionsService,
@@ -174,7 +175,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
         this.theDeleteCallback = this.deleteSemanticType.bind(this);
         this.theDisableCallback = this.changeSemanticDisabledStatus.bind(this);
-		this.isContainsSearchDefault = this.featureFlagService.flags[FeatureFlags.ContainsSearchDefaultUiFlag];
+		this.isContainsSearchDefault = this.featureFlagService.variation<boolean>(FeatureFlags.ContainsSearchDefaultUiFlag);
 	}
 
     ngOnInit() {

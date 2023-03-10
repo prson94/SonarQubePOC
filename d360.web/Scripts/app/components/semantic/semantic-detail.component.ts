@@ -14,7 +14,8 @@ import { CompanySettingEnum } from '../../models/settings.model';
 import { AuthenticationService } from '../../services/authentication.service';
 
 import { DataProfileService } from '../../services/dataprofile.service';
-import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "../../services/feature-flags.enum";
 import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -70,11 +71,11 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         private resourcesService: ResourcesService,
         protected settingsService: CompanySettingsService,
         private authenticationService: AuthenticationService,
-        private featureFlagService: FeatureFlagsService,
+        private featureFlagService: LaunchDarklyService,
     ) {
         super(settingsService);   
 
-        if (!featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
+        if (!featureFlagService.variation<boolean>(FeatureFlags.SemanticTypesUiFlag)) {
             this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
         } 
     }
