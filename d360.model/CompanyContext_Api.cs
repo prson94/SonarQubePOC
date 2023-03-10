@@ -644,22 +644,22 @@ namespace d360.model
 						inner join AssetDetail ad on AD.[AssetTypeID] = V.SubjectAssetTypeID and {assetJoin} 
 						where isfound = 0;
 
-						if exists(Select 1 from #tempdata t where t.ObjectClass = {(int)AssetTypeClass.ReferenceItemType}  and isfound = 0)
+						if exists(Select 1 from #tempdata t where t.ObjectClass = {(int)AssetTypeClass.Reference}  and isfound = 0)
 						begin
 							update V
 							set isfound = 3
 							from #tempdata V
-							inner join AssetType att on att.ID = V.ObjectAssetTypeID AND V.ObjectClass = 0 and {assetrefJoin}
-							where isfound = 0;
+							inner join AssetType att on att.[Class] = {(int)AssetTypeClass.Reference} and att.[ObjectID] <> 0 and {assetrefJoin}
+							where isfound = 0 and V.ObjectAssetTypeID = 0 and V.ObjectClass = {(int)AssetTypeClass.Reference};
 						end
 
-						if exists(Select 1 from #tempdata t where t.SubjectClass = {(int)AssetTypeClass.ReferenceItemType} and isfound = 0)
+						if exists(Select 1 from #tempdata t where t.SubjectClass = {(int)AssetTypeClass.Reference} and isfound = 0)
 						begin
 							update V
 							set isfound = 4
 							from #tempdata V
-							inner join AssetType att on att.[ID] = V.[SubjectAssetTypeID] AND V.SubjectClass = 0 and {assetrefJoin}
-							where isfound = 0;
+							inner join AssetType att on att.[Class] = {(int)AssetTypeClass.Reference} and att.[ObjectID] <> 0 and {assetrefJoin}
+							where isfound = 0 and V.SubjectAssetTypeID = 0 and V.SubjectClass = {(int)AssetTypeClass.Reference};
 						end;
 
 						WITH RS_DATA AS(SELECT ExecutionID,ItemNumber,FTName,MAX(FieldValue) FieldValue,MIN(isfound) isfound 
@@ -1149,7 +1149,7 @@ namespace d360.model
 					isfound = 1
 				from #tempdata V
 				inner join AssetDetail ad on AD.AssetTypeID = V.ITOBJECTASSETTYPEID and {assetJoin} 
-				where isfound = 0;
+				where isfound = 0 and V.ObjectAssetTypeID = V.ITSUBJECTASSETTYPEID;
 
 				update V
 				set [SubjectAssetID] = AD.[ID],
@@ -1158,7 +1158,7 @@ namespace d360.model
 					isfound = 2
 				from #tempdata V
 				inner join AssetDetail ad on AD.AssetTypeID = V.ITSUBJECTASSETTYPEID and {assetJoin} 
-				where isfound = 0;
+				where isfound = 0 and V.ObjectAssetTypeID = V.ITOBJECTASSETTYPEID;
 
 				if exists(Select 1 from #tempdata t where T.OBJECTCLASS = {(int)AssetTypeClass.Reference}  and isfound = 0)
 				begin
@@ -1168,8 +1168,8 @@ namespace d360.model
 						switchObject = 1,
 						isfound = 3
 					from #tempdata V
-					inner join AssetType att on att.[Object] = 'ReferenceItemType' and att.[ObjectID] <> 0 and {assetrefJoin} 
-					where isfound = 0;
+					inner join AssetType att on att.[Class] = {(int)AssetTypeClass.Reference} and att.[ObjectID] <> 0 and {assetrefJoin} 
+					where isfound = 0 and V.ITOBJECTASSETTYPEID = 0 and V.OBJECTCLASS = {(int)AssetTypeClass.Reference} ;
 				end
 
 				if exists(Select 1 from #tempdata t where T.SUBJECTCLASS = {(int)AssetTypeClass.Reference}  and isfound = 0)
@@ -1180,8 +1180,8 @@ namespace d360.model
 						switchObject = 0,
 						isfound = 4
 					from #tempdata V
-					inner join AssetType att on att.[Object] = 'ReferenceItemType' and att.[ObjectID] <> 0 and {assetrefJoin} 
-					where isfound = 0;
+					inner join AssetType att on att.[Class] = {(int)AssetTypeClass.Reference} and att.[ObjectID] <> 0 and {assetrefJoin} 
+					where isfound = 0 and V.ITSUBJECTASSETTYPEID = 0 and V.SUBJECTCLASS = {(int)AssetTypeClass.Reference} ;
 				end
 
 				insert into #Relationships WITH(TABLOCK) (ID, [uid], IntersectTypeID, SubjectAssetID, SubjectAssetTypeID, ObjectAssetID, ObjectAssetTypeID, SwitchObject)
