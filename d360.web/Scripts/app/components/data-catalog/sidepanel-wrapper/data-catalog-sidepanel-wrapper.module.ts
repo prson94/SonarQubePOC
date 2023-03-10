@@ -5,7 +5,7 @@ import { AngularSplitModule } from 'angular-split';
 import { FormsModule } from '@angular/forms';
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
 import { DataCatalogSidePanelWrapperComponent } from './data-catalog-sidepanel-wrapper.component';
-import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module';
+import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 
 @NgModule({
 	declarations: [
@@ -21,7 +21,7 @@ import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module
 		TableModule,
 		AngularSplitModule,
 		SidePanelModule,
-		AssetDetailModule
+		AssetPreviewModule
 	]
 })
 export class DataCatalogSidePanelWrapperModule { }

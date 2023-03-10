@@ -15,21 +15,14 @@ export class DataCatalogSidePanelWrapperComponent implements OnChanges, OnDestro
 	sidePanelOpen = false;
 
 	selectedAsset: Record<string, unknown>;
-	selectedReferenceItem: Record<string, unknown>;
-	selectedTag: Record<string, unknown>;
 
 	hrefSub: Subscription;
 
-	constructor(public sidePanelService: SidePanelService,
-		private linkClickInterceptor: LinkClickInterceptor) {
+	constructor(public sidePanelService: SidePanelService) {
 		this.sidePanelService.sidePanelStateChange$.subscribe((res) => {
 			if (res.assetUid) {
 				this.selectedAsset = { uid: res.assetUid, type: 'Artifact' };
 			}
-		});
-
-		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-			this.linkClickInterceptor.handleEvent(this, ev);
 		});
 	}
 	ngOnDestroy(): void {
