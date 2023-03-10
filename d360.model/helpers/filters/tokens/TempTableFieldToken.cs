@@ -135,7 +135,7 @@ namespace d360.model.helpers.filters
 		{
 			var fieldSql = GetColumnValueSyntax(fieldType.ID);
 
-			if (@operator == "eq" && fieldType.Type == "Text")
+			if (@operator == "eq" && fieldType.Type == "Text" && fieldSql.ToLower().Contains("formattedvalue") )
 			{
 				fieldSql = $"trim({fieldSql})";
 			}
