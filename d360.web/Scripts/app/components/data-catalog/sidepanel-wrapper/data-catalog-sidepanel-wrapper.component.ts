@@ -1,7 +1,6 @@
 import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from "@angular/core";
 import { IOutputData } from "angular-split";
 import { Subscription } from "rxjs";
-import { LinkClickInterceptor } from "../../../services/href-click-service";
 import { SidePanelService } from "../../../services/side-panel.service";
 
 @Component({
