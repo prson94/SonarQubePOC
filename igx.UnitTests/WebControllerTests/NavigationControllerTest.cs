@@ -90,7 +90,7 @@ namespace igx.UnitTests.WebControllerTests
 
             ;
 
-            Assert.True(navigationController.GenerateSiteMenu(nodes, false, true, true).Count == 0);
+            Assert.True(navigationController.GenerateSiteMenu(nodes, false, true, false).Count == 0);
         }
 
         [Fact]
@@ -112,7 +112,7 @@ namespace igx.UnitTests.WebControllerTests
                             </nav>"
             });
 
-            Assert.True(navigationController.GenerateSiteMenu(nodes, true, true, true).Count == 1);
+            Assert.True(navigationController.GenerateSiteMenu(nodes, true, true, false).Count == 1);
         }
 
         [Fact]
