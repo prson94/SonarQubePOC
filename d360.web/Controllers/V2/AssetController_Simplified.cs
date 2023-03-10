@@ -3,10 +3,12 @@ using d360.core;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.EnterpriseServices;
 using System.Linq;
@@ -88,6 +90,7 @@ namespace d360.web.Controllers.V2
 			public string PropertyName { get; set; }
 			public string Query { get; set; }
 			public string Where { get; set; }
+			public string TokenExpression { get; set; }
 			public int PredicateId { get; set; }
 		}
 
@@ -152,8 +155,16 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetCatalogAssetsAsync(CancellationToken cancellationToken)
 		{
+			if (cancellationToken == null)
+			{
+				cancellationToken = CancellationToken.None;
+			}
+
 			var queryParams = Request.GetQueryNameValuePairs();
 			string sql = "";
+			string advancedFilterString = "";
+			string simpleFilterTempTable = "";
+			List<string> whereStatements = new List<string>();
 
 			// Get relevant predicates.
 			sql = "select p.Id, p.Name from [Predicate] p where p.[Type] = 5 and exists (select 1 from IntersectType where PredicateId = p.Id)";
@@ -181,115 +192,155 @@ namespace d360.web.Controllers.V2
 			});
 
 			// Add path as the last column.
-			columns.Add(new CatalogColumn { ApiName = "displaypath", Column = "p.DisplayPath", Sort = "p.DisplayPath", Position = columns.Max(c => c.Position) + 1 });
+			columns.Add(new CatalogColumn { ApiName = "displaypath", Column = "p.DisplayPath", Sort = "p.DisplayPath", JoinStatement = "inner join AssetPath p on p.Id = S.ObjectAssetId", Position = columns.Max(c => c.Position) + 1 });
 
 			#endregion
 
 			#region Filtering logic
 
-			var whereConnectors = new List<Tuple<string, int>>();
 			var catalogWheres = new List<CatalogWhere>();
 			var dbArgs = new DynamicParameters();
 			if (queryParams.Any(q => q.Key == "_filter"))
 			{
-				var filterString = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).FirstOrDefault();
+				advancedFilterString = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).FirstOrDefault();
 
-				foreach (var idx in GetAllIndexes(filterString, " and "))
+				var filters = Regex.Matches(advancedFilterString, @"([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\-\/\:\,\*]+)");
+				if (filters.Count > 0)
 				{
-					whereConnectors.Add(new Tuple<string, int>("and", idx));
-				}
-
-				foreach (var idx in GetAllIndexes(filterString, " or "))
-				{
-					whereConnectors.Add(new Tuple<string, int>("or", idx));
-				}
-
-				string[] delimiters = { " and ", " or " };
-				var rawFilters = filterString.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
-
-				int parameterIndex = 1;
-				foreach (var rawFilter in rawFilters)
-				{
-					var filterMatch = Regex.Match(rawFilter, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin)\s([\w\-\/\:\,\*]+)$");
-					if (filterMatch.Success && filterMatch.Groups.Count == 4)
+					int parameterIndex = 1;
+					foreach (Match filterGrp in filters)
 					{
-						var filterProperty = filterMatch.Groups[1].Value;
-						var filterOperation = filterMatch.Groups[2].Value;
-						var filterValue = filterMatch.Groups[3].Value;
-						var column = columns.FirstOrDefault(c => c.ApiName.ToLowerInvariant() == filterProperty.ToLowerInvariant());
-						if (column != null)
+						var filterMatch = Regex.Match(filterGrp.Value, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\-\/\:\,\*]+)$");
+						if (filterMatch.Success && filterMatch.Groups.Count == 4)
 						{
-							// Treat as standard text value.
-							var operation = "";
-							switch (filterOperation)
+							var filterProperty = filterMatch.Groups[1].Value;
+							var filterOperation = filterMatch.Groups[2].Value;
+							var filterValue = filterMatch.Groups[3].Value;
+							var column = columns.FirstOrDefault(c => c.ApiName.ToLowerInvariant() == filterProperty.ToLowerInvariant());
+							if (column != null)
 							{
-								case "ct":
-									operation = "like";
-									if (filterValue.StartsWith("*"))
-									{
-										dbArgs.Add($"p{parameterIndex}", $"%{filterValue.Replace("*", "")}");
-									}
-									else if (filterValue.EndsWith("*"))
-									{
-										dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "")}%");
-									}
-									else
-									{
-										dbArgs.Add($"p{parameterIndex}", $"%{filterValue}%");
-									}
-
-									break;
-								case "eq":
-									operation = "=";
-									dbArgs.Add($"p{parameterIndex}", filterValue);
-									break;
-								case "nct":
-									operation = "not like";
-									dbArgs.Add($"p{parameterIndex}", filterValue);
-									break;
-								case "neq":
-									operation = "<>";
-									dbArgs.Add($"p{parameterIndex}", filterValue);
-									break;
-							}
-							var predicate = predicates.FirstOrDefault(p => p.Name.ToLowerInvariant() == filterProperty.ToLowerInvariant());
-
-							if (predicate != null)
-							{
-								catalogWheres.Add(new CatalogWhere
+								// Treat as standard text value.
+								var operation = "";
+								switch (filterOperation)
 								{
-									PropertyName = $"p{parameterIndex}",
-									PredicateId = predicate.Id,
-									Where = $"fr.p{parameterIndex} = 1",
-									Query = $@"select I.ObjectAssetID from #v pred 
+									case "ct":
+										operation = "like";
+										if (filterValue.StartsWith("*"))
+										{
+											dbArgs.Add($"p{parameterIndex}", $"%{filterValue.Replace("*", "")}");
+										}
+										else if (filterValue.EndsWith("*"))
+										{
+											dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "")}%");
+										}
+										else
+										{
+											dbArgs.Add($"p{parameterIndex}", $"%{filterValue}%");
+										}
+
+										break;
+									case "eq":
+										operation = "=";
+										dbArgs.Add($"p{parameterIndex}", filterValue);
+										break;
+									case "nct":
+										operation = "not like";
+										dbArgs.Add($"p{parameterIndex}", filterValue);
+										break;
+									case "ne":
+									case "neq":
+										operation = "<>";
+										dbArgs.Add($"p{parameterIndex}", filterValue);
+										break;
+								}
+								var predicate = predicates.FirstOrDefault(p => p.Name.ToLowerInvariant() == filterProperty.ToLowerInvariant());
+
+								if (predicate != null)
+								{
+									string valuePart = $"pred.DisplayValue {operation} @p{parameterIndex}";
+
+									if (filterValue.Trim().ToLowerInvariant() == "null")
+									{
+										if (operation == "=")
+										{
+											valuePart = $"pred.DisplayValue is null";
+										}
+										else
+										{
+											valuePart = $"pred.DisplayValue is not null";
+										}
+									}
+
+									catalogWheres.Add(new CatalogWhere
+									{
+										TokenExpression = filterGrp.Value,
+										PropertyName = $"p{parameterIndex}",
+										PredicateId = predicate.Id,
+										Where = $"fr.p{parameterIndex} = 1",
+										Query = $@"select I.ObjectAssetID from #v pred 
 											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
 											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
-											where pred.PredicateId = {predicate.Id} and pred.DisplayValue {operation} @p{parameterIndex}"
-								});
-							}
-							else if (column.ApiName == "displayValue")
-							{
-								catalogWheres.Add(new CatalogWhere
+											where pred.PredicateId = {predicate.Id} and {valuePart}"
+									});
+								}
+								else if (column.ApiName == "displayValue")
 								{
-									PropertyName = $"p{parameterIndex}",
-									Where = $"fr.p{parameterIndex} = 1",
-									Query = $@"select ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue {operation} @p{parameterIndex}"
-								});
-							}
+									catalogWheres.Add(new CatalogWhere
+									{
+										TokenExpression = filterGrp.Value,
+										PropertyName = $"p{parameterIndex}",
+										Where = $"fr.p{parameterIndex} = 1",
+										Query = $@"select ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue {operation} @p{parameterIndex}"
+									});
+								}
 
-							else if (column.ApiName == "displaypath")
-							{
-								catalogWheres.Add(new CatalogWhere
+								else if (column.ApiName == "displaypath")
 								{
-									PropertyName = $"p{parameterIndex}",
-									Where = $"fr.p{parameterIndex} = 1",
-									Query = $@"select id as ObjectAssetID from assetpath ap where ap.displaypath {operation} @p{parameterIndex}"
-								});
+									catalogWheres.Add(new CatalogWhere
+									{
+										TokenExpression = filterGrp.Value,
+										PropertyName = $"p{parameterIndex}",
+										Where = $"fr.p{parameterIndex} = 1",
+										Query = $@"select id as ObjectAssetID from assetpath ap where ap.displaypath {operation} @p{parameterIndex}"
+									});
+								}
 							}
 						}
+						parameterIndex++;
 					}
-					parameterIndex++;
 				}
+			}
+
+			if (queryParams.Any(q => q.Key == "_simpleFilter"))
+			{
+				var simpleFilter = queryParams.Where(q => q.Key.ToLowerInvariant() == "_simplefilter").Select(s => s.Value).FirstOrDefault();
+
+				//replace * with contains symbol for sql
+				simpleFilter = simpleFilter.Replace("*", "%");
+
+				//add % to make sure it is using at least startsWith
+				simpleFilter += "%";
+
+				//if last step did cause duplicate %, remove one
+				simpleFilter = simpleFilter.Replace("%%", "%");
+
+				dbArgs.Add("simpleFilter", simpleFilter);
+				simpleFilterTempTable = $@"
+					drop table if exists #simpleFiltersTempTable
+
+					select ObjectAssetID
+					into #simpleFiltersTempTable
+					from dbo.CatalogBrowseSubject where SubjectDisplayValue like @simpleFilter
+
+					insert into #simpleFiltersTempTable
+					select ObjectAssetID from dbo.CatalogBrowseObject where ObjectDisplayValue like @simpleFilter
+
+					insert into #simpleFiltersTempTable 
+					select ObjectAssetID from dbo.CatalogBrowseObject
+					inner join AssetPath ap on ap.ID = ObjectAssetID
+					where ap.DisplayPath like 'eagle%'
+
+					create nonclustered index idx on #simpleFiltersTempTable (ObjectAssetID)";
 			}
 
 			#endregion
@@ -327,7 +378,7 @@ namespace d360.web.Controllers.V2
 			foreach (var key in parsedSorts.Keys)
 			{
 				var sortDirection = (parsedSorts[key] ? "asc" : "desc");
-				var column = columns.Where(x => !string.IsNullOrEmpty(x.Sort)).FirstOrDefault(c => c.ApiName == key);
+				var column = columns.Where(x => !string.IsNullOrEmpty(x.Sort)).FirstOrDefault(c => c.ApiName.ToLowerInvariant() == key.ToLowerInvariant());
 				if (column != null)
 				{
 					sorts.Add($"{column.Sort} {sortDirection}");
@@ -445,7 +496,7 @@ namespace d360.web.Controllers.V2
 
 				foreach (var filter in catalogWheres)
 				{
-						sb.AppendLine($@"
+					sb.AppendLine($@"
 						MERGE #filteredResults AS Target
 						USING (
 						{filter.Query}
@@ -455,35 +506,34 @@ namespace d360.web.Controllers.V2
 							Target.{filter.PropertyName} = 1
 						WHEN NOT MATCHED BY Target THEN
 							INSERT (AssetId,{filter.PropertyName}) 
-							VALUES (Source.ObjectAssetID, 1);");
+							VALUES (Source.ObjectAssetID, 1)
+						option(recompile);");
 				}
 
 				filtersTempTable = sb.ToString();
 			}
 
-			StringBuilder whereSb = new StringBuilder();
-
 			if (catalogWheres.Count > 0)
 			{
-				whereSb.Append("where " + catalogWheres[0].Where);
-
-				if (catalogWheres.Count > 1)
+				//replaced original query parameter value which contains all brackets and and/or operators
+				//with parsed where values
+				foreach (var cwhere in catalogWheres)
 				{
-					int idx = 0;
-					foreach (var filter in catalogWheres)
-					{
-						whereSb.Append(whereConnectors[idx].Item1 + " " + filter.Where);
-					}
+					advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression, cwhere.Where);
 				}
+
+				whereStatements.Add(advancedFilterString);
 			}
-			string whereStatement = whereSb.ToString();
+
+			string whereStatement = whereStatements.Count > 0 ? " where " + string.Join(" and ", whereStatements) : "";
 
 			string baseSQL = $@"
 				select {{0}}
 				from
 				dbo.CatalogBrowseObject S
 				{(hasFilters ? "inner join #filteredResults fr on fr.AssetId = S.ObjectAssetID" : "")}
-				{string.Join(Environment.NewLine, columns.Where(x => !string.IsNullOrEmpty(x.JoinStatement) && x.UseAsSortBy == true).Select(x => x.JoinStatement))}
+				{(!string.IsNullOrEmpty(simpleFilterTempTable) ? "inner join #simpleFiltersTempTable sftt on sftt.ObjectAssetID = s.ObjectAssetID" : "")}
+				{string.Join(Environment.NewLine, columns.Where(x => !string.IsNullOrEmpty(x.JoinStatement) && x.UseAsSortBy == true).Select(x => x.JoinStatement).Distinct())}
 				{whereStatement}";
 
 
@@ -492,7 +542,23 @@ namespace d360.web.Controllers.V2
 				{string.Format(baseSQL, "count(1) as cnt")}
 				group by S.ObjectDisplayValue
 				)
-				select COUNT(1) from cte;";
+				select COUNT(1) from cte
+				option(recompile);";
+
+
+			if (!hasFilters)
+			{
+				countSql = $@"select COUNT(distinct ObjectAssetID) from dbo.CatalogBrowseSubject option(recompile)";
+
+				if (!string.IsNullOrEmpty(simpleFilterTempTable))
+				{
+					countSql = $@"
+						select COUNT(distinct CBS.ObjectAssetID) 
+						from dbo.CatalogBrowseSubject CBS
+						inner join #simpleFiltersTempTable sftt on sftt.ObjectAssetID = CBS.ObjectAssetID
+						option(recompile)";
+				}
+			}
 
 
 			string offsetGroupBy = "group by S.ObjectDisplayValue";
@@ -523,7 +589,9 @@ namespace d360.web.Controllers.V2
 							inner join IntersectType t on t.PredicateId = p.Id and p.[Type] = 5
 							inner join Asset a on a.AssetTypeId = t.SubjectAssetTypeId
 							inner join AssetDisplayValue d on d.AssetId = a.Id;
-	
+
+				{simpleFilterTempTable}	
+
 				{definitionSql}
 
 				{filtersTempTable}
@@ -537,10 +605,16 @@ namespace d360.web.Controllers.V2
 				inner join AssetDisplayValue adv on adv.AssetID = res.objectassetid
 				inner join asset a on a.ID = res.objectassetid
 				inner join AssetPath p on p.Id = A.Id
-				{string.Join(Environment.NewLine, columns.Where(x => x.CatalogColumnType == CatalogColumnType.Predicate).Select(x => x.DataStatement))}
+				{string.Join(Environment.NewLine, columns.Where(x => x.CatalogColumnType == CatalogColumnType.Predicate).Select(x => x.DataStatement).Distinct())}
+				option(recompile)
 				";
 
-			var results = await Company.QueryMultipleAsync(finalSql, dbArgs);
+			SqlMapper.GridReader results = await Company.Database.Connection.QueryMultipleAsync(
+					  new CommandDefinition(finalSql,
+					  cancellationToken: cancellationToken,
+					  parameters: dbArgs,
+					  commandTimeout: ApiTimeout
+					));
 
 			List<PropertyDefinition> properties = null;
 			if (includeDefinition)

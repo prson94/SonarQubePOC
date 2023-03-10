@@ -57,10 +57,10 @@ export class SidePanelComponent extends BaseComponent {
 		super(settingsService);
 
 		this.sidePanelService.sidePanelStateChange$.subscribe((state) => {
-			if (state.expanded) {
+			if (state.expanded === true) {
 				this.expandSidePanel();
 			}
-			else {
+			else if (state.expanded === false) {
 				this.collapseSidePanel();
 			}
 		});

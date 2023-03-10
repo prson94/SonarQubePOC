@@ -268,6 +268,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Data Catalog.
+        /// </summary>
+        public static string Text_DataCatalog {
+            get {
+                return ResourceManager.GetString("Text_DataCatalog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Folder.
         /// </summary>
         public static string Text_Folder {

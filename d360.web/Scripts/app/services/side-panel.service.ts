@@ -6,7 +6,8 @@ import { distinctUntilChanged, map } from 'rxjs/operators';
 import { MessagesObservableService } from './messages-observable.service';
 
 export class SidePanelState {
-	expanded: boolean;
+	expanded?: boolean;
+	assetUid?: string;
 }
 
 @Injectable({
