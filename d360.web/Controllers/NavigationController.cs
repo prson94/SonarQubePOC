@@ -114,7 +114,7 @@ namespace d360.web.Controllers
 					Title = CommonNames.Text_DataCatalog,
 					MenuID = "#DataCatalog",
 					SortOrder = 0,
-					Icon = "fa-database",
+					Icon = "gov-data-catalog-icon",
 					ShouldDisplay = true,
 					NavigationItems = new List<NavigationItem>() 
 

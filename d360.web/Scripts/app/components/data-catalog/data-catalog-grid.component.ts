@@ -82,7 +82,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.folderTitle ? this.folderTitle : this.area));
 		this.secondaryNavService.clearCurrentObject();
 		this.secondaryNavService.clearItems();
-		this.secondaryNavService.setCurrentArea(this.folderTitle ? this.folderTitle : this.area, 'fa-database', null);
+		this.secondaryNavService.setCurrentArea(this.folderTitle ? this.folderTitle : this.area, 'gov-data-catalog-icon-white', null);
 
 	}
 

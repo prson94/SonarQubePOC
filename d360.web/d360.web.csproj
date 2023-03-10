@@ -1198,6 +1198,8 @@
     <Content Include="Content\images\govern-small-white.svg" />
     <Content Include="Content\images\govern-small.svg" />
     <Content Include="Content\images\govern.svg" />
+    <Content Include="Content\images\open-book-icon.svg" />
+    <Content Include="Content\images\open-book-icon-white.svg" />
     <Content Include="Content\images\Governance Icons\bdd_circle.png" />
     <Content Include="Content\images\Governance Icons\bpc_circle.png" />
     <Content Include="Content\images\Governance Icons\dsr_circle.png" />
