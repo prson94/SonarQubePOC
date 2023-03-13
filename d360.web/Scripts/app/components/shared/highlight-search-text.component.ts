@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
     selector: 'd3s-highlight-search-text',
-    template: `<span [innerHTML]="html | safeHtml"></span>`,
+    template: `<span [innerText]="searchedText"></span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -10,7 +10,7 @@ export class HighlightSearchTextComponent {
     @Input() text: string;
     @Input() highlight: string;
 
-    public get html() {
+	public get searchedText() {
         if (!this.highlight) {
             return this.text;
         }
