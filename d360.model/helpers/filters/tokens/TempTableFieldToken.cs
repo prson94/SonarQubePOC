@@ -134,6 +134,12 @@ namespace d360.model.helpers.filters
 		private string LoadFieldQueryForTemporaryTables()
 		{
 			var fieldSql = GetColumnValueSyntax(fieldType.ID);
+
+			if (@operator == "eq" && fieldType.Type == "Text" && fieldSql.ToLower().Contains("formattedvalue") )
+			{
+				fieldSql = $"trim({fieldSql})";
+			}
+
 			if (@operator == "ct" && fieldType.Type != "Text")
 			{
 				fieldSql = $"CONVERT(NVARCHAR(max),{fieldSql})";
