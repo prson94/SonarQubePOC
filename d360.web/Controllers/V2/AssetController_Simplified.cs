@@ -258,12 +258,20 @@ namespace d360.web.Controllers.V2
 								if (predicate != null)
 								{
 									string valuePart = $"pred.DisplayValue {operation} @p{parameterIndex}";
+									string query = $@"select I.ObjectAssetID from #v pred 
+											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
+											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
+											where pred.PredicateId = {predicate.Id} and {valuePart}";
 
 									if (filterValue.Trim().ToLowerInvariant() == "null")
 									{
 										if (operation == "=")
 										{
 											valuePart = $"pred.DisplayValue is null";
+											query = $@"
+											    select S.ObjectAssetID from dbo.CatalogBrowseSubject S
+												left join dbo.CatalogBrowseSubject SP ON SP.ObjectAssetID = S.objectassetid and SP.PredicateId = {predicate.Id}
+												where SP.ObjectAssetID is null";
 										}
 										else
 										{
@@ -277,10 +285,7 @@ namespace d360.web.Controllers.V2
 										PropertyName = $"p{parameterIndex}",
 										PredicateId = predicate.Id,
 										Where = $"fr.p{parameterIndex} = 1",
-										Query = $@"select I.ObjectAssetID from #v pred 
-											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
-											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
-											where pred.PredicateId = {predicate.Id} and {valuePart}"
+										Query = query
 									});
 								}
 								else if (column.ApiName == "displayValue")

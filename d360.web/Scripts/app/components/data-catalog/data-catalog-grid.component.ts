@@ -105,9 +105,9 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 				this.predicates = res;
 
 				this.columns = [];
-				this.columns.push({ columnName: $localize`Name`, apiProperty: "DisplayValue" });
+				this.columns.push({ columnName: $localize`Name`, apiProperty: "DisplayValue", minWidth: "300px" });
 				this.predicates.forEach((pred) => {
-					this.columns.push({ columnName: pred.Name, apiProperty: pred.Name });
+					this.columns.push({ columnName: pred.Name, apiProperty: pred.Name, minWidth: "150px" });
 				});
 				this.columns.push({ columnName: $localize`Asset Path`, apiProperty: "DisplayPath" });
 				this.setFieldsObsservable();
@@ -144,7 +144,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 			}
 		}
 
-		params["_pageNum"] = this.dataTable.first / this.dataTable.rows;
+		params["_pageNum"] = (this.dataTable.first / this.dataTable.rows) + 1;
 		params["_pageSize"] = this.dataTable.rows;
 
 
