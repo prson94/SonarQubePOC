@@ -16,8 +16,8 @@ export class HighlightSearchTextComponent {
 			return escape(this.text);
 		}
 
-		const regexSafeHighlight = this.highlight.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-		let placeolder = this.text.replace(new RegExp(regexSafeHighlight, "gi"), (match) => {
+		const regexSafeHighlight = this.highlight.replace(/[\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+		const placeolder = this.text.replace(new RegExp(regexSafeHighlight, "gi"), (match) => {
             return `__HILITESTART__${match}__HILITEEND__`;
 		});
 		return escape(placeolder)
