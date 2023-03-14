@@ -1424,10 +1424,22 @@ namespace d360.model
 			//use SQL here instead of EF to avoid triggering further workflows
 			if (field == null && !string.IsNullOrEmpty(val))
 			{
+				var dbargs = new
+				{
+					value = val,
+					fieldTypeID = fieldType.ID,
+					assetID = isAssetEdited ? asset.ID : (long?)null,
+					objectId,
+					objectType = objectType.ToString(),
+					IssueID = objectType == SystemObjects.Issue.ToString() ? objectId : (long?)null,
+					IntersectID = objectType == SystemObjects.Intersect.ToString() ? objectId : (long?)null,
+					updatedBy = CurrentResourceID
+				};
+
 				await Database.Connection.ExecuteAsync(@"
 					declare @fieldId int = 
 						(select top 1 ID from dbo.Field 
-						where  @fieldTypeID = @fieldTypeID and 
+						where  FieldTypeId = @fieldTypeID and 
 						(
 						(@assetID is not null and AssetID = @assetID) or 
 						(@IntersectID is not null and IntersectID = @IntersectID) or 
@@ -1446,17 +1458,7 @@ namespace d360.model
 						insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], IssueID, IntersectID, UpdatedBy) 
 						values (@assetID, @fieldTypeID, @objectId, @objectType, @value, @IssueID, @IntersectID, @updatedBy)
 					end"
-					, new
-					{
-						value = val,
-						fieldTypeID = fieldType.ID,
-						assetID = isAssetEdited ? asset.ID : (long?)null,
-						objectId,
-						objectType = objectType.ToString(),						
-						IssueID = objectType == SystemObjects.Issue.ToString() ? objectId : (long?)null,
-						IntersectID = objectType == SystemObjects.Intersect.ToString() ? objectId : (long?)null,
-						updatedBy = CurrentResourceID
-					});
+					, dbargs);
 			}
 			else if (field != null)
 			{
