@@ -1410,7 +1410,9 @@ order by Sort, title";
 			list.ForEach(f =>
 			{
 				if (f.Row >= colourRowIndex)
+				{
 					f.Row += 1;
+				}					
 			});
 
 			list.Add(new EditableField { Row = colourRowIndex, Column = 1, FieldName = "Color", Name = "Color", FieldType = DataType.Color.ToString() });
