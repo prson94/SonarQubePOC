@@ -1392,8 +1392,6 @@ order by Sort, title";
 			var row = 1;
 
 			list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-			list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Code", true, "", 1, 250, "Must be between 1 and 250 alphanumeric characters in length.") });
-			list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Color", Name = "Color", FieldType = DataType.Color.ToString() });
 
 			//if the reference type has a parent we need to add parent field with the values from the parent
 			var assetType = Company.AssetTypes.SingleOrDefault(a => a.Object == "ReferenceItemType" && a.ObjectID == id);
@@ -1405,8 +1403,17 @@ order by Sort, title";
 				list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentUid", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid) }).ToList() });
 			}
 
-
+			
 			list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row, false);
+			var colourRowIndex = list.First(x => x.FieldName.ToLower() == "code").Row.Value + 1;
+			
+			list.ForEach(f =>
+			{
+				if (f.Row >= colourRowIndex)
+					f.Row += 1;
+			});
+
+			list.Add(new EditableField { Row = colourRowIndex, Column = 1, FieldName = "Color", Name = "Color", FieldType = DataType.Color.ToString() });
 
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}

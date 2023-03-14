@@ -1699,10 +1699,6 @@ namespace d360.web.Controllers.V2
 							list.Add("Description", 0);
 						}
 					}
-					else
-					{
-						list.Add("Code", 0);
-					}
 				}
 				else if (type == SystemObjects.ResourceType)
 				{
