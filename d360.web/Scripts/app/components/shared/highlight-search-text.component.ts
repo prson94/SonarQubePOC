@@ -16,7 +16,9 @@ export class HighlightSearchTextComponent {
 			return escape(this.text);
 		}
 
-		const regexSafeHighlight = this.highlight.replace(/[\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+		/* eslint-disable-next-line no-useless-escape */
+		const regexSafeHighlight = this.highlight.replace(/\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+		/* eslint-disable-next-line detect-non-literal-regexp */
 		const placeolder = this.text.replace(new RegExp(regexSafeHighlight, "gi"), (match) => {
             return `__HILITESTART__${match}__HILITEEND__`;
 		});
