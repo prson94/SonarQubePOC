@@ -192,7 +192,7 @@ namespace d360.model.helpers
 
 				if (definition.Relations.IndexOf(rel) == 0)
 				{
-					if (IsBothSideSame)
+					if (IsBothSideSame && rel.Direction == FieldTypeComplexLookupRelationDirection.Both)
 					{
 						joins.Add($@"cross apply (select Ia{idx}.id, Ia{idx}.SubjectAssetId 
 												  from [Intersect] Ia{idx} 
@@ -222,7 +222,7 @@ namespace d360.model.helpers
 				}
 				else
 				{
-					if (IsBothSideSame)
+					if (IsBothSideSame && rel.Direction == FieldTypeComplexLookupRelationDirection.Both)
 					{
 						joins.Add($@"cross apply (select Ia{idx}.id, Ia{idx}.ObjectAssetId 
 												  from [Intersect] Ia{idx} 

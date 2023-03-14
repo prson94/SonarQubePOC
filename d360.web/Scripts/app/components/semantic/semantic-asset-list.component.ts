@@ -9,7 +9,7 @@ import { SemanticType, SemanticTypeAsset } from '../../models/semantic-type.mode
 import { LazyLoadEvent } from 'primeng/api';
 import { forkJoin } from 'rxjs';
 import { SemanticBaseComponent } from './semantics-base.component';
-import { FeatureFlagsService } from '../../services/featureflags.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavItem } from '../../models/secondaryNav.model';
@@ -49,7 +49,7 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
-        private featureFlagService: FeatureFlagsService,) {
+        private featureFlagService: LaunchDarklyService,) {
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
     }    
 

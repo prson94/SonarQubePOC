@@ -3769,7 +3769,8 @@ namespace d360.web.Controllers.V2
 						from [Asset] A
 				inner join dbo.AssetDisplayValue TD on TD.AssetID = A.ID
 				outer apply GetParentByAssetID(A.ID) P
-				where A.AssetTypeID = @typeId";
+				where A.AssetTypeID = @typeId
+				order by TD.DisplayValue";
 
 			return Company.Query<dynamic>(querySql, new { assetUid }).ToList();
 		}

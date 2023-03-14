@@ -186,6 +186,9 @@
   <data name="ReferenceItem" xml:space="preserve">
     <value>Reference Item</value>
   </data>
+  <data name="Text_DataCatalog" xml:space="preserve">
+    <value>Data Catalog</value>
+  </data>
   <data name="Text_Folder" xml:space="preserve">
     <value>Folder</value>
   </data>

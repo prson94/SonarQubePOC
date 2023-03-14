@@ -5,10 +5,10 @@ import { ReferenceComponent } from './reference.component';
 
 const routes: Routes = [
     {
-        path: '',
+		path: 'class/Reference',
         component: ReferenceComponent,
         children: [
-			{ path: 'class/Reference', component: ReferenceListComponent },
+			{ path: '', component: ReferenceListComponent },
         ]                
     }
 ];

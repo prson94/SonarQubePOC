@@ -7,7 +7,8 @@ import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SearchType, SettingsHelper } from '../models/settings.model';
 import { IndexableStatus, IndexableType, IndexPartialRebuild } from "../models/search-admin.model";
-import { FeatureFlags, FeatureFlagsService } from './featureflags.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "./feature-flags.enum";
 import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 import { Table } from 'primeng/table';
 import { FilterMatchMode } from 'primeng/api';
@@ -17,7 +18,7 @@ import { FilterMatchMode } from 'primeng/api';
 })
 export class SearchService extends BaseObservableService  {
 
-    constructor(private http: HttpClient, messagesService: MessagesObservableService, private featureFlagService: FeatureFlagsService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService, private featureFlagService: LaunchDarklyService) { super(messagesService); }
 
     public getEmptyResult(): SearchResults {
         const result = new SearchResults();
@@ -87,7 +88,7 @@ export class SearchService extends BaseObservableService  {
         }
         let categories: SearchType[] = SettingsHelper.getSearchTypesList().filter((t) => exclude.indexOf(t.value) === -1);
         
-        if (!this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
+        if (!this.featureFlagService.variation<boolean>(FeatureFlags.SemanticTypesUiFlag)) {
             categories = categories.filter((s) => s.value !== "SemanticType");
         }
         

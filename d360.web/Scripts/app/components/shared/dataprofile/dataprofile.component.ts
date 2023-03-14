@@ -7,7 +7,8 @@ import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { DataProfileService } from '../../../services/dataprofile.service';
 import { SemanticType } from '../../../models/semantic-type.model';
-import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "../../../services/feature-flags.enum";
 import { AuthenticationService } from '../../../services/authentication.service';
 
 @Component({
@@ -35,7 +36,7 @@ export class DataProfileComponent extends BaseComponent implements OnChanges {
         protected settingsService: CompanySettingsService,
         private dataProfileService: DataProfileService,
         private cdRef: ChangeDetectorRef,
-        private featureFlagService: FeatureFlagsService,
+        private featureFlagService: LaunchDarklyService,
         private authenticationService: AuthenticationService
     ) {
         super(settingsService);
@@ -118,7 +119,7 @@ export class DataProfileComponent extends BaseComponent implements OnChanges {
 		this.hasDefinedType = false;
         const startDate = new Date();
         startDate.setFullYear(startDate.getUTCFullYear() - 100);
-        if (this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
+        if (this.featureFlagService.variation<boolean>(FeatureFlags.SemanticTypesUiFlag)) {
             this.dataProfileService.getDataProfiles(this.dataProfile.assetUid, startDate, null, false, false, false).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 1) {
@@ -134,7 +135,7 @@ export class DataProfileComponent extends BaseComponent implements OnChanges {
                 this.isAdmin = res;
             });
 
-            if (this.dataProfile.typeQualifier && this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
+            if (this.dataProfile.typeQualifier && this.featureFlagService.variation<boolean>(FeatureFlags.SemanticTypesUiFlag)) {
                 this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.dataProfile.typeQualifier}'`).subscribe((s) => {
                     this.semanticType = s.items[0];
                     if (this.semanticType) {

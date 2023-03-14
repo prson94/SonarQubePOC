@@ -2037,6 +2037,20 @@ namespace d360.web.Controllers.V2
 				string pagingQuery = "";
 				string whereQuery = "";
 				string refListOrder = "";
+				bool onlyCount = false;
+
+				if (skip != null && take != null)
+				{
+					if (skip < 0)
+					{
+						skip = 0;
+					}
+					pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
+					if (take <= 0)
+					{
+						onlyCount = true;
+					}
+				}
 
 				if (assetTypeUid == Guid.Empty && fieldName == "EvaluatedAssetClass")
 				{
@@ -2056,12 +2070,53 @@ namespace d360.web.Controllers.V2
 
 					return Request.CreateResponse(HttpStatusCode.OK, new { items = classInfos.Select(x => x.Name).ToList() });
 				}
+				else if (assetTypeUid == Guid.Empty)
+				{
+					//this handles scenarios when filtering is on Catalog Browser reference lists
+					//where fieldName represents name of reference list
+
+					whereQuery = "where a.AssetTypeID  in (select id from #assetTypes)";
+					if (!string.IsNullOrEmpty(filter))
+					{
+						filter = "%" + filter + "%";
+						whereQuery += " and a.code like @filter ";
+					}
+
+
+					var sql = $@"
+						select distinct IT.SubjectAssetTypeID as Id
+						into #assetTypes from [Predicate] P
+						inner join IntersectType IT on IT.PredicateID = P.ID
+						where P.Name = @fieldName and Type = 5
+
+						select 
+						coalesce(a.code,'Code Missing') as value,
+						coalesce(a.code,'Code Missing') as name 
+						from asset a 
+						{whereQuery}
+						order by a.Code desc
+						{pagingQuery}
+						option(recompile);
+
+						select count(1)
+						from asset a 
+						{whereQuery}
+						option(recompile);
+					";
+					var resultsAssets = Company.Connection.QueryMultiple(sql, new { skip, take, filter, fieldName });
+					var data = new
+					{
+						items = resultsAssets.Read<dynamic>().ToList(),
+						count = resultsAssets.Read<int>().FirstOrDefault()
+					};
+
+					return Request.CreateResponse(HttpStatusCode.OK, data);
+				}
 
 				int fieldTypeId = -1;
 				string fieldObject = "";
 				int fieldObjectID = 0;
 				int id = -1;
-				bool onlyCount = false;
 
 				var atype = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
 
@@ -2077,19 +2132,6 @@ namespace d360.web.Controllers.V2
 					fieldObject = atype.Object;
 					fieldObjectID = atype.ObjectID;
 					id = atype.ID;
-				}
-
-				if (skip != null && take != null)
-				{
-					if(skip < 0)
-					{
-						skip = 0;
-					}
-					pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
-					if (take <= 0)
-					{
-						onlyCount = true;
-					}
 				}
 
 				if (atype != null && atype.Class == AssetTypeClass.Group

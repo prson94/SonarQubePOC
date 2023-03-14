@@ -4,7 +4,8 @@ import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "../../../services/feature-flags.enum";
 import { SidePanelService } from '../../../services/side-panel.service';
 
 @Component({
@@ -52,14 +53,14 @@ export class SidePanelComponent extends BaseComponent {
 		private sidePanelService: SidePanelService,
 		private stateService: StateService,
         protected settingsService: CompanySettingsService,
-        private featureFlagService: FeatureFlagsService) {
+        private featureFlagService: LaunchDarklyService) {
 		super(settingsService);
 
 		this.sidePanelService.sidePanelStateChange$.subscribe((state) => {
-			if (state.expanded) {
+			if (state.expanded === true) {
 				this.expandSidePanel();
 			}
-			else {
+			else if (state.expanded === false) {
 				this.collapseSidePanel();
 			}
 		});
@@ -192,7 +193,7 @@ export class SidePanelComponent extends BaseComponent {
             }));
         }
 
-        if (this.hasProfiling && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
+        if (this.hasProfiling && this.featureFlagService.variation<boolean>(FeatureFlags.DataProfilingUiFlag)) {
             this.buttons.push(new SidePanelButton({
                 label: $localize`Profiling`,
                 tooltip: $localize`Profiling`,
