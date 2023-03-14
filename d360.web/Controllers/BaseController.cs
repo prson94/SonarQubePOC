@@ -1470,6 +1470,10 @@ namespace d360.web.Controllers
 			foreach (var ft in relationshipFieldTypes)
 			{
 				var intersectType = intersectTypes.FirstOrDefault(x => x.ID == ft.LookupObjectID.Value);
+				if (intersectType == null)
+				{
+					continue;
+				}
 				var result = Company.GetRelationshipFieldItems(ft.ID, asset.ID, intersectType: intersectType, ft: ft, onlyQueries: true);
 
 				var relFieldDataSQL = $@"
