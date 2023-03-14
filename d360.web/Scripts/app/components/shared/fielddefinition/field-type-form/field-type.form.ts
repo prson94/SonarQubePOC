@@ -122,7 +122,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private listFilterPredicate: string = null;
     private listFilterPredicates: any[] = [];
     private listFilterRelatedFields: any[] = [];
-    private expandFilterConfiguration: boolean = false;
+	private expandFilterConfiguration: boolean = false;
 
     private displayFieldSelected: boolean = true;
     public listParentFields: SelectItem[] = [];
@@ -246,7 +246,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
         this.lookups.Field_JsonDataTypes.unshift({ label: this.chooseLabel, value: null });
         this.lookups.Field_JsonFields.unshift({ label: this.chooseLabel, value: null });
-		this.lookups.DataTypes.unshift({ label: this.chooseLabel, value: "Empty" });
+		this.lookups.DataTypes.unshift({ label: this.chooseLabel, value: "Empty" });	
+		if (!this.model.FieldType.Type.System) {
+			this.lookups.DataTypes = this.lookups.DataTypes.filter(s => s.label.toLowerCase() !== "system")
+		}		
     };
 
     private getFormDataHandler = (responseGetFormData) => {
@@ -261,7 +264,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private load(): void {
         if (this.name && (this.assetTypeUid || this.actionTypeUid || this.relationshipTypeUid)) {
-            this.actionName = $localize`Edit`;
+			this.actionName = $localize`Edit`;
             this.isLoading = true;
 
             this.fieldsService.getFieldTypeEditor(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
@@ -276,10 +279,20 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                     this.getFormDataHandler(formData);
                                     this.loadDataType(this.currentFieldType(this.model.FieldType), true);
 
-                                    var lockedNames: string[] = ['Name', 'GovernanceRole', 'StepNo'];
-                                    if (this.objectType === 'TaskType' && lockedNames.some((x) => x === this.name)) {
+									var lockedNames: string[] = ['Name', 'GovernanceRole', 'StepNo'];
+									if (this.objectType === 'TaskType' && lockedNames.some((x) => x === this.name)) {
                                         this.disableFieldTypeSelection = true;
-                                    }
+									}
+
+									if (this.model.FieldType.Type.System) {
+										this.disableFieldTypeSelection = true;
+										this.showAddToSearch = false;
+										this.showShowInDetailTile = false;
+										this.showIsEditable = false;
+										this.hasDisplayInColumn = false;
+										this.showPersistInFilters = false;
+										this.enableAllowMultipleValues = false;
+									}
 
                                     this.isLoading = false;
                                 });
@@ -1432,28 +1445,28 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         switch (val) {
             case 'IsDisplayable':
-                return (['ComplexRelationLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'RefListRelationship', 'System'].indexOf(this.currentType) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score', 'Counter'].indexOf(this.currentType) > -1);
+				return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.currentType) > -1);
             case 'IsListable':
-                return (['ComplexRelationLookup', 'RefListRelationship', 'Json', 'JSON'].indexOf(this.currentType) > -1
+				return (['ComplexRelationLookup', 'RefListRelationship', 'Json', 'JSON', 'System'].indexOf(this.currentType) > -1
                     || (this.currentType === 'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Counter'].indexOf(this.currentType) > -1);
+				return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.currentType) > -1);
 			case 'IsPartOfKey':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Link']
+				return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Link', 'System']
                     .indexOf(this.currentType) > -1
                     || this.objectType === 'ReferenceItemType');
             case 'IsPrimaryFilter':
-                return (!this.supportsPrimaryFilterOption || ['FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'RefListRelationship'].indexOf(this.currentType) > -1);
+				return (!this.supportsPrimaryFilterOption || ['FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'RefListRelationship', 'System'].indexOf(this.currentType) > -1);
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.currentType) === -1);
-            case 'ShowIfEmpty':
-                return (['Path', 'Tag'].indexOf(this.currentType) > -1 || (this.currentType === 'Score' && !this.model.FieldType.Type['Score'].IsDisplayable));
+			case 'ShowIfEmpty':
+				return (['Path', 'Tag', 'System'].indexOf(this.currentType) > -1 || (this.currentType === 'Score' && !this.model.FieldType.Type['Score'].IsDisplayable) || (this.objectType === 'ReferenceItemType' && this.name.toLocaleLowerCase() === "code"));
             case 'SearchAddToResult':
-                return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'ComplexRelationLookup', 'RefListRelationship', 'Score', 'Tag'].indexOf(this.currentType) > -1);
+				return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'ComplexRelationLookup', 'RefListRelationship', 'Score', 'Tag', 'System'].indexOf(this.currentType) > -1);
             case 'isSettingDisabled':
-                return (['Json', 'JSON', 'JsonElement', 'ComplexRelationLookup', 'Tag', 'RefListRelationship'].indexOf(this.currentType) > -1);
+				return (['Json', 'JSON', 'JsonElement', 'ComplexRelationLookup', 'Tag', 'RefListRelationship', 'System'].indexOf(this.currentType) > -1);
             case 'DisplayInColumn':
                 if (this.currentType === "OwnershipLookup") {
                     var isDisabled = !this.model.FieldType.Type[this.currentType].Definition.DisplayAsList;

@@ -10,6 +10,7 @@ import { AssetTypeClass } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-field-definition-tile',
@@ -214,6 +215,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			case "Score": return $localize`Score`;
 			case "Tag": return $localize`Tag`;
 			case "Text": return $localize`Simple Text`;
+			case "System": return $localize`System`;
 		}
 	}
 	edit(name: string): void {
@@ -315,6 +317,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			if (fdm.Name === 'Name' || fdm.Name === 'StepNo' || fdm.Name === 'GovernanceRole')
 				{return false;}
+		}
+
+		if (fdm.FieldType === "System") {
+			return false; 
 		}
 		return true;
 	}

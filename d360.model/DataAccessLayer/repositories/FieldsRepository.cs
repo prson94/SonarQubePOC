@@ -618,7 +618,31 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Counter' then FT.SearchDisplayOrder else null end as 'Type.Counter.Search.DisplayOrder',
 										case when FT.Type = 'Counter' then FT.CounterPrefix else null end as 'Type.Counter.CounterPrefix', 
 										case when FT.Type = 'Counter' then FT.CounterInitialIndex else null end as 'Type.Counter.CounterInitialIndex',
-										case when FT.Type = 'Counter' then FT.DisplayInColumn else null end as 'Type.Counter.DisplayInColumn'
+										case when FT.Type = 'Counter' then FT.DisplayInColumn else null end as 'Type.Counter.DisplayInColumn',
+
+										case when FT.Type = 'System' then FT.ColumnOrder else null end as 'Type.System.ColumnOrder',
+										case when FT.Type = 'System' then FT.ColumnWidth else null end as 'Type.System.ColumnWidth',
+										case when FT.Type = 'System' then FT.SortOrder else null end as 'Type.System.SortOrder',
+										case when FT.Type = 'System' then FT.SortByAscending else null end as 'Type.System.SortByAscending',
+										case when FT.Type = 'System' then FT.DefaultValue else null end as 'Type.System.DefaultValue',
+										case when FT.Type = 'System' then FT.DisplayDescription else null end as 'Type.System.Description.Display',
+										case when FT.Type = 'System' then FT.FormDescription else null end as 'Type.System.Description.Form',
+										case when FT.Type = 'System' then FT.MinimumLength else null end as 'Type.System.Validation.MinimumLength',
+										case when FT.Type = 'System' then FT.MaximumLength else null end as 'Type.System.Validation.MaximumLength',
+										case when FT.Type = 'System' then FT.Pattern else null end as 'Type.System.Validation.Pattern',
+										case when FT.Type = 'System' then FT.IsRequired else null end as 'Type.System.Validation.IsRequired',
+										case when FT.Type = 'System' then FT.ValidationDescription else null end as 'Type.System.Validation.Message',
+										case when FT.Type = 'System' then FT.IsDisplayable else null end as 'Type.System.IsDisplayable',
+										case when FT.Type = 'System' then FT.IsEditable else null end as 'Type.System.IsEditable',
+										case when FT.Type = 'System' then FT.IsListable else null end as 'Type.System.IsListable',
+										case when FT.Type = 'System' then FT.IsPartOfKey else null end as 'Type.System.IsPartOfKey',
+										case when FT.Type = 'System' then FT.IsPrimaryFilter else null end as 'Type.System.IsPrimaryFilter',
+										case when FT.Type = 'System' then FT.ShowIfEmpty else null end as 'Type.System.ShowIfEmpty',
+										case when FT.Type = 'System' then FT.SearchAddToResult else null end as 'Type.System.Search.AddToResult', 
+										case when FT.Type = 'System' then FT.SearchPrefix else null end as 'Type.System.Search.Prefix', 
+										case when FT.Type = 'System' then FT.SearchSuffix else null end as 'Type.System.Search.Suffix', 
+										case when FT.Type = 'System' then FT.SearchDisplayOrder else null end as 'Type.System.Search.DisplayOrder', 
+										case when FT.Type = 'System' then FT.DisplayInColumn else null end as 'Type.System.DisplayInColumn'
 
 								from	FieldType FT
 										left join AssetType O_A on O_A.ID = FT.AssetTypeID 
@@ -693,6 +717,15 @@ namespace d360.model.DataAccessLayer
 				if (reservedWords.Contains(f.Name.ToLower()))
 				{
 					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
+				}
+
+				if (f.Name.ToLower()== "code")
+				{
+					var assetType  = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
+					if(assetType.Class == AssetTypeClass.ReferenceItemType)
+					{
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
+					}					
 				}
 
 				var newFieldType = new FieldType
@@ -1844,6 +1877,55 @@ namespace d360.model.DataAccessLayer
 						newFieldType.SearchDisplayOrder = f.Type.Counter.Search.DisplayOrder;
 					}
 				}
+				else if (f.Type.System != null)
+				{
+					newFieldType.Type = DataType.System.ToString();
+					newFieldType.ColumnOrder = f.Type.System.ColumnOrder.HasValue ? f.Type.System.ColumnOrder.Value : ++maxColumnIndex;
+					newFieldType.ColumnWidth = f.Type.System.ColumnWidth;
+
+					if (string.IsNullOrEmpty(f.Type.System.DefaultValue))
+					{
+						newFieldType.DefaultValue = null;
+						newFieldType.DefaultFormattedValue = null;
+					}
+					else
+					{
+						newFieldType.DefaultValue = f.Type.System.DefaultValue;
+						newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
+					}
+
+					if (f.Type.System.Description != null)
+					{
+						newFieldType.DisplayDescription = f.Type.System.Description.Display;
+						newFieldType.FormDescription = f.Type.System.Description.Form;
+					}
+					newFieldType.IsDisplayable = f.Type.System.IsDisplayable;
+					newFieldType.IsEditable = f.Type.System.IsEditable;
+					newFieldType.IsListable = f.Type.System.IsListable;
+					newFieldType.IsPartOfKey = f.Type.System.IsPartOfKey;
+					newFieldType.IsPrimaryFilter = f.Type.System.IsPrimaryFilter;
+					newFieldType.ShowIfEmpty = f.Type.System.ShowIfEmpty;
+					newFieldType.SortOrder = f.Type.System.SortOrder;
+					newFieldType.SortByAscending = f.Type.System.SortByAscending;
+					newFieldType.DisplayInColumn = f.Type.System.DisplayInColumn;
+
+					if (f.Type.System.Validation != null)
+					{
+						newFieldType.IsRequired = f.Type.System.Validation.IsRequired;
+						newFieldType.ValidationDescription = f.Type.System.Validation.Message;
+						newFieldType.MaximumLength = f.Type.System.Validation.MaximumLength;
+						newFieldType.MinimumLength = f.Type.System.Validation.MinimumLength;
+						newFieldType.Pattern = f.Type.System.Validation.Pattern;
+					}
+					if (f.Type.System.Search != null)
+					{
+						newFieldType.SearchAddToResult = f.Type.System.Search.AddToResult;
+						newFieldType.SearchPrefix = f.Type.System.Search.Prefix;
+						newFieldType.SearchSuffix = f.Type.System.Search.Suffix;
+						newFieldType.SearchDisplayOrder = f.Type.System.Search.DisplayOrder;
+					}
+
+				}
 				else
 				{
 					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoValidTypeDefined, string.Format(FieldErrors.NotIncludedValidTypeFieldType, f.Name));
@@ -2222,21 +2304,7 @@ namespace d360.model.DataAccessLayer
 			}
 			else if (fieldType.Type == "RefListRelationship")
 			{
-				var fields = new List<FieldType>
-				{
-					new FieldType
-					{
-						Name = "Code",
-						FriendlyName = "Code",
-						Type = DataType.Text.ToString()
-					},
-
-					new FieldType
-					{
-						Name = "Color",
-						Type = DataType.Color.ToString()
-					}
-				};
+				var fields = new List<FieldType>();
 
 				fields.AddRange(Company.Query<FieldType>($@"
 					declare @objectAssetId int
@@ -2270,6 +2338,12 @@ namespace d360.model.DataAccessLayer
 						order by ColumnOrder asc, FriendlyName asc;
 						", new { fieldTypeId = fieldType.ID, assetUid }).ToList());
 
+
+				fields.Insert(fields.IndexOf(fields.First(f=> f.Name == "Code"))+1, new FieldType
+									{
+										Name = "Color",
+										Type = DataType.Color.ToString()
+									});
 				return fields;
 			}
 			else

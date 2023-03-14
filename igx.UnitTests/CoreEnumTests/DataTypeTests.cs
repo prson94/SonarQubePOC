@@ -39,7 +39,7 @@ namespace igx.UnitTests.CoreEnumTests
         {
             var dataTypes = DataType.Text.GetDataTypeInfoList();
 
-            Assert.True(dataTypes.Count == 27, "Data types have been added / removed make sure they are unit tested.");
+            Assert.True(dataTypes.Count == 28, "Data types have been added / removed make sure they are unit tested.");
         }
 
         [Fact]

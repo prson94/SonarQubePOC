@@ -640,6 +640,55 @@ delete from [dbo].[HelpResource] where [Url] = 'Default.htm#b-release-notes/what
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Data.Corrections.GOV-20560">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			INSERT INTO FieldType (Name, FriendlyName, Type, Object, ObjectID, AssetTypeID, IsRequired, IsListable, IsDisplayable, IsEditable, IsPartOfKey, ColumnOrder, ShowIfEmpty, SortByAscending)
+			SELECT 
+				'Code',
+				'Code',
+				'System',
+				ATT.Object,
+				ATT.ObjectID,
+				ATT.ID,
+				1,
+				1,
+				1,
+				1,
+				1,
+				0,
+				1,
+				1
+			FROM
+				AssetType ATT
+				LEFT JOIN 
+				FieldType FT on FT.AssetTypeID = ATT.ID and FT.Name = 'Code'
+				WHERE ATT.[Object] = 'ReferenceItemType' and FT.ID is null
+
+
+			INSERT INTO field (AssetID, ObjectType, ObjectID, FieldTypeID, Value, FormattedValue, UpdatedBy, UpdatedOn)
+			SELECT 
+				A.ID,
+				A.Object,
+				A.ObjectID,
+				FT.ID,
+				A.Code,
+				A.Code,
+				0,
+				GetDate()
+			FROM
+				Asset A
+				inner join 
+				FieldType FT on FT.Name='Code' and FT.AssetTypeID = A.AssetTypeID
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
 
 

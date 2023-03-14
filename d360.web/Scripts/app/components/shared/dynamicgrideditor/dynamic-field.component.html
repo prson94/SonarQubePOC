@@ -13,6 +13,9 @@
             <div *ngSwitchCase="'Text'" style="width:100%;">
                 <input igInput igSize="full" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" type="text" [required]="isRequired()">
             </div>
+            <div *ngSwitchCase="'System'" style="width:100%;">
+                <input igInput igSize="full" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" type="text" [required]="isRequired()">
+            </div>
             <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
             <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl #ed></p-editor>
             <div *ngSwitchCase="'Lookup'">

@@ -91,8 +91,11 @@ namespace d360.core
         Score = 1 << 27,
 
         [Description("Counter")]
-        Counter = 1 << 28
-    }
+        Counter = 1 << 28,
+
+		[Description("System")]
+		System = 1 << 29
+	}
 
     public class DataTypeInfo
     {
@@ -213,8 +216,9 @@ namespace d360.core
                 case DataType.Tag: return Enums.FieldType_Tag;
                 case DataType.Text: return Enums.FieldType_SimpleText;
                 case DataType.UncLink: return Enums.FieldType_UNCLink;
+				case DataType.System: return Enums.FieldType_System;
 
-                default: throw new ArgumentOutOfRangeException("DataType");
+				default: throw new ArgumentOutOfRangeException("DataType");
             }
         }
     }
