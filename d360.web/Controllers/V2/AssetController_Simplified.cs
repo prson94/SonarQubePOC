@@ -343,7 +343,7 @@ namespace d360.web.Controllers.V2
 					insert into #simpleFiltersTempTable 
 					select ObjectAssetID from dbo.CatalogBrowseObject
 					inner join AssetPath ap on ap.ID = ObjectAssetID
-					where ap.DisplayPath like 'eagle%'
+					where ap.DisplayPath like @simpleFilter
 
 					create nonclustered index idx on #simpleFiltersTempTable (ObjectAssetID)";
 			}
