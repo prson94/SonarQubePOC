@@ -3,7 +3,7 @@
 		<div class="simple-search">
 			<ig-search-field mode="Keypress"
 							 [debounce]="600"
-							 (onSearch)="subjectLoadGrid.next(0);"
+							 (onSearch)="subjectLoadGrid.next('onSearch');"
 							 [(ngModel)]="simpleSearchText"
 							 [infoTooltip]="isContainsSearchDefault ? null : simpleSearchTooltipHTML">
 			</ig-search-field>
@@ -29,9 +29,9 @@
 			 [rows]="rowsPerPage"
 			 [rowsPerPageOptions]="defaultPagingOptions"
 			 [lazy]="true"
-			 (sortFunction)="subjectLoadGrid.next(0);"
+			 (sortFunction)="subjectLoadGrid.next('sortFunction');"
 			 [customSort]="true"
-			 (onLazyLoad)="subjectLoadGrid.next(0);"
+			 (onLazyLoad)="subjectLoadGrid.next('onLazyLoad');"
 			 [totalRecords]="totalRecords"
 			 (onPage)="numberOfRowsByCategoryService.onPage($event)">
 		<ng-template pTemplate="header">

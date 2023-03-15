@@ -30,7 +30,7 @@ import { PopupMenu } from '../shared/controls/popup-menu/popup-menu.component';
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DataCatalogGridComponent extends AssetGridBaseComponent implements OnInit {
-	subjectLoadGrid = new Subject<unknown>();
+	subjectLoadGrid = new Subject<string>();
 	predicates: Predicate[];
 	columns: Record<string, unknown>[] = [];
 	data: Record<string, unknown>[] = [];
@@ -70,7 +70,8 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 
 		this.subjectLoadGrid.pipe(
 			debounceTime(300))
-			.subscribe(() => {
+			.subscribe((ev) => {
+				console.log(ev);
 				this.loadData();
 			});
 
@@ -111,7 +112,6 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 				});
 				this.columns.push({ columnName: $localize`Asset Path`, apiProperty: "DisplayPath" });
 				this.setFieldsObsservable();
-				this.subjectLoadGrid.next(0);
 			});
 	}
 
@@ -200,8 +200,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		this.advancedFilterText = $event.filter as string;
 
 		this.advancedFilterText = this.advancedFilterText.split(`'`).join(``);
-
-		this.subjectLoadGrid.next(0);
+		this.subjectLoadGrid.next("advancedFiltersChanged");
 	}
 	selectRow($event) {
 		this.sidePanelService.setSidePanelState({ assetUid: $event.Uid });

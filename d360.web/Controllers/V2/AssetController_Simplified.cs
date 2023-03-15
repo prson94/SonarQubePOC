@@ -245,7 +245,18 @@ namespace d360.web.Controllers.V2
 										break;
 									case "nct":
 										operation = "not like";
-										dbArgs.Add($"p{parameterIndex}", filterValue);
+										if (filterValue.StartsWith("*"))
+										{
+											dbArgs.Add($"p{parameterIndex}", $"%{filterValue.Replace("*", "")}");
+										}
+										else if (filterValue.EndsWith("*"))
+										{
+											dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "")}%");
+										}
+										else
+										{
+											dbArgs.Add($"p{parameterIndex}", $"%{filterValue}%");
+										}
 										break;
 									case "ne":
 									case "neq":
@@ -545,7 +556,7 @@ namespace d360.web.Controllers.V2
 			string countSql = $@"
 				;with cte as (
 				{string.Format(baseSQL, "count(1) as cnt")}
-				group by S.ObjectDisplayValue
+				group by S.ObjectAssetID
 				)
 				select COUNT(1) from cte
 				option(recompile);";
