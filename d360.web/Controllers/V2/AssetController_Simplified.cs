@@ -566,7 +566,7 @@ namespace d360.web.Controllers.V2
 			}
 
 
-			string offsetGroupBy = "group by S.ObjectDisplayValue";
+			string offsetGroupBy = "group by S.ObjectAssetId";
 
 			if (columns.Any(x => x.UseAsSortBy))
 			{
