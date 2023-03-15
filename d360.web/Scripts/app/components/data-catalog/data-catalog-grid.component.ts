@@ -70,8 +70,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 
 		this.subjectLoadGrid.pipe(
 			debounceTime(300))
-			.subscribe((ev) => {
-				console.log(ev);
+			.subscribe(() => {
 				this.loadData();
 			});
 
