@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { escape } from "lodash-es";
 
 @Component({
     selector: 'd3s-highlight-search-text',
-    template: `<span [innerText]="searchedText"></span>`,
+	template: `<span  [innerHTML]="html | safeHtml"></span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -10,13 +11,19 @@ export class HighlightSearchTextComponent {
     @Input() text: string;
     @Input() highlight: string;
 
-	public get searchedText() {
-        if (!this.highlight) {
-            return this.text;
-        }
+	public get html() {
+		if (!this.highlight) {
+			return escape(this.text);
+		}
 
-        return this.text.replace(new RegExp(this.highlight, "gi"), (match) => {
-            return '<span style="background: #f5eeff;">' + match + '</span>';
-        });
+		/* eslint-disable-next-line no-useless-escape */
+		const regexSafeHighlight = this.highlight.replace(/\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+		/* eslint-disable-next-line */
+		const placeolder = this.text.replace(new RegExp(regexSafeHighlight, "gi"), (match) => {
+            return `__HILITESTART__${match}__HILITEEND__`;
+		});
+		return escape(placeolder)
+			.replace(new RegExp("__HILITESTART__", "gi"), "<span style=\"background: var(--navbarBackColorSelectedHover);\">")
+			.replace(new RegExp("__HILITEEND__", "gi"), "</span>");
     }
 }
