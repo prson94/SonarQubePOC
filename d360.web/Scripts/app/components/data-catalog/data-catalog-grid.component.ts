@@ -189,7 +189,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 				Name: pred.Name, FriendlyName: pred.Name, Type: ft, Category: ""
 			});
 		});
-		var pathType = new FieldType("Path");
+		const pathType = new FieldType("Path");
 		pathType.Path.Definition = null;
 		fields.push({
 			Name: "displayPath", FriendlyName: "Asset Path", Type: pathType, Category: "", RemovePopulatedOperator: true
