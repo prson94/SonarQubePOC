@@ -204,13 +204,13 @@ namespace d360.web.Controllers.V2
 			{
 				advancedFilterString = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).FirstOrDefault();
 
-				var filters = Regex.Matches(advancedFilterString, @"([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\-\/\:\,\*]+)");
+				var filters = Regex.Matches(advancedFilterString, @"([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\>\-\/\:\,\*]+)");
 				if (filters.Count > 0)
 				{
 					int parameterIndex = 1;
 					foreach (Match filterGrp in filters)
 					{
-						var filterMatch = Regex.Match(filterGrp.Value, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\-\/\:\,\*]+)$");
+						var filterMatch = Regex.Match(filterGrp.Value, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\>\-\/\:\,\*]+)$");
 						if (filterMatch.Success && filterMatch.Groups.Count == 4)
 						{
 							var filterProperty = filterMatch.Groups[1].Value;
@@ -312,12 +312,58 @@ namespace d360.web.Controllers.V2
 
 								else if (column.ApiName == "displaypath")
 								{
+									string whereQuery = "";
+
+									switch (filterOperation)
+									{
+										case "ct":
+										case "nct":
+											if (filterValue.StartsWith("*"))
+											{
+												whereQuery = "{0}.exist('/path/segment[last()][contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
+											}
+											else if (filterValue.EndsWith("*"))
+											{
+												whereQuery = "{0}.exist('/path/segment[1][contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
+											}
+											else
+											{
+												whereQuery = "{0}.exist('/path/segment[contains(lower-case(.),sql:variable(\"{1}\"))]') = {2}";
+											}
+
+											dbArgs.Add($"p{parameterIndex}", $"{filterValue.ToLowerInvariant().Replace("*", "").Replace("%", "")}");
+											whereQuery = string.Format(whereQuery, "ap.Segments", $"@p{parameterIndex}", filterOperation == "ct" ? "1" : "0");
+											break;
+										case "eq":
+										case "ne":
+											var pathTokens = filterValue.Replace("%", "").Split('>').Select(x => x.ToLowerInvariant().Trim());
+											List<string> pathWheres = new List<string>();
+											var idx = 1;
+											foreach (var pToken in pathTokens)
+											{
+												dbArgs.Add($"p{parameterIndex}_path_token_{idx}", pToken);
+												pathWheres.Add(
+													string.Format("{0}.exist('/path/segment["+ idx + "][contains(lower-case(.),sql:variable(\"{1}\"))]') = {2}",
+													"ap.Segments", $"@p{parameterIndex}_path_token_{idx}", filterOperation == "eq" ? "1" : "0"
+													));
+												idx++;
+											}
+											whereQuery = "(" + string.Join(filterOperation == "eq" ? " and " : " or ", pathWheres) + ")";
+											break;
+										default:
+											whereQuery = "1=1";
+											break;
+									}
+
+
 									catalogWheres.Add(new CatalogWhere
 									{
 										TokenExpression = filterGrp.Value,
 										PropertyName = $"p{parameterIndex}",
 										Where = $"fr.p{parameterIndex} = 1",
-										Query = $@"select id as ObjectAssetID from assetpath ap where ap.displaypath {operation} @p{parameterIndex}"
+										Query = $@"select distinct ObjectAssetID from dbo.CatalogBrowseObject
+												inner join AssetPath AP ON AP.ID = ObjectAssetID 
+												where {whereQuery}"
 									});
 								}
 							}
