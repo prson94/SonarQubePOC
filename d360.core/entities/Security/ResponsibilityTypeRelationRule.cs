@@ -138,4 +138,14 @@ namespace d360.core.entities
 
         public ResponsibilityMatchType MatchType { get; set; } = ResponsibilityMatchType.And;
     }
+
+	public class ResponsibilityWhenQueryData
+	{
+		public string SqlQuery { get; set; }
+
+		public string TempTableQuery { get; set; }
+		public Dictionary<string, object> DbParameters { get => _dbParameters; set => _dbParameters = value; }
+
+		private Dictionary<string, object> _dbParameters = new Dictionary<string, object>();
+	}
 }

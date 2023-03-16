@@ -135,11 +135,11 @@ namespace d360.model
 		private bool HasAssetDefaultReadPermission(string type, int id)
 		{
 			bool hasPermission = CurrentResourceIsAdmin;
-			
+
 			if (!hasPermission)
 			{
 				int assetTypeID = Query<int>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).FirstOrDefault();
-				
+
 				if (assetTypeID <= 0)
 				{
 					return true; // objects not in asset table we grant permission               
@@ -359,7 +359,7 @@ namespace d360.model
 		public bool HasAssetTypePermission(int assetTypeId, Permission permission)
 		{
 			AssetType assetType = Query<AssetType>("select * from AssetType where ID = @id", new { id = assetTypeId }).Single();
-			
+
 			return HasAssetTypePermission(assetType.Object, assetTypeId, permission);
 		}
 
@@ -593,7 +593,7 @@ namespace d360.model
 				try
 				{
 					string thenSql = GetThenResultsSql(rule, false, transaction, false, "", false);
-					string whenSql = await GetWhenResultsSql(rule, transaction, false, false).ConfigureAwait(false);
+					var whenQueryData = await GetWhenResultsSql(rule, transaction, false, false).ConfigureAwait(false);
 
 					thenSql = string.Format(thenSql, "");
 
@@ -603,9 +603,11 @@ namespace d360.model
 
 					//merge into the asset table 
 					sqlToExecute = $@"
+							{whenQueryData.TempTableQuery}
+
 							merge [dbo].[ResponsibilityRuleResultAsset] as T
 									using	(
-												{whenSql}
+												{whenQueryData.SqlQuery}
 											) as S
 									on		@ruleId = T.RuleID and S.AssetID = T.AssetID
 									when	matched then
@@ -618,10 +620,11 @@ namespace d360.model
 											iif($action = 'DELETE', deleted.RuleID, inserted.RuleID), 
 											iif($action = 'DELETE', deleted.AssetID, inserted.AssetID)
 									into #changes;";
-					await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
+					whenQueryData.DbParameters.Add("ruleId", rule.ID);
+					await Connection.ExecuteAsync(sqlToExecute, whenQueryData.DbParameters, transaction: transaction, commandTimeout: ApiTimeout);
 
 					//merge into the resource table
-					if(thenSql != null && thenSql.Length > 0)
+					if (thenSql != null && thenSql.Length > 0)
 					{
 						sqlToExecute = $@"
 							merge [dbo].[ResponsibilityRuleResultSecurityAsset] as T
@@ -658,7 +661,7 @@ namespace d360.model
 										and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
 										and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
 										and V.Definition <> '{}'";
-					IEnumerable<ResponsibilityAssetMeasureProcessedResult> ruleResults = 
+					IEnumerable<ResponsibilityAssetMeasureProcessedResult> ruleResults =
 						await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(sqlToExecute, new { today = DateTime.UtcNow.Date }, transaction: transaction);
 
 					results.AddRange(ruleResults);
@@ -782,7 +785,7 @@ namespace d360.model
 										and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
 										and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
 										and V.Definition <> '{}'";
-					IEnumerable<ResponsibilityAssetMeasureProcessedResult> ruleResults = 
+					IEnumerable<ResponsibilityAssetMeasureProcessedResult> ruleResults =
 						await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(sqlToExecute, new { today = DateTime.UtcNow.Date }, transaction: transaction);
 
 					results.AddRange(ruleResults);
@@ -869,20 +872,22 @@ namespace d360.model
 
 		private async Task<IEnumerable<ResponsibilityTypeRelationRule>> GetRulesToRun(Guid executionId, int beginItemNumber, int endItemNumber)
 		{
-				return await Connection.QueryAsync<ResponsibilityTypeRelationRule>(@"
+			return await Connection.QueryAsync<ResponsibilityTypeRelationRule>(@"
 					select	R.* 
 					from	ResponsibilityTypeRelationRule R 
 							inner join api.executionresponsibilityrule E on E.uid = R.uid 
 								and E.Success != 0
 								and E.ItemNumber between @beginItemNumber and @endItemNumber
 								and E.ExecutionID = @executionId"
-				, new { executionId, beginItemNumber, endItemNumber });
+			, new { executionId, beginItemNumber, endItemNumber });
 		}
 
-		public async Task<string> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true, bool includeUid = true)
+		public async Task<ResponsibilityWhenQueryData> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true, bool includeUid = true)
 		{
 			var whenSql = new StringBuilder();
 			var whenWhereConditions = new List<string>();
+			var whenTempTables = new StringBuilder();
+			Dictionary<string, object> dbArgs = new Dictionary<string, object>();
 
 			whenSql.Append("select distinct A.ID as AssetID ");
 			if (includeName)
@@ -913,51 +918,73 @@ from	Asset A
 					{
 						if (w.FieldTypeID > 0)
 						{
-							var whenFieldType = Connection.QueryFirstOrDefaultAsync<FieldType>("select * from FieldType where ID = @FieldTypeID", new { w.FieldTypeID }, transaction: transaction).Result;							
+							string fieldWhere = "";
+							var whenFieldType = Connection.QueryFirstOrDefaultAsync<FieldType>("select * from FieldType where ID = @FieldTypeID", new { w.FieldTypeID }, transaction: transaction).Result;
 
 							if (whenFieldType != null)
 							{
-								whenSql.Append($" cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID");
-								
+								string dbParameterName = $"@filter_{fCount}";
+								string value = w.Value;
 								if (whenFieldType.AllowMultipleValues)// multiselect list
 								{
-									whenSql.Append(
-										$" where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}");
-								}else if (whenFieldType.Type == "Text")
+									fieldWhere =
+										$" where FT.ID = {w.FieldTypeID} and {dbParameterName} in (select value from string_split(coalesce(F.Value, FT.DefaultValue),','))";
+								}
+								else if (whenFieldType.Type == "Text")
 								{
 									switch (w.Operator)
 									{
-										case Operator.NotEquals:								
-											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) != '{w.Value}' ) FV{fCount}");
+										case Operator.NotEquals:
+											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) != {dbParameterName}";
 											break;
 										case Operator.Contains:
-											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{w.Value}%' ) FV{fCount}");
+											value = $"%{w.Value.Trim()}%";
+											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE {dbParameterName}";
 											break;
 										case Operator.NotContains:
-											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) NOT LIKE '%{w.Value}%' ) FV{fCount}");
+											value = $"%{w.Value.Trim()}%";
+											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) NOT LIKE {dbParameterName}";
 											break;
 										case Operator.StartsWith:
-											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '{w.Value}%' ) FV{fCount}");
+											value = $"{w.Value}%";
+											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE {dbParameterName}";
 											break;
 										case Operator.EndsWith:
-											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE '%{w.Value}' ) FV{fCount}");
+											value = $"%{w.Value}";
+											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE {dbParameterName}";
 											break;
 										case Operator.Populated:
-											whenSql.Append($" where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is not null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))>0) ) FV{fCount}");  // all field types plus single select list
+											fieldWhere = $" where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is not null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))>0)";  // all field types plus single select list
 											break;
 										case Operator.NotPopulated:
-											whenSql.Append($" where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))=0) ) FV{fCount}");  // all field types plus single select list
+											fieldWhere = $" where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))=0)";  // all field types plus single select list
 											break;
 										default:
-											whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
+											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = {dbParameterName}'";  // all field types plus single select list
 											break;
 									}
-									
+
 								}
 								else // all other field types including single select list
 								{
-									whenSql.Append($" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
+									fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}'";  // all field types plus single select list
 								}
+
+								dbArgs.Add(dbParameterName, value);
+								//load filtered field data into temp table
+								whenTempTables.Append($@"
+									drop table if exists #filtered_field_{fCount}
+
+									select f.AssetID
+									into #filtered_field_{fCount}
+									from Field f
+									inner join FieldType ft on ft.ID = f.FieldTypeID 
+									{fieldWhere}");
+
+								//filter by using inner join 
+								whenSql.AppendLine($"inner join #filtered_field_{fCount} ftf{fCount} on ftf{fCount}.AssetId = A.Id");
+
+
 							}
 							else // invalid field type ID so the when is always not going to return anything
 							{
@@ -971,7 +998,7 @@ from	Asset A
 					{
 						whenWhereConditions.Add(
 							$@"( 
-								{ (w.Operator == Operator.NotIn ? "Not" : "") } exists(
+								{(w.Operator == Operator.NotIn ? "Not" : "")} exists(
 										SELECT TargetAsset.Uid as TargetAssetId
 										FROM  
 											[Intersect] I
@@ -985,7 +1012,7 @@ from	Asset A
 											(I.ObjectAssetId = A.Id and I.SubjectAssetId = TargetAsset.Id))
 										)
 							)"
-							);						
+							);
 						rCount++;
 					}
 				}
@@ -997,7 +1024,12 @@ from	Asset A
 				whenSql.Append(string.Join(" and ", whenWhereConditions));
 			}
 
-			return whenSql.ToString();
+			return new ResponsibilityWhenQueryData
+			{
+				SqlQuery = whenSql.ToString(),
+				TempTableQuery = whenTempTables.ToString(),
+				DbParameters = dbArgs
+			};
 		}
 
 		private string ThenSqlConnector(ResponsibilityRuleDefinitionThen then)
@@ -1008,17 +1040,17 @@ from	Asset A
 		public string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "", bool includeUid = true)
 		{
 			StringBuilder thenSql = new StringBuilder();
-			
+
 			string obj = "";
 			string uniqueIdField = "ID";
 
 			if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null) && (rule.StructuredDefinition.Then.Object != null || (rule.StructuredDefinition.Then.Conditions != null && rule.StructuredDefinition.Then.Conditions.All(c => c.Object != null))))
-			{							
-                if (rule.StructuredDefinition.Then.Conditions != null && rule.StructuredDefinition.Then.Conditions.Count > 0)
-                {
+			{
+				if (rule.StructuredDefinition.Then.Conditions != null && rule.StructuredDefinition.Then.Conditions.Count > 0)
+				{
 					var rulegroups = rule.StructuredDefinition.Then.Conditions.GroupBy(c => c.Object);
-					foreach(var rulegroup in rulegroups)
-                    {
+					foreach (var rulegroup in rulegroups)
+					{
 						//As it was discussed here https://infogix.slack.com/archives/GCYCRNR54/p1663685002231019
 						//we can not be inside this loop whitout that key (https://infogix.slack.com/archives/GCYCRNR54/p1663751303398119?thread_ts=1663685002.231019&cid=GCYCRNR54)
 						var rulegroupKey = rulegroup.Key ?? rule.StructuredDefinition.Then.Object;
@@ -1050,7 +1082,7 @@ from	Asset A
 						}
 
 						foreach (var rc in rulegroup)
-						{				
+						{
 							var sqlEscapedValue = rc.Value == null ? "" : rc.Value.Replace("'", "''");
 
 							if (rc.FieldTypeID > 0)
@@ -1058,7 +1090,7 @@ from	Asset A
 
 								var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();
 								whenSuffix.Append(whenSuffix.Length == 0 ? $" where ( " : $" {ThenSqlConnector(rule.StructuredDefinition.Then)} ");
-								
+
 								var fieldDetailInitialSql = $"select 1 from FieldDetail where Object = '{obj}' and ObjectID = {objectIds[obj]}.{uniqueIdField}";
 
 								if (thenFieldType != null)
@@ -1072,29 +1104,29 @@ from	Asset A
 									{
 										switch (rc.Operator)
 										{
-											case Operator.NotEquals:												
+											case Operator.NotEquals:
 												whenSuffix.Append($"not exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue = '{sqlEscapedValue}' )  ");
 												break;
-											case Operator.Contains:												
+											case Operator.Contains:
 												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '%{sqlEscapedValue}%' )  ");
 												break;
-											case Operator.NotContains:												
+											case Operator.NotContains:
 												whenSuffix.Append($"not exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '%{sqlEscapedValue}%' )  ");
 												break;
 											case Operator.StartsWith:
 												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '{sqlEscapedValue}%' )  ");
 												break;
 											case Operator.EndsWith:
-												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '%{sqlEscapedValue}' )  ");												
+												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue LIKE '%{sqlEscapedValue}' )  ");
 												break;
-											case Operator.Populated:												
+											case Operator.Populated:
 												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and (FormattedValue is not null or LEN(FormattedValue)>0) ) ");
 												break;
-											case Operator.NotPopulated:												
+											case Operator.NotPopulated:
 												whenSuffix.Append($"not exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and (FormattedValue is not null or LEN(FormattedValue)>0) ) ");
 												break;
 											default:
-												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue = '{sqlEscapedValue}' )  ");												
+												whenSuffix.Append($"exists({fieldDetailInitialSql} and FieldTypeID = {rc.FieldTypeID} and FormattedValue = '{sqlEscapedValue}' )  ");
 												break;
 										}
 
@@ -1115,14 +1147,14 @@ from	Asset A
 								{
 									if (rc.FieldTypeName == "Name")
 									{
-										whenSuffix.Append((whenSuffix.Length==0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"{objectIds[obj]}.{uniqueIdField} = {rc.Value}");
+										whenSuffix.Append((whenSuffix.Length == 0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"{objectIds[obj]}.{uniqueIdField} = {rc.Value}");
 									}
 									else
 									{
 										whenSuffix.Append((whenSuffix.Length == 0 ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"{objectIds[obj]}.{rc.FieldTypeName} = '{sqlEscapedValue}'");
 									}
 								}
-							}																				
+							}
 						}
 
 						if (rulegroupKey == "ResourceType")
@@ -1139,17 +1171,17 @@ from	Asset A
 							whenSuffix.Append(" ) ");
 						}
 
-						if (rulegroupSql.Length > 0 || whenSuffix.Length>0)
+						if (rulegroupSql.Length > 0 || whenSuffix.Length > 0)
 						{
 							rulegroupSql.Append(" {0} " + whenSuffix);
 						}
 
-						thenSql.Append($"{(thenSql.Length>0 ? " UNION " : "")}{rulegroupSql}");
+						thenSql.Append($"{(thenSql.Length > 0 ? " UNION " : "")}{rulegroupSql}");
 					}
 				}
 				else
 				{
-					thenSql.Append($@"select distinct {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}");					
+					thenSql.Append($@"select distinct {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}");
 
 					if (rule.StructuredDefinition.Then.Object == "GroupType")
 					{
@@ -1160,8 +1192,8 @@ from	Asset A
 					{
 						thenSql.Append($@"'R' as SecurityAsset, O.ResourceID as SecurityAssetID{(includeName ? ", O.FirstName + ' ' + O.LastName as Name" : "")} {(includeUid ? ", O.FirstName + ' ' + O.LastName as Path, O.uid " : "")} from reporting.Global_Resource O ");
 					}
-				}				
-			}			
+				}
+			}
 
 			return thenSql.ToString();
 		}
@@ -1174,7 +1206,7 @@ from	Asset A
 			Connection.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);
 		}
 
-        #endregion
+		#endregion
 
 	}
 }
