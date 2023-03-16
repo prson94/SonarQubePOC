@@ -50,6 +50,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 	noWhenResults: boolean = false;
 	noThenResults: boolean = false;
 
+	whenTestTotalRecords: number = 0;
+
     actionName: string = $localize`Add`;
 
     visibleTooltip = $localize`Marking the rule as visible applies a visibility setting to all applied responsibilities for this rule. Users will be able to see users and groups assigned via this rule. 
@@ -368,7 +370,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 				this.simpleWhenFilter)
             .subscribe((response) => {
                 if (response) {
-                    this.WhenTestRows = response.items;
+					this.WhenTestRows = response.items;
+					this.whenTestTotalRecords = +response["total"];
 				}
 				this.noWhenResults = this.WhenTestRows.length === 0 && this.simpleWhenFilter.trim() === "";
 

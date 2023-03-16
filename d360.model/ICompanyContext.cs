@@ -351,7 +351,7 @@ namespace d360.model
         List<PermissionInfo> GetTypePermissions(string type, int typeID);
         
         string GetUserHomePage();
-        Task<string> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true, bool includeUid = true);
+        Task<ResponsibilityWhenQueryData> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true, bool includeUid = true);
         
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, bool sendToDefaultUsers = true);
         

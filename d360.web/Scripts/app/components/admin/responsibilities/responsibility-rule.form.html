@@ -153,8 +153,8 @@
                         <div style="margin-left:10px">
                             <span *ngIf="noWhenResults">No Results</span>
                             <a *ngIf="WhenTestRows && WhenTestRows.length>0" (click)="showWhenResults = !showWhenResults">
-                                <span *ngIf="showWhenResults">{{hideResultsLabel}} ({{WhenTestRows.length}}) <i class="fa fa-angle-up" aria-hidden="true"></i></span>
-                                <span *ngIf="!showWhenResults">{{showResultsLabel}} ({{WhenTestRows.length}}) <i class="fa fa-angle-down" aria-hidden="true"></i></span>
+                                <span *ngIf="showWhenResults">{{hideResultsLabel}} ({{whenTestTotalRecords}}) <i class="fa fa-angle-up" aria-hidden="true"></i></span>
+                                <span *ngIf="!showWhenResults">{{showResultsLabel}} ({{whenTestTotalRecords}}) <i class="fa fa-angle-down" aria-hidden="true"></i></span>
                             </a>
                         </div>
                     </div>
@@ -189,7 +189,7 @@
                                     No results match the search filter.
                                 </ng-template>
                                 <ng-template pTemplate="summary">
-                                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="whenTestTotalRecords"></d3s-grid-paging-info>
                                 </ng-template>
                             </p-table>
                         </div>
