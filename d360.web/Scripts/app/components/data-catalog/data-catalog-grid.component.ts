@@ -30,7 +30,7 @@ import { PopupMenu } from '../shared/controls/popup-menu/popup-menu.component';
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DataCatalogGridComponent extends AssetGridBaseComponent implements OnInit {
-	subjectLoadGrid = new Subject<unknown>();
+	subjectLoadGrid = new Subject<string>();
 	predicates: Predicate[];
 	columns: Record<string, unknown>[] = [];
 	data: Record<string, unknown>[] = [];
@@ -105,13 +105,12 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 				this.predicates = res;
 
 				this.columns = [];
-				this.columns.push({ columnName: $localize`Name`, apiProperty: "DisplayValue" });
+				this.columns.push({ columnName: $localize`Name`, apiProperty: "DisplayValue", minWidth: "300px" });
 				this.predicates.forEach((pred) => {
-					this.columns.push({ columnName: pred.Name, apiProperty: pred.Name });
+					this.columns.push({ columnName: pred.Name, apiProperty: pred.Name, minWidth: "150px" });
 				});
 				this.columns.push({ columnName: $localize`Asset Path`, apiProperty: "DisplayPath" });
 				this.setFieldsObsservable();
-				this.subjectLoadGrid.next(0);
 			});
 	}
 
@@ -144,7 +143,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 			}
 		}
 
-		params["_pageNum"] = this.dataTable.first / this.dataTable.rows;
+		params["_pageNum"] = (this.dataTable.first / this.dataTable.rows) + 1;
 		params["_pageSize"] = this.dataTable.rows;
 
 
@@ -200,8 +199,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		this.advancedFilterText = $event.filter as string;
 
 		this.advancedFilterText = this.advancedFilterText.split(`'`).join(``);
-
-		this.subjectLoadGrid.next(0);
+		this.subjectLoadGrid.next("advancedFiltersChanged");
 	}
 	selectRow($event) {
 		this.sidePanelService.setSidePanelState({ assetUid: $event.Uid });

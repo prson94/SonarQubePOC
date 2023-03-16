@@ -245,7 +245,18 @@ namespace d360.web.Controllers.V2
 										break;
 									case "nct":
 										operation = "not like";
-										dbArgs.Add($"p{parameterIndex}", filterValue);
+										if (filterValue.StartsWith("*"))
+										{
+											dbArgs.Add($"p{parameterIndex}", $"%{filterValue.Replace("*", "")}");
+										}
+										else if (filterValue.EndsWith("*"))
+										{
+											dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "")}%");
+										}
+										else
+										{
+											dbArgs.Add($"p{parameterIndex}", $"%{filterValue}%");
+										}
 										break;
 									case "ne":
 									case "neq":
@@ -258,12 +269,20 @@ namespace d360.web.Controllers.V2
 								if (predicate != null)
 								{
 									string valuePart = $"pred.DisplayValue {operation} @p{parameterIndex}";
+									string query = $@"select I.ObjectAssetID from #v pred 
+											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
+											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
+											where pred.PredicateId = {predicate.Id} and {valuePart}";
 
 									if (filterValue.Trim().ToLowerInvariant() == "null")
 									{
 										if (operation == "=")
 										{
 											valuePart = $"pred.DisplayValue is null";
+											query = $@"
+											    select S.ObjectAssetID from dbo.CatalogBrowseSubject S
+												left join dbo.CatalogBrowseSubject SP ON SP.ObjectAssetID = S.objectassetid and SP.PredicateId = {predicate.Id}
+												where SP.ObjectAssetID is null";
 										}
 										else
 										{
@@ -277,10 +296,7 @@ namespace d360.web.Controllers.V2
 										PropertyName = $"p{parameterIndex}",
 										PredicateId = predicate.Id,
 										Where = $"fr.p{parameterIndex} = 1",
-										Query = $@"select I.ObjectAssetID from #v pred 
-											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
-											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
-											where pred.PredicateId = {predicate.Id} and {valuePart}"
+										Query = query
 									});
 								}
 								else if (column.ApiName == "displayValue")
@@ -338,7 +354,7 @@ namespace d360.web.Controllers.V2
 					insert into #simpleFiltersTempTable 
 					select ObjectAssetID from dbo.CatalogBrowseObject
 					inner join AssetPath ap on ap.ID = ObjectAssetID
-					where ap.DisplayPath like 'eagle%'
+					where ap.DisplayPath like @simpleFilter
 
 					create nonclustered index idx on #simpleFiltersTempTable (ObjectAssetID)";
 			}
@@ -540,7 +556,7 @@ namespace d360.web.Controllers.V2
 			string countSql = $@"
 				;with cte as (
 				{string.Format(baseSQL, "count(1) as cnt")}
-				group by S.ObjectDisplayValue
+				group by S.ObjectAssetID
 				)
 				select COUNT(1) from cte
 				option(recompile);";
@@ -561,7 +577,7 @@ namespace d360.web.Controllers.V2
 			}
 
 
-			string offsetGroupBy = "group by S.ObjectDisplayValue";
+			string offsetGroupBy = "group by S.ObjectAssetId";
 
 			if (columns.Any(x => x.UseAsSortBy))
 			{
