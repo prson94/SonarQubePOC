@@ -1638,9 +1638,14 @@ select	r.uid as ResourceUid,
 
 				css.AppendLine("}");
 
-				var customCss = ThemeRepository.GetCurrentThemeCustomCssByUser();
-				css.AppendLine("");
-				css.Append(customCss);
+				if (Company.CurrentResourceID > 0)
+				{
+					//https://jira.syncsort.com/browse/GOV-21052
+					//Limited / Low-risk information disclosure via CSS overrides
+					var customCss = ThemeRepository.GetCurrentThemeCustomCssByUser();
+					css.AppendLine("");
+					css.Append(customCss);
+				}
 
 				return ResponseMessage(
 					new HttpResponseMessage
