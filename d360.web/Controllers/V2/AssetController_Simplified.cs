@@ -1,16 +1,11 @@
-﻿using AngleSharp.Text;
-using d360.core;
+﻿using d360.core.enums;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Diagnostics;
-using System.EnterpriseServices;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -587,6 +582,51 @@ namespace d360.web.Controllers.V2
 				whereStatements.Add(advancedFilterString);
 			}
 
+			string permissionTempTableSql = "";
+
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				permissionTempTableSql = $@"
+					drop table if exists #NoReadAssets;
+					create table #NoReadAssets(
+						AssetId int,
+						AssetTypeID bigint,
+						PermissionsBitMask int
+					)
+
+					create index cix_permissionAssetId on #NoReadAssets(Assetid);
+
+
+					declare @assetTypeIds table (id int, PermissionsBitMask int)
+					insert into @assetTypeIds
+					select distinct ObjectAssetTypeID, 0 from [Predicate] P 
+					inner join  [IntersectType] IT on IT.PredicateID = P.ID
+					where P.Type = {((int)Permission.ReadAsset)}
+
+					declare @typeid int;
+					set @typeid = (select top 1 id from @assetTypeIds)
+					while @typeid is not null
+					begin
+						insert into #NoReadAssets
+						select AssetID,AssetTypeID,PermissionsBitMask from dbo.UserAssetPermissions(@userId,@typeid) where ((PermissionsBitMask & {((int)Permission.ReadAsset)})) = 0; 
+
+						delete top (1) from @assetTypeIds
+						set @typeid = (select top 1 id from @assetTypeIds)
+					end
+
+
+					insert into @assetTypeIds (id, PermissionsBitMask)
+					select distinct AssetTypeID, PermissionsBitMask from #NoReadAssets where AssetId = 0
+
+					insert into #NoReadAssets
+					select a.ID, ati.id, ati.PermissionsBitMask from @assetTypeIds ati
+					inner join asset a on a.AssetTypeID = ati.id";
+
+				dbArgs.Add("userId", Company.CurrentResourceID);
+				whereStatements.Add("not exists (select AssetID from #NoReadAssets where AssetID = S.ObjectAssetID)");
+			}
+
+
 			string whereStatement = whereStatements.Count > 0 ? " where " + string.Join(" and ", whereStatements) : "";
 
 			string baseSQL = $@"
@@ -610,14 +650,21 @@ namespace d360.web.Controllers.V2
 
 			if (!hasFilters)
 			{
-				countSql = $@"select COUNT(distinct ObjectAssetID) from dbo.CatalogBrowseSubject option(recompile)";
+				string where = "";
+				if (!Company.CurrentResourceIsAdmin)
+				{
+					where = " where not exists (select AssetID from #NoReadAssets where AssetID = S.ObjectAssetID)";
+				}
+
+				countSql = $@"select COUNT(distinct S.ObjectAssetID) from dbo.CatalogBrowseSubject S {where} option(recompile)";
 
 				if (!string.IsNullOrEmpty(simpleFilterTempTable))
 				{
 					countSql = $@"
-						select COUNT(distinct CBS.ObjectAssetID) 
-						from dbo.CatalogBrowseSubject CBS
-						inner join #simpleFiltersTempTable sftt on sftt.ObjectAssetID = CBS.ObjectAssetID
+						select COUNT(distinct S.ObjectAssetID) 
+						from dbo.CatalogBrowseSubject S
+						inner join #simpleFiltersTempTable sftt on sftt.ObjectAssetID = S.ObjectAssetID
+						{where}
 						option(recompile)";
 				}
 			}
@@ -651,6 +698,8 @@ namespace d360.web.Controllers.V2
 							inner join IntersectType t on t.PredicateId = p.Id and p.[Type] = 5
 							inner join Asset a on a.AssetTypeId = t.SubjectAssetTypeId
 							inner join AssetDisplayValue d on d.AssetId = a.Id;
+
+				{permissionTempTableSql}
 
 				{simpleFilterTempTable}	
 
