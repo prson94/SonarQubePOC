@@ -144,7 +144,8 @@ namespace d360.core.entities
 		public string SqlQuery { get; set; }
 
 		public string TempTableQuery { get; set; }
+		public Dictionary<string, object> DbParameters { get => _dbParameters; set => _dbParameters = value; }
 
-		public Dictionary<string, object> dbParameters = new Dictionary<string, object>();
+		private Dictionary<string, object> _dbParameters = new Dictionary<string, object>();
 	}
 }

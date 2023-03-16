@@ -620,8 +620,8 @@ namespace d360.model
 											iif($action = 'DELETE', deleted.RuleID, inserted.RuleID), 
 											iif($action = 'DELETE', deleted.AssetID, inserted.AssetID)
 									into #changes;";
-					whenQueryData.dbParameters.Add("ruleId", rule.ID);
-					await Connection.ExecuteAsync(sqlToExecute, whenQueryData.dbParameters, transaction: transaction, commandTimeout: ApiTimeout);
+					whenQueryData.DbParameters.Add("ruleId", rule.ID);
+					await Connection.ExecuteAsync(sqlToExecute, whenQueryData.DbParameters, transaction: transaction, commandTimeout: ApiTimeout);
 
 					//merge into the resource table
 					if (thenSql != null && thenSql.Length > 0)
@@ -1028,7 +1028,7 @@ from	Asset A
 			{
 				SqlQuery = whenSql.ToString(),
 				TempTableQuery = whenTempTables.ToString(),
-				dbParameters = dbArgs
+				DbParameters = dbArgs
 			};
 		}
 

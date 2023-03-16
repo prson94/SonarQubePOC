@@ -1255,7 +1255,7 @@ namespace d360.model.DataAccessLayer
 				var queryData = await Company.GetWhenResultsSql(testModel, null);
 				resultsSql = queryData.SqlQuery;
 				whenTempTables = queryData.TempTableQuery;
-				dbArgs = queryData.dbParameters;
+				dbArgs = queryData.DbParameters;
 			}
 
 			if (string.IsNullOrWhiteSpace(resultsSql))
