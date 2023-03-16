@@ -1304,7 +1304,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 						simpleFilters.Add($@"
 							select I.ObjectAssetID from [Intersect] I 
-							where I.IntersectTypeID = @parentIntersectTypeId and I.SubjectAssetID in (select assetid from @parentAssets)
+							left join #TempFilteredAssets tfa on tfa.AssetId = I.ObjectAssetID
+							where tfa.AssetId is null and I.IntersectTypeID = @parentIntersectTypeId and I.SubjectAssetID in (select assetid from @parentAssets)
 							option(recompile)");
 					}
 
