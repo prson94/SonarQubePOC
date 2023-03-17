@@ -47,6 +47,8 @@ import { IOutputData } from 'angular-split';
 import { LocalStorageKey } from "../../enums/localstorage.enum";
 import { UsageAction } from '../../models/web-analytics-activity.model';
 
+/*global $localize*/
+
 declare var CurrentResourceID;
 
 @Component({
@@ -526,7 +528,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		return res;
 	}
 
-	private buildTreeNodeArraylevelSearch(hierarchies: any[], levelNumber: number): TreeNode[] {
+	private buildTreeNodeArraylevelSearch(hierarchies: any, levelNumber: number): TreeNode[] {
 		const rootNodes = hierarchies;
 
 		if (rootNodes.length === 0) {
@@ -582,7 +584,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			let isAddAssetPath = false;
 			for (const root of this.columnsOrg) {
 				res.push(root);
-				if (!isAddAssetPath && this.excludedLinkColumnTypes.findIndex((e) => e === (root as any).fieldType) === -1) {
+				if (!isAddAssetPath && this.excludedLinkColumnTypes.findIndex((e) => e === root.fieldType) === -1) {
 					res.push({ text: $localize`Asset Path`, datafield: "DisplayPath", columnWidth: 0, fieldType: "Path", type: "", cellsformat: "", description: "" });
 					isAddAssetPath = true;
 				}
