@@ -111,28 +111,6 @@ export class AssetDetailFieldComponent {
         return this.field.Value !== "" && this.field.Value != null ? Number(this.field.Value).toLocaleString() : "";
     }
 
-    get linkUrl(): string {
-        if (this.field == null || this.field.Value.indexOf("|") === -1) {
-            return null;
-        }
-        const index = this.field.Value.indexOf("|");
-
-        return this.field.Value.substring(index + 1);
-    }
-
-    get linkName(): string {
-        if (this.field == null || this.field.Value.indexOf("|") === -1) {
-            return null;
-        }
-        const index = this.field.Value.indexOf("|");
-        if (index === 0) {
-            return this.linkUrl;
-        }
-        else {
-            return this.field.Value.split("|")[0];
-        }
-    }
-
     get json(): any {
         if (this.jsonValue != null) {
             return this.jsonValue;

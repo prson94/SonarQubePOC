@@ -414,10 +414,10 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         if (this.field.FieldType === 'Link') {
             var control = this.form.controls[this.field.FieldName + '_Url'];
-            if (control.value) {
-                var value = control.value as string;
-                if (!value.toLowerCase().startsWith("http://")
-                    && !value.toLowerCase().startsWith("https://")) {
+			if (control.value) {
+				const value = (control.value as string).toLowerCase();
+				const validProtocols = ["http://", "https://", "route:"];
+				if (validProtocols.every((p) => value.startsWith(p) === false)) {
                     control.setErrors({ invalidUrlStart: true });
                     return false;
                 }

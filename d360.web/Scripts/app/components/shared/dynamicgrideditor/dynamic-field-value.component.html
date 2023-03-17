@@ -53,6 +53,9 @@
             <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
         </ng-template>
     </span>
+    <span *ngSwitchCase="'Link'" [class]="styleClass">
+        <d3s-link-display *ngIf="fieldValue != null" [value]="fieldValue" [showTooltip]="false"></d3s-link-display>
+    </span>
     <span *ngSwitchCase="'html'">
         <span class="ql-editor small-indent" *ngIf="fieldValue != null"
               [innerHtml]="fieldValue | safeHtml"

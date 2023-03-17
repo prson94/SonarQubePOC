@@ -72,17 +72,8 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         if ((this.fieldType === 'date' || this.fieldType === 'datetime') && isNaN(Date.parse(this.fieldValue)))
             {this.fieldValue = null;}
 
-        if (this.useApiName && this.column['fieldType'] === 'Link' && this.fieldValue) {
-            var delimiterIdx = (this.fieldValue as string).indexOf('|');
-            if (delimiterIdx > -1) {
-                let name = (this.fieldValue as string).substring(0, delimiterIdx);
-                const href = (this.fieldValue as string).substring(delimiterIdx + 1);
-				if (!name) {
-					name = href;
-				}
-				name = escape(name)
-                this.fieldValue = `<a href="${href}" target="_blank">${name}</a>`;
-            }
+		if (this.column['fieldType'] === 'Link' && this.fieldValue) {
+			this.fieldType = "Link";
 		}
 
 		if (this.column['fieldType'] === 'FieldFromRelationship') {
