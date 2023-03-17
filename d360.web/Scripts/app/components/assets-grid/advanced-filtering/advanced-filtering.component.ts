@@ -51,6 +51,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     @Input() externalAllocations: ScoreTypeAllocation[] = [];
     @Input() clearConditionsOnFilterField: string = '';
     @Input() disableMatchAny: boolean = false;
+    @Input() afMessage: string = '';
 
     @Output() onChange = new EventEmitter();
     @Output() onLoad = new EventEmitter();
@@ -315,6 +316,9 @@ export class AdvancedFilteringComponent implements OnChanges {
                         && f.Category === "System Fields") {
                         this.updateOperatorsForDateTimeSystemField(f);
                     }
+                    if (this.gridType === "Tree" && f.Name === "[Level]") {
+                        this.updateOperatorsForTreeLevelField(f);
+                    }
                 }
             });
         });
@@ -396,6 +400,10 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     getLocalStorageKey() {
         return this.loadIdentifier + "_advancedFilters";
+    }
+
+    private updateOperatorsForTreeLevelField(f: FieldTypeAPIModelFieldAdvancedCondition) {
+        f.Operators = f.Operators.filter((x) => x.value !== "Populated" && x.value !== "NotPopulated");
     }
 
     private saveFilters() {

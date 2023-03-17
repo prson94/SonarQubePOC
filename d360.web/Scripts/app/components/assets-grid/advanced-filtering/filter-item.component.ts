@@ -47,6 +47,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	@Input() fields: FieldTypeAPIModelFieldAdvancedCondition[] = null;
 	@Input() operators: OperatorModel[] = [];
 	@Input() relationshipTypes: RelationshipType[] = [];
+	@Input() message: string = "";
 
 	@Output() onChange = new EventEmitter();
 
@@ -79,6 +80,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
 	uiIsAllDisabled: boolean = true;
 	uiIsAnyDisabled: boolean = true;
+	IsLevelFieldSeleted: boolean = false;
 
 	rollbackOperator: any;
 	rollbackValue1: any;
@@ -548,6 +550,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
 			if (this.condition.field === "CreatedBy") {
 				this.hasSelectAllCheckbox = true;
+			}
+
+			if (this.condition.field.toLowerCase() === "[level]") {
+				this.IsLevelFieldSeleted = true;
+			}
+			else {
+				this.IsLevelFieldSeleted = false;
 			}
 
 			if (type.Type.Score && !this.condition.value) {

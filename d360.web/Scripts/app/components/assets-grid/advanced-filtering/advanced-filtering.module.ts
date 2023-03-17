@@ -19,6 +19,7 @@ import { OverlayPanelModule } from "primeng/overlaypanel";
 import { FocusTrapModule } from "primeng/focustrap";
 import { IgColorPickerModule } from "../../shared/controls/color-picker/color-picker.module";
 import { CheckboxModule } from 'primeng/checkbox';
+import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
 
 @NgModule({
     imports: [
@@ -42,6 +43,7 @@ import { CheckboxModule } from 'primeng/checkbox';
         FocusTrapModule,
         IgColorPickerModule,
         CheckboxModule,
+        IgMessageBoxModule,
     ],
     declarations: [AdvancedFilteringComponent, FilterItemComponent],
     exports: [AdvancedFilteringComponent],
