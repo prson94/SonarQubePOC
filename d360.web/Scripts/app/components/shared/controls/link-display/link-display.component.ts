@@ -1,5 +1,5 @@
 ﻿import { NgModule, Component, Input } from "@angular/core";
-import { RouterModule } from "@angular/router"
+import { RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { TooltipModule } from "primeng/tooltip";
 
@@ -11,9 +11,6 @@ export class LinkDisplayComponent {
 
 	@Input() value: string;
 	@Input() showTooltip: boolean = true;
-
-	constructor() {
-	}
 
 	get linkName(): string {
 		if (this.value === null || this.value.indexOf("|") === -1) {
