@@ -1,5 +1,15 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.utils.company;
+using d360.web.Extensions;
+using d360.web.Models;
+using Dapper;
+using IdentityModel.Client;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.Owin;
+using Resources;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -9,25 +19,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.utils.company;
-using d360.web.Extensions;
-using d360.web.Models;
-using Dapper;
-
-using IdentityModel.Client;
-
-using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.Owin;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Resources;
 
 namespace d360.web
 {
@@ -36,39 +28,39 @@ namespace d360.web
 		public class usercompany
 		{
 			public int ResourceID { get; set; }
-			
+
 			public int CompanyID { get; set; }
-			
+
 			public bool IsAdministrator { get; set; }
-						
+
 			public CompanyResourceState State { get; set; }
 
 			public string Username { get; set; }
-						
+
 			public string APIPublicKey { get; set; }
-			
+
 			public string APIPrivateKey { get; set; }
 
 		}
 
-		public UserIDCheckMiddleware(Func<IDictionary<string, object>, Task> next): base(next)
+		public class UserRecacheEventArgs : EventArgs
 		{
+			public usercompany user { get; set; }
+			public string key { get; set; }
 		}
 
-		public ConcurrentBag<usercompany> Users
-		{
-			get
-			{
-				var users = Cache.GetItem<ConcurrentBag<usercompany>>("Users");
-				
-				if (users == null)
-				{
-					users = new ConcurrentBag<usercompany>();
-				}
+		public event EventHandler<UserRecacheEventArgs> UserRecache;
 
-				return users;
+		public virtual void OnUserRecache(UserRecacheEventArgs args)
+		{
+			if (args.user != null)
+			{
+				Cache.SetItem(args.key, args.user, true, 1);
 			}
-			set => Cache.SetItem("Users", value, true, 10);
+		}
+
+		public UserIDCheckMiddleware(Func<IDictionary<string, object>, Task> next) : base(next)
+		{
 		}
 
 		private usercompany LoadUserFromDatabase(int companyID, string apiKey = null, string apiSecret = null, string username = null)
@@ -114,9 +106,12 @@ namespace d360.web
 
 			usercompany u = null;
 
-			var companyID = context.Get<int>("CompanyID");
-			var urlPrefix = context.Get<string>("CompanyDomain");
-			var mappingsKey = $"{companyID}_{urlPrefix}_ClaimMappings";
+			int companyID = context.Get<int>("CompanyID");
+			string urlPrefix = context.Get<string>("CompanyDomain");
+			string mappingsKey = $"{companyID}_{urlPrefix}_ClaimMappings";
+			string userCacheKey = $"TenantUser_{companyID}_";
+			bool isValidCacheKey = false;
+			bool inCache = false;
 
 			try
 			{
@@ -124,9 +119,6 @@ namespace d360.web
 				var apiCredentials = context.Request.Headers["Authorization"];
 				var token = string.Empty;
 
-				var cachedUsers = Users;
-
-				// llyods custom auth depends on ceriticate and JWT token
 				if (!string.IsNullOrEmpty(apiCredentials) && apiCredentials.ToUpper().Contains("BEARER"))
 				{
 					var jwtTelemetry = new Microsoft.ApplicationInsights.TelemetryClient();
@@ -155,18 +147,20 @@ namespace d360.web
 						}
 
 						jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Username {jwtClaim.Identity.Name}", SeverityLevel = SeverityLevel.Verbose });
-						u = LoadUserFromDatabase(companyID, null, null, jwtClaim.Identity.Name);
 
+						userCacheKey += $"E_{jwtClaim.Identity.Name.ToLower()}";
+						isValidCacheKey = true;
+						u = Cache.GetItem<usercompany>(userCacheKey);
+						inCache = (u != null);
+						if (!inCache)
+						{
+							u = LoadUserFromDatabase(companyID, null, null, jwtClaim.Identity.Name);
+							OnUserRecache(new UserRecacheEventArgs { key = userCacheKey, user = u });
+						}
 						if (u != null)
 						{
-							if (!cachedUsers.Any(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
-							{
-								cachedUsers.Add(u);
-							}
-							Users = cachedUsers;
-
-							await parseLoginInfoAndClaims(companyID, 
-								userAuth.FirstName, userAuth.LastName, userAuth.Email, 
+							await parseLoginInfoAndClaims(companyID,
+								userAuth.FirstName, userAuth.LastName, userAuth.Email,
 								userAuth.Groups, jwtTelemetry);
 						}
 					}
@@ -177,20 +171,20 @@ namespace d360.web
 
 					if (authValues.Length == 2 && authValues[0].Length == 25 && authValues[1].Length == 50)
 					{
-						u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.APIPrivateKey == authValues[1] && i.APIPublicKey == authValues[0]);
-						
-						if (u == null)
+						userCacheKey += $"A_{authValues[0]}";
+						isValidCacheKey = true;
+						u = Cache.GetItem<usercompany>(userCacheKey);
+						inCache = (u != null);
+						if (!inCache)
 						{
 							u = LoadUserFromDatabase(companyID, apiKey: authValues[0], apiSecret: authValues[1]);
-							
-							if (u != null)
+							OnUserRecache(new UserRecacheEventArgs { key = userCacheKey, user = u });
+						}
+						else
+						{
+							if (u.APIPrivateKey != authValues[1])
 							{
-								if (!cachedUsers.Any(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
-								{
-									cachedUsers.Add(u);
-								}
-
-								Users = cachedUsers;
+								u = null;
 							}
 						}
 					}
@@ -198,21 +192,15 @@ namespace d360.web
 
 				if (context.Request.User.Identity.IsAuthenticated)
 				{
-					u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.Username == context.Request.User.Identity.Name.ToLower());
-					
-					if (u == null)
+					var username = context.Request.User.Identity.Name.ToLower();
+					userCacheKey += $"E_{username}";
+					isValidCacheKey = true;
+					u = Cache.GetItem<usercompany>(userCacheKey);
+					inCache = (u != null);
+					if (!inCache && isValidCacheKey)
 					{
-						u = LoadUserFromDatabase(companyID, username: context.Request.User.Identity.Name.ToLower());
-						
-						if (u != null)
-						{
-							if (!cachedUsers.Any(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
-							{
-								cachedUsers.Add(u);
-							}
-
-							Users = cachedUsers;
-						}
+						u = LoadUserFromDatabase(companyID, username: username);
+						OnUserRecache(new UserRecacheEventArgs { key = userCacheKey, user = u });
 					}
 				}
 
@@ -285,7 +273,6 @@ namespace d360.web
 			await Next(environment);
 		}
 
-		public const string Authority = "http://localhost:5000";
 		private static readonly bool jwtDiscoveryValidateIssuerName = (ConfigurationManager.AppSettings["jwtDiscoveryValidateIssuerName"] ?? "").ToUpper() == "TRUE";
 		private static readonly bool jwtValidateAudience = (ConfigurationManager.AppSettings["jwtValidateAudience"] ?? "").ToUpper() == "TRUE";
 		private static readonly bool jwtRequireExpirationTime = (ConfigurationManager.AppSettings["jwtRequireExpirationTime"] ?? "").ToUpper() == "TRUE";
@@ -293,7 +280,7 @@ namespace d360.web
 
 		private async Task<ClaimsPrincipal> ValidateJwt(string jwt, IOwinContext context, Microsoft.ApplicationInsights.TelemetryClient telemetry)
 		{
-			string authority = await getJwtAuthority(context);			
+			string authority = await getJwtAuthority(context);
 			var authenticationSettings = context.Request.Get<CompanyOpenIdAuthenticationSettings>("AuthenticationSettings");
 			var discoveryUri = authenticationSettings.jwtAuthorityUri ?? authenticationSettings.discoveryUri ?? authority;
 
@@ -304,16 +291,17 @@ namespace d360.web
 			{
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
 			});
-			var discoCache = new DiscoveryCache(discoveryUri, () => clientFactory, new DiscoveryPolicy { 
+			var discoCache = new DiscoveryCache(discoveryUri, () => clientFactory, new DiscoveryPolicy
+			{
 				ValidateEndpoints = false,
-				Authority = authority, 
-				ValidateIssuerName = jwtDiscoveryValidateIssuerName 
+				Authority = authority,
+				ValidateIssuerName = jwtDiscoveryValidateIssuerName
 			});
 			var disco = await discoCache.GetAsync();
 
 			if (disco == null)
 			{
-				telemetry.TrackTrace($"Discovery response is null.", SeverityLevel.Error, new Dictionary<string, string> { { "Authority", authority }, { "DiscoverUri", discoveryUri } });				
+				telemetry.TrackTrace($"Discovery response is null.", SeverityLevel.Error, new Dictionary<string, string> { { "Authority", authority }, { "DiscoverUri", discoveryUri } });
 				return null;
 			}
 
@@ -355,7 +343,7 @@ namespace d360.web
 				{
 					cnn.Open();
 					cnName = (await cnn.QueryAsync<string>(@"select Value from Setting where ID = @s", new { @s = (int)Setting.JwtAuthority })).FirstOrDefault();
-					
+
 					if (string.IsNullOrEmpty(cnName))
 					{
 						cnName = Setting.JwtAuthority.AsInfoModel().DefaultValue;
@@ -516,9 +504,5 @@ namespace d360.web
 
 			return resource;
 		}
-
-
-
-
 	}
 }
