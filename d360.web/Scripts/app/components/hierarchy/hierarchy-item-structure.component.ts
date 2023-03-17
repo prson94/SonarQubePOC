@@ -851,7 +851,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				uriParams["_filter"] = this.newAdvancedFilters.filter;
 				this.areAllExpanded = true;
 				if (this.newAdvancedFilters.filter.includes("[Level]")) {
-					this.levelSearchActive = true
+					this.levelSearchActive = true;
 				}
 			}
 
@@ -861,7 +861,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 				if (this.hierarchy.length !== 0) {
 					clearTimeout(this.timeouthandle);
-					let lvlnumber = this.levelSearchActive ? this.hierarchy[0]?.Level : 1;
+					const lvlnumber = this.levelSearchActive ? this.hierarchy[0]?.Level : 1;
 					this.timeouthandle = window.setTimeout(() => {
 						this.columns = this.resetColumns();
 						if (this.levelSearchActive) {
