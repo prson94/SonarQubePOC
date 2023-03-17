@@ -285,6 +285,18 @@ namespace d360.web.Controllers.V2
 										}
 									}
 
+									if (filterOperation == "ne")
+									{
+										query = $@"select I.ObjectAssetID from #v pred 
+											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
+											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
+											where pred.PredicateId = {predicate.Id} and {valuePart}
+											union
+											select S.ObjectAssetID from dbo.CatalogBrowseSubject S
+											left join dbo.CatalogBrowseSubject SP ON SP.ObjectAssetID = S.objectassetid and SP.PredicateId = {predicate.Id}
+											where SP.ObjectAssetID is null";
+									}
+
 									catalogWheres.Add(new CatalogWhere
 									{
 										TokenExpression = filterGrp.Value,
@@ -338,7 +350,7 @@ namespace d360.web.Controllers.V2
 											{
 												dbArgs.Add($"p{parameterIndex}_path_token_{idx}", pToken);
 												pathWheres.Add(
-													string.Format("{0}.exist('/path/segment["+ idx + "][contains(lower-case(.),sql:variable(\"{1}\"))]') = {2}",
+													string.Format("{0}.exist('/path/segment[" + idx + "][contains(lower-case(.),sql:variable(\"{1}\"))]') = {2}",
 													"ap.Segments", $"@p{parameterIndex}_path_token_{idx}", filterOperation == "eq" ? "1" : "0"
 													));
 												idx++;
