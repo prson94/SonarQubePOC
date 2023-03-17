@@ -400,6 +400,10 @@ export class BaseComponent {
 					url = `/assets/${this.baseResponsibilityUid}/log`;
 				}
 
+				if (this.objectType?.toLowerCase() === "tag") {
+					url = `/tag/${this.uid}/log`;
+				}
+
 				if (this.baseSemanticTypeUid) {
 					url = `/semantics/${this.baseSemanticTypeUid}/log`;
 				}
