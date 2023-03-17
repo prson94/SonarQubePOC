@@ -41,6 +41,11 @@
 
     <div class="value-selection" [hidden]="!isSelectingValue">
         <div class="selectors" pFocusTrap>
+            <ng-container *ngIf="message?.length>0 && IsLevelFieldSeleted">
+                <ig-message-box>
+                    {{message}}
+                </ig-message-box>
+            </ng-container>
             <div class="operator-selector" [hidden]="!showOperatorList">
                 <p-dropdown igDropdown
                             [options]="uiCurrentOperatorsList"
