@@ -190,7 +190,7 @@ namespace d360.model.DataAccessLayer
 			//Check Record Exist for No Read Asset
 			//1: Add Condition, 0: Not Add Condition
 			var responsibilitySQL = @$"select count(1) from (select top 1 rd.RuleID from dbo.responsibilitydetail rd
-										where ResourceID = @ResourceID and ((PermissionsBitMask & @permission) = 0)) a
+										where abs(ResourceID) = @ResourceID and ((PermissionsBitMask & @permission) = 0)) a
 										option(recompile)";
 
 			var AddrightCondition = companyContext.Database.Connection.Query<int>(responsibilitySQL, new { ResourceID = companyContext.CurrentResourceID, permission = (int)Permission.ReadRelationships }).FirstOrDefault();
