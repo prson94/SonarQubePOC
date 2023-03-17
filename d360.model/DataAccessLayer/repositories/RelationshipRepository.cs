@@ -211,7 +211,7 @@ namespace d360.model.DataAccessLayer
 					Insert into #TempNoPermissionObjects
 					select distinct AssetID,AssetTypeID
 					from ResponsibilityDetail 
-					where ResourceID = @ResourceID and ((PermissionsBitMask & @permission) = 0)
+					where abs(ResourceID) = @ResourceID and ((PermissionsBitMask & @permission) = 0)
 					option(recompile)";
 
 				dbArgs.Add("@CurrentResourceID", companyContext.CurrentResourceID);
