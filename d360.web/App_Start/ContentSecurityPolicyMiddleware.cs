@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
+using d360.core;
 using d360.core.enums;
 
 using Microsoft.Owin;
@@ -12,18 +12,27 @@ namespace d360.web
 {
     public class ContentSecurityPolicyMiddleware : BaseMiddleware
     {
-        private readonly Dictionary<string, List<string>> Permissive = new Dictionary<string, List<string>>
+		public static string StorageUrl { 
+			get {
+				var storageAccountName = Config.GetValue<string>("AzureStorageName") ?? "data3sixty";
+				return $"https://{storageAccountName}.blob.core.windows.net";
+			} 
+		}
+
+		private readonly Dictionary<string, List<string>> Policies = new Dictionary<string, List<string>>
         {
-            { "default-src", new List<string>{"*", "data:", "blob:", "filesystem:", "ws:", "wss:", "'unsafe-inline'", "'unsafe-eval'" } },
-            { "script-src", new List<string>{ "*", "'unsafe-inline'", "'unsafe-eval'" } },
+			{ "default-src", new List<string>{ "'self'", "'unsafe-inline'" } }, // "*", "data:", "blob:", "filesystem:", "ws:", "wss:", "'unsafe-eval'"
+            { "script-src", new List<string>{ "'self'", "'unsafe-inline'" } }, //"*", "'unsafe-eval'"
             { "connect-src", new List<string>{ "*", "'unsafe-inline'" } },
-            { "img-src", new List<string>{ "*", "data:", "blob:", "'unsafe-inline'" } },
-            { "style-src", new List<string>{ "*", "data:", "blob:", "'unsafe-inline'" } },
-            { "font-src", new List<string>{ "*", "data:", "blob:", "'unsafe-inline'" } },
-            { "frame-src", new List<string>{ "*" } },
+			{ "img-src", new List<string>{ "'self'", "data:", "'unsafe-inline'", StorageUrl } }, // "*", "blob:"
+			{ "style-src", new List<string>{ "'self'", "'unsafe-inline'", StorageUrl } }, // "*", "data:", "blob:", "'unsafe-inline'" } },
+            { "font-src", new List<string>{ "'self'", "data:", "'unsafe-inline'", StorageUrl } }, // "*"
+			{ "frame-src", new List<string>{ "*" } },
+			{ "object-src", new List<string>{ "'none'" } },
+			// { "require-trusted-types-for", new List<string>{ "'script'" } }, // This document requires 'TrustedHTML' assignment."
             { "frame-ancestors", new List<string>{ "'self'" } },
             { "worker-src", new List<string>{ "blob:" } }
-    };
+		};
 
         public ContentSecurityPolicyMiddleware(Func<IDictionary<string, object>, Task> next): base(next)
         {
@@ -37,6 +46,9 @@ namespace d360.web
 
             int? companyID = request.Get<int?>("CompanyID");
 
+			// Get base CSP
+			var directives = Policies.ToDictionary(d => d.Key, d => d.Value.ToList());
+
 			if (companyID.HasValue)
 			{
 				var ctx = CreateOwinCompanyContext(companyID.Value);
@@ -45,8 +57,6 @@ namespace d360.web
 				//If company has a frame setting, a CSP header should be added to allow the frame ancestors
 				if (!string.IsNullOrEmpty(ancestor))
 				{
-					//Get base permissive CSP
-					Dictionary<string, List<string>> directives = Permissive.ToDictionary(d => d.Key, d => d.Value.ToList());
 
 					//Add the allowed ancestors from the setting
 					if (!directives.ContainsKey("frame-ancestors"))
@@ -62,28 +72,28 @@ namespace d360.web
 					{
 						request.Set("CompanyFrameRequestStart", true);
 					}
-					response.OnSendingHeaders(s =>
-					{
-						var res = (IOwinResponse)s;
-
-						string directiveString = string.Join("; ", directives
-							.Where(d => d.Value.Any())
-							.Select(d => d.Key + " " + string.Join(" ", d.Value.ToArray())).ToArray());
-
-						res.Headers.Add("Content-Security-Policy", new[] { directiveString });
-					}, response);
 				}
 
 				int? resourceId = request.Get<int?>("ResourceID");
 				if (resourceId.HasValue)
 				{
 					var lang = ctx.ResourceSettings.FirstOrDefault(x=> x.ResourceID == resourceId.Value && x.Setting == "ApplicationLanguage" && x.AssetTypeID == 0);
-					context.Set<string>("ApplicationLanguageSetting", lang?.Value);
+					context.Set("ApplicationLanguageSetting", lang?.Value);
 				}
-
 			}
 
-            await Next(environment).ConfigureAwait(false);
+			response.OnSendingHeaders(s =>
+			{
+				var res = (IOwinResponse)s;
+
+				string directiveString = string.Join("; ", directives
+					.Where(d => d.Value.Any())
+					.Select(d => d.Key + " " + string.Join(" ", d.Value.ToArray())).ToArray());
+
+				res.Headers.Add("Content-Security-Policy", new[] { directiveString });
+			}, response);
+
+			await Next(environment).ConfigureAwait(false);
         }
 
         /*
