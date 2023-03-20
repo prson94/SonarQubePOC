@@ -2719,6 +2719,7 @@ namespace d360.model.DataAccessLayer
 			List<string> selects = new List<string>();
 			List<string> joins = new List<string>();
 			List<string> wheres = new List<string>();
+			List<(int order, string sql)> sortFields = new List<(int order, string sql)>();
 
 			int? assetTypeId = await GetAssetTypeIdForRefListField(dbArgs).ConfigureAwait(false);
 
@@ -2726,7 +2727,7 @@ namespace d360.model.DataAccessLayer
 			wheres.Add("not exists(select 1 from dbo.AssetTypesUserCantRead(@resourceid) u where u.AssetTypeID = A.AssetTypeID)");
 			dbArgs.Add("assetTypeId", assetTypeId);
 
-			string itemsSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, false);
+			string itemsSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, false, sortFields);
 			string countSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, true);
 			(Columns, Fields) = ComplexFieldsHelper.GetComplexRefListFromRelFieldsAndColumns(fields);
 
@@ -2763,13 +2764,21 @@ namespace d360.model.DataAccessLayer
 				var idx = selects.IndexOf(el);
 				if (idx > 0)
 				{
-					orderByClause = "order by " + (idx + 1);
+					orderByClause = $"order by {(idx + 1)} {direction}";
 				}
+			}
+			else if(sortFields.Count > 0)
+			{				
+				orderByClause = $"order by {string.Join(",", sortFields.OrderBy(x => x.order).Select(y => y.sql))}";
+			}
+			else
+			{
+				orderByClause = $"{orderByClause} {direction}";
 			}
 
 			itemsSQL = $@"{itemsSQL}
 							{(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
-							{orderByClause} {direction}
+							{orderByClause} 
 							offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
 
 			countSQL = $@"{countSQL}
