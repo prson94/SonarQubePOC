@@ -189,8 +189,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.showSurvey = false;
         this.searchDetails = null;
         this.items = [];
-        this.buttons = [];
-        this.currentResouceID = +CurrentResourceID;
+		this.buttons = [];
+		if (typeof CurrentResourceID === "undefined") {
+			this.settingsService.getUserVariables().subscribe((res) => {
+				this.currentResouceID = res.CurrentResourceID;
+			});
+		} else {
+			this.currentResouceID = +CurrentResourceID;
+		}
         this.subscription = this.secondaryNavService.rightSidebar$.subscribe(
             (item) => {
                 this.items.push(item);

@@ -5,8 +5,8 @@
 declare var VersionNumber: string;
 
 export const environment = {
-    production: false,
-    version: VersionNumber,
+	production: false,
+	version: typeof VersionNumber === "undefined" ? "" : VersionNumber,
     timeStamp: "{BUILD_TIMESTAMP}"
 };
 

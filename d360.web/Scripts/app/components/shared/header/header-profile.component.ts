@@ -20,12 +20,12 @@ declare var ResourceEmail;
 
 export class HeaderProfileComponent implements OnInit, OnDestroy {
 
-    public active: boolean = false;
-    public resourceId: number = CurrentResourceID;
-    public resourceUid: string = CurrentResourceUid;
-    public singleSignOn: boolean = SingleSignOn;
-    public userName: string = ResourceName;
-    public userEmail: string = ResourceEmail;
+	public active: boolean = false;
+	public resourceId: number = typeof CurrentResourceID === "undefined" ? -1 : CurrentResourceID;
+	public resourceUid: string = typeof CurrentResourceUid === "undefined" ? "" : CurrentResourceUid;
+	public singleSignOn: boolean = typeof SingleSignOn === "undefined" ? true : SingleSignOn;
+	public userName: string = typeof ResourceName === "undefined" ? "" : ResourceName;
+    public userEmail: string = typeof ResourceEmail === "undefined" ? "" : ResourceEmail;
     showAllUsersAPIKey: boolean = false;
 	isApiKeysPopupVisible: boolean = false;
 	isLanguageSettingModalVisible = false;
@@ -38,7 +38,18 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
         protected settingsService: CompanySettingsService
     ) { }
 
-    ngOnInit() {
+	ngOnInit() {
+		if (this.resourceId === -1) {
+			this.settingsService.getUserVariables().subscribe((res) => {
+				this.resourceId = res.CurrentResourceID;
+				this.resourceUid = res.CurrentResourceUid;
+				this.singleSignOn = res.SingleSignOn;
+				this.userName = res.ResourceName;
+				this.userEmail = res.ResourceEmail;
+				this.ref.markForCheck();
+			});
+		}
+
         const showApiKey = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
 
         this.isAdminSub = this.authenticationService.isAdmin$.subscribe((x) => {

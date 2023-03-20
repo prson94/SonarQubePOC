@@ -136,6 +136,31 @@ namespace d360.web.Controllers.V2
 			}
 		}
 
+		[HttpGet, Route("uservariables"), ApiExplorerSettings(IgnoreApi = true)]
+		public async Task<HttpResponseMessage> GetUserVariables()
+		{
+			var res = Company.GlobalReportingResources.Where(x => x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+			var authModel = await Community.QueryFirstOrDefaultAsync<AuthenticationType>("select AuthenticationType from CompanyDomainSetting where CompanyID = @id and UrlPrefix = @prefix", new { id = Company.CurrentCompanyID, prefix = Company.CurrentCompanyDomain });
+			var isSSO = !(authModel == AuthenticationType.Forms);
+
+			var data = new
+			{
+				CurrentResourceID = res.ResourceID,
+				CurrentResourceUid = res.Uid,
+				ResourceHomePage = Company.GetUserHomePage(),
+				SingleSignOn = isSSO,
+				ResourceName = res.FullName,
+				ResourceEmail = res.Email,
+				VersionNumber = typeof(EnvironmentController).Assembly.GetName().Version.ToString(),
+				DataDogApplicationId = ConfigurationManager.AppSettings["DD_RUM_APPLICATIONID"] ?? "",
+				DataDogClientToken = ConfigurationManager.AppSettings["DD_RUM_CLIENTTOKEN"] ?? "",
+				DataDogService = ConfigurationManager.AppSettings["DD_RUM_SERVICE"] ?? "",
+				ApplicationLanguageSetting = ""
+			};
+
+			return Request.CreateResponse(HttpStatusCode.OK, data);
+		}
+
 		[HttpGet, Route("styles"), ApiExplorerSettings(IgnoreApi = true)]
 		public HttpResponseMessage StyleCustomizations()
 		{

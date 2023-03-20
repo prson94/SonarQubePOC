@@ -224,4 +224,14 @@ export class CompanySettingsService extends BaseObservableService {
 				catchError((err) => this.handleError(err))
 			);
 	}
+
+	getUserVariables() {
+		return this.http
+			.get(`api/v2/environment/uservariables`)
+			.pipe(
+				map((res) => res as JsonResult),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
 }
