@@ -601,7 +601,7 @@ namespace d360.web.Controllers.V2
 					insert into @assetTypeIds
 					select distinct ObjectAssetTypeID, 0 from [Predicate] P 
 					inner join  [IntersectType] IT on IT.PredicateID = P.ID
-					where P.Type = {((int)Permission.ReadAsset)}
+					where P.Type = {((int)PredicateType.CatalogBrowse)}
 
 					declare @typeid int;
 					set @typeid = (select top 1 id from @assetTypeIds)
