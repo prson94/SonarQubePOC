@@ -313,7 +313,7 @@ namespace d360.web.Controllers.V2
 										TokenExpression = filterGrp.Value,
 										PropertyName = $"p{parameterIndex}",
 										Where = $"fr.p{parameterIndex} = 1",
-										Query = $@"select ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue {operation} @p{parameterIndex}"
+										Query = $@"select distinct ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue {operation} @p{parameterIndex}"
 									});
 								}
 
@@ -584,9 +584,9 @@ namespace d360.web.Controllers.V2
 
 			if (catalogWheres.Count > 0)
 			{
-				//replaced original query parameter value which contains all brackets and and/or operators
-				//with parsed where values
-				foreach (var cwhere in catalogWheres)
+				//replaced original query parameter value which contains all brackets and and/or operators with parsed where values
+				//order by TokenExpression to avoid wrong replacement in similiar expressions i.w. field ct test and field ct testing
+				foreach (var cwhere in catalogWheres.OrderByDescending(x=> x.TokenExpression.Length))
 				{
 					advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression, cwhere.Where);
 				}
