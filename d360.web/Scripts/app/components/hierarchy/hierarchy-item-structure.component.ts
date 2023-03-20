@@ -47,6 +47,8 @@ import { IOutputData } from 'angular-split';
 import { LocalStorageKey } from "../../enums/localstorage.enum";
 import { UsageAction } from '../../models/web-analytics-activity.model';
 
+/*global $localize*/
+
 declare var CurrentResourceID;
 
 @Component({
@@ -107,6 +109,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	treeNodeArray: TreeNode[] = [];
 	selected: TreeNode;
 
+	columnsOrg: GridColumn[] = [];
 	columns: GridColumn[] = [];
 	fields: GridField[] = [];
 	scoreAllocations: GridScoreAllocation[] = [];
@@ -132,6 +135,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 	simpleFilterValue: string = '';
 	areAllExpanded: boolean = false;
+	levelSearchActive: boolean = false;
 	loadNodesSub: Subscription;
 
 	sidePanelOpen: boolean = false;
@@ -463,6 +467,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		this.gridDefinitionService.getGridDefinition(this.objectTypeId, this.objectType).subscribe(
 			(result) => {
 				this.scoreAllocations = result.ScoreAllocations;
+				this.columnsOrg = result.Columns;
 				this.columns = result.Columns;
 				this.fields = result.Fields;
 				var filterfields = this.fields.filter(function (item) { return item.apiName && item.name.startsWith("Field"); });
@@ -522,6 +527,71 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		}
 		return res;
 	}
+
+	private buildTreeNodeArraylevelSearch(hierarchies: any, levelNumber: number): TreeNode[] {
+		const rootNodes = hierarchies;
+
+		if (rootNodes.length === 0) {
+			return null;
+		}
+
+		const res: TreeNode[] = [];
+
+
+		for (const root of rootNodes) {
+			const isExpanded = this.areAllExpanded;
+			root.Level = levelNumber;
+
+			root[this.menuKey] = [
+				{ title: $localize`View Information` },
+				{ title: $localize`Open` },
+				{ title: $localize`Open in New Tab` },
+			];
+
+			if (this.displayChildAdd(levelNumber) && this.hasAddAssetPermissions()) {
+				root[this.menuKey].push({ title: $localize`Add Child` });
+			}
+
+			if (root.Permissions.ModifyAsset) {
+				root[this.menuKey].push({ title: $localize`Edit` });
+			}
+
+			const children: TreeNode[] = [];
+
+			if (root.Permissions.DeleteAsset && (root?.ChildID == null)) {
+				root[this.menuKey].push({ title: $localize`Delete` });
+			}
+
+			res.push({
+				key: root.AssetUid,
+				label: root.Path,
+				expanded: isExpanded,
+				data: root,
+				children
+			});
+		}
+		return res;
+	}
+
+	private resetColumns(): GridColumn[] {
+		const res: GridColumn[] = [];
+		if ((this.levelSearchActive && this.columnsOrg.findIndex((e) => e.fieldType === "Path") !== -1) || (!this.levelSearchActive)) {
+			for (const root of this.columnsOrg) {
+				res.push(root);
+			}
+		}
+		else {
+			let isAddAssetPath = false;
+			for (const root of this.columnsOrg) {
+				res.push(root);
+				if (!isAddAssetPath && this.excludedLinkColumnTypes.findIndex((e) => e === root.fieldType) === -1) {
+					res.push({ text: $localize`Asset Path`, datafield: "DisplayPath", columnWidth: 0, fieldType: "Path", type: "", cellsformat: "", description: "" });
+					isAddAssetPath = true;
+				}
+			}
+		}
+		return res;
+	}	
 
 	private buildScoreAllocationThresholds() {
 		if (this.scoreAllocations && this.scoreAllocations.length > 0) {
@@ -745,6 +815,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	loadNodes(autoSelect: boolean = true, edit?: { keyFieldChanged: boolean }) {
 		this.expandedNodes = this.treeState;
 		this.areAllExpanded = false;
+		this.levelSearchActive = false;
 		if (this.assetTypeUid) {
 			this.isLoading = true;
 
@@ -781,6 +852,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			if (this.newAdvancedFilters && this.newAdvancedFilters.filter) {
 				uriParams["_filter"] = this.newAdvancedFilters.filter;
 				this.areAllExpanded = true;
+				if (this.newAdvancedFilters.filter.includes("[Level]")) {
+					this.levelSearchActive = true;
+				}
 			}
 
 			this.loadNodesSub = this.assetService.getAssets(this.assetTypeUid, uriParams, true).subscribe((result) => {
@@ -789,8 +863,15 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 				if (this.hierarchy.length !== 0) {
 					clearTimeout(this.timeouthandle);
+					const lvlnumber = this.levelSearchActive ? this.hierarchy[0]?.Level : 1;
 					this.timeouthandle = window.setTimeout(() => {
-						this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
+						this.columns = this.resetColumns();
+						if (this.levelSearchActive) {
+							this.treeNodeArray = this.buildTreeNodeArraylevelSearch(this.hierarchy, lvlnumber);
+						}
+						else {
+							this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
+						}
 						if (autoSelect) {
 							if (this.treeNodeArray.length > 0) {
 								if (this.selected && edit && !edit.keyFieldChanged) {
@@ -919,5 +1000,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		} else {
 			this.secondarySidePanel = "status";
 		}
+	}
+	getlevelmessage() {
+		return $localize`Filtering by level will return the child asset items only and their asset path. Results will not be shown in a hierarchy.`;
 	}
 }

@@ -306,7 +306,9 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			var includeTotal = true;
 			bool hasAssetPathField = false;
 			string hierarchyParentUidCol = "";
+			string hierarchyChildUidCol = "";
 			string hierarchyParentUidSelect = "";
+			string hierarchyChildUidSelect = "";
 			bool includeCreatedByModifiedBy = false;
 			bool includeOwnershipLookup = false;
 			bool simpleFilterOwnershipOnResource = false;
@@ -317,6 +319,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			string profilingCheckFields = "";
 			bool includeProfilingCheck = false;
 			bool useCachedFilters = false;
+			bool IsModelPolicyHasLevelFilter = false;
 			var simpleFilterTempTables = new StringBuilder();
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
@@ -416,6 +419,14 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			if (queryParams.Any(x => x.Key.ToLower() == "isfortreegrid"))
 			{
 				bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "isfortreegrid").Value, out isForTreeGrid);
+				if (isForTreeGrid && (assetType.Class == AssetTypeClass.Policy || assetType.Class == AssetTypeClass.Model) && queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
+				{
+					var filtervalue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+					if (filtervalue.Contains("[Level]"))
+					{
+						IsModelPolicyHasLevelFilter = true;
+					}
+				}
 			}
 
 			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includeprofilingcheck"))
@@ -1304,7 +1315,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 						simpleFilters.Add($@"
 							select I.ObjectAssetID from [Intersect] I 
-							where I.IntersectTypeID = @parentIntersectTypeId and I.SubjectAssetID in (select assetid from @parentAssets)
+							left join #TempFilteredAssets tfa on tfa.AssetId = I.ObjectAssetID
+							where tfa.AssetId is null and I.IntersectTypeID = @parentIntersectTypeId and I.SubjectAssetID in (select assetid from @parentAssets)
 							option(recompile)");
 					}
 
@@ -1475,6 +1487,20 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						whereStatements.Add("HParent.Uid is null");
 					}
 				}
+			}
+
+			if (IsModelPolicyHasLevelFilter)
+			{
+				hierarchyChildUidCol = " ,HChild.ChildID as ChildID";
+
+				hierarchyChildUidSelect = $@"outer  apply (
+					select	top 1 I.ObjectAssetID ChildID
+					from	[Intersect] I
+							inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.SubjectAssetID = A.ID
+							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+							inner join Asset CH on CH.ID = I.ObjectAssetID
+					) HChild ";
+
 			}
 
 			var whereSql = "";
@@ -1714,6 +1740,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					{fieldsSql}
 					{(includePermissionDetails ? includePermissionFields : "")} 
 					{hierarchyParentUidCol}
+					{hierarchyChildUidCol}
 				{(useTempTableForResults ? " into #results " : "")}
 				from #tempasset TempA
 				inner join Asset A on TempA.AssetId = A.ID
@@ -1726,7 +1753,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				{(includePermissionDetails ? permissionDetailSQL : "")}
 				{(includeProfilingCheck ? profilingCheckSql : "")}
 				{hierarchyParentUidSelect}
-				{(includeParent ? parentApplySQL : "")}				
+				{hierarchyChildUidSelect}
+				{(includeParent ? parentApplySQL : "")}							
 				Order By {orderByFields}				
 				{(useTempTableForResults ? "select * from #results order by _rowid " : "")}
 			";
@@ -1895,7 +1923,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			//used in tree grids we want to find all parents from our assets that are included in results
 			if (isForTreeGrid)
 			{
-				if (queryParams.Any(x => x.Key.ToLower() == "_simplefilter" || x.Key.ToLower() == "_filter"))
+				if ((queryParams.Any(x => x.Key.ToLower() == "_simplefilter" || x.Key.ToLower() == "_filter")) && !IsModelPolicyHasLevelFilter)
 				{
 					List<Guid> assetUids = new List<Guid>();
 					foreach (var item in results)
@@ -2213,7 +2241,9 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			AssetType assetType = null;
 			var fields = new List<FieldType>();
 			var tempFields = new List<FieldType>();
+			var tempFieldsNotPK = new List<FieldType>();
 			var fieldsToRemove = new List<FieldType>();
+			bool IsModelPolicyHasLevelFilter = false;
 
 			string filter = "";
 			if (queryParams.Any(p => p.Key.Trim().ToLower() == "_simplefilter"))
@@ -2256,19 +2286,33 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 			results = data.items;
 
-			if (assetType.Class == AssetTypeClass.Policy)
+			if (queryParams.Any(x => x.Key.ToLower() == "isfortreegrid"))
+			{
+				bool isForTreeGrid;
+				bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "isfortreegrid").Value, out isForTreeGrid);
+				if ((assetType.Class == AssetTypeClass.Policy || assetType.Class == AssetTypeClass.Model) && queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
+				{
+					var filtervalue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+					if (filtervalue.Contains("[Level]"))
+					{
+						IsModelPolicyHasLevelFilter = true;
+					}
+				}
+			}
+
+			if (assetType.Class == AssetTypeClass.Policy && !IsModelPolicyHasLevelFilter)
 			{
 				levels = GetPolicyTypeLevels(id);
 			}
 
-			if (assetType.Class == AssetTypeClass.Model)
+			if (assetType.Class == AssetTypeClass.Model && !IsModelPolicyHasLevelFilter)
 			{
 				levels = GetTaxonomyTypeLevels(id);
 			}
 
 			List<KeyValuePair<string, string>> qp = new List<KeyValuePair<string, string>>();
 
-			if (!string.IsNullOrEmpty(filter))
+			if (!string.IsNullOrEmpty(filter) && !IsModelPolicyHasLevelFilter)
 			{
 				assetUids = results.Select(x => x.AssetUid).ToList();
 				var allFamily = GetAllFamilyForAssetUid(assetUids).Distinct().ToList();
@@ -2309,50 +2353,72 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			document.SetCellValue(3, 2, allResults.Select(m => m.AssetUid).Distinct().Count());
 			document.SelectWorksheet(assetSheetName);
 
-			foreach (var row in allResults)
-			{
-				int depth = CheckDepth(allResults, row.AssetUid);
-				if (depth > maxDepth)
-				{
-					maxDepth = depth;
-				}
-			}
-
 			int index = 1;
-			for (int i = 1; i < maxDepth + 1; i++)
+			if (!IsModelPolicyHasLevelFilter)
+			{
+				foreach (var row in allResults)
+				{
+					int depth = CheckDepth(allResults, row.AssetUid);
+					if (depth > maxDepth)
+					{
+						maxDepth = depth;
+					}
+				}
+
+				for (int i = 1; i < maxDepth + 1; i++)
+				{
+					foreach (var field in fields)
+					{
+						if (field.IsPartOfKey)
+						{
+							fieldsToRemove.Add(field);
+
+							string levelName = "Level " + i.ToString();
+							foreach (var level in levels)
+							{
+								if ((int)level.Level == i)
+								{
+									levelName = level.Name;
+								}
+							}
+							tempFields.Add(new FieldType { Type = "string", Name = $"{field.Name}", FriendlyName = $"{levelName} {field.FriendlyName}", ID = field.ID, IsPartOfKey = field.IsPartOfKey });
+
+						}
+					}
+				}
+				tempFields.AddRange(fields);
+			}
+			else
 			{
 				foreach (var field in fields)
 				{
 					if (field.IsPartOfKey)
 					{
-						fieldsToRemove.Add(field);
-
-						string levelName = "Level " + i.ToString();
-						foreach (var level in levels)
-						{
-							if ((int)level.Level == i)
-							{
-								levelName = level.Name;
-							}
-						}
-						tempFields.Add(new FieldType { Type = "string", Name = $"{field.Name}", FriendlyName = $"{levelName} {field.FriendlyName}", ID = field.ID, IsPartOfKey = field.IsPartOfKey });
-
+						tempFields.Add(field);
 					}
-				}
-			}
-
-			tempFields.AddRange(fields);
-			for (int i = 1; i < maxDepth + 1; i++)
-			{
-				string levelName = "Level " + i.ToString();
-				foreach (var level in levels)
-				{
-					if ((int)level.Level == i)
+					else
 					{
-						levelName = level.Name;
+						tempFieldsNotPK.Add(field);
 					}
+
 				}
-				tempFields.Add(new FieldType { Type = "string", Name = $"AssetUid", FriendlyName = $"{levelName} UID", IsPartOfKey = true });
+				tempFields.Add(new FieldType { Type = "string", Name = $"DisplayPath", FriendlyName = $"Asset Path", ID = 99999999, IsPartOfKey = false });
+				tempFields.AddRange(tempFieldsNotPK);
+			}
+			if (!IsModelPolicyHasLevelFilter)
+			{
+				for (int i = 1; i < maxDepth + 1; i++)
+				{
+					string levelName = "Level " + i.ToString();
+					foreach (var level in levels)
+					{
+						if ((int)level.Level == i)
+						{
+							levelName = level.Name;
+						}
+					}
+					tempFields.Add(new FieldType { Type = "string", Name = $"AssetUid", FriendlyName = $"{levelName} UID", IsPartOfKey = true });
+				}
 			}
 			tempFields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "URL" });
 			fields = tempFields;
@@ -2373,19 +2439,62 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				index++;
 			}
 
-			int rowNumber = 1;
-			List<Guid> used = new List<Guid>();
-			foreach (var row in allResults.Where(x => x.ParentUid == null).ToList())
+			if (allResults == null || allResults.ToList().Count == 0)
 			{
-				if (used.Contains(row.AssetUid))
-				{
-					continue;
-				}
-				rowNumber++;
-				(int, List<Guid>) tuple = AddRow(allResults, document, fields, rowNumber, row, maxDepth, used);
-				(rowNumber, used) = tuple;
+				return document;
 			}
 
+			int rowNumber = 1;
+			List<Guid> used = new List<Guid>();
+			if (!IsModelPolicyHasLevelFilter)
+			{
+				foreach (var row in allResults.Where(x => x.ParentUid == null).ToList())
+				{
+					if (used.Contains(row.AssetUid))
+					{
+						continue;
+					}
+					rowNumber++;
+					(int, List<Guid>) tuple = AddRow(allResults, document, fields, rowNumber, row, maxDepth, used);
+					(rowNumber, used) = tuple;
+				}
+			}
+			else {
+				foreach (var row in allResults)
+				{
+					index = 1;
+					rowNumber++;
+					var rowValues = row as IDictionary<string, object>;
+
+					foreach (var field in fields)
+					{
+						if (typesToAvoid.Contains(field.Type))
+						{
+							continue;
+						}
+
+						if (rowValues.ContainsKey(field.Name))
+						{
+
+							if (field.Name == "Color")
+							{
+								string val = extractColorNameFromJSON((string)rowValues[field.Name]);
+								setCellValueFromField(document, rowNumber, index, field, val);
+							}
+							else
+							{
+								var val = rowValues[field.Name];
+								setCellValueFromField(document, rowNumber, index, field, val);
+							}
+						}
+						if (field.Name == "Url" && rowValues.ContainsKey("AssetUid"))
+						{
+							document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
+						}
+						index++;
+					}
+				}
+			}
 			#endregion
 			SetExcelColumnWidths(document, fields);
 			return document;

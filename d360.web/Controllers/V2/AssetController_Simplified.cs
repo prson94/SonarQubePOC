@@ -1,16 +1,11 @@
-﻿using AngleSharp.Text;
-using d360.core;
+﻿using d360.core.enums;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Diagnostics;
-using System.EnterpriseServices;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -204,13 +199,13 @@ namespace d360.web.Controllers.V2
 			{
 				advancedFilterString = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).FirstOrDefault();
 
-				var filters = Regex.Matches(advancedFilterString, @"([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\-\/\:\,\*]+)");
+				var filters = Regex.Matches(advancedFilterString, @"([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\>\-\/\:\,\*]+)");
 				if (filters.Count > 0)
 				{
 					int parameterIndex = 1;
 					foreach (Match filterGrp in filters)
 					{
-						var filterMatch = Regex.Match(filterGrp.Value, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\-\/\:\,\*]+)$");
+						var filterMatch = Regex.Match(filterGrp.Value, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\>\-\/\:\,\*]+)$");
 						if (filterMatch.Success && filterMatch.Groups.Count == 4)
 						{
 							var filterProperty = filterMatch.Groups[1].Value;
@@ -245,7 +240,18 @@ namespace d360.web.Controllers.V2
 										break;
 									case "nct":
 										operation = "not like";
-										dbArgs.Add($"p{parameterIndex}", filterValue);
+										if (filterValue.StartsWith("*"))
+										{
+											dbArgs.Add($"p{parameterIndex}", $"%{filterValue.Replace("*", "")}");
+										}
+										else if (filterValue.EndsWith("*"))
+										{
+											dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "")}%");
+										}
+										else
+										{
+											dbArgs.Add($"p{parameterIndex}", $"%{filterValue}%");
+										}
 										break;
 									case "ne":
 									case "neq":
@@ -258,12 +264,20 @@ namespace d360.web.Controllers.V2
 								if (predicate != null)
 								{
 									string valuePart = $"pred.DisplayValue {operation} @p{parameterIndex}";
+									string query = $@"select I.ObjectAssetID from #v pred 
+											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
+											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
+											where pred.PredicateId = {predicate.Id} and {valuePart}";
 
 									if (filterValue.Trim().ToLowerInvariant() == "null")
 									{
 										if (operation == "=")
 										{
 											valuePart = $"pred.DisplayValue is null";
+											query = $@"
+											    select S.ObjectAssetID from dbo.CatalogBrowseSubject S
+												left join dbo.CatalogBrowseSubject SP ON SP.ObjectAssetID = S.objectassetid and SP.PredicateId = {predicate.Id}
+												where SP.ObjectAssetID is null";
 										}
 										else
 										{
@@ -277,10 +291,7 @@ namespace d360.web.Controllers.V2
 										PropertyName = $"p{parameterIndex}",
 										PredicateId = predicate.Id,
 										Where = $"fr.p{parameterIndex} = 1",
-										Query = $@"select I.ObjectAssetID from #v pred 
-											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
-											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
-											where pred.PredicateId = {predicate.Id} and {valuePart}"
+										Query = query
 									});
 								}
 								else if (column.ApiName == "displayValue")
@@ -296,12 +307,58 @@ namespace d360.web.Controllers.V2
 
 								else if (column.ApiName == "displaypath")
 								{
+									string whereQuery = "";
+
+									switch (filterOperation)
+									{
+										case "ct":
+										case "nct":
+											if (filterValue.StartsWith("*"))
+											{
+												whereQuery = "{0}.exist('/path/segment[last()][contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
+											}
+											else if (filterValue.EndsWith("*"))
+											{
+												whereQuery = "{0}.exist('/path/segment[1][contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
+											}
+											else
+											{
+												whereQuery = "{0}.exist('/path/segment[contains(lower-case(.),sql:variable(\"{1}\"))]') = {2}";
+											}
+
+											dbArgs.Add($"p{parameterIndex}", $"{filterValue.ToLowerInvariant().Replace("*", "").Replace("%", "")}");
+											whereQuery = string.Format(whereQuery, "ap.Segments", $"@p{parameterIndex}", filterOperation == "ct" ? "1" : "0");
+											break;
+										case "eq":
+										case "ne":
+											var pathTokens = filterValue.Replace("%", "").Split('>').Select(x => x.ToLowerInvariant().Trim());
+											List<string> pathWheres = new List<string>();
+											var idx = 1;
+											foreach (var pToken in pathTokens)
+											{
+												dbArgs.Add($"p{parameterIndex}_path_token_{idx}", pToken);
+												pathWheres.Add(
+													string.Format("{0}.exist('/path/segment["+ idx + "][contains(lower-case(.),sql:variable(\"{1}\"))]') = {2}",
+													"ap.Segments", $"@p{parameterIndex}_path_token_{idx}", filterOperation == "eq" ? "1" : "0"
+													));
+												idx++;
+											}
+											whereQuery = "(" + string.Join(filterOperation == "eq" ? " and " : " or ", pathWheres) + ")";
+											break;
+										default:
+											whereQuery = "1=1";
+											break;
+									}
+
+
 									catalogWheres.Add(new CatalogWhere
 									{
 										TokenExpression = filterGrp.Value,
 										PropertyName = $"p{parameterIndex}",
 										Where = $"fr.p{parameterIndex} = 1",
-										Query = $@"select id as ObjectAssetID from assetpath ap where ap.displaypath {operation} @p{parameterIndex}"
+										Query = $@"select distinct ObjectAssetID from dbo.CatalogBrowseObject
+												inner join AssetPath AP ON AP.ID = ObjectAssetID 
+												where {whereQuery}"
 									});
 								}
 							}
@@ -338,7 +395,7 @@ namespace d360.web.Controllers.V2
 					insert into #simpleFiltersTempTable 
 					select ObjectAssetID from dbo.CatalogBrowseObject
 					inner join AssetPath ap on ap.ID = ObjectAssetID
-					where ap.DisplayPath like 'eagle%'
+					where ap.DisplayPath like @simpleFilter
 
 					create nonclustered index idx on #simpleFiltersTempTable (ObjectAssetID)";
 			}
@@ -525,6 +582,51 @@ namespace d360.web.Controllers.V2
 				whereStatements.Add(advancedFilterString);
 			}
 
+			string permissionTempTableSql = "";
+
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				permissionTempTableSql = $@"
+					drop table if exists #NoReadAssets;
+					create table #NoReadAssets(
+						AssetId int,
+						AssetTypeID bigint,
+						PermissionsBitMask int
+					)
+
+					create index cix_permissionAssetId on #NoReadAssets(Assetid);
+
+
+					declare @assetTypeIds table (id int, PermissionsBitMask int)
+					insert into @assetTypeIds
+					select distinct ObjectAssetTypeID, 0 from [Predicate] P 
+					inner join  [IntersectType] IT on IT.PredicateID = P.ID
+					where P.Type = {((int)Permission.ReadAsset)}
+
+					declare @typeid int;
+					set @typeid = (select top 1 id from @assetTypeIds)
+					while @typeid is not null
+					begin
+						insert into #NoReadAssets
+						select AssetID,AssetTypeID,PermissionsBitMask from dbo.UserAssetPermissions(@userId,@typeid) where ((PermissionsBitMask & {((int)Permission.ReadAsset)})) = 0; 
+
+						delete top (1) from @assetTypeIds
+						set @typeid = (select top 1 id from @assetTypeIds)
+					end
+
+
+					insert into @assetTypeIds (id, PermissionsBitMask)
+					select distinct AssetTypeID, PermissionsBitMask from #NoReadAssets where AssetId = 0
+
+					insert into #NoReadAssets
+					select a.ID, ati.id, ati.PermissionsBitMask from @assetTypeIds ati
+					inner join asset a on a.AssetTypeID = ati.id";
+
+				dbArgs.Add("userId", Company.CurrentResourceID);
+				whereStatements.Add("not exists (select AssetID from #NoReadAssets where AssetID = S.ObjectAssetID)");
+			}
+
+
 			string whereStatement = whereStatements.Count > 0 ? " where " + string.Join(" and ", whereStatements) : "";
 
 			string baseSQL = $@"
@@ -540,7 +642,7 @@ namespace d360.web.Controllers.V2
 			string countSql = $@"
 				;with cte as (
 				{string.Format(baseSQL, "count(1) as cnt")}
-				group by S.ObjectDisplayValue
+				group by S.ObjectAssetID
 				)
 				select COUNT(1) from cte
 				option(recompile);";
@@ -548,20 +650,27 @@ namespace d360.web.Controllers.V2
 
 			if (!hasFilters)
 			{
-				countSql = $@"select COUNT(distinct ObjectAssetID) from dbo.CatalogBrowseSubject option(recompile)";
+				string where = "";
+				if (!Company.CurrentResourceIsAdmin)
+				{
+					where = " where not exists (select AssetID from #NoReadAssets where AssetID = S.ObjectAssetID)";
+				}
+
+				countSql = $@"select COUNT(distinct S.ObjectAssetID) from dbo.CatalogBrowseSubject S {where} option(recompile)";
 
 				if (!string.IsNullOrEmpty(simpleFilterTempTable))
 				{
 					countSql = $@"
-						select COUNT(distinct CBS.ObjectAssetID) 
-						from dbo.CatalogBrowseSubject CBS
-						inner join #simpleFiltersTempTable sftt on sftt.ObjectAssetID = CBS.ObjectAssetID
+						select COUNT(distinct S.ObjectAssetID) 
+						from dbo.CatalogBrowseSubject S
+						inner join #simpleFiltersTempTable sftt on sftt.ObjectAssetID = S.ObjectAssetID
+						{where}
 						option(recompile)";
 				}
 			}
 
 
-			string offsetGroupBy = "group by S.ObjectDisplayValue";
+			string offsetGroupBy = "group by S.ObjectAssetId";
 
 			if (columns.Any(x => x.UseAsSortBy))
 			{
@@ -589,6 +698,8 @@ namespace d360.web.Controllers.V2
 							inner join IntersectType t on t.PredicateId = p.Id and p.[Type] = 5
 							inner join Asset a on a.AssetTypeId = t.SubjectAssetTypeId
 							inner join AssetDisplayValue d on d.AssetId = a.Id;
+
+				{permissionTempTableSql}
 
 				{simpleFilterTempTable}	
 

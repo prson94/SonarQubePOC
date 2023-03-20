@@ -83,7 +83,7 @@ export class PreviewTooltipComponent {
             //get object properties for the tooltip
             if (this.uid) {
                 this.toolTipService.getTooltipInfoByUid(this.uid, this.objectType)
-                    .subscribe((res) => {
+					.subscribe((res) => {
                         if (!res.ShowTooltip || !this.pending) {
                             this.active = false;
                             return;
@@ -99,7 +99,7 @@ export class PreviewTooltipComponent {
                     });
             } else {
                 this.toolTipService.getTooltipInfo(this.objectType, this.objectId)
-                    .subscribe((res) => {
+					.subscribe((res) => {
                         if (!res.ShowTooltip || !this.pending) {
                             this.active = false;
                             return;
@@ -107,9 +107,9 @@ export class PreviewTooltipComponent {
 
                         this.data = res;
                         this.data.FieldValues.filter((x) => x.Type === "Color").length > 0 ?
-                            this.setColorHtml(this.data.FieldValues.filter((x) => x.Type === "Color")[0].Value) : null;
-
-                        if (tip.innerText !== " " && tip.textContent !== " ") {
+							this.setColorHtml(this.data.FieldValues.filter((x) => x.Type === "Color")[0].Value) : null;
+						
+						if (res) {
                             this.showPanel(tip, item);
                             this.ref.markForCheck();
                         }
@@ -165,7 +165,7 @@ export class PreviewTooltipComponent {
         }
     }
 
-    showPanel(panel, item) {
+	showPanel(panel, item) {
         let xoffset = 0;
         if (this.contentAnchor === 'right' && this.previewText && this.previewText.nativeElement) {
             xoffset = this.previewText.nativeElement.offsetWidth + 5;

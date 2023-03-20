@@ -240,7 +240,7 @@ namespace d360.model.DataAccessLayer
 								cross apply dbo.GetAssetTypeTextPathById(att.ID, ' / ') P
 							where ";
 			sql += (type == "A") ? "att.[uid] = @uid" : "rt.[uid] = @uid";
-			
+
 			return await Company.QueryAsync<ResponsibilityTypeAllocationViewModel>(sql, new { uid = uid.ToString() }, ApiTimeout);
 		}
 
@@ -479,7 +479,7 @@ namespace d360.model.DataAccessLayer
 				responsibilityQueryFilterSql = " and " + String.Join(" and ", responsibilityQueryFilters);
 			}
 
-			permissionsFilter = $" and not exists(select 1 from AssetTypesUserCantRead({ Company.CurrentResourceID}) u where u.AssetTypeID = a.AssetTypeID) and not exists(select 1 from AssetsByTypeUserCantRead({ Company.CurrentResourceID}, a.AssetTypeID) u where u.AssetID = a.ID)";
+			permissionsFilter = $" and not exists(select 1 from AssetTypesUserCantRead({Company.CurrentResourceID}) u where u.AssetTypeID = a.AssetTypeID) and not exists(select 1 from AssetsByTypeUserCantRead({Company.CurrentResourceID}, a.AssetTypeID) u where u.AssetID = a.ID)";
 
 			var countSql = $@"        select
 											count(1)
@@ -574,7 +574,7 @@ namespace d360.model.DataAccessLayer
 			};
 
 			var resType = Company.ResponsibilityTypes.FirstOrDefault(x => x.UID == result.Uid);
-			
+
 			if (resType == null)
 			{
 				result.Message = "Not found";
@@ -1199,7 +1199,7 @@ namespace d360.model.DataAccessLayer
 					Company
 						.Connection
 						.Execute(
-							$@"insert into {sourceTable} (ExecutionID, ItemNumber, AssetTypeUid, [Definition]) values (@executionId, 1, @AssetTypeUid, @Definition)", 
+							$@"insert into {sourceTable} (ExecutionID, ItemNumber, AssetTypeUid, [Definition]) values (@executionId, 1, @AssetTypeUid, @Definition)",
 							new { executionId, test.AssetTypeUid, Definition = JsonConvert.SerializeObject(test.Definition) }, transaction: trans, commandTimeout: 3600);
 
 					Company.ParseResponsibilityRuleModel(executionId, trans, 3600, sourceTable);
@@ -1239,6 +1239,9 @@ namespace d360.model.DataAccessLayer
 
 			int? total = null;
 			string resultsSql;
+			string whenTempTables = "";
+			Dictionary<string, object> dbArgs = new Dictionary<string, object>();
+
 			var orderSql = $" order by [path] {direction} ";
 			var pagingSql = " OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY ";
 
@@ -1249,7 +1252,10 @@ namespace d360.model.DataAccessLayer
 			}
 			else
 			{
-				resultsSql = await Company.GetWhenResultsSql(testModel, null);
+				var queryData = await Company.GetWhenResultsSql(testModel, null);
+				resultsSql = queryData.SqlQuery;
+				whenTempTables = queryData.TempTableQuery;
+				dbArgs = queryData.DbParameters;
 			}
 
 			if (string.IsNullOrWhiteSpace(resultsSql))
@@ -1265,10 +1271,13 @@ namespace d360.model.DataAccessLayer
 
 			if (includeTotal)
 			{
-				total = await Company.QueryFirstOrDefaultAsync<int>($"select count(*) from ({resultsSql}) x {simpleFilterSQL}");
+				total = await Company.QueryFirstOrDefaultAsync<int>($"{whenTempTables} select count(*) from ({resultsSql}) x {simpleFilterSQL}", dbArgs);
 			}
 
-			var items = await Company.QueryAsync<ResponsibilityRuleTestResultModel>($"select * from ({resultsSql}) r {simpleFilterSQL} {orderSql} {pagingSql}", new { offset = pageSize * (pageNum - 1), rows = pageSize });
+			dbArgs.Add("offset", pageSize * (pageNum - 1));
+			dbArgs.Add("rows", pageSize );
+
+			var items = await Company.QueryAsync<ResponsibilityRuleTestResultModel>($"{whenTempTables} select * from ({resultsSql}) r {simpleFilterSQL} {orderSql} {pagingSql}", dbArgs);
 
 			return new ResponsibilityRuleTestResponseModel
 			{
@@ -1280,9 +1289,9 @@ namespace d360.model.DataAccessLayer
 		}
 
 		/// <inheritdoc />
-        public Task DeleteResponsibilityOverridesByGroupOrResourceAsync(Guid uid)
-        {
-            return Company.Connection.ExecuteAsync(@"
+		public Task DeleteResponsibilityOverridesByGroupOrResourceAsync(Guid uid)
+		{
+			return Company.Connection.ExecuteAsync(@"
                 DELETE FROM source
                   FROM [dbo].[ResponsibilityTypeRelationOverrideItem] source  
                   JOIN [dbo].[Asset] a
@@ -1291,20 +1300,20 @@ namespace d360.model.DataAccessLayer
                    AND source.SecurityAssetID = a.ObjectID
                  WHERE a.uid = @uid
             ", new { uid });
-        }
+		}
 
-        /// <inheritdoc />
-        public Task DeleteResponsibilityOverridesByTypeAsync(Guid typeUid)
-        {
-            return Company.Connection.ExecuteAsync(@"
+		/// <inheritdoc />
+		public Task DeleteResponsibilityOverridesByTypeAsync(Guid typeUid)
+		{
+			return Company.Connection.ExecuteAsync(@"
                 DELETE source
                   FROM [dbo].[ResponsibilityTypeRelationOverrideItem] source
                   JOIN [dbo].[ResponsibilityType] type ON type.ID = source.ResponsibilityTypeID
                  WHERE type.uid = @typeUid
             ", new { typeUid });
-        }
+		}
 
-        public async Task<ICollection<ResponsibilityBreakdownResponse>> GetTypeBreakdownAsync(Guid? responsibilityTypeUid)
+		public async Task<ICollection<ResponsibilityBreakdownResponse>> GetTypeBreakdownAsync(Guid? responsibilityTypeUid)
 		{
 			string CountSql(string innerQuery)
 			{
@@ -1491,12 +1500,12 @@ namespace d360.model.DataAccessLayer
 			 ORDER BY ResponsibilityTypeName 
 			";
 
-	        var entities = await Company.Connection.QueryAsync<ResponsibilityBreakdownResponse>(sql, new { responsibilityTypeUid });
-	        return entities.ToList();
-        }
+			var entities = await Company.Connection.QueryAsync<ResponsibilityBreakdownResponse>(sql, new { responsibilityTypeUid });
+			return entities.ToList();
+		}
 
-        public async Task<ICollection<ResponsibilityBreakdownByResourceAggregate>> GetTypeBreakdownByResourceAsync(Guid resourceUid, Guid? responsibilityTypeUid = null)
-        {
+		public async Task<ICollection<ResponsibilityBreakdownByResourceAggregate>> GetTypeBreakdownByResourceAsync(Guid resourceUid, Guid? responsibilityTypeUid = null)
+		{
 			#region build sql
 			var responsibilityTypeUidFilter = responsibilityTypeUid == null ? "1=1" : "responsibilityType.[uid] = @responsibilityTypeUid";
 
@@ -1600,16 +1609,16 @@ namespace d360.model.DataAccessLayer
 
 			var reader = await Company.Connection.QueryMultipleAsync(sql, new { resourceUid, responsibilityTypeUid });
 
-	        var result = await reader.ReadCollectionAsync<ResponsibilityBreakdownByResourceAggregate>().ConfigureAwait(false);
-	        var assetTypes = await reader.ReadCollectionAsync<AssetType>().ConfigureAwait(false);
-	        var responsibilityTypes = await reader.ReadCollectionAsync<ResponsibilityType>().ConfigureAwait(false);
-	        foreach (var aggregate in result)
-	        {
-		        aggregate.AssetType = assetTypes.First(x => x.uid == aggregate.AssetTypeUid);
-		        aggregate.ResponsibilityType = responsibilityTypes.First(x => x.UID == aggregate.ResponsibilityTypeUid);
-	        }
+			var result = await reader.ReadCollectionAsync<ResponsibilityBreakdownByResourceAggregate>().ConfigureAwait(false);
+			var assetTypes = await reader.ReadCollectionAsync<AssetType>().ConfigureAwait(false);
+			var responsibilityTypes = await reader.ReadCollectionAsync<ResponsibilityType>().ConfigureAwait(false);
+			foreach (var aggregate in result)
+			{
+				aggregate.AssetType = assetTypes.First(x => x.uid == aggregate.AssetTypeUid);
+				aggregate.ResponsibilityType = responsibilityTypes.First(x => x.UID == aggregate.ResponsibilityTypeUid);
+			}
 
-	        return result;
+			return result;
 		}
 	}
 }

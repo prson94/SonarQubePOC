@@ -802,7 +802,7 @@ namespace d360.web.Controllers
 						intersectTypeID = det.TypeID;
 					}
 
-					if(det != null && det.Type != SystemObjects.IntersectType.ToString() && det.Type != SystemObjects.IssueType.ToString())
+					if(det != null && det.Type != SystemObjects.IntersectType.ToString() && det.Type != SystemObjects.IssueType.ToString() && det.Type != SystemObjects.Tag.ToString())
 					{
 						assetTypeID = Company.AssetTypes.Where(a => a.Object == det.Type && a.ObjectID == det.TypeID).FirstOrDefault().ID;
 					}					

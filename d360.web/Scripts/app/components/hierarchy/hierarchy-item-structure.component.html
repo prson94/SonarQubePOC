@@ -73,7 +73,8 @@
                     <advanced-filtering [loadIdentifier]="assetTypeUid"
                                         [gridType]="'Tree'"
                                         (onLoad)="onFiltersLoaded()"
-                                        (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+                                        (onChange)="advancedFiltersChanged($event)"
+                                        [afMessage]="getlevelmessage()"></advanced-filtering>
                 </div>
             </div>
 
