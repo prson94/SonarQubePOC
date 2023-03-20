@@ -42,6 +42,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { DynamicFieldNameModule } from '../dynamic-field-name.component';
 import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
 import { SearchFieldModule } from '../controls/search-field/search-field.component';
+import { LinkDisplayModule } from "../controls/link-display/link-display.component";
 
 @NgModule({
     imports: [
@@ -66,7 +67,8 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
         IgDateModule,
         IgNumberFieldModule,
         OwnershipListModule,
-        DynamicFieldNameModule,
+		DynamicFieldNameModule,
+		LinkDisplayModule,
 
         //prime        
         CalendarModule,

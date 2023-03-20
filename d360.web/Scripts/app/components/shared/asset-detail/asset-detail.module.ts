@@ -20,6 +20,7 @@ import { SharedGridPagingInfoModule } from "../grid-paging-info.component";
 import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-list.component";
 import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../controls/search-field/search-field.component";
+import { LinkDisplayModule } from "../controls/link-display/link-display.component";
 import { ScoreBadgeModule } from "../small-widgets/score-badge/score-badge.module";
 import { PeopleResponsibilitiesModule } from "../responsibilities/people-responsibilities.tile";
 import { DynamicFieldNameModule } from "../dynamic-field-name.component";
@@ -45,7 +46,8 @@ import { GroupMembersModule } from '../group/group-members.module';
         SharedGridPagingInfoModule,
         OwnershipListModule,
         AdvancedFiltersModule,
-        SearchFieldModule,
+		SearchFieldModule,
+		LinkDisplayModule,
         ScoreBadgeModule,
         PeopleResponsibilitiesModule,
         DynamicFieldNameModule,
