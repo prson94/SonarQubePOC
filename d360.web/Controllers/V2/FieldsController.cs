@@ -238,11 +238,23 @@ namespace d360.web.Controllers.V2
 			#region Validation
 
 			var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
-			var ExistingIntersectID = new List<Tuple<string, Guid>>();
-			
+			var ExistingIntersectID = new List<Tuple<string, Guid>>();					
+
+			if (model.AssetTypeUid.HasValue)
+			{
+				ExistingIntersectID = FieldsRepository.GetFieldInterSetUID(existingFields);
+			}
+
+			var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID);			
+
+			if (validationStatus.StatusCode != HttpStatusCode.OK)
+			{
+				throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+			}
+
 			if (model.Fields.Any(x => x.Type.System != null))
 			{
-				if(model.Fields.Any(f=> f.Type.System != null && !existingFields.Any(e=> f.Name == e.Name && e.Type == DataType.System.ToString())))
+				if (model.Fields.Any(f => f.Type.System != null && !existingFields.Any(e => f.Name == e.Name && e.Type == DataType.System.ToString())))
 				{
 					// can't add new system fields 
 					throw new ForbiddenBusinessLayerException(ApiMessages.AddSystemFieldTypeNotAllowed);
@@ -251,8 +263,8 @@ namespace d360.web.Controllers.V2
 				model.Fields.FindAll(x => x.Type.System != null).ForEach(f =>
 				{
 					var existing = existingFields.First(e => e.Name == f.Name);
-					
-					if(
+
+					if (
 					f.Type.System.DefaultValue != existing.DefaultValue
 					|| f.Type.System.IsEditable != existing.IsEditable
 					|| f.Type.System.IsListable != existing.IsListable
@@ -266,18 +278,6 @@ namespace d360.web.Controllers.V2
 					}
 
 				});
-			}
-
-			if (model.AssetTypeUid.HasValue)
-			{
-				ExistingIntersectID = FieldsRepository.GetFieldInterSetUID(existingFields);
-			}
-
-			var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID);
-
-			if (validationStatus.StatusCode != HttpStatusCode.OK)
-			{
-				throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
 			}
 
 			if (assetTypeIdentifierInfoModel != null && model.Fields.Any(x => x.Type.Counter != null))
