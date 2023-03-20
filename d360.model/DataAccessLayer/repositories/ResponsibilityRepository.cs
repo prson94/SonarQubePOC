@@ -188,22 +188,22 @@ namespace d360.model.DataAccessLayer
 				var definition = res.Definition;
 				definition?.When?.FindAll((d) => d.IntersectTypeID > 0)?.ForEach((when) =>
 				{
-					when.IntersectTypeUID = Company.IntersectTypes.FirstOrDefault(x => x.ID == when.IntersectTypeID).uid;
+					when.IntersectTypeUID = Company.IntersectTypes.FirstOrDefault(x => x.ID == when.IntersectTypeID)?.uid;
 				});
 
 				definition?.When?.FindAll((d) => d.TargetObjectID > 0 && d.TargetObject != null)?.ForEach((asset) =>
 				{
-					asset.AssetUID = Company.Assets.FirstOrDefault(x => x.Object == asset.TargetObject && x.ObjectID == asset.TargetObjectID).uid;
+					asset.AssetUID = Company.Assets.FirstOrDefault(x => x.Object == asset.TargetObject && x.ObjectID == asset.TargetObjectID)?.uid;
 				});
 
 				definition?.Then?.Conditions?.FindAll((d) => d.IntersectTypeID > 0)?.ForEach((when) =>
 				{
-					when.IntersectTypeUID = Company.IntersectTypes.FirstOrDefault(x => x.ID == when.IntersectTypeID).uid;
+					when.IntersectTypeUID = Company.IntersectTypes.FirstOrDefault(x => x.ID == when.IntersectTypeID)?.uid;
 				});
 
 				definition?.Then?.Conditions?.FindAll((d) => d.TargetObjectID > 0 && d.TargetObject != null)?.ForEach((asset) =>
 				{
-					asset.AssetUID = Company.Assets.FirstOrDefault(x => x.Object == asset.TargetObject && x.ObjectID == asset.TargetObjectID).uid;
+					asset.AssetUID = Company.Assets.FirstOrDefault(x => x.Object == asset.TargetObject && x.ObjectID == asset.TargetObjectID)?.uid;
 				});
 
 				res.DefinitionRaw = JsonConvert.SerializeObject(definition);
