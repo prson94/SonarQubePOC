@@ -243,7 +243,7 @@
     <value>Fields contain errors</value>
   </data>
   <data name="FieldTypeConversionError" xml:space="preserve">
-    <value>You may not convert field {0} from a {1} to a {1}. A field with the same name and different type may already exist.</value>
+    <value>You may not convert field {0} from a {1} to a {2}. A field with the same name and different type may already exist.</value>
   </data>
   <data name="FieldTypeError" xml:space="preserve">
     <value>Field type error</value>

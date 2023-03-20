@@ -412,7 +412,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not convert field {0} from a {1} to a {1}. A field with the same name and different type may already exist..
+        ///   Looks up a localized string similar to You may not convert field {0} from a {1} to a {2}. A field with the same name and different type may already exist..
         /// </summary>
         public static string FieldTypeConversionError {
             get {
