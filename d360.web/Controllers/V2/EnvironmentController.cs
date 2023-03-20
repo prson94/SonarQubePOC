@@ -141,7 +141,7 @@ namespace d360.web.Controllers.V2
 		{
 			var res = Company.GlobalReportingResources.Where(x => x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
 			var authModel = await Community.QueryFirstOrDefaultAsync<AuthenticationType>("select AuthenticationType from CompanyDomainSetting where CompanyID = @id and UrlPrefix = @prefix", new { id = Company.CurrentCompanyID, prefix = Company.CurrentCompanyDomain });
-			var isSSO = !(authModel == AuthenticationType.Forms);
+			var isSSO = authModel != AuthenticationType.Forms;
 
 			var data = new
 			{
