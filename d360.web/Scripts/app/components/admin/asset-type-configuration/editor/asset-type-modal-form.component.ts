@@ -80,6 +80,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			parentPredicatesSub = this.relationshipService.getPredicates("IntraTypeHierarchy");
 		}
 
+		this.isLoading = true;
+
 		forkJoin(
 			this.assetService.getAllColors(),
 			this.relationshipService.getPredicates('Grammar'),
@@ -107,6 +109,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			this.flowObjectTypes.push({ value: 'Activity', label: $localize`Activity` });
 			this.flowObjectTypes.push({ value: 'Event', label: $localize`Event` });
 			this.flowObjectTypes.push({ value: 'Gateway', label: $localize`Gateway` });
+
+			this.isLoading = false;
 		});
 	}
 
