@@ -38,7 +38,7 @@
 			 (onPage)="numberOfRowsByCategoryService.onPage($event)">
 		<ng-template pTemplate="header">
 			<tr>
-				<th  *ngFor="let col of columns" [style.minWidth]="col.minWidth" [pSortableColumn]="col.apiProperty">
+				<th *ngFor="let col of columns" [pSortableColumn]="col.apiProperty">
 					<ng-container>{{col.columnName}}</ng-container>
 					<d3s-sortIcon [field]="col.apiProperty"></d3s-sortIcon>
 				</th>
