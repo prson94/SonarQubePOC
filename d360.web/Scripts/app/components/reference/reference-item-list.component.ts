@@ -59,7 +59,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     private getAssetSub: Subscription;
     @ViewChild('dt', { static: false }) table: Table;
 
-    private loadParams = { _loadPermissionDetails: true, _includeParent: true, _order: 'Code', _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true, _listColorsAsJSON: true, };
+    private loadParams = { _loadPermissionDetails: true, _includeParent: true, _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true, _listColorsAsJSON: true, };
 
 
     add() {
@@ -86,14 +86,12 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.assetTypeUid && changes.assetTypeUid.currentValue !== changes.assetTypeUid.previousValue) {
-            this.load();
-            this.loadParams._order = 'Code';
+            this.load();            
             this.loadParams._direction = 'ASC';
             this.loadParams._pageNum = 1;
             this.loadParams._pageSize = 10;
             this.loadParams.useGraphForParent = true;
 			this.loadParams._listColorsAsJSON = true;
-			//this.loadParams._applySortOrder = true;
             delete this.loadParams['_simpleFilter'];
             delete this.loadParams['_filter'];
         }
@@ -193,13 +191,22 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     private loadAssets(event) {
         if (event) {
 			let sort = event.sortField;			
-            var field = this.fields.filter((x) => x.name.toLowerCase() === event.sortField.toLowerCase())[0];
-            if (field)
-                {sort = field.apiName;}
 
-            if (event.sortField === 'Color')
-                {sort = 'Color';}
+			if (!event.sortField || event.sortField === '') {
+				delete this.loadParams['_order'];
+			} else {
+				var field = this.fields.filter((x) => x.name.toLowerCase() === event.sortField.toLowerCase())[0];
+				if (field) {
+					sort = field.apiName;
+				}
 
+				if (event.sortField === 'Color') {
+					sort = 'Color';
+				}
+
+				this.loadParams['_order'] = sort;
+			}
+            
             if (event.globalFilter && event.globalFilter.length > 0) {
                 this.loadParams['_simpleFilter'] = event.globalFilter;
             }
@@ -215,11 +222,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
                 delete this.loadParams['_filter'];
             }
 
-			if (!event.sortField || event.sortField === '') {
-				delete this.loadParams['_order'];
-			} else {
-				this.loadParams['_order'] = sort;
-			}
+			
 			
             this.loadParams._direction = event.sortOrder === 1 ? 'ASC' : 'DESC';
 
@@ -243,7 +246,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     }
 
     public saveReferenceItem(event) {
-        this.showEditor = false;
+		this.showEditor = false;
     }
     private canExportRecords() {
         return this.totalRecords <= this.maxExportRows;
