@@ -1686,6 +1686,8 @@ namespace d360.model
                 int? fieldTypeId = null;
                 string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
 
+
+
                 // Validation of field and value;
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
 
@@ -1694,13 +1696,13 @@ namespace d360.model
                     fieldName = fieldType.FriendlyName;
                 }
 
-                if (fieldType == null)
+                if (fieldType == null || (ot.ToLower() == "referenceitemtype" && fieldName.ToLower() == "code" && fieldType.Type.ToLower() == "system"))
                 {
                     if (fieldName.ToLower() == "color")
                     {
                         if (fieldValue.StartsWith("#") && fieldValue.Length != 7)
                         {
-                            errorMessages.Add($"The Color field must be a seven character RGB code or the name of a Govern color");
+                            errorMessages.Add(CompanyContextApiError.ValidateColorField);
                             success = false;
                         }
 
@@ -1717,7 +1719,7 @@ namespace d360.model
 
                                 if ((fieldValue ?? "").Length > 250)
                                 {
-                                    errorMessages.Add($"The Code field must be 250 characters or less in length");
+                                    errorMessages.Add(CompanyContextApiError.ReferenceListCodeFieldMaxLengthCheck);
                                     success = false;
                                 }
 
@@ -1726,7 +1728,7 @@ namespace d360.model
 
                                 if ((fieldValue ?? "").Length > 50 || !fieldValue.StartsWith("fa-"))
                                 {
-                                    errorMessages.Add($"The Icon field must be fifty characters or less in length and start with 'fa-'");
+                                    errorMessages.Add(CompanyContextApiError.IconFieldValidation);
                                     success = false;
                                 }
 
@@ -1735,14 +1737,14 @@ namespace d360.model
                                 break;
                             default:
                                 success = false;
-                                errorMessages.Add($"{fieldName} is not a valid field");
+                                errorMessages.Add(string.Format(CompanyContextApiError.ValidFieldCheck, fieldName));
                                 break;
                         }
                     }
                     else
                     {
                         success = false;
-                        errorMessages.Add($"{fieldName} is not a valid field");
+                        errorMessages.Add(string.Format(CompanyContextApiError.ValidFieldCheck, fieldName));
                     }
                 }
                 else
@@ -1752,7 +1754,7 @@ namespace d360.model
                     if (restrictedFieldTypes.Contains(fieldType.Type))
                     {
                         success = false;
-                        errorMessages.Add($"{fieldName} is a {fieldType.Type} field and cannot be updated on this request");
+                        errorMessages.Add(string.Format(CompanyContextApiError.RestrictFieldTypeUpdate, fieldName, fieldType.Type));
                     }
                     else
                     {
@@ -1761,7 +1763,7 @@ namespace d360.model
                             if (fieldType.IsRequired)
                             {
                                 success = false;
-                                errorMessages.Add($"{fieldName} is a required field");
+                                errorMessages.Add(string.Format(CompanyContextApiError.FieldValueIsRequired, fieldName));
                             }
 
                             if (isValueEmptyString)
@@ -1769,23 +1771,23 @@ namespace d360.model
                                 switch (fieldType.Type)
                                 {
                                     case "Boolean":
-                                        errorMessages.Add($"{fieldName} is a boolean field and may only be 'false' or 'true'");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateBoolValue, fieldName));
                                         success = false;
                                         break;
                                     case "Date":
-                                        errorMessages.Add($"{fieldName} must be a valid date");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "date"));
                                         success = false;
                                         break;
                                     case "DateTime":
-                                        errorMessages.Add($"{fieldName} must be a valid datetime value");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "datetime value"));
                                         success = false;
                                         break;
                                     case "Decimal":
-                                        errorMessages.Add($"{fieldName} must be a valid decimal");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "decimal"));
                                         success = false;
                                         break;
                                     case "Number":
-                                        errorMessages.Add($"{fieldName} must be a valid number");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "number"));
                                         success = false;
                                         break;
                                 }
@@ -1800,7 +1802,7 @@ namespace d360.model
                                     if ((fieldValue.ToLower() != "true" && fieldValue.ToLower() != "false") && !string.IsNullOrEmpty(fieldValue))
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} is a boolean field and may only be 'false' or 'true'");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateBoolValue, fieldName));
                                     }
 
                                     break;
@@ -1810,7 +1812,7 @@ namespace d360.model
                                     if (!DateTime.TryParse(fieldValue, out dTest) && !string.IsNullOrEmpty(fieldValue))
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} must be a valid date");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "date"));
                                     }
 
                                     if (success)
@@ -1825,7 +1827,7 @@ namespace d360.model
                                     if (!DateTime.TryParse(fieldValue, out dtTest) && !string.IsNullOrEmpty(fieldValue))
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} must be a valid datetime value");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "datetime value"));
                                     }
 
                                     if (success)
@@ -1840,7 +1842,7 @@ namespace d360.model
                                     if (!decimal.TryParse(fieldValue, out decTest) && !string.IsNullOrEmpty(fieldValue))
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} must be a valid decimal");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "decimal"));
                                     }
 
                                     break;
@@ -1849,7 +1851,7 @@ namespace d360.model
                                     if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue) && !fieldValue.Equals('|'))
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} must be a valid link, using the format name|url");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateLinkValue, fieldName));
                                     }
 
                                     if (success)
@@ -1873,7 +1875,7 @@ namespace d360.model
                                     if (!long.TryParse(fieldValue, out _) && !string.IsNullOrEmpty(fieldValue))
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} must be a valid whole number, greater than -9223372036854775808 and less than 9223372036854775807");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateNumberFieldRange, fieldName, -9223372036854775808, 9223372036854775807));
                                     }
 
                                     break;
@@ -1883,8 +1885,8 @@ namespace d360.model
                                     if (!decimal.TryParse(fieldValue, out pctTest) && !string.IsNullOrEmpty(fieldValue))
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} must be a valid percentage");
-                                    }
+                                        errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "percentage"));
+									}
 
                                     break;
                                 case "JSON":
@@ -1892,7 +1894,7 @@ namespace d360.model
                                     if (jsonElementsEnabled && (fieldValue.Length > 2500))
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.ExceedsMaximumLength, fieldName, 2500));
                                     }
 
                                     validationFieldProperties.JsonFieldCount++;
@@ -1903,7 +1905,7 @@ namespace d360.model
                                     if (!int.TryParse(fieldValue, out counterValue) || counterValue <= 0)
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} must be a valid whole number, greater than 0 and less than 2147483647.");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.ValidateNumberFieldRange, fieldName, 0, 2147483647));
                                     }
 
                                     break;
@@ -1914,7 +1916,7 @@ namespace d360.model
                                         if (!Regex.IsMatch(fieldValue, fieldType.Pattern))
                                         {
                                             success = false;
-                                            errorMessages.Add($"{fieldName} must match regular expression pattern defined for this field");
+                                            errorMessages.Add(string.Format(CompanyContextApiError.RegularExpressionPatternMatch, fieldName));
                                         }
                                     }
 
@@ -1926,7 +1928,7 @@ namespace d360.model
                                 if (fieldValue.Length < fieldType.Length.Value)
                                 {
                                     success = false;
-                                    errorMessages.Add($"{fieldName} must have an exact length of {fieldType.Length.Value}");
+                                    errorMessages.Add(string.Format(CompanyContextApiError.CheckExactLength, fieldName, fieldType.Length.Value));
                                 }
                             }
 
@@ -1937,7 +1939,7 @@ namespace d360.model
                                     if (decimal.TryParse(fieldValue, out decimal fieldDecimalValue) && fieldDecimalValue < fieldType.MinimumLength.Value)
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} must have a minimum value of {fieldType.MinimumLength.Value.ToString(decimalFormatString)}");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMinimumValueCheck, fieldName, fieldType.MinimumLength.Value.ToString(decimalFormatString)));
                                     }
                                 }
                                 else
@@ -1945,7 +1947,7 @@ namespace d360.model
                                     if (fieldValue.Length < fieldType.MinimumLength.Value)
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} must have a minimum length of {fieldType.MinimumLength.Value.ToString(decimalFormatString)}");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMinimumLengthCheck, fieldName, fieldType.MinimumLength.Value.ToString(decimalFormatString)));
                                     }
                                 }
 
@@ -1958,7 +1960,7 @@ namespace d360.model
                                     if (decimal.TryParse(fieldValue, out decimal fieldDecimalValue) && fieldDecimalValue > fieldType.MaximumLength.Value)
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} must have a maximum value of {fieldType.MaximumLength.Value.ToString(decimalFormatString)}");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMaximumValueCheck, fieldType.MaximumLength.Value.ToString(decimalFormatString)));
                                     }
                                 }
                                 else
@@ -1966,7 +1968,7 @@ namespace d360.model
                                     if (fieldValue.Length > fieldType.MaximumLength.Value)
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} may only have a maximum length of {fieldType.MaximumLength.Value.ToString(decimalFormatString)}");
+                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMaxmiumLengthCheck, fieldType.MaximumLength.Value.ToString(decimalFormatString)));
                                     }
                                 }
                             }

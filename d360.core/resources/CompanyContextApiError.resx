@@ -117,14 +117,29 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CheckExactLength" xml:space="preserve">
+    <value>{0} must have an exact length of {1}</value>
+  </data>
   <data name="DataProfilingNoPermission" xml:space="preserve">
     <value>User does not have permission to add, edit or delete profiling data for this asset</value>
   </data>
   <data name="DuplicateExecutionItem" xml:space="preserve">
     <value>Duplicate [ExecutionItemUid]: {0}. Identifiers must be unique within a batch.</value>
   </data>
+  <data name="ExceedsMaximumLength" xml:space="preserve">
+    <value>{0} exceeds the maximum length of {1} characters</value>
+  </data>
+  <data name="FieldNameValidate" xml:space="preserve">
+    <value>{0} must be a valid {1}</value>
+  </data>
   <data name="FieldNotAllowedMultipleValies" xml:space="preserve">
     <value>{0} does not allow selection of multiple values</value>
+  </data>
+  <data name="FieldValueIsRequired" xml:space="preserve">
+    <value>{0} is a required field</value>
+  </data>
+  <data name="IconFieldValidation" xml:space="preserve">
+    <value>The Icon field must be fifty characters or less in length and start with 'fa-'</value>
   </data>
   <data name="NotPermissionModifyRelationobjectAsset" xml:space="preserve">
     <value>You do not have permission to modify relationships on the object asset.</value>
@@ -132,8 +147,26 @@
   <data name="NotPermissionModifyRelationSubjectAsset" xml:space="preserve">
     <value>You do not have permission to modify relationships on the subject asset.</value>
   </data>
+  <data name="NumericMaximumValueCheck" xml:space="preserve">
+    <value>{0} must have a maximum value of {1}</value>
+  </data>
+  <data name="NumericMaxmiumLengthCheck" xml:space="preserve">
+    <value>{0} must have a maximum length of {1}</value>
+  </data>
+  <data name="NumericMinimumLengthCheck" xml:space="preserve">
+    <value>{0} must have a minimum length of {1}</value>
+  </data>
+  <data name="NumericMinimumValueCheck" xml:space="preserve">
+    <value>{0} must have a minimum value of {1}</value>
+  </data>
   <data name="OwnerValueMaxLength" xml:space="preserve">
     <value>Owner value max length exceeded : {0}. Max length of Owner field is 100 characters.</value>
+  </data>
+  <data name="ReferenceListCodeFieldMaxLengthCheck" xml:space="preserve">
+    <value>The Code field must be 250 characters or less in length</value>
+  </data>
+  <data name="RegularExpressionPatternMatch" xml:space="preserve">
+    <value>{0} must match regular expression pattern defined for this field</value>
   </data>
   <data name="RelationshipInvalidUid" xml:space="preserve">
     <value>UID of the relationship is invalid.</value>
@@ -146,5 +179,23 @@
   </data>
   <data name="RelatioshipUidExistWithDifferentType" xml:space="preserve">
     <value>Relationship UID specified is of a different relationship type.</value>
+  </data>
+  <data name="RestrictFieldTypeUpdate" xml:space="preserve">
+    <value>{0} is a {1} field and cannot be updated on this request</value>
+  </data>
+  <data name="ValidateBoolValue" xml:space="preserve">
+    <value>{0} is a boolean field and may only be 'false' or 'true'</value>
+  </data>
+  <data name="ValidateColorField" xml:space="preserve">
+    <value>The Color field must be a seven character RGB code or the name of a Govern color</value>
+  </data>
+  <data name="ValidateLinkValue" xml:space="preserve">
+    <value>{0} must be a valid link, using the format name|url</value>
+  </data>
+  <data name="ValidateNumberFieldRange" xml:space="preserve">
+    <value>{0} must be a valid whole number, greater than {0} and less than {2}</value>
+  </data>
+  <data name="ValidFieldCheck" xml:space="preserve">
+    <value>{0} is not a valid field</value>
   </data>
 </root>
