@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.dbo.GetReferenceItemValues-v3.1">
+  <changeSet author="bquinlivan" id="Procedure.dbo.GetReferenceItemValues-v3.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -153,6 +153,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = O.ID
 
   SELECT @tsqlSort = @tsqlSort + Stuff((Select ', ' + case when SortByAscending=1 then 'f'+cast(identifier as nvarchar)+'.FormattedValue asc' else 'f'+cast(identifier as nvarchar) + '.FormattedValue Desc' end
                    FROM #fieldtypes t2
+				   where SortOrder > 0
 				   order by SortOrder asc
                    --WHERE t2.Id = t1.Id
                    FOR XML PATH(''), TYPE

@@ -707,7 +707,7 @@ namespace d360.model.helpers
 					selects.Add("A.[Code] as [Code]");
 					if (ft.SortOrder > 0 && sortFields != null)
 					{
-						sortFields.Add((ft.SortOrder, $"F{ft.ID}.FormattedValue {(ft.SortByAscending ? "" : "desc")}"));
+						sortFields.Add((ft.SortOrder, $"A.[Code] {(ft.SortByAscending ? "" : "desc")}"));
 					}
 				}
 				else if (ft.Name == "Color" && ft.ID == 0)
