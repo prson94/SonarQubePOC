@@ -1339,6 +1339,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to IP address {0} is not allowed for IP Restrictions..
+        /// </summary>
+        public static string IpSettingNotAllowed {
+            get {
+                return ResourceManager.GetString("IpSettingNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [IsChangePasswordReqeust] set to true, Not allowed for authentication type other than Forms.
         /// </summary>
         public static string IsChangePwdReqAuthOtherThanForm {

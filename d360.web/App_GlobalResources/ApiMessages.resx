@@ -762,4 +762,7 @@
   <data name="DeleteSystemFieldsError" xml:space="preserve">
     <value>You cannot delete system field {0}.</value>
   </data>
+  <data name="IpSettingNotAllowed" xml:space="preserve">
+    <value>IP address {0} is not allowed for IP Restrictions.</value>
+  </data>
 </root>
