@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.dbo.GetReferenceItemValues-v3">
+  <changeSet author="bquinlivan" id="Procedure.dbo.GetReferenceItemValues-v3.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -15,7 +15,7 @@ create or alter procedure [dbo].[GetReferenceItemValues]
  @listid int,  
  @resourceID int = 0,  
  @useApiName bit = 0,
- @applySortOrder int = 0
+ @applySortOrder int = 1
 AS  
 BEGIN  
  SET NOCOUNT ON;  
@@ -38,12 +38,12 @@ BEGIN
   if @useApiName = 1  
   begin  
    insert into #fieldtypes  
-    select ID, [Name], SortOrder, SortByAscending from fieldtype where AssetTypeID = @listAssetTypeId order by ColumnOrder  
+    select ID, [Name], case when SortOrder>0 then SortOrder else null end, SortByAscending from fieldtype where AssetTypeID = @listAssetTypeId order by ColumnOrder  
   end  
  else  
   begin  
    insert into #fieldtypes  
-    select ID, 'Field' + cast(id as varchar(100)) as [Name], SortOrder, SortByAscending from fieldtype where AssetTypeID = @listAssetTypeId order by ColumnOrder  
+    select ID, 'Field' + cast(id as varchar(100)) as [Name], case when SortOrder>0 then SortOrder else null end, SortByAscending from fieldtype where AssetTypeID = @listAssetTypeId order by ColumnOrder  
   end  
   
  declare @parentLevel int = 0;  

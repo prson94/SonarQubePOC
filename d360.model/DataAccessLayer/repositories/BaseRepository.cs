@@ -124,7 +124,7 @@ namespace d360.model.DataAccessLayer.repositories
 			return "";
 		}
 
-		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string idSql = "A.[ID]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null, SystemObjects objectType = SystemObjects.Artifact, bool CreateTempTableForFieldFromRelationship = false)
+		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string idSql = "A.[ID]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null, SystemObjects objectType = SystemObjects.Artifact, bool CreateTempTableForFieldFromRelationship = false, List<(int, string)> fieldSorts = null)
 		{
 			List<string> TempTableNameList = new List<string>();
 
@@ -764,8 +764,13 @@ namespace d360.model.DataAccessLayer.repositories
 				 {
 					 fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {fieldJoinIdSQL}", f.ID.ToString());
 				 }
+
+				 if (f.SortOrder > 0 && fieldSorts != null)
+				 {
+					 fieldSorts.Add((f.SortOrder, $"{tableAlias}.{valueColumn} {(f.SortByAscending ? "" : "desc")}"));					 
+				 }
 			 }
-			);
+			);			
 		}
 
 		protected void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams, List<string> fieldsUsedInMainQuery)
