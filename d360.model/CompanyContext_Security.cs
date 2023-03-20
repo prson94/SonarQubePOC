@@ -960,7 +960,7 @@ from	Asset A
 											fieldWhere = $" where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))=0)";  // all field types plus single select list
 											break;
 										default:
-											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = {dbParameterName}'";  // all field types plus single select list
+											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = {dbParameterName}";  // all field types plus single select list
 											break;
 									}
 
