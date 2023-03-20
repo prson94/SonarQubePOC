@@ -383,6 +383,8 @@ namespace d360.web.Controllers.V2
 						var xml = new XElement("ips");
 						foreach (var ip in model.IpAddressSetting.Value)
 						{
+							List<IPAddress> disallowedIp = new List<IPAddress> { IPAddress.Parse("127.0.0.1") };
+
 							if (string.IsNullOrEmpty(ip.Name) || string.IsNullOrEmpty(ip.Start) || string.IsNullOrEmpty(ip.End))
 							{
 								throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.MissingIPAddressValue);
@@ -394,6 +396,14 @@ namespace d360.web.Controllers.V2
 							if (!IPAddress.TryParse(ip.End, out IPAddress _))
 							{
 								throw new GenericException(HttpStatusCode.BadRequest, string.Format(ApiMessages.EndIPAddressNotValid, ip.End));
+							}
+							if (disallowedIp.Contains(IPAddress.Parse(ip.Start)))
+							{
+								throw new GenericException(HttpStatusCode.BadRequest, string.Format(ApiMessages.IpSettingNotAllowed, ip.Start));
+							}
+							if (disallowedIp.Contains(IPAddress.Parse(ip.End)))
+							{
+								throw new GenericException(HttpStatusCode.BadRequest, string.Format(ApiMessages.IpSettingNotAllowed, ip.End));
 							}
 
 							xml.Add(new XElement("ip",
@@ -874,12 +884,13 @@ namespace d360.web.Controllers.V2
 
 				if (whereClauseItems.Count > 0)
 				{
-					whereClause = $" where {string.Join(" and ", whereClauseItems.ToArray()) } ";
+					whereClause = $" where {string.Join(" and ", whereClauseItems.ToArray())} ";
 				}
 
 				#endregion
 
-				Func<string, string> contains = delegate(string p) {
+				Func<string, string> contains = delegate (string p)
+				{
 					return (objectTablesThatRequireInnerJoin.Contains(p) ? "inner" : "left");
 				};
 
@@ -924,20 +935,22 @@ select	r.uid as ResourceUid,
 				{
 					string countSql = $"select count(*) {tableSql} {whereClause}";
 					var count = await Company.QueryFirstOrDefaultAsync<int>(countSql, dbArgs);
-					var model = new { 
-						pageSize, 
-						pageNum, 
-						total = count, 
-						items = response 
+					var model = new
+					{
+						pageSize,
+						pageNum,
+						total = count,
+						items = response
 					};
 					return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 				}
 				else
 				{
-					var model = new { 
-						pageSize, 
-						pageNum, 
-						items = response 
+					var model = new
+					{
+						pageSize,
+						pageNum,
+						items = response
 					};
 					return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 				}
@@ -1070,7 +1083,7 @@ select	r.uid as ResourceUid,
 				return Request.CreateResponse(HttpStatusCode.OK);
 			}
 			else
-			{ 
+			{
 				return Request.CreateResponse(HttpStatusCode.BadRequest);
 			}
 		}
@@ -2798,13 +2811,13 @@ select	r.uid as ResourceUid,
 		[HttpPost, AjaxValidateAntiForgeryToken, Route("me/language"), ApiExplorerSettings(IgnoreApi = true)]
 		public async Task<HttpResponseMessage> UpdateCurrentUserLanguage(UserLanguageModel model)
 		{
-			
+
 			if (model == null)
 			{
 				throw new ArgumentException(ApiMessages.InvalidModel);
 			}
 
-			if (model.LanguageCode != null && !InternationalizationUtilities.AllowedUILocales.Select(x=> x.ToLowerInvariant()).Contains(model.LanguageCode.ToLowerInvariant()))
+			if (model.LanguageCode != null && !InternationalizationUtilities.AllowedUILocales.Select(x => x.ToLowerInvariant()).Contains(model.LanguageCode.ToLowerInvariant()))
 			{
 				throw new ArgumentException(String.Format(ApiMessages.InvalidLanguageCode, String.Join(", ", InternationalizationUtilities.AllowedUILocales)));
 			}
@@ -3025,7 +3038,7 @@ select	r.uid as ResourceUid,
 				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.Error, ApiMessages.UnknownErrorInvestigatingMessage);
 			}
 		}
-		
+
 		#endregion
 	}
 }
