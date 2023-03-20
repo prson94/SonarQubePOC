@@ -722,7 +722,7 @@ namespace d360.model.DataAccessLayer
 				if (f.Name.ToLower()== "code")
 				{
 					var assetType  = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
-					if(assetType.Class == AssetTypeClass.ReferenceItemType)
+					if(assetType.Class == AssetTypeClass.Reference)
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
 					}					

@@ -412,7 +412,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not convert field {0} from a {1} to a {2} or a field with the same name and different type may already exist..
+        ///   Looks up a localized string similar to You may not convert field {0} from a {1} to a {1}. A field with the same name and different type may already exist..
         /// </summary>
         public static string FieldTypeConversionError {
             get {
@@ -835,7 +835,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You may not use {f.Name} as the Name of your field because it is a reserved word..
+        ///   Looks up a localized string similar to You may not use {0} as the Name of your field because it is a reserved word..
         /// </summary>
         public static string NameReservedword {
             get {
