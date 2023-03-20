@@ -24,7 +24,6 @@ using d360.model.helpers;
 using d360.model.helpers.filters;
 
 using Dapper;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -437,6 +436,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 			var fieldColumns = new DynamicQuerySelects();
 			var fieldJoins = new DynamicQueryJoins();
+			var fieldSorts = new List<(int order, string sql)>();
 			var advancedFilterTempTableInfos = new AdvancedFilterTempTableFilters();
 
 			List<string> whereStatements = new List<string>();
@@ -459,7 +459,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 			//Don't get field sql for OwnershipLookup fields, as that will return the definition rather than the json we want
 			//The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
-			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Id]", listColorsAsJSON, true, TempTableScriptList);
+			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Id]", listColorsAsJSON, true, TempTableScriptList, fieldSorts: fieldSorts);
 			var countJoins = fieldJoins.Clone();
 
 			if (includeProfilingCheck)
@@ -1684,6 +1684,13 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				pagingQuery = "";
 			}
 
+			var orderByFields = "TempA.ID";
+			
+			if (!queryParams.ToList().Any(k => k.Key.ToLower() == "_order") && assetType.Class == AssetTypeClass.Reference && fieldSorts.Count() > 0)
+			{
+				orderByFields = $"{string.Join(",", fieldSorts.OrderBy(x => x.order).Select(y => y.sql))}";				
+			}
+			
 			var sql = $@"
 				{(useTempTableForResults ? "drop table if exists #results;" : "")}
 				select 
@@ -1719,8 +1726,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				{(includePermissionDetails ? permissionDetailSQL : "")}
 				{(includeProfilingCheck ? profilingCheckSql : "")}
 				{hierarchyParentUidSelect}
-				{(includeParent ? parentApplySQL : "")}
-				Order By TempA.ID
+				{(includeParent ? parentApplySQL : "")}				
+				Order By {orderByFields}				
 				{(useTempTableForResults ? "select * from #results order by _rowid " : "")}
 			";
 

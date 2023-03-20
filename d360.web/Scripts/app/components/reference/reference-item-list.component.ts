@@ -45,7 +45,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     @Input() highlightUid: string = '';
 
     public rowsPerPage: number;
-    private sortField: string = 'Code';
+    private sortField: string;
     private items: any[] = [];
     private totalRecords: number = 10000;
     private destroy = new Subject<void>();
@@ -59,7 +59,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     private getAssetSub: Subscription;
     @ViewChild('dt', { static: false }) table: Table;
 
-    private loadParams = { _loadPermissionDetails: true, _includeParent: true, _order: 'Code', _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true, _listColorsAsJSON: true };
+    private loadParams = { _loadPermissionDetails: true, _includeParent: true, _order: 'Code', _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true, _listColorsAsJSON: true, };
 
 
     add() {
@@ -92,7 +92,8 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
             this.loadParams._pageNum = 1;
             this.loadParams._pageSize = 10;
             this.loadParams.useGraphForParent = true;
-            this.loadParams._listColorsAsJSON = true;
+			this.loadParams._listColorsAsJSON = true;
+			//this.loadParams._applySortOrder = true;
             delete this.loadParams['_simpleFilter'];
             delete this.loadParams['_filter'];
         }
@@ -191,7 +192,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
 
     private loadAssets(event) {
         if (event) {
-            let sort = event.sortField;
+			let sort = event.sortField;			
             var field = this.fields.filter((x) => x.name.toLowerCase() === event.sortField.toLowerCase())[0];
             if (field)
                 {sort = field.apiName;}
@@ -214,7 +215,12 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
                 delete this.loadParams['_filter'];
             }
 
-            this.loadParams._order = sort ? sort : this.sortField;
+			if (!event.sortField || event.sortField === '') {
+				delete this.loadParams['_order'];
+			} else {
+				this.loadParams['_order'] = sort;
+			}
+			
             this.loadParams._direction = event.sortOrder === 1 ? 'ASC' : 'DESC';
 
             this.loadParams._pageSize = +event.rows;

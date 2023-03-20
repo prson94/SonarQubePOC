@@ -692,7 +692,7 @@ namespace d360.model.helpers
 			return (Columns, Fields);
 		}
 
-		public static string GetRefListFromRelSQL(List<FieldType> fields, DynamicParameters dbArgs, List<string> selects, List<string> joins, bool isCountQuery)
+		public static string GetRefListFromRelSQL(List<FieldType> fields, DynamicParameters dbArgs, List<string> selects, List<string> joins, bool isCountQuery, List<(int, string)> sortFields = null)
 		{
 			if (isCountQuery)
 			{
@@ -701,11 +701,14 @@ namespace d360.model.helpers
 			}
 			selects.Add("A.[uid] as [Uid]");
 			foreach (var ft in fields)
-			{
-
+			{				
 				if (ft.Name == "Code" && ft.Type == DataType.System.ToString())
 				{
 					selects.Add("A.[Code] as [Code]");
+					if (ft.SortOrder > 0 && sortFields != null)
+					{
+						sortFields.Add((ft.SortOrder, $"F{ft.ID}.FormattedValue {(ft.SortByAscending ? "" : "desc")}"));
+					}
 				}
 				else if (ft.Name == "Color" && ft.ID == 0)
 				{
@@ -716,32 +719,39 @@ namespace d360.model.helpers
 				{
 					string fieldSelector = $"F{ft.ID}";
 					string fieldAlias = ft.Name;
-
+					string selectField = "";
 					switch (ft.Type.ToLowerInvariant())
 					{
 						case "boolean":
-							selects.Add($"try_cast({fieldSelector}.FormattedValue AS bit) AS [{fieldAlias}]");
+							selectField = $"try_cast({fieldSelector}.FormattedValue AS bit)";
 							break;
 						case "number":
-							selects.Add($"try_cast({fieldSelector}.FormattedValue AS int) AS [{fieldAlias}]");
+							selectField = $"try_cast({fieldSelector}.FormattedValue AS int)";
 							break;
 						case "decimal":
-							selects.Add($"try_cast({fieldSelector}.FormattedValue AS decimal(38,6)) AS [{fieldAlias}]");
+							selectField = $"try_cast({fieldSelector}.FormattedValue AS decimal(38,6))";
 							break;
 						case "date":
-							selects.Add($"try_cast({fieldSelector}.FormattedValue AS date) AS [{fieldAlias}]");
+							selectField = $"try_cast({fieldSelector}.FormattedValue AS date)";
 							break;
 						case "datetime":
-							selects.Add($"try_cast({fieldSelector}.FormattedValue AS datetime) AS [{fieldAlias}]");
+							selectField = $"try_cast({fieldSelector}.FormattedValue AS datetime)";
 							break;
 						case "counter":
 							string cnt_prefix = "cntprefix_" + ft.ID;
 							dbArgs.Add(cnt_prefix, ft.CounterPrefix);
-							selects.Add($"(@{cnt_prefix} + try_cast({fieldSelector}.FormattedValue AS nvarchar(20))) AS [{fieldAlias}]");
+							selectField = $"(@{cnt_prefix} + try_cast({fieldSelector}.FormattedValue AS nvarchar(20)))";
 							break;
 						default:
-							selects.Add($"{fieldSelector}.FormattedValue as [{fieldAlias}]");
+							selectField = $"{fieldSelector}.FormattedValue";
 							break;
+					}
+
+					selects.Add($"{selectField} AS [{fieldAlias}]");
+
+					if (ft.SortOrder > 0 && sortFields!=null)
+					{
+						sortFields.Add((ft.SortOrder, $"{selectField} {(ft.SortByAscending ? "" : "desc")}" ));
 					}
 
 					var HasDefaultValue = !string.IsNullOrEmpty(ft.DefaultFormattedValue) ? 1 : 0;
