@@ -767,15 +767,22 @@ namespace d360.model.DataAccessLayer.repositories
 				 }
 
 				 if (f.SortOrder > 0 && fieldSorts != null)
-				 {
-					 fieldSorts.Add((f.SortOrder, $"{(numberFieldTypes.Contains(f.Type.ToLower()) ? $"CAST({tableAlias}.{valueColumn} as float)" : $"{tableAlias}.{valueColumn}")} {(f.SortByAscending ? "" : "desc")}"));					 
+				 {					 
+					 fieldSorts.Add((f.SortOrder, $"{getFieldDataTypeWrapper(f)} {(f.SortByAscending ? "" : "desc")}"));
 				 }
 			 }
 			);			
 		}
 
 		protected void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams, List<string> fieldsUsedInMainQuery)
-		{
+		{			
+			bool useTypeLevelDefaultSorts = false;
+			
+			if(assetType.Class == AssetTypeClass.Reference)
+			{
+				useTypeLevelDefaultSorts = true;
+			}
+
 			if (queryParams != null)
 			{
 				var orderBySql = "";
@@ -794,7 +801,7 @@ namespace d360.model.DataAccessLayer.repositories
 
 				//add base sort if none is specified
 				if (!queryParams.Any(p => p.Key == "_order"))
-				{
+				{					
 					orderBySql = $"order by A.ID {orderDirection}";
 				}
 
@@ -808,6 +815,7 @@ namespace d360.model.DataAccessLayer.repositories
 						{
 							if (key == "_order")
 							{
+								useTypeLevelDefaultSorts = false;
 								if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
 								{
 									orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"A.Code {orderDirection} ";
@@ -979,8 +987,7 @@ namespace d360.model.DataAccessLayer.repositories
 						}
 					});
 
-
-				bool useTypeLevelDefaultSorts = false;
+				
 				var defSorts = queryParams.FirstOrDefault(x => x.Key.ToLower() == "usetypeleveldefaultsorts");
 				if (!string.IsNullOrEmpty(defSorts.Key))
 				{
