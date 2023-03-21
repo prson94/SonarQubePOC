@@ -1070,6 +1070,11 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
+				if (result.Success)
+				{
+					result.Message = null;
+				}
+
 				results.Add(result);
 			}
 
