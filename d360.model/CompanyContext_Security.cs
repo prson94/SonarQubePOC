@@ -584,7 +584,7 @@ namespace d360.model
 			await Connection.ExecuteAsync("update ResponsibilityTypeRelationRule set LastRunOn = @date where ID = @id", new { date = DateTime.UtcNow, id = ruleId }, transaction: transaction);
 		}
 
-		private async Task ProcessRuleForAsset(ResponsibilityTypeRelationRule rule, List<ResponsibilityAssetMeasureProcessedResult> results)
+		private async Task ProcessRuleForAsset(ResponsibilityTypeRelationRule rule, List<ResponsibilityAssetMeasureProcessedResult> results, int timeout = 3600)
 		{
 			string sqlToExecute = "";
 
@@ -621,7 +621,7 @@ namespace d360.model
 											iif($action = 'DELETE', deleted.AssetID, inserted.AssetID)
 									into #changes;";
 					whenQueryData.DbParameters.Add("ruleId", rule.ID);
-					await Connection.ExecuteAsync(sqlToExecute, whenQueryData.DbParameters, transaction: transaction, commandTimeout: ApiTimeout);
+					await Connection.ExecuteAsync(sqlToExecute, whenQueryData.DbParameters, transaction: transaction, commandTimeout: timeout);
 
 					//merge into the resource table
 					if (thenSql != null && thenSql.Length > 0)
