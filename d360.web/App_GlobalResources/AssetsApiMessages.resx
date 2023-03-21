@@ -237,6 +237,9 @@
   <data name="InvalidResourceUID" xml:space="preserve">
     <value>Invalid [resourceUid] provided</value>
   </data>
+  <data name="InvalidSortDataCatalog" xml:space="preserve">
+    <value>{0} is not valid sort property. Allowed properties are {1}.</value>
+  </data>
   <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
     <value>Invalid user or group uid as non owner passed in the request</value>
   </data>

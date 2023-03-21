@@ -1,8 +1,10 @@
 ﻿using d360.core.enums;
+using d360.core.resources;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
 using Newtonsoft.Json;
+using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -452,6 +454,10 @@ namespace d360.web.Controllers.V2
 				{
 					sorts.Add($"{column.Sort} {sortDirection}");
 					column.UseAsSortBy = true;
+				}
+				else
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(AssetsApiMessages.InvalidSortDataCatalog, key, string.Join(", ", columns.Where(x => !string.IsNullOrEmpty(x.Sort)).Select(x=> x.ApiName)))));
 				}
 			}
 

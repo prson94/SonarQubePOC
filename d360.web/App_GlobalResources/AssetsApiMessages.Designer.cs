@@ -421,6 +421,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} is not valid sort property. Allowed properties are {1}..
+        /// </summary>
+        public static string InvalidSortDataCatalog {
+            get {
+                return ResourceManager.GetString("InvalidSortDataCatalog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid user or group uid as non owner passed in the request.
         /// </summary>
         public static string InvalidUserGroupRequestAsNonOwner {
