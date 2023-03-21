@@ -1685,18 +1685,22 @@ namespace d360.model
                 string fieldValue = (k.Value + "").Trim();
                 int? fieldTypeId = null;
                 string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
-
+                string fieldtypestr = "";
 
 
                 // Validation of field and value;
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
 
-                if (useFriendlyNames)
+                if (fieldType != null)
                 {
-                    fieldName = fieldType.FriendlyName;
+                    if (useFriendlyNames)
+                    {
+                        fieldName = fieldType.FriendlyName;
+                    }
+                    fieldtypestr = fieldType.Type.ToLower();
                 }
 
-                if (fieldType == null || (ot.ToLower() == "referenceitemtype" && fieldName.ToLower() == "code" && fieldType.Type.ToLower() == "system"))
+                if (fieldType == null || (fieldtypestr == "system"))
                 {
                     if (fieldName.ToLower() == "color")
                     {
@@ -1886,7 +1890,7 @@ namespace d360.model
                                     {
                                         success = false;
                                         errorMessages.Add(string.Format(CompanyContextApiError.FieldNameValidate, fieldName, "percentage"));
-									}
+                                    }
 
                                     break;
                                 case "JSON":
