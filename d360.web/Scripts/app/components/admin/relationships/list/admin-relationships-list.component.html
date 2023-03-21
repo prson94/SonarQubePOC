@@ -38,7 +38,7 @@
 	<p-table #dt [value]="relationships"
 			 selectionMode="single"
 			 [metaKeySelection]="true"
-			 [globalFilterFields]="['Subject','Predicate','Object', 'HasRelationshipsTextValue']"
+			 [globalFilterFields]="['Subject','Predicate','PredicateFunctionalType','Object', 'HasRelationshipsTextValue']"
 			 [pageLinks]="3"
 			 [paginator]="true"
 			 [(first)]="first"
@@ -55,9 +55,9 @@
 					<ng-container i18n>Subject</ng-container>
 					<d3s-sortIcon [field]="'Subject'"></d3s-sortIcon>
 				</th>
-				<th [pSortableColumn]="'Predicate'">
+				<th [pSortableColumn]="'PredicateWithFunctionalType'">
 					<ng-container i18n>Predicate</ng-container>
-					<d3s-sortIcon [field]="'Predicate'"></d3s-sortIcon>
+					<d3s-sortIcon [field]="'PredicateWithFunctionalType'"></d3s-sortIcon>
 				</th>
 				<th [pSortableColumn]="'Object'">
 					<ng-container i18n>Object</ng-container>
@@ -81,7 +81,7 @@
 					{{item.Subject}}
 				</td>				
 				<td>
-					{{item.Predicate}}
+					{{item.Predicate}} <span class="light-text">({{item.PredicateFunctionalType}})</span>
 				</td>				
 				<td>
 					{{item.Object}}
