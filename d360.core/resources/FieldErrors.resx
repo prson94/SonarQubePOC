@@ -243,7 +243,7 @@
     <value>Fields contain errors</value>
   </data>
   <data name="FieldTypeConversionError" xml:space="preserve">
-    <value>You may not convert field {0} from a {1} to a {2} or a field with the same name and different type may already exist.</value>
+    <value>You may not convert field {0} from a {1} to a {2}. A field with the same name and different type may already exist.</value>
   </data>
   <data name="FieldTypeError" xml:space="preserve">
     <value>Field type error</value>
@@ -390,7 +390,7 @@
     <value>[Name] cannot be [{0}].</value>
   </data>
   <data name="NameReservedword" xml:space="preserve">
-    <value>You may not use {f.Name} as the Name of your field because it is a reserved word.</value>
+    <value>You may not use {0} as the Name of your field because it is a reserved word.</value>
   </data>
   <data name="NoModelFound" xml:space="preserve">
     <value>No model found</value>
