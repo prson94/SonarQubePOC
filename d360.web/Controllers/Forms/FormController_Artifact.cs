@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Web.Mvc;
-
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.helpers;
 using d360.web.Models;
 using d360.web.Models.Attributes;
-
 using Resources;
 
 namespace d360.web.Controllers
@@ -108,13 +104,10 @@ namespace d360.web.Controllers
 
             var parentType = Company.GetParentType(a.AssetType.ID);
 
-            if (PluralCultureHelper.IsNeutralCultureEnglish())
+            if (parentType != null)
             {
-                if (parentType != null)
-                {
                     var parent = Company.GetParentAsset(a.ID);
 
-                    var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                     var parents = Company.Query<SelectListItem>($@"select 
                                     lower(convert(nvarchar(36), A.uid)) as Value, 
                                     AN.DisplayPath as Text 	
@@ -130,7 +123,7 @@ namespace d360.web.Controllers
                         Column = 1,
                         Required = true,
                         FieldName = "ParentUID",
-                        Name = $"Parent {pluralize.Singularize(parentType.Name)}",
+                        Name = $"Parent {parentType.Name}",
                         FieldType = DataType.Lookup.ToString(),
                         Value = (parent != null) ? (parent.uid.ToString() ?? "").ToLower() : "",
                         Items = parents,
@@ -139,9 +132,8 @@ namespace d360.web.Controllers
                         ReadOnly = a.AssetType?.CanEditParent == false ? true : false,
                         TooltipText = a.AssetType?.CanEditParent == false ? "The parent for this type of asset cannot be changed once set" : null
                     });
-                }
             }
-
+        
 			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
 
