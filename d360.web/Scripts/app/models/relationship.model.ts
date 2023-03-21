@@ -24,6 +24,7 @@ export class RelationshipTypeSimpleUIModel {
 	MenuItems?: MenuItem[];
 	Subject: string;
 	Predicate: string;
+	PredicateFunctionalType: string;
 	Object: string;
 	IsEditDisabled: boolean = false;
 }
@@ -62,6 +63,7 @@ export class RelationshipType {
 			Object: data.Object.Name,
 			RelationshipTypeName: data.Subject.Name + " - " + data.Predicate.Name + " - " + data.Object.Name,
 			Uid: data.Uid,
+			PredicateFunctionalType: data.Predicate.FriendlyTypeName,
 			HasRelationships: data.HasRelationships,
 			HasRelationshipsTextValue: data.HasRelationships ? $localize`True` : $localize`False`,
 			TotalRelationshipCount: data.TotalRelationshipCount,

@@ -38,7 +38,7 @@
 	<p-table #dt [value]="relationships"
 			 selectionMode="single"
 			 [metaKeySelection]="true"
-			 [globalFilterFields]="['Subject','Predicate','Object', 'HasRelationshipsTextValue']"
+			 [globalFilterFields]="['Subject','Predicate','PredicateFunctionalType','Object', 'HasRelationshipsTextValue']"
 			 [pageLinks]="3"
 			 [paginator]="true"
 			 [(first)]="first"
@@ -81,7 +81,7 @@
 					{{item.Subject}}
 				</td>				
 				<td>
-					{{item.Predicate}}
+					{{item.Predicate}} <span class="light-text">({{item.PredicateFunctionalType}})</span>
 				</td>				
 				<td>
 					{{item.Object}}
