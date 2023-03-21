@@ -16,7 +16,7 @@ export class RedirectGuard implements CanActivate {
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
         const defaultRoute = this.settingsService.getSettingById(CompanySettingEnum.DefaultRoute).StringSetting.Value;
-        if (ResourceHomePage !== null && ResourceHomePage !== "" && ResourceHomePage !== '/') {
+        if (typeof ResourceHomePage !== "undefined" && ResourceHomePage !== null && ResourceHomePage !== "" && ResourceHomePage !== '/') {
             this.router.navigate([ResourceHomePage]);
         }
         else if (defaultRoute !== null && defaultRoute !== '' && defaultRoute !== '/') {

@@ -3,6 +3,6 @@
 
 export const environment = {
     production: true,
-    version: VersionNumber,
+	version: typeof VersionNumber === "undefined" ? "" : VersionNumber,
 	timeStamp: "{BUILD_TIMESTAMP}"
 };

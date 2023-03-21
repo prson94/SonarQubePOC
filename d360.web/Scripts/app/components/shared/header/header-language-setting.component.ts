@@ -73,7 +73,7 @@ export class HeaderLanguageSettingComponent {
 			}
 		];
 
-		if (!ApplicationLanguageSetting) {
+		if (typeof ApplicationLanguageSetting === "undefined" || !ApplicationLanguageSetting) {
 			this.selectedLanguage = this.languages.find((x) => x.code === null);
 		}
 		else {

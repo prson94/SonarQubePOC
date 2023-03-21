@@ -10,7 +10,7 @@ export class GovernRequestInterceptor implements HttpInterceptor {
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 		let returnResult;
 
-		if (!ApplicationLanguageSetting) {
+		if (typeof ApplicationLanguageSetting === "undefined" || !ApplicationLanguageSetting) {
 			if (req.method === 'POST') {
 				returnResult = req.clone(
 					{

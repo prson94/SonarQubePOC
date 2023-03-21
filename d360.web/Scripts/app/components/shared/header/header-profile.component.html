@@ -1,5 +1,5 @@
 <span #item class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
-    <a class="photo hide-on-med-and-down"><img [src]="'/api/v2/membership/users/' + resourceUid + '/image?size=25'" height="25" width="25" /></a>
+    <a class="photo hide-on-med-and-down"><img *ngIf="resourceUid" [src]="'/api/v2/membership/users/' + resourceUid + '/image?size=25'" height="25" width="25" /></a>
     <div class="show-on-medium-and-down hide-on-med-and-up">
         <div class="mini-menu-line">
             <div class="check-gutter"></div><div class="text" i18n>My Account</div><div class="expand-gutter"><i class="fa fa-caret-right"></i></div>
