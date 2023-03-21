@@ -171,7 +171,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		this.numberOfRowsByCategoryService.rowsPerPage.pipe(
 			takeUntil(this.destroy)
 		).subscribe((rowsPerPage) => {
-			this.rowsPerPage = rowsPerPage['Main'];
+			this.rowsPerPage = rowsPerPage['Main'] ?? 25;
 		});
 	}
 
