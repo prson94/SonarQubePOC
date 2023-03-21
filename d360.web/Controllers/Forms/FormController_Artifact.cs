@@ -83,8 +83,7 @@ namespace d360.web.Controllers
 
             if (intersectType != null)
             {
-                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(new CultureInfo("en"));
-                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = (p > 0) ? p.ToString() : null, ItemSize = 20 });
+                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {intersectType.SubjectName}", FieldType = DataType.Lookup.ToString(), Value = (p > 0) ? p.ToString() : null, ItemSize = 20 });
             }
 
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(type, at).ToList(), 2, loadLookupValues: false);
