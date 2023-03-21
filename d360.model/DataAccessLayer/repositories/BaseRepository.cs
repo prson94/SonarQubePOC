@@ -127,6 +127,7 @@ namespace d360.model.DataAccessLayer.repositories
 		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string idSql = "A.[ID]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null, SystemObjects objectType = SystemObjects.Artifact, bool CreateTempTableForFieldFromRelationship = false, List<(int, string)> fieldSorts = null)
 		{
 			List<string> TempTableNameList = new List<string>();
+			List<string> numberFieldTypes = new List<string> { "counter", "decimal", "number"};
 
 			fieldTypes.OrderBy(x => x.ID).ToList().ForEach(f =>
 			 {
@@ -767,7 +768,7 @@ namespace d360.model.DataAccessLayer.repositories
 
 				 if (f.SortOrder > 0 && fieldSorts != null)
 				 {
-					 fieldSorts.Add((f.SortOrder, $"{tableAlias}.{valueColumn} {(f.SortByAscending ? "" : "desc")}"));					 
+					 fieldSorts.Add((f.SortOrder, $"{(numberFieldTypes.Contains(f.Type.ToLower()) ? $"CAST({tableAlias}.{valueColumn} as float)" : $"{tableAlias}.{valueColumn}")} {(f.SortByAscending ? "" : "desc")}"));					 
 				 }
 			 }
 			);			
