@@ -403,8 +403,6 @@ namespace d360.web.Controllers.V2
 													whereConnector = " and ";
 													hierarchyLevelSearchWheres.Add($"fp{i}.assetid is null");
 													break;
-												default:
-													break;
 											}
 										}
 
@@ -428,7 +426,6 @@ namespace d360.web.Controllers.V2
 												value = filterValue + "%";
 												query = $@"select id as ObjectAssetID from assetpath where displaypath not like @p{parameterIndex}";
 												break;
-											default: break;
 										}
 										dbArgs.Add($"p{parameterIndex}", value);
 									}
