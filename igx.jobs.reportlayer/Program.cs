@@ -1,14 +1,12 @@
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.helpers;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;

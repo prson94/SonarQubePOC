@@ -793,8 +793,6 @@ namespace d360.model
 				WHERE O.ID = @assetTypeId", new { assetTypeId });
 			}
 
-			PluralizeModelName(ref model);
-
 			return model;
 		}
 
@@ -802,32 +800,7 @@ namespace d360.model
 		{
 			ObjectDetail model = Database.Connection.QuerySingleOrDefault<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@type, @id)", new { type = new DbString { Value = type, IsAnsi = true, Length = 50 }, id });
 
-			PluralizeModelName(ref model);
-
 			return model;
-		}
-
-		private void PluralizeModelName(ref ObjectDetail model)
-		{
-			try
-			{
-				if ((model != null) && PluralCultureHelper.IsNeutralCultureEnglish())
-				{
-#if RUNNING_ON_STANDARD
-					model.PluralizedName = PluralizeService.Core.PluralizationProvider.Pluralize(model.Name ?? "");
-#endif
-
-#if RUNNING_ON_NET48
-				var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-				model.PluralizedName = pluralize.Pluralize(model.Name ?? "");
-#endif
-				}
-			}
-			catch (System.Resources.MissingManifestResourceException)
-			{
-				//It should be traced someday, but today I won't inject any logger this deep.
-				//At this moment it will be enough to stop diying because of exception from Plurarization module.
-			}
 		}
 
 		public string GetObjectTypePath(string type, long id)

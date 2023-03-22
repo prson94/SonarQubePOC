@@ -1322,7 +1322,7 @@ namespace d360.web.Controllers
 
 			return Request.CreateResponse(HttpStatusCode.OK, new
 			{
-				Title = (detail != null) ? detail.PluralizedName : "Child Items",
+				Title = (detail != null) ? detail.Name : "Child Items",
 				Type = type.ToString(),
 				ID = id,
 				FieldsCount = totalItems.Count,
