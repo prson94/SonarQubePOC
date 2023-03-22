@@ -388,21 +388,20 @@ namespace d360.web.Controllers.V2
 										List<string> hierarchyLevelSearchWheres = new List<string>();
 										string whereConnector = " and ";
 
-										dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*","%")}");
+										dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "%")}");
 										for (int i = hierarchyMaxDepth; i > 0; i--)
 										{
 											hierarchyLevelSearchJoins.Add($"left join #filtered_parents_{parameterIndex} fp{i} on fp{i}.AssetID = h.i{i}");
 
-											switch (filterOperation)
+											if (filterOperation == "ct")
 											{
-												case "ct":
-													whereConnector = " or ";
-													hierarchyLevelSearchWheres.Add($"fp{i}.assetid is not null");
-													break;
-												case "nct":
-													whereConnector = " and ";
-													hierarchyLevelSearchWheres.Add($"fp{i}.assetid is null");
-													break;
+												whereConnector = " or ";
+												hierarchyLevelSearchWheres.Add($"fp{i}.assetid is not null");
+											}
+											else if (filterOperation == "nct")
+											{
+												whereConnector = " and ";
+												hierarchyLevelSearchWheres.Add($"fp{i}.assetid is null");
 											}
 										}
 
