@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.dbo.GetReferenceItemValues-v3.2">
+  <changeSet author="bquinlivan" id="Procedure.dbo.GetReferenceItemValues-v3.3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -31,19 +31,19 @@ BEGIN
  
  drop table if exists #fieldtypes  
  drop table if exists #parentTypes  
- create table #fieldtypes (identifier [int] IDENTITY(0,1) NOT NULL, ID int, Name nvarchar(250), SortOrder int, SortByAscending bit)   
+ create table #fieldtypes (identifier [int] IDENTITY(0,1) NOT NULL, ID int, Name nvarchar(250), SortOrder int, SortByAscending bit, type varchar(25))   
  create table #parentTypes (IntersectTypeID int, Name nvarchar(250), ReferenceListTypeID int, ParentLevel int)  
   
    
   if @useApiName = 1  
   begin  
    insert into #fieldtypes  
-    select ID, [Name], case when SortOrder>0 then SortOrder else null end, SortByAscending from fieldtype where AssetTypeID = @listAssetTypeId order by ColumnOrder  
+    select ID, [Name], case when SortOrder>0 then SortOrder else null end, SortByAscending, Type from fieldtype where AssetTypeID = @listAssetTypeId order by ColumnOrder  
   end  
  else  
   begin  
    insert into #fieldtypes  
-    select ID, 'Field' + cast(id as varchar(100)) as [Name], case when SortOrder>0 then SortOrder else null end, SortByAscending from fieldtype where AssetTypeID = @listAssetTypeId order by ColumnOrder  
+    select ID, 'Field' + cast(id as varchar(100)) as [Name], case when SortOrder>0 then SortOrder else null end, SortByAscending, Type from fieldtype where AssetTypeID = @listAssetTypeId order by ColumnOrder  
   end  
   
  declare @parentLevel int = 0;  
@@ -151,11 +151,10 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = O.ID
 
   set @tsqlSort =' order by '
 
-  SELECT @tsqlSort = @tsqlSort + Stuff((Select ', ' + case when SortByAscending=1 then 'f'+cast(identifier as nvarchar)+'.FormattedValue asc' else 'f'+cast(identifier as nvarchar) + '.FormattedValue Desc' end
+  SELECT @tsqlSort = @tsqlSort + Stuff((Select ', ' + case when t2.Type in ('Counter', 'Decimal', 'Number') then 'CAST(' + 'f'+cast(identifier as nvarchar)+'.FormattedValue' + ' as float)' else 'f'+cast(identifier as nvarchar)+'.FormattedValue' end  + case when SortByAscending=1 then ' asc' else ' Desc' end
                    FROM #fieldtypes t2
 				   where SortOrder > 0
 				   order by SortOrder asc
-                   --WHERE t2.Id = t1.Id
                    FOR XML PATH(''), TYPE
             ).value('.', 'NVARCHAR(MAX)'), 1,2,'')
   end
