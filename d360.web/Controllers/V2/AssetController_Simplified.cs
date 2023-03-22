@@ -3,6 +3,7 @@ using d360.core.resources;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Newtonsoft.Json;
 using Resources;
 using Swashbuckle.Swagger.Annotations;
@@ -11,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.ServiceModel.Configuration;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -161,6 +163,9 @@ namespace d360.web.Controllers.V2
 			string sql = "";
 			string advancedFilterString = "";
 			string simpleFilterTempTable = "";
+			StringBuilder assetsHierarchyTempTable = new StringBuilder();
+			int hierarchyMaxDepth = 0;
+
 			List<string> whereStatements = new List<string>();
 
 			// Get relevant predicates.
@@ -318,61 +323,124 @@ namespace d360.web.Controllers.V2
 										Query = $@"select distinct ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue {operation} @p{parameterIndex}"
 									});
 								}
-
 								else if (column.ApiName == "displaypath")
 								{
-									string whereQuery = "";
-
-									switch (filterOperation)
+									string query = "";
+									if ((filterOperation == "ct" || filterOperation == "nct") && !filterValue.Contains("*"))
 									{
-										case "ct":
-										case "nct":
-											if (filterValue.StartsWith("*"))
+										//contains and not contains operator needs to use temp table that contains hierarchy of all catalog asset
+										//with temp table we can filter out results faster
+										if (assetsHierarchyTempTable.Length == 0)
+										{
+											//find max depth of any asset type that is used CatalogBrowse relationship types
+											hierarchyMaxDepth = (await Company.QueryAsync<int>($@"
+													select max(Type.Depth) from IntersectTypeDetail ITD
+													outer apply (
+													select top 1 ap.Segments.value('count(/path/segment)', 'int') - 1 as Depth from Asset a 
+													inner join AssetPath AP on AP.ID = a.ID
+													where a.AssetTypeID = ITD.ObjectAssetTypeID
+													)Type(Depth)
+													where ITD.PredicateType = {(int)PredicateType.CatalogBrowse}")).FirstOrDefault();
+
+											List<string> selects = new List<string>();
+											List<string> joins = new List<string>();
+											for (int i = 1; i <= hierarchyMaxDepth; i++)
 											{
-												whereQuery = "{0}.exist('/path/segment[last()][contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
-											}
-											else if (filterValue.EndsWith("*"))
-											{
-												whereQuery = "{0}.exist('/path/segment[1][contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
-											}
-											else
-											{
-												whereQuery = "{0}.exist('/path/segment[contains(lower-case(.),sql:variable(\"{1}\"))]') = {2}";
+												selects.Add($"i{i}.SubjectAssetID as i{i}");
+												if (i == 1)
+												{
+													joins.Add($"left join [Intersect] i{i} on i{i}.ObjectAssetID = r.ObjectAssetID and i{i}.IntersectTypeID in (select ID from #rels)");
+												}
+												else
+												{
+													joins.Add($"left join [Intersect] i{i} on i{i}.ObjectAssetID = i{i - 1}.SubjectAssetID and i{i}.IntersectTypeID in (select ID from #rels)");
+												}
 											}
 
-											dbArgs.Add($"p{parameterIndex}", $"{filterValue.ToLowerInvariant().Replace("*", "").Replace("%", "")}");
-											whereQuery = string.Format(whereQuery, "ap.Segments", $"@p{parameterIndex}", filterOperation == "ct" ? "1" : "0");
-											break;
-										case "eq":
-										case "ne":
-											var pathTokens = filterValue.Replace("%", "").Split('>').Select(x => x.ToLowerInvariant().Trim());
-											List<string> pathWheres = new List<string>();
-											var idx = 1;
-											foreach (var pToken in pathTokens)
+											//build temporary table that will hold hierarchy asset id's for all catalog assets
+											assetsHierarchyTempTable.AppendLine($@"
+											drop table if exists #rels
+											select itd.ID into #rels 
+											from IntersectTypeDetail itd where itd.PredicateType in (3,4);
+											create nonclustered index nix_rels_id on #rels (Id);
+
+											drop table if exists #hierarchy
+											select distinct r.ObjectAssetID, 
+											{string.Join("," + Environment.NewLine, selects)}
+											into #hierarchy
+											from CatalogBrowseObject r
+											{string.Join(Environment.NewLine, joins)}
+											option(recompile);");
+										}
+
+										//prefilter all asset that match search criteria
+										assetsHierarchyTempTable.AppendLine($@"
+											drop table if exists #filtered_parents_{parameterIndex}
+											select adv.AssetID into #filtered_parents_{parameterIndex}   
+											from assettype at
+												inner join asset a on a.assettypeid = at.id
+												inner join assetdisplayvalue adv on adv.assetid = a.id
+											where at.class = {(int)AssetTypeClass.TechnicalAsset} and DisplayValuePrefix like @p{parameterIndex}
+											option(recompile);
+
+											CREATE CLUSTERED INDEX ix_tempCIndexAft_{parameterIndex} ON #filtered_parents_{parameterIndex} (AssetId);");
+
+
+										List<string> hierarchyLevelSearchJoins = new List<string>();
+										List<string> hierarchyLevelSearchWheres = new List<string>();
+										string whereConnector = " and ";
+
+										dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*","%")}");
+										for (int i = hierarchyMaxDepth; i > 0; i--)
+										{
+											hierarchyLevelSearchJoins.Add($"left join #filtered_parents_{parameterIndex} fp{i} on fp{i}.AssetID = h.i{i}");
+
+											switch (filterOperation)
 											{
-												dbArgs.Add($"p{parameterIndex}_path_token_{idx}", pToken);
-												pathWheres.Add(
-													string.Format("{0}.exist('/path/segment[" + idx + "][contains(lower-case(.),sql:variable(\"{1}\"))]') = {2}",
-													"ap.Segments", $"@p{parameterIndex}_path_token_{idx}", filterOperation == "eq" ? "1" : "0"
-													));
-												idx++;
+												case "ct":
+													whereConnector = " or ";
+													hierarchyLevelSearchWheres.Add($"fp{i}.assetid is not null");
+													break;
+												case "nct":
+													whereConnector = " and ";
+													hierarchyLevelSearchWheres.Add($"fp{i}.assetid is null");
+													break;
+												default:
+													break;
 											}
-											whereQuery = "(" + string.Join(filterOperation == "eq" ? " and " : " or ", pathWheres) + ")";
-											break;
-										default:
-											whereQuery = "1=1";
-											break;
+										}
+
+										//build where query using hierarchy temp table and filteres assets temp table
+										query = $@"
+											select h.ObjectAssetID from #hierarchy h
+											{string.Join(Environment.NewLine, hierarchyLevelSearchJoins)}
+											where {string.Join(whereConnector, hierarchyLevelSearchWheres)}";
 									}
-
+									else
+									{
+										string value = filterValue;
+										switch (filterOperation)
+										{
+											case "eq":
+											case "ct":
+												value = (filterValue + "%").Replace("*", "%").Replace("%%", "%");
+												query = $@"select id as ObjectAssetID from assetpath where displaypath like @p{parameterIndex}";
+												break;
+											case "ne":
+												value = filterValue + "%";
+												query = $@"select id as ObjectAssetID from assetpath where displaypath not like @p{parameterIndex}";
+												break;
+											default: break;
+										}
+										dbArgs.Add($"p{parameterIndex}", value);
+									}
 
 									catalogWheres.Add(new CatalogWhere
 									{
 										TokenExpression = filterGrp.Value,
 										PropertyName = $"p{parameterIndex}",
 										Where = $"fr.p{parameterIndex} = 1",
-										Query = $@"select distinct ObjectAssetID from dbo.CatalogBrowseObject
-												inner join AssetPath AP ON AP.ID = ObjectAssetID 
-												where {whereQuery}"
+										Query = query
 									});
 								}
 							}
@@ -457,7 +525,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(AssetsApiMessages.InvalidSortDataCatalog, key, string.Join(", ", columns.Where(x => !string.IsNullOrEmpty(x.Sort)).Select(x=> x.ApiName)))));
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(AssetsApiMessages.InvalidSortDataCatalog, key, string.Join(", ", columns.Where(x => !string.IsNullOrEmpty(x.Sort)).Select(x => x.ApiName)))));
 				}
 			}
 
@@ -592,7 +660,7 @@ namespace d360.web.Controllers.V2
 			{
 				//replaced original query parameter value which contains all brackets and and/or operators with parsed where values
 				//order by TokenExpression to avoid wrong replacement in similiar expressions i.w. field ct test and field ct testing
-				foreach (var cwhere in catalogWheres.OrderByDescending(x=> x.TokenExpression.Length))
+				foreach (var cwhere in catalogWheres.OrderByDescending(x => x.TokenExpression.Length))
 				{
 					advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression, cwhere.Where);
 				}
@@ -716,6 +784,8 @@ namespace d360.web.Controllers.V2
 							inner join IntersectType t on t.PredicateId = p.Id and p.[Type] = 5
 							inner join Asset a on a.AssetTypeId = t.SubjectAssetTypeId
 							inner join AssetDisplayValue d on d.AssetId = a.Id;
+
+				{assetsHierarchyTempTable}
 
 				{permissionTempTableSql}
 
