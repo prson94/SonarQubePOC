@@ -131,11 +131,11 @@ namespace d360.web.Controllers.V2
 		///Sorting is done using _order parameter and sort expressions are specified using operator and property name. For example: `desc(displayValue)`.
 		///
 		///Examples using Ascending Order:
-		///- asc(path)
+		///- asc(displayPath)
 		///- asc(displayValue)
 		///
 		///Examples using Descending Order:
-		///- desc(path)
+		///- desc(displayPath)
 		///- desc(displayValue)
 		/// </remarks>
 		[
@@ -189,7 +189,7 @@ namespace d360.web.Controllers.V2
 			});
 
 			// Add path as the last column.
-			columns.Add(new CatalogColumn { ApiName = "displaypath", Column = "p.DisplayPath", Sort = "p.DisplayPath", JoinStatement = "inner join AssetPath p on p.Id = S.ObjectAssetId", Position = columns.Max(c => c.Position) + 1 });
+			columns.Add(new CatalogColumn { ApiName = "displayPath", Column = "p.DisplayPath", Sort = "p.DisplayPath", JoinStatement = "inner join AssetPath p on p.Id = S.ObjectAssetId", Position = columns.Max(c => c.Position) + 1 });
 
 			#endregion
 
