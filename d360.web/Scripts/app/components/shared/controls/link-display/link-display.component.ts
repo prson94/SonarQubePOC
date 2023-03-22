@@ -50,11 +50,6 @@ export class LinkDisplayComponent {
 	get isRoute(): boolean {
 		return this.routeUrl !== null;
 	}
-
-	get tooltipVisible(): boolean {
-		return this.showTooltip && !this.isRoute;
-	}
-
 }
 
 @NgModule({
