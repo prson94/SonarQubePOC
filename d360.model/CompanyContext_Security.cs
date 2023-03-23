@@ -587,6 +587,7 @@ namespace d360.model
 		private async Task ProcessRuleForAsset(ResponsibilityTypeRelationRule rule, List<ResponsibilityAssetMeasureProcessedResult> results, int timeout = 3600)
 		{
 			string sqlToExecute = "";
+			string declareVar = "";
 
 			using (SqlTransaction transaction = Connection.BeginTransaction())
 			{
@@ -594,6 +595,7 @@ namespace d360.model
 				{
 					string thenSql = GetThenResultsSql(rule, false, transaction, false, "", false);
 					var whenQueryData = await GetWhenResultsSql(rule, transaction, false, false).ConfigureAwait(false);
+					declareVar = whenQueryData.DeclareVariable;
 
 					thenSql = string.Format(thenSql, "");
 
@@ -603,6 +605,8 @@ namespace d360.model
 
 					//merge into the asset table 
 					sqlToExecute = $@"
+							{declareVar}
+
 							{whenQueryData.TempTableQuery}
 
 							merge [dbo].[ResponsibilityRuleResultAsset] as T
