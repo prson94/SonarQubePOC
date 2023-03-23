@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.dbo.GetReferenceItemValues-v3.3">
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.GetReferenceItemValues-v3.4">
+  <comment>GOV-21224</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -159,7 +160,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = O.ID
             ).value('.', 'NVARCHAR(MAX)'), 1,2,'')
   end
   
- SET @tsql = @tsqlSelect + @tsqlFrom + @tsqlWhere + @tsqlSort;  
+ SET @tsql = isnull(@tsqlSelect,' ') + isnull(@tsqlFrom, ' ') + isnull(@tsqlWhere,' ') + isnull(@tsqlSort,' ');  
     print(@tsql);
  EXEC sp_executesql @tsql;
 END
@@ -170,7 +171,8 @@ END
 create or alter procedure [dbo].[GetReferenceItemValues]   
  @listid int,  
  @resourceID int = 0,  
- @useApiName bit = 0  
+ @useApiName bit = 0,
+ @applySortOrder int = 1
 AS  
 BEGIN  
  SET NOCOUNT ON;  
@@ -183,22 +185,22 @@ BEGIN
 		@isAdmin = [IsAdministrator]  
  from	[reporting].[Global_Resource]  
  where	[ResourceID] = @resourceID;  
-  
+ 
  drop table if exists #fieldtypes  
  drop table if exists #parentTypes  
- create table #fieldtypes (ID int, Name nvarchar(250))  
+ create table #fieldtypes (identifier [int] IDENTITY(0,1) NOT NULL, ID int, Name nvarchar(250), SortOrder int, SortByAscending bit, type varchar(25))   
  create table #parentTypes (IntersectTypeID int, Name nvarchar(250), ReferenceListTypeID int, ParentLevel int)  
   
    
- if @useApiName = 1  
+  if @useApiName = 1  
   begin  
    insert into #fieldtypes  
-    select ID, [Name] from fieldtype where AssetTypeID = @listAssetTypeId order by ColumnOrder  
+    select ID, [Name], case when SortOrder>0 then SortOrder else null end, SortByAscending, Type from fieldtype where AssetTypeID = @listAssetTypeId order by ColumnOrder  
   end  
  else  
   begin  
    insert into #fieldtypes  
-    select ID, 'Field' + cast(id as varchar(100)) as [Name] from fieldtype where AssetTypeID = @listAssetTypeId order by ColumnOrder  
+    select ID, 'Field' + cast(id as varchar(100)) as [Name], case when SortOrder>0 then SortOrder else null end, SortByAscending, Type from fieldtype where AssetTypeID = @listAssetTypeId order by ColumnOrder  
   end  
   
  declare @parentLevel int = 0;  
@@ -228,6 +230,7 @@ BEGIN
  declare @tsqlFrom nvarchar(max);  
  declare @tsqlWhere nvarchar(max);  
  declare @tsql nvarchar(max);  
+ declare @tsqlSort nvarchar(max) = '';
   
  set @tsqlSelect = 'select O.ObjectID as [ID] , O.code as [Code], o.id as [AssetID], o.uid as [UID]';  
  set @tsqlFrom = 'from AssetType AT inner join Asset O on O.AssetTypeID = AT.ID ';  
@@ -299,10 +302,23 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = O.ID
  begin   
   SET @tsqlSelect = @tsqlSelect + ', cast(1 as bit) as P_CanEdit, cast(1 as bit) as P_CanDelete '  
  end  
+ 
+ if @applySortOrder = 1
+  Begin
+
+  set @tsqlSort =' order by '
+
+  SELECT @tsqlSort = @tsqlSort + Stuff((Select ', ' + case when t2.Type in ('Counter', 'Decimal', 'Number') then 'CAST(' + 'f'+cast(identifier as nvarchar)+'.FormattedValue' + ' as float)' else 'f'+cast(identifier as nvarchar)+'.FormattedValue' end  + case when SortByAscending=1 then ' asc' else ' Desc' end
+                   FROM #fieldtypes t2
+				   where SortOrder > 0
+				   order by SortOrder asc
+                   FOR XML PATH(''), TYPE
+            ).value('.', 'NVARCHAR(MAX)'), 1,2,'')
+  end
   
- SET @tsql = @tsqlSelect + @tsqlFrom + @tsqlWhere;  
+ SET @tsql = @tsqlSelect + @tsqlFrom + @tsqlWhere + @tsqlSort;  
     print(@tsql);
- EXEC sp_executesql @tsql;  
+ EXEC sp_executesql @tsql;
 END
 		]]>
 	</rollback>
