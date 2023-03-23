@@ -510,8 +510,7 @@ END;
 		IF COL_LENGTH('[dbo].[FieldType]', 'UseDisplayFormat') IS NULL
 		BEGIN
 			alter table dbo.FieldType
-			add [UseDisplayFormat] bit null
-			default 0
+			add [UseDisplayFormat] [bit] CONSTRAINT [DF_FieldType_UseDisplayFormat] DEFAULT (0) NOT NULL			
 		END
 	  ]]>
     </sql>
