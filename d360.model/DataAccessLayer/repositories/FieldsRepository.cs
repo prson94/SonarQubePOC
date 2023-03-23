@@ -719,7 +719,7 @@ namespace d360.model.DataAccessLayer
 					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
 				}
 
-				if (f.Name.ToLower()== "code")
+				if (f.Name.ToLower()== "code" && f.Type.System==null)
 				{
 					var assetType  = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 					if(assetType.Class == AssetTypeClass.Reference)
