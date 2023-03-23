@@ -174,8 +174,8 @@ namespace d360.model.DataAccessLayer
 					{
 						throw new ArgumentException(AssetTypeErrors.InvalidValueincludeLevels, includeLevelsString);
 					}
-				}				
-				
+				}
+
 				if (queryParams.Any(q => q.Key.ToLower() == "includeupdatedandcreatedfields"))
 				{
 					var IncludeCreatedOnCreatedByString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "includeupdatedandcreatedfields").Value;
@@ -274,7 +274,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						{condition}
 						order by    P.[Path]
 						";
-			
+
 
 			// If you change the order of the select columns please pay attention to the dapper multimap split on parameter where it is splitting out the icon class.
 			return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param: dbArgs, map: (a, i) => { a.IconStyle = i; return a; }, splitOn: "Path,BackColor", timeout: ApiTimeout);
@@ -1263,7 +1263,14 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 								targetJoins.Add($"ATarget{i}.ID");
 								sb.AppendLine($"left join Asset ATarget{i} on ATarget{i}.ID = I{i}.SubjectAssetID AND ATarget{i}.ID IN (select AssetId from #filtered_parents_simple_filter)");
 							}
-							sb.AppendLine($"where tfa.AssetId is null and a.AssetTypeID = @assettypeid and coalesce({string.Join(",", targetJoins)}) is not null");
+							if (targetJoins.Count == 1)
+							{
+								sb.AppendLine($"where tfa.AssetId is null and a.AssetTypeID = @assettypeid and {targetJoins.FirstOrDefault()} is not null");
+							}
+							else
+							{
+								sb.AppendLine($"where tfa.AssetId is null and a.AssetTypeID = @assettypeid and coalesce({string.Join(",", targetJoins)}) is not null");
+							}
 
 							pathSegmentsSimpleFilterTempTables = sb.ToString();
 						}
@@ -1711,12 +1718,12 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			}
 
 			var orderByFields = "TempA.ID";
-			
+
 			if (!queryParams.ToList().Any(k => k.Key.ToLower() == "_order") && assetType.Class == AssetTypeClass.Reference && fieldSorts.Count() > 0)
 			{
-				orderByFields = $"{string.Join(",", fieldSorts.OrderBy(x => x.order).Select(y => y.sql))}";				
+				orderByFields = $"{string.Join(",", fieldSorts.OrderBy(x => x.order).Select(y => y.sql))}";
 			}
-			
+
 			var sql = $@"
 				{(useTempTableForResults ? "drop table if exists #results;" : "")}
 				select 
@@ -2459,7 +2466,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					(rowNumber, used) = tuple;
 				}
 			}
-			else {
+			else
+			{
 				foreach (var row in allResults)
 				{
 					index = 1;
