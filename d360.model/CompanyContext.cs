@@ -511,11 +511,11 @@ namespace d360.model
 
 			selectedSql = $@"
 						select	A.ObjectId as [Value],
-								{(ft.UseDisplayFormat.Value ? "ADV.DisplayValue" : "P.DisplayPath" )} as [Text],
+								{(ft.UseDisplayFormat ? "ADV.DisplayValue" : "P.DisplayPath" )} as [Text],
 								1 as Selected 
 						from	[Intersect] i
 								inner join Asset A on A.ID = iif(i.SubjectAssetID = @assetId, i.ObjectAssetID, i.SubjectAssetID)
-								{(ft.UseDisplayFormat.Value ? "inner join AssetDisplayValue ADV on ADV.AssetID = A.ID" : "inner join AssetPath P on P.ID = A.ID")}								
+								{(ft.UseDisplayFormat ? "inner join AssetDisplayValue ADV on ADV.AssetID = A.ID" : "inner join AssetPath P on P.ID = A.ID")}								
 						where	i.intersectTypeID = @intersectTypeID and i.State = 1 and (i.SubjectAssetID = @assetId or i.ObjectAssetID = @assetId)";
 
 			switch (objectAssetClass)

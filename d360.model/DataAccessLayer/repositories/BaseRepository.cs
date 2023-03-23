@@ -579,7 +579,7 @@ namespace d360.model.DataAccessLayer.repositories
 						 }
 						 
 						 assetIdFinalQuery = $@" outer apply (
-							{( f.UseDisplayFormat.Value ? 
+							{( f.UseDisplayFormat ? 
 							$@"
 								select
 									STRING_AGG(TRY_CAST(DisplayValue as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') as FormattedValue									
