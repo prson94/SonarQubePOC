@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,6 @@ using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 
 using Dapper;
-
 using Newtonsoft.Json;
 
 namespace d360.model.DataAccessLayer
@@ -1239,6 +1239,7 @@ namespace d360.model.DataAccessLayer
 
 			int? total = null;
 			string resultsSql;
+			string declareVar = "";
 			string whenTempTables = "";
 			Dictionary<string, object> dbArgs = new Dictionary<string, object>();
 
@@ -1255,6 +1256,7 @@ namespace d360.model.DataAccessLayer
 				var queryData = await Company.GetWhenResultsSql(testModel, null);
 				resultsSql = queryData.SqlQuery;
 				whenTempTables = queryData.TempTableQuery;
+				declareVar = queryData.DeclareVariable;
 				dbArgs = queryData.DbParameters;
 			}
 
@@ -1269,15 +1271,35 @@ namespace d360.model.DataAccessLayer
 				};
 			}
 
+			string countSQL = "";
 			if (includeTotal)
 			{
-				total = await Company.QueryFirstOrDefaultAsync<int>($"{whenTempTables} select count(*) from ({resultsSql}) x {simpleFilterSQL}", dbArgs);
+					countSQL = $@"select count(*) from ({resultsSql}) x 
+									{simpleFilterSQL};";
 			}
+
+			string getAllQuery = $@"{declareVar}
+									{whenTempTables}
+									{countSQL}
+
+									select * from ({resultsSql}) r 
+									{simpleFilterSQL} 
+									{orderSql} 
+									{pagingSql}";
+			
+
 
 			dbArgs.Add("offset", pageSize * (pageNum - 1));
 			dbArgs.Add("rows", pageSize );
 
-			var items = await Company.QueryAsync<ResponsibilityRuleTestResultModel>($"{whenTempTables} select * from ({resultsSql}) r {simpleFilterSQL} {orderSql} {pagingSql}", dbArgs);
+			SqlMapper.GridReader gridReader = await Company.QueryMultipleAsync(getAllQuery, dbArgs);
+
+			if (includeTotal)
+			{
+				total = gridReader.Read<int>().FirstOrDefault();
+			}
+
+			var items = gridReader.Read<ResponsibilityRuleTestResultModel>().ToList();
 
 			return new ResponsibilityRuleTestResponseModel
 			{

@@ -143,6 +143,8 @@ namespace d360.core.entities
 	{
 		public string SqlQuery { get; set; }
 
+		public string DeclareVariable { get; set; }
+
 		public string TempTableQuery { get; set; }
 		public Dictionary<string, object> DbParameters { get => _dbParameters; set => _dbParameters = value; }
 
