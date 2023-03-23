@@ -1190,7 +1190,7 @@ namespace d360.web.Controllers
 					parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
 
 					//Add the colour column after code
-					columns.Insert(columns.IndexOf(columns.First(x => x.apiName.ToLower() == "code")) + 1, new GridColumn { text = Fields.Color_Name, datafield = "Color", });
+					columns.Insert(columns.IndexOf(columns.First(x => x.apiName != null && x.apiName.ToLower() == "code")) + 1, new GridColumn { text = Fields.Color_Name, datafield = "Color", });
 
 					fields.Add(new GridField { name = "AssetID", type = "number" });
 					fields.Add(new GridField { name = "ID", type = "number" });
