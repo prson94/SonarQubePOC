@@ -885,9 +885,14 @@ namespace d360.model
 		public async Task<ResponsibilityWhenQueryData> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true, bool includeUid = true)
 		{
 			var whenSql = new StringBuilder();
+			var declareVar = new StringBuilder();
 			var whenWhereConditions = new List<string>();
 			var whenTempTables = new StringBuilder();
 			Dictionary<string, object> dbArgs = new Dictionary<string, object>();
+
+			declareVar.Append($@"declare @AssetTypeIDValue int;
+							     select @AssetTypeIDValue = id from assettype t where T.Object = '{rule.Object}' and T.ObjectID = {rule.ObjectID};
+								 ");
 
 			whenSql.Append("select distinct A.ID as AssetID ");
 			if (includeName)
@@ -901,13 +906,14 @@ namespace d360.model
 			}
 
 			whenSql.Append($@"
-from	Asset A 
-		inner join AssetPath P on P.ID = A.ID
+		from	Asset A 
+		inner join AssetPath P on P.ID = A.ID and A.AssetTypeID =  @AssetTypeIDValue
 		inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
-		inner join AssetType T on T.ID = A.AssetTypeID and T.Object = '{rule.Object}' and T.ObjectID = {rule.ObjectID} ");
+		");
 
 			int fCount = 1;
 			int rCount = 1;
+			bool iScreateTempTableScriptRun = true;
 
 
 			if (rule.StructuredDefinition != null && rule.StructuredDefinition.When != null)
@@ -924,66 +930,87 @@ from	Asset A
 							if (whenFieldType != null)
 							{
 								string dbParameterName = $"@filter_{fCount}";
+								string dbParameterDefaultValue = $"@DefaultValue_{fCount}";
 								string value = w.Value;
+
+								string defaultValue = "";
+								if (!string.IsNullOrEmpty(whenFieldType.DefaultValue))
+								{
+									defaultValue = whenFieldType.DefaultValue;
+								}
+
+
 								if (whenFieldType.AllowMultipleValues)// multiselect list
 								{
 									fieldWhere =
-										$" where FT.ID = {w.FieldTypeID} and {dbParameterName} in (select value from string_split(coalesce(F.Value, FT.DefaultValue),','))";
+										$" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and {dbParameterName} in (select value from string_split(coalesce(F.Value, {dbParameterDefaultValue}),','))";
 								}
 								else if (whenFieldType.Type == "Text")
 								{
 									switch (w.Operator)
 									{
 										case Operator.NotEquals:
-											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) != {dbParameterName}";
+											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) != {dbParameterName}";
 											break;
 										case Operator.Contains:
 											value = $"%{w.Value.Trim()}%";
-											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE {dbParameterName}";
+											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) LIKE {dbParameterName}";
 											break;
 										case Operator.NotContains:
 											value = $"%{w.Value.Trim()}%";
-											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) NOT LIKE {dbParameterName}";
+											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) NOT LIKE {dbParameterName}";
 											break;
 										case Operator.StartsWith:
 											value = $"{w.Value}%";
-											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE {dbParameterName}";
+											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) LIKE {dbParameterName}";
 											break;
 										case Operator.EndsWith:
 											value = $"%{w.Value}";
-											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) LIKE {dbParameterName}";
+											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) LIKE {dbParameterName}";
 											break;
 										case Operator.Populated:
-											fieldWhere = $" where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is not null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))>0)";  // all field types plus single select list
+											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) is not null or LEN(coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}))>0)";  // all field types plus single select list
 											break;
 										case Operator.NotPopulated:
-											fieldWhere = $" where FT.ID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, FT.DefaultValue) is null or LEN(coalesce(F.Value, F.FormattedValue, FT.DefaultValue))=0)";  // all field types plus single select list
+											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) is null or LEN(coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}))=0)";  // all field types plus single select list
 											break;
 										default:
-											fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = {dbParameterName}";  // all field types plus single select list
+											fieldWhere = $" where ff.AssetId is null and  f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) = {dbParameterName}";  // all field types plus single select list
 											break;
 									}
 
 								}
 								else // all other field types including single select list
 								{
-									fieldWhere = $" where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}'";  // all field types plus single select list
+									fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) = '{w.Value}'";  // all field types plus single select list
+								}
+
+								if (iScreateTempTableScriptRun)
+								{
+									whenTempTables.Append($@"
+									drop table if exists #filtered_field;
+									create table #filtered_field(AssetID Bigint);
+									create clustered index icx_filtered_field on #filtered_field(AssetID);
+									");
 								}
 
 								dbArgs.Add(dbParameterName, value);
+								dbArgs.Add(dbParameterDefaultValue, defaultValue);
 								//load filtered field data into temp table
 								whenTempTables.Append($@"
-									drop table if exists #filtered_field_{fCount}
 
+									insert into #filtered_field
 									select f.AssetID
-									into #filtered_field_{fCount}
 									from Field f
-									inner join FieldType ft on ft.ID = f.FieldTypeID 
+									left join #filtered_field ff on ff.AssetId = f.AssetID
 									{fieldWhere}");
 
 								//filter by using inner join 
-								whenSql.AppendLine($"inner join #filtered_field_{fCount} ftf{fCount} on ftf{fCount}.AssetId = A.Id");
-
+								if (iScreateTempTableScriptRun)
+								{
+									whenSql.AppendLine($"inner join #filtered_field ftf on ftf.AssetId = A.Id");
+								}
+								iScreateTempTableScriptRun = false;
 
 							}
 							else // invalid field type ID so the when is always not going to return anything
@@ -1028,7 +1055,8 @@ from	Asset A
 			{
 				SqlQuery = whenSql.ToString(),
 				TempTableQuery = whenTempTables.ToString(),
-				DbParameters = dbArgs
+				DbParameters = dbArgs,
+				DeclareVariable = declareVar.ToString()
 			};
 		}
 
