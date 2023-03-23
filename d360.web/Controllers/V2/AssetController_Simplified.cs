@@ -112,21 +112,31 @@ namespace d360.web.Controllers.V2
 		/// </summary>
 		/// <remarks>
 		///Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example: `city eq 'Redmond'`.
-		///*  For comparison operators on Text fields you can use eq (equal), neq (not equal), ct (contains), nct (not contains)
+		///*  For comparison operators on Text fields you can use eq (equal), ne (not equal), ct (contains), nct (not contains)
 		///*  For comparison operators on List fields you can use in (in) and nin (not in)
 		///     
 		///Example :
 		///     
-		///- **Text Comparison Operators**
+		///- **Text comparing operators ** (displayValue, displayPath)
 		///	- Equals operator - {fieldname} eq Data
-		///	- Not equals operator - {fieldname} neq Data
+		///	- Not equals operator - {fieldname} ne Data
 		///	- Contains operator - {fieldname} ct Data
 		///	- Not Contains operator - {fieldname} nct Data
-		///- **List Comparison Operators**
-		///	- In operator - {fieldname} in Data
-		///	- In operator - {fieldname} in Data1,Data2
-		///	- Not In operator - {fieldname} nin Data
-		///	- Not In operator - {fieldname} nin Data1,Data2
+		///	- Starts with operator - {fieldname} ct Data*
+		///	- Ends with operator - {fieldname} ct *Data
+		///	
+		///- **List Comparison Operators** (Reference List values)
+		///	- Equals operator - {fieldname} eq Data
+		///	- Not equals operator - {fieldname} neq Data
+		///	- Is Populated - {fieldname} eq null
+		///	- Is Not Populated - {fieldname} ne null
+		///	
+		///- ** Logical Operators **
+		/// - Logical and - {fieldname} ge 00 and {fieldname} le 99
+		/// - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		/// - AssetPath Contains (Match All(and)) - (({AssetPathFieldName} ct 'APValue1') and ({AssetPathFieldName} ct 'APValue2') )
+		/// - AssetPath Contains (Match Any(or)) - (({AssetPathFieldName} ct 'APValue1') or ({AssetPathFieldName} ct 'APValue2'))
+		///
 		///
 		///Sorting is done using _order parameter and sort expressions are specified using operator and property name. For example: `desc(displayValue)`.
 		///
