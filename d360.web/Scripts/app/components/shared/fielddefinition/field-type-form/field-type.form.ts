@@ -27,6 +27,8 @@ import {
 } from '../../../../models/fieldtype-api.model';
 import { AssetService } from '../../../../services/asset.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
+import { RelationshipsService } from "../../../../services/relationships.service";
+import { RelationshipType } from "../../../../models/relationship.model";
 
 
 @Component({
@@ -56,6 +58,10 @@ import { CompanySettingsService } from '../../../../services/settings.service';
                 display: flex;
                 gap: 12px;
             }
+
+			.display-format-label{
+				color: red;
+			}
         `
     ],
     providers: [FieldsObservableService, ObjectDetailService, AssetService],
@@ -98,7 +104,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private lookups: Lookups = new Lookups();
     private lookupDefaultValueOptions: SelectItem[];
-    private booleanDefaultValueOptions: SelectItem[];
+	private booleanDefaultValueOptions: SelectItem[];
+	private relationshipDisplayFormatValueOptions: SelectItem[];
     private scoreTypeOptions: SelectItem[];
     private model: FieldTypeEditorModel;
     private initialItem: FieldTypeEditorModel;
@@ -156,16 +163,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private disableFieldTypeSelection: boolean = false;
     public enableListSingleResponsibilityType: boolean = false;
     public listSingleSegmentCheckbox: boolean = false;
-    public assetTypeAncestries: AssetTypeAncestry[] = [];
+	public assetTypeAncestries: AssetTypeAncestry[] = [];
+	public relationshipList: RelationshipType[];
 
 	chooseLabel = $localize`Choose...`;
 	loadingLabel = $localize`Loading...`;
+	displayFormatLabel = $localize`Display Format`;
 
     constructor(private fieldsService: FieldsObservableService,
         private messagesService: MessagesObservableService,
         private objectDetailService: ObjectDetailService,
         private assetService: AssetService,
-        protected settingsService: CompanySettingsService
+		protected settingsService: CompanySettingsService,
+		private relationshipService: RelationshipsService,
     ) {
         super(settingsService);
         this.model = new FieldTypeEditorModel();
@@ -174,7 +184,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             { label: $localize`-No Default-`, value: null },
             { label: $localize`True`, value: true },
             { label: $localize`False`, value: false },
-        ];
+		];
+		this.relationshipDisplayFormatValueOptions = [
+			{ label: this.displayFormatLabel, value: true },
+			{ label: $localize`Asset Path`, value: false },
+		];
     }
 
     ngOnInit() {
@@ -272,7 +286,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.getFieldTypeEditorHandler(fieldTypeEditor);
                     this.setListSingleSegmentCheckbox(fieldTypeEditor);
                     this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
-                        .subscribe((s) => {
+						.subscribe((s) => {							
+							this.getRelationshipDetails();		
                             this.getLookupsHandler(s);
                             this.fieldsService.getFormData(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                                 .subscribe((formData) => {
@@ -305,13 +320,22 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType = new FieldTypeAPIModelField();
 
             this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
-                .subscribe((x) => {
+				.subscribe((x) => {
+					this.getRelationshipDetails();			
                     this.getLookupsHandler(x);
                     this.model.FieldType.Type = new FieldType(); //Set as Empty to allow for selection.
                     this.isLoading = false;
                 });
         }
-    }
+	}
+
+	private getRelationshipDetails() {
+		this.relationshipService.getRelationshipTypes(this.assetTypeUid, false, false, true).subscribe(
+				(x) => {
+					this.relationshipList = x;
+				}
+			);			
+	}
 
     private loadComplexRelationLookup() {
         //load existing values
@@ -579,15 +603,28 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.isListableRelationship = false;
 
         //update the model to have correct lookuptype object and id
-        this.model.FieldType.Type["Relationship"].IntersectTypeUid = value.toLocaleLowerCase();
+		this.model.FieldType.Type["Relationship"].IntersectTypeUid = value.toLocaleLowerCase();
 
-        return this.fieldsService.getRelationshipFieldIsListable(value, this.assetTypeUid)
+		this.updateRelationshipDisplayFormatLabel(value.toLocaleLowerCase());
+
+		return this.fieldsService.getRelationshipFieldIsListable(value, this.assetTypeUid)
             .pipe(map((res) => {
                 this.isListableRelationship = res;
                 if (!this.isListableRelationship)
                     {this.model.FieldType.Type[this.currentType].IsListable = this.isListableRelationship;}
             }));
-    }
+	}
+
+	private updateRelationshipDisplayFormatLabel(intersectTypeUid: string) {		
+		this.relationshipList.filter(r => r.Uid === intersectTypeUid).map(x => {
+			if (x.Subject.Uid === this.assetTypeUid) {
+				this.relationshipDisplayFormatValueOptions[0].label = `${this.displayFormatLabel} : ${x.Object.DisplayFormat}`
+			} else {
+				this.relationshipDisplayFormatValueOptions[0].label = `${this.displayFormatLabel} : ${x.Subject.DisplayFormat}`
+			}
+		}
+		);
+	}	
 
     private cardinalFieldFromRelationshipSelected(value: string, fieldTypename: string = null): Observable<any> {
 

@@ -2364,10 +2364,13 @@ namespace d360.web.Controllers.V2
 									declare @assetTypeId int = (select top 1 id from assettype where id = @targetassettypeid)";
 
 					sql += onlyCount ? Environment.NewLine + "select 1 where 1 = 0;" : $@"
-									select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
-									 inner join AssetPath Node on Node.id = a.id
+									select 
+										ObjectId as value,
+									{(fieldType.UseDisplayFormat.Value? "ADV.DisplayValue" : "isnull(node.DisplayPath,'Path Missing') ")} as text										
+									from Asset A
+									{(fieldType.UseDisplayFormat.Value ? "inner join AssetDisplayValue ADV on ADV.AssetID = a.id" : "inner join AssetPath Node on Node.id = a.id")}									 
 									where a.AssetTypeID = @assetTypeId {whereQuery}
-									order by node.displaypath
+									order by {(fieldType.UseDisplayFormat.Value ? "ADV.DisplayValue" : "node.displaypath")} 
 									{pagingQuery}
 									OPTION(RECOMPILE);";
 					sql += $@"

@@ -499,4 +499,27 @@ END;
 		]]>
 	</rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Table.dbo.FieldType-v9">
+    <comment>GOV-14922</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		
+		IF COL_LENGTH('[dbo].[FieldType]', 'UseDisplayFormat') IS NULL
+		BEGIN
+			alter table dbo.FieldType
+			add [UseDisplayFormat] bit null
+			default 0
+		END
+	  ]]>
+    </sql>
+    <rollback>
+      <![CDATA[		
+		alter table dbo.FieldType 
+		drop column if exists UseDisplayFormat
+	  ]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>
