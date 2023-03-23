@@ -2366,11 +2366,11 @@ namespace d360.web.Controllers.V2
 					sql += onlyCount ? Environment.NewLine + "select 1 where 1 = 0;" : $@"
 									select 
 										ObjectId as value,
-									{(fieldType.UseDisplayFormat.Value? "ADV.DisplayValue" : "isnull(node.DisplayPath,'Path Missing') ")} as text										
+									{(fieldType.UseDisplayFormat? "ADV.DisplayValue" : "isnull(node.DisplayPath,'Path Missing') ")} as text										
 									from Asset A
-									{(fieldType.UseDisplayFormat.Value ? "inner join AssetDisplayValue ADV on ADV.AssetID = a.id" : "inner join AssetPath Node on Node.id = a.id")}									 
+									{(fieldType.UseDisplayFormat ? "inner join AssetDisplayValue ADV on ADV.AssetID = a.id" : "inner join AssetPath Node on Node.id = a.id")}									 
 									where a.AssetTypeID = @assetTypeId {whereQuery}
-									order by {(fieldType.UseDisplayFormat.Value ? "ADV.DisplayValue" : "node.displaypath")} 
+									order by {(fieldType.UseDisplayFormat ? "ADV.DisplayValue" : "node.displaypath")} 
 									{pagingQuery}
 									OPTION(RECOMPILE);";
 					sql += $@"
