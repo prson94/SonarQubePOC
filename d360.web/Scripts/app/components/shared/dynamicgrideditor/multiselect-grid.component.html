@@ -36,7 +36,7 @@
              [scrollHeight]="selectionScrollHeight">
         <ng-template pTemplate="header">
             <tr>
-                <th style="flex: 0 0 38px;">
+                <th width="30px">
                     <p-tableHeaderCheckbox *ngIf="multiple"></p-tableHeaderCheckbox>
                 </th>
                 <th i18n>Available Assets</th>
@@ -44,7 +44,7 @@
         </ng-template>
         <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
             <tr [pSelectableRow]="item">
-                <td style="flex: 0 0 38px;padding-left:10px;" class="disable-pointer-events">
+                <td class="disable-pointer-events">
                     <p-tableRadioButton *ngIf="!multiple" [value]="item"></p-tableRadioButton>
                     <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
                 </td>
