@@ -1887,7 +1887,7 @@ namespace d360.web.Controllers
 				var uid = isSubject ? intersect.ObjectUid : intersect.SubjectUid;
 
 				var assetInfo = relationshipAssetInfo.Where(x => x.Uid == uid).FirstOrDefault();
-				var intersectDisplayValue = assetInfo?.DisplayPath ?? assetInfo?.DisplayValue;
+				var intersectDisplayValue = ft.UseDisplayFormat.Value ? assetInfo?.DisplayValue : assetInfo?.DisplayPath ?? assetInfo?.DisplayValue;
 
 				if (objectsWithoutReadAccess != null && objectsWithoutReadAccess.Any(x => x.Object == obj && x.ObjectID == objID))
 				{

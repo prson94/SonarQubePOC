@@ -12,7 +12,8 @@ export class RelationshipTypeEdge {
 	Uid: string;
 	Name: string;
 	Class: string;
-	Cardinality: string;
+	Cardinality: string;	
+	DisplayFormat: string;
 }
 
 export class RelationshipTypeSimpleUIModel {

@@ -687,7 +687,7 @@ namespace d360.model.DataAccessLayer
 						includeAssetPath = false;
 					}
 				}
-
+				
 				if (fieldTypes != null && fieldTypes.Count() > 0)
 				{
 					getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "i.Id", listColorsAsJSON, objectType: SystemObjects.Intersect, IsCreateTempTable: true, TempTableScriptList: TempTableScriptList);
@@ -1161,7 +1161,7 @@ select	lower(I.Uid) as Uid,
 		P.Inverse as 'Predicate.Inverse',
 		lower(S.Uid) as 'Subject.Uid',
 		ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid'
-		{(includeAssetPath ? ",ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'" : "")}
+		{(includeAssetPath ? ",ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'" : "")}	
 		{(isExport ? ",PS.[Path] as 'Subject.AssetTypePath'" : "")}                
 		{(isExport ? ",ADVS.DisplayValue as 'Subject.DisplayName'" : "")}
 		,lower(O.Uid) as 'Object.Uid'
@@ -1169,7 +1169,7 @@ select	lower(I.Uid) as Uid,
 		{(isExport ? ",ADVO.DisplayValue as 'Object.DisplayName'" : "")}
 		{(isExport ? ",PO.[Path] as 'Object.AssetTypePath'" : "")}
 		{(includeAssetPath ? ",ISNULL(ANDP_Object.DisplayPath,OT2.Name) as 'Object.[Path]'" : "")}
-				
+		
 		{baseTableSql(true)}
 		{string.Join("\n", fieldJoins.GetStatements())}
 		order by TempI.ID
@@ -1284,6 +1284,7 @@ OPTION(RECOMPILE)";
 			bool includeHasRelationships = false;
 			bool includeTotalRelationshipCount = false;
 			bool includeCreatedModifiedBy = false;
+			bool includeDisplayFormat = false;
 
 			if (queryParams != null)
 			{
@@ -1377,6 +1378,12 @@ OPTION(RECOMPILE)";
 					var includeCreatedModifiedByString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includecreatedmodifiedby").Value;
 					bool.TryParse(includeCreatedModifiedByString, out includeCreatedModifiedBy);
 				}
+
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includedisplayformat"))
+				{
+					var includeDisplayFormatString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includedisplayformat").Value;
+					bool.TryParse(includeDisplayFormatString, out includeDisplayFormat);
+				}
 			}
 
 			List<string> additionalColumns = new List<string>();
@@ -1428,11 +1435,13 @@ select	I.Id,
 		coalesce(SP.[Path], S.Name, S9.Name) as 'Subject.Name',
 		coalesce(I.SubjectClass,0) as 'Subject.Class',
 		I.SubjectCardinality as 'Subject.Cardinality',
+		{(includeDisplayFormat ? "ISNULL(lower(S.DisplayFormat),lower(S9.DisplayFormat)) as 'Subject.DisplayFormat'," : "")}
 		coalesce(O.Uid,O9.Uid) as 'Object.Uid',
 		coalesce(OP.[Path], O.Name, O9.Name)  as 'Object.Name',
 		coalesce(I.ObjectClass,0) as 'Object.Class',
 		I.ObjectCardinality as 'Object.Cardinality'
 		{(additionalColumns.Count > 0 ? string.Join(Environment.NewLine, additionalColumns) : "")}
+		{(includeDisplayFormat ? ",ISNULL(lower(O.DisplayFormat),lower(O9.DisplayFormat)) as 'Object.DisplayFormat'" : "")}		
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
 		left join AssetType S on S.ID = I.SubjectAssetTypeID and I.SubjectAssetTypeID > 0

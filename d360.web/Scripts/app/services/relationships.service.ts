@@ -28,7 +28,7 @@ export class RelationshipsService extends BaseObservableService {
 
 	constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-	getRelationshipTypes(assetTypeUid: string = null, includeHasRelationships: boolean = false, includeTotalRelationshipCount: boolean = false): Observable<RelationshipType[]> {
+	getRelationshipTypes(assetTypeUid: string = null, includeHasRelationships: boolean = false, includeTotalRelationshipCount: boolean = false, includeDisplayFormat: boolean = false): Observable<RelationshipType[]> {
         let url = 'api/v2/relationships/types?state=1';
 
         if (assetTypeUid) {
@@ -41,7 +41,11 @@ export class RelationshipsService extends BaseObservableService {
 
 		if (includeTotalRelationshipCount) {
 			url += `&includeTotalRelationshipCount=true`;
-        }
+		}
+
+		if (includeDisplayFormat) {
+			url += `&includeDisplayFormat=true`;
+		}
 
         return this.http.get(url)
             .pipe(

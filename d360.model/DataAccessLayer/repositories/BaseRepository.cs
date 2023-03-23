@@ -579,9 +579,22 @@ namespace d360.model.DataAccessLayer.repositories
 						 }
 						 
 						 assetIdFinalQuery = $@" outer apply (
-							select STRING_AGG(TRY_CAST(DisplayPath as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetPath where ID in (
-							{assetIdQuery})
-							having string_agg(TRY_CAST(DisplayPath as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') is not null
+							{( f.UseDisplayFormat.Value ? 
+							$@"
+								select
+									STRING_AGG(TRY_CAST(DisplayValue as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') as FormattedValue									
+								from 
+									AssetDisplayValue ADV	
+								where 
+									assetid in ({assetIdQuery})"
+							: 
+							$@"
+								select 
+									STRING_AGG(TRY_CAST(DisplayPath as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') as FormattedValue 
+								from 
+									AssetPath where ID in ({assetIdQuery})
+								having 
+									string_agg(TRY_CAST(DisplayPath as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') is not null")}							
 							) {tableAlias} ";
 
 						 fieldJoins.Add(assetIdFinalQuery, f.ID.ToString());

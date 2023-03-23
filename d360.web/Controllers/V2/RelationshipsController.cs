@@ -450,7 +450,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included and if leave out this parameter.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("_includePath", "Includes Asset path values to both object and subject side.  The default is false meaning relationships will not return asset path.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of a relationship. Filtering is done using 'Contains' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
-			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),			
 		]
 		public async Task<HttpResponseMessage> GetRelationshipsAsync(CancellationToken cancellationToken, State? State = null)
 		{
@@ -991,6 +991,7 @@ namespace d360.web.Controllers.V2
 		/// <param name="includeHasRelationships">Return a property "HasRelationships". If Relationship Type has relationships value is true otherwise false.</param>
 		/// <param name="includeTotalRelationshipCount">Return a property "TotalRelationshipCount". Returns number of total relationships for type.</param>
 		/// <param name="includeCreatedModifiedBy">"Include the CreatedByName, CreatedByUid, ModifiedByName and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.</param>
+		/// <param name="includeDisplayFormat">"Includes Asset Type Display format values to both object and subject side. The default is false meaning relationships will not return the display format.</param>		
 		/// <returns></returns>
 		[
 			HttpGet,
@@ -1000,7 +1001,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, State? State = null, bool? includeHasFieldTypes = null, bool? includeHasRelationships = null, bool? includeTotalRelationshipCount = null, bool? includeCreatedModifiedBy = null, Guid? RelationshipTypeUid = null)
+		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, State? State = null, bool? includeHasFieldTypes = null, bool? includeHasRelationships = null, bool? includeTotalRelationshipCount = null, bool? includeCreatedModifiedBy = null, Guid? RelationshipTypeUid = null, bool? includeDisplayFormat = null)
 		{
 			var prefix = "Relationships.GetRelationshipTypesAsync => ";
 			string errorMessage;
@@ -1047,6 +1048,11 @@ namespace d360.web.Controllers.V2
 				if (RelationshipTypeUid.HasValue)
 				{
 					queryParams.Add(new KeyValuePair<string, string>("RelationshipTypeUid", RelationshipTypeUid.Value.ToString()));
+				}
+
+				if (includeDisplayFormat.HasValue)
+				{
+					queryParams.Add(new KeyValuePair<string, string>("includeDisplayFormat", includeDisplayFormat.ToString()));
 				}
 
 				var types = await RelationshipRepository.GetRelationshipTypes(queryParams);

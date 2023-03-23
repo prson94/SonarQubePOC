@@ -31,8 +31,8 @@
                                    type="text"
                                    [(ngModel)]="model.FieldType.FriendlyName"
                                    style="width: 98%; display: block;"
-                                   (keyup)="syncApiNameWithName && updateApiName($event)"
-                                   [igDataCy]="'FieldType_Field_Name'"
+                                   (keyup)="syncApiNameWithName && updateApiName($event)"                                   
+                                   [igDataCy]="'FieldType_Field_Name'"                                  
                                    #friendlyName="ngModel" />
                             <div [hidden]="friendlyName.valid || friendlyName.pristine" i18n>Friendly name is required</div>
                         </div>
@@ -60,7 +60,7 @@
                                    pInputText
                                    type="number"
                                    [(ngModel)]="model.FieldType.Type[currentType].ColumnWidth"
-                                   [igDataCy]="'FieldType_Field_Width'"
+                                   [igDataCy]="'FieldType_Field_Width'"                                   
                                    style="width: 25%; display: block;" />
                         </div>
                     </div>
@@ -820,7 +820,7 @@
                           active="true"
                           *ngIf="currentType == 'Relationship'">
             <div class="row">
-                <div class="col s12"
+                <div class="col s6"
                      style="margin: 10px 0 10px 0">
                     <div class="FieldName" i18n>Relationship</div>
                     <p-dropdown [ngModelOptions]="{standalone: true}"
@@ -831,6 +831,18 @@
                                 i18n-placeholder
                                 placeholder="'Select relationship'"
                                 ngDefaultControl></p-dropdown>
+                </div>
+                <div class="col s6"
+                     style="margin: 10px 0 10px 0">
+                    <div class="FieldName" i18n>Asset Display</div>
+                    <p-dropdown [ngModelOptions]="{standalone: true}"
+                                [options]="relationshipDisplayFormatValueOptions"
+                                [ngModel]="model.FieldType.Type[currentType].UseDisplayFormat"
+                                (ngModelChange)="model.FieldType.Type[currentType].UseDisplayFormat=$event;"
+                                [style]="{ 'width': '98%' }"
+                                i18n-placeholder
+                                ngDefaultControl>
+                    </p-dropdown>
                 </div>
             </div>
         </simple-accordion>

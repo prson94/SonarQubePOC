@@ -546,6 +546,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Relationship' then FT.SearchSuffix else null end as 'Type.Relationship.Search.Suffix', 
 										case when FT.Type = 'Relationship' then FT.SearchDisplayOrder else null end as 'Type.Relationship.Search.DisplayOrder', 
 										case when FT.Type = 'Relationship' then FT.DisplayInColumn else null end as 'Type.Relationship.DisplayInColumn', 
+										case when FT.Type = 'Relationship' then FT.UseDisplayFormat else null end as 'Type.Relationship.UseDisplayFormat', 
 
 										case when FT.Type = 'Text' then FT.ColumnOrder else null end as 'Type.Text.ColumnOrder',
 										case when FT.Type = 'Text' then FT.ColumnWidth else null end as 'Type.Text.ColumnWidth',
@@ -1767,7 +1768,8 @@ namespace d360.model.DataAccessLayer
 					newFieldType.SortByAscending = f.Type.Relationship.SortByAscending;
 					newFieldType.IsPrimaryFilter = f.Type.Relationship.IsPrimaryFilter;
 					newFieldType.DisplayInColumn = f.Type.Relationship.DisplayInColumn;
-					
+					newFieldType.UseDisplayFormat = f.Type.Relationship.UseDisplayFormat;
+
 					if (f.Type.Relationship.Search != null)
 					{
 						newFieldType.SearchAddToResult = f.Type.Relationship.Search.AddToResult;
@@ -2021,6 +2023,7 @@ namespace d360.model.DataAccessLayer
 					currentFieldType.CounterPrefix = newFieldType.CounterPrefix;
 					currentFieldType.CounterInitialIndex = newFieldType.CounterInitialIndex;
 					currentFieldType.DisplayInColumn = newFieldType.DisplayInColumn;
+					currentFieldType.UseDisplayFormat = newFieldType.UseDisplayFormat;
 
 					fieldTypeNamesToDelete.Add(f.Name);
 				}

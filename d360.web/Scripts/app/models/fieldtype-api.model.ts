@@ -193,7 +193,8 @@ export class Boolean implements ICommonOptions {
     IntersectTypeUid?: string;
     Validation: BooleanValidation = new BooleanValidation();
     Search: Search = new Search();
-    DisplayInColumn: boolean = false;
+	DisplayInColumn: boolean = false;
+	UseDisplayFormat: boolean = false;
 }
 
 export class Description {
