@@ -331,10 +331,10 @@ namespace d360.web.Controllers.V2
 										Query = $@"select distinct ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue {operation} @p{parameterIndex}"
 									});
 								}
-								else if (column.ApiName == "displaypath")
+								else if (column.ApiName.ToLowerInvariant() == "displaypath")
 								{
 									string query = "";
-									if ((filterOperation == "ct" || filterOperation == "nct") && !filterValue.Contains("*"))
+									if ((filterOperation == "ct" || filterOperation == "nct") && filterValue.Contains("*"))
 									{
 										//contains and not contains operator needs to use temp table that contains hierarchy of all catalog asset
 										//with temp table we can filter out results faster
@@ -349,6 +349,11 @@ namespace d360.web.Controllers.V2
 													where a.AssetTypeID = ITD.ObjectAssetTypeID
 													)Type(Depth)
 													where ITD.PredicateType = {(int)PredicateType.CatalogBrowse}")).FirstOrDefault();
+
+											if (hierarchyMaxDepth == 0)
+											{
+												hierarchyMaxDepth = 1;
+											}
 
 											List<string> selects = new List<string>();
 											List<string> joins = new List<string>();
@@ -397,6 +402,9 @@ namespace d360.web.Controllers.V2
 										List<string> hierarchyLevelSearchJoins = new List<string>();
 										List<string> hierarchyLevelSearchWheres = new List<string>();
 										string whereConnector = " and ";
+
+										hierarchyLevelSearchJoins.Add($"left join #filtered_parents_{parameterIndex} fp_object on fp_object.AssetID = h.ObjectAssetId");
+										hierarchyLevelSearchWheres.Add("fp_object.assetid is not null");
 
 										dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "%")}");
 										for (int i = hierarchyMaxDepth; i > 0; i--)
