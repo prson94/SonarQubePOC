@@ -683,13 +683,20 @@ namespace d360.model.DataAccessLayer.repositories
 						 {
 							 temptablename = $@"#TempLookUp{f.LookupObjectType}{f.LookupObjectID}";
 							 temptableScript = $@" 
+
+								declare @at_temp_ft_{f.ID} int;
+								select @at_temp_ft_{f.ID} = (Select top 1 ID from AssetType att where att.Object = '{type}' and att.objectid = {f.LookupObjectID})
+
 								drop table if exists {temptablename};
-								select A.[Object],A.[ObjectID],A.ID,A.Code,COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
+								select A.ID, A.Object as Object, A.ObjectID as ObjectId, A.Code as Code, CAST(A.Color as nvarchar(max)) as color
 								into {temptablename}
-								from AssetType Att
-								inner join Asset A on Att.ID = A.AssetTypeId
-								cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
-								where att.Object = '{type}' and att.objectid = {f.LookupObjectID};
+								from Asset A where A.AssetTypeID = @at_temp_ft_{f.ID}
+								option(recompile);
+
+								Update T
+								set t.color = COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent')
+								from {temptablename} T
+								cross apply dbo.GetAssetColorJsonByColor(t.color) ACJ
 
 								create index ix_{temptablename} on {temptablename}(object,objectid);
 
