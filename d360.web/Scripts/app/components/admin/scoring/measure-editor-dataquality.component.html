@@ -67,13 +67,9 @@
                             <label></label>
                             <div *ngIf="verb == 'Edit'">
                                 <ig-message-box>
-                                    <span *ngIf="model.HasResults" i18n>
+                                    <span i18n>
                                         As scoring data has been collected against this measure (effective from {{currentEffectiveDate | utcDate | date:'shortDate' }}),
                                         any changes you make to this measure will result in a  new version being created, with a new effective date.
-                                    </span>
-                                    <span *ngIf="!model.HasResults" i18n>
-                                        Keep an effective date of {{currentEffectiveDate | utcDate | date:'shortDate' }} to update the current version of the measure.
-                                        Choose a later date to create a new version of the measure, which will be used in future calculations
                                     </span>
                                 </ig-message-box>
                             </div>
