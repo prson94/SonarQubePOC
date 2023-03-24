@@ -34,13 +34,14 @@ export class AdminResourcesComponent extends AdminBaseComponent implements OnIni
         this.adminHeading = StringConstants.SubArea_Security;
         this.secondaryNavService = secondaryNavService;
 
-        this.setCommonItems();
-		this.setObjectInfo('ResourceType', 1);
-		this.buildSecondaryNavigation({ assetTypeUid: this.resourceTypeUid });
     }
 
     ngOnInit() {
-        this.clearSidebar();
+		this.clearSidebar();
+
+		this.setCommonItems();
+		this.setObjectInfo('ResourceType', 1);
+		this.buildSecondaryNavigation({ assetTypeUid: this.resourceTypeUid, forceRefresh: true });
     }
 
     getSidePanelWidth(): number {
