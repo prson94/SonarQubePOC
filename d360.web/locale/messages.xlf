@@ -6020,7 +6020,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">95</context>
+          <context context-type="linenumber">91</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/score-calculation.component.html</context>
@@ -6862,7 +6862,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">246</context>
+          <context context-type="linenumber">242</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
@@ -6870,7 +6870,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">315</context>
+          <context context-type="linenumber">311</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-history.component.html</context>
@@ -6897,11 +6897,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">236,238</context>
+          <context context-type="linenumber">232,234</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">260,262</context>
+          <context context-type="linenumber">256,258</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
@@ -6923,30 +6923,15 @@
           <context context-type="linenumber">69,72</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="0115d7ac49d25f664282a230457c3b0d9027cd21" datatype="html">
-        <source> Keep an effective date of <x id="INTERPOLATION" equiv-text="{{currentEffectiveDate | utcDate | date:&apos;shortDate&apos; }}"/> to update the current version of the measure. Choose a later date to create a new version of the measure, which will be used in future calculations </source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">74,77</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-external.component.html</context>
-          <context context-type="linenumber">55,58</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">73,76</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="86f6e61f1a3398bbce2ee92edfe73cb7e30547db" datatype="html">
         <source>Grouping Measure</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">86</context>
+          <context context-type="linenumber">82</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">84</context>
+          <context context-type="linenumber">80</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/definition/score-definition.component.html</context>
@@ -6957,7 +6942,7 @@
         <source>Use Pass Threshold</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">98</context>
+          <context context-type="linenumber">94</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-history.component.html</context>
@@ -6972,67 +6957,67 @@
         <source> Pass Threshold(%) </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">110,112</context>
+          <context context-type="linenumber">106,108</context>
         </context-group>
       </trans-unit>
       <trans-unit id="382fb11afee5659843eac419fec408ce12e241fc" datatype="html">
         <source> Please enter a value between 1 and 100. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">122,124</context>
+          <context context-type="linenumber">118,120</context>
         </context-group>
       </trans-unit>
       <trans-unit id="c13ea732e9b52813d15ee5f6ddd1fc2853215423" datatype="html">
         <source> Please enter a value with a maximum of 3 decimal places of accuracy. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">125,127</context>
+          <context context-type="linenumber">121,123</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2fff0102e75b326dba6e5e1407a3ba3624916138" datatype="html">
         <source> Rule Results Selection </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">138,140</context>
+          <context context-type="linenumber">134,136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7aafd947f45bc4206b441325d891038becd40526" datatype="html">
         <source>Results Operation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">162</context>
+          <context context-type="linenumber">158</context>
         </context-group>
       </trans-unit>
       <trans-unit id="394c00aee0947bca7a131743216dd659df21218a" datatype="html">
         <source>Only apply this measure to assets that match a condition group</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">207</context>
+          <context context-type="linenumber">203</context>
         </context-group>
       </trans-unit>
       <trans-unit id="12e73728cbfeef584421a67cc424fad14e8e2957" datatype="html">
         <source>Apply this measure to all assets, using the first matching condition group to determine measure weight</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">208</context>
+          <context context-type="linenumber">204</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8cf9727d49e8986568364442472f247e62e18947" datatype="html">
         <source>Condition Group</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">213</context>
+          <context context-type="linenumber">209</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">309</context>
+          <context context-type="linenumber">305</context>
         </context-group>
       </trans-unit>
       <trans-unit id="fe242d7eb96c69009248f390f4d0228cb8b28520" datatype="html">
         <source>Pass Threshold</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">222</context>
+          <context context-type="linenumber">218</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-history.component.html</context>
@@ -7047,7 +7032,7 @@
         <source> Please enter a value with a maximum of 3 decimal places of accuracy. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">239,241</context>
+          <context context-type="linenumber">235,237</context>
         </context-group>
       </trans-unit>
       <trans-unit id="429763935097463241" datatype="html">
@@ -7133,54 +7118,54 @@
         <source>Test Type</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">98</context>
+          <context context-type="linenumber">94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ae00c437dcfe469f1553cb48652102b07b910abd" datatype="html">
         <source>Update Frequency</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">121</context>
+          <context context-type="linenumber">117</context>
         </context-group>
       </trans-unit>
       <trans-unit id="86581d46df0a5e73355341570621e6d24f9bdbbe" datatype="html">
         <source>Instruction String</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">140</context>
+          <context context-type="linenumber">136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="65e69975dda97cf9e78e60cb464edccaa6b37d12" datatype="html">
         <source>Test Condition</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">145</context>
+          <context context-type="linenumber">141</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">150</context>
+          <context context-type="linenumber">146</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">195</context>
+          <context context-type="linenumber">191</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">239</context>
+          <context context-type="linenumber">235</context>
         </context-group>
       </trans-unit>
       <trans-unit id="d930ff6a0a9475e690b4cd21a6b33edab6002d9e" datatype="html">
         <source> Choose the type of test to perfom on assets (eg. a field, relationship or ownership test), to be prompted for more information on how to test for a pass or fail. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">284,287</context>
+          <context context-type="linenumber">280,283</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3a1f24ba74c0517d446f51cf770f69d027fb9710" datatype="html">
         <source>Asset Conditions and Weighting</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">296</context>
+          <context context-type="linenumber">292</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-history.component.html</context>
@@ -7199,7 +7184,7 @@
         <source> Please enter a value between 1 and 100 </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
-          <context context-type="linenumber">328,330</context>
+          <context context-type="linenumber">324,326</context>
         </context-group>
       </trans-unit>
       <trans-unit id="11fef2d867ee02ac5a3c48e513178df31f4db39b" datatype="html">
