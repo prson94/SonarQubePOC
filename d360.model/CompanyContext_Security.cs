@@ -917,8 +917,6 @@ namespace d360.model
 
 			int fCount = 1;
 			int rCount = 1;
-			bool iScreateTempTableScriptRun = true;
-
 
 			if (rule.StructuredDefinition != null && rule.StructuredDefinition.When != null)
 			{
@@ -989,33 +987,25 @@ namespace d360.model
 									fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) = '{w.Value}'";  // all field types plus single select list
 								}
 
-								if (iScreateTempTableScriptRun)
-								{
-									whenTempTables.Append($@"
-									drop table if exists #filtered_field;
-									create table #filtered_field(AssetID Bigint);
-									create clustered index icx_filtered_field on #filtered_field(AssetID);
-									");
-								}
+								whenTempTables.Append($@"
+								drop table if exists #filtered_field{fCount};
+								create table #filtered_field{fCount}(AssetID Bigint);
+								create clustered index icx_filtered_field{fCount} on #filtered_field{fCount}(AssetID);");
 
 								dbArgs.Add(dbParameterName, value);
 								dbArgs.Add(dbParameterDefaultValue, defaultValue);
 								//load filtered field data into temp table
 								whenTempTables.Append($@"
 
-									insert into #filtered_field
+									insert into #filtered_field{fCount}
 									select f.AssetID
 									from Field f
-									left join #filtered_field ff on ff.AssetId = f.AssetID
+									left join #filtered_field{fCount} ff on ff.AssetId = f.AssetID
 									{fieldWhere}");
 
 								//filter by using inner join 
-								if (iScreateTempTableScriptRun)
-								{
-									whenSql.AppendLine($"inner join #filtered_field ftf on ftf.AssetId = A.Id");
-								}
-								iScreateTempTableScriptRun = false;
-
+								
+								whenSql.AppendLine($"inner join #filtered_field{fCount} ftf{fCount} on ftf{fCount}.AssetId = A.Id");
 							}
 							else // invalid field type ID so the when is always not going to return anything
 							{
