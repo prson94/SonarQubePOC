@@ -468,7 +468,7 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 									[Name],
 									[Inverse]
 							from	[Predicate]
-							where	[Type] in (6,7,9,14)
+							where	[Type] in (5,6,7,9,14)
 							order by [Type], [Name];
 
 							select  Id,
