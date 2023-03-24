@@ -34,7 +34,7 @@ const routes: Routes = [
 	{ path: "semantics", loadChildren: () => import("./components/semantic/semantics.module").then((m) => m.SemanticsModule) },
 	{ path: "users", loadChildren: () => import("./components/resource/resource.module").then((m) => m.ResourceModule) },
 	{ path: "users", loadChildren: () => import("./components/sidebar/membergroup/membergroup.module").then((m) => m.MemberGroupModule) },
-	{ path: "asset", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
+	{ path: "asset/:assetUid", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
 	//sidebar
 	{ path: "assets", loadChildren: () => import("./components/sidebar/permissions/permissions.module").then((m) => m.PermissionsModule) },
 	{ path: "asset/:uid/children", loadChildren: () => import("./components/sidebar/children/children.module").then((m) => m.ChildrenModule) },
@@ -51,7 +51,7 @@ const routes: Routes = [
 	{ path: "asset/:assetUid/diagrams/:diagramType", loadChildren: () => import("./components/sidebar/visualization/visualization.module").then((m) => m.VisualizationModule) },
 	{ path: "asset/:assetUid/diagrams/:diagramType/:focusKey", loadChildren: () => import("./components/sidebar/visualization/visualization.module").then((m) => m.VisualizationModule) },
 	{ path: "asset/:uid/relationships", loadChildren: () => import("./components/sidebar/relationships/relationships.module").then((m) => m.RelationshipsModule) },
-	{ path: "assets", loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
+	{ path: "assets/:assetTypeUid/fields", loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
 	{ path: "admin/predicate", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 	{ path: "semantics", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 	{ path: "tag", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
