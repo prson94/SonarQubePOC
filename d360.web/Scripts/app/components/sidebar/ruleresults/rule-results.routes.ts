@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { RuleResultsComponent } from './rule-results.component';
 
 const routes: Routes = [
-    { path: ':assetUid/results', component: RuleResultsComponent },   
+    { path: '', component: RuleResultsComponent },   
 ];
 
 @NgModule({
