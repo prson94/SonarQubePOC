@@ -1943,10 +1943,20 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 					if (allParents.Count > 0)
 					{
-						var par = queryParams.Where(k => k.Key.ToLower() != "_simplefilter" && k.Key.ToLower() != "_filter" && k.Key.ToLower() != "isfortreegrid").ToList();
-						par.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", allParents)));
-						var fammilyAssets = await GetAssets(assetType, par);
-						results = results.Union(fammilyAssets.items).ToList().ToList();
+						//load parents 2000 per db call, as there is limitation in parameter size
+						var pages = allParents.Count() / 2000;
+						for (int i = 0; i <= pages; i++)
+						{
+							var par = queryParams.Where(k => k.Key.ToLower() != "_simplefilter" && k.Key.ToLower() != "_filter" && k.Key.ToLower() != "isfortreegrid").ToList();
+							string parentsParameter = string.Join(",", allParents.Skip(i * 2000).Take(2000));
+
+							if (!string.IsNullOrEmpty(parentsParameter))
+							{
+								par.Add(new KeyValuePair<string, string>("_assetUid", parentsParameter));
+								var fammilyAssets = await GetAssets(assetType, par);
+								results = results.Union(fammilyAssets.items).ToList().ToList();
+							}
+						}
 
 						//filtered tree grid results need to be sorted in memory too
 						string orderBy = "";
