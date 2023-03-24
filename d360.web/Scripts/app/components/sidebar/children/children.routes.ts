@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { ChildrenComponent } from './children.component';
 
 const routes: Routes = [
-	{ path: ':uid/children', component: ChildrenComponent },
+	{ path: '', component: ChildrenComponent },
 ];
 
 @NgModule({

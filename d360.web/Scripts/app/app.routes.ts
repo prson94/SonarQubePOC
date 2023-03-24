@@ -37,8 +37,9 @@ const routes: Routes = [
     { path: "asset", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
 	//sidebar
     { path: "assets", loadChildren: () => import("./components/sidebar/permissions/permissions.module").then((m) => m.PermissionsModule) },
-    { path: "asset", loadChildren: () => import("./components/sidebar/children/children.module").then((m) => m.ChildrenModule) },
-    { path: "asset", loadChildren: () => import("./components/sidebar/score/score.module").then((m) => m.ScoreModule) },
+	{ path: "asset/:uid/children", loadChildren: () => import("./components/sidebar/children/children.module").then((m) => m.ChildrenModule) },
+	{ path: "asset/:Uid/score", loadChildren: () => import("./components/sidebar/score/score.module").then((m) => m.ScoreModule) },
+	{ path: "asset/:Uid/score/:scoreType", loadChildren: () => import("./components/sidebar/score/score.module").then((m) => m.ScoreModule) },
     { path: "asset", loadChildren: () => import("./components/sidebar/comments/comments.module").then((m) => m.CommentsModule) },
     { path: "asset", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
     { path: "asset", loadChildren: () => import("./components/sidebar/actions/actions.module").then((m) => m.ActionsModule) },
