@@ -24,6 +24,7 @@ import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.compon
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
+import { AssetTypeService } from '../../services/asset-type.service';
 
 declare var CurrentResourceID;
 
@@ -37,7 +38,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 	@Input() assetTypeApiModel: AssetTypeApiModel;
 	@Input() assetTypeUid: string;
 
-	artifactTypeHierarchy: ArtifactType[];
+	artifactTypeHierarchy: AssetTypeApiModel[];
 	sub: any;
 	currentAreaNameSubscription: any;
 	navigationItemsSubs: Subscription[] = [];
@@ -67,6 +68,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
 
 	constructor(private artifactTypeService: ArtifactTypeService,
+		private assetTypeService: AssetTypeService,
 		private sidePanelService: SidePanelService,
 		private titleAndTabsService: TitleAndTabsService,
 		headerBreadcrumbService: HeaderBreadcrumbService,
@@ -107,10 +109,10 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 			this.folderTitle = res;
 			this.area = res;
 
-			//this.setObjectInfo('ArtifactType', this.assetTypeApiModel.uid);
+			this.setObjectInfo('ArtifactType', this.assetTypeApiModel.ID);
 
-			//this.artifactTypeHierarchy.push(this.artifactType);
-			//this.createBreadcrumbHierarchy(artifactType);
+			this.artifactTypeHierarchy.push(this.assetTypeApiModel);
+			this.createBreadcrumbHierarchy(this.assetTypeApiModel);
 
 			this.setBrowserTitle(this.titleService, this.assetTypeApiModel.Name);
 			this.isLoading = false;
@@ -118,11 +120,11 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		});
 	}
 
-	createBreadcrumbHierarchy(artifact: ArtifactType) {
-		if (artifact.ParentID) {
-			var detailsSub = this.artifactTypeService.getArtifactTypeDetails(artifact.ParentUid).subscribe((parent) => {
+	createBreadcrumbHierarchy(assetType: AssetTypeApiModel) {
+		if ((assetType.ParentUid ?? "").length > 0) {
+			var detailsSub = this.assetTypeService.GetAssetTypeByUid(assetType.ParentUid).subscribe((parent) => {
 				this.artifactTypeHierarchy.unshift(parent);
-				if (parent.ParentID) { this.createBreadcrumbHierarchy(parent); }
+				if (parent.ParentUid) { this.createBreadcrumbHierarchy(parent); }
 				else { this.displayBreadcrumb(); }
 			});
 
@@ -141,32 +143,32 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 					this.artifactTypeHierarchy.forEach((x) => {
 						this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
 							x.Name,
-							SiteUrlHelpers.getAssetTypeUrl(x.AssetTypeUID),
+							SiteUrlHelpers.getAssetTypeUrl(x.uid),
 							false,
 							"ArtifactType",
 							x.ID,
 							null,
 							null,
 							true,
-							x.ParentID > 0));
+							(x.ParentUid ?? "").length > 0));
 
 					});
 
-					//var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe((res) => {
-					//	this.baseAssetTypeUid = this.artifactType.AssetTypeUID;
-					//	this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.artifactType.HasDashboards });
-					//	this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
-					//	this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, $localize`Assets`);
-					//	if (this.artifactType.HasV2Workflows) {
-					//		this.secondaryNavService.showItem(
-					//			new SecondaryNavItem($localize`Workflow`,
-					//				'workflowmonitor',
-					//				['fa-usb'],
-					//				`/assets/${this.baseAssetTypeUid}/workflowmonitor;isAdminPage=false`)
-					//		);
-					//	}
-					//});
-				//	this.navigationItemsSubs.push(breadCrumbsSub);
+					var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.assetTypeApiModel.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe((res) => {
+						this.baseAssetTypeUid = this.assetTypeApiModel.uid;
+						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.assetTypeApiModel.HasDashboards });
+						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.assetTypeApiModel.ID, this.assetTypeApiModel.Name, null, true, null, this.assetTypeApiModel.uid));
+						this.secondaryNavService.setCurrentArea(this.assetTypeApiModel.Name, res, $localize`Assets`);
+						if (this.assetTypeApiModel.HasV2Workflows) {
+							this.secondaryNavService.showItem(
+								new SecondaryNavItem($localize`Workflow`,
+									'workflowmonitor',
+									['fa-usb'],
+									`/assets/${this.baseAssetTypeUid}/workflowmonitor;isAdminPage=false`)
+							);
+						}
+					});
+					this.navigationItemsSubs.push(breadCrumbsSub);
 				});
 
 	}

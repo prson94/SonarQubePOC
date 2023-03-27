@@ -29,12 +29,10 @@ import { HeaderActionsService } from "../../services/header-actions.service";
 import { AssetTypeExportTemplate } from "../../models/artifact-type.model";
 import { BaseComponent } from "../shared/base.component";
 import { SiteUrlHelpers } from "../../static/site-url-helpers";
-import { StringConstants } from "../../static/string-constants";
 import { ObjectDetailService } from "../../services/object-detail.service";
 import { isEqual } from "lodash-es";
 import { V2ApiFilters } from "../../models/asset-search.model";
 import { SortOrder } from "../../models/enums.model";
-import { AssetGridObject } from "./asset-grid.model";
 import { Filters } from "./advanced-filtering/advanced-filtering.models";
 import { CompanySettingsService } from "../../services/settings.service";
 import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.component";
@@ -356,7 +354,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	}
 
 	getFieldsDefinition() {
-		this.gridDefinitionService.getGridDefinition(this.assetTypeApiModel.uid, this.assetTypeApiModel.Class.Name).subscribe(
+		this.gridDefinitionService.getGridDefinition(this.assetTypeApiModel.uid, "ArtifactType").subscribe(
 			(result) => {
 				this.columns = result.Columns.filter((x) => x.datafield !== 'Name');
 				this.filtercolumns = result.FilterColumns;
@@ -607,10 +605,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	}
 
 	export(listableOnly) {
-		//if (this.gridObject.HasCustomExportTemplates) {
-		//	this.customExport();
-		//	return;
-		//}
+		if (this.assetTypeApiModel.HasCustomExportTemplates) {
+			this.customExport();
+			return;
+		}
 
 		this.isExportInProgress = true;
 		this.assetService

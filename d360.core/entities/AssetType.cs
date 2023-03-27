@@ -185,6 +185,9 @@ namespace d360.core.entities
 		[DataMember]
 		public bool? HasDashboards { get; set; }
 
+		[DataMember]
+		public bool? HasCustomExportTemplates { get; set; }
+
 		[IgnoreDataMember]
 		public string LevelsJson { get; set; }
 

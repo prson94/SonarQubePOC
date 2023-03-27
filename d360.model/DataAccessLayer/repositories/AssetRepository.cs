@@ -163,6 +163,23 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
+				if (queryParams.Any(q => q.Key.ToLowerInvariant() == "includeCustomExportTemplatesFlag".ToLowerInvariant()))
+				{
+					var includeString = queryParams.FirstOrDefault(q => q.Key.ToLowerInvariant() == "includeCustomExportTemplatesFlag".ToLowerInvariant()).Value;
+					if (bool.TryParse(includeString, out bool include))
+					{
+						extraJoins += @$" cross apply (select count(1) as [Count] from AssetTypeExportTemplate where AssetTypeId = A.ID) CXT ";
+						extraColumns += @", cast(iif(CXT.[Count] > 1, 1, 0) as bit) as HasCustomExportTemplates ";
+					}
+					else
+					{
+						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+					}
+				}
+
+				//ID: number;
+				//HasV2Workflows: boolean = false;
+
 				if (queryParams.Any(q => q.Key.ToLower() == "includelevels"))
 				{
 					var includeLevelsString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "includelevels").Value;

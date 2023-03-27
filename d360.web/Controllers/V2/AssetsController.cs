@@ -143,6 +143,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("IncludeLevels", "Include values of Level, Name, Description properties of the AssetTypeLevel table in response model.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("IncludeDashboardFlag", "Include value of HasDashboards property of the Report table in response model.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("IncludeUpdatedAndCreatedFields ", "Include values of CreatedOn, CreatedBy, UpdatedOn and UpdatedBy fields.", DataType = "boolean", ParameterType = "query", Required = false),
+			SwaggerParameter("IncludeCustomExportTemplatesFlag ", "Include value of HasCustomExportTemplates in response model.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
@@ -150,17 +151,16 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null, Guid? assetTypeUid = null)
 		{
+			var queryParams = Request.GetQueryNameValuePairs();
+			var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, assetTypeUid);
+
 			if (assetTypeUid != null && assetTypeUid.Value != Guid.Empty)
 			{
-				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid.Value);
-				if (assetType == null)
+				if (assetTypes.Count() == 0)
 				{
 					throw new NotFoundBusinessLayerException(AssetTypeErrors.NotFoundGeneric);
 				}
 			}
-
-			var queryParams = Request.GetQueryNameValuePairs();
-			var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, assetTypeUid);
 
 			return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
 		}
