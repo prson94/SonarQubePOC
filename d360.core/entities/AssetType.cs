@@ -119,6 +119,9 @@ namespace d360.core.entities
 		public Guid uid { get; set; }
 
 		[DataMember]
+		public int? ID { get; set; }
+
+		[DataMember]
 		public string PredicateInverse { get; set; }
 
 		[DataMember]
@@ -187,6 +190,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public bool? HasCustomExportTemplates { get; set; }
+
+		[DataMember]
+		public bool? HasV2Workflows { get; set; }
 
 		[IgnoreDataMember]
 		public string LevelsJson { get; set; }

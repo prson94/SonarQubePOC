@@ -177,8 +177,35 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				//ID: number;
-				//HasV2Workflows: boolean = false;
+				if (queryParams.Any(q => q.Key.ToLowerInvariant() == "IncludeHasV2Workflows".ToLowerInvariant()))
+				{
+					var includeString = queryParams.FirstOrDefault(q => q.Key.ToLowerInvariant() == "IncludeHasV2Workflows".ToLowerInvariant()).Value;
+					if (bool.TryParse(includeString, out bool include))
+					{
+						extraJoins += @$" cross apply (
+								select count(1) as [Count] from workflow.[Type] WT 
+								inner join workflow.EventRegistration WER on WER.TypeID = WT.ID
+								where WT.State = 1 and WER.Object = A.Object AND WER.ObjectID = A.ObjectID) V2Workflow  ";
+						extraColumns += @", cast(iif(V2Workflow.[Count] > 0, 1, 0) as bit) as HasV2Workflows ";
+					}
+					else
+					{
+						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+					}
+				}
+
+				if (queryParams.Any(q => q.Key.ToLowerInvariant() == "includeId".ToLowerInvariant()))
+				{
+					var includeString = queryParams.FirstOrDefault(q => q.Key.ToLowerInvariant() == "includeId".ToLowerInvariant()).Value;
+					if (bool.TryParse(includeString, out bool include))
+					{
+						extraColumns += @", A.Id as ID ";
+					}
+					else
+					{
+						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+					}
+				}
 
 				if (queryParams.Any(q => q.Key.ToLower() == "includelevels"))
 				{
