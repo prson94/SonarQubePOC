@@ -62,7 +62,7 @@
         </div>
     </div>
     <div class="grid-actions-header-row">
-        <advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+        <advanced-filtering [loadIdentifier]="assetTypeApiModel.uid" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
     </div>
 </div>
 
@@ -77,7 +77,7 @@
          [ngClass]="{ 'artifact-context-menu': isMenuOpen, 'artifact-context-menu-closed': !isMenuOpen }">
         <a [href]="itemUrl" target="_blank" i18n>Open in new window</a>
     </div>
-    <d3s-asset-grid-custom-export #gridCustomExport *ngIf="showCustomExport && canExportRecords()"
+    <!--<d3s-asset-grid-custom-export #gridCustomExport *ngIf="showCustomExport && canExportRecords()"
                                   (closeClick)="showCustomExport = false"
                                   (customExportClick)="downloadCustomExcel($event)"
                                   [gridObject]="gridObject"
@@ -87,7 +87,7 @@
                                   [filters]="stateService.artifactTypeFilters.filters"
                                   [relationships]="stateService.artifactTypeFilters.relationships"
                                   [simpleFilter]="stateService.artifactTypeFilters.simpleTextFilter"
-                                  [owner]="stateService.artifactTypeFilters.owners"></d3s-asset-grid-custom-export>
+                                  [owner]="stateService.artifactTypeFilters.owners"></d3s-asset-grid-custom-export>-->
     <div class="col s12" [hidden]="showCustomExport" *ngIf="isDefinitionLoaded && areFiltersLoaded">
         <p-table #dt
                  [igDataCy]="'Assets_Page_'"
