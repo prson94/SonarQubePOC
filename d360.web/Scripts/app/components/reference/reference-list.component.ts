@@ -138,11 +138,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		this.baseAssetTypeUid = this.selectedReferenceListUid = this.selectedReferenceItemType.uid;
 		this.setSecondaryNavItems();
 		if (requiresRedirect) {
-
 			this.location.go(`/assets/${e.uid}`);
 			this.assetTypeUid = e.uid;
 			this.loadSelectedItem();
-			/*this.router.navigateByUrl(`/assets/${e.uid}`, { replaceUrl });*/
 		}
 	}
 
