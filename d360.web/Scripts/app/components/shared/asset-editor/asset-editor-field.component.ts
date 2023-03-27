@@ -786,7 +786,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 		const loadParams = this.getLoadParams({ first: 0, rows: 0 });
 		this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
 			if (!this.lookupValues || this.lookupValues.length === 0) {
-				this.lookupValues = Array.from({ length: res.count }, () => { return { label: null, value: null, color: null }; });
+				this.lookupValues = Array.from({ length: res.count }, () => { return { label: null, value: null, color: null, hasAssetReadAccess: null }; });
 			}
 			this.setSelectionScrollHeight();
 		});
@@ -824,7 +824,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
 		this.lookupSub = this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
 			if (!this.lookupValues || this.lookupValues.length === 0 || this.lookupValues.length < res.count) {
-				this.lookupValues = Array.from({ length: res.count }, () => { return { label: null, value: null, color: null }; });
+				this.lookupValues = Array.from({ length: res.count }, () => { return { label: null, value: null, color: null, hasAssetReadAccess: null }; });
 			}
 
             if (this.lookupValues.length > 10 || loadParams["filter"]) {
@@ -838,7 +838,11 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
             res.items.forEach((str) => {
 				const color = str.color;
-                loadedData.push({ label: str.text, value: str.value, ...(color && { color }) });
+				let hasAssetReadAccess = true;
+				if (str?.hasAssetReadAccess != null) {
+					hasAssetReadAccess = str.hasAssetReadAccess;
+				}
+				loadedData.push({ label: str.text, value: str.value, hasAssetReadAccess: hasAssetReadAccess, ...(color && { color }) });
             });
 
             Array.prototype.splice.apply(this.lookupValues, [...[loadParams.skip, loadParams.take], ...loadedData]);
@@ -853,7 +857,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			// By adding an empty element and hiding it, the area size is usable.
 			// This should be redone once PrimeNG has been updated to 14.x
 			if (this.showLookupSearchField && this.lookupValues.length < 10) {
-				this.lookupValues.push({ label: null, value: null, color: null });
+				this.lookupValues.push({ label: null, value: null, color: null, hasAssetReadAccess: null });
 			}
 
 			this.lookupValues = [...this.lookupValues];
@@ -979,4 +983,5 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			this.selectionScrollHeight = calculatedHeight + "px";
 		}, 100);
 	}
+
 }

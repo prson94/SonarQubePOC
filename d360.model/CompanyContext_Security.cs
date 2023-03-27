@@ -129,6 +129,23 @@ namespace d360.model
 			return permissions;
 		}
 
+		public bool GetPermissionsRead(long assetId, int assetTypeId)
+		{
+			List<PermissionInfo> permissions = Permission.DeleteAsset.GetList();
+
+			IEnumerable<int> responsibilityAssignments = Query<int>(@"select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = 0
+														union select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = @assetId", new { r = CurrentResourceID, assetTypeId, assetId });
+
+			if (responsibilityAssignments.Any())
+			{
+				return responsibilityAssignments.Any(i => (i & (int)Permission.ReadAsset) == (int)Permission.ReadAsset);
+			}
+			else
+			{
+				return true;
+			}
+		}
+
 		/// <summary>
 		/// Default to read unless the user explicitly has no read access to an asset.
 		/// </summary>
