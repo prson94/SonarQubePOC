@@ -439,6 +439,10 @@ namespace d360.web.Controllers.V2
 												value = (filterValue + "%").Replace("*", "%").Replace("%%", "%");
 												query = $@"select id as ObjectAssetID from assetpath where displaypath like @p{parameterIndex}";
 												break;
+											case "nct":
+												value = (filterValue + "%").Replace("*", "%").Replace("%%", "%");
+												query = $@"select id as ObjectAssetID from assetpath where displaypath not like @p{parameterIndex}";
+												break;
 											case "ne":
 												value = filterValue + "%";
 												query = $@"select id as ObjectAssetID from assetpath where displaypath not like @p{parameterIndex}";
