@@ -131,8 +131,6 @@ namespace d360.model
 
 		public bool GetPermissionsRead(long assetId, int assetTypeId)
 		{
-			List<PermissionInfo> permissions = Permission.DeleteAsset.GetList();
-
 			IEnumerable<int> responsibilityAssignments = Query<int>(@"select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = 0
 														union select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = @assetId", new { r = CurrentResourceID, assetTypeId, assetId });
 

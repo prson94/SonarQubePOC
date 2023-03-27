@@ -838,11 +838,11 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
             res.items.forEach((str) => {
 				const color = str.color;
-				let hasAssetReadAccess = true;
+				let hasAssetReadAccessValue = true;
 				if (str?.hasAssetReadAccess != null) {
-					hasAssetReadAccess = str.hasAssetReadAccess;
+					hasAssetReadAccessValue = str.hasAssetReadAccess;
 				}
-				loadedData.push({ label: str.text, value: str.value, hasAssetReadAccess: hasAssetReadAccess, ...(color && { color }) });
+				loadedData.push({ label: str.text, value: str.value, hasAssetReadAccess: hasAssetReadAccessValue, ...(color && { color }) });
             });
 
             Array.prototype.splice.apply(this.lookupValues, [...[loadParams.skip, loadParams.take], ...loadedData]);
