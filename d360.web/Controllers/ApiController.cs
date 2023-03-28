@@ -1063,7 +1063,7 @@ namespace d360.web.Controllers
 
 			DynamicParameters dbArgs = new DynamicParameters();
 			dbArgs.Add("@skippedFieldTypes", skippedFieldTypes);
-			dbArgs.Add("@type", type);
+			dbArgs.Add("@type", type.ToString());
 			dbArgs.Add("@id", id);
 			SqlMapper.GridReader gridReader = Company.Database.Connection.QueryMultiple(loadDataSql, dbArgs);
 
@@ -1071,7 +1071,7 @@ namespace d360.web.Controllers
 			var scoreAllocations = gridReader.Read<dynamic>().ToList();
 			bool hasAssetDataProfileData = gridReader.Read<bool>().FirstOrDefault();
 			AssetType assetType = gridReader.Read<AssetType>().FirstOrDefault();
-			bool hasParentType = gridReader.Read<bool>().FirstOrDefault();
+			bool hasParentType = gridReader.Read<int>().FirstOrDefault() > 0;
 			gridReader.Dispose();
 
 			var hasProfiling = GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING) ? hasAssetDataProfileData : false;
