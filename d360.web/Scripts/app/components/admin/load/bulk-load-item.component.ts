@@ -5,157 +5,158 @@ import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { LazyLoadEvent } from 'primeng/api';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { SortOrder } from '../../../models/enums.model';
 
 @Component({
-    selector: 'd3s-bulk-load-item',
-    templateUrl: './bulk-load-item.component.html',
-    providers: [LoadService]
+	selector: 'd3s-bulk-load-item',
+	templateUrl: './bulk-load-item.component.html',
+	providers: [LoadService]
 })
 
 export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
-    @Input() id: number;
-    @Input() title: string = $localize`Load Details`;
+	@Input() id: number;
+	@Input() title: string = $localize`Load Details`;
 
-    @Output() refreshClick = new EventEmitter();
+	@Output() refreshClick = new EventEmitter();
 
-    columns: GridColumn[];
-    items: any[];
-    rowsPerPage: number = 25;
-    totalRecords: number = 0;
-    simpleTextFilter: string;
-    pageNum: number = 1;
-    firstPage: number = 0;
-    sortOrder: number = SortOrder.None;
-    sortField: string = "";
-    itemsLoading: boolean = false;
-    private itemsSearchSub: Subscription;
+	private loadUid: string;
 
-    get globalFilterFields(): string[] {
-        const f = this.columns.map((c) => c.datafield);
+	columns: GridColumn[];
+	items: any[];
+	rowsPerPage: number = 25;
+	totalRecords: number = 0;
+	simpleTextFilter: string;
+	pageNum: number = 1;
+	firstPage: number = 0;
+	sortOrder: number = SortOrder.None;
+	sortField: string = "";
+	itemsLoading: boolean = false;
+	private itemsSearchSub: Subscription;
 
-        f.concat(['Status', 'RowIndex', 'StatusMessage']);
+	get globalFilterFields(): string[] {
+		const f = this.columns.map((c) => c.datafield);
 
-        return f;
-    }
+		f.concat(['Status', 'RowIndex', 'StatusMessage']);
 
-    constructor(
-        private loadService: LoadService,
-        protected settingsService: CompanySettingsService,
-        private changeDetectorRef: ChangeDetectorRef,    ) {
-        super(settingsService);
-    }
+		return f;
+	}
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (const p in changes) {
-            if (p === 'id') {
-                return this.load();
-            }
-        }
+	constructor(
+		private loadService: LoadService,
+		protected settingsService: CompanySettingsService,
+		private changeDetectorRef: ChangeDetectorRef,) {
+		super(settingsService);
+	}
 
-        this.load();
-    }
+	ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+		for (const p in changes) {
+			if (p === 'id') {
+				return this.load();
+			}
+		}
 
-    ngOnDestroy() {
-        if (this.itemsSearchSub) {
-            this.itemsSearchSub.unsubscribe();
-        }
-    }
+		this.load();
+	}
 
-    exportErrors(): void {
-        if (this.id == null)
-            {return;}
+	ngOnDestroy() {
+		if (this.itemsSearchSub) {
+			this.itemsSearchSub.unsubscribe();
+		}
+	}
 
-        this.loadService.getLoadErrorsXls(this.id);
-    }
+	exportErrors(): void {
+		if (this.id == null) { return; }
 
-    exportOriginal(): void {
-        if (this.id == null)
-            {return;}
+		this.loadService.getLoadErrorsXls(this.loadUid);
+	}
 
-        this.loadService.getLoadOriginalXls(this.id);
-    }
+	exportOriginal(): void {
+		if (this.id == null) { return; }
 
-    load(): void {
-        this.isLoading = true;
-        this.loadService.getLoadColumns(this.id).subscribe(
-            (columnData) => {
-                this.columns = columnData;
-                this.isLoading = false;
-                this.firstPage = 0;
-                this.pageNum = 0;
-                this.getData();
-            }
-        );
-    }
+		this.loadService.getLoadOriginalXls(this.loadUid);
+	}
 
-    getData(): void {
-        if (this.id == null)
-            {return;}
-    
-        if (this.itemsSearchSub) {
-            this.itemsSearchSub.unsubscribe();
-        }
+	load(): void {
+		this.isLoading = true;
+		forkJoin(
+			this.loadService.getLoadUid(this.id),
+			this.loadService.getLoadColumns(this.id)
+		).subscribe(
+			(results) => {
+				this.loadUid = results[0];
+				this.columns = results[1];
+				this.isLoading = false;
+				this.firstPage = 0;
+				this.pageNum = 0;
+				this.getData();
+			}
+		);
+	}
 
-        this.itemsLoading = true;
+	getData(): void {
+		if (this.id == null) { return; }
 
-        this.loadService.getLoadUid(this.id).subscribe((r) => {
-            this.itemsSearchSub =  this.loadService.getLoadItemsV2(r, this.getParams()).pipe(debounceTime(400)).subscribe((data) => {
-                this.items = data.items;
-                this.totalRecords = data.total;
-                this.itemsLoading = false;
-            });
-        });
-    }
+		if (this.itemsSearchSub) {
+			this.itemsSearchSub.unsubscribe();
+		}
+
+		this.itemsLoading = true;
+
+		this.itemsSearchSub = this.loadService.getLoadItemsV2(this.loadUid, this.getParams()).pipe(debounceTime(400)).subscribe((data) => {
+			this.items = data.items;
+			this.totalRecords = data.total;
+			this.itemsLoading = false;
+		});
+	}
 
 
-    loadItemsLazy(event: LazyLoadEvent) {
-        this.firstPage = event.first;
-        this.pageNum = event.first / event.rows;
-        this.sortOrder = event.sortOrder;
-        this.sortField = event.sortField;
-        this.rowsPerPage = event.rows;
-        this.getData();
-    }
-    
+	loadItemsLazy(event: LazyLoadEvent) {
+		this.firstPage = event.first;
+		this.pageNum = event.first / event.rows;
+		this.sortOrder = event.sortOrder;
+		this.sortField = event.sortField;
+		this.rowsPerPage = event.rows;
+		this.getData();
+	}
 
-    getParams() {
-        var params = new V2ApiFilters();
-        params._pageNum = this.pageNum + 1;
 
-        params._pageSize = this.rowsPerPage;
-        if (this.sortField) {
-            params._order = this.sortField;
-        }
-        else {
-            delete params['_order'];
-        }
+	getParams() {
+		var params = new V2ApiFilters();
+		params._pageNum = this.pageNum + 1;
 
-        if (this.sortOrder !== SortOrder.None) {
-            params._direction = this.sortOrder === SortOrder.Ascending ? "asc" : "desc";
-        }
-        else {
-            delete params['_direction'];
-        }
+		params._pageSize = this.rowsPerPage;
+		if (this.sortField) {
+			params._order = this.sortField;
+		}
+		else {
+			delete params['_order'];
+		}
 
-        if (this.simpleTextFilter && this.simpleTextFilter.length > 0) {
-            params._simpleFilter = encodeURIComponent(this.simpleTextFilter);
-        }
-        else {
-            delete params['_simpleFilter'];
-        }
+		if (this.sortOrder !== SortOrder.None) {
+			params._direction = this.sortOrder === SortOrder.Ascending ? "asc" : "desc";
+		}
+		else {
+			delete params['_direction'];
+		}
 
-        return params;
-    }
+		if (this.simpleTextFilter && this.simpleTextFilter.length > 0) {
+			params._simpleFilter = encodeURIComponent(this.simpleTextFilter);
+		}
+		else {
+			delete params['_simpleFilter'];
+		}
 
-    public onSimpleSearch($event) {
-        this.getData();
-    }
+		return params;
+	}
 
-    refresh(): void {
-        this.load();
-        this.refreshClick.emit();
-    }
+	public onSimpleSearch($event) {
+		this.getData();
+	}
+
+	refresh(): void {
+		this.load();
+		this.refreshClick.emit();
+	}
 }

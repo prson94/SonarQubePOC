@@ -1216,8 +1216,8 @@ order by Sort, title";
 			}
 		}
 
-		[Route("loads/{id:int}/Errors.xlsx"), FileDownload, HttpGet]
-		public FileResult ErrorLoadFile(int id)
+		[Route("loads/{uid}/Errors.xlsx"), FileDownload, HttpGet]
+		public FileResult ErrorLoadFile(Guid uid)
 		{
 			//only admins can access this route
 			if (!Company.CurrentResourceIsAdmin)
@@ -1227,7 +1227,7 @@ order by Sort, title";
 				return null;
 			}
 
-			var load = Company.GetById<Load>(id);
+			var load = Company.Loads.FirstOrDefault(x => x.uid == uid);
 
 			var itemSql = @"select RowIndex, StatusMessage from LoadItem where LoadID = @id and Status = 0 order by RowIndex asc";
 			var itemColumnSql = @"select C.* from LoadItem I inner join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex and I.LoadID = @id and I.Status = 0 order by I.RowIndex asc, C.ColumnIndex asc";
@@ -1315,12 +1315,12 @@ order by Sort, title";
 				}
 			}
 
-			var loadColumns = Company.Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
-			var loadItems = Company.Query<dynamic>(itemSql, new { id }).ToList();
-			var loadItemColumns = Company.Query<dynamic>(itemColumnSql, new { id }).ToList();
+			var loadColumns = Company.Filter<LoadColumn>(i => i.LoadID == load.ID).OrderBy(i => i.ColumnIndex).ToList();
+			var loadItems = Company.Query<dynamic>(itemSql, new { load.ID }).ToList();
+			var loadItemColumns = Company.Query<dynamic>(itemColumnSql, new { load.ID }).ToList();
 			var columnCount = loadColumns.Count();
 
-			var document = new ExcelDocument($"Errors-{id}")
+			var document = new ExcelDocument($"Errors-{load.ID}")
 			{
 				new ExcelSheet("Items")
 				{
@@ -1352,8 +1352,8 @@ order by Sort, title";
 			return ExcelDocumentAsFile(document);
 		}
 
-		[Route("loads/{id:int}/all.xlsx"), FileDownload, HttpGet]
-		public FileResult FullLoadFile(int id)
+		[Route("loads/{uid}/all.xlsx"), FileDownload, HttpGet]
+		public FileResult FullLoadFile(Guid uid)
 		{
 			//only admins can access this route
 			if (!Company.CurrentResourceIsAdmin)
@@ -1363,7 +1363,7 @@ order by Sort, title";
 				return null;
 			}
 
-			var load = Company.GetById<Load>(id);
+			var load = Company.Loads.FirstOrDefault(x => x.uid == uid);
 			var bytes = load.File;
 
 			if (bytes == null)
