@@ -184,7 +184,7 @@ namespace d360.web.Controllers.V2
 
 			var columns = new List<CatalogColumn> {
 				new CatalogColumn { ApiName = "uid", Column = "a.Uid", Position = 1 },
-				new CatalogColumn { ApiName = "displayValue", Column = "adv.DisplayValue", Position = 2, Sort = "S.ObjectDisplayValue" }
+				new CatalogColumn { ApiName = "displayValue", Column = "adv.DisplayValue", Position = 2, Sort = "S.DisplayValuePrefix" }
 			};
 
 			predicates.ForEach(p =>
@@ -640,6 +640,7 @@ namespace d360.web.Controllers.V2
 			string filtersTempTable = "";
 			if (hasFilters)
 			{
+				bool useSortPathInTempTable = true;
 				StringBuilder sb = new StringBuilder();
 				List<string> tempCols = new List<string>
 				{
@@ -649,6 +650,21 @@ namespace d360.web.Controllers.V2
 				{
 					tempCols.Add($"{w.PropertyName} bit");
 				});
+
+				if (sorts.Any(x => x.ToLowerInvariant().Contains("p.DisplayPath".ToLowerInvariant())))
+				{
+					//if we are sorting and filtering on display path we should include display path sorting value in temporary table
+					//otherwise indexing on asset path table is not optimial
+					//https://jira.syncsort.com/browse/GOV-21188
+
+					tempCols.Add("sort_path nvarchar(50)");
+					useSortPathInTempTable = true;
+					sorts = sorts.Select(sort => sort.Replace("p.DisplayPath", "fr.sort_path")).ToList();
+					
+					var pathCol = columns.FirstOrDefault(x => x.ApiName == "displayPath");
+					pathCol.Sort = "fr.sort_path";
+				}
+
 				sb.AppendLine($@"
 					drop table if exists #filteredResults
 					create table #filteredResults ({string.Join(",", tempCols)});");
@@ -667,6 +683,15 @@ namespace d360.web.Controllers.V2
 							INSERT (AssetId,{filter.PropertyName}) 
 							VALUES (Source.ObjectAssetID, 1)
 						option(recompile);");
+				}
+
+				if (useSortPathInTempTable)
+				{
+					sb.AppendLine(@"
+						update t 
+						set t.sort_path = CAST(ap.DisplayPath as nvarchar(50))
+						from #filteredResults t
+						inner join AssetPath ap on ap.ID = t.AssetId");
 				}
 
 				filtersTempTable = sb.ToString();
