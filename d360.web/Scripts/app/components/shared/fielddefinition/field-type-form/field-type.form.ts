@@ -100,7 +100,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() fields: FieldTypeAPIModelField[] = [];
     @Input() allowSingleSegmentPath: boolean = true;
 
-    private currentType: string = "Empty";
+	private currentType: string = "Empty";
+	public currentRelationshipType: string;
 
     private lookups: Lookups = new Lookups();
     private lookupDefaultValueOptions: SelectItem[];
@@ -165,6 +166,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     public listSingleSegmentCheckbox: boolean = false;
 	public assetTypeAncestries: AssetTypeAncestry[] = [];
 	public relationshipList: RelationshipType[];
+	public relationshipSelectItems: SelectItem[] = [];
 
 	chooseLabel = $localize`Choose...`;
 	loadingLabel = $localize`Loading...`;
@@ -232,12 +234,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private getFieldTypeEditorHandler = (responseGetFieldTypeEditor: FieldTypeAPIModelField) => {
         this.currentType = this.currentFieldType(responseGetFieldTypeEditor);
         const DBType = this.currentType;
-        this.currentType = this.checkCurrentTypeName(this.currentType);
+		this.currentType = this.checkCurrentTypeName(this.currentType);
         if (DBType !== this.currentType) {
             //only one type to be defined for editing so remove the missnamed DBType after assigning its values to the correct object
             const correctNameType = new FieldType(this.currentType);
             responseGetFieldTypeEditor.Type[this.currentType] = { ...(correctNameType[this.currentType]), ...responseGetFieldTypeEditor.Type[DBType] };
-            responseGetFieldTypeEditor.Type[DBType] = null;
+			responseGetFieldTypeEditor.Type[DBType] = null;
+
+			if (this.currentType === 'Relationship') {
+				this.currentRelationshipType = `${responseGetFieldTypeEditor.Type[this.currentType].IntersectTypeUid}|${responseGetFieldTypeEditor.Type[this.currentType].IsSubject}`;
+			}
+			
         } else {
             //requires initialising as some parameters like isRequired will be null from the DB
             const intiialisedType = new FieldType(this.currentType);
@@ -286,9 +293,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.getFieldTypeEditorHandler(fieldTypeEditor);
                     this.setListSingleSegmentCheckbox(fieldTypeEditor);
                     this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
-						.subscribe((s) => {							
-							this.getRelationshipDetails();		
-                            this.getLookupsHandler(s);
+						.subscribe((s) => {															
+							this.getLookupsHandler(s);
+							this.getRelationshipDetails();	
                             this.fieldsService.getFormData(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                                 .subscribe((formData) => {
                                     this.getFormDataHandler(formData);
@@ -320,9 +327,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType = new FieldTypeAPIModelField();
 
             this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
-				.subscribe((x) => {
+				.subscribe((x) => {					
+					this.getLookupsHandler(x);
 					this.getRelationshipDetails();			
-                    this.getLookupsHandler(x);
                     this.model.FieldType.Type = new FieldType(); //Set as Empty to allow for selection.
                     this.isLoading = false;
                 });
@@ -330,6 +337,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 	}
 
 	private getRelationshipDetails() {
+		
+		this.lookups.Field_Relationships.forEach((i) => {
+			if (typeof i.value === "undefined") {
+				i.value = null;
+			}
+			this.relationshipSelectItems.push({ label: i.title, value: `${i.value}|${i.isSubject}` });
+		});
+
+		if (this.model.FieldType.Type["Relationship"]) {
+			this.currentRelationshipType = `${this.model.FieldType.Type["Relationship"].IntersectTypeUid}|${this.model.FieldType.Type["Relationship"].IsSubject}`;
+		}
+		
+
 		this.relationshipService.getRelationshipTypes(this.assetTypeUid, false, false, true).subscribe(
 				(x) => {
 					this.relationshipList = x;
@@ -457,8 +477,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case 'relationship':
                 try {
-                    if (this.model.FieldType.Type["Relationship"].IntersectTypeUid) {
-                        observables.push(this.cardinalRelationshipSelected(this.model.FieldType.Type["Relationship"].IntersectTypeUid));
+					if (this.model.FieldType.Type["Relationship"].IntersectTypeUid) {
+						observables.push(this.cardinalRelationshipSelected(`${this.model.FieldType.Type["Relationship"].IntersectTypeUid}|${this.model.FieldType.Type["Relationship"].IsSubject}`));
                     }
                     if (!this.model.FieldType.Type["Relationship"].IsEditable) {
                         this.showDescription = false;
@@ -600,14 +620,20 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             console.log("[ERROR] - Intersect TYPE IS UNDEFINED", value);
             return Observable.create();
         }
-        this.isListableRelationship = false;
-
+		this.isListableRelationship = false;		
+		let intersectTypeUid = value.split('|')[0];
+		let isSubject = value.split('|')[1] === "true";
         //update the model to have correct lookuptype object and id
-		this.model.FieldType.Type["Relationship"].IntersectTypeUid = value.toLocaleLowerCase();
+		this.model.FieldType.Type["Relationship"].IntersectTypeUid = intersectTypeUid.toLocaleLowerCase();
+		let relationship = this.relationshipList.find(x => x.Uid === this.model.FieldType.Type["Relationship"].IntersectTypeUid);
+		if (relationship.Subject.Uid === relationship.Object.Uid) {
+			this.model.FieldType.Type["Relationship"].IsSubject = isSubject;		
+		}
+		
 
-		this.updateRelationshipDisplayFormatLabel(value.toLocaleLowerCase());
+		this.updateRelationshipDisplayFormatLabel(intersectTypeUid.toLocaleLowerCase());
 
-		return this.fieldsService.getRelationshipFieldIsListable(value, this.assetTypeUid)
+		return this.fieldsService.getRelationshipFieldIsListable(intersectTypeUid, this.assetTypeUid)
             .pipe(map((res) => {
                 this.isListableRelationship = res;
                 if (!this.isListableRelationship)
@@ -893,7 +919,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.ConvertDisplayFieldsToAPIDefinition();
             this.model.FieldType.Type.ComputedRelationshipLookup = this.model.FieldType.Type.ComplexRelationLookup;
             this.model.FieldType.Type.ComplexRelationLookup = undefined;
-        }
+		}		
         //special cases for Model and reference item types 
         if (this.currentType === 'Lookup') {
             if (!this.isUid(this.model.FieldType.Type.Lookup.List.Uid)) {

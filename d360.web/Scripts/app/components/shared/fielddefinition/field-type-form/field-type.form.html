@@ -824,9 +824,9 @@
                      style="margin: 10px 0 10px 0">
                     <div class="FieldName" i18n>Relationship</div>
                     <p-dropdown [ngModelOptions]="{standalone: true}"
-                                [options]="lookups.Field_Relationships"
-                                [ngModel]="model.FieldType.Type[currentType].IntersectTypeUid"
-                                (ngModelChange)="model.FieldType.Type[currentType].IntersectTypeUid=$event;cardinalRelationshipSelected($event).subscribe();"
+                                [options]="relationshipSelectItems"
+                                [ngModel]="currentRelationshipType"
+                                (ngModelChange)="currentRelationshipType=$event;cardinalRelationshipSelected($event).subscribe();"
                                 [style]="{ 'width': '98%' }"
                                 i18n-placeholder
                                 placeholder="'Select relationship'"

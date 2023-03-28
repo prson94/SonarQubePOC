@@ -547,6 +547,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Relationship' then FT.SearchDisplayOrder else null end as 'Type.Relationship.Search.DisplayOrder', 
 										case when FT.Type = 'Relationship' then FT.DisplayInColumn else null end as 'Type.Relationship.DisplayInColumn', 
 										case when FT.Type = 'Relationship' then FT.UseDisplayFormat else null end as 'Type.Relationship.UseDisplayFormat', 
+										case when FT.Type = 'Relationship' then FT.IsSubject else null end as 'Type.Relationship.IsSubject', 
 
 										case when FT.Type = 'Text' then FT.ColumnOrder else null end as 'Type.Text.ColumnOrder',
 										case when FT.Type = 'Text' then FT.ColumnWidth else null end as 'Type.Text.ColumnWidth',
@@ -1769,6 +1770,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = f.Type.Relationship.IsPrimaryFilter;
 					newFieldType.DisplayInColumn = f.Type.Relationship.DisplayInColumn;
 					newFieldType.UseDisplayFormat = f.Type.Relationship.UseDisplayFormat;
+					newFieldType.IsSubject = f.Type.Relationship.IsSubject;
 
 					if (f.Type.Relationship.Search != null)
 					{
@@ -2024,6 +2026,7 @@ namespace d360.model.DataAccessLayer
 					currentFieldType.CounterInitialIndex = newFieldType.CounterInitialIndex;
 					currentFieldType.DisplayInColumn = newFieldType.DisplayInColumn;
 					currentFieldType.UseDisplayFormat = newFieldType.UseDisplayFormat;
+					currentFieldType.IsSubject = newFieldType.IsSubject;
 
 					fieldTypeNamesToDelete.Add(f.Name);
 				}
@@ -2241,8 +2244,8 @@ namespace d360.model.DataAccessLayer
 		}
 
 		public List<FieldType> GetFieldTypes(TypeIdentifierInfoModel typeIdentifierInfoModel)
-		{
-			return Company.Filter<FieldType>(f => ((typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() && f.IssueTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object != SystemObjects.IntersectType.ToString() && typeIdentifierInfoModel.Object != SystemObjects.IssueType.ToString() && f.AssetTypeID == typeIdentifierInfoModel.ID)), i => i.FieldTypeLookup).ToList();
+		{			
+			return Company.Filter<FieldType>(f => ((typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() && f.IssueTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object != SystemObjects.IntersectType.ToString() && typeIdentifierInfoModel.Object != SystemObjects.IssueType.ToString() && f.AssetTypeID == typeIdentifierInfoModel.ID)), i => i.FieldTypeLookup).ToList();			
 		}
 
 		public IEnumerable<string> GetCustomFields(SystemObjects objectType, int objectId)

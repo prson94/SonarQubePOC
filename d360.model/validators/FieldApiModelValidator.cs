@@ -13,7 +13,7 @@ namespace d360.model.validators
 {
     public static class FieldApiModelValidator
     {
-        public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, List<FieldType> existingFieldTypes = null, List<Tuple<string, Guid>> ExistingIntersectID = null, bool isJsonAttributeFieldTypeEnabled = true)
+        public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, List<FieldType> existingFieldTypes = null, List<Tuple<string, Guid>> ExistingIntersectID = null, bool isJsonAttributeFieldTypeEnabled = true, List<IntersectType> existingIntersects = null)
         {
             WorkHttpStatus baseValidation = BaseModelValidation(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
 
@@ -279,11 +279,32 @@ namespace d360.model.validators
                     {
                         if (ExistingIntersectID.Count() > 0)
                         {
-                            List<string> duplicateFieldIntersectTypeUid1 = ExistingIntersectID.Where(f => f.Item1 != field.Name && f.Item2 == field.Type.Relationship.IntersectTypeUid).Select(f => f.Item1).ToList();
-                            if (duplicateFieldIntersectTypeUid1.Count > 0)
-                            {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateRelationship, string.Format(FieldErrors.RelationshipIDUsedMoreThanOnce, field.Type.Relationship.IntersectTypeUid));
+							List<string> duplicateFieldIntersectTypeUid1 = ExistingIntersectID.Where(f => f.Item1 != field.Name && f.Item2 == field.Type.Relationship.IntersectTypeUid).Select(f => f.Item1).ToList();							
 
+							if (duplicateFieldIntersectTypeUid1.Count > 0)
+                            {								
+								var invalidIntersects = existingIntersects.Where(it =>
+																		it.uid == field.Type.Relationship.IntersectTypeUid
+																		&&
+																		(
+																			it.SubjectAssetTypeID != it.ObjectAssetTypeID 
+																			||
+																			(
+																				it.SubjectAssetTypeID == it.ObjectAssetTypeID 																											
+																				&& 
+																				existingFieldTypes.Any(x => x.LookupObjectID == it.ID 
+																				&&
+																				x.IsSubject == field.Type.Relationship.IsSubject
+																				&&
+																				x.Name != field.Name
+																				)
+																			)
+																		)
+																).ToList();
+								if (invalidIntersects.Count > 0)
+								{
+									return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateRelationship, string.Format(FieldErrors.RelationshipIDUsedMoreThanOnce, field.Type.Relationship.IntersectTypeUid));
+								}								
                             }
                         }
                     }
