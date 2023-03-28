@@ -91,7 +91,6 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		this.artifactTypeHierarchy = [];
 		this.headerBreadcrumbService.setCurrentObjectInfo(null, -1, this.assetTypeUid);
 		this.logAssetTypeAction(UsageAction.View, this.assetTypeUid);
-		console.log(this.assetTypeApiModel);
 
 		let folderName: string = '#Business';
 		this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
@@ -105,19 +104,18 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 
 		this.headerBreadcrumbService.getFolderTitle(folderName).then((res) => {
 			this.headerBreadcrumbService.clearBreadcrumbs();
-
 			this.folderTitle = res;
 			this.area = res;
-
-			this.setObjectInfo('ArtifactType', this.assetTypeApiModel.ID);
-
-			this.artifactTypeHierarchy.push(this.assetTypeApiModel);
-			this.createBreadcrumbHierarchy(this.assetTypeApiModel);
-
-			this.setBrowserTitle(this.titleService, this.assetTypeApiModel.Name);
-			this.isLoading = false;
 			this.titleAndTabsService.isInitialize = true;
 		});
+
+		this.setObjectInfo('ArtifactType', this.assetTypeApiModel.ID);
+
+		this.artifactTypeHierarchy.push(this.assetTypeApiModel);
+		this.createBreadcrumbHierarchy(this.assetTypeApiModel);
+
+		this.setBrowserTitle(this.titleService, this.assetTypeApiModel.Name);
+		this.isLoading = false;
 	}
 
 	createBreadcrumbHierarchy(assetType: AssetTypeApiModel) {
