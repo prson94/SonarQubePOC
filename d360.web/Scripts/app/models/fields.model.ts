@@ -185,7 +185,7 @@ export class Lookups {
     Lookups: SelectItem[];
     Field_JsonFields: SelectItem[];
     Field_JsonDataTypes: SelectItem[];
-	Field_Relationships: Record<string, unknown>[] = [];
+	Field_Relationships: Record<string, any>[] = [];
     Field_CardinalRelationships: SelectItem[];
     Field_CardinalReferenceRelationships: SelectItem[];
     FieldResponsibilityTypes: SelectItem[];
