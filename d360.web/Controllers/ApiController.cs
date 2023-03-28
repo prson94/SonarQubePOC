@@ -2927,10 +2927,10 @@ namespace d360.web.Controllers
 									var parentAsset = Company.GetAssetDetail("Artifact", parent.ObjectID);
 									var parentUrl = Company.Query<string>($"select dbo.GenerateAssetUrl({parentAsset.ID})").First();
 
-									var perms = Company.GetPermissions(parentAsset.ID, parentAsset.AssetTypeID);
+									var checkReadPermission = Company.GetPermissionsRead(parentAsset.ID, parentAsset.AssetTypeID);
 									bool HasAssetReadAccess;
 
-									if (perms.Any(x => x.ID == Permission.ReadAsset) || Company.CurrentResourceIsAdmin)
+									if (checkReadPermission || Company.CurrentResourceIsAdmin)
 									{
 										HasAssetReadAccess = true;
 									}

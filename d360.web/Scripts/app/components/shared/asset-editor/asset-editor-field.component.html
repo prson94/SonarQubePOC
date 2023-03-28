@@ -139,7 +139,7 @@
                                             <span class="p-multiselect-token-label">
                                                 {{ (item | findMultiselectOption: field.Items).label }}
                                             </span>
-                                            <asset-editor-field-info *ngIf="useSidePanel && item"
+                                            <asset-editor-field-info *ngIf="useSidePanel && item && item?.hasAssetReadAccess"
                                                                      [object]="{objectID: item.toLowerCase(), fieldName: field.FieldName}"
                                                                      (click)="onItemInfoClick($event, item)"
                                                                      [selected]="sidePanelSelection" size="chip">
@@ -178,10 +178,14 @@
                                     <span class="ig-colorfield-item-label">{{item.label}}</span>
                                 </div>
 
-                                <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
+                                <span *ngIf="!field.UseColorControl && item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
+                                <span *ngIf="!field.UseColorControl && !item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label ?? item.Text"
+                                      i18n-pTooltip pTooltip="You do not have permission to view the details of this item." 
+                                      tooltipStyleClass="ig-tooltip" 
+                                      tooltipPosition="top"></span>
 
                                 <div class="info-button"
-                                     *ngIf="useSidePanel && item.value"
+                                     *ngIf="useSidePanel && item.value && item?.hasAssetReadAccess"
                                      [class.info-button--required]="field.Required">
                                     <asset-editor-field-info (click)="onItemInfoClick($event, item.value)" size="m"
                                                              [object]="{objectID: item.value.toLowerCase(), fieldName: field.FieldName}"
@@ -241,9 +245,13 @@
                                                     <span class="ig-colorfield-item-label">{{item.label}}</span>
                                                 </div>
 
-                                                <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label"></span>
+                                                <span *ngIf="!field.UseColorControl && item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label"></span>
+                                                <span *ngIf="!field.UseColorControl && !item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label"
+                                                      i18n-pTooltip pTooltip="You do not have permission to view the details of this item." 
+                                                      tooltipStyleClass="ig-tooltip" 
+                                                      tooltipPosition="top"></span>
                                             </td>
-                                            <td style="justify-content: flex-end;" *ngIf="useSidePanel && item.value">
+                                            <td style="justify-content: flex-end;" *ngIf="useSidePanel && item.value && item?.hasAssetReadAccess">
                                                 <asset-editor-field-info (click)="onItemInfoClick($event, item.value)"
                                                                          [object]="{objectID: item.value.toLowerCase(), fieldName: field.FieldName}"
                                                                          [selected]="sidePanelSelection">

@@ -2215,15 +2215,71 @@ namespace d360.web.Controllers.V2
 						}
 						else
 						{
-							sql += $@"
+							if (Company.CurrentResourceIsAdmin)
+							{
+								sql += $@"
 								select 
-								cast(uid as nvarchar(36)) as value,
-								coalesce(DisplayPath,'Path Missing') as text 
+								cast(uid as nvarchar(36)) as value
+								,coalesce(DisplayPath,'Path Missing') as text
 								from #tempAssetsMap
 								{(!string.IsNullOrEmpty(whereQuery) ? "where " + whereQuery : "")}
 								order by displaypath 
 								{pagingQuery}
-								option(recompile);";
+								option(recompile);
+								";
+							}
+							else
+							{
+								sql += $@"
+								drop table if exists #tempassetpremmission;
+								select 
+								a.id AssetID,
+								cast(uid as nvarchar(36)) as value
+								,coalesce(DisplayPath,'Path Missing') as text
+								,1 hasAssetReadAccess
+								into #tempassetpremmission
+								from #tempAssetsMap a
+								{(!string.IsNullOrEmpty(whereQuery) ? "where " + whereQuery : "")}
+								order by displaypath 
+								{pagingQuery}
+								option(recompile);
+
+								drop table if exists #ReadAssets;
+								create table #ReadAssets(
+									AssetId int,
+									AssetTypeID bigint
+								)
+
+								create index cix_permissionAssetId on #ReadAssets(Assetid);
+
+								insert into #ReadAssets
+								select AssetID,AssetTypeID 
+								from dbo.UserAssetPermissions(@userId,@parentAssetTypeId) 
+								where ((PermissionsBitMask & {((int)Permission.ReadAsset)})) = 0; 
+		
+								if exists (select 1 from #ReadAssets where assettypeid = @parentAssetTypeId and assetid = 0)
+									begin
+										update t
+										set hasAssetReadAccess = 0
+										from #tempassetpremmission t
+									end
+								else
+									begin
+										update t
+										set hasAssetReadAccess = 0
+										from #tempassetpremmission t
+										inner join #ReadAssets r on t.AssetID = r.AssetID;
+									end
+
+								select 
+								 tp.value
+								,tp.text
+								,tp.hasAssetReadAccess
+								from #tempassetpremmission tp
+								order by tp.text 
+								option(recompile);
+								";
+							}
 						}
 
 						sql += $@"
@@ -2286,7 +2342,7 @@ namespace d360.web.Controllers.V2
 						}
 					}
 
-					var cmd = new CommandDefinition(sql, cancellationToken: cancellationToken, parameters: new { atype.ID, skip, take, filter, assetUid });
+					var cmd = new CommandDefinition(sql, cancellationToken: cancellationToken, parameters: new { atype.ID, skip, take, filter, assetUid, userId = Company.CurrentResourceID});
 					var resultsAssets = await Company.Connection.QueryMultipleAsync(cmd);
 					var items = resultsAssets.Read<DDLSelectItem>().ToList();
 
@@ -2574,6 +2630,9 @@ namespace d360.web.Controllers.V2
 			public string value { get; set; }
 
 			public string color { get; set; }
+
+			public bool hasAssetReadAccess { get; set; } = true;
+
 		}
 
 		/// <summary>
