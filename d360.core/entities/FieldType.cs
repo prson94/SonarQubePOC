@@ -177,6 +177,9 @@ namespace d360.core.entities
 		[DataMember]
 		public bool UseDisplayFormat { get; set; }
 
+		[DataMember]
+		public bool IsSubject { get; set; }
+
 		public bool IsPathSegment
 		{
 			get
@@ -814,6 +817,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public bool UseDisplayFormat { get; set; }
+		
+		[DataMember]
+		public bool IsSubject { get; set; }
 	}
 
 	public class FieldTypeDataTypeTextApiViewModel : FieldTypeEditableApiViewModel

@@ -128,7 +128,7 @@ export class FieldType {
     Score: Score;
 	Counter: Counter;
 	System: Text;
-    Empty: Empty;
+	Empty: Empty;
 }
 
 export class FieldDisplayModel {
@@ -195,6 +195,7 @@ export class Boolean implements ICommonOptions {
     Search: Search = new Search();
 	DisplayInColumn: boolean = false;
 	UseDisplayFormat: boolean = false;
+	IsSubject: boolean = false;
 }
 
 export class Description {

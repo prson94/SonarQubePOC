@@ -521,4 +521,25 @@ END;
 	  ]]>
     </rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Table.dbo.FieldType-v10">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		
+		IF COL_LENGTH('[dbo].[FieldType]', 'IsSubject') IS NULL
+		BEGIN
+			alter table dbo.FieldType
+			add [IsSubject] [bit] CONSTRAINT [DF_FieldType_IsSubject] DEFAULT (1) NOT NULL			
+		END
+	  ]]>
+    </sql>
+    <rollback>
+      <![CDATA[		
+		alter table dbo.FieldType 
+		drop column if exists IsSubject
+	  ]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

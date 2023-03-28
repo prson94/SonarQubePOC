@@ -245,7 +245,16 @@ namespace d360.web.Controllers.V2
 				ExistingIntersectID = FieldsRepository.GetFieldInterSetUID(existingFields);
 			}
 
-			var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID);			
+			var existingIntersectTypes = new List<IntersectType>();
+			if (model.Fields.Any(f => f.Type.Relationship != null))
+			{
+				foreach(var field in model.Fields.Where(f=>f.Type.Relationship != null))
+				{
+					existingIntersectTypes.AddRange(Company.IntersectTypes.Where(i => field.Type.Relationship.IntersectTypeUid == i.uid));
+				}				
+			}
+					
+			var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID, existingIntersects: existingIntersectTypes);			
 
 			if (validationStatus.StatusCode != HttpStatusCode.OK)
 			{
@@ -672,17 +681,29 @@ namespace d360.web.Controllers.V2
 					)
 				).ToList();
 
-				var Field_Relationships = allRelationships
-					.Where(x => (!x.PredicateType.HasValue || !excludedFieldRelationshipPredicates.Contains(x.PredicateType.Value))
-								&& x.PredicateType != PredicateType.InterTypeHierarchy
-							   )
-					.Select(i => new
-					{
-						title = (i.SubjectUid == AssetTypeUid) ?
-							$"{i.PredicateName} {i.ObjectAssetTypePath}" :
-							$"{i.PredicateInverse} {i.SubjectAssetTypePath}",
-						value = i.Uid
-					}).OrderBy(i => i.title);
+				var relationships = allRelationships
+				   .Where(x => (!x.PredicateType.HasValue || !excludedFieldRelationshipPredicates.Contains(x.PredicateType.Value))
+							   && x.PredicateType != PredicateType.InterTypeHierarchy
+							  );
+				
+				var subject_relationships = relationships.Where(i => i.SubjectUid == AssetTypeUid).Select(i => new
+				{
+					title = $"{i.PredicateName} {i.ObjectAssetTypePath}",
+					isSubject = true,
+					value = i.Uid
+				}).ToList();
+
+
+				var object_relationships = relationships.Where(i => i.ObjectUid == AssetTypeUid).Select(i => new
+				{
+					title = $"{i.PredicateInverse} {i.SubjectAssetTypePath}",
+					isSubject = false,
+					value = i.Uid
+				});
+
+				var Field_Relationships = subject_relationships.ToList();
+				Field_Relationships.AddRange(object_relationships);
+				Field_Relationships = Field_Relationships.OrderBy(i => i.title).ToList();
 
 				var Field_CardinalRelationships = cardinalRelationships
 					.Select(i => new

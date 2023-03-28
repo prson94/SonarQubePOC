@@ -505,6 +505,17 @@ namespace d360.model
 					intersectJoin = @"(I.ObjectAssetID = {0} and I.SubjectAssetID = @assetId)";
 				}
 			}
+			else
+			{
+				if (ft.IsSubject)
+				{
+					intersectJoin = @"(I.SubjectAssetID = {0} and I.ObjectAssetID = @assetId)";
+				}
+				else
+				{
+					intersectJoin = @"(I.ObjectAssetID = {0} and I.SubjectAssetID = @assetId)";
+				}
+			}
 
 			string formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "AD.ID");
 			string formattedIntersectJoin = string.Format(intersectJoin, "AD.ID");
