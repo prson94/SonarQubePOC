@@ -25,6 +25,8 @@ import { ButtonModule } from "../../../../directives/ig-button-directive";
 import { TooltipModule } from "primeng/tooltip";
 import { DomSanitizer } from '@angular/platform-browser';
 
+/*global $localize*/
+
 export const IMAGE_PICKER_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => ImagePicker),
@@ -74,7 +76,9 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
         public el: ElementRef) {
     }
 
-    ngOnInit() {
+	ngOnInit() {
+		this.hasError = false;
+		this.validationMessage = ``;
         this.setPreviewDimensions();
         this.setInvalidMessages();
     }
@@ -148,10 +152,18 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
         this.value = "";
 
         this.file = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
-        var reader = new FileReader();
 
-        reader.onload = this._handleReaderLoaded.bind(this);
-        reader.readAsDataURL(this.file);
+		this.hasError = false;
+		if (this.file && this.file.type && this.allowedExtensions.indexOf(this.file.type) === -1) {
+			this.hasError = true;
+			this.validationMessage = $localize`Invalid file type. Allowed extenstions are ${this.allowedExtensions}`;
+		}
+		else {
+			var reader = new FileReader();
+
+			reader.onload = this._handleReaderLoaded.bind(this);
+			reader.readAsDataURL(this.file);
+		}
     }
 
     _handleReaderLoaded(e) {
