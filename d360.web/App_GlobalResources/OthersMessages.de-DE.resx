@@ -181,6 +181,27 @@
   <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
     <value>Ungültiges Beziehungsfeld in ungültigem oder gelöschtem Beziehungstyp gefunden.</value>
   </data>
+  <data name="InvalidpageNum" xml:space="preserve">
+    <value>Ungültiger pageNum-Wert angegeben.</value>
+  </data>
+  <data name="InvalidpageNumGT0" xml:space="preserve">
+    <value>Ungültiger pageNum-Wert angegeben. Wert muss größer als 0 sein.</value>
+  </data>
+  <data name="InvalidpageNumNumberValue" xml:space="preserve">
+    <value>Ungültiger pageNum-Wert angegeben. Muss ein numerischer Wert ohne Dezimaltrennzeichen sein.</value>
+  </data>
+  <data name="InvalidPageSize" xml:space="preserve">
+    <value>Ungültiger pageSize-Wert angegeben.</value>
+  </data>
+  <data name="InvalidpageSizeGT0" xml:space="preserve">
+    <value>Ungültiger pageSize-Wert angegeben. Wert muss größer als 0 sein.</value>
+  </data>
+  <data name="InvalidpageSizeNumberLarge" xml:space="preserve">
+    <value>Ungültiger pageSize-Wert angegeben. Zahl ist zu groß.</value>
+  </data>
+  <data name="InvalidpageSizeNumberValue" xml:space="preserve">
+    <value>Ungültiger pageSize-Wert angegeben. Muss ein numerischer Wert ohne Dezimaltrennzeichen sein.</value>
+  </data>
   <data name="ItemNotFound" xml:space="preserve">
     <value>Element nicht gefunden.</value>
   </data>

@@ -205,6 +205,9 @@
   <data name="FieldType_SimpleText" xml:space="preserve">
     <value>Eenvoudige tekst</value>
   </data>
+  <data name="FieldType_System" xml:space="preserve">
+    <value>Systeem</value>
+  </data>
   <data name="FieldType_Tag" xml:space="preserve">
     <value>Tag</value>
   </data>

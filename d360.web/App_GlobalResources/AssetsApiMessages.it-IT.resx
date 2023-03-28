@@ -235,6 +235,9 @@
   <data name="InvalidResourceUID" xml:space="preserve">
     <value>[resourceUid] fornito non valido</value>
   </data>
+  <data name="InvalidSortDataCatalog" xml:space="preserve">
+    <value>{0} non è una proprietà di ordinamento valida. Le proprietà consentite sono {1}.</value>
+  </data>
   <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
     <value>UID utente o gruppo non valido come non proprietario trasmesso nella richiesta</value>
   </data>

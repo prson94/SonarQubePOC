@@ -235,6 +235,9 @@
   <data name="InvalidResourceUID" xml:space="preserve">
     <value>Ongeldige [resourceUid] opgegeven</value>
   </data>
+  <data name="InvalidSortDataCatalog" xml:space="preserve">
+    <value>{0} is geen geldige sorteereigenschap. Toegestane eigenschappen zijn {1}.</value>
+  </data>
   <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
     <value>Ongeldige gebruikers- of groeps-UID omdat er een niet-eigenaar is doorgegeven in de aanvraag</value>
   </data>

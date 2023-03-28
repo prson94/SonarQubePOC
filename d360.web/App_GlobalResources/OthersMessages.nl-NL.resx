@@ -181,6 +181,27 @@
   <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
     <value>Ongeldig relatieveld gedetecteerd Ongeldig of verwijderd relatietype gedetecteerd.</value>
   </data>
+  <data name="InvalidpageNum" xml:space="preserve">
+    <value>Ongeldige waarde voor pageNum opgegeven.</value>
+  </data>
+  <data name="InvalidpageNumGT0" xml:space="preserve">
+    <value>Ongeldige waarde voor pageNum opgegeven. De waarde moet hoger zijn dan 0.</value>
+  </data>
+  <data name="InvalidpageNumNumberValue" xml:space="preserve">
+    <value>Ongeldige waarde voor pageNum opgegeven. Moet een numerieke waarde zonder decimaalteken zijn.</value>
+  </data>
+  <data name="InvalidPageSize" xml:space="preserve">
+    <value>Ongeldige waarde voor pageSize opgegeven.</value>
+  </data>
+  <data name="InvalidpageSizeGT0" xml:space="preserve">
+    <value>Ongeldige waarde voor pageSize opgegeven. De waarde moet hoger zijn dan 0.</value>
+  </data>
+  <data name="InvalidpageSizeNumberLarge" xml:space="preserve">
+    <value>Ongeldige waarde voor pageSize opgegeven. Getal is te groot.</value>
+  </data>
+  <data name="InvalidpageSizeNumberValue" xml:space="preserve">
+    <value>Ongeldige waarde voor pageSize opgegeven. Moet een numerieke waarde zonder decimaalteken zijn.</value>
+  </data>
   <data name="ItemNotFound" xml:space="preserve">
     <value>Item niet gevonden.</value>
   </data>

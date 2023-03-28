@@ -751,4 +751,16 @@
   <data name="InvalidLanguageCode" xml:space="preserve">
     <value>Ongeldige [LanguageCode]. Ondersteunde waarden zijn {0}.</value>
   </data>
+  <data name="AddSystemFieldTypeNotAllowed" xml:space="preserve">
+    <value>U kunt geen typen voor systeemvelden toevoegen</value>
+  </data>
+  <data name="EditSystemFieldTypePropertyNotAllowed" xml:space="preserve">
+    <value>U kunt bepaalde eigenschappen voor veldtypen niet bewerken</value>
+  </data>
+  <data name="DeleteSystemFieldsError" xml:space="preserve">
+    <value>U kunt het systeemveld {0} niet verwijderen.</value>
+  </data>
+  <data name="IpSettingNotAllowed" xml:space="preserve">
+    <value>Het IP-adres {0} is niet toegestaan voor IP-beperkingen.</value>
+  </data>
 </root>
