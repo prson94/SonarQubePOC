@@ -640,7 +640,7 @@ namespace d360.web.Controllers.V2
 			string filtersTempTable = "";
 			if (hasFilters)
 			{
-				bool useSortPathInTempTable = true;
+				bool useSortPathInTempTable = false;
 				StringBuilder sb = new StringBuilder();
 				List<string> tempCols = new List<string>
 				{
