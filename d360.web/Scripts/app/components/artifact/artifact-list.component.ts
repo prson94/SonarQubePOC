@@ -106,15 +106,15 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 			this.headerBreadcrumbService.clearBreadcrumbs();
 			this.folderTitle = res;
 			this.area = res;
+			this.setObjectInfo('ArtifactType', this.assetTypeApiModel.ID);
+
+			this.artifactTypeHierarchy.push(this.assetTypeApiModel);
+			this.createBreadcrumbHierarchy(this.assetTypeApiModel);
+
+			this.setBrowserTitle(this.titleService, this.assetTypeApiModel.Name);
 			this.titleAndTabsService.isInitialize = true;
 		});
 
-		this.setObjectInfo('ArtifactType', this.assetTypeApiModel.ID);
-
-		this.artifactTypeHierarchy.push(this.assetTypeApiModel);
-		this.createBreadcrumbHierarchy(this.assetTypeApiModel);
-
-		this.setBrowserTitle(this.titleService, this.assetTypeApiModel.Name);
 		this.isLoading = false;
 	}
 
