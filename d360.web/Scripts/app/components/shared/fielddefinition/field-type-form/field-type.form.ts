@@ -621,11 +621,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return Observable.create();
         }
 		this.isListableRelationship = false;		
-		let intersectTypeUid = value.split('|')[0];
-		let isSubject = value.split('|')[1] === "true";
+		const intersectTypeUid = value.split('|')[0];
+		const isSubject = value.split('|')[1] === "true";
         //update the model to have correct lookuptype object and id
 		this.model.FieldType.Type["Relationship"].IntersectTypeUid = intersectTypeUid.toLocaleLowerCase();
-		let relationship = this.relationshipList.find(x => x.Uid === this.model.FieldType.Type["Relationship"].IntersectTypeUid);
+		const relationship = this.relationshipList.find(x => x.Uid === this.model.FieldType.Type["Relationship"].IntersectTypeUid);
 		if (relationship.Subject.Uid === relationship.Object.Uid) {
 			this.model.FieldType.Type["Relationship"].IsSubject = isSubject;		
 		}
