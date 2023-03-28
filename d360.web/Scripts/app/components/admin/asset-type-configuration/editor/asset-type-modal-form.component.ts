@@ -105,6 +105,13 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 			this.hierarchyPredicatesSelectItem = this.hierarchyPredicatesSelectItem.sort((a, b) => a.title.localeCompare(b.title));
 
+			if (this.hasPredicateUid) {
+				if (this.hierarchyPredicatesSelectItem.length > 0) {
+					const selected = this.hierarchyPredicatesSelectItem[0];
+					this.assetTypeForm.controls["predicateUid"].setValue(selected.value);
+				}
+			}
+
 			this.flowObjectTypes = [];
 			this.flowObjectTypes.push({ value: 'Activity', label: $localize`Activity` });
 			this.flowObjectTypes.push({ value: 'Event', label: $localize`Event` });
