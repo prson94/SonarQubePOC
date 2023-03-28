@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -412,7 +414,7 @@ namespace d360.web.Controllers
 				var fieldType = "Html";
 
 				assetID = Company.Assets.Where(a => a.Object == sType && a.ObjectID == id).FirstOrDefault().ID;
-				
+
 				var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectTypeID && (i.SubjectAssetID == assetID || i.ObjectAssetID == assetID)).FirstOrDefault();
 
 				if (fieldTypeID > 0)
@@ -535,11 +537,11 @@ namespace d360.web.Controllers
 				if (type == SystemObjects.IssueType || type == SystemObjects.Issue)
 				{
 					issueTypeID = type == SystemObjects.IssueType ? id : Company.Issues.Where(i => i.ID == id).FirstOrDefault().IssueTypeID;
-				} 
+				}
 				else if (type == SystemObjects.Intersect || type == SystemObjects.IntersectType)
 				{
 					intersectTypeID = type == SystemObjects.IntersectType ? id : Company.Intersects.Where(i => i.ID == id).FirstOrDefault().IntersectTypeID;
-				} 
+				}
 				else
 				{
 					assettypeID = Company.Assets.Where(a => a.Object == type.ToString() && a.ObjectID == id).FirstOrDefault().AssetTypeID;
@@ -1016,16 +1018,6 @@ namespace d360.web.Controllers
 		[HttpGet, Route("{type}/{id:int}/grid/definition")]
 		public HttpResponseMessage GetGridDefinitionByType(SystemObjects type, int id)
 		{
-			var skippedFieldTypes = DataType.Text.GetNonlistableFields();
-
-			var assetTypeId = (type == SystemObjects.IntersectType || type == SystemObjects.IssueType) ? -1 : Company.AssetTypes.Where(a => a.Object == type.ToString() && a.ObjectID == id).FirstOrDefault().ID;
-
-			var totalItems = Company
-				.Filter<FieldType>(i => ((type == SystemObjects.IssueType && i.IssueTypeID == id) || (type == SystemObjects.IntersectType && i.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && i.AssetTypeID == assetTypeId)) && !skippedFieldTypes.Contains(i.Type))
-				.ToList();
-
-			var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
-
 			var columns = new List<GridColumn>();
 			var fields = new List<GridField>();
 			var filterColumns = new List<GridFilterColumn>();
@@ -1035,15 +1027,57 @@ namespace d360.web.Controllers
 			ObjectDetail detail = null;
 			bool isReadOnly = false;
 
-			var scoreAllocations = Company.Query<dynamic>(@"
-				select FT.[Name], FT.ScoreType, A.LowerThreshold, A.UpperThreshold  from FieldType FT
-				inner join AssetType T on T.Id = FT.AssetTypeID
-				inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
-				where T.[Object] = @type and T.ObjectID = @id and FT.[Type] = 'Score'", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).ToList();
+			var skippedFieldTypes = DataType.Text.GetNonlistableFields();
 
-			var hasProfiling = GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING) ? Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault() : false;
+			string loadDataSql = $@"
+					if @type = 'IssueType'
+					begin
+						select * from FieldType FT where FT.IssueTypeID = @id and FT.Type not in @skippedFieldTypes and FT.IsListable = 1
+						order by FT.ColumnOrder, FT.FriendlyName
+					end
+					else if @type = 'IntersectType'
+					begin
+						select * from FieldType FT where FT.IntersectTypeID = @id and FT.Type not in @skippedFieldTypes and FT.IsListable = 1
+						order by FT.ColumnOrder, FT.FriendlyName
+					end
+					else 
+					begin
+						declare @assetTypeId int = (select top 1 AT.ID from AssetType AT where AT.Object = @type and AT.ObjectID = @id)
+						select * from FieldType FT where FT.AssetTypeID = @assetTypeId and FT.Type not in @skippedFieldTypes and FT.IsListable = 1
+						order by FT.ColumnOrder, FT.FriendlyName
+					end
 
-			var assetType = Company.Filter<AssetType>(x => x.Object == type.ToString() && x.ObjectID == id).FirstOrDefault();
+					select FT.[Name], FT.ScoreType, A.LowerThreshold, A.UpperThreshold  from FieldType FT
+									inner join AssetType T on T.Id = FT.AssetTypeID
+									inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
+									where T.[Object] = @type and T.ObjectID = @id and FT.[Type] = 'Score'
+
+					select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end
+
+					select * from AssetType where Object = @type and ObjectID = @id
+
+					select	count(1) 
+					from	IntersectType I
+							inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3)
+							inner join AssetType O on O.ID = I.ObjectAssetTypeID and O.[Object] = @type and O.ObjectID = @id";
+
+			DynamicParameters dbArgs = new DynamicParameters();
+			dbArgs.Add("@skippedFieldTypes", skippedFieldTypes);
+			dbArgs.Add("@type", type);
+			dbArgs.Add("@id", id);
+			SqlMapper.GridReader gridReader = Company.Database.Connection.QueryMultiple(loadDataSql, dbArgs);
+
+			IEnumerable<FieldType> totalItems = gridReader.Read<FieldType>().ToList();
+			var scoreAllocations = gridReader.Read<dynamic>().ToList();
+			bool hasAssetDataProfileData = gridReader.Read<bool>().FirstOrDefault();
+			AssetType assetType = gridReader.Read<AssetType>().FirstOrDefault();
+			bool hasParentType = gridReader.Read<bool>().FirstOrDefault();
+			gridReader.Dispose();
+
+			var hasProfiling = GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING) ? hasAssetDataProfileData : false;
+
+			var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+
 			switch (type)
 			{
 				case SystemObjects.ArtifactType:
@@ -1055,7 +1089,6 @@ namespace d360.web.Controllers
 						showParent = assetType.AutoDisplayParent.HasValue ? (bool)assetType.AutoDisplayParent : true;
 					}
 
-					var hasParentType = Company.TypeHasParent(SystemObjects.ArtifactType, id);
 					parseDynamicColumnsAndFields(items, columns, fields, 0, true);
 
 					if (hasParentType && showParent)
@@ -1176,7 +1209,7 @@ namespace d360.web.Controllers
 						parentRefType = Company.GetParentType(parentRefType.ID);
 						loopCount++;
 					}
-					
+
 					var idx = 0;
 					//parent fields were added starting from child element up, meaning we need to reverse this list to get correct index segment withing asset path
 					parentGridFields.Reverse();
@@ -1325,7 +1358,7 @@ namespace d360.web.Controllers
 				Title = (detail != null) ? detail.Name : "Child Items",
 				Type = type.ToString(),
 				ID = id,
-				FieldsCount = totalItems.Count,
+				FieldsCount = totalItems.Count(),
 				Fields = fields,
 				Columns = columns,
 				FilterColumns = filterColumns,
@@ -1876,7 +1909,7 @@ namespace d360.web.Controllers
 					inner join AssetType AT on AT.Id = A.AssetTypeID
 					left join AssetPath AP ON AP.ID = A.ID
 					left join AssetDisplayValue adv on adv.AssetID = a.ID
-					where a.uid in @assets", new { assets = objectsToCheckAccesFor.Select(x=> x.Uid).ToList() }).ToList();
+					where a.uid in @assets", new { assets = objectsToCheckAccesFor.Select(x => x.Uid).ToList() }).ToList();
 
 			foreach (var intersect in intersects)
 			{
@@ -2050,10 +2083,10 @@ namespace d360.web.Controllers
 		}
 
 		[Route("relationships/field/{fieldTypeID:int}"), HttpGet]
-        public HttpResponseMessage GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null)
-        {
+		public HttpResponseMessage GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null)
+		{
 			var asset = Company.GetAssetDetail(@object, objectID.GetValueOrDefault());
-            var selected = Company.GetRelationshipFieldItems(fieldTypeID, asset.ID, offset, rows, query, true);
+			var selected = Company.GetRelationshipFieldItems(fieldTypeID, asset.ID, offset, rows, query, true);
 
 			if (selected.ContainsKey("RelationshipError"))
 			{
@@ -2103,7 +2136,7 @@ namespace d360.web.Controllers
 			{
 				List<string> excludeValues = selection.Select(s => s.Value).ToList(); //Exclude values already added to selection
 				result = Company.GetRelationshipFieldItems(fieldTypeID, asset.ID, offset, rows, query, false);
-				
+
 				if (result.ContainsKey("Items"))
 				{
 					List<dynamic> items = (List<dynamic>)result["Items"];
@@ -2585,7 +2618,7 @@ namespace d360.web.Controllers
 		public ObjectDetail GetObjectDetail(Guid uid)
 		{
 			var data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
-			if(data == null)
+			if (data == null)
 			{
 				data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
 			}
@@ -2703,7 +2736,7 @@ namespace d360.web.Controllers
 									outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.AssetID=ACF.ID) FD
 									outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.AssetID=ACF.ID) FPL
 								FOR JSON PATH";
-				string colorAndValue = Company.Query<string>(colorAndValueSql, 
+				string colorAndValue = Company.Query<string>(colorAndValueSql,
 					new { fieldTypeID = fieldType.ID, assetId = objectDetail.AssetID, assetTypeId = objectDetail.AssetTypeID, fieldType.DefaultValue, fieldType.DefaultFormattedValue }).FirstOrDefault();
 
 				if (!string.IsNullOrEmpty(colorAndValue))
@@ -2802,7 +2835,7 @@ namespace d360.web.Controllers
 			var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
 			model.Object = type.ToString();
 			model.ObjectID = id;
-			
+
 
 			var metadataResult = await Company.QueryAsync<dynamic>(@"
 					select  V.DisplayValue as AssetName, 
@@ -3835,7 +3868,7 @@ from	Asset A
 		left join AssetTypeLevel L on L.AssetTypeID = A.AssetTypeID and L.[Level] = P.Segments.value('(/path/segment/@level)[last()]', 'int')
 where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 					if (policy != null)
-					{ 
+					{
 						model.rows.Add(new DetailReadOnlyRowModel
 						{
 							columns = 2,
