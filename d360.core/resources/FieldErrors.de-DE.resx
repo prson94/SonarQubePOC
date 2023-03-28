@@ -241,7 +241,7 @@
     <value>Felder enthalten Fehler</value>
   </data>
   <data name="FieldTypeConversionError" xml:space="preserve">
-    <value>Feld {0} kann nicht von {1} zu {2} konvertiert werden oder es ist bereits ein Feld mit demselben Namen und einem anderem Typ vorhanden.</value>
+    <value>Sie können das Feld {0} nicht von einem {1} in einen {2} konvertieren. Möglicherweise ist bereits ein Feld mit demselben Namen und einem anderen Typ vorhanden.</value>
   </data>
   <data name="FieldTypeError" xml:space="preserve">
     <value>Feldtypfehler</value>
@@ -388,7 +388,7 @@
     <value>[Name] darf nicht [{0}] entsprechen.</value>
   </data>
   <data name="NameReservedword" xml:space="preserve">
-    <value>{f.Name} darf nicht als Feldname verwendet werden, da es sich um ein reserviertes Wort handelt.</value>
+    <value>{0} darf nicht als Feldname verwendet werden, da es sich um ein reserviertes Wort handelt.</value>
   </data>
   <data name="NoModelFound" xml:space="preserve">
     <value>Kein Modell gefunden</value>

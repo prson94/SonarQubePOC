@@ -181,6 +181,27 @@
   <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
     <value>Se ha encontrado un campo de relación no válido o un tipo de relación eliminado.</value>
   </data>
+  <data name="InvalidpageNum" xml:space="preserve">
+    <value>Valor pageNum proporcionado no válido.</value>
+  </data>
+  <data name="InvalidpageNumGT0" xml:space="preserve">
+    <value>Valor pageNum proporcionado no válido. El valor debe ser mayor que 0.</value>
+  </data>
+  <data name="InvalidpageNumNumberValue" xml:space="preserve">
+    <value>Valor pageNum proporcionado no válido. Debe ser un valor numérico sin separador decimal.</value>
+  </data>
+  <data name="InvalidPageSize" xml:space="preserve">
+    <value>Valor pageSize proporcionado no válido.</value>
+  </data>
+  <data name="InvalidpageSizeGT0" xml:space="preserve">
+    <value>Valor pageSize proporcionado no válido. El valor debe ser mayor que 0.</value>
+  </data>
+  <data name="InvalidpageSizeNumberLarge" xml:space="preserve">
+    <value>Valor pageSize proporcionado no válido. El número es demasiado largo.</value>
+  </data>
+  <data name="InvalidpageSizeNumberValue" xml:space="preserve">
+    <value>Valor pageSize proporcionado no válido. Debe ser un valor numérico sin separador decimal.</value>
+  </data>
   <data name="ItemNotFound" xml:space="preserve">
     <value>Elemento no encontrado.</value>
   </data>

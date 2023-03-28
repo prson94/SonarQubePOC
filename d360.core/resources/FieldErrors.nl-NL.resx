@@ -241,7 +241,7 @@
     <value>Er zijn velden die fouten bevatten</value>
   </data>
   <data name="FieldTypeConversionError" xml:space="preserve">
-    <value>U mag veld {0} niet converteren van een {1} naar een {2} of er bestaat mogelijk al een veld met dezelfde naam en een ander type.</value>
+    <value>U mag veld {0} niet converteren van een {1} naar een {2}. Er bestaat mogelijk al een veld met dezelfde naam en een ander type.</value>
   </data>
   <data name="FieldTypeError" xml:space="preserve">
     <value>Fout met veldtype</value>
@@ -388,7 +388,7 @@
     <value>[Name] kan geen [{0}] zijn.</value>
   </data>
   <data name="NameReservedword" xml:space="preserve">
-    <value>U mag {f.Name} niet als naam voor uw veld gebruiken omdat dit een gereserveerd woord is.</value>
+    <value>U mag {0} niet als naam voor uw veld gebruiken omdat dit een gereserveerd woord is.</value>
   </data>
   <data name="NoModelFound" xml:space="preserve">
     <value>Geen model gevonden</value>

@@ -751,4 +751,16 @@
   <data name="InvalidLanguageCode" xml:space="preserve">
     <value>[LanguageCode] non valido. I valori supportati sono {0}.</value>
   </data>
+  <data name="AddSystemFieldTypeNotAllowed" xml:space="preserve">
+    <value>Impossibile aggiungere tipi di campi di sistema</value>
+  </data>
+  <data name="EditSystemFieldTypePropertyNotAllowed" xml:space="preserve">
+    <value>Impossibile modificare alcune proprietà del tipo di campo</value>
+  </data>
+  <data name="DeleteSystemFieldsError" xml:space="preserve">
+    <value>Impossibile eliminare il campo di sistema {0}.</value>
+  </data>
+  <data name="IpSettingNotAllowed" xml:space="preserve">
+    <value>L'indirizzo IP {0} non è consentito per le restrizioni IP.</value>
+  </data>
 </root>

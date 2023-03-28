@@ -235,6 +235,9 @@
   <data name="InvalidResourceUID" xml:space="preserve">
     <value>Valeur [resourceUid] fournie non valide</value>
   </data>
+  <data name="InvalidSortDataCatalog" xml:space="preserve">
+    <value>{0} n’est pas une propriété de tri valide. Les propriétés autorisées sont {1}.</value>
+  </data>
   <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
     <value>UID d’utilisateur ou de groupe non-propriétaire transmis dans la requête non valide</value>
   </data>

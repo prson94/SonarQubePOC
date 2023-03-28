@@ -751,4 +751,16 @@
   <data name="InvalidLanguageCode" xml:space="preserve">
     <value>[LanguageCode] ungültig. Unterstützte Werte sind {0}.</value>
   </data>
+  <data name="AddSystemFieldTypeNotAllowed" xml:space="preserve">
+    <value>Es können keine Systemfeldtypen hinzugefügt werden</value>
+  </data>
+  <data name="EditSystemFieldTypePropertyNotAllowed" xml:space="preserve">
+    <value>Bestimmte Feldtypeigenschaften können nicht bearbeitet werden</value>
+  </data>
+  <data name="DeleteSystemFieldsError" xml:space="preserve">
+    <value>Das Systemfeld {0} kann nicht gelöscht werden.</value>
+  </data>
+  <data name="IpSettingNotAllowed" xml:space="preserve">
+    <value>Die IP-Adresse {0} ist für IP-Einschränkungen nicht zulässig.</value>
+  </data>
 </root>

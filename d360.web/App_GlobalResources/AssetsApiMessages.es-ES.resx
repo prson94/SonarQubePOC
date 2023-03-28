@@ -235,6 +235,9 @@
   <data name="InvalidResourceUID" xml:space="preserve">
     <value>[resourceUid] proporcionado no válido</value>
   </data>
+  <data name="InvalidSortDataCatalog" xml:space="preserve">
+    <value>{0} no es una propiedad de clasificación válida. Las propiedades permitidas son {1}.</value>
+  </data>
   <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
     <value>UID de usuario o grupo como no propietario pasado en la solicitud no válido</value>
   </data>
