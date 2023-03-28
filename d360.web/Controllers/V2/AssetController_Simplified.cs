@@ -184,7 +184,7 @@ namespace d360.web.Controllers.V2
 
 			var columns = new List<CatalogColumn> {
 				new CatalogColumn { ApiName = "uid", Column = "a.Uid", Position = 1 },
-				new CatalogColumn { ApiName = "displayValue", Column = "adv.DisplayValue", Position = 2, Sort = "S.ObjectDisplayValue" }
+				new CatalogColumn { ApiName = "displayValue", Column = "adv.DisplayValue", Position = 2, Sort = "S.DisplayValuePrefix" }
 			};
 
 			predicates.ForEach(p =>
