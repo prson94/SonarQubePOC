@@ -38,17 +38,17 @@ namespace d360.web.Controllers
 	{
 		#region DI
 
-        private readonly IStorageProvider Storage;
+		private readonly IStorageProvider Storage;
 		private readonly IResponsibilityRepository ResponsibilityRepository;
-        private readonly GetResponsibilityTypeRelationRule getResponsibilityTypeRelationRule;
+		private readonly GetResponsibilityTypeRelationRule getResponsibilityTypeRelationRule;
 
-        public FormController(ICoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository,
-            GetResponsibilityTypeRelationRule getResponsibilityTypeRelationRule)
-            : base(set)
-        {
-            Storage = storage;
-            ResponsibilityRepository = responsibilityRepository;
-            this.getResponsibilityTypeRelationRule = getResponsibilityTypeRelationRule;
+		public FormController(ICoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository,
+			GetResponsibilityTypeRelationRule getResponsibilityTypeRelationRule)
+			: base(set)
+		{
+			Storage = storage;
+			ResponsibilityRepository = responsibilityRepository;
+			this.getResponsibilityTypeRelationRule = getResponsibilityTypeRelationRule;
 #if DEBUG
 			Company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
@@ -69,29 +69,29 @@ namespace d360.web.Controllers
 				f = style.IconForeColor;
 			}
 
-			list.Add(new EditableField 
-					{ 
-						Row = row, 
-						Column = 1, 
-						Required = true, 
-						FieldName = "IconBackColor", 
-						Name = "Background Color", 
-						FieldDescription = "The icon's background color", 
-						FieldType = DataType.Color.ToString(), 
-						Value = b 
-					});
+			list.Add(new EditableField
+			{
+				Row = row,
+				Column = 1,
+				Required = true,
+				FieldName = "IconBackColor",
+				Name = "Background Color",
+				FieldDescription = "The icon's background color",
+				FieldType = DataType.Color.ToString(),
+				Value = b
+			});
 
-			list.Add(new EditableField 
-					{ 
-						Row = row, 
-						Column = 2, 
-						Required = true, 
-						FieldName = "IconForeColor", 
-						Name = "Text Color", 
-						FieldDescription = "The icon's text color", 
-						FieldType = DataType.Color.ToString(), 
-						Value = f 
-					});
+			list.Add(new EditableField
+			{
+				Row = row,
+				Column = 2,
+				Required = true,
+				FieldName = "IconForeColor",
+				Name = "Text Color",
+				FieldDescription = "The icon's text color",
+				FieldType = DataType.Color.ToString(),
+				Value = f
+			});
 		}
 
 		private void upsertAssetStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx")
@@ -264,7 +264,7 @@ namespace d360.web.Controllers
 			if (assetUid.HasValue)
 			{
 				var asset = Company.Filter<Asset>(a => a.uid == assetUid.Value).SingleOrDefault();
-				
+
 				if (asset == null)
 				{
 					return jsonException(string.Format(ActionApiMessages.AssetNotFound, assetUid.Value), HttpStatusCode.NotFound);
@@ -275,12 +275,12 @@ namespace d360.web.Controllers
 			else
 			{
 				var assetType = Company.AssetTypes.SingleOrDefault(x => x.uid == assetTypeUid);
-				
+
 				if (assetType == null)
 				{
 					return jsonException(string.Format(ActionApiMessages.AssetTypeNotFound, assetUid.Value), HttpStatusCode.NotFound);
 				}
-				
+
 				return DynamicEditorAddFields(assetType.Object, null, parentId, assetType.ObjectID);
 			}
 		}
@@ -411,7 +411,7 @@ namespace d360.web.Controllers
 				if (objectType == SystemObjects.Issue.ToString())
 				{
 					var issueType = Company.IssueTypes.FirstOrDefault(x => x.uid == guid);
-					
+
 					if (issueType != null)
 					{
 						return DynamicEditorAddFields(SystemObjects.Issue.ToString(), issueType.ID, null, null);
@@ -424,7 +424,7 @@ namespace d360.web.Controllers
 				else if (objectType == SystemObjects.IssueTypeRelation.ToString())
 				{
 					var issueType = Company.IssueTypes.FirstOrDefault(x => x.uid == guid);
-					
+
 					if (issueType != null)
 					{
 						return DynamicEditorAddFields(SystemObjects.IssueTypeRelation.ToString(), issueType.ID, null, null);
@@ -450,7 +450,7 @@ namespace d360.web.Controllers
 				else
 				{
 					var asset = Company.AssetTypes.FirstOrDefault(x => x.uid == guid);
-					
+
 					if (asset != null)
 					{
 						return DynamicEditorAddFields(asset.Object.Replace("Type", ""), asset.ObjectID, null, null);
@@ -540,7 +540,7 @@ namespace d360.web.Controllers
 			}
 
 			res.MaxJsonLength = int.MaxValue;
-			
+
 			return res;
 		}
 
@@ -688,11 +688,11 @@ namespace d360.web.Controllers
 		public class LoadFilePostModel
 		{
 			public string LoadAction { get; set; }
-			
+
 			public string Type { get; set; }
-			
+
 			public string Notes { get; set; }
-			
+
 			public string File { get; set; }
 		}
 
@@ -891,15 +891,15 @@ order by Sort, title";
 		internal class LevelField
 		{
 			public int Level { get; set; }
-			
+
 			public string Name { get; set; }
-			
+
 			public bool PartOfKey { get; set; }
-			
+
 			public bool Required { get; set; }
-			
+
 			public int ColumnIndex { get; set; }
-			
+
 			public bool DataLoaded { get; set; } = false;
 		}
 
@@ -1013,6 +1013,36 @@ order by Sort, title";
 							}
 						}
 
+						var currentWorksheet = xls.GetCurrentWorksheetName();
+
+						//validate each cell for formula errors
+						foreach (var sheet in xls.GetSheetNames())
+						{
+							xls.SelectWorksheet(sheet);
+							var allCells = xls.GetCells();
+
+							foreach (var rowKey in allCells.Keys)
+							{
+								var rowCells = allCells[rowKey];
+								foreach (var cellKey in rowCells.Keys)
+								{
+									var cell = rowCells[cellKey];
+									if (cell.DataType == DocumentFormat.OpenXml.Spreadsheet.CellValues.Error)
+									{
+										if (cell.CellFormula != null)
+										{
+											errorMessages.Add($"Invalid cell value or macro present in row: {rowKey}, column:{cellKey}.");
+										}
+										else
+										{
+											errorMessages.Add($"Invalid cell value in row: {rowKey}, column:{cellKey}.");
+										}
+									}
+								}
+							}
+						}
+
+						xls.SelectWorksheet(currentWorksheet);
 						if (errorMessages.Count == 0)
 						{
 							// Spreadsheet should not have more columns than the type has, but it can have less.
@@ -1223,7 +1253,7 @@ order by Sort, title";
 			if (!Company.CurrentResourceIsAdmin)
 			{
 				Response.StatusCode = (int)HttpStatusCode.Forbidden;
-				
+
 				return null;
 			}
 
@@ -1246,7 +1276,7 @@ order by Sort, title";
 											 )  EA on EA.ExecutionItemUid = L.ExecutionItemUid
 										where L.LoadID = @id order by RowIndex asc";
 
-																	itemColumnSql = @"
+							itemColumnSql = @"
 										select C.LoadID, C.RowIndex, C.ColumnIndex, coalesce(EF.FieldValue, C.[Value]) as [Value] 
 										from LoadItem I 
 										inner join (
@@ -1273,7 +1303,7 @@ order by Sort, title";
 										order by RowIndex asc
 										";
 
-																	itemColumnSql = @"
+							itemColumnSql = @"
 										select C.LoadID, C.RowIndex, C.ColumnIndex, coalesce(EF.FieldValue, C.[Value]) as [Value] 
 										from LoadItem I 
 										join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex 
@@ -1298,7 +1328,7 @@ order by Sort, title";
 										order by RowIndex asc
 										";
 
-																	itemColumnSql = @"
+							itemColumnSql = @"
 										select C.LoadID, C.RowIndex, C.ColumnIndex,
 										coalesce(EF.FieldValue, C.[Value]) as [Value] 
 										from LoadItem I 
@@ -1396,23 +1426,23 @@ order by Sort, title";
 			//if the reference type has a parent we need to add parent field with the values from the parent
 			var assetType = Company.AssetTypes.SingleOrDefault(a => a.Object == "ReferenceItemType" && a.ObjectID == id);
 			var parentType = Company.GetParentType(assetType.ID);
-			
+
 			if (parentType != null)
 			{
 				var sql = "select DisplayValue, uid from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
 				list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentUid", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid) }).ToList() });
 			}
 
-			
+
 			list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row, false);
 			var colourRowIndex = list.First(x => x.FieldName.ToLower() == "code").Row.Value + 1;
-			
+
 			list.ForEach(f =>
 			{
 				if (f.Row >= colourRowIndex)
 				{
 					f.Row += 1;
-				}					
+				}
 			});
 
 			list.Add(new EditableField { Row = colourRowIndex, Column = 1, FieldName = "Color", Name = "Color", FieldType = DataType.Color.ToString() });
@@ -1565,7 +1595,7 @@ order by Sort, title";
 			}
 
 			var item = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == shoppingCartID && i.Object == type && i.ObjectID == id).FirstOrDefault();
-			
+
 			if (item == null)
 			{
 				return jsonException(FormControllerApiMessage.ShoppingCartNotFound, HttpStatusCode.NotFound);
@@ -1588,7 +1618,7 @@ order by Sort, title";
 		public JsonNetResult GetMyShoppingCart(int typeID)
 		{
 			var cart = Company.ShoppingCarts.Where(s => s.ResourceID == Company.CurrentResourceID && s.ShoppingCartTypeID == typeID && s.RequestedOn == null).FirstOrDefault();
-			
+
 			if (cart == null)
 			{
 				return new JsonNetResult
@@ -1795,12 +1825,12 @@ order by Sort, title";
 				return jsonException(FormControllerApiMessage.ShortcutMissingAnIcon, HttpStatusCode.BadRequest);
 			}
 
-			if(!string.IsNullOrEmpty(shortcut.IconPayload) && (!shortcut.IconPayload.IsValidImageData()))
-			{ 
+			if (!string.IsNullOrEmpty(shortcut.IconPayload) && (!shortcut.IconPayload.IsValidImageData()))
+			{
 				return jsonException(FormControllerApiMessage.IconIsInvalid, HttpStatusCode.BadRequest);
 			}
 
-			if(!string.IsNullOrEmpty(shortcut.Url) && !ValidateShortcutUrl(shortcut.Url))
+			if (!string.IsNullOrEmpty(shortcut.Url) && !ValidateShortcutUrl(shortcut.Url))
 			{
 				return jsonException(FormControllerApiMessage.ShortcutInvalidURL, HttpStatusCode.BadRequest);
 			}
@@ -1869,7 +1899,7 @@ order by Sort, title";
 		{
 			var validProtools = new string[] { "http", "https", "mailto" };
 			var colonPos = url.IndexOf(":");
-			if(colonPos > 0)
+			if (colonPos > 0)
 			{
 				var protocol = url.Substring(0, colonPos).ToLower();
 				return validProtools.Contains(protocol);
@@ -2077,7 +2107,7 @@ order by Sort, title";
 			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
 
-			list = 
+			list =
 			   loadDynamicFields(
 				   SystemObjects.Group.ToString(),
 				   groupId,
@@ -2246,7 +2276,7 @@ order by Sort, title";
 				{
 					return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 				}
-				
+
 				if (detail != null)
 				{
 					Company.Delete(detail);
@@ -2294,7 +2324,7 @@ order by Sort, title";
 			list.Add(new EditableField { FieldName = "IncludeFieldTypes", Name = "IncludeFieldTypes", FieldType = DataType.Hidden.ToString(), Value = template.IncludeFieldTypes == null ? template.IncludeFieldTypes.ToString() : null });
 			list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Namespace", true, "", 1, 250), Value = template.Name });
 			list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = template.Description });
-			
+
 			var names = Enum.GetNames(typeof(ExportView)).Select(i => new SelectListItem { Text = i, Value = i }).ToList();
 
 			list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names, Value = template.ExportViewType.ToString() });
