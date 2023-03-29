@@ -155,8 +155,3 @@ stages:
       inputs:
         PathtoPublish: $(Build.Repository.LocalPath)\govern\d360.web\bin\Release\web.zip
         ArtifactName: Govern-UI
-- stage: UPDATE_VG_DB_DEPLOYMENTS
-  displayName: 'Update Variable Groups for DB deployments'
-  dependsOn: []
-  jobs:
-  - template: build/jobs/job-update-vg-db-deployments.yml@templates
