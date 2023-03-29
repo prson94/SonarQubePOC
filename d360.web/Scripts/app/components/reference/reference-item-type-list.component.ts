@@ -170,17 +170,8 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         this.load();
     }
 
-    private onSelect() {
-        this.assetTypeService.GetAssetTypeByUid(this.selected.uid)
-            .subscribe((res) => {
-             if (res) {
-                    this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
-                        .subscribe((res) => {
-                            this.selected.ID = +res.ObjectID;
-                            this.selectedChange.emit(this.selected);
-                        });
-                  }
-            });
+	private onSelect() {
+		this.selectedChange.emit(this.selected);
     }
 
     private onEdit(item: ReferenceItemType) {

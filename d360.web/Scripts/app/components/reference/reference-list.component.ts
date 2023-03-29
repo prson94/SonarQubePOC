@@ -1,4 +1,5 @@
 ﻿import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -34,7 +35,6 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 	private canAddReferenceItem: boolean = false;
 
 	private loadPermissionSub: Subscription;
-	private loadObjectDataSub: Subscription;
 	private replaceUrl: boolean = true;
 	highlightUid: string = '';
 	constructor(
@@ -47,7 +47,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		secondaryNavService: SecondaryNavService,
 		protected settingsService: CompanySettingsService,
 		protected titleService: Title,
-		private router: Router
+		private location: Location
 	) {
 		super(settingsService);
 		this.secondaryNavService = secondaryNavService;
@@ -56,19 +56,21 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
 	ngOnInit() {
 		this.setBrowserTitle(this.titleService, 'Reference');
-
 		this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
-
-
-		var refListIdString = "";
-		//load default perms
-		this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
-		refListIdString = this.assetTypeUid;
 
 		const headerActions: HeaderActions = new HeaderActions();
 		headerActions.showRaiseIssue = false;
 		this.headerActionsService.setCurrentHeaderActions(headerActions);
 
+		this.loadSelectedItem();
+
+	}
+	
+	// eslint-disable-next-line
+	private loadSelectedItem() {
+		var refListIdString = "";
+		//load default perms
+		refListIdString = this.assetTypeUid;
 		if (this.assetTypeUid && (this.assetTypeUid as string).indexOf(',') !== -1) {
 			var items = refListIdString.split(',');
 			refListIdString = items[0];
@@ -79,75 +81,56 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		}
 
 		if (refListIdString) {
-
 			if (refListIdString.toString().length === 36) {
 				this.baseAssetTypeUid = this.selectedReferenceListUid = refListIdString;
-				if (this.loadObjectDataSub) {
-					this.loadObjectDataSub.unsubscribe();
+				this.load();
+				if (this.selectedReferenceItemType && this.selectedReferenceItemType.uid !== this.selectedReferenceListUid) {
+					var referenceItemType: ReferenceItemType = new ReferenceItemType();
+					referenceItemType.uid = this.selectedReferenceListUid;
+					this.changeType(referenceItemType, true);
 				}
-				this.loadObjectDataSub = this.assetTypeService.getAssetTypeObjectAndID(refListIdString).subscribe((res) => {
-					this.load();
-					if (this.selectedReferenceItemType && this.selectedReferenceItemType.uid !== this.selectedReferenceListUid) {
-						var referenceItemType: ReferenceItemType = new ReferenceItemType();
-						referenceItemType.uid = this.selectedReferenceListUid;
-						this.changeType(referenceItemType, true);
-					}
-					this.replaceUrl = false;
-				});
+				this.replaceUrl = false;
 			}
 			else if (this.selectedReferenceListUid != null) {
 				this.load();
 				this.replaceUrl = true;
 			}
 		}
-
 	}
 
 	private load() {
 		//check if the user has permission to read the selected type
-		if (this.loadPermissionSub)
-			{this.loadPermissionSub.unsubscribe();}
+		if (this.loadPermissionSub) { this.loadPermissionSub.unsubscribe(); }
 
-		this.loadPermissionSub = this.referenceService.canReadReferenceType(this.selectedReferenceListUid)
-			.subscribe((r) => {
-				if (this.selectedReferenceListUid) {
-					this.permissionsService.getAssetTypePermissions(this.selectedReferenceListUid)
-						.subscribe((res) => {
-							this.objectPermission = res;
-							this.canAddReferenceItem = this.hasAddAssetPermissions();
-						});
+		if (this.selectedReferenceListUid) {
+			this.permissionsService.getAssetTypePermissions(this.selectedReferenceListUid)
+				.subscribe((res) => {
+					this.objectPermission = res;
+					this.canAddReferenceItem = this.hasAddAssetPermissions();
+				});
 
-					this.buildSecondaryNavigationForAssetTypeUid(this.selectedReferenceListUid, () => {
-						this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {
-							this.headerBreadcrumbService.clearBreadcrumbs();
-							this.headerBreadcrumbService.clearCurrentObjectInfo();
-							this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
-							if (this.selectedReferenceItemType)
-								{this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selectedReferenceItemType.Name));}
-							if (this.auditSidebar) {
-								this.auditSidebar.url = `/assets/${this.selectedReferenceListUid}/log`;
-							}
-						});
-					});
-				}
+			this.buildSecondaryNavigationForAssetTypeUid(this.selectedReferenceListUid, () => {
+				this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {
+					this.headerBreadcrumbService.clearBreadcrumbs();
+					this.headerBreadcrumbService.clearCurrentObjectInfo();
+					this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
+					if (this.selectedReferenceItemType) { this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selectedReferenceItemType.Name)); }
+					if (this.auditSidebar) {
+						this.auditSidebar.url = `/assets/${this.selectedReferenceListUid}/log`;
+					}
+				});
 			});
+		}
 	}
 
 	ngOnDestroy() {
 		this.clearSidebar();
-		if (this.loadPermissionSub)
-			{this.loadPermissionSub.unsubscribe();}
-
-		if (this.loadObjectDataSub)
-			{this.loadObjectDataSub.unsubscribe();}
-
+		if (this.loadPermissionSub) { this.loadPermissionSub.unsubscribe(); }
 	}
 
 	private changeFormMode(formMode: FormMode) {
-		if (formMode === FormMode.Default)
-			{this.showDefault = true;}
-		else
-			{this.showDefault = false;}
+		if (formMode === FormMode.Default) { this.showDefault = true; }
+		else { this.showDefault = false; }
 	}
 
 	changeType(e: any, replaceUrl: boolean) {
@@ -156,7 +139,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		this.baseAssetTypeUid = this.selectedReferenceListUid = this.selectedReferenceItemType.uid;
 		this.setSecondaryNavItems();
 		if (requiresRedirect) {
-			this.router.navigateByUrl(`/assets/${e.uid}`, { replaceUrl });
+			this.location.go(`/assets/${e.uid}`);
+			this.assetTypeUid = e.uid;
+			this.loadSelectedItem();
 		}
 	}
 
