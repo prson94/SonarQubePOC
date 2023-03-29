@@ -46,6 +46,8 @@ import { AssetTypeApiModel } from "../../models/asset.model";
 import { LocalStorageKey } from "../../enums/localstorage.enum";
 import { AssetGridCustomExportComponent } from "./asset-grid-custom-export.component";
 
+/*global $localize*/
+
 @Component({
 	selector: "d3s-asset-grid",
 	providers: [GridDefinitionService, ArtifactService, PermissionsService, ObjectDetailService, AssetService],
@@ -313,7 +315,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 			.subscribe((res) => {
 				this.objectPermission = res;
 				this.changeDetectorRef.markForCheck();
-			})
+			});
 
 		this.getFieldsDefinition();
 	}
@@ -770,7 +772,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	}
 
 	getAssetPath() {
-		var assetTypePath = this.assetTypeApiModel.Path;
+		const assetTypePath = this.assetTypeApiModel.Path;
 
 		if (this.selected && this.selected.Path) {
 			let path = this.selected.Path as string;

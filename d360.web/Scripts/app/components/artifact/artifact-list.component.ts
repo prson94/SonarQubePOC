@@ -1,18 +1,15 @@
 ﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-
 import { ArtifactTypeService } from '../../services/artifact-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
-import { ArtifactType } from '../../models/artifact-type.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SecondaryNavCurrentObject, SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
 import { forkJoin, Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
-import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { LinkClickInterceptor } from '../../services/href-click-service';
@@ -27,6 +24,8 @@ import { UsageAction } from '../../models/web-analytics-activity.model';
 import { AssetTypeService } from '../../services/asset-type.service';
 
 declare var CurrentResourceID;
+
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-artifact-list',
@@ -120,7 +119,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 
 	createBreadcrumbHierarchy(assetType: AssetTypeApiModel) {
 		if ((assetType.ParentUid ?? "").length > 0) {
-			var detailsSub = this.assetTypeService.GetAssetTypeByUid(assetType.ParentUid).subscribe((parent) => {
+			const detailsSub = this.assetTypeService.GetAssetTypeByUid(assetType.ParentUid).subscribe((parent) => {
 				this.artifactTypeHierarchy.unshift(parent);
 				if (parent.ParentUid) { this.createBreadcrumbHierarchy(parent); }
 				else { this.displayBreadcrumb(); }
@@ -152,7 +151,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 
 					});
 
-					var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.assetTypeApiModel.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe((res) => {
+					const breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.assetTypeApiModel.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe((res) => {
 						this.baseAssetTypeUid = this.assetTypeApiModel.uid;
 						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.assetTypeApiModel.HasDashboards });
 						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.assetTypeApiModel.ID, this.assetTypeApiModel.Name, null, true, null, this.assetTypeApiModel.uid));
