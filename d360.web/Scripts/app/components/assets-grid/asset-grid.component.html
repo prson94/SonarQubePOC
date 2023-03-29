@@ -184,7 +184,7 @@
                   [title]="assetEditorTitle"
                   [selection]="selected"
                   [rowID]="rowID"
-                  [objectTypeUid]="assetTypeApiModel?.Uid"
+                  [objectTypeUid]="assetTypeApiModel?.uid"
                   [assetTypePath]="getAssetPath()"
                   (saveClick)="saveItem($event)"
                   [showAsModal]="true"
@@ -195,7 +195,7 @@
 
 <d3s-asset-delete-editor *ngIf="showDelete"
                          [uid]="selected?.AssetUid"
-                         [assetTypeUid]="assetTypeApiModel?.Uid"
+                         [assetTypeUid]="assetTypeApiModel?.uid"
                          [displayValue]="(deleteName ? deleteName : 'Artifact')"
                          (onCancel)="showDelete = false"
                          (onDeleted)="onDeleted()">

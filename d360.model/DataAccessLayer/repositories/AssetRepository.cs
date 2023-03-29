@@ -169,7 +169,7 @@ namespace d360.model.DataAccessLayer
 					if (bool.TryParse(includeString, out bool include))
 					{
 						extraJoins += @$" cross apply (select count(1) as [Count] from AssetTypeExportTemplate where AssetTypeId = A.ID) CXT ";
-						extraColumns += @", cast(iif(CXT.[Count] > 1, 1, 0) as bit) as HasCustomExportTemplates ";
+						extraColumns += @", cast(iif(CXT.[Count] > 0, 1, 0) as bit) as HasCustomExportTemplates ";
 					}
 					else
 					{
@@ -194,12 +194,12 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (queryParams.Any(q => q.Key.ToLowerInvariant() == "includeId".ToLowerInvariant()))
+				if (queryParams.Any(q => q.Key.ToLowerInvariant() == "includeLegacyData".ToLowerInvariant()))
 				{
-					var includeString = queryParams.FirstOrDefault(q => q.Key.ToLowerInvariant() == "includeId".ToLowerInvariant()).Value;
+					var includeString = queryParams.FirstOrDefault(q => q.Key.ToLowerInvariant() == "includeLegacyData".ToLowerInvariant()).Value;
 					if (bool.TryParse(includeString, out bool include))
 					{
-						extraColumns += @", A.Id as ID, A.Object as Object ";
+						extraColumns += @", A.ObjectId as ID, REPLACE(A.Object,'Type','') as Object ";
 					}
 					else
 					{
