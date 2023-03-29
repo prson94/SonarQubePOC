@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-using System.Xml;
 using System.Xml.Linq;
-
 using d360.core;
 using d360.core.entities;
 using d360.core.entities.Views;
@@ -24,14 +21,10 @@ using d360.model.helpers;
 using d360.web.Extensions;
 using d360.web.Filters;
 using d360.web.Models;
-
 using Dapper;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using Resources;
-
 using SmartFormat;
 
 namespace d360.web.Controllers
@@ -412,7 +405,7 @@ namespace d360.web.Controllers
 				var fieldType = "Html";
 
 				assetID = Company.Assets.Where(a => a.Object == sType && a.ObjectID == id).FirstOrDefault().ID;
-				
+
 				var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectTypeID && (i.SubjectAssetID == assetID || i.ObjectAssetID == assetID)).FirstOrDefault();
 
 				if (fieldTypeID > 0)
@@ -535,11 +528,11 @@ namespace d360.web.Controllers
 				if (type == SystemObjects.IssueType || type == SystemObjects.Issue)
 				{
 					issueTypeID = type == SystemObjects.IssueType ? id : Company.Issues.Where(i => i.ID == id).FirstOrDefault().IssueTypeID;
-				} 
+				}
 				else if (type == SystemObjects.Intersect || type == SystemObjects.IntersectType)
 				{
 					intersectTypeID = type == SystemObjects.IntersectType ? id : Company.Intersects.Where(i => i.ID == id).FirstOrDefault().IntersectTypeID;
-				} 
+				}
 				else
 				{
 					assettypeID = Company.Assets.Where(a => a.Object == type.ToString() && a.ObjectID == id).FirstOrDefault().AssetTypeID;
@@ -1176,7 +1169,7 @@ namespace d360.web.Controllers
 						parentRefType = Company.GetParentType(parentRefType.ID);
 						loopCount++;
 					}
-					
+
 					var idx = 0;
 					//parent fields were added starting from child element up, meaning we need to reverse this list to get correct index segment withing asset path
 					parentGridFields.Reverse();
@@ -1478,62 +1471,38 @@ namespace d360.web.Controllers
 
 		#region Followers
 
-		[HttpGet, Route("followinfo/{type}/{uid}")]
-		public dynamic GetFollowInfo(Guid uid, SystemObjects type)
+		[HttpGet, Route("followinfo/{assetTypeUid}/{assetUid}")]
+		public async Task<dynamic> GetFollowInfo(Guid? assetTypeUid, Guid? assetUid)
 		{
-			int id = Company.GetObjectId(uid, type);
-			return GetFollowInfo(id, type);
-		}
+			var followType = (await Company.QueryAsync<Follow>($@"
+				declare @assetid int = (select top 1 id from asset where uid = @assetuid)
+				declare @assettypeid int = (select top 1 id from AssetType where uid = @assetTypeuid)
 
-		[HttpGet, Route("followinfo/{type}/{id:int}")]
-		public dynamic GetFollowInfo(int id, SystemObjects type)
-		{
-			int? assetTypeid = 0;
-			long? assetid = 0;
-			var sType = type.ToString();
+				declare @results table (Id int, FollowTypeID int)
+				if @assettypeid is not null and @assetid is null
+				begin
+					insert into @results
+					select ID, FollowTypeID  from [Follow] F where F.AssetTypeID = @assettypeid
+				end
 
-			if (!type.ToString().ToLower().EndsWith("type") && Company.Any<Asset>(x => x.Object == sType && x.ObjectID == id))
-			{
-				assetid = Company.Filter<Asset>(x => x.Object == sType && x.ObjectID == id).SingleOrDefault().ID;
-			}
-			else if (Company.Any<AssetType>(x => x.Object == sType && x.ObjectID == id))
-			{
-				assetTypeid = Company.Filter<AssetType>(x => x.Object == sType && x.ObjectID == id).SingleOrDefault().ID;
-			}
+				if @assetid is not null
+				begin
+					insert into @results
+					select ID, FollowTypeID 
+					from [Follow] F where F.AssetId = @assetid
 
-			return GetFollowInfo(assetTypeid, assetid);
-		}
+					if not exists (select top 1 1 from @results)
+					begin
+						insert into @results
+						select ID, FollowTypeID  from [Follow] F where F.AssetTypeID = @assettypeid
+					end
 
-		[HttpGet, Route("followinfo/{assetTypeUid:Guid}/{assetUid:Guid}")]
-		public dynamic GetFollowInfo(Guid? assetTypeUid, Guid? assetUid)
-		{
-			int? AssettypeID = 0;
-			long? AssetID = 0;
-			if (assetUid != Guid.Empty && Company.Any<Asset>(x => x.uid == assetUid))
-			{
-				AssetID = Company.Filter<Asset>(x => x.uid == assetUid).SingleOrDefault().ID;
-			}
-			else if (assetTypeUid != Guid.Empty && Company.Any<AssetType>(x => x.uid == assetTypeUid))
-			{
-				AssettypeID = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault().ID;
-			}
-			return GetFollowInfo(AssettypeID, AssetID);
-		}
+				end
+				select * from @results", new { assetTypeUid, assetUid })).FirstOrDefault();
 
-		[HttpGet, Route("followinfo/{assetTypeid}/{assetid}")]
-		public dynamic GetFollowInfo(int? assetTypeid, long? assetid)
-		{
-			var following = Company.IsUserFollowing(assetTypeid, assetid, null);
-			var followParent = Company.GetFollowingParent(assetTypeid, assetid, null);
-			var followingParent = followParent != null && followParent.FollowTypeID == FollowType.Parent;
-
-			return new
-			{
-				isFollowing = following,
-				isFollowingParent = followingParent,
-				parent = followParent
-			};
-
+			return new { 
+				isFollowing = followType != null, 
+				isFollowingParent = followType != null && followType.FollowTypeID == FollowType.Parent };
 		}
 
 		#endregion
@@ -1876,7 +1845,7 @@ namespace d360.web.Controllers
 					inner join AssetType AT on AT.Id = A.AssetTypeID
 					left join AssetPath AP ON AP.ID = A.ID
 					left join AssetDisplayValue adv on adv.AssetID = a.ID
-					where a.uid in @assets", new { assets = objectsToCheckAccesFor.Select(x=> x.Uid).ToList() }).ToList();
+					where a.uid in @assets", new { assets = objectsToCheckAccesFor.Select(x => x.Uid).ToList() }).ToList();
 
 			foreach (var intersect in intersects)
 			{
@@ -2050,10 +2019,10 @@ namespace d360.web.Controllers
 		}
 
 		[Route("relationships/field/{fieldTypeID:int}"), HttpGet]
-        public HttpResponseMessage GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null)
-        {
+		public HttpResponseMessage GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null)
+		{
 			var asset = Company.GetAssetDetail(@object, objectID.GetValueOrDefault());
-            var selected = Company.GetRelationshipFieldItems(fieldTypeID, asset.ID, offset, rows, query, true);
+			var selected = Company.GetRelationshipFieldItems(fieldTypeID, asset.ID, offset, rows, query, true);
 
 			if (selected.ContainsKey("RelationshipError"))
 			{
@@ -2103,7 +2072,7 @@ namespace d360.web.Controllers
 			{
 				List<string> excludeValues = selection.Select(s => s.Value).ToList(); //Exclude values already added to selection
 				result = Company.GetRelationshipFieldItems(fieldTypeID, asset.ID, offset, rows, query, false);
-				
+
 				if (result.ContainsKey("Items"))
 				{
 					List<dynamic> items = (List<dynamic>)result["Items"];
@@ -2585,7 +2554,7 @@ namespace d360.web.Controllers
 		public ObjectDetail GetObjectDetail(Guid uid)
 		{
 			var data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
-			if(data == null)
+			if (data == null)
 			{
 				data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
 			}
@@ -2703,7 +2672,7 @@ namespace d360.web.Controllers
 									outer apply (select FormattedValue from field FD1 inner join FieldType FT1 on FD1.FieldTypeID = FT1.ID where FT1.[Type]='{DataType.Text}' and LOWER(FT1.FriendlyName)='description' and FD1.AssetID=ACF.ID) FD
 									outer apply (select FormattedValue from field FD2 inner join FieldType FT2 on FD2.FieldTypeID = FT2.ID where FT2.[Type]='{DataType.Text}' and LOWER(FT2.FriendlyName)='profile level' and FD2.AssetID=ACF.ID) FPL
 								FOR JSON PATH";
-				string colorAndValue = Company.Query<string>(colorAndValueSql, 
+				string colorAndValue = Company.Query<string>(colorAndValueSql,
 					new { fieldTypeID = fieldType.ID, assetId = objectDetail.AssetID, assetTypeId = objectDetail.AssetTypeID, fieldType.DefaultValue, fieldType.DefaultFormattedValue }).FirstOrDefault();
 
 				if (!string.IsNullOrEmpty(colorAndValue))
@@ -2802,7 +2771,7 @@ namespace d360.web.Controllers
 			var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
 			model.Object = type.ToString();
 			model.ObjectID = id;
-			
+
 
 			var metadataResult = await Company.QueryAsync<dynamic>(@"
 					select  V.DisplayValue as AssetName, 
@@ -3835,7 +3804,7 @@ from	Asset A
 		left join AssetTypeLevel L on L.AssetTypeID = A.AssetTypeID and L.[Level] = P.Segments.value('(/path/segment/@level)[last()]', 'int')
 where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 					if (policy != null)
-					{ 
+					{
 						model.rows.Add(new DetailReadOnlyRowModel
 						{
 							columns = 2,
