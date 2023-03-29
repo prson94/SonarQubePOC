@@ -93,5 +93,25 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfileSample-v5">
+   <comment>GOV-21225</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			ALTER TABLE AssetDataProfileSample
+			ALTER COLUMN [value] NVARCHAR(500)
+			
+			ALTER TABLE AssetDataProfileSample
+			ALTER COLUMN [key] NVARCHAR(500)				
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+			
+		]]>
+	</rollback>
+  </changeSet>
 
 </databaseChangeLog>
