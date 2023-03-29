@@ -1125,7 +1125,8 @@ namespace d360.model
 						IT.[ObjectClass] as OBJECTCLASS,
 						IT.ObjectAssetTypeID as ITOBJECTASSETTYPEID,
 						IT.[SubjectClass] as SUBJECTCLASS,
-						IT.SubjectAssetTypeID as ITSUBJECTASSETTYPEID
+						IT.SubjectAssetTypeID as ITSUBJECTASSETTYPEID,
+						FT.IsSubject
 				into #tempdata
 				from    {tableName} A
 						inner join AssetType OT on OT.Object = A.ObjectType and OT.ObjectID = A.ObjectTypeID
@@ -1149,7 +1150,7 @@ namespace d360.model
 					isfound = 1
 				from #tempdata V
 				inner join AssetDetail ad on AD.AssetTypeID = V.ITOBJECTASSETTYPEID and {assetJoin} 
-				where isfound = 0 and V.ObjectAssetTypeID = V.ITSUBJECTASSETTYPEID;
+				where isfound = 0 and V.ObjectAssetTypeID = V.ITSUBJECTASSETTYPEID and (V.ITSUBJECTASSETTYPEID != V.ITOBJECTASSETTYPEID or (V.ITSUBJECTASSETTYPEID = V.ITOBJECTASSETTYPEID and V.IsSubject=1));
 
 				update V
 				set [SubjectAssetID] = AD.[ID],
@@ -1158,7 +1159,7 @@ namespace d360.model
 					isfound = 2
 				from #tempdata V
 				inner join AssetDetail ad on AD.AssetTypeID = V.ITSUBJECTASSETTYPEID and {assetJoin} 
-				where isfound = 0 and V.ObjectAssetTypeID = V.ITOBJECTASSETTYPEID;
+				where isfound = 0 and V.ObjectAssetTypeID = V.ITOBJECTASSETTYPEID and (V.ITSUBJECTASSETTYPEID != V.ITOBJECTASSETTYPEID or (V.ITSUBJECTASSETTYPEID = V.ITOBJECTASSETTYPEID and V.IsSubject=0));
 
 				if exists(Select 1 from #tempdata t where T.OBJECTCLASS = {(int)AssetTypeClass.Reference}  and isfound = 0)
 				begin
