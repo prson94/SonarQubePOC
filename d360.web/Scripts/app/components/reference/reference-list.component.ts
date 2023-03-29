@@ -65,7 +65,8 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 		this.loadSelectedItem();
 
 	}
-
+	
+	// eslint-disable-next-line
 	private loadSelectedItem() {
 		var refListIdString = "";
 		//load default perms
