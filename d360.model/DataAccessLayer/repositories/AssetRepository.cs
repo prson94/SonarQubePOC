@@ -199,7 +199,7 @@ namespace d360.model.DataAccessLayer
 					var includeString = queryParams.FirstOrDefault(q => q.Key.ToLowerInvariant() == "includeId".ToLowerInvariant()).Value;
 					if (bool.TryParse(includeString, out bool include))
 					{
-						extraColumns += @", A.Id as ID ";
+						extraColumns += @", A.Id as ID, A.Object as Object ";
 					}
 					else
 					{

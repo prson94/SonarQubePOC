@@ -179,12 +179,12 @@
            [isVisible]="showEditor">
     <asset-editor #dynamicEditor
                   *ngIf="showEditor"
-                  [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
-                  [objectType]="gridObject.Object"
+                  [objectID]="selected ? selected?.ObjectID : assetTypeApiModel?.ID"
+                  [objectType]="assetTypeApiModel?.Object"
                   [title]="assetEditorTitle"
                   [selection]="selected"
                   [rowID]="rowID"
-                  [objectTypeUid]="gridObject?.AssetTypeUID"
+                  [objectTypeUid]="assetTypeApiModel?.Uid"
                   [assetTypePath]="getAssetPath()"
                   (saveClick)="saveItem($event)"
                   [showAsModal]="true"
@@ -195,7 +195,7 @@
 
 <d3s-asset-delete-editor *ngIf="showDelete"
                          [uid]="selected?.AssetUid"
-                         [assetTypeUid]="gridObject?.AssetTypeUID"
+                         [assetTypeUid]="assetTypeApiModel?.Uid"
                          [displayValue]="(deleteName ? deleteName : 'Artifact')"
                          (onCancel)="showDelete = false"
                          (onDeleted)="onDeleted()">

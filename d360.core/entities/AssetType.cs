@@ -122,6 +122,9 @@ namespace d360.core.entities
 		public int? ID { get; set; }
 
 		[DataMember]
+		public string Object { get; set; }
+
+		[DataMember]
 		public string PredicateInverse { get; set; }
 
 		[DataMember]
