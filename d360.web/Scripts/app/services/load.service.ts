@@ -108,12 +108,12 @@ export class LoadService extends BaseObservableService {
         );
     }
 
-    getLoadErrorsXls(id: number) {
-        window.location.assign(`/form/loads/${id}/Errors.xlsx`);
+	getLoadErrorsXls(uid: string) {
+		window.location.assign(`/form/loads/${uid}/Errors.xlsx`);
     }
 
-    getLoadOriginalXls(id: number) {
-        window.location.assign(`/form/loads/${id}/all.xlsx`);
+	getLoadOriginalXls(uid: string) {
+		window.location.assign(`/form/loads/${uid}/all.xlsx`);
     }
 
     postLoad(model: LoadFilePostModel): Observable<JsonResult> {

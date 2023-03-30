@@ -185,13 +185,13 @@ export class Lookups {
     Lookups: SelectItem[];
     Field_JsonFields: SelectItem[];
     Field_JsonDataTypes: SelectItem[];
-    Field_Relationships: SelectItem[];
+	Field_Relationships: any[] = [];
     Field_CardinalRelationships: SelectItem[];
     Field_CardinalReferenceRelationships: SelectItem[];
     FieldResponsibilityTypes: SelectItem[];
     ComplexLookupRelations: any[] = [];
     FilteredLookups: any[] = [];
-    Field_FieldFromRelRelationships: any[] = [];
+	Field_FieldFromRelRelationships: any[] = [];
 
     ReferenceTypes: SelectItem[] = new Array<SelectItem>();
 }

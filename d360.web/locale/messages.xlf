@@ -11931,6 +11931,14 @@ Please refine your search.</source>
           <context context-type="sourcefile">Scripts/app/components/shared/asset-detail/asset-detail-field.component.html</context>
           <context context-type="linenumber">32</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-editor/asset-editor-field.component.html</context>
+          <context context-type="linenumber">183</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-editor/asset-editor-field.component.html</context>
+          <context context-type="linenumber">250</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="80fa90ce67552f3f8a824f756a94327e41d3fc49" datatype="html">
         <source>Members</source>
@@ -11997,7 +12005,7 @@ Please refine your search.</source>
         <source>  No matches found</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-editor/asset-editor-field.component.html</context>
-          <context context-type="linenumber">217</context>
+          <context context-type="linenumber">221</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7868123795200926554" datatype="html">

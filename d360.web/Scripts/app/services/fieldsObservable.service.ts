@@ -215,7 +215,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                             l.IntersectTypes.push({ value: j.value, label: j.label, id: null });
                         });
 
-                        l.Field_Relationships = this.ftItemToSelectItem(r.Field_Relationships);
+                        l.Field_Relationships = r.Field_Relationships;
                         l.Field_CardinalRelationships = this.ftItemToSelectItem(r.Field_CardinalRelationships);
                         l.Field_CardinalReferenceRelationships = this.ftItemToSelectItem(r.Field_CardinalReferenceRelationships);
                         l.Field_FieldFromRelRelationships = this.ftItemToSelectItem(r.Field_FieldFromRelRelationships);

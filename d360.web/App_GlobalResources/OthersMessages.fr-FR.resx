@@ -181,6 +181,27 @@
   <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
     <value>Champ Relationship non valide rencontré, type de relation non valide ou supprimé rencontré.</value>
   </data>
+  <data name="InvalidpageNum" xml:space="preserve">
+    <value>Valeur pageNum fournie non valide.</value>
+  </data>
+  <data name="InvalidpageNumGT0" xml:space="preserve">
+    <value>Valeur pageNum fournie non valide. La valeur doit être supérieure à 0.</value>
+  </data>
+  <data name="InvalidpageNumNumberValue" xml:space="preserve">
+    <value>Valeur pageNum fournie non valide. Doit être une valeur numérique sans point décimal.</value>
+  </data>
+  <data name="InvalidPageSize" xml:space="preserve">
+    <value>Valeur pageSize fournie non valide.</value>
+  </data>
+  <data name="InvalidpageSizeGT0" xml:space="preserve">
+    <value>Valeur pageSize fournie non valide. La valeur doit être supérieure à 0.</value>
+  </data>
+  <data name="InvalidpageSizeNumberLarge" xml:space="preserve">
+    <value>Valeur pageSize fournie non valide. Le nombre est trop grand.</value>
+  </data>
+  <data name="InvalidpageSizeNumberValue" xml:space="preserve">
+    <value>Valeur pageSize fournie non valide. Doit être une valeur numérique sans point décimal.</value>
+  </data>
   <data name="ItemNotFound" xml:space="preserve">
     <value>Élément introuvable.</value>
   </data>

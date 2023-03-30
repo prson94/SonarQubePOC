@@ -241,7 +241,7 @@
     <value>Les champs contiennent des erreurs</value>
   </data>
   <data name="FieldTypeConversionError" xml:space="preserve">
-    <value>Vous ne pouvez pas convertir un champ {0} de {1} à {2} ou en champ avec le même nom et un type différent existe peut-être déjà.</value>
+    <value>Vous ne pouvez pas convertir un champ {0} de {1} à {2}. Un champ avec le même nom et un type différent existe peut-être déjà.</value>
   </data>
   <data name="FieldTypeError" xml:space="preserve">
     <value>Erreur de type de champ</value>
@@ -388,7 +388,7 @@
     <value>[Name] ne peut pas être [{0}].</value>
   </data>
   <data name="NameReservedword" xml:space="preserve">
-    <value>Vous ne pouvez pas utiliser {f.Name} comme nom pour votre champ, car ce mot est réservé.</value>
+    <value>Vous ne pouvez pas utiliser {0} comme nom pour votre champ, car ce mot est réservé.</value>
   </data>
   <data name="NoModelFound" xml:space="preserve">
     <value>Aucun modèle trouvé</value>

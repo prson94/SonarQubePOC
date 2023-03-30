@@ -467,7 +467,7 @@ namespace d360.model
 			int count = 0;
 			string sql = "", countSql = "", selectedSql = "", cardinalityCheckSQL = "";
 
-			bool isSubject = intersectType.SubjectAssetTypeID == ft.AssetTypeID;
+			bool isSubject = intersectType.SubjectAssetTypeID == intersectType.ObjectAssetTypeID ? ft.IsSubject : intersectType.SubjectAssetTypeID == ft.AssetTypeID;
 			bool sameSubjectObject = intersectType.SubjectAssetTypeID == intersectType.ObjectAssetTypeID;
 			var objectAssetClass = isSubject ? intersectType.ObjectClass : intersectType.SubjectClass;
 			int objectAssetTypeID = isSubject ? intersectType.ObjectAssetTypeID : intersectType.SubjectAssetTypeID;
@@ -494,6 +494,8 @@ namespace d360.model
 
 			string intersectJoin = @"((I.SubjectAssetID = {0} and I.ObjectAssetID = @assetId) or (I.ObjectAssetID = {0} and I.SubjectAssetID = @assetId))";
 
+			string assetidQuery = "i.SubjectAssetID = @assetId or i.ObjectAssetID = @assetId";
+
 			if (!sameSubjectObject)
 			{
 				if (isSubject)
@@ -503,6 +505,19 @@ namespace d360.model
 				else
 				{
 					intersectJoin = @"(I.ObjectAssetID = {0} and I.SubjectAssetID = @assetId)";
+				}
+			}
+			else
+			{
+				if (ft.IsSubject)
+				{
+					intersectJoin = @"(I.SubjectAssetID = {0} and I.ObjectAssetID = @assetId)";
+					assetidQuery = "i.SubjectAssetID = @assetId";
+				}
+				else
+				{
+					intersectJoin = @"(I.ObjectAssetID = {0} and I.SubjectAssetID = @assetId)";
+					assetidQuery = "i.ObjectAssetID = @assetId";
 				}
 			}
 
@@ -516,7 +531,7 @@ namespace d360.model
 						from	[Intersect] i
 								inner join Asset A on A.ID = iif(i.SubjectAssetID = @assetId, i.ObjectAssetID, i.SubjectAssetID)
 								{(ft.UseDisplayFormat ? "inner join AssetDisplayValue ADV on ADV.AssetID = A.ID" : "inner join AssetPath P on P.ID = A.ID")}								
-						where	i.intersectTypeID = @intersectTypeID and i.State = 1 and (i.SubjectAssetID = @assetId or i.ObjectAssetID = @assetId)";
+						where	i.intersectTypeID = @intersectTypeID and i.State = 1 and ({assetidQuery})";
 
 			switch (objectAssetClass)
 			{
