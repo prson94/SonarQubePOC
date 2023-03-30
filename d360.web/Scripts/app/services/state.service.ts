@@ -30,7 +30,7 @@ export class WorkflowItemFilters {
     workflowTypeFilters: GridFilterExpression;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class StateService {
     constructor() {
         this.artifactTypeFilters = new ArtifactTypeFilters();

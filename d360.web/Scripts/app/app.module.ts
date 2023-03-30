@@ -13,36 +13,11 @@ import { RightsidebarModule } from './components/shared/rightsidebar/right-sideb
 import { SiteMenuModule } from './components/shared/menu/site-menu.module';
 import { HeaderModule } from './components/shared/header/header.module';
 
-import { AdminUserGuard } from './guards/admin-user.guard';
-import { RedirectGuard } from './guards/redirect.guard';
+import { NumberOfRowsByCategoryServiceInitializer } from './services/number-of-rows-by-category.service';
 
-import { AuthenticationService } from './services/authentication.service';
-import { MessagesObservableService } from "./services/messages-observable.service";
-import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
-import { HeaderActionsService } from './services/header-actions.service';
-import { SecondaryNavService } from './services/right-sidebar.service';
-import { FavoritesService } from './services/favorites.service';
-import { FollowerService } from './services/follower.service';
-import { StateService } from './services/state.service';
-import { WebAnalyticsService } from './services/web-analytics.service';
-import { SearchService } from './services/search.service';
-import {
-    NumberOfRowsByCategoryService,
-    NumberOfRowsByCategoryServiceInitializer
-} from './services/number-of-rows-by-category.service';
-import { TitleAndTabsService } from './services/title-and-tabs.service';
-
-import { TooltipSingletonService } from './services/tooltip-singleton.service';
-import { PreviewpopupSingletonService } from './services/previewpopup-singleton.service';
-
-import { CookieService } from './services/cookie.service';
-import { SiteMenuService } from './services/site-menu.service';
 import { DialogModule } from 'primeng/dialog';
-import { AssetStyleService } from './services/asset-style.service';
 import { CompanySettingsService } from './services/settings.service';
-import { UserSettingsService } from './services/usersettings.service';
 import { governHttpInterceptorProviders } from './http-interceptors';
-import { SelectAssetService } from './services/select-asset.service';
 import { ForceNoReuseStrategy } from './services/forceNoReuseStrategy';
 import { AngularSplitModule } from 'angular-split';
 import { FeatureFlagsInitService } from './services/feature-flags-init.service';
@@ -113,28 +88,8 @@ export function localeInitializer(localeId: string) {
     ],
     bootstrap: [AppComponent],
     providers: [
-        AdminUserGuard,
         governHttpInterceptorProviders,
-        RedirectGuard,
-        AuthenticationService,
         Title,
-        HeaderActionsService,
-        HeaderBreadcrumbService,
-        MessagesObservableService,
-        SecondaryNavService,
-        FavoritesService,
-        FollowerService,
-        NumberOfRowsByCategoryService,
-        AssetStyleService,
-        WebAnalyticsService,
-        TooltipSingletonService,
-        PreviewpopupSingletonService,
-        StateService,
-        CookieService,
-        TitleAndTabsService,
-        SelectAssetService,
-		SiteMenuService,
-		UserSettingsService,
         { provide: LOCALE_ID, useFactory: localeIdFactory },
         {
             provide: APP_INITIALIZER,
@@ -155,7 +110,6 @@ export function localeInitializer(localeId: string) {
             deps: [CompanySettingsService]
         },
         NumberOfRowsByCategoryServiceInitializer,
-        SearchService,
         { provide: RouteReuseStrategy, useClass: ForceNoReuseStrategy },
     ]
 })

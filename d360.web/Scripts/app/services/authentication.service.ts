@@ -4,7 +4,7 @@ import { HttpClient, HttpContext } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class AuthenticationService {
     private _isAdmin: boolean = null;
 

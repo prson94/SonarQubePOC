@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { HeaderActions } from '../models/header.model';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class HeaderActionsService {
     showFavorite: boolean = false;
     showNotifications: boolean = false;

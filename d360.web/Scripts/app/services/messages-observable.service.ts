@@ -5,7 +5,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { HeaderActionsService } from './header-actions.service';
 import { catchError, map } from "rxjs/operators";
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class MessagesObservableService {
     // Observable sources
     private errorMessageSource = new Subject<SiteMessage>();

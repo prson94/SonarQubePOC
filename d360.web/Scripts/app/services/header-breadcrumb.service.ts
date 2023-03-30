@@ -11,8 +11,7 @@ import { AssetStyleService } from './asset-style.service';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 
-
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class HeaderBreadcrumbService extends BaseObservableService {
     private sitenavservice: SiteMenuService;
     breadcrumbIsSetToStorage: Subject<void> = new Subject<void>();

@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class PreviewpopupSingletonService {
     // Observable sources
     private popupSource = new Subject<any>();
