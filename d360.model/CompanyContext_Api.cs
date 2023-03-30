@@ -11790,7 +11790,7 @@ where   ER.ExecutionID = @ExecutionID
 									distinct ExecutionID, itemnumber, SampleType 
 								from 
 									api.ExecutionAssetDataProfileSample 
-								where ExecutionID = @ExecutionID and TRIM(Value)='' and LOWER(SampleType) in ('topk', 'bottomk') 
+								where ExecutionID = @ExecutionID and LEN(TRIM(value))=0 and LOWER(SampleType) in ('topk', 'bottomk') 
 							) EDPS on EDP.ExecutionID=EDPS.ExecutionID and EDP.ItemNumber=EDPS.ItemNumber 
 						where 
 							EDP.ExecutionID = @ExecutionID                             
