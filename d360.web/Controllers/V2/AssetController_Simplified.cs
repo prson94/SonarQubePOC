@@ -425,7 +425,7 @@ namespace d360.web.Controllers.V2
 									//handle as startsWith as default
 									filterValue = filterValue + "*";
 
-									dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "%").Replace("%%","%")}");
+									dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "%").Replace("%%", "%")}");
 									for (int i = hierarchyMaxDepth; i > 0; i--)
 									{
 										hierarchyLevelSearchJoins.Add($"left join #filtered_parents_{parameterIndex} fp{i} on fp{i}.AssetID = h.i{i}");
@@ -691,13 +691,13 @@ namespace d360.web.Controllers.V2
 				}
 
 				sb.AppendLine($@"
-					drop table if exists #filteredResults
-					create table #filteredResults ({string.Join(",", tempCols)});");
+					drop table if exists #filteredResults_temp
+					create table #filteredResults_temp ({string.Join(",", tempCols)});");
 
 				foreach (var filter in catalogWheres)
 				{
 					sb.AppendLine($@"
-						MERGE #filteredResults AS Target
+						MERGE #filteredResults_temp AS Target
 						USING (
 						{filter.Query}
 						) AS Source
@@ -715,23 +715,30 @@ namespace d360.web.Controllers.V2
 					sb.AppendLine(@"
 						update t 
 						set t.sort_path = CAST(ap.DisplayPath as nvarchar(50))
-						from #filteredResults t
+						from #filteredResults_temp t
 						inner join AssetPath ap on ap.ID = t.AssetId");
 				}
 
-				filtersTempTable = sb.ToString();
-			}
 
-			if (catalogWheres.Count > 0)
-			{
-				//replaced original query parameter value which contains all brackets and and/or operators with parsed where values
-				//order by TokenExpression to avoid wrong replacement in similiar expressions i.w. field ct test and field ct testing
-				foreach (var cwhere in catalogWheres.OrderByDescending(x => x.TokenExpression.Length))
+				if (catalogWheres.Count > 0)
 				{
-					advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression, cwhere.Where);
+					//replaced original query parameter value which contains all brackets and and/or operators with parsed where values
+					//order by TokenExpression to avoid wrong replacement in similiar expressions i.w. field ct test and field ct testing
+					foreach (var cwhere in catalogWheres.OrderByDescending(x => x.TokenExpression.Length))
+					{
+						advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression, cwhere.Where);
+					}
 				}
 
-				whereStatements.Add(advancedFilterString);
+				sb.AppendLine($@"
+						drop table if exists #filteredResults
+						select AssetId {(useSortPathInTempTable ? ", sort_path" : "")}
+						into #filteredResults
+						from #filteredResults_temp fr
+						where {advancedFilterString}
+						option(recompile)");
+
+				filtersTempTable = sb.ToString();
 			}
 
 			string permissionTempTableSql = "";
