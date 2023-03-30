@@ -1890,7 +1890,8 @@ namespace d360.model.DataAccessLayer
 							
 									) as ValuesJson
 							from	AssetType A
-									inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'DateTime', 'Html', 'Lookup', 'Number', 'Text')",
+									inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'DateTime', 'Html', 'Lookup', 'Number', 'Text')
+									order by F.FriendlyName asc",
 									new { assetTypeUid }, ApiTimeout).ToList();
 		}
 
