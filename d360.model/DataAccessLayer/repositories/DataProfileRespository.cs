@@ -1187,13 +1187,13 @@ namespace d360.model.DataAccessLayer
 								) as confidenceAnalysisDetails
 								outer apply (								
 													select  (
-															select json_query([value]) as [value]
+															select top 1 json_query([value]) as [value]
 															from AssetDataProfileSampleJson
 															where
 																AssetDataProfileId = ADP.ID
 																and
 																lower(SampleType) = 'tableStructureInfo'
-															for json path
+															for json path, WITHOUT_ARRAY_WRAPPER
 															) as [value]
 								) as tableStructureInfo
 "
