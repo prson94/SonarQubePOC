@@ -292,11 +292,12 @@ namespace d360.web.Controllers.V2
 											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
 											where pred.PredicateId = {predicate.Id} and {valuePart}";
 
-									if (filterValue.Trim().ToLowerInvariant() == "null")
+									bool isNullOperator = filterValue.Trim().ToLowerInvariant() == "null";
+
+									if (isNullOperator)
 									{
 										if (operation == "=")
 										{
-											valuePart = $"pred.DisplayValue is null";
 											query = $@"
 											    select S.ObjectAssetID from dbo.CatalogBrowseSubject S
 												left join dbo.CatalogBrowseSubject SP ON SP.ObjectAssetID = S.objectassetid and SP.PredicateId = {predicate.Id}
@@ -304,11 +305,14 @@ namespace d360.web.Controllers.V2
 										}
 										else
 										{
-											valuePart = $"pred.DisplayValue is not null";
+											query = $@"
+											    select I.ObjectAssetID from #v pred 
+												inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
+												inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
+												where pred.PredicateId = {predicate.Id} and pred.DisplayValue is not null";
 										}
 									}
-
-									if (filterOperation == "ne")
+									else if (filterOperation == "ne")
 									{
 										query = $@"select I.ObjectAssetID from #v pred 
 											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
