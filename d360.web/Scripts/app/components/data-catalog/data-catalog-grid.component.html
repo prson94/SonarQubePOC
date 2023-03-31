@@ -35,7 +35,7 @@
 			 [customSort]="true"
 			 (onLazyLoad)="subjectLoadGrid.next('onLazyLoad');"
 			 [totalRecords]="totalRecords"
-			 (onPage)="numberOfRowsByCategoryService.onPage($event)">
+			 (onPage)="numberOfRowsByCategoryService.onPage($event, numberOfRowsCategory)">
 		<ng-template pTemplate="header">
 			<tr>
 				<th *ngFor="let col of columns" [pSortableColumn]="col.apiProperty">
