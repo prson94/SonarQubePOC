@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuditPageComponent } from './audit-page.component';
 
 const routes: Routes = [
-	{ path: ':uid/log', component: AuditPageComponent }
+	{ path: '', component: AuditPageComponent }
 ];
 
 @NgModule({

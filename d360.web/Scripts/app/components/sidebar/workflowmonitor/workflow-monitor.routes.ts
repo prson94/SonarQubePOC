@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { MonitorWorkflowComponent } from './monitor-workflow.component';
 
 const routes: Routes = [
-	{ path: ':assetUid/workflowmonitor', component: MonitorWorkflowComponent }
+	{ path: '', component: MonitorWorkflowComponent }
 ];
 
 @NgModule({

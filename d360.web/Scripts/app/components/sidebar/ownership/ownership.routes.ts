@@ -4,7 +4,7 @@ import { OwnershipComponent } from './ownership.component';
 
 const routes: Routes = [
     //{ path: ':objectType/:objectId', component: OwnershipComponent },
-    { path: ':assetUid/owners', component: OwnershipComponent },
+    { path: '', component: OwnershipComponent },
 ];
 
 @NgModule({
