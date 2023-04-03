@@ -8,7 +8,7 @@ import {
 } from '../models/grid-definition.model';
 
 export class ArtifactTypeFilters {
-    artifactTypeId: number;
+	artifactTypeUid: string;
     simpleTextFilter: string;
     currentPageNumber: number = 0;
     sortField: string = "";
@@ -44,10 +44,10 @@ export class StateService {
     siteMenuRequiresReload$ = this.siteMenuRequiresReloadSource.asObservable();
     recalculateTagSize$ = this.recalculateTagSizeSource.asObservable();
 
-    public resetArtifactTypeFilterIfRequired(artifactTypeId: number) {
-        if (this.artifactTypeFilters.artifactTypeId !== artifactTypeId) {            
+	public resetArtifactTypeFilterIfRequired(artifactTypeUid: string) {
+		if (this.artifactTypeFilters.artifactTypeUid !== artifactTypeUid) {            
             this.artifactTypeFilters = new ArtifactTypeFilters();
-            this.artifactTypeFilters.artifactTypeId = artifactTypeId;
+			this.artifactTypeFilters.artifactTypeUid = artifactTypeUid;
         }
     }
 

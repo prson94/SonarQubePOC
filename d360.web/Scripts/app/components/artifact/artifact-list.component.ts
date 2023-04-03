@@ -1,18 +1,15 @@
 ﻿import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-
 import { ArtifactTypeService } from '../../services/artifact-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
-import { ArtifactType } from '../../models/artifact-type.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SecondaryNavCurrentObject, SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
 import { forkJoin, Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
-import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { LinkClickInterceptor } from '../../services/href-click-service';
@@ -24,8 +21,11 @@ import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.compon
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
+import { AssetTypeService } from '../../services/asset-type.service';
 
 declare var CurrentResourceID;
+
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-artifact-list',
@@ -37,9 +37,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 	@Input() assetTypeApiModel: AssetTypeApiModel;
 	@Input() assetTypeUid: string;
 
-	gridObject: AssetGridObject;
-	artifactType: ArtifactType;
-	artifactTypeHierarchy: ArtifactType[];
+	artifactTypeHierarchy: AssetTypeApiModel[];
 	sub: any;
 	currentAreaNameSubscription: any;
 	navigationItemsSubs: Subscription[] = [];
@@ -69,6 +67,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
 
 	constructor(private artifactTypeService: ArtifactTypeService,
+		private assetTypeService: AssetTypeService,
 		private sidePanelService: SidePanelService,
 		private titleAndTabsService: TitleAndTabsService,
 		headerBreadcrumbService: HeaderBreadcrumbService,
@@ -91,53 +90,43 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		this.artifactTypeHierarchy = [];
 		this.headerBreadcrumbService.setCurrentObjectInfo(null, -1, this.assetTypeUid);
 		this.logAssetTypeAction(UsageAction.View, this.assetTypeUid);
-		this
-			.artifactTypeService
-			.getArtifactTypeDetails(this.assetTypeUid, true)
-			.subscribe((artifactType) => {
-				let folderName: string = '#Business';
-				this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 
-				if (artifactType.Class === AssetTypeClass.TechnicalAsset) {
-					folderName = '#Technical';
-					this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
-				}
+		let folderName: string = '#Business';
+		this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 
-				this.sidePanelStorageKey = 'list_' + AssetTypeClass[artifactType.Class] + '_' + CurrentResourceID;
+		if (this.assetTypeApiModel.Class.Value === AssetTypeClass.TechnicalAsset) {
+			folderName = '#Technical';
+			this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
+		}
 
-				this.headerBreadcrumbService.getFolderTitle(folderName).then((res) => {
-					this.headerBreadcrumbService.clearBreadcrumbs();
+		this.sidePanelStorageKey = 'list_' + AssetTypeClass[this.assetTypeApiModel.Class.Value] + '_' + CurrentResourceID;
 
-					this.folderTitle = res;
-					this.area = res;
+		this.headerBreadcrumbService.getFolderTitle(folderName).then((res) => {
+			this.headerBreadcrumbService.clearBreadcrumbs();
+			this.folderTitle = res;
+			this.area = res;
+			this.setObjectInfo('ArtifactType', this.assetTypeApiModel.ID);
 
-					this.artifactType = artifactType;
-					this.gridObject = ArtifactType.AsGridObject(this.artifactType);
-					this.setObjectInfo('ArtifactType', this.artifactType.ID);
+			this.artifactTypeHierarchy.push(this.assetTypeApiModel);
+			this.createBreadcrumbHierarchy(this.assetTypeApiModel);
 
-					this.artifactTypeHierarchy.push(this.artifactType);
-					this.createBreadcrumbHierarchy(artifactType);
+			this.setBrowserTitle(this.titleService, this.assetTypeApiModel.Name);
+			this.titleAndTabsService.isInitialize = true;
+		});
 
-					this.setBrowserTitle(this.titleService, this.artifactType.Name);
-					this.isLoading = false;
-					this.titleAndTabsService.isInitialize = true;
-				});
-			});
+		this.isLoading = false;
 	}
 
-	createBreadcrumbHierarchy(artifact: ArtifactType) {
-		if (artifact.ParentID) {
-			var detailsSub = this.artifactTypeService.getArtifactTypeDetails(artifact.ParentUid).subscribe((parent) => {
+	createBreadcrumbHierarchy(assetType: AssetTypeApiModel) {
+		if ((assetType.ParentUid ?? "").length > 0) {
+			const detailsSub = this.assetTypeService.GetAssetTypeByUid(assetType.ParentUid).subscribe((parent) => {
 				this.artifactTypeHierarchy.unshift(parent);
-				if (parent.ParentID)
-					{this.createBreadcrumbHierarchy(parent);}
-				else
-					{this.displayBreadcrumb();}
+				if (parent.ParentUid) { this.createBreadcrumbHierarchy(parent); }
+				else { this.displayBreadcrumb(); }
 			});
 
 			this.navigationItemsSubs.push(detailsSub);
-		} else
-			{this.displayBreadcrumb();}
+		} else { this.displayBreadcrumb(); }
 	}
 
 	displayBreadcrumb() {
@@ -151,23 +140,23 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 					this.artifactTypeHierarchy.forEach((x) => {
 						this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
 							x.Name,
-							SiteUrlHelpers.getAssetTypeUrl(x.AssetTypeUID),
+							SiteUrlHelpers.getAssetTypeUrl(x.uid),
 							false,
 							"ArtifactType",
 							x.ID,
 							null,
 							null,
 							true,
-							x.ParentID > 0));
+							(x.ParentUid ?? "").length > 0));
 
 					});
 
-					var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe((res) => {
-						this.baseAssetTypeUid = this.artifactType.AssetTypeUID;
-						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.artifactType.HasDashboards });
-						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
-						this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, $localize`Assets`);
-						if (this.artifactType.HasV2Workflows) {
+					const breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.assetTypeApiModel.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe((res) => {
+						this.baseAssetTypeUid = this.assetTypeApiModel.uid;
+						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.assetTypeApiModel.HasDashboards });
+						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.assetTypeApiModel.ID, this.assetTypeApiModel.Name, null, true, null, this.assetTypeApiModel.uid));
+						this.secondaryNavService.setCurrentArea(this.assetTypeApiModel.Name, res, $localize`Assets`);
+						if (this.assetTypeApiModel.HasV2Workflows) {
 							this.secondaryNavService.showItem(
 								new SecondaryNavItem($localize`Workflow`,
 									'workflowmonitor',
@@ -211,21 +200,21 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		}
 	}
 
-    getSidePanelWidth(): number {
-        return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
-    }
+	getSidePanelWidth(): number {
+		return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+	}
 
-    getSidePanelMaxWidth(): number {
-        return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
-    }
+	getSidePanelMaxWidth(): number {
+		return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+	}
 
-    getSidePanelMinWidth(): number {
-        return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
-    }
+	getSidePanelMinWidth(): number {
+		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+	}
 
-    onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
-        this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
-    }
+	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+	}
 	get panelApplies(): boolean {
 		if (this.selection == null || this.sidePanelTab === 'detail') {
 			return true;

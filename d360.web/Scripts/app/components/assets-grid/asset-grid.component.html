@@ -62,7 +62,7 @@
         </div>
     </div>
     <div class="grid-actions-header-row">
-        <advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+        <advanced-filtering [loadIdentifier]="assetTypeApiModel.uid" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
     </div>
 </div>
 
@@ -80,8 +80,7 @@
     <d3s-asset-grid-custom-export #gridCustomExport *ngIf="showCustomExport && canExportRecords()"
                                   (closeClick)="showCustomExport = false"
                                   (customExportClick)="downloadCustomExcel($event)"
-                                  [gridObject]="gridObject"
-                                  [objectType]="gridObject.ObjectType"
+                                  [assetTypeUid]="assetTypeApiModel.uid"
                                   [sortOrder]="stateService.artifactTypeFilters.sortOrder"
                                   [sortField]="stateService.artifactTypeFilters.sortField"
                                   [filters]="stateService.artifactTypeFilters.filters"
@@ -180,12 +179,12 @@
            [isVisible]="showEditor">
     <asset-editor #dynamicEditor
                   *ngIf="showEditor"
-                  [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
-                  [objectType]="gridObject.Object"
+                  [objectID]="selected ? selected?.ObjectID : assetTypeApiModel?.ID"
+                  [objectType]="assetTypeApiModel?.Object"
                   [title]="assetEditorTitle"
                   [selection]="selected"
                   [rowID]="rowID"
-                  [objectTypeUid]="gridObject?.AssetTypeUID"
+                  [objectTypeUid]="assetTypeApiModel?.uid"
                   [assetTypePath]="getAssetPath()"
                   (saveClick)="saveItem($event)"
                   [showAsModal]="true"
@@ -196,7 +195,7 @@
 
 <d3s-asset-delete-editor *ngIf="showDelete"
                          [uid]="selected?.AssetUid"
-                         [assetTypeUid]="gridObject?.AssetTypeUID"
+                         [assetTypeUid]="assetTypeApiModel?.uid"
                          [displayValue]="(deleteName ? deleteName : 'Artifact')"
                          (onCancel)="showDelete = false"
                          (onDeleted)="onDeleted()">

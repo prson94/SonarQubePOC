@@ -129,7 +129,6 @@ export class AssetTypeApiModel {
     Hierarchical: boolean;
     HierarchyMaximumDepth: number;
     FlowObjectType: FlowObjectType;
-    ID: number;
     AssetTypeID: number;
     count: number = 0; //not currently loaded from API.
 	IsDescriptionEnabled: boolean;
@@ -148,6 +147,11 @@ export class AssetTypeApiModel {
 	UpdatedOn: Date;
 	UpdatedByUid: string;
 	UpdatedByName: string;
+
+    ID: number;
+	HasCustomExportTemplates: boolean = false;
+	HasDashboards: boolean = false;
+	HasV2Workflows: boolean = false;
 }
 
 export class IconStyle {

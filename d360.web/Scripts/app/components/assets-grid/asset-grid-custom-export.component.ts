@@ -28,8 +28,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 })
 
 export class AssetGridCustomExportComponent extends BaseComponent implements OnInit {
-    @Input() gridObject: ArtifactType;
-    @Input() objectType: string = 'ArtifactType';
+    @Input() assetTypeUid: string;
     @Input() sortField: string;
     @Input() sortOrder: SortOrder;
     @Input() filters: GridFilterExpression[];
@@ -56,7 +55,7 @@ export class AssetGridCustomExportComponent extends BaseComponent implements OnI
 
     private load() {
         this.isLoading = true;
-        this.exportTempalteService.getExportTemplatesForAssetType(this.gridObject.AssetTypeUID).subscribe((res) => {
+		this.exportTempalteService.getExportTemplatesForAssetType(this.assetTypeUid).subscribe((res) => {
             this.isLoading = false;
             this.exportOptions = res;
             this.changeDetectorRef.markForCheck();
