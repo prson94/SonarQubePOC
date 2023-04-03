@@ -125,6 +125,13 @@ namespace d360.web.Controllers.V2
 		///	- Starts with operator - {fieldname} ct Data*
 		///	- Ends with operator - {fieldname} ct *Data
 		///	
+		/// - **Asset Path segment comparing operators ** (displayPathSegment) 
+		/// This expression will be matched agains every path segment in asset path
+		///	- Contains operator - {fieldname} ct Data
+		///	- Not Contains operator - {fieldname} nct Data
+		///	- Starts with operator - {fieldname} ct Data*
+		///	- Ends with operator - {fieldname} ct *Data
+		///	
 		///- **List Comparison Operators** (Reference List values)
 		///	- Equals operator - {fieldname} eq Data
 		///	- Not equals operator - {fieldname} neq Data
@@ -203,6 +210,7 @@ namespace d360.web.Controllers.V2
 
 			// Add path as the last column.
 			columns.Add(new CatalogColumn { ApiName = "displayPath", Column = "p.DisplayPath", Sort = "p.DisplayPath", JoinStatement = "inner join AssetPath p on p.Id = S.ObjectAssetId", Position = columns.Max(c => c.Position) + 1 });
+			columns.Add(new CatalogColumn { ApiName = "displayPathSegment", Column = "p.DisplayPath", Sort = "p.DisplayPath", JoinStatement = "inner join AssetPath p on p.Id = S.ObjectAssetId", Position = columns.Max(c => c.Position) + 1 });
 
 			#endregion
 
@@ -284,11 +292,12 @@ namespace d360.web.Controllers.V2
 											inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
 											where pred.PredicateId = {predicate.Id} and {valuePart}";
 
-									if (filterValue.Trim().ToLowerInvariant() == "null")
+									bool isNullOperator = filterValue.Trim().ToLowerInvariant() == "null";
+
+									if (isNullOperator)
 									{
 										if (operation == "=")
 										{
-											valuePart = $"pred.DisplayValue is null";
 											query = $@"
 											    select S.ObjectAssetID from dbo.CatalogBrowseSubject S
 												left join dbo.CatalogBrowseSubject SP ON SP.ObjectAssetID = S.objectassetid and SP.PredicateId = {predicate.Id}
@@ -296,11 +305,14 @@ namespace d360.web.Controllers.V2
 										}
 										else
 										{
-											valuePart = $"pred.DisplayValue is not null";
+											query = $@"
+											    select I.ObjectAssetID from #v pred 
+												inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
+												inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.PredicateID = {predicate.Id}
+												where pred.PredicateId = {predicate.Id} and pred.DisplayValue is not null";
 										}
 									}
-
-									if (filterOperation == "ne")
+									else if (filterOperation == "ne")
 									{
 										query = $@"select I.ObjectAssetID from #v pred 
 											inner join [Intersect] I on I.SubjectAssetID = pred.AssetId
@@ -331,17 +343,14 @@ namespace d360.web.Controllers.V2
 										Query = $@"select distinct ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue {operation} @p{parameterIndex}"
 									});
 								}
-								else if (column.ApiName.ToLowerInvariant() == "displaypath")
+								else if (column.ApiName.ToLowerInvariant() == "displaypathsegment")
 								{
-									string query = "";
-									if ((filterOperation == "ct" || filterOperation == "nct") && filterValue.Contains("*"))
+									//contains and not contains operator needs to use temp table that contains hierarchy of all catalog asset
+									//with temp table we can filter out results faster
+									if (assetsHierarchyTempTable.Length == 0)
 									{
-										//contains and not contains operator needs to use temp table that contains hierarchy of all catalog asset
-										//with temp table we can filter out results faster
-										if (assetsHierarchyTempTable.Length == 0)
-										{
-											//find max depth of any asset type that is used CatalogBrowse relationship types
-											hierarchyMaxDepth = (await Company.QueryAsync<int>($@"
+										//find max depth of any asset type that is used CatalogBrowse relationship types
+										hierarchyMaxDepth = (await Company.QueryAsync<int>($@"
 													select max(Type.Depth) from IntersectTypeDetail ITD
 													outer apply (
 													select top 1 ap.Segments.value('count(/path/segment)', 'int') - 1 as Depth from Asset a 
@@ -350,28 +359,28 @@ namespace d360.web.Controllers.V2
 													)Type(Depth)
 													where ITD.PredicateType = {(int)PredicateType.CatalogBrowse}")).FirstOrDefault();
 
-											if (hierarchyMaxDepth == 0)
-											{
-												hierarchyMaxDepth = 1;
-											}
+										if (hierarchyMaxDepth == 0)
+										{
+											hierarchyMaxDepth = 1;
+										}
 
-											List<string> selects = new List<string>();
-											List<string> joins = new List<string>();
-											for (int i = 1; i <= hierarchyMaxDepth; i++)
+										List<string> selects = new List<string>();
+										List<string> joins = new List<string>();
+										for (int i = 1; i <= hierarchyMaxDepth; i++)
+										{
+											selects.Add($"i{i}.SubjectAssetID as i{i}");
+											if (i == 1)
 											{
-												selects.Add($"i{i}.SubjectAssetID as i{i}");
-												if (i == 1)
-												{
-													joins.Add($"left join [Intersect] i{i} on i{i}.ObjectAssetID = r.ObjectAssetID and i{i}.IntersectTypeID in (select ID from #rels)");
-												}
-												else
-												{
-													joins.Add($"left join [Intersect] i{i} on i{i}.ObjectAssetID = i{i - 1}.SubjectAssetID and i{i}.IntersectTypeID in (select ID from #rels)");
-												}
+												joins.Add($"left join [Intersect] i{i} on i{i}.ObjectAssetID = r.ObjectAssetID and i{i}.IntersectTypeID in (select ID from #rels)");
 											}
+											else
+											{
+												joins.Add($"left join [Intersect] i{i} on i{i}.ObjectAssetID = i{i - 1}.SubjectAssetID and i{i}.IntersectTypeID in (select ID from #rels)");
+											}
+										}
 
-											//build temporary table that will hold hierarchy asset id's for all catalog assets
-											assetsHierarchyTempTable.AppendLine($@"
+										//build temporary table that will hold hierarchy asset id's for all catalog assets
+										assetsHierarchyTempTable.AppendLine($@"
 											drop table if exists #rels
 											select itd.ID into #rels 
 											from IntersectTypeDetail itd where itd.PredicateType in (3,4);
@@ -384,10 +393,10 @@ namespace d360.web.Controllers.V2
 											from CatalogBrowseObject r
 											{string.Join(Environment.NewLine, joins)}
 											option(recompile);");
-										}
+									}
 
-										//prefilter all asset that match search criteria
-										assetsHierarchyTempTable.AppendLine($@"
+									//prefilter all asset that match search criteria
+									assetsHierarchyTempTable.AppendLine($@"
 											drop table if exists #filtered_parents_{parameterIndex}
 											select adv.AssetID into #filtered_parents_{parameterIndex}   
 											from assettype at
@@ -399,57 +408,73 @@ namespace d360.web.Controllers.V2
 											CREATE CLUSTERED INDEX ix_tempCIndexAft_{parameterIndex} ON #filtered_parents_{parameterIndex} (AssetId);");
 
 
-										List<string> hierarchyLevelSearchJoins = new List<string>();
-										List<string> hierarchyLevelSearchWheres = new List<string>();
-										string whereConnector = " and ";
+									List<string> hierarchyLevelSearchJoins = new List<string>();
+									List<string> hierarchyLevelSearchWheres = new List<string>();
+									string whereConnector = " and ";
 
-										hierarchyLevelSearchJoins.Add($"left join #filtered_parents_{parameterIndex} fp_object on fp_object.AssetID = h.ObjectAssetId");
+									hierarchyLevelSearchJoins.Add($"left join #filtered_parents_{parameterIndex} fp_object on fp_object.AssetID = h.ObjectAssetId");
+									if (filterOperation == "ct")
+									{
 										hierarchyLevelSearchWheres.Add("fp_object.assetid is not null");
 
-										dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "%")}");
-										for (int i = hierarchyMaxDepth; i > 0; i--)
+									}
+									else if (filterOperation == "nct")
+									{
+										hierarchyLevelSearchWheres.Add("fp_object.assetid is null");
+									}
+									//handle as startsWith as default
+									filterValue = filterValue + "*";
+
+									dbArgs.Add($"p{parameterIndex}", $"{filterValue.Replace("*", "%").Replace("%%", "%")}");
+									for (int i = hierarchyMaxDepth; i > 0; i--)
+									{
+										hierarchyLevelSearchJoins.Add($"left join #filtered_parents_{parameterIndex} fp{i} on fp{i}.AssetID = h.i{i}");
+
+										if (filterOperation == "ct")
 										{
-											hierarchyLevelSearchJoins.Add($"left join #filtered_parents_{parameterIndex} fp{i} on fp{i}.AssetID = h.i{i}");
-
-											if (filterOperation == "ct")
-											{
-												whereConnector = " or ";
-												hierarchyLevelSearchWheres.Add($"fp{i}.assetid is not null");
-											}
-											else if (filterOperation == "nct")
-											{
-												whereConnector = " and ";
-												hierarchyLevelSearchWheres.Add($"fp{i}.assetid is null");
-											}
+											whereConnector = " or ";
+											hierarchyLevelSearchWheres.Add($"fp{i}.assetid is not null");
 										}
+										else if (filterOperation == "nct")
+										{
+											whereConnector = " and ";
+											hierarchyLevelSearchWheres.Add($"fp{i}.assetid is null");
+										}
+									}
 
-										//build where query using hierarchy temp table and filteres assets temp table
-										query = $@"
+									//build where query using hierarchy temp table and filteres assets temp table
+									catalogWheres.Add(new CatalogWhere
+									{
+										TokenExpression = filterGrp.Value,
+										PropertyName = $"p{parameterIndex}",
+										Where = $"fr.p{parameterIndex} = 1",
+										Query = $@"
 											select h.ObjectAssetID from #hierarchy h
 											{string.Join(Environment.NewLine, hierarchyLevelSearchJoins)}
-											where {string.Join(whereConnector, hierarchyLevelSearchWheres)}";
-									}
-									else
+											where {string.Join(whereConnector, hierarchyLevelSearchWheres)}"
+									});
+								}
+								else if (column.ApiName.ToLowerInvariant() == "displaypath")
+								{
+									string query = "";
+									string value = filterValue;
+									switch (filterOperation)
 									{
-										string value = filterValue;
-										switch (filterOperation)
-										{
-											case "eq":
-											case "ct":
-												value = (filterValue + "%").Replace("*", "%").Replace("%%", "%");
-												query = $@"select id as ObjectAssetID from assetpath where displaypath like @p{parameterIndex}";
-												break;
-											case "nct":
-												value = (filterValue + "%").Replace("*", "%").Replace("%%", "%");
-												query = $@"select id as ObjectAssetID from assetpath where displaypath not like @p{parameterIndex}";
-												break;
-											case "ne":
-												value = filterValue + "%";
-												query = $@"select id as ObjectAssetID from assetpath where displaypath not like @p{parameterIndex}";
-												break;
-										}
-										dbArgs.Add($"p{parameterIndex}", value);
+										case "eq":
+										case "ct":
+											value = filterValue.Replace("*", "%");
+											query = $@"select id as ObjectAssetID from assetpath where displaypath like @p{parameterIndex}";
+											break;
+										case "nct":
+											value = filterValue.Replace("*", "%");
+											query = $@"select id as ObjectAssetID from assetpath where displaypath not like @p{parameterIndex}";
+											break;
+										case "ne":
+											value = filterValue;
+											query = $@"select id as ObjectAssetID from assetpath where displaypath not like @p{parameterIndex}";
+											break;
 									}
+									dbArgs.Add($"p{parameterIndex}", value);
 
 									catalogWheres.Add(new CatalogWhere
 									{
@@ -507,22 +532,22 @@ namespace d360.web.Controllers.V2
 			{
 				var rawSorts = queryParams.Where(q => q.Key == "_order").Select(s => s.Value).ToList();
 				rawSorts.ForEach(rawSort =>
-				{
-					var sortMatch = Regex.Match(rawSort, @"^(asc|desc)\(([\w\d\s\-\/\:]+)\)$");
-					if (sortMatch.Success && sortMatch.Groups.Count == 3)
-					{
-						var sortProperty = sortMatch.Groups[2].Value.Trim();
-						var sortDirection = (sortMatch.Groups[1].Value == "asc");
-						if (parsedSorts.ContainsKey(sortProperty))
-						{
-							parsedSorts[sortProperty] = sortDirection;
-						}
-						else
-						{
-							parsedSorts.Add(sortProperty, sortDirection);
-						}
-					}
-				});
+							{
+								var sortMatch = Regex.Match(rawSort, @"^(asc|desc)\(([\w\d\s\-\/\:]+)\)$");
+								if (sortMatch.Success && sortMatch.Groups.Count == 3)
+								{
+									var sortProperty = sortMatch.Groups[2].Value.Trim();
+									var sortDirection = (sortMatch.Groups[1].Value == "asc");
+									if (parsedSorts.ContainsKey(sortProperty))
+									{
+										parsedSorts[sortProperty] = sortDirection;
+									}
+									else
+									{
+										parsedSorts.Add(sortProperty, sortDirection);
+									}
+								}
+							});
 			}
 			if (parsedSorts.Count == 0)
 			{
@@ -660,19 +685,19 @@ namespace d360.web.Controllers.V2
 					tempCols.Add("sort_path nvarchar(50)");
 					useSortPathInTempTable = true;
 					sorts = sorts.Select(sort => sort.Replace("p.DisplayPath", "fr.sort_path")).ToList();
-					
+
 					var pathCol = columns.FirstOrDefault(x => x.ApiName == "displayPath");
 					pathCol.Sort = "fr.sort_path";
 				}
 
 				sb.AppendLine($@"
-					drop table if exists #filteredResults
-					create table #filteredResults ({string.Join(",", tempCols)});");
+					drop table if exists #filteredResults_temp
+					create table #filteredResults_temp ({string.Join(",", tempCols)});");
 
 				foreach (var filter in catalogWheres)
 				{
 					sb.AppendLine($@"
-						MERGE #filteredResults AS Target
+						MERGE #filteredResults_temp AS Target
 						USING (
 						{filter.Query}
 						) AS Source
@@ -690,23 +715,30 @@ namespace d360.web.Controllers.V2
 					sb.AppendLine(@"
 						update t 
 						set t.sort_path = CAST(ap.DisplayPath as nvarchar(50))
-						from #filteredResults t
+						from #filteredResults_temp t
 						inner join AssetPath ap on ap.ID = t.AssetId");
 				}
 
-				filtersTempTable = sb.ToString();
-			}
 
-			if (catalogWheres.Count > 0)
-			{
-				//replaced original query parameter value which contains all brackets and and/or operators with parsed where values
-				//order by TokenExpression to avoid wrong replacement in similiar expressions i.w. field ct test and field ct testing
-				foreach (var cwhere in catalogWheres.OrderByDescending(x => x.TokenExpression.Length))
+				if (catalogWheres.Count > 0)
 				{
-					advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression, cwhere.Where);
+					//replaced original query parameter value which contains all brackets and and/or operators with parsed where values
+					//order by TokenExpression to avoid wrong replacement in similiar expressions i.w. field ct test and field ct testing
+					foreach (var cwhere in catalogWheres.OrderByDescending(x => x.TokenExpression.Length))
+					{
+						advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression, cwhere.Where);
+					}
 				}
 
-				whereStatements.Add(advancedFilterString);
+				sb.AppendLine($@"
+						drop table if exists #filteredResults
+						select AssetId {(useSortPathInTempTable ? ", sort_path" : "")}
+						into #filteredResults
+						from #filteredResults_temp fr
+						where {advancedFilterString}
+						option(recompile)");
+
+				filtersTempTable = sb.ToString();
 			}
 
 			string permissionTempTableSql = "";

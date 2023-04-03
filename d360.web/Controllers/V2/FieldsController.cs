@@ -2115,7 +2115,7 @@ namespace d360.web.Controllers.V2
 						coalesce(a.code,'Code Missing') as name 
 						from asset a 
 						{whereQuery}
-						order by a.Code desc
+						order by a.Code asc
 						{pagingQuery}
 						option(recompile);
 

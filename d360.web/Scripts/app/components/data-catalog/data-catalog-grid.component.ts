@@ -35,6 +35,8 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	columns: Record<string, unknown>[] = [];
 	data: Record<string, unknown>[] = [];
 
+	numberOfRowsCategory = 'DataCatalog';
+
 	rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
 	destroy = new Subject<void>();
 	assetSearchSub: Subscription;
@@ -98,7 +100,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 
 	ngOnInit(): void {
 		this.setRowsPerPage();
-		this.numberOfRowsByCategoryService.defineNumberOfRows();
+		this.numberOfRowsByCategoryService.defineNumberOfRows(25, this.numberOfRowsCategory);
 
 		this.predicateService.getPredicatesByType(PredicateType.CatalogBrowse)
 			.subscribe((res) => {
@@ -171,7 +173,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		this.numberOfRowsByCategoryService.rowsPerPage.pipe(
 			takeUntil(this.destroy)
 		).subscribe((rowsPerPage) => {
-			this.rowsPerPage = rowsPerPage['Main'] ?? 25;
+			this.rowsPerPage = rowsPerPage[this.numberOfRowsCategory] ?? 25;
 		});
 	}
 
