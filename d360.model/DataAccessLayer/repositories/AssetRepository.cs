@@ -2940,7 +2940,9 @@ where an.Uid = fam.uid)
 			var assetTypeID = 0;
 			assetTypeID = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == assetTypeUid)?.ID ?? 0;
 			//Use same output format as FieldsController._FieldTypesByObject to preserve compatability
-			return CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).Select(i => new
+			return CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID)
+				.OrderBy(x=> x.FriendlyName)
+				.Select(i => new
 			{
 				i.FriendlyName,
 				i.Category,
