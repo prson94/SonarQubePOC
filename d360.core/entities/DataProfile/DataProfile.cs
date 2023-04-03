@@ -229,7 +229,7 @@ namespace d360.core.entities
         public int? outlierCardinality { get; set; }
 
         [DataMember]
-        [ValidateSample(200)]
+        [ValidateSample(500)]
         public List<DataProfileSampleDetail> outlierDetail { get; set; }
 
         [DataMember]
@@ -244,49 +244,49 @@ namespace d360.core.entities
         public string structureSignature { get; set; }
 
         [DataMember]
-        [ValidateKList(200)]
+        [ValidateKList(500)]
         public List<string> bottomK { get; set; }
 
         [DataMember]
-        [ValidateKList(200)]
+        [ValidateKList(500)]
         public List<string> topK { get; set; }
 
         [DataMember]
         public int? cardinality { get; set; }
 
         [DataMember]
-        [ValidateSample(200)]
+        [ValidateSample(500)]
         public List<DataProfileSampleDetail> cardinalityDetail { get; set; }
 
         [DataMember]
         public int? shapesCardinality { get; set; }
 
         [DataMember]
-        [ValidateSample(200)]
+        [ValidateSample(500)]
         public List<DataProfileSampleDetail> shapesDetail { get; set; }
 
         [DataMember]
-        [ValidateSample(200)]
+        [ValidateSample(500)]
         public List<DataProfileSampleDetail> scriptDistributionStatistics { get; set; }
 
         [DataMember]
-        [ValidateSample(200)]
+        [ValidateSample(500)]
         public List<DataProfileSampleDetail> characterCasingStatistics { get; set; }
 
         [DataMember]
-        [ValidateSample(200)]
+        [ValidateSample(500)]
         public List<DataProfileSampleDetail> characterDataTypeStatistics { get; set; }
 
         [DataMember]
-        [ValidateSample(200)]
+        [ValidateSample(500)]
         public List<DataProfileSampleDetail> characterSpacingStatistics { get; set; }
 
         [DataMember]
-        [ValidateSample(200)]
+        [ValidateSample(500)]
         public List<DataProfileSampleDetail> specialCharacterStatistics { get; set; }
 
         [DataMember]
-        [ValidateSample(200)]
+        [ValidateSample(500)]
         public List<DataProfileSampleDetail> percentileStatistics { get; set; }
 
 		[DataMember]
@@ -592,14 +592,14 @@ namespace d360.core.entities
             Maxlength = maxlength;
         }
 
-        public int Maxlength { get; }
+		public int Maxlength { get; } = 500;
 
         protected override ValidationResult IsValid(object value,
             ValidationContext validationContext)
         {
             var sample = (List<DataProfileSampleDetail>)value;
 
-            if (sample?.Count > 0 && sample.Any(x => x.key?.Length > 200))
+            if (sample?.Count > 0 && sample.Any(x => x.key?.Length > Maxlength))
             {
                 return new ValidationResult($"{validationContext.DisplayName} keys cannot be more than {Maxlength} characters.");
             }
