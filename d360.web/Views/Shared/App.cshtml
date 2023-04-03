@@ -12,10 +12,6 @@
     var customStylesheetURL = (settings["CustomCSSLocation"] ?? "");
     var useCdn = System.Configuration.ConfigurationManager.AppSettings["cdn:enabled"];
 
-    var DataDogApplicationId = (System.Configuration.ConfigurationManager.AppSettings["DD_RUM_APPLICATIONID"] ?? "a6856a29-b0df-4399-9209-fab1529c798b");
-    var DataDogClientToken = (System.Configuration.ConfigurationManager.AppSettings["DD_RUM_CLIENTTOKEN"] ?? "pubb2d8e686770c86a615449864b1b9e64b");
-    var DataDogService = (System.Configuration.ConfigurationManager.AppSettings["DD_RUM_SERVICE"] ?? "Govern");
-
     var baseUrl = "";
     if ((useCdn ?? "").ToLower() == "true")
     {
@@ -26,8 +22,6 @@
 
     var companyIcon = string.Format("{0}/favicon.ico", baseUrl);
     companyIcon = settings["CompanyIcon"];
-
-
 }
 @functions{
     public string GetAntiForgeryToken()
@@ -59,9 +53,6 @@
         var ResourceName = '@(ViewData["ResourceName"].ToString())';
         var ResourceEmail = '@(ViewData["ResourceEmail"].ToString())';
         var VersionNumber = '@(VersionNumber)';
-        var DataDogApplicationId = '@(DataDogApplicationId)';
-        var DataDogClientToken = '@(DataDogClientToken)';
-        var DataDogService = '@(DataDogService)';
         var ApplicationLanguageSetting = '@(ApplicationLanguageSetting)';
     </script>
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/primeng.min.css", baseUrl)" />
