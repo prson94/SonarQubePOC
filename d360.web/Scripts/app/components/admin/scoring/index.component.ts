@@ -186,7 +186,7 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
         if (!alloc)
             {alloc = this.getAllocationByUid(event.uid);}
         const url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${alloc.assetTypeUid}/${alloc.uid}`;
-        this.router.navigateByUrl(url);
+		this.router.navigateByUrl(this.federateUrl(url));
     }
 
     get deletePopupTitle(): string {

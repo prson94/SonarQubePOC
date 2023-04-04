@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { DirectivesModule } from "../../../../directives/directives.module";
 import { LinkClickInterceptor } from "../../../../services/href-click-service";
 import { Router } from "@angular/router";
+import { SiteUrlHelpers } from "../../../../static/site-url-helpers";
 
 class OwnershipResource {
     ResourceName: string;
@@ -80,7 +81,7 @@ export class OwnershipListComponent implements OnInit {
             this.linkClickInterceptor.sendEvent($event, data, data.ResourceItemUrl);
             return;
         }
-        this.router.navigateByUrl(data.ResourceItemUrl);
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(data.ResourceItemUrl));
         if ($event) {
             $event.preventDefault();
             $event.stopPropagation();

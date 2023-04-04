@@ -198,7 +198,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         this
             .router
             .navigateByUrl(
-                `asset/${artifact.AssetUid}`);
+				this.federateUrl(`asset/${artifact.AssetUid}`));
     }
 
     canExportRecords() {

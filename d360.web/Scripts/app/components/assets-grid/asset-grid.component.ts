@@ -644,7 +644,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		}
 		else if ($event && $event.action === 'new') {
 			var newUrl = '/asset/' + $event.assetUid;
-			this.router.navigateByUrl(newUrl);
+			this.router.navigateByUrl(this.federateUrl(newUrl));
 		}
 		else {
 			this.getData(true, { keyFieldChanged: $event.keyFieldChanged });
@@ -677,7 +677,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 						DataType: 'Lookup'
 					}, this.itemUrl);
 				} else {
-					this.router.navigateByUrl(this.itemUrl);
+					this.router.navigateByUrl(this.federateUrl(this.itemUrl));
 				}
 			});
 

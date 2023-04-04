@@ -38,13 +38,13 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
 
 	private navigateToArtifact() {
         this.router
-			.navigateByUrl(SiteUrlHelpers.getAssetUrl(this.selected["uid"]));           
+			.navigateByUrl(this.federateUrl(SiteUrlHelpers.getAssetUrl(this.selected["uid"])));
 
     }
 
     private artifactLink(uid:string) {
         this.router
-			.navigateByUrl(SiteUrlHelpers.getAssetUrl(uid));           
+			.navigateByUrl(this.federateUrl(SiteUrlHelpers.getAssetUrl(uid)));
     }
 
     private load() {

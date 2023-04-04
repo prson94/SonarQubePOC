@@ -479,8 +479,8 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
 		if (openUrl) {
             if (newTab) {
 				window.open(openUrl, '_blank');
-            } else {
-				this.router.navigateByUrl(openUrl);
+			} else {
+				this.router.navigateByUrl(SiteUrlHelpers.federateUrl(openUrl));
             }
         }
     }

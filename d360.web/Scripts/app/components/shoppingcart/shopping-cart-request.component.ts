@@ -69,7 +69,7 @@ export class ShoppingCartRequestComponent extends BaseComponent implements OnIni
     }
 
     navigate(item: ShoppingCartListItem) {
-        this.router.navigateByUrl(item.Url);
+		this.router.navigateByUrl(this.federateUrl(item.Url));
     }
 }
 

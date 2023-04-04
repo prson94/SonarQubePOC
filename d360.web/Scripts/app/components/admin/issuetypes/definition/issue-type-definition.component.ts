@@ -3,6 +3,7 @@ import { Router } from "@angular/router";
 import { WorkflowIssueType } from "../../../../models/workflow.model";
 import { SidePanelService } from "../../../../services/side-panel.service";
 import { WorkflowService } from "../../../../services/workflow.service";
+import { SiteUrlHelpers } from "../../../../static/site-url-helpers";
 
 
 @Component({
@@ -30,7 +31,7 @@ export class IssueTypeDefinitionComponent {
 			window.open(url, "_blank");
 		}
 		else {
-			this.router.navigateByUrl(url);
+			this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
 		}
 	}
 

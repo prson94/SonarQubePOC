@@ -86,7 +86,7 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
         if (this.item.IsLink) {
             window.location.href = this.item.Url;
         } else {
-            this.router.navigateByUrl(this.item.Url);
+			this.router.navigateByUrl(this.federateUrl(this.item.Url));
         }
         this.active = false;
         this.activeChange.emit(this.active);

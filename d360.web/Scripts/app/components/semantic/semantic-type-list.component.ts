@@ -301,7 +301,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             if (newTab) {
                 window.open(url, '_blank');
             } else {
-                this.router.navigateByUrl(url);
+				this.router.navigateByUrl(this.federateUrl(url));
             }
         }
     }
@@ -438,7 +438,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         }
         else if ($event && $event.action.toLowerCase() === "new") {
             var newUrl = "/semantics/" + $event.item.uid;
-            this.router.navigateByUrl(newUrl);
+			this.router.navigateByUrl(this.federateUrl(newUrl));
         }
         else {
             if ($event.item.uid) {

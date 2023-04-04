@@ -126,8 +126,8 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         this.searchText = event.srcElement.value;
     }
 
-    navigateToTag(tag: any, event:any, ac:any) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl("TAG", tag.Uid));
+	navigateToTag(tag: any, event: any, ac: any) {
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(SiteUrlHelpers.getObjectUrl("TAG", tag.Uid)));
         this.removeFocus(ac);
         ac.hide();
         event.stopPropagation();
@@ -149,16 +149,16 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         const url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}${(this.keepFilter) ? '&f=1' : ''}&types=${this.options ? this.options.join(',') : ''}`;
         if (!this.keepFilter) {
             SearchSession.removeState(q);
-        }
-        this.router.navigateByUrl(url);
+		}
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
     }
 
     selectItem(ac) {
         if (this.result.Type === this.endSearchAllTypeToken) {
             this.result.Name = this.searchText;
             this.openSearch();
-        } else {
-            this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));
+		} else {
+			this.router.navigateByUrl(SiteUrlHelpers.federateUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url)));
         }
         this.removeFocus(ac);
     }

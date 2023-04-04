@@ -1553,4 +1553,8 @@ export class BaseComponent {
 		console.log(helpBaseUri, helpLocale, helpPath, url);
 		return url;
 	}
+
+	public federateUrl(url: string): string {
+		return SiteUrlHelpers.federateUrl(url);
+	}
 }

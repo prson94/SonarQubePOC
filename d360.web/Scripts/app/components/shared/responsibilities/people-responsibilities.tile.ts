@@ -134,7 +134,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
 
     
     navigate(url: string) {
-        this.router.navigateByUrl(url);
+		this.router.navigateByUrl(this.federateUrl(url));
     }
 
     onDoubleClick(item: any) {

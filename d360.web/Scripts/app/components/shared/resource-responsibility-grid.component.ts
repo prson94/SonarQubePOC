@@ -114,7 +114,7 @@ export class ResourceResponsibilityGridComponent extends BaseComponent implement
 
     navigate(e: any) {
         //let url = e.data.ObjectUrl;
-        //this.router.navigateByUrl(url);
+        //this.router.navigateByUrl(this.federateUrl(url));
 
     }
 

@@ -117,7 +117,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     openItem(url: string) {
-        this.router.navigateByUrl(url);
+		this.router.navigateByUrl(this.federateUrl(url));
     }
 
     ngOnDestroy(): void {

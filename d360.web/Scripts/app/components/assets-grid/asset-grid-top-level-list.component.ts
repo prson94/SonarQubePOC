@@ -128,7 +128,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 	}
 
 	navigate(uid: string) {
-		this.router.navigateByUrl("assets/" + uid);
+		this.router.navigateByUrl(this.federateUrl("assets/" + uid));
 
 	}
 }

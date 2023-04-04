@@ -10,6 +10,7 @@ import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { CompanySettingsService } from "../../../services/settings.service";
 import { AuthenticationService } from '../../../services/authentication.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 // TODO: it will be great to move out next out of this component:
 // • statistics
@@ -202,12 +203,14 @@ export class TabsComponent implements OnDestroy {
                 home = `/artifact/${this.secondaryNavService.artifactTypeId}`;
                 this.secondaryNavService.activeTabTitle = null;
                 this.secondaryNavService.artifactTypeId = null;
-            }
-            this.router.navigateByUrl(home);
+			}
+			this.router.navigateByUrl(SiteUrlHelpers.federateUrl(home));
             return;
         }
 
-        if (item.url) { this.router.navigateByUrl(item.url); }
+		if (item.url) {
+			this.router.navigateByUrl(SiteUrlHelpers.federateUrl(item.url));
+		}
 
         if (this.emitSecondaryNav) {
             this.secondaryNavService.itemClicked(item as SecondaryNavItem);

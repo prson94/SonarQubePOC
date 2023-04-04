@@ -18,6 +18,7 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { Router } from '@angular/router';
 import { StringConstants } from '../../../static/string-constants';
 import { AuthenticationService } from '../../../services/authentication.service';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'ig-tagged-assets-detail',
@@ -104,7 +105,7 @@ export class TaggedAssetDetailComponent implements OnChanges, OnDestroy {
     open(isNewTab: boolean = false) {
         const url : string = 'tag/' + this.tag.uid;
         if (!isNewTab) {
-            this.router.navigateByUrl(url);
+			this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
             return;
         } else {
             window.open(url, '_blank');

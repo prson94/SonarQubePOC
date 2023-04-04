@@ -260,7 +260,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 			window.open(url, "_blank");
 		}
 		else {
-			this.router.navigateByUrl(url);
+			this.router.navigateByUrl(this.federateUrl(url));
 		}
 	}
 

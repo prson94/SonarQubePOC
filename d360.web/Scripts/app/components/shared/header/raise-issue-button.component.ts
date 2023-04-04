@@ -26,6 +26,6 @@ export class RaiseIssueButtonComponent extends BaseComponent {
     }
 
     public raiseIssue() {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE}`);
+		this.router.navigateByUrl(this.federateUrl(`${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE}`));
     }
 }

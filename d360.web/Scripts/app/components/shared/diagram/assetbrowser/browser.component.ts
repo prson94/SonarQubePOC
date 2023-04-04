@@ -715,7 +715,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private menu_ClickLinkItem(e: any) {
         if (e.value.toLowerCase() === 'open') {
-            this.router.navigateByUrl(`asset/${this.selectedDiagramAsset.Uid}/diagrams/${DiagramType[this.displayConfiguration.DiagramType]}`);
+			this.router.navigateByUrl(this.federateUrl(`asset/${this.selectedDiagramAsset.Uid}/diagrams/${DiagramType[this.displayConfiguration.DiagramType]}`));
         }
         if (e.value.toLowerCase() === 'open in new tab') {
             window.open(`asset/${this.selectedDiagramAsset.Uid}/diagrams/${DiagramType[this.displayConfiguration.DiagramType]}`, "_blank");
@@ -2454,14 +2454,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         if (obj.part.data.class && obj.part.data.class.toString() === 'DiagramAsset') {
 
                             this.processService.getProcessUrlByDiagramAssetUid(obj.part.data.assetUid).subscribe((res) => {
-                                this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
-                                    this.router.navigateByUrl(res);
+								this.router.navigateByUrl(this.federateUrl('/bla'), { skipLocationChange: true }).then(() => {
+									this.router.navigateByUrl(this.federateUrl(res));
                                 });
                             });
                             return;
                         }
 
-                        this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
+						this.router.navigateByUrl(this.federateUrl('/bla'), { skipLocationChange: true }).then(() => {
                             this.router.navigate(['asset', assetUidRedirect,'diagrams']);
                         });
                     }
@@ -3476,7 +3476,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 	viewchange_Apply(e: DiagramType) {
 		this.displayConfiguration.DiagramType = e;
         this.saveFilter();
-        this.router.navigateByUrl(`asset/${this.assetUid}/diagrams/${DiagramType[e]}`);
+		this.router.navigateByUrl(this.federateUrl(`asset/${this.assetUid}/diagrams/${DiagramType[e]}`));
     }
 
     /**

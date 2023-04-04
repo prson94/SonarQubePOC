@@ -673,7 +673,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		}
 		else if ($event && $event.action === 'new') {
 			var newUrl = '/asset/' + $event.assetUid;
-			this.router.navigateByUrl(newUrl);
+			this.router.navigateByUrl(this.federateUrl(newUrl));
 		}
 		else {
 			this.showEditor = false;
@@ -803,7 +803,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 						DataType: 'Lookup'
 					}, url);
 				} else {
-					this.router.navigateByUrl(url);
+					this.router.navigateByUrl(this.federateUrl(url));
 				}
 			});
 	}

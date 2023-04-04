@@ -104,7 +104,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
     }
 
     navigate(url: string) {
-        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
+		this.router.navigateByUrl(this.federateUrl(SiteUrlHelpers.convertClassicUrl(url)));
     }
 
     export() {

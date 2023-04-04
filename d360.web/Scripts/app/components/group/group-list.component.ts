@@ -63,6 +63,6 @@ export class GroupListComponent extends BaseComponent implements OnInit {
 
             return;
         }
-        this.router.navigateByUrl(SiteUrlHelpers.getGroupUrl(group.ID));
+		this.router.navigateByUrl(this.federateUrl(SiteUrlHelpers.getGroupUrl(group.ID)));
     }
 }

@@ -51,7 +51,7 @@ export class ShortcutDisplayComponent extends BaseComponent implements OnInit {
             window.open(shortcut.Url, "_self");
         }
         else if (shortcut.LinkTarget === LinkTarget.RouterLink) {
-            this.router.navigateByUrl(shortcut.Url);
+			this.router.navigateByUrl(this.federateUrl(shortcut.Url));
         }
     }
 }

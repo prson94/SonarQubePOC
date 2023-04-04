@@ -218,7 +218,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 			window.open(url, "_blank");
 		}
 		else {
-			this.router.navigateByUrl(url);
+			this.router.navigateByUrl(this.federateUrl(url));
 		}
 	}
 

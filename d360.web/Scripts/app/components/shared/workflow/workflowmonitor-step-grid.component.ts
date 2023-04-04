@@ -59,8 +59,8 @@ export class WorkflowMonitorStepGridComponent extends BaseComponent implements O
         this.ref.markForCheck();
     }
 
-    doSelect(item: WorkflowItemStep) {
-       this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${item.TypeID}/${item.ID}/${item.ItemID}`);
+	doSelect(item: WorkflowItemStep) {
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${item.TypeID}/${item.ID}/${item.ItemID}`));
     }
 
     rowClick(item: any) {

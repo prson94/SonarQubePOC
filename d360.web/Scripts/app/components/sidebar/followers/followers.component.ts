@@ -128,6 +128,6 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
     }
 
 	private doSelect(follower: FollowDetail) {
-		this.router.navigateByUrl(follower.FollowerUrl);
+		this.router.navigateByUrl(this.federateUrl(follower.FollowerUrl));
     }
 }

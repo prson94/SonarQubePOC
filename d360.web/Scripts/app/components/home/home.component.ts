@@ -129,9 +129,13 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 
     public onShowAssignmentDetails(event) {
         if (event.workflowId)
-            {this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${event.workflowId}/${event.version}/${event.stepId}`);}
+		{
+			this.router.navigateByUrl(this.federateUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${event.workflowId}/${event.version}/${event.stepId}`));
+		}
         else
-            {this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${event.workflowType}`);}
+		{
+			this.router.navigateByUrl(this.federateUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${event.workflowType}`));
+		}
     }
 
     public onShowBoardDetails(event) {

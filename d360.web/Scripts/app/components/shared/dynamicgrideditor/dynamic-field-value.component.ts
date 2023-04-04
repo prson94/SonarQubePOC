@@ -134,6 +134,6 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     }
 
     private navigate(url: string) {
-        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
+		this.router.navigateByUrl(this.federateUrl(SiteUrlHelpers.convertClassicUrl(url)));
     }
 }

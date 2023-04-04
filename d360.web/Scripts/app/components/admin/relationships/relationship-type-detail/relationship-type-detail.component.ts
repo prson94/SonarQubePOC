@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { RelationshipType } from '../../../../models/relationship.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { SidePanelService } from '../../../../services/side-panel.service';
+import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 
 /*global $localize*/
 
@@ -70,7 +71,7 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 			window.open(url, "_blank");
 		}
 		else {
-			this.router.navigateByUrl(url);
+			this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
 		}
 	}
 

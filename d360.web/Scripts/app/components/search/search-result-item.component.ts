@@ -100,8 +100,8 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         if (newTab) {
             // eslint-disable-next-line
             window.open(url, "_blank");
-        } else {
-            this.router.navigateByUrl(url);
+		} else {
+			this.router.navigateByUrl(this.federateUrl(url));
         }
     }
 

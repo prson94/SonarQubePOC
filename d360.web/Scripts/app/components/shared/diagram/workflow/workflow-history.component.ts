@@ -59,7 +59,7 @@ export class WorkflowHistoryComponent extends BaseComponent implements OnInit, O
     }
 
     navigate(url: string) {
-        this.router.navigateByUrl(url);
+		this.router.navigateByUrl(this.federateUrl(url));
     }
 }
 

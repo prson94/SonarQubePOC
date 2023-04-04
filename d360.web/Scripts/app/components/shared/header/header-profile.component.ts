@@ -73,7 +73,7 @@ export class HeaderProfileComponent implements OnInit, OnDestroy {
     }
 
 	public viewProfile() {
-		this.router.navigateByUrl(SiteUrlHelpers.getUserUrl(CurrentResourceUid));
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(SiteUrlHelpers.getUserUrl(CurrentResourceUid)));
     }
 
     show(item) {
