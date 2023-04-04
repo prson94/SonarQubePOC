@@ -1,6 +1,8 @@
-﻿declare var CompanySettings;
+﻿/* eslint-disable no-var */
+declare var CompanySettings;
 declare var ResourceHomePage;
 declare var FederationUrlPrefix;
+/* eslint-enable */
 
 export class SiteUrlHelpers {
 
