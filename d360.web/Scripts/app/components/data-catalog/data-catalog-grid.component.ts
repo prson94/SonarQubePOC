@@ -168,7 +168,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	}
 
 	loadRowsPerPage(): void {
-		var rowsPerPageStorage = localStorage.getItem(this.numberOfRowsStorageKey);
+		const rowsPerPageStorage = localStorage.getItem(this.numberOfRowsStorageKey);
 		this.rowsPerPage = rowsPerPageStorage != null ? +rowsPerPageStorage : 25;
 	}
 
