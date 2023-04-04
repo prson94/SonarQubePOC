@@ -28,7 +28,6 @@
     "@angular/platform-server": "14.2.12",
     "@angular/router": "14.2.12",
     "@ctrl/ngx-codemirror": "5.1.1",
-    "@datadog/browser-rum": "4.2.0",
     "angular-split": "^14.1.0",
     "codemirror": "5.64.0",
     "eslint": "^8.24.0",

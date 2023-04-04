@@ -5,17 +5,12 @@ import { Message, MessageService, PrimeNGConfig, Translation } from 'primeng/api
 import { CookieService } from './services/cookie.service';
 import { MessagesObservableService } from './services/messages-observable.service';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { datadogRum } from '@datadog/browser-rum';
-import { environment } from '../environments/environment';
 import { DOCUMENT } from '@angular/common';
 
 declare var CurrentResourceID;
 declare var VersionNumber: string;
 declare var ResourceName;
 declare var ResourceEmail;
-declare var DataDogApplicationId;
-declare var DataDogClientToken;
-declare var DataDogService;
 
 @Component({
     selector: 'd3s-app',
@@ -57,8 +52,6 @@ export class AppComponent implements AfterContentInit, OnDestroy {
         private renderer: Renderer2,
         private config: PrimeNGConfig) {
         this.msgs = [];
-
-        this.enableDataDog();
 
         this.errorSub = messagesService.errorMessage$.subscribe(
             (errorMsg) => {
@@ -102,36 +95,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             this.handleMenuChange(menuState.toLocaleLowerCase() === "true");
         }
         this.setMaxHeight();
-    }
-
-    private enableDataDog() {
-        try {
-            // Only turn on datadog Real user monitoring when Govern is in prod mode we dont want errors from developers building govern reported.
-            if (environment.production) {
-                datadogRum.init({
-                    applicationId: DataDogApplicationId,
-                    clientToken: DataDogClientToken,
-                    site: 'datadoghq.com',
-                    service: DataDogService,
-                    env: location.hostname,
-                    version: VersionNumber,
-                    sampleRate: 100,
-                    trackInteractions: true,
-                    defaultPrivacyLevel: 'mask-user-input',
-                    allowedTracingOrigins: [/https:\/\/.*\.data3sixty\.com/, /https:\/\/.*\.data3sixty\.local/]
-                });
-
-                datadogRum.setUser({
-                    id: CurrentResourceID,
-                    name: ResourceName,
-                    email: ResourceEmail,
-                });
-            }
-        }
-        catch {
-            console.log("Datadog Real user monitoring cannot be initialized!");
-        }
-    }
+	}
 
     public handleMenuChange(v: boolean) {
         this.menuOpen = v;
