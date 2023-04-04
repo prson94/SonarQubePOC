@@ -35,7 +35,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	columns: Record<string, unknown>[] = [];
 	data: Record<string, unknown>[] = [];
 
-	numberOfRowsCategory = 'DataCatalog';
+	numberOfRowsStorageKey = 'DataCatalogRowsPerPage';
 
 	rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
 	destroy = new Subject<void>();
@@ -57,7 +57,6 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		private predicateService: PredicatesService,
 		public sidePanelService: SidePanelService,
 		settingsService: CompanySettingsService,
-		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 		private featureFlagService: LaunchDarklyService,
 		private cdRef: ChangeDetectorRef,
 		private titleService: Title,
@@ -99,8 +98,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	}
 
 	ngOnInit(): void {
-		this.setRowsPerPage();
-		this.numberOfRowsByCategoryService.defineNumberOfRows(25, this.numberOfRowsCategory);
+		this.loadRowsPerPage();
 
 		this.predicateService.getPredicatesByType(PredicateType.CatalogBrowse)
 			.subscribe((res) => {
@@ -169,12 +167,15 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		});
 	}
 
-	setRowsPerPage(): void {
-		this.numberOfRowsByCategoryService.rowsPerPage.pipe(
-			takeUntil(this.destroy)
-		).subscribe((rowsPerPage) => {
-			this.rowsPerPage = rowsPerPage[this.numberOfRowsCategory] ?? 25;
-		});
+	loadRowsPerPage(): void {
+		var rowsPerPageStorage = localStorage.getItem(this.numberOfRowsStorageKey);
+		this.rowsPerPage = rowsPerPageStorage != null ? +rowsPerPageStorage : 25;
+	}
+
+	setRowsPerPage($event) {
+		if ($event && $event.rows) {
+			localStorage.setItem(this.numberOfRowsStorageKey, $event.rows);
+		}
 	}
 
 	private setFieldsObsservable() {
