@@ -1685,22 +1685,17 @@ namespace d360.model
                 string fieldValue = (k.Value + "").Trim();
                 int? fieldTypeId = null;
                 string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
-                string fieldtypestr = "";
 
 
                 // Validation of field and value;
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
 
-                if (fieldType != null)
+                if (useFriendlyNames)
                 {
-                    if (useFriendlyNames)
-                    {
-                        fieldName = fieldType.FriendlyName;
-                    }
-                    fieldtypestr = fieldType.Type.ToLower();
+                    fieldName = fieldType.FriendlyName;
                 }
 
-                if (fieldType == null || (fieldtypestr == "system"))
+                if (fieldType == null)
                 {
                     if (fieldName.ToLower() == "color")
                     {
@@ -1910,6 +1905,14 @@ namespace d360.model
                                     {
                                         success = false;
                                         errorMessages.Add(string.Format(CompanyContextApiError.ValidateNumberFieldRange, fieldName, 0, 2147483647));
+                                    }
+
+                                    break;
+                                case "System":
+                                    if (ot == "ReferenceItemType" && fieldName.ToLower() == "code" && (fieldValue ?? "").Length > 250)
+                                    {
+                                        success = false;
+                                        errorMessages.Add(CompanyContextApiError.ReferenceListCodeFieldMaxLengthCheck);
                                     }
 
                                     break;
