@@ -615,14 +615,14 @@ namespace d360.core.entities
             Maxlength = maxlength;
         }
 
-        public int Maxlength { get; }
+		public int Maxlength { get; } = 500;
 
         protected override ValidationResult IsValid(object value,
             ValidationContext validationContext)
         {
             var list = (List<string>)value;
 
-            if (list?.Count > 0 && list.Any(x => x.Length > 200))
+            if (list?.Count > 0 && list.Any(x => x.Length > Maxlength))
             {
                 return new ValidationResult($"{validationContext.DisplayName} elements cannot be more than {Maxlength} characters.");
             }
