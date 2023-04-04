@@ -61,6 +61,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} must have an exact length of {1}.
+        /// </summary>
+        public static string CheckExactLength {
+            get {
+                return ResourceManager.GetString("CheckExactLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User does not have permission to add, edit or delete profiling data for this asset.
         /// </summary>
         public static string DataProfilingNoPermission {
@@ -79,11 +88,47 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} exceeds the maximum length of {1} characters.
+        /// </summary>
+        public static string ExceedsMaximumLength {
+            get {
+                return ResourceManager.GetString("ExceedsMaximumLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} must be a valid {1}.
+        /// </summary>
+        public static string FieldNameValidate {
+            get {
+                return ResourceManager.GetString("FieldNameValidate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} does not allow selection of multiple values.
         /// </summary>
         public static string FieldNotAllowedMultipleValies {
             get {
                 return ResourceManager.GetString("FieldNotAllowedMultipleValies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is a required field.
+        /// </summary>
+        public static string FieldValueIsRequired {
+            get {
+                return ResourceManager.GetString("FieldValueIsRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Icon field must be fifty characters or less in length and start with &apos;fa-&apos;.
+        /// </summary>
+        public static string IconFieldValidation {
+            get {
+                return ResourceManager.GetString("IconFieldValidation", resourceCulture);
             }
         }
         
@@ -106,11 +151,65 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} must have a maximum value of {1}.
+        /// </summary>
+        public static string NumericMaximumValueCheck {
+            get {
+                return ResourceManager.GetString("NumericMaximumValueCheck", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} must have a maximum length of {1}.
+        /// </summary>
+        public static string NumericMaxmiumLengthCheck {
+            get {
+                return ResourceManager.GetString("NumericMaxmiumLengthCheck", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} must have a minimum length of {1}.
+        /// </summary>
+        public static string NumericMinimumLengthCheck {
+            get {
+                return ResourceManager.GetString("NumericMinimumLengthCheck", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} must have a minimum value of {1}.
+        /// </summary>
+        public static string NumericMinimumValueCheck {
+            get {
+                return ResourceManager.GetString("NumericMinimumValueCheck", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Owner value max length exceeded : {0}. Max length of Owner field is 100 characters..
         /// </summary>
         public static string OwnerValueMaxLength {
             get {
                 return ResourceManager.GetString("OwnerValueMaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Code field must be 250 characters or less in length.
+        /// </summary>
+        public static string ReferenceListCodeFieldMaxLengthCheck {
+            get {
+                return ResourceManager.GetString("ReferenceListCodeFieldMaxLengthCheck", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} must match regular expression pattern defined for this field.
+        /// </summary>
+        public static string RegularExpressionPatternMatch {
+            get {
+                return ResourceManager.GetString("RegularExpressionPatternMatch", resourceCulture);
             }
         }
         
@@ -147,6 +246,60 @@ namespace d360.core.resources {
         public static string RelatioshipUidExistWithDifferentType {
             get {
                 return ResourceManager.GetString("RelatioshipUidExistWithDifferentType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is a {1} field and cannot be updated on this request.
+        /// </summary>
+        public static string RestrictFieldTypeUpdate {
+            get {
+                return ResourceManager.GetString("RestrictFieldTypeUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is a boolean field and may only be &apos;false&apos; or &apos;true&apos;.
+        /// </summary>
+        public static string ValidateBoolValue {
+            get {
+                return ResourceManager.GetString("ValidateBoolValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Color field must be a seven character RGB code or the name of a Govern color.
+        /// </summary>
+        public static string ValidateColorField {
+            get {
+                return ResourceManager.GetString("ValidateColorField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} must be a valid link, using the format name|url.
+        /// </summary>
+        public static string ValidateLinkValue {
+            get {
+                return ResourceManager.GetString("ValidateLinkValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} must be a valid whole number, greater than {0} and less than {2}.
+        /// </summary>
+        public static string ValidateNumberFieldRange {
+            get {
+                return ResourceManager.GetString("ValidateNumberFieldRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is not a valid field.
+        /// </summary>
+        public static string ValidFieldCheck {
+            get {
+                return ResourceManager.GetString("ValidFieldCheck", resourceCulture);
             }
         }
     }
