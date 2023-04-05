@@ -11273,6 +11273,7 @@ where   ER.ExecutionID = @ExecutionID
 
 					DataProfileTable.Columns.Add("PopularityCount", typeof(long));
 					DataProfileTable.Columns.Add("IsAuthorizedForPopularity", typeof(bool));
+					DataProfileTable.Columns.Add("SourceLastModified", typeof(DateTime));
 
 					DataProfileSampleTable.Columns.Add("ExecutionID", typeof(Guid));
                     DataProfileSampleTable.Columns.Add("ItemNumber", typeof(int));
@@ -11341,6 +11342,8 @@ where   ER.ExecutionID = @ExecutionID
 
 						row["PopularityCount"] = item.PopularityCount ?? (object)DBNull.Value;
 						row["IsAuthorizedForPopularity"] = item.IsAuthorizedForPopularity ?? (object)DBNull.Value;
+						row["SourceLastModified"] = item.SourceLastModified ?? (object)DBNull.Value;						
+
 
 						DataProfileTable.Rows.Add(row);
                         if (item.outlierDetail != null)
@@ -11689,6 +11692,7 @@ where   ER.ExecutionID = @ExecutionID
 
 								bulkCopy.ColumnMappings.Add("PopularityCount", "PopularityCount");
 								bulkCopy.ColumnMappings.Add("IsAuthorizedForPopularity", "IsAuthorizedForPopularity");
+								bulkCopy.ColumnMappings.Add("SourceLastModified", "SourceLastModified");
 
 								bulkCopy.WriteToServer(DataProfileTable);
                             }
@@ -11919,6 +11923,7 @@ where   ER.ExecutionID = @ExecutionID
 													,[DecimalSeparator]
 													,[PopularityCount]
 													,[IsAuthorizedForPopularity]
+													,[SourceLastModified]
 													,[CreatedBy]
 													,[CreatedOn]
 													,[UpdatedBy]
@@ -11960,6 +11965,7 @@ where   ER.ExecutionID = @ExecutionID
 													,EDP.DecimalSeparator
 													,EDP.PopularityCount
 													,EDP.IsAuthorizedForPopularity
+													,EDP.SourceLastModified
 													,@CurrentResourceID
 													,GETDATE()
 													,@CurrentResourceID
@@ -12016,6 +12022,7 @@ where   ER.ExecutionID = @ExecutionID
 											,ADP.[DecimalSeparator] = EDP.[DecimalSeparator]
 											,ADP.[PopularityCount] = EDP.[PopularityCount]
 											,ADP.[IsAuthorizedForPopularity] = EDP.[IsAuthorizedForPopularity]
+											,ADP.[SourceLastModified] = EDP.[SourceLastModified]
 											,ADP.[UpdatedBy] = @CurrentResourceID
 											,ADP.[UpdatedOn] = GETDATE()                                       
 										OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;
