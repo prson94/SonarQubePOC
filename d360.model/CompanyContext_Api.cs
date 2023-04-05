@@ -1018,7 +1018,7 @@ namespace d360.model
 									{lookupFieldValuesSql}
 								) as S 
 					on          ( T.FieldTypeID = S.FieldTypeID and ({mergefieldSQL}) )
-					when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS then
+					when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS or T.Value is null then
 					update set T.Value = S.Value, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()                     
 					when		not matched by target then
 					insert		(FieldTypeID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID, IntersectID)
