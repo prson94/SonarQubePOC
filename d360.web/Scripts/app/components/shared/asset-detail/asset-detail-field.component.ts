@@ -132,7 +132,6 @@ export class AssetDetailFieldComponent {
 	}
 
 	private formatAsPath(value): string {
-		console.log(value);
 		return StringHelpers.formatAsPathString(value, false);
 	}
 }
