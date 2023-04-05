@@ -4,6 +4,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
 import { AssetService } from '../../../services/asset.service';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { StringHelpers } from '../../../static/string-helpers';
 
 @Component({
     selector: 'ig-asset-detail-field',
@@ -128,6 +129,11 @@ export class AssetDetailFieldComponent {
             return "resource";
         }
         return "asset";
-    }
+	}
+
+	private formatAsPath(value): string {
+		console.log(value);
+		return StringHelpers.formatAsPathString(value, false);
+	}
 }
 
