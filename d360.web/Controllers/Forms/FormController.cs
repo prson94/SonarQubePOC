@@ -1465,9 +1465,7 @@ order by Sort, title";
 			var row = 1;
 			//resolve the color correctly from the Id or hex value
 			var color = Company.Query<string>($@"SELECT top 1 COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Name'), '') as Text FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ  WHERE A.ID = {a.ID}").SingleOrDefault();
-			list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
-			list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString(), Validations = checkAndAddValidation("Text", "Code", true, "", 1, 250, "Must be between 1 and 250 alphanumeric characters in length.") });
-			list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Color", Name = "Color", FieldType = DataType.Color.ToString(), Value = color });
+			list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });						
 
 			//if the reference type has a parent we need to add parent field with the values from the parent
 
@@ -1489,12 +1487,23 @@ order by Sort, title";
 					Value = (parent != null) ? (parent.uid.ToString() ?? "").ToLower() : "",
 					Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid), Selected = i.uid == (parent != null ? parent.uid : Guid.Empty) }).ToList()
 				});
-			}
+			}			
 
 			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
 
 			list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, fieldTypes, fields, row, false, false);
+			var colourRowIndex = list.First(x => x.FieldName.ToLower() == "code").Row.Value + 1;
+
+			list.ForEach(f =>
+			{
+				if (f.Row >= colourRowIndex)
+				{
+					f.Row += 1;
+				}
+			});
+
+			list.Add(new EditableField { Row = colourRowIndex, Column = 1, FieldName = "Color", Name = "Color", FieldType = DataType.Color.ToString(), Value = color });			
 
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}
